@@ -12,3 +12,7 @@ build/
 # Directory created by dartdoc
 doc/api/
 
+
+# Files created by melos
+# Omitted since client is published as a library
+*.iml
