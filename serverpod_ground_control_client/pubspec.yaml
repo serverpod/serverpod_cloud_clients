@@ -1,9 +1,9 @@
 name: serverpod_ground_control_client
 version: 0.0.1
 description: A client library for the Serverpod Ground Control API. Used to manage Serverpod Cloud projects.
-repository: https://github.com/serverpod/serverpod_ground_control_client
+repository: https://github.com/serverpod/serverpod_cloud_clients
 homepage: https://serverpod.dev
-issue_tracker: https://github.com/serverpod/serverpod_ground_control_client/issues
+issue_tracker: https://github.com/serverpod/serverpod_cloud_clients/issues
 
 topics:
   - api
