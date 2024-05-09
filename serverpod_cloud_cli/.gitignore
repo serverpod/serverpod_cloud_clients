@@ -1,0 +1,17 @@
+# https://dart.dev/guides/libraries/private-files
+# Created by `dart pub`
+.dart_tool/
+
+# Omit commiting pubspec.lock for library packages:
+# https://dart.dev/guides/libraries/private-files#pubspeclock
+pubspec.lock
+
+# Conventional directory for build outputs
+build/
+
+# Directory created by dartdoc
+doc/api/
+
+# Files created by melos
+# Omitted since client is published as a library
+*.iml
