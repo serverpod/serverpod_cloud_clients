@@ -13,12 +13,13 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 enum DatabaseProvider with _i1.SerializableEntity {
   neon;
 
-  static DatabaseProvider? fromJson(String name) {
+  static DatabaseProvider fromJson(String name) {
     switch (name) {
       case 'neon':
         return neon;
       default:
-        return null;
+        throw ArgumentError(
+            'Value "$name" cannot be converted to "DatabaseProvider"');
     }
   }
 

@@ -26,17 +26,13 @@ abstract class Project extends _i1.SerializableEntity {
     required _i2.ServerpodRegion region,
   }) = _ProjectImpl;
 
-  factory Project.fromJson(
-    Map<String, dynamic> jsonSerialization,
-    _i1.SerializationManager serializationManager,
-  ) {
+  factory Project.fromJson(Map<String, dynamic> jsonSerialization) {
     return Project(
-      id: serializationManager.deserialize<int?>(jsonSerialization['id']),
-      name: serializationManager.deserialize<String>(jsonSerialization['name']),
-      projectId: serializationManager
-          .deserialize<String>(jsonSerialization['projectId']),
-      region: serializationManager
-          .deserialize<_i2.ServerpodRegion>(jsonSerialization['region']),
+      id: jsonSerialization['id'] as int?,
+      name: jsonSerialization['name'] as String,
+      projectId: jsonSerialization['projectId'] as String,
+      region:
+          _i2.ServerpodRegion.fromJson((jsonSerialization['region'] as int)),
     );
   }
 

@@ -16,7 +16,7 @@ enum ServerpodRegion with _i1.SerializableEntity {
   europe,
   asia;
 
-  static ServerpodRegion? fromJson(int index) {
+  static ServerpodRegion fromJson(int index) {
     switch (index) {
       case 0:
         return usEast;
@@ -27,7 +27,8 @@ enum ServerpodRegion with _i1.SerializableEntity {
       case 3:
         return asia;
       default:
-        return null;
+        throw ArgumentError(
+            'Value "$index" cannot be converted to "ServerpodRegion"');
     }
   }
 

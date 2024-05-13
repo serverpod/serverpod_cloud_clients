@@ -14,7 +14,6 @@ import 'infrastrucutre/database_provider.dart' as _i2;
 import 'infrastrucutre/database_resource.dart' as _i3;
 import 'project.dart' as _i4;
 import 'serverpod_region.dart' as _i5;
-import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i6;
 export 'infrastrucutre/database_provider.dart';
 export 'infrastrucutre/database_resource.dart';
 export 'project.dart';
@@ -43,10 +42,10 @@ class Protocol extends _i1.SerializationManager {
       return _i2.DatabaseProvider.fromJson(data) as T;
     }
     if (t == _i3.DatabaseResource) {
-      return _i3.DatabaseResource.fromJson(data, this) as T;
+      return _i3.DatabaseResource.fromJson(data) as T;
     }
     if (t == _i4.Project) {
-      return _i4.Project.fromJson(data, this) as T;
+      return _i4.Project.fromJson(data) as T;
     }
     if (t == _i5.ServerpodRegion) {
       return _i5.ServerpodRegion.fromJson(data) as T;
@@ -55,28 +54,19 @@ class Protocol extends _i1.SerializationManager {
       return (data != null ? _i2.DatabaseProvider.fromJson(data) : null) as T;
     }
     if (t == _i1.getType<_i3.DatabaseResource?>()) {
-      return (data != null ? _i3.DatabaseResource.fromJson(data, this) : null)
-          as T;
+      return (data != null ? _i3.DatabaseResource.fromJson(data) : null) as T;
     }
     if (t == _i1.getType<_i4.Project?>()) {
-      return (data != null ? _i4.Project.fromJson(data, this) : null) as T;
+      return (data != null ? _i4.Project.fromJson(data) : null) as T;
     }
     if (t == _i1.getType<_i5.ServerpodRegion?>()) {
       return (data != null ? _i5.ServerpodRegion.fromJson(data) : null) as T;
     }
-    try {
-      return _i6.Protocol().deserialize<T>(data, t);
-    } catch (_) {}
     return super.deserialize<T>(data, t);
   }
 
   @override
   String? getClassNameForObject(Object data) {
-    String? className;
-    className = _i6.Protocol().getClassNameForObject(data);
-    if (className != null) {
-      return 'serverpod_auth.$className';
-    }
     if (data is _i2.DatabaseProvider) {
       return 'DatabaseProvider';
     }
@@ -94,10 +84,6 @@ class Protocol extends _i1.SerializationManager {
 
   @override
   dynamic deserializeByClassName(Map<String, dynamic> data) {
-    if (data['className'].startsWith('serverpod_auth.')) {
-      data['className'] = data['className'].substring(15);
-      return _i6.Protocol().deserializeByClassName(data);
-    }
     if (data['className'] == 'DatabaseProvider') {
       return deserialize<_i2.DatabaseProvider>(data['data']);
     }
