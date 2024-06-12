@@ -10,20 +10,21 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
-enum DatabaseProvider with _i1.SerializableEntity {
+enum DatabaseProvider implements _i1.SerializableModel {
   neon;
 
-  static DatabaseProvider? fromJson(String name) {
+  static DatabaseProvider fromJson(String name) {
     switch (name) {
       case 'neon':
         return neon;
       default:
-        return null;
+        throw ArgumentError(
+            'Value "$name" cannot be converted to "DatabaseProvider"');
     }
   }
 
   @override
   String toJson() => name;
   @override
-  String toString() => toJson();
+  String toString() => name;
 }

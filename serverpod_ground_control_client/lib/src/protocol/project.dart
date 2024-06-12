@@ -11,7 +11,7 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import 'protocol.dart' as _i2;
 
-abstract class Project extends _i1.SerializableEntity {
+abstract class Project implements _i1.SerializableModel {
   Project._({
     this.id,
     required this.name,
@@ -26,17 +26,13 @@ abstract class Project extends _i1.SerializableEntity {
     required _i2.ServerpodRegion region,
   }) = _ProjectImpl;
 
-  factory Project.fromJson(
-    Map<String, dynamic> jsonSerialization,
-    _i1.SerializationManager serializationManager,
-  ) {
+  factory Project.fromJson(Map<String, dynamic> jsonSerialization) {
     return Project(
-      id: serializationManager.deserialize<int?>(jsonSerialization['id']),
-      name: serializationManager.deserialize<String>(jsonSerialization['name']),
-      projectId: serializationManager
-          .deserialize<String>(jsonSerialization['projectId']),
-      region: serializationManager
-          .deserialize<_i2.ServerpodRegion>(jsonSerialization['region']),
+      id: jsonSerialization['id'] as int?,
+      name: jsonSerialization['name'] as String,
+      projectId: jsonSerialization['projectId'] as String,
+      region:
+          _i2.ServerpodRegion.fromJson((jsonSerialization['region'] as int)),
     );
   }
 
@@ -65,6 +61,11 @@ abstract class Project extends _i1.SerializableEntity {
       'projectId': projectId,
       'region': region.toJson(),
     };
+  }
+
+  @override
+  String toString() {
+    return _i1.SerializationManager.encode(this);
   }
 }
 

@@ -26,8 +26,6 @@ class Protocol extends _i1.SerializationManager {
 
   factory Protocol() => _instance;
 
-  static final Map<Type, _i1.constructor> customConstructors = {};
-
   static final Protocol _instance = Protocol._();
 
   @override
@@ -36,17 +34,14 @@ class Protocol extends _i1.SerializationManager {
     Type? t,
   ]) {
     t ??= T;
-    if (customConstructors.containsKey(t)) {
-      return customConstructors[t]!(data, this) as T;
-    }
     if (t == _i2.DatabaseProvider) {
       return _i2.DatabaseProvider.fromJson(data) as T;
     }
     if (t == _i3.DatabaseResource) {
-      return _i3.DatabaseResource.fromJson(data, this) as T;
+      return _i3.DatabaseResource.fromJson(data) as T;
     }
     if (t == _i4.Project) {
-      return _i4.Project.fromJson(data, this) as T;
+      return _i4.Project.fromJson(data) as T;
     }
     if (t == _i5.ServerpodRegion) {
       return _i5.ServerpodRegion.fromJson(data) as T;
@@ -55,18 +50,17 @@ class Protocol extends _i1.SerializationManager {
       return (data != null ? _i2.DatabaseProvider.fromJson(data) : null) as T;
     }
     if (t == _i1.getType<_i3.DatabaseResource?>()) {
-      return (data != null ? _i3.DatabaseResource.fromJson(data, this) : null)
-          as T;
+      return (data != null ? _i3.DatabaseResource.fromJson(data) : null) as T;
     }
     if (t == _i1.getType<_i4.Project?>()) {
-      return (data != null ? _i4.Project.fromJson(data, this) : null) as T;
+      return (data != null ? _i4.Project.fromJson(data) : null) as T;
     }
     if (t == _i1.getType<_i5.ServerpodRegion?>()) {
       return (data != null ? _i5.ServerpodRegion.fromJson(data) : null) as T;
     }
     try {
       return _i6.Protocol().deserialize<T>(data, t);
-    } catch (_) {}
+    } on _i1.DeserializationTypeNotFoundException catch (_) {}
     return super.deserialize<T>(data, t);
   }
 

@@ -10,13 +10,13 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
-enum ServerpodRegion with _i1.SerializableEntity {
+enum ServerpodRegion implements _i1.SerializableModel {
   usEast,
   usWest,
   europe,
   asia;
 
-  static ServerpodRegion? fromJson(int index) {
+  static ServerpodRegion fromJson(int index) {
     switch (index) {
       case 0:
         return usEast;
@@ -27,10 +27,13 @@ enum ServerpodRegion with _i1.SerializableEntity {
       case 3:
         return asia;
       default:
-        return null;
+        throw ArgumentError(
+            'Value "$index" cannot be converted to "ServerpodRegion"');
     }
   }
 
   @override
   int toJson() => index;
+  @override
+  String toString() => name;
 }

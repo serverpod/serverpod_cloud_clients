@@ -11,7 +11,7 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../protocol.dart' as _i2;
 
-abstract class DatabaseResource extends _i1.SerializableEntity {
+abstract class DatabaseResource implements _i1.SerializableModel {
   DatabaseResource._({
     this.id,
     required this.projectId,
@@ -26,18 +26,13 @@ abstract class DatabaseResource extends _i1.SerializableEntity {
     required _i2.DatabaseProvider provider,
   }) = _DatabaseResourceImpl;
 
-  factory DatabaseResource.fromJson(
-    Map<String, dynamic> jsonSerialization,
-    _i1.SerializationManager serializationManager,
-  ) {
+  factory DatabaseResource.fromJson(Map<String, dynamic> jsonSerialization) {
     return DatabaseResource(
-      id: serializationManager.deserialize<int?>(jsonSerialization['id']),
-      projectId:
-          serializationManager.deserialize<int>(jsonSerialization['projectId']),
-      providerId: serializationManager
-          .deserialize<String>(jsonSerialization['providerId']),
-      provider: serializationManager
-          .deserialize<_i2.DatabaseProvider>(jsonSerialization['provider']),
+      id: jsonSerialization['id'] as int?,
+      projectId: jsonSerialization['projectId'] as int,
+      providerId: jsonSerialization['providerId'] as String,
+      provider: _i2.DatabaseProvider.fromJson(
+          (jsonSerialization['provider'] as String)),
     );
   }
 
@@ -66,6 +61,11 @@ abstract class DatabaseResource extends _i1.SerializableEntity {
       'providerId': providerId,
       'provider': provider.toJson(),
     };
+  }
+
+  @override
+  String toString() {
+    return _i1.SerializationManager.encode(this);
   }
 }
 
