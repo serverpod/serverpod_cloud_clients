@@ -10,13 +10,13 @@
 library protocol; // ignore_for_file: no_leading_underscores_for_library_prefixes
 
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import 'infrastrucutre/database_provider.dart' as _i2;
-import 'infrastrucutre/database_resource.dart' as _i3;
+import 'infrastructure/database_provider.dart' as _i2;
+import 'infrastructure/database_resource.dart' as _i3;
 import 'project.dart' as _i4;
 import 'serverpod_region.dart' as _i5;
 import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i6;
-export 'infrastrucutre/database_provider.dart';
-export 'infrastrucutre/database_resource.dart';
+export 'infrastructure/database_provider.dart';
+export 'infrastructure/database_resource.dart';
 export 'project.dart';
 export 'serverpod_region.dart';
 export 'client.dart';
