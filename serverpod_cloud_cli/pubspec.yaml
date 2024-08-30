@@ -15,7 +15,8 @@ environment:
 
 
 dependencies:
-  # path: ^1.8.0
+  cli_tools: ^0.1.0
+  pub_semver: ^2.1.4
 
 dev_dependencies:
   test: ^1.24.0

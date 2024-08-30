@@ -1,1 +1,7 @@
 include: package:serverpod_lints/cli.yaml
+
+linter:
+  rules:
+    prefer_final_locals: true
+    prefer_final_parameters: true
+    unnecessary_final: false
