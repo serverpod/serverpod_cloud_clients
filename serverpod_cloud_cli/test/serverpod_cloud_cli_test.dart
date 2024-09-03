@@ -1,24 +1,8 @@
-import 'package:cli_tools/cli_tools.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:test/test.dart';
 
-class TestLogger extends VoidLogger {
-  final List<String> messages = [];
-
-  @override
-  void info(
-    final String message, {
-    final bool newParagraph = false,
-    final LogType type = const RawLogType(),
-  }) {
-    messages.add(message);
-  }
-
-  void clear() {
-    messages.clear();
-  }
-}
+import '../test_utils/test_logger.dart';
 
 void main() async {
   final logger = TestLogger();

@@ -16,11 +16,14 @@ environment:
 
 dependencies:
   cli_tools: ^0.1.0
+  path: ^1.8.2
   pub_semver: ^2.1.4
 
 dev_dependencies:
   test: ^1.24.0
   serverpod_lints: ">=1.2.6"
+  http: ^1.2.2
+  uuid: ^4.1.0
 
 executables:
   scloud: serverpod_cloud_cli

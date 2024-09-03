@@ -7,3 +7,12 @@ The Serverpod Cloud CLI is a command line interface for the Serverpod Cloud plat
 ## Contributing Guidelines
 
 The Serverpod Cloud CLI is developed in a closed-source repository. We are not accepting contributions to this repository at this time. Please create an issue on this repository if you have any suggestions or feedback.
+
+## Commands
+
+The Serverpod Cloud CLI has the following commands:
+
+| Command | Description |
+|---------|-------------|
+| version | Print the version of the Serverpod Cloud CLI |
+| login   | Log in to Serverpod Cloud |

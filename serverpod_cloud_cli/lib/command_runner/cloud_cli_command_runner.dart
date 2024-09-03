@@ -1,5 +1,6 @@
 import 'package:cli_tools/cli_tools.dart';
 import 'package:pub_semver/pub_semver.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/login_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/version_command.dart';
 
 class CloudCliCommandRunner extends BetterCommandRunner {
@@ -40,6 +41,7 @@ class CloudCliCommandRunner extends BetterCommandRunner {
 
     runner.addCommands([
       VersionCommand(logger: logger),
+      CloudLoginCommand(logger: logger),
     ]);
 
     return runner;
