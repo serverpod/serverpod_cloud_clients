@@ -20,7 +20,7 @@ class _Modules {
   late final _i1.Caller auth;
 }
 
-class Client extends _i2.ServerpodClient {
+class Client extends _i2.ServerpodClientShared {
   Client(
     String host, {
     dynamic securityContext,
@@ -33,6 +33,7 @@ class Client extends _i2.ServerpodClient {
       StackTrace,
     )? onFailedCall,
     Function(_i2.MethodCallContext)? onSucceededCall,
+    bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
           host,
           _i3.Protocol(),
@@ -42,6 +43,8 @@ class Client extends _i2.ServerpodClient {
           connectionTimeout: connectionTimeout,
           onFailedCall: onFailedCall,
           onSucceededCall: onSucceededCall,
+          disconnectStreamsOnLostInternetConnection:
+              disconnectStreamsOnLostInternetConnection,
         ) {
     modules = _Modules(this);
   }
