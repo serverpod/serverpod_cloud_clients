@@ -9,19 +9,18 @@ import 'package:uuid/uuid.dart';
 
 void main() {
   final logger = VoidLogger();
+  final testCacheFolderPath = p.join(
+    'test_integration',
+    const Uuid().v4(),
+  );
+
+  tearDown(() {
+    final directory = Directory(testCacheFolderPath);
+    if (directory.existsSync()) {
+      directory.deleteSync(recursive: true);
+    }
+  });
   group('ServerpodCloudData: ', () {
-    final testCacheFolderPath = p.join(
-      'test_integration',
-      const Uuid().v4(),
-    );
-
-    tearDown(() {
-      final directory = Directory(testCacheFolderPath);
-      if (directory.existsSync()) {
-        directory.deleteSync(recursive: true);
-      }
-    });
-
     test(
         'Given cloud data when doing storage roundtrip then cloud data values are preserved.',
         () async {

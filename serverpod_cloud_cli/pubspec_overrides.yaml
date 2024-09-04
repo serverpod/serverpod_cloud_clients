@@ -1,0 +1,4 @@
+# melos_managed_dependency_overrides: serverpod_ground_control_client
+dependency_overrides:
+  serverpod_ground_control_client:
+    path: ../../serverpod_ground_control/serverpod_ground_control_client

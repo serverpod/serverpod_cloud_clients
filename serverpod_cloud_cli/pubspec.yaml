@@ -18,6 +18,7 @@ dependencies:
   cli_tools: ^0.1.0
   path: ^1.8.2
   pub_semver: ^2.1.4
+  serverpod_ground_control_client: ^0.0.1
 
 dev_dependencies:
   test: ^1.24.0

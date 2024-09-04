@@ -19,7 +19,7 @@ class CloudLoginCommand extends CloudCliCommand {
 
     argParser.addFlag(
       'persistent',
-      help: 'Store the authentication token.',
+      help: 'Store the authentication credentials.',
       defaultsTo: true,
       negatable: true,
     );
@@ -35,7 +35,8 @@ class CloudLoginCommand extends CloudCliCommand {
     argParser.addOption(
       'dir',
       abbr: 'd',
-      help: 'The directory path where the serverpod cloud data file is stored.',
+      help:
+          'The directory path where the Serverpod Cloud credentials are stored.',
       hide: true,
       defaultsTo: ResourceManager.localStorageDirectory.path,
     );
