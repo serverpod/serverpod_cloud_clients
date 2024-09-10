@@ -17,3 +17,4 @@ The Serverpod Cloud CLI has the following commands:
 | version | Print the version of the Serverpod Cloud CLI |
 | login   | Log in or create an account in Serverpod Cloud |
 | logout  | Log out from Serverpod Cloud and remove stored credentials |
+| deploy  | Deploy a Serverpod Cloud project |

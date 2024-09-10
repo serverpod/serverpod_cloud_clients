@@ -1,0 +1,11 @@
+services:
+  storage-emulator:
+    # Readme: https://github.com/fsouza/fake-gcs-server
+    image: fsouza/fake-gcs-server
+    ports:
+      - "4443:4443"
+      - "8000:8000"
+    volumes:
+      - ./test_storage_bucket/:/data
+    command: -public-host localhost -scheme both 
+    restart: unless-stopped

@@ -10,8 +10,8 @@ import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:test/test.dart';
 import 'package:uuid/uuid.dart';
 
-import '../test_utils/http_server_builder.dart';
-import '../test_utils/test_logger.dart';
+import '../../test_utils/http_server_builder.dart';
+import '../../test_utils/test_logger.dart';
 
 void main() {
   final logger = TestLogger();
@@ -70,7 +70,7 @@ void main() {
           'logout',
           '--server',
           localServerAddress.toString(),
-          '--dir',
+          '--auth-dir',
           testCacheFolderPath,
         ]);
       });
@@ -139,7 +139,7 @@ void main() {
           'logout',
           '--server',
           localServerAddress.toString(),
-          '--dir',
+          '--auth-dir',
           testCacheFolderPath,
         ]);
       });
@@ -168,9 +168,9 @@ void main() {
       test('then a "request to sign out" error is logged.', () async {
         await runLogoutCommand.onError((final e, final s) {});
 
-        expect(logger.messages, isNotEmpty);
+        expect(logger.errors, isNotEmpty);
         expect(
-          logger.messages.first,
+          logger.errors.first,
           contains('Request to sign out from Serverpod Cloud failed:'),
         );
       });
@@ -182,7 +182,7 @@ void main() {
       () async {
     final runLogoutCommand = cli.run([
       'logout',
-      '--dir',
+      '--auth-dir',
       testCacheFolderPath,
     ]);
 

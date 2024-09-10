@@ -14,16 +14,15 @@ class CloudLogoutCommand extends CloudCliCommand {
       'Log out from Serverpod Cloud and remove stored credentials.';
 
   CloudLogoutCommand({required super.logger}) {
-    // Developer options and flags
     argParser.addOption(
-      'dir',
+      'auth-dir',
       abbr: 'd',
       help:
-          'The directory path where the Serverpod Cloud credentials are stored.',
-      hide: true,
+          'Override the directory path where the serverpod cloud authentication file is stored.',
       defaultsTo: ResourceManager.localStorageDirectory.path,
     );
 
+    // Developer options and flags
     argParser.addOption(
       'server',
       abbr: 's',
@@ -35,7 +34,7 @@ class CloudLogoutCommand extends CloudCliCommand {
 
   @override
   void run() async {
-    final localStoragePath = argResults!['dir'] as String;
+    final localStoragePath = argResults!['auth-dir'] as String;
     final serverAddress = argResults!['server'] as String;
 
     final cloudData = await ResourceManager.tryFetchServerpodCloudData(

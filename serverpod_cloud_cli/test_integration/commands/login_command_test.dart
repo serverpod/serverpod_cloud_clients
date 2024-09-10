@@ -11,7 +11,7 @@ import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:test/test.dart';
 import 'package:uuid/uuid.dart';
 
-import '../test_utils/test_logger.dart';
+import '../../test_utils/test_logger.dart';
 
 void main() {
   final logger = TestLogger();
@@ -52,7 +52,7 @@ void main() {
     test(
         'when logging in through cli then "already logged in" message is logged.',
         () async {
-      await cli.run(['login', '--dir', testCacheFolderPath]);
+      await cli.run(['login', '--auth-dir', testCacheFolderPath]);
 
       expect(logger.messages, isNotEmpty);
       expect(
@@ -88,8 +88,8 @@ void main() {
     group('when logging in through cli', () {
       late Future cliOnDone;
       setUp(() async {
-        cliOnDone =
-            cli.run(['login', '--no-browser', '--dir', testCacheFolderPath]);
+        cliOnDone = cli
+            .run(['login', '--no-browser', '--auth-dir', testCacheFolderPath]);
         await tokenSent.future;
       });
 
@@ -121,7 +121,7 @@ void main() {
           'login',
           '--no-persistent',
           '--no-browser',
-          '--dir',
+          '--auth-dir',
           testCacheFolderPath,
         ]);
         await tokenSent.future;
@@ -172,8 +172,8 @@ void main() {
     group('when logging in through cli', () {
       late Future cliOnDone;
       setUp(() async {
-        cliOnDone =
-            cli.run(['login', '--no-browser', '--dir', testCacheFolderPath]);
+        cliOnDone = cli
+            .run(['login', '--no-browser', '--auth-dir', testCacheFolderPath]);
         await tokenSent.future;
       });
 

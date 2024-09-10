@@ -4,6 +4,7 @@ import 'package:cli_tools/logger.dart';
 
 class TestLogger extends VoidLogger {
   final List<String> messages = [];
+  final List<String> errors = [];
   Completer<void> _somethingLogged = Completer<void>();
 
   @override
@@ -28,11 +29,12 @@ class TestLogger extends VoidLogger {
     if (_somethingLogged.isCompleted == false) {
       _somethingLogged.complete();
     }
-    messages.add(message);
+    errors.add(message);
   }
 
   void clear() {
     messages.clear();
+    errors.clear();
   }
 
   Future<void> waitForLog() async {

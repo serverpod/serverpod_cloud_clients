@@ -10,7 +10,7 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart
 const String cliVersion = '0.0.1';
 
 void main(final List<String> args) async {
-  final logger = StdOutLogger(LogLevel.info);
+  final logger = _buildLogger();
 
   await runZonedGuarded(
     () async {
@@ -64,4 +64,13 @@ https://github.com/serverpod/serverpod/issues
 
 $error
 ''';
+}
+
+Logger _buildLogger() {
+  const Map<String, String> windowsReplacements = {
+    '🚀': '',
+  };
+  return Platform.isWindows
+      ? StdOutLogger(LogLevel.info, replacements: windowsReplacements)
+      : StdOutLogger(LogLevel.info);
 }

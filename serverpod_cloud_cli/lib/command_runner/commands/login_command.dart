@@ -31,15 +31,15 @@ class CloudLoginCommand extends CloudCliCommand {
       negatable: true,
     );
 
-    // Developer options and flags
     argParser.addOption(
-      'dir',
+      'auth-dir',
       abbr: 'd',
       help:
-          'The directory path where the Serverpod Cloud credentials are stored.',
-      hide: true,
+          'Override the directory path where the serverpod cloud authentication file is stored.',
       defaultsTo: ResourceManager.localStorageDirectory.path,
     );
+
+    // Developer options and flags
 
     argParser.addOption(
       'server',
@@ -64,7 +64,7 @@ class CloudLoginCommand extends CloudCliCommand {
 
   @override
   void run() async {
-    final localStoragePath = argResults!['dir'] as String;
+    final localStoragePath = argResults!['auth-dir'] as String;
     final timeLimit = Duration(seconds: int.parse(argResults!['timeout']));
     final serverAddress = argResults!['server'] as String;
     final signInPath = argResults!['sign-in-path'] as String;

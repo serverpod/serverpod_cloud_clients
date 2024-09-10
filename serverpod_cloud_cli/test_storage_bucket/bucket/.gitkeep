@@ -1,0 +1,3 @@
+This folder is configured to be the root of the mock GCP storage bucket server. Without this folder all retrievals and uploads of objects will fail in the tests.
+
+The bucket name is configured in the test server by setting the env GCP_BUCKET_CODE_UPLOAD.
