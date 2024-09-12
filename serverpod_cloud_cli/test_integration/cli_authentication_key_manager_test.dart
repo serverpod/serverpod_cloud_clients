@@ -151,7 +151,7 @@ void main() {
       keyManager = CliAuthenticationKeyManager(
         logger: logger,
         localStoragePath: testCacheFolderPath,
-        cloudData: cloudData,
+        cloudDataOverride: cloudData,
       );
     });
 

@@ -52,7 +52,7 @@ class CloudLogoutCommand extends CloudCliCommand {
       authenticationKeyManager: CliAuthenticationKeyManager(
         logger: logger,
         localStoragePath: localStoragePath,
-        cloudData: cloudData,
+        cloudDataOverride: cloudData,
       ),
     );
 

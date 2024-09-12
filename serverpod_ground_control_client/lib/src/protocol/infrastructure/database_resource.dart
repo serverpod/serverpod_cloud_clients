@@ -15,14 +15,14 @@ import '../protocol.dart' as _i2;
 abstract class DatabaseResource implements _i1.SerializableModel {
   DatabaseResource._({
     this.id,
-    required this.projectId,
+    required this.envId,
     required this.providerId,
     required this.provider,
   });
 
   factory DatabaseResource({
     int? id,
-    required int projectId,
+    required int envId,
     required String providerId,
     required _i2.DatabaseProvider provider,
   }) = _DatabaseResourceImpl;
@@ -30,7 +30,7 @@ abstract class DatabaseResource implements _i1.SerializableModel {
   factory DatabaseResource.fromJson(Map<String, dynamic> jsonSerialization) {
     return DatabaseResource(
       id: jsonSerialization['id'] as int?,
-      projectId: jsonSerialization['projectId'] as int,
+      envId: jsonSerialization['envId'] as int,
       providerId: jsonSerialization['providerId'] as String,
       provider: _i2.DatabaseProvider.fromJson(
           (jsonSerialization['provider'] as String)),
@@ -42,7 +42,7 @@ abstract class DatabaseResource implements _i1.SerializableModel {
   /// the id will be null.
   int? id;
 
-  int projectId;
+  int envId;
 
   String providerId;
 
@@ -50,7 +50,7 @@ abstract class DatabaseResource implements _i1.SerializableModel {
 
   DatabaseResource copyWith({
     int? id,
-    int? projectId,
+    int? envId,
     String? providerId,
     _i2.DatabaseProvider? provider,
   });
@@ -58,7 +58,7 @@ abstract class DatabaseResource implements _i1.SerializableModel {
   Map<String, dynamic> toJson() {
     return {
       if (id != null) 'id': id,
-      'projectId': projectId,
+      'envId': envId,
       'providerId': providerId,
       'provider': provider.toJson(),
     };
@@ -75,12 +75,12 @@ class _Undefined {}
 class _DatabaseResourceImpl extends DatabaseResource {
   _DatabaseResourceImpl({
     int? id,
-    required int projectId,
+    required int envId,
     required String providerId,
     required _i2.DatabaseProvider provider,
   }) : super._(
           id: id,
-          projectId: projectId,
+          envId: envId,
           providerId: providerId,
           provider: provider,
         );
@@ -88,13 +88,13 @@ class _DatabaseResourceImpl extends DatabaseResource {
   @override
   DatabaseResource copyWith({
     Object? id = _Undefined,
-    int? projectId,
+    int? envId,
     String? providerId,
     _i2.DatabaseProvider? provider,
   }) {
     return DatabaseResource(
       id: id is int? ? id : this.id,
-      projectId: projectId ?? this.projectId,
+      envId: envId ?? this.envId,
       providerId: providerId ?? this.providerId,
       provider: provider ?? this.provider,
     );

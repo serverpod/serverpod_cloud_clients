@@ -11,10 +11,10 @@ class CliAuthenticationKeyManager extends AuthenticationKeyManager {
   CliAuthenticationKeyManager({
     required final Logger logger,
     required final String localStoragePath,
-    final ServerpodCloudData? cloudData,
+    final ServerpodCloudData? cloudDataOverride,
   })  : _localStoragePath = localStoragePath,
         _logger = logger,
-        _cloudData = cloudData;
+        _cloudData = cloudDataOverride;
 
   @override
   Future<String?> get() async {

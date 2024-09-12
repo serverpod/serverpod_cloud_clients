@@ -1,7 +1,8 @@
-include: package:serverpod_lints/cli.yaml
+include: package:serverpod_cloud_lints/lints.yaml
+
+# Consider making changes in the common lints package instead of here,
+# unless it is specifically a local need.
 
 linter:
   rules:
-    prefer_final_locals: true
-    prefer_final_parameters: true
-    unnecessary_final: false
+    avoid_print: false
