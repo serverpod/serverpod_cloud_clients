@@ -16,8 +16,11 @@ abstract class CloudCliCommand extends BetterCommand {
     required final String localStoragePath,
     required final String serverAddress,
   }) async {
+    final address =
+        serverAddress.endsWith('/') ? serverAddress : '$serverAddress/';
+
     final cloudClient = Client(
-      serverAddress,
+      address,
       authenticationKeyManager: CliAuthenticationKeyManager(
         logger: logger,
         localStoragePath: localStoragePath,

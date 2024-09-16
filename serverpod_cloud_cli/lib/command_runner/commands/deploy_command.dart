@@ -4,7 +4,6 @@ import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
-import 'package:serverpod_cloud_cli/util/cli_authentication_key_manager.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
@@ -72,12 +71,9 @@ class CloudDeployCommand extends CloudCliCommand {
       throw ExitException();
     }
 
-    final cloudClient = Client(
-      serverAddress,
-      authenticationKeyManager: CliAuthenticationKeyManager(
-        logger: logger,
-        localStoragePath: localStoragePath,
-      ),
+    final cloudClient = await getClient(
+      serverAddress: serverAddress,
+      localStoragePath: localStoragePath,
     );
 
     final String uploadDescription;
