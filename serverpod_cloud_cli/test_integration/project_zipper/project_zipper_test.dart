@@ -106,7 +106,7 @@ void main() {
   });
 
   test(
-      'Given a project directory with files when zipping then files are included in the zip file.',
+      'Given a project directory with files when zipping then files are included in the root of the zip file.',
       () async {
     final projectDirectory = DirectoryFactory(
       withFiles: [
@@ -124,8 +124,9 @@ void main() {
     final archive = ZipDecoder().decodeBytes(zippedProject);
     expect(archive.length, 3);
     final archiveNames = archive.map((final file) => file.name).toList();
-    expect(archiveNames, contains(contains('file1.txt')));
-    expect(archiveNames, contains(contains('file2.txt')));
-    expect(archiveNames, contains(contains('file3.txt')));
+
+    expect(archiveNames, contains('file1.txt'));
+    expect(archiveNames, contains('file2.txt'));
+    expect(archiveNames, contains('file3.txt'));
   });
 }

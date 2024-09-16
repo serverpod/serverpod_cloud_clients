@@ -66,7 +66,7 @@ abstract final class ProjectZipper {
 
         archive.addFile(
           ArchiveFile(
-            path,
+            path.replaceFirst('${projectDirectory.path}/', ''),
             length,
             bytes,
           ),
