@@ -1,5 +1,4 @@
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
-import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 
 class VersionCommand extends CloudCliCommand {
   @override
@@ -11,8 +10,7 @@ class VersionCommand extends CloudCliCommand {
   VersionCommand({required super.logger});
 
   @override
-  void run() {
-    logger.info(
-        'Serverpod Cloud CLI version: ${(runner as CloudCliCommandRunner).version}');
+  Future<void> run() async {
+    logger.info('Serverpod Cloud CLI version: ${runner.version}');
   }
 }

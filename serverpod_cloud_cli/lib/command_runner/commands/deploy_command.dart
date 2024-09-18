@@ -2,68 +2,70 @@ import 'dart:io';
 
 import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
-import 'package:serverpod_cloud_cli/constants.dart';
-import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dart';
+import 'package:serverpod_cloud_cli/util/configuration.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
 
-class CloudDeployCommand extends CloudCliCommand {
+enum DeployCommandOption implements OptionDefinition {
+  projectId(
+    ConfigOption(
+      argName: 'project-id',
+      argAbbrev: 'i',
+      helpText: 'The ID of the project.',
+      mandatory: true,
+      envName: 'SERVERPOD_CLOUD_PROJECT_ID',
+    ),
+  ),
+  projectDir(
+    ConfigOption(
+      argName: 'project-dir',
+      argAbbrev: 'p',
+      helpText: 'The path to the directory of the project to deploy.',
+      hide: true,
+      defaultFrom: _getCurrentPath,
+      envName: 'SERVERPOD_CLOUD_PROJECT_DIR',
+    ),
+  ),
+  concurrency(
+    ConfigOption(
+      argName: 'concurrency',
+      argAbbrev: 'c',
+      helpText:
+          'Number of concurrent files processed when zipping the project.',
+      defaultsTo: '5',
+      valueHelp: '5',
+    ),
+  );
+
+  const DeployCommandOption(this.option);
+
+  @override
+  final ConfigOption option;
+}
+
+String _getCurrentPath() {
+  return Directory.current.path;
+}
+
+class CloudDeployCommand extends CloudCliCommand<DeployCommandOption> {
   @override
   String get description => 'Deploy a Serverpod project to the cloud.';
 
   @override
   String get name => 'deploy';
 
-  CloudDeployCommand({required super.logger}) {
-    argParser.addOption(
-      'concurrency',
-      abbr: 'c',
-      help: 'Number of concurrent files processed when zipping the project.',
-      valueHelp: '5',
-      defaultsTo: '5',
-    );
-
-    argParser.addOption(
-      'project-id',
-      abbr: 'i',
-      help: 'The project ID to deploy to.',
-      mandatory: true,
-    );
-
-    argParser.addOption(
-      'auth-dir',
-      abbr: 'd',
-      help:
-          'Used to override directory path where the serverpod cloud authentication file is stored.',
-      defaultsTo: ResourceManager.localStorageDirectory.path,
-    );
-
-    // Developer options and flags
-    argParser.addOption(
-      'project-dir',
-      abbr: 'p',
-      help: 'The path to the directory of the project to deploy.',
-      hide: true,
-      defaultsTo: Directory.current.path,
-    );
-
-    argParser.addOption(
-      'server',
-      abbr: 's',
-      help: 'The URL to the Serverpod cloud api server.',
-      hide: true,
-      defaultsTo: HostConstants.serverpodCloudApi,
-    );
-  }
+  CloudDeployCommand({required super.logger})
+      : super(options: DeployCommandOption.values);
 
   @override
-  Future<void> run() async {
-    final concurrency = int.tryParse(argResults!['concurrency'] as String);
-    final localStoragePath = argResults!['auth-dir'] as String;
-    final serverAddress = argResults!['server'] as String;
-    final projectId = argResults!['project-id'] as String;
-    final projectDirectory = Directory(argResults!['project-dir'] as String);
+  Future<void> runWithConfig(
+      final Configuration<DeployCommandOption> commandConfig) async {
+    final projectId = commandConfig.value(DeployCommandOption.projectId);
+    final projectDirectory =
+        Directory(commandConfig.value(DeployCommandOption.projectDir));
+    final concurrency =
+        int.tryParse(commandConfig.value(DeployCommandOption.concurrency));
 
     if (concurrency == null) {
       logger.error(
@@ -71,10 +73,7 @@ class CloudDeployCommand extends CloudCliCommand {
       throw ExitException();
     }
 
-    final cloudClient = await getClient(
-      serverAddress: serverAddress,
-      localStoragePath: localStoragePath,
-    );
+    final cloudClient = await runner.getClient();
 
     final String uploadDescription;
     try {

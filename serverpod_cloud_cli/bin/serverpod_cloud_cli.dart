@@ -46,7 +46,12 @@ Future<void> _main(final List<String> args, final Logger logger) async {
     logger: logger,
     version: Version.parse(cliVersion),
   );
-  await runner.run(args);
+  try {
+    await runner.run(args);
+  } on ArgumentError catch (e) {
+    logger.error(e.message);
+    throw ExitException();
+  }
 }
 
 Future<void> _preExit(final Logger logger) async {

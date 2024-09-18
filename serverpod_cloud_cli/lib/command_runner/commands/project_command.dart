@@ -1,8 +1,7 @@
 import 'package:cli_tools/cli_tools.dart';
 import 'package:collection/collection.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
-import 'package:serverpod_cloud_cli/constants.dart';
-import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
+import 'package:serverpod_cloud_cli/util/configuration.dart';
 import 'package:serverpod_cloud_cli/util/table_printer.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
 
@@ -21,6 +20,21 @@ class CloudProjectCommand extends CloudCliCommand {
   }
 }
 
+class ProjectCommandConfig extends Configuration {
+  static const projectIdOpt = ConfigOption(
+    argName: 'project-id',
+    argAbbrev: 'i',
+    helpText: 'The ID of the project.',
+    mandatory: true,
+    envName: 'SERVERPOD_CLOUD_PROJECT_ID',
+  );
+
+  ProjectCommandConfig({
+    super.args,
+    super.env,
+  }) : super.fromEnvAndArgs(options: [projectIdOpt]);
+}
+
 class CloudProjectCreateCommand extends CloudCliCommand {
   @override
   final name = 'create';
@@ -28,52 +42,28 @@ class CloudProjectCreateCommand extends CloudCliCommand {
   @override
   final description = 'Create a Serverpod Cloud tenant project.';
 
-  CloudProjectCreateCommand({required super.logger}) {
-    argParser.addOption(
-      'project-id',
-      abbr: 'i',
-      help: 'The ID for the new project.',
-      mandatory: true,
-    );
+  @override
+  final bool takesArguments = false;
 
-    argParser.addOption(
-      'auth-dir',
-      abbr: 'd',
-      help:
-          'Override the directory path where the serverpod cloud authentication file is stored.',
-      defaultsTo: ResourceManager.localStorageDirectory.path,
-    );
-
-    // Developer options and flags
-    argParser.addOption(
-      'server',
-      abbr: 's',
-      help: 'The URL to the Serverpod cloud api server.',
-      hide: true,
-      defaultsTo: HostConstants.serverpodCloudApi,
-    );
-  }
+  CloudProjectCreateCommand({required super.logger})
+      : super(options: [ProjectCommandConfig.projectIdOpt]);
 
   @override
-  void run() async {
-    final projectName = argResults!['project-id'] as String;
+  Future<void> runWithConfig(final Configuration commandConfig) async {
+    final projectId = commandConfig.value(ProjectCommandConfig.projectIdOpt);
 
-    final cloudClient = await getClient(
-        localStoragePath: argResults!['auth-dir'] as String,
-        serverAddress: argResults!['server'] as String);
-
+    final cloudClient = await runner.getClient();
     try {
       await cloudClient.tenantProjects
-          .createTenantProject(canonicalName: projectName);
-    } catch (e, stackTrace) {
+          .createTenantProject(canonicalName: projectId);
+    } catch (e) {
       logger.error(
         'Request to create a new tenant project failed: $e',
-        stackTrace: stackTrace,
       );
       throw ExitException();
     }
 
-    logger.info("Successfully created the new tenant project '$projectName'.");
+    logger.info("Successfully created the new tenant project '$projectId'.");
   }
 }
 
@@ -84,52 +74,28 @@ class CloudProjectDeleteCommand extends CloudCliCommand {
   @override
   final description = 'Delete a Serverpod Cloud tenant project.';
 
-  CloudProjectDeleteCommand({required super.logger}) {
-    argParser.addOption(
-      'project-id',
-      abbr: 'i',
-      help: 'The ID of the project to delete.',
-      mandatory: true,
-    );
+  @override
+  final bool takesArguments = false;
 
-    argParser.addOption(
-      'auth-dir',
-      abbr: 'd',
-      help:
-          'Override the directory path where the serverpod cloud authentication file is stored.',
-      defaultsTo: ResourceManager.localStorageDirectory.path,
-    );
-
-    // Developer options and flags
-    argParser.addOption(
-      'server',
-      abbr: 's',
-      help: 'The URL to the Serverpod cloud api server.',
-      hide: true,
-      defaultsTo: HostConstants.serverpodCloudApi,
-    );
-  }
+  CloudProjectDeleteCommand({required super.logger})
+      : super(options: [ProjectCommandConfig.projectIdOpt]);
 
   @override
-  void run() async {
-    final projectName = argResults!['project-id'] as String;
+  Future<void> runWithConfig(final Configuration commandConfig) async {
+    final projectId = commandConfig.value(ProjectCommandConfig.projectIdOpt);
 
-    final cloudClient = await getClient(
-        localStoragePath: argResults!['auth-dir'] as String,
-        serverAddress: argResults!['server'] as String);
-
+    final cloudClient = await runner.getClient();
     try {
       await cloudClient.tenantProjects
-          .deleteTenantProject(canonicalName: projectName);
-    } catch (e, stackTrace) {
+          .deleteTenantProject(canonicalName: projectId);
+    } catch (e) {
       logger.error(
         'Request to delete a new tenant project failed: $e',
-        stackTrace: stackTrace,
       );
       throw ExitException();
     }
 
-    logger.info("Successfully deleted the tenant project '$projectName'.");
+    logger.info("Successfully deleted the tenant project '$projectId'.");
   }
 }
 
@@ -140,38 +106,20 @@ class CloudProjectListCommand extends CloudCliCommand {
   @override
   final description = 'List the Serverpod Cloud tenant projects.';
 
-  CloudProjectListCommand({required super.logger}) {
-    argParser.addOption(
-      'auth-dir',
-      abbr: 'd',
-      help:
-          'Override the directory path where the serverpod cloud authentication file is stored.',
-      defaultsTo: ResourceManager.localStorageDirectory.path,
-    );
+  @override
+  final bool takesArguments = false;
 
-    // Developer options and flags
-    argParser.addOption(
-      'server',
-      abbr: 's',
-      help: 'The URL to the Serverpod cloud api server.',
-      hide: true,
-      defaultsTo: HostConstants.serverpodCloudApi,
-    );
-  }
+  CloudProjectListCommand({required super.logger}) : super(options: []);
 
   @override
-  void run() async {
-    final cloudClient = await getClient(
-        localStoragePath: argResults!['auth-dir'] as String,
-        serverAddress: argResults!['server'] as String);
-
+  Future<void> runWithConfig(final Configuration commandConfig) async {
+    final cloudClient = await runner.getClient();
     late List<TenantProject> projects;
     try {
       projects = await cloudClient.tenantProjects.listTenantProjects();
-    } catch (e, stackTrace) {
+    } catch (e) {
       logger.error(
         'Request to list tenant projects failed: $e',
-        stackTrace: stackTrace,
       );
       throw ExitException();
     }
