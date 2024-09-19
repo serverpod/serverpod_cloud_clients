@@ -27,7 +27,9 @@ void main() {
       final bool ignoreCase,
     ) {
       final casing = 'with ignoreCase = $ignoreCase';
-      test('${c.name}: Ignore.ignores("$path") == $expected $casing', () {
+      test(
+          '${c.name}: Ignore.ignores("${_stripControlCharacters(path)}") == $expected $casing',
+          () {
         var hasWarning = false;
         final pathWithoutSlash =
             path.endsWith('/') ? path.substring(0, path.length - 1) : path;
@@ -153,7 +155,7 @@ void main() {
       final casing = 'with ignoreCase = $ignoreCase';
       final result = expected ? 'IGNORED' : 'NOT ignored';
       test(
-        '${c.name}: git check-ignore "$path" is $result $casing',
+        '${c.name}: git check-ignore "${_stripControlCharacters(path)}" is $result $casing',
         () async {
           expect(
             runGit(
@@ -208,6 +210,18 @@ void main() {
       });
     }
   });
+}
+
+/// In order to print a string representation of test cases containing control characters,
+/// strip them out before including them in test output messages.
+String _stripControlCharacters(String input) {
+  var buffer = StringBuffer();
+  for (var codeUnit in input.codeUnits) {
+    if (codeUnit >= 32 && codeUnit <= 126) {
+      buffer.writeCharCode(codeUnit);
+    }
+  }
+  return buffer.toString();
 }
 
 class TestData {
