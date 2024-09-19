@@ -15,14 +15,14 @@ import '../protocol.dart' as _i2;
 abstract class DatabaseResource implements _i1.SerializableModel {
   DatabaseResource._({
     this.id,
-    required this.envId,
+    required this.canonicalName,
     required this.providerId,
     required this.provider,
   });
 
   factory DatabaseResource({
     int? id,
-    required int envId,
+    required String canonicalName,
     required String providerId,
     required _i2.DatabaseProvider provider,
   }) = _DatabaseResourceImpl;
@@ -30,7 +30,7 @@ abstract class DatabaseResource implements _i1.SerializableModel {
   factory DatabaseResource.fromJson(Map<String, dynamic> jsonSerialization) {
     return DatabaseResource(
       id: jsonSerialization['id'] as int?,
-      envId: jsonSerialization['envId'] as int,
+      canonicalName: jsonSerialization['canonicalName'] as String,
       providerId: jsonSerialization['providerId'] as String,
       provider: _i2.DatabaseProvider.fromJson(
           (jsonSerialization['provider'] as String)),
@@ -42,7 +42,7 @@ abstract class DatabaseResource implements _i1.SerializableModel {
   /// the id will be null.
   int? id;
 
-  int envId;
+  String canonicalName;
 
   String providerId;
 
@@ -50,7 +50,7 @@ abstract class DatabaseResource implements _i1.SerializableModel {
 
   DatabaseResource copyWith({
     int? id,
-    int? envId,
+    String? canonicalName,
     String? providerId,
     _i2.DatabaseProvider? provider,
   });
@@ -58,7 +58,7 @@ abstract class DatabaseResource implements _i1.SerializableModel {
   Map<String, dynamic> toJson() {
     return {
       if (id != null) 'id': id,
-      'envId': envId,
+      'canonicalName': canonicalName,
       'providerId': providerId,
       'provider': provider.toJson(),
     };
@@ -75,12 +75,12 @@ class _Undefined {}
 class _DatabaseResourceImpl extends DatabaseResource {
   _DatabaseResourceImpl({
     int? id,
-    required int envId,
+    required String canonicalName,
     required String providerId,
     required _i2.DatabaseProvider provider,
   }) : super._(
           id: id,
-          envId: envId,
+          canonicalName: canonicalName,
           providerId: providerId,
           provider: provider,
         );
@@ -88,13 +88,13 @@ class _DatabaseResourceImpl extends DatabaseResource {
   @override
   DatabaseResource copyWith({
     Object? id = _Undefined,
-    int? envId,
+    String? canonicalName,
     String? providerId,
     _i2.DatabaseProvider? provider,
   }) {
     return DatabaseResource(
       id: id is int? ? id : this.id,
-      envId: envId ?? this.envId,
+      canonicalName: canonicalName ?? this.canonicalName,
       providerId: providerId ?? this.providerId,
       provider: provider ?? this.provider,
     );
