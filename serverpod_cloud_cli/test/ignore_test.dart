@@ -214,8 +214,8 @@ void main() {
 
 /// In order to print a string representation of test cases containing control characters,
 /// strip them out before including them in test output messages.
-String _stripControlCharacters(String input) {
-  var buffer = StringBuffer();
+String _stripControlCharacters(final String input) {
+  final buffer = StringBuffer();
   for (var codeUnit in input.codeUnits) {
     if (codeUnit >= 32 && codeUnit <= 126) {
       buffer.writeCharCode(codeUnit);
