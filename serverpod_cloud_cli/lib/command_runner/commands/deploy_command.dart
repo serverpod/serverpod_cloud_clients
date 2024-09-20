@@ -12,7 +12,9 @@ enum DeployCommandOption implements OptionDefinition {
     ConfigOption(
       argName: 'project-id',
       argAbbrev: 'i',
-      helpText: 'The ID of the project.',
+      argPos: 0,
+      helpText:
+          'The ID of the project. Can also be specified as the first argument.',
       mandatory: true,
       envName: 'SERVERPOD_CLOUD_PROJECT_ID',
     ),

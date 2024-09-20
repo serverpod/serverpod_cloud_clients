@@ -57,7 +57,7 @@ class CloudCliCommandRunner extends BetterCommandRunner {
     );
 
     // Add global options
-    GlobalOption.values.addToArgParser(runner.argParser);
+    GlobalOption.values.prepareForParsing(runner.argParser);
 
     // Add commands (which may in turn have their own options and subcommands)
     runner.addCommands([

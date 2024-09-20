@@ -24,7 +24,9 @@ class ProjectCommandConfig extends Configuration {
   static const projectIdOpt = ConfigOption(
     argName: 'project-id',
     argAbbrev: 'i',
-    helpText: 'The ID of the project.',
+    argPos: 0,
+    helpText:
+        'The ID of the project. Can also be specified as the first argument.',
     mandatory: true,
     envName: 'SERVERPOD_CLOUD_PROJECT_ID',
   );
@@ -43,8 +45,6 @@ class CloudProjectCreateCommand extends CloudCliCommand {
   final description = 'Create a Serverpod Cloud tenant project.';
 
   @override
-  final bool takesArguments = false;
-
   CloudProjectCreateCommand({required super.logger})
       : super(options: [ProjectCommandConfig.projectIdOpt]);
 
@@ -73,9 +73,6 @@ class CloudProjectDeleteCommand extends CloudCliCommand {
 
   @override
   final description = 'Delete a Serverpod Cloud tenant project.';
-
-  @override
-  final bool takesArguments = false;
 
   CloudProjectDeleteCommand({required super.logger})
       : super(options: [ProjectCommandConfig.projectIdOpt]);

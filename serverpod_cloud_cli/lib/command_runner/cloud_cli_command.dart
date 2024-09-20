@@ -18,7 +18,7 @@ abstract class CloudCliCommand<T extends OptionDefinition>
           logInfo: (final String message) => logger.info(message),
           wrapTextColumn: logger.wrapTextColumn,
         ) {
-    options.addToArgParser(argParser);
+    options.prepareForParsing(argParser);
   }
 
   /// Gets the command runner [CloudCliCommandRunner].
