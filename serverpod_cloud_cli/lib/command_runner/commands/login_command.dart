@@ -72,7 +72,7 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
     final openBrowser = commandConfig.flag(LoginCommandOption.browserOpt);
 
     final localStoragePath = globalConfiguration.authDir;
-    final serverAddress = globalConfiguration.server;
+    final serverAddress = globalConfiguration.consoleServer;
 
     final storedCloudData = await ResourceManager.tryFetchServerpodCloudData(
       localStoragePath: localStoragePath,

@@ -52,9 +52,9 @@ class CloudProjectCreateCommand extends CloudCliCommand {
   Future<void> runWithConfig(final Configuration commandConfig) async {
     final projectId = commandConfig.value(ProjectCommandConfig.projectIdOpt);
 
-    final cloudClient = await runner.getClient();
+    final apiCloudClient = runner.serviceProvider.cloudApiClient;
     try {
-      await cloudClient.tenantProjects
+      await apiCloudClient.tenantProjects
           .createTenantProject(canonicalName: projectId);
     } catch (e) {
       logger.error(
@@ -81,9 +81,9 @@ class CloudProjectDeleteCommand extends CloudCliCommand {
   Future<void> runWithConfig(final Configuration commandConfig) async {
     final projectId = commandConfig.value(ProjectCommandConfig.projectIdOpt);
 
-    final cloudClient = await runner.getClient();
+    final apiCloudClient = runner.serviceProvider.cloudApiClient;
     try {
-      await cloudClient.tenantProjects
+      await apiCloudClient.tenantProjects
           .deleteTenantProject(canonicalName: projectId);
     } catch (e) {
       logger.error(
@@ -110,10 +110,10 @@ class CloudProjectListCommand extends CloudCliCommand {
 
   @override
   Future<void> runWithConfig(final Configuration commandConfig) async {
-    final cloudClient = await runner.getClient();
+    final apiCloudClient = runner.serviceProvider.cloudApiClient;
     late List<TenantProject> projects;
     try {
-      projects = await cloudClient.tenantProjects.listTenantProjects();
+      projects = await apiCloudClient.tenantProjects.listTenantProjects();
     } catch (e) {
       logger.error(
         'Request to list tenant projects failed: $e',

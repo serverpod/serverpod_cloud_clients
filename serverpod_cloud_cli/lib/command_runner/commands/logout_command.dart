@@ -1,9 +1,7 @@
 import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
-import 'package:serverpod_cloud_cli/util/cli_authentication_key_manager.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
-import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
 
 class CloudLogoutCommand extends CloudCliCommand {
   @override
@@ -18,7 +16,6 @@ class CloudLogoutCommand extends CloudCliCommand {
   @override
   Future<void> runWithConfig(final Configuration commandConfig) async {
     final localStoragePath = globalConfiguration.authDir;
-    final serverAddress = globalConfiguration.server;
 
     final cloudData = await ResourceManager.tryFetchServerpodCloudData(
       localStoragePath: localStoragePath,
@@ -30,14 +27,7 @@ class CloudLogoutCommand extends CloudCliCommand {
       return;
     }
 
-    final cloudClient = Client(
-      serverAddress,
-      authenticationKeyManager: CliAuthenticationKeyManager(
-        logger: logger,
-        localStoragePath: localStoragePath,
-        cloudDataOverride: cloudData,
-      ),
-    );
+    final cloudClient = runner.serviceProvider.cloudApiClient;
 
     ExitException? exitException;
     try {

@@ -8,12 +8,10 @@ import 'package:serverpod_cloud_cli/command_runner/commands/login_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/logout_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/project_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/version_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
-import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
-import 'package:serverpod_cloud_cli/util/cli_authentication_key_manager.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
-import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
 
 /// Represents the Serverpod Cloud CLI main command, its global options, and subcommands.
 class CloudCliCommandRunner extends BetterCommandRunner {
@@ -23,6 +21,8 @@ class CloudCliCommandRunner extends BetterCommandRunner {
   /// The curremt global configuration for the Serverpod Cloud CLI.
   /// (Since this object is re-entrant, the global config is regenerated each call to [runCommand].)
   GlobalConfiguration globalConfiguration = GlobalConfiguration();
+
+  final CloudCliServiceProvider serviceProvider = CloudCliServiceProvider();
 
   CloudCliCommandRunner._({
     required this.logger,
@@ -78,28 +78,16 @@ class CloudCliCommandRunner extends BetterCommandRunner {
       env: Platform.environment,
     );
 
-    return super.runCommand(topLevelResults);
-  }
-
-  /// Gets a [Client] for the Serverpod Cloud.
-  /// Will contain the authentication if the user is authenticated.
-  Future<Client> getClient({
-    final ServerpodCloudData? cloudDataOverride,
-  }) async {
-    final localStoragePath = globalConfiguration.authDir;
-    final serverAddress = globalConfiguration.server;
-    final address =
-        serverAddress.endsWith('/') ? serverAddress : '$serverAddress/';
-
-    final cloudClient = Client(
-      address,
-      authenticationKeyManager: CliAuthenticationKeyManager(
-        logger: logger,
-        localStoragePath: localStoragePath,
-        cloudDataOverride: cloudDataOverride,
-      ),
+    serviceProvider.initialize(
+      globalConfiguration: globalConfiguration,
+      logger: logger,
     );
-    return cloudClient;
+
+    try {
+      await super.runCommand(topLevelResults);
+    } finally {
+      serviceProvider.shutdown();
+    }
   }
 
   static void _configureLogLevel({
@@ -128,7 +116,6 @@ enum GlobalOption implements OptionDefinition {
   authDir(
     ConfigOption(
       argName: 'auth-dir',
-      argAbbrev: 'd',
       envName: 'SERVERPOD_CLOUD_AUTH_DIR',
       helpText:
           'Override the directory path where the serverpod cloud authentication file is stored.',
@@ -136,14 +123,23 @@ enum GlobalOption implements OptionDefinition {
     ),
   ),
   // Developer options and flags
-  server(
+  apiServer(
     ConfigOption(
-      argName: 'server',
-      argAbbrev: 's',
-      envName: 'SERVERPOD_CLOUD_SERVER_URL',
+      argName: 'api-url',
+      envName: 'SERVERPOD_CLOUD_API_SERVER_URL',
       helpText: 'The URL to the Serverpod cloud api server.',
       hide: true,
       defaultsTo: HostConstants.serverpodCloudApi,
+    ),
+  ),
+
+  consoleServer(
+    ConfigOption(
+      argName: 'console-url',
+      envName: 'SERVERPOD_CLOUD_CONSOLE_SERVER_URL',
+      helpText: 'The URL to the Serverpod cloud console server.',
+      hide: true,
+      defaultsTo: HostConstants.serverpodCloudConsole,
     ),
   );
 
@@ -162,5 +158,7 @@ class GlobalConfiguration extends Configuration {
 
   String get authDir => value(GlobalOption.authDir);
 
-  String get server => value(GlobalOption.server);
+  String get apiServer => value(GlobalOption.apiServer);
+
+  String get consoleServer => value(GlobalOption.consoleServer);
 }

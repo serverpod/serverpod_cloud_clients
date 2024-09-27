@@ -75,11 +75,11 @@ class CloudDeployCommand extends CloudCliCommand<DeployCommandOption> {
       throw ExitException();
     }
 
-    final cloudClient = await runner.getClient();
+    final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
     final String uploadDescription;
     try {
-      uploadDescription = await cloudClient.deploy.createUploadDescription(
+      uploadDescription = await apiCloudClient.deploy.createUploadDescription(
         projectId,
       );
     } catch (e) {

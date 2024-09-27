@@ -109,7 +109,7 @@ void main() {
           '123',
           '--auth-dir',
           testAuthDir,
-          '--server',
+          '--api-url',
           localServerAddress.toString(),
         ]);
       });
@@ -170,7 +170,7 @@ void main() {
           testAuthDir,
           '--project-dir',
           testProjectDir,
-          '--server',
+          '--api-url',
           localServerAddress.toString(),
         ]);
       });
@@ -232,7 +232,7 @@ void main() {
           testAuthDir,
           '--project-dir',
           testProjectDir,
-          '--server',
+          '--api-url',
           localServerAddress.toString(),
         ]);
       });
@@ -310,7 +310,7 @@ void main() {
           testAuthDir,
           '--project-dir',
           testProjectDir,
-          '--server',
+          '--api-url',
           localServerAddress.toString(),
         ]);
       });
@@ -380,7 +380,7 @@ void main() {
           testAuthDir,
           '--project-dir',
           testProjectDir,
-          '--server',
+          '--api-url',
           localServerAddress.toString(),
         ]);
       });
@@ -444,7 +444,7 @@ void main() {
           projectId,
           '--auth-dir',
           testAuthDir,
-          '--server',
+          '--api-url',
           localServerAddress.toString(),
         ]);
       });
@@ -515,7 +515,7 @@ void main() {
           projectId,
           '--auth-dir',
           testAuthDir,
-          '--server',
+          '--api-url',
           localServerAddress.toString(),
         ]);
       });

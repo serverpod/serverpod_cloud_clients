@@ -68,7 +68,7 @@ void main() {
       setUp(() {
         runLogoutCommand = cli.run([
           'logout',
-          '--server',
+          '--api-url',
           localServerAddress.toString(),
           '--auth-dir',
           testCacheFolderPath,
@@ -137,7 +137,7 @@ void main() {
       setUp(() {
         runLogoutCommand = cli.run([
           'logout',
-          '--server',
+          '--api-url',
           localServerAddress.toString(),
           '--auth-dir',
           testCacheFolderPath,
