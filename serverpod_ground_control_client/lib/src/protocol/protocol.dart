@@ -16,28 +16,30 @@ import 'exceptions/invalid_value_exception.dart' as _i3;
 import 'exceptions/not_found_exception.dart' as _i4;
 import 'exceptions/unauthenticated_exception.dart' as _i5;
 import 'exceptions/unauthorized_exception.dart' as _i6;
-import 'infrastructure/database_provider.dart' as _i7;
-import 'infrastructure/database_resource.dart' as _i8;
-import 'infrastructure/environment.dart' as _i9;
-import 'infrastructure/secret_resource.dart' as _i10;
-import 'infrastructure/secret_type.dart' as _i11;
-import 'serverpod_region.dart' as _i12;
-import 'tenant/address.dart' as _i13;
-import 'tenant/role.dart' as _i14;
-import 'tenant/tenant_project.dart' as _i15;
-import 'tenant/user.dart' as _i16;
-import 'tenant/user_role_membership.dart' as _i17;
-import 'protocol.dart' as _i18;
+import 'infrastructure/database_connection.dart' as _i7;
+import 'infrastructure/database_provider.dart' as _i8;
+import 'infrastructure/database_resource.dart' as _i9;
+import 'infrastructure/environment.dart' as _i10;
+import 'infrastructure/secret_resource.dart' as _i11;
+import 'infrastructure/secret_type.dart' as _i12;
+import 'serverpod_region.dart' as _i13;
+import 'tenant/address.dart' as _i14;
+import 'tenant/role.dart' as _i15;
+import 'tenant/tenant_project.dart' as _i16;
+import 'tenant/user.dart' as _i17;
+import 'tenant/user_role_membership.dart' as _i18;
+import 'protocol.dart' as _i19;
 import 'package:serverpod_ground_control_client/src/protocol/tenant/role.dart'
-    as _i19;
-import 'package:serverpod_ground_control_client/src/protocol/tenant/tenant_project.dart'
     as _i20;
-import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i21;
+import 'package:serverpod_ground_control_client/src/protocol/tenant/tenant_project.dart'
+    as _i21;
+import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i22;
 export 'exceptions/duplicate_entry_exception.dart';
 export 'exceptions/invalid_value_exception.dart';
 export 'exceptions/not_found_exception.dart';
 export 'exceptions/unauthenticated_exception.dart';
 export 'exceptions/unauthorized_exception.dart';
+export 'infrastructure/database_connection.dart';
 export 'infrastructure/database_provider.dart';
 export 'infrastructure/database_resource.dart';
 export 'infrastructure/environment.dart';
@@ -79,38 +81,41 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i6.UnauthorizedException) {
       return _i6.UnauthorizedException.fromJson(data) as T;
     }
-    if (t == _i7.DatabaseProvider) {
-      return _i7.DatabaseProvider.fromJson(data) as T;
+    if (t == _i7.DatabaseConnection) {
+      return _i7.DatabaseConnection.fromJson(data) as T;
     }
-    if (t == _i8.DatabaseResource) {
-      return _i8.DatabaseResource.fromJson(data) as T;
+    if (t == _i8.DatabaseProvider) {
+      return _i8.DatabaseProvider.fromJson(data) as T;
     }
-    if (t == _i9.Environment) {
-      return _i9.Environment.fromJson(data) as T;
+    if (t == _i9.DatabaseResource) {
+      return _i9.DatabaseResource.fromJson(data) as T;
     }
-    if (t == _i10.SecretResource) {
-      return _i10.SecretResource.fromJson(data) as T;
+    if (t == _i10.Environment) {
+      return _i10.Environment.fromJson(data) as T;
     }
-    if (t == _i11.SecretType) {
-      return _i11.SecretType.fromJson(data) as T;
+    if (t == _i11.SecretResource) {
+      return _i11.SecretResource.fromJson(data) as T;
     }
-    if (t == _i12.ServerpodRegion) {
-      return _i12.ServerpodRegion.fromJson(data) as T;
+    if (t == _i12.SecretType) {
+      return _i12.SecretType.fromJson(data) as T;
     }
-    if (t == _i13.Address) {
-      return _i13.Address.fromJson(data) as T;
+    if (t == _i13.ServerpodRegion) {
+      return _i13.ServerpodRegion.fromJson(data) as T;
     }
-    if (t == _i14.Role) {
-      return _i14.Role.fromJson(data) as T;
+    if (t == _i14.Address) {
+      return _i14.Address.fromJson(data) as T;
     }
-    if (t == _i15.TenantProject) {
-      return _i15.TenantProject.fromJson(data) as T;
+    if (t == _i15.Role) {
+      return _i15.Role.fromJson(data) as T;
     }
-    if (t == _i16.User) {
-      return _i16.User.fromJson(data) as T;
+    if (t == _i16.TenantProject) {
+      return _i16.TenantProject.fromJson(data) as T;
     }
-    if (t == _i17.UserRoleMembership) {
-      return _i17.UserRoleMembership.fromJson(data) as T;
+    if (t == _i17.User) {
+      return _i17.User.fromJson(data) as T;
+    }
+    if (t == _i18.UserRoleMembership) {
+      return _i18.UserRoleMembership.fromJson(data) as T;
     }
     if (t == _i1.getType<_i2.DuplicateEntryException?>()) {
       return (data != null ? _i2.DuplicateEntryException.fromJson(data) : null)
@@ -131,79 +136,82 @@ class Protocol extends _i1.SerializationManager {
       return (data != null ? _i6.UnauthorizedException.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i7.DatabaseProvider?>()) {
-      return (data != null ? _i7.DatabaseProvider.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i7.DatabaseConnection?>()) {
+      return (data != null ? _i7.DatabaseConnection.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i8.DatabaseResource?>()) {
-      return (data != null ? _i8.DatabaseResource.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i8.DatabaseProvider?>()) {
+      return (data != null ? _i8.DatabaseProvider.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i9.Environment?>()) {
-      return (data != null ? _i9.Environment.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i9.DatabaseResource?>()) {
+      return (data != null ? _i9.DatabaseResource.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i10.SecretResource?>()) {
-      return (data != null ? _i10.SecretResource.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i10.Environment?>()) {
+      return (data != null ? _i10.Environment.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i11.SecretType?>()) {
-      return (data != null ? _i11.SecretType.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i11.SecretResource?>()) {
+      return (data != null ? _i11.SecretResource.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i12.ServerpodRegion?>()) {
-      return (data != null ? _i12.ServerpodRegion.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i12.SecretType?>()) {
+      return (data != null ? _i12.SecretType.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i13.Address?>()) {
-      return (data != null ? _i13.Address.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i13.ServerpodRegion?>()) {
+      return (data != null ? _i13.ServerpodRegion.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i14.Role?>()) {
-      return (data != null ? _i14.Role.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i14.Address?>()) {
+      return (data != null ? _i14.Address.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i15.TenantProject?>()) {
-      return (data != null ? _i15.TenantProject.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i15.Role?>()) {
+      return (data != null ? _i15.Role.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i16.User?>()) {
-      return (data != null ? _i16.User.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i16.TenantProject?>()) {
+      return (data != null ? _i16.TenantProject.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i17.UserRoleMembership?>()) {
-      return (data != null ? _i17.UserRoleMembership.fromJson(data) : null)
+    if (t == _i1.getType<_i17.User?>()) {
+      return (data != null ? _i17.User.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i18.UserRoleMembership?>()) {
+      return (data != null ? _i18.UserRoleMembership.fromJson(data) : null)
           as T;
     }
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList()
           as dynamic;
     }
-    if (t == _i1.getType<List<_i18.UserRoleMembership>?>()) {
+    if (t == _i1.getType<List<_i19.UserRoleMembership>?>()) {
       return (data != null
           ? (data as List)
-              .map((e) => deserialize<_i18.UserRoleMembership>(e))
+              .map((e) => deserialize<_i19.UserRoleMembership>(e))
               .toList()
           : null) as dynamic;
     }
-    if (t == _i1.getType<List<_i18.Role>?>()) {
+    if (t == _i1.getType<List<_i19.Role>?>()) {
       return (data != null
-          ? (data as List).map((e) => deserialize<_i18.Role>(e)).toList()
+          ? (data as List).map((e) => deserialize<_i19.Role>(e)).toList()
           : null) as dynamic;
     }
-    if (t == _i1.getType<List<_i18.Environment>?>()) {
+    if (t == _i1.getType<List<_i19.Environment>?>()) {
       return (data != null
-          ? (data as List).map((e) => deserialize<_i18.Environment>(e)).toList()
+          ? (data as List).map((e) => deserialize<_i19.Environment>(e)).toList()
           : null) as dynamic;
     }
-    if (t == _i1.getType<List<_i18.UserRoleMembership>?>()) {
+    if (t == _i1.getType<List<_i19.UserRoleMembership>?>()) {
       return (data != null
           ? (data as List)
-              .map((e) => deserialize<_i18.UserRoleMembership>(e))
+              .map((e) => deserialize<_i19.UserRoleMembership>(e))
               .toList()
           : null) as dynamic;
     }
-    if (t == List<_i19.Role>) {
-      return (data as List).map((e) => deserialize<_i19.Role>(e)).toList()
+    if (t == List<_i20.Role>) {
+      return (data as List).map((e) => deserialize<_i20.Role>(e)).toList()
           as dynamic;
     }
-    if (t == List<_i20.TenantProject>) {
+    if (t == List<_i21.TenantProject>) {
       return (data as List)
-          .map((e) => deserialize<_i20.TenantProject>(e))
+          .map((e) => deserialize<_i21.TenantProject>(e))
           .toList() as dynamic;
     }
     try {
-      return _i21.Protocol().deserialize<T>(data, t);
+      return _i22.Protocol().deserialize<T>(data, t);
     } on _i1.DeserializationTypeNotFoundException catch (_) {}
     return super.deserialize<T>(data, t);
   }
@@ -227,40 +235,43 @@ class Protocol extends _i1.SerializationManager {
     if (data is _i6.UnauthorizedException) {
       return 'UnauthorizedException';
     }
-    if (data is _i7.DatabaseProvider) {
+    if (data is _i7.DatabaseConnection) {
+      return 'DatabaseConnection';
+    }
+    if (data is _i8.DatabaseProvider) {
       return 'DatabaseProvider';
     }
-    if (data is _i8.DatabaseResource) {
+    if (data is _i9.DatabaseResource) {
       return 'DatabaseResource';
     }
-    if (data is _i9.Environment) {
+    if (data is _i10.Environment) {
       return 'Environment';
     }
-    if (data is _i10.SecretResource) {
+    if (data is _i11.SecretResource) {
       return 'SecretResource';
     }
-    if (data is _i11.SecretType) {
+    if (data is _i12.SecretType) {
       return 'SecretType';
     }
-    if (data is _i12.ServerpodRegion) {
+    if (data is _i13.ServerpodRegion) {
       return 'ServerpodRegion';
     }
-    if (data is _i13.Address) {
+    if (data is _i14.Address) {
       return 'Address';
     }
-    if (data is _i14.Role) {
+    if (data is _i15.Role) {
       return 'Role';
     }
-    if (data is _i15.TenantProject) {
+    if (data is _i16.TenantProject) {
       return 'TenantProject';
     }
-    if (data is _i16.User) {
+    if (data is _i17.User) {
       return 'User';
     }
-    if (data is _i17.UserRoleMembership) {
+    if (data is _i18.UserRoleMembership) {
       return 'UserRoleMembership';
     }
-    className = _i21.Protocol().getClassNameForObject(data);
+    className = _i22.Protocol().getClassNameForObject(data);
     if (className != null) {
       return 'serverpod_auth.$className';
     }
@@ -284,42 +295,45 @@ class Protocol extends _i1.SerializationManager {
     if (data['className'] == 'UnauthorizedException') {
       return deserialize<_i6.UnauthorizedException>(data['data']);
     }
+    if (data['className'] == 'DatabaseConnection') {
+      return deserialize<_i7.DatabaseConnection>(data['data']);
+    }
     if (data['className'] == 'DatabaseProvider') {
-      return deserialize<_i7.DatabaseProvider>(data['data']);
+      return deserialize<_i8.DatabaseProvider>(data['data']);
     }
     if (data['className'] == 'DatabaseResource') {
-      return deserialize<_i8.DatabaseResource>(data['data']);
+      return deserialize<_i9.DatabaseResource>(data['data']);
     }
     if (data['className'] == 'Environment') {
-      return deserialize<_i9.Environment>(data['data']);
+      return deserialize<_i10.Environment>(data['data']);
     }
     if (data['className'] == 'SecretResource') {
-      return deserialize<_i10.SecretResource>(data['data']);
+      return deserialize<_i11.SecretResource>(data['data']);
     }
     if (data['className'] == 'SecretType') {
-      return deserialize<_i11.SecretType>(data['data']);
+      return deserialize<_i12.SecretType>(data['data']);
     }
     if (data['className'] == 'ServerpodRegion') {
-      return deserialize<_i12.ServerpodRegion>(data['data']);
+      return deserialize<_i13.ServerpodRegion>(data['data']);
     }
     if (data['className'] == 'Address') {
-      return deserialize<_i13.Address>(data['data']);
+      return deserialize<_i14.Address>(data['data']);
     }
     if (data['className'] == 'Role') {
-      return deserialize<_i14.Role>(data['data']);
+      return deserialize<_i15.Role>(data['data']);
     }
     if (data['className'] == 'TenantProject') {
-      return deserialize<_i15.TenantProject>(data['data']);
+      return deserialize<_i16.TenantProject>(data['data']);
     }
     if (data['className'] == 'User') {
-      return deserialize<_i16.User>(data['data']);
+      return deserialize<_i17.User>(data['data']);
     }
     if (data['className'] == 'UserRoleMembership') {
-      return deserialize<_i17.UserRoleMembership>(data['data']);
+      return deserialize<_i18.UserRoleMembership>(data['data']);
     }
     if (data['className'].startsWith('serverpod_auth.')) {
       data['className'] = data['className'].substring(15);
-      return _i21.Protocol().deserializeByClassName(data);
+      return _i22.Protocol().deserializeByClassName(data);
     }
     return super.deserializeByClassName(data);
   }
