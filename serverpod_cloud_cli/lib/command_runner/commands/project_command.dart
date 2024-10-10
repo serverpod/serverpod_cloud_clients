@@ -20,7 +20,7 @@ class CloudProjectCommand extends CloudCliCommand {
   }
 }
 
-class ProjectCommandConfig extends Configuration {
+abstract final class ProjectCommandConfig {
   static const projectIdOpt = ConfigOption(
     argName: 'project-id',
     argAbbrev: 'i',
@@ -30,11 +30,6 @@ class ProjectCommandConfig extends Configuration {
     mandatory: true,
     envName: 'SERVERPOD_CLOUD_PROJECT_ID',
   );
-
-  ProjectCommandConfig({
-    super.args,
-    super.env,
-  }) : super.fromEnvAndArgs(options: [projectIdOpt]);
 }
 
 class CloudProjectCreateCommand extends CloudCliCommand {
