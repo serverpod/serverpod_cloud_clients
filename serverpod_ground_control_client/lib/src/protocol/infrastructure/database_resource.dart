@@ -18,6 +18,7 @@ abstract class DatabaseResource implements _i1.SerializableModel {
     required this.canonicalName,
     required this.providerId,
     required this.provider,
+    required this.connection,
   });
 
   factory DatabaseResource({
@@ -25,6 +26,7 @@ abstract class DatabaseResource implements _i1.SerializableModel {
     required String canonicalName,
     required String providerId,
     required _i2.DatabaseProvider provider,
+    required _i2.DatabaseConnection connection,
   }) = _DatabaseResourceImpl;
 
   factory DatabaseResource.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -34,6 +36,8 @@ abstract class DatabaseResource implements _i1.SerializableModel {
       providerId: jsonSerialization['providerId'] as String,
       provider: _i2.DatabaseProvider.fromJson(
           (jsonSerialization['provider'] as String)),
+      connection: _i2.DatabaseConnection.fromJson(
+          (jsonSerialization['connection'] as Map<String, dynamic>)),
     );
   }
 
@@ -48,11 +52,14 @@ abstract class DatabaseResource implements _i1.SerializableModel {
 
   _i2.DatabaseProvider provider;
 
+  _i2.DatabaseConnection connection;
+
   DatabaseResource copyWith({
     int? id,
     String? canonicalName,
     String? providerId,
     _i2.DatabaseProvider? provider,
+    _i2.DatabaseConnection? connection,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -61,6 +68,7 @@ abstract class DatabaseResource implements _i1.SerializableModel {
       'canonicalName': canonicalName,
       'providerId': providerId,
       'provider': provider.toJson(),
+      'connection': connection.toJson(),
     };
   }
 
@@ -78,11 +86,13 @@ class _DatabaseResourceImpl extends DatabaseResource {
     required String canonicalName,
     required String providerId,
     required _i2.DatabaseProvider provider,
+    required _i2.DatabaseConnection connection,
   }) : super._(
           id: id,
           canonicalName: canonicalName,
           providerId: providerId,
           provider: provider,
+          connection: connection,
         );
 
   @override
@@ -91,12 +101,14 @@ class _DatabaseResourceImpl extends DatabaseResource {
     String? canonicalName,
     String? providerId,
     _i2.DatabaseProvider? provider,
+    _i2.DatabaseConnection? connection,
   }) {
     return DatabaseResource(
       id: id is int? ? id : this.id,
       canonicalName: canonicalName ?? this.canonicalName,
       providerId: providerId ?? this.providerId,
       provider: provider ?? this.provider,
+      connection: connection ?? this.connection.copyWith(),
     );
   }
 }
