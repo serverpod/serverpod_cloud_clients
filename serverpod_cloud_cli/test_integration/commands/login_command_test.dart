@@ -50,14 +50,14 @@ void main() {
     });
 
     test(
-        'when logging in through cli then "already logged in" message is logged.',
+        'when logging in through cli then "logout first to log in again" message is logged.',
         () async {
       await cli.run(['login', '--auth-dir', testCacheFolderPath]);
 
       expect(logger.messages, isNotEmpty);
       expect(
         logger.messages.first,
-        'Already logged in to Serverpod cloud.',
+        'Detected an existing login session for Serverpod cloud. Logout first to log in again.',
       );
     });
   });

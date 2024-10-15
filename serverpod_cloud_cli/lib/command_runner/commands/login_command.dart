@@ -80,7 +80,8 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
     );
 
     if (storedCloudData != null) {
-      logger.info('Already logged in to Serverpod cloud.');
+      logger.info(
+          'Detected an existing login session for Serverpod cloud. Logout first to log in again.');
       return;
     }
 
