@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
+
 class HttpServerBuilder {
   String _host;
   String _path;
@@ -23,6 +25,21 @@ class HttpServerBuilder {
     final void Function(HttpRequest request) onRequest,
   ) {
     _onRequest = onRequest;
+    return this;
+  }
+
+  HttpServerBuilder withSuccessfulResponse(
+    final Object responseBody,
+  ) {
+    _onRequest = (final request) {
+      request.response.statusCode = 200;
+      request.response.write(
+        responseBody is SerializableModel
+            ? responseBody.toString()
+            : responseBody,
+      );
+      request.response.close();
+    };
     return this;
   }
 
