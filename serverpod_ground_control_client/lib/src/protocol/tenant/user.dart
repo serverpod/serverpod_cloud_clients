@@ -22,8 +22,10 @@ abstract class User implements _i1.SerializableModel {
     required this.userAuthId,
     this.displayName,
     this.memberships,
+    int? maxCreatedProjects,
   })  : createdAt = createdAt ?? DateTime.now(),
-        updatedAt = updatedAt ?? DateTime.now();
+        updatedAt = updatedAt ?? DateTime.now(),
+        maxCreatedProjects = maxCreatedProjects ?? 3;
 
   factory User({
     int? id,
@@ -33,6 +35,7 @@ abstract class User implements _i1.SerializableModel {
     required String userAuthId,
     String? displayName,
     List<_i2.UserRoleMembership>? memberships,
+    int? maxCreatedProjects,
   }) = _UserImpl;
 
   factory User.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -51,6 +54,7 @@ abstract class User implements _i1.SerializableModel {
           ?.map((e) =>
               _i2.UserRoleMembership.fromJson((e as Map<String, dynamic>)))
           .toList(),
+      maxCreatedProjects: jsonSerialization['maxCreatedProjects'] as int,
     );
   }
 
@@ -73,6 +77,9 @@ abstract class User implements _i1.SerializableModel {
   /// The role memberships of this user.
   List<_i2.UserRoleMembership>? memberships;
 
+  /// Max number of projects this user can create.
+  int maxCreatedProjects;
+
   User copyWith({
     int? id,
     DateTime? createdAt,
@@ -81,6 +88,7 @@ abstract class User implements _i1.SerializableModel {
     String? userAuthId,
     String? displayName,
     List<_i2.UserRoleMembership>? memberships,
+    int? maxCreatedProjects,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -93,6 +101,7 @@ abstract class User implements _i1.SerializableModel {
       if (displayName != null) 'displayName': displayName,
       if (memberships != null)
         'memberships': memberships?.toJson(valueToJson: (v) => v.toJson()),
+      'maxCreatedProjects': maxCreatedProjects,
     };
   }
 
@@ -113,6 +122,7 @@ class _UserImpl extends User {
     required String userAuthId,
     String? displayName,
     List<_i2.UserRoleMembership>? memberships,
+    int? maxCreatedProjects,
   }) : super._(
           id: id,
           createdAt: createdAt,
@@ -121,6 +131,7 @@ class _UserImpl extends User {
           userAuthId: userAuthId,
           displayName: displayName,
           memberships: memberships,
+          maxCreatedProjects: maxCreatedProjects,
         );
 
   @override
@@ -132,6 +143,7 @@ class _UserImpl extends User {
     String? userAuthId,
     Object? displayName = _Undefined,
     Object? memberships = _Undefined,
+    int? maxCreatedProjects,
   }) {
     return User(
       id: id is int? ? id : this.id,
@@ -143,6 +155,7 @@ class _UserImpl extends User {
       memberships: memberships is List<_i2.UserRoleMembership>?
           ? memberships
           : this.memberships?.map((e0) => e0.copyWith()).toList(),
+      maxCreatedProjects: maxCreatedProjects ?? this.maxCreatedProjects,
     );
   }
 }
