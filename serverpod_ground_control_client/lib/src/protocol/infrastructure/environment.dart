@@ -21,6 +21,7 @@ abstract class Environment implements _i1.SerializableModel {
     required this.region,
     required this.tenantProjectId,
     this.tenantProject,
+    this.environmentVariables,
   });
 
   factory Environment({
@@ -30,6 +31,7 @@ abstract class Environment implements _i1.SerializableModel {
     required _i2.ServerpodRegion region,
     required int tenantProjectId,
     _i2.TenantProject? tenantProject,
+    List<_i2.EnvironmentVariable>? environmentVariables,
   }) = _EnvironmentImpl;
 
   factory Environment.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -44,6 +46,10 @@ abstract class Environment implements _i1.SerializableModel {
           ? null
           : _i2.TenantProject.fromJson(
               (jsonSerialization['tenantProject'] as Map<String, dynamic>)),
+      environmentVariables: (jsonSerialization['environmentVariables'] as List?)
+          ?.map((e) =>
+              _i2.EnvironmentVariable.fromJson((e as Map<String, dynamic>)))
+          .toList(),
     );
   }
 
@@ -66,6 +72,8 @@ abstract class Environment implements _i1.SerializableModel {
   /// The tenant this environment belongs to.
   _i2.TenantProject? tenantProject;
 
+  List<_i2.EnvironmentVariable>? environmentVariables;
+
   Environment copyWith({
     int? id,
     String? name,
@@ -73,6 +81,7 @@ abstract class Environment implements _i1.SerializableModel {
     _i2.ServerpodRegion? region,
     int? tenantProjectId,
     _i2.TenantProject? tenantProject,
+    List<_i2.EnvironmentVariable>? environmentVariables,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -83,6 +92,9 @@ abstract class Environment implements _i1.SerializableModel {
       'region': region.toJson(),
       'tenantProjectId': tenantProjectId,
       if (tenantProject != null) 'tenantProject': tenantProject?.toJson(),
+      if (environmentVariables != null)
+        'environmentVariables':
+            environmentVariables?.toJson(valueToJson: (v) => v.toJson()),
     };
   }
 
@@ -102,6 +114,7 @@ class _EnvironmentImpl extends Environment {
     required _i2.ServerpodRegion region,
     required int tenantProjectId,
     _i2.TenantProject? tenantProject,
+    List<_i2.EnvironmentVariable>? environmentVariables,
   }) : super._(
           id: id,
           name: name,
@@ -109,6 +122,7 @@ class _EnvironmentImpl extends Environment {
           region: region,
           tenantProjectId: tenantProjectId,
           tenantProject: tenantProject,
+          environmentVariables: environmentVariables,
         );
 
   @override
@@ -119,6 +133,7 @@ class _EnvironmentImpl extends Environment {
     _i2.ServerpodRegion? region,
     int? tenantProjectId,
     Object? tenantProject = _Undefined,
+    Object? environmentVariables = _Undefined,
   }) {
     return Environment(
       id: id is int? ? id : this.id,
@@ -129,6 +144,10 @@ class _EnvironmentImpl extends Environment {
       tenantProject: tenantProject is _i2.TenantProject?
           ? tenantProject
           : this.tenantProject?.copyWith(),
+      environmentVariables:
+          environmentVariables is List<_i2.EnvironmentVariable>?
+              ? environmentVariables
+              : this.environmentVariables?.map((e0) => e0.copyWith()).toList(),
     );
   }
 }

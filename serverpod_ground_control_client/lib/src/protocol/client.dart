@@ -11,14 +11,16 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import 'dart:async' as _i2;
-import 'package:serverpod_ground_control_client/src/protocol/tenant/role.dart'
+import 'package:serverpod_ground_control_client/src/protocol/tenant/environment_variable.dart'
     as _i3;
-import 'package:serverpod_ground_control_client/src/protocol/tenant/tenant_project.dart'
+import 'package:serverpod_ground_control_client/src/protocol/tenant/role.dart'
     as _i4;
-import 'package:serverpod_ground_control_client/src/protocol/tenant/user.dart'
+import 'package:serverpod_ground_control_client/src/protocol/tenant/tenant_project.dart'
     as _i5;
-import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i6;
-import 'protocol.dart' as _i7;
+import 'package:serverpod_ground_control_client/src/protocol/tenant/user.dart'
+    as _i6;
+import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i7;
+import 'protocol.dart' as _i8;
 
 /// {@category Endpoint}
 class EndpointDeploy extends _i1.EndpointRef {
@@ -35,6 +37,87 @@ class EndpointDeploy extends _i1.EndpointRef {
       );
 }
 
+/// Endpoint for managing environment variables.
+/// {@category Endpoint}
+class EndpointEnvironmentVariables extends _i1.EndpointRef {
+  EndpointEnvironmentVariables(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'environmentVariables';
+
+  /// Creates a new [EnvironmentVariable] with the specified [name] and [value].
+  /// Throws a [DuplicateEntryException] if an environment variable with the same name already exists.
+  _i2.Future<_i3.EnvironmentVariable> create(
+    String name,
+    String value,
+    String envId,
+  ) =>
+      caller.callServerEndpoint<_i3.EnvironmentVariable>(
+        'environmentVariables',
+        'create',
+        {
+          'name': name,
+          'value': value,
+          'envId': envId,
+        },
+      );
+
+  /// Fetches the specified environment variable.
+  /// Throws a [NotFoundException] if the environment variable is not found.
+  _i2.Future<_i3.EnvironmentVariable> read({
+    required String name,
+    required String envId,
+  }) =>
+      caller.callServerEndpoint<_i3.EnvironmentVariable>(
+        'environmentVariables',
+        'read',
+        {
+          'name': name,
+          'envId': envId,
+        },
+      );
+
+  /// Gets the list of environment variables for the given [envId].
+  _i2.Future<List<_i3.EnvironmentVariable>> list(String envId) =>
+      caller.callServerEndpoint<List<_i3.EnvironmentVariable>>(
+        'environmentVariables',
+        'list',
+        {'envId': envId},
+      );
+
+  /// Creates a new [EnvironmentVariable] with the specified [name] and [value].
+  /// Throws a [NotFoundException] if the environment variable is not found.
+  _i2.Future<_i3.EnvironmentVariable> update({
+    required String name,
+    required String value,
+    required String envId,
+  }) =>
+      caller.callServerEndpoint<_i3.EnvironmentVariable>(
+        'environmentVariables',
+        'update',
+        {
+          'name': name,
+          'value': value,
+          'envId': envId,
+        },
+      );
+
+  /// Permanently deletes an environment variable.
+  /// Throws a [NotFoundException] if the environment variable is not found.
+  _i2.Future<_i3.EnvironmentVariable> delete({
+    required String envId,
+    required String name,
+  }) =>
+      caller.callServerEndpoint<_i3.EnvironmentVariable>(
+        'environmentVariables',
+        'delete',
+        {
+          'envId': envId,
+          'name': name,
+        },
+      );
+}
+
 /// Endpoint for managing access roles.
 /// {@category Endpoint}
 class EndpointRoles extends _i1.EndpointRef {
@@ -44,9 +127,9 @@ class EndpointRoles extends _i1.EndpointRef {
   String get name => 'roles';
 
   /// Fetches the user roles for a project.
-  _i2.Future<List<_i3.Role>> fetchRolesForProject(
+  _i2.Future<List<_i4.Role>> fetchRolesForProject(
           {required String canonicalName}) =>
-      caller.callServerEndpoint<List<_i3.Role>>(
+      caller.callServerEndpoint<List<_i4.Role>>(
         'roles',
         'fetchRolesForProject',
         {'canonicalName': canonicalName},
@@ -63,9 +146,9 @@ class EndpointTenantProjects extends _i1.EndpointRef {
 
   /// Creates a new tenant project with basic setup.
   /// The [canonicalName] must be globally unique.
-  _i2.Future<_i4.TenantProject> createTenantProject(
+  _i2.Future<_i5.TenantProject> createTenantProject(
           {required String canonicalName}) =>
-      caller.callServerEndpoint<_i4.TenantProject>(
+      caller.callServerEndpoint<_i5.TenantProject>(
         'tenantProjects',
         'createTenantProject',
         {'canonicalName': canonicalName},
@@ -73,26 +156,26 @@ class EndpointTenantProjects extends _i1.EndpointRef {
 
   /// Fetches the specified tenant project.
   /// Its user roles are included in the response.
-  _i2.Future<_i4.TenantProject> fetchTenantProject(
+  _i2.Future<_i5.TenantProject> fetchTenantProject(
           {required String canonicalName}) =>
-      caller.callServerEndpoint<_i4.TenantProject>(
+      caller.callServerEndpoint<_i5.TenantProject>(
         'tenantProjects',
         'fetchTenantProject',
         {'canonicalName': canonicalName},
       );
 
   /// Fetches the list of tenant projects the current user has access to.
-  _i2.Future<List<_i4.TenantProject>> listTenantProjects() =>
-      caller.callServerEndpoint<List<_i4.TenantProject>>(
+  _i2.Future<List<_i5.TenantProject>> listTenantProjects() =>
+      caller.callServerEndpoint<List<_i5.TenantProject>>(
         'tenantProjects',
         'listTenantProjects',
         {},
       );
 
   /// Deletes a tenant project permanently.
-  _i2.Future<_i4.TenantProject> deleteTenantProject(
+  _i2.Future<_i5.TenantProject> deleteTenantProject(
           {required String canonicalName}) =>
-      caller.callServerEndpoint<_i4.TenantProject>(
+      caller.callServerEndpoint<_i5.TenantProject>(
         'tenantProjects',
         'deleteTenantProject',
         {'canonicalName': canonicalName},
@@ -108,8 +191,8 @@ class EndpointUsers extends _i1.EndpointRef {
   String get name => 'users';
 
   /// Fetches the tenant user for the currently authenticated user.
-  _i2.Future<_i5.User> fetchCurrentUser() =>
-      caller.callServerEndpoint<_i5.User>(
+  _i2.Future<_i6.User> fetchCurrentUser() =>
+      caller.callServerEndpoint<_i6.User>(
         'users',
         'fetchCurrentUser',
         {},
@@ -117,8 +200,8 @@ class EndpointUsers extends _i1.EndpointRef {
 
   /// Registers a new tenant user record for the current authenticated user.
   /// Throws [DuplicateEntryException] if the tenant user already exists.
-  _i2.Future<_i5.User> registerCurrentUser({String? userDisplayName}) =>
-      caller.callServerEndpoint<_i5.User>(
+  _i2.Future<_i6.User> registerCurrentUser({String? userDisplayName}) =>
+      caller.callServerEndpoint<_i6.User>(
         'users',
         'registerCurrentUser',
         {'userDisplayName': userDisplayName},
@@ -127,10 +210,10 @@ class EndpointUsers extends _i1.EndpointRef {
 
 class _Modules {
   _Modules(Client client) {
-    auth = _i6.Caller(client);
+    auth = _i7.Caller(client);
   }
 
-  late final _i6.Caller auth;
+  late final _i7.Caller auth;
 }
 
 class Client extends _i1.ServerpodClientShared {
@@ -149,7 +232,7 @@ class Client extends _i1.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
           host,
-          _i7.Protocol(),
+          _i8.Protocol(),
           securityContext: securityContext,
           authenticationKeyManager: authenticationKeyManager,
           streamingConnectionTimeout: streamingConnectionTimeout,
@@ -160,6 +243,7 @@ class Client extends _i1.ServerpodClientShared {
               disconnectStreamsOnLostInternetConnection,
         ) {
     deploy = EndpointDeploy(this);
+    environmentVariables = EndpointEnvironmentVariables(this);
     roles = EndpointRoles(this);
     tenantProjects = EndpointTenantProjects(this);
     users = EndpointUsers(this);
@@ -167,6 +251,8 @@ class Client extends _i1.ServerpodClientShared {
   }
 
   late final EndpointDeploy deploy;
+
+  late final EndpointEnvironmentVariables environmentVariables;
 
   late final EndpointRoles roles;
 
@@ -179,6 +265,7 @@ class Client extends _i1.ServerpodClientShared {
   @override
   Map<String, _i1.EndpointRef> get endpointRefLookup => {
         'deploy': deploy,
+        'environmentVariables': environmentVariables,
         'roles': roles,
         'tenantProjects': tenantProjects,
         'users': users,
