@@ -24,8 +24,7 @@ abstract final class EnvCommandConfig {
   static const projectId = ConfigOption(
     argName: 'project-id',
     argAbbrev: 'i',
-    helpText:
-        'The ID of the project. Can also be specified as the first argument.',
+    helpText: 'The ID of the project.',
     mandatory: true,
     envName: 'SERVERPOD_CLOUD_PROJECT_ID',
   );
@@ -154,7 +153,7 @@ class CloudEnvUpdateCommand extends CloudCliCommand<UpdateEnvCommandConfig> {
       await apiCloudClient.environmentVariables.update(
         name: variableName,
         value: variableValue,
-        envId: projectId,
+        canonicalName: projectId,
       );
     } catch (e) {
       logger.error(
@@ -190,7 +189,7 @@ class CloudEnvDeleteCommand extends CloudCliCommand<DeleteEnvCommandConfig> {
     try {
       await apiCloudClient.environmentVariables.delete(
         name: variableName,
-        envId: projectId,
+        canonicalName: projectId,
       );
     } catch (e) {
       logger.error(

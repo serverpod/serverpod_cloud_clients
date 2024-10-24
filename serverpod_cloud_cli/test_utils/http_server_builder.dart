@@ -28,16 +28,20 @@ class HttpServerBuilder {
     return this;
   }
 
-  HttpServerBuilder withSuccessfulResponse(
-    final Object responseBody,
-  ) {
+  HttpServerBuilder withSuccessfulResponse([
+    final Object? responseBody,
+  ]) {
     _onRequest = (final request) {
       request.response.statusCode = 200;
-      request.response.write(
-        responseBody is SerializableModel
-            ? responseBody.toString()
-            : responseBody,
-      );
+
+      if (responseBody != null) {
+        request.response.write(
+          responseBody is SerializableModel
+              ? responseBody.toString()
+              : responseBody,
+        );
+      }
+
       request.response.close();
     };
     return this;

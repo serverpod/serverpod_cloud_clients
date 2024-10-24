@@ -27,9 +27,13 @@ void main() async {
     );
 
     test(
-        'then the produced string contains the single header as well as a separator line.',
+        'then the produced string contains the single header as well as a separator line and empty tag.',
         () {
-      expect(tablePrinter.toString(), 'Header\n------\n');
+      expect(
+          tablePrinter.toString(),
+          'Header\n'
+          '------\n'
+          '<empty>\n');
     });
 
     test(
@@ -52,11 +56,13 @@ void main() async {
     );
 
     test(
-        'then the produced string contains all three columns as well as a seperator line.',
+        'then the produced string contains all three columns as well as a seperator line and empty tags.',
         () {
       expect(
         tablePrinter.toString(),
-        'Col1 | Col2 | Col3\n-----+------+-----\n',
+        'Col1 | Col2 | Col3\n'
+        '-----+------+-----\n'
+        '<empty> | <empty> | <empty>\n',
       );
     });
   });

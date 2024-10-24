@@ -11,18 +11,81 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import 'dart:async' as _i2;
-import 'package:serverpod_ground_control_client/src/protocol/tenant/environment_variable.dart'
+import 'package:serverpod_ground_control_client/src/protocol/infrastructure/domain_name_target.dart'
     as _i3;
-import 'package:serverpod_ground_control_client/src/protocol/logs/log_record.dart'
+import 'package:serverpod_ground_control_client/src/protocol/view_models/infrastructure/custom_domain_name_list.dart'
     as _i4;
-import 'package:serverpod_ground_control_client/src/protocol/tenant/role.dart'
+import 'package:serverpod_ground_control_client/src/protocol/infrastructure/domain_name_status.dart'
     as _i5;
-import 'package:serverpod_ground_control_client/src/protocol/tenant/tenant_project.dart'
+import 'package:serverpod_ground_control_client/src/protocol/tenant/environment_variable.dart'
     as _i6;
-import 'package:serverpod_ground_control_client/src/protocol/tenant/user.dart'
+import 'package:serverpod_ground_control_client/src/protocol/logs/log_record.dart'
     as _i7;
-import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i8;
-import 'protocol.dart' as _i9;
+import 'package:serverpod_ground_control_client/src/protocol/tenant/role.dart'
+    as _i8;
+import 'package:serverpod_ground_control_client/src/protocol/tenant/tenant_project.dart'
+    as _i9;
+import 'package:serverpod_ground_control_client/src/protocol/tenant/user.dart'
+    as _i10;
+import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i11;
+import 'protocol.dart' as _i12;
+
+/// {@category Endpoint}
+class EndpointCustomDomainName extends _i1.EndpointRef {
+  EndpointCustomDomainName(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'customDomainName';
+
+  _i2.Future<void> add({
+    required String domainName,
+    required _i3.DomainNameTarget target,
+    required String environmentCanonicalName,
+  }) =>
+      caller.callServerEndpoint<void>(
+        'customDomainName',
+        'add',
+        {
+          'domainName': domainName,
+          'target': target,
+          'environmentCanonicalName': environmentCanonicalName,
+        },
+      );
+
+  _i2.Future<void> remove({
+    required String domainName,
+    required String environmentCanonicalName,
+  }) =>
+      caller.callServerEndpoint<void>(
+        'customDomainName',
+        'remove',
+        {
+          'domainName': domainName,
+          'environmentCanonicalName': environmentCanonicalName,
+        },
+      );
+
+  _i2.Future<_i4.CustomDomainNameList> list(
+          {required String environmentCanonicalName}) =>
+      caller.callServerEndpoint<_i4.CustomDomainNameList>(
+        'customDomainName',
+        'list',
+        {'environmentCanonicalName': environmentCanonicalName},
+      );
+
+  _i2.Future<_i5.DomainNameStatus> refreshRecord({
+    required String domainName,
+    required String environmentCanonicalName,
+  }) =>
+      caller.callServerEndpoint<_i5.DomainNameStatus>(
+        'customDomainName',
+        'refreshRecord',
+        {
+          'domainName': domainName,
+          'environmentCanonicalName': environmentCanonicalName,
+        },
+      );
+}
 
 /// {@category Endpoint}
 class EndpointDeploy extends _i1.EndpointRef {
@@ -49,72 +112,72 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
 
   /// Creates a new [EnvironmentVariable] with the specified [name] and [value].
   /// Throws a [DuplicateEntryException] if an environment variable with the same name already exists.
-  _i2.Future<_i3.EnvironmentVariable> create(
+  _i2.Future<_i6.EnvironmentVariable> create(
     String name,
     String value,
-    String envId,
+    String canonicalName,
   ) =>
-      caller.callServerEndpoint<_i3.EnvironmentVariable>(
+      caller.callServerEndpoint<_i6.EnvironmentVariable>(
         'environmentVariables',
         'create',
         {
           'name': name,
           'value': value,
-          'envId': envId,
+          'canonicalName': canonicalName,
         },
       );
 
   /// Fetches the specified environment variable.
   /// Throws a [NotFoundException] if the environment variable is not found.
-  _i2.Future<_i3.EnvironmentVariable> read({
+  _i2.Future<_i6.EnvironmentVariable> read({
     required String name,
-    required String envId,
+    required String canonicalName,
   }) =>
-      caller.callServerEndpoint<_i3.EnvironmentVariable>(
+      caller.callServerEndpoint<_i6.EnvironmentVariable>(
         'environmentVariables',
         'read',
         {
           'name': name,
-          'envId': envId,
+          'canonicalName': canonicalName,
         },
       );
 
-  /// Gets the list of environment variables for the given [envId].
-  _i2.Future<List<_i3.EnvironmentVariable>> list(String envId) =>
-      caller.callServerEndpoint<List<_i3.EnvironmentVariable>>(
+  /// Gets the list of environment variables for the given [canonicalName].
+  _i2.Future<List<_i6.EnvironmentVariable>> list(String canonicalName) =>
+      caller.callServerEndpoint<List<_i6.EnvironmentVariable>>(
         'environmentVariables',
         'list',
-        {'envId': envId},
+        {'canonicalName': canonicalName},
       );
 
   /// Creates a new [EnvironmentVariable] with the specified [name] and [value].
   /// Throws a [NotFoundException] if the environment variable is not found.
-  _i2.Future<_i3.EnvironmentVariable> update({
+  _i2.Future<_i6.EnvironmentVariable> update({
     required String name,
     required String value,
-    required String envId,
+    required String canonicalName,
   }) =>
-      caller.callServerEndpoint<_i3.EnvironmentVariable>(
+      caller.callServerEndpoint<_i6.EnvironmentVariable>(
         'environmentVariables',
         'update',
         {
           'name': name,
           'value': value,
-          'envId': envId,
+          'canonicalName': canonicalName,
         },
       );
 
   /// Permanently deletes an environment variable.
   /// Throws a [NotFoundException] if the environment variable is not found.
-  _i2.Future<_i3.EnvironmentVariable> delete({
-    required String envId,
+  _i2.Future<_i6.EnvironmentVariable> delete({
+    required String canonicalName,
     required String name,
   }) =>
-      caller.callServerEndpoint<_i3.EnvironmentVariable>(
+      caller.callServerEndpoint<_i6.EnvironmentVariable>(
         'environmentVariables',
         'delete',
         {
-          'envId': envId,
+          'canonicalName': canonicalName,
           'name': name,
         },
       );
@@ -129,14 +192,14 @@ class EndpointLogs extends _i1.EndpointRef {
   String get name => 'logs';
 
   /// Fetches log records from the specified project.
-  _i2.Stream<_i4.LogRecord> fetchRecords({
+  _i2.Stream<_i7.LogRecord> fetchRecords({
     required String canonicalName,
     DateTime? beforeTime,
     DateTime? afterTime,
     int? limit,
   }) =>
-      caller.callStreamingServerEndpoint<_i2.Stream<_i4.LogRecord>,
-          _i4.LogRecord>(
+      caller.callStreamingServerEndpoint<_i2.Stream<_i7.LogRecord>,
+          _i7.LogRecord>(
         'logs',
         'fetchRecords',
         {
@@ -151,12 +214,12 @@ class EndpointLogs extends _i1.EndpointRef {
   /// Tails log records from the specified project.
   /// Continues until the client unsubscribes, [limit] is reached,
   /// or the internal max limit is reached.
-  _i2.Stream<_i4.LogRecord> tailRecords({
+  _i2.Stream<_i7.LogRecord> tailRecords({
     required String canonicalName,
     int? limit,
   }) =>
-      caller.callStreamingServerEndpoint<_i2.Stream<_i4.LogRecord>,
-          _i4.LogRecord>(
+      caller.callStreamingServerEndpoint<_i2.Stream<_i7.LogRecord>,
+          _i7.LogRecord>(
         'logs',
         'tailRecords',
         {
@@ -176,9 +239,9 @@ class EndpointRoles extends _i1.EndpointRef {
   String get name => 'roles';
 
   /// Fetches the user roles for a project.
-  _i2.Future<List<_i5.Role>> fetchRolesForProject(
+  _i2.Future<List<_i8.Role>> fetchRolesForProject(
           {required String canonicalName}) =>
-      caller.callServerEndpoint<List<_i5.Role>>(
+      caller.callServerEndpoint<List<_i8.Role>>(
         'roles',
         'fetchRolesForProject',
         {'canonicalName': canonicalName},
@@ -195,9 +258,9 @@ class EndpointTenantProjects extends _i1.EndpointRef {
 
   /// Creates a new tenant project with basic setup.
   /// The [canonicalName] must be globally unique.
-  _i2.Future<_i6.TenantProject> createTenantProject(
+  _i2.Future<_i9.TenantProject> createTenantProject(
           {required String canonicalName}) =>
-      caller.callServerEndpoint<_i6.TenantProject>(
+      caller.callServerEndpoint<_i9.TenantProject>(
         'tenantProjects',
         'createTenantProject',
         {'canonicalName': canonicalName},
@@ -205,26 +268,26 @@ class EndpointTenantProjects extends _i1.EndpointRef {
 
   /// Fetches the specified tenant project.
   /// Its user roles are included in the response.
-  _i2.Future<_i6.TenantProject> fetchTenantProject(
+  _i2.Future<_i9.TenantProject> fetchTenantProject(
           {required String canonicalName}) =>
-      caller.callServerEndpoint<_i6.TenantProject>(
+      caller.callServerEndpoint<_i9.TenantProject>(
         'tenantProjects',
         'fetchTenantProject',
         {'canonicalName': canonicalName},
       );
 
   /// Fetches the list of tenant projects the current user has access to.
-  _i2.Future<List<_i6.TenantProject>> listTenantProjects() =>
-      caller.callServerEndpoint<List<_i6.TenantProject>>(
+  _i2.Future<List<_i9.TenantProject>> listTenantProjects() =>
+      caller.callServerEndpoint<List<_i9.TenantProject>>(
         'tenantProjects',
         'listTenantProjects',
         {},
       );
 
   /// Deletes a tenant project permanently.
-  _i2.Future<_i6.TenantProject> deleteTenantProject(
+  _i2.Future<_i9.TenantProject> deleteTenantProject(
           {required String canonicalName}) =>
-      caller.callServerEndpoint<_i6.TenantProject>(
+      caller.callServerEndpoint<_i9.TenantProject>(
         'tenantProjects',
         'deleteTenantProject',
         {'canonicalName': canonicalName},
@@ -240,8 +303,8 @@ class EndpointUsers extends _i1.EndpointRef {
   String get name => 'users';
 
   /// Fetches the tenant user for the currently authenticated user.
-  _i2.Future<_i7.User> fetchCurrentUser() =>
-      caller.callServerEndpoint<_i7.User>(
+  _i2.Future<_i10.User> fetchCurrentUser() =>
+      caller.callServerEndpoint<_i10.User>(
         'users',
         'fetchCurrentUser',
         {},
@@ -249,8 +312,8 @@ class EndpointUsers extends _i1.EndpointRef {
 
   /// Registers a new tenant user record for the current authenticated user.
   /// Throws [DuplicateEntryException] if the tenant user already exists.
-  _i2.Future<_i7.User> registerCurrentUser({String? userDisplayName}) =>
-      caller.callServerEndpoint<_i7.User>(
+  _i2.Future<_i10.User> registerCurrentUser({String? userDisplayName}) =>
+      caller.callServerEndpoint<_i10.User>(
         'users',
         'registerCurrentUser',
         {'userDisplayName': userDisplayName},
@@ -259,10 +322,10 @@ class EndpointUsers extends _i1.EndpointRef {
 
 class _Modules {
   _Modules(Client client) {
-    auth = _i8.Caller(client);
+    auth = _i11.Caller(client);
   }
 
-  late final _i8.Caller auth;
+  late final _i11.Caller auth;
 }
 
 class Client extends _i1.ServerpodClientShared {
@@ -281,7 +344,7 @@ class Client extends _i1.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
           host,
-          _i9.Protocol(),
+          _i12.Protocol(),
           securityContext: securityContext,
           authenticationKeyManager: authenticationKeyManager,
           streamingConnectionTimeout: streamingConnectionTimeout,
@@ -291,6 +354,7 @@ class Client extends _i1.ServerpodClientShared {
           disconnectStreamsOnLostInternetConnection:
               disconnectStreamsOnLostInternetConnection,
         ) {
+    customDomainName = EndpointCustomDomainName(this);
     deploy = EndpointDeploy(this);
     environmentVariables = EndpointEnvironmentVariables(this);
     logs = EndpointLogs(this);
@@ -299,6 +363,8 @@ class Client extends _i1.ServerpodClientShared {
     users = EndpointUsers(this);
     modules = _Modules(this);
   }
+
+  late final EndpointCustomDomainName customDomainName;
 
   late final EndpointDeploy deploy;
 
@@ -316,6 +382,7 @@ class Client extends _i1.ServerpodClientShared {
 
   @override
   Map<String, _i1.EndpointRef> get endpointRefLookup => {
+        'customDomainName': customDomainName,
         'deploy': deploy,
         'environmentVariables': environmentVariables,
         'logs': logs,

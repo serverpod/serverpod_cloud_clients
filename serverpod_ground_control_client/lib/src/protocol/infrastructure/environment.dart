@@ -17,28 +17,30 @@ abstract class Environment implements _i1.SerializableModel {
   Environment._({
     this.id,
     required this.name,
-    required this.envId,
+    required this.canonicalName,
     required this.region,
     required this.tenantProjectId,
     this.tenantProject,
     this.environmentVariables,
+    this.domainNames,
   });
 
   factory Environment({
     int? id,
     required String name,
-    required String envId,
+    required String canonicalName,
     required _i2.ServerpodRegion region,
     required int tenantProjectId,
     _i2.TenantProject? tenantProject,
     List<_i2.EnvironmentVariable>? environmentVariables,
+    List<_i2.CustomDomainName>? domainNames,
   }) = _EnvironmentImpl;
 
   factory Environment.fromJson(Map<String, dynamic> jsonSerialization) {
     return Environment(
       id: jsonSerialization['id'] as int?,
       name: jsonSerialization['name'] as String,
-      envId: jsonSerialization['envId'] as String,
+      canonicalName: jsonSerialization['canonicalName'] as String,
       region:
           _i2.ServerpodRegion.fromJson((jsonSerialization['region'] as int)),
       tenantProjectId: jsonSerialization['tenantProjectId'] as int,
@@ -49,6 +51,10 @@ abstract class Environment implements _i1.SerializableModel {
       environmentVariables: (jsonSerialization['environmentVariables'] as List?)
           ?.map((e) =>
               _i2.EnvironmentVariable.fromJson((e as Map<String, dynamic>)))
+          .toList(),
+      domainNames: (jsonSerialization['domainNames'] as List?)
+          ?.map(
+              (e) => _i2.CustomDomainName.fromJson((e as Map<String, dynamic>)))
           .toList(),
     );
   }
@@ -61,8 +67,8 @@ abstract class Environment implements _i1.SerializableModel {
   /// The name of the environment. User-defined.
   String name;
 
-  /// The globally unique ID of the environment. Cannot be changed.
-  String envId;
+  /// Globally unique identitifier of the environment. Cannot be changed.
+  String canonicalName;
 
   /// The region where the environment is hosted. Cannot be changed.
   _i2.ServerpodRegion region;
@@ -72,29 +78,36 @@ abstract class Environment implements _i1.SerializableModel {
   /// The tenant this environment belongs to.
   _i2.TenantProject? tenantProject;
 
+  /// Environment variables for this environment.
   List<_i2.EnvironmentVariable>? environmentVariables;
+
+  /// The domain names for this environment.
+  List<_i2.CustomDomainName>? domainNames;
 
   Environment copyWith({
     int? id,
     String? name,
-    String? envId,
+    String? canonicalName,
     _i2.ServerpodRegion? region,
     int? tenantProjectId,
     _i2.TenantProject? tenantProject,
     List<_i2.EnvironmentVariable>? environmentVariables,
+    List<_i2.CustomDomainName>? domainNames,
   });
   @override
   Map<String, dynamic> toJson() {
     return {
       if (id != null) 'id': id,
       'name': name,
-      'envId': envId,
+      'canonicalName': canonicalName,
       'region': region.toJson(),
       'tenantProjectId': tenantProjectId,
       if (tenantProject != null) 'tenantProject': tenantProject?.toJson(),
       if (environmentVariables != null)
         'environmentVariables':
             environmentVariables?.toJson(valueToJson: (v) => v.toJson()),
+      if (domainNames != null)
+        'domainNames': domainNames?.toJson(valueToJson: (v) => v.toJson()),
     };
   }
 
@@ -110,35 +123,38 @@ class _EnvironmentImpl extends Environment {
   _EnvironmentImpl({
     int? id,
     required String name,
-    required String envId,
+    required String canonicalName,
     required _i2.ServerpodRegion region,
     required int tenantProjectId,
     _i2.TenantProject? tenantProject,
     List<_i2.EnvironmentVariable>? environmentVariables,
+    List<_i2.CustomDomainName>? domainNames,
   }) : super._(
           id: id,
           name: name,
-          envId: envId,
+          canonicalName: canonicalName,
           region: region,
           tenantProjectId: tenantProjectId,
           tenantProject: tenantProject,
           environmentVariables: environmentVariables,
+          domainNames: domainNames,
         );
 
   @override
   Environment copyWith({
     Object? id = _Undefined,
     String? name,
-    String? envId,
+    String? canonicalName,
     _i2.ServerpodRegion? region,
     int? tenantProjectId,
     Object? tenantProject = _Undefined,
     Object? environmentVariables = _Undefined,
+    Object? domainNames = _Undefined,
   }) {
     return Environment(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
-      envId: envId ?? this.envId,
+      canonicalName: canonicalName ?? this.canonicalName,
       region: region ?? this.region,
       tenantProjectId: tenantProjectId ?? this.tenantProjectId,
       tenantProject: tenantProject is _i2.TenantProject?
@@ -148,6 +164,9 @@ class _EnvironmentImpl extends Environment {
           environmentVariables is List<_i2.EnvironmentVariable>?
               ? environmentVariables
               : this.environmentVariables?.map((e0) => e0.copyWith()).toList(),
+      domainNames: domainNames is List<_i2.CustomDomainName>?
+          ? domainNames
+          : this.domainNames?.map((e0) => e0.copyWith()).toList(),
     );
   }
 }

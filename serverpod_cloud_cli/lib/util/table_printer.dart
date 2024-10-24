@@ -67,6 +67,9 @@ class TablePrinter {
 
     if (_columnHeaders.isNotEmpty) {
       buffer.write(_formatHeader(columnWidths));
+      if (_rows.isEmpty) {
+        buffer.write(_formatEmptyLine(columnWidths));
+      }
     }
 
     for (final row in _rows) {
@@ -90,6 +93,15 @@ class TablePrinter {
       }).join('-+-'),
     );
     return buffer.toString();
+  }
+
+  String _formatEmptyLine(final List<int> columnWidths) {
+    final line = List.generate(
+      columnWidths.length,
+      (final colIx) => ('<empty>').padRight(columnWidths[colIx]),
+    ).join(' | ');
+
+    return '$line\n';
   }
 
   String _formatLine(final List<int> columnWidths, final List<String?> row) {
