@@ -7,6 +7,7 @@ import 'package:serverpod_cloud_cli/command_runner/commands/deploy_command.dart'
 import 'package:serverpod_cloud_cli/command_runner/commands/env_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/login_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/logout_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/log_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/project_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/version_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
@@ -68,6 +69,7 @@ class CloudCliCommandRunner extends BetterCommandRunner {
       CloudProjectCommand(logger: logger),
       CloudDeployCommand(logger: logger),
       CloudEnvCommand(logger: logger),
+      CloudLogCommand(logger: logger)
     ]);
 
     return runner;

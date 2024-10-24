@@ -32,7 +32,7 @@ void main(final List<String> args) async {
     },
     (final error, final stackTrace) async {
       logger.error(
-        _formatInternalError(error),
+        _formatInternalError(error, zonedError: true),
         stackTrace: stackTrace,
       );
       await _preExit(logger);
@@ -49,7 +49,7 @@ Future<void> _main(final List<String> args, final Logger logger) async {
   try {
     await runner.run(args);
   } on ArgumentError catch (e) {
-    logger.error(e.message);
+    logger.error(e.toString());
     throw ExitException();
   }
 }
@@ -58,7 +58,10 @@ Future<void> _preExit(final Logger logger) async {
   await logger.flush();
 }
 
-String _formatInternalError(final dynamic error) {
+String _formatInternalError(
+  final dynamic error, {
+  final bool zonedError = false,
+}) {
   return 'Yikes! It is possible that this error is caused by an'
       ' internal issue with the Serverpod tooling. We would appreciate if you '
       'filed an issue over at Github. Please include the stack trace below and '
@@ -66,9 +69,8 @@ String _formatInternalError(final dynamic error) {
       '''
 
 https://github.com/serverpod/serverpod/issues
-
-$error
-''';
+${zonedError ? 'Zoned error' : ''}
+$error''';
 }
 
 Logger _buildLogger() {

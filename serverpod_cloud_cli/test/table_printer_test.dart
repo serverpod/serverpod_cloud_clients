@@ -8,6 +8,17 @@ void main() async {
     test('then the produced string is empty.', () {
       expect(tablePrinter.toString(), isEmpty);
     });
+
+    test('then the produced stream is empty.', () async {
+      expect(
+        await tablePrinter.toStream(null).toList(),
+        isEmpty,
+      );
+    });
+
+    test('then the row count is zero.', () {
+      expect(tablePrinter.rowCount, isZero);
+    });
   });
 
   group('Given a TablePrinter with just a single column header', () {
@@ -19,6 +30,19 @@ void main() async {
         'then the produced string contains the single header as well as a separator line.',
         () {
       expect(tablePrinter.toString(), 'Header\n------\n');
+    });
+
+    test(
+        'then the produced stream contains the single header and separator line.',
+        () async {
+      expect(
+        await tablePrinter.toStream(null).toList(),
+        ['Header\n------\n'],
+      );
+    });
+
+    test('then the row count is zero.', () {
+      expect(tablePrinter.rowCount, isZero);
     });
   });
 
@@ -50,6 +74,18 @@ void main() async {
         'Cell1\n',
       );
     });
+
+    test('then the produced stream is a line with just the single value.',
+        () async {
+      expect(
+        await tablePrinter.toStream(null).toList(),
+        ['Cell1\n'],
+      );
+    });
+
+    test('then the row count is one.', () {
+      expect(tablePrinter.rowCount, 1);
+    });
   });
 
   group('Given a TablePrinter with 1 row with 3 cells', () {
@@ -66,6 +102,19 @@ void main() async {
         tablePrinter.toString(),
         'Cell1 | Cell2 | Cell3\n',
       );
+    });
+
+    test(
+        'then the produced stream is a line with the three cell values with column separators between them.',
+        () async {
+      expect(
+        await tablePrinter.toStream(null).toList(),
+        ['Cell1 | Cell2 | Cell3\n'],
+      );
+    });
+
+    test('then the row count is one.', () {
+      expect(tablePrinter.rowCount, 1);
     });
   });
 
@@ -97,6 +146,25 @@ Row3-Cell1--   | Row3-Cell2--   | Row3-Cell3     | Row3-Cell4      |
 Row4-Cell1---  | Row4-Cell2-    | Row4-Cell3     | Row4-Cell4      | Row4-Cell5
 Row5-Cell1---- | Row5-Cell2     | Row5-Cell3     |                 | Row5-Cell5
 ''');
+    });
+
+    test('then the produced stream is a correctly aligned table.', () async {
+      expect(
+        await tablePrinter.toStream(null).toList(),
+        [
+          'Col1           | Col2           | Col3---------- |                 |           \n'
+              '---------------+----------------+----------------+-----------------+-----------\n',
+          'Row1-Cell1     | Row1-Cell2---- | Row1-Cell3     |                 |           \n',
+          'Row2-Cell1-    | Row2-Cell2---  |                |                 |           \n',
+          'Row3-Cell1--   | Row3-Cell2--   | Row3-Cell3     | Row3-Cell4      |           \n',
+          'Row4-Cell1---  | Row4-Cell2-    | Row4-Cell3     | Row4-Cell4      | Row4-Cell5\n',
+          'Row5-Cell1---- | Row5-Cell2     | Row5-Cell3     |                 | Row5-Cell5\n',
+        ],
+      );
+    });
+
+    test('then the row count is 5.', () {
+      expect(tablePrinter.rowCount, 5);
     });
   });
 }
