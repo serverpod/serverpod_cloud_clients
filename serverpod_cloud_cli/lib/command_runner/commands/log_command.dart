@@ -204,7 +204,8 @@ class CloudLogTailCommand extends CloudCliCommand<LogTailOption> {
 
   @override
   Future<void> runWithConfig(
-      final Configuration<LogTailOption> commandConfig) async {
+    final Configuration<LogTailOption> commandConfig,
+  ) async {
     final projectId = commandConfig.value(LogTailOption.projectId);
     final limit = int.tryParse(commandConfig.value(LogTailOption.limit));
     final inUtc = commandConfig.flag(LogTailOption.utc);
