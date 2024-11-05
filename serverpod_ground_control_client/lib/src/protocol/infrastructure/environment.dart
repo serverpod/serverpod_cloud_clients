@@ -75,7 +75,7 @@ abstract class Environment implements _i1.SerializableModel {
 
   int tenantProjectId;
 
-  /// The tenant this environment belongs to.
+  /// The tenant this environment belongs to. Cannot be changed.
   _i2.TenantProject? tenantProject;
 
   /// Environment variables for this environment.
