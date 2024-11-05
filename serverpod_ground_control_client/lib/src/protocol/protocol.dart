@@ -8,8 +8,7 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 
-library protocol; // ignore_for_file: no_leading_underscores_for_library_prefixes
-
+// ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import 'exceptions/duplicate_entry_exception.dart' as _i2;
 import 'exceptions/invalid_value_exception.dart' as _i3;
@@ -391,80 +390,84 @@ class Protocol extends _i1.SerializationManager {
 
   @override
   dynamic deserializeByClassName(Map<String, dynamic> data) {
-    if (data['className'] == 'DuplicateEntryException') {
+    var dataClassName = data['className'];
+    if (dataClassName is! String) {
+      return super.deserializeByClassName(data);
+    }
+    if (dataClassName == 'DuplicateEntryException') {
       return deserialize<_i2.DuplicateEntryException>(data['data']);
     }
-    if (data['className'] == 'InvalidValueException') {
+    if (dataClassName == 'InvalidValueException') {
       return deserialize<_i3.InvalidValueException>(data['data']);
     }
-    if (data['className'] == 'NotFoundException') {
+    if (dataClassName == 'NotFoundException') {
       return deserialize<_i4.NotFoundException>(data['data']);
     }
-    if (data['className'] == 'UnauthenticatedException') {
+    if (dataClassName == 'UnauthenticatedException') {
       return deserialize<_i5.UnauthenticatedException>(data['data']);
     }
-    if (data['className'] == 'UnauthorizedException') {
+    if (dataClassName == 'UnauthorizedException') {
       return deserialize<_i6.UnauthorizedException>(data['data']);
     }
-    if (data['className'] == 'CustomDomainName') {
+    if (dataClassName == 'CustomDomainName') {
       return deserialize<_i7.CustomDomainName>(data['data']);
     }
-    if (data['className'] == 'DatabaseConnection') {
+    if (dataClassName == 'DatabaseConnection') {
       return deserialize<_i8.DatabaseConnection>(data['data']);
     }
-    if (data['className'] == 'DatabaseProvider') {
+    if (dataClassName == 'DatabaseProvider') {
       return deserialize<_i9.DatabaseProvider>(data['data']);
     }
-    if (data['className'] == 'DatabaseResource') {
+    if (dataClassName == 'DatabaseResource') {
       return deserialize<_i10.DatabaseResource>(data['data']);
     }
-    if (data['className'] == 'DomainNameStatus') {
+    if (dataClassName == 'DomainNameStatus') {
       return deserialize<_i11.DomainNameStatus>(data['data']);
     }
-    if (data['className'] == 'DomainNameTarget') {
+    if (dataClassName == 'DomainNameTarget') {
       return deserialize<_i12.DomainNameTarget>(data['data']);
     }
-    if (data['className'] == 'Environment') {
+    if (dataClassName == 'Environment') {
       return deserialize<_i13.Environment>(data['data']);
     }
-    if (data['className'] == 'SecretResource') {
+    if (dataClassName == 'SecretResource') {
       return deserialize<_i14.SecretResource>(data['data']);
     }
-    if (data['className'] == 'SecretType') {
+    if (dataClassName == 'SecretType') {
       return deserialize<_i15.SecretType>(data['data']);
     }
-    if (data['className'] == 'LogRecord') {
+    if (dataClassName == 'LogRecord') {
       return deserialize<_i16.LogRecord>(data['data']);
     }
-    if (data['className'] == 'ServerpodRegion') {
+    if (dataClassName == 'ServerpodRegion') {
       return deserialize<_i17.ServerpodRegion>(data['data']);
     }
-    if (data['className'] == 'AccountAuthorization') {
+    if (dataClassName == 'AccountAuthorization') {
       return deserialize<_i18.AccountAuthorization>(data['data']);
     }
-    if (data['className'] == 'Address') {
+    if (dataClassName == 'Address') {
       return deserialize<_i19.Address>(data['data']);
     }
-    if (data['className'] == 'EnvironmentVariable') {
+    if (dataClassName == 'EnvironmentVariable') {
       return deserialize<_i20.EnvironmentVariable>(data['data']);
     }
-    if (data['className'] == 'Role') {
+    if (dataClassName == 'Role') {
       return deserialize<_i21.Role>(data['data']);
     }
-    if (data['className'] == 'TenantProject') {
+    if (dataClassName == 'TenantProject') {
       return deserialize<_i22.TenantProject>(data['data']);
     }
-    if (data['className'] == 'User') {
+    if (dataClassName == 'User') {
       return deserialize<_i23.User>(data['data']);
     }
-    if (data['className'] == 'UserRoleMembership') {
+    if (dataClassName == 'UserRoleMembership') {
       return deserialize<_i24.UserRoleMembership>(data['data']);
     }
-    if (data['className'] == 'CustomDomainNameList') {
+    if (dataClassName == 'CustomDomainNameList') {
       return deserialize<_i25.CustomDomainNameList>(data['data']);
     }
-    if (data['className'].startsWith('serverpod_auth.')) {
-      data['className'] = data['className'].substring(15);
+    if (dataClassName.startsWith('serverpod_auth.')) {
+      data['className'] = dataClassName.substring(15);
       return _i30.Protocol().deserializeByClassName(data);
     }
     return super.deserializeByClassName(data);
