@@ -230,6 +230,23 @@ class EndpointLogs extends _i1.EndpointRef {
       );
 }
 
+/// Endpoint for infrastructure resource provisioning.
+/// {@category Endpoint}
+class EndpointInfraResources extends _i1.EndpointRef {
+  EndpointInfraResources(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'infraResources';
+
+  /// Enables the database for a project.
+  _i2.Future<void> enableDatabase({required String canonicalName}) =>
+      caller.callServerEndpoint<void>(
+        'infraResources',
+        'enableDatabase',
+        {'canonicalName': canonicalName},
+      );
+}
+
 /// Endpoint for managing access roles.
 /// {@category Endpoint}
 class EndpointRoles extends _i1.EndpointRef {
@@ -358,6 +375,7 @@ class Client extends _i1.ServerpodClientShared {
     deploy = EndpointDeploy(this);
     environmentVariables = EndpointEnvironmentVariables(this);
     logs = EndpointLogs(this);
+    infraResources = EndpointInfraResources(this);
     roles = EndpointRoles(this);
     tenantProjects = EndpointTenantProjects(this);
     users = EndpointUsers(this);
@@ -371,6 +389,8 @@ class Client extends _i1.ServerpodClientShared {
   late final EndpointEnvironmentVariables environmentVariables;
 
   late final EndpointLogs logs;
+
+  late final EndpointInfraResources infraResources;
 
   late final EndpointRoles roles;
 
@@ -386,6 +406,7 @@ class Client extends _i1.ServerpodClientShared {
         'deploy': deploy,
         'environmentVariables': environmentVariables,
         'logs': logs,
+        'infraResources': infraResources,
         'roles': roles,
         'tenantProjects': tenantProjects,
         'users': users,
