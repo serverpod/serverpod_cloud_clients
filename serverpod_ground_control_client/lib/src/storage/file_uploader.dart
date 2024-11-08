@@ -33,44 +33,57 @@ class GoogleCloudStorageUploader {
     }
     _attemptedUpload = true;
 
-    if (_uploadDescription.type == _UploadType.binary) {
-      try {
-        var result = switch (_uploadDescription.httpMethod) {
-          'PUT' => await http.put(
-              _uploadDescription.url,
-              body: await _readStreamData(stream),
-              headers: _uploadDescription.headers,
-            ),
-          _ => await http.post(
-              _uploadDescription.url,
-              body: await _readStreamData(stream),
-              headers: _uploadDescription.headers,
-            ),
-        };
+    switch (_uploadDescription.type) {
+      case _UploadType.binary:
+        final http.Response result;
+        try {
+          result = switch (_uploadDescription.httpMethod) {
+            'PUT' => await http.put(
+                _uploadDescription.url,
+                body: await _readStreamData(stream),
+                headers: _uploadDescription.headers,
+              ),
+            _ => await http.post(
+                _uploadDescription.url,
+                body: await _readStreamData(stream),
+                headers: _uploadDescription.headers,
+              ),
+          };
+        } catch (e) {
+          throw Exception('Failed to upload binary file, error: $e');
+        }
 
-        return result.statusCode == 200;
-      } catch (e) {
-        return false;
-      }
-    } else if (_uploadDescription.type == _UploadType.multipart) {
-      var request = http.MultipartRequest('POST', _uploadDescription.url);
-      var multipartFile = http.MultipartFile(
-          _uploadDescription.field!, stream, length,
-          filename: _uploadDescription.fileName);
+        if (result.statusCode == 200) {
+          return true;
+        }
+        throw Exception('Failed to upload binary file, '
+            'response code ${result.statusCode}, body: ${result.body}, '
+            '$_uploadDescription');
 
-      request.files.add(multipartFile);
-      for (var key in _uploadDescription.requestFields.keys) {
-        request.fields[key] = _uploadDescription.requestFields[key]!;
-      }
+      case _UploadType.multipart:
+        var request = http.MultipartRequest('POST', _uploadDescription.url);
+        var multipartFile = http.MultipartFile(
+            _uploadDescription.field!, stream, length,
+            filename: _uploadDescription.fileName);
 
-      try {
-        var result = await request.send();
-        return result.statusCode == 204;
-      } catch (e) {
-        return false;
-      }
+        request.files.add(multipartFile);
+        for (var key in _uploadDescription.requestFields.keys) {
+          request.fields[key] = _uploadDescription.requestFields[key]!;
+        }
+
+        final http.StreamedResponse result;
+        try {
+          result = await request.send();
+        } catch (e) {
+          throw Exception('Failed to upload multipart file, error: $e');
+        }
+        if (result.statusCode == 204) {
+          return true;
+        }
+        throw Exception('Failed to upload multipart file, '
+            'response code ${result.statusCode}, body: ${result.stream.bytesToString()}, '
+            '$_uploadDescription');
     }
-    throw UnimplementedError('Unknown upload type');
   }
 
   Future<List<int>> _readStreamData(Stream<List<int>> stream) async {
@@ -117,5 +130,9 @@ class _UploadDescription {
       fileName = data['file-name'];
       requestFields = (data['request-fields'] as Map).cast<String, String>();
     }
+  }
+
+  String toString() {
+    return '_UploadDescription{type: $type, url: $url, field: $field, fileName: $fileName, requestFields: $requestFields}';
   }
 }

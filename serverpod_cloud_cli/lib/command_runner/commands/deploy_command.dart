@@ -125,14 +125,22 @@ class CloudDeployCommand extends CloudCliCommand<DeployCommandOption> {
     }
 
     final success = await logger.progress('Uploading project...', () async {
-      return await GoogleCloudStorageUploader(uploadDescription).upload(
-        Stream.fromIterable([projectZip]),
-        projectZip.length,
-      );
+      try {
+        final ret = await GoogleCloudStorageUploader(uploadDescription).upload(
+          Stream.fromIterable([projectZip]),
+          projectZip.length,
+        );
+        if (!ret) {
+          logger.error('Failed to upload project, please try again.');
+        }
+        return ret;
+      } catch (e) {
+        logger.error('Failed to upload project, please try again. $e');
+        return false;
+      }
     });
 
     if (!success) {
-      logger.error('Failed to upload project, please try again.');
       throw ExitException();
     }
 
