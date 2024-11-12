@@ -173,7 +173,12 @@ class CloudLogRangeCommand extends CloudCliCommand<LogGetOption> {
         afterTime: after,
         limit: limit,
       );
-      await _outputLogStream(logger.info, recordStream, inUtc: inUtc);
+      await _outputLogStream(
+        logger.info,
+        recordStream,
+        limit: limit,
+        inUtc: inUtc,
+      );
     } catch (e) {
       logger.error('Failed to fetch log records: $e');
       throw ExitException();
@@ -224,7 +229,12 @@ class CloudLogTailCommand extends CloudCliCommand<LogTailOption> {
         canonicalName: projectId,
         limit: limit,
       );
-      await _outputLogStream(logger.info, recordStream, inUtc: inUtc);
+      await _outputLogStream(
+        logger.info,
+        recordStream,
+        limit: limit,
+        inUtc: inUtc,
+      );
     } catch (e) {
       logger.error('Failed to tail log records: $e');
       throw ExitException();
@@ -235,16 +245,21 @@ class CloudLogTailCommand extends CloudCliCommand<LogTailOption> {
 Future<void> _outputLogStream(
   final void Function(String) output,
   final Stream<LogRecord> recordStream, {
+  required final int limit,
   final bool inUtc = false,
 }) async {
+  var count = 0;
   final tablePrinter = _createLogTablePrinter();
   final tableStream = tablePrinter.toStream(recordStream.map(
-    (final rec) => _toLogTableRow(rec, inUtc: inUtc),
+    (final rec) {
+      count++;
+      return _toLogTableRow(rec, inUtc: inUtc);
+    },
   ));
   await for (final line in tableStream) {
     output(line.trimRight());
   }
-  output('-- End of log stream --');
+  output('-- End of log stream -- $count records (limit $limit) --');
 }
 
 TablePrinter _createLogTablePrinter() {
