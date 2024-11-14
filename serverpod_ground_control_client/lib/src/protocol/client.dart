@@ -230,6 +230,47 @@ class EndpointLogs extends _i1.EndpointRef {
       );
 }
 
+/// {@category Endpoint}
+class EndpointSecrets extends _i1.EndpointRef {
+  EndpointSecrets(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'secrets';
+
+  _i2.Future<void> create({
+    required Map<String, String> secrets,
+    required String environmentCanonicalName,
+  }) =>
+      caller.callServerEndpoint<void>(
+        'secrets',
+        'create',
+        {
+          'secrets': secrets,
+          'environmentCanonicalName': environmentCanonicalName,
+        },
+      );
+
+  _i2.Future<void> delete({
+    required String key,
+    required String environmentCanonicalName,
+  }) =>
+      caller.callServerEndpoint<void>(
+        'secrets',
+        'delete',
+        {
+          'key': key,
+          'environmentCanonicalName': environmentCanonicalName,
+        },
+      );
+
+  _i2.Future<List<String>> list(String environmentCanonicalName) =>
+      caller.callServerEndpoint<List<String>>(
+        'secrets',
+        'list',
+        {'environmentCanonicalName': environmentCanonicalName},
+      );
+}
+
 /// Endpoint for infrastructure resource provisioning.
 /// {@category Endpoint}
 class EndpointInfraResources extends _i1.EndpointRef {
@@ -375,6 +416,7 @@ class Client extends _i1.ServerpodClientShared {
     deploy = EndpointDeploy(this);
     environmentVariables = EndpointEnvironmentVariables(this);
     logs = EndpointLogs(this);
+    secrets = EndpointSecrets(this);
     infraResources = EndpointInfraResources(this);
     roles = EndpointRoles(this);
     tenantProjects = EndpointTenantProjects(this);
@@ -389,6 +431,8 @@ class Client extends _i1.ServerpodClientShared {
   late final EndpointEnvironmentVariables environmentVariables;
 
   late final EndpointLogs logs;
+
+  late final EndpointSecrets secrets;
 
   late final EndpointInfraResources infraResources;
 
@@ -406,6 +450,7 @@ class Client extends _i1.ServerpodClientShared {
         'deploy': deploy,
         'environmentVariables': environmentVariables,
         'logs': logs,
+        'secrets': secrets,
         'infraResources': infraResources,
         'roles': roles,
         'tenantProjects': tenantProjects,

@@ -300,6 +300,14 @@ class Protocol extends _i1.SerializationManager {
           .map((e) => deserialize<_i28.EnvironmentVariable>(e))
           .toList() as dynamic;
     }
+    if (t == Map<String, String>) {
+      return (data as Map).map((k, v) =>
+          MapEntry(deserialize<String>(k), deserialize<String>(v))) as dynamic;
+    }
+    if (t == List<String>) {
+      return (data as List).map((e) => deserialize<String>(e)).toList()
+          as dynamic;
+    }
     if (t == List<_i29.Role>) {
       return (data as List).map((e) => deserialize<_i29.Role>(e)).toList()
           as dynamic;
