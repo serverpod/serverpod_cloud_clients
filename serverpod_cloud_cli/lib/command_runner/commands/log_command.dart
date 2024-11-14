@@ -180,7 +180,7 @@ class CloudLogRangeCommand extends CloudCliCommand<LogGetOption> {
         inUtc: inUtc,
       );
     } catch (e) {
-      logger.error('Failed to fetch log records: $e');
+      logger.error('Error while fetching log records: $e');
       throw ExitException();
     }
   }
@@ -236,7 +236,7 @@ class CloudLogTailCommand extends CloudCliCommand<LogTailOption> {
         inUtc: inUtc,
       );
     } catch (e) {
-      logger.error('Failed to tail log records: $e');
+      logger.error('Error while tailing log records: $e');
       throw ExitException();
     }
   }
@@ -256,10 +256,13 @@ Future<void> _outputLogStream(
       return _toLogTableRow(rec, inUtc: inUtc);
     },
   ));
-  await for (final line in tableStream) {
-    output(line.trimRight());
+  try {
+    await for (final line in tableStream) {
+      output(line.trimRight());
+    }
+  } finally {
+    output('-- End of log stream -- $count records (limit $limit) --');
   }
-  output('-- End of log stream -- $count records (limit $limit) --');
 }
 
 TablePrinter _createLogTablePrinter() {
