@@ -228,6 +228,40 @@ class EndpointLogs extends _i1.EndpointRef {
         },
         {},
       );
+
+  /// Fetches log records from the specified build.
+  _i2.Stream<_i7.LogRecord> fetchBuild({
+    required String canonicalName,
+    int? limit,
+  }) =>
+      caller.callStreamingServerEndpoint<_i2.Stream<_i7.LogRecord>,
+          _i7.LogRecord>(
+        'logs',
+        'fetchBuild',
+        {
+          'canonicalName': canonicalName,
+          'limit': limit,
+        },
+        {},
+      );
+
+  /// Tails log records from the specified build.
+  /// Continues until the client unsubscribes, [limit] is reached,
+  /// or the internal max limit is reached.
+  _i2.Stream<_i7.LogRecord> tailBuild({
+    required String canonicalName,
+    int? limit,
+  }) =>
+      caller.callStreamingServerEndpoint<_i2.Stream<_i7.LogRecord>,
+          _i7.LogRecord>(
+        'logs',
+        'tailBuild',
+        {
+          'canonicalName': canonicalName,
+          'limit': limit,
+        },
+        {},
+      );
 }
 
 /// {@category Endpoint}

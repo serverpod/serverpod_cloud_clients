@@ -1,4 +1,4 @@
-import 'package:cli_tools/cli_tools.dart';
+import 'package:cli_tools/cli_tools.dart' as cli;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/option_parsing.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
@@ -26,6 +26,7 @@ abstract final class _LogOptions {
     argAbbrev: 'u',
     helpText: 'Display timestamps in UTC timezone instead of local.',
     isFlag: true,
+    negatable: true,
     defaultsTo: "false",
     envName: 'SERVERPOD_CLOUD_DISPLAY_UTC',
   );
@@ -40,12 +41,10 @@ abstract final class _LogOptions {
   );
   static const before = ConfigOption(
       argName: 'before',
-      argAbbrev: 'b',
       helpText: 'Fetch records from before this timestamp.',
       valueHelp: 'YYYY-MM-DDttHH:MM:SSz');
   static const after = ConfigOption(
       argName: 'after',
-      argAbbrev: 'a',
       helpText: 'Fetch records from after this timestamp.',
       valueHelp: 'YYYY-MM-DDttHH:MM:SSz');
   static const all = ConfigOption(
@@ -181,7 +180,7 @@ class CloudLogRangeCommand extends CloudCliCommand<LogGetOption> {
       );
     } catch (e) {
       logger.error('Error while fetching log records: $e');
-      throw ExitException();
+      throw cli.ExitException();
     }
   }
 }
@@ -237,7 +236,7 @@ class CloudLogTailCommand extends CloudCliCommand<LogTailOption> {
       );
     } catch (e) {
       logger.error('Error while tailing log records: $e');
-      throw ExitException();
+      throw cli.ExitException();
     }
   }
 }
