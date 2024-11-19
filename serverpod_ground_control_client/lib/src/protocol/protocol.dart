@@ -35,14 +35,15 @@ import 'tenant/tenant_project.dart' as _i23;
 import 'tenant/user.dart' as _i24;
 import 'tenant/user_role_membership.dart' as _i25;
 import 'view_models/infrastructure/custom_domain_name_list.dart' as _i26;
-import 'protocol.dart' as _i27;
+import 'view_models/infrastructure/project_config.dart' as _i27;
+import 'protocol.dart' as _i28;
 import 'package:serverpod_ground_control_client/src/protocol/tenant/environment_variable.dart'
-    as _i28;
-import 'package:serverpod_ground_control_client/src/protocol/tenant/role.dart'
     as _i29;
-import 'package:serverpod_ground_control_client/src/protocol/tenant/tenant_project.dart'
+import 'package:serverpod_ground_control_client/src/protocol/tenant/role.dart'
     as _i30;
-import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i31;
+import 'package:serverpod_ground_control_client/src/protocol/tenant/tenant_project.dart'
+    as _i31;
+import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i32;
 export 'exceptions/duplicate_entry_exception.dart';
 export 'exceptions/invalid_value_exception.dart';
 export 'exceptions/not_found_exception.dart';
@@ -68,6 +69,7 @@ export 'tenant/tenant_project.dart';
 export 'tenant/user.dart';
 export 'tenant/user_role_membership.dart';
 export 'view_models/infrastructure/custom_domain_name_list.dart';
+export 'view_models/infrastructure/project_config.dart';
 export 'client.dart';
 
 class Protocol extends _i1.SerializationManager {
@@ -158,6 +160,9 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i26.CustomDomainNameList) {
       return _i26.CustomDomainNameList.fromJson(data) as T;
     }
+    if (t == _i27.ProjectConfig) {
+      return _i27.ProjectConfig.fromJson(data) as T;
+    }
     if (t == _i1.getType<_i2.DuplicateEntryException?>()) {
       return (data != null ? _i2.DuplicateEntryException.fromJson(data) : null)
           as T;
@@ -243,17 +248,20 @@ class Protocol extends _i1.SerializationManager {
       return (data != null ? _i26.CustomDomainNameList.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<List<_i27.EnvironmentVariable>?>()) {
+    if (t == _i1.getType<_i27.ProjectConfig?>()) {
+      return (data != null ? _i27.ProjectConfig.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<List<_i28.EnvironmentVariable>?>()) {
       return (data != null
           ? (data as List)
-              .map((e) => deserialize<_i27.EnvironmentVariable>(e))
+              .map((e) => deserialize<_i28.EnvironmentVariable>(e))
               .toList()
           : null) as dynamic;
     }
-    if (t == _i1.getType<List<_i27.CustomDomainName>?>()) {
+    if (t == _i1.getType<List<_i28.CustomDomainName>?>()) {
       return (data != null
           ? (data as List)
-              .map((e) => deserialize<_i27.CustomDomainName>(e))
+              .map((e) => deserialize<_i28.CustomDomainName>(e))
               .toList()
           : null) as dynamic;
     }
@@ -261,43 +269,43 @@ class Protocol extends _i1.SerializationManager {
       return (data as List).map((e) => deserialize<String>(e)).toList()
           as dynamic;
     }
-    if (t == _i1.getType<List<_i27.UserRoleMembership>?>()) {
+    if (t == _i1.getType<List<_i28.UserRoleMembership>?>()) {
       return (data != null
           ? (data as List)
-              .map((e) => deserialize<_i27.UserRoleMembership>(e))
+              .map((e) => deserialize<_i28.UserRoleMembership>(e))
               .toList()
           : null) as dynamic;
     }
-    if (t == _i1.getType<List<_i27.Role>?>()) {
+    if (t == _i1.getType<List<_i28.Role>?>()) {
       return (data != null
-          ? (data as List).map((e) => deserialize<_i27.Role>(e)).toList()
+          ? (data as List).map((e) => deserialize<_i28.Role>(e)).toList()
           : null) as dynamic;
     }
-    if (t == _i1.getType<List<_i27.Environment>?>()) {
+    if (t == _i1.getType<List<_i28.Environment>?>()) {
       return (data != null
-          ? (data as List).map((e) => deserialize<_i27.Environment>(e)).toList()
+          ? (data as List).map((e) => deserialize<_i28.Environment>(e)).toList()
           : null) as dynamic;
     }
-    if (t == _i1.getType<List<_i27.UserRoleMembership>?>()) {
+    if (t == _i1.getType<List<_i28.UserRoleMembership>?>()) {
       return (data != null
           ? (data as List)
-              .map((e) => deserialize<_i27.UserRoleMembership>(e))
+              .map((e) => deserialize<_i28.UserRoleMembership>(e))
               .toList()
           : null) as dynamic;
     }
-    if (t == List<_i27.CustomDomainName>) {
+    if (t == List<_i28.CustomDomainName>) {
       return (data as List)
-          .map((e) => deserialize<_i27.CustomDomainName>(e))
+          .map((e) => deserialize<_i28.CustomDomainName>(e))
           .toList() as dynamic;
     }
-    if (t == Map<_i27.DomainNameTarget, String>) {
+    if (t == Map<_i28.DomainNameTarget, String>) {
       return Map.fromEntries((data as List).map((e) => MapEntry(
-          deserialize<_i27.DomainNameTarget>(e['k']),
+          deserialize<_i28.DomainNameTarget>(e['k']),
           deserialize<String>(e['v'])))) as dynamic;
     }
-    if (t == List<_i28.EnvironmentVariable>) {
+    if (t == List<_i29.EnvironmentVariable>) {
       return (data as List)
-          .map((e) => deserialize<_i28.EnvironmentVariable>(e))
+          .map((e) => deserialize<_i29.EnvironmentVariable>(e))
           .toList() as dynamic;
     }
     if (t == Map<String, String>) {
@@ -308,17 +316,17 @@ class Protocol extends _i1.SerializationManager {
       return (data as List).map((e) => deserialize<String>(e)).toList()
           as dynamic;
     }
-    if (t == List<_i29.Role>) {
-      return (data as List).map((e) => deserialize<_i29.Role>(e)).toList()
+    if (t == List<_i30.Role>) {
+      return (data as List).map((e) => deserialize<_i30.Role>(e)).toList()
           as dynamic;
     }
-    if (t == List<_i30.TenantProject>) {
+    if (t == List<_i31.TenantProject>) {
       return (data as List)
-          .map((e) => deserialize<_i30.TenantProject>(e))
+          .map((e) => deserialize<_i31.TenantProject>(e))
           .toList() as dynamic;
     }
     try {
-      return _i31.Protocol().deserialize<T>(data, t);
+      return _i32.Protocol().deserialize<T>(data, t);
     } on _i1.DeserializationTypeNotFoundException catch (_) {}
     return super.deserialize<T>(data, t);
   }
@@ -402,7 +410,10 @@ class Protocol extends _i1.SerializationManager {
     if (data is _i26.CustomDomainNameList) {
       return 'CustomDomainNameList';
     }
-    className = _i31.Protocol().getClassNameForObject(data);
+    if (data is _i27.ProjectConfig) {
+      return 'ProjectConfig';
+    }
+    className = _i32.Protocol().getClassNameForObject(data);
     if (className != null) {
       return 'serverpod_auth.$className';
     }
@@ -490,9 +501,12 @@ class Protocol extends _i1.SerializationManager {
     if (dataClassName == 'CustomDomainNameList') {
       return deserialize<_i26.CustomDomainNameList>(data['data']);
     }
+    if (dataClassName == 'ProjectConfig') {
+      return deserialize<_i27.ProjectConfig>(data['data']);
+    }
     if (dataClassName.startsWith('serverpod_auth.')) {
       data['className'] = dataClassName.substring(15);
-      return _i31.Protocol().deserializeByClassName(data);
+      return _i32.Protocol().deserializeByClassName(data);
     }
     return super.deserializeByClassName(data);
   }

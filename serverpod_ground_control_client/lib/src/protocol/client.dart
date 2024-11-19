@@ -25,10 +25,12 @@ import 'package:serverpod_ground_control_client/src/protocol/tenant/role.dart'
     as _i8;
 import 'package:serverpod_ground_control_client/src/protocol/tenant/tenant_project.dart'
     as _i9;
-import 'package:serverpod_ground_control_client/src/protocol/tenant/user.dart'
+import 'package:serverpod_ground_control_client/src/protocol/view_models/infrastructure/project_config.dart'
     as _i10;
-import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i11;
-import 'protocol.dart' as _i12;
+import 'package:serverpod_ground_control_client/src/protocol/tenant/user.dart'
+    as _i11;
+import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i12;
+import 'protocol.dart' as _i13;
 
 /// {@category Endpoint}
 class EndpointCustomDomainName extends _i1.EndpointRef {
@@ -384,6 +386,14 @@ class EndpointTenantProjects extends _i1.EndpointRef {
         'deleteTenantProject',
         {'canonicalName': canonicalName},
       );
+
+  _i2.Future<_i10.ProjectConfig> fetchProjectConfig(
+          {required String canonicalName}) =>
+      caller.callServerEndpoint<_i10.ProjectConfig>(
+        'tenantProjects',
+        'fetchProjectConfig',
+        {'canonicalName': canonicalName},
+      );
 }
 
 /// Endpoint for managing tenant users.
@@ -395,8 +405,8 @@ class EndpointUsers extends _i1.EndpointRef {
   String get name => 'users';
 
   /// Fetches the tenant user for the currently authenticated user.
-  _i2.Future<_i10.User> fetchCurrentUser() =>
-      caller.callServerEndpoint<_i10.User>(
+  _i2.Future<_i11.User> fetchCurrentUser() =>
+      caller.callServerEndpoint<_i11.User>(
         'users',
         'fetchCurrentUser',
         {},
@@ -404,8 +414,8 @@ class EndpointUsers extends _i1.EndpointRef {
 
   /// Registers a new tenant user record for the current authenticated user.
   /// Throws [DuplicateEntryException] if the tenant user already exists.
-  _i2.Future<_i10.User> registerCurrentUser({String? userDisplayName}) =>
-      caller.callServerEndpoint<_i10.User>(
+  _i2.Future<_i11.User> registerCurrentUser({String? userDisplayName}) =>
+      caller.callServerEndpoint<_i11.User>(
         'users',
         'registerCurrentUser',
         {'userDisplayName': userDisplayName},
@@ -414,10 +424,10 @@ class EndpointUsers extends _i1.EndpointRef {
 
 class _Modules {
   _Modules(Client client) {
-    auth = _i11.Caller(client);
+    auth = _i12.Caller(client);
   }
 
-  late final _i11.Caller auth;
+  late final _i12.Caller auth;
 }
 
 class Client extends _i1.ServerpodClientShared {
@@ -436,7 +446,7 @@ class Client extends _i1.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
           host,
-          _i12.Protocol(),
+          _i13.Protocol(),
           securityContext: securityContext,
           authenticationKeyManager: authenticationKeyManager,
           streamingConnectionTimeout: streamingConnectionTimeout,

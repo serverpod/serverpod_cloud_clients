@@ -6,6 +6,7 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/custom_domain_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/env_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/link_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/login_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/logout_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/log_command.dart';
@@ -74,6 +75,7 @@ class CloudCliCommandRunner extends BetterCommandRunner {
       CloudCustomDomainCommand(logger: logger),
       CloudLogCommand(logger: logger),
       CloudSecretsCommand(logger: logger),
+      CloudLinkCommand(logger: logger),
     ]);
 
     return runner;

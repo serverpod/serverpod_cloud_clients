@@ -1,7 +1,12 @@
+import 'dart:io';
+
 import 'package:cli_tools/cli_tools.dart';
 import 'package:collection/collection.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
+import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
+import 'package:serverpod_cloud_cli/util/serverpod_server_folder_detection.dart';
 import 'package:serverpod_cloud_cli/util/table_printer.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
 
@@ -77,7 +82,7 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
       throw ExitException();
     }
 
-    logger.info("Successfully created the new tenant project '$projectId'.");
+    logger.info("Successfully created new project '$projectId'.");
 
     if (enableDb) {
       try {
@@ -91,7 +96,37 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
       }
 
       logger.info(
-          "Successfully requested to create a database for the new tenant project '$projectId'.");
+        "Successfully requested to create a database for the new tenant project '$projectId'.",
+      );
+    }
+
+    if (isServerpodServerDirectory(Directory.current.path)) {
+      try {
+        if (File(ConfigFileConstants.fileName).existsSync()) {
+          return;
+        }
+
+        final projectConfig = await apiCloudClient.tenantProjects
+            .fetchProjectConfig(canonicalName: projectId);
+
+        ScloudConfig.writeToFile(projectConfig, Directory.current);
+      } catch (e) {
+        logger.error(
+          'Failed to fetch project config: $e',
+        );
+        throw ExitException();
+      }
+
+      logger.info(
+        "Successfully created the ${ConfigFileConstants.fileName} configuration file for '$projectId'.",
+      );
+    } else {
+      logger.info(
+        'Since the current directory is not a Serverpod server directory '
+        'an scloud.yaml configuration file has not been created. \n'
+        'Use the scloud link command to create it in the server '
+        'directory of this project.',
+      );
     }
   }
 }

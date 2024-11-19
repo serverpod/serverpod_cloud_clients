@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
@@ -6,6 +7,8 @@ class HttpServerBuilder {
   String _host;
   String _path;
   void Function(HttpRequest request)? _onRequest;
+
+  final Map<String, String Function()> _onServerpodMethodCalls = {};
 
   HttpServerBuilder()
       : _host = 'localhost',
@@ -18,6 +21,31 @@ class HttpServerBuilder {
 
   HttpServerBuilder withPath(final String path) {
     _path = path;
+    return this;
+  }
+
+  HttpServerBuilder withOnServerpodMethodCall(
+    final String method,
+    final String Function() onServerpodMethodCall,
+  ) {
+    _onServerpodMethodCalls[method] = onServerpodMethodCall;
+
+    if (_onRequest != null) {
+      return this;
+    }
+
+    _onRequest = (final request) async {
+      request.response.statusCode = 200;
+
+      final Map<String, dynamic> body =
+          jsonDecode(await utf8.decoder.bind(request).join());
+
+      final method = body['method'] as String;
+      final response = _onServerpodMethodCalls[method]?.call();
+      request.response.write(response);
+
+      await request.response.close();
+    };
     return this;
   }
 
