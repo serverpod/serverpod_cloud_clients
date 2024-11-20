@@ -57,7 +57,7 @@ class EndpointCustomDomainName extends _i1.EndpointRef {
   _i2.Future<void> add({
     required String domainName,
     required _i3.DomainNameTarget target,
-    required String environmentCanonicalName,
+    required String cloudEnvironmentId,
   }) =>
       caller.callServerEndpoint<void>(
         'customDomainName',
@@ -65,41 +65,41 @@ class EndpointCustomDomainName extends _i1.EndpointRef {
         {
           'domainName': domainName,
           'target': target,
-          'environmentCanonicalName': environmentCanonicalName,
+          'cloudEnvironmentId': cloudEnvironmentId,
         },
       );
 
   _i2.Future<void> remove({
     required String domainName,
-    required String environmentCanonicalName,
+    required String cloudEnvironmentId,
   }) =>
       caller.callServerEndpoint<void>(
         'customDomainName',
         'remove',
         {
           'domainName': domainName,
-          'environmentCanonicalName': environmentCanonicalName,
+          'cloudEnvironmentId': cloudEnvironmentId,
         },
       );
 
   _i2.Future<_i4.CustomDomainNameList> list(
-          {required String environmentCanonicalName}) =>
+          {required String cloudEnvironmentId}) =>
       caller.callServerEndpoint<_i4.CustomDomainNameList>(
         'customDomainName',
         'list',
-        {'environmentCanonicalName': environmentCanonicalName},
+        {'cloudEnvironmentId': cloudEnvironmentId},
       );
 
   _i2.Future<_i5.DomainNameStatus> refreshRecord({
     required String domainName,
-    required String environmentCanonicalName,
+    required String cloudEnvironmentId,
   }) =>
       caller.callServerEndpoint<_i5.DomainNameStatus>(
         'customDomainName',
         'refreshRecord',
         {
           'domainName': domainName,
-          'environmentCanonicalName': environmentCanonicalName,
+          'cloudEnvironmentId': cloudEnvironmentId,
         },
       );
 }
@@ -132,7 +132,7 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
   _i2.Future<_i6.EnvironmentVariable> create(
     String name,
     String value,
-    String canonicalName,
+    String cloudEnvironmentId,
   ) =>
       caller.callServerEndpoint<_i6.EnvironmentVariable>(
         'environmentVariables',
@@ -140,7 +140,7 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
         {
           'name': name,
           'value': value,
-          'canonicalName': canonicalName,
+          'cloudEnvironmentId': cloudEnvironmentId,
         },
       );
 
@@ -148,23 +148,23 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
   /// Throws a [NotFoundException] if the environment variable is not found.
   _i2.Future<_i6.EnvironmentVariable> read({
     required String name,
-    required String canonicalName,
+    required String cloudEnvironmentId,
   }) =>
       caller.callServerEndpoint<_i6.EnvironmentVariable>(
         'environmentVariables',
         'read',
         {
           'name': name,
-          'canonicalName': canonicalName,
+          'cloudEnvironmentId': cloudEnvironmentId,
         },
       );
 
-  /// Gets the list of environment variables for the given [canonicalName].
-  _i2.Future<List<_i6.EnvironmentVariable>> list(String canonicalName) =>
+  /// Gets the list of environment variables for the given [cloudEnvironmentId].
+  _i2.Future<List<_i6.EnvironmentVariable>> list(String cloudEnvironmentId) =>
       caller.callServerEndpoint<List<_i6.EnvironmentVariable>>(
         'environmentVariables',
         'list',
-        {'canonicalName': canonicalName},
+        {'cloudEnvironmentId': cloudEnvironmentId},
       );
 
   /// Creates a new [EnvironmentVariable] with the specified [name] and [value].
@@ -172,7 +172,7 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
   _i2.Future<_i6.EnvironmentVariable> update({
     required String name,
     required String value,
-    required String canonicalName,
+    required String cloudEnvironmentId,
   }) =>
       caller.callServerEndpoint<_i6.EnvironmentVariable>(
         'environmentVariables',
@@ -180,21 +180,21 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
         {
           'name': name,
           'value': value,
-          'canonicalName': canonicalName,
+          'cloudEnvironmentId': cloudEnvironmentId,
         },
       );
 
   /// Permanently deletes an environment variable.
   /// Throws a [NotFoundException] if the environment variable is not found.
   _i2.Future<_i6.EnvironmentVariable> delete({
-    required String canonicalName,
+    required String cloudEnvironmentId,
     required String name,
   }) =>
       caller.callServerEndpoint<_i6.EnvironmentVariable>(
         'environmentVariables',
         'delete',
         {
-          'canonicalName': canonicalName,
+          'cloudEnvironmentId': cloudEnvironmentId,
           'name': name,
         },
       );
@@ -290,35 +290,35 @@ class EndpointSecrets extends _i1.EndpointRef {
 
   _i2.Future<void> create({
     required Map<String, String> secrets,
-    required String environmentCanonicalName,
+    required String cloudEnvironmentId,
   }) =>
       caller.callServerEndpoint<void>(
         'secrets',
         'create',
         {
           'secrets': secrets,
-          'environmentCanonicalName': environmentCanonicalName,
+          'cloudEnvironmentId': cloudEnvironmentId,
         },
       );
 
   _i2.Future<void> delete({
     required String key,
-    required String environmentCanonicalName,
+    required String cloudEnvironmentId,
   }) =>
       caller.callServerEndpoint<void>(
         'secrets',
         'delete',
         {
           'key': key,
-          'environmentCanonicalName': environmentCanonicalName,
+          'cloudEnvironmentId': cloudEnvironmentId,
         },
       );
 
-  _i2.Future<List<String>> list(String environmentCanonicalName) =>
+  _i2.Future<List<String>> list(String cloudEnvironmentId) =>
       caller.callServerEndpoint<List<String>>(
         'secrets',
         'list',
-        {'environmentCanonicalName': environmentCanonicalName},
+        {'cloudEnvironmentId': cloudEnvironmentId},
       );
 }
 

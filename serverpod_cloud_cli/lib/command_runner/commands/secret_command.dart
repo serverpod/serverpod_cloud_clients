@@ -78,7 +78,7 @@ class CloudCreateSecretCommand
     try {
       await apiCloudClient.secrets.create(
         secrets: {name: value},
-        environmentCanonicalName: projectId,
+        cloudEnvironmentId: projectId,
       );
     } catch (e) {
       logger.error(
@@ -178,7 +178,7 @@ class CloudDeleteSecretCommand
 
     try {
       await apiCloudClient.secrets.delete(
-        environmentCanonicalName: projectId,
+        cloudEnvironmentId: projectId,
         key: name,
       );
     } catch (e) {

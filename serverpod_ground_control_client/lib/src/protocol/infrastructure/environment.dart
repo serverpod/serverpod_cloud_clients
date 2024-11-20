@@ -17,7 +17,7 @@ abstract class Environment implements _i1.SerializableModel {
   Environment._({
     this.id,
     required this.name,
-    required this.canonicalName,
+    required this.cloudEnvironmentId,
     required this.region,
     required this.tenantProjectId,
     this.tenantProject,
@@ -28,7 +28,7 @@ abstract class Environment implements _i1.SerializableModel {
   factory Environment({
     int? id,
     required String name,
-    required String canonicalName,
+    required String cloudEnvironmentId,
     required _i2.ServerpodRegion region,
     required int tenantProjectId,
     _i2.TenantProject? tenantProject,
@@ -40,7 +40,7 @@ abstract class Environment implements _i1.SerializableModel {
     return Environment(
       id: jsonSerialization['id'] as int?,
       name: jsonSerialization['name'] as String,
-      canonicalName: jsonSerialization['canonicalName'] as String,
+      cloudEnvironmentId: jsonSerialization['cloudEnvironmentId'] as String,
       region:
           _i2.ServerpodRegion.fromJson((jsonSerialization['region'] as int)),
       tenantProjectId: jsonSerialization['tenantProjectId'] as int,
@@ -68,7 +68,7 @@ abstract class Environment implements _i1.SerializableModel {
   String name;
 
   /// Globally unique identitifier of the environment. Cannot be changed.
-  String canonicalName;
+  String cloudEnvironmentId;
 
   /// The region where the environment is hosted. Cannot be changed.
   _i2.ServerpodRegion region;
@@ -87,7 +87,7 @@ abstract class Environment implements _i1.SerializableModel {
   Environment copyWith({
     int? id,
     String? name,
-    String? canonicalName,
+    String? cloudEnvironmentId,
     _i2.ServerpodRegion? region,
     int? tenantProjectId,
     _i2.TenantProject? tenantProject,
@@ -99,7 +99,7 @@ abstract class Environment implements _i1.SerializableModel {
     return {
       if (id != null) 'id': id,
       'name': name,
-      'canonicalName': canonicalName,
+      'cloudEnvironmentId': cloudEnvironmentId,
       'region': region.toJson(),
       'tenantProjectId': tenantProjectId,
       if (tenantProject != null) 'tenantProject': tenantProject?.toJson(),
@@ -123,7 +123,7 @@ class _EnvironmentImpl extends Environment {
   _EnvironmentImpl({
     int? id,
     required String name,
-    required String canonicalName,
+    required String cloudEnvironmentId,
     required _i2.ServerpodRegion region,
     required int tenantProjectId,
     _i2.TenantProject? tenantProject,
@@ -132,7 +132,7 @@ class _EnvironmentImpl extends Environment {
   }) : super._(
           id: id,
           name: name,
-          canonicalName: canonicalName,
+          cloudEnvironmentId: cloudEnvironmentId,
           region: region,
           tenantProjectId: tenantProjectId,
           tenantProject: tenantProject,
@@ -144,7 +144,7 @@ class _EnvironmentImpl extends Environment {
   Environment copyWith({
     Object? id = _Undefined,
     String? name,
-    String? canonicalName,
+    String? cloudEnvironmentId,
     _i2.ServerpodRegion? region,
     int? tenantProjectId,
     Object? tenantProject = _Undefined,
@@ -154,7 +154,7 @@ class _EnvironmentImpl extends Environment {
     return Environment(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
-      canonicalName: canonicalName ?? this.canonicalName,
+      cloudEnvironmentId: cloudEnvironmentId ?? this.cloudEnvironmentId,
       region: region ?? this.region,
       tenantProjectId: tenantProjectId ?? this.tenantProjectId,
       tenantProject: tenantProject is _i2.TenantProject?

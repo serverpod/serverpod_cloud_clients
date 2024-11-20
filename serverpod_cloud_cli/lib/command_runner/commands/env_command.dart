@@ -153,7 +153,7 @@ class CloudEnvUpdateCommand extends CloudCliCommand<UpdateEnvCommandConfig> {
       await apiCloudClient.environmentVariables.update(
         name: variableName,
         value: variableValue,
-        canonicalName: projectId,
+        cloudEnvironmentId: projectId,
       );
     } catch (e) {
       logger.error(
@@ -189,7 +189,7 @@ class CloudEnvDeleteCommand extends CloudCliCommand<DeleteEnvCommandConfig> {
     try {
       await apiCloudClient.environmentVariables.delete(
         name: variableName,
-        canonicalName: projectId,
+        cloudEnvironmentId: projectId,
       );
     } catch (e) {
       logger.error(
