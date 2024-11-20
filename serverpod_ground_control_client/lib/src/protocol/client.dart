@@ -32,6 +32,21 @@ import 'package:serverpod_ground_control_client/src/protocol/tenant/user.dart'
 import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i12;
 import 'protocol.dart' as _i13;
 
+/// Endpoint for managing tenant projects.
+/// {@category Endpoint}
+class EndpointAdmin extends _i1.EndpointRef {
+  EndpointAdmin(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'admin';
+
+  _i2.Future<void> deleteAllProjects() => caller.callServerEndpoint<void>(
+        'admin',
+        'deleteAllProjects',
+        {},
+      );
+}
+
 /// {@category Endpoint}
 class EndpointCustomDomainName extends _i1.EndpointRef {
   EndpointCustomDomainName(_i1.EndpointCaller caller) : super(caller);
@@ -456,6 +471,7 @@ class Client extends _i1.ServerpodClientShared {
           disconnectStreamsOnLostInternetConnection:
               disconnectStreamsOnLostInternetConnection,
         ) {
+    admin = EndpointAdmin(this);
     customDomainName = EndpointCustomDomainName(this);
     deploy = EndpointDeploy(this);
     environmentVariables = EndpointEnvironmentVariables(this);
@@ -467,6 +483,8 @@ class Client extends _i1.ServerpodClientShared {
     users = EndpointUsers(this);
     modules = _Modules(this);
   }
+
+  late final EndpointAdmin admin;
 
   late final EndpointCustomDomainName customDomainName;
 
@@ -490,6 +508,7 @@ class Client extends _i1.ServerpodClientShared {
 
   @override
   Map<String, _i1.EndpointRef> get endpointRefLookup => {
+        'admin': admin,
         'customDomainName': customDomainName,
         'deploy': deploy,
         'environmentVariables': environmentVariables,
