@@ -30,8 +30,8 @@ import 'serverpod_region.dart' as _i18;
 import 'tenant/account_authorization.dart' as _i19;
 import 'tenant/address.dart' as _i20;
 import 'tenant/environment_variable.dart' as _i21;
-import 'tenant/role.dart' as _i22;
-import 'tenant/tenant_project.dart' as _i23;
+import 'tenant/project.dart' as _i22;
+import 'tenant/role.dart' as _i23;
 import 'tenant/user.dart' as _i24;
 import 'tenant/user_role_membership.dart' as _i25;
 import 'view_models/infrastructure/custom_domain_name_list.dart' as _i26;
@@ -39,9 +39,9 @@ import 'view_models/infrastructure/project_config.dart' as _i27;
 import 'protocol.dart' as _i28;
 import 'package:serverpod_ground_control_client/src/protocol/tenant/environment_variable.dart'
     as _i29;
-import 'package:serverpod_ground_control_client/src/protocol/tenant/role.dart'
+import 'package:serverpod_ground_control_client/src/protocol/tenant/project.dart'
     as _i30;
-import 'package:serverpod_ground_control_client/src/protocol/tenant/tenant_project.dart'
+import 'package:serverpod_ground_control_client/src/protocol/tenant/role.dart'
     as _i31;
 import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i32;
 export 'exceptions/duplicate_entry_exception.dart';
@@ -64,8 +64,8 @@ export 'serverpod_region.dart';
 export 'tenant/account_authorization.dart';
 export 'tenant/address.dart';
 export 'tenant/environment_variable.dart';
+export 'tenant/project.dart';
 export 'tenant/role.dart';
-export 'tenant/tenant_project.dart';
 export 'tenant/user.dart';
 export 'tenant/user_role_membership.dart';
 export 'view_models/infrastructure/custom_domain_name_list.dart';
@@ -145,11 +145,11 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i21.EnvironmentVariable) {
       return _i21.EnvironmentVariable.fromJson(data) as T;
     }
-    if (t == _i22.Role) {
-      return _i22.Role.fromJson(data) as T;
+    if (t == _i22.Project) {
+      return _i22.Project.fromJson(data) as T;
     }
-    if (t == _i23.TenantProject) {
-      return _i23.TenantProject.fromJson(data) as T;
+    if (t == _i23.Role) {
+      return _i23.Role.fromJson(data) as T;
     }
     if (t == _i24.User) {
       return _i24.User.fromJson(data) as T;
@@ -231,11 +231,11 @@ class Protocol extends _i1.SerializationManager {
       return (data != null ? _i21.EnvironmentVariable.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i22.Role?>()) {
-      return (data != null ? _i22.Role.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i22.Project?>()) {
+      return (data != null ? _i22.Project.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i23.TenantProject?>()) {
-      return (data != null ? _i23.TenantProject.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i23.Role?>()) {
+      return (data != null ? _i23.Role.fromJson(data) : null) as T;
     }
     if (t == _i1.getType<_i24.User?>()) {
       return (data != null ? _i24.User.fromJson(data) : null) as T;
@@ -265,6 +265,16 @@ class Protocol extends _i1.SerializationManager {
               .toList()
           : null) as dynamic;
     }
+    if (t == _i1.getType<List<_i28.Role>?>()) {
+      return (data != null
+          ? (data as List).map((e) => deserialize<_i28.Role>(e)).toList()
+          : null) as dynamic;
+    }
+    if (t == _i1.getType<List<_i28.Environment>?>()) {
+      return (data != null
+          ? (data as List).map((e) => deserialize<_i28.Environment>(e)).toList()
+          : null) as dynamic;
+    }
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList()
           as dynamic;
@@ -274,16 +284,6 @@ class Protocol extends _i1.SerializationManager {
           ? (data as List)
               .map((e) => deserialize<_i28.UserRoleMembership>(e))
               .toList()
-          : null) as dynamic;
-    }
-    if (t == _i1.getType<List<_i28.Role>?>()) {
-      return (data != null
-          ? (data as List).map((e) => deserialize<_i28.Role>(e)).toList()
-          : null) as dynamic;
-    }
-    if (t == _i1.getType<List<_i28.Environment>?>()) {
-      return (data != null
-          ? (data as List).map((e) => deserialize<_i28.Environment>(e)).toList()
           : null) as dynamic;
     }
     if (t == _i1.getType<List<_i28.UserRoleMembership>?>()) {
@@ -308,6 +308,14 @@ class Protocol extends _i1.SerializationManager {
           .map((e) => deserialize<_i29.EnvironmentVariable>(e))
           .toList() as dynamic;
     }
+    if (t == List<_i30.Project>) {
+      return (data as List).map((e) => deserialize<_i30.Project>(e)).toList()
+          as dynamic;
+    }
+    if (t == List<_i31.Role>) {
+      return (data as List).map((e) => deserialize<_i31.Role>(e)).toList()
+          as dynamic;
+    }
     if (t == Map<String, String>) {
       return (data as Map).map((k, v) =>
           MapEntry(deserialize<String>(k), deserialize<String>(v))) as dynamic;
@@ -315,15 +323,6 @@ class Protocol extends _i1.SerializationManager {
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList()
           as dynamic;
-    }
-    if (t == List<_i30.Role>) {
-      return (data as List).map((e) => deserialize<_i30.Role>(e)).toList()
-          as dynamic;
-    }
-    if (t == List<_i31.TenantProject>) {
-      return (data as List)
-          .map((e) => deserialize<_i31.TenantProject>(e))
-          .toList() as dynamic;
     }
     try {
       return _i32.Protocol().deserialize<T>(data, t);
@@ -395,11 +394,11 @@ class Protocol extends _i1.SerializationManager {
     if (data is _i21.EnvironmentVariable) {
       return 'EnvironmentVariable';
     }
-    if (data is _i22.Role) {
-      return 'Role';
+    if (data is _i22.Project) {
+      return 'Project';
     }
-    if (data is _i23.TenantProject) {
-      return 'TenantProject';
+    if (data is _i23.Role) {
+      return 'Role';
     }
     if (data is _i24.User) {
       return 'User';
@@ -486,11 +485,11 @@ class Protocol extends _i1.SerializationManager {
     if (dataClassName == 'EnvironmentVariable') {
       return deserialize<_i21.EnvironmentVariable>(data['data']);
     }
-    if (dataClassName == 'Role') {
-      return deserialize<_i22.Role>(data['data']);
+    if (dataClassName == 'Project') {
+      return deserialize<_i22.Project>(data['data']);
     }
-    if (dataClassName == 'TenantProject') {
-      return deserialize<_i23.TenantProject>(data['data']);
+    if (dataClassName == 'Role') {
+      return deserialize<_i23.Role>(data['data']);
     }
     if (dataClassName == 'User') {
       return deserialize<_i24.User>(data['data']);

@@ -12,7 +12,7 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../protocol.dart' as _i2;
 
-/// Represents an access role for a specific tenant project.
+/// Represents an access role for a specific project.
 /// Roles are assigned to users via membership, giving them the role's access scopes.
 abstract class Role implements _i1.SerializableModel {
   Role._({
@@ -20,10 +20,10 @@ abstract class Role implements _i1.SerializableModel {
     DateTime? createdAt,
     DateTime? updatedAt,
     this.archivedAt,
-    required this.tenantProjectId,
-    this.tenantProject,
+    required this.projectId,
+    this.project,
     required this.name,
-    required this.tenantScopes,
+    required this.projectScopes,
     this.memberships,
   })  : createdAt = createdAt ?? DateTime.now(),
         updatedAt = updatedAt ?? DateTime.now();
@@ -33,10 +33,10 @@ abstract class Role implements _i1.SerializableModel {
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? archivedAt,
-    required int tenantProjectId,
-    _i2.TenantProject? tenantProject,
+    required int projectId,
+    _i2.Project? project,
     required String name,
-    required List<String> tenantScopes,
+    required List<String> projectScopes,
     List<_i2.UserRoleMembership>? memberships,
   }) = _RoleImpl;
 
@@ -50,13 +50,13 @@ abstract class Role implements _i1.SerializableModel {
       archivedAt: jsonSerialization['archivedAt'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['archivedAt']),
-      tenantProjectId: jsonSerialization['tenantProjectId'] as int,
-      tenantProject: jsonSerialization['tenantProject'] == null
+      projectId: jsonSerialization['projectId'] as int,
+      project: jsonSerialization['project'] == null
           ? null
-          : _i2.TenantProject.fromJson(
-              (jsonSerialization['tenantProject'] as Map<String, dynamic>)),
+          : _i2.Project.fromJson(
+              (jsonSerialization['project'] as Map<String, dynamic>)),
       name: jsonSerialization['name'] as String,
-      tenantScopes: (jsonSerialization['tenantScopes'] as List)
+      projectScopes: (jsonSerialization['projectScopes'] as List)
           .map((e) => e as String)
           .toList(),
       memberships: (jsonSerialization['memberships'] as List?)
@@ -77,16 +77,16 @@ abstract class Role implements _i1.SerializableModel {
 
   DateTime? archivedAt;
 
-  int tenantProjectId;
+  int projectId;
 
-  /// A role belongs to a tenant project. Cannot be changed.
-  _i2.TenantProject? tenantProject;
+  /// A role belongs to a project. Cannot be changed.
+  _i2.Project? project;
 
   /// The name of the role, e.g. 'Owners'. Can be changed.
   String name;
 
-  /// The access scopes this role has in the tenant project.
-  List<String> tenantScopes;
+  /// The access scopes this role has in the project.
+  List<String> projectScopes;
 
   /// The user memberships of this role.
   List<_i2.UserRoleMembership>? memberships;
@@ -96,10 +96,10 @@ abstract class Role implements _i1.SerializableModel {
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? archivedAt,
-    int? tenantProjectId,
-    _i2.TenantProject? tenantProject,
+    int? projectId,
+    _i2.Project? project,
     String? name,
-    List<String>? tenantScopes,
+    List<String>? projectScopes,
     List<_i2.UserRoleMembership>? memberships,
   });
   @override
@@ -109,10 +109,10 @@ abstract class Role implements _i1.SerializableModel {
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
       if (archivedAt != null) 'archivedAt': archivedAt?.toJson(),
-      'tenantProjectId': tenantProjectId,
-      if (tenantProject != null) 'tenantProject': tenantProject?.toJson(),
+      'projectId': projectId,
+      if (project != null) 'project': project?.toJson(),
       'name': name,
-      'tenantScopes': tenantScopes.toJson(),
+      'projectScopes': projectScopes.toJson(),
       if (memberships != null)
         'memberships': memberships?.toJson(valueToJson: (v) => v.toJson()),
     };
@@ -132,20 +132,20 @@ class _RoleImpl extends Role {
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? archivedAt,
-    required int tenantProjectId,
-    _i2.TenantProject? tenantProject,
+    required int projectId,
+    _i2.Project? project,
     required String name,
-    required List<String> tenantScopes,
+    required List<String> projectScopes,
     List<_i2.UserRoleMembership>? memberships,
   }) : super._(
           id: id,
           createdAt: createdAt,
           updatedAt: updatedAt,
           archivedAt: archivedAt,
-          tenantProjectId: tenantProjectId,
-          tenantProject: tenantProject,
+          projectId: projectId,
+          project: project,
           name: name,
-          tenantScopes: tenantScopes,
+          projectScopes: projectScopes,
           memberships: memberships,
         );
 
@@ -155,10 +155,10 @@ class _RoleImpl extends Role {
     DateTime? createdAt,
     DateTime? updatedAt,
     Object? archivedAt = _Undefined,
-    int? tenantProjectId,
-    Object? tenantProject = _Undefined,
+    int? projectId,
+    Object? project = _Undefined,
     String? name,
-    List<String>? tenantScopes,
+    List<String>? projectScopes,
     Object? memberships = _Undefined,
   }) {
     return Role(
@@ -166,12 +166,11 @@ class _RoleImpl extends Role {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       archivedAt: archivedAt is DateTime? ? archivedAt : this.archivedAt,
-      tenantProjectId: tenantProjectId ?? this.tenantProjectId,
-      tenantProject: tenantProject is _i2.TenantProject?
-          ? tenantProject
-          : this.tenantProject?.copyWith(),
+      projectId: projectId ?? this.projectId,
+      project: project is _i2.Project? ? project : this.project?.copyWith(),
       name: name ?? this.name,
-      tenantScopes: tenantScopes ?? this.tenantScopes.map((e0) => e0).toList(),
+      projectScopes:
+          projectScopes ?? this.projectScopes.map((e0) => e0).toList(),
       memberships: memberships is List<_i2.UserRoleMembership>?
           ? memberships
           : this.memberships?.map((e0) => e0.copyWith()).toList(),

@@ -26,7 +26,7 @@ class CloudAdminDeleteAllProjectsCommand extends CloudCliCommand {
   final description = 'Deletes all projects.';
 
   CloudAdminDeleteAllProjectsCommand({required super.logger})
-      : super(options: []) {}
+      : super(options: DeleteAllProjectsCommandOption.values);
 
   @override
   Future<void> runWithConfig(final Configuration commandConfig) async {

@@ -15,7 +15,7 @@ class CloudProjectCommand extends CloudCliCommand {
   final name = 'project';
 
   @override
-  final description = 'Manage Serverpod Cloud tenant projects.';
+  final description = 'Manage Serverpod Cloud projects.';
 
   CloudProjectCommand({required super.logger}) {
     // Subcommands
@@ -60,7 +60,7 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
   final name = 'create';
 
   @override
-  final description = 'Create a Serverpod Cloud tenant project.';
+  final description = 'Create a Serverpod Cloud project.';
 
   @override
   CloudProjectCreateCommand({required super.logger})
@@ -73,11 +73,10 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
     try {
-      await apiCloudClient.tenantProjects
-          .createTenantProject(canonicalName: projectId);
+      await apiCloudClient.projects.createProject(cloudProjectId: projectId);
     } catch (e) {
       logger.error(
-        'Request to create a new tenant project failed: $e',
+        'Request to create a new project failed: $e',
       );
       throw ExitException();
     }
@@ -87,16 +86,16 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
     if (enableDb) {
       try {
         await apiCloudClient.infraResources
-            .enableDatabase(canonicalName: projectId);
+            .enableDatabase(cloudEnvironmentId: projectId);
       } catch (e) {
         logger.error(
-          'Request to create a database for the new tenant project failed: $e',
+          'Request to create a database for the new project failed: $e',
         );
         throw ExitException();
       }
 
       logger.info(
-        "Successfully requested to create a database for the new tenant project '$projectId'.",
+        "Successfully requested to create a database for the new project '$projectId'.",
       );
     }
 
@@ -106,8 +105,8 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
           return;
         }
 
-        final projectConfig = await apiCloudClient.tenantProjects
-            .fetchProjectConfig(canonicalName: projectId);
+        final projectConfig = await apiCloudClient.projects
+            .fetchProjectConfig(cloudProjectId: projectId);
 
         ScloudConfig.writeToFile(projectConfig, Directory.current);
       } catch (e) {
@@ -136,7 +135,7 @@ class CloudProjectDeleteCommand extends CloudCliCommand {
   final name = 'delete';
 
   @override
-  final description = 'Delete a Serverpod Cloud tenant project.';
+  final description = 'Delete a Serverpod Cloud project.';
 
   CloudProjectDeleteCommand({required super.logger})
       : super(options: [_ProjectOptions.projectId]);
@@ -147,16 +146,15 @@ class CloudProjectDeleteCommand extends CloudCliCommand {
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
     try {
-      await apiCloudClient.tenantProjects
-          .deleteTenantProject(canonicalName: projectId);
+      await apiCloudClient.projects.deleteProject(cloudProjectId: projectId);
     } catch (e) {
       logger.error(
-        'Request to delete a new tenant project failed: $e',
+        'Request to delete a new project failed: $e',
       );
       throw ExitException();
     }
 
-    logger.info("Successfully deleted the tenant project '$projectId'.");
+    logger.info("Successfully deleted the project '$projectId'.");
   }
 }
 
@@ -165,7 +163,7 @@ class CloudProjectListCommand extends CloudCliCommand {
   final name = 'list';
 
   @override
-  final description = 'List the Serverpod Cloud tenant projects.';
+  final description = 'List the Serverpod Cloud projects.';
 
   @override
   final bool takesArguments = false;
@@ -175,24 +173,24 @@ class CloudProjectListCommand extends CloudCliCommand {
   @override
   Future<void> runWithConfig(final Configuration commandConfig) async {
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
-    late List<TenantProject> projects;
+    late List<Project> projects;
     try {
-      projects = await apiCloudClient.tenantProjects.listTenantProjects();
+      projects = await apiCloudClient.projects.listProjects();
     } catch (e) {
       logger.error(
-        'Request to list tenant projects failed: $e',
+        'Request to list projects failed: $e',
       );
       throw ExitException();
     }
     if (projects.isEmpty) {
-      logger.info('No tenant projects available.');
+      logger.info('No projects available.');
       return;
     }
     final tablePrinter = TablePrinter();
     tablePrinter.addHeaders(['Project Canonical Name', 'Created At']);
     for (final project in projects.sortedBy((final p) => p.createdAt)) {
       tablePrinter.addRow([
-        project.canonicalName,
+        project.cloudProjectId,
         project.createdAt.toString().substring(0, 19),
       ]);
     }

@@ -63,8 +63,8 @@ class CloudLinkCommand extends CloudCliCommand<LinkCommandOption> {
 
     final ProjectConfig projectConfig;
     try {
-      projectConfig = await apiCloudClient.tenantProjects.fetchProjectConfig(
-        canonicalName: projectId,
+      projectConfig = await apiCloudClient.projects.fetchProjectConfig(
+        cloudProjectId: projectId,
       );
     } catch (e) {
       logger.error('Failed to fetch project config: $e');

@@ -167,7 +167,7 @@ class CloudLogRangeCommand extends CloudCliCommand<LogGetOption> {
     final Stream<LogRecord> recordStream;
     try {
       recordStream = runner.serviceProvider.cloudApiClient.logs.fetchRecords(
-        canonicalName: projectId,
+        cloudProjectId: projectId,
         beforeTime: before,
         afterTime: after,
         limit: limit,
@@ -225,7 +225,7 @@ class CloudLogTailCommand extends CloudCliCommand<LogTailOption> {
     final Stream<LogRecord> recordStream;
     try {
       recordStream = runner.serviceProvider.cloudApiClient.logs.tailRecords(
-        canonicalName: projectId,
+        cloudProjectId: projectId,
         limit: limit,
       );
       await _outputLogStream(

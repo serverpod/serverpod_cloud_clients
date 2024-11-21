@@ -21,18 +21,18 @@ import 'package:serverpod_ground_control_client/src/protocol/tenant/environment_
     as _i6;
 import 'package:serverpod_ground_control_client/src/protocol/logs/log_record.dart'
     as _i7;
-import 'package:serverpod_ground_control_client/src/protocol/tenant/role.dart'
+import 'package:serverpod_ground_control_client/src/protocol/tenant/project.dart'
     as _i8;
-import 'package:serverpod_ground_control_client/src/protocol/tenant/tenant_project.dart'
-    as _i9;
 import 'package:serverpod_ground_control_client/src/protocol/view_models/infrastructure/project_config.dart'
+    as _i9;
+import 'package:serverpod_ground_control_client/src/protocol/tenant/role.dart'
     as _i10;
 import 'package:serverpod_ground_control_client/src/protocol/tenant/user.dart'
     as _i11;
 import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i12;
 import 'protocol.dart' as _i13;
 
-/// Endpoint for managing tenant projects.
+/// Endpoint for managing projects.
 /// {@category Endpoint}
 class EndpointAdmin extends _i1.EndpointRef {
   EndpointAdmin(_i1.EndpointCaller caller) : super(caller);
@@ -111,11 +111,11 @@ class EndpointDeploy extends _i1.EndpointRef {
   @override
   String get name => 'deploy';
 
-  _i2.Future<String> createUploadDescription(String projectId) =>
+  _i2.Future<String> createUploadDescription(String cloudProjectId) =>
       caller.callServerEndpoint<String>(
         'deploy',
         'createUploadDescription',
-        {'projectId': projectId},
+        {'cloudProjectId': cloudProjectId},
       );
 }
 
@@ -210,7 +210,7 @@ class EndpointLogs extends _i1.EndpointRef {
 
   /// Fetches log records from the specified project.
   _i2.Stream<_i7.LogRecord> fetchRecords({
-    required String canonicalName,
+    required String cloudProjectId,
     DateTime? beforeTime,
     DateTime? afterTime,
     int? limit,
@@ -220,7 +220,7 @@ class EndpointLogs extends _i1.EndpointRef {
         'logs',
         'fetchRecords',
         {
-          'canonicalName': canonicalName,
+          'cloudProjectId': cloudProjectId,
           'beforeTime': beforeTime,
           'afterTime': afterTime,
           'limit': limit,
@@ -232,7 +232,7 @@ class EndpointLogs extends _i1.EndpointRef {
   /// Continues until the client unsubscribes, [limit] is reached,
   /// or the internal max limit is reached.
   _i2.Stream<_i7.LogRecord> tailRecords({
-    required String canonicalName,
+    required String cloudProjectId,
     int? limit,
   }) =>
       caller.callStreamingServerEndpoint<_i2.Stream<_i7.LogRecord>,
@@ -240,7 +240,7 @@ class EndpointLogs extends _i1.EndpointRef {
         'logs',
         'tailRecords',
         {
-          'canonicalName': canonicalName,
+          'cloudProjectId': cloudProjectId,
           'limit': limit,
         },
         {},
@@ -248,7 +248,7 @@ class EndpointLogs extends _i1.EndpointRef {
 
   /// Fetches log records from the specified build.
   _i2.Stream<_i7.LogRecord> fetchBuild({
-    required String canonicalName,
+    required String cloudProjectId,
     int? limit,
   }) =>
       caller.callStreamingServerEndpoint<_i2.Stream<_i7.LogRecord>,
@@ -256,7 +256,7 @@ class EndpointLogs extends _i1.EndpointRef {
         'logs',
         'fetchBuild',
         {
-          'canonicalName': canonicalName,
+          'cloudProjectId': cloudProjectId,
           'limit': limit,
         },
         {},
@@ -266,7 +266,7 @@ class EndpointLogs extends _i1.EndpointRef {
   /// Continues until the client unsubscribes, [limit] is reached,
   /// or the internal max limit is reached.
   _i2.Stream<_i7.LogRecord> tailBuild({
-    required String canonicalName,
+    required String cloudProjectId,
     int? limit,
   }) =>
       caller.callStreamingServerEndpoint<_i2.Stream<_i7.LogRecord>,
@@ -274,10 +274,96 @@ class EndpointLogs extends _i1.EndpointRef {
         'logs',
         'tailBuild',
         {
-          'canonicalName': canonicalName,
+          'cloudProjectId': cloudProjectId,
           'limit': limit,
         },
         {},
+      );
+}
+
+/// Endpoint for infrastructure resource provisioning.
+/// {@category Endpoint}
+class EndpointInfraResources extends _i1.EndpointRef {
+  EndpointInfraResources(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'infraResources';
+
+  /// Enables the database for a project.
+  _i2.Future<void> enableDatabase({required String cloudEnvironmentId}) =>
+      caller.callServerEndpoint<void>(
+        'infraResources',
+        'enableDatabase',
+        {'cloudEnvironmentId': cloudEnvironmentId},
+      );
+}
+
+/// Endpoint for managing projects.
+/// {@category Endpoint}
+class EndpointProjects extends _i1.EndpointRef {
+  EndpointProjects(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'projects';
+
+  /// Creates a new project with basic setup.
+  /// The [cloudProjectId] must be globally unique.
+  _i2.Future<_i8.Project> createProject({required String cloudProjectId}) =>
+      caller.callServerEndpoint<_i8.Project>(
+        'projects',
+        'createProject',
+        {'cloudProjectId': cloudProjectId},
+      );
+
+  /// Fetches the specified project.
+  /// Its user roles are included in the response.
+  _i2.Future<_i8.Project> fetchProject({required String cloudProjectId}) =>
+      caller.callServerEndpoint<_i8.Project>(
+        'projects',
+        'fetchProject',
+        {'cloudProjectId': cloudProjectId},
+      );
+
+  /// Fetches the list of projects the current user has access to.
+  _i2.Future<List<_i8.Project>> listProjects() =>
+      caller.callServerEndpoint<List<_i8.Project>>(
+        'projects',
+        'listProjects',
+        {},
+      );
+
+  /// Deletes a project permanently.
+  _i2.Future<_i8.Project> deleteProject({required String cloudProjectId}) =>
+      caller.callServerEndpoint<_i8.Project>(
+        'projects',
+        'deleteProject',
+        {'cloudProjectId': cloudProjectId},
+      );
+
+  _i2.Future<_i9.ProjectConfig> fetchProjectConfig(
+          {required String cloudProjectId}) =>
+      caller.callServerEndpoint<_i9.ProjectConfig>(
+        'projects',
+        'fetchProjectConfig',
+        {'cloudProjectId': cloudProjectId},
+      );
+}
+
+/// Endpoint for managing access roles.
+/// {@category Endpoint}
+class EndpointRoles extends _i1.EndpointRef {
+  EndpointRoles(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'roles';
+
+  /// Fetches the user roles for a project.
+  _i2.Future<List<_i10.Role>> fetchRolesForProject(
+          {required String cloudProjectId}) =>
+      caller.callServerEndpoint<List<_i10.Role>>(
+        'roles',
+        'fetchRolesForProject',
+        {'cloudProjectId': cloudProjectId},
       );
 }
 
@@ -319,95 +405,6 @@ class EndpointSecrets extends _i1.EndpointRef {
         'secrets',
         'list',
         {'cloudEnvironmentId': cloudEnvironmentId},
-      );
-}
-
-/// Endpoint for infrastructure resource provisioning.
-/// {@category Endpoint}
-class EndpointInfraResources extends _i1.EndpointRef {
-  EndpointInfraResources(_i1.EndpointCaller caller) : super(caller);
-
-  @override
-  String get name => 'infraResources';
-
-  /// Enables the database for a project.
-  _i2.Future<void> enableDatabase({required String canonicalName}) =>
-      caller.callServerEndpoint<void>(
-        'infraResources',
-        'enableDatabase',
-        {'canonicalName': canonicalName},
-      );
-}
-
-/// Endpoint for managing access roles.
-/// {@category Endpoint}
-class EndpointRoles extends _i1.EndpointRef {
-  EndpointRoles(_i1.EndpointCaller caller) : super(caller);
-
-  @override
-  String get name => 'roles';
-
-  /// Fetches the user roles for a project.
-  _i2.Future<List<_i8.Role>> fetchRolesForProject(
-          {required String canonicalName}) =>
-      caller.callServerEndpoint<List<_i8.Role>>(
-        'roles',
-        'fetchRolesForProject',
-        {'canonicalName': canonicalName},
-      );
-}
-
-/// Endpoint for managing tenant projects.
-/// {@category Endpoint}
-class EndpointTenantProjects extends _i1.EndpointRef {
-  EndpointTenantProjects(_i1.EndpointCaller caller) : super(caller);
-
-  @override
-  String get name => 'tenantProjects';
-
-  /// Creates a new tenant project with basic setup.
-  /// The [canonicalName] must be globally unique.
-  _i2.Future<_i9.TenantProject> createTenantProject(
-          {required String canonicalName}) =>
-      caller.callServerEndpoint<_i9.TenantProject>(
-        'tenantProjects',
-        'createTenantProject',
-        {'canonicalName': canonicalName},
-      );
-
-  /// Fetches the specified tenant project.
-  /// Its user roles are included in the response.
-  _i2.Future<_i9.TenantProject> fetchTenantProject(
-          {required String canonicalName}) =>
-      caller.callServerEndpoint<_i9.TenantProject>(
-        'tenantProjects',
-        'fetchTenantProject',
-        {'canonicalName': canonicalName},
-      );
-
-  /// Fetches the list of tenant projects the current user has access to.
-  _i2.Future<List<_i9.TenantProject>> listTenantProjects() =>
-      caller.callServerEndpoint<List<_i9.TenantProject>>(
-        'tenantProjects',
-        'listTenantProjects',
-        {},
-      );
-
-  /// Deletes a tenant project permanently.
-  _i2.Future<_i9.TenantProject> deleteTenantProject(
-          {required String canonicalName}) =>
-      caller.callServerEndpoint<_i9.TenantProject>(
-        'tenantProjects',
-        'deleteTenantProject',
-        {'canonicalName': canonicalName},
-      );
-
-  _i2.Future<_i10.ProjectConfig> fetchProjectConfig(
-          {required String canonicalName}) =>
-      caller.callServerEndpoint<_i10.ProjectConfig>(
-        'tenantProjects',
-        'fetchProjectConfig',
-        {'canonicalName': canonicalName},
       );
 }
 
@@ -476,10 +473,10 @@ class Client extends _i1.ServerpodClientShared {
     deploy = EndpointDeploy(this);
     environmentVariables = EndpointEnvironmentVariables(this);
     logs = EndpointLogs(this);
-    secrets = EndpointSecrets(this);
     infraResources = EndpointInfraResources(this);
+    projects = EndpointProjects(this);
     roles = EndpointRoles(this);
-    tenantProjects = EndpointTenantProjects(this);
+    secrets = EndpointSecrets(this);
     users = EndpointUsers(this);
     modules = _Modules(this);
   }
@@ -494,13 +491,13 @@ class Client extends _i1.ServerpodClientShared {
 
   late final EndpointLogs logs;
 
-  late final EndpointSecrets secrets;
-
   late final EndpointInfraResources infraResources;
+
+  late final EndpointProjects projects;
 
   late final EndpointRoles roles;
 
-  late final EndpointTenantProjects tenantProjects;
+  late final EndpointSecrets secrets;
 
   late final EndpointUsers users;
 
@@ -513,10 +510,10 @@ class Client extends _i1.ServerpodClientShared {
         'deploy': deploy,
         'environmentVariables': environmentVariables,
         'logs': logs,
-        'secrets': secrets,
         'infraResources': infraResources,
+        'projects': projects,
         'roles': roles,
-        'tenantProjects': tenantProjects,
+        'secrets': secrets,
         'users': users,
       };
 

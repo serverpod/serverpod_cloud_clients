@@ -14,30 +14,30 @@ import '../protocol.dart' as _i2;
 
 /// Represents a project of a tenant.
 /// Typically a serverpod project.
-abstract class TenantProject implements _i1.SerializableModel {
-  TenantProject._({
+abstract class Project implements _i1.SerializableModel {
+  Project._({
     this.id,
     DateTime? createdAt,
     DateTime? updatedAt,
     this.archivedAt,
-    required this.canonicalName,
+    required this.cloudProjectId,
     this.roles,
     this.environments,
   })  : createdAt = createdAt ?? DateTime.now(),
         updatedAt = updatedAt ?? DateTime.now();
 
-  factory TenantProject({
+  factory Project({
     int? id,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? archivedAt,
-    required String canonicalName,
+    required String cloudProjectId,
     List<_i2.Role>? roles,
     List<_i2.Environment>? environments,
-  }) = _TenantProjectImpl;
+  }) = _ProjectImpl;
 
-  factory TenantProject.fromJson(Map<String, dynamic> jsonSerialization) {
-    return TenantProject(
+  factory Project.fromJson(Map<String, dynamic> jsonSerialization) {
+    return Project(
       id: jsonSerialization['id'] as int?,
       createdAt:
           _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
@@ -46,7 +46,7 @@ abstract class TenantProject implements _i1.SerializableModel {
       archivedAt: jsonSerialization['archivedAt'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['archivedAt']),
-      canonicalName: jsonSerialization['canonicalName'] as String,
+      cloudProjectId: jsonSerialization['cloudProjectId'] as String,
       roles: (jsonSerialization['roles'] as List?)
           ?.map((e) => _i2.Role.fromJson((e as Map<String, dynamic>)))
           .toList(),
@@ -70,7 +70,7 @@ abstract class TenantProject implements _i1.SerializableModel {
   /// The canonical name of the project.
   /// This must be globally unique.
   /// This is the default production name of the project.
-  String canonicalName;
+  String cloudProjectId;
 
   /// The roles for this project.
   List<_i2.Role>? roles;
@@ -78,12 +78,12 @@ abstract class TenantProject implements _i1.SerializableModel {
   /// The environments of this project.
   List<_i2.Environment>? environments;
 
-  TenantProject copyWith({
+  Project copyWith({
     int? id,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? archivedAt,
-    String? canonicalName,
+    String? cloudProjectId,
     List<_i2.Role>? roles,
     List<_i2.Environment>? environments,
   });
@@ -94,7 +94,7 @@ abstract class TenantProject implements _i1.SerializableModel {
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
       if (archivedAt != null) 'archivedAt': archivedAt?.toJson(),
-      'canonicalName': canonicalName,
+      'cloudProjectId': cloudProjectId,
       if (roles != null) 'roles': roles?.toJson(valueToJson: (v) => v.toJson()),
       if (environments != null)
         'environments': environments?.toJson(valueToJson: (v) => v.toJson()),
@@ -109,13 +109,13 @@ abstract class TenantProject implements _i1.SerializableModel {
 
 class _Undefined {}
 
-class _TenantProjectImpl extends TenantProject {
-  _TenantProjectImpl({
+class _ProjectImpl extends Project {
+  _ProjectImpl({
     int? id,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? archivedAt,
-    required String canonicalName,
+    required String cloudProjectId,
     List<_i2.Role>? roles,
     List<_i2.Environment>? environments,
   }) : super._(
@@ -123,27 +123,27 @@ class _TenantProjectImpl extends TenantProject {
           createdAt: createdAt,
           updatedAt: updatedAt,
           archivedAt: archivedAt,
-          canonicalName: canonicalName,
+          cloudProjectId: cloudProjectId,
           roles: roles,
           environments: environments,
         );
 
   @override
-  TenantProject copyWith({
+  Project copyWith({
     Object? id = _Undefined,
     DateTime? createdAt,
     DateTime? updatedAt,
     Object? archivedAt = _Undefined,
-    String? canonicalName,
+    String? cloudProjectId,
     Object? roles = _Undefined,
     Object? environments = _Undefined,
   }) {
-    return TenantProject(
+    return Project(
       id: id is int? ? id : this.id,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       archivedAt: archivedAt is DateTime? ? archivedAt : this.archivedAt,
-      canonicalName: canonicalName ?? this.canonicalName,
+      cloudProjectId: cloudProjectId ?? this.cloudProjectId,
       roles: roles is List<_i2.Role>?
           ? roles
           : this.roles?.map((e0) => e0.copyWith()).toList(),

@@ -10,7 +10,7 @@ class CloudEnvCommand extends CloudCliCommand {
 
   @override
   final description =
-      'Manage Serverpod Cloud environment variables for a tenant project.';
+      'Manage Serverpod Cloud environment variables for a project.';
 
   CloudEnvCommand({required super.logger}) {
     addSubcommand(CloudEnvCreateCommand(logger: logger));

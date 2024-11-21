@@ -52,8 +52,8 @@ void main() {
     setUp(() async {
       final serverBuilder = HttpServerBuilder();
 
-      serverBuilder.withOnServerpodMethodCall('createTenantProject', () {
-        return TenantProject(canonicalName: projectId).toString();
+      serverBuilder.withOnServerpodMethodCall('createProject', () {
+        return Project(cloudProjectId: projectId).toString();
       });
 
       serverBuilder.withOnServerpodMethodCall('fetchProjectConfig', () {

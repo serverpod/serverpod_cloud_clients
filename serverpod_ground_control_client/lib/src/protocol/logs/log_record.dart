@@ -14,8 +14,8 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 /// Represents a log record (entry).
 abstract class LogRecord implements _i1.SerializableModel {
   LogRecord._({
-    required this.projectId,
-    required this.envId,
+    required this.cloudProjectId,
+    required this.cloudEnvironmentId,
     required this.recordId,
     required this.timestamp,
     this.severity,
@@ -23,8 +23,8 @@ abstract class LogRecord implements _i1.SerializableModel {
   });
 
   factory LogRecord({
-    required String projectId,
-    required String envId,
+    required String cloudProjectId,
+    required String cloudEnvironmentId,
     required String recordId,
     required DateTime timestamp,
     String? severity,
@@ -33,8 +33,8 @@ abstract class LogRecord implements _i1.SerializableModel {
 
   factory LogRecord.fromJson(Map<String, dynamic> jsonSerialization) {
     return LogRecord(
-      projectId: jsonSerialization['projectId'] as String,
-      envId: jsonSerialization['envId'] as String,
+      cloudProjectId: jsonSerialization['cloudProjectId'] as String,
+      cloudEnvironmentId: jsonSerialization['cloudEnvironmentId'] as String,
       recordId: jsonSerialization['recordId'] as String,
       timestamp:
           _i1.DateTimeJsonExtension.fromJson(jsonSerialization['timestamp']),
@@ -43,11 +43,11 @@ abstract class LogRecord implements _i1.SerializableModel {
     );
   }
 
-  /// The ID of the tenant project this log record is from.
-  String projectId;
+  /// The ID of the project this log record is from.
+  String cloudProjectId;
 
   /// The ID of the environment this log record is from.
-  String envId;
+  String cloudEnvironmentId;
 
   /// The ID of this log record.
   String recordId;
@@ -62,8 +62,8 @@ abstract class LogRecord implements _i1.SerializableModel {
   String content;
 
   LogRecord copyWith({
-    String? projectId,
-    String? envId,
+    String? cloudProjectId,
+    String? cloudEnvironmentId,
     String? recordId,
     DateTime? timestamp,
     String? severity,
@@ -72,8 +72,8 @@ abstract class LogRecord implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
-      'projectId': projectId,
-      'envId': envId,
+      'cloudProjectId': cloudProjectId,
+      'cloudEnvironmentId': cloudEnvironmentId,
       'recordId': recordId,
       'timestamp': timestamp.toJson(),
       if (severity != null) 'severity': severity,
@@ -91,15 +91,15 @@ class _Undefined {}
 
 class _LogRecordImpl extends LogRecord {
   _LogRecordImpl({
-    required String projectId,
-    required String envId,
+    required String cloudProjectId,
+    required String cloudEnvironmentId,
     required String recordId,
     required DateTime timestamp,
     String? severity,
     required String content,
   }) : super._(
-          projectId: projectId,
-          envId: envId,
+          cloudProjectId: cloudProjectId,
+          cloudEnvironmentId: cloudEnvironmentId,
           recordId: recordId,
           timestamp: timestamp,
           severity: severity,
@@ -108,16 +108,16 @@ class _LogRecordImpl extends LogRecord {
 
   @override
   LogRecord copyWith({
-    String? projectId,
-    String? envId,
+    String? cloudProjectId,
+    String? cloudEnvironmentId,
     String? recordId,
     DateTime? timestamp,
     Object? severity = _Undefined,
     String? content,
   }) {
     return LogRecord(
-      projectId: projectId ?? this.projectId,
-      envId: envId ?? this.envId,
+      cloudProjectId: cloudProjectId ?? this.cloudProjectId,
+      cloudEnvironmentId: cloudEnvironmentId ?? this.cloudEnvironmentId,
       recordId: recordId ?? this.recordId,
       timestamp: timestamp ?? this.timestamp,
       severity: severity is String? ? severity : this.severity,
