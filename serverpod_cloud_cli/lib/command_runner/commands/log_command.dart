@@ -1,9 +1,10 @@
+import 'dart:io';
+
 import 'package:cli_tools/cli_tools.dart' as cli;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/option_parsing.dart';
+import 'package:serverpod_cloud_cli/features/logs/logs.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
-import 'package:serverpod_cloud_cli/util/table_printer.dart';
-import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
 
 abstract final class _LogOptions {
   static const projectId = ConfigOption(
@@ -159,22 +160,13 @@ class CloudLogRangeCommand extends CloudCliCommand<LogGetOption> {
       after = _parseRecentOpt(recentOpt ?? '1m');
     }
 
-    final timezoneName =
-        inUtc ? 'UTC' : 'local (${DateTime.now().timeZoneName})';
-    logger.info('Fetching logs from ${after?.toTzString(inUtc) ?? 'oldest'} '
-        'to ${before?.toTzString(inUtc) ?? 'newest'}. Display time zone: $timezoneName.');
-
-    final Stream<LogRecord> recordStream;
     try {
-      recordStream = runner.serviceProvider.cloudApiClient.logs.fetchRecords(
-        cloudProjectId: projectId,
-        beforeTime: before,
-        afterTime: after,
-        limit: limit,
-      );
-      await _outputLogStream(
-        logger.info,
-        recordStream,
+      await LogsFeature.fetchContainerLog(
+        runner.serviceProvider.cloudApiClient,
+        writeln: stdout.writeln,
+        projectId: projectId,
+        before: before,
+        after: after,
         limit: limit,
         inUtc: inUtc,
       );
@@ -218,19 +210,11 @@ class CloudLogTailCommand extends CloudCliCommand<LogTailOption> {
       throw ArgumentError('Value must be an integer.', '--limit');
     }
 
-    final timezoneName =
-        inUtc ? 'UTC' : 'local (${DateTime.now().timeZoneName})';
-    logger.info('Tailing logs. Display time zone: $timezoneName.');
-
-    final Stream<LogRecord> recordStream;
     try {
-      recordStream = runner.serviceProvider.cloudApiClient.logs.tailRecords(
-        cloudProjectId: projectId,
-        limit: limit,
-      );
-      await _outputLogStream(
-        logger.info,
-        recordStream,
+      await LogsFeature.tailContainerLog(
+        runner.serviceProvider.cloudApiClient,
+        writeln: stdout.writeln,
+        projectId: projectId,
         limit: limit,
         inUtc: inUtc,
       );
@@ -239,52 +223,4 @@ class CloudLogTailCommand extends CloudCliCommand<LogTailOption> {
       throw cli.ExitException();
     }
   }
-}
-
-Future<void> _outputLogStream(
-  final void Function(String) output,
-  final Stream<LogRecord> recordStream, {
-  required final int limit,
-  final bool inUtc = false,
-}) async {
-  var count = 0;
-  final tablePrinter = _createLogTablePrinter();
-  final tableStream = tablePrinter.toStream(recordStream.map(
-    (final rec) {
-      count++;
-      return _toLogTableRow(rec, inUtc: inUtc);
-    },
-  ));
-  try {
-    await for (final line in tableStream) {
-      output(line.trimRight());
-    }
-  } finally {
-    output('-- End of log stream -- $count records (limit $limit) --');
-  }
-}
-
-TablePrinter _createLogTablePrinter() {
-  final tablePrinter = TablePrinter(
-    headers: ['Timestamp', 'Level', 'Content'],
-    columnMinWidths: [27, 7, 0],
-  );
-  return tablePrinter;
-}
-
-List<String> _toLogTableRow(
-  final LogRecord rec, {
-  final bool inUtc = false,
-}) {
-  return [
-    rec.timestamp.toTzString(inUtc),
-    rec.severity ?? '',
-    rec.content,
-  ];
-}
-
-extension _TimezonedString on DateTime {
-  /// Converts this date-time to a string in either local or UTC time zone.
-  String toTzString(final bool inUtc) =>
-      inUtc ? toUtc().toString() : toLocal().toString();
 }

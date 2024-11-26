@@ -5,8 +5,8 @@ void main() async {
   group('Given an empty TablePrinter', () {
     final tablePrinter = TablePrinter();
 
-    test('then the produced string is empty.', () {
-      expect(tablePrinter.toString(), isEmpty);
+    test('then the produced string is a no-rows symbol.', () {
+      expect(tablePrinter.toString(), '<no rows data>\n');
     });
 
     test('then the produced stream is empty.', () async {
@@ -27,13 +27,13 @@ void main() async {
     );
 
     test(
-        'then the produced string contains the single header as well as a separator line and empty tag.',
+        'then the produced string contains the single header as well as a separator line and a no-rows symbol.',
         () {
       expect(
           tablePrinter.toString(),
           'Header\n'
           '------\n'
-          '<empty>\n');
+          '<no rows data>\n');
     });
 
     test(
@@ -56,13 +56,13 @@ void main() async {
     );
 
     test(
-        'then the produced string contains all three columns as well as a seperator line and empty tags.',
+        'then the produced string contains all three columns as well as a seperator line and a no-rows symbol.',
         () {
       expect(
         tablePrinter.toString(),
         'Col1 | Col2 | Col3\n'
         '-----+------+-----\n'
-        '<empty> | <empty> | <empty>\n',
+        '<no rows data>\n',
       );
     });
   });

@@ -552,7 +552,7 @@ void main() {
                 'my-magical-project.web.serverpod.space      | web     \n',
             'Custom domain name | Target | Status\n'
                 '-------------------+--------+-------\n'
-                '<empty>            | <empty> | <empty>\n'
+                '<no rows data>\n'
           ]));
     });
   });

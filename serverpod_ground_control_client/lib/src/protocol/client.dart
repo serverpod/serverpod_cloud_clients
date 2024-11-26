@@ -27,10 +27,12 @@ import 'package:serverpod_ground_control_client/src/protocol/view_models/infrast
     as _i9;
 import 'package:serverpod_ground_control_client/src/protocol/tenant/role.dart'
     as _i10;
-import 'package:serverpod_ground_control_client/src/protocol/tenant/user.dart'
+import 'package:serverpod_ground_control_client/src/protocol/status/build_status.dart'
     as _i11;
-import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i12;
-import 'protocol.dart' as _i13;
+import 'package:serverpod_ground_control_client/src/protocol/tenant/user.dart'
+    as _i12;
+import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i13;
+import 'protocol.dart' as _i14;
 
 /// Endpoint for managing projects.
 /// {@category Endpoint}
@@ -247,16 +249,18 @@ class EndpointLogs extends _i1.EndpointRef {
       );
 
   /// Fetches log records from the specified build.
-  _i2.Stream<_i7.LogRecord> fetchBuild({
+  _i2.Stream<_i7.LogRecord> fetchBuildLog({
     required String cloudProjectId,
+    required String buildId,
     int? limit,
   }) =>
       caller.callStreamingServerEndpoint<_i2.Stream<_i7.LogRecord>,
           _i7.LogRecord>(
         'logs',
-        'fetchBuild',
+        'fetchBuildLog',
         {
           'cloudProjectId': cloudProjectId,
+          'buildId': buildId,
           'limit': limit,
         },
         {},
@@ -265,16 +269,18 @@ class EndpointLogs extends _i1.EndpointRef {
   /// Tails log records from the specified build.
   /// Continues until the client unsubscribes, [limit] is reached,
   /// or the internal max limit is reached.
-  _i2.Stream<_i7.LogRecord> tailBuild({
+  _i2.Stream<_i7.LogRecord> tailBuildLog({
     required String cloudProjectId,
+    String? buildId,
     int? limit,
   }) =>
       caller.callStreamingServerEndpoint<_i2.Stream<_i7.LogRecord>,
           _i7.LogRecord>(
         'logs',
-        'tailBuild',
+        'tailBuildLog',
         {
           'cloudProjectId': cloudProjectId,
+          'buildId': buildId,
           'limit': limit,
         },
         {},
@@ -408,6 +414,59 @@ class EndpointSecrets extends _i1.EndpointRef {
       );
 }
 
+/// Endpoint for accessing project status.
+/// {@category Endpoint}
+class EndpointStatus extends _i1.EndpointRef {
+  EndpointStatus(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'status';
+
+  /// Gets build statuses of the specified project.
+  /// Gets the recent-most build statuses, up till [limit] if specified.
+  _i2.Future<List<_i11.BuildStatus>> getBuildStatuses({
+    required String cloudProjectId,
+    int? limit,
+  }) =>
+      caller.callServerEndpoint<List<_i11.BuildStatus>>(
+        'status',
+        'getBuildStatuses',
+        {
+          'cloudProjectId': cloudProjectId,
+          'limit': limit,
+        },
+      );
+
+  /// Gets the specified build status of the a project.
+  _i2.Future<_i11.BuildStatus> getBuildStatus({
+    required String cloudProjectId,
+    required String buildId,
+  }) =>
+      caller.callServerEndpoint<_i11.BuildStatus>(
+        'status',
+        'getBuildStatus',
+        {
+          'cloudProjectId': cloudProjectId,
+          'buildId': buildId,
+        },
+      );
+
+  /// Gets the build id for the specified build number of a project.
+  /// Build numbers enumerate the project's builds as latest first, starting from 0.
+  _i2.Future<String> getBuildId({
+    required String cloudProjectId,
+    required int buildNumber,
+  }) =>
+      caller.callServerEndpoint<String>(
+        'status',
+        'getBuildId',
+        {
+          'cloudProjectId': cloudProjectId,
+          'buildNumber': buildNumber,
+        },
+      );
+}
+
 /// Endpoint for managing tenant users.
 /// {@category Endpoint}
 class EndpointUsers extends _i1.EndpointRef {
@@ -417,8 +476,8 @@ class EndpointUsers extends _i1.EndpointRef {
   String get name => 'users';
 
   /// Fetches the tenant user for the currently authenticated user.
-  _i2.Future<_i11.User> fetchCurrentUser() =>
-      caller.callServerEndpoint<_i11.User>(
+  _i2.Future<_i12.User> fetchCurrentUser() =>
+      caller.callServerEndpoint<_i12.User>(
         'users',
         'fetchCurrentUser',
         {},
@@ -426,8 +485,8 @@ class EndpointUsers extends _i1.EndpointRef {
 
   /// Registers a new tenant user record for the current authenticated user.
   /// Throws [DuplicateEntryException] if the tenant user already exists.
-  _i2.Future<_i11.User> registerCurrentUser({String? userDisplayName}) =>
-      caller.callServerEndpoint<_i11.User>(
+  _i2.Future<_i12.User> registerCurrentUser({String? userDisplayName}) =>
+      caller.callServerEndpoint<_i12.User>(
         'users',
         'registerCurrentUser',
         {'userDisplayName': userDisplayName},
@@ -436,10 +495,10 @@ class EndpointUsers extends _i1.EndpointRef {
 
 class _Modules {
   _Modules(Client client) {
-    auth = _i12.Caller(client);
+    auth = _i13.Caller(client);
   }
 
-  late final _i12.Caller auth;
+  late final _i13.Caller auth;
 }
 
 class Client extends _i1.ServerpodClientShared {
@@ -458,7 +517,7 @@ class Client extends _i1.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
           host,
-          _i13.Protocol(),
+          _i14.Protocol(),
           securityContext: securityContext,
           authenticationKeyManager: authenticationKeyManager,
           streamingConnectionTimeout: streamingConnectionTimeout,
@@ -477,6 +536,7 @@ class Client extends _i1.ServerpodClientShared {
     projects = EndpointProjects(this);
     roles = EndpointRoles(this);
     secrets = EndpointSecrets(this);
+    status = EndpointStatus(this);
     users = EndpointUsers(this);
     modules = _Modules(this);
   }
@@ -499,6 +559,8 @@ class Client extends _i1.ServerpodClientShared {
 
   late final EndpointSecrets secrets;
 
+  late final EndpointStatus status;
+
   late final EndpointUsers users;
 
   late final _Modules modules;
@@ -514,6 +576,7 @@ class Client extends _i1.ServerpodClientShared {
         'projects': projects,
         'roles': roles,
         'secrets': secrets,
+        'status': status,
         'users': users,
       };
 

@@ -3,16 +3,21 @@ import 'dart:io';
 
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
 
+typedef _MethodHandler = void Function(
+  HttpResponse response,
+  Map<String, dynamic> parameters,
+);
+
 class HttpServerBuilder {
   String _host;
   String _path;
+  final Map<String, _MethodHandler> _methodHandlers;
   void Function(HttpRequest request)? _onRequest;
-
-  final Map<String, String Function()> _onServerpodMethodCalls = {};
 
   HttpServerBuilder()
       : _host = 'localhost',
-        _path = '/';
+        _path = '/',
+        _methodHandlers = {};
 
   HttpServerBuilder withHost(final String host) {
     _host = host;
@@ -24,31 +29,7 @@ class HttpServerBuilder {
     return this;
   }
 
-  HttpServerBuilder withOnServerpodMethodCall(
-    final String method,
-    final String Function() onServerpodMethodCall,
-  ) {
-    _onServerpodMethodCalls[method] = onServerpodMethodCall;
-
-    if (_onRequest != null) {
-      return this;
-    }
-
-    _onRequest = (final request) async {
-      request.response.statusCode = 200;
-
-      final Map<String, dynamic> body =
-          jsonDecode(await utf8.decoder.bind(request).join());
-
-      final method = body['method'] as String;
-      final response = _onServerpodMethodCalls[method]?.call();
-      request.response.write(response);
-
-      await request.response.close();
-    };
-    return this;
-  }
-
+  /// Adds a handler for all requests.
   HttpServerBuilder withOnRequest(
     final void Function(HttpRequest request) onRequest,
   ) {
@@ -56,10 +37,11 @@ class HttpServerBuilder {
     return this;
   }
 
+  /// Adds a handler that gives a successful response for all requests.
   HttpServerBuilder withSuccessfulResponse([
     final Object? responseBody,
   ]) {
-    _onRequest = (final request) {
+    return withOnRequest((final request) {
       request.response.statusCode = 200;
 
       if (responseBody != null) {
@@ -71,6 +53,30 @@ class HttpServerBuilder {
       }
 
       request.response.close();
+    });
+  }
+
+  /// Adds a handler that gives a response for a specific endpoint method.
+  HttpServerBuilder withMethodResponse(
+    final String endpointName,
+    final String methodName,
+    final (int, Object?) Function(Map<String, dynamic> parameters)
+        methodResponse,
+  ) {
+    final methodKey = '$endpointName.$methodName';
+    _methodHandlers[methodKey] =
+        (final response, final Map<String, dynamic> parameters) async {
+      final (responseCode, responseBody) = methodResponse(parameters);
+
+      response.statusCode = responseCode;
+
+      if (responseBody != null) {
+        response.write(
+          responseBody is SerializableModel
+              ? responseBody.toString()
+              : jsonEncode(responseBody),
+        );
+      }
     };
     return this;
   }
@@ -78,9 +84,28 @@ class HttpServerBuilder {
   Future<(HttpServer server, Uri serverAddress)> build() async {
     final server = await HttpServer.bind(_host, 0 /* Pick available port */);
     final localServerAddress = Uri.http('$_host:${server.port}', _path);
-    server.listen((final request) {
-      _onRequest?.call(request);
+
+    server.listen((final request) async {
+      if (_onRequest != null) {
+        _onRequest?.call(request);
+        return;
+      }
+
+      final endpointPath = request.uri.pathSegments.first;
+      final Map<String, dynamic> requestBody =
+          jsonDecode(await utf8.decoder.bind(request).join())
+              as Map<String, dynamic>;
+      final methodName = requestBody.remove('method');
+      final handler = _methodHandlers['$endpointPath.$methodName'];
+      if (handler != null) {
+        handler(request.response, requestBody);
+      } else {
+        request.response.statusCode = 404;
+        request.response.write('Method not found');
+      }
+      await request.response.close();
     });
+
     return (server, localServerAddress);
   }
 }

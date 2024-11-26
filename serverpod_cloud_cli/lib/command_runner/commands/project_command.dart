@@ -187,7 +187,7 @@ class CloudProjectListCommand extends CloudCliCommand {
       return;
     }
     final tablePrinter = TablePrinter();
-    tablePrinter.addHeaders(['Project Canonical Name', 'Created At']);
+    tablePrinter.addHeaders(['Project Id', 'Created At']);
     for (final project in projects.sortedBy((final p) => p.createdAt)) {
       tablePrinter.addRow([
         project.cloudProjectId,

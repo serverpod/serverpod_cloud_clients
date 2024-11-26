@@ -52,13 +52,11 @@ void main() {
     setUp(() async {
       final serverBuilder = HttpServerBuilder();
 
-      serverBuilder.withOnServerpodMethodCall('createProject', () {
-        return Project(cloudProjectId: projectId).toString();
-      });
+      serverBuilder.withMethodResponse('projects', 'createProject',
+          (final _) => (200, Project(cloudProjectId: projectId)));
 
-      serverBuilder.withOnServerpodMethodCall('fetchProjectConfig', () {
-        return ProjectConfig(projectId: projectId).toString();
-      });
+      serverBuilder.withMethodResponse('projects', 'fetchProjectConfig',
+          (final _) => (200, ProjectConfig(projectId: projectId)));
 
       final (startedServer, serverAddress) = await serverBuilder.build();
       localServerAddress = serverAddress;
