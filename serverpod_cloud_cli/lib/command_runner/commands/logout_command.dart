@@ -31,7 +31,7 @@ class CloudLogoutCommand extends CloudCliCommand {
 
     ExitException? exitException;
     try {
-      await cloudClient.modules.auth.status.signOut();
+      await cloudClient.modules.auth.status.signOutDevice();
     } catch (e) {
       logger.error(
         'Request to sign out from Serverpod Cloud failed: $e',
