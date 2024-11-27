@@ -10,7 +10,10 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../protocol.dart' as _i2;
+import '../serverpod_region.dart' as _i2;
+import '../tenant/project.dart' as _i3;
+import '../tenant/environment_variable.dart' as _i4;
+import '../infrastructure/custom_domain_name.dart' as _i5;
 
 /// Represents an infrastructure environment instance (a deployment target).
 abstract class Environment implements _i1.SerializableModel {
@@ -31,9 +34,9 @@ abstract class Environment implements _i1.SerializableModel {
     required String cloudEnvironmentId,
     required _i2.ServerpodRegion region,
     required int projectId,
-    _i2.Project? project,
-    List<_i2.EnvironmentVariable>? environmentVariables,
-    List<_i2.CustomDomainName>? domainNames,
+    _i3.Project? project,
+    List<_i4.EnvironmentVariable>? environmentVariables,
+    List<_i5.CustomDomainName>? domainNames,
   }) = _EnvironmentImpl;
 
   factory Environment.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -46,15 +49,15 @@ abstract class Environment implements _i1.SerializableModel {
       projectId: jsonSerialization['projectId'] as int,
       project: jsonSerialization['project'] == null
           ? null
-          : _i2.Project.fromJson(
+          : _i3.Project.fromJson(
               (jsonSerialization['project'] as Map<String, dynamic>)),
       environmentVariables: (jsonSerialization['environmentVariables'] as List?)
           ?.map((e) =>
-              _i2.EnvironmentVariable.fromJson((e as Map<String, dynamic>)))
+              _i4.EnvironmentVariable.fromJson((e as Map<String, dynamic>)))
           .toList(),
       domainNames: (jsonSerialization['domainNames'] as List?)
           ?.map(
-              (e) => _i2.CustomDomainName.fromJson((e as Map<String, dynamic>)))
+              (e) => _i5.CustomDomainName.fromJson((e as Map<String, dynamic>)))
           .toList(),
     );
   }
@@ -76,13 +79,13 @@ abstract class Environment implements _i1.SerializableModel {
   int projectId;
 
   /// The project this environment belongs to. Cannot be changed.
-  _i2.Project? project;
+  _i3.Project? project;
 
   /// Environment variables for this environment.
-  List<_i2.EnvironmentVariable>? environmentVariables;
+  List<_i4.EnvironmentVariable>? environmentVariables;
 
   /// The domain names for this environment.
-  List<_i2.CustomDomainName>? domainNames;
+  List<_i5.CustomDomainName>? domainNames;
 
   Environment copyWith({
     int? id,
@@ -90,9 +93,9 @@ abstract class Environment implements _i1.SerializableModel {
     String? cloudEnvironmentId,
     _i2.ServerpodRegion? region,
     int? projectId,
-    _i2.Project? project,
-    List<_i2.EnvironmentVariable>? environmentVariables,
-    List<_i2.CustomDomainName>? domainNames,
+    _i3.Project? project,
+    List<_i4.EnvironmentVariable>? environmentVariables,
+    List<_i5.CustomDomainName>? domainNames,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -126,9 +129,9 @@ class _EnvironmentImpl extends Environment {
     required String cloudEnvironmentId,
     required _i2.ServerpodRegion region,
     required int projectId,
-    _i2.Project? project,
-    List<_i2.EnvironmentVariable>? environmentVariables,
-    List<_i2.CustomDomainName>? domainNames,
+    _i3.Project? project,
+    List<_i4.EnvironmentVariable>? environmentVariables,
+    List<_i5.CustomDomainName>? domainNames,
   }) : super._(
           id: id,
           name: name,
@@ -157,12 +160,12 @@ class _EnvironmentImpl extends Environment {
       cloudEnvironmentId: cloudEnvironmentId ?? this.cloudEnvironmentId,
       region: region ?? this.region,
       projectId: projectId ?? this.projectId,
-      project: project is _i2.Project? ? project : this.project?.copyWith(),
+      project: project is _i3.Project? ? project : this.project?.copyWith(),
       environmentVariables:
-          environmentVariables is List<_i2.EnvironmentVariable>?
+          environmentVariables is List<_i4.EnvironmentVariable>?
               ? environmentVariables
               : this.environmentVariables?.map((e0) => e0.copyWith()).toList(),
-      domainNames: domainNames is List<_i2.CustomDomainName>?
+      domainNames: domainNames is List<_i5.CustomDomainName>?
           ? domainNames
           : this.domainNames?.map((e0) => e0.copyWith()).toList(),
     );

@@ -10,7 +10,8 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../protocol.dart' as _i2;
+import '../tenant/project.dart' as _i2;
+import '../tenant/user_role_membership.dart' as _i3;
 
 /// Represents an access role for a specific project.
 /// Roles are assigned to users via membership, giving them the role's access scopes.
@@ -37,7 +38,7 @@ abstract class Role implements _i1.SerializableModel {
     _i2.Project? project,
     required String name,
     required List<String> projectScopes,
-    List<_i2.UserRoleMembership>? memberships,
+    List<_i3.UserRoleMembership>? memberships,
   }) = _RoleImpl;
 
   factory Role.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -61,7 +62,7 @@ abstract class Role implements _i1.SerializableModel {
           .toList(),
       memberships: (jsonSerialization['memberships'] as List?)
           ?.map((e) =>
-              _i2.UserRoleMembership.fromJson((e as Map<String, dynamic>)))
+              _i3.UserRoleMembership.fromJson((e as Map<String, dynamic>)))
           .toList(),
     );
   }
@@ -89,7 +90,7 @@ abstract class Role implements _i1.SerializableModel {
   List<String> projectScopes;
 
   /// The user memberships of this role.
-  List<_i2.UserRoleMembership>? memberships;
+  List<_i3.UserRoleMembership>? memberships;
 
   Role copyWith({
     int? id,
@@ -100,7 +101,7 @@ abstract class Role implements _i1.SerializableModel {
     _i2.Project? project,
     String? name,
     List<String>? projectScopes,
-    List<_i2.UserRoleMembership>? memberships,
+    List<_i3.UserRoleMembership>? memberships,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -136,7 +137,7 @@ class _RoleImpl extends Role {
     _i2.Project? project,
     required String name,
     required List<String> projectScopes,
-    List<_i2.UserRoleMembership>? memberships,
+    List<_i3.UserRoleMembership>? memberships,
   }) : super._(
           id: id,
           createdAt: createdAt,
@@ -171,7 +172,7 @@ class _RoleImpl extends Role {
       name: name ?? this.name,
       projectScopes:
           projectScopes ?? this.projectScopes.map((e0) => e0).toList(),
-      memberships: memberships is List<_i2.UserRoleMembership>?
+      memberships: memberships is List<_i3.UserRoleMembership>?
           ? memberships
           : this.memberships?.map((e0) => e0.copyWith()).toList(),
     );

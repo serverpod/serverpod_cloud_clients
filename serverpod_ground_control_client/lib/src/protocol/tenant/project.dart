@@ -10,7 +10,8 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../protocol.dart' as _i2;
+import '../tenant/role.dart' as _i2;
+import '../infrastructure/environment.dart' as _i3;
 
 /// Represents a project of a tenant.
 /// Typically a serverpod project.
@@ -33,7 +34,7 @@ abstract class Project implements _i1.SerializableModel {
     DateTime? archivedAt,
     required String cloudProjectId,
     List<_i2.Role>? roles,
-    List<_i2.Environment>? environments,
+    List<_i3.Environment>? environments,
   }) = _ProjectImpl;
 
   factory Project.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -51,7 +52,7 @@ abstract class Project implements _i1.SerializableModel {
           ?.map((e) => _i2.Role.fromJson((e as Map<String, dynamic>)))
           .toList(),
       environments: (jsonSerialization['environments'] as List?)
-          ?.map((e) => _i2.Environment.fromJson((e as Map<String, dynamic>)))
+          ?.map((e) => _i3.Environment.fromJson((e as Map<String, dynamic>)))
           .toList(),
     );
   }
@@ -76,7 +77,7 @@ abstract class Project implements _i1.SerializableModel {
   List<_i2.Role>? roles;
 
   /// The environments of this project.
-  List<_i2.Environment>? environments;
+  List<_i3.Environment>? environments;
 
   Project copyWith({
     int? id,
@@ -85,7 +86,7 @@ abstract class Project implements _i1.SerializableModel {
     DateTime? archivedAt,
     String? cloudProjectId,
     List<_i2.Role>? roles,
-    List<_i2.Environment>? environments,
+    List<_i3.Environment>? environments,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -117,7 +118,7 @@ class _ProjectImpl extends Project {
     DateTime? archivedAt,
     required String cloudProjectId,
     List<_i2.Role>? roles,
-    List<_i2.Environment>? environments,
+    List<_i3.Environment>? environments,
   }) : super._(
           id: id,
           createdAt: createdAt,
@@ -147,7 +148,7 @@ class _ProjectImpl extends Project {
       roles: roles is List<_i2.Role>?
           ? roles
           : this.roles?.map((e0) => e0.copyWith()).toList(),
-      environments: environments is List<_i2.Environment>?
+      environments: environments is List<_i3.Environment>?
           ? environments
           : this.environments?.map((e0) => e0.copyWith()).toList(),
     );

@@ -10,7 +10,8 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../protocol.dart' as _i2;
+import '../infrastructure/domain_name_status.dart' as _i2;
+import '../infrastructure/domain_name_target.dart' as _i3;
 
 abstract class CustomDomainName implements _i1.SerializableModel {
   CustomDomainName._({
@@ -26,7 +27,7 @@ abstract class CustomDomainName implements _i1.SerializableModel {
     int? id,
     required String name,
     required _i2.DomainNameStatus status,
-    required _i2.DomainNameTarget target,
+    required _i3.DomainNameTarget target,
     DateTime? createdAt,
     required int environmentId,
   }) = _CustomDomainNameImpl;
@@ -37,7 +38,7 @@ abstract class CustomDomainName implements _i1.SerializableModel {
       name: jsonSerialization['name'] as String,
       status: _i2.DomainNameStatus.fromJson(
           (jsonSerialization['status'] as String)),
-      target: _i2.DomainNameTarget.fromJson(
+      target: _i3.DomainNameTarget.fromJson(
           (jsonSerialization['target'] as String)),
       createdAt: jsonSerialization['createdAt'] == null
           ? null
@@ -55,7 +56,7 @@ abstract class CustomDomainName implements _i1.SerializableModel {
 
   _i2.DomainNameStatus status;
 
-  _i2.DomainNameTarget target;
+  _i3.DomainNameTarget target;
 
   DateTime? createdAt;
 
@@ -65,7 +66,7 @@ abstract class CustomDomainName implements _i1.SerializableModel {
     int? id,
     String? name,
     _i2.DomainNameStatus? status,
-    _i2.DomainNameTarget? target,
+    _i3.DomainNameTarget? target,
     DateTime? createdAt,
     int? environmentId,
   });
@@ -94,7 +95,7 @@ class _CustomDomainNameImpl extends CustomDomainName {
     int? id,
     required String name,
     required _i2.DomainNameStatus status,
-    required _i2.DomainNameTarget target,
+    required _i3.DomainNameTarget target,
     DateTime? createdAt,
     required int environmentId,
   }) : super._(
@@ -111,7 +112,7 @@ class _CustomDomainNameImpl extends CustomDomainName {
     Object? id = _Undefined,
     String? name,
     _i2.DomainNameStatus? status,
-    _i2.DomainNameTarget? target,
+    _i3.DomainNameTarget? target,
     Object? createdAt = _Undefined,
     int? environmentId,
   }) {

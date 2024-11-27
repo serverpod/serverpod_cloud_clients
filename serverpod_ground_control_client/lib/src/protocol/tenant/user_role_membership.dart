@@ -10,7 +10,8 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../protocol.dart' as _i2;
+import '../tenant/user.dart' as _i2;
+import '../tenant/role.dart' as _i3;
 
 /// Represents a membership of a user in a role.
 abstract class UserRoleMembership implements _i1.SerializableModel {
@@ -34,7 +35,7 @@ abstract class UserRoleMembership implements _i1.SerializableModel {
     required int userId,
     _i2.User? user,
     required int roleId,
-    _i2.Role? role,
+    _i3.Role? role,
   }) = _UserRoleMembershipImpl;
 
   factory UserRoleMembership.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -55,7 +56,7 @@ abstract class UserRoleMembership implements _i1.SerializableModel {
       roleId: jsonSerialization['roleId'] as int,
       role: jsonSerialization['role'] == null
           ? null
-          : _i2.Role.fromJson(
+          : _i3.Role.fromJson(
               (jsonSerialization['role'] as Map<String, dynamic>)),
     );
   }
@@ -79,7 +80,7 @@ abstract class UserRoleMembership implements _i1.SerializableModel {
   int roleId;
 
   /// The role the user is a member of.
-  _i2.Role? role;
+  _i3.Role? role;
 
   UserRoleMembership copyWith({
     int? id,
@@ -89,7 +90,7 @@ abstract class UserRoleMembership implements _i1.SerializableModel {
     int? userId,
     _i2.User? user,
     int? roleId,
-    _i2.Role? role,
+    _i3.Role? role,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -122,7 +123,7 @@ class _UserRoleMembershipImpl extends UserRoleMembership {
     required int userId,
     _i2.User? user,
     required int roleId,
-    _i2.Role? role,
+    _i3.Role? role,
   }) : super._(
           id: id,
           createdAt: createdAt,
@@ -153,7 +154,7 @@ class _UserRoleMembershipImpl extends UserRoleMembership {
       userId: userId ?? this.userId,
       user: user is _i2.User? ? user : this.user?.copyWith(),
       roleId: roleId ?? this.roleId,
-      role: role is _i2.Role? ? role : this.role?.copyWith(),
+      role: role is _i3.Role? ? role : this.role?.copyWith(),
     );
   }
 }

@@ -10,7 +10,8 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../protocol.dart' as _i2;
+import '../../infrastructure/custom_domain_name.dart' as _i2;
+import '../../infrastructure/domain_name_target.dart' as _i3;
 
 abstract class CustomDomainNameList implements _i1.SerializableModel {
   CustomDomainNameList._({
@@ -20,7 +21,7 @@ abstract class CustomDomainNameList implements _i1.SerializableModel {
 
   factory CustomDomainNameList({
     required List<_i2.CustomDomainName> customDomainNames,
-    required Map<_i2.DomainNameTarget, String> defaultDomainsByTarget,
+    required Map<_i3.DomainNameTarget, String> defaultDomainsByTarget,
   }) = _CustomDomainNameListImpl;
 
   factory CustomDomainNameList.fromJson(
@@ -32,11 +33,11 @@ abstract class CustomDomainNameList implements _i1.SerializableModel {
           .toList(),
       defaultDomainsByTarget:
           (jsonSerialization['defaultDomainsByTarget'] as List)
-              .fold<Map<_i2.DomainNameTarget, String>>(
+              .fold<Map<_i3.DomainNameTarget, String>>(
                   {},
                   (t, e) => {
                         ...t,
-                        _i2.DomainNameTarget.fromJson((e['k'] as String)):
+                        _i3.DomainNameTarget.fromJson((e['k'] as String)):
                             e['v'] as String
                       }),
     );
@@ -44,11 +45,11 @@ abstract class CustomDomainNameList implements _i1.SerializableModel {
 
   List<_i2.CustomDomainName> customDomainNames;
 
-  Map<_i2.DomainNameTarget, String> defaultDomainsByTarget;
+  Map<_i3.DomainNameTarget, String> defaultDomainsByTarget;
 
   CustomDomainNameList copyWith({
     List<_i2.CustomDomainName>? customDomainNames,
-    Map<_i2.DomainNameTarget, String>? defaultDomainsByTarget,
+    Map<_i3.DomainNameTarget, String>? defaultDomainsByTarget,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -69,7 +70,7 @@ abstract class CustomDomainNameList implements _i1.SerializableModel {
 class _CustomDomainNameListImpl extends CustomDomainNameList {
   _CustomDomainNameListImpl({
     required List<_i2.CustomDomainName> customDomainNames,
-    required Map<_i2.DomainNameTarget, String> defaultDomainsByTarget,
+    required Map<_i3.DomainNameTarget, String> defaultDomainsByTarget,
   }) : super._(
           customDomainNames: customDomainNames,
           defaultDomainsByTarget: defaultDomainsByTarget,
@@ -78,7 +79,7 @@ class _CustomDomainNameListImpl extends CustomDomainNameList {
   @override
   CustomDomainNameList copyWith({
     List<_i2.CustomDomainName>? customDomainNames,
-    Map<_i2.DomainNameTarget, String>? defaultDomainsByTarget,
+    Map<_i3.DomainNameTarget, String>? defaultDomainsByTarget,
   }) {
     return CustomDomainNameList(
       customDomainNames: customDomainNames ??

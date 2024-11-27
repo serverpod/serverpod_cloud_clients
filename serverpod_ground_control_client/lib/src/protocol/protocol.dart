@@ -37,16 +37,15 @@ import 'tenant/user.dart' as _i25;
 import 'tenant/user_role_membership.dart' as _i26;
 import 'view_models/infrastructure/custom_domain_name_list.dart' as _i27;
 import 'view_models/infrastructure/project_config.dart' as _i28;
-import 'protocol.dart' as _i29;
 import 'package:serverpod_ground_control_client/src/protocol/tenant/environment_variable.dart'
-    as _i30;
+    as _i29;
 import 'package:serverpod_ground_control_client/src/protocol/tenant/project.dart'
-    as _i31;
+    as _i30;
 import 'package:serverpod_ground_control_client/src/protocol/tenant/role.dart'
-    as _i32;
+    as _i31;
 import 'package:serverpod_ground_control_client/src/protocol/status/build_status.dart'
-    as _i33;
-import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i34;
+    as _i32;
+import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i33;
 export 'exceptions/duplicate_entry_exception.dart';
 export 'exceptions/invalid_value_exception.dart';
 export 'exceptions/not_found_exception.dart';
@@ -261,69 +260,69 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i1.getType<_i28.ProjectConfig?>()) {
       return (data != null ? _i28.ProjectConfig.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<List<_i29.EnvironmentVariable>?>()) {
+    if (t == _i1.getType<List<_i22.EnvironmentVariable>?>()) {
       return (data != null
           ? (data as List)
-              .map((e) => deserialize<_i29.EnvironmentVariable>(e))
+              .map((e) => deserialize<_i22.EnvironmentVariable>(e))
               .toList()
           : null) as dynamic;
     }
-    if (t == _i1.getType<List<_i29.CustomDomainName>?>()) {
+    if (t == _i1.getType<List<_i7.CustomDomainName>?>()) {
       return (data != null
           ? (data as List)
-              .map((e) => deserialize<_i29.CustomDomainName>(e))
+              .map((e) => deserialize<_i7.CustomDomainName>(e))
               .toList()
           : null) as dynamic;
     }
-    if (t == _i1.getType<List<_i29.Role>?>()) {
+    if (t == _i1.getType<List<_i24.Role>?>()) {
       return (data != null
-          ? (data as List).map((e) => deserialize<_i29.Role>(e)).toList()
+          ? (data as List).map((e) => deserialize<_i24.Role>(e)).toList()
           : null) as dynamic;
     }
-    if (t == _i1.getType<List<_i29.Environment>?>()) {
+    if (t == _i1.getType<List<_i13.Environment>?>()) {
       return (data != null
-          ? (data as List).map((e) => deserialize<_i29.Environment>(e)).toList()
+          ? (data as List).map((e) => deserialize<_i13.Environment>(e)).toList()
           : null) as dynamic;
     }
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList()
           as dynamic;
     }
-    if (t == _i1.getType<List<_i29.UserRoleMembership>?>()) {
+    if (t == _i1.getType<List<_i26.UserRoleMembership>?>()) {
       return (data != null
           ? (data as List)
-              .map((e) => deserialize<_i29.UserRoleMembership>(e))
+              .map((e) => deserialize<_i26.UserRoleMembership>(e))
               .toList()
           : null) as dynamic;
     }
-    if (t == _i1.getType<List<_i29.UserRoleMembership>?>()) {
+    if (t == _i1.getType<List<_i26.UserRoleMembership>?>()) {
       return (data != null
           ? (data as List)
-              .map((e) => deserialize<_i29.UserRoleMembership>(e))
+              .map((e) => deserialize<_i26.UserRoleMembership>(e))
               .toList()
           : null) as dynamic;
     }
-    if (t == List<_i29.CustomDomainName>) {
+    if (t == List<_i7.CustomDomainName>) {
       return (data as List)
-          .map((e) => deserialize<_i29.CustomDomainName>(e))
+          .map((e) => deserialize<_i7.CustomDomainName>(e))
           .toList() as dynamic;
     }
-    if (t == Map<_i29.DomainNameTarget, String>) {
+    if (t == Map<_i12.DomainNameTarget, String>) {
       return Map.fromEntries((data as List).map((e) => MapEntry(
-          deserialize<_i29.DomainNameTarget>(e['k']),
+          deserialize<_i12.DomainNameTarget>(e['k']),
           deserialize<String>(e['v'])))) as dynamic;
     }
-    if (t == List<_i30.EnvironmentVariable>) {
+    if (t == List<_i29.EnvironmentVariable>) {
       return (data as List)
-          .map((e) => deserialize<_i30.EnvironmentVariable>(e))
+          .map((e) => deserialize<_i29.EnvironmentVariable>(e))
           .toList() as dynamic;
     }
-    if (t == List<_i31.Project>) {
-      return (data as List).map((e) => deserialize<_i31.Project>(e)).toList()
+    if (t == List<_i30.Project>) {
+      return (data as List).map((e) => deserialize<_i30.Project>(e)).toList()
           as dynamic;
     }
-    if (t == List<_i32.Role>) {
-      return (data as List).map((e) => deserialize<_i32.Role>(e)).toList()
+    if (t == List<_i31.Role>) {
+      return (data as List).map((e) => deserialize<_i31.Role>(e)).toList()
           as dynamic;
     }
     if (t == Map<String, String>) {
@@ -334,13 +333,13 @@ class Protocol extends _i1.SerializationManager {
       return (data as List).map((e) => deserialize<String>(e)).toList()
           as dynamic;
     }
-    if (t == List<_i33.BuildStatus>) {
+    if (t == List<_i32.BuildStatus>) {
       return (data as List)
-          .map((e) => deserialize<_i33.BuildStatus>(e))
+          .map((e) => deserialize<_i32.BuildStatus>(e))
           .toList() as dynamic;
     }
     try {
-      return _i34.Protocol().deserialize<T>(data, t);
+      return _i33.Protocol().deserialize<T>(data, t);
     } on _i1.DeserializationTypeNotFoundException catch (_) {}
     return super.deserialize<T>(data, t);
   }
@@ -430,7 +429,7 @@ class Protocol extends _i1.SerializationManager {
     if (data is _i28.ProjectConfig) {
       return 'ProjectConfig';
     }
-    className = _i34.Protocol().getClassNameForObject(data);
+    className = _i33.Protocol().getClassNameForObject(data);
     if (className != null) {
       return 'serverpod_auth.$className';
     }
@@ -526,7 +525,7 @@ class Protocol extends _i1.SerializationManager {
     }
     if (dataClassName.startsWith('serverpod_auth.')) {
       data['className'] = dataClassName.substring(15);
-      return _i34.Protocol().deserializeByClassName(data);
+      return _i33.Protocol().deserializeByClassName(data);
     }
     return super.deserializeByClassName(data);
   }

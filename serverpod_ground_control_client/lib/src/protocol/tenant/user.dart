@@ -10,7 +10,7 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../protocol.dart' as _i2;
+import '../tenant/user_role_membership.dart' as _i2;
 
 /// Represents a Serverpod cloud customer user.
 abstract class User implements _i1.SerializableModel {

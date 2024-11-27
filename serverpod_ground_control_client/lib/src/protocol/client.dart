@@ -493,8 +493,8 @@ class EndpointUsers extends _i1.EndpointRef {
       );
 }
 
-class _Modules {
-  _Modules(Client client) {
+class Modules {
+  Modules(Client client) {
     auth = _i13.Caller(client);
   }
 
@@ -538,7 +538,7 @@ class Client extends _i1.ServerpodClientShared {
     secrets = EndpointSecrets(this);
     status = EndpointStatus(this);
     users = EndpointUsers(this);
-    modules = _Modules(this);
+    modules = Modules(this);
   }
 
   late final EndpointAdmin admin;
@@ -563,7 +563,7 @@ class Client extends _i1.ServerpodClientShared {
 
   late final EndpointUsers users;
 
-  late final _Modules modules;
+  late final Modules modules;
 
   @override
   Map<String, _i1.EndpointRef> get endpointRefLookup => {

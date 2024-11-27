@@ -10,7 +10,8 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../protocol.dart' as _i2;
+import '../infrastructure/database_provider.dart' as _i2;
+import '../infrastructure/database_connection.dart' as _i3;
 
 abstract class DatabaseResource implements _i1.SerializableModel {
   DatabaseResource._({
@@ -26,7 +27,7 @@ abstract class DatabaseResource implements _i1.SerializableModel {
     required String cloudEnvironmentId,
     required String providerId,
     required _i2.DatabaseProvider provider,
-    required _i2.DatabaseConnection connection,
+    required _i3.DatabaseConnection connection,
   }) = _DatabaseResourceImpl;
 
   factory DatabaseResource.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -36,7 +37,7 @@ abstract class DatabaseResource implements _i1.SerializableModel {
       providerId: jsonSerialization['providerId'] as String,
       provider: _i2.DatabaseProvider.fromJson(
           (jsonSerialization['provider'] as String)),
-      connection: _i2.DatabaseConnection.fromJson(
+      connection: _i3.DatabaseConnection.fromJson(
           (jsonSerialization['connection'] as Map<String, dynamic>)),
     );
   }
@@ -52,14 +53,14 @@ abstract class DatabaseResource implements _i1.SerializableModel {
 
   _i2.DatabaseProvider provider;
 
-  _i2.DatabaseConnection connection;
+  _i3.DatabaseConnection connection;
 
   DatabaseResource copyWith({
     int? id,
     String? cloudEnvironmentId,
     String? providerId,
     _i2.DatabaseProvider? provider,
-    _i2.DatabaseConnection? connection,
+    _i3.DatabaseConnection? connection,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -86,7 +87,7 @@ class _DatabaseResourceImpl extends DatabaseResource {
     required String cloudEnvironmentId,
     required String providerId,
     required _i2.DatabaseProvider provider,
-    required _i2.DatabaseConnection connection,
+    required _i3.DatabaseConnection connection,
   }) : super._(
           id: id,
           cloudEnvironmentId: cloudEnvironmentId,
@@ -101,7 +102,7 @@ class _DatabaseResourceImpl extends DatabaseResource {
     String? cloudEnvironmentId,
     String? providerId,
     _i2.DatabaseProvider? provider,
-    _i2.DatabaseConnection? connection,
+    _i3.DatabaseConnection? connection,
   }) {
     return DatabaseResource(
       id: id is int? ? id : this.id,
