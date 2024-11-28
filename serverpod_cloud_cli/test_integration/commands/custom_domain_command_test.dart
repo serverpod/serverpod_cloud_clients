@@ -70,9 +70,10 @@ void main() {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
-          'domain',
+          'domains',
           'add',
           'domain.com',
+          '--target',
           'api',
           '--project-id',
           projectId,
@@ -103,7 +104,7 @@ void main() {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
-          'domain',
+          'domains',
           'list',
           '--project-id',
           projectId,
@@ -134,7 +135,7 @@ void main() {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
-          'domain',
+          'domains',
           'remove',
           'domain.com',
           '--project-id',
@@ -166,7 +167,7 @@ void main() {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
-          'domain',
+          'domains',
           'refresh-record',
           'domain.com',
           '--project-id',
@@ -217,9 +218,10 @@ void main() {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
-          'domain',
+          'domains',
           'add',
           'domain.com',
+          '--target',
           'api',
           '--project-id',
           projectId,
@@ -247,7 +249,7 @@ void main() {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
-          'domain',
+          'domains',
           'remove',
           'domain.com',
           '--project-id',
@@ -290,7 +292,7 @@ void main() {
       server = startedServer;
 
       commandResult = cli.run([
-        'domain',
+        'domains',
         'refresh-record',
         'domain.com',
         '--project-id',
@@ -337,7 +339,7 @@ void main() {
       server = startedServer;
 
       commandResult = cli.run([
-        'domain',
+        'domains',
         'refresh-record',
         'domain.com',
         '--project-id',
@@ -385,7 +387,7 @@ void main() {
       server = startedServer;
 
       commandResult = cli.run([
-        'domain',
+        'domains',
         'refresh-record',
         'domain.com',
         '--project-id',
@@ -458,7 +460,7 @@ void main() {
       server = startedServer;
 
       commandResult = cli.run([
-        'domain',
+        'domains',
         'list',
         '--project-id',
         projectId,
@@ -521,7 +523,7 @@ void main() {
       server = startedServer;
 
       commandResult = cli.run([
-        'domain',
+        'domains',
         'list',
         '--project-id',
         projectId,

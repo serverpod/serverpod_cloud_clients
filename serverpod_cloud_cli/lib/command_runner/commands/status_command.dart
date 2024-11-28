@@ -1,19 +1,12 @@
 import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/features/status/status.dart';
 import 'package:serverpod_cloud_cli/features/logs/logs.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 
 abstract final class _StatusOptions {
-  static const projectId = ConfigOption(
-    argName: 'project-id',
-    argAbbrev: 'i',
-    argPos: 0,
-    helpText:
-        'The ID of the project. Can also be specified as the first argument.',
-    mandatory: true,
-    envName: 'SERVERPOD_CLOUD_PROJECT_ID',
-  );
+  static const projectId = ProjectIdOption();
   static const limit = ConfigOption(
     argName: 'limit',
     helpText: 'The maximum number of records to fetch.',
@@ -31,8 +24,7 @@ abstract final class _StatusOptions {
 
   static const deploy = ConfigOption(
     argName: 'deploy',
-    argAbbrev: 'd',
-    argPos: 1,
+    argPos: 0,
     helpText:
         'View a specific deployment, with uuid or sequence number, 0 for latest.',
     valueHelp: '<uuid|integer>',
@@ -40,7 +32,7 @@ abstract final class _StatusOptions {
   );
   static const list = ConfigOption(
     argName: 'list',
-    argAbbrev: 'l',
+    argAbbrev: CommandConfigConstants.listOptionAbbrev,
     isFlag: true,
     defaultsTo: 'false',
     helpText: "List recent deployments.",

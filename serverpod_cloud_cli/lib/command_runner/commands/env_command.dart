@@ -1,5 +1,6 @@
 import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 import 'package:serverpod_cloud_cli/util/table_printer.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
@@ -21,30 +22,18 @@ class CloudEnvCommand extends CloudCliCommand {
 }
 
 abstract final class EnvCommandConfig {
-  static const projectId = ConfigOption(
-    argName: 'project-id',
-    argAbbrev: 'i',
-    helpText: 'The ID of the project.',
-    mandatory: true,
-    envName: 'SERVERPOD_CLOUD_PROJECT_ID',
-  );
+  static const projectId = ProjectIdOption();
 
-  static const variableName = ConfigOption(
-    argName: 'name',
-    argAbbrev: 'n',
+  static const variableName = NameOption(
     argPos: 0,
     helpText:
-        'The name of the environment variable. Can also be specified as the first argument.',
-    mandatory: true,
+        'The name of the environment variable. Can be passed as the first argument.',
   );
 
-  static const variableValue = ConfigOption(
-    argName: 'value',
-    argAbbrev: 'v',
+  static const variableValue = ValueOption(
     argPos: 1,
     helpText:
-        'The value of the environment variable. Can also be specified as the second argument.',
-    mandatory: true,
+        'The value of the environment variable. Can be passed as the second argument.',
   );
 }
 

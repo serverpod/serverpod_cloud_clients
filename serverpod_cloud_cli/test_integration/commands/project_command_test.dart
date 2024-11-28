@@ -80,7 +80,7 @@ void main() {
         }));
 
         commandResult = cli.run([
-          'project',
+          'projects',
           'create',
           projectId,
           '--api-url',
@@ -132,7 +132,7 @@ void main() {
         }));
 
         commandResult = cli.run([
-          'project',
+          'projects',
           'create',
           projectId,
           '--api-url',
@@ -178,7 +178,7 @@ void main() {
         }));
 
         commandResult = cli.run([
-          'project',
+          'projects',
           'create',
           projectId,
           '--api-url',
@@ -212,7 +212,7 @@ void main() {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
-          'project',
+          'projects',
           'create',
           projectId,
           '--api-url',

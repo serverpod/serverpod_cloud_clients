@@ -242,12 +242,6 @@ Status of projectId build build-id-foo, started at 2021-12-31 10:20:30:
         }
 
         testCorrectGetRecentStatusCommand(
-            'by positional proj opt and default build', [projectId]);
-        testCorrectGetRecentStatusCommand(
-            'by positional proj opt and build index', [projectId, '0']);
-        testCorrectGetRecentStatusCommand(
-            'by positional proj opt and build id', [projectId, 'build-id-foo']);
-        testCorrectGetRecentStatusCommand(
             'by named proj opt and default build', ['--project-id', projectId]);
         testCorrectGetRecentStatusCommand('by named proj opt and build index',
             ['--project-id', projectId, '0']);
@@ -320,17 +314,14 @@ Status of projectId build build-id-foo, started at 2021-12-31 10:20:30:
         }
 
         testIncorrectGetStatusCommand(
-            'with misplaced index arg', ['0', projectId]);
-        testIncorrectGetStatusCommand(
-            'by positional proj opt and non-existing build index',
-            [projectId, '2']);
-        testIncorrectGetStatusCommand(
             'for named proj opt and non-existing build index',
             ['--project-id', projectId, '2']);
         testIncorrectGetStatusCommand(
-            'for non-existing project', ['--project-id', 'non-existing']);
+            'for non-existing project without build index',
+            ['--project-id', 'non-existing']);
         testIncorrectGetStatusCommand(
-            'for non-existing project', ['--project-id', 'non-existing', '0']);
+            'for non-existing project and build index',
+            ['--project-id', 'non-existing', '0']);
       });
     });
 
@@ -420,9 +411,6 @@ Status of projectId build build-id-foo, started at 2021-12-31 10:20:30:
           });
         }
 
-        testCorrectGetStatusesCommand(
-            'with long option', [projectId, '--list']);
-        testCorrectGetStatusesCommand('with short option', [projectId, '-l']);
         testCorrectGetStatusesCommand('with named project opt and long option',
             ['--project-id', projectId, '--list']);
         testCorrectGetStatusesCommand('with named project op and short option',
@@ -484,10 +472,10 @@ Status of projectId build build-id-foo, started at 2021-12-31 10:20:30:
 
         testIncorrectGetStatusesCommand(
             'for non-existing project and long option',
-            ['non-existing-project', '--list']);
+            ['--project-id', projectId, 'non-existing-project', '--list']);
         testIncorrectGetStatusesCommand(
             'for non-existing project and short option',
-            ['non-existing-project', '-l']);
+            ['--project-id', projectId, 'non-existing-project', '-l']);
       });
     });
   });

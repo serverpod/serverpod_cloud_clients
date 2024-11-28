@@ -1,12 +1,13 @@
 import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 import 'package:serverpod_cloud_cli/util/table_printer.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
 
 class CloudCustomDomainCommand extends CloudCliCommand {
   @override
-  final name = 'domain';
+  final name = 'domains';
 
   @override
   final description = 'Manage Serverpod Cloud custom domains.';
@@ -20,27 +21,16 @@ class CloudCustomDomainCommand extends CloudCliCommand {
 }
 
 abstract final class CustomDomainCommandConfig {
-  static const projectId = ConfigOption(
-    argName: 'project-id',
-    argAbbrev: 'i',
-    helpText: 'The ID of the project.',
-    mandatory: true,
-    envName: 'SERVERPOD_CLOUD_PROJECT_ID',
-  );
+  static const projectId = ProjectIdOption();
 
-  static const domainName = ConfigOption(
-    argName: 'domain-name',
-    argAbbrev: 'n',
+  static const domainName = NameOption(
+    helpText: 'The custom domain name. Can be passed as the first argument.',
     argPos: 0,
-    helpText:
-        'The custom domain name. Can also be specified as the first argument.',
-    mandatory: true,
   );
 
   static const target = ConfigOption(
     argName: 'target',
     argAbbrev: 't',
-    argPos: 1,
     helpText: 'The target of the custom domain.',
     mandatory: true,
     valueHelp: '[api|web|insights]',

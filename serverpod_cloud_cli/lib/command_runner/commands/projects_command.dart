@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cli_tools/cli_tools.dart';
 import 'package:collection/collection.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
@@ -12,7 +13,7 @@ import 'package:serverpod_ground_control_client/serverpod_ground_control_client.
 
 class CloudProjectCommand extends CloudCliCommand {
   @override
-  final name = 'project';
+  final name = 'projects';
 
   @override
   final description = 'Manage Serverpod Cloud projects.';
@@ -26,14 +27,11 @@ class CloudProjectCommand extends CloudCliCommand {
 }
 
 abstract final class _ProjectOptions {
-  static const projectId = ConfigOption(
-    argName: 'project-id',
-    argAbbrev: 'i',
-    argPos: 0,
+  static const projectId = ProjectIdOption(
     helpText:
-        'The ID of the project. Can also be specified as the first argument.',
-    mandatory: true,
-    envName: 'SERVERPOD_CLOUD_PROJECT_ID',
+        '${CommandConfigConstants.projectIdHelpText} Can be passed as the first argument.',
+    argPos: 0,
+    envName: null,
   );
 
   static const enableDb = ConfigOption(

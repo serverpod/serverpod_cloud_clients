@@ -1,5 +1,6 @@
 import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 import 'package:serverpod_cloud_cli/util/table_printer.dart';
 
@@ -18,28 +19,16 @@ class CloudSecretsCommand extends CloudCliCommand {
 }
 
 abstract final class SecretCommandConfig {
-  static const projectId = ConfigOption(
-    argName: 'project-id',
-    argAbbrev: 'i',
-    helpText: 'The ID of the project.',
-    mandatory: true,
-    envName: 'SERVERPOD_CLOUD_PROJECT_ID',
-  );
+  static const projectId = ProjectIdOption();
 
-  static const name = ConfigOption(
-    argName: 'name',
-    argAbbrev: 'n',
+  static const name = NameOption(
+    helpText: 'The name of the secret. Can be passed as the first argument.',
     argPos: 0,
-    helpText: 'The name of the secret.',
-    mandatory: true,
   );
 
-  static const value = ConfigOption(
-    argName: 'value',
-    argAbbrev: 'v',
+  static const value = ValueOption(
     argPos: 1,
-    helpText: 'The value of the secret.',
-    mandatory: true,
+    helpText: 'The value of the secret. Can be passed as the second argument.',
   );
 }
 

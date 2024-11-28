@@ -2,23 +2,15 @@ import 'dart:io';
 
 import 'package:cli_tools/cli_tools.dart' as cli;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/option_parsing.dart';
 import 'package:serverpod_cloud_cli/features/logs/logs.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 
 abstract final class _LogOptions {
-  static const projectId = ConfigOption(
-    argName: 'project-id',
-    argAbbrev: 'i',
-    argPos: 0,
-    helpText:
-        'The ID of the project. Can also be specified as the first argument.',
-    mandatory: true,
-    envName: 'SERVERPOD_CLOUD_PROJECT_ID',
-  );
+  static const projectId = ProjectIdOption();
   static const limit = ConfigOption(
     argName: 'limit',
-    argAbbrev: 'l',
     helpText: 'The maximum number of log records to fetch.',
     defaultsTo: '50',
   );
@@ -35,7 +27,6 @@ abstract final class _LogOptions {
   static const recent = ConfigOption(
     argName: 'recent',
     argAbbrev: 'r',
-    argPos: 1,
     helpText:
         'Fetch records from the recent period length; s (seconds) by default.',
     valueHelp: '<integer>[s|m|h|d]',

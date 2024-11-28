@@ -15,7 +15,7 @@ enum LoginCommandOption implements OptionDefinition {
       argAbbrev: 't',
       helpText:
           'The time in seconds to wait for the authentication to complete.',
-      defaultsTo: '120',
+      defaultsTo: '300',
     ),
   ),
   persistentOpt(
