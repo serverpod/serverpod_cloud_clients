@@ -413,7 +413,7 @@ void main() {
 
     /// This url is missing the `bucketName` subdomain.
     const uploadDescription =
-        '"{\\"url\\":\\"http://localhost:8000/$projectId%2F$projectUuid.zip?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=test-service-bucket%40hosting-example-414217.iam.gserviceaccount.com%2F20240909%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20240909T094501Z&X-Goog-Expires=600&X-Goog-SignedHeaders=accept%3Bcontent-type%3Bhost%3Bx-goog-meta-tenant-project-id&x-goog-signature=2a3432d7e650cd7f32e4b6ddb01051390ae40084fb45f7af25cfaa891f33425d7bf64939b78b9e339b28bcf5238dfb58c67fd8e1eb8957c2df22b1b91d1f01a3ecd1ad4217a570a7e7a80e2999164ca7d920058bfdf52851341fe3c85340da14917026c8efae8f733d5d6548a149ae0558f88307bfcf23f97c2a141317d2be5cf4035488bd7b01137333250be11a174e73096674d8eaffcc7c7d2849044a3eb7669c35f7e421f99ab9557610478c96b68b29962fa1ea002cf76a09a0f302c66157844bd1a2b4b8a36378fd18f8a8dab750d955ff1866c9b20105c56b1f3ebf88c4dcf75043518c74d3d25c54673557b397ba1e31336766004c06ddf7bbbe1940\\",\\"type\\":\\"binary\\",\\"httpMethod\\":\\"PUT\\",\\"headers\\":{\\"content-type\\":\\"application/octet-stream\\",\\"accept\\":\\"*/*\\",\\"x-goog-meta-tenant-project-id\\":\\"$projectId\\",\\"host\\":\\"$bucketName.localhost:8000\\"}}"';
+        '"{\\"url\\":\\"http://localhost:8000/$projectId%2F$projectUuid.zip?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=test-service-bucket%40hosting-example-414217.iam.gserviceaccount.com%2F20240909%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20240909T094501Z&X-Goog-Expires=600&X-Goog-SignedHeaders=accept%3Bcontent-type%3Bhost%3Bx-goog-meta-tenant-project-id&x-goog-signature=2a3432d7e650cd7f32e4b6ddb01051390ae40084fb45f7af25cfaa891f33425d7bf64939b78b9e339b28bcf5238dfb58c67fd8e1eb8957c2df22b1b91d1f01a3ecd1ad4217a570a7e7a80e2999164ca7d920058bfdf52851341fe3c85340da14917026c8efae8f733d5d6548a149ae0558f88307bfcf23f97c2a141317d2be5cf4035488bd7b01137333250be11a174e73096674d8eaffcc7c7d2849044a3eb7669c35f7e421f99ab9557610478c96b68b29962fa1ea002cf76a09a0f302c66157844bd1a2b4b8a36378fd18f8a8dab750d955ff1866c9b20105c56b1f3ebf88c4dcf75043518c74d3d25c54673557b397ba1e31336766004c06ddf7bbbe1940\\",\\"type\\":\\"binary\\",\\"httpMethod\\":\\"PUT\\",\\"headers\\":{\\"content-type\\":\\"application/octet-stream\\",\\"accept\\":\\"*/*\\",\\"x-goog-meta-tenant-project-id\\":\\"$projectId\\",\\"x-goog-meta-upload-id\\":\\"upload-$projectUuid\\",\\"host\\":\\"$bucketName.localhost:8000\\"}}"';
 
     setUp(() async {
       final serverBuilder = HttpServerBuilder();
@@ -482,6 +482,7 @@ void main() {
         '\\"content-type\\": \\"application/octet-stream\\",'
         '\\"accept\\": \\"*/*\\",'
         '\\"x-goog-meta-tenant-project-id\\": \\"$projectId\\",'
+        '\\"x-goog-meta-upload-id\\": \\"upload-$projectUuid\\",'
         '\\"host\\": \\"$bucketName.localhost:8000\\"'
         '}'
         '}"';
