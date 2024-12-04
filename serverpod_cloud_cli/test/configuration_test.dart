@@ -1,8 +1,111 @@
 import 'package:args/args.dart';
-import 'package:test/test.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
+import 'package:test/test.dart';
 
 void main() async {
+  group('Given invalid configuration abbrevation without full name', () {
+    const projectIdOpt = ConfigOption(
+      argAbbrev: 'p',
+    );
+    final parser = ArgParser();
+
+    test('when preparing for parsing then throws exception', () async {
+      expect(
+        () => [projectIdOpt].prepareForParsing(parser),
+        throwsA(allOf(
+          isA<ArgumentError>(),
+          (final e) => e.toString().contains(
+                "An argument option can't have an abbreviation but not a full name",
+              ),
+        )),
+      );
+    });
+  });
+
+  group('Given invalid configuration positional argument and isFlag', () {
+    const projectIdOpt = ConfigOption(
+      argPos: 0,
+      isFlag: true,
+    );
+    final parser = ArgParser();
+
+    test('when preparing for parsing then throws exception', () async {
+      expect(
+        () => [projectIdOpt].prepareForParsing(parser),
+        throwsA(allOf(
+          isA<ArgumentError>(),
+          (final e) => e.toString().contains(
+                "Positional options can't be flags",
+              ),
+        )),
+      );
+    });
+  });
+
+  group('Given invalid configuration valueRequired and mandatory', () {
+    const projectIdOpt = ConfigOption(
+      valueRequired: true,
+      mandatory: true,
+    );
+    final parser = ArgParser();
+
+    test('when preparing for parsing then throws exception', () async {
+      expect(
+        () => [projectIdOpt].prepareForParsing(parser),
+        throwsA(allOf(
+          isA<ArgumentError>(),
+          (final e) => e.toString().contains(
+                "An argument option should not have valueRequired specified if mandatory is true, "
+                "since this already guarantees that the value will be passed",
+              ),
+        )),
+      );
+    });
+  });
+
+  group('Given invalid configuration mandatory with default value', () {
+    const projectIdOpt = ConfigOption(
+      mandatory: true,
+      defaultsTo: 'default',
+    );
+    final parser = ArgParser();
+
+    test('when preparing for parsing then throws exception', () async {
+      expect(
+        () => [projectIdOpt].prepareForParsing(parser),
+        throwsA(allOf(
+          isA<ArgumentError>(),
+          (final e) => e
+              .toString()
+              .contains("Mandatory options can't have default values"),
+        )),
+      );
+    });
+  });
+
+  group(
+      'Given invalid configuration mandatory with default value from function',
+      () {
+    const projectIdOpt = ConfigOption(
+      mandatory: true,
+      defaultFrom: _defaultValueFunction,
+    );
+
+    final parser = ArgParser();
+
+    test('when preparing for parsing then throws exception', () async {
+      expect(
+        () => [projectIdOpt].prepareForParsing(parser),
+        throwsA(allOf(
+          isA<ArgumentError>(),
+          (final e) => e
+              .toString()
+              .contains("Mandatory options can't have default values"),
+        )),
+      );
+    });
+  });
+
   group('Given a configuration option definition', () {
     const projectIdOpt = ConfigOption(
       argName: 'project-id',
@@ -314,10 +417,91 @@ void main() async {
     });
   });
 
+  group('Given a valueRequired configuration option', () {
+    const projectIdOpt = ConfigOption(
+      argName: 'project-id',
+      envName: 'PROJECT_ID',
+      valueRequired: true,
+    );
+    final parser = ArgParser();
+    [projectIdOpt].prepareForParsing(parser);
+
+    test('when provided as argument then parsing succeeds', () async {
+      final argResults = parser.parse(['--project-id', '123']);
+      final envVars = <String, String>{};
+      final config = Configuration.fromEnvAndArgs(
+        options: [projectIdOpt],
+        args: argResults,
+        env: envVars,
+      );
+      expect(config.value(projectIdOpt), equals('123'));
+    });
+
+    test('when provided as env variable then parsing succeeds', () async {
+      final argResults = parser.parse([]);
+      final envVars = {'PROJECT_ID': '456'};
+      final config = Configuration.fromEnvAndArgs(
+        options: [projectIdOpt],
+        args: argResults,
+        env: envVars,
+      );
+      expect(config.value(projectIdOpt), equals('456'));
+    });
+
+    test('when not provided then parsing throws ArgumentError', () async {
+      final argResults = parser.parse([]);
+      final envVars = <String, String>{};
+      expect(
+          () => Configuration.fromEnvAndArgs(
+                options: [projectIdOpt],
+                args: argResults,
+                env: envVars,
+              ),
+          throwsA(isA<ArgumentError>()));
+    });
+  });
+
   group('Given a mandatory env-only configuration option', () {
     const projectIdOpt = ConfigOption(
       envName: 'PROJECT_ID',
       mandatory: true,
+    );
+    final parser = ArgParser();
+    [projectIdOpt].prepareForParsing(parser);
+
+    test('when provided as argument then parsing fails', () async {
+      expect(() => parser.parse(['--project-id', '123']),
+          throwsA(isA<FormatException>()));
+    });
+
+    test('when provided as env variable then parsing succeeds', () async {
+      final argResults = parser.parse([]);
+      final envVars = {'PROJECT_ID': '456'};
+      final config = Configuration.fromEnvAndArgs(
+        options: [projectIdOpt],
+        args: argResults,
+        env: envVars,
+      );
+      expect(config.value(projectIdOpt), equals('456'));
+    });
+
+    test('when not provided then parsing throws ArgumentError', () async {
+      final argResults = parser.parse([]);
+      final envVars = <String, String>{};
+      expect(
+          () => Configuration.fromEnvAndArgs(
+                options: [projectIdOpt],
+                args: argResults,
+                env: envVars,
+              ),
+          throwsA(isA<ArgumentError>()));
+    });
+  });
+
+  group('Given a valueRequired env-only configuration option', () {
+    const projectIdOpt = ConfigOption(
+      envName: 'PROJECT_ID',
+      valueRequired: true,
     );
     final parser = ArgParser();
     [projectIdOpt].prepareForParsing(parser);
@@ -483,6 +667,65 @@ void main() async {
     const positionalOpt = ConfigOption(
       argPos: 0,
       mandatory: true,
+    );
+    const projectIdOpt = ConfigOption(
+      argName: 'project-id',
+    );
+    final options = [positionalOpt, projectIdOpt];
+    final parser = ArgParser();
+    options.prepareForParsing(parser);
+
+    test('when provided as lone positional argument then parsing succeeds',
+        () async {
+      final argResults = parser.parse(['pos-arg']);
+      final envVars = <String, String>{};
+      final config = Configuration.fromEnvAndArgs(
+        options: options,
+        args: argResults,
+        env: envVars,
+      );
+      expect(config.value(positionalOpt), equals('pos-arg'));
+    });
+
+    test('when provided before named argument then parsing succeeds', () async {
+      final argResults = parser.parse(['pos-arg', '--project-id', '123']);
+      final envVars = <String, String>{};
+      final config = Configuration.fromEnvAndArgs(
+        options: options,
+        args: argResults,
+        env: envVars,
+      );
+      expect(config.value(positionalOpt), equals('pos-arg'));
+    });
+
+    test('when provided after named argument then parsing succeeds', () async {
+      final argResults = parser.parse(['--project-id', '123', 'pos-arg']);
+      final envVars = <String, String>{};
+      final config = Configuration.fromEnvAndArgs(
+        options: options,
+        args: argResults,
+        env: envVars,
+      );
+      expect(config.value(positionalOpt), equals('pos-arg'));
+    });
+
+    test('when not provided then parsing throws ArgumentError', () async {
+      final argResults = parser.parse([]);
+      final envVars = <String, String>{};
+      expect(
+          () => Configuration.fromEnvAndArgs(
+                options: options,
+                args: argResults,
+                env: envVars,
+              ),
+          throwsA(isA<ArgumentError>()));
+    });
+  });
+
+  group('Given a valueRequired positional argument option', () {
+    const positionalOpt = ConfigOption(
+      argPos: 0,
+      valueRequired: true,
     );
     const projectIdOpt = ConfigOption(
       argName: 'project-id',

@@ -1,12 +1,15 @@
 import 'dart:io';
 
 import 'package:serverpod_cloud_cli/util/configuration.dart';
+import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
 
 abstract final class CommandConfigConstants {
   static const listOptionAbbrev = 'l';
 
   static const projectIdArgName = 'project-id';
-  static const projectIdHelpText = 'The ID of the project.';
+  static const projectIdHelpText =
+      'The ID of the project. Can be omitted if the project is linked. \n'
+      'See `scloud link --help` for more information.';
 }
 
 class ProjectIdOption extends ConfigOption {
@@ -17,8 +20,17 @@ class ProjectIdOption extends ConfigOption {
   }) : super(
           argName: CommandConfigConstants.projectIdArgName,
           argAbbrev: 'i',
-          mandatory: true,
+          defaultFrom: _tryGetProjectIdFromConfig,
+          valueRequired: true,
         );
+}
+
+String? _tryGetProjectIdFromConfig() {
+  try {
+    return ScloudConfig.getProjectIdFromConfig(Directory.current.path);
+  } catch (_) {
+    return null;
+  }
 }
 
 class ProjectDirOption extends ConfigOption {

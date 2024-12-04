@@ -21,7 +21,9 @@ abstract class OptionDefinition {
 /// still get the correct value.
 /// Note that this means that an option can't be provided both named and positional at the same time.
 ///
-/// If [mandatory] is true, the option must be provided in the configuration sources.
+/// If [mandatory] is true, the option must be provided in the configuration sources. This cannot be used together with [defaultsTo] or [defaultFrom].
+/// [valueRequired] is a more permitting version of [mandatory]. If true, the options must either have been provided in the configuration sources,
+/// or have a default value. [valueRequired] cannot be used together with [mandatory].
 /// If no value is provided from the configuration sources, the [defaultFrom] callback is used
 /// if available, otherwise the [defaultsTo] value is used.
 /// [defaultFrom] must return the same value if called multiple times.
@@ -35,6 +37,7 @@ class ConfigOption implements OptionDefinition {
   final String? defaultsTo;
   final String? Function()? defaultFrom;
   final bool mandatory;
+  final bool valueRequired;
   final bool hide;
   final bool isFlag;
   final bool negatable;
@@ -52,6 +55,7 @@ class ConfigOption implements OptionDefinition {
     this.hide = false,
     this.isFlag = false,
     this.negatable = true,
+    this.valueRequired = false,
   });
 
   String? defaultValue() {
@@ -94,11 +98,19 @@ class ConfigOption implements OptionDefinition {
       throw ArgumentError(
           "An argument option can't have an abbreviation but not a full name: $this");
     }
+
     if (argPos != null && isFlag) {
       throw ArgumentError("Positional options can't be flags: $this");
     }
+
+    if (valueRequired && mandatory) {
+      throw ArgumentError(
+          "An argument option should not have valueRequired specified if mandatory is true, "
+          "since this already guarantees that the value will be passed: $this");
+    }
+
     if ((defaultFrom != null || defaultsTo != null) && mandatory) {
-      throw ArgumentError("Mandatory options can't have default value: $this");
+      throw ArgumentError("Mandatory options can't have default values: $this");
     }
   }
 
@@ -191,11 +203,12 @@ class Configuration<T extends OptionDefinition> {
   /// i.e. are mandatory or have defaults. For other options it throws [StateError].
   /// See also [valueOrNull].
   String value(final T option) {
-    if (!(option.option.mandatory ||
+    final isRequired = option.option.valueRequired || option.option.mandatory;
+    if (!(isRequired ||
         option.option.defaultFrom != null ||
         option.option.defaultsTo != null)) {
       throw StateError(
-          "Can't invoke non-nullable value() for $option which is neither mandatory or has a default value.");
+          "Can't invoke non-nullable value() for $option which is neither mandatory nor has a default value.");
     }
     final val = valueOrNull(option);
     if (val != null) return val;
@@ -208,11 +221,12 @@ class Configuration<T extends OptionDefinition> {
   /// i.e. are mandatory or have defaults. For other flags it throws [StateError].
   /// See also [flagOrNull].
   bool flag(final T option) {
-    if (!(option.option.mandatory ||
+    final isRequired = option.option.valueRequired || option.option.mandatory;
+    if (!(isRequired ||
         option.option.defaultFrom != null ||
         option.option.defaultsTo != null)) {
       throw StateError(
-          "Can't invoke non-nullable flag() for $option which is neither mandatory or has a default value.");
+          "Can't invoke non-nullable flag() for $option which is neither mandatory nor has a default value.");
     }
     final val = flagOrNull(option);
     if (val != null) return val;
@@ -276,7 +290,7 @@ class Configuration<T extends OptionDefinition> {
     final envVarName = option.option.envName;
 
     String? value;
-    Iterable<String> nextRemPosArgs = remainingPosArgs;
+    Iterable<String> nextRemainingPosArgs = remainingPosArgs;
     if (argOptName != null && args != null && args.wasParsed(argOptName)) {
       // Named arguments takes precedence over other config sources.
       value = option.option.isFlag
@@ -285,7 +299,7 @@ class Configuration<T extends OptionDefinition> {
     } else if (argOptPos != null && remainingPosArgs.isNotEmpty) {
       // Positional arguments have second highest precedence.
       value = remainingPosArgs.first;
-      nextRemPosArgs = remainingPosArgs.skip(1);
+      nextRemainingPosArgs = remainingPosArgs.skip(1);
     } else if (envVarName != null && env.containsKey(envVarName)) {
       // Environment variables have third highest precedence.
       value = env[envVarName];
@@ -297,9 +311,10 @@ class Configuration<T extends OptionDefinition> {
       value = option.option.defaultsTo;
     }
 
-    if (value == null && option.option.mandatory) {
+    if (value == null &&
+        (option.option.valueRequired || option.option.mandatory)) {
       throw ArgumentError('Option/flag is mandatory.', option.toString());
     }
-    return (value, nextRemPosArgs);
+    return (value, nextRemainingPosArgs);
   }
 }

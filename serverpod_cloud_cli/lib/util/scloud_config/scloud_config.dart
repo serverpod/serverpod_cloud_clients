@@ -17,15 +17,8 @@ final _schema = YamlMap.wrap({
 final _yamlSchema = YamlSchema(_schema);
 
 abstract final class ScloudConfig {
-  static Map<String, dynamic> parseConfigYaml(final String path) {
-    final yaml = (File(join(path, ConfigFileConstants.fileName))
-          ..createSync(exclusive: false))
-        .readAsStringSync();
-    final data = loadYaml(yaml);
-
-    if (data == null) {
-      return {};
-    }
+  static Map<String, dynamic> parseConfigYaml(final String configYaml) {
+    final data = loadYaml(configYaml);
 
     if (data is! YamlMap) {
       throw Exception('Invalid YAML data');
@@ -38,22 +31,46 @@ abstract final class ScloudConfig {
     );
   }
 
+  static String getProjectIdFromConfig(final String path) {
+    final yaml = tryReadFile(path);
+    if (yaml == null) {
+      throw Exception('No configuration found.');
+    }
+
+    final cloudConfig = parseConfigYaml(yaml);
+
+    return cloudConfig['project']?['projectId'];
+  }
+
   static void writeToFile(
     final ProjectConfig projectConfig,
     final Directory projectDirectory,
   ) {
-    final output =
-        ScloudConfig.projectConfigToYaml(projectConfig, projectDirectory.path);
+    final output = ScloudConfig.mergeProjectConfigWithCurrentConfigAsYaml(
+      projectConfig,
+      projectDirectory.path,
+    );
     File(join(projectDirectory.path, ConfigFileConstants.fileName))
       ..createSync(recursive: false)
       ..writeAsStringSync(output);
   }
 
-  static String projectConfigToYaml(
+  static String? tryReadFile(final String path) {
+    try {
+      return File(join(path, ConfigFileConstants.fileName)).readAsStringSync();
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static String mergeProjectConfigWithCurrentConfigAsYaml(
     final ProjectConfig projectConfig,
     final String path,
   ) {
-    final cloudConfig = parseConfigYaml(path);
+    final yaml = tryReadFile(path);
+
+    final Map<String, dynamic> cloudConfig =
+        yaml == null ? {} : parseConfigYaml(yaml);
 
     if (cloudConfig['project'] == null) {
       cloudConfig['project'] = {};
