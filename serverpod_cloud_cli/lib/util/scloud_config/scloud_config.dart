@@ -39,7 +39,8 @@ abstract final class ScloudConfig {
 
     final cloudConfig = parseConfigYaml(yaml);
 
-    return cloudConfig['project']?['projectId'];
+    final project = cloudConfig['project'] as YamlMap?;
+    return project?['projectId'];
   }
 
   static void writeToFile(

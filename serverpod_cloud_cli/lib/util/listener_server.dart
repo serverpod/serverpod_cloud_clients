@@ -91,7 +91,7 @@ abstract final class ListenerServer {
   }
 
   static Future<String?> _processRequests(
-      final HttpServer server, final logger) async {
+      final HttpServer server, final Logger logger) async {
     await for (var request in server) {
       logger.debug('Received request: ${request.method} ${request.uri}');
       try {

@@ -172,9 +172,10 @@ void main() {
         expect(file.existsSync(), isTrue);
 
         final content = file.readAsStringSync();
-        final yaml = loadYaml(content);
+        final yaml = loadYaml(content) as YamlMap;
+        final project = yaml['project'] as YamlMap;
 
-        expect(yaml['project']['projectId'], projectId);
+        expect(project['projectId'], projectId);
       });
     });
 
@@ -225,8 +226,9 @@ void main() {
         expect(file.existsSync(), isTrue);
 
         final content = file.readAsStringSync();
-        final yaml = loadYaml(content);
-        expect(yaml['project']['projectId'], projectId);
+        final yaml = loadYaml(content) as YamlMap;
+        final project = yaml['project'] as YamlMap;
+        expect(project['projectId'], projectId);
       });
     });
 

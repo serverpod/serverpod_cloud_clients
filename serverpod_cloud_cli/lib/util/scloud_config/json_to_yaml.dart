@@ -23,8 +23,8 @@ void _convertToYaml(
       _writeIndent(buffer, currentIndent);
       buffer.write('$key:');
 
-      final isNestedType = val is List || val is Map<String, dynamic>;
-      if (isNestedType && val.isNotEmpty) {
+      if ((val is List && val.isNotEmpty) ||
+          (val is Map<String, dynamic> && val.isNotEmpty)) {
         buffer.writeln();
       } else {
         _writeIndent(buffer, 1);
@@ -50,9 +50,8 @@ void _convertToYaml(
       _writeIndent(buffer, currentIndent);
       buffer.write('-');
 
-      final isNestedType = item is List || item is Map<String, dynamic>;
-
-      if (isNestedType && item.isNotEmpty) {
+      if ((item is List && item.isNotEmpty) ||
+          (item is Map<String, dynamic> && item.isNotEmpty)) {
         buffer.writeln();
       } else {
         _writeIndent(buffer, 1);
