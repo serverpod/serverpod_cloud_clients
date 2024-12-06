@@ -1,6 +1,7 @@
 import 'package:mocktail/mocktail.dart';
 import 'package:serverpod_ground_control_client/src/protocol/client.dart';
-import 'package:serverpod_auth_client/serverpod_auth_client.dart';
+import 'package:serverpod_auth_client/serverpod_auth_client.dart'
+    hide EndpointStatus;
 
 class EndpointCustomDomainNameMock extends Mock
     implements EndpointCustomDomainName {}
@@ -23,7 +24,10 @@ class EndpointSecretsMock extends Mock implements EndpointSecrets {}
 
 class EndpointUsersMock extends Mock implements EndpointUsers {}
 
-/// Modules mocks
+class EndpointStatusMock extends Mock implements EndpointStatus {}
+
+// Modules mocks
+
 class EndpointEmailMock extends Mock implements EndpointEmail {}
 
 class AuthModule extends Mock implements Caller {
@@ -95,6 +99,9 @@ class ClientMock extends Mock implements Client {
 
   @override
   final EndpointUsers users = EndpointUsersMock();
+
+  @override
+  final EndpointStatus status = EndpointStatusMock();
 
   @override
   final Modules modules = ModulesMock();

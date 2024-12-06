@@ -87,10 +87,14 @@ class CloudStatusCommand extends CloudCliCommand<StatusOption> {
 
     if (list) {
       // list recent deployments
+      if (deploymentArg != null && deploymentArg != '0') {
+        logger.error('Cannot specify deploy id with --list.');
+        throw ExitException();
+      }
       try {
-        final outputTable = await StatusFeature.getBuildsList(
+        final outputTable = await StatusFeature.getDeployAttemptsList(
           runner.serviceProvider.cloudApiClient,
-          projectId: projectId,
+          environmentId: projectId,
           limit: limit,
           inUtc: inUtc,
         );
@@ -127,8 +131,8 @@ class CloudStatusCommand extends CloudCliCommand<StatusOption> {
 
       final output = await StatusFeature.getDeploymentStatus(
         runner.serviceProvider.cloudApiClient,
-        projectId: projectId,
-        buildId: buildUuid,
+        environmentId: projectId,
+        attemptId: buildUuid,
         inUtc: inUtc,
       );
       logger.info(output.toString());
@@ -142,10 +146,10 @@ class CloudStatusCommand extends CloudCliCommand<StatusOption> {
     buildArg ??= '0';
     final buildNumber = int.tryParse(buildArg);
     return buildNumber != null
-        ? await StatusFeature.getBuildId(
+        ? await StatusFeature.getDeployAttemptId(
             runner.serviceProvider.cloudApiClient,
-            projectId: projectId,
-            buildNumber: buildNumber,
+            environmentId: projectId,
+            attemptNumber: buildNumber,
           )
         : buildArg;
   }

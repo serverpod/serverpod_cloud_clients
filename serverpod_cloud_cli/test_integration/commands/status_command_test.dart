@@ -1,22 +1,28 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:meta/meta.dart';
 import 'package:cli_tools/cli_tools.dart';
 import 'package:pub_semver/pub_semver.dart';
-import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
-import '../../test_utils/http_server_builder.dart';
+import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
+import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
+import 'package:serverpod_ground_control_client/serverpod_ground_control_client_mock.dart';
+
 import '../../test_utils/test_logger.dart';
 
 void main() {
   final logger = TestLogger();
   final version = Version.parse('0.0.1');
+  final client = ClientMock();
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     version: version,
+    serviceProvider: CloudCliServiceProvider(
+      apiClientFactory: (final globalCfg) => client,
+    ),
   );
 
   tearDown(() {
@@ -26,34 +32,26 @@ void main() {
   const projectId = 'projectId';
 
   group('Given unauthenticated', () {
-    late Uri localServerAddress;
-    late Completer requestCompleter;
-    late HttpServer server;
+    setUpAll(() {
+      when(() => client.status.getDeployAttempts(
+            cloudEnvironmentId: any(named: 'cloudEnvironmentId'),
+            limit: any(named: 'limit'),
+          )).thenThrow(ServerpodClientUnauthorized());
 
-    setUp(() async {
-      requestCompleter = Completer();
-      final serverBuilder = HttpServerBuilder();
-      serverBuilder.withOnRequest((final request) {
-        requestCompleter.complete();
-        request.response.statusCode = 401;
-        request.response.close();
-      });
-
-      final (startedServer, serverAddress) = await serverBuilder.build();
-      localServerAddress = serverAddress;
-      server = startedServer;
+      when(() => client.status.getDeployAttemptId(
+            cloudEnvironmentId: any(named: 'cloudEnvironmentId'),
+            attemptNumber: any(named: 'attemptNumber'),
+          )).thenThrow(ServerpodClientUnauthorized());
     });
 
-    tearDown(() async {
-      await server.close(force: true);
+    tearDownAll(() {
+      reset(client.status);
     });
 
-    group('when running status', () {
+    group('when running status without options', () {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
-          '--api-url',
-          localServerAddress.toString(),
           'status',
           '--project-id',
           projectId,
@@ -61,7 +59,6 @@ void main() {
       });
 
       test('then throws exception', () async {
-        await expectLater(requestCompleter.future, completes);
         await expectLater(commandResult, throwsA(isA<ExitException>()));
       });
 
@@ -82,8 +79,6 @@ void main() {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
-          '--api-url',
-          localServerAddress.toString(),
           'status',
           '--project-id',
           projectId,
@@ -92,7 +87,6 @@ void main() {
       });
 
       test('then throws exception', () async {
-        await expectLater(requestCompleter.future, completes);
         await expectLater(commandResult, throwsA(isA<ExitException>()));
       });
 
@@ -113,8 +107,6 @@ void main() {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
-          '--api-url',
-          localServerAddress.toString(),
           'status',
           '--project-id',
           projectId,
@@ -123,7 +115,6 @@ void main() {
       });
 
       test('then throws exception', () async {
-        await expectLater(requestCompleter.future, completes);
         await expectLater(commandResult, throwsA(isA<ExitException>()));
       });
 
@@ -144,58 +135,56 @@ void main() {
   group('Given authenticated', () {
     group('when running status command', () {
       group('with correct args to get the most recent deploy status', () {
-        late Uri localServerAddress;
-        late HttpServer server;
-
         setUpAll(() async {
-          final buildStatuses = [
-            BuildStatus(
-              cloudProjectId: projectId,
+          final attemptStages = [
+            DeployAttemptStage(
               cloudEnvironmentId: projectId,
-              buildId: 'build-id-foo',
-              status: 'SUCCESS',
+              attemptId: 'abc',
+              stageType: DeployStageType.upload,
+              stageStatus: DeployProgressStatus.success,
               startTime: DateTime.parse("2021-12-31 10:20:30"),
-              finishTime: DateTime.parse("2021-12-31 10:20:40"),
-              info: null,
+              endTime: DateTime.parse("2021-12-31 10:20:40"),
+            ),
+            DeployAttemptStage(
+              cloudEnvironmentId: projectId,
+              attemptId: 'abc',
+              stageType: DeployStageType.build,
+              externalId: 'build-id-foo',
+              stageStatus: DeployProgressStatus.success,
+              startTime: DateTime.parse("2021-12-31 10:20:30"),
+              endTime: DateTime.parse("2021-12-31 10:20:40"),
+            ),
+            DeployAttemptStage(
+              cloudEnvironmentId: projectId,
+              attemptId: 'abc',
+              stageType: DeployStageType.deploy,
+              stageStatus: DeployProgressStatus.success,
+              startTime: DateTime.parse("2021-12-31 10:20:30"),
+              endTime: DateTime.parse("2021-12-31 10:20:40"),
+            ),
+            DeployAttemptStage(
+              cloudEnvironmentId: projectId,
+              attemptId: 'abc',
+              stageType: DeployStageType.service,
+              stageStatus: DeployProgressStatus.success,
+              startTime: DateTime.parse("2021-12-31 10:20:30"),
+              endTime: DateTime.parse("2021-12-31 10:20:40"),
             ),
           ];
 
-          final serverBuilder = HttpServerBuilder();
-          serverBuilder.withMethodResponse(
-            'status',
-            'getBuildStatus',
-            (final parameters) {
-              if (parameters['cloudProjectId'] != projectId) {
-                return (404, null);
-              }
-              final status = buildStatuses
-                  .where(
-                      (final status) => status.buildId == parameters['buildId'])
-                  .firstOrNull;
-              return (status != null ? 200 : 404, status);
-            },
-          );
+          when(() => client.status.getDeployAttemptStatus(
+                cloudEnvironmentId: projectId,
+                attemptId: attemptStages.first.attemptId,
+              )).thenAnswer((final _) async => attemptStages);
 
-          serverBuilder.withMethodResponse(
-            'status',
-            'getBuildId',
-            (final parameters) {
-              if (parameters['cloudProjectId'] != projectId) {
-                return (404, null);
-              }
-              final buildNumber = parameters['buildNumber'] as int;
-              if (buildNumber < 0 || buildNumber >= buildStatuses.length) {
-                return (404, null);
-              }
-              return (200, buildStatuses[buildNumber].buildId);
-            },
-          );
-
-          (server, localServerAddress) = await serverBuilder.build();
+          when(() => client.status.getDeployAttemptId(
+                cloudEnvironmentId: projectId,
+                attemptNumber: 0,
+              )).thenAnswer((final _) async => attemptStages.first.attemptId);
         });
 
-        tearDownAll(() async {
-          await server.close(force: true);
+        tearDownAll(() {
+          reset(client.status);
         });
 
         @isTestGroup
@@ -207,8 +196,6 @@ void main() {
             late Future commandResult;
             setUp(() async {
               commandResult = cli.run([
-                '--api-url',
-                localServerAddress.toString(),
                 'status',
                 ...args,
               ]);
@@ -225,7 +212,7 @@ void main() {
               expect(
                 logger.messages.first,
                 '''
-Status of projectId build build-id-foo, started at 2021-12-31 10:20:30:
+Status of projectId deploy abc, started at 2021-12-31 10:20:30:
 
 ✅  Booster liftoff:     Upload successful!
 
@@ -233,7 +220,7 @@ Status of projectId build build-id-foo, started at 2021-12-31 10:20:30:
 
 ✅  Orbital insertion:   Deploy successful!
 
-✅  Pod commissioning:   Service running! 🚀
+✅  Pod commissioning:   Service successful! 🚀
 
 ''',
               );
@@ -246,34 +233,24 @@ Status of projectId build build-id-foo, started at 2021-12-31 10:20:30:
         testCorrectGetRecentStatusCommand('by named proj opt and build index',
             ['--project-id', projectId, '0']);
         testCorrectGetRecentStatusCommand('by named proj opt and build id',
-            ['--project-id', projectId, 'build-id-foo']);
+            ['--project-id', projectId, 'abc']);
       });
 
       group('with incorrect args to get a deploy status', () {
-        late Uri localServerAddress;
-        late HttpServer server;
-
         setUpAll(() async {
-          final serverBuilder = HttpServerBuilder();
-          serverBuilder.withMethodResponse(
-            'status',
-            'getBuildStatus',
-            (final parameters) => (404, null),
-          );
+          when(() => client.status.getDeployAttemptStatus(
+                cloudEnvironmentId: any(named: 'cloudEnvironmentId'),
+                attemptId: any(named: 'attemptId'),
+              )).thenThrow(ServerpodClientNotFound());
 
-          serverBuilder.withMethodResponse(
-            'status',
-            'getBuildId',
-            (final parameters) => (404, null),
-          );
-
-          final (startedServer, serverAddress) = await serverBuilder.build();
-          localServerAddress = serverAddress;
-          server = startedServer;
+          when(() => client.status.getDeployAttemptId(
+                cloudEnvironmentId: any(named: 'cloudEnvironmentId'),
+                attemptNumber: any(named: 'attemptNumber'),
+              )).thenThrow(ServerpodClientNotFound());
         });
 
         tearDownAll(() async {
-          await server.close(force: true);
+          reset(client.status);
         });
 
         @isTestGroup
@@ -285,8 +262,6 @@ Status of projectId build build-id-foo, started at 2021-12-31 10:20:30:
             late Future commandResult;
             setUp(() async {
               commandResult = cli.run([
-                '--api-url',
-                localServerAddress.toString(),
                 'status',
                 ...args,
               ]);
@@ -327,50 +302,34 @@ Status of projectId build build-id-foo, started at 2021-12-31 10:20:30:
 
     group('when running status list command', () {
       group('with correct args to get the deployments list', () {
-        late Uri localServerAddress;
-        late HttpServer server;
-
         setUpAll(() async {
           final buildStatuses = [
-            BuildStatus(
-              cloudProjectId: projectId,
+            DeployAttempt(
               cloudEnvironmentId: projectId,
-              buildId: 'build-id-foo',
-              status: 'SUCCESS',
+              attemptId: 'foo',
+              status: DeployProgressStatus.success,
               startTime: DateTime.parse("2021-12-31 10:20:30"),
-              finishTime: DateTime.parse("2021-12-31 10:20:40"),
-              info: null,
+              endTime: DateTime.parse("2021-12-31 10:20:40"),
+              statusInfo: null,
             ),
-            BuildStatus(
-              cloudProjectId: projectId,
+            DeployAttempt(
               cloudEnvironmentId: projectId,
-              buildId: 'build-id-bar',
-              status: 'FAILURE',
+              attemptId: 'bar',
+              status: DeployProgressStatus.failure,
               startTime: DateTime.parse("2021-12-31 10:10:30"),
-              finishTime: DateTime.parse("2021-12-31 10:10:40"),
-              info: 'Some error',
+              endTime: DateTime.parse("2021-12-31 10:10:40"),
+              statusInfo: 'Some error',
             ),
           ];
 
-          final serverBuilder = HttpServerBuilder();
-          serverBuilder.withMethodResponse(
-            'status',
-            'getBuildStatuses',
-            (final parameters) {
-              if (parameters['cloudProjectId'] != projectId) {
-                return (404, null);
-              }
-              return (200, buildStatuses);
-            },
-          );
-
-          final (startedServer, serverAddress) = await serverBuilder.build();
-          localServerAddress = serverAddress;
-          server = startedServer;
+          when(() => client.status.getDeployAttempts(
+                cloudEnvironmentId: projectId,
+                limit: any(named: 'limit'),
+              )).thenAnswer((final _) async => buildStatuses);
         });
 
         tearDownAll(() async {
-          await server.close(force: true);
+          reset(client.status);
         });
 
         @isTestGroup
@@ -383,8 +342,6 @@ Status of projectId build build-id-foo, started at 2021-12-31 10:20:30:
 
             setUp(() async {
               commandResult = cli.run([
-                '--api-url',
-                localServerAddress.toString(),
                 'status',
                 ...args,
               ]);
@@ -401,10 +358,10 @@ Status of projectId build build-id-foo, started at 2021-12-31 10:20:30:
               expect(
                 logger.messages.first,
                 '''
-# | Project   | Build Id     | Status  | Started             | Finished            | Info      
---+-----------+--------------+---------+---------------------+---------------------+-----------
-0 | projectId | build-id-foo | SUCCESS | 2021-12-31 10:20:30 | 2021-12-31 10:20:40 |           
-1 | projectId | build-id-bar | FAILURE | 2021-12-31 10:10:30 | 2021-12-31 10:10:40 | Some error
+# | Project   | Deploy Id | Status  | Started             | Finished            | Info      
+--+-----------+-----------+---------+---------------------+---------------------+-----------
+0 | projectId | foo       | SUCCESS | 2021-12-31 10:20:30 | 2021-12-31 10:20:40 |           
+1 | projectId | bar       | FAILURE | 2021-12-31 10:10:30 | 2021-12-31 10:10:40 | Some error
 ''',
               );
             });
@@ -418,20 +375,6 @@ Status of projectId build build-id-foo, started at 2021-12-31 10:20:30:
       });
 
       group('with incorrect args to get a deployments list', () {
-        late Uri localServerAddress;
-        late HttpServer server;
-
-        setUpAll(() async {
-          final serverBuilder = HttpServerBuilder();
-          final (startedServer, serverAddress) = await serverBuilder.build();
-          localServerAddress = serverAddress;
-          server = startedServer;
-        });
-
-        tearDownAll(() async {
-          await server.close(force: true);
-        });
-
         @isTestGroup
         void testIncorrectGetStatusesCommand(
           final String description,
@@ -442,8 +385,6 @@ Status of projectId build build-id-foo, started at 2021-12-31 10:20:30:
 
             setUp(() async {
               commandResult = cli.run([
-                '--api-url',
-                localServerAddress.toString(),
                 'status',
                 ...args,
               ]);
@@ -451,12 +392,6 @@ Status of projectId build build-id-foo, started at 2021-12-31 10:20:30:
 
             test('then throws ExitException', () async {
               await expectLater(commandResult, throwsA(isA<ExitException>()));
-
-              expect(logger.errors, isNotEmpty);
-              expect(
-                logger.errors.first,
-                startsWith('Failed to get deployments list:'),
-              );
             });
             test('then outputs error message', () async {
               await commandResult.onError((final e, final s) {});
@@ -464,7 +399,7 @@ Status of projectId build build-id-foo, started at 2021-12-31 10:20:30:
               expect(logger.errors, isNotEmpty);
               expect(
                 logger.errors.first,
-                startsWith('Failed to get deployments list:'),
+                startsWith('Cannot specify deploy id with --list'),
               );
             });
           });
@@ -472,10 +407,10 @@ Status of projectId build build-id-foo, started at 2021-12-31 10:20:30:
 
         testIncorrectGetStatusesCommand(
             'for non-existing project and long option',
-            ['--project-id', projectId, 'non-existing-project', '--list']);
+            ['--project-id', projectId, 'disallowed-attempt-id', '--list']);
         testIncorrectGetStatusesCommand(
             'for non-existing project and short option',
-            ['--project-id', projectId, 'non-existing-project', '-l']);
+            ['--project-id', projectId, 'disallowed-attempt-id', '-l']);
       });
     });
   });

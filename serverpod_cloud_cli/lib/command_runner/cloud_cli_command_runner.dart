@@ -24,16 +24,16 @@ import 'package:serverpod_cloud_cli/util/configuration.dart';
 class CloudCliCommandRunner extends BetterCommandRunner {
   final Version version;
   final Logger logger;
+  final CloudCliServiceProvider serviceProvider;
 
   /// The curremt global configuration for the Serverpod Cloud CLI.
   /// (Since this object is re-entrant, the global config is regenerated each call to [runCommand].)
   GlobalConfiguration globalConfiguration = GlobalConfiguration();
 
-  final CloudCliServiceProvider serviceProvider = CloudCliServiceProvider();
-
   CloudCliCommandRunner._({
     required this.logger,
     required this.version,
+    required this.serviceProvider,
     super.setLogLevel,
     super.logError,
     super.logInfo,
@@ -46,10 +46,12 @@ class CloudCliCommandRunner extends BetterCommandRunner {
   static CloudCliCommandRunner create({
     required final Logger logger,
     required final Version version,
+    final CloudCliServiceProvider? serviceProvider,
   }) {
     final runner = CloudCliCommandRunner._(
       logger: logger,
       version: version,
+      serviceProvider: serviceProvider ?? CloudCliServiceProvider(),
       logInfo: logger.info,
       logError: logger.error,
       setLogLevel: ({

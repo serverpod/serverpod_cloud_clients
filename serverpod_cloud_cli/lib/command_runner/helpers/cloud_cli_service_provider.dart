@@ -7,11 +7,16 @@ import 'package:serverpod_ground_control_client/serverpod_ground_control_client.
 /// [initialize] should be called before first use.
 /// [shutdown] should be called after last use.
 class CloudCliServiceProvider {
+  final Client Function(GlobalConfiguration globalCfg)? _apiClientFactory;
+
   late GlobalConfiguration _globalConfiguration;
   late Logger _logger;
+
   Client? _cloudApiClient;
 
-  CloudCliServiceProvider();
+  CloudCliServiceProvider({
+    final Client Function(GlobalConfiguration globalCfg)? apiClientFactory,
+  }) : _apiClientFactory = apiClientFactory;
 
   void initialize({
     required final GlobalConfiguration globalConfiguration,
@@ -36,18 +41,23 @@ class CloudCliServiceProvider {
       return localCloudApiClient;
     }
 
-    final localStoragePath = _globalConfiguration.authDir;
-    final serverAddress = _globalConfiguration.apiServer;
-    final address =
-        serverAddress.endsWith('/') ? serverAddress : '$serverAddress/';
+    final Client cloudApiClient;
+    if (_apiClientFactory != null) {
+      cloudApiClient = _apiClientFactory(_globalConfiguration);
+    } else {
+      final localStoragePath = _globalConfiguration.authDir;
+      final serverAddress = _globalConfiguration.apiServer;
+      final address =
+          serverAddress.endsWith('/') ? serverAddress : '$serverAddress/';
 
-    final cloudApiClient = Client(
-      address,
-      authenticationKeyManager: CliAuthenticationKeyManager(
-        logger: _logger,
-        localStoragePath: localStoragePath,
-      ),
-    );
+      cloudApiClient = Client(
+        address,
+        authenticationKeyManager: CliAuthenticationKeyManager(
+          logger: _logger,
+          localStoragePath: localStoragePath,
+        ),
+      );
+    }
 
     _cloudApiClient = cloudApiClient;
     return cloudApiClient;

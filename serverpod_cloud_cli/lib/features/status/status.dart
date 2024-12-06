@@ -4,105 +4,156 @@ import 'package:serverpod_cloud_cli/util/table_printer.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
 
 abstract class StatusFeature {
-  static Future<TablePrinter> getBuildsList(
+  static Future<TablePrinter> getDeployAttemptsList(
     final Client cloudApiClient, {
-    required final String projectId,
+    required final String environmentId,
     required final int limit,
     final bool inUtc = false,
   }) async {
-    final List<BuildStatus> builds;
-    builds = await cloudApiClient.status.getBuildStatuses(
-      cloudProjectId: projectId,
+    final statuses = await cloudApiClient.status.getDeployAttempts(
+      cloudEnvironmentId: environmentId,
       limit: limit,
     );
 
-    return BuildStatusTable(inUtc: inUtc)..addRows(builds);
+    return DeployStatusTable(inUtc: inUtc)..addRows(statuses);
   }
 
   static Future<String> getDeploymentStatus(
     final Client cloudApiClient, {
-    required final String projectId,
-    required final String buildId,
+    required final String environmentId,
+    required final String attemptId,
     final bool inUtc = false,
   }) async {
-    const pendingMark = '⬛';
-    const workingMark = '…';
-    const successMark = '✅';
-    const failureMark = '❌';
-
-    final build = await cloudApiClient.status.getBuildStatus(
-      cloudProjectId: projectId,
-      buildId: buildId,
+    final stages = await cloudApiClient.status.getDeployAttemptStatus(
+      cloudEnvironmentId: environmentId,
+      attemptId: attemptId,
     );
+
     final List<String> rows = [
-      'Status of $projectId build $buildId'
-          ', started at ${build.startTime?.toTzString(inUtc, _numTimeStampChars)}:',
-      ...switch (build.status) {
-        'SUCCESS' => [
+      'Status of $environmentId deploy $attemptId'
+          ', started at ${stages.first.startTime?.toTzString(inUtc, _numTimeStampChars)}:',
+      ...stages.map(_getStatusLine),
+/*
+       ...switch (stages.first.stageStatus) {
+        DeployProgressStatus.success => [
             '$successMark  Booster liftoff:     Upload successful!',
             '$successMark  Orbit acceleration:  Build successful!',
             '$successMark  Orbital insertion:   Deploy successful!',
             '$successMark  Pod commissioning:   Service running! 🚀',
           ],
-        'PENDING' || 'QUEUED' || 'WORKING' => [
+        DeployProgressStatus.created || DeployProgressStatus.running => [
             '$successMark  Booster liftoff:     Upload successful!',
             '$workingMark  Orbit acceleration:  Build in progress. See build logs.',
             '$pendingMark  Orbital insertion:   Deploy pending...',
-            '$successMark  Pod commissioning:   Service pending...',
+            '$pendingMark  Pod commissioning:   Service pending...',
           ],
-        _ => [
+        DeployProgressStatus.failure => [
             '$successMark  Booster liftoff:     Upload successful!',
             '$failureMark  Orbit acceleration:  Build failed! 💥 See build logs.',
             '$pendingMark  Orbital insertion:   Unable to deploy.',
           ],
+        DeployProgressStatus.unknown => [
+            '$workingMark  Booster liftoff:     Upload pending...',
+            '$workingMark  Orbit acceleration:  Build pending...',
+            '$workingMark  Orbital insertion:   Deploy pending...',
+            '$workingMark  Pod commissioning:   Service pending...',
+          ],
       },
+ */
     ];
 
     return rows.expand((final r) => ['$r\n', '\n']).join();
   }
 
-  static Future<String> getBuildId(
+  static Future<String> getDeployAttemptId(
     final Client cloudApiClient, {
-    required final String projectId,
-    required final int buildNumber,
+    required final String environmentId,
+    required final int attemptNumber,
   }) async {
-    return await cloudApiClient.status.getBuildId(
-      cloudProjectId: projectId,
-      buildNumber: buildNumber,
+    return await cloudApiClient.status.getDeployAttemptId(
+      cloudEnvironmentId: environmentId,
+      attemptNumber: attemptNumber,
     );
   }
+
+  static String _getStatusLine(final DeployAttemptStage stage) {
+    final mark = _getStatusMark(stage.stageStatus);
+    final phrase = '${_getRocketStagePhrase(stage.stageType)}:';
+    final status = _getStatusPhrase(stage);
+
+    final rocket = stage.stageType == DeployStageType.service &&
+            stage.stageStatus == DeployProgressStatus.success
+        ? ' 🚀'
+        : '';
+
+    return '$mark  ${phrase.padRight(20)} $status$rocket';
+  }
+
+  static String _getStatusMark(final DeployProgressStatus status) {
+    return switch (status) {
+      DeployProgressStatus.unknown => '⬛',
+      DeployProgressStatus.created => '…',
+      DeployProgressStatus.running => '…',
+      DeployProgressStatus.success => '✅',
+      DeployProgressStatus.failure => '❌',
+    };
+  }
+
+  static String _getRocketStagePhrase(final DeployStageType type) {
+    return switch (type) {
+      DeployStageType.upload => 'Booster liftoff',
+      DeployStageType.build => 'Orbit acceleration',
+      DeployStageType.deploy => 'Orbital insertion',
+      DeployStageType.service => 'Pod commissioning',
+    };
+  }
+
+  static String _getStatusPhrase(final DeployAttemptStage stage) {
+    final stageName = _capitalize(stage.stageType.name);
+    final verb = switch (stage.stageStatus) {
+      DeployProgressStatus.unknown => '<unknown>',
+      DeployProgressStatus.created => 'pending...',
+      DeployProgressStatus.running => 'running...',
+      DeployProgressStatus.success => 'successful!',
+      DeployProgressStatus.failure => 'failed! 💥',
+    };
+    return '$stageName $verb${stage.statusInfo != null ? ' ${stage.statusInfo}' : ''}';
+  }
+
+  static _capitalize(final String s) =>
+      s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 }
 
 const _numTimeStampChars = 19;
 
-class BuildStatusTable extends TablePrinter {
+class DeployStatusTable extends TablePrinter {
   final bool inUtc;
 
-  BuildStatusTable({this.inUtc = false})
+  DeployStatusTable({this.inUtc = false})
       : super(headers: [
           '#',
           'Project',
-          'Build Id',
+          'Deploy Id',
           'Status',
           'Started',
           'Finished',
           'Info',
         ]);
 
-  void addRows(final Iterable<BuildStatus> buildes) {
-    buildes.mapIndexed(_tableRowFromBuildBuild).forEach(addRow);
+  void addRows(final Iterable<DeployAttempt> attempts) {
+    attempts.mapIndexed(_tableRowFromDeployAttempt).forEach(addRow);
   }
 
-  List<String?> _tableRowFromBuildBuild(
-      final int index, final BuildStatus build) {
+  List<String?> _tableRowFromDeployAttempt(
+      final int index, final DeployAttempt attempt) {
     return [
       index.toString(),
-      build.cloudProjectId,
-      build.buildId,
-      build.status,
-      build.startTime?.toTzString(inUtc, _numTimeStampChars),
-      build.finishTime?.toTzString(inUtc, _numTimeStampChars),
-      build.info,
+      attempt.cloudEnvironmentId,
+      attempt.attemptId,
+      attempt.status.name.toUpperCase(),
+      attempt.startTime?.toTzString(inUtc, _numTimeStampChars),
+      attempt.endTime?.toTzString(inUtc, _numTimeStampChars),
+      attempt.statusInfo,
     ];
   }
 }

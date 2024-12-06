@@ -27,12 +27,14 @@ import 'package:serverpod_ground_control_client/src/protocol/view_models/infrast
     as _i9;
 import 'package:serverpod_ground_control_client/src/protocol/tenant/role.dart'
     as _i10;
-import 'package:serverpod_ground_control_client/src/protocol/status/build_status.dart'
+import 'package:serverpod_ground_control_client/src/protocol/status/deploy_attempt.dart'
     as _i11;
-import 'package:serverpod_ground_control_client/src/protocol/tenant/user.dart'
+import 'package:serverpod_ground_control_client/src/protocol/status/deploy_attempt_stage.dart'
     as _i12;
-import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i13;
-import 'protocol.dart' as _i14;
+import 'package:serverpod_ground_control_client/src/protocol/tenant/user.dart'
+    as _i13;
+import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i14;
+import 'protocol.dart' as _i15;
 
 /// Endpoint for managing projects.
 /// {@category Endpoint}
@@ -414,7 +416,7 @@ class EndpointSecrets extends _i1.EndpointRef {
       );
 }
 
-/// Endpoint for accessing project status.
+/// Endpoint for accessing environment status.
 /// {@category Endpoint}
 class EndpointStatus extends _i1.EndpointRef {
   EndpointStatus(_i1.EndpointCaller caller) : super(caller);
@@ -422,47 +424,47 @@ class EndpointStatus extends _i1.EndpointRef {
   @override
   String get name => 'status';
 
-  /// Gets build statuses of the specified project.
-  /// Gets the recent-most build statuses, up till [limit] if specified.
-  _i2.Future<List<_i11.BuildStatus>> getBuildStatuses({
-    required String cloudProjectId,
+  /// Gets deploy attempts of the specified environment.
+  /// Gets the recent-most attempts, up till [limit] if specified.
+  _i2.Future<List<_i11.DeployAttempt>> getDeployAttempts({
+    required String cloudEnvironmentId,
     int? limit,
   }) =>
-      caller.callServerEndpoint<List<_i11.BuildStatus>>(
+      caller.callServerEndpoint<List<_i11.DeployAttempt>>(
         'status',
-        'getBuildStatuses',
+        'getDeployAttempts',
         {
-          'cloudProjectId': cloudProjectId,
+          'cloudEnvironmentId': cloudEnvironmentId,
           'limit': limit,
         },
       );
 
-  /// Gets the specified build status of the a project.
-  _i2.Future<_i11.BuildStatus> getBuildStatus({
-    required String cloudProjectId,
-    required String buildId,
+  /// Gets the specified deploy attempt status of the a environment.
+  _i2.Future<List<_i12.DeployAttemptStage>> getDeployAttemptStatus({
+    required String cloudEnvironmentId,
+    required String attemptId,
   }) =>
-      caller.callServerEndpoint<_i11.BuildStatus>(
+      caller.callServerEndpoint<List<_i12.DeployAttemptStage>>(
         'status',
-        'getBuildStatus',
+        'getDeployAttemptStatus',
         {
-          'cloudProjectId': cloudProjectId,
-          'buildId': buildId,
+          'cloudEnvironmentId': cloudEnvironmentId,
+          'attemptId': attemptId,
         },
       );
 
-  /// Gets the build id for the specified build number of a project.
-  /// Build numbers enumerate the project's builds as latest first, starting from 0.
-  _i2.Future<String> getBuildId({
-    required String cloudProjectId,
-    required int buildNumber,
+  /// Gets the deploy attempt id for the specified attempt number of a environment.
+  /// This number enumerate the environment's deploy attempts as latest first, starting from 0.
+  _i2.Future<String> getDeployAttemptId({
+    required String cloudEnvironmentId,
+    required int attemptNumber,
   }) =>
       caller.callServerEndpoint<String>(
         'status',
-        'getBuildId',
+        'getDeployAttemptId',
         {
-          'cloudProjectId': cloudProjectId,
-          'buildNumber': buildNumber,
+          'cloudEnvironmentId': cloudEnvironmentId,
+          'attemptNumber': attemptNumber,
         },
       );
 }
@@ -476,8 +478,8 @@ class EndpointUsers extends _i1.EndpointRef {
   String get name => 'users';
 
   /// Fetches the tenant user for the currently authenticated user.
-  _i2.Future<_i12.User> fetchCurrentUser() =>
-      caller.callServerEndpoint<_i12.User>(
+  _i2.Future<_i13.User> fetchCurrentUser() =>
+      caller.callServerEndpoint<_i13.User>(
         'users',
         'fetchCurrentUser',
         {},
@@ -485,8 +487,8 @@ class EndpointUsers extends _i1.EndpointRef {
 
   /// Registers a new tenant user record for the current authenticated user.
   /// Throws [DuplicateEntryException] if the tenant user already exists.
-  _i2.Future<_i12.User> registerCurrentUser({String? userDisplayName}) =>
-      caller.callServerEndpoint<_i12.User>(
+  _i2.Future<_i13.User> registerCurrentUser({String? userDisplayName}) =>
+      caller.callServerEndpoint<_i13.User>(
         'users',
         'registerCurrentUser',
         {'userDisplayName': userDisplayName},
@@ -495,10 +497,10 @@ class EndpointUsers extends _i1.EndpointRef {
 
 class Modules {
   Modules(Client client) {
-    auth = _i13.Caller(client);
+    auth = _i14.Caller(client);
   }
 
-  late final _i13.Caller auth;
+  late final _i14.Caller auth;
 }
 
 class Client extends _i1.ServerpodClientShared {
@@ -517,7 +519,7 @@ class Client extends _i1.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
           host,
-          _i14.Protocol(),
+          _i15.Protocol(),
           securityContext: securityContext,
           authenticationKeyManager: authenticationKeyManager,
           streamingConnectionTimeout: streamingConnectionTimeout,
