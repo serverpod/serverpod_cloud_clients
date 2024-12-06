@@ -1,6 +1,7 @@
 import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 import 'package:serverpod_cloud_cli/util/table_printer.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
@@ -71,23 +72,27 @@ class CloudAddCustomDomainCommand
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
-    try {
-      final parsedTarget = _domainNameTargetfromString(target);
+    await handleCommonClientExceptions(
+      logger,
+      () async {
+        final parsedTarget = _domainNameTargetfromString(target);
 
-      await apiCloudClient.customDomainName.add(
-        domainName: domainName,
-        target: parsedTarget,
-        cloudEnvironmentId: projectId,
-      );
-    } catch (e) {
-      logger.error(
-        'Failed to add a new custom domain: $e',
-      );
+        await apiCloudClient.customDomainName.add(
+          domainName: domainName,
+          target: parsedTarget,
+          cloudEnvironmentId: projectId,
+        );
+      },
+      (final e) {
+        logger.error(
+          'Could not add the custom domain: $e',
+        );
 
-      throw ExitException();
-    }
+        throw ExitException();
+      },
+    );
 
-    logger.info('Successfully added a new custom domain.');
+    logger.info('Custom domain added successfully! 🚀\n');
   }
 }
 
@@ -121,17 +126,17 @@ class CloudListCustomDomainCommand
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
     late CustomDomainNameList domainNamesList;
-    try {
+    await handleCommonClientExceptions(logger, () async {
       domainNamesList = await apiCloudClient.customDomainName.list(
         cloudEnvironmentId: projectId,
       );
-    } catch (e) {
+    }, (final e) {
       logger.error(
         'Failed to list custom domains: $e',
       );
 
       throw ExitException();
-    }
+    });
 
     final defaultDomainPrinter = TablePrinter();
     defaultDomainPrinter.addHeaders(['Default domain name', 'Target']);
@@ -201,18 +206,18 @@ class CloudRemoveCustomDomainCommand
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
-    try {
+    await handleCommonClientExceptions(logger, () async {
       await apiCloudClient.customDomainName.remove(
         cloudEnvironmentId: projectId,
         domainName: domainName,
       );
-    } catch (e) {
+    }, (final e) {
       logger.error(
         'Failed to remove custom domain: $e',
       );
 
       throw ExitException();
-    }
+    });
 
     logger.info('Successfully removed custom domain: $domainName.');
   }
@@ -250,7 +255,7 @@ class CloudRefreshCustomDomainRecordCommand
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
-    try {
+    await handleCommonClientExceptions(logger, () async {
       final result = await apiCloudClient.customDomainName.refreshRecord(
         cloudEnvironmentId: projectId,
         domainName: domainName,
@@ -270,13 +275,13 @@ class CloudRefreshCustomDomainRecordCommand
       }
 
       return;
-    } catch (e) {
+    }, (final e) {
       logger.error(
         'Failed to refresh custom domain record: $e',
       );
 
       throw ExitException();
-    }
+    });
   }
 }
 

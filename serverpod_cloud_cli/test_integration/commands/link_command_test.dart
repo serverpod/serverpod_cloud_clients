@@ -2,8 +2,12 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:cli_tools/cli_tools.dart';
+import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/link_command.dart';
+import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
+import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/json_to_yaml.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
 import 'package:test/test.dart';
@@ -22,17 +26,39 @@ void main() {
 
   const projectId = 'projectId';
 
+  final testCacheFolderPath = p.join(
+    'test_integration',
+    const Uuid().v4(),
+  );
+
   tearDown(() {
+    final directory = Directory(testCacheFolderPath);
+    if (directory.existsSync()) {
+      directory.deleteSync(recursive: true);
+    }
+
     logger.clear();
+  });
+
+  test('Given link command when instantiated then requires login', () {
+    expect(CloudLinkCommand(logger: logger).requireLogin, isTrue);
   });
 
   group('Given unauthenticated', () {
     late Uri localServerAddress;
+    late Completer requestCompleter;
     late HttpServer server;
 
     setUp(() async {
+      requestCompleter = Completer();
+      await ResourceManager.storeServerpodCloudData(
+        cloudData: ServerpodCloudData('my-token'),
+        localStoragePath: testCacheFolderPath,
+      );
+
       final serverBuilder = HttpServerBuilder();
       serverBuilder.withOnRequest((final request) {
+        requestCompleter.complete();
         request.response.statusCode = 401;
         request.response.close();
       });
@@ -55,10 +81,13 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
         ]);
       });
 
       test('then throws exception', () async {
+        await expectLater(requestCompleter.future, completes);
         await expectLater(commandResult, throwsA(isA<ExitException>()));
       });
 
@@ -69,9 +98,9 @@ void main() {
 
         expect(logger.errors, isNotEmpty);
         expect(
-          logger.errors.first,
-          'Failed to fetch project config: ServerpodClientException: Unauthorized, statusCode = 401',
-        );
+            logger.errors.first,
+            'The credentials for this session seem to no longer be valid.\n'
+            'Please run `scloud logout` followed by `scloud login` and try this command again.');
       });
     });
   });
@@ -81,6 +110,11 @@ void main() {
     late HttpServer server;
 
     setUp(() async {
+      await ResourceManager.storeServerpodCloudData(
+        cloudData: ServerpodCloudData('my-token'),
+        localStoragePath: testCacheFolderPath,
+      );
+
       final serverBuilder = HttpServerBuilder();
 
       serverBuilder.withSuccessfulResponse(
@@ -105,6 +139,8 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
         ]);
       });
 
@@ -156,6 +192,8 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
         ]);
       });
 
@@ -207,6 +245,8 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
         ]);
       });
 

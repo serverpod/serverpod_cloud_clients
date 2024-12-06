@@ -6,6 +6,7 @@ import 'package:cli_tools/cli_tools.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/custom_domains_command.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
@@ -37,6 +38,11 @@ void main() {
   });
 
   const projectId = 'projectId';
+
+  test('Given custom domains command when instantiated then requires login',
+      () {
+    expect(CloudCustomDomainCommand(logger: logger).requireLogin, isTrue);
+  });
 
   group('Given unauthenticated', () {
     late Uri localServerAddress;
@@ -79,6 +85,8 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
         ]);
       });
 
@@ -94,9 +102,9 @@ void main() {
 
         expect(logger.errors, isNotEmpty);
         expect(
-          logger.errors.first,
-          'Failed to add a new custom domain: ServerpodClientException: Unauthorized, statusCode = 401',
-        );
+            logger.errors.first,
+            'The credentials for this session seem to no longer be valid.\n'
+            'Please run `scloud logout` followed by `scloud login` and try this command again.');
       });
     });
 
@@ -110,6 +118,8 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
         ]);
       });
 
@@ -125,9 +135,9 @@ void main() {
 
         expect(logger.errors, isNotEmpty);
         expect(
-          logger.errors.first,
-          'Failed to list custom domains: ServerpodClientException: Unauthorized, statusCode = 401',
-        );
+            logger.errors.first,
+            'The credentials for this session seem to no longer be valid.\n'
+            'Please run `scloud logout` followed by `scloud login` and try this command again.');
       });
     });
 
@@ -142,6 +152,8 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
         ]);
       });
 
@@ -157,9 +169,9 @@ void main() {
 
         expect(logger.errors, isNotEmpty);
         expect(
-          logger.errors.first,
-          'Failed to remove custom domain: ServerpodClientException: Unauthorized, statusCode = 401',
-        );
+            logger.errors.first,
+            'The credentials for this session seem to no longer be valid.\n'
+            'Please run `scloud logout` followed by `scloud login` and try this command again.');
       });
     });
 
@@ -174,6 +186,8 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
         ]);
       });
 
@@ -190,25 +204,23 @@ void main() {
         expect(logger.errors, isNotEmpty);
         expect(
           logger.errors.first,
-          'Failed to refresh custom domain record: ServerpodClientException: Unauthorized, statusCode = 401',
+          'The credentials for this session seem to no longer be valid.\n'
+          'Please run `scloud logout` followed by `scloud login` and try this command again.',
         );
       });
     });
   });
 
   group('Given authenticated', () {
+    setUp(() async {
+      await ResourceManager.storeServerpodCloudData(
+        cloudData: ServerpodCloudData('my-token'),
+        localStoragePath: testCacheFolderPath,
+      );
+    });
+
     late Uri localServerAddress;
     late HttpServer server;
-
-    setUp(() async {
-      final serverBuilder = HttpServerBuilder();
-
-      serverBuilder.withSuccessfulResponse();
-
-      final (startedServer, serverAddress) = await serverBuilder.build();
-      localServerAddress = serverAddress;
-      server = startedServer;
-    });
 
     tearDown(() async {
       await server.close(force: true);
@@ -217,6 +229,16 @@ void main() {
     group('when executing domain add', () {
       late Future commandResult;
       setUp(() async {
+        final serverBuilder = HttpServerBuilder();
+
+        serverBuilder.withMethodResponse('customDomainName', 'add', (final _) {
+          return (200, null);
+        });
+
+        final (startedServer, serverAddress) = await serverBuilder.build();
+        localServerAddress = serverAddress;
+        server = startedServer;
+
         commandResult = cli.run([
           'domains',
           'add',
@@ -227,6 +249,8 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
         ]);
       });
 
@@ -238,16 +262,24 @@ void main() {
         await commandResult;
 
         expect(logger.messages, isNotEmpty);
-        expect(
-          logger.messages.first,
-          'Successfully added a new custom domain.',
-        );
+        expect(logger.messages.first, 'Custom domain added successfully! 🚀\n');
       });
     });
 
     group('when executing domain remove', () {
       late Future commandResult;
       setUp(() async {
+        final serverBuilder = HttpServerBuilder();
+
+        serverBuilder.withMethodResponse('customDomainName', 'remove',
+            (final _) {
+          return (200, '');
+        });
+
+        final (startedServer, serverAddress) = await serverBuilder.build();
+        localServerAddress = serverAddress;
+        server = startedServer;
+
         commandResult = cli.run([
           'domains',
           'remove',
@@ -256,6 +288,8 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
         ]);
       });
 
@@ -273,289 +307,265 @@ void main() {
         );
       });
     });
-  });
-  group(
-      'Given authenticated and status is configured when executing domain refresh-record',
-      () {
-    late Uri localServerAddress;
-    late HttpServer server;
 
-    late Future commandResult;
+    group('and status is configured when executing domain refresh-record', () {
+      late Uri localServerAddress;
 
-    setUp(() async {
-      final serverBuilder = HttpServerBuilder();
-      serverBuilder
-          .withSuccessfulResponse(jsonEncode(DomainNameStatus.configured));
+      late Future commandResult;
 
-      final (startedServer, serverAddress) = await serverBuilder.build();
-      localServerAddress = serverAddress;
-      server = startedServer;
+      setUp(() async {
+        final serverBuilder = HttpServerBuilder();
+        serverBuilder
+            .withSuccessfulResponse(jsonEncode(DomainNameStatus.configured));
 
-      commandResult = cli.run([
-        'domains',
-        'refresh-record',
-        'domain.com',
-        '--project-id',
-        projectId,
-        '--api-url',
-        localServerAddress.toString(),
-      ]);
+        final (startedServer, serverAddress) = await serverBuilder.build();
+        localServerAddress = serverAddress;
+        server = startedServer;
+
+        commandResult = cli.run([
+          'domains',
+          'refresh-record',
+          'domain.com',
+          '--project-id',
+          projectId,
+          '--api-url',
+          localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
+        ]);
+      });
+
+      test('then completes successfully', () async {
+        await expectLater(commandResult, completes);
+      });
+
+      test('then logs success message', () async {
+        await commandResult;
+
+        expect(logger.messages, isNotEmpty);
+        expect(
+          logger.messages.first,
+          'Successfully verified the DNS record for the custom domain. It is now active.',
+        );
+      });
     });
 
-    tearDown(() async {
-      await server.close(force: true);
+    group('and status is pending when executing domain refresh-record', () {
+      late Uri localServerAddress;
+
+      late Future commandResult;
+
+      setUp(() async {
+        final serverBuilder = HttpServerBuilder();
+        serverBuilder
+            .withSuccessfulResponse(jsonEncode(DomainNameStatus.pending));
+
+        final (startedServer, serverAddress) = await serverBuilder.build();
+        localServerAddress = serverAddress;
+        server = startedServer;
+
+        commandResult = cli.run([
+          'domains',
+          'refresh-record',
+          'domain.com',
+          '--project-id',
+          projectId,
+          '--api-url',
+          localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
+        ]);
+      });
+
+      test('then completes successfully', () async {
+        await expectLater(commandResult, completes);
+      });
+
+      test('then logs success message', () async {
+        await commandResult;
+
+        expect(logger.messages, isNotEmpty);
+        expect(
+          logger.messages.first,
+          'The DNS record for the custom domain is verified but certificate creation is still pending. '
+          'Try again in a few minutes.',
+        );
+      });
     });
 
-    test('then completes successfully', () async {
-      await expectLater(commandResult, completes);
+    group('and status is needsSetup when executing domain refresh-record', () {
+      late Uri localServerAddress;
+
+      late Future commandResult;
+
+      setUp(() async {
+        final serverBuilder = HttpServerBuilder();
+        serverBuilder
+            .withSuccessfulResponse(jsonEncode(DomainNameStatus.needsSetup));
+
+        final (startedServer, serverAddress) = await serverBuilder.build();
+        localServerAddress = serverAddress;
+        server = startedServer;
+
+        commandResult = cli.run([
+          'domains',
+          'refresh-record',
+          'domain.com',
+          '--project-id',
+          projectId,
+          '--api-url',
+          localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
+        ]);
+      });
+
+      test('then completes successfully', () async {
+        await expectLater(commandResult, completes);
+      });
+
+      test('then logs information message about status', () async {
+        await commandResult;
+
+        expect(logger.messages, isNotEmpty);
+        expect(
+          logger.messages.first,
+          'Failed to verify the DNS record for the custom domain. Ensure the CNAME is correctly set and try again later.',
+        );
+      });
     });
 
-    test('then logs success message', () async {
-      await commandResult;
+    group('and custom domains exist when executing domain list', () {
+      late Uri localServerAddress;
 
-      expect(logger.messages, isNotEmpty);
-      expect(
-        logger.messages.first,
-        'Successfully verified the DNS record for the custom domain. It is now active.',
-      );
-    });
-  });
+      late Future commandResult;
 
-  group(
-      'Given authenticated and status is pending when executing domain refresh-record',
-      () {
-    late Uri localServerAddress;
-    late HttpServer server;
+      setUp(() async {
+        final serverBuilder = HttpServerBuilder();
+        serverBuilder.withSuccessfulResponse(jsonEncode(CustomDomainNameList(
+          customDomainNames: [
+            CustomDomainName(
+              environmentId: 1,
+              name: 'api.domain.com',
+              status: DomainNameStatus.configured,
+              target: DomainNameTarget.api,
+            ),
+            CustomDomainName(
+              environmentId: 1,
+              name: 'web.domain.com',
+              status: DomainNameStatus.pending,
+              target: DomainNameTarget.web,
+            ),
+            CustomDomainName(
+              environmentId: 1,
+              name: 'insights.domain.com',
+              status: DomainNameStatus.needsSetup,
+              target: DomainNameTarget.insights,
+            ),
+          ],
+          defaultDomainsByTarget: {
+            DomainNameTarget.api: 'my-magical-project.api.serverpod.space',
+            DomainNameTarget.insights:
+                'my-magical-project.insights.serverpod.space',
+            DomainNameTarget.web: 'my-magical-project.web.serverpod.space',
+          },
+        )));
 
-    late Future commandResult;
+        final (startedServer, serverAddress) = await serverBuilder.build();
+        localServerAddress = serverAddress;
+        server = startedServer;
 
-    setUp(() async {
-      final serverBuilder = HttpServerBuilder();
-      serverBuilder
-          .withSuccessfulResponse(jsonEncode(DomainNameStatus.pending));
+        commandResult = cli.run([
+          'domains',
+          'list',
+          '--project-id',
+          projectId,
+          '--api-url',
+          localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
+        ]);
+      });
 
-      final (startedServer, serverAddress) = await serverBuilder.build();
-      localServerAddress = serverAddress;
-      server = startedServer;
+      test('then completes successfully', () async {
+        await expectLater(commandResult, completes);
+      });
 
-      commandResult = cli.run([
-        'domains',
-        'refresh-record',
-        'domain.com',
-        '--project-id',
-        projectId,
-        '--api-url',
-        localServerAddress.toString(),
-      ]);
-    });
+      test('then logs success message', () async {
+        await commandResult;
 
-    tearDown(() async {
-      await server.close(force: true);
-    });
-
-    test('then completes successfully', () async {
-      await expectLater(commandResult, completes);
-    });
-
-    test('then logs success message', () async {
-      await commandResult;
-
-      expect(logger.messages, isNotEmpty);
-      expect(
-        logger.messages.first,
-        'The DNS record for the custom domain is verified but certificate creation is still pending. '
-        'Try again in a few minutes.',
-      );
-    });
-  });
-
-  group(
-      'Given authenticated and status is needsSetup when executing domain refresh-record',
-      () {
-    late Uri localServerAddress;
-    late HttpServer server;
-
-    late Future commandResult;
-
-    setUp(() async {
-      final serverBuilder = HttpServerBuilder();
-      serverBuilder
-          .withSuccessfulResponse(jsonEncode(DomainNameStatus.needsSetup));
-
-      final (startedServer, serverAddress) = await serverBuilder.build();
-      localServerAddress = serverAddress;
-      server = startedServer;
-
-      commandResult = cli.run([
-        'domains',
-        'refresh-record',
-        'domain.com',
-        '--project-id',
-        projectId,
-        '--api-url',
-        localServerAddress.toString(),
-      ]);
+        expect(logger.messages, isNotEmpty);
+        expect(
+            logger.messages,
+            containsAll([
+              'Default domain name                         | Target  \n'
+                  '--------------------------------------------+---------\n'
+                  'my-magical-project.api.serverpod.space      | api     \n'
+                  'my-magical-project.insights.serverpod.space | insights\n'
+                  'my-magical-project.web.serverpod.space      | web     \n',
+              'Custom domain name  | Target                                      | Status                      \n'
+                  '--------------------+---------------------------------------------+-----------------------------\n'
+                  'api.domain.com      | my-magical-project.api.serverpod.space      | Configured                  \n'
+                  'web.domain.com      | my-magical-project.web.serverpod.space      | Certificate creation pending\n'
+                  'insights.domain.com | my-magical-project.insights.serverpod.space | Needs setup                 \n',
+            ]));
+      });
     });
 
-    tearDown(() async {
-      await server.close(force: true);
-    });
+    group('and custom domains does not exist when executing domain list', () {
+      late Uri localServerAddress;
 
-    test('then completes successfully', () async {
-      await expectLater(commandResult, completes);
-    });
+      late Future commandResult;
 
-    test('then logs information message about status', () async {
-      await commandResult;
+      setUp(() async {
+        final serverBuilder = HttpServerBuilder();
+        serverBuilder.withSuccessfulResponse(jsonEncode(CustomDomainNameList(
+          customDomainNames: [],
+          defaultDomainsByTarget: {
+            DomainNameTarget.api: 'my-magical-project.api.serverpod.space',
+            DomainNameTarget.insights:
+                'my-magical-project.insights.serverpod.space',
+            DomainNameTarget.web: 'my-magical-project.web.serverpod.space',
+          },
+        )));
 
-      expect(logger.messages, isNotEmpty);
-      expect(
-        logger.messages.first,
-        'Failed to verify the DNS record for the custom domain. Ensure the CNAME is correctly set and try again later.',
-      );
-    });
-  });
+        final (startedServer, serverAddress) = await serverBuilder.build();
+        localServerAddress = serverAddress;
+        server = startedServer;
 
-  group(
-      'Given authenticated and custom domains exist when executing domain list',
-      () {
-    late Uri localServerAddress;
-    late HttpServer server;
+        commandResult = cli.run([
+          'domains',
+          'list',
+          '--project-id',
+          projectId,
+          '--api-url',
+          localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
+        ]);
+      });
 
-    late Future commandResult;
+      test('then completes successfully', () async {
+        await expectLater(commandResult, completes);
+      });
 
-    setUp(() async {
-      final serverBuilder = HttpServerBuilder();
-      serverBuilder.withSuccessfulResponse(jsonEncode(CustomDomainNameList(
-        customDomainNames: [
-          CustomDomainName(
-            environmentId: 1,
-            name: 'api.domain.com',
-            status: DomainNameStatus.configured,
-            target: DomainNameTarget.api,
-          ),
-          CustomDomainName(
-            environmentId: 1,
-            name: 'web.domain.com',
-            status: DomainNameStatus.pending,
-            target: DomainNameTarget.web,
-          ),
-          CustomDomainName(
-            environmentId: 1,
-            name: 'insights.domain.com',
-            status: DomainNameStatus.needsSetup,
-            target: DomainNameTarget.insights,
-          ),
-        ],
-        defaultDomainsByTarget: {
-          DomainNameTarget.api: 'my-magical-project.api.serverpod.space',
-          DomainNameTarget.insights:
-              'my-magical-project.insights.serverpod.space',
-          DomainNameTarget.web: 'my-magical-project.web.serverpod.space',
-        },
-      )));
+      test('then logs success message', () async {
+        await commandResult;
 
-      final (startedServer, serverAddress) = await serverBuilder.build();
-      localServerAddress = serverAddress;
-      server = startedServer;
-
-      commandResult = cli.run([
-        'domains',
-        'list',
-        '--project-id',
-        projectId,
-        '--api-url',
-        localServerAddress.toString(),
-      ]);
-    });
-
-    tearDown(() async {
-      await server.close(force: true);
-    });
-
-    test('then completes successfully', () async {
-      await expectLater(commandResult, completes);
-    });
-
-    test('then logs success message', () async {
-      await commandResult;
-
-      expect(logger.messages, isNotEmpty);
-      expect(
-          logger.messages,
-          containsAll([
-            'Default domain name                         | Target  \n'
-                '--------------------------------------------+---------\n'
-                'my-magical-project.api.serverpod.space      | api     \n'
-                'my-magical-project.insights.serverpod.space | insights\n'
-                'my-magical-project.web.serverpod.space      | web     \n',
-            'Custom domain name  | Target                                      | Status                      \n'
-                '--------------------+---------------------------------------------+-----------------------------\n'
-                'api.domain.com      | my-magical-project.api.serverpod.space      | Configured                  \n'
-                'web.domain.com      | my-magical-project.web.serverpod.space      | Certificate creation pending\n'
-                'insights.domain.com | my-magical-project.insights.serverpod.space | Needs setup                 \n',
-          ]));
-    });
-  });
-
-  group(
-      'Given authenticated and custom domains does not exist when executing domain list',
-      () {
-    late Uri localServerAddress;
-    late HttpServer server;
-
-    late Future commandResult;
-
-    setUp(() async {
-      final serverBuilder = HttpServerBuilder();
-      serverBuilder.withSuccessfulResponse(jsonEncode(CustomDomainNameList(
-        customDomainNames: [],
-        defaultDomainsByTarget: {
-          DomainNameTarget.api: 'my-magical-project.api.serverpod.space',
-          DomainNameTarget.insights:
-              'my-magical-project.insights.serverpod.space',
-          DomainNameTarget.web: 'my-magical-project.web.serverpod.space',
-        },
-      )));
-
-      final (startedServer, serverAddress) = await serverBuilder.build();
-      localServerAddress = serverAddress;
-      server = startedServer;
-
-      commandResult = cli.run([
-        'domains',
-        'list',
-        '--project-id',
-        projectId,
-        '--api-url',
-        localServerAddress.toString(),
-      ]);
-    });
-
-    tearDown(() async {
-      await server.close(force: true);
-    });
-
-    test('then completes successfully', () async {
-      await expectLater(commandResult, completes);
-    });
-
-    test('then logs success message', () async {
-      await commandResult;
-
-      expect(logger.messages, isNotEmpty);
-      expect(
-          logger.messages.take(2),
-          equals([
-            'Default domain name                         | Target  \n'
-                '--------------------------------------------+---------\n'
-                'my-magical-project.api.serverpod.space      | api     \n'
-                'my-magical-project.insights.serverpod.space | insights\n'
-                'my-magical-project.web.serverpod.space      | web     \n',
-            'Custom domain name | Target | Status\n'
-                '-------------------+--------+-------\n'
-                '<no rows data>\n'
-          ]));
+        expect(logger.messages, isNotEmpty);
+        expect(
+            logger.messages.take(2),
+            equals([
+              'Default domain name                         | Target  \n'
+                  '--------------------------------------------+---------\n'
+                  'my-magical-project.api.serverpod.space      | api     \n'
+                  'my-magical-project.insights.serverpod.space | insights\n'
+                  'my-magical-project.web.serverpod.space      | web     \n',
+              'Custom domain name | Target | Status\n'
+                  '-------------------+--------+-------\n'
+                  '<no rows data>\n'
+            ]));
+      });
     });
   });
 }

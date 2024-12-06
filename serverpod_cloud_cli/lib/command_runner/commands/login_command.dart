@@ -57,6 +57,9 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
       : super(options: LoginCommandOption.values);
 
   @override
+  bool get requireLogin => false;
+
+  @override
   final name = 'login';
 
   @override

@@ -6,6 +6,9 @@ import 'package:cli_tools/cli_tools.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/secrets_command.dart';
+import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
+import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
 import 'package:test/test.dart';
 
@@ -36,6 +39,10 @@ void main() {
 
   const projectId = 'projectId';
 
+  test('Given secrets command when instantiated then requires login', () {
+    expect(CloudSecretsCommand(logger: logger).requireLogin, isTrue);
+  });
+
   group('Given unauthenticated', () {
     late Uri localServerAddress;
     late Completer requestCompleter;
@@ -43,6 +50,10 @@ void main() {
 
     setUp(() async {
       requestCompleter = Completer();
+      await ResourceManager.storeServerpodCloudData(
+        cloudData: ServerpodCloudData('my-token'),
+        localStoragePath: testCacheFolderPath,
+      );
 
       final serverBuilder = HttpServerBuilder();
       serverBuilder.withOnRequest((final request) {
@@ -72,6 +83,8 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
         ]);
       });
 
@@ -87,9 +100,9 @@ void main() {
 
         expect(logger.errors, isNotEmpty);
         expect(
-          logger.errors.first,
-          'Failed to create a new secret: ServerpodClientException: Unauthorized, statusCode = 401',
-        );
+            logger.errors.first,
+            'The credentials for this session seem to no longer be valid.\n'
+            'Please run `scloud logout` followed by `scloud login` and try this command again.');
       });
     });
 
@@ -104,6 +117,8 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
         ]);
       });
 
@@ -119,9 +134,9 @@ void main() {
 
         expect(logger.errors, isNotEmpty);
         expect(
-          logger.errors.first,
-          'Failed to delete the secret: ServerpodClientException: Unauthorized, statusCode = 401',
-        );
+            logger.errors.first,
+            'The credentials for this session seem to no longer be valid.\n'
+            'Please run `scloud logout` followed by `scloud login` and try this command again.');
       });
     });
 
@@ -135,6 +150,8 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
         ]);
       });
 
@@ -151,7 +168,8 @@ void main() {
         expect(logger.errors, isNotEmpty);
         expect(
           logger.errors.first,
-          'Failed to list secrets: ServerpodClientException: Unauthorized, statusCode = 401',
+          'The credentials for this session seem to no longer be valid.\n'
+          'Please run `scloud logout` followed by `scloud login` and try this command again.',
         );
       });
     });
@@ -162,6 +180,11 @@ void main() {
     late HttpServer server;
 
     setUp(() async {
+      await ResourceManager.storeServerpodCloudData(
+        cloudData: ServerpodCloudData('my-token'),
+        localStoragePath: testCacheFolderPath,
+      );
+
       final serverBuilder = HttpServerBuilder();
 
       serverBuilder.withSuccessfulResponse();
@@ -187,6 +210,8 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
         ]);
       });
 
@@ -216,6 +241,8 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
         ]);
       });
 
@@ -242,6 +269,11 @@ void main() {
     late Future commandResult;
 
     setUp(() async {
+      await ResourceManager.storeServerpodCloudData(
+        cloudData: ServerpodCloudData('my-token'),
+        localStoragePath: testCacheFolderPath,
+      );
+
       final serverBuilder = HttpServerBuilder();
       serverBuilder.withSuccessfulResponse(jsonEncode([
         'SECRET_1',
@@ -260,6 +292,8 @@ void main() {
         projectId,
         '--api-url',
         localServerAddress.toString(),
+        '--auth-dir',
+        testCacheFolderPath,
       ]);
     });
 

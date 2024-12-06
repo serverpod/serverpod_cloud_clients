@@ -1,6 +1,7 @@
 import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/features/status/status.dart';
 import 'package:serverpod_cloud_cli/features/logs/logs.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
@@ -91,7 +92,7 @@ class CloudStatusCommand extends CloudCliCommand<StatusOption> {
         logger.error('Cannot specify deploy id with --list.');
         throw ExitException();
       }
-      try {
+      await handleCommonClientExceptions(logger, () async {
         final outputTable = await StatusFeature.getDeployAttemptsList(
           runner.serviceProvider.cloudApiClient,
           environmentId: projectId,
@@ -99,16 +100,16 @@ class CloudStatusCommand extends CloudCliCommand<StatusOption> {
           inUtc: inUtc,
         );
         logger.info(outputTable.toString());
-      } catch (e) {
+      }, (final e) {
         logger.error('Failed to get deployments list: $e');
         throw ExitException();
-      }
+      });
       return;
     }
 
     if (log) {
       // view log
-      try {
+      await handleCommonClientExceptions(logger, () async {
         final buildUuid = await _getBuildUuid(projectId, deploymentArg);
 
         await LogsFeature.fetchBuildLog(
@@ -118,15 +119,16 @@ class CloudStatusCommand extends CloudCliCommand<StatusOption> {
           buildId: buildUuid,
           inUtc: inUtc,
         );
-      } catch (e) {
+      }, (final e) {
         logger.error('Failed to get build log: $e');
         throw ExitException();
-      }
+      });
+
       return;
     }
 
     // view a specific deployment
-    try {
+    await handleCommonClientExceptions(logger, () async {
       final buildUuid = await _getBuildUuid(projectId, deploymentArg);
 
       final output = await StatusFeature.getDeploymentStatus(
@@ -136,10 +138,10 @@ class CloudStatusCommand extends CloudCliCommand<StatusOption> {
         inUtc: inUtc,
       );
       logger.info(output.toString());
-    } catch (e) {
+    }, (final e) {
       logger.error('Failed to get deployment status: $e');
       throw ExitException();
-    }
+    });
   }
 
   Future<String> _getBuildUuid(final String projectId, String? buildArg) async {

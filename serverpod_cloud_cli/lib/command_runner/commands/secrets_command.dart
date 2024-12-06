@@ -1,6 +1,7 @@
 import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 import 'package:serverpod_cloud_cli/util/table_printer.dart';
 
@@ -64,18 +65,18 @@ class CloudCreateSecretCommand
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
-    try {
+    await handleCommonClientExceptions(logger, () async {
       await apiCloudClient.secrets.create(
         secrets: {name: value},
         cloudEnvironmentId: projectId,
       );
-    } catch (e) {
+    }, (final e) {
       logger.error(
         'Failed to create a new secret: $e',
       );
 
       throw ExitException();
-    }
+    });
 
     logger.info('Successfully created secret.');
   }
@@ -110,17 +111,17 @@ class CloudListSecretsCommand
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
     late List<String> secrets;
-    try {
+    await handleCommonClientExceptions(logger, () async {
       secrets = await apiCloudClient.secrets.list(
         projectId,
       );
-    } catch (e) {
+    }, (final e) {
       logger.error(
         'Failed to list secrets: $e',
       );
 
       throw ExitException();
-    }
+    });
 
     final secretsPrinter = TablePrinter();
     secretsPrinter.addHeaders(['Secret name']);
@@ -165,18 +166,18 @@ class CloudDeleteSecretCommand
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
-    try {
+    await handleCommonClientExceptions(logger, () async {
       await apiCloudClient.secrets.delete(
         cloudEnvironmentId: projectId,
         key: name,
       );
-    } catch (e) {
+    }, (final e) {
       logger.error(
         'Failed to delete the secret: $e',
       );
 
       throw ExitException();
-    }
+    });
 
     logger.info('Successfully deleted secret: $name.');
   }

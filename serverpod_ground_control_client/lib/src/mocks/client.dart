@@ -44,6 +44,8 @@ class AuthenticationKeyManagerMock extends Mock
     implements AuthenticationKeyManager {}
 
 class InMemoryKeyManager extends AuthenticationKeyManager {
+  Future<bool> get isAuthenticated async => await get() != null;
+
   String? _key;
 
   @override

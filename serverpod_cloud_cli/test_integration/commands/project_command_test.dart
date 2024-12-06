@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
+import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
+import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/json_to_yaml.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
 import 'package:test/test.dart';
@@ -50,6 +52,11 @@ void main() {
     late HttpServer server;
 
     setUp(() async {
+      await ResourceManager.storeServerpodCloudData(
+        cloudData: ServerpodCloudData('my-token'),
+        localStoragePath: testCacheFolderPath,
+      );
+
       final serverBuilder = HttpServerBuilder();
 
       serverBuilder.withMethodResponse('projects', 'createProject',
@@ -85,6 +92,8 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
         ]);
       });
 
@@ -137,6 +146,8 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
         ]);
       });
 
@@ -183,6 +194,8 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
         ]);
       });
 
@@ -217,6 +230,8 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
         ]);
       });
 

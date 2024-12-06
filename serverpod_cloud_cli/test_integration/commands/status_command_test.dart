@@ -1,22 +1,23 @@
 import 'dart:async';
 
-import 'package:meta/meta.dart';
 import 'package:cli_tools/cli_tools.dart';
-import 'package:pub_semver/pub_semver.dart';
+import 'package:meta/meta.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:test/test.dart';
-
+import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/status_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client_mock.dart';
+import 'package:test/test.dart';
 
 import '../../test_utils/test_logger.dart';
 
 void main() {
   final logger = TestLogger();
   final version = Version.parse('0.0.1');
-  final client = ClientMock();
+  final keyManager = InMemoryKeyManager();
+  final client = ClientMock(authenticationKeyManager: keyManager);
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     version: version,
@@ -25,14 +26,23 @@ void main() {
     ),
   );
 
-  tearDown(() {
+  tearDown(() async {
+    await keyManager.remove();
+
     logger.clear();
   });
-
   const projectId = 'projectId';
 
+  test('Given status command when instantiated then requires login', () {
+    expect(CloudStatusCommand(logger: logger).requireLogin, isTrue);
+  });
+
   group('Given unauthenticated', () {
-    setUpAll(() {
+    setUp(() async {
+      await keyManager.put('mock-token');
+    });
+
+    setUpAll(() async {
       when(() => client.status.getDeployAttempts(
             cloudEnvironmentId: any(named: 'cloudEnvironmentId'),
             limit: any(named: 'limit'),
@@ -48,7 +58,7 @@ void main() {
       reset(client.status);
     });
 
-    group('when running status without options', () {
+    group('when executing status', () {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
@@ -69,20 +79,20 @@ void main() {
 
         expect(logger.errors, isNotEmpty);
         expect(
-          logger.errors.first,
-          'Failed to get deployment status: ServerpodClientException: Unauthorized, statusCode = 401',
-        );
+            logger.errors.first,
+            'The credentials for this session seem to no longer be valid.\n'
+            'Please run `scloud logout` followed by `scloud login` and try this command again.');
       });
     });
 
-    group('when running status with --build-log', () {
+    group('when executing status --build-log', () {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
           'status',
-          '--project-id',
-          projectId,
           '--build-log',
+          '--project-id',
+          projectId,
         ]);
       });
 
@@ -97,20 +107,20 @@ void main() {
 
         expect(logger.errors, isNotEmpty);
         expect(
-          logger.errors.first,
-          'Failed to get build log: ServerpodClientException: Unauthorized, statusCode = 401',
-        );
+            logger.errors.first,
+            'The credentials for this session seem to no longer be valid.\n'
+            'Please run `scloud logout` followed by `scloud login` and try this command again.');
       });
     });
 
-    group('when running status with --list', () {
+    group('when executing status --list', () {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
           'status',
+          '--list',
           '--project-id',
           projectId,
-          '--list',
         ]);
       });
 
@@ -125,14 +135,18 @@ void main() {
 
         expect(logger.errors, isNotEmpty);
         expect(
-          logger.errors.first,
-          'Failed to get deployments list: ServerpodClientException: Unauthorized, statusCode = 401',
-        );
+            logger.errors.first,
+            'The credentials for this session seem to no longer be valid.\n'
+            'Please run `scloud logout` followed by `scloud login` and try this command again.');
       });
     });
   });
 
   group('Given authenticated', () {
+    setUp(() async {
+      await keyManager.put('mock-token');
+    });
+
     group('when running status command', () {
       group('with correct args to get the most recent deploy status', () {
         setUpAll(() async {

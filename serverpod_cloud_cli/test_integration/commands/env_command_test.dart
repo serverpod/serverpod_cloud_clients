@@ -6,6 +6,7 @@ import 'package:cli_tools/cli_tools.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/env_command.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
@@ -37,6 +38,10 @@ void main() {
   });
 
   const projectId = 'projectId';
+
+  test('Given env command when instantiated then requires login', () {
+    expect(CloudEnvCommand(logger: logger).requireLogin, isTrue);
+  });
 
   group('Given unauthenticated', () {
     late Uri localServerAddress;
@@ -78,6 +83,8 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
         ]);
       });
 
@@ -93,9 +100,9 @@ void main() {
 
         expect(logger.errors, isNotEmpty);
         expect(
-          logger.errors.first,
-          'Failed to create a new environment variable: ServerpodClientException: Unauthorized, statusCode = 401',
-        );
+            logger.errors.first,
+            'The credentials for this session seem to no longer be valid.\n'
+            'Please run `scloud logout` followed by `scloud login` and try this command again.');
       });
     });
 
@@ -111,6 +118,8 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
         ]);
       });
 
@@ -126,9 +135,9 @@ void main() {
 
         expect(logger.errors, isNotEmpty);
         expect(
-          logger.errors.first,
-          'Failed to update a the environment variable: ServerpodClientException: Unauthorized, statusCode = 401',
-        );
+            logger.errors.first,
+            'The credentials for this session seem to no longer be valid.\n'
+            'Please run `scloud logout` followed by `scloud login` and try this command again.');
       });
     });
 
@@ -143,6 +152,8 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
         ]);
       });
 
@@ -158,9 +169,9 @@ void main() {
 
         expect(logger.errors, isNotEmpty);
         expect(
-          logger.errors.first,
-          'Failed to delete the environment variable: ServerpodClientException: Unauthorized, statusCode = 401',
-        );
+            logger.errors.first,
+            'The credentials for this session seem to no longer be valid.\n'
+            'Please run `scloud logout` followed by `scloud login` and try this command again.');
       });
     });
 
@@ -174,6 +185,8 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
         ]);
       });
 
@@ -190,7 +203,8 @@ void main() {
         expect(logger.errors, isNotEmpty);
         expect(
           logger.errors.first,
-          'Failed to list environment variables: ServerpodClientException: Unauthorized, statusCode = 401',
+          'The credentials for this session seem to no longer be valid.\n'
+          'Please run `scloud logout` followed by `scloud login` and try this command again.',
         );
       });
     });
@@ -201,6 +215,11 @@ void main() {
     late HttpServer server;
 
     setUp(() async {
+      await ResourceManager.storeServerpodCloudData(
+        cloudData: ServerpodCloudData('my-token'),
+        localStoragePath: testCacheFolderPath,
+      );
+
       final serverBuilder = HttpServerBuilder();
 
       serverBuilder.withSuccessfulResponse(EnvironmentVariable(
@@ -230,6 +249,8 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
         ]);
       });
 
@@ -260,6 +281,8 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
         ]);
       });
 
@@ -289,6 +312,8 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
         ]);
       });
 
@@ -307,6 +332,7 @@ void main() {
       });
     });
   });
+
   group('Given authenticated when executing env list', () {
     late Uri localServerAddress;
     late HttpServer server;
@@ -314,6 +340,11 @@ void main() {
     late Future commandResult;
 
     setUp(() async {
+      await ResourceManager.storeServerpodCloudData(
+        cloudData: ServerpodCloudData('my-token'),
+        localStoragePath: testCacheFolderPath,
+      );
+
       final serverBuilder = HttpServerBuilder();
       serverBuilder.withSuccessfulResponse(jsonEncode([
         EnvironmentVariable(
@@ -334,14 +365,14 @@ void main() {
         projectId,
         '--api-url',
         localServerAddress.toString(),
+        '--auth-dir',
+        testCacheFolderPath,
       ]);
     });
 
     tearDown(() async {
       await server.close(force: true);
     });
-
-    setUp(() async {});
 
     test('then completes successfully', () async {
       await expectLater(commandResult, completes);

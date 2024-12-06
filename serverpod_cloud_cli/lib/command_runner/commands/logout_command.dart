@@ -5,6 +5,9 @@ import 'package:serverpod_cloud_cli/util/configuration.dart';
 
 class CloudLogoutCommand extends CloudCliCommand {
   @override
+  bool get requireLogin => false;
+
+  @override
   final name = 'logout';
 
   @override

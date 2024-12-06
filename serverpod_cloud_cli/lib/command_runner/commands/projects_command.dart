@@ -4,6 +4,7 @@ import 'package:cli_tools/cli_tools.dart';
 import 'package:collection/collection.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
@@ -70,27 +71,27 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
     final enableDb = commandConfig.flag(ProjectCreateOption.enableDb);
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
-    try {
+    await handleCommonClientExceptions(logger, () async {
       await apiCloudClient.projects.createProject(cloudProjectId: projectId);
-    } catch (e) {
+    }, (final e) {
       logger.error(
         'Request to create a new project failed: $e',
       );
       throw ExitException();
-    }
+    });
 
     logger.info("Successfully created new project '$projectId'.");
 
     if (enableDb) {
-      try {
+      await handleCommonClientExceptions(logger, () async {
         await apiCloudClient.infraResources
             .enableDatabase(cloudEnvironmentId: projectId);
-      } catch (e) {
+      }, (final e) {
         logger.error(
           'Request to create a database for the new project failed: $e',
         );
         throw ExitException();
-      }
+      });
 
       logger.info(
         "Successfully requested to create a database for the new project '$projectId'.",
@@ -98,21 +99,21 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
     }
 
     if (isServerpodServerDirectory(Directory.current.path)) {
-      try {
-        if (File(ConfigFileConstants.fileName).existsSync()) {
-          return;
-        }
+      if (File(ConfigFileConstants.fileName).existsSync()) {
+        return;
+      }
 
+      await handleCommonClientExceptions(logger, () async {
         final projectConfig = await apiCloudClient.projects
             .fetchProjectConfig(cloudProjectId: projectId);
 
         ScloudConfig.writeToFile(projectConfig, Directory.current);
-      } catch (e) {
+      }, (final e) {
         logger.error(
           'Failed to fetch project config: $e',
         );
         throw ExitException();
-      }
+      });
 
       logger.info(
         "Successfully created the ${ConfigFileConstants.fileName} configuration file for '$projectId'.",
@@ -143,14 +144,14 @@ class CloudProjectDeleteCommand extends CloudCliCommand {
     final projectId = commandConfig.value(_ProjectOptions.projectId);
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
-    try {
+    await handleCommonClientExceptions(logger, () async {
       await apiCloudClient.projects.deleteProject(cloudProjectId: projectId);
-    } catch (e) {
+    }, (final e) {
       logger.error(
         'Request to delete a new project failed: $e',
       );
       throw ExitException();
-    }
+    });
 
     logger.info("Successfully deleted the project '$projectId'.");
   }
@@ -172,14 +173,15 @@ class CloudProjectListCommand extends CloudCliCommand {
   Future<void> runWithConfig(final Configuration commandConfig) async {
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
     late List<Project> projects;
-    try {
+    await handleCommonClientExceptions(logger, () async {
       projects = await apiCloudClient.projects.listProjects();
-    } catch (e) {
+    }, (final e) {
       logger.error(
         'Request to list projects failed: $e',
       );
       throw ExitException();
-    }
+    });
+
     if (projects.isEmpty) {
       logger.info('No projects available.');
       return;

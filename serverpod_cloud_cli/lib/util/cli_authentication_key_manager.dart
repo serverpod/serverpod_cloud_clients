@@ -3,6 +3,10 @@ import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_da
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
 
+extension IsAuthenticated on AuthenticationKeyManager {
+  Future<bool> get isAuthenticated async => await get() != null;
+}
+
 class CliAuthenticationKeyManager extends AuthenticationKeyManager {
   final Logger _logger;
   final String _localStoragePath;

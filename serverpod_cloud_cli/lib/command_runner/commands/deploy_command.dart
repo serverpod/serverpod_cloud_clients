@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
@@ -65,15 +66,15 @@ class CloudDeployCommand extends CloudCliCommand<DeployCommandOption> {
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
-    final String uploadDescription;
-    try {
+    late final String uploadDescription;
+    await handleCommonClientExceptions(logger, () async {
       uploadDescription = await apiCloudClient.deploy.createUploadDescription(
         projectId,
       );
-    } catch (e) {
+    }, (final e) {
       logger.error('Failed to fetch upload description: $e');
       throw ExitException();
-    }
+    });
 
     final List<int> projectZip;
     try {

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
+import 'package:serverpod_cloud_cli/util/cli_authentication_key_manager.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 
 abstract class CloudCliCommand<T extends OptionDefinition>
@@ -10,6 +11,8 @@ abstract class CloudCliCommand<T extends OptionDefinition>
 
   /// The option definitions for this command.
   final List<T> options;
+
+  final bool requireLogin = true;
 
   CloudCliCommand({
     required this.logger,
@@ -37,6 +40,17 @@ abstract class CloudCliCommand<T extends OptionDefinition>
       args: argResults,
       env: Platform.environment,
     );
+
+    final apiCloudClient = runner.serviceProvider.cloudApiClient;
+
+    if (requireLogin &&
+        await apiCloudClient.authenticationKeyManager?.isAuthenticated !=
+            true) {
+      logger.error('This command requires you to be logged in. '
+          'Please run `scloud login` to authenticate and try again.');
+      throw ExitException();
+    }
+
     await runWithConfig(config);
   }
 

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cli_tools/cli_tools.dart' as cli;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/option_parsing.dart';
 import 'package:serverpod_cloud_cli/features/logs/logs.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
@@ -151,7 +152,7 @@ class CloudLogRangeCommand extends CloudCliCommand<LogGetOption> {
       after = _parseRecentOpt(recentOpt ?? '1m');
     }
 
-    try {
+    await handleCommonClientExceptions(logger, () async {
       await LogsFeature.fetchContainerLog(
         runner.serviceProvider.cloudApiClient,
         writeln: stdout.writeln,
@@ -161,10 +162,10 @@ class CloudLogRangeCommand extends CloudCliCommand<LogGetOption> {
         limit: limit,
         inUtc: inUtc,
       );
-    } catch (e) {
+    }, (final e) {
       logger.error('Error while fetching log records: $e');
       throw cli.ExitException();
-    }
+    });
   }
 }
 
@@ -201,7 +202,7 @@ class CloudLogTailCommand extends CloudCliCommand<LogTailOption> {
       throw ArgumentError('Value must be an integer.', '--limit');
     }
 
-    try {
+    await handleCommonClientExceptions(logger, () async {
       await LogsFeature.tailContainerLog(
         runner.serviceProvider.cloudApiClient,
         writeln: stdout.writeln,
@@ -209,9 +210,9 @@ class CloudLogTailCommand extends CloudCliCommand<LogTailOption> {
         limit: limit,
         inUtc: inUtc,
       );
-    } catch (e) {
+    }, (final e) {
       logger.error('Error while tailing log records: $e');
       throw cli.ExitException();
-    }
+    });
   }
 }

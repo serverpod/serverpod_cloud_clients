@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
@@ -45,15 +46,15 @@ class CloudLinkCommand extends CloudCliCommand<LinkCommandOption> {
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
-    final ProjectConfig projectConfig;
-    try {
+    late final ProjectConfig projectConfig;
+    await handleCommonClientExceptions(logger, () async {
       projectConfig = await apiCloudClient.projects.fetchProjectConfig(
         cloudProjectId: projectId,
       );
-    } catch (e) {
+    }, (final e) {
       logger.error('Failed to fetch project config: $e');
       throw ExitException();
-    }
+    });
 
     try {
       ScloudConfig.writeToFile(projectConfig, projectDirectory);
