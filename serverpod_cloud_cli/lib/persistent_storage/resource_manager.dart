@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cli_tools/cli_tools.dart';
 import 'package:path/path.dart' as p;
+import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
 
 abstract class ResourceManager {
@@ -50,7 +51,7 @@ abstract class ResourceManager {
 
   static Future<ServerpodCloudData?> tryFetchServerpodCloudData({
     required final String localStoragePath,
-    required final Logger logger,
+    required final CommandLogger logger,
   }) async {
     void deleteFile(final File file) {
       try {

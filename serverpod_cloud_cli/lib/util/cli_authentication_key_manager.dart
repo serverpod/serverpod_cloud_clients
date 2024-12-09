@@ -1,4 +1,4 @@
-import 'package:cli_tools/cli_tools.dart';
+import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
@@ -8,12 +8,12 @@ extension IsAuthenticated on AuthenticationKeyManager {
 }
 
 class CliAuthenticationKeyManager extends AuthenticationKeyManager {
-  final Logger _logger;
+  final CommandLogger _logger;
   final String _localStoragePath;
   ServerpodCloudData? _cloudData;
 
   CliAuthenticationKeyManager({
-    required final Logger logger,
+    required final CommandLogger logger,
     required final String localStoragePath,
     final ServerpodCloudData? cloudDataOverride,
   })  : _localStoragePath = localStoragePath,

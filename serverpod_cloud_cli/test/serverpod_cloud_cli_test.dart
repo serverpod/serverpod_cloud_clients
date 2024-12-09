@@ -1,4 +1,5 @@
 import 'package:pub_semver/pub_semver.dart';
+import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:test/test.dart';
 
@@ -6,9 +7,10 @@ import '../test_utils/test_logger.dart';
 
 void main() async {
   final logger = TestLogger();
+  final commandLogger = CommandLogger(logger);
   final version = Version.parse('0.0.1');
   final cli = CloudCliCommandRunner.create(
-    logger: logger,
+    logger: commandLogger,
     version: Version.parse('0.0.1'),
   );
 

@@ -1,4 +1,4 @@
-import 'package:cli_tools/cli_tools.dart';
+import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/util/cli_authentication_key_manager.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
@@ -10,7 +10,7 @@ class CloudCliServiceProvider {
   final Client Function(GlobalConfiguration globalCfg)? _apiClientFactory;
 
   late GlobalConfiguration _globalConfiguration;
-  late Logger _logger;
+  late CommandLogger _logger;
 
   Client? _cloudApiClient;
 
@@ -20,7 +20,7 @@ class CloudCliServiceProvider {
 
   void initialize({
     required final GlobalConfiguration globalConfiguration,
-    required final Logger logger,
+    required final CommandLogger logger,
   }) {
     _globalConfiguration = globalConfiguration;
     _logger = logger;

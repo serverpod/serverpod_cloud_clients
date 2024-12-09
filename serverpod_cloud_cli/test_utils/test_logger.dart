@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:cli_tools/logger.dart';
 
+import 'mock_stdout.dart';
+
 class TestLogger extends VoidLogger {
   final List<String> messages = [];
   final List<String> errors = [];
@@ -56,4 +58,21 @@ class TestLogger extends VoidLogger {
     _somethingLogged = Completer<void>();
     await _somethingLogged.future;
   }
+}
+
+Future<({MockStdout stdout, MockStdout stderr})> collectOutput<T>(
+  final FutureOr<T> Function() runner,
+) async {
+  final standardOut = MockStdout();
+  final standardError = MockStdout();
+  await IOOverrides.runZoned(
+    () async {
+      final result = await runner();
+      return result;
+    },
+    stdout: () => standardOut,
+    stderr: () => standardError,
+  );
+
+  return (stdout: standardOut, stderr: standardError);
 }

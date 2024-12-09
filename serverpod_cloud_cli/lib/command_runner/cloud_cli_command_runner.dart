@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:cli_tools/cli_tools.dart';
 import 'package:pub_semver/pub_semver.dart';
+import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/admin_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/custom_domains_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy_command.dart';
@@ -23,7 +24,7 @@ import 'package:serverpod_cloud_cli/util/configuration.dart';
 /// Represents the Serverpod Cloud CLI main command, its global options, and subcommands.
 class CloudCliCommandRunner extends BetterCommandRunner {
   final Version version;
-  final Logger logger;
+  final CommandLogger logger;
   final CloudCliServiceProvider serviceProvider;
 
   /// The curremt global configuration for the Serverpod Cloud CLI.
@@ -44,7 +45,7 @@ class CloudCliCommandRunner extends BetterCommandRunner {
         );
 
   static CloudCliCommandRunner create({
-    required final Logger logger,
+    required final CommandLogger logger,
     required final Version version,
     final CloudCliServiceProvider? serviceProvider,
   }) {
@@ -107,7 +108,7 @@ class CloudCliCommandRunner extends BetterCommandRunner {
   }
 
   static void _configureLogLevel({
-    required final Logger logger,
+    required final CommandLogger logger,
     required final CommandRunnerLogLevel parsedLogLevel,
     final String? commandName,
   }) {

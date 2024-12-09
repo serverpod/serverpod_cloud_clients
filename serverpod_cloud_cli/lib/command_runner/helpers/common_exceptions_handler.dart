@@ -1,10 +1,11 @@
 import 'dart:async';
 
 import 'package:cli_tools/cli_tools.dart';
+import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
 
 FutureOr<T> handleCommonClientExceptions<T>(
-  final Logger logger,
+  final CommandLogger logger,
   final FutureOr<T> Function() callback,
   final T Function(dynamic e) onUnhandledException,
 ) async {

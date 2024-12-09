@@ -9,10 +9,10 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:cli_tools/cli_tools.dart';
-import 'package:serverpod_cloud_cli/util/ignore.dart';
+import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dart';
+import 'package:serverpod_cloud_cli/util/ignore.dart';
 
 abstract final class ProjectFiles {
   /// Collects all files in the project directory that are not ignored by any
@@ -22,7 +22,7 @@ abstract final class ProjectFiles {
   /// [ProjectZipper.recognizedIgnoreRuleFiles] files.
   static List<String> collectFiles({
     required final Directory projectDirectory,
-    required final Logger logger,
+    required final CommandLogger logger,
   }) {
     final root = p.toUri(p.normalize(projectDirectory.path)).path;
     const beneath = '.';
@@ -68,8 +68,9 @@ abstract final class ProjectFiles {
         return Ignore(
           rules,
           onInvalidPattern: (final pattern, final exception) {
-            logger.warning('Ignoring invalid pattern in ignore file: $pattern. '
-                '${exception.message}');
+            logger.warning(
+              'Ignoring invalid pattern in ignore file: $pattern. Remove it to avoid this warning.',
+            );
           },
           // Ignore case on macOS and Windows, because `git clone` and
           // `git init` will set `core.ignoreCase = true` in the local
