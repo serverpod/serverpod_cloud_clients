@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:archive/archive_io.dart';
 import 'package:cli_tools/cli_tools.dart';
 import 'package:path/path.dart' as p;
+import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dart';
 import 'package:test/test.dart';
@@ -12,6 +13,8 @@ import '../../test_utils/project_factory.dart';
 
 void main() {
   final logger = StdOutLogger(LogLevel.debug);
+  final commandLogger = CommandLogger(logger);
+
   final testProjectPath = p.join(
     'test_integration',
     const Uuid().v4(),
@@ -33,7 +36,7 @@ void main() {
     await expectLater(
       ProjectZipper.zipProject(
         projectDirectory: projectDirectory,
-        logger: logger,
+        logger: commandLogger,
       ),
       throwsA(isA<ProjectDirectoryDoesNotExistException>()),
     );
@@ -48,7 +51,7 @@ void main() {
     await expectLater(
       ProjectZipper.zipProject(
         projectDirectory: projectDirectory,
-        logger: logger,
+        logger: commandLogger,
       ),
       throwsA(isA<EmptyProjectException>()),
     );
@@ -78,7 +81,7 @@ void main() {
     await expectLater(
       ProjectZipper.zipProject(
         projectDirectory: projectDirectory,
-        logger: logger,
+        logger: commandLogger,
       ),
       throwsA(isA<DirectorySymLinkException>()),
     );
@@ -99,7 +102,7 @@ void main() {
     await expectLater(
       ProjectZipper.zipProject(
         projectDirectory: projectDirectory,
-        logger: logger,
+        logger: commandLogger,
       ),
       throwsA(isA<NonResolvingSymlinkException>()),
     );
@@ -118,7 +121,7 @@ void main() {
 
     final zippedProject = await ProjectZipper.zipProject(
       projectDirectory: projectDirectory,
-      logger: logger,
+      logger: commandLogger,
     );
 
     final archive = ZipDecoder().decodeBytes(zippedProject);

@@ -5,6 +5,7 @@ import 'package:cli_tools/cli_tools.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
+import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
@@ -15,9 +16,10 @@ import '../../test_utils/test_logger.dart';
 
 void main() {
   final logger = TestLogger();
+  final commandLogger = CommandLogger(logger);
   final version = Version.parse('0.0.1');
   final cli = CloudCliCommandRunner.create(
-    logger: logger,
+    logger: commandLogger,
     version: version,
   );
 
@@ -107,7 +109,7 @@ void main() {
         await cliOnDone;
         final storedCloudData =
             await ResourceManager.tryFetchServerpodCloudData(
-          logger: logger,
+          logger: commandLogger,
           localStoragePath: testCacheFolderPath,
         );
         expect(storedCloudData?.token, testToken);
@@ -141,7 +143,7 @@ void main() {
         await cliOnDone;
         final storedCloudData =
             await ResourceManager.tryFetchServerpodCloudData(
-          logger: logger,
+          logger: commandLogger,
           localStoragePath: testCacheFolderPath,
         );
         expect(storedCloudData, isNull);
@@ -192,7 +194,7 @@ void main() {
         await cliOnDone.catchError((final _) {});
         final storedCloudData =
             await ResourceManager.tryFetchServerpodCloudData(
-          logger: logger,
+          logger: commandLogger,
           localStoragePath: testCacheFolderPath,
         );
         expect(storedCloudData, isNull);

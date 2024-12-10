@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:cli_tools/cli_tools.dart';
 import 'package:pub_semver/pub_semver.dart';
+import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 
 /// The version of the Serverpod Cloud CLI.
@@ -10,7 +11,7 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart
 const String cliVersion = '0.0.1';
 
 void main(final List<String> args) async {
-  final logger = _buildLogger();
+  final logger = CommandLogger.create();
 
   await runZonedGuarded(
     () async {
@@ -41,7 +42,7 @@ void main(final List<String> args) async {
   );
 }
 
-Future<void> _main(final List<String> args, final Logger logger) async {
+Future<void> _main(final List<String> args, final CommandLogger logger) async {
   final runner = CloudCliCommandRunner.create(
     logger: logger,
     version: Version.parse(cliVersion),
@@ -54,7 +55,7 @@ Future<void> _main(final List<String> args, final Logger logger) async {
   }
 }
 
-Future<void> _preExit(final Logger logger) async {
+Future<void> _preExit(final CommandLogger logger) async {
   await logger.flush();
 }
 
@@ -71,13 +72,4 @@ String _formatInternalError(
 https://github.com/serverpod/serverpod/issues
 ${zonedError ? 'Zoned error' : ''}
 $error''';
-}
-
-Logger _buildLogger() {
-  const Map<String, String> windowsReplacements = {
-    '🚀': '',
-  };
-  return Platform.isWindows
-      ? StdOutLogger(LogLevel.info, replacements: windowsReplacements)
-      : StdOutLogger(LogLevel.info);
 }

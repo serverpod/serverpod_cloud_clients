@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cli_tools/cli_tools.dart';
+import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
 import 'package:test/test.dart';
@@ -9,6 +10,7 @@ import '../test_utils/test_logger.dart';
 
 void main() {
   final logger = TestLogger();
+  final commandLogger = CommandLogger(logger);
 
   test(
       'Given a callback that throws ServerpodClientUnauthorized '
@@ -16,7 +18,7 @@ void main() {
       'should rethrow ExitException and log error message', () {
     expect(
       () => handleCommonClientExceptions(
-        logger,
+        commandLogger,
         () {
           throw ServerpodClientUnauthorized();
         },
@@ -38,7 +40,7 @@ void main() {
       'then should rethrow ExitException and log error message', () {
     expect(
       () => handleCommonClientExceptions(
-        logger,
+        commandLogger,
         () {
           throw UnauthorizedException(message: 'some error');
         },
@@ -60,7 +62,7 @@ void main() {
     final completer = Completer<void>();
 
     handleCommonClientExceptions(
-      logger,
+      commandLogger,
       () {
         throw Exception();
       },

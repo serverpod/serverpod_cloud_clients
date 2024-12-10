@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:cli_tools/logger.dart';
+import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 
 abstract final class ListenerServer {
   static Future<String?> listenForAuthenticationToken({
     final void Function(Uri callbackUrl)? onConnected,
     final Duration timeLimit = const Duration(minutes: 2),
-    required final Logger logger,
+    required final CommandLogger logger,
   }) async {
     const host = 'localhost';
     final server = await HttpServer.bind(host, 0 /* Pick available port */);
@@ -91,7 +91,7 @@ abstract final class ListenerServer {
   }
 
   static Future<String?> _processRequests(
-      final HttpServer server, final Logger logger) async {
+      final HttpServer server, final CommandLogger logger) async {
     await for (var request in server) {
       logger.debug('Received request: ${request.method} ${request.uri}');
       try {

@@ -4,6 +4,7 @@ import 'package:cli_tools/cli_tools.dart';
 import 'package:meta/meta.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:pub_semver/pub_semver.dart';
+import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/status_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
@@ -15,11 +16,12 @@ import '../../test_utils/test_logger.dart';
 
 void main() {
   final logger = TestLogger();
+  final commandLogger = CommandLogger(logger);
   final version = Version.parse('0.0.1');
   final keyManager = InMemoryKeyManager();
   final client = ClientMock(authenticationKeyManager: keyManager);
   final cli = CloudCliCommandRunner.create(
-    logger: logger,
+    logger: commandLogger,
     version: version,
     serviceProvider: CloudCliServiceProvider(
       apiClientFactory: (final globalCfg) => client,
@@ -34,7 +36,7 @@ void main() {
   const projectId = 'projectId';
 
   test('Given status command when instantiated then requires login', () {
-    expect(CloudStatusCommand(logger: logger).requireLogin, isTrue);
+    expect(CloudStatusCommand(logger: commandLogger).requireLogin, isTrue);
   });
 
   group('Given unauthenticated', () {

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cli_tools/cli_tools.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
+import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
@@ -55,13 +56,15 @@ class CommandThatDoesNotRequiredLogin extends CloudCliCommand {
 
 void main() {
   final logger = TestLogger();
+  final commandLogger = CommandLogger(logger);
   final runner = CloudCliCommandRunner.create(
-    logger: logger,
+    logger: commandLogger,
     version: Version(0, 0, 0),
   );
-  final commandThatRequiresLogin = CommandThatRequiresLogin(logger: logger);
+  final commandThatRequiresLogin =
+      CommandThatRequiresLogin(logger: commandLogger);
   final commandThatDoesNotRequiredLogin =
-      CommandThatDoesNotRequiredLogin(logger: logger);
+      CommandThatDoesNotRequiredLogin(logger: commandLogger);
   runner.addCommand(commandThatRequiresLogin);
   runner.addCommand(commandThatDoesNotRequiredLogin);
 
@@ -104,8 +107,9 @@ void main() {
 
     expect(
         logger.errors,
-        contains('This command requires you to be logged in. '
-            'Please run `scloud login` to authenticate and try again.'));
+        contains(
+          'This command requires you to be logged in. Please run `scloud login` to authenticate and try again.',
+        ));
   });
 
   test(

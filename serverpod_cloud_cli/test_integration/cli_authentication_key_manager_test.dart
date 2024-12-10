@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cli_tools/cli_tools.dart';
 import 'package:path/path.dart' as p;
+import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_cloud_cli/util/cli_authentication_key_manager.dart';
@@ -9,7 +10,7 @@ import 'package:test/test.dart';
 import 'package:uuid/uuid.dart';
 
 void main() {
-  final logger = VoidLogger();
+  final logger = CommandLogger(VoidLogger());
   final testCacheFolderPath = p.join(
     'test_integration',
     const Uuid().v4(),

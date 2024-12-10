@@ -1,13 +1,14 @@
 import 'dart:io';
 
 import 'package:cli_tools/cli_tools.dart';
+import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/util/cli_authentication_key_manager.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 
 abstract class CloudCliCommand<T extends OptionDefinition>
     extends BetterCommand {
-  final Logger logger;
+  final CommandLogger logger;
 
   /// The option definitions for this command.
   final List<T> options;

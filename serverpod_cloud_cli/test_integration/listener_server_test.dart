@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:cli_tools/cli_tools.dart';
+import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/util/listener_server.dart';
 import 'package:test/test.dart';
 import 'package:http/http.dart' as http;
@@ -14,7 +15,7 @@ void main() async {
     setUp(() async {
       callbackUrlFuture = Completer<Uri>();
       tokenFuture = ListenerServer.listenForAuthenticationToken(
-        logger: VoidLogger(),
+        logger: CommandLogger(VoidLogger()),
         onConnected: (final Uri callbackUrl) {
           callbackUrlFuture.complete(callbackUrl);
         },
@@ -108,7 +109,7 @@ void main() async {
     setUp(() async {
       callbackUrlFuture = Completer<Uri>();
       tokenFuture = ListenerServer.listenForAuthenticationToken(
-        logger: VoidLogger(),
+        logger: CommandLogger(VoidLogger()),
         onConnected: (final Uri callbackUrl) {
           callbackUrlFuture.complete(callbackUrl);
         },

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:archive/archive_io.dart';
 import 'package:cli_tools/cli_tools.dart';
 import 'package:pool/pool.dart';
+import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/project_zipper/helpers/project_files.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dart';
 
@@ -34,7 +35,7 @@ abstract final class ProjectZipper {
   /// a non-resolving symlink.
   static Future<List<int>> zipProject({
     required final Directory projectDirectory,
-    required final Logger logger,
+    required final CommandLogger logger,
     final int fileReadPoolSize = 5,
   }) async {
     if (!projectDirectory.existsSync()) {
