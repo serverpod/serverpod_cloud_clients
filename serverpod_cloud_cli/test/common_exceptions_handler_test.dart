@@ -1,16 +1,19 @@
 import 'dart:async';
 
 import 'package:cli_tools/cli_tools.dart';
-import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
 import 'package:test/test.dart';
 
-import '../test_utils/test_logger.dart';
+import '../test_utils/command_logger_matchers.dart';
+import '../test_utils/test_command_logger.dart';
 
 void main() {
-  final logger = TestLogger();
-  final commandLogger = CommandLogger(logger);
+  final logger = TestCommandLogger();
+
+  tearDown(() async {
+    logger.clear();
+  });
 
   test(
       'Given a callback that throws ServerpodClientUnauthorized '
@@ -18,20 +21,23 @@ void main() {
       'should rethrow ExitException and log error message', () {
     expect(
       () => handleCommonClientExceptions(
-        commandLogger,
+        logger,
         () {
           throw ServerpodClientUnauthorized();
         },
-        (final e) => throw UnimplementedError(),
+        (final e) => fail('callback should not have been called'),
       ),
       throwsA(isA<ExitException>()),
     );
 
     expect(
-        logger.errors,
-        contains(
+      logger.errorCalls.last,
+      equalsErrorCall(
+        message:
             'The credentials for this session seem to no longer be valid.\n'
-            'Please run `scloud logout` followed by `scloud login` and try this command again.'));
+            'Please run `scloud logout` followed by `scloud login` and try this command again.',
+      ),
+    );
   });
 
   test(
@@ -40,18 +46,47 @@ void main() {
       'then should rethrow ExitException and log error message', () {
     expect(
       () => handleCommonClientExceptions(
-        commandLogger,
+        logger,
         () {
           throw UnauthorizedException(message: 'some error');
         },
-        (final e) => throw UnimplementedError(),
+        (final e) => fail('callback should not have been called'),
       ),
       throwsA(isA<ExitException>()),
     );
 
     expect(
-      logger.errors,
-      contains('You are not authorized to perform this action.'),
+      logger.errorCalls.last,
+      equalsErrorCall(
+        message: 'You are not authorized to perform this action.',
+      ),
+    );
+  });
+
+  test(
+      'Given a callback that throws ForbiddenException '
+      'when calling handleCommonClientExceptions '
+      'then should rethrow ExitException and log error message', () {
+    expect(
+      () => handleCommonClientExceptions(
+        logger,
+        () {
+          throw ForbiddenException(
+              message:
+                  'The maximum number of projects that can be created has been reached (5).');
+        },
+        (final e) => fail('callback should not have been called'),
+      ),
+      throwsA(isA<ExitException>()),
+    );
+
+    expect(
+      logger.errorCalls.last,
+      equalsErrorCall(
+        message: 'The action was not allowed.',
+        hint:
+            'The maximum number of projects that can be created has been reached (5).',
+      ),
     );
   });
 
@@ -62,7 +97,7 @@ void main() {
     final completer = Completer<void>();
 
     handleCommonClientExceptions(
-      commandLogger,
+      logger,
       () {
         throw Exception();
       },

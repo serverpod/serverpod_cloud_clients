@@ -24,6 +24,13 @@ FutureOr<T> handleCommonClientExceptions<T>(
     );
 
     throw ExitException();
+  } on ForbiddenException catch (e) {
+    logger.error(
+      'The action was not allowed.',
+      hint: e.message,
+    );
+
+    throw ExitException();
   } catch (e) {
     return onUnhandledException(e);
   }
