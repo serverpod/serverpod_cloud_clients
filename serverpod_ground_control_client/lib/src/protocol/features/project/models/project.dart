@@ -10,8 +10,8 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../tenant/role.dart' as _i2;
-import '../infrastructure/environment.dart' as _i3;
+import '../../../features/project/models/role.dart' as _i2;
+import '../../../features/environments/models/environment.dart' as _i3;
 
 /// Represents a project of a tenant.
 /// Typically a serverpod project.

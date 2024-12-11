@@ -11,27 +11,27 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import 'dart:async' as _i2;
-import 'package:serverpod_ground_control_client/src/protocol/infrastructure/domain_name_target.dart'
+import 'package:serverpod_ground_control_client/src/protocol/features/custom_domain_name/models/domain_name_target.dart'
     as _i3;
-import 'package:serverpod_ground_control_client/src/protocol/view_models/infrastructure/custom_domain_name_list.dart'
+import 'package:serverpod_ground_control_client/src/protocol/features/custom_domain_name/models/custom_domain_name_list.dart'
     as _i4;
-import 'package:serverpod_ground_control_client/src/protocol/infrastructure/domain_name_status.dart'
+import 'package:serverpod_ground_control_client/src/protocol/features/custom_domain_name/models/domain_name_status.dart'
     as _i5;
-import 'package:serverpod_ground_control_client/src/protocol/tenant/environment_variable.dart'
+import 'package:serverpod_ground_control_client/src/protocol/features/environment_variables/models/environment_variable.dart'
     as _i6;
-import 'package:serverpod_ground_control_client/src/protocol/logs/log_record.dart'
+import 'package:serverpod_ground_control_client/src/protocol/features/logs/models/log_record.dart'
     as _i7;
-import 'package:serverpod_ground_control_client/src/protocol/tenant/project.dart'
+import 'package:serverpod_ground_control_client/src/protocol/features/project/models/project.dart'
     as _i8;
-import 'package:serverpod_ground_control_client/src/protocol/view_models/infrastructure/project_config.dart'
+import 'package:serverpod_ground_control_client/src/protocol/features/project/models/project_config.dart'
     as _i9;
-import 'package:serverpod_ground_control_client/src/protocol/tenant/role.dart'
+import 'package:serverpod_ground_control_client/src/protocol/features/project/models/role.dart'
     as _i10;
-import 'package:serverpod_ground_control_client/src/protocol/status/deploy_attempt.dart'
+import 'package:serverpod_ground_control_client/src/protocol/domains/status/models/deploy_attempt.dart'
     as _i11;
-import 'package:serverpod_ground_control_client/src/protocol/status/deploy_attempt_stage.dart'
+import 'package:serverpod_ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
     as _i12;
-import 'package:serverpod_ground_control_client/src/protocol/tenant/user.dart'
+import 'package:serverpod_ground_control_client/src/protocol/domains/users/models/user.dart'
     as _i13;
 import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i14;
 import 'protocol.dart' as _i15;

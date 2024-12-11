@@ -10,8 +10,8 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../status/deploy_stage_type.dart' as _i2;
-import '../status/deploy_progress_status.dart' as _i3;
+import '../../../domains/status/models/deploy_stage_type.dart' as _i2;
+import '../../../domains/status/models/deploy_progress_status.dart' as _i3;
 
 /// Represents the status information of a stage in a deployment attempt.
 abstract class DeployAttemptStage implements _i1.SerializableModel {
