@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:cli_tools/cli_tools.dart';
+import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:test/test.dart';
-import 'package:path/path.dart' as p;
 import 'package:uuid/uuid.dart';
 
 void main() {
@@ -80,17 +80,6 @@ void main() {
         );
 
         expect(cloudData, isNull);
-      });
-
-      test('when fetching from disk then file is deleted.', () async {
-        try {
-          await ResourceManager.tryFetchServerpodCloudData(
-            logger: commandLogger,
-            localStoragePath: testCacheFolderPath,
-          );
-        } catch (_) {}
-
-        expect(file.existsSync(), isFalse);
       });
     });
   });

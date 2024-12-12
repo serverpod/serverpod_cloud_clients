@@ -36,22 +36,23 @@ import 'features/project/models/user_role_membership.dart' as _i23;
 import 'features/secret_manager/models/secret_resource.dart' as _i24;
 import 'features/secret_manager/models/secret_type.dart' as _i25;
 import 'shared/exceptions/models/duplicate_entry_exception.dart' as _i26;
-import 'shared/exceptions/models/invalid_value_exception.dart' as _i27;
-import 'shared/exceptions/models/not_found_exception.dart' as _i28;
-import 'shared/exceptions/models/unauthenticated_exception.dart' as _i29;
-import 'shared/exceptions/models/unauthorized_exception.dart' as _i30;
-import 'shared/models/serverpod_region.dart' as _i31;
+import 'shared/exceptions/models/forbidden_exception.dart' as _i27;
+import 'shared/exceptions/models/invalid_value_exception.dart' as _i28;
+import 'shared/exceptions/models/not_found_exception.dart' as _i29;
+import 'shared/exceptions/models/unauthenticated_exception.dart' as _i30;
+import 'shared/exceptions/models/unauthorized_exception.dart' as _i31;
+import 'shared/models/serverpod_region.dart' as _i32;
 import 'package:serverpod_ground_control_client/src/protocol/features/environment_variables/models/environment_variable.dart'
-    as _i32;
-import 'package:serverpod_ground_control_client/src/protocol/features/project/models/project.dart'
     as _i33;
-import 'package:serverpod_ground_control_client/src/protocol/features/project/models/role.dart'
+import 'package:serverpod_ground_control_client/src/protocol/features/project/models/project.dart'
     as _i34;
-import 'package:serverpod_ground_control_client/src/protocol/domains/status/models/deploy_attempt.dart'
+import 'package:serverpod_ground_control_client/src/protocol/features/project/models/role.dart'
     as _i35;
-import 'package:serverpod_ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
+import 'package:serverpod_ground_control_client/src/protocol/domains/status/models/deploy_attempt.dart'
     as _i36;
-import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i37;
+import 'package:serverpod_ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
+    as _i37;
+import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i38;
 export 'domains/status/models/deploy_attempt.dart';
 export 'domains/status/models/deploy_attempt_stage.dart';
 export 'domains/status/models/deploy_progress_status.dart';
@@ -77,6 +78,7 @@ export 'features/project/models/user_role_membership.dart';
 export 'features/secret_manager/models/secret_resource.dart';
 export 'features/secret_manager/models/secret_type.dart';
 export 'shared/exceptions/models/duplicate_entry_exception.dart';
+export 'shared/exceptions/models/forbidden_exception.dart';
 export 'shared/exceptions/models/invalid_value_exception.dart';
 export 'shared/exceptions/models/not_found_exception.dart';
 export 'shared/exceptions/models/unauthenticated_exception.dart';
@@ -172,20 +174,23 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i26.DuplicateEntryException) {
       return _i26.DuplicateEntryException.fromJson(data) as T;
     }
-    if (t == _i27.InvalidValueException) {
-      return _i27.InvalidValueException.fromJson(data) as T;
+    if (t == _i27.ForbiddenException) {
+      return _i27.ForbiddenException.fromJson(data) as T;
     }
-    if (t == _i28.NotFoundException) {
-      return _i28.NotFoundException.fromJson(data) as T;
+    if (t == _i28.InvalidValueException) {
+      return _i28.InvalidValueException.fromJson(data) as T;
     }
-    if (t == _i29.UnauthenticatedException) {
-      return _i29.UnauthenticatedException.fromJson(data) as T;
+    if (t == _i29.NotFoundException) {
+      return _i29.NotFoundException.fromJson(data) as T;
     }
-    if (t == _i30.UnauthorizedException) {
-      return _i30.UnauthorizedException.fromJson(data) as T;
+    if (t == _i30.UnauthenticatedException) {
+      return _i30.UnauthenticatedException.fromJson(data) as T;
     }
-    if (t == _i31.ServerpodRegion) {
-      return _i31.ServerpodRegion.fromJson(data) as T;
+    if (t == _i31.UnauthorizedException) {
+      return _i31.UnauthorizedException.fromJson(data) as T;
+    }
+    if (t == _i32.ServerpodRegion) {
+      return _i32.ServerpodRegion.fromJson(data) as T;
     }
     if (t == _i1.getType<_i2.DeployAttempt?>()) {
       return (data != null ? _i2.DeployAttempt.fromJson(data) : null) as T;
@@ -271,24 +276,28 @@ class Protocol extends _i1.SerializationManager {
       return (data != null ? _i26.DuplicateEntryException.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i27.InvalidValueException?>()) {
-      return (data != null ? _i27.InvalidValueException.fromJson(data) : null)
+    if (t == _i1.getType<_i27.ForbiddenException?>()) {
+      return (data != null ? _i27.ForbiddenException.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i28.NotFoundException?>()) {
-      return (data != null ? _i28.NotFoundException.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i28.InvalidValueException?>()) {
+      return (data != null ? _i28.InvalidValueException.fromJson(data) : null)
+          as T;
     }
-    if (t == _i1.getType<_i29.UnauthenticatedException?>()) {
+    if (t == _i1.getType<_i29.NotFoundException?>()) {
+      return (data != null ? _i29.NotFoundException.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i30.UnauthenticatedException?>()) {
       return (data != null
-          ? _i29.UnauthenticatedException.fromJson(data)
+          ? _i30.UnauthenticatedException.fromJson(data)
           : null) as T;
     }
-    if (t == _i1.getType<_i30.UnauthorizedException?>()) {
-      return (data != null ? _i30.UnauthorizedException.fromJson(data) : null)
+    if (t == _i1.getType<_i31.UnauthorizedException?>()) {
+      return (data != null ? _i31.UnauthorizedException.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i31.ServerpodRegion?>()) {
-      return (data != null ? _i31.ServerpodRegion.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i32.ServerpodRegion?>()) {
+      return (data != null ? _i32.ServerpodRegion.fromJson(data) : null) as T;
     }
     if (t == _i1.getType<List<_i23.UserRoleMembership>?>()) {
       return (data != null
@@ -342,17 +351,17 @@ class Protocol extends _i1.SerializationManager {
               .toList()
           : null) as dynamic;
     }
-    if (t == List<_i32.EnvironmentVariable>) {
+    if (t == List<_i33.EnvironmentVariable>) {
       return (data as List)
-          .map((e) => deserialize<_i32.EnvironmentVariable>(e))
+          .map((e) => deserialize<_i33.EnvironmentVariable>(e))
           .toList() as dynamic;
     }
-    if (t == List<_i33.Project>) {
-      return (data as List).map((e) => deserialize<_i33.Project>(e)).toList()
+    if (t == List<_i34.Project>) {
+      return (data as List).map((e) => deserialize<_i34.Project>(e)).toList()
           as dynamic;
     }
-    if (t == List<_i34.Role>) {
-      return (data as List).map((e) => deserialize<_i34.Role>(e)).toList()
+    if (t == List<_i35.Role>) {
+      return (data as List).map((e) => deserialize<_i35.Role>(e)).toList()
           as dynamic;
     }
     if (t == Map<String, String>) {
@@ -363,18 +372,18 @@ class Protocol extends _i1.SerializationManager {
       return (data as List).map((e) => deserialize<String>(e)).toList()
           as dynamic;
     }
-    if (t == List<_i35.DeployAttempt>) {
+    if (t == List<_i36.DeployAttempt>) {
       return (data as List)
-          .map((e) => deserialize<_i35.DeployAttempt>(e))
+          .map((e) => deserialize<_i36.DeployAttempt>(e))
           .toList() as dynamic;
     }
-    if (t == List<_i36.DeployAttemptStage>) {
+    if (t == List<_i37.DeployAttemptStage>) {
       return (data as List)
-          .map((e) => deserialize<_i36.DeployAttemptStage>(e))
+          .map((e) => deserialize<_i37.DeployAttemptStage>(e))
           .toList() as dynamic;
     }
     try {
-      return _i37.Protocol().deserialize<T>(data, t);
+      return _i38.Protocol().deserialize<T>(data, t);
     } on _i1.DeserializationTypeNotFoundException catch (_) {}
     return super.deserialize<T>(data, t);
   }
@@ -458,22 +467,25 @@ class Protocol extends _i1.SerializationManager {
     if (data is _i26.DuplicateEntryException) {
       return 'DuplicateEntryException';
     }
-    if (data is _i27.InvalidValueException) {
+    if (data is _i27.ForbiddenException) {
+      return 'ForbiddenException';
+    }
+    if (data is _i28.InvalidValueException) {
       return 'InvalidValueException';
     }
-    if (data is _i28.NotFoundException) {
+    if (data is _i29.NotFoundException) {
       return 'NotFoundException';
     }
-    if (data is _i29.UnauthenticatedException) {
+    if (data is _i30.UnauthenticatedException) {
       return 'UnauthenticatedException';
     }
-    if (data is _i30.UnauthorizedException) {
+    if (data is _i31.UnauthorizedException) {
       return 'UnauthorizedException';
     }
-    if (data is _i31.ServerpodRegion) {
+    if (data is _i32.ServerpodRegion) {
       return 'ServerpodRegion';
     }
-    className = _i37.Protocol().getClassNameForObject(data);
+    className = _i38.Protocol().getClassNameForObject(data);
     if (className != null) {
       return 'serverpod_auth.$className';
     }
@@ -561,24 +573,27 @@ class Protocol extends _i1.SerializationManager {
     if (dataClassName == 'DuplicateEntryException') {
       return deserialize<_i26.DuplicateEntryException>(data['data']);
     }
+    if (dataClassName == 'ForbiddenException') {
+      return deserialize<_i27.ForbiddenException>(data['data']);
+    }
     if (dataClassName == 'InvalidValueException') {
-      return deserialize<_i27.InvalidValueException>(data['data']);
+      return deserialize<_i28.InvalidValueException>(data['data']);
     }
     if (dataClassName == 'NotFoundException') {
-      return deserialize<_i28.NotFoundException>(data['data']);
+      return deserialize<_i29.NotFoundException>(data['data']);
     }
     if (dataClassName == 'UnauthenticatedException') {
-      return deserialize<_i29.UnauthenticatedException>(data['data']);
+      return deserialize<_i30.UnauthenticatedException>(data['data']);
     }
     if (dataClassName == 'UnauthorizedException') {
-      return deserialize<_i30.UnauthorizedException>(data['data']);
+      return deserialize<_i31.UnauthorizedException>(data['data']);
     }
     if (dataClassName == 'ServerpodRegion') {
-      return deserialize<_i31.ServerpodRegion>(data['data']);
+      return deserialize<_i32.ServerpodRegion>(data['data']);
     }
     if (dataClassName.startsWith('serverpod_auth.')) {
       data['className'] = dataClassName.substring(15);
-      return _i37.Protocol().deserializeByClassName(data);
+      return _i38.Protocol().deserializeByClassName(data);
     }
     return super.deserializeByClassName(data);
   }

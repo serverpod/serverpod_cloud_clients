@@ -77,6 +77,7 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
       logger.error(
         'Request to create a new project failed: $e',
       );
+
       throw ExitException();
     });
 

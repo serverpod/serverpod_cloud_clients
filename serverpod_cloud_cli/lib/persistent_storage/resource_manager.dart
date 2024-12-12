@@ -53,29 +53,22 @@ abstract class ResourceManager {
     required final String localStoragePath,
     required final CommandLogger logger,
   }) async {
-    void deleteFile(final File file) {
-      try {
-        file.deleteSync();
-      } catch (deleteError) {
-        logger.warning(
-          'Failed to delete stored serverpod cloud data file. Error: $deleteError',
-        );
-      }
-    }
-
     try {
       return await LocalStorageManager.tryFetchAndDeserializeJsonFile(
         fileName: ResourceManagerConstants.serverpodCloudDataFilePath,
         localStoragePath: localStoragePath,
         fromJson: ServerpodCloudData.fromJson,
       );
-    } on ReadException catch (e) {
-      deleteFile(e.file);
-    } on DeserializationException catch (e) {
-      deleteFile(e.file);
+    } on ReadException catch (_) {
+      logger.error(
+          'Could not read file at location ${ResourceManagerConstants.serverpodCloudDataFilePath}.',
+          hint:
+              'Please check that the Serverpod Cloud CLI has the correct permissions to '
+              'read the file. If the problem persists, try deleting the file.');
+      return null;
+    } on DeserializationException catch (_) {
+      return null;
     }
-
-    return null;
   }
 }
 
