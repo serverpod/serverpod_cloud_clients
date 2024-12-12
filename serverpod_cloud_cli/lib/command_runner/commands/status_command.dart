@@ -110,13 +110,13 @@ class CloudStatusCommand extends CloudCliCommand<StatusOption> {
     if (log) {
       // view log
       await handleCommonClientExceptions(logger, () async {
-        final buildUuid = await _getBuildUuid(projectId, deploymentArg);
+        final attemptId = await _getDeployAttemptId(projectId, deploymentArg);
 
         await LogsFeature.fetchBuildLog(
           runner.serviceProvider.cloudApiClient,
           writeln: logger.info,
           projectId: projectId,
-          buildId: buildUuid,
+          attemptId: attemptId,
           inUtc: inUtc,
         );
       }, (final e) {
@@ -129,12 +129,12 @@ class CloudStatusCommand extends CloudCliCommand<StatusOption> {
 
     // view a specific deployment
     await handleCommonClientExceptions(logger, () async {
-      final buildUuid = await _getBuildUuid(projectId, deploymentArg);
+      final attemptId = await _getDeployAttemptId(projectId, deploymentArg);
 
       final output = await StatusFeature.getDeploymentStatus(
         runner.serviceProvider.cloudApiClient,
         environmentId: projectId,
-        attemptId: buildUuid,
+        attemptId: attemptId,
         inUtc: inUtc,
       );
       logger.info(output.toString());
@@ -144,15 +144,18 @@ class CloudStatusCommand extends CloudCliCommand<StatusOption> {
     });
   }
 
-  Future<String> _getBuildUuid(final String projectId, String? buildArg) async {
-    buildArg ??= '0';
-    final buildNumber = int.tryParse(buildArg);
-    return buildNumber != null
+  Future<String> _getDeployAttemptId(
+    final String projectId,
+    String? deploymentArg,
+  ) async {
+    deploymentArg ??= '0';
+    final attemptNumber = int.tryParse(deploymentArg);
+    return attemptNumber != null
         ? await StatusFeature.getDeployAttemptId(
             runner.serviceProvider.cloudApiClient,
             environmentId: projectId,
-            attemptNumber: buildNumber,
+            attemptNumber: attemptNumber,
           )
-        : buildArg;
+        : deploymentArg;
   }
 }

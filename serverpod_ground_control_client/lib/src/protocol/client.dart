@@ -250,10 +250,10 @@ class EndpointLogs extends _i1.EndpointRef {
         {},
       );
 
-  /// Fetches log records from the specified build.
+  /// Fetches the build log records for the specified deploy attempt.
   _i2.Stream<_i7.LogRecord> fetchBuildLog({
     required String cloudProjectId,
-    required String buildId,
+    required String attemptId,
     int? limit,
   }) =>
       caller.callStreamingServerEndpoint<_i2.Stream<_i7.LogRecord>,
@@ -262,27 +262,7 @@ class EndpointLogs extends _i1.EndpointRef {
         'fetchBuildLog',
         {
           'cloudProjectId': cloudProjectId,
-          'buildId': buildId,
-          'limit': limit,
-        },
-        {},
-      );
-
-  /// Tails log records from the specified build.
-  /// Continues until the client unsubscribes, [limit] is reached,
-  /// or the internal max limit is reached.
-  _i2.Stream<_i7.LogRecord> tailBuildLog({
-    required String cloudProjectId,
-    String? buildId,
-    int? limit,
-  }) =>
-      caller.callStreamingServerEndpoint<_i2.Stream<_i7.LogRecord>,
-          _i7.LogRecord>(
-        'logs',
-        'tailBuildLog',
-        {
-          'cloudProjectId': cloudProjectId,
-          'buildId': buildId,
+          'attemptId': attemptId,
           'limit': limit,
         },
         {},

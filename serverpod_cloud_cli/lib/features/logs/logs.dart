@@ -58,17 +58,17 @@ abstract class LogsFeature {
     final Client cloudApiClient, {
     required final void Function(String) writeln,
     required final String projectId,
-    required final String buildId,
+    required final String attemptId,
     required final bool inUtc,
   }) async {
     final timezoneName =
         inUtc ? 'UTC' : 'local (${DateTime.now().timeZoneName})';
     writeln(
-        'Fetching logs for build $buildId. Display time zone: $timezoneName.');
+        'Fetching build logs for deploy id $attemptId. Display time zone: $timezoneName.');
 
     final recordStream = cloudApiClient.logs.fetchBuildLog(
       cloudProjectId: projectId,
-      buildId: buildId,
+      attemptId: attemptId,
     );
     await _outputLogStream(
       writeln,
