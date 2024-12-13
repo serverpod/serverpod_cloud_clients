@@ -1,102 +1,85 @@
-import 'dart:io';
-
 import 'package:cli_tools/cli_tools.dart' as cli;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/option_parsing.dart';
 import 'package:serverpod_cloud_cli/features/logs/logs.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 
-abstract final class _LogOptions {
-  static const projectId = ProjectIdOption();
-  static const limit = ConfigOption(
+enum LogOption implements OptionDefinition {
+  projectId(ProjectIdOption()),
+  limit(ConfigOption(
     argName: 'limit',
     helpText: 'The maximum number of log records to fetch.',
     defaultsTo: '50',
-  );
-  static const utc = ConfigOption(
+  )),
+  utc(ConfigOption(
     argName: 'utc',
     argAbbrev: 'u',
     helpText: 'Display timestamps in UTC timezone instead of local.',
     isFlag: true,
-    negatable: true,
     defaultsTo: "false",
     envName: 'SERVERPOD_CLOUD_DISPLAY_UTC',
-  );
-
-  static const recent = ConfigOption(
+  )),
+  recent(ConfigOption(
     argName: 'recent',
     argAbbrev: 'r',
     helpText:
-        'Fetch records from the recent period length; s (seconds) by default.',
+        'Fetch records from the recent period length; s (seconds) by default. '
+        'Can also be specified as the first argument.',
     valueHelp: '<integer>[s|m|h|d]',
-  );
-  static const before = ConfigOption(
-      argName: 'before',
-      helpText: 'Fetch records from before this timestamp.',
-      valueHelp: 'YYYY-MM-DDttHH:MM:SSz');
-  static const after = ConfigOption(
-      argName: 'after',
-      helpText: 'Fetch records from after this timestamp.',
-      valueHelp: 'YYYY-MM-DDttHH:MM:SSz');
-  static const all = ConfigOption(
+    argPos: 0,
+  )),
+  before(ConfigOption(
+    argName: 'before',
+    helpText: 'Fetch records from before this timestamp.',
+    valueHelp: 'YYYY-MM-DDtHH:MM:SSz',
+  )),
+  after(ConfigOption(
+    argName: 'after',
+    helpText: 'Fetch records from after this timestamp.',
+    valueHelp: 'YYYY-MM-DDtHH:MM:SSz',
+  )),
+  all(ConfigOption(
     argName: 'all',
     helpText: 'Fetch all records (up to specified limit or server limit).',
     isFlag: true,
     defaultsTo: 'false',
     hide: true,
-  );
-}
+  )),
+  tail(ConfigOption(
+    argName: 'tail',
+    helpText: 'Tail the log and get real time updates.',
+    isFlag: true,
+    negatable: false,
+    defaultsTo: 'false',
+  ));
 
-class CloudLogCommand extends CloudCliCommand {
-  @override
-  final name = 'log';
-
-  @override
-  final description = 'Fetch Serverpod Cloud tenant logs.';
-
-  CloudLogCommand({required super.logger}) {
-    // Subcommands
-    addSubcommand(CloudLogRangeCommand(logger: logger));
-    addSubcommand(CloudLogTailCommand(logger: logger));
-  }
-}
-
-enum LogGetOption implements OptionDefinition {
-  projectId(_LogOptions.projectId),
-  limit(_LogOptions.limit),
-  utc(_LogOptions.utc),
-  recent(_LogOptions.recent),
-  before(_LogOptions.before),
-  after(_LogOptions.after),
-  all(_LogOptions.all);
-
-  const LogGetOption(this.option);
+  const LogOption(this.option);
 
   @override
   final ConfigOption option;
 }
 
-class CloudLogRangeCommand extends CloudCliCommand<LogGetOption> {
+class CloudLogCommand extends CloudCliCommand<LogOption> {
   @override
-  String get description => 'Get logs within a time range.';
+  final name = 'log';
 
   @override
-  String get name => 'get';
+  final description = 'Fetch Serverpod Cloud logs.';
 
-  CloudLogRangeCommand({required super.logger})
-      : super(options: LogGetOption.values);
+  CloudLogCommand({required super.logger}) : super(options: LogOption.values);
 
-  /// Parses the --recent option and returns the 'after' timestamp to use.
   static DateTime _parseRecentOpt(final String recentOpt) {
     const pattern = r'^(\d+)([smhd])?$';
     final regex = RegExp(pattern);
     final match = regex.firstMatch(recentOpt);
 
     if (match == null || match.groupCount != 2) {
-      throw ArgumentError(
-          'Failed to parse --recent value ($recentOpt), the required pattern is <integer>[s|m|h|d]');
+      throw CloudCliUsageException(
+        'Failed to parse --recent value "$recentOpt", the required pattern is <integer>[s|m|h|d]',
+      );
     }
     final valueStr = match.group(1);
     final unit = match.group(2) ?? 's';
@@ -112,50 +95,95 @@ class CloudLogRangeCommand extends CloudCliCommand<LogGetOption> {
       case 'd':
         return now.subtract(Duration(days: value));
       default:
-        throw ArgumentError(
+        throw CloudCliUsageException(
             'Failed to parse --recent option, invalid unit "$unit".');
     }
   }
 
   @override
   Future<void> runWithConfig(
-      final Configuration<LogGetOption> commandConfig) async {
-    final projectId = commandConfig.value(LogGetOption.projectId);
-    final limit = int.tryParse(commandConfig.value(LogGetOption.limit));
-    final inUtc = commandConfig.flag(LogGetOption.utc);
-    final recentOpt = commandConfig.valueOrNull(LogGetOption.recent);
-    final beforeOpt = commandConfig.valueOrNull(LogGetOption.before);
-    final afterOpt = commandConfig.valueOrNull(LogGetOption.after);
+    final Configuration<LogOption> commandConfig,
+  ) async {
+    final projectId = commandConfig.value(LogOption.projectId);
+    final limit = int.tryParse(commandConfig.value(LogOption.limit));
+    final inUtc = commandConfig.flag(LogOption.utc);
+    final recentOpt = commandConfig.valueOrNull(LogOption.recent);
+    final beforeOpt = commandConfig.valueOrNull(LogOption.before);
+    final afterOpt = commandConfig.valueOrNull(LogOption.after);
+    final tailOpt = commandConfig.flagOrNull(LogOption.tail);
+    final internalAllOpt = commandConfig.flag(LogOption.all);
 
     if (limit == null) {
-      throw ArgumentError('Value must be an integer.', '--limit');
+      throw CloudCliUsageException(
+        'The --limit value must be an integer.',
+      );
     }
 
     final DateTime? before, after;
-    if (commandConfig.flag(LogGetOption.all)) {
-      if (recentOpt != null || beforeOpt != null || afterOpt != null) {
-        throw ArgumentError('The --all option cannot be combined with '
-            '--before, --after, or --recent.');
+    final anyTimeSpanIsSet =
+        recentOpt != null || beforeOpt != null || afterOpt != null;
+    if (internalAllOpt) {
+      if (anyTimeSpanIsSet) {
+        throw CloudCliUsageException(
+          'The --all option cannot be combined with '
+          '--before, --after, or --recent.',
+        );
       }
+
+      before = null;
+      after = null;
+    } else if (tailOpt == true) {
+      if (anyTimeSpanIsSet) {
+        throw CloudCliUsageException(
+          'The --tail option cannot be combined with '
+          '--before, --after, or --recent.',
+        );
+      }
+
       before = null;
       after = null;
     } else if (beforeOpt != null || afterOpt != null) {
       if (recentOpt != null) {
-        throw ArgumentError('The --recent option cannot be combined with '
-            '--before or --after.');
+        throw CloudCliUsageException(
+          'The --recent option cannot be combined with '
+          '--before or --after.',
+        );
       }
+
       before = beforeOpt != null ? OptionParsing.parseDate(beforeOpt) : null;
       after = afterOpt != null ? OptionParsing.parseDate(afterOpt) : null;
+      if (before != null && after != null && before.isBefore(after)) {
+        throw CloudCliUsageException(
+          'The --before value must be after --after value.',
+        );
+      }
     } else {
-      // if no range specified, default to fetch recent logs
+      // If no range specified, default to fetch recent logs
       before = null;
       after = _parseRecentOpt(recentOpt ?? '1m');
+    }
+
+    if (tailOpt == true) {
+      await handleCommonClientExceptions(logger, () async {
+        await LogsFeature.tailContainerLog(
+          runner.serviceProvider.cloudApiClient,
+          writeln: logger.info,
+          projectId: projectId,
+          limit: limit,
+          inUtc: inUtc,
+        );
+      }, (final e) {
+        logger.error('Error while tailing log records: $e');
+        throw cli.ExitException();
+      });
+
+      return;
     }
 
     await handleCommonClientExceptions(logger, () async {
       await LogsFeature.fetchContainerLog(
         runner.serviceProvider.cloudApiClient,
-        writeln: stdout.writeln,
+        writeln: logger.info,
         projectId: projectId,
         before: before,
         after: after,
@@ -164,54 +192,6 @@ class CloudLogRangeCommand extends CloudCliCommand<LogGetOption> {
       );
     }, (final e) {
       logger.error('Error while fetching log records: $e');
-      throw cli.ExitException();
-    });
-  }
-}
-
-enum LogTailOption implements OptionDefinition {
-  projectId(_LogOptions.projectId),
-  limit(_LogOptions.limit),
-  utc(_LogOptions.utc);
-
-  const LogTailOption(this.option);
-
-  @override
-  final ConfigOption option;
-}
-
-class CloudLogTailCommand extends CloudCliCommand<LogTailOption> {
-  @override
-  String get description => 'Tail logs.';
-
-  @override
-  String get name => 'tail';
-
-  CloudLogTailCommand({required super.logger})
-      : super(options: LogTailOption.values);
-
-  @override
-  Future<void> runWithConfig(
-    final Configuration<LogTailOption> commandConfig,
-  ) async {
-    final projectId = commandConfig.value(LogTailOption.projectId);
-    final limit = int.tryParse(commandConfig.value(LogTailOption.limit));
-    final inUtc = commandConfig.flag(LogTailOption.utc);
-
-    if (limit == null) {
-      throw ArgumentError('Value must be an integer.', '--limit');
-    }
-
-    await handleCommonClientExceptions(logger, () async {
-      await LogsFeature.tailContainerLog(
-        runner.serviceProvider.cloudApiClient,
-        writeln: stdout.writeln,
-        projectId: projectId,
-        limit: limit,
-        inUtc: inUtc,
-      );
-    }, (final e) {
-      logger.error('Error while tailing log records: $e');
       throw cli.ExitException();
     });
   }

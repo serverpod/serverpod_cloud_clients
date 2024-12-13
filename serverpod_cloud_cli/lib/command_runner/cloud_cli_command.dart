@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
 import 'package:serverpod_cloud_cli/util/cli_authentication_key_manager.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 
@@ -52,7 +53,12 @@ abstract class CloudCliCommand<T extends OptionDefinition>
       throw ExitException();
     }
 
-    await runWithConfig(config);
+    try {
+      await runWithConfig(config);
+    } on CloudCliUsageException catch (e) {
+      logger.error(e.message, hint: e.hint);
+      throw ExitException();
+    }
   }
 
   /// Runs this command with prepared configuration (options).

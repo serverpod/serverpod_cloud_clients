@@ -1,3 +1,5 @@
+import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
+
 /// Common option value parsers.
 abstract final class OptionParsing {
   /// Parses a date string into a [DateTime] object.
@@ -13,9 +15,11 @@ abstract final class OptionParsing {
           '${dateStr.substring(0, 10)}T${dateStr.substring(11)}');
       if (value != null) return value;
     }
-    throw ArgumentError('Failed to parse date-time option "$dateStr".\n'
-        'Value must be an ISO date-time: '
-        'YYYY-MM-DD HH:MM:SSz (or shorter) '
-        'Alternate date/time separators: Tt-_/:');
+    throw CloudCliUsageException(
+      'Failed to parse date-time option "$dateStr".',
+      hint: 'Value must be an ISO date-time: '
+          'YYYY-MM-DD HH:MM:SSz (or shorter) '
+          'Alternate date/time separators: Tt-_/:',
+    );
   }
 }
