@@ -92,10 +92,12 @@ abstract class StatusFeature {
   static String _getStatusMark(final DeployProgressStatus status) {
     return switch (status) {
       DeployProgressStatus.unknown => '⬛',
+      DeployProgressStatus.pending => '⬛',
       DeployProgressStatus.created => '…',
       DeployProgressStatus.running => '…',
       DeployProgressStatus.success => '✅',
       DeployProgressStatus.failure => '❌',
+      DeployProgressStatus.cancelled => '❌',
     };
   }
 
@@ -112,10 +114,12 @@ abstract class StatusFeature {
     final stageName = _capitalize(stage.stageType.name);
     final verb = switch (stage.stageStatus) {
       DeployProgressStatus.unknown => '<unknown>',
+      DeployProgressStatus.pending => 'pending...',
       DeployProgressStatus.created => 'pending...',
       DeployProgressStatus.running => 'running...',
       DeployProgressStatus.success => 'successful!',
       DeployProgressStatus.failure => 'failed! 💥',
+      DeployProgressStatus.cancelled => 'cancelled.',
     };
     return '$stageName $verb${stage.statusInfo != null ? ' ${stage.statusInfo}' : ''}';
   }

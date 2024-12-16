@@ -19,7 +19,7 @@ import 'package:serverpod_ground_control_client/src/protocol/features/custom_dom
     as _i5;
 import 'package:serverpod_ground_control_client/src/protocol/features/environment_variables/models/environment_variable.dart'
     as _i6;
-import 'package:serverpod_ground_control_client/src/protocol/features/logs/models/log_record.dart'
+import 'package:serverpod_ground_control_client/src/protocol/domains/logs/models/log_record.dart'
     as _i7;
 import 'package:serverpod_ground_control_client/src/protocol/features/project/models/project.dart'
     as _i8;

@@ -13,6 +13,8 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 enum DeployProgressStatus implements _i1.SerializableModel {
   unknown,
+  cancelled,
+  pending,
   created,
   running,
   success,
@@ -22,6 +24,10 @@ enum DeployProgressStatus implements _i1.SerializableModel {
     switch (name) {
       case 'unknown':
         return unknown;
+      case 'cancelled':
+        return cancelled;
+      case 'pending':
+        return pending;
       case 'created':
         return created;
       case 'running':
