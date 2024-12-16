@@ -2,6 +2,7 @@
 import 'package:test/test.dart';
 
 import 'test_command_logger.dart';
+import 'package:collection/collection.dart';
 
 Matcher equalsErrorCall({
   required final String message,
@@ -142,7 +143,8 @@ class _ListCallMatcher extends Matcher {
   @override
   bool matches(final Object? item, final Map matchState) {
     if (item is! ListCall) return false;
-    return item.items == listCall.items &&
+
+    return ListEquality().equals(item.items, listCall.items) &&
         item.title == listCall.title &&
         item.newParagraph == listCall.newParagraph;
   }

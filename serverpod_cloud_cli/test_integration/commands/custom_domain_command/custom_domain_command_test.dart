@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:cli_tools/cli_tools.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
-import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/custom_domains_command.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
@@ -13,15 +12,15 @@ import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
 import 'package:test/test.dart';
 
-import '../../test_utils/http_server_builder.dart';
-import '../../test_utils/test_logger.dart';
+import '../../../test_utils/command_logger_matchers.dart';
+import '../../../test_utils/http_server_builder.dart';
+import '../../../test_utils/test_command_logger.dart';
 
 void main() {
-  final logger = TestLogger();
-  final commandLogger = CommandLogger(logger);
+  final logger = TestCommandLogger();
   final version = Version.parse('0.0.1');
   final cli = CloudCliCommandRunner.create(
-    logger: commandLogger,
+    logger: logger,
     version: version,
   );
 
@@ -43,8 +42,7 @@ void main() {
 
   test('Given custom domains command when instantiated then requires login',
       () {
-    expect(
-        CloudCustomDomainCommand(logger: commandLogger).requireLogin, isTrue);
+    expect(CloudCustomDomainCommand(logger: logger).requireLogin, isTrue);
   });
 
   group('Given unauthenticated', () {
@@ -103,11 +101,14 @@ void main() {
           await commandResult;
         } catch (_) {}
 
-        expect(logger.errors, isNotEmpty);
+        expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errors.first,
-            'The credentials for this session seem to no longer be valid.\n'
-            'Please run `scloud logout` followed by `scloud login` and try this command again.');
+            logger.errorCalls.first,
+            equalsErrorCall(
+              message:
+                  'The credentials for this session seem to no longer be valid.\n'
+                  'Please run `scloud logout` followed by `scloud login` and try this command again.',
+            ));
       });
     });
 
@@ -136,11 +137,14 @@ void main() {
           await commandResult;
         } catch (_) {}
 
-        expect(logger.errors, isNotEmpty);
+        expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errors.first,
-            'The credentials for this session seem to no longer be valid.\n'
-            'Please run `scloud logout` followed by `scloud login` and try this command again.');
+            logger.errorCalls.first,
+            equalsErrorCall(
+              message:
+                  'The credentials for this session seem to no longer be valid.\n'
+                  'Please run `scloud logout` followed by `scloud login` and try this command again.',
+            ));
       });
     });
 
@@ -170,11 +174,14 @@ void main() {
           await commandResult;
         } catch (_) {}
 
-        expect(logger.errors, isNotEmpty);
+        expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errors.first,
-            'The credentials for this session seem to no longer be valid.\n'
-            'Please run `scloud logout` followed by `scloud login` and try this command again.');
+            logger.errorCalls.first,
+            equalsErrorCall(
+              message:
+                  'The credentials for this session seem to no longer be valid.\n'
+                  'Please run `scloud logout` followed by `scloud login` and try this command again.',
+            ));
       });
     });
 
@@ -204,12 +211,14 @@ void main() {
           await commandResult;
         } catch (_) {}
 
-        expect(logger.errors, isNotEmpty);
+        expect(logger.errorCalls, isNotEmpty);
         expect(
-          logger.errors.first,
-          'The credentials for this session seem to no longer be valid.\n'
-          'Please run `scloud logout` followed by `scloud login` and try this command again.',
-        );
+            logger.errorCalls.first,
+            equalsErrorCall(
+              message:
+                  'The credentials for this session seem to no longer be valid.\n'
+                  'Please run `scloud logout` followed by `scloud login` and try this command again.',
+            ));
       });
     });
   });
@@ -235,7 +244,22 @@ void main() {
         final serverBuilder = HttpServerBuilder();
 
         serverBuilder.withMethodResponse('customDomainName', 'add', (final _) {
-          return (200, null);
+          return (
+            200,
+            CustomDomainNameWithDefaultDomains(
+                customDomainName: CustomDomainName(
+                  name: 'domain.com',
+                  status: DomainNameStatus.needsSetup,
+                  target: DomainNameTarget.api,
+                  environmentId: 1,
+                ),
+                defaultDomainsByTarget: {
+                  DomainNameTarget.api: '$projectId.api.serverpod.space',
+                  DomainNameTarget.insights:
+                      '$projectId.insights.serverpod.space',
+                  DomainNameTarget.web: '$projectId.web.serverpod.space',
+                }),
+          );
         });
 
         final (startedServer, serverAddress) = await serverBuilder.build();
@@ -264,8 +288,57 @@ void main() {
       test('then logs success message', () async {
         await commandResult;
 
-        expect(logger.messages, isNotEmpty);
-        expect(logger.messages.first, 'Custom domain added successfully! 🚀\n');
+        expect(logger.successCalls, isNotEmpty);
+        expect(
+          logger.successCalls.first,
+          equalsSuccessCall(
+            message: 'Custom domain added successfully!',
+            newParagraph: true,
+          ),
+        );
+      });
+
+      test('then logs follow up instructions', () async {
+        await commandResult;
+
+        final followUpLogCalls = [
+          ...logger.listCalls,
+          ...logger.terminalCommandCalls
+        ];
+
+        expect(followUpLogCalls, isNotEmpty);
+        expect(
+          followUpLogCalls,
+          containsAll(
+            [
+              equalsListCall(
+                title: 'Follow these steps to complete setup:',
+                items: [
+                  'Add a CNAME record with the value "$projectId.api.serverpod.space" to the DNS configuration for this domain.',
+                  'Wait for the update to propagate. This can take up to a few hours.',
+                  'Run the following command to verify the DNS record (Serverpod Cloud will also try to verify the record periodically):',
+                ],
+                newParagraph: true,
+              ),
+              equalsTerminalCommandCall(
+                command:
+                    'scloud domains refresh-record domain.com --project-id $projectId',
+                newParagraph: true,
+              ),
+              equalsListCall(
+                items: [
+                  'When verification succeeds, the custom domain will shortly become active.',
+                  'Run the following command to check the status:',
+                ],
+                newParagraph: true,
+              ),
+              equalsTerminalCommandCall(
+                command: 'scloud domains list --project-id $projectId',
+                newParagraph: true,
+              ),
+            ],
+          ),
+        );
       });
     });
 
@@ -303,10 +376,12 @@ void main() {
       test('then logs success message', () async {
         await commandResult;
 
-        expect(logger.messages, isNotEmpty);
+        expect(logger.successCalls, isNotEmpty);
         expect(
-          logger.messages.first,
-          'Successfully removed custom domain: domain.com.',
+          logger.successCalls.first,
+          equalsSuccessCall(
+            message: 'Successfully removed custom domain: domain.com.',
+          ),
         );
       });
     });
@@ -345,10 +420,13 @@ void main() {
       test('then logs success message', () async {
         await commandResult;
 
-        expect(logger.messages, isNotEmpty);
+        expect(logger.successCalls, isNotEmpty);
         expect(
-          logger.messages.first,
-          'Successfully verified the DNS record for the custom domain. It is now active.',
+          logger.successCalls.first,
+          equalsSuccessCall(
+            message:
+                'Successfully verified the DNS record for the custom domain. It is now active.',
+          ),
         );
       });
     });
@@ -387,11 +465,14 @@ void main() {
       test('then logs success message', () async {
         await commandResult;
 
-        expect(logger.messages, isNotEmpty);
+        expect(logger.infoCalls, isNotEmpty);
         expect(
-          logger.messages.first,
-          'The DNS record for the custom domain is verified but certificate creation is still pending. '
-          'Try again in a few minutes.',
+          logger.infoCalls.first,
+          equalsInfoCall(
+            message:
+                'The DNS record for the custom domain is verified but certificate creation is still pending. '
+                'Try again in a few minutes.',
+          ),
         );
       });
     });
@@ -430,10 +511,13 @@ void main() {
       test('then logs information message about status', () async {
         await commandResult;
 
-        expect(logger.messages, isNotEmpty);
+        expect(logger.infoCalls, isNotEmpty);
         expect(
-          logger.messages.first,
-          'Failed to verify the DNS record for the custom domain. Ensure the CNAME is correctly set and try again later.',
+          logger.infoCalls.first,
+          equalsInfoCall(
+            message: 'Failed to verify the DNS record for the custom domain. '
+                'Ensure the CNAME is correctly set and try again later.',
+          ),
         );
       });
     });
@@ -497,20 +581,25 @@ void main() {
       test('then logs success message', () async {
         await commandResult;
 
-        expect(logger.messages, isNotEmpty);
+        expect(logger.infoCalls, isNotEmpty);
         expect(
-            logger.messages,
+            logger.infoCalls.take(2),
             containsAll([
-              'Default domain name                         | Target  \n'
-                  '--------------------------------------------+---------\n'
-                  'my-magical-project.api.serverpod.space      | api     \n'
-                  'my-magical-project.insights.serverpod.space | insights\n'
-                  'my-magical-project.web.serverpod.space      | web     \n',
-              'Custom domain name  | Target                                      | Status                      \n'
-                  '--------------------+---------------------------------------------+-----------------------------\n'
-                  'api.domain.com      | my-magical-project.api.serverpod.space      | Configured                  \n'
-                  'web.domain.com      | my-magical-project.web.serverpod.space      | Certificate creation pending\n'
-                  'insights.domain.com | my-magical-project.insights.serverpod.space | Needs setup                 \n',
+              equalsInfoCall(
+                  message:
+                      'Default domain name                         | Target  \n'
+                      '--------------------------------------------+---------\n'
+                      'my-magical-project.api.serverpod.space      | api     \n'
+                      'my-magical-project.insights.serverpod.space | insights\n'
+                      'my-magical-project.web.serverpod.space      | web     \n'),
+              equalsInfoCall(
+                message:
+                    'Custom domain name  | Target                                      | Status                      \n'
+                    '--------------------+---------------------------------------------+-----------------------------\n'
+                    'api.domain.com      | my-magical-project.api.serverpod.space      | Configured                  \n'
+                    'web.domain.com      | my-magical-project.web.serverpod.space      | Certificate creation pending\n'
+                    'insights.domain.com | my-magical-project.insights.serverpod.space | Needs setup                 \n',
+              ),
             ]));
       });
     });
@@ -555,18 +644,23 @@ void main() {
       test('then logs success message', () async {
         await commandResult;
 
-        expect(logger.messages, isNotEmpty);
+        expect(logger.infoCalls, isNotEmpty);
         expect(
-            logger.messages.take(2),
+            logger.infoCalls.take(2),
             equals([
-              'Default domain name                         | Target  \n'
-                  '--------------------------------------------+---------\n'
-                  'my-magical-project.api.serverpod.space      | api     \n'
-                  'my-magical-project.insights.serverpod.space | insights\n'
-                  'my-magical-project.web.serverpod.space      | web     \n',
-              'Custom domain name | Target | Status\n'
-                  '-------------------+--------+-------\n'
-                  '<no rows data>\n'
+              equalsInfoCall(
+                message:
+                    'Default domain name                         | Target  \n'
+                    '--------------------------------------------+---------\n'
+                    'my-magical-project.api.serverpod.space      | api     \n'
+                    'my-magical-project.insights.serverpod.space | insights\n'
+                    'my-magical-project.web.serverpod.space      | web     \n',
+              ),
+              equalsInfoCall(
+                message: 'Custom domain name | Target | Status\n'
+                    '-------------------+--------+-------\n'
+                    '<no rows data>\n',
+              ),
             ]));
       });
     });

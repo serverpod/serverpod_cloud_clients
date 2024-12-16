@@ -2,6 +2,7 @@ import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 import 'package:serverpod_cloud_cli/util/table_printer.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
@@ -72,12 +73,15 @@ class CloudAddCustomDomainCommand
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
+    final parsedTarget = _domainNameTargetfromString(target);
+
+    late CustomDomainNameWithDefaultDomains customDomainNameWithDefaultDomains;
+
     await handleCommonClientExceptions(
       logger,
       () async {
-        final parsedTarget = _domainNameTargetfromString(target);
-
-        await apiCloudClient.customDomainName.add(
+        customDomainNameWithDefaultDomains =
+            await apiCloudClient.customDomainName.add(
           domainName: domainName,
           target: parsedTarget,
           cloudEnvironmentId: projectId,
@@ -85,14 +89,51 @@ class CloudAddCustomDomainCommand
       },
       (final e) {
         logger.error(
-          'Could not add the custom domain: $e',
+          'Could not add the custom domain.',
+          hint: e,
         );
 
         throw ExitException();
       },
     );
 
-    logger.info('Custom domain added successfully! 🚀\n');
+    logger.success('Custom domain added successfully!', newParagraph: true);
+
+    final targetDefaultDomain =
+        customDomainNameWithDefaultDomains.defaultDomainsByTarget[parsedTarget];
+
+    if (targetDefaultDomain == null) {
+      logger.error(
+        'Could not find the target domain for "$target".',
+        hint: 'Please check that CLI is updated to the latest version.',
+      );
+      throw ExitException();
+    }
+
+    logger.list(
+      newParagraph: true,
+      title: 'Follow these steps to complete setup:',
+      [
+        'Add a CNAME record with the value "$targetDefaultDomain" to the DNS configuration for this domain.',
+        'Wait for the update to propagate. This can take up to a few hours.',
+        'Run the following command to verify the DNS record (Serverpod Cloud will also try to verify the record periodically):',
+      ],
+    );
+
+    logger.terminalCommand(
+      newParagraph: true,
+      'scloud domains refresh-record $domainName --project-id $projectId',
+    );
+
+    logger.list(newParagraph: true, [
+      'When verification succeeds, the custom domain will shortly become active.',
+      'Run the following command to check the status:'
+    ]);
+
+    logger.terminalCommand(
+      newParagraph: true,
+      'scloud domains list --project-id $projectId',
+    );
   }
 }
 
@@ -132,7 +173,8 @@ class CloudListCustomDomainCommand
       );
     }, (final e) {
       logger.error(
-        'Failed to list custom domains: $e',
+        'Failed to list custom domains.',
+        hint: e,
       );
 
       throw ExitException();
@@ -213,13 +255,14 @@ class CloudRemoveCustomDomainCommand
       );
     }, (final e) {
       logger.error(
-        'Failed to remove custom domain: $e',
+        'Failed to remove custom domain.',
+        hint: e,
       );
 
       throw ExitException();
     });
 
-    logger.info('Successfully removed custom domain: $domainName.');
+    logger.success('Successfully removed custom domain: $domainName.');
   }
 }
 
@@ -263,21 +306,23 @@ class CloudRefreshCustomDomainRecordCommand
 
       switch (result) {
         case DomainNameStatus.configured:
-          logger.info(
+          logger.success(
               'Successfully verified the DNS record for the custom domain. It is now active.');
         case DomainNameStatus.needsSetup:
           logger.info('Failed to verify the DNS record for the custom domain. '
               'Ensure the CNAME is correctly set and try again later.');
         case DomainNameStatus.pending:
           logger.info(
-              'The DNS record for the custom domain is verified but certificate creation is still pending. '
-              'Try again in a few minutes.');
+            'The DNS record for the custom domain is verified but certificate creation is still pending. '
+            'Try again in a few minutes.',
+          );
       }
 
       return;
     }, (final e) {
       logger.error(
-        'Failed to refresh custom domain record: $e',
+        'Failed to refresh custom domain record',
+        hint: e,
       );
 
       throw ExitException();
@@ -294,6 +339,9 @@ DomainNameTarget _domainNameTargetfromString(final String value) {
     case 'insights':
       return DomainNameTarget.insights;
     default:
-      throw ArgumentError('Invalid target: $value');
+      throw CloudCliUsageException(
+        'Invalid target value "$value".',
+        hint: 'Valid values are: [${DomainNameTarget.values.join(', ')}]',
+      );
   }
 }

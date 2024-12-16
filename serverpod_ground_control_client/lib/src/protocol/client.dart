@@ -11,30 +11,32 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import 'dart:async' as _i2;
-import 'package:serverpod_ground_control_client/src/protocol/features/custom_domain_name/models/domain_name_target.dart'
+import 'package:serverpod_ground_control_client/src/protocol/features/custom_domain_name/models/view_models/custom_domain_name_with_default_domains.dart'
     as _i3;
-import 'package:serverpod_ground_control_client/src/protocol/features/custom_domain_name/models/custom_domain_name_list.dart'
+import 'package:serverpod_ground_control_client/src/protocol/features/custom_domain_name/models/domain_name_target.dart'
     as _i4;
-import 'package:serverpod_ground_control_client/src/protocol/features/custom_domain_name/models/domain_name_status.dart'
+import 'package:serverpod_ground_control_client/src/protocol/features/custom_domain_name/models/custom_domain_name_list.dart'
     as _i5;
-import 'package:serverpod_ground_control_client/src/protocol/features/environment_variables/models/environment_variable.dart'
+import 'package:serverpod_ground_control_client/src/protocol/features/custom_domain_name/models/domain_name_status.dart'
     as _i6;
-import 'package:serverpod_ground_control_client/src/protocol/domains/logs/models/log_record.dart'
+import 'package:serverpod_ground_control_client/src/protocol/features/environment_variables/models/environment_variable.dart'
     as _i7;
-import 'package:serverpod_ground_control_client/src/protocol/features/project/models/project.dart'
+import 'package:serverpod_ground_control_client/src/protocol/domains/logs/models/log_record.dart'
     as _i8;
-import 'package:serverpod_ground_control_client/src/protocol/features/project/models/project_config.dart'
+import 'package:serverpod_ground_control_client/src/protocol/features/project/models/project.dart'
     as _i9;
-import 'package:serverpod_ground_control_client/src/protocol/features/project/models/role.dart'
+import 'package:serverpod_ground_control_client/src/protocol/features/project/models/project_config.dart'
     as _i10;
-import 'package:serverpod_ground_control_client/src/protocol/domains/status/models/deploy_attempt.dart'
+import 'package:serverpod_ground_control_client/src/protocol/features/project/models/role.dart'
     as _i11;
-import 'package:serverpod_ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
+import 'package:serverpod_ground_control_client/src/protocol/domains/status/models/deploy_attempt.dart'
     as _i12;
-import 'package:serverpod_ground_control_client/src/protocol/domains/users/models/user.dart'
+import 'package:serverpod_ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
     as _i13;
-import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i14;
-import 'protocol.dart' as _i15;
+import 'package:serverpod_ground_control_client/src/protocol/domains/users/models/user.dart'
+    as _i14;
+import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i15;
+import 'protocol.dart' as _i16;
 
 /// Endpoint for managing projects.
 /// {@category Endpoint}
@@ -58,12 +60,12 @@ class EndpointCustomDomainName extends _i1.EndpointRef {
   @override
   String get name => 'customDomainName';
 
-  _i2.Future<void> add({
+  _i2.Future<_i3.CustomDomainNameWithDefaultDomains> add({
     required String domainName,
-    required _i3.DomainNameTarget target,
+    required _i4.DomainNameTarget target,
     required String cloudEnvironmentId,
   }) =>
-      caller.callServerEndpoint<void>(
+      caller.callServerEndpoint<_i3.CustomDomainNameWithDefaultDomains>(
         'customDomainName',
         'add',
         {
@@ -86,19 +88,19 @@ class EndpointCustomDomainName extends _i1.EndpointRef {
         },
       );
 
-  _i2.Future<_i4.CustomDomainNameList> list(
+  _i2.Future<_i5.CustomDomainNameList> list(
           {required String cloudEnvironmentId}) =>
-      caller.callServerEndpoint<_i4.CustomDomainNameList>(
+      caller.callServerEndpoint<_i5.CustomDomainNameList>(
         'customDomainName',
         'list',
         {'cloudEnvironmentId': cloudEnvironmentId},
       );
 
-  _i2.Future<_i5.DomainNameStatus> refreshRecord({
+  _i2.Future<_i6.DomainNameStatus> refreshRecord({
     required String domainName,
     required String cloudEnvironmentId,
   }) =>
-      caller.callServerEndpoint<_i5.DomainNameStatus>(
+      caller.callServerEndpoint<_i6.DomainNameStatus>(
         'customDomainName',
         'refreshRecord',
         {
@@ -133,12 +135,12 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
 
   /// Creates a new [EnvironmentVariable] with the specified [name] and [value].
   /// Throws a [DuplicateEntryException] if an environment variable with the same name already exists.
-  _i2.Future<_i6.EnvironmentVariable> create(
+  _i2.Future<_i7.EnvironmentVariable> create(
     String name,
     String value,
     String cloudEnvironmentId,
   ) =>
-      caller.callServerEndpoint<_i6.EnvironmentVariable>(
+      caller.callServerEndpoint<_i7.EnvironmentVariable>(
         'environmentVariables',
         'create',
         {
@@ -150,11 +152,11 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
 
   /// Fetches the specified environment variable.
   /// Throws a [NotFoundException] if the environment variable is not found.
-  _i2.Future<_i6.EnvironmentVariable> read({
+  _i2.Future<_i7.EnvironmentVariable> read({
     required String name,
     required String cloudEnvironmentId,
   }) =>
-      caller.callServerEndpoint<_i6.EnvironmentVariable>(
+      caller.callServerEndpoint<_i7.EnvironmentVariable>(
         'environmentVariables',
         'read',
         {
@@ -164,8 +166,8 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
       );
 
   /// Gets the list of environment variables for the given [cloudEnvironmentId].
-  _i2.Future<List<_i6.EnvironmentVariable>> list(String cloudEnvironmentId) =>
-      caller.callServerEndpoint<List<_i6.EnvironmentVariable>>(
+  _i2.Future<List<_i7.EnvironmentVariable>> list(String cloudEnvironmentId) =>
+      caller.callServerEndpoint<List<_i7.EnvironmentVariable>>(
         'environmentVariables',
         'list',
         {'cloudEnvironmentId': cloudEnvironmentId},
@@ -173,12 +175,12 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
 
   /// Creates a new [EnvironmentVariable] with the specified [name] and [value].
   /// Throws a [NotFoundException] if the environment variable is not found.
-  _i2.Future<_i6.EnvironmentVariable> update({
+  _i2.Future<_i7.EnvironmentVariable> update({
     required String name,
     required String value,
     required String cloudEnvironmentId,
   }) =>
-      caller.callServerEndpoint<_i6.EnvironmentVariable>(
+      caller.callServerEndpoint<_i7.EnvironmentVariable>(
         'environmentVariables',
         'update',
         {
@@ -190,11 +192,11 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
 
   /// Permanently deletes an environment variable.
   /// Throws a [NotFoundException] if the environment variable is not found.
-  _i2.Future<_i6.EnvironmentVariable> delete({
+  _i2.Future<_i7.EnvironmentVariable> delete({
     required String cloudEnvironmentId,
     required String name,
   }) =>
-      caller.callServerEndpoint<_i6.EnvironmentVariable>(
+      caller.callServerEndpoint<_i7.EnvironmentVariable>(
         'environmentVariables',
         'delete',
         {
@@ -213,14 +215,14 @@ class EndpointLogs extends _i1.EndpointRef {
   String get name => 'logs';
 
   /// Fetches log records from the specified project.
-  _i2.Stream<_i7.LogRecord> fetchRecords({
+  _i2.Stream<_i8.LogRecord> fetchRecords({
     required String cloudProjectId,
     DateTime? beforeTime,
     DateTime? afterTime,
     int? limit,
   }) =>
-      caller.callStreamingServerEndpoint<_i2.Stream<_i7.LogRecord>,
-          _i7.LogRecord>(
+      caller.callStreamingServerEndpoint<_i2.Stream<_i8.LogRecord>,
+          _i8.LogRecord>(
         'logs',
         'fetchRecords',
         {
@@ -235,12 +237,12 @@ class EndpointLogs extends _i1.EndpointRef {
   /// Tails log records from the specified project.
   /// Continues until the client unsubscribes, [limit] is reached,
   /// or the internal max limit is reached.
-  _i2.Stream<_i7.LogRecord> tailRecords({
+  _i2.Stream<_i8.LogRecord> tailRecords({
     required String cloudProjectId,
     int? limit,
   }) =>
-      caller.callStreamingServerEndpoint<_i2.Stream<_i7.LogRecord>,
-          _i7.LogRecord>(
+      caller.callStreamingServerEndpoint<_i2.Stream<_i8.LogRecord>,
+          _i8.LogRecord>(
         'logs',
         'tailRecords',
         {
@@ -251,13 +253,13 @@ class EndpointLogs extends _i1.EndpointRef {
       );
 
   /// Fetches the build log records for the specified deploy attempt.
-  _i2.Stream<_i7.LogRecord> fetchBuildLog({
+  _i2.Stream<_i8.LogRecord> fetchBuildLog({
     required String cloudProjectId,
     required String attemptId,
     int? limit,
   }) =>
-      caller.callStreamingServerEndpoint<_i2.Stream<_i7.LogRecord>,
-          _i7.LogRecord>(
+      caller.callStreamingServerEndpoint<_i2.Stream<_i8.LogRecord>,
+          _i8.LogRecord>(
         'logs',
         'fetchBuildLog',
         {
@@ -296,8 +298,8 @@ class EndpointProjects extends _i1.EndpointRef {
 
   /// Creates a new project with basic setup.
   /// The [cloudProjectId] must be globally unique.
-  _i2.Future<_i8.Project> createProject({required String cloudProjectId}) =>
-      caller.callServerEndpoint<_i8.Project>(
+  _i2.Future<_i9.Project> createProject({required String cloudProjectId}) =>
+      caller.callServerEndpoint<_i9.Project>(
         'projects',
         'createProject',
         {'cloudProjectId': cloudProjectId},
@@ -305,32 +307,32 @@ class EndpointProjects extends _i1.EndpointRef {
 
   /// Fetches the specified project.
   /// Its user roles are included in the response.
-  _i2.Future<_i8.Project> fetchProject({required String cloudProjectId}) =>
-      caller.callServerEndpoint<_i8.Project>(
+  _i2.Future<_i9.Project> fetchProject({required String cloudProjectId}) =>
+      caller.callServerEndpoint<_i9.Project>(
         'projects',
         'fetchProject',
         {'cloudProjectId': cloudProjectId},
       );
 
   /// Fetches the list of projects the current user has access to.
-  _i2.Future<List<_i8.Project>> listProjects() =>
-      caller.callServerEndpoint<List<_i8.Project>>(
+  _i2.Future<List<_i9.Project>> listProjects() =>
+      caller.callServerEndpoint<List<_i9.Project>>(
         'projects',
         'listProjects',
         {},
       );
 
   /// Deletes a project permanently.
-  _i2.Future<_i8.Project> deleteProject({required String cloudProjectId}) =>
-      caller.callServerEndpoint<_i8.Project>(
+  _i2.Future<_i9.Project> deleteProject({required String cloudProjectId}) =>
+      caller.callServerEndpoint<_i9.Project>(
         'projects',
         'deleteProject',
         {'cloudProjectId': cloudProjectId},
       );
 
-  _i2.Future<_i9.ProjectConfig> fetchProjectConfig(
+  _i2.Future<_i10.ProjectConfig> fetchProjectConfig(
           {required String cloudProjectId}) =>
-      caller.callServerEndpoint<_i9.ProjectConfig>(
+      caller.callServerEndpoint<_i10.ProjectConfig>(
         'projects',
         'fetchProjectConfig',
         {'cloudProjectId': cloudProjectId},
@@ -346,9 +348,9 @@ class EndpointRoles extends _i1.EndpointRef {
   String get name => 'roles';
 
   /// Fetches the user roles for a project.
-  _i2.Future<List<_i10.Role>> fetchRolesForProject(
+  _i2.Future<List<_i11.Role>> fetchRolesForProject(
           {required String cloudProjectId}) =>
-      caller.callServerEndpoint<List<_i10.Role>>(
+      caller.callServerEndpoint<List<_i11.Role>>(
         'roles',
         'fetchRolesForProject',
         {'cloudProjectId': cloudProjectId},
@@ -406,11 +408,11 @@ class EndpointStatus extends _i1.EndpointRef {
 
   /// Gets deploy attempts of the specified environment.
   /// Gets the recent-most attempts, up till [limit] if specified.
-  _i2.Future<List<_i11.DeployAttempt>> getDeployAttempts({
+  _i2.Future<List<_i12.DeployAttempt>> getDeployAttempts({
     required String cloudEnvironmentId,
     int? limit,
   }) =>
-      caller.callServerEndpoint<List<_i11.DeployAttempt>>(
+      caller.callServerEndpoint<List<_i12.DeployAttempt>>(
         'status',
         'getDeployAttempts',
         {
@@ -420,11 +422,11 @@ class EndpointStatus extends _i1.EndpointRef {
       );
 
   /// Gets the specified deploy attempt status of the a environment.
-  _i2.Future<List<_i12.DeployAttemptStage>> getDeployAttemptStatus({
+  _i2.Future<List<_i13.DeployAttemptStage>> getDeployAttemptStatus({
     required String cloudEnvironmentId,
     required String attemptId,
   }) =>
-      caller.callServerEndpoint<List<_i12.DeployAttemptStage>>(
+      caller.callServerEndpoint<List<_i13.DeployAttemptStage>>(
         'status',
         'getDeployAttemptStatus',
         {
@@ -458,8 +460,8 @@ class EndpointUsers extends _i1.EndpointRef {
   String get name => 'users';
 
   /// Fetches the tenant user for the currently authenticated user.
-  _i2.Future<_i13.User> fetchCurrentUser() =>
-      caller.callServerEndpoint<_i13.User>(
+  _i2.Future<_i14.User> fetchCurrentUser() =>
+      caller.callServerEndpoint<_i14.User>(
         'users',
         'fetchCurrentUser',
         {},
@@ -467,8 +469,8 @@ class EndpointUsers extends _i1.EndpointRef {
 
   /// Registers a new tenant user record for the current authenticated user.
   /// Throws [DuplicateEntryException] if the tenant user already exists.
-  _i2.Future<_i13.User> registerCurrentUser({String? userDisplayName}) =>
-      caller.callServerEndpoint<_i13.User>(
+  _i2.Future<_i14.User> registerCurrentUser({String? userDisplayName}) =>
+      caller.callServerEndpoint<_i14.User>(
         'users',
         'registerCurrentUser',
         {'userDisplayName': userDisplayName},
@@ -477,10 +479,10 @@ class EndpointUsers extends _i1.EndpointRef {
 
 class Modules {
   Modules(Client client) {
-    auth = _i14.Caller(client);
+    auth = _i15.Caller(client);
   }
 
-  late final _i14.Caller auth;
+  late final _i15.Caller auth;
 }
 
 class Client extends _i1.ServerpodClientShared {
@@ -499,7 +501,7 @@ class Client extends _i1.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
           host,
-          _i15.Protocol(),
+          _i16.Protocol(),
           securityContext: securityContext,
           authenticationKeyManager: authenticationKeyManager,
           streamingConnectionTimeout: streamingConnectionTimeout,
