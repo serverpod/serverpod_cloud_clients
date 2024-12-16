@@ -14,7 +14,7 @@ import 'package:serverpod_ground_control_client/serverpod_ground_control_client.
 
 class CloudProjectCommand extends CloudCliCommand {
   @override
-  final name = 'projects';
+  final name = 'project';
 
   @override
   final description = 'Manage Serverpod Cloud projects.';

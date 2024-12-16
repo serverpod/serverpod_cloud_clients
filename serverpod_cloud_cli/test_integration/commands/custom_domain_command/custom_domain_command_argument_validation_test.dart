@@ -48,7 +48,7 @@ void main() {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
-          'domains',
+          'domain',
           'add',
           'domain.com',
           '--target',

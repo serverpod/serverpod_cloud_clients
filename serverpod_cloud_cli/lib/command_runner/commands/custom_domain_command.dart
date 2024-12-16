@@ -9,7 +9,7 @@ import 'package:serverpod_ground_control_client/serverpod_ground_control_client.
 
 class CloudCustomDomainCommand extends CloudCliCommand {
   @override
-  final name = 'domains';
+  final name = 'domain';
 
   @override
   final description = 'Manage Serverpod Cloud custom domains.';

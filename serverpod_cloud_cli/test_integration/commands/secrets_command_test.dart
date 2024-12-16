@@ -7,7 +7,7 @@ import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/secrets_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/secret_command.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
@@ -42,7 +42,7 @@ void main() {
   const projectId = 'projectId';
 
   test('Given secrets command when instantiated then requires login', () {
-    expect(CloudSecretsCommand(logger: commandLogger).requireLogin, isTrue);
+    expect(CloudSecretCommand(logger: commandLogger).requireLogin, isTrue);
   });
 
   group('Given unauthenticated', () {
@@ -77,7 +77,7 @@ void main() {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
-          'secrets',
+          'secret',
           'create',
           'key',
           'value',
@@ -112,7 +112,7 @@ void main() {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
-          'secrets',
+          'secret',
           'delete',
           'key',
           '--project-id',
@@ -146,7 +146,7 @@ void main() {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
-          'secrets',
+          'secret',
           'list',
           '--project-id',
           projectId,
@@ -204,7 +204,7 @@ void main() {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
-          'secrets',
+          'secret',
           'create',
           'key',
           'value',
@@ -236,7 +236,7 @@ void main() {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
-          'secrets',
+          'secret',
           'delete',
           'key',
           '--project-id',
@@ -288,7 +288,7 @@ void main() {
       server = startedServer;
 
       commandResult = cli.run([
-        'secrets',
+        'secret',
         'list',
         '--project-id',
         projectId,

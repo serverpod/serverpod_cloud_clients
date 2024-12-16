@@ -6,7 +6,7 @@ import 'package:cli_tools/cli_tools.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/custom_domains_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/custom_domain_command.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
@@ -77,7 +77,7 @@ void main() {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
-          'domains',
+          'domain',
           'add',
           'domain.com',
           '--target',
@@ -116,7 +116,7 @@ void main() {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
-          'domains',
+          'domain',
           'list',
           '--project-id',
           projectId,
@@ -152,7 +152,7 @@ void main() {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
-          'domains',
+          'domain',
           'remove',
           'domain.com',
           '--project-id',
@@ -189,7 +189,7 @@ void main() {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
-          'domains',
+          'domain',
           'refresh-record',
           'domain.com',
           '--project-id',
@@ -267,7 +267,7 @@ void main() {
         server = startedServer;
 
         commandResult = cli.run([
-          'domains',
+          'domain',
           'add',
           'domain.com',
           '--target',
@@ -357,7 +357,7 @@ void main() {
         server = startedServer;
 
         commandResult = cli.run([
-          'domains',
+          'domain',
           'remove',
           'domain.com',
           '--project-id',
@@ -401,7 +401,7 @@ void main() {
         server = startedServer;
 
         commandResult = cli.run([
-          'domains',
+          'domain',
           'refresh-record',
           'domain.com',
           '--project-id',
@@ -446,7 +446,7 @@ void main() {
         server = startedServer;
 
         commandResult = cli.run([
-          'domains',
+          'domain',
           'refresh-record',
           'domain.com',
           '--project-id',
@@ -492,7 +492,7 @@ void main() {
         server = startedServer;
 
         commandResult = cli.run([
-          'domains',
+          'domain',
           'refresh-record',
           'domain.com',
           '--project-id',
@@ -563,7 +563,7 @@ void main() {
         server = startedServer;
 
         commandResult = cli.run([
-          'domains',
+          'domain',
           'list',
           '--project-id',
           projectId,
@@ -626,7 +626,7 @@ void main() {
         server = startedServer;
 
         commandResult = cli.run([
-          'domains',
+          'domain',
           'list',
           '--project-id',
           projectId,
