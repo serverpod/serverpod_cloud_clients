@@ -72,20 +72,20 @@ void main() {
 
       test('then logs output stream', () async {
         expect(
-          logger.infoCalls,
+          logger.lineCalls,
           containsAll([
-            equalsInfoCall(
-              message: 'Timestamp                   | Level   | Content'
+            equalsLineCall(
+              line: 'Timestamp                   | Level   | Content'
                   '\n----------------------------+---------+--------',
             ),
-            equalsInfoCall(
-              message: '2024-01-01 00:00:00.000Z    |         | Log message 1',
+            equalsLineCall(
+              line: '2024-01-01 00:00:00.000Z    |         | Log message 1',
             ),
-            equalsInfoCall(
-              message: '2024-01-01 00:00:00.000Z    |         | Log message 2',
+            equalsLineCall(
+              line: '2024-01-01 00:00:00.000Z    |         | Log message 2',
             ),
-            equalsInfoCall(
-              message: '-- End of log stream -- 2 records (limit 50) --',
+            equalsLineCall(
+              line: '-- End of log stream -- 2 records (limit 50) --',
             ),
           ]),
         );
@@ -113,24 +113,24 @@ void main() {
 
       test('then logs output stream', () async {
         expect(
-          logger.infoCalls,
+          logger.lineCalls,
           containsAll([
-            equalsInfoCall(
-              message:
+            equalsLineCall(
+              line:
                   'Fetching logs from oldest to 2030-12-01 00:00:00.000Z. Display time zone: UTC.',
             ),
-            equalsInfoCall(
-              message: 'Timestamp                   | Level   | Content'
+            equalsLineCall(
+              line: 'Timestamp                   | Level   | Content'
                   '\n----------------------------+---------+--------',
             ),
-            equalsInfoCall(
-              message: '2024-01-01 00:00:00.000Z    |         | Log message 1',
+            equalsLineCall(
+              line: '2024-01-01 00:00:00.000Z    |         | Log message 1',
             ),
-            equalsInfoCall(
-              message: '2024-01-01 00:00:00.000Z    |         | Log message 2',
+            equalsLineCall(
+              line: '2024-01-01 00:00:00.000Z    |         | Log message 2',
             ),
-            equalsInfoCall(
-              message: '-- End of log stream -- 2 records (limit 50) --',
+            equalsLineCall(
+              line: '-- End of log stream -- 2 records (limit 50) --',
             ),
           ]),
         );
@@ -158,24 +158,24 @@ void main() {
 
       test('then logs output stream', () async {
         expect(
-          logger.infoCalls,
+          logger.lineCalls,
           containsAll([
-            equalsInfoCall(
-              message:
+            equalsLineCall(
+              line:
                   'Fetching logs from 2020-12-01 00:00:00.000Z to newest. Display time zone: UTC.',
             ),
-            equalsInfoCall(
-              message: 'Timestamp                   | Level   | Content'
+            equalsLineCall(
+              line: 'Timestamp                   | Level   | Content'
                   '\n----------------------------+---------+--------',
             ),
-            equalsInfoCall(
-              message: '2024-01-01 00:00:00.000Z    |         | Log message 1',
+            equalsLineCall(
+              line: '2024-01-01 00:00:00.000Z    |         | Log message 1',
             ),
-            equalsInfoCall(
-              message: '2024-01-01 00:00:00.000Z    |         | Log message 2',
+            equalsLineCall(
+              line: '2024-01-01 00:00:00.000Z    |         | Log message 2',
             ),
-            equalsInfoCall(
-              message: '-- End of log stream -- 2 records (limit 50) --',
+            equalsLineCall(
+              line: '-- End of log stream -- 2 records (limit 50) --',
             ),
           ]),
         );
@@ -206,24 +206,24 @@ void main() {
 
       test('then logs output stream', () async {
         expect(
-          logger.infoCalls,
+          logger.lineCalls,
           containsAll([
-            equalsInfoCall(
-              message:
+            equalsLineCall(
+              line:
                   'Fetching logs from 2020-12-01 00:00:00.000Z to 2030-01-01 00:00:00.000Z. Display time zone: UTC.',
             ),
-            equalsInfoCall(
-              message: 'Timestamp                   | Level   | Content'
+            equalsLineCall(
+              line: 'Timestamp                   | Level   | Content'
                   '\n----------------------------+---------+--------',
             ),
-            equalsInfoCall(
-              message: '2024-01-01 00:00:00.000Z    |         | Log message 1',
+            equalsLineCall(
+              line: '2024-01-01 00:00:00.000Z    |         | Log message 1',
             ),
-            equalsInfoCall(
-              message: '2024-01-01 00:00:00.000Z    |         | Log message 2',
+            equalsLineCall(
+              line: '2024-01-01 00:00:00.000Z    |         | Log message 2',
             ),
-            equalsInfoCall(
-              message: '-- End of log stream -- 2 records (limit 50) --',
+            equalsLineCall(
+              line: '-- End of log stream -- 2 records (limit 50) --',
             ),
           ]),
         );
@@ -248,23 +248,23 @@ void main() {
 
       test('then logs output stream', () async {
         expect(
-          logger.infoCalls,
+          logger.lineCalls,
           containsAll([
-            equalsInfoCall(
-              message: 'Tailing logs. Display time zone: UTC.',
+            equalsLineCall(
+              line: 'Tailing logs. Display time zone: UTC.',
             ),
-            equalsInfoCall(
-              message: 'Timestamp                   | Level   | Content'
+            equalsLineCall(
+              line: 'Timestamp                   | Level   | Content'
                   '\n----------------------------+---------+--------',
             ),
-            equalsInfoCall(
-              message: '2024-01-01 00:00:00.000Z    |         | Log message 1',
+            equalsLineCall(
+              line: '2024-01-01 00:00:00.000Z    |         | Log message 1',
             ),
-            equalsInfoCall(
-              message: '2024-01-01 00:00:00.000Z    |         | Log message 2',
+            equalsLineCall(
+              line: '2024-01-01 00:00:00.000Z    |         | Log message 2',
             ),
-            equalsInfoCall(
-              message: '-- End of log stream -- 2 records (limit 50) --',
+            equalsLineCall(
+              line: '-- End of log stream -- 2 records (limit 50) --',
             ),
           ]),
         );

@@ -108,13 +108,13 @@ class CloudStatusCommand extends CloudCliCommand<StatusOption> {
     }
 
     if (log) {
-      // view log
+      // view build log
       await handleCommonClientExceptions(logger, () async {
         final attemptId = await _getDeployAttemptId(projectId, deploymentArg);
 
         await LogsFeature.fetchBuildLog(
           runner.serviceProvider.cloudApiClient,
-          writeln: logger.info,
+          writeln: logger.line,
           projectId: projectId,
           attemptId: attemptId,
           inUtc: inUtc,

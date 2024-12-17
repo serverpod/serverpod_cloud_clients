@@ -45,6 +45,19 @@ class InfoCall {
   }
 }
 
+class LineCall {
+  final String line;
+
+  LineCall({required this.line});
+
+  @override
+  String toString() {
+    return {
+      'line': line,
+    }.toString();
+  }
+}
+
 class ListCall {
   final List<String> items;
   final String? title;
@@ -133,6 +146,7 @@ class TestCommandLogger extends CommandLogger {
   final List<ErrorCall> errorCalls = [];
   var flushCallsCount = 0;
   final List<InfoCall> infoCalls = [];
+  final List<LineCall> lineCalls = [];
   final List<ListCall> listCalls = [];
   final List<ProgressCall> progressCalls = [];
   final List<SuccessCall> successCalls = [];
@@ -151,6 +165,7 @@ class TestCommandLogger extends CommandLogger {
     errorCalls.clear();
     flushCallsCount = 0;
     infoCalls.clear();
+    lineCalls.clear();
     listCalls.clear();
     progressCalls.clear();
     successCalls.clear();
@@ -206,6 +221,17 @@ class TestCommandLogger extends CommandLogger {
     }
 
     infoCalls.add(InfoCall(message: message, newParagraph: newParagraph));
+  }
+
+  @override
+  void line(
+    final String line,
+  ) {
+    if (!_somethingLogged.isCompleted) {
+      _somethingLogged.complete();
+    }
+
+    lineCalls.add(LineCall(line: line));
   }
 
   @override

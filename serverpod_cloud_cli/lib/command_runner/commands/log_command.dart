@@ -167,7 +167,7 @@ class CloudLogCommand extends CloudCliCommand<LogOption> {
       await handleCommonClientExceptions(logger, () async {
         await LogsFeature.tailContainerLog(
           runner.serviceProvider.cloudApiClient,
-          writeln: logger.info,
+          writeln: logger.line,
           projectId: projectId,
           limit: limit,
           inUtc: inUtc,
@@ -183,7 +183,7 @@ class CloudLogCommand extends CloudCliCommand<LogOption> {
     await handleCommonClientExceptions(logger, () async {
       await LogsFeature.fetchContainerLog(
         runner.serviceProvider.cloudApiClient,
-        writeln: logger.info,
+        writeln: logger.line,
         projectId: projectId,
         before: before,
         after: after,
