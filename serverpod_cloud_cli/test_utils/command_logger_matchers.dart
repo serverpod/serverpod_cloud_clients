@@ -123,6 +123,51 @@ class _InfoCallMatcher extends Matcher {
   }
 }
 
+Matcher equalsLineCall({
+  required final String line,
+}) {
+  return _LineCallMatcher(LineCall(
+    line: line,
+  ));
+}
+
+class _LineCallMatcher extends Matcher {
+  final LineCall lineCall;
+
+  _LineCallMatcher(this.lineCall);
+
+  @override
+  bool matches(final Object? item, final Map matchState) {
+    if (item is! LineCall) return false;
+    return item.line == lineCall.line;
+  }
+
+  @override
+  Description describe(final Description description) {
+    return description.add(
+      'an info log with line "${lineCall.line}"',
+    );
+  }
+
+  @override
+  Description describeMismatch(
+    final item,
+    final Description mismatchDescription,
+    final Map matchState,
+    final bool verbose,
+  ) {
+    if (item is! LineCall) {
+      return mismatchDescription.add('is not a LineCall');
+    }
+    if (item.line != lineCall.line) {
+      return mismatchDescription.add('line is not "${lineCall.line}"');
+    }
+
+    return super
+        .describeMismatch(item, mismatchDescription, matchState, verbose);
+  }
+}
+
 Matcher equalsListCall({
   required final List<String> items,
   final String? title,

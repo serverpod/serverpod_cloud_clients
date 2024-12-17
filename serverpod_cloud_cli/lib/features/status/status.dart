@@ -33,33 +33,6 @@ abstract class StatusFeature {
       'Status of $environmentId deploy $attemptId'
           ', started at ${stages.first.startTime?.toTzString(inUtc, _numTimeStampChars)}:',
       ...stages.map(_getStatusLine),
-/*
-       ...switch (stages.first.stageStatus) {
-        DeployProgressStatus.success => [
-            '$successMark  Booster liftoff:     Upload successful!',
-            '$successMark  Orbit acceleration:  Build successful!',
-            '$successMark  Orbital insertion:   Deploy successful!',
-            '$successMark  Pod commissioning:   Service running! 🚀',
-          ],
-        DeployProgressStatus.created || DeployProgressStatus.running => [
-            '$successMark  Booster liftoff:     Upload successful!',
-            '$workingMark  Orbit acceleration:  Build in progress. See build logs.',
-            '$pendingMark  Orbital insertion:   Deploy pending...',
-            '$pendingMark  Pod commissioning:   Service pending...',
-          ],
-        DeployProgressStatus.failure => [
-            '$successMark  Booster liftoff:     Upload successful!',
-            '$failureMark  Orbit acceleration:  Build failed! 💥 See build logs.',
-            '$pendingMark  Orbital insertion:   Unable to deploy.',
-          ],
-        DeployProgressStatus.unknown => [
-            '$workingMark  Booster liftoff:     Upload pending...',
-            '$workingMark  Orbit acceleration:  Build pending...',
-            '$workingMark  Orbital insertion:   Deploy pending...',
-            '$workingMark  Pod commissioning:   Service pending...',
-          ],
-      },
- */
     ];
 
     return rows.expand((final r) => ['$r\n', '\n']).join();

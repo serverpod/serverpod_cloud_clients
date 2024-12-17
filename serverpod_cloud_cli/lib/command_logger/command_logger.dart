@@ -113,8 +113,9 @@ class CommandLogger {
 
   /// **Information Messages Guidelines**
   ///
-  /// Use when the message does not fit into success, error or warning types.
-  /// Can be used for tables, lists, or general information.
+  /// Used for messages to the user when the message does not fit into
+  /// success, error or warning types.
+  /// Can be used for general information.
   ///
   /// Tone: Neutral and informative.
   ///
@@ -134,6 +135,32 @@ class CommandLogger {
       message,
       type: TextLogType.normal,
       newParagraph: newParagraph,
+    );
+  }
+
+  /// **Line Output Guidelines**
+  ///
+  /// Used for line-oriented output that should not be modified or formatted.
+  /// Typical use cases are logs, tables, and line-oriented text data dumps.
+  ///
+  /// Format:
+  /// ```bash
+  /// <line of text>
+  /// ```
+  /// Example:
+  /// ```bash
+  /// Fetching logs from oldest to newest. Display time zone: local (CET).
+  /// Timestamp                   | Level   | Content
+  /// ----------------------------+---------+--------
+  /// 2024-11-26 16:38:44.113541  | INFO    | Webserver listening on port 8082
+  /// ```
+  void line(
+    final String line,
+  ) {
+    _logger.info(
+      line,
+      type: RawLogType(),
+      newParagraph: false,
     );
   }
 
