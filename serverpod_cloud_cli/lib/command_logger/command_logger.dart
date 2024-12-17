@@ -140,7 +140,8 @@ class CommandLogger {
 
   /// **Line Output Guidelines**
   ///
-  /// Used for line-oriented output that should not be modified or formatted.
+  /// Used for line-oriented output that should not be modified or formatted
+  /// other than each line being appended with a newline.
   /// Typical use cases are logs, tables, and line-oriented text data dumps.
   ///
   /// Format:
@@ -158,7 +159,7 @@ class CommandLogger {
     final String line,
   ) {
     _logger.info(
-      line,
+      '$line\n',
       type: RawLogType(),
       newParagraph: false,
     );
