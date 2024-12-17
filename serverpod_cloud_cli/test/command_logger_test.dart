@@ -4,7 +4,7 @@ import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:test/test.dart';
 
-import '../test_utils/test_logger.dart';
+import '../test_utils/test_command_logger.dart';
 
 void main() {
   final commandLogger = CommandLogger.create(LogLevel.debug);

@@ -6,7 +6,6 @@ import 'package:googleapis/storage/v1.dart';
 import 'package:http/http.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
-import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy_command.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
@@ -14,16 +13,16 @@ import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:test/test.dart';
 import 'package:uuid/uuid.dart';
 
+import '../test_utils/command_logger_matchers.dart';
 import '../test_utils/http_server_builder.dart';
 import '../test_utils/project_factory.dart';
-import '../test_utils/test_logger.dart';
+import '../test_utils/test_command_logger.dart';
 
 void main() {
-  final logger = TestLogger();
-  final commandLogger = CommandLogger(logger);
+  final logger = TestCommandLogger();
   final version = Version.parse('0.0.1');
   final cli = CloudCliCommandRunner.create(
-    logger: commandLogger,
+    logger: logger,
     version: version,
   );
 
@@ -47,15 +46,19 @@ void main() {
   });
 
   test('Given deploy command when instantiated then requires login', () {
-    expect(CloudDeployCommand(logger: commandLogger).requireLogin, isTrue);
+    expect(CloudDeployCommand(logger: logger).requireLogin, isTrue);
   });
 
-  group('Given unauthenticated', () {
+  group(
+      'Given unauthenticated and current directory is serverpod server directory',
+      () {
     late Uri localServerAddress;
     late Completer requestCompleter;
     late HttpServer server;
 
     setUp(() async {
+      DirectoryFactory.serverpodServerDir().construct(testProjectDir);
+
       requestCompleter = Completer();
       await ResourceManager.storeServerpodCloudData(
         cloudData: ServerpodCloudData('my-token'),
@@ -89,6 +92,8 @@ void main() {
           localServerAddress.toString(),
           '--auth-dir',
           testCacheFolderPath,
+          '--project-dir',
+          testProjectDir,
         ]);
       });
 
@@ -102,11 +107,14 @@ void main() {
           await commandResult;
         } catch (_) {}
 
-        expect(logger.errors, isNotEmpty);
+        expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errors.first,
-            'The credentials for this session seem to no longer be valid.\n'
-            'Please run `scloud logout` followed by `scloud login` and try this command again.');
+            logger.errorCalls.first,
+            equalsErrorCall(
+              message:
+                  'The credentials for this session seem to no longer be valid.\n'
+                  'Please run `scloud logout` followed by `scloud login` and try this command again.',
+            ));
       });
     });
   });
@@ -143,481 +151,430 @@ void main() {
 
       test('then error message is logged', () async {
         await cliCommandFuture.catchError((final _) {});
-        expect(logger.errors, isNotEmpty);
+        expect(logger.errorCalls, isNotEmpty);
         expect(
-          logger.errors.first,
-          'Failed to parse --concurrency option, value must be an integer.',
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message:
+                'Failed to parse --concurrency option, value must be an integer.',
+          ),
         );
       });
     });
 
-    group('and 403 response for creating file upload request', () {
-      late Uri localServerAddress;
-      late HttpServer server;
-
-      setUp(() async {
-        final serverBuilder = HttpServerBuilder();
-        serverBuilder.withOnRequest((final request) {
-          request.response.statusCode = 403;
-          request.response.close();
-        });
-
-        final (startedServer, serverAddress) = await serverBuilder.build();
-        localServerAddress = serverAddress;
-        server = startedServer;
-      });
-
-      tearDown(() {
-        server.close(force: true);
-      });
-
-      group('when deploying through CLI', () {
-        late Future cliCommandFuture;
-        setUp(() async {
-          cliCommandFuture = cli.run([
-            'deploy',
-            '--concurrency',
-            '1',
-            '--project-id',
-            '123',
-            '--api-url',
-            localServerAddress.toString(),
-            '--auth-dir',
-            testCacheFolderPath,
-          ]);
-        });
-
-        test('then exit exception is thrown.', () async {
-          await expectLater(
-            cliCommandFuture,
-            throwsA(isA<ExitException>()),
-          );
-        });
-
-        test('then failed to fetch upload description error message is logged.',
-            () async {
-          await cliCommandFuture.catchError((final _) {});
-          expect(logger.errors, isNotEmpty);
-          expect(
-            logger.errors.first,
-            startsWith('Failed to fetch upload description'),
-          );
-        });
-      });
-    });
-
-    group('and valid upload description response but no project directory', () {
-      late Uri localServerAddress;
-      late HttpServer server;
-
-      setUp(() async {
-        final serverBuilder = HttpServerBuilder();
-        serverBuilder.withOnRequest((final request) async {
-          final response = request.response;
-          response.statusCode = 200;
-          response.write('"this-is-an-upload-description"');
-          await response.close();
-        });
-
-        final (startedServer, serverAddress) = await serverBuilder.build();
-        localServerAddress = serverAddress;
-        server = startedServer;
-
-        assert(Directory(testProjectDir).existsSync() == false);
-      });
-
-      tearDown(() {
-        server.close(force: true);
-      });
-
-      group('when deploying through CLI', () {
-        late Future cliCommandFuture;
-        setUp(() async {
-          cliCommandFuture = cli.run([
-            'deploy',
-            '--concurrency',
-            '1',
-            '--project-id',
-            '123',
-            '--project-dir',
-            testProjectDir,
-            '--api-url',
-            localServerAddress.toString(),
-            '--auth-dir',
-            testCacheFolderPath,
-          ]);
-        });
-
-        test('then exit exception is thrown.', () async {
-          await expectLater(
-            cliCommandFuture,
-            throwsA(isA<ExitException>()),
-          );
-        });
-
-        test('then project directory does not exist error message is logged.',
-            () async {
-          await cliCommandFuture.catchError((final _) {});
-          expect(logger.errors, isNotEmpty);
-          expect(
-            logger.errors.first,
-            startsWith('Project directory does not exist:'),
-          );
-        });
-      });
-    });
-
-    group('and valid upload description response but empty project directory',
-        () {
-      late Uri localServerAddress;
-      late HttpServer server;
-
-      setUp(() async {
-        final serverBuilder = HttpServerBuilder();
-        serverBuilder.withOnRequest((final request) async {
-          final response = request.response;
-          response.statusCode = 200;
-          response.write('"this-is-an-upload-description"');
-          await response.close();
-        });
-
-        final (startedServer, serverAddress) = await serverBuilder.build();
-        localServerAddress = serverAddress;
-        server = startedServer;
-
-        DirectoryFactory().construct(testProjectDir);
-      });
-
-      tearDown(() {
-        server.close(force: true);
-      });
-
-      group('when deploying through CLI', () {
-        late Future cliCommandFuture;
-        setUp(() async {
-          cliCommandFuture = cli.run([
-            'deploy',
-            '--concurrency',
-            '1',
-            '--project-id',
-            '123',
-            '--project-dir',
-            testProjectDir,
-            '--api-url',
-            localServerAddress.toString(),
-            '--auth-dir',
-            testCacheFolderPath,
-          ]);
-        });
-
-        test('then exit exception is thrown.', () async {
-          await expectLater(
-            cliCommandFuture,
-            throwsA(isA<ExitException>()),
-          );
-        });
-
-        test('then no files to upload error message is logged.', () async {
-          await cliCommandFuture.catchError((final _) {});
-          expect(logger.errors, isNotEmpty);
-          expect(
-            logger.errors.first,
-            startsWith('No files to upload'),
-          );
-        });
-      });
-    });
-
     group(
-        'Given valid upload description response but project directory contains directory symlink',
+        'and current directory is not Serverpod server directory when running deploy command',
         () {
-      late Uri localServerAddress;
-      late HttpServer server;
-
+      late Future cliCommandFuture;
       setUp(() async {
-        final serverBuilder = HttpServerBuilder();
-        serverBuilder.withOnRequest((final request) async {
-          final response = request.response;
-          response.statusCode = 200;
-          response.write('"this-is-an-upload-description"');
-          await response.close();
-        });
+        DirectoryFactory(withFiles: [
+          FileFactory(
+            withName: 'pubspec.yaml',
+            withContents: 'name: my_project',
+          ),
+        ]).construct(testProjectDir);
 
-        final (startedServer, serverAddress) = await serverBuilder.build();
-        localServerAddress = serverAddress;
-        server = startedServer;
-
-        const symlinkedDirectoryName = 'symlinked_directory';
-        DirectoryFactory(
-          withSubDirectories: [
-            DirectoryFactory(
-              withDirectoryName: symlinkedDirectoryName,
-              withFiles: [
-                FileFactory(withName: 'file1.txt', withContents: 'file1'),
-              ],
-            ),
-          ],
-          withSymLinks: [
-            SymLinkFactory(
-              withName: 'symlinked_directory_link',
-              withTarget: symlinkedDirectoryName,
-            ),
-          ],
-        ).construct(testProjectDir);
+        cliCommandFuture = cli.run([
+          'deploy',
+          '--project-id',
+          '123',
+          '--auth-dir',
+          testCacheFolderPath,
+          '--project-dir',
+          testProjectDir,
+        ]);
       });
 
-      tearDown(() {
-        server.close(force: true);
+      test('then exit exception is thrown.', () async {
+        await expectLater(
+          cliCommandFuture,
+          throwsA(isA<ExitException>()),
+        );
       });
 
-      group('when deploying through CLI', () {
-        late Future cliCommandFuture;
-        setUp(() async {
-          cliCommandFuture = cli.run([
-            'deploy',
-            '--concurrency',
-            '1',
-            '--project-id',
-            '123',
-            '--project-dir',
-            testProjectDir,
-            '--api-url',
-            localServerAddress.toString(),
-            '--auth-dir',
-            testCacheFolderPath,
-          ]);
-        });
-
-        test('then exit exception is thrown.', () async {
-          await expectLater(
-            cliCommandFuture,
-            throwsA(isA<ExitException>()),
-          );
-        });
-
-        test('then directory symlinks are unsupported message is logged.',
-            () async {
-          await cliCommandFuture.catchError((final _) {});
-          expect(logger.errors, isNotEmpty);
-          expect(
-            logger.errors.first,
-            startsWith('Serverpod Cloud does not support directory symlinks:'),
-          );
-        });
+      test('then error message is logged', () async {
+        await cliCommandFuture.catchError((final _) {});
+        expect(logger.errorCalls, isNotEmpty);
+        expect(
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message: 'The provided project directory '
+                '(either through the --project-dir flag or the current directory) '
+                'is not a Serverpod server directory.',
+            hint: "Provide the project's server directory and try again.",
+          ),
+        );
       });
     });
 
-    group(
-        'Given valid upload description response but project contains unresolved symlink',
-        () {
-      late Uri localServerAddress;
-      late HttpServer server;
-
+    group('and current directory is a Serverpod server directory', () {
       setUp(() async {
-        final serverBuilder = HttpServerBuilder();
-        serverBuilder.withOnRequest((final request) async {
-          final response = request.response;
-          response.statusCode = 200;
-          response.write('"this-is-an-upload-description"');
-          await response.close();
-        });
-
-        final (startedServer, serverAddress) = await serverBuilder.build();
-        localServerAddress = serverAddress;
-        server = startedServer;
-
-        DirectoryFactory(
-          withSymLinks: [
-            SymLinkFactory(
-              withName: 'non-resolving-symlink',
-              withTarget: 'non-existing-file',
-            ),
-          ],
-        ).construct(testProjectDir);
+        DirectoryFactory.serverpodServerDir().construct(testProjectDir);
       });
 
-      tearDown(() {
-        server.close(force: true);
-      });
+      group('and 403 response for creating file upload request', () {
+        late Uri localServerAddress;
+        late HttpServer server;
 
-      group('when deploying through CLI', () {
-        late Future cliCommandFuture;
         setUp(() async {
-          cliCommandFuture = cli.run([
-            'deploy',
-            '--concurrency',
-            '1',
-            '--project-id',
-            '123',
-            '--project-dir',
-            testProjectDir,
-            '--api-url',
-            localServerAddress.toString(),
-            '--auth-dir',
-            testCacheFolderPath,
-          ]);
+          final serverBuilder = HttpServerBuilder();
+          serverBuilder.withOnRequest((final request) {
+            request.response.statusCode = 403;
+            request.response.close();
+          });
+
+          final (startedServer, serverAddress) = await serverBuilder.build();
+          localServerAddress = serverAddress;
+          server = startedServer;
         });
 
-        test('then exit exception is thrown.', () async {
-          await expectLater(
-            cliCommandFuture,
-            throwsA(isA<ExitException>()),
-          );
+        tearDown(() {
+          server.close(force: true);
         });
 
-        test('then non-resolving symlinks message is logged.', () async {
-          await cliCommandFuture.catchError((final _) {});
-          expect(logger.errors, isNotEmpty);
-          expect(
-            logger.errors.first,
-            startsWith(
-                'Serverpod Cloud does not support non-resolving symlinks:'),
-          );
+        group('when deploying through CLI', () {
+          late Future cliCommandFuture;
+          setUp(() async {
+            cliCommandFuture = cli.run([
+              'deploy',
+              '--concurrency',
+              '1',
+              '--project-id',
+              '123',
+              '--api-url',
+              localServerAddress.toString(),
+              '--auth-dir',
+              testCacheFolderPath,
+              '--project-dir',
+              testProjectDir,
+            ]);
+          });
+
+          test('then exit exception is thrown.', () async {
+            await expectLater(
+              cliCommandFuture,
+              throwsA(isA<ExitException>()),
+            );
+          });
+
+          test(
+              'then failed to fetch upload description error message is logged.',
+              () async {
+            await cliCommandFuture.catchError((final _) {});
+            expect(logger.errorCalls, isNotEmpty);
+            expect(
+              logger.errorCalls.first.message,
+              startsWith('Failed to fetch upload description'),
+            );
+          });
         });
       });
-    });
 
-    group('and upload description response but with invalid url', () {
-      late Uri localServerAddress;
-      late HttpServer server;
-      const projectId = 'my-project-id';
-      const projectUuid = '586a138e-66f3-4dcb-b2e6-bb2d38ab4a4a';
-      const bucketName = 'bucket';
+      group(
+          'Given valid upload description response but project directory contains directory symlink',
+          () {
+        late Uri localServerAddress;
+        late HttpServer server;
 
-      /// This url is missing the `bucketName` subdomain.
-      const uploadDescription =
-          '"{\\"url\\":\\"http://localhost:8000/$projectId%2F$projectUuid.zip?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=test-service-bucket%40hosting-example-414217.iam.gserviceaccount.com%2F20240909%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20240909T094501Z&X-Goog-Expires=600&X-Goog-SignedHeaders=accept%3Bcontent-type%3Bhost%3Bx-goog-meta-tenant-project-id&x-goog-signature=2a3432d7e650cd7f32e4b6ddb01051390ae40084fb45f7af25cfaa891f33425d7bf64939b78b9e339b28bcf5238dfb58c67fd8e1eb8957c2df22b1b91d1f01a3ecd1ad4217a570a7e7a80e2999164ca7d920058bfdf52851341fe3c85340da14917026c8efae8f733d5d6548a149ae0558f88307bfcf23f97c2a141317d2be5cf4035488bd7b01137333250be11a174e73096674d8eaffcc7c7d2849044a3eb7669c35f7e421f99ab9557610478c96b68b29962fa1ea002cf76a09a0f302c66157844bd1a2b4b8a36378fd18f8a8dab750d955ff1866c9b20105c56b1f3ebf88c4dcf75043518c74d3d25c54673557b397ba1e31336766004c06ddf7bbbe1940\\",\\"type\\":\\"binary\\",\\"httpMethod\\":\\"PUT\\",\\"headers\\":{\\"content-type\\":\\"application/octet-stream\\",\\"accept\\":\\"*/*\\",\\"x-goog-meta-tenant-project-id\\":\\"$projectId\\",\\"x-goog-meta-upload-id\\":\\"upload-$projectUuid\\",\\"host\\":\\"$bucketName.localhost:8000\\"}}"';
-
-      setUp(() async {
-        final serverBuilder = HttpServerBuilder();
-        serverBuilder.withOnRequest((final request) async {
-          final response = request.response;
-          response.statusCode = 200;
-          response.write(uploadDescription);
-          await response.close();
-        });
-
-        final (startedServer, serverAddress) = await serverBuilder.build();
-        localServerAddress = serverAddress;
-        server = startedServer;
-      });
-
-      tearDown(() {
-        server.close(force: true);
-      });
-
-      group('when deploying through CLI', () {
-        late Future cliCommandFuture;
         setUp(() async {
-          cliCommandFuture = cli.run([
-            'deploy',
-            '--concurrency',
-            '1',
-            '--project-id',
-            projectId,
-            '--api-url',
-            localServerAddress.toString(),
-            '--auth-dir',
-            testCacheFolderPath,
-          ]);
+          final serverBuilder = HttpServerBuilder();
+          serverBuilder.withOnRequest((final request) async {
+            final response = request.response;
+            response.statusCode = 200;
+            response.write('"this-is-an-upload-description"');
+            await response.close();
+          });
+
+          final (startedServer, serverAddress) = await serverBuilder.build();
+          localServerAddress = serverAddress;
+          server = startedServer;
+
+          const symlinkedDirectoryName = 'symlinked_directory';
+          DirectoryFactory(
+            withSubDirectories: [
+              DirectoryFactory(
+                withDirectoryName: symlinkedDirectoryName,
+                withFiles: [
+                  FileFactory(withName: 'file1.txt', withContents: 'file1'),
+                ],
+              ),
+            ],
+            withSymLinks: [
+              SymLinkFactory(
+                withName: 'symlinked_directory_link',
+                withTarget: symlinkedDirectoryName,
+              ),
+            ],
+          ).construct(testProjectDir);
         });
 
-        test('then exit exception is thrown.', () async {
-          await expectLater(
-            cliCommandFuture,
-            throwsA(isA<ExitException>()),
-          );
+        tearDown(() {
+          server.close(force: true);
         });
 
-        test('then failed to upload project error message is logged.',
-            () async {
-          await cliCommandFuture.catchError((final _) {});
-          expect(logger.errors, isNotEmpty);
-          expect(
-            logger.errors.first,
-            startsWith('Failed to upload project, please try again.'),
-          );
+        group('when deploying through CLI', () {
+          late Future cliCommandFuture;
+          setUp(() async {
+            cliCommandFuture = cli.run([
+              'deploy',
+              '--concurrency',
+              '1',
+              '--project-id',
+              '123',
+              '--project-dir',
+              testProjectDir,
+              '--api-url',
+              localServerAddress.toString(),
+              '--auth-dir',
+              testCacheFolderPath,
+            ]);
+          });
+
+          test('then exit exception is thrown.', () async {
+            await expectLater(
+              cliCommandFuture,
+              throwsA(isA<ExitException>()),
+            );
+          });
+
+          test('then directory symlinks are unsupported message is logged.',
+              () async {
+            await cliCommandFuture.catchError((final _) {});
+            expect(logger.errorCalls, isNotEmpty);
+            expect(
+              logger.errorCalls.first.message,
+              startsWith(
+                  'Serverpod Cloud does not support directory symlinks:'),
+            );
+          });
         });
       });
-    });
 
-    group('and valid upload description response', () {
-      late Uri localServerAddress;
-      late HttpServer server;
-      const projectId = 'my-project-id';
-      const projectUuid = '586a138e-66f3-4dcb-b2e6-bb2d38ab4a4a';
-      const bucketName = 'bucket';
+      group(
+          'Given valid upload description response but project contains unresolved symlink',
+          () {
+        late Uri localServerAddress;
+        late HttpServer server;
 
-      const uploadDescription = '"{'
-          '\\"url\\": \\"http://$bucketName.localhost:8000/$projectId%2F$projectUuid.zip?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=test-service-bucket%40hosting-example-414217.iam.gserviceaccount.com%2F20240909%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20240909T094501Z&X-Goog-Expires=600&X-Goog-SignedHeaders=accept%3Bcontent-type%3Bhost%3Bx-goog-meta-tenant-project-id&x-goog-signature=2a3432d7e650cd7f32e4b6ddb01051390ae40084fb45f7af25cfaa891f33425d7bf64939b78b9e339b28bcf5238dfb58c67fd8e1eb8957c2df22b1b91d1f01a3ecd1ad4217a570a7e7a80e2999164ca7d920058bfdf52851341fe3c85340da14917026c8efae8f733d5d6548a149ae0558f88307bfcf23f97c2a141317d2be5cf4035488bd7b01137333250be11a174e73096674d8eaffcc7c7d2849044a3eb7669c35f7e421f99ab9557610478c96b68b29962fa1ea002cf76a09a0f302c66157844bd1a2b4b8a36378fd18f8a8dab750d955ff1866c9b20105c56b1f3ebf88c4dcf75043518c74d3d25c54673557b397ba1e31336766004c06ddf7bbbe1940\\",'
-          '\\"type\\": \\"binary\\",'
-          '\\"httpMethod\\": \\"PUT\\",'
-          '\\"headers\\": {'
-          '\\"content-type\\": \\"application/octet-stream\\",'
-          '\\"accept\\": \\"*/*\\",'
-          '\\"x-goog-meta-tenant-project-id\\": \\"$projectId\\",'
-          '\\"x-goog-meta-upload-id\\": \\"upload-$projectUuid\\",'
-          '\\"host\\": \\"$bucketName.localhost:8000\\"'
-          '}'
-          '}"';
-
-      setUp(() async {
-        final serverBuilder = HttpServerBuilder();
-        serverBuilder.withOnRequest((final request) async {
-          final response = request.response;
-          response.statusCode = 200;
-          response.write(uploadDescription);
-          await response.close();
-        });
-
-        final (startedServer, serverAddress) = await serverBuilder.build();
-        localServerAddress = serverAddress;
-        server = startedServer;
-      });
-
-      tearDown(() {
-        server.close(force: true);
-      });
-
-      group('when deploying through CLI', () {
-        late Future cliCommandFuture;
         setUp(() async {
-          cliCommandFuture = cli.run([
-            'deploy',
-            '--concurrency',
-            '1',
-            '--project-id',
-            projectId,
-            '--api-url',
-            localServerAddress.toString(),
-            '--auth-dir',
-            testCacheFolderPath,
-          ]);
+          final serverBuilder = HttpServerBuilder();
+          serverBuilder.withOnRequest((final request) async {
+            final response = request.response;
+            response.statusCode = 200;
+            response.write('"this-is-an-upload-description"');
+            await response.close();
+          });
+
+          final (startedServer, serverAddress) = await serverBuilder.build();
+          localServerAddress = serverAddress;
+          server = startedServer;
+
+          DirectoryFactory(
+            withSymLinks: [
+              SymLinkFactory(
+                withName: 'non-resolving-symlink',
+                withTarget: 'non-existing-file',
+              ),
+            ],
+          ).construct(testProjectDir);
         });
 
-        test(
-            'then command executes successfully and logs Project uploaded successfully message.',
-            () async {
-          await expectLater(cliCommandFuture, completes);
-
-          expect(logger.messages, isNotEmpty);
-          expect(logger.messages.last, 'Project uploaded successfully! 🚀');
+        tearDown(() {
+          server.close(force: true);
         });
 
-        test('then zipped project is accessible in bucket.', () async {
-          await cliCommandFuture;
-          final client = Client();
-          final storage = StorageApi(
-            client,
-            rootUrl: 'http://localhost:8000/',
-          );
+        group('when deploying through CLI', () {
+          late Future cliCommandFuture;
+          setUp(() async {
+            cliCommandFuture = cli.run([
+              'deploy',
+              '--concurrency',
+              '1',
+              '--project-id',
+              '123',
+              '--project-dir',
+              testProjectDir,
+              '--api-url',
+              localServerAddress.toString(),
+              '--auth-dir',
+              testCacheFolderPath,
+            ]);
+          });
 
-          await expectLater(
-            storage.objects.get(bucketName, '$projectId/$projectUuid.zip'),
-            completion(
-              isNotNull,
-            ),
-          );
+          test('then exit exception is thrown.', () async {
+            await expectLater(
+              cliCommandFuture,
+              throwsA(isA<ExitException>()),
+            );
+          });
+
+          test('then non-resolving symlinks message is logged.', () async {
+            await cliCommandFuture.catchError((final _) {});
+            expect(logger.errorCalls, isNotEmpty);
+            expect(
+              logger.errorCalls.first.message,
+              startsWith(
+                  'Serverpod Cloud does not support non-resolving symlinks:'),
+            );
+          });
+        });
+      });
+
+      group('and upload description response but with invalid url', () {
+        late Uri localServerAddress;
+        late HttpServer server;
+        const projectId = 'my-project-id';
+        const projectUuid = '586a138e-66f3-4dcb-b2e6-bb2d38ab4a4a';
+        const bucketName = 'bucket';
+
+        /// This url is missing the `bucketName` subdomain.
+        const uploadDescription =
+            '"{\\"url\\":\\"http://localhost:8000/$projectId%2F$projectUuid.zip?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=test-service-bucket%40hosting-example-414217.iam.gserviceaccount.com%2F20240909%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20240909T094501Z&X-Goog-Expires=600&X-Goog-SignedHeaders=accept%3Bcontent-type%3Bhost%3Bx-goog-meta-tenant-project-id&x-goog-signature=2a3432d7e650cd7f32e4b6ddb01051390ae40084fb45f7af25cfaa891f33425d7bf64939b78b9e339b28bcf5238dfb58c67fd8e1eb8957c2df22b1b91d1f01a3ecd1ad4217a570a7e7a80e2999164ca7d920058bfdf52851341fe3c85340da14917026c8efae8f733d5d6548a149ae0558f88307bfcf23f97c2a141317d2be5cf4035488bd7b01137333250be11a174e73096674d8eaffcc7c7d2849044a3eb7669c35f7e421f99ab9557610478c96b68b29962fa1ea002cf76a09a0f302c66157844bd1a2b4b8a36378fd18f8a8dab750d955ff1866c9b20105c56b1f3ebf88c4dcf75043518c74d3d25c54673557b397ba1e31336766004c06ddf7bbbe1940\\",\\"type\\":\\"binary\\",\\"httpMethod\\":\\"PUT\\",\\"headers\\":{\\"content-type\\":\\"application/octet-stream\\",\\"accept\\":\\"*/*\\",\\"x-goog-meta-tenant-project-id\\":\\"$projectId\\",\\"x-goog-meta-upload-id\\":\\"upload-$projectUuid\\",\\"host\\":\\"$bucketName.localhost:8000\\"}}"';
+
+        setUp(() async {
+          DirectoryFactory.serverpodServerDir().construct(testProjectDir);
+
+          final serverBuilder = HttpServerBuilder();
+          serverBuilder.withOnRequest((final request) async {
+            final response = request.response;
+            response.statusCode = 200;
+            response.write(uploadDescription);
+            await response.close();
+          });
+
+          final (startedServer, serverAddress) = await serverBuilder.build();
+          localServerAddress = serverAddress;
+          server = startedServer;
+        });
+
+        tearDown(() {
+          server.close(force: true);
+        });
+
+        group('when deploying through CLI', () {
+          late Future cliCommandFuture;
+          setUp(() async {
+            cliCommandFuture = cli.run([
+              'deploy',
+              '--concurrency',
+              '1',
+              '--project-id',
+              projectId,
+              '--api-url',
+              localServerAddress.toString(),
+              '--auth-dir',
+              testCacheFolderPath,
+              '--project-dir',
+              testProjectDir,
+            ]);
+          });
+
+          test('then exit exception is thrown.', () async {
+            await expectLater(
+              cliCommandFuture,
+              throwsA(isA<ExitException>()),
+            );
+          });
+
+          test('then failed to upload project error message is logged.',
+              () async {
+            await cliCommandFuture.catchError((final _) {});
+            expect(logger.errorCalls, isNotEmpty);
+            expect(
+              logger.errorCalls.first.message,
+              startsWith('Failed to upload project:'),
+            );
+          });
+        });
+      });
+
+      group('and valid upload description response', () {
+        late Uri localServerAddress;
+        late HttpServer server;
+        const projectId = 'my-project-id';
+        const projectUuid = '586a138e-66f3-4dcb-b2e6-bb2d38ab4a4a';
+        const bucketName = 'bucket';
+
+        const uploadDescription = '"{'
+            '\\"url\\": \\"http://$bucketName.localhost:8000/$projectId%2F$projectUuid.zip?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=test-service-bucket%40hosting-example-414217.iam.gserviceaccount.com%2F20240909%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20240909T094501Z&X-Goog-Expires=600&X-Goog-SignedHeaders=accept%3Bcontent-type%3Bhost%3Bx-goog-meta-tenant-project-id&x-goog-signature=2a3432d7e650cd7f32e4b6ddb01051390ae40084fb45f7af25cfaa891f33425d7bf64939b78b9e339b28bcf5238dfb58c67fd8e1eb8957c2df22b1b91d1f01a3ecd1ad4217a570a7e7a80e2999164ca7d920058bfdf52851341fe3c85340da14917026c8efae8f733d5d6548a149ae0558f88307bfcf23f97c2a141317d2be5cf4035488bd7b01137333250be11a174e73096674d8eaffcc7c7d2849044a3eb7669c35f7e421f99ab9557610478c96b68b29962fa1ea002cf76a09a0f302c66157844bd1a2b4b8a36378fd18f8a8dab750d955ff1866c9b20105c56b1f3ebf88c4dcf75043518c74d3d25c54673557b397ba1e31336766004c06ddf7bbbe1940\\",'
+            '\\"type\\": \\"binary\\",'
+            '\\"httpMethod\\": \\"PUT\\",'
+            '\\"headers\\": {'
+            '\\"content-type\\": \\"application/octet-stream\\",'
+            '\\"accept\\": \\"*/*\\",'
+            '\\"x-goog-meta-tenant-project-id\\": \\"$projectId\\",'
+            '\\"x-goog-meta-upload-id\\": \\"upload-$projectUuid\\",'
+            '\\"host\\": \\"$bucketName.localhost:8000\\"'
+            '}'
+            '}"';
+
+        setUp(() async {
+          DirectoryFactory.serverpodServerDir().construct(testProjectDir);
+
+          final serverBuilder = HttpServerBuilder();
+          serverBuilder.withOnRequest((final request) async {
+            final response = request.response;
+            response.statusCode = 200;
+            response.write(uploadDescription);
+            await response.close();
+          });
+
+          final (startedServer, serverAddress) = await serverBuilder.build();
+          localServerAddress = serverAddress;
+          server = startedServer;
+        });
+
+        tearDown(() {
+          server.close(force: true);
+        });
+
+        group('when deploying through CLI', () {
+          late Future cliCommandFuture;
+          setUp(() async {
+            cliCommandFuture = cli.run([
+              'deploy',
+              '--concurrency',
+              '1',
+              '--project-id',
+              projectId,
+              '--api-url',
+              localServerAddress.toString(),
+              '--auth-dir',
+              testCacheFolderPath,
+              '--project-dir',
+              testProjectDir,
+            ]);
+          });
+
+          test(
+              'then command executes successfully and logs Project uploaded successfully message.',
+              () async {
+            await expectLater(cliCommandFuture, completes);
+
+            expect(logger.successCalls, isNotEmpty);
+            expect(
+                logger.successCalls.last,
+                equalsSuccessCall(
+                  message: 'Project uploaded successfully!',
+                  trailingRocket: true,
+                ));
+          });
+
+          test('then zipped project is accessible in bucket.', () async {
+            await cliCommandFuture;
+            final client = Client();
+            final storage = StorageApi(
+              client,
+              rootUrl: 'http://localhost:8000/',
+            );
+
+            await expectLater(
+              storage.objects.get(bucketName, '$projectId/$projectUuid.zip'),
+              completion(
+                isNotNull,
+              ),
+            );
+          });
         });
       });
     });

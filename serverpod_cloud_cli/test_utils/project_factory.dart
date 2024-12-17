@@ -45,6 +45,19 @@ class DirectoryFactory {
 
     return directory;
   }
+
+  factory DirectoryFactory.serverpodServerDir() {
+    return DirectoryFactory(withFiles: [
+      FileFactory(
+        withName: 'pubspec.yaml',
+        withContents: '''
+name: my_project_server
+dependencies:
+  serverpod: 2.0.0
+''',
+      ),
+    ]);
+  }
 }
 
 /// A class for constructing files.

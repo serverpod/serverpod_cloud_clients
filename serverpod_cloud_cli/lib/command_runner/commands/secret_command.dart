@@ -78,7 +78,7 @@ class CloudCreateSecretCommand
       throw ExitException();
     });
 
-    logger.info('Successfully created secret.');
+    logger.success('Successfully created secret.');
   }
 }
 
@@ -179,6 +179,6 @@ class CloudDeleteSecretCommand
       throw ExitException();
     });
 
-    logger.info('Successfully deleted secret: $name.');
+    logger.success('Successfully deleted secret: $name.');
   }
 }

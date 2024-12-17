@@ -115,7 +115,7 @@ class CloudEnvCreateCommand extends CloudCliCommand<CreateEnvCommandConfig> {
       throw ExitException();
     });
 
-    logger.info('Successfully created environment variable.');
+    logger.success('Successfully created environment variable.');
   }
 }
 
@@ -154,7 +154,7 @@ class CloudEnvUpdateCommand extends CloudCliCommand<UpdateEnvCommandConfig> {
       throw ExitException();
     });
 
-    logger.info('Successfully updated environment variable: $variableName.');
+    logger.success('Successfully updated environment variable: $variableName.');
   }
 }
 
@@ -190,7 +190,7 @@ class CloudEnvDeleteCommand extends CloudCliCommand<DeleteEnvCommandConfig> {
       throw ExitException();
     });
 
-    logger.info('Successfully deleted environment variable: $variableName.');
+    logger.success('Successfully deleted environment variable: $variableName.');
   }
 }
 

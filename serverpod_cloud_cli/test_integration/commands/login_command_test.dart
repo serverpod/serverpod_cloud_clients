@@ -5,21 +5,20 @@ import 'package:cli_tools/cli_tools.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
-import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:test/test.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../test_utils/test_logger.dart';
+import '../../test_utils/command_logger_matchers.dart';
+import '../../test_utils/test_command_logger.dart';
 
 void main() {
-  final logger = TestLogger();
-  final commandLogger = CommandLogger(logger);
+  final logger = TestCommandLogger();
   final version = Version.parse('0.0.1');
   final cli = CloudCliCommandRunner.create(
-    logger: commandLogger,
+    logger: logger,
     version: version,
   );
 
@@ -56,10 +55,13 @@ void main() {
         () async {
       await cli.run(['login', '--auth-dir', testCacheFolderPath]);
 
-      expect(logger.messages, isNotEmpty);
+      expect(logger.infoCalls, isNotEmpty);
       expect(
-        logger.messages.first,
-        'Detected an existing login session for Serverpod cloud. Logout first to log in again.',
+        logger.infoCalls.first,
+        equalsInfoCall(
+          message: 'Detected an existing login session for Serverpod cloud. '
+              'Log out first to log in again.',
+        ),
       );
     });
   });
@@ -71,7 +73,7 @@ void main() {
       tokenSent = Completer();
       final loggerFuture = logger.waitForLog();
       unawaited(loggerFuture.then((final _) async {
-        final loggedMessage = logger.messages.first;
+        final loggedMessage = logger.infoCalls.first.message;
         final splitMessage = loggedMessage.split('callback=');
         assert(
             splitMessage.length == 2, 'Expected callback URL in log message.');
@@ -109,7 +111,7 @@ void main() {
         await cliOnDone;
         final storedCloudData =
             await ResourceManager.tryFetchServerpodCloudData(
-          logger: commandLogger,
+          logger: logger,
           localStoragePath: testCacheFolderPath,
         );
         expect(storedCloudData?.token, testToken);
@@ -143,7 +145,7 @@ void main() {
         await cliOnDone;
         final storedCloudData =
             await ResourceManager.tryFetchServerpodCloudData(
-          logger: commandLogger,
+          logger: logger,
           localStoragePath: testCacheFolderPath,
         );
         expect(storedCloudData, isNull);
@@ -157,7 +159,7 @@ void main() {
       tokenSent = Completer();
       final loggerFuture = logger.waitForLog();
       unawaited(loggerFuture.then((final _) async {
-        final loggedMessage = logger.messages.first;
+        final loggedMessage = logger.infoCalls.first.message;
         final splitMessage = loggedMessage.split('callback=');
         assert(
             splitMessage.length == 2, 'Expected callback URL in log message.');
@@ -194,7 +196,7 @@ void main() {
         await cliOnDone.catchError((final _) {});
         final storedCloudData =
             await ResourceManager.tryFetchServerpodCloudData(
-          logger: commandLogger,
+          logger: logger,
           localStoragePath: testCacheFolderPath,
         );
         expect(storedCloudData, isNull);

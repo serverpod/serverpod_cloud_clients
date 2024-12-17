@@ -7,6 +7,7 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_han
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
+import 'package:serverpod_cloud_cli/util/serverpod_server_folder_detection.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
 
 enum DeployCommandOption implements OptionDefinition {
@@ -64,6 +65,16 @@ class CloudDeployCommand extends CloudCliCommand<DeployCommandOption> {
       throw ExitException();
     }
 
+    if (!isServerpodServerDirectory(projectDirectory.path)) {
+      logger.error(
+        'The provided project directory (either through the '
+        '--project-dir flag or the current directory) '
+        'is not a Serverpod server directory.',
+        hint: "Provide the project's server directory and try again.",
+      );
+      throw ExitException();
+    }
+
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
     late final String uploadDescription;
@@ -92,7 +103,10 @@ class CloudDeployCommand extends CloudCliCommand<DeployCommandOption> {
           break;
         case EmptyProjectException():
           logger.error(
-            'No files to upload. Make sure you are selecting the correct project directory and check that `.gitignore` and `.scloudignore` does not filter out all project files.',
+            'No files to upload.',
+            hint:
+                'Ensure that the correct project directory is selected (either through the --project-dir flag or the current directory) and check '
+                'that `.gitignore` and `.scloudignore` does not filter out all project files.',
           );
           break;
         case DirectorySymLinkException():
@@ -107,7 +121,8 @@ class CloudDeployCommand extends CloudCliCommand<DeployCommandOption> {
           break;
         case NullZipException():
           logger.error(
-              'Unknown error occurred while zipping project, please try again.');
+            'Unknown error occurred while zipping project, please try again.',
+          );
           break;
       }
       throw ExitException();
@@ -124,7 +139,9 @@ class CloudDeployCommand extends CloudCliCommand<DeployCommandOption> {
         }
         return ret;
       } catch (e) {
-        logger.error('Failed to upload project, please try again. $e');
+        logger.error(
+          'Failed to upload project: $e',
+        );
         return false;
       }
     });
@@ -133,6 +150,9 @@ class CloudDeployCommand extends CloudCliCommand<DeployCommandOption> {
       throw ExitException();
     }
 
-    logger.info('Project uploaded successfully! 🚀');
+    logger.success(
+      'Project uploaded successfully!',
+      trailingRocket: true,
+    );
   }
 }

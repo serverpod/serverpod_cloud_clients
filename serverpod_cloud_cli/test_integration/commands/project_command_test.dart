@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
-import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
@@ -12,15 +11,15 @@ import 'package:serverpod_ground_control_client/serverpod_ground_control_client.
 import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
 
+import '../../test_utils/command_logger_matchers.dart';
 import '../../test_utils/http_server_builder.dart';
-import '../../test_utils/test_logger.dart';
+import '../../test_utils/test_command_logger.dart';
 
 void main() {
-  final logger = TestLogger();
-  final commandLogger = CommandLogger(logger);
+  final logger = TestCommandLogger();
   final version = Version.parse('0.0.1');
   final cli = CloudCliCommandRunner.create(
-    logger: commandLogger,
+    logger: logger,
     version: version,
   );
 
@@ -106,10 +105,12 @@ void main() {
       test('then logs success message', () async {
         await commandResult;
 
-        expect(logger.messages, isNotEmpty);
+        expect(logger.successCalls, isNotEmpty);
         expect(
-          logger.messages.first,
-          "Successfully created new project '$projectId'.",
+          logger.successCalls.first,
+          equalsSuccessCall(
+            message: "Successfully created new project '$projectId'.",
+          ),
         );
       });
 
@@ -160,10 +161,12 @@ void main() {
       test('then logs success message', () async {
         await commandResult;
 
-        expect(logger.messages, isNotEmpty);
+        expect(logger.successCalls, isNotEmpty);
         expect(
-          logger.messages.first,
-          "Successfully created new project '$projectId'.",
+          logger.successCalls.first,
+          equalsSuccessCall(
+            message: "Successfully created new project '$projectId'.",
+          ),
         );
       });
 
@@ -208,10 +211,12 @@ void main() {
       test('then logs success message', () async {
         await commandResult;
 
-        expect(logger.messages, isNotEmpty);
+        expect(logger.successCalls, isNotEmpty);
         expect(
-          logger.messages.first,
-          "Successfully created new project '$projectId'.",
+          logger.successCalls.first,
+          equalsSuccessCall(
+            message: "Successfully created new project '$projectId'.",
+          ),
         );
       });
 
@@ -244,10 +249,12 @@ void main() {
       test('then logs success message', () async {
         await commandResult;
 
-        expect(logger.messages, isNotEmpty);
+        expect(logger.successCalls, isNotEmpty);
         expect(
-          logger.messages.first,
-          "Successfully created new project '$projectId'.",
+          logger.successCalls.first,
+          equalsSuccessCall(
+            message: "Successfully created new project '$projectId'.",
+          ),
         );
       });
 
@@ -263,12 +270,17 @@ void main() {
           'command in the project server folder', () async {
         await commandResult;
 
+        expect(logger.terminalCommandCalls, isNotEmpty);
         expect(
-          logger.messages.last,
-          'Since the current directory is not a Serverpod server directory '
-          'an scloud.yaml configuration file has not been created. \n'
-          'Use the scloud link command to create it in the server '
-          'directory of this project.',
+          logger.terminalCommandCalls.last,
+          equalsTerminalCommandCall(
+            message:
+                'Since the current directory is not a Serverpod server directory '
+                'an scloud.yaml configuration file has not been created. '
+                'Use the link command to create it in the server directory of this project:',
+            newParagraph: true,
+            command: 'scloud link $projectId',
+          ),
         );
       });
     });

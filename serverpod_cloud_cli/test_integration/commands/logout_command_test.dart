@@ -4,22 +4,21 @@ import 'dart:io';
 import 'package:cli_tools/cli_tools.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
-import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:test/test.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../test_utils/command_logger_matchers.dart';
 import '../../test_utils/http_server_builder.dart';
-import '../../test_utils/test_logger.dart';
+import '../../test_utils/test_command_logger.dart';
 
 void main() {
-  final logger = TestLogger();
-  final commandLogger = CommandLogger(logger);
+  final logger = TestCommandLogger();
   final version = Version.parse('0.0.1');
   final cli = CloudCliCommandRunner.create(
-    logger: commandLogger,
+    logger: logger,
     version: version,
   );
 
@@ -82,7 +81,7 @@ void main() {
 
         final cloudData = await ResourceManager.tryFetchServerpodCloudData(
           localStoragePath: testCacheFolderPath,
-          logger: commandLogger,
+          logger: logger,
         );
 
         expect(cloudData, isNull);
@@ -97,10 +96,12 @@ void main() {
       test('then a "logged out" message is logged', () async {
         await runLogoutCommand;
 
-        expect(logger.messages, isNotEmpty);
+        expect(logger.successCalls, isNotEmpty);
         expect(
-          logger.messages.first,
-          'Successfully logged out from Serverpod cloud.',
+          logger.successCalls.first,
+          equalsSuccessCall(
+            message: 'Successfully logged out from Serverpod cloud.',
+          ),
         );
       });
     });
@@ -151,7 +152,7 @@ void main() {
 
         final cloudData = await ResourceManager.tryFetchServerpodCloudData(
           localStoragePath: testCacheFolderPath,
-          logger: commandLogger,
+          logger: logger,
         );
 
         expect(cloudData, isNull);
@@ -170,9 +171,9 @@ void main() {
       test('then a "request to sign out" error is logged.', () async {
         await runLogoutCommand.onError((final e, final s) {});
 
-        expect(logger.errors, isNotEmpty);
+        expect(logger.errorCalls, isNotEmpty);
         expect(
-          logger.errors.first,
+          logger.errorCalls.first.message,
           contains('Request to sign out from Serverpod Cloud failed:'),
         );
       });
@@ -190,10 +191,12 @@ void main() {
 
     await expectLater(runLogoutCommand, completes);
 
-    expect(logger.messages, isNotEmpty);
+    expect(logger.infoCalls, isNotEmpty);
     expect(
-      logger.messages.first,
-      'No stored Serverpod Cloud credentials found.',
+      logger.infoCalls.first,
+      equalsInfoCall(
+        message: 'No stored Serverpod Cloud credentials found.',
+      ),
     );
   });
 }

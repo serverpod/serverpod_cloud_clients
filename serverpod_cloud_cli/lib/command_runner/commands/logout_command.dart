@@ -48,7 +48,9 @@ class CloudLogoutCommand extends CloudCliCommand {
       );
     } catch (e) {
       logger.error(
-        'Failed to remove stored credentials. Please remove the these manually: $e',
+        'Failed to remove stored credentials: $e',
+        hint: 'Please remove these manually. '
+            'They should be located in $localStoragePath.',
       );
       exitException = ExitException();
     }
@@ -57,6 +59,6 @@ class CloudLogoutCommand extends CloudCliCommand {
       throw exitException;
     }
 
-    logger.info('Successfully logged out from Serverpod cloud.');
+    logger.success('Successfully logged out from Serverpod cloud.');
   }
 }

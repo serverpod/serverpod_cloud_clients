@@ -83,8 +83,8 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
     );
 
     if (storedCloudData != null) {
-      logger.info(
-          'Detected an existing login session for Serverpod cloud. Logout first to log in again.');
+      logger.info('Detected an existing login session for Serverpod cloud. '
+          'Log out first to log in again.');
       return;
     }
 
@@ -123,7 +123,11 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
 
     final token = await tokenFuture;
     if (token == null) {
-      logger.error('Failed to get authentication token.');
+      logger.error(
+        'Failed to get authentication token.',
+        hint: 'Please try to log in again.',
+      );
+
       throw ExitException();
     }
 
@@ -133,6 +137,7 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
         localStoragePath: localStoragePath,
       );
     }
-    logger.info('Successfully logged in to Serverpod cloud.');
+
+    logger.success('Successfully logged in to Serverpod cloud.');
   }
 }

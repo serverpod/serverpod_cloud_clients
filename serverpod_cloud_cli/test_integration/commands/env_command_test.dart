@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:cli_tools/cli_tools.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
-import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/env_command.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
@@ -13,15 +12,15 @@ import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
 import 'package:test/test.dart';
 
+import '../../test_utils/command_logger_matchers.dart';
 import '../../test_utils/http_server_builder.dart';
-import '../../test_utils/test_logger.dart';
+import '../../test_utils/test_command_logger.dart';
 
 void main() {
-  final logger = TestLogger();
-  final commandLogger = CommandLogger(logger);
+  final logger = TestCommandLogger();
   final version = Version.parse('0.0.1');
   final cli = CloudCliCommandRunner.create(
-    logger: commandLogger,
+    logger: logger,
     version: version,
   );
 
@@ -42,7 +41,7 @@ void main() {
   const projectId = 'projectId';
 
   test('Given env command when instantiated then requires login', () {
-    expect(CloudEnvCommand(logger: commandLogger).requireLogin, isTrue);
+    expect(CloudEnvCommand(logger: logger).requireLogin, isTrue);
   });
 
   group('Given unauthenticated', () {
@@ -100,11 +99,14 @@ void main() {
           await commandResult;
         } catch (_) {}
 
-        expect(logger.errors, isNotEmpty);
+        expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errors.first,
-            'The credentials for this session seem to no longer be valid.\n'
-            'Please run `scloud logout` followed by `scloud login` and try this command again.');
+            logger.errorCalls.first,
+            equalsErrorCall(
+              message:
+                  'The credentials for this session seem to no longer be valid.\n'
+                  'Please run `scloud logout` followed by `scloud login` and try this command again.',
+            ));
       });
     });
 
@@ -135,11 +137,14 @@ void main() {
           await commandResult;
         } catch (_) {}
 
-        expect(logger.errors, isNotEmpty);
+        expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errors.first,
-            'The credentials for this session seem to no longer be valid.\n'
-            'Please run `scloud logout` followed by `scloud login` and try this command again.');
+            logger.errorCalls.first,
+            equalsErrorCall(
+              message:
+                  'The credentials for this session seem to no longer be valid.\n'
+                  'Please run `scloud logout` followed by `scloud login` and try this command again.',
+            ));
       });
     });
 
@@ -169,11 +174,14 @@ void main() {
           await commandResult;
         } catch (_) {}
 
-        expect(logger.errors, isNotEmpty);
+        expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errors.first,
-            'The credentials for this session seem to no longer be valid.\n'
-            'Please run `scloud logout` followed by `scloud login` and try this command again.');
+            logger.errorCalls.first,
+            equalsErrorCall(
+              message:
+                  'The credentials for this session seem to no longer be valid.\n'
+                  'Please run `scloud logout` followed by `scloud login` and try this command again.',
+            ));
       });
     });
 
@@ -202,12 +210,14 @@ void main() {
           await commandResult;
         } catch (_) {}
 
-        expect(logger.errors, isNotEmpty);
+        expect(logger.errorCalls, isNotEmpty);
         expect(
-          logger.errors.first,
-          'The credentials for this session seem to no longer be valid.\n'
-          'Please run `scloud logout` followed by `scloud login` and try this command again.',
-        );
+            logger.errorCalls.first,
+            equalsErrorCall(
+              message:
+                  'The credentials for this session seem to no longer be valid.\n'
+                  'Please run `scloud logout` followed by `scloud login` and try this command again.',
+            ));
       });
     });
   });
@@ -263,10 +273,12 @@ void main() {
       test('then logs success message', () async {
         await commandResult;
 
-        expect(logger.messages, isNotEmpty);
+        expect(logger.successCalls, isNotEmpty);
         expect(
-          logger.messages.first,
-          'Successfully created environment variable.',
+          logger.successCalls.first,
+          equalsSuccessCall(
+            message: 'Successfully created environment variable.',
+          ),
         );
       });
     });
@@ -295,10 +307,12 @@ void main() {
       test('then logs success message', () async {
         await commandResult;
 
-        expect(logger.messages, isNotEmpty);
+        expect(logger.successCalls, isNotEmpty);
         expect(
-          logger.messages.first,
-          'Successfully updated environment variable: key.',
+          logger.successCalls.first,
+          equalsSuccessCall(
+            message: 'Successfully updated environment variable: key.',
+          ),
         );
       });
     });
@@ -326,10 +340,12 @@ void main() {
       test('then logs success message', () async {
         await commandResult;
 
-        expect(logger.messages, isNotEmpty);
+        expect(logger.successCalls, isNotEmpty);
         expect(
-          logger.messages.first,
-          'Successfully deleted environment variable: key.',
+          logger.successCalls.first,
+          equalsSuccessCall(
+            message: 'Successfully deleted environment variable: key.',
+          ),
         );
       });
     });
@@ -383,12 +399,14 @@ void main() {
     test('then logs success message', () async {
       await commandResult;
 
-      expect(logger.messages, isNotEmpty);
+      expect(logger.infoCalls, isNotEmpty);
       expect(
-        logger.messages.first,
-        'Name | Value\n'
-        '-----+------\n'
-        'name | value\n',
+        logger.infoCalls.first,
+        equalsInfoCall(
+          message: 'Name | Value\n'
+              '-----+------\n'
+              'name | value\n',
+        ),
       );
     });
   });

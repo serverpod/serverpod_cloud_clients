@@ -1,5 +1,10 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
+
+import 'mock_stdout.dart';
 
 class ErrorCall {
   final String message;
@@ -134,6 +139,8 @@ class TestCommandLogger extends CommandLogger {
   final List<TerminalCommandCall> terminalCommandCalls = [];
   final List<WarningCall> warningCalls = [];
 
+  Completer<void> _somethingLogged = Completer<void>();
+
   final Logger _logger;
 
   TestCommandLogger()
@@ -167,12 +174,21 @@ class TestCommandLogger extends CommandLogger {
     final bool newParagraph = false,
     final StackTrace? stackTrace,
   }) {
+    if (!_somethingLogged.isCompleted) {
+      _somethingLogged.complete();
+    }
+
     errorCalls.add(ErrorCall(
       message: message,
       hint: hint,
       newParagraph: newParagraph,
       stackTrace: stackTrace,
     ));
+  }
+
+  Future<void> waitForLog() async {
+    _somethingLogged = Completer<void>();
+    await _somethingLogged.future;
   }
 
   @override
@@ -185,6 +201,10 @@ class TestCommandLogger extends CommandLogger {
     final String message, {
     final bool newParagraph = false,
   }) {
+    if (!_somethingLogged.isCompleted) {
+      _somethingLogged.complete();
+    }
+
     infoCalls.add(InfoCall(message: message, newParagraph: newParagraph));
   }
 
@@ -194,6 +214,10 @@ class TestCommandLogger extends CommandLogger {
     final String? title,
     final bool newParagraph = false,
   }) {
+    if (!_somethingLogged.isCompleted) {
+      _somethingLogged.complete();
+    }
+
     listCalls
         .add(ListCall(items: items, title: title, newParagraph: newParagraph));
   }
@@ -204,6 +228,10 @@ class TestCommandLogger extends CommandLogger {
     final Future<bool> Function() runner, {
     final bool newParagraph = false,
   }) async {
+    if (!_somethingLogged.isCompleted) {
+      _somethingLogged.complete();
+    }
+
     progressCalls
         .add(ProgressCall(message: message, newParagraph: newParagraph));
     return _logger.progress(message, runner);
@@ -216,6 +244,10 @@ class TestCommandLogger extends CommandLogger {
     final bool newParagraph = false,
     final String? followUp,
   }) {
+    if (!_somethingLogged.isCompleted) {
+      _somethingLogged.complete();
+    }
+
     successCalls.add(SuccessCall(
       message: message,
       trailingRocket: trailingRocket,
@@ -230,6 +262,10 @@ class TestCommandLogger extends CommandLogger {
     final String? message,
     final bool newParagraph = false,
   }) {
+    if (!_somethingLogged.isCompleted) {
+      _somethingLogged.complete();
+    }
+
     terminalCommandCalls.add(TerminalCommandCall(
       command: command,
       message: message,
@@ -243,6 +279,10 @@ class TestCommandLogger extends CommandLogger {
     final bool newParagraph = false,
     final String? hint,
   }) {
+    if (!_somethingLogged.isCompleted) {
+      _somethingLogged.complete();
+    }
+
     warningCalls.add(WarningCall(
       message: message,
       newParagraph: newParagraph,
@@ -270,4 +310,21 @@ class WarningCall {
       'newParagraph': newParagraph,
     }.toString();
   }
+}
+
+Future<({MockStdout stdout, MockStdout stderr})> collectOutput<T>(
+  final FutureOr<T> Function() runner,
+) async {
+  final standardOut = MockStdout();
+  final standardError = MockStdout();
+  await IOOverrides.runZoned(
+    () async {
+      final result = await runner();
+      return result;
+    },
+    stdout: () => standardOut,
+    stderr: () => standardError,
+  );
+
+  return (stdout: standardOut, stderr: standardError);
 }

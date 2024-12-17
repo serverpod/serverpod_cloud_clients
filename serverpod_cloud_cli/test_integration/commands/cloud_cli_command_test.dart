@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:cli_tools/cli_tools.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
-import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
@@ -12,7 +11,8 @@ import 'package:serverpod_cloud_cli/util/configuration.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
 import 'package:test/test.dart';
 
-import '../../test_utils/test_logger.dart';
+import '../../test_utils/command_logger_matchers.dart';
+import '../../test_utils/test_command_logger.dart';
 
 class CommandThatRequiresLogin extends CloudCliCommand {
   @override
@@ -55,16 +55,14 @@ class CommandThatDoesNotRequiredLogin extends CloudCliCommand {
 }
 
 void main() {
-  final logger = TestLogger();
-  final commandLogger = CommandLogger(logger);
+  final logger = TestCommandLogger();
   final runner = CloudCliCommandRunner.create(
-    logger: commandLogger,
+    logger: logger,
     version: Version(0, 0, 0),
   );
-  final commandThatRequiresLogin =
-      CommandThatRequiresLogin(logger: commandLogger);
+  final commandThatRequiresLogin = CommandThatRequiresLogin(logger: logger);
   final commandThatDoesNotRequiredLogin =
-      CommandThatDoesNotRequiredLogin(logger: commandLogger);
+      CommandThatDoesNotRequiredLogin(logger: logger);
   runner.addCommand(commandThatRequiresLogin);
   runner.addCommand(commandThatDoesNotRequiredLogin);
 
@@ -106,9 +104,12 @@ void main() {
     );
 
     expect(
-        logger.errors,
+        logger.errorCalls,
         contains(
-          'This command requires you to be logged in. Please run `scloud login` to authenticate and try again.',
+          equalsErrorCall(
+            message: 'This command requires you to be logged in. '
+                'Please run `scloud login` to authenticate and try again.',
+          ),
         ));
   });
 
@@ -130,7 +131,7 @@ void main() {
       ),
       completes,
     );
-    expect(logger.errors, isEmpty);
+    expect(logger.errorCalls, isEmpty);
   });
 
   test(

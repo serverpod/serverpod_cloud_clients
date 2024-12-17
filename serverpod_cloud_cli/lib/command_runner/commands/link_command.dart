@@ -64,6 +64,6 @@ class CloudLinkCommand extends CloudCliCommand<LinkCommandOption> {
       throw ExitException();
     }
 
-    logger.info('Successfully linked project!');
+    logger.success('Successfully linked project!');
   }
 }

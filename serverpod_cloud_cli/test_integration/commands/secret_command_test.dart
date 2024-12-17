@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:cli_tools/cli_tools.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
-import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/secret_command.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
@@ -13,15 +12,15 @@ import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
 import 'package:test/test.dart';
 
+import '../../test_utils/command_logger_matchers.dart';
 import '../../test_utils/http_server_builder.dart';
-import '../../test_utils/test_logger.dart';
+import '../../test_utils/test_command_logger.dart';
 
 void main() {
-  final logger = TestLogger();
-  final commandLogger = CommandLogger(logger);
+  final logger = TestCommandLogger();
   final version = Version.parse('0.0.1');
   final cli = CloudCliCommandRunner.create(
-    logger: commandLogger,
+    logger: logger,
     version: version,
   );
 
@@ -42,7 +41,7 @@ void main() {
   const projectId = 'projectId';
 
   test('Given secrets command when instantiated then requires login', () {
-    expect(CloudSecretCommand(logger: commandLogger).requireLogin, isTrue);
+    expect(CloudSecretCommand(logger: logger).requireLogin, isTrue);
   });
 
   group('Given unauthenticated', () {
@@ -100,11 +99,14 @@ void main() {
           await commandResult;
         } catch (_) {}
 
-        expect(logger.errors, isNotEmpty);
+        expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errors.first,
-            'The credentials for this session seem to no longer be valid.\n'
-            'Please run `scloud logout` followed by `scloud login` and try this command again.');
+            logger.errorCalls.first,
+            equalsErrorCall(
+              message:
+                  'The credentials for this session seem to no longer be valid.\n'
+                  'Please run `scloud logout` followed by `scloud login` and try this command again.',
+            ));
       });
     });
 
@@ -134,11 +136,14 @@ void main() {
           await commandResult;
         } catch (_) {}
 
-        expect(logger.errors, isNotEmpty);
+        expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errors.first,
-            'The credentials for this session seem to no longer be valid.\n'
-            'Please run `scloud logout` followed by `scloud login` and try this command again.');
+            logger.errorCalls.first,
+            equalsErrorCall(
+              message:
+                  'The credentials for this session seem to no longer be valid.\n'
+                  'Please run `scloud logout` followed by `scloud login` and try this command again.',
+            ));
       });
     });
 
@@ -167,12 +172,14 @@ void main() {
           await commandResult;
         } catch (_) {}
 
-        expect(logger.errors, isNotEmpty);
+        expect(logger.errorCalls, isNotEmpty);
         expect(
-          logger.errors.first,
-          'The credentials for this session seem to no longer be valid.\n'
-          'Please run `scloud logout` followed by `scloud login` and try this command again.',
-        );
+            logger.errorCalls.first,
+            equalsErrorCall(
+              message:
+                  'The credentials for this session seem to no longer be valid.\n'
+                  'Please run `scloud logout` followed by `scloud login` and try this command again.',
+            ));
       });
     });
   });
@@ -224,10 +231,10 @@ void main() {
       test('then logs success message', () async {
         await commandResult;
 
-        expect(logger.messages, isNotEmpty);
+        expect(logger.successCalls, isNotEmpty);
         expect(
-          logger.messages.first,
-          'Successfully created secret.',
+          logger.successCalls.first,
+          equalsSuccessCall(message: 'Successfully created secret.'),
         );
       });
     });
@@ -255,10 +262,10 @@ void main() {
       test('then logs success message', () async {
         await commandResult;
 
-        expect(logger.messages, isNotEmpty);
+        expect(logger.successCalls, isNotEmpty);
         expect(
-          logger.messages.first,
-          'Successfully deleted secret: key.',
+          logger.successCalls.first,
+          equalsSuccessCall(message: 'Successfully deleted secret: key.'),
         );
       });
     });
@@ -312,15 +319,16 @@ void main() {
     test('then logs table', () async {
       await commandResult;
 
-      expect(logger.messages, isNotEmpty);
+      expect(logger.infoCalls, isNotEmpty);
       expect(
-        logger.messages.first,
-        'Secret name\n'
-        '-----------\n'
-        'SECRET_1   \n'
-        'SECRET_2   \n'
-        'SECRET_3   \n',
-      );
+          logger.infoCalls.first,
+          equalsInfoCall(
+            message: 'Secret name\n'
+                '-----------\n'
+                'SECRET_1   \n'
+                'SECRET_2   \n'
+                'SECRET_3   \n',
+          ));
     });
   });
 }

@@ -81,7 +81,7 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
       throw ExitException();
     });
 
-    logger.info("Successfully created new project '$projectId'.");
+    logger.success("Successfully created new project '$projectId'.");
 
     if (enableDb) {
       await handleCommonClientExceptions(logger, () async {
@@ -116,15 +116,18 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
         throw ExitException();
       });
 
-      logger.info(
+      logger.success(
         "Successfully created the ${ConfigFileConstants.fileName} configuration file for '$projectId'.",
       );
     } else {
-      logger.info(
-        'Since the current directory is not a Serverpod server directory '
-        'an scloud.yaml configuration file has not been created. \n'
-        'Use the scloud link command to create it in the server '
-        'directory of this project.',
+      logger.terminalCommand(
+        message:
+            'Since the current directory is not a Serverpod server directory '
+            'an scloud.yaml configuration file has not been created. '
+            'Use the link command to create it in the server '
+            'directory of this project:',
+        newParagraph: true,
+        'scloud link $projectId',
       );
     }
   }
@@ -154,7 +157,7 @@ class CloudProjectDeleteCommand extends CloudCliCommand {
       throw ExitException();
     });
 
-    logger.info("Successfully deleted the project '$projectId'.");
+    logger.success("Successfully deleted the project '$projectId'.");
   }
 }
 

@@ -4,7 +4,6 @@ import 'package:cli_tools/cli_tools.dart';
 import 'package:meta/meta.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:pub_semver/pub_semver.dart';
-import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/status_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
@@ -12,16 +11,16 @@ import 'package:serverpod_ground_control_client/serverpod_ground_control_client.
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client_mock.dart';
 import 'package:test/test.dart';
 
-import '../../test_utils/test_logger.dart';
+import '../../test_utils/command_logger_matchers.dart';
+import '../../test_utils/test_command_logger.dart';
 
 void main() {
-  final logger = TestLogger();
-  final commandLogger = CommandLogger(logger);
+  final logger = TestCommandLogger();
   final version = Version.parse('0.0.1');
   final keyManager = InMemoryKeyManager();
   final client = ClientMock(authenticationKeyManager: keyManager);
   final cli = CloudCliCommandRunner.create(
-    logger: commandLogger,
+    logger: logger,
     version: version,
     serviceProvider: CloudCliServiceProvider(
       apiClientFactory: (final globalCfg) => client,
@@ -36,7 +35,7 @@ void main() {
   const projectId = 'projectId';
 
   test('Given status command when instantiated then requires login', () {
-    expect(CloudStatusCommand(logger: commandLogger).requireLogin, isTrue);
+    expect(CloudStatusCommand(logger: logger).requireLogin, isTrue);
   });
 
   group('Given unauthenticated', () {
@@ -79,11 +78,14 @@ void main() {
           await commandResult;
         } catch (_) {}
 
-        expect(logger.errors, isNotEmpty);
+        expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errors.first,
-            'The credentials for this session seem to no longer be valid.\n'
-            'Please run `scloud logout` followed by `scloud login` and try this command again.');
+            logger.errorCalls.first,
+            equalsErrorCall(
+              message:
+                  'The credentials for this session seem to no longer be valid.\n'
+                  'Please run `scloud logout` followed by `scloud login` and try this command again.',
+            ));
       });
     });
 
@@ -107,11 +109,14 @@ void main() {
           await commandResult;
         } catch (_) {}
 
-        expect(logger.errors, isNotEmpty);
+        expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errors.first,
-            'The credentials for this session seem to no longer be valid.\n'
-            'Please run `scloud logout` followed by `scloud login` and try this command again.');
+            logger.errorCalls.first,
+            equalsErrorCall(
+              message:
+                  'The credentials for this session seem to no longer be valid.\n'
+                  'Please run `scloud logout` followed by `scloud login` and try this command again.',
+            ));
       });
     });
 
@@ -135,11 +140,14 @@ void main() {
           await commandResult;
         } catch (_) {}
 
-        expect(logger.errors, isNotEmpty);
+        expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errors.first,
-            'The credentials for this session seem to no longer be valid.\n'
-            'Please run `scloud logout` followed by `scloud login` and try this command again.');
+            logger.errorCalls.first,
+            equalsErrorCall(
+              message:
+                  'The credentials for this session seem to no longer be valid.\n'
+                  'Please run `scloud logout` followed by `scloud login` and try this command again.',
+            ));
       });
     });
   });
@@ -224,9 +232,9 @@ void main() {
             test('then outputs the status', () async {
               await commandResult;
 
-              expect(logger.messages, isNotEmpty);
+              expect(logger.infoCalls, isNotEmpty);
               expect(
-                logger.messages.first,
+                logger.infoCalls.first.message,
                 '''
 Status of projectId deploy abc, started at 2021-12-31 10:20:30:
 
@@ -286,18 +294,18 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
             test('then throws ExitException', () async {
               await expectLater(commandResult, throwsA(isA<ExitException>()));
 
-              expect(logger.errors, isNotEmpty);
+              expect(logger.errorCalls, isNotEmpty);
               expect(
-                logger.errors.first,
+                logger.errorCalls.first.message,
                 startsWith('Failed to get deployment status'),
               );
             });
             test('then outputs error message', () async {
               await commandResult.onError((final e, final s) {});
 
-              expect(logger.errors, isNotEmpty);
+              expect(logger.errorCalls, isNotEmpty);
               expect(
-                logger.errors.first,
+                logger.errorCalls.first.message,
                 startsWith('Failed to get deployment status'),
               );
             });
@@ -370,15 +378,17 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
             test('then outputs the status list', () async {
               await commandResult;
 
-              expect(logger.messages, isNotEmpty);
+              expect(logger.infoCalls, isNotEmpty);
               expect(
-                logger.messages.first,
-                '''
+                logger.infoCalls.first,
+                equalsInfoCall(
+                  message: '''
 # | Project   | Deploy Id | Status  | Started             | Finished            | Info      
 --+-----------+-----------+---------+---------------------+---------------------+-----------
 0 | projectId | foo       | SUCCESS | 2021-12-31 10:20:30 | 2021-12-31 10:20:40 |           
 1 | projectId | bar       | FAILURE | 2021-12-31 10:10:30 | 2021-12-31 10:10:40 | Some error
 ''',
+                ),
               );
             });
           });
@@ -412,10 +422,11 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
             test('then outputs error message', () async {
               await commandResult.onError((final e, final s) {});
 
-              expect(logger.errors, isNotEmpty);
+              expect(logger.errorCalls, isNotEmpty);
               expect(
-                logger.errors.first,
-                startsWith('Cannot specify deploy id with --list'),
+                logger.errorCalls.first,
+                equalsErrorCall(
+                    message: 'Cannot specify deploy id with --list.'),
               );
             });
           });
