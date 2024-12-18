@@ -38,9 +38,8 @@ abstract final class _ProjectOptions {
   static const enableDb = ConfigOption(
     argName: 'enable-db',
     isFlag: true,
-    negatable: true,
-    defaultsTo: 'false',
     helpText: 'Flag to enable the database for the project.',
+    mandatory: true,
   );
 }
 
