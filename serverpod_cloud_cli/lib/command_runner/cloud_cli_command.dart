@@ -48,8 +48,11 @@ abstract class CloudCliCommand<T extends OptionDefinition>
     if (requireLogin &&
         await apiCloudClient.authenticationKeyManager?.isAuthenticated !=
             true) {
-      logger.error('This command requires you to be logged in. '
-          'Please run `scloud login` to authenticate and try again.');
+      logger.error('This command requires you to be logged in.');
+      logger.terminalCommand(
+        message: 'Please run the login command to authenticate and try again:',
+        'scloud login',
+      );
       throw ExitException();
     }
 

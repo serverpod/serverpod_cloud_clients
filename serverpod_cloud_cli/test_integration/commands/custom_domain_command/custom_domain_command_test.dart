@@ -106,8 +106,7 @@ void main() {
             logger.errorCalls.first,
             equalsErrorCall(
               message:
-                  'The credentials for this session seem to no longer be valid.\n'
-                  'Please run `scloud logout` followed by `scloud login` and try this command again.',
+                  'The credentials for this session seem to no longer be valid.',
             ));
       });
     });
@@ -142,8 +141,7 @@ void main() {
             logger.errorCalls.first,
             equalsErrorCall(
               message:
-                  'The credentials for this session seem to no longer be valid.\n'
-                  'Please run `scloud logout` followed by `scloud login` and try this command again.',
+                  'The credentials for this session seem to no longer be valid.',
             ));
       });
     });
@@ -179,8 +177,7 @@ void main() {
             logger.errorCalls.first,
             equalsErrorCall(
               message:
-                  'The credentials for this session seem to no longer be valid.\n'
-                  'Please run `scloud logout` followed by `scloud login` and try this command again.',
+                  'The credentials for this session seem to no longer be valid.',
             ));
       });
     });
@@ -216,8 +213,7 @@ void main() {
             logger.errorCalls.first,
             equalsErrorCall(
               message:
-                  'The credentials for this session seem to no longer be valid.\n'
-                  'Please run `scloud logout` followed by `scloud login` and try this command again.',
+                  'The credentials for this session seem to no longer be valid.',
             ));
       });
     });

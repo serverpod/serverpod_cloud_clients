@@ -13,8 +13,14 @@ FutureOr<T> handleCommonClientExceptions<T>(
     return await callback();
   } on ServerpodClientUnauthorized {
     logger.error(
-      'The credentials for this session seem to no longer be valid.\n'
-      'Please run `scloud logout` followed by `scloud login` and try this command again.',
+      'The credentials for this session seem to no longer be valid.',
+    );
+    logger.terminalCommand(
+      message: 'Run the following commands to re-authenticate:',
+      'scloud logout',
+    );
+    logger.terminalCommand(
+      'scloud login',
     );
 
     throw ExitException();

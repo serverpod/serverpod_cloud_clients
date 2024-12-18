@@ -33,10 +33,20 @@ void main() {
     expect(
       logger.errorCalls.last,
       equalsErrorCall(
-        message:
-            'The credentials for this session seem to no longer be valid.\n'
-            'Please run `scloud logout` followed by `scloud login` and try this command again.',
+        message: 'The credentials for this session seem to no longer be valid.',
       ),
+    );
+    expect(
+      logger.terminalCommandCalls,
+      containsAllInOrder([
+        equalsTerminalCommandCall(
+          message: 'Run the following commands to re-authenticate:',
+          command: 'scloud logout',
+        ),
+        equalsTerminalCommandCall(
+          command: 'scloud login',
+        ),
+      ]),
     );
   });
 

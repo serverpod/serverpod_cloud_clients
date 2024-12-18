@@ -89,8 +89,7 @@ class CloudAddCustomDomainCommand
       },
       (final e) {
         logger.error(
-          'Could not add the custom domain.',
-          hint: e,
+          'Could not add the custom domain: $e',
         );
 
         throw ExitException();
@@ -173,8 +172,7 @@ class CloudListCustomDomainCommand
       );
     }, (final e) {
       logger.error(
-        'Failed to list custom domains.',
-        hint: e,
+        'Failed to list custom domains: $e',
       );
 
       throw ExitException();
@@ -255,8 +253,7 @@ class CloudRemoveCustomDomainCommand
       );
     }, (final e) {
       logger.error(
-        'Failed to remove custom domain.',
-        hint: e,
+        'Failed to remove custom domain: $e',
       );
 
       throw ExitException();
@@ -321,8 +318,7 @@ class CloudRefreshCustomDomainRecordCommand
       return;
     }, (final e) {
       logger.error(
-        'Failed to refresh custom domain record',
-        hint: e,
+        'Failed to refresh custom domain recor: $e',
       );
 
       throw ExitException();

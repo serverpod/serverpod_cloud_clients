@@ -104,13 +104,18 @@ void main() {
     );
 
     expect(
-        logger.errorCalls,
-        contains(
-          equalsErrorCall(
-            message: 'This command requires you to be logged in. '
-                'Please run `scloud login` to authenticate and try again.',
-          ),
-        ));
+      logger.errorCalls.first,
+      equalsErrorCall(
+        message: 'This command requires you to be logged in.',
+      ),
+    );
+    expect(
+      logger.terminalCommandCalls.first,
+      equalsTerminalCommandCall(
+        message: 'Please run the login command to authenticate and try again:',
+        command: 'scloud login',
+      ),
+    );
   });
 
   test(
