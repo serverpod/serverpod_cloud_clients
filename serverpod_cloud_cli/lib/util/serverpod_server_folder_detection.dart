@@ -23,10 +23,5 @@ bool isServerpodServerDirectory(final String path) {
     return false;
   }
 
-  final name = pubspec['name'];
-  if (name is String && name.endsWith('server')) {
-    return true;
-  }
-
-  return false;
+  return true;
 }

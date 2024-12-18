@@ -6,6 +6,7 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart'
 import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dart';
+import 'package:serverpod_cloud_cli/util/common.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 import 'package:serverpod_cloud_cli/util/serverpod_server_folder_detection.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
@@ -66,12 +67,7 @@ class CloudDeployCommand extends CloudCliCommand<DeployCommandOption> {
     }
 
     if (!isServerpodServerDirectory(projectDirectory.path)) {
-      logger.error(
-        'The provided project directory (either through the '
-        '--project-dir flag or the current directory) '
-        'is not a Serverpod server directory.',
-        hint: "Provide the project's server directory and try again.",
-      );
+      logProjectDirIsNotAServerpodServerDirectory(logger);
       throw ExitException();
     }
 
