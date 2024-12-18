@@ -132,7 +132,7 @@ class CloudListSecretsCommand
       ]);
     }
 
-    logger.info(secretsPrinter.toString());
+    secretsPrinter.writeLines(logger.line);
   }
 }
 

@@ -375,17 +375,27 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
             test('then outputs the status list', () async {
               await commandResult;
 
-              expect(logger.infoCalls, isNotEmpty);
+              expect(logger.lineCalls, isNotEmpty);
               expect(
-                logger.infoCalls.first,
-                equalsInfoCall(
-                  message: '''
-# | Project   | Deploy Id | Status  | Started             | Finished            | Info      
---+-----------+-----------+---------+---------------------+---------------------+-----------
-0 | projectId | foo       | SUCCESS | 2021-12-31 10:20:30 | 2021-12-31 10:20:40 |           
-1 | projectId | bar       | FAILURE | 2021-12-31 10:10:30 | 2021-12-31 10:10:40 | Some error
-''',
-                ),
+                logger.lineCalls,
+                containsAllInOrder([
+                  equalsLineCall(
+                    line:
+                        '# | Project   | Deploy Id | Status  | Started             | Finished            | Info      ',
+                  ),
+                  equalsLineCall(
+                    line:
+                        '--+-----------+-----------+---------+---------------------+---------------------+-----------',
+                  ),
+                  equalsLineCall(
+                    line:
+                        '0 | projectId | foo       | SUCCESS | 2021-12-31 10:20:30 | 2021-12-31 10:20:40 |           ',
+                  ),
+                  equalsLineCall(
+                    line:
+                        '1 | projectId | bar       | FAILURE | 2021-12-31 10:10:30 | 2021-12-31 10:10:40 | Some error',
+                  ),
+                ]),
               );
             });
           });

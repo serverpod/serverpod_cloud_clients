@@ -577,26 +577,46 @@ void main() {
       test('then logs success message', () async {
         await commandResult;
 
-        expect(logger.infoCalls, isNotEmpty);
+        expect(logger.lineCalls, isNotEmpty);
         expect(
-            logger.infoCalls.take(2),
-            containsAll([
-              equalsInfoCall(
-                  message:
-                      'Default domain name                         | Target  \n'
-                      '--------------------------------------------+---------\n'
-                      'my-magical-project.api.serverpod.space      | api     \n'
-                      'my-magical-project.insights.serverpod.space | insights\n'
-                      'my-magical-project.web.serverpod.space      | web     \n'),
-              equalsInfoCall(
-                message:
-                    'Custom domain name  | Target                                      | Status                      \n'
-                    '--------------------+---------------------------------------------+-----------------------------\n'
-                    'api.domain.com      | my-magical-project.api.serverpod.space      | Configured                  \n'
-                    'web.domain.com      | my-magical-project.web.serverpod.space      | Certificate creation pending\n'
-                    'insights.domain.com | my-magical-project.insights.serverpod.space | Needs setup                 \n',
-              ),
-            ]));
+          logger.lineCalls,
+          containsAllInOrder([
+            equalsLineCall(
+                line: 'Default domain name                         | Target  '),
+            equalsLineCall(
+              line: '--------------------------------------------+---------',
+            ),
+            equalsLineCall(
+              line: 'my-magical-project.api.serverpod.space      | api     ',
+            ),
+            equalsLineCall(
+              line: 'my-magical-project.insights.serverpod.space | insights',
+            ),
+            equalsLineCall(
+              line: 'my-magical-project.web.serverpod.space      | web     ',
+            ),
+            equalsLineCall(
+              line:
+                  'Custom domain name  | Target                                      | Status                      ',
+            ),
+            equalsLineCall(
+              line:
+                  '--------------------+---------------------------------------------+-----------------------------',
+            ),
+            equalsLineCall(
+              line:
+                  'api.domain.com      | my-magical-project.api.serverpod.space      | Configured                  ',
+            ),
+            equalsLineCall(
+              line:
+                  'web.domain.com      | my-magical-project.web.serverpod.space      | Certificate creation pending',
+            ),
+            equalsLineCall(
+              line:
+                  'insights.domain.com | my-magical-project.insights.serverpod.space | Needs setup                 ',
+            ),
+          ]),
+        );
       });
     });
 
@@ -640,24 +660,36 @@ void main() {
       test('then logs success message', () async {
         await commandResult;
 
-        expect(logger.infoCalls, isNotEmpty);
+        expect(logger.lineCalls, isNotEmpty);
         expect(
-            logger.infoCalls.take(2),
-            equals([
-              equalsInfoCall(
-                message:
-                    'Default domain name                         | Target  \n'
-                    '--------------------------------------------+---------\n'
-                    'my-magical-project.api.serverpod.space      | api     \n'
-                    'my-magical-project.insights.serverpod.space | insights\n'
-                    'my-magical-project.web.serverpod.space      | web     \n',
-              ),
-              equalsInfoCall(
-                message: 'Custom domain name | Target | Status\n'
-                    '-------------------+--------+-------\n'
-                    '<no rows data>\n',
-              ),
-            ]));
+          logger.lineCalls,
+          containsAllInOrder([
+            equalsLineCall(
+              line: 'Default domain name                         | Target  ',
+            ),
+            equalsLineCall(
+              line: '--------------------------------------------+---------',
+            ),
+            equalsLineCall(
+              line: 'my-magical-project.api.serverpod.space      | api     ',
+            ),
+            equalsLineCall(
+              line: 'my-magical-project.insights.serverpod.space | insights',
+            ),
+            equalsLineCall(
+              line: 'my-magical-project.web.serverpod.space      | web     ',
+            ),
+            equalsLineCall(
+              line: 'Custom domain name | Target | Status',
+            ),
+            equalsLineCall(
+              line: '-------------------+--------+-------',
+            ),
+            equalsLineCall(
+              line: '<no rows data>',
+            ),
+          ]),
+        );
       });
     });
   });

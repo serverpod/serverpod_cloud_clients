@@ -230,6 +230,6 @@ class CloudEnvListCommand extends CloudCliCommand<ListEnvCommandConfig> {
       tablePrinter.addRow([variable.name, variable.value]);
     }
 
-    logger.info(tablePrinter.toString());
+    tablePrinter.writeLines(logger.line);
   }
 }

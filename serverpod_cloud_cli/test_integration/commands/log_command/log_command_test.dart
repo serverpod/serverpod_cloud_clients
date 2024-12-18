@@ -73,10 +73,12 @@ void main() {
       test('then logs output stream', () async {
         expect(
           logger.lineCalls,
-          containsAll([
+          containsAllInOrder([
             equalsLineCall(
-              line: 'Timestamp                   | Level   | Content'
-                  '\n----------------------------+---------+--------',
+              line: 'Timestamp                   | Level   | Content',
+            ),
+            equalsLineCall(
+              line: '----------------------------+---------+--------',
             ),
             equalsLineCall(
               line: '2024-01-01 00:00:00.000Z    |         | Log message 1',
@@ -114,14 +116,16 @@ void main() {
       test('then logs output stream', () async {
         expect(
           logger.lineCalls,
-          containsAll([
+          containsAllInOrder([
             equalsLineCall(
               line:
                   'Fetching logs from oldest to 2030-12-01 00:00:00.000Z. Display time zone: UTC.',
             ),
             equalsLineCall(
-              line: 'Timestamp                   | Level   | Content'
-                  '\n----------------------------+---------+--------',
+              line: 'Timestamp                   | Level   | Content',
+            ),
+            equalsLineCall(
+              line: '----------------------------+---------+--------',
             ),
             equalsLineCall(
               line: '2024-01-01 00:00:00.000Z    |         | Log message 1',
@@ -159,14 +163,16 @@ void main() {
       test('then logs output stream', () async {
         expect(
           logger.lineCalls,
-          containsAll([
+          containsAllInOrder([
             equalsLineCall(
               line:
                   'Fetching logs from 2020-12-01 00:00:00.000Z to newest. Display time zone: UTC.',
             ),
             equalsLineCall(
-              line: 'Timestamp                   | Level   | Content'
-                  '\n----------------------------+---------+--------',
+              line: 'Timestamp                   | Level   | Content',
+            ),
+            equalsLineCall(
+              line: '----------------------------+---------+--------',
             ),
             equalsLineCall(
               line: '2024-01-01 00:00:00.000Z    |         | Log message 1',
@@ -207,14 +213,16 @@ void main() {
       test('then logs output stream', () async {
         expect(
           logger.lineCalls,
-          containsAll([
+          containsAllInOrder([
             equalsLineCall(
               line:
                   'Fetching logs from 2020-12-01 00:00:00.000Z to 2030-01-01 00:00:00.000Z. Display time zone: UTC.',
             ),
             equalsLineCall(
-              line: 'Timestamp                   | Level   | Content'
-                  '\n----------------------------+---------+--------',
+              line: 'Timestamp                   | Level   | Content',
+            ),
+            equalsLineCall(
+              line: '----------------------------+---------+--------',
             ),
             equalsLineCall(
               line: '2024-01-01 00:00:00.000Z    |         | Log message 1',
@@ -249,13 +257,15 @@ void main() {
       test('then logs output stream', () async {
         expect(
           logger.lineCalls,
-          containsAll([
+          containsAllInOrder([
             equalsLineCall(
               line: 'Tailing logs. Display time zone: UTC.',
             ),
             equalsLineCall(
-              line: 'Timestamp                   | Level   | Content'
-                  '\n----------------------------+---------+--------',
+              line: 'Timestamp                   | Level   | Content',
+            ),
+            equalsLineCall(
+              line: '----------------------------+---------+--------',
             ),
             equalsLineCall(
               line: '2024-01-01 00:00:00.000Z    |         | Log message 1',

@@ -395,14 +395,14 @@ void main() {
     test('then logs success message', () async {
       await commandResult;
 
-      expect(logger.infoCalls, isNotEmpty);
+      expect(logger.lineCalls, isNotEmpty);
       expect(
-        logger.infoCalls.first,
-        equalsInfoCall(
-          message: 'Name | Value\n'
-              '-----+------\n'
-              'name | value\n',
-        ),
+        logger.lineCalls,
+        containsAllInOrder([
+          equalsLineCall(line: 'Name | Value'),
+          equalsLineCall(line: '-----+------'),
+          equalsLineCall(line: 'name | value'),
+        ]),
       );
     });
   });

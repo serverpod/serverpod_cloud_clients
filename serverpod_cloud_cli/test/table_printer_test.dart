@@ -16,6 +16,13 @@ void main() async {
       );
     });
 
+    test('then the only written line is a no-rows symbol.', () {
+      final List<String> lines = [];
+      tablePrinter.writeLines(lines.add);
+      expect(lines, hasLength(1));
+      expect(lines.single, '<no rows data>');
+    });
+
     test('then the row count is zero.', () {
       expect(tablePrinter.rowCount, isZero);
     });
@@ -41,7 +48,25 @@ void main() async {
         () async {
       expect(
         await tablePrinter.toStream(null).toList(),
-        ['Header\n------\n'],
+        [
+          'Header',
+          '------',
+        ],
+      );
+    });
+
+    test(
+        'then the written lines contain the single header as well as a separator line and a no-rows symbol.',
+        () {
+      final List<String> lines = [];
+      tablePrinter.writeLines(lines.add);
+      expect(
+        lines,
+        [
+          'Header',
+          '------',
+          '<no rows data>',
+        ],
       );
     });
 
@@ -85,8 +110,14 @@ void main() async {
         () async {
       expect(
         await tablePrinter.toStream(null).toList(),
-        ['Cell1\n'],
+        ['Cell1'],
       );
+    });
+
+    test('then the written line is a line with just the single value.', () {
+      final List<String> lines = [];
+      tablePrinter.writeLines(lines.add);
+      expect(lines, ['Cell1']);
     });
 
     test('then the row count is one.', () {
@@ -115,7 +146,7 @@ void main() async {
         () async {
       expect(
         await tablePrinter.toStream(null).toList(),
-        ['Cell1 | Cell2 | Cell3\n'],
+        ['Cell1 | Cell2 | Cell3'],
       );
     });
 
@@ -158,15 +189,29 @@ Row5-Cell1---- | Row5-Cell2     | Row5-Cell3     |                 | Row5-Cell5
       expect(
         await tablePrinter.toStream(null).toList(),
         [
-          'Col1           | Col2           | Col3---------- |                 |           \n'
-              '---------------+----------------+----------------+-----------------+-----------\n',
-          'Row1-Cell1     | Row1-Cell2---- | Row1-Cell3     |                 |           \n',
-          'Row2-Cell1-    | Row2-Cell2---  |                |                 |           \n',
-          'Row3-Cell1--   | Row3-Cell2--   | Row3-Cell3     | Row3-Cell4      |           \n',
-          'Row4-Cell1---  | Row4-Cell2-    | Row4-Cell3     | Row4-Cell4      | Row4-Cell5\n',
-          'Row5-Cell1---- | Row5-Cell2     | Row5-Cell3     |                 | Row5-Cell5\n',
+          'Col1           | Col2           | Col3---------- |                 |           ',
+          '---------------+----------------+----------------+-----------------+-----------',
+          'Row1-Cell1     | Row1-Cell2---- | Row1-Cell3     |                 |           ',
+          'Row2-Cell1-    | Row2-Cell2---  |                |                 |           ',
+          'Row3-Cell1--   | Row3-Cell2--   | Row3-Cell3     | Row3-Cell4      |           ',
+          'Row4-Cell1---  | Row4-Cell2-    | Row4-Cell3     | Row4-Cell4      | Row4-Cell5',
+          'Row5-Cell1---- | Row5-Cell2     | Row5-Cell3     |                 | Row5-Cell5',
         ],
       );
+    });
+
+    test('then the written lines are a correctly aligned table.', () {
+      final List<String> lines = [];
+      tablePrinter.writeLines(lines.add);
+      expect(lines, [
+        'Col1           | Col2           | Col3---------- |                 |           ',
+        '---------------+----------------+----------------+-----------------+-----------',
+        'Row1-Cell1     | Row1-Cell2---- | Row1-Cell3     |                 |           ',
+        'Row2-Cell1-    | Row2-Cell2---  |                |                 |           ',
+        'Row3-Cell1--   | Row3-Cell2--   | Row3-Cell3     | Row3-Cell4      |           ',
+        'Row4-Cell1---  | Row4-Cell2-    | Row4-Cell3     | Row4-Cell4      | Row4-Cell5',
+        'Row5-Cell1---- | Row5-Cell2     | Row5-Cell3     |                 | Row5-Cell5',
+      ]);
     });
 
     test('then the row count is 5.', () {

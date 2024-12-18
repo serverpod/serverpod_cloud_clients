@@ -99,7 +99,7 @@ class CloudStatusCommand extends CloudCliCommand<StatusOption> {
           limit: limit,
           inUtc: inUtc,
         );
-        logger.info(outputTable.toString());
+        outputTable.writeLines(logger.line);
       }, (final e) {
         logger.error('Failed to get deployments list: $e');
         throw ExitException();

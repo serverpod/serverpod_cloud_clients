@@ -34,6 +34,9 @@ class TablePrinter {
 
   /// Converts the table content to a stream of formatted strings,
   /// one for each row.
+  ///
+  /// The produced strings are not terminated with a newline.
+  ///
   /// If this table already has rows, they will be included
   /// first in the stream and the column widths will be based on them.
   /// Subsequent rows might break the alignment if they have wider content.
@@ -44,7 +47,10 @@ class TablePrinter {
     final columnWidths = _getColumnWidths();
 
     if (_columnHeaders.isNotEmpty) {
-      yield _formatHeader(columnWidths);
+      final headerLines = _formatHeader(columnWidths);
+      for (final line in headerLines) {
+        yield line;
+      }
     }
 
     int count = 0;
@@ -58,42 +64,47 @@ class TablePrinter {
     }
   }
 
-  /// Converts the table content to a formatted string.
+  /// Converts the table content to a formatted string,
+  /// with rows separated by newlines.
   @override
   String toString() {
     final StringBuffer buffer = StringBuffer();
 
-    final columnWidths = _getColumnWidths();
-
-    if (_columnHeaders.isNotEmpty) {
-      buffer.write(_formatHeader(columnWidths));
-    }
-
-    if (_rows.isEmpty) {
-      buffer.write('<no rows data>\n');
-    }
-
-    for (final row in _rows) {
-      buffer.write(_formatLine(columnWidths, row));
-    }
+    writeLines(buffer.writeln);
 
     return buffer.toString();
   }
 
-  String _formatHeader(final List<int> columnWidths) {
-    final StringBuffer buffer = StringBuffer();
-    buffer.writeln(List.generate(
+  /// Puts the table content to the provided sink line by line.
+  /// The line strings are not terminated with a newline.
+  void writeLines(final void Function(String) lineSink) {
+    final columnWidths = _getColumnWidths();
+
+    if (_columnHeaders.isNotEmpty) {
+      _formatHeader(columnWidths).forEach(lineSink);
+    }
+
+    if (_rows.isEmpty) {
+      lineSink('<no rows data>');
+    }
+
+    for (final row in _rows) {
+      lineSink(_formatLine(columnWidths, row));
+    }
+  }
+
+  List<String> _formatHeader(final List<int> columnWidths) {
+    final headerNames = List.generate(
       columnWidths.length,
       (final colIx) => (_columnHeaders.elementAtOrNull(colIx) ?? '')
           .padRight(columnWidths[colIx]),
-    ).join(' | '));
+    ).join(' | ');
 
-    buffer.writeln(
-      columnWidths.map((final width) {
-        return '-' * (width);
-      }).join('-+-'),
-    );
-    return buffer.toString();
+    final headerDivider = columnWidths.map((final width) {
+      return '-' * (width);
+    }).join('-+-');
+
+    return [headerNames, headerDivider];
   }
 
   String _formatLine(final List<int> columnWidths, final List<String?> row) {
@@ -102,7 +113,7 @@ class TablePrinter {
       (final colIx) =>
           (row.elementAtOrNull(colIx) ?? '').padRight(columnWidths[colIx]),
     ).join(' | ');
-    return '$line\n';
+    return line;
   }
 
   List<int> _getColumnWidths() {

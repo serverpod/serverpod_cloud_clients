@@ -198,8 +198,8 @@ class CloudListCustomDomainCommand
       ]);
     }
 
-    logger.info(defaultDomainPrinter.toString());
-    logger.info(customDomainPrinter.toString());
+    defaultDomainPrinter.writeLines(logger.line);
+    customDomainPrinter.writeLines(logger.line);
   }
 
   _getStatusLabel(final DomainNameStatus status) {
