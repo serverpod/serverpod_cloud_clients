@@ -101,6 +101,30 @@ void main() {
   });
 
   test(
+      'Given a callback that throws NotFoundException '
+      'when calling handleCommonClientExceptions '
+      'then should rethrow ExitException and log error message', () {
+    expect(
+      () => handleCommonClientExceptions(
+        logger,
+        () {
+          throw NotFoundException(message: 'No such project.');
+        },
+        (final e) => fail('callback should not have been called'),
+      ),
+      throwsA(isA<ExitException>()),
+    );
+
+    expect(
+      logger.errorCalls.last,
+      equalsErrorCall(
+        message: 'The requested resource did not exist.',
+        hint: 'No such project.',
+      ),
+    );
+  });
+
+  test(
       'Given a callback that throws an exception that is not commonly handled '
       'when calling handleCommonClientExceptions '
       'then should trigger the onUnhandledException callback', () {

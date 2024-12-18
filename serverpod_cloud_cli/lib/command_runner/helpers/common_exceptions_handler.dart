@@ -37,6 +37,13 @@ FutureOr<T> handleCommonClientExceptions<T>(
     );
 
     throw ExitException();
+  } on NotFoundException catch (e) {
+    logger.error(
+      'The requested resource did not exist.',
+      hint: e.message,
+    );
+
+    throw ExitException();
   } catch (e) {
     return onUnhandledException(e);
   }
