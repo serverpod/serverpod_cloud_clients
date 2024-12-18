@@ -198,6 +198,6 @@ class CloudProjectListCommand extends CloudCliCommand {
         project.createdAt.toString().substring(0, 19),
       ]);
     }
-    tablePrinter.toString().split('\n').forEach(logger.info);
+    tablePrinter.writeLines(logger.line);
   }
 }

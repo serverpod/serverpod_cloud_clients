@@ -316,16 +316,17 @@ void main() {
     test('then logs table', () async {
       await commandResult;
 
-      expect(logger.infoCalls, isNotEmpty);
+      expect(logger.lineCalls, isNotEmpty);
       expect(
-          logger.infoCalls.first,
-          equalsInfoCall(
-            message: 'Secret name\n'
-                '-----------\n'
-                'SECRET_1   \n'
-                'SECRET_2   \n'
-                'SECRET_3   \n',
-          ));
+        logger.lineCalls,
+        containsAllInOrder([
+          equalsLineCall(line: 'Secret name'),
+          equalsLineCall(line: '-----------'),
+          equalsLineCall(line: 'SECRET_1   '),
+          equalsLineCall(line: 'SECRET_2   '),
+          equalsLineCall(line: 'SECRET_3   '),
+        ]),
+      );
     });
   });
 }
