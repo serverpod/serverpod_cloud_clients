@@ -41,7 +41,6 @@ class ProjectDirOption extends ConfigOption {
           helpText: helpText,
           defaultFrom: _getCurrentPath,
           envName: 'SERVERPOD_CLOUD_PROJECT_DIR',
-          hide: true,
         );
 }
 
@@ -68,5 +67,9 @@ class ValueOption extends ConfigOption {
 }
 
 String _getCurrentPath() {
+  if (Platform.environment.containsKey('GENERATING_DOCS')) {
+    return "<current directory>";
+  }
+
   return Directory.current.path;
 }
