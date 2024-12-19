@@ -28,6 +28,12 @@ class CloudProjectCommand extends CloudCliCommand {
 }
 
 abstract final class _ProjectOptions {
+  static const projectIdForCreation = ProjectIdOption(
+    helpText: 'The ID of the project. Can be passed as the first argument.',
+    argPos: 0,
+    envName: null,
+  );
+
   static const projectId = ProjectIdOption(
     helpText:
         '${CommandConfigConstants.projectIdHelpText} Can be passed as the first argument.',
@@ -44,7 +50,7 @@ abstract final class _ProjectOptions {
 }
 
 enum ProjectCreateOption implements OptionDefinition {
-  projectId(_ProjectOptions.projectId),
+  projectId(_ProjectOptions.projectIdForCreation),
   enableDb(_ProjectOptions.enableDb);
 
   const ProjectCreateOption(this.option);
