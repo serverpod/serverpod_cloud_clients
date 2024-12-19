@@ -27,7 +27,7 @@ abstract final class _StatusOptions {
     argName: 'deploy',
     argPos: 0,
     helpText:
-        'View a specific deployment, with uuid or sequence number, 0 for latest.',
+        'View a specific deployment, with uuid or sequence number, 0 for latest. Can be passed as the first argument.',
     valueHelp: '<uuid|integer>',
     defaultsTo: '0',
   );
@@ -37,6 +37,7 @@ abstract final class _StatusOptions {
     isFlag: true,
     defaultsTo: 'false',
     helpText: "List recent deployments.",
+    negatable: false,
   );
   static const log = ConfigOption(
     argName: 'build-log',
@@ -44,6 +45,7 @@ abstract final class _StatusOptions {
     isFlag: true,
     defaultsTo: 'false',
     helpText: "View a deployment's build log, or latest by default.",
+    negatable: false,
   );
 }
 
