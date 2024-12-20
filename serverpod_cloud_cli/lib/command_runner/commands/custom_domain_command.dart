@@ -1,4 +1,6 @@
+import 'package:basic_utils/basic_utils.dart';
 import 'package:cli_tools/cli_tools.dart';
+import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
@@ -109,11 +111,48 @@ class CloudAddCustomDomainCommand
       throw ExitException();
     }
 
+    if (DomainUtils.isSubDomain(domainName)) {
+      _logDomainInstructions(
+        action: 'Add a CNAME record with the value "$targetDefaultDomain" '
+            'to the DNS configuration for this domain.',
+        logger: logger,
+        domainName: domainName,
+        projectId: projectId,
+      );
+      return;
+    }
+
+    final verificationToken =
+        customDomainNameWithDefaultDomains.customDomainName.verificationToken;
+
+    if (verificationToken == null) {
+      logger.error(
+        'Could not find the verification token for the custom domain.',
+        hint: 'Please check that CLI is updated to the latest version.',
+      );
+      throw ExitException();
+    }
+
+    _logDomainInstructions(
+      action: 'Add a TXT record with the name "$targetDefaultDomain" and '
+          'value "scloud-verify-$verificationToken"',
+      logger: logger,
+      domainName: domainName,
+      projectId: projectId,
+    );
+  }
+
+  void _logDomainInstructions({
+    required final CommandLogger logger,
+    required final String domainName,
+    required final String projectId,
+    required final String action,
+  }) {
     logger.list(
       newParagraph: true,
       title: 'Follow these steps to complete setup:',
       [
-        'Add a CNAME record with the value "$targetDefaultDomain" to the DNS configuration for this domain.',
+        action,
         'Wait for the update to propagate. This can take up to a few hours.',
         'Run the following command to verify the DNS record (Serverpod Cloud will also try to verify the record periodically):',
       ],

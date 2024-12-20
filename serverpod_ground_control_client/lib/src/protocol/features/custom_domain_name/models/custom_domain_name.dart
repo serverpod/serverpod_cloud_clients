@@ -23,6 +23,7 @@ abstract class CustomDomainName implements _i1.SerializableModel {
     required this.target,
     DateTime? createdAt,
     required this.environmentId,
+    this.verificationToken,
   }) : createdAt = createdAt ?? DateTime.now();
 
   factory CustomDomainName({
@@ -32,6 +33,7 @@ abstract class CustomDomainName implements _i1.SerializableModel {
     required _i3.DomainNameTarget target,
     DateTime? createdAt,
     required int environmentId,
+    String? verificationToken,
   }) = _CustomDomainNameImpl;
 
   factory CustomDomainName.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -46,6 +48,7 @@ abstract class CustomDomainName implements _i1.SerializableModel {
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
       environmentId: jsonSerialization['environmentId'] as int,
+      verificationToken: jsonSerialization['verificationToken'] as String?,
     );
   }
 
@@ -64,6 +67,8 @@ abstract class CustomDomainName implements _i1.SerializableModel {
 
   int environmentId;
 
+  String? verificationToken;
+
   CustomDomainName copyWith({
     int? id,
     String? name,
@@ -71,6 +76,7 @@ abstract class CustomDomainName implements _i1.SerializableModel {
     _i3.DomainNameTarget? target,
     DateTime? createdAt,
     int? environmentId,
+    String? verificationToken,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -81,6 +87,7 @@ abstract class CustomDomainName implements _i1.SerializableModel {
       'target': target.toJson(),
       if (createdAt != null) 'createdAt': createdAt?.toJson(),
       'environmentId': environmentId,
+      if (verificationToken != null) 'verificationToken': verificationToken,
     };
   }
 
@@ -100,6 +107,7 @@ class _CustomDomainNameImpl extends CustomDomainName {
     required _i3.DomainNameTarget target,
     DateTime? createdAt,
     required int environmentId,
+    String? verificationToken,
   }) : super._(
           id: id,
           name: name,
@@ -107,6 +115,7 @@ class _CustomDomainNameImpl extends CustomDomainName {
           target: target,
           createdAt: createdAt,
           environmentId: environmentId,
+          verificationToken: verificationToken,
         );
 
   @override
@@ -117,6 +126,7 @@ class _CustomDomainNameImpl extends CustomDomainName {
     _i3.DomainNameTarget? target,
     Object? createdAt = _Undefined,
     int? environmentId,
+    Object? verificationToken = _Undefined,
   }) {
     return CustomDomainName(
       id: id is int? ? id : this.id,
@@ -125,6 +135,9 @@ class _CustomDomainNameImpl extends CustomDomainName {
       target: target ?? this.target,
       createdAt: createdAt is DateTime? ? createdAt : this.createdAt,
       environmentId: environmentId ?? this.environmentId,
+      verificationToken: verificationToken is String?
+          ? verificationToken
+          : this.verificationToken,
     );
   }
 }

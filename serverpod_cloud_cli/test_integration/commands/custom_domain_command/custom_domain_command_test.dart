@@ -244,7 +244,7 @@ void main() {
             200,
             CustomDomainNameWithDefaultDomains(
                 customDomainName: CustomDomainName(
-                  name: 'domain.com',
+                  name: 'www.domain.com',
                   status: DomainNameStatus.needsSetup,
                   target: DomainNameTarget.api,
                   environmentId: 1,
@@ -265,7 +265,7 @@ void main() {
         commandResult = cli.run([
           'domain',
           'add',
-          'domain.com',
+          'www.domain.com',
           '--target',
           'api',
           '--project-id',
@@ -318,7 +318,7 @@ void main() {
               ),
               equalsTerminalCommandCall(
                 command:
-                    'scloud domains refresh-record domain.com --project-id $projectId',
+                    'scloud domains refresh-record www.domain.com --project-id $projectId',
                 newParagraph: true,
               ),
               equalsListCall(
