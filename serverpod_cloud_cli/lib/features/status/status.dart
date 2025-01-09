@@ -31,7 +31,7 @@ abstract class StatusFeature {
 
     final List<String> rows = [
       'Status of $environmentId deploy $attemptId'
-          ', started at ${stages.first.startTime?.toTzString(inUtc, _numTimeStampChars)}:',
+          ', started at ${stages.first.startedAt?.toTzString(inUtc, _numTimeStampChars)}:',
       ...stages.map(_getStatusLine),
     ];
 
@@ -65,8 +65,7 @@ abstract class StatusFeature {
   static String _getStatusMark(final DeployProgressStatus status) {
     return switch (status) {
       DeployProgressStatus.unknown => '⬛',
-      DeployProgressStatus.pending => '⬛',
-      DeployProgressStatus.created => '…',
+      DeployProgressStatus.awaiting => '⬛',
       DeployProgressStatus.running => '…',
       DeployProgressStatus.success => '✅',
       DeployProgressStatus.failure => '❌',
@@ -87,8 +86,7 @@ abstract class StatusFeature {
     final stageName = _capitalize(stage.stageType.name);
     final verb = switch (stage.stageStatus) {
       DeployProgressStatus.unknown => '<unknown>',
-      DeployProgressStatus.pending => 'pending...',
-      DeployProgressStatus.created => 'pending...',
+      DeployProgressStatus.awaiting => 'awaiting...',
       DeployProgressStatus.running => 'running...',
       DeployProgressStatus.success => 'successful!',
       DeployProgressStatus.failure => 'failed! 💥',
@@ -128,8 +126,8 @@ class DeployStatusTable extends TablePrinter {
       attempt.cloudEnvironmentId,
       attempt.attemptId,
       attempt.status.name.toUpperCase(),
-      attempt.startTime?.toTzString(inUtc, _numTimeStampChars),
-      attempt.endTime?.toTzString(inUtc, _numTimeStampChars),
+      attempt.startedAt?.toTzString(inUtc, _numTimeStampChars),
+      attempt.endedAt?.toTzString(inUtc, _numTimeStampChars),
       attempt.statusInfo,
     ];
   }

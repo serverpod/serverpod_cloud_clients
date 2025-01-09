@@ -21,13 +21,12 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
     required this.attemptId,
     required this.stageType,
     this.stageInfo,
-    this.externalId,
+    this.buildId,
     required this.stageStatus,
-    DateTime? createTime,
-    this.startTime,
-    this.endTime,
+    this.startedAt,
+    this.endedAt,
     this.statusInfo,
-  }) : createTime = createTime ?? DateTime.now();
+  });
 
   factory DeployAttemptStage({
     int? id,
@@ -35,11 +34,10 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
     required String attemptId,
     required _i2.DeployStageType stageType,
     String? stageInfo,
-    String? externalId,
+    String? buildId,
     required _i3.DeployProgressStatus stageStatus,
-    DateTime? createTime,
-    DateTime? startTime,
-    DateTime? endTime,
+    DateTime? startedAt,
+    DateTime? endedAt,
     String? statusInfo,
   }) = _DeployAttemptStageImpl;
 
@@ -51,17 +49,15 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
       stageType: _i2.DeployStageType.fromJson(
           (jsonSerialization['stageType'] as String)),
       stageInfo: jsonSerialization['stageInfo'] as String?,
-      externalId: jsonSerialization['externalId'] as String?,
+      buildId: jsonSerialization['buildId'] as String?,
       stageStatus: _i3.DeployProgressStatus.fromJson(
           (jsonSerialization['stageStatus'] as String)),
-      createTime:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createTime']),
-      startTime: jsonSerialization['startTime'] == null
+      startedAt: jsonSerialization['startedAt'] == null
           ? null
-          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['startTime']),
-      endTime: jsonSerialization['endTime'] == null
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['startedAt']),
+      endedAt: jsonSerialization['endedAt'] == null
           ? null
-          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['endTime']),
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['endedAt']),
       statusInfo: jsonSerialization['statusInfo'] as String?,
     );
   }
@@ -86,18 +82,15 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
   /// This should be a human-readable string.
   String? stageInfo;
 
-  /// If this stage corresponds to an external entity/operation instance,
-  /// this field identifies it.
-  String? externalId;
+  /// The build ID of the deploy attempt that this stage belongs to, if known.
+  String? buildId;
 
   /// The current / last known status of this stage.
   _i3.DeployProgressStatus stageStatus;
 
-  DateTime createTime;
+  DateTime? startedAt;
 
-  DateTime? startTime;
-
-  DateTime? endTime;
+  DateTime? endedAt;
 
   /// Optionally contains user-readable information about the current status of this stage.
   String? statusInfo;
@@ -108,11 +101,10 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
     String? attemptId,
     _i2.DeployStageType? stageType,
     String? stageInfo,
-    String? externalId,
+    String? buildId,
     _i3.DeployProgressStatus? stageStatus,
-    DateTime? createTime,
-    DateTime? startTime,
-    DateTime? endTime,
+    DateTime? startedAt,
+    DateTime? endedAt,
     String? statusInfo,
   });
   @override
@@ -123,11 +115,10 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
       'attemptId': attemptId,
       'stageType': stageType.toJson(),
       if (stageInfo != null) 'stageInfo': stageInfo,
-      if (externalId != null) 'externalId': externalId,
+      if (buildId != null) 'buildId': buildId,
       'stageStatus': stageStatus.toJson(),
-      'createTime': createTime.toJson(),
-      if (startTime != null) 'startTime': startTime?.toJson(),
-      if (endTime != null) 'endTime': endTime?.toJson(),
+      if (startedAt != null) 'startedAt': startedAt?.toJson(),
+      if (endedAt != null) 'endedAt': endedAt?.toJson(),
       if (statusInfo != null) 'statusInfo': statusInfo,
     };
   }
@@ -147,11 +138,10 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
     required String attemptId,
     required _i2.DeployStageType stageType,
     String? stageInfo,
-    String? externalId,
+    String? buildId,
     required _i3.DeployProgressStatus stageStatus,
-    DateTime? createTime,
-    DateTime? startTime,
-    DateTime? endTime,
+    DateTime? startedAt,
+    DateTime? endedAt,
     String? statusInfo,
   }) : super._(
           id: id,
@@ -159,11 +149,10 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
           attemptId: attemptId,
           stageType: stageType,
           stageInfo: stageInfo,
-          externalId: externalId,
+          buildId: buildId,
           stageStatus: stageStatus,
-          createTime: createTime,
-          startTime: startTime,
-          endTime: endTime,
+          startedAt: startedAt,
+          endedAt: endedAt,
           statusInfo: statusInfo,
         );
 
@@ -174,11 +163,10 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
     String? attemptId,
     _i2.DeployStageType? stageType,
     Object? stageInfo = _Undefined,
-    Object? externalId = _Undefined,
+    Object? buildId = _Undefined,
     _i3.DeployProgressStatus? stageStatus,
-    DateTime? createTime,
-    Object? startTime = _Undefined,
-    Object? endTime = _Undefined,
+    Object? startedAt = _Undefined,
+    Object? endedAt = _Undefined,
     Object? statusInfo = _Undefined,
   }) {
     return DeployAttemptStage(
@@ -187,11 +175,10 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
       attemptId: attemptId ?? this.attemptId,
       stageType: stageType ?? this.stageType,
       stageInfo: stageInfo is String? ? stageInfo : this.stageInfo,
-      externalId: externalId is String? ? externalId : this.externalId,
+      buildId: buildId is String? ? buildId : this.buildId,
       stageStatus: stageStatus ?? this.stageStatus,
-      createTime: createTime ?? this.createTime,
-      startTime: startTime is DateTime? ? startTime : this.startTime,
-      endTime: endTime is DateTime? ? endTime : this.endTime,
+      startedAt: startedAt is DateTime? ? startedAt : this.startedAt,
+      endedAt: endedAt is DateTime? ? endedAt : this.endedAt,
       statusInfo: statusInfo is String? ? statusInfo : this.statusInfo,
     );
   }

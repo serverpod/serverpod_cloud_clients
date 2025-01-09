@@ -18,8 +18,8 @@ abstract class DeployAttempt implements _i1.SerializableModel {
     required this.cloudEnvironmentId,
     required this.attemptId,
     required this.status,
-    this.startTime,
-    this.endTime,
+    this.startedAt,
+    this.endedAt,
     this.statusInfo,
   });
 
@@ -27,8 +27,8 @@ abstract class DeployAttempt implements _i1.SerializableModel {
     required String cloudEnvironmentId,
     required String attemptId,
     required _i2.DeployProgressStatus status,
-    DateTime? startTime,
-    DateTime? endTime,
+    DateTime? startedAt,
+    DateTime? endedAt,
     String? statusInfo,
   }) = _DeployAttemptImpl;
 
@@ -38,12 +38,12 @@ abstract class DeployAttempt implements _i1.SerializableModel {
       attemptId: jsonSerialization['attemptId'] as String,
       status: _i2.DeployProgressStatus.fromJson(
           (jsonSerialization['status'] as String)),
-      startTime: jsonSerialization['startTime'] == null
+      startedAt: jsonSerialization['startedAt'] == null
           ? null
-          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['startTime']),
-      endTime: jsonSerialization['endTime'] == null
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['startedAt']),
+      endedAt: jsonSerialization['endedAt'] == null
           ? null
-          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['endTime']),
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['endedAt']),
       statusInfo: jsonSerialization['statusInfo'] as String?,
     );
   }
@@ -57,9 +57,9 @@ abstract class DeployAttempt implements _i1.SerializableModel {
   /// The current status of this deployment.
   _i2.DeployProgressStatus status;
 
-  DateTime? startTime;
+  DateTime? startedAt;
 
-  DateTime? endTime;
+  DateTime? endedAt;
 
   /// Optionally contains user-readable information about the current status of this attempt.
   String? statusInfo;
@@ -68,8 +68,8 @@ abstract class DeployAttempt implements _i1.SerializableModel {
     String? cloudEnvironmentId,
     String? attemptId,
     _i2.DeployProgressStatus? status,
-    DateTime? startTime,
-    DateTime? endTime,
+    DateTime? startedAt,
+    DateTime? endedAt,
     String? statusInfo,
   });
   @override
@@ -78,8 +78,8 @@ abstract class DeployAttempt implements _i1.SerializableModel {
       'cloudEnvironmentId': cloudEnvironmentId,
       'attemptId': attemptId,
       'status': status.toJson(),
-      if (startTime != null) 'startTime': startTime?.toJson(),
-      if (endTime != null) 'endTime': endTime?.toJson(),
+      if (startedAt != null) 'startedAt': startedAt?.toJson(),
+      if (endedAt != null) 'endedAt': endedAt?.toJson(),
       if (statusInfo != null) 'statusInfo': statusInfo,
     };
   }
@@ -97,15 +97,15 @@ class _DeployAttemptImpl extends DeployAttempt {
     required String cloudEnvironmentId,
     required String attemptId,
     required _i2.DeployProgressStatus status,
-    DateTime? startTime,
-    DateTime? endTime,
+    DateTime? startedAt,
+    DateTime? endedAt,
     String? statusInfo,
   }) : super._(
           cloudEnvironmentId: cloudEnvironmentId,
           attemptId: attemptId,
           status: status,
-          startTime: startTime,
-          endTime: endTime,
+          startedAt: startedAt,
+          endedAt: endedAt,
           statusInfo: statusInfo,
         );
 
@@ -114,16 +114,16 @@ class _DeployAttemptImpl extends DeployAttempt {
     String? cloudEnvironmentId,
     String? attemptId,
     _i2.DeployProgressStatus? status,
-    Object? startTime = _Undefined,
-    Object? endTime = _Undefined,
+    Object? startedAt = _Undefined,
+    Object? endedAt = _Undefined,
     Object? statusInfo = _Undefined,
   }) {
     return DeployAttempt(
       cloudEnvironmentId: cloudEnvironmentId ?? this.cloudEnvironmentId,
       attemptId: attemptId ?? this.attemptId,
       status: status ?? this.status,
-      startTime: startTime is DateTime? ? startTime : this.startTime,
-      endTime: endTime is DateTime? ? endTime : this.endTime,
+      startedAt: startedAt is DateTime? ? startedAt : this.startedAt,
+      endedAt: endedAt is DateTime? ? endedAt : this.endedAt,
       statusInfo: statusInfo is String? ? statusInfo : this.statusInfo,
     );
   }
