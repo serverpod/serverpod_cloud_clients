@@ -18,7 +18,7 @@ abstract class StatusFeature {
     return DeployStatusTable(inUtc: inUtc)..addRows(statuses);
   }
 
-  static Future<String> getDeploymentStatus(
+  static Future<List<String>> getDeploymentStatus(
     final Client cloudApiClient, {
     required final String environmentId,
     required final String attemptId,
@@ -35,7 +35,7 @@ abstract class StatusFeature {
       ...stages.map(_getStatusLine),
     ];
 
-    return rows.expand((final r) => ['$r\n', '\n']).join();
+    return rows;
   }
 
   static Future<String> getDeployAttemptId(

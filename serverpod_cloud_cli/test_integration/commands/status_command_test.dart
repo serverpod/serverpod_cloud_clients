@@ -229,9 +229,9 @@ void main() {
             test('then outputs the status', () async {
               await commandResult;
 
-              expect(logger.infoCalls, isNotEmpty);
+              expect(logger.lineCalls, isNotEmpty);
               expect(
-                logger.infoCalls.first.message,
+                logger.lineCalls.map((final l) => l.line).join('\n'),
                 '''
 Status of projectId deploy abc, started at 2021-12-31 10:20:30:
 
@@ -242,7 +242,6 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
 ✅  Orbital insertion:   Deploy successful!
 
 ✅  Pod commissioning:   Service successful! 🚀
-
 ''',
               );
             });

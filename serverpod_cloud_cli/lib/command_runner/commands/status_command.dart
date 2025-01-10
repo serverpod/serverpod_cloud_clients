@@ -139,7 +139,10 @@ class CloudStatusCommand extends CloudCliCommand<StatusOption> {
         attemptId: attemptId,
         inUtc: inUtc,
       );
-      logger.info(output.toString());
+      for (final line in output) {
+        logger.line(line);
+        logger.line('');
+      }
     }, (final e) {
       logger.error('Failed to get deployment status: $e');
       throw ExitException();
