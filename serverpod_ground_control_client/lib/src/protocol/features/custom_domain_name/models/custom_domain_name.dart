@@ -14,6 +14,8 @@ import '../../../features/custom_domain_name/models/domain_name_status.dart'
     as _i2;
 import '../../../features/custom_domain_name/models/domain_name_target.dart'
     as _i3;
+import '../../../features/custom_domain_name/models/dns_record_type.dart'
+    as _i4;
 
 abstract class CustomDomainName implements _i1.SerializableModel {
   CustomDomainName._({
@@ -23,6 +25,8 @@ abstract class CustomDomainName implements _i1.SerializableModel {
     required this.target,
     DateTime? createdAt,
     required this.environmentId,
+    required this.dnsRecordVerificationValue,
+    required this.dnsRecordType,
   }) : createdAt = createdAt ?? DateTime.now();
 
   factory CustomDomainName({
@@ -32,6 +36,8 @@ abstract class CustomDomainName implements _i1.SerializableModel {
     required _i3.DomainNameTarget target,
     DateTime? createdAt,
     required int environmentId,
+    required String dnsRecordVerificationValue,
+    required _i4.DnsRecordType dnsRecordType,
   }) = _CustomDomainNameImpl;
 
   factory CustomDomainName.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -46,6 +52,10 @@ abstract class CustomDomainName implements _i1.SerializableModel {
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
       environmentId: jsonSerialization['environmentId'] as int,
+      dnsRecordVerificationValue:
+          jsonSerialization['dnsRecordVerificationValue'] as String,
+      dnsRecordType: _i4.DnsRecordType.fromJson(
+          (jsonSerialization['dnsRecordType'] as String)),
     );
   }
 
@@ -64,6 +74,10 @@ abstract class CustomDomainName implements _i1.SerializableModel {
 
   int environmentId;
 
+  String dnsRecordVerificationValue;
+
+  _i4.DnsRecordType dnsRecordType;
+
   CustomDomainName copyWith({
     int? id,
     String? name,
@@ -71,6 +85,8 @@ abstract class CustomDomainName implements _i1.SerializableModel {
     _i3.DomainNameTarget? target,
     DateTime? createdAt,
     int? environmentId,
+    String? dnsRecordVerificationValue,
+    _i4.DnsRecordType? dnsRecordType,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -81,6 +97,8 @@ abstract class CustomDomainName implements _i1.SerializableModel {
       'target': target.toJson(),
       if (createdAt != null) 'createdAt': createdAt?.toJson(),
       'environmentId': environmentId,
+      'dnsRecordVerificationValue': dnsRecordVerificationValue,
+      'dnsRecordType': dnsRecordType.toJson(),
     };
   }
 
@@ -100,6 +118,8 @@ class _CustomDomainNameImpl extends CustomDomainName {
     required _i3.DomainNameTarget target,
     DateTime? createdAt,
     required int environmentId,
+    required String dnsRecordVerificationValue,
+    required _i4.DnsRecordType dnsRecordType,
   }) : super._(
           id: id,
           name: name,
@@ -107,6 +127,8 @@ class _CustomDomainNameImpl extends CustomDomainName {
           target: target,
           createdAt: createdAt,
           environmentId: environmentId,
+          dnsRecordVerificationValue: dnsRecordVerificationValue,
+          dnsRecordType: dnsRecordType,
         );
 
   @override
@@ -117,6 +139,8 @@ class _CustomDomainNameImpl extends CustomDomainName {
     _i3.DomainNameTarget? target,
     Object? createdAt = _Undefined,
     int? environmentId,
+    String? dnsRecordVerificationValue,
+    _i4.DnsRecordType? dnsRecordType,
   }) {
     return CustomDomainName(
       id: id is int? ? id : this.id,
@@ -125,6 +149,9 @@ class _CustomDomainNameImpl extends CustomDomainName {
       target: target ?? this.target,
       createdAt: createdAt is DateTime? ? createdAt : this.createdAt,
       environmentId: environmentId ?? this.environmentId,
+      dnsRecordVerificationValue:
+          dnsRecordVerificationValue ?? this.dnsRecordVerificationValue,
+      dnsRecordType: dnsRecordType ?? this.dnsRecordType,
     );
   }
 }

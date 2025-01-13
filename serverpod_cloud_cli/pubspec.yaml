@@ -23,6 +23,7 @@ dependencies:
   pub_semver: ^2.1.4
   serverpod_ground_control_client: ^0.0.1
   yaml: ^3.1.2
+  basic_utils: ^5.7.0
 
 dev_dependencies:
   googleapis: ^13.2.0

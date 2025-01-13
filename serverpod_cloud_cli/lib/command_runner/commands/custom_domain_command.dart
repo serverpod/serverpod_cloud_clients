@@ -1,4 +1,6 @@
+import 'package:basic_utils/basic_utils.dart';
 import 'package:cli_tools/cli_tools.dart';
+import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
@@ -104,16 +106,41 @@ class CloudAddCustomDomainCommand
     if (targetDefaultDomain == null) {
       logger.error(
         'Could not find the target domain for "$target".',
-        hint: 'Please check that CLI is updated to the latest version.',
       );
       throw ExitException();
     }
 
+    if (DomainUtils.isSubDomain(domainName)) {
+      _logDomainInstructions(
+        action: 'Add a CNAME record with the value "$targetDefaultDomain" '
+            'to the DNS configuration for this domain.',
+        logger: logger,
+        domainName: domainName,
+        projectId: projectId,
+      );
+      return;
+    }
+
+    _logDomainInstructions(
+      action: 'Add a TXT record with the name "$targetDefaultDomain" and '
+          'value "${customDomainNameWithDefaultDomains.customDomainName.dnsRecordVerificationValue}".',
+      logger: logger,
+      domainName: domainName,
+      projectId: projectId,
+    );
+  }
+
+  void _logDomainInstructions({
+    required final CommandLogger logger,
+    required final String domainName,
+    required final String projectId,
+    required final String action,
+  }) {
     logger.list(
       newParagraph: true,
       title: 'Follow these steps to complete setup:',
       [
-        'Add a CNAME record with the value "$targetDefaultDomain" to the DNS configuration for this domain.',
+        action,
         'Wait for the update to propagate. This can take up to a few hours.',
         'Run the following command to verify the DNS record (Serverpod Cloud will also try to verify the record periodically):',
       ],
@@ -306,8 +333,7 @@ class CloudRefreshCustomDomainRecordCommand
           logger.success(
               'Successfully verified the DNS record for the custom domain. It is now active.');
         case DomainNameStatus.needsSetup:
-          logger.info('Failed to verify the DNS record for the custom domain. '
-              'Ensure the CNAME is correctly set and try again later.');
+          logger.info('Failed to verify the DNS record for the custom domain.');
         case DomainNameStatus.pending:
           logger.info(
             'The DNS record for the custom domain is verified but certificate creation is still pending. '
@@ -317,8 +343,15 @@ class CloudRefreshCustomDomainRecordCommand
 
       return;
     }, (final e) {
+      if (e is DNSVerificationFailedException) {
+        logger.error(
+          'Failed to verify the DNS record for the custom domain: ${e.message}',
+        );
+        return;
+      }
+
       logger.error(
-        'Failed to refresh custom domain recor: $e',
+        'Failed to refresh custom domain record: $e',
       );
 
       throw ExitException();

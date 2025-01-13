@@ -244,10 +244,12 @@ void main() {
             200,
             CustomDomainNameWithDefaultDomains(
                 customDomainName: CustomDomainName(
-                  name: 'domain.com',
+                  name: 'www.domain.com',
                   status: DomainNameStatus.needsSetup,
                   target: DomainNameTarget.api,
                   environmentId: 1,
+                  dnsRecordVerificationValue: 'projectId.api.serverpod.space',
+                  dnsRecordType: DnsRecordType.cname,
                 ),
                 defaultDomainsByTarget: {
                   DomainNameTarget.api: '$projectId.api.serverpod.space',
@@ -265,7 +267,7 @@ void main() {
         commandResult = cli.run([
           'domain',
           'add',
-          'domain.com',
+          'www.domain.com',
           '--target',
           'api',
           '--project-id',
@@ -318,7 +320,7 @@ void main() {
               ),
               equalsTerminalCommandCall(
                 command:
-                    'scloud domains refresh-record domain.com --project-id $projectId',
+                    'scloud domains refresh-record www.domain.com --project-id $projectId',
                 newParagraph: true,
               ),
               equalsListCall(
@@ -511,8 +513,59 @@ void main() {
         expect(
           logger.infoCalls.first,
           equalsInfoCall(
-            message: 'Failed to verify the DNS record for the custom domain. '
-                'Ensure the CNAME is correctly set and try again later.',
+            message: 'Failed to verify the DNS record for the custom domain.',
+          ),
+        );
+      });
+    });
+
+    group('and call throws DNSVerificationFailedException', () {
+      late Uri localServerAddress;
+
+      late Future commandResult;
+
+      setUp(() async {
+        final serverBuilder = HttpServerBuilder();
+        serverBuilder.withMethodResponse('customDomainName', 'refreshRecord',
+            (final _) {
+          return (
+            400,
+            DNSVerificationFailedException(
+              message: 'Could not find a CNAME record for the domain.',
+            )
+          );
+        });
+
+        final (startedServer, serverAddress) = await serverBuilder.build();
+        localServerAddress = serverAddress;
+        server = startedServer;
+
+        commandResult = cli.run([
+          'domain',
+          'refresh-record',
+          'domain.com',
+          '--project-id',
+          projectId,
+          '--api-url',
+          localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
+        ]);
+      });
+
+      test('then completes successfully', () async {
+        await expectLater(commandResult, completes);
+      });
+
+      test('then logs information message about status', () async {
+        await commandResult;
+
+        expect(logger.errorCalls, hasLength(1));
+        expect(
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message: 'Failed to verify the DNS record for the custom domain: '
+                'Could not find a CNAME record for the domain.',
           ),
         );
       });
@@ -532,18 +585,24 @@ void main() {
               name: 'api.domain.com',
               status: DomainNameStatus.configured,
               target: DomainNameTarget.api,
+              dnsRecordVerificationValue: 'projectId.api.serverpod.space',
+              dnsRecordType: DnsRecordType.cname,
             ),
             CustomDomainName(
               environmentId: 1,
               name: 'web.domain.com',
               status: DomainNameStatus.pending,
               target: DomainNameTarget.web,
+              dnsRecordVerificationValue: 'projectId.web.serverpod.space',
+              dnsRecordType: DnsRecordType.cname,
             ),
             CustomDomainName(
               environmentId: 1,
               name: 'insights.domain.com',
               status: DomainNameStatus.needsSetup,
               target: DomainNameTarget.insights,
+              dnsRecordVerificationValue: 'projectId.insights.serverpod.space',
+              dnsRecordType: DnsRecordType.cname,
             ),
           ],
           defaultDomainsByTarget: {

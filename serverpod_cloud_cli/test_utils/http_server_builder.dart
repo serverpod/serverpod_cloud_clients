@@ -14,6 +14,8 @@ class HttpServerBuilder {
   final Map<String, _MethodHandler> _methodHandlers;
   void Function(HttpRequest request)? _onRequest;
 
+  SerializationManager serializer = Protocol();
+
   HttpServerBuilder()
       : _host = 'localhost',
         _path = '/',
@@ -72,9 +74,13 @@ class HttpServerBuilder {
 
       if (responseBody != null) {
         response.write(
-          responseBody is SerializableModel
-              ? responseBody.toString()
-              : jsonEncode(responseBody),
+          switch (responseBody) {
+            SerializableException() => serializer.encodeWithTypeForProtocol(
+                responseBody,
+              ),
+            SerializableModel() => responseBody.toString(),
+            _ => jsonEncode(responseBody),
+          },
         );
       }
     };
