@@ -109,9 +109,10 @@ void main() {
       });
     });
 
-    group('when executing secrets delete', () {
+    group('when executing secrets delete and confirming prompt', () {
       late Future commandResult;
       setUp(() async {
+        logger.answerNextConfirmWith(true);
         commandResult = cli.run([
           'secret',
           'delete',
@@ -236,9 +237,10 @@ void main() {
       });
     });
 
-    group('when executing secrets delete', () {
+    group('when executing secrets delete and confirming prompt', () {
       late Future commandResult;
       setUp(() async {
+        logger.answerNextConfirmWith(true);
         commandResult = cli.run([
           'secret',
           'delete',
@@ -250,6 +252,19 @@ void main() {
           '--auth-dir',
           testCacheFolderPath,
         ]);
+      });
+
+      test('then logs confirm message', () async {
+        await commandResult;
+
+        expect(logger.confirmCalls, isNotEmpty);
+        expect(
+          logger.confirmCalls.first,
+          equalsConfirmCall(
+            message: 'Are you sure you want to delete the secret "key"?',
+            defaultValue: false,
+          ),
+        );
       });
 
       test('then completes successfully', () async {
@@ -264,6 +279,51 @@ void main() {
           logger.successCalls.first,
           equalsSuccessCall(message: 'Successfully deleted secret: key.'),
         );
+      });
+    });
+
+    group('when executing secrets delete and rejecting prompt', () {
+      late Future commandResult;
+      setUp(() async {
+        logger.answerNextConfirmWith(false);
+        commandResult = cli.run([
+          'secret',
+          'delete',
+          'key',
+          '--project-id',
+          projectId,
+          '--api-url',
+          localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
+        ]);
+      });
+
+      test('then logs confirm message', () async {
+        try {
+          await commandResult;
+        } catch (_) {}
+
+        expect(logger.confirmCalls, isNotEmpty);
+        expect(
+          logger.confirmCalls.first,
+          equalsConfirmCall(
+            message: 'Are you sure you want to delete the secret "key"?',
+            defaultValue: false,
+          ),
+        );
+      });
+
+      test('then throws exit exception', () async {
+        await expectLater(commandResult, throwsA(isA<ExitException>()));
+      });
+
+      test('then logs no success message', () async {
+        try {
+          await commandResult;
+        } catch (_) {}
+
+        expect(logger.successCalls, isEmpty);
       });
     });
   });

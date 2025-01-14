@@ -146,9 +146,10 @@ void main() {
       });
     });
 
-    group('when executing domain remove', () {
+    group('when executing domain remove and confirming prompt', () {
       late Future commandResult;
       setUp(() async {
+        logger.answerNextConfirmWith(true);
         commandResult = cli.run([
           'domain',
           'remove',
@@ -340,7 +341,7 @@ void main() {
       });
     });
 
-    group('when executing domain remove', () {
+    group('when executing domain remove and confirming prompt', () {
       late Future commandResult;
       setUp(() async {
         final serverBuilder = HttpServerBuilder();
@@ -354,6 +355,8 @@ void main() {
         localServerAddress = serverAddress;
         server = startedServer;
 
+        logger.answerNextConfirmWith(true);
+
         commandResult = cli.run([
           'domain',
           'remove',
@@ -365,6 +368,22 @@ void main() {
           '--auth-dir',
           testCacheFolderPath,
         ]);
+      });
+
+      test('then logs confirm message', () async {
+        try {
+          await commandResult;
+        } catch (_) {}
+
+        expect(logger.confirmCalls, isNotEmpty);
+        expect(
+          logger.confirmCalls.first,
+          equalsConfirmCall(
+            message:
+                'Are you sure you want to delete the custom domain "domain.com"?',
+            defaultValue: false,
+          ),
+        );
       });
 
       test('then completes successfully', () async {
@@ -381,6 +400,64 @@ void main() {
             message: 'Successfully removed custom domain: domain.com.',
           ),
         );
+      });
+    });
+
+    group('when executing domain remove and rejecting prompt', () {
+      late Future commandResult;
+      setUp(() async {
+        final serverBuilder = HttpServerBuilder();
+
+        serverBuilder.withMethodResponse('customDomainName', 'remove',
+            (final _) {
+          return (200, '');
+        });
+
+        final (startedServer, serverAddress) = await serverBuilder.build();
+        localServerAddress = serverAddress;
+        server = startedServer;
+
+        logger.answerNextConfirmWith(false);
+
+        commandResult = cli.run([
+          'domain',
+          'remove',
+          'domain.com',
+          '--project-id',
+          projectId,
+          '--api-url',
+          localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
+        ]);
+      });
+
+      test('then logs confirm message', () async {
+        try {
+          await commandResult;
+        } catch (_) {}
+
+        expect(logger.confirmCalls, isNotEmpty);
+        expect(
+          logger.confirmCalls.first,
+          equalsConfirmCall(
+            message:
+                'Are you sure you want to delete the custom domain "domain.com"?',
+            defaultValue: false,
+          ),
+        );
+      });
+
+      test('then throws exit exception', () async {
+        await expectLater(commandResult, throwsA(isA<ExitException>()));
+      });
+
+      test('then logs no success message', () async {
+        try {
+          await commandResult;
+        } catch (_) {}
+
+        expect(logger.successCalls, isEmpty);
       });
     });
 

@@ -271,6 +271,15 @@ class CloudRemoveCustomDomainCommand
     final domainName =
         commandConfig.value(RemoveCustomDomainCommandConfig.domainName);
 
+    final shouldDelete = await logger.confirm(
+      'Are you sure you want to delete the custom domain "$domainName"?',
+      defaultValue: false,
+    );
+
+    if (!shouldDelete) {
+      throw ExitException();
+    }
+
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
     await handleCommonClientExceptions(logger, () async {

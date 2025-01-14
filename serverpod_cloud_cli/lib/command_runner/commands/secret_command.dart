@@ -164,6 +164,15 @@ class CloudDeleteSecretCommand
     final projectId = commandConfig.value(DeleteSecretCommandConfig.projectId);
     final name = commandConfig.value(DeleteSecretCommandConfig.name);
 
+    final shouldDelete = await logger.confirm(
+      'Are you sure you want to delete the secret "$name"?',
+      defaultValue: false,
+    );
+
+    if (!shouldDelete) {
+      throw ExitException();
+    }
+
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
     await handleCommonClientExceptions(logger, () async {

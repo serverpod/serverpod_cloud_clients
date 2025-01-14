@@ -175,6 +175,15 @@ class CloudEnvDeleteCommand extends CloudCliCommand<DeleteEnvCommandConfig> {
     final variableName =
         commandConfig.value(DeleteEnvCommandConfig.variableName);
 
+    final shouldDelete = await logger.confirm(
+      'Are you sure you want to delete the environment variable "$variableName"?',
+      defaultValue: false,
+    );
+
+    if (!shouldDelete) {
+      throw ExitException();
+    }
+
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
     await handleCommonClientExceptions(logger, () async {

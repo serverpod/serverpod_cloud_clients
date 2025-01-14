@@ -146,9 +146,10 @@ void main() {
       });
     });
 
-    group('when executing env delete', () {
+    group('when executing env and confirming prompt', () {
       late Future commandResult;
       setUp(() async {
+        logger.answerNextConfirmWith(true);
         commandResult = cli.run([
           'env',
           'delete',
@@ -313,9 +314,10 @@ void main() {
       });
     });
 
-    group('when executing env delete', () {
+    group('when executing env delete and confirming prompt', () {
       late Future commandResult;
       setUp(() async {
+        logger.answerNextConfirmWith(true);
         commandResult = cli.run([
           'env',
           'delete',
@@ -327,6 +329,22 @@ void main() {
           '--auth-dir',
           testCacheFolderPath,
         ]);
+      });
+
+      test('then logs confirm message', () async {
+        try {
+          await commandResult;
+        } catch (_) {}
+
+        expect(logger.confirmCalls, isNotEmpty);
+        expect(
+          logger.confirmCalls.first,
+          equalsConfirmCall(
+            message:
+                'Are you sure you want to delete the environment variable "key"?',
+            defaultValue: false,
+          ),
+        );
       });
 
       test('then completes successfully', () async {
@@ -343,6 +361,52 @@ void main() {
             message: 'Successfully deleted environment variable: key.',
           ),
         );
+      });
+    });
+
+    group('when executing env delete and rejecting prompt', () {
+      late Future commandResult;
+      setUp(() async {
+        logger.answerNextConfirmWith(false);
+        commandResult = cli.run([
+          'env',
+          'delete',
+          'key',
+          '--project-id',
+          projectId,
+          '--api-url',
+          localServerAddress.toString(),
+          '--auth-dir',
+          testCacheFolderPath,
+        ]);
+      });
+
+      test('then logs confirm message', () async {
+        try {
+          await commandResult;
+        } catch (_) {}
+
+        expect(logger.confirmCalls, isNotEmpty);
+        expect(
+          logger.confirmCalls.first,
+          equalsConfirmCall(
+            message:
+                'Are you sure you want to delete the environment variable "key"?',
+            defaultValue: false,
+          ),
+        );
+      });
+
+      test('then throws exit exception', () async {
+        await expectLater(commandResult, throwsA(isA<ExitException>()));
+      });
+
+      test('then logs no success message', () async {
+        try {
+          await commandResult;
+        } catch (_) {}
+
+        expect(logger.successCalls, isEmpty);
       });
     });
   });
