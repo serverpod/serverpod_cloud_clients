@@ -152,17 +152,27 @@ class CloudProjectDeleteCommand extends CloudCliCommand {
   Future<void> runWithConfig(final Configuration commandConfig) async {
     final projectId = commandConfig.value(_ProjectOptions.projectId);
 
+    final shouldDelete = await logger.confirm(
+      'Are you sure you want to delete the project "$projectId"?',
+      defaultValue: false,
+    );
+
+    if (!shouldDelete) {
+      throw ExitException();
+    }
+
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
     await handleCommonClientExceptions(logger, () async {
       await apiCloudClient.projects.deleteProject(cloudProjectId: projectId);
     }, (final e) {
       logger.error(
-        'Request to delete a new project failed: $e',
+        'Request to delete the project failed: $e',
       );
+
       throw ExitException();
     });
 
-    logger.success("Successfully deleted the project '$projectId'.");
+    logger.success('Successfully deleted the project "$projectId".');
   }
 }
 

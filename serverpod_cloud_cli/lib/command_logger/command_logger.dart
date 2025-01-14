@@ -313,4 +313,51 @@ class CommandLogger {
       );
     }
   }
+
+  /// ***Confirmation Messages Guidelines***
+  ///
+  /// Prompts the user for a `y/n` confirmation.
+  /// Accepts an optional [defaultValue] to specify what happens when the user simply presses Enter.
+  /// Returns `true` for "yes" or "y" and `false` for "no" or "n".
+  ///
+  /// Format:
+  /// ```bash
+  /// <message prompt> [y/n]:
+  /// ```
+  Future<bool> confirm(
+    final String message, {
+    final bool? defaultValue,
+  }) async {
+    final prompt = defaultValue == null
+        ? '[y/n]'
+        : defaultValue
+            ? '[Y/n]'
+            : '[y/N]';
+
+    while (true) {
+      _logger.write(
+        '$message $prompt: ',
+        LogLevel.info,
+        newLine: false,
+        newParagraph: false,
+      );
+      final input = stdin.readLineSync()?.trim().toLowerCase();
+
+      if (input == null || input.isEmpty) {
+        if (defaultValue != null) {
+          return defaultValue;
+        }
+        _logger.info('Please enter "y" or "n".');
+        continue;
+      }
+
+      if (input == 'y' || input == 'yes') {
+        return true;
+      } else if (input == 'n' || input == 'no') {
+        return false;
+      } else {
+        _logger.info('Invalid input. Please enter "y" or "n".');
+      }
+    }
+  }
 }

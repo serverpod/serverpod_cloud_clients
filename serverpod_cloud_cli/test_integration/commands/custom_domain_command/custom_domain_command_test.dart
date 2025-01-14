@@ -320,7 +320,7 @@ void main() {
               ),
               equalsTerminalCommandCall(
                 command:
-                    'scloud domains refresh-record www.domain.com --project-id $projectId',
+                    'scloud domain refresh-record www.domain.com --project-id $projectId',
                 newParagraph: true,
               ),
               equalsListCall(
@@ -331,7 +331,7 @@ void main() {
                 newParagraph: true,
               ),
               equalsTerminalCommandCall(
-                command: 'scloud domains list --project-id $projectId',
+                command: 'scloud domain list --project-id $projectId',
                 newParagraph: true,
               ),
             ],

@@ -11,9 +11,9 @@ import 'package:serverpod_ground_control_client/serverpod_ground_control_client.
 import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
 
-import '../../test_utils/command_logger_matchers.dart';
-import '../../test_utils/http_server_builder.dart';
-import '../../test_utils/test_command_logger.dart';
+import '../../../test_utils/command_logger_matchers.dart';
+import '../../../test_utils/http_server_builder.dart';
+import '../../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();

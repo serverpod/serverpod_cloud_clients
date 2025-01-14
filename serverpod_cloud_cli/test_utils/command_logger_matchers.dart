@@ -4,6 +4,7 @@ import 'package:test/test.dart';
 import 'test_command_logger.dart';
 import 'package:collection/collection.dart';
 
+/// Test matcher to assert TestCommandLogger.error calls
 Matcher equalsErrorCall({
   required final String message,
   final String? hint,
@@ -71,6 +72,7 @@ class _ErrorCallMatcher extends Matcher {
   }
 }
 
+/// Test matcher to assert TestCommandLogger.info calls
 Matcher equalsInfoCall({
   required final String message,
   final bool newParagraph = false,
@@ -123,6 +125,7 @@ class _InfoCallMatcher extends Matcher {
   }
 }
 
+/// Test matcher to assert TestCommandLogger.line calls
 Matcher equalsLineCall({
   required final String line,
 }) {
@@ -168,6 +171,7 @@ class _LineCallMatcher extends Matcher {
   }
 }
 
+/// Test matcher to assert TestCommandLogger.list calls
 Matcher equalsListCall({
   required final List<String> items,
   final String? title,
@@ -227,6 +231,7 @@ class _ListCallMatcher extends Matcher {
   }
 }
 
+/// Test matcher to assert TestCommandLogger.success calls
 Matcher equalsSuccessCall({
   required final String message,
   final bool trailingRocket = false,
@@ -295,6 +300,7 @@ class _SuccessCallMatcher extends Matcher {
   }
 }
 
+/// Test matcher to assert TestCommandLogger.terminalCommand calls
 Matcher equalsTerminalCommandCall({
   required final String command,
   final String? message,
@@ -356,6 +362,7 @@ class _TerminalCommandCallMatcher extends Matcher {
   }
 }
 
+/// Test matcher to assert TestCommandLogger.warning calls
 Matcher equalsWarningCall({
   required final message,
   final String? hint,
@@ -415,6 +422,7 @@ class _WarningCallMatcher extends Matcher {
   }
 }
 
+/// Test matcher to assert TestCommandLogger.progress calls
 Matcher equalsProgressCall({
   required final message,
   final bool newParagraph = false,
@@ -463,6 +471,61 @@ class _ProgressCallMatcher extends Matcher {
     if (item.newParagraph != progressCall.newParagraph) {
       return mismatchDescription
           .add('newParagraph is not ${progressCall.newParagraph}');
+    }
+
+    return super
+        .describeMismatch(item, mismatchDescription, matchState, verbose);
+  }
+}
+
+/// Test matcher to assert TestCommandLogger.confirm calls
+equalsConfirmCall({
+  required final String message,
+  final bool? defaultValue,
+}) {
+  return _ConfirmCallMatcher(
+    ConfirmCall(
+      message: message,
+      defaultValue: defaultValue,
+    ),
+  );
+}
+
+class _ConfirmCallMatcher extends Matcher {
+  final ConfirmCall confirmCall;
+
+  _ConfirmCallMatcher(this.confirmCall);
+
+  @override
+  bool matches(final Object? item, final Map matchState) {
+    if (item is! ConfirmCall) return false;
+    return item.message == confirmCall.message &&
+        item.defaultValue == confirmCall.defaultValue;
+  }
+
+  @override
+  Description describe(final Description description) {
+    return description.add(
+      'a confirm log with message "${confirmCall.message}" and defaultValue ${confirmCall.defaultValue}',
+    );
+  }
+
+  @override
+  Description describeMismatch(
+    final item,
+    final Description mismatchDescription,
+    final Map matchState,
+    final bool verbose,
+  ) {
+    if (item is! ConfirmCall) {
+      return mismatchDescription.add('is not a ConfirmCall');
+    }
+    if (item.message != confirmCall.message) {
+      return mismatchDescription.add('message is not "${confirmCall.message}"');
+    }
+    if (item.defaultValue != confirmCall.defaultValue) {
+      return mismatchDescription
+          .add('defaultValue is not ${confirmCall.defaultValue}');
     }
 
     return super

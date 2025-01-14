@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 
+import 'mock_stdin.dart';
 import 'mock_stdout.dart';
 
 class ErrorCall {
@@ -121,6 +122,24 @@ class SuccessCall {
   }
 }
 
+class ConfirmCall {
+  final String message;
+  final bool? defaultValue;
+
+  ConfirmCall({
+    required this.message,
+    required this.defaultValue,
+  });
+
+  @override
+  String toString() {
+    return {
+      'message': message,
+      'defaultValue': defaultValue,
+    }.toString();
+  }
+}
+
 class TerminalCommandCall {
   final String command;
   final String? message;
@@ -152,8 +171,10 @@ class TestCommandLogger extends CommandLogger {
   final List<SuccessCall> successCalls = [];
   final List<TerminalCommandCall> terminalCommandCalls = [];
   final List<WarningCall> warningCalls = [];
+  final List<ConfirmCall> confirmCalls = [];
 
   Completer<void> _somethingLogged = Completer<void>();
+  bool? _nextConfirmAnswer;
 
   final Logger _logger;
 
@@ -315,6 +336,39 @@ class TestCommandLogger extends CommandLogger {
       hint: hint,
     ));
   }
+
+  @override
+  Future<bool> confirm(
+    final String message, {
+    final bool? defaultValue,
+    final bool throwExitException = true,
+  }) async {
+    final nextConfirmAnswer = _nextConfirmAnswer;
+    if (nextConfirmAnswer == null) {
+      throw StateError(
+        'No answer set for confirm cal. '
+        'Use TestCommandLogger.answerNextConfirmWith() to set the answer.',
+      );
+    }
+
+    confirmCalls.add(ConfirmCall(
+      message: message,
+      defaultValue: defaultValue,
+    ));
+
+    final result = nextConfirmAnswer;
+    _nextConfirmAnswer = false;
+
+    if (throwExitException && result == false) {
+      throw ExitException();
+    }
+
+    return result;
+  }
+
+  void answerNextConfirmWith(final bool answer) {
+    _nextConfirmAnswer = answer;
+  }
 }
 
 class WarningCall {
@@ -338,19 +392,25 @@ class WarningCall {
   }
 }
 
-Future<({MockStdout stdout, MockStdout stderr})> collectOutput<T>(
-  final FutureOr<T> Function() runner,
-) async {
+Future<({MockStdout stdout, MockStdout stderr, MockStdin stdin})>
+    collectOutput<T>(
+  final FutureOr<T> Function() runner, {
+  final List<String> stdinLines = const [],
+}) async {
   final standardOut = MockStdout();
   final standardError = MockStdout();
+  final standardIn = MockStdin(stdinLines);
+
   await IOOverrides.runZoned(
     () async {
       final result = await runner();
+
       return result;
     },
     stdout: () => standardOut,
     stderr: () => standardError,
+    stdin: () => standardIn,
   );
 
-  return (stdout: standardOut, stderr: standardError);
+  return (stdout: standardOut, stderr: standardError, stdin: standardIn);
 }

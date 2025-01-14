@@ -4,7 +4,7 @@ import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:test/test.dart';
 
-import '../test_utils/test_command_logger.dart';
+import '../../test_utils/test_command_logger.dart';
 
 void main() {
   final commandLogger = CommandLogger.create(LogLevel.debug);
@@ -13,7 +13,7 @@ void main() {
       'Given empty standard out '
       'when calling debug '
       'then debug message is logged correctly', () async {
-    final (:stdout, :stderr) = await collectOutput(() {
+    final (:stdout, :stderr, :stdin) = await collectOutput(() {
       commandLogger.debug('Debugging information');
     });
 
@@ -27,7 +27,7 @@ void main() {
       'Given empty standard out '
       'when calling debug with newParagraph enabled '
       'then output starts with a new paragraph', () async {
-    final (:stdout, :stderr) = await collectOutput(() {
+    final (:stdout, :stderr, :stdin) = await collectOutput(() {
       commandLogger.debug('Debugging information', newParagraph: true);
     });
 
@@ -41,7 +41,7 @@ void main() {
       'Given empty standard out '
       'when calling error with hint property '
       'then both error and hint are logged correctly', () async {
-    final (:stdout, :stderr) = await collectOutput(() {
+    final (:stdout, :stderr, :stdin) = await collectOutput(() {
       commandLogger.error(
         'An error occurred',
         hint: 'Try running the command with different arguments.',
@@ -62,7 +62,7 @@ void main() {
       'Given empty standard out '
       'when calling error with hint property and newParagraph enabled '
       'then error output starts with a new paragraph', () async {
-    final (:stdout, :stderr) = await collectOutput(() {
+    final (:stdout, :stderr, :stdin) = await collectOutput(() {
       commandLogger.error(
         'An error occurred',
         hint: 'Try running the command with different arguments.',
@@ -84,7 +84,7 @@ void main() {
       'Given empty standard out '
       'when calling error without hint property '
       'then only error is printed', () async {
-    final (:stdout, :stderr) = await collectOutput(() {
+    final (:stdout, :stderr, :stdin) = await collectOutput(() {
       commandLogger.error(
         'An error occurred',
         newParagraph: true,
@@ -102,7 +102,7 @@ void main() {
       'Given empty standard out '
       'when calling info '
       'then logs message correctly', () async {
-    final (:stdout, :stderr) = await collectOutput(() {
+    final (:stdout, :stderr, :stdin) = await collectOutput(() {
       commandLogger.info(
         'Some info',
       );
@@ -119,7 +119,7 @@ void main() {
       'Given empty standard out '
       'when calling info with newParagraph enabled '
       'then logs message correctly', () async {
-    final (:stdout, :stderr) = await collectOutput(() {
+    final (:stdout, :stderr, :stdin) = await collectOutput(() {
       commandLogger.info(
         'Some info',
         newParagraph: true,
@@ -137,7 +137,7 @@ void main() {
       'Given empty standard out '
       'when calling list with title property'
       'then output is formatted correctly', () async {
-    final (:stdout, :stderr) = await collectOutput(() {
+    final (:stdout, :stderr, :stdin) = await collectOutput(() {
       commandLogger.list(['first', 'second'], title: 'Follow these steps:');
     });
 
@@ -153,7 +153,7 @@ void main() {
       'Given empty standard out '
       'when calling list without title property'
       'then output is formatted correctly', () async {
-    final (:stdout, :stderr) = await collectOutput(() {
+    final (:stdout, :stderr, :stdin) = await collectOutput(() {
       commandLogger.list(['first', 'second']);
     });
 
@@ -168,7 +168,7 @@ void main() {
       'Given empty standard out '
       'when calling list with title property and newParagraph enabled'
       'then title starts with new paragraph', () async {
-    final (:stdout, :stderr) = await collectOutput(() {
+    final (:stdout, :stderr, :stdin) = await collectOutput(() {
       commandLogger.list(
         ['first', 'second'],
         newParagraph: true,
@@ -188,7 +188,7 @@ void main() {
       'Given empty standard out '
       'when calling list without title property and newParagraph enabled'
       'then output starts with new paragraph', () async {
-    final (:stdout, :stderr) = await collectOutput(() {
+    final (:stdout, :stderr, :stdin) = await collectOutput(() {
       commandLogger.list(['first', 'second'], newParagraph: true);
     });
 
@@ -205,7 +205,7 @@ void main() {
     'when calling success with trailingRocket enabled '
     'then output is formatted with a rocket at the end if platform is not Windows',
     () async {
-      final (:stdout, :stderr) = await collectOutput(() {
+      final (:stdout, :stderr, :stdin) = await collectOutput(() {
         commandLogger.success('Operation successful', trailingRocket: true);
       });
 
@@ -227,7 +227,7 @@ void main() {
       'Given empty standard out '
       'when calling success with trailingRocket disabled '
       'then output is not formatted with a rocket at the end', () async {
-    final (:stdout, :stderr) = await collectOutput(() {
+    final (:stdout, :stderr, :stdin) = await collectOutput(() {
       commandLogger.success('Operation successful', trailingRocket: false);
     });
 
@@ -241,7 +241,7 @@ void main() {
       'Given empty standard out '
       'when calling success with newParagraph enabled'
       'then output starts with a new paragraph', () async {
-    final (:stdout, :stderr) = await collectOutput(() {
+    final (:stdout, :stderr, :stdin) = await collectOutput(() {
       commandLogger.success(
         'Operation successful',
         newParagraph: true,
@@ -258,7 +258,7 @@ void main() {
       'Given empty standard out '
       'when calling success with followUp property'
       'then output starts with a new paragraph', () async {
-    final (:stdout, :stderr) = await collectOutput(() {
+    final (:stdout, :stderr, :stdin) = await collectOutput(() {
       commandLogger.success(
         'Operation successful',
         followUp: 'You can now proceed to the next step.',
@@ -276,7 +276,7 @@ void main() {
       'Given empty standard out '
       'when calling terminalCommand without message property'
       'then output is formatted correctly', () async {
-    final (:stdout, :stderr) = await collectOutput(() {
+    final (:stdout, :stderr, :stdin) = await collectOutput(() {
       commandLogger.terminalCommand('echo "Hello, World!"');
     });
 
@@ -290,7 +290,7 @@ void main() {
       'Given empty standard out '
       'when calling terminalCommand without message property and newParagraph enabled'
       'then output starts with new paragraph', () async {
-    final (:stdout, :stderr) = await collectOutput(() {
+    final (:stdout, :stderr, :stdin) = await collectOutput(() {
       commandLogger.terminalCommand(
         'echo "Hello, World!"',
         newParagraph: true,
@@ -308,7 +308,7 @@ void main() {
       'Given empty standard out '
       'when calling terminalCommand with message property'
       'then message is output before the command', () async {
-    final (:stdout, :stderr) = await collectOutput(() {
+    final (:stdout, :stderr, :stdin) = await collectOutput(() {
       commandLogger.terminalCommand(
         'echo "Hello, World!"',
         message: 'Run this command:',
@@ -326,7 +326,7 @@ void main() {
       'Given empty standard out '
       'when calling terminalCommand with message property and newParagraph enabled'
       'then message starts with a new paragraph', () async {
-    final (:stdout, :stderr) = await collectOutput(() {
+    final (:stdout, :stderr, :stdin) = await collectOutput(() {
       commandLogger.terminalCommand(
         'echo "Hello, World!"',
         message: 'Run this command:',
@@ -345,7 +345,7 @@ void main() {
       'Given empty standard out '
       'when calling warning '
       'then logs message correctly', () async {
-    final (:stdout, :stderr) = await collectOutput(() {
+    final (:stdout, :stderr, :stdin) = await collectOutput(() {
       commandLogger.warning(
         'Invalid value found in config',
       );
@@ -362,7 +362,7 @@ void main() {
       'Given empty standard out '
       'when calling warning with newParagraph enabled '
       'then output starts with new paragraph', () async {
-    final (:stdout, :stderr) = await collectOutput(() {
+    final (:stdout, :stderr, :stdin) = await collectOutput(() {
       commandLogger.warning(
         'Invalid value found in config',
         newParagraph: true,
@@ -383,7 +383,7 @@ void main() {
       'Given empty standard out '
       'when calling warning with hint property '
       'then both warning and hint are logged correctly', () async {
-    final (:stdout, :stderr) = await collectOutput(() {
+    final (:stdout, :stderr, :stdin) = await collectOutput(() {
       commandLogger.warning('Invalid value found in config',
           hint: 'Try removing the value.');
     });
