@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:cli_tools/cli_tools.dart';
 import 'package:collection/collection.dart';
+import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
+import 'package:serverpod_cloud_cli/util/configuration.dart';
 
 /// Logger that logs using the provided [Logger].
 /// This interface is created to make it easier to follow the UX guidelines, as outlined in this issue: https://github.com/serverpod/serverpod_cloud/issues/371
@@ -341,7 +343,12 @@ class CommandLogger {
   Future<bool> confirm(
     final String message, {
     final bool? defaultValue,
+    required final bool Function(OptionDefinition option) checkBypassFlag,
   }) async {
+    if (checkBypassFlag(GlobalOption.skipConfirmation)) {
+      return true;
+    }
+
     final prompt = defaultValue == null
         ? '[y/n]'
         : defaultValue

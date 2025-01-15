@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
+import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
+import 'package:serverpod_cloud_cli/util/configuration.dart';
 
 import 'mock_stdin.dart';
 import 'mock_stdout.dart';
@@ -389,12 +391,19 @@ class TestCommandLogger extends CommandLogger {
   Future<bool> confirm(
     final String message, {
     final bool? defaultValue,
-    final bool throwExitException = true,
+    required final bool Function(OptionDefinition option) checkBypassFlag,
   }) async {
     final nextConfirmAnswer = _nextConfirmAnswer;
     if (nextConfirmAnswer == null) {
       throw StateError(
-        'No answer set for confirm cal. '
+        'No answer set for confirm call. '
+        'Use TestCommandLogger.answerNextConfirmWith() to set the answer.',
+      );
+    }
+
+    if (checkBypassFlag(GlobalOption.skipConfirmation)) {
+      throw StateError(
+        'Dont bypass confirmation in unit or integration tests. '
         'Use TestCommandLogger.answerNextConfirmWith() to set the answer.',
       );
     }
@@ -406,10 +415,6 @@ class TestCommandLogger extends CommandLogger {
 
     final result = nextConfirmAnswer;
     _nextConfirmAnswer = false;
-
-    if (throwExitException && result == false) {
-      throw ExitException();
-    }
 
     return result;
   }

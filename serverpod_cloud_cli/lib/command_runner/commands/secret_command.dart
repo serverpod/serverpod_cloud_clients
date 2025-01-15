@@ -167,6 +167,7 @@ class CloudDeleteSecretCommand
     final shouldDelete = await logger.confirm(
       'Are you sure you want to delete the secret "$name"?',
       defaultValue: false,
+      checkBypassFlag: runner.globalConfiguration.flag,
     );
 
     if (!shouldDelete) {

@@ -195,7 +195,6 @@ enum GlobalOption implements OptionDefinition {
       defaultsTo: HostConstants.serverpodCloudApi,
     ),
   ),
-
   consoleServer(
     ConfigOption(
       argName: 'console-url',
@@ -203,6 +202,16 @@ enum GlobalOption implements OptionDefinition {
       helpText: 'The URL to the Serverpod cloud console server.',
       hide: true,
       defaultsTo: HostConstants.serverpodCloudConsole,
+    ),
+  ),
+  skipConfirmation(
+    ConfigOption(
+      argName: 'skip-confirmation',
+      helpText:
+          'Should be used in CI environment to bypass confirmation prompts.',
+      hide: true,
+      isFlag: true,
+      defaultsTo: 'false',
     ),
   );
 

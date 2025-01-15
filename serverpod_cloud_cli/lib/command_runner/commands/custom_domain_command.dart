@@ -274,6 +274,7 @@ class CloudRemoveCustomDomainCommand
     final shouldDelete = await logger.confirm(
       'Are you sure you want to delete the custom domain "$domainName"?',
       defaultValue: false,
+      checkBypassFlag: runner.globalConfiguration.flag,
     );
 
     if (!shouldDelete) {

@@ -155,6 +155,7 @@ class CloudProjectDeleteCommand extends CloudCliCommand {
     final shouldDelete = await logger.confirm(
       'Are you sure you want to delete the project "$projectId"?',
       defaultValue: false,
+      checkBypassFlag: runner.globalConfiguration.flag,
     );
 
     if (!shouldDelete) {

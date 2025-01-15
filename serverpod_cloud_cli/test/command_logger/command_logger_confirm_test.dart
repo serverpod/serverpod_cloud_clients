@@ -15,7 +15,10 @@ void main() {
     await collectOutput(
       stdinLines: ['yes'],
       () {
-        result = commandLogger.confirm('Are you sure?');
+        result = commandLogger.confirm(
+          'Are you sure?',
+          checkBypassFlag: (final _) => false,
+        );
       },
     );
 
@@ -33,7 +36,10 @@ void main() {
     await collectOutput(
       stdinLines: ['y'],
       () {
-        result = commandLogger.confirm('Are you sure?');
+        result = commandLogger.confirm(
+          'Are you sure?',
+          checkBypassFlag: (final _) => false,
+        );
       },
     );
 
@@ -51,7 +57,10 @@ void main() {
     await collectOutput(
       stdinLines: ['Y'],
       () {
-        result = commandLogger.confirm('Are you sure?');
+        result = commandLogger.confirm(
+          'Are you sure?',
+          checkBypassFlag: (final _) => false,
+        );
       },
     );
 
@@ -71,6 +80,7 @@ void main() {
       () async {
         result = commandLogger.confirm(
           'Are you sure?',
+          checkBypassFlag: (final _) => false,
         );
       },
     );
@@ -91,6 +101,7 @@ void main() {
       () async {
         result = commandLogger.confirm(
           'Are you sure?',
+          checkBypassFlag: (final _) => false,
         );
       },
     );
@@ -111,6 +122,7 @@ void main() {
       () async {
         result = commandLogger.confirm(
           'Are you sure?',
+          checkBypassFlag: (final _) => false,
         );
       },
     );
@@ -129,7 +141,10 @@ void main() {
     final (:stdout, :stderr, :stdin) = await collectOutput(
       stdinLines: ['invalid', 'yes'],
       () {
-        result = commandLogger.confirm('Are you sure?');
+        result = commandLogger.confirm(
+          'Are you sure?',
+          checkBypassFlag: (final _) => false,
+        );
       },
     );
 
@@ -154,8 +169,11 @@ void main() {
     await collectOutput(
       stdinLines: ['  '],
       () async {
-        result =
-            await commandLogger.confirm('Are you sure?', defaultValue: false);
+        result = await commandLogger.confirm(
+          'Are you sure?',
+          defaultValue: false,
+          checkBypassFlag: (final _) => false,
+        );
       },
     );
 
@@ -173,7 +191,11 @@ void main() {
     await collectOutput(
       stdinLines: ['  '],
       () {
-        result = commandLogger.confirm('Are you sure?', defaultValue: true);
+        result = commandLogger.confirm(
+          'Are you sure?',
+          defaultValue: true,
+          checkBypassFlag: (final _) => false,
+        );
       },
     );
 
@@ -191,7 +213,10 @@ void main() {
     final (:stdout, :stderr, :stdin) = await collectOutput(
       stdinLines: ['  ', 'yes'],
       () {
-        result = commandLogger.confirm('Are you sure?');
+        result = commandLogger.confirm(
+          'Are you sure?',
+          checkBypassFlag: (final _) => false,
+        );
       },
     );
 
@@ -214,7 +239,10 @@ void main() {
     final (:stdout, :stderr, :stdin) = await collectOutput(
       stdinLines: ['yes'],
       () async {
-        await commandLogger.confirm('Are you sure?');
+        await commandLogger.confirm(
+          'Are you sure?',
+          checkBypassFlag: (final _) => false,
+        );
       },
     );
 
@@ -228,7 +256,11 @@ void main() {
     final (:stdout, :stderr, :stdin) = await collectOutput(
       stdinLines: ['yes'],
       () async {
-        await commandLogger.confirm('Are you sure?', defaultValue: true);
+        await commandLogger.confirm(
+          'Are you sure?',
+          defaultValue: true,
+          checkBypassFlag: (final _) => false,
+        );
       },
     );
 
@@ -242,10 +274,34 @@ void main() {
     final (:stdout, :stderr, :stdin) = await collectOutput(
       stdinLines: ['yes'],
       () async {
-        await commandLogger.confirm('Are you sure?', defaultValue: false);
+        await commandLogger.confirm(
+          'Are you sure?',
+          defaultValue: false,
+          checkBypassFlag: (final _) => false,
+        );
       },
     );
 
     expect(stdout.output, 'Are you sure? [y/N]: ');
+  });
+
+  test(
+      'Given empty standard out '
+      'when calling confirm with checkBypassFlag returning true '
+      'then should immediately return true', () async {
+    late final bool result;
+
+    final (:stdout, :stderr, :stdin) = await collectOutput(
+      () async {
+        result = await commandLogger.confirm(
+          'Are you sure?',
+          defaultValue: false,
+          checkBypassFlag: (final _) => true,
+        );
+      },
+    );
+
+    expect(stdout.output, isEmpty);
+    expect(result, isTrue);
   });
 }
