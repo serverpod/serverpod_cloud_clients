@@ -94,7 +94,7 @@ void main() {
           '--no-enable-db',
           '--api-url',
           localServerAddress.toString(),
-          '--auth-dir',
+          '--scloud-dir',
           testCacheFolderPath,
         ]);
       });
@@ -151,7 +151,7 @@ void main() {
           '--no-enable-db',
           '--api-url',
           localServerAddress.toString(),
-          '--auth-dir',
+          '--scloud-dir',
           testCacheFolderPath,
         ]);
       });
@@ -202,7 +202,7 @@ void main() {
           '--no-enable-db',
           '--api-url',
           localServerAddress.toString(),
-          '--auth-dir',
+          '--scloud-dir',
           testCacheFolderPath,
         ]);
       });
@@ -241,7 +241,7 @@ void main() {
           '--no-enable-db',
           '--api-url',
           localServerAddress.toString(),
-          '--auth-dir',
+          '--scloud-dir',
           testCacheFolderPath,
         ]);
       });

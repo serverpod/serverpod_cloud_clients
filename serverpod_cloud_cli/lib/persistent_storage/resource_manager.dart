@@ -70,8 +70,62 @@ abstract class ResourceManager {
       return null;
     }
   }
+
+  static Future<void> storeLatestCliVersion({
+    required final CommandLogger logger,
+    required final PackageVersionData cliVersionData,
+    String? localStoragePath,
+  }) async {
+    localStoragePath ??= localStorageDirectory.path;
+
+    try {
+      await LocalStorageManager.storeJsonFile(
+        fileName: ResourceManagerConstants.latestVersionFilePath,
+        json: cliVersionData.toJson(),
+        localStoragePath: localStoragePath,
+      );
+    } catch (e) {
+      // Ignore since users can't do anything about it.
+      logger.debug(
+        'Failed to store latest cli version to file: $e',
+      );
+    }
+  }
+
+  static Future<PackageVersionData?> tryFetchLatestCliVersion({
+    String? localStoragePath,
+    required final CommandLogger logger,
+  }) async {
+    localStoragePath ??= localStorageDirectory.path;
+
+    void deleteFile(final File file) {
+      try {
+        file.deleteSync();
+      } catch (e) {
+        // Ignore since users can't do anything about it.
+        logger.debug(
+          'Failed to store latest cli version to file: $e',
+        );
+      }
+    }
+
+    try {
+      return await LocalStorageManager.tryFetchAndDeserializeJsonFile(
+        fileName: ResourceManagerConstants.latestVersionFilePath,
+        localStoragePath: localStoragePath,
+        fromJson: PackageVersionData.fromJson,
+      );
+    } on ReadException catch (e) {
+      deleteFile(e.file);
+    } on DeserializationException catch (e) {
+      deleteFile(e.file);
+    }
+
+    return null;
+  }
 }
 
 abstract class ResourceManagerConstants {
   static const serverpodCloudDataFilePath = 'serverpod_cloud_data.yaml';
+  static const latestVersionFilePath = 'latest_cli_version.json';
 }

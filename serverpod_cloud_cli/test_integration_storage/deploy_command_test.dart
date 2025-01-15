@@ -90,7 +90,7 @@ void main() {
           '123',
           '--api-url',
           localServerAddress.toString(),
-          '--auth-dir',
+          '--scloud-dir',
           testCacheFolderPath,
           '--project-dir',
           testProjectDir,
@@ -136,7 +136,7 @@ void main() {
           'invalid',
           '--project-id',
           '123',
-          '--auth-dir',
+          '--scloud-dir',
           testCacheFolderPath,
         ]);
       });
@@ -177,7 +177,7 @@ void main() {
           'deploy',
           '--project-id',
           '123',
-          '--auth-dir',
+          '--scloud-dir',
           testCacheFolderPath,
           '--project-dir',
           testProjectDir,
@@ -242,7 +242,7 @@ void main() {
               '123',
               '--api-url',
               localServerAddress.toString(),
-              '--auth-dir',
+              '--scloud-dir',
               testCacheFolderPath,
               '--project-dir',
               testProjectDir,
@@ -324,7 +324,7 @@ void main() {
               testProjectDir,
               '--api-url',
               localServerAddress.toString(),
-              '--auth-dir',
+              '--scloud-dir',
               testCacheFolderPath,
             ]);
           });
@@ -395,7 +395,7 @@ void main() {
               testProjectDir,
               '--api-url',
               localServerAddress.toString(),
-              '--auth-dir',
+              '--scloud-dir',
               testCacheFolderPath,
             ]);
           });
@@ -461,7 +461,7 @@ void main() {
               projectId,
               '--api-url',
               localServerAddress.toString(),
-              '--auth-dir',
+              '--scloud-dir',
               testCacheFolderPath,
               '--project-dir',
               testProjectDir,
@@ -538,7 +538,7 @@ void main() {
               projectId,
               '--api-url',
               localServerAddress.toString(),
-              '--auth-dir',
+              '--scloud-dir',
               testCacheFolderPath,
               '--project-dir',
               testProjectDir,

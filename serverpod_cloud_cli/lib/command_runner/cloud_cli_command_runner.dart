@@ -17,6 +17,7 @@ import 'package:serverpod_cloud_cli/command_runner/commands/secret_command.dart'
 import 'package:serverpod_cloud_cli/command_runner/commands/status_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/version_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/cli_version_checker.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
@@ -100,6 +101,32 @@ class CloudCliCommandRunner extends BetterCommandRunner {
       logger: logger,
     );
 
+    final Version? latestVersion;
+    try {
+      latestVersion = await CLIVersionChecker.fetchLatestCLIVersion(
+        logger: logger,
+        localStoragePath: globalConfiguration.scloudDir,
+      );
+    } catch (e) {
+      logger.debug('Failed to fetch latest CLI version: $e');
+      throw ExitException();
+    }
+
+    if (latestVersion != null && version < latestVersion) {
+      final isRequiredUpdate = CLIVersionChecker.isBreakingUpdate(
+        currentVersion: version,
+        latestVersion: latestVersion,
+      );
+
+      _printUpdateCLIPrompt(
+        latestVersion: latestVersion,
+        logger: logger,
+        isRequiredUpdate: isRequiredUpdate,
+      );
+
+      if (isRequiredUpdate) throw ExitException();
+    }
+
     try {
       await super.runCommand(topLevelResults);
     } finally {
@@ -122,6 +149,25 @@ class CloudCliCommandRunner extends BetterCommandRunner {
 
     logger.logLevel = logLevel;
   }
+
+  static void _printUpdateCLIPrompt({
+    required final Version latestVersion,
+    required final CommandLogger logger,
+    required final bool isRequiredUpdate,
+  }) {
+    var infoMessage =
+        '''A new version $latestVersion of Serverpod Cloud CLI is available!
+
+To update to the latest version, run "dart pub global activate serverpod_cloud_cli".''';
+
+    if (isRequiredUpdate) {
+      infoMessage = '$infoMessage You need to update the CLI to continue.';
+    }
+
+    logger.box(
+      infoMessage,
+    );
+  }
 }
 
 String _getDefaultStoragePath() {
@@ -130,12 +176,12 @@ String _getDefaultStoragePath() {
 
 /// The global configuration options for the Serverpod Cloud CLI.
 enum GlobalOption implements OptionDefinition {
-  authDir(
+  scloudDir(
     ConfigOption(
-      argName: 'auth-dir',
-      envName: 'SERVERPOD_CLOUD_AUTH_DIR',
+      argName: 'scloud-dir',
+      envName: 'SERVERPOD_CLOUD_DIR',
       helpText:
-          'Override the directory path where the serverpod cloud authentication file is stored.',
+          'Override the directory path where Serverpod Cloud cache/authentication files are stored.',
       defaultFrom: _getDefaultStoragePath,
     ),
   ),
@@ -173,7 +219,7 @@ class GlobalConfiguration extends Configuration {
     super.env,
   }) : super.fromEnvAndArgs(options: GlobalOption.values);
 
-  String get authDir => value(GlobalOption.authDir);
+  String get scloudDir => value(GlobalOption.scloudDir);
 
   String get apiServer => value(GlobalOption.apiServer);
 

@@ -45,7 +45,7 @@ class CloudCliServiceProvider {
     if (_apiClientFactory != null) {
       cloudApiClient = _apiClientFactory(_globalConfiguration);
     } else {
-      final localStoragePath = _globalConfiguration.authDir;
+      final localStoragePath = _globalConfiguration.scloudDir;
       final serverAddress = _globalConfiguration.apiServer;
       final address =
           serverAddress.endsWith('/') ? serverAddress : '$serverAddress/';

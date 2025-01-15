@@ -7,6 +7,24 @@ import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'mock_stdin.dart';
 import 'mock_stdout.dart';
 
+class BoxCall {
+  final String message;
+  final bool newParagraph;
+
+  BoxCall({
+    required this.message,
+    this.newParagraph = false,
+  });
+
+  @override
+  String toString() {
+    return {
+      'message': message,
+      'newParagraph': newParagraph,
+    }.toString();
+  }
+}
+
 class ErrorCall {
   final String message;
   final String? hint;
@@ -162,6 +180,7 @@ class TerminalCommandCall {
 }
 
 class TestCommandLogger extends CommandLogger {
+  final List<BoxCall> boxCalls = [];
   final List<ErrorCall> errorCalls = [];
   var flushCallsCount = 0;
   final List<InfoCall> infoCalls = [];
@@ -182,6 +201,34 @@ class TestCommandLogger extends CommandLogger {
       : _logger = VoidLogger(),
         super(VoidLogger());
 
+  int get totalLogCalls =>
+      boxCalls.length +
+      errorCalls.length +
+      infoCalls.length +
+      lineCalls.length +
+      listCalls.length +
+      progressCalls.length +
+      successCalls.length +
+      terminalCommandCalls.length +
+      warningCalls.length;
+
+  @override
+  void box(
+    final String message, {
+    final bool newParagraph = false,
+  }) {
+    if (!_somethingLogged.isCompleted) {
+      _somethingLogged.complete();
+    }
+
+    boxCalls.add(
+      BoxCall(
+        message: message,
+        newParagraph: newParagraph,
+      ),
+    );
+  }
+
   void clear() {
     errorCalls.clear();
     flushCallsCount = 0;
@@ -192,6 +239,7 @@ class TestCommandLogger extends CommandLogger {
     successCalls.clear();
     terminalCommandCalls.clear();
     warningCalls.clear();
+    boxCalls.clear();
   }
 
   @override

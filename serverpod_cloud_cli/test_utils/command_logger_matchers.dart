@@ -532,3 +532,57 @@ class _ConfirmCallMatcher extends Matcher {
         .describeMismatch(item, mismatchDescription, matchState, verbose);
   }
 }
+
+Matcher equalsBoxCall({
+  required final message,
+  final bool newParagraph = false,
+}) {
+  return _BoxCallMatcher(
+    BoxCall(
+      message: message,
+      newParagraph: newParagraph,
+    ),
+  );
+}
+
+class _BoxCallMatcher extends Matcher {
+  final BoxCall boxCall;
+
+  _BoxCallMatcher(this.boxCall);
+
+  @override
+  bool matches(final Object? item, final Map matchState) {
+    if (item is! BoxCall) return false;
+    return item.message == boxCall.message &&
+        item.newParagraph == boxCall.newParagraph;
+  }
+
+  @override
+  Description describe(final Description description) {
+    return description.add(
+      'a box log with message "${boxCall.message}" and newParagraph ${boxCall.newParagraph}',
+    );
+  }
+
+  @override
+  Description describeMismatch(
+    final item,
+    final Description mismatchDescription,
+    final Map matchState,
+    final bool verbose,
+  ) {
+    if (item is! BoxCall) {
+      return mismatchDescription.add('is not a BoxCall');
+    }
+    if (item.message != boxCall.message) {
+      return mismatchDescription.add('message is not "${boxCall.message}"');
+    }
+    if (item.newParagraph != boxCall.newParagraph) {
+      return mismatchDescription
+          .add('newParagraph is not ${boxCall.newParagraph}');
+    }
+
+    return super
+        .describeMismatch(item, mismatchDescription, matchState, verbose);
+  }
+}

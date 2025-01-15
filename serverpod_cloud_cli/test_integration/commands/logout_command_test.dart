@@ -71,7 +71,7 @@ void main() {
           'logout',
           '--api-url',
           localServerAddress.toString(),
-          '--auth-dir',
+          '--scloud-dir',
           testCacheFolderPath,
         ]);
       });
@@ -142,7 +142,7 @@ void main() {
           'logout',
           '--api-url',
           localServerAddress.toString(),
-          '--auth-dir',
+          '--scloud-dir',
           testCacheFolderPath,
         ]);
       });
@@ -185,7 +185,7 @@ void main() {
       () async {
     final runLogoutCommand = cli.run([
       'logout',
-      '--auth-dir',
+      '--scloud-dir',
       testCacheFolderPath,
     ]);
 

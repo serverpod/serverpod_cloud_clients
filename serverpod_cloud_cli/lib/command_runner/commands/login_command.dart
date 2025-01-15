@@ -74,7 +74,7 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
     final persistent = commandConfig.flag(LoginCommandOption.persistentOpt);
     final openBrowser = commandConfig.flag(LoginCommandOption.browserOpt);
 
-    final localStoragePath = globalConfiguration.authDir;
+    final localStoragePath = globalConfiguration.scloudDir;
     final serverAddress = globalConfiguration.consoleServer;
 
     final storedCloudData = await ResourceManager.tryFetchServerpodCloudData(

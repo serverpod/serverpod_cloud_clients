@@ -53,7 +53,7 @@ void main() {
     test(
         'when logging in through cli then "logout first to log in again" message is logged.',
         () async {
-      await cli.run(['login', '--auth-dir', testCacheFolderPath]);
+      await cli.run(['login', '--scloud-dir', testCacheFolderPath]);
 
       expect(logger.infoCalls, isNotEmpty);
       expect(
@@ -92,8 +92,8 @@ void main() {
     group('when logging in through cli', () {
       late Future cliOnDone;
       setUp(() async {
-        cliOnDone = cli
-            .run(['login', '--no-browser', '--auth-dir', testCacheFolderPath]);
+        cliOnDone = cli.run(
+            ['login', '--no-browser', '--scloud-dir', testCacheFolderPath]);
         await tokenSent.future;
       });
 
@@ -125,7 +125,7 @@ void main() {
           'login',
           '--no-persistent',
           '--no-browser',
-          '--auth-dir',
+          '--scloud-dir',
           testCacheFolderPath,
         ]);
         await tokenSent.future;
@@ -176,8 +176,8 @@ void main() {
     group('when logging in through cli', () {
       late Future cliOnDone;
       setUp(() async {
-        cliOnDone = cli
-            .run(['login', '--no-browser', '--auth-dir', testCacheFolderPath]);
+        cliOnDone = cli.run(
+            ['login', '--no-browser', '--scloud-dir', testCacheFolderPath]);
         await tokenSent.future;
       });
 

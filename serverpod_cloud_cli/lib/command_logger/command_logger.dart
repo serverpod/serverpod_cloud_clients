@@ -138,6 +138,20 @@ class CommandLogger {
     );
   }
 
+  /// **Box Messages Guidelines**
+  ///
+  /// Same as [info] but with a box around the message.
+  void box(
+    final String message, {
+    final bool newParagraph = false,
+  }) {
+    _logger.info(
+      message,
+      type: const BoxLogType(newParagraph: true),
+      newParagraph: newParagraph,
+    );
+  }
+
   /// **Line Output Guidelines**
   ///
   /// Used for line-oriented output that should not be modified or formatted

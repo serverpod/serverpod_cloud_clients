@@ -18,7 +18,7 @@ class CloudLogoutCommand extends CloudCliCommand {
 
   @override
   Future<void> runWithConfig(final Configuration commandConfig) async {
-    final localStoragePath = globalConfiguration.authDir;
+    final localStoragePath = globalConfiguration.scloudDir;
 
     final cloudData = await ResourceManager.tryFetchServerpodCloudData(
       localStoragePath: localStoragePath,

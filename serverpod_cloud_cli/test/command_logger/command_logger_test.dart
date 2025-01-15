@@ -394,4 +394,42 @@ void main() {
       'Try removing the value.\n',
     );
   });
+
+  test(
+      'Given empty standard out '
+      'when calling box '
+      'then is logged correctly', () async {
+    final (:stdout, :stderr, :stdin) = await collectOutput(() {
+      commandLogger.box(
+        'Some information.',
+      );
+    });
+
+    expect(
+      stdout.output,
+      '┌───────────────────┐\n'
+      '│ Some information. │\n'
+      '└───────────────────┘\n',
+    );
+  });
+
+  test(
+      'Given empty standard out '
+      'when calling box with newParagraph true '
+      'then is logged correctly', () async {
+    final (:stdout, :stderr, :stdin) = await collectOutput(() {
+      commandLogger.box(
+        'Some information.',
+        newParagraph: true,
+      );
+    });
+
+    expect(
+      stdout.output,
+      '\n'
+      '┌───────────────────┐\n'
+      '│ Some information. │\n'
+      '└───────────────────┘\n',
+    );
+  });
 }
