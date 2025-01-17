@@ -226,6 +226,7 @@ class CloudListCustomDomainCommand
     }
 
     defaultDomainPrinter.writeLines(logger.line);
+    logger.line('');
     customDomainPrinter.writeLines(logger.line);
   }
 
