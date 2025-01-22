@@ -24,19 +24,21 @@ import 'package:serverpod_ground_control_client/src/protocol/features/environmen
     as _i8;
 import 'package:serverpod_ground_control_client/src/protocol/domains/logs/models/log_record.dart'
     as _i9;
-import 'package:serverpod_ground_control_client/src/protocol/features/project/models/project.dart'
+import 'package:serverpod_ground_control_client/src/protocol/features/database/models/database_connection.dart'
     as _i10;
-import 'package:serverpod_ground_control_client/src/protocol/features/project/models/project_config.dart'
+import 'package:serverpod_ground_control_client/src/protocol/features/project/models/project.dart'
     as _i11;
-import 'package:serverpod_ground_control_client/src/protocol/features/project/models/role.dart'
+import 'package:serverpod_ground_control_client/src/protocol/features/project/models/project_config.dart'
     as _i12;
-import 'package:serverpod_ground_control_client/src/protocol/domains/status/models/deploy_attempt.dart'
+import 'package:serverpod_ground_control_client/src/protocol/features/project/models/role.dart'
     as _i13;
-import 'package:serverpod_ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
+import 'package:serverpod_ground_control_client/src/protocol/domains/status/models/deploy_attempt.dart'
     as _i14;
-import 'package:serverpod_ground_control_client/src/protocol/domains/users/models/user.dart'
+import 'package:serverpod_ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
     as _i15;
-import 'protocol.dart' as _i16;
+import 'package:serverpod_ground_control_client/src/protocol/domains/users/models/user.dart'
+    as _i16;
+import 'protocol.dart' as _i17;
 
 /// Endpoint for managing projects.
 /// {@category Endpoint}
@@ -293,6 +295,53 @@ class EndpointLogs extends _i1.EndpointRef {
       );
 }
 
+/// Endpoint for database management.
+/// {@category Endpoint}
+class EndpointDatabase extends _i1.EndpointRef {
+  EndpointDatabase(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'database';
+
+  _i2.Future<_i10.DatabaseConnection> getConnectionDetails(
+          {required String cloudEnvironmentId}) =>
+      caller.callServerEndpoint<_i10.DatabaseConnection>(
+        'database',
+        'getConnectionDetails',
+        {'cloudEnvironmentId': cloudEnvironmentId},
+      );
+
+  /// Creates a new super user in the database.
+  /// Returns the password for the new user.
+  _i2.Future<String> createSuperUser({
+    required String cloudEnvironmentId,
+    required String username,
+  }) =>
+      caller.callServerEndpoint<String>(
+        'database',
+        'createSuperUser',
+        {
+          'cloudEnvironmentId': cloudEnvironmentId,
+          'username': username,
+        },
+      );
+
+  /// Resets the password for a user in the database.
+  /// Returns the new password for the user.
+  _i2.Future<String> resetDatabasePassword({
+    required String cloudEnvironmentId,
+    required String username,
+  }) =>
+      caller.callServerEndpoint<String>(
+        'database',
+        'resetDatabasePassword',
+        {
+          'cloudEnvironmentId': cloudEnvironmentId,
+          'username': username,
+        },
+      );
+}
+
 /// Endpoint for infrastructure resource provisioning.
 /// {@category Endpoint}
 class EndpointInfraResources extends _i1.EndpointRef {
@@ -320,8 +369,8 @@ class EndpointProjects extends _i1.EndpointRef {
 
   /// Creates a new project with basic setup.
   /// The [cloudProjectId] must be globally unique.
-  _i2.Future<_i10.Project> createProject({required String cloudProjectId}) =>
-      caller.callServerEndpoint<_i10.Project>(
+  _i2.Future<_i11.Project> createProject({required String cloudProjectId}) =>
+      caller.callServerEndpoint<_i11.Project>(
         'projects',
         'createProject',
         {'cloudProjectId': cloudProjectId},
@@ -329,32 +378,32 @@ class EndpointProjects extends _i1.EndpointRef {
 
   /// Fetches the specified project.
   /// Its user roles are included in the response.
-  _i2.Future<_i10.Project> fetchProject({required String cloudProjectId}) =>
-      caller.callServerEndpoint<_i10.Project>(
+  _i2.Future<_i11.Project> fetchProject({required String cloudProjectId}) =>
+      caller.callServerEndpoint<_i11.Project>(
         'projects',
         'fetchProject',
         {'cloudProjectId': cloudProjectId},
       );
 
   /// Fetches the list of projects the current user has access to.
-  _i2.Future<List<_i10.Project>> listProjects() =>
-      caller.callServerEndpoint<List<_i10.Project>>(
+  _i2.Future<List<_i11.Project>> listProjects() =>
+      caller.callServerEndpoint<List<_i11.Project>>(
         'projects',
         'listProjects',
         {},
       );
 
   /// Deletes a project permanently.
-  _i2.Future<_i10.Project> deleteProject({required String cloudProjectId}) =>
-      caller.callServerEndpoint<_i10.Project>(
+  _i2.Future<_i11.Project> deleteProject({required String cloudProjectId}) =>
+      caller.callServerEndpoint<_i11.Project>(
         'projects',
         'deleteProject',
         {'cloudProjectId': cloudProjectId},
       );
 
-  _i2.Future<_i11.ProjectConfig> fetchProjectConfig(
+  _i2.Future<_i12.ProjectConfig> fetchProjectConfig(
           {required String cloudProjectId}) =>
-      caller.callServerEndpoint<_i11.ProjectConfig>(
+      caller.callServerEndpoint<_i12.ProjectConfig>(
         'projects',
         'fetchProjectConfig',
         {'cloudProjectId': cloudProjectId},
@@ -370,9 +419,9 @@ class EndpointRoles extends _i1.EndpointRef {
   String get name => 'roles';
 
   /// Fetches the user roles for a project.
-  _i2.Future<List<_i12.Role>> fetchRolesForProject(
+  _i2.Future<List<_i13.Role>> fetchRolesForProject(
           {required String cloudProjectId}) =>
-      caller.callServerEndpoint<List<_i12.Role>>(
+      caller.callServerEndpoint<List<_i13.Role>>(
         'roles',
         'fetchRolesForProject',
         {'cloudProjectId': cloudProjectId},
@@ -430,11 +479,11 @@ class EndpointStatus extends _i1.EndpointRef {
 
   /// Gets deploy attempts of the specified environment.
   /// Gets the recent-most attempts, up till [limit] if specified.
-  _i2.Future<List<_i13.DeployAttempt>> getDeployAttempts({
+  _i2.Future<List<_i14.DeployAttempt>> getDeployAttempts({
     required String cloudEnvironmentId,
     int? limit,
   }) =>
-      caller.callServerEndpoint<List<_i13.DeployAttempt>>(
+      caller.callServerEndpoint<List<_i14.DeployAttempt>>(
         'status',
         'getDeployAttempts',
         {
@@ -444,11 +493,11 @@ class EndpointStatus extends _i1.EndpointRef {
       );
 
   /// Gets the specified deploy attempt status of the a environment.
-  _i2.Future<List<_i14.DeployAttemptStage>> getDeployAttemptStatus({
+  _i2.Future<List<_i15.DeployAttemptStage>> getDeployAttemptStatus({
     required String cloudEnvironmentId,
     required String attemptId,
   }) =>
-      caller.callServerEndpoint<List<_i14.DeployAttemptStage>>(
+      caller.callServerEndpoint<List<_i15.DeployAttemptStage>>(
         'status',
         'getDeployAttemptStatus',
         {
@@ -482,8 +531,8 @@ class EndpointUsers extends _i1.EndpointRef {
   String get name => 'users';
 
   /// Fetches the tenant user for the currently authenticated user.
-  _i2.Future<_i15.User> fetchCurrentUser() =>
-      caller.callServerEndpoint<_i15.User>(
+  _i2.Future<_i16.User> fetchCurrentUser() =>
+      caller.callServerEndpoint<_i16.User>(
         'users',
         'fetchCurrentUser',
         {},
@@ -491,8 +540,8 @@ class EndpointUsers extends _i1.EndpointRef {
 
   /// Registers a new tenant user record for the current authenticated user.
   /// Throws [DuplicateEntryException] if the tenant user already exists.
-  _i2.Future<_i15.User> registerCurrentUser({String? userDisplayName}) =>
-      caller.callServerEndpoint<_i15.User>(
+  _i2.Future<_i16.User> registerCurrentUser({String? userDisplayName}) =>
+      caller.callServerEndpoint<_i16.User>(
         'users',
         'registerCurrentUser',
         {'userDisplayName': userDisplayName},
@@ -523,7 +572,7 @@ class Client extends _i1.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
           host,
-          _i16.Protocol(),
+          _i17.Protocol(),
           securityContext: securityContext,
           authenticationKeyManager: authenticationKeyManager,
           streamingConnectionTimeout: streamingConnectionTimeout,
@@ -539,6 +588,7 @@ class Client extends _i1.ServerpodClientShared {
     deploy = EndpointDeploy(this);
     environmentVariables = EndpointEnvironmentVariables(this);
     logs = EndpointLogs(this);
+    database = EndpointDatabase(this);
     infraResources = EndpointInfraResources(this);
     projects = EndpointProjects(this);
     roles = EndpointRoles(this);
@@ -559,6 +609,8 @@ class Client extends _i1.ServerpodClientShared {
   late final EndpointEnvironmentVariables environmentVariables;
 
   late final EndpointLogs logs;
+
+  late final EndpointDatabase database;
 
   late final EndpointInfraResources infraResources;
 
@@ -582,6 +634,7 @@ class Client extends _i1.ServerpodClientShared {
         'deploy': deploy,
         'environmentVariables': environmentVariables,
         'logs': logs,
+        'database': database,
         'infraResources': infraResources,
         'projects': projects,
         'roles': roles,

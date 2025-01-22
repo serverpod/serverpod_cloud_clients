@@ -16,6 +16,8 @@ class EndpointLogsMock extends Mock implements EndpointLogs {}
 class EndpointInfraResourcesMock extends Mock
     implements EndpointInfraResources {}
 
+class EndpointDatabaseMock extends Mock implements EndpointDatabase {}
+
 class EndpointProjectsMock extends Mock implements EndpointProjects {}
 
 class EndpointRolesMock extends Mock implements EndpointRoles {}
@@ -91,6 +93,9 @@ class ClientMock extends Mock implements Client {
 
   @override
   final EndpointInfraResources infraResources = EndpointInfraResourcesMock();
+
+  @override
+  final EndpointDatabase database = EndpointDatabaseMock();
 
   @override
   final EndpointProjects projects = EndpointProjectsMock();
