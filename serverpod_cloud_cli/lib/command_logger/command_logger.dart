@@ -1,11 +1,11 @@
 import 'dart:io';
 
-import 'package:cli_tools/cli_tools.dart';
+import 'package:cli_tools/cli_tools.dart' as cli;
 import 'package:collection/collection.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 
-/// Logger that logs using the provided [Logger].
+/// Logger that logs using the provided [cli.Logger].
 /// This interface is created to make it easier to follow the UX guidelines, as outlined in this issue: https://github.com/serverpod/serverpod_cloud/issues/371
 ///
 /// # Guiding principles
@@ -38,24 +38,25 @@ import 'package:serverpod_cloud_cli/util/configuration.dart';
 ///
 /// The language used should always be written in an objective tone and avoid addressing the user with "you" or refer to the system as "we" (e.g. "The project was deployed" instead of "Your project was deployed").
 class CommandLogger {
-  final Logger _logger;
+  final cli.Logger _logger;
 
-  CommandLogger(final Logger logger) : _logger = logger;
+  CommandLogger(final cli.Logger logger) : _logger = logger;
 
-  factory CommandLogger.create([final LogLevel logLevel = LogLevel.info]) {
+  factory CommandLogger.create(
+      [final cli.LogLevel logLevel = cli.LogLevel.info]) {
     const Map<String, String> windowsReplacements = {
       '🚀': '',
     };
 
     final stdOutLogger = Platform.isWindows
-        ? StdOutLogger(logLevel, replacements: windowsReplacements)
-        : StdOutLogger(logLevel);
+        ? cli.StdOutLogger(logLevel, replacements: windowsReplacements)
+        : cli.StdOutLogger(logLevel);
 
     return CommandLogger(stdOutLogger);
   }
 
-  LogLevel get logLevel => _logger.logLevel;
-  set logLevel(final LogLevel level) => _logger.logLevel = level;
+  cli.LogLevel get logLevel => _logger.logLevel;
+  set logLevel(final cli.LogLevel level) => _logger.logLevel = level;
 
   int? get wrapTextColumn => _logger.wrapTextColumn;
 
@@ -65,7 +66,7 @@ class CommandLogger {
   /// These messages are not intended to be shown to the user.
   void debug(
     final String message, {
-    final TextLogType type = TextLogType.normal,
+    final cli.TextLogType type = cli.TextLogType.normal,
     final bool newParagraph = false,
   }) {
     _logger.debug(
@@ -104,7 +105,7 @@ class CommandLogger {
     if (hint != null) {
       _logger.info(
         hint,
-        type: TextLogType.hint,
+        type: cli.TextLogType.hint,
       );
     }
   }
@@ -135,7 +136,7 @@ class CommandLogger {
   }) {
     _logger.info(
       message,
-      type: TextLogType.normal,
+      type: cli.TextLogType.normal,
       newParagraph: newParagraph,
     );
   }
@@ -149,7 +150,7 @@ class CommandLogger {
   }) {
     _logger.info(
       message,
-      type: const BoxLogType(newParagraph: true),
+      type: const cli.BoxLogType(newParagraph: true),
       newParagraph: newParagraph,
     );
   }
@@ -176,7 +177,7 @@ class CommandLogger {
   ) {
     _logger.info(
       '$line\n',
-      type: RawLogType(),
+      type: cli.RawLogType(),
       newParagraph: false,
     );
   }
@@ -205,7 +206,7 @@ class CommandLogger {
     if (title != null) {
       _logger.info(
         title,
-        type: TextLogType.normal,
+        type: cli.TextLogType.normal,
         newParagraph: newParagraph,
       );
     }
@@ -213,7 +214,7 @@ class CommandLogger {
     items.forEachIndexed((final i, final item) {
       _logger.info(
         items[i],
-        type: TextLogType.bullet,
+        type: cli.TextLogType.bullet,
         newParagraph: i == 0 && newParagraph && title == null,
       );
     });
@@ -257,14 +258,14 @@ class CommandLogger {
   }) {
     _logger.info(
       '$message${trailingRocket ? ' 🚀' : ''}',
-      type: TextLogType.header,
+      type: cli.TextLogType.header,
       newParagraph: newParagraph,
     );
 
     if (followUp != null) {
       _logger.info(
         followUp,
-        type: TextLogType.normal,
+        type: cli.TextLogType.normal,
       );
     }
   }
@@ -290,13 +291,13 @@ class CommandLogger {
       _logger.info(
         message,
         newParagraph: newParagraph,
-        type: TextLogType.normal,
+        type: cli.TextLogType.normal,
       );
     }
 
     _logger.info(
       command,
-      type: TextLogType.command,
+      type: cli.TextLogType.command,
       newParagraph: newParagraph && message == null,
     );
   }
@@ -325,7 +326,7 @@ class CommandLogger {
     if (hint != null) {
       _logger.info(
         hint,
-        type: TextLogType.hint,
+        type: cli.TextLogType.hint,
       );
     }
   }
@@ -349,36 +350,10 @@ class CommandLogger {
       return true;
     }
 
-    final prompt = defaultValue == null
-        ? '[y/n]'
-        : defaultValue
-            ? '[Y/n]'
-            : '[y/N]';
-
-    while (true) {
-      _logger.write(
-        '$message $prompt: ',
-        LogLevel.info,
-        newLine: false,
-        newParagraph: false,
-      );
-      final input = stdin.readLineSync()?.trim().toLowerCase();
-
-      if (input == null || input.isEmpty) {
-        if (defaultValue != null) {
-          return defaultValue;
-        }
-        _logger.info('Please enter "y" or "n".');
-        continue;
-      }
-
-      if (input == 'y' || input == 'yes') {
-        return true;
-      } else if (input == 'n' || input == 'no') {
-        return false;
-      } else {
-        _logger.info('Invalid input. Please enter "y" or "n".');
-      }
-    }
+    return cli.confirm(
+      message,
+      defaultValue: defaultValue,
+      logger: _logger,
+    );
   }
 }
