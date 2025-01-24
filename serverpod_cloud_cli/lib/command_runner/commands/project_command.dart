@@ -1,8 +1,8 @@
 import 'dart:io';
-
-import 'package:cli_tools/cli_tools.dart';
 import 'package:collection/collection.dart';
+
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
@@ -83,7 +83,7 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
         'Request to create a new project failed: $e',
       );
 
-      throw ExitException();
+      throw ErrorExitException();
     });
 
     logger.success("Successfully created new project '$projectId'.");
@@ -96,7 +96,7 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
         logger.error(
           'Request to create a database for the new project failed: $e',
         );
-        throw ExitException();
+        throw ErrorExitException();
       });
 
       logger.info(
@@ -118,7 +118,7 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
         logger.error(
           'Failed to fetch project config: $e',
         );
-        throw ExitException();
+        throw ErrorExitException();
       });
 
       logger.success(
@@ -159,7 +159,7 @@ class CloudProjectDeleteCommand extends CloudCliCommand {
     );
 
     if (!shouldDelete) {
-      throw ExitException();
+      throw ErrorExitException();
     }
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
@@ -170,7 +170,7 @@ class CloudProjectDeleteCommand extends CloudCliCommand {
         'Request to delete the project failed: $e',
       );
 
-      throw ExitException();
+      throw ErrorExitException();
     });
 
     logger.success('Successfully deleted the project "$projectId".');
@@ -199,7 +199,7 @@ class CloudProjectListCommand extends CloudCliCommand {
       logger.error(
         'Request to list projects failed: $e',
       );
-      throw ExitException();
+      throw ErrorExitException();
     });
 
     if (projects.isEmpty) {

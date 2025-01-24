@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
@@ -50,7 +50,7 @@ class CloudLinkCommand extends CloudCliCommand<LinkCommandOption> {
 
     if (!isServerpodServerDirectory(projectDirectory.path)) {
       logProjectDirIsNotAServerpodServerDirectory(logger);
-      throw ExitException();
+      throw ErrorExitException();
     }
 
     late final ProjectConfig projectConfig;
@@ -60,7 +60,7 @@ class CloudLinkCommand extends CloudCliCommand<LinkCommandOption> {
       );
     }, (final e) {
       logger.error('Failed to fetch project config: $e');
-      throw ExitException();
+      throw ErrorExitException();
     });
 
     try {
@@ -68,7 +68,7 @@ class CloudLinkCommand extends CloudCliCommand<LinkCommandOption> {
     } catch (e) {
       logger
           .error('Failed to write to ${ConfigFileConstants.fileName} file: $e');
-      throw ExitException();
+      throw ErrorExitException();
     }
 
     logger.success('Successfully linked project!');

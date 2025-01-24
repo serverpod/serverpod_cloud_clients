@@ -1,7 +1,7 @@
 import 'package:basic_utils/basic_utils.dart';
-import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
@@ -94,7 +94,7 @@ class CloudAddCustomDomainCommand
           'Could not add the custom domain: $e',
         );
 
-        throw ExitException();
+        throw ErrorExitException();
       },
     );
 
@@ -107,7 +107,7 @@ class CloudAddCustomDomainCommand
       logger.error(
         'Could not find the target domain for "$target".',
       );
-      throw ExitException();
+      throw ErrorExitException();
     }
 
     if (DomainUtils.isSubDomain(domainName)) {
@@ -202,7 +202,7 @@ class CloudListCustomDomainCommand
         'Failed to list custom domains: $e',
       );
 
-      throw ExitException();
+      throw ErrorExitException();
     });
 
     final defaultDomainPrinter = TablePrinter();
@@ -279,7 +279,7 @@ class CloudRemoveCustomDomainCommand
     );
 
     if (!shouldDelete) {
-      throw ExitException();
+      throw ErrorExitException();
     }
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
@@ -294,7 +294,7 @@ class CloudRemoveCustomDomainCommand
         'Failed to remove custom domain: $e',
       );
 
-      throw ExitException();
+      throw ErrorExitException();
     });
 
     logger.success('Successfully removed custom domain: $domainName.');
@@ -365,7 +365,7 @@ class CloudRefreshCustomDomainRecordCommand
         'Failed to refresh custom domain record: $e',
       );
 
-      throw ExitException();
+      throw ErrorExitException();
     });
   }
 }

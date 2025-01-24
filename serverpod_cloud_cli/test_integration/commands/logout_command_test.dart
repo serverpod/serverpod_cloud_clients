@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:cli_tools/cli_tools.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
+import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:test/test.dart';
@@ -165,7 +165,7 @@ void main() {
       });
 
       test('then the command throws exit exception.', () async {
-        await expectLater(runLogoutCommand, throwsA(isA<ExitException>()));
+        await expectLater(runLogoutCommand, throwsA(isA<ErrorExitException>()));
       });
 
       test('then a "request to sign out" error is logged.', () async {

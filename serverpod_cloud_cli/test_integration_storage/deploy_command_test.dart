@@ -1,17 +1,18 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:cli_tools/cli_tools.dart';
 import 'package:googleapis/storage/v1.dart';
 import 'package:http/http.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
-import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/deploy_command.dart';
-import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
-import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:test/test.dart';
 import 'package:uuid/uuid.dart';
+
+import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/deploy_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
+import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 
 import '../test_utils/command_logger_matchers.dart';
 import '../test_utils/http_server_builder.dart';
@@ -99,7 +100,7 @@ void main() {
 
       test('then throws exception', () async {
         await expectLater(requestCompleter.future, completes);
-        await expectLater(commandResult, throwsA(isA<ExitException>()));
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
       });
 
       test('then logs error', () async {
@@ -141,10 +142,10 @@ void main() {
         ]);
       });
 
-      test('then exit exception is thrown.', () async {
+      test('then ExitErrorException is thrown.', () async {
         await expectLater(
           cliCommandFuture,
-          throwsA(isA<ExitException>()),
+          throwsA(isA<ErrorExitException>()),
         );
       });
 
@@ -184,10 +185,10 @@ void main() {
         ]);
       });
 
-      test('then exit exception is thrown.', () async {
+      test('then ExitErrorException is thrown.', () async {
         await expectLater(
           cliCommandFuture,
-          throwsA(isA<ExitException>()),
+          throwsA(isA<ErrorExitException>()),
         );
       });
 
@@ -249,10 +250,10 @@ void main() {
             ]);
           });
 
-          test('then exit exception is thrown.', () async {
+          test('then ExitErrorException is thrown.', () async {
             await expectLater(
               cliCommandFuture,
-              throwsA(isA<ExitException>()),
+              throwsA(isA<ErrorExitException>()),
             );
           });
 
@@ -329,10 +330,10 @@ void main() {
             ]);
           });
 
-          test('then exit exception is thrown.', () async {
+          test('then ExitErrorException is thrown.', () async {
             await expectLater(
               cliCommandFuture,
-              throwsA(isA<ExitException>()),
+              throwsA(isA<ErrorExitException>()),
             );
           });
 
@@ -400,10 +401,10 @@ void main() {
             ]);
           });
 
-          test('then exit exception is thrown.', () async {
+          test('then ExitErrorException is thrown.', () async {
             await expectLater(
               cliCommandFuture,
-              throwsA(isA<ExitException>()),
+              throwsA(isA<ErrorExitException>()),
             );
           });
 
@@ -468,10 +469,10 @@ void main() {
             ]);
           });
 
-          test('then exit exception is thrown.', () async {
+          test('then ExitErrorException is thrown.', () async {
             await expectLater(
               cliCommandFuture,
-              throwsA(isA<ExitException>()),
+              throwsA(isA<ErrorExitException>()),
             );
           });
 

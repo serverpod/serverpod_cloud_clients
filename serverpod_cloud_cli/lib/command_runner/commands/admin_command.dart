@@ -1,5 +1,5 @@
-import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 
 enum DeleteAllProjectsCommandOption implements OptionDefinition {
@@ -38,7 +38,7 @@ class CloudAdminDeleteAllProjectsCommand extends CloudCliCommand {
       logger.error(
         'You must confirm the deletion of all projects by passing the --confirmation-flag=yes flag.',
       );
-      throw ExitException();
+      throw ErrorExitException();
     }
 
     try {
@@ -47,7 +47,7 @@ class CloudAdminDeleteAllProjectsCommand extends CloudCliCommand {
       logger.error(
         'Request to delete all projects failed: $e',
       );
-      throw ExitException();
+      throw ErrorExitException();
     }
 
     logger.info('Successfully deleted all projects.');

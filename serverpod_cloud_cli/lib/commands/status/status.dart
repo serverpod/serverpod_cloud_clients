@@ -1,55 +1,67 @@
 import 'package:collection/collection.dart';
+import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
 import 'package:serverpod_cloud_cli/util/table_printer.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
 
-abstract class StatusFeature {
-  static Future<TablePrinter> getDeployAttemptsList(
+import 'status_feature.dart';
+
+/// Status subcommand implementations
+abstract class StatusCommands {
+  /// Subcommand to list the most recent deploy attempts.
+  static Future<void> listDeployAttempts(
     final Client cloudApiClient, {
+    required final CommandLogger logger,
     required final String environmentId,
     required final int limit,
     final bool inUtc = false,
   }) async {
-    final statuses = await cloudApiClient.status.getDeployAttempts(
-      cloudEnvironmentId: environmentId,
+    final statuses = await StatusFeature.getDeployAttemptList(
+      cloudApiClient,
+      environmentId: environmentId,
       limit: limit,
     );
 
-    return DeployStatusTable(inUtc: inUtc)..addRows(statuses);
+    final table = DeployStatusTable(inUtc: inUtc)..addRows(statuses);
+    table.writeLines(logger.line);
   }
 
-  static Future<List<String>> getDeploymentStatus(
+  /// Subcommand to show the status of a deployment attempt.
+  /// If [outputOverallStatus] is true, only the overall status word
+  /// is shown (e.g. "success").
+  static Future<void> showDeploymentStatus(
     final Client cloudApiClient, {
+    required final CommandLogger logger,
     required final String environmentId,
     required final String attemptId,
     final bool inUtc = false,
+    final bool outputOverallStatus = false,
   }) async {
-    final stages = await cloudApiClient.status.getDeployAttemptStatus(
-      cloudEnvironmentId: environmentId,
+    final stages = await StatusFeature.getDeployAttemptStatus(
+      cloudApiClient,
+      environmentId: environmentId,
       attemptId: attemptId,
     );
+
+    if (outputOverallStatus) {
+      final overallStatus = stages.last.stageStatus;
+      logger.line(overallStatus.name);
+      return;
+    }
 
     final List<String> rows = [
       'Status of $environmentId deploy $attemptId'
           ', started at ${stages.first.startedAt?.toTzString(inUtc, _numTimeStampChars)}:',
-      ...stages.map(_getStatusLine),
+      ...stages.map(_generateStatusLine),
     ];
 
-    return rows;
+    for (final line in rows) {
+      logger.line(line);
+      logger.line('');
+    }
   }
 
-  static Future<String> getDeployAttemptId(
-    final Client cloudApiClient, {
-    required final String environmentId,
-    required final int attemptNumber,
-  }) async {
-    return await cloudApiClient.status.getDeployAttemptId(
-      cloudEnvironmentId: environmentId,
-      attemptNumber: attemptNumber,
-    );
-  }
-
-  static String _getStatusLine(final DeployAttemptStage stage) {
+  static String _generateStatusLine(final DeployAttemptStage stage) {
     final mark = _getStatusMark(stage.stageStatus);
     final phrase = '${_getRocketStagePhrase(stage.stageType)}:';
     final status = _getStatusPhrase(stage);

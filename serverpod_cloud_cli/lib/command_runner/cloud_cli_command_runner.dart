@@ -17,6 +17,7 @@ import 'package:serverpod_cloud_cli/command_runner/commands/project_command.dart
 import 'package:serverpod_cloud_cli/command_runner/commands/secret_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/status_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/version_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cli_version_checker.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
@@ -111,7 +112,7 @@ class CloudCliCommandRunner extends BetterCommandRunner {
       );
     } catch (e) {
       logger.debug('Failed to fetch latest CLI version: $e');
-      throw ExitException();
+      throw ErrorExitException();
     }
 
     if (latestVersion != null && version < latestVersion) {
@@ -126,7 +127,7 @@ class CloudCliCommandRunner extends BetterCommandRunner {
         isRequiredUpdate: isRequiredUpdate,
       );
 
-      if (isRequiredUpdate) throw ExitException();
+      if (isRequiredUpdate) throw ErrorExitException();
     }
 
     try {

@@ -1,11 +1,11 @@
 import 'dart:async';
 
-import 'package:cli_tools/cli_tools.dart';
 import 'package:meta/meta.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/status_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client_mock.dart';
@@ -70,7 +70,7 @@ void main() {
       });
 
       test('then throws exception', () async {
-        await expectLater(commandResult, throwsA(isA<ExitException>()));
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
       });
 
       test('then logs error', () async {
@@ -100,7 +100,7 @@ void main() {
       });
 
       test('then throws exception', () async {
-        await expectLater(commandResult, throwsA(isA<ExitException>()));
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
       });
 
       test('then logs error', () async {
@@ -130,7 +130,7 @@ void main() {
       });
 
       test('then throws exception', () async {
-        await expectLater(commandResult, throwsA(isA<ExitException>()));
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
       });
 
       test('then logs error', () async {
@@ -154,7 +154,7 @@ void main() {
       await keyManager.put('mock-token');
     });
 
-    group('when running status command', () {
+    group('and a successful status, when running status command', () {
       group('with correct args to get the most recent deploy status', () {
         setUpAll(() async {
           final attemptStages = [
@@ -254,6 +254,30 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
             ['--project-id', projectId, '0']);
         testCorrectGetRecentStatusCommand('by named proj opt and build id',
             ['--project-id', projectId, 'abc']);
+
+        group('and with option --output-overall-status', () {
+          late Future commandResult;
+
+          setUp(() async {
+            commandResult = cli.run([
+              'status',
+              '--project-id',
+              projectId,
+              '--output-overall-status',
+            ]);
+          });
+
+          test('then completes successfully', () async {
+            await expectLater(commandResult, completes);
+          });
+
+          test('then outputs the single word success', () async {
+            await commandResult;
+
+            expect(logger.lineCalls, isNotEmpty);
+            expect(logger.lineCalls.single.line, equals('success'));
+          });
+        });
       });
 
       group('with incorrect args to get a deploy status', () {
@@ -287,8 +311,9 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
               ]);
             });
 
-            test('then throws ExitException', () async {
-              await expectLater(commandResult, throwsA(isA<ExitException>()));
+            test('then throws ExitErrorException', () async {
+              await expectLater(
+                  commandResult, throwsA(isA<ErrorExitException>()));
 
               expect(logger.errorCalls, isNotEmpty);
               expect(
@@ -317,6 +342,121 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
         testIncorrectGetStatusCommand(
             'for non-existing project and build index',
             ['--project-id', 'non-existing', '0']);
+      });
+    });
+
+    group('and an unsuccessful status,', () {
+      setUpAll(() async {
+        final attemptStages = [
+          DeployAttemptStage(
+            cloudEnvironmentId: projectId,
+            attemptId: 'abc',
+            stageType: DeployStageType.upload,
+            stageStatus: DeployProgressStatus.success,
+            startedAt: DateTime.parse("2021-12-31 10:20:30"),
+            endedAt: DateTime.parse("2021-12-31 10:20:40"),
+          ),
+          DeployAttemptStage(
+            cloudEnvironmentId: projectId,
+            attemptId: 'abc',
+            stageType: DeployStageType.build,
+            buildId: 'build-id-foo',
+            stageStatus: DeployProgressStatus.success,
+            startedAt: DateTime.parse("2021-12-31 10:20:30"),
+            endedAt: DateTime.parse("2021-12-31 10:20:40"),
+          ),
+          DeployAttemptStage(
+            cloudEnvironmentId: projectId,
+            attemptId: 'abc',
+            stageType: DeployStageType.deploy,
+            stageStatus: DeployProgressStatus.success,
+            startedAt: DateTime.parse("2021-12-31 10:20:30"),
+            endedAt: DateTime.parse("2021-12-31 10:20:40"),
+          ),
+          DeployAttemptStage(
+            cloudEnvironmentId: projectId,
+            attemptId: 'abc',
+            stageType: DeployStageType.service,
+            stageStatus: DeployProgressStatus.awaiting,
+            startedAt: DateTime.parse("2021-12-31 10:20:30"),
+            endedAt: DateTime.parse("2021-12-31 10:20:40"),
+          ),
+        ];
+
+        when(() => client.status.getDeployAttemptStatus(
+              cloudEnvironmentId: projectId,
+              attemptId: attemptStages.first.attemptId,
+            )).thenAnswer((final _) async => attemptStages);
+
+        when(() => client.status.getDeployAttemptId(
+              cloudEnvironmentId: projectId,
+              attemptNumber: 0,
+            )).thenAnswer((final _) async => attemptStages.first.attemptId);
+      });
+
+      tearDownAll(() {
+        reset(client.status);
+      });
+
+      group('when running status command to get the deploy status', () {
+        late Future commandResult;
+
+        setUp(() async {
+          commandResult = cli.run([
+            'status',
+            '--project-id',
+            projectId,
+          ]);
+        });
+
+        test('then completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then outputs the status', () async {
+          await commandResult;
+
+          expect(logger.lineCalls, isNotEmpty);
+          expect(
+            logger.lineCalls.map((final l) => l.line).join('\n'),
+            '''
+Status of projectId deploy abc, started at 2021-12-31 10:20:30:
+
+✅  Booster liftoff:     Upload successful!
+
+✅  Orbit acceleration:  Build successful!
+
+✅  Orbital insertion:   Deploy successful!
+
+⬛  Pod commissioning:   Service awaiting...
+''',
+          );
+        });
+      });
+
+      group('when running status command with --output-overall-status option',
+          () {
+        late Future commandResult;
+
+        setUp(() async {
+          commandResult = cli.run([
+            'status',
+            '--project-id',
+            projectId,
+            '--output-overall-status',
+          ]);
+        });
+
+        test('then completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then outputs the single word awaiting', () async {
+          await commandResult;
+
+          expect(logger.lineCalls, isNotEmpty);
+          expect(logger.lineCalls.single.line, equals('awaiting'));
+        });
       });
     });
 
@@ -422,8 +562,9 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
               ]);
             });
 
-            test('then throws ExitException', () async {
-              await expectLater(commandResult, throwsA(isA<ExitException>()));
+            test('then throws ExitErrorException', () async {
+              await expectLater(
+                  commandResult, throwsA(isA<ErrorExitException>()));
             });
             test('then outputs error message', () async {
               await commandResult.onError((final e, final s) {});

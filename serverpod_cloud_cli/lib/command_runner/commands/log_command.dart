@@ -1,9 +1,9 @@
-import 'package:cli_tools/cli_tools.dart' as cli;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/option_parsing.dart';
-import 'package:serverpod_cloud_cli/features/logs/logs.dart';
+import 'package:serverpod_cloud_cli/commands/logs/logs.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 
@@ -174,7 +174,7 @@ class CloudLogCommand extends CloudCliCommand<LogOption> {
         );
       }, (final e) {
         logger.error('Error while tailing log records: $e');
-        throw cli.ExitException();
+        throw ErrorExitException();
       });
 
       return;
@@ -192,7 +192,7 @@ class CloudLogCommand extends CloudCliCommand<LogOption> {
       );
     }, (final e) {
       logger.error('Error while fetching log records: $e');
-      throw cli.ExitException();
+      throw ErrorExitException();
     });
   }
 }

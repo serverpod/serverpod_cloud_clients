@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
+import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
 
 FutureOr<T> handleCommonClientExceptions<T>(
@@ -23,27 +24,29 @@ FutureOr<T> handleCommonClientExceptions<T>(
       'scloud login',
     );
 
-    throw ExitException();
+    throw ErrorExitException();
   } on UnauthorizedException {
     logger.error(
       'You are not authorized to perform this action.',
     );
 
-    throw ExitException();
+    throw ErrorExitException();
   } on ForbiddenException catch (e) {
     logger.error(
       'The action was not allowed.',
       hint: e.message,
     );
 
-    throw ExitException();
+    throw ErrorExitException();
   } on NotFoundException catch (e) {
     logger.error(
       'The requested resource did not exist.',
       hint: e.message,
     );
 
-    throw ExitException();
+    throw ErrorExitException();
+  } on ExitException catch (_) {
+    rethrow;
   } catch (e) {
     return onUnhandledException(e);
   }

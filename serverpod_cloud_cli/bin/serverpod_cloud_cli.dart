@@ -5,6 +5,7 @@ import 'package:cli_tools/cli_tools.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
+import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 
 /// The version of the Serverpod Cloud CLI.
 /// This should be updated when a new version is released.
@@ -28,7 +29,7 @@ void main(final List<String> args) async {
           stackTrace: stackTrace,
         );
         await _preExit(logger);
-        exit(ExitCodeType.general.exitCode);
+        exit(ExitException.codeError);
       }
     },
     (final error, final stackTrace) async {
@@ -37,7 +38,7 @@ void main(final List<String> args) async {
         stackTrace: stackTrace,
       );
       await _preExit(logger);
-      exit(ExitCodeType.general.exitCode);
+      exit(ExitException.codeError);
     },
   );
 }
@@ -51,7 +52,7 @@ Future<void> _main(final List<String> args, final CommandLogger logger) async {
     await runner.run(args);
   } on ArgumentError catch (e) {
     logger.error(e.toString());
-    throw ExitException();
+    throw ErrorExitException();
   }
 }
 

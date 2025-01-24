@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:cli_tools/cli_tools.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/link_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/json_to_yaml.dart';
@@ -98,7 +98,7 @@ void main() {
 
       test('then throws exception', () async {
         await expectLater(requestCompleter.future, completes);
-        await expectLater(commandResult, throwsA(isA<ExitException>()));
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
       });
 
       test('then logs error', () async {
@@ -283,7 +283,7 @@ void main() {
         });
 
         test('then command throws exit exception', () async {
-          await expectLater(commandResult, throwsA(isA<ExitException>()));
+          await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
         });
 
         test('then logs error message', () async {
@@ -320,7 +320,7 @@ void main() {
       });
 
       test('then command throws exit exception', () async {
-        await expectLater(commandResult, throwsA(isA<ExitException>()));
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
       });
 
       test('then logs error message', () async {

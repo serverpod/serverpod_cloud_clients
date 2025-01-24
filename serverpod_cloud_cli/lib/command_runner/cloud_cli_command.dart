@@ -7,6 +7,8 @@ import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.
 import 'package:serverpod_cloud_cli/util/cli_authentication_key_manager.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 
+import 'exit_exceptions.dart';
+
 abstract class CloudCliCommand<T extends OptionDefinition>
     extends BetterCommand {
   final CommandLogger logger;
@@ -53,14 +55,14 @@ abstract class CloudCliCommand<T extends OptionDefinition>
         message: 'Please run the login command to authenticate and try again:',
         'scloud login',
       );
-      throw ExitException();
+      throw ErrorExitException();
     }
 
     try {
       await runWithConfig(config);
     } on CloudCliUsageException catch (e) {
       logger.error(e.message, hint: e.hint);
-      throw ExitException();
+      throw ErrorExitException();
     }
   }
 

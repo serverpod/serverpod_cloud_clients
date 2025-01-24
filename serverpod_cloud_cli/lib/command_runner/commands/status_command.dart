@@ -1,9 +1,10 @@
-import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
-import 'package:serverpod_cloud_cli/features/status/status.dart';
-import 'package:serverpod_cloud_cli/features/logs/logs.dart';
+import 'package:serverpod_cloud_cli/commands/status/status.dart';
+import 'package:serverpod_cloud_cli/commands/logs/logs.dart';
+import 'package:serverpod_cloud_cli/commands/status/status_feature.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 
 abstract final class _StatusOptions {
@@ -47,6 +48,14 @@ abstract final class _StatusOptions {
     helpText: "View a deployment's build log, or latest by default.",
     negatable: false,
   );
+  static const overallStatus = ConfigOption(
+    argName: 'output-overall-status',
+    isFlag: true,
+    defaultsTo: 'false',
+    helpText: "View a deployment's overall status as a single word, one of: "
+        "success, failure, awaiting, running, cancelled, unknown.",
+    negatable: false,
+  );
 }
 
 enum StatusOption implements OptionDefinition {
@@ -55,7 +64,8 @@ enum StatusOption implements OptionDefinition {
   utc(_StatusOptions.utc),
   deploy(_StatusOptions.deploy),
   list(_StatusOptions.list),
-  log(_StatusOptions.log);
+  log(_StatusOptions.log),
+  overallStatus(_StatusOptions.overallStatus);
 
   const StatusOption(this.option);
 
@@ -82,29 +92,30 @@ class CloudStatusCommand extends CloudCliCommand<StatusOption> {
     final deploymentArg = commandConfig.valueOrNull(StatusOption.deploy);
     final list = commandConfig.flag(StatusOption.list);
     final log = commandConfig.flag(StatusOption.log);
+    final overallStatus = commandConfig.flag(StatusOption.overallStatus);
 
     if (list && log) {
       logger.error('Cannot use --list and --build-log together.');
-      throw ExitException();
+      throw ErrorExitException();
     }
 
     if (list) {
       // list recent deployments
       if (deploymentArg != null && deploymentArg != '0') {
         logger.error('Cannot specify deploy id with --list.');
-        throw ExitException();
+        throw ErrorExitException();
       }
       await handleCommonClientExceptions(logger, () async {
-        final outputTable = await StatusFeature.getDeployAttemptsList(
+        await StatusCommands.listDeployAttempts(
           runner.serviceProvider.cloudApiClient,
+          logger: logger,
           environmentId: projectId,
           limit: limit,
           inUtc: inUtc,
         );
-        outputTable.writeLines(logger.line);
       }, (final e) {
         logger.error('Failed to get deployments list: $e');
-        throw ExitException();
+        throw ErrorExitException();
       });
       return;
     }
@@ -123,7 +134,7 @@ class CloudStatusCommand extends CloudCliCommand<StatusOption> {
         );
       }, (final e) {
         logger.error('Failed to get build log: $e');
-        throw ExitException();
+        throw ErrorExitException();
       });
 
       return;
@@ -133,19 +144,17 @@ class CloudStatusCommand extends CloudCliCommand<StatusOption> {
     await handleCommonClientExceptions(logger, () async {
       final attemptId = await _getDeployAttemptId(projectId, deploymentArg);
 
-      final output = await StatusFeature.getDeploymentStatus(
+      await StatusCommands.showDeploymentStatus(
         runner.serviceProvider.cloudApiClient,
+        logger: logger,
         environmentId: projectId,
         attemptId: attemptId,
         inUtc: inUtc,
+        outputOverallStatus: overallStatus,
       );
-      for (final line in output) {
-        logger.line(line);
-        logger.line('');
-      }
     }, (final e) {
       logger.error('Failed to get deployment status: $e');
-      throw ExitException();
+      throw ErrorExitException();
     });
   }
 

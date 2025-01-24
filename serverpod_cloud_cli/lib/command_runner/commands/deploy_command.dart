@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper.dart';
@@ -63,12 +63,12 @@ class CloudDeployCommand extends CloudCliCommand<DeployCommandOption> {
     if (concurrency == null) {
       logger.error(
           'Failed to parse --concurrency option, value must be an integer.');
-      throw ExitException();
+      throw ErrorExitException();
     }
 
     if (!isServerpodServerDirectory(projectDirectory.path)) {
       logProjectDirIsNotAServerpodServerDirectory(logger);
-      throw ExitException();
+      throw ErrorExitException();
     }
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
@@ -80,7 +80,7 @@ class CloudDeployCommand extends CloudCliCommand<DeployCommandOption> {
       );
     }, (final e) {
       logger.error('Failed to fetch upload description: $e');
-      throw ExitException();
+      throw ErrorExitException();
     });
 
     final List<int> projectZip;
@@ -121,7 +121,7 @@ class CloudDeployCommand extends CloudCliCommand<DeployCommandOption> {
           );
           break;
       }
-      throw ExitException();
+      throw ErrorExitException();
     }
 
     final success = await logger.progress('Uploading project...', () async {
@@ -143,7 +143,7 @@ class CloudDeployCommand extends CloudCliCommand<DeployCommandOption> {
     });
 
     if (!success) {
-      throw ExitException();
+      throw ErrorExitException();
     }
 
     logger.success(

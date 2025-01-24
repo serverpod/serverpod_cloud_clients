@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:cli_tools/cli_tools.dart';
+import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
 import 'package:test/test.dart';
@@ -18,7 +18,7 @@ void main() {
   test(
       'Given a callback that throws ServerpodClientUnauthorized '
       'when calling handleCommonClientExceptions then '
-      'should rethrow ExitException and log error message', () {
+      'should rethrow ExitErrorException and log error message', () {
     expect(
       () => handleCommonClientExceptions(
         logger,
@@ -27,7 +27,7 @@ void main() {
         },
         (final e) => fail('callback should not have been called'),
       ),
-      throwsA(isA<ExitException>()),
+      throwsA(isA<ErrorExitException>()),
     );
 
     expect(
@@ -53,7 +53,7 @@ void main() {
   test(
       'Given a callback that throws UnauthorizedException '
       'when calling handleCommonClientExceptions '
-      'then should rethrow ExitException and log error message', () {
+      'then should rethrow ExitErrorException and log error message', () {
     expect(
       () => handleCommonClientExceptions(
         logger,
@@ -62,7 +62,7 @@ void main() {
         },
         (final e) => fail('callback should not have been called'),
       ),
-      throwsA(isA<ExitException>()),
+      throwsA(isA<ErrorExitException>()),
     );
 
     expect(
@@ -76,7 +76,7 @@ void main() {
   test(
       'Given a callback that throws ForbiddenException '
       'when calling handleCommonClientExceptions '
-      'then should rethrow ExitException and log error message', () {
+      'then should rethrow ExitErrorException and log error message', () {
     expect(
       () => handleCommonClientExceptions(
         logger,
@@ -87,7 +87,7 @@ void main() {
         },
         (final e) => fail('callback should not have been called'),
       ),
-      throwsA(isA<ExitException>()),
+      throwsA(isA<ErrorExitException>()),
     );
 
     expect(
@@ -103,7 +103,7 @@ void main() {
   test(
       'Given a callback that throws NotFoundException '
       'when calling handleCommonClientExceptions '
-      'then should rethrow ExitException and log error message', () {
+      'then should rethrow ExitErrorException and log error message', () {
     expect(
       () => handleCommonClientExceptions(
         logger,
@@ -112,7 +112,7 @@ void main() {
         },
         (final e) => fail('callback should not have been called'),
       ),
-      throwsA(isA<ExitException>()),
+      throwsA(isA<ErrorExitException>()),
     );
 
     expect(

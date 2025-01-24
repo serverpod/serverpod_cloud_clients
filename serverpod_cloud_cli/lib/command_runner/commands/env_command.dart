@@ -1,5 +1,5 @@
-import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
@@ -112,7 +112,7 @@ class CloudEnvCreateCommand extends CloudCliCommand<CreateEnvCommandConfig> {
         'Failed to create a new environment variable: $e',
       );
 
-      throw ExitException();
+      throw ErrorExitException();
     });
 
     logger.success('Successfully created environment variable.');
@@ -151,7 +151,7 @@ class CloudEnvUpdateCommand extends CloudCliCommand<UpdateEnvCommandConfig> {
         'Failed to update the environment variable: $e',
       );
 
-      throw ExitException();
+      throw ErrorExitException();
     });
 
     logger.success('Successfully updated environment variable: $variableName.');
@@ -182,7 +182,7 @@ class CloudEnvDeleteCommand extends CloudCliCommand<DeleteEnvCommandConfig> {
     );
 
     if (!shouldDelete) {
-      throw ExitException();
+      throw ErrorExitException();
     }
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
@@ -197,7 +197,7 @@ class CloudEnvDeleteCommand extends CloudCliCommand<DeleteEnvCommandConfig> {
         'Failed to delete the environment variable: $e',
       );
 
-      throw ExitException();
+      throw ErrorExitException();
     });
 
     logger.success('Successfully deleted environment variable: $variableName.');
@@ -231,7 +231,7 @@ class CloudEnvListCommand extends CloudCliCommand<ListEnvCommandConfig> {
         'Failed to list environment variables: $e',
       );
 
-      throw ExitException();
+      throw ErrorExitException();
     });
 
     final tablePrinter = TablePrinter();
