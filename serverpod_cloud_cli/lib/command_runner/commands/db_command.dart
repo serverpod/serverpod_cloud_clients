@@ -71,12 +71,10 @@ class CloudDbConnectionDetailsCommand
 Connection details:
   Host: ${connection.host}
   Port: ${connection.port}
-  Database: ${connection.name}
-''',
+  Database: ${connection.name}''',
           followUp: '''
 This psql command can be used to connect to the database (it will prompt for the password):
-  psql "$connectionString" --user <username>
-''',
+  psql "$connectionString" --user <username>''',
         );
       },
       (final e) {
@@ -129,8 +127,7 @@ class CloudDbCreateSuperuserCommand
         logger.success(
           '''
 DB superuser created. The password on the next line is only shown this once:
-$password
-''',
+$password''',
         );
       },
       (final e) {
@@ -183,8 +180,7 @@ class CloudDbResetPasswordCommand
         logger.success(
           '''
 DB password is reset. The new password on the next line is only shown this once:
-$password
-''',
+$password''',
         );
       },
       (final e) {

@@ -277,8 +277,7 @@ void main() {
           logger.successCalls.single.message,
           '''
 DB superuser created. The password on the next line is only shown this once:
-$password
-''',
+$password''',
         );
       });
     });
@@ -320,8 +319,7 @@ $password
           logger.successCalls.single.message,
           '''
 DB password is reset. The new password on the next line is only shown this once:
-$password
-''',
+$password''',
         );
       });
     });
