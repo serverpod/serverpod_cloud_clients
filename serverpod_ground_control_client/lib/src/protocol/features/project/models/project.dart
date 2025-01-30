@@ -11,7 +11,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../features/project/models/role.dart' as _i2;
-import '../../../features/environments/models/environment.dart' as _i3;
+import '../../../features/capsules/models/capsule.dart' as _i3;
 
 /// Represents a project of a tenant.
 /// Typically a serverpod project.
@@ -23,7 +23,7 @@ abstract class Project implements _i1.SerializableModel {
     this.archivedAt,
     required this.cloudProjectId,
     this.roles,
-    this.environments,
+    this.capsules,
   })  : createdAt = createdAt ?? DateTime.now(),
         updatedAt = updatedAt ?? DateTime.now();
 
@@ -34,7 +34,7 @@ abstract class Project implements _i1.SerializableModel {
     DateTime? archivedAt,
     required String cloudProjectId,
     List<_i2.Role>? roles,
-    List<_i3.Environment>? environments,
+    List<_i3.Capsule>? capsules,
   }) = _ProjectImpl;
 
   factory Project.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -51,8 +51,8 @@ abstract class Project implements _i1.SerializableModel {
       roles: (jsonSerialization['roles'] as List?)
           ?.map((e) => _i2.Role.fromJson((e as Map<String, dynamic>)))
           .toList(),
-      environments: (jsonSerialization['environments'] as List?)
-          ?.map((e) => _i3.Environment.fromJson((e as Map<String, dynamic>)))
+      capsules: (jsonSerialization['capsules'] as List?)
+          ?.map((e) => _i3.Capsule.fromJson((e as Map<String, dynamic>)))
           .toList(),
     );
   }
@@ -76,8 +76,8 @@ abstract class Project implements _i1.SerializableModel {
   /// The roles for this project.
   List<_i2.Role>? roles;
 
-  /// The environments of this project.
-  List<_i3.Environment>? environments;
+  /// The capsules of this project.
+  List<_i3.Capsule>? capsules;
 
   Project copyWith({
     int? id,
@@ -86,7 +86,7 @@ abstract class Project implements _i1.SerializableModel {
     DateTime? archivedAt,
     String? cloudProjectId,
     List<_i2.Role>? roles,
-    List<_i3.Environment>? environments,
+    List<_i3.Capsule>? capsules,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -97,8 +97,8 @@ abstract class Project implements _i1.SerializableModel {
       if (archivedAt != null) 'archivedAt': archivedAt?.toJson(),
       'cloudProjectId': cloudProjectId,
       if (roles != null) 'roles': roles?.toJson(valueToJson: (v) => v.toJson()),
-      if (environments != null)
-        'environments': environments?.toJson(valueToJson: (v) => v.toJson()),
+      if (capsules != null)
+        'capsules': capsules?.toJson(valueToJson: (v) => v.toJson()),
     };
   }
 
@@ -118,7 +118,7 @@ class _ProjectImpl extends Project {
     DateTime? archivedAt,
     required String cloudProjectId,
     List<_i2.Role>? roles,
-    List<_i3.Environment>? environments,
+    List<_i3.Capsule>? capsules,
   }) : super._(
           id: id,
           createdAt: createdAt,
@@ -126,7 +126,7 @@ class _ProjectImpl extends Project {
           archivedAt: archivedAt,
           cloudProjectId: cloudProjectId,
           roles: roles,
-          environments: environments,
+          capsules: capsules,
         );
 
   @override
@@ -137,7 +137,7 @@ class _ProjectImpl extends Project {
     Object? archivedAt = _Undefined,
     String? cloudProjectId,
     Object? roles = _Undefined,
-    Object? environments = _Undefined,
+    Object? capsules = _Undefined,
   }) {
     return Project(
       id: id is int? ? id : this.id,
@@ -148,9 +148,9 @@ class _ProjectImpl extends Project {
       roles: roles is List<_i2.Role>?
           ? roles
           : this.roles?.map((e0) => e0.copyWith()).toList(),
-      environments: environments is List<_i3.Environment>?
-          ? environments
-          : this.environments?.map((e0) => e0.copyWith()).toList(),
+      capsules: capsules is List<_i3.Capsule>?
+          ? capsules
+          : this.capsules?.map((e0) => e0.copyWith()).toList(),
     );
   }
 }

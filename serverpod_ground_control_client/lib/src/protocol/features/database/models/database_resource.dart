@@ -16,7 +16,7 @@ import '../../../features/database/models/database_connection.dart' as _i3;
 abstract class DatabaseResource implements _i1.SerializableModel {
   DatabaseResource._({
     this.id,
-    required this.cloudEnvironmentId,
+    required this.cloudCapsuleId,
     required this.providerId,
     required this.provider,
     required this.connection,
@@ -24,7 +24,7 @@ abstract class DatabaseResource implements _i1.SerializableModel {
 
   factory DatabaseResource({
     int? id,
-    required String cloudEnvironmentId,
+    required String cloudCapsuleId,
     required String providerId,
     required _i2.DatabaseProvider provider,
     required _i3.DatabaseConnection connection,
@@ -33,7 +33,7 @@ abstract class DatabaseResource implements _i1.SerializableModel {
   factory DatabaseResource.fromJson(Map<String, dynamic> jsonSerialization) {
     return DatabaseResource(
       id: jsonSerialization['id'] as int?,
-      cloudEnvironmentId: jsonSerialization['cloudEnvironmentId'] as String,
+      cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
       providerId: jsonSerialization['providerId'] as String,
       provider: _i2.DatabaseProvider.fromJson(
           (jsonSerialization['provider'] as String)),
@@ -47,7 +47,7 @@ abstract class DatabaseResource implements _i1.SerializableModel {
   /// the id will be null.
   int? id;
 
-  String cloudEnvironmentId;
+  String cloudCapsuleId;
 
   String providerId;
 
@@ -57,7 +57,7 @@ abstract class DatabaseResource implements _i1.SerializableModel {
 
   DatabaseResource copyWith({
     int? id,
-    String? cloudEnvironmentId,
+    String? cloudCapsuleId,
     String? providerId,
     _i2.DatabaseProvider? provider,
     _i3.DatabaseConnection? connection,
@@ -66,7 +66,7 @@ abstract class DatabaseResource implements _i1.SerializableModel {
   Map<String, dynamic> toJson() {
     return {
       if (id != null) 'id': id,
-      'cloudEnvironmentId': cloudEnvironmentId,
+      'cloudCapsuleId': cloudCapsuleId,
       'providerId': providerId,
       'provider': provider.toJson(),
       'connection': connection.toJson(),
@@ -84,13 +84,13 @@ class _Undefined {}
 class _DatabaseResourceImpl extends DatabaseResource {
   _DatabaseResourceImpl({
     int? id,
-    required String cloudEnvironmentId,
+    required String cloudCapsuleId,
     required String providerId,
     required _i2.DatabaseProvider provider,
     required _i3.DatabaseConnection connection,
   }) : super._(
           id: id,
-          cloudEnvironmentId: cloudEnvironmentId,
+          cloudCapsuleId: cloudCapsuleId,
           providerId: providerId,
           provider: provider,
           connection: connection,
@@ -99,14 +99,14 @@ class _DatabaseResourceImpl extends DatabaseResource {
   @override
   DatabaseResource copyWith({
     Object? id = _Undefined,
-    String? cloudEnvironmentId,
+    String? cloudCapsuleId,
     String? providerId,
     _i2.DatabaseProvider? provider,
     _i3.DatabaseConnection? connection,
   }) {
     return DatabaseResource(
       id: id is int? ? id : this.id,
-      cloudEnvironmentId: cloudEnvironmentId ?? this.cloudEnvironmentId,
+      cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
       providerId: providerId ?? this.providerId,
       provider: provider ?? this.provider,
       connection: connection ?? this.connection.copyWith(),

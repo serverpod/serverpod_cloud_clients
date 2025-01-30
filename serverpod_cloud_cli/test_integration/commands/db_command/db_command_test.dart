@@ -57,7 +57,7 @@ void main() {
     group('when executing db connection', () {
       setUpAll(() {
         when(() => client.database.getConnectionDetails(
-              cloudEnvironmentId: any(named: 'cloudEnvironmentId'),
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
             )).thenThrow(ServerpodClientUnauthorized());
       });
 
@@ -97,7 +97,7 @@ void main() {
     group('when executing db create-superuser', () {
       setUpAll(() {
         when(() => client.database.createSuperUser(
-              cloudEnvironmentId: any(named: 'cloudEnvironmentId'),
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
               username: 'wernher',
             )).thenThrow(ServerpodClientUnauthorized());
       });
@@ -139,7 +139,7 @@ void main() {
     group('when executing db reset-password', () {
       setUpAll(() {
         when(() => client.database.resetDatabasePassword(
-              cloudEnvironmentId: any(named: 'cloudEnvironmentId'),
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
               username: 'wernher',
             )).thenThrow(ServerpodClientUnauthorized());
       });
@@ -195,7 +195,7 @@ void main() {
 
       setUpAll(() {
         when(() => client.database.getConnectionDetails(
-              cloudEnvironmentId: any(named: 'cloudEnvironmentId'),
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
             )).thenAnswer((final _) async => Future.value(connection));
       });
 
@@ -245,7 +245,7 @@ void main() {
 
       setUpAll(() {
         when(() => client.database.createSuperUser(
-              cloudEnvironmentId: any(named: 'cloudEnvironmentId'),
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
               username: 'wernher',
             )).thenAnswer((final _) async => Future.value(password));
       });
@@ -287,7 +287,7 @@ $password''',
 
       setUpAll(() {
         when(() => client.database.resetDatabasePassword(
-              cloudEnvironmentId: any(named: 'cloudEnvironmentId'),
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
               username: 'wernher',
             )).thenAnswer((final _) async => Future.value(password));
       });

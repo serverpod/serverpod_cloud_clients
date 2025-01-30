@@ -15,13 +15,13 @@ abstract class NewCustomDomainNamesEvent implements _i1.SerializableModel {
   NewCustomDomainNamesEvent._({
     required this.domainName,
     required this.attempts,
-    required this.cloudEnvironmentId,
+    required this.cloudCapsuleId,
   });
 
   factory NewCustomDomainNamesEvent({
     required String domainName,
     required int attempts,
-    required String cloudEnvironmentId,
+    required String cloudCapsuleId,
   }) = _NewCustomDomainNamesEventImpl;
 
   factory NewCustomDomainNamesEvent.fromJson(
@@ -29,7 +29,7 @@ abstract class NewCustomDomainNamesEvent implements _i1.SerializableModel {
     return NewCustomDomainNamesEvent(
       domainName: jsonSerialization['domainName'] as String,
       attempts: jsonSerialization['attempts'] as int,
-      cloudEnvironmentId: jsonSerialization['cloudEnvironmentId'] as String,
+      cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
     );
   }
 
@@ -37,19 +37,19 @@ abstract class NewCustomDomainNamesEvent implements _i1.SerializableModel {
 
   int attempts;
 
-  String cloudEnvironmentId;
+  String cloudCapsuleId;
 
   NewCustomDomainNamesEvent copyWith({
     String? domainName,
     int? attempts,
-    String? cloudEnvironmentId,
+    String? cloudCapsuleId,
   });
   @override
   Map<String, dynamic> toJson() {
     return {
       'domainName': domainName,
       'attempts': attempts,
-      'cloudEnvironmentId': cloudEnvironmentId,
+      'cloudCapsuleId': cloudCapsuleId,
     };
   }
 
@@ -63,23 +63,23 @@ class _NewCustomDomainNamesEventImpl extends NewCustomDomainNamesEvent {
   _NewCustomDomainNamesEventImpl({
     required String domainName,
     required int attempts,
-    required String cloudEnvironmentId,
+    required String cloudCapsuleId,
   }) : super._(
           domainName: domainName,
           attempts: attempts,
-          cloudEnvironmentId: cloudEnvironmentId,
+          cloudCapsuleId: cloudCapsuleId,
         );
 
   @override
   NewCustomDomainNamesEvent copyWith({
     String? domainName,
     int? attempts,
-    String? cloudEnvironmentId,
+    String? cloudCapsuleId,
   }) {
     return NewCustomDomainNamesEvent(
       domainName: domainName ?? this.domainName,
       attempts: attempts ?? this.attempts,
-      cloudEnvironmentId: cloudEnvironmentId ?? this.cloudEnvironmentId,
+      cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
     );
   }
 }

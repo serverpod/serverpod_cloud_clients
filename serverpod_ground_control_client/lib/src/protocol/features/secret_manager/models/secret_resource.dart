@@ -15,7 +15,7 @@ import '../../../features/secret_manager/models/secret_type.dart' as _i2;
 abstract class SecretResource implements _i1.SerializableModel {
   SecretResource._({
     this.id,
-    required this.cloudEnvironmentId,
+    required this.cloudCapsuleId,
     required this.secretId,
     required this.secretType,
     this.createdAt,
@@ -23,7 +23,7 @@ abstract class SecretResource implements _i1.SerializableModel {
 
   factory SecretResource({
     int? id,
-    required String cloudEnvironmentId,
+    required String cloudCapsuleId,
     required String secretId,
     required _i2.SecretType secretType,
     DateTime? createdAt,
@@ -32,7 +32,7 @@ abstract class SecretResource implements _i1.SerializableModel {
   factory SecretResource.fromJson(Map<String, dynamic> jsonSerialization) {
     return SecretResource(
       id: jsonSerialization['id'] as int?,
-      cloudEnvironmentId: jsonSerialization['cloudEnvironmentId'] as String,
+      cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
       secretId: jsonSerialization['secretId'] as String,
       secretType:
           _i2.SecretType.fromJson((jsonSerialization['secretType'] as String)),
@@ -47,7 +47,7 @@ abstract class SecretResource implements _i1.SerializableModel {
   /// the id will be null.
   int? id;
 
-  String cloudEnvironmentId;
+  String cloudCapsuleId;
 
   String secretId;
 
@@ -57,7 +57,7 @@ abstract class SecretResource implements _i1.SerializableModel {
 
   SecretResource copyWith({
     int? id,
-    String? cloudEnvironmentId,
+    String? cloudCapsuleId,
     String? secretId,
     _i2.SecretType? secretType,
     DateTime? createdAt,
@@ -66,7 +66,7 @@ abstract class SecretResource implements _i1.SerializableModel {
   Map<String, dynamic> toJson() {
     return {
       if (id != null) 'id': id,
-      'cloudEnvironmentId': cloudEnvironmentId,
+      'cloudCapsuleId': cloudCapsuleId,
       'secretId': secretId,
       'secretType': secretType.toJson(),
       if (createdAt != null) 'createdAt': createdAt?.toJson(),
@@ -84,13 +84,13 @@ class _Undefined {}
 class _SecretResourceImpl extends SecretResource {
   _SecretResourceImpl({
     int? id,
-    required String cloudEnvironmentId,
+    required String cloudCapsuleId,
     required String secretId,
     required _i2.SecretType secretType,
     DateTime? createdAt,
   }) : super._(
           id: id,
-          cloudEnvironmentId: cloudEnvironmentId,
+          cloudCapsuleId: cloudCapsuleId,
           secretId: secretId,
           secretType: secretType,
           createdAt: createdAt,
@@ -99,14 +99,14 @@ class _SecretResourceImpl extends SecretResource {
   @override
   SecretResource copyWith({
     Object? id = _Undefined,
-    String? cloudEnvironmentId,
+    String? cloudCapsuleId,
     String? secretId,
     _i2.SecretType? secretType,
     Object? createdAt = _Undefined,
   }) {
     return SecretResource(
       id: id is int? ? id : this.id,
-      cloudEnvironmentId: cloudEnvironmentId ?? this.cloudEnvironmentId,
+      cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
       secretId: secretId ?? this.secretId,
       secretType: secretType ?? this.secretType,
       createdAt: createdAt is DateTime? ? createdAt : this.createdAt,

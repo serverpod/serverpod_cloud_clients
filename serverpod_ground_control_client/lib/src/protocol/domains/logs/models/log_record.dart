@@ -15,7 +15,7 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 abstract class LogRecord implements _i1.SerializableModel {
   LogRecord._({
     required this.cloudProjectId,
-    required this.cloudEnvironmentId,
+    required this.cloudCapsuleId,
     required this.recordId,
     required this.timestamp,
     this.severity,
@@ -24,7 +24,7 @@ abstract class LogRecord implements _i1.SerializableModel {
 
   factory LogRecord({
     required String cloudProjectId,
-    required String cloudEnvironmentId,
+    required String cloudCapsuleId,
     required String recordId,
     required DateTime timestamp,
     String? severity,
@@ -34,7 +34,7 @@ abstract class LogRecord implements _i1.SerializableModel {
   factory LogRecord.fromJson(Map<String, dynamic> jsonSerialization) {
     return LogRecord(
       cloudProjectId: jsonSerialization['cloudProjectId'] as String,
-      cloudEnvironmentId: jsonSerialization['cloudEnvironmentId'] as String,
+      cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
       recordId: jsonSerialization['recordId'] as String,
       timestamp:
           _i1.DateTimeJsonExtension.fromJson(jsonSerialization['timestamp']),
@@ -46,8 +46,8 @@ abstract class LogRecord implements _i1.SerializableModel {
   /// The ID of the project this log record is from.
   String cloudProjectId;
 
-  /// The ID of the environment this log record is from.
-  String cloudEnvironmentId;
+  /// The ID of the capsule this log record is from.
+  String cloudCapsuleId;
 
   /// The ID of this log record.
   String recordId;
@@ -63,7 +63,7 @@ abstract class LogRecord implements _i1.SerializableModel {
 
   LogRecord copyWith({
     String? cloudProjectId,
-    String? cloudEnvironmentId,
+    String? cloudCapsuleId,
     String? recordId,
     DateTime? timestamp,
     String? severity,
@@ -73,7 +73,7 @@ abstract class LogRecord implements _i1.SerializableModel {
   Map<String, dynamic> toJson() {
     return {
       'cloudProjectId': cloudProjectId,
-      'cloudEnvironmentId': cloudEnvironmentId,
+      'cloudCapsuleId': cloudCapsuleId,
       'recordId': recordId,
       'timestamp': timestamp.toJson(),
       if (severity != null) 'severity': severity,
@@ -92,14 +92,14 @@ class _Undefined {}
 class _LogRecordImpl extends LogRecord {
   _LogRecordImpl({
     required String cloudProjectId,
-    required String cloudEnvironmentId,
+    required String cloudCapsuleId,
     required String recordId,
     required DateTime timestamp,
     String? severity,
     required String content,
   }) : super._(
           cloudProjectId: cloudProjectId,
-          cloudEnvironmentId: cloudEnvironmentId,
+          cloudCapsuleId: cloudCapsuleId,
           recordId: recordId,
           timestamp: timestamp,
           severity: severity,
@@ -109,7 +109,7 @@ class _LogRecordImpl extends LogRecord {
   @override
   LogRecord copyWith({
     String? cloudProjectId,
-    String? cloudEnvironmentId,
+    String? cloudCapsuleId,
     String? recordId,
     DateTime? timestamp,
     Object? severity = _Undefined,
@@ -117,7 +117,7 @@ class _LogRecordImpl extends LogRecord {
   }) {
     return LogRecord(
       cloudProjectId: cloudProjectId ?? this.cloudProjectId,
-      cloudEnvironmentId: cloudEnvironmentId ?? this.cloudEnvironmentId,
+      cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
       recordId: recordId ?? this.recordId,
       timestamp: timestamp ?? this.timestamp,
       severity: severity is String? ? severity : this.severity,

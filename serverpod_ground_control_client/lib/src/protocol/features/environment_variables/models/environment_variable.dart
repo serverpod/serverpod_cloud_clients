@@ -10,15 +10,15 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../features/environments/models/environment.dart' as _i2;
+import '../../../features/capsules/models/capsule.dart' as _i2;
 
 abstract class EnvironmentVariable implements _i1.SerializableModel {
   EnvironmentVariable._({
     this.id,
     DateTime? createdAt,
     DateTime? updatedAt,
-    required this.environmentId,
-    this.environment,
+    required this.capsuleId,
+    this.capsule,
     required this.name,
     required this.value,
   })  : createdAt = createdAt ?? DateTime.now(),
@@ -28,8 +28,8 @@ abstract class EnvironmentVariable implements _i1.SerializableModel {
     int? id,
     DateTime? createdAt,
     DateTime? updatedAt,
-    required int environmentId,
-    _i2.Environment? environment,
+    required int capsuleId,
+    _i2.Capsule? capsule,
     required String name,
     required String value,
   }) = _EnvironmentVariableImpl;
@@ -41,11 +41,11 @@ abstract class EnvironmentVariable implements _i1.SerializableModel {
           _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
       updatedAt:
           _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
-      environmentId: jsonSerialization['environmentId'] as int,
-      environment: jsonSerialization['environment'] == null
+      capsuleId: jsonSerialization['capsuleId'] as int,
+      capsule: jsonSerialization['capsule'] == null
           ? null
-          : _i2.Environment.fromJson(
-              (jsonSerialization['environment'] as Map<String, dynamic>)),
+          : _i2.Capsule.fromJson(
+              (jsonSerialization['capsule'] as Map<String, dynamic>)),
       name: jsonSerialization['name'] as String,
       value: jsonSerialization['value'] as String,
     );
@@ -60,10 +60,10 @@ abstract class EnvironmentVariable implements _i1.SerializableModel {
 
   DateTime updatedAt;
 
-  int environmentId;
+  int capsuleId;
 
-  /// An environment variable belongs to an environment. Cannot be changed.
-  _i2.Environment? environment;
+  /// An environment variable belongs to a capsule. Cannot be changed.
+  _i2.Capsule? capsule;
 
   /// The name of the environment variable, e.g. 'HOST'. Can be changed.
   String name;
@@ -75,8 +75,8 @@ abstract class EnvironmentVariable implements _i1.SerializableModel {
     int? id,
     DateTime? createdAt,
     DateTime? updatedAt,
-    int? environmentId,
-    _i2.Environment? environment,
+    int? capsuleId,
+    _i2.Capsule? capsule,
     String? name,
     String? value,
   });
@@ -86,8 +86,8 @@ abstract class EnvironmentVariable implements _i1.SerializableModel {
       if (id != null) 'id': id,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
-      'environmentId': environmentId,
-      if (environment != null) 'environment': environment?.toJson(),
+      'capsuleId': capsuleId,
+      if (capsule != null) 'capsule': capsule?.toJson(),
       'name': name,
       'value': value,
     };
@@ -106,16 +106,16 @@ class _EnvironmentVariableImpl extends EnvironmentVariable {
     int? id,
     DateTime? createdAt,
     DateTime? updatedAt,
-    required int environmentId,
-    _i2.Environment? environment,
+    required int capsuleId,
+    _i2.Capsule? capsule,
     required String name,
     required String value,
   }) : super._(
           id: id,
           createdAt: createdAt,
           updatedAt: updatedAt,
-          environmentId: environmentId,
-          environment: environment,
+          capsuleId: capsuleId,
+          capsule: capsule,
           name: name,
           value: value,
         );
@@ -125,8 +125,8 @@ class _EnvironmentVariableImpl extends EnvironmentVariable {
     Object? id = _Undefined,
     DateTime? createdAt,
     DateTime? updatedAt,
-    int? environmentId,
-    Object? environment = _Undefined,
+    int? capsuleId,
+    Object? capsule = _Undefined,
     String? name,
     String? value,
   }) {
@@ -134,10 +134,8 @@ class _EnvironmentVariableImpl extends EnvironmentVariable {
       id: id is int? ? id : this.id,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      environmentId: environmentId ?? this.environmentId,
-      environment: environment is _i2.Environment?
-          ? environment
-          : this.environment?.copyWith(),
+      capsuleId: capsuleId ?? this.capsuleId,
+      capsule: capsule is _i2.Capsule? ? capsule : this.capsule?.copyWith(),
       name: name ?? this.name,
       value: value ?? this.value,
     );

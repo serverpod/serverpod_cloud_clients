@@ -86,7 +86,7 @@ class CloudAddCustomDomainCommand
             await apiCloudClient.customDomainName.add(
           domainName: domainName,
           target: parsedTarget,
-          cloudEnvironmentId: projectId,
+          cloudCapsuleId: projectId,
         );
       },
       (final e) {
@@ -195,7 +195,7 @@ class CloudListCustomDomainCommand
     late CustomDomainNameList domainNamesList;
     await handleCommonClientExceptions(logger, () async {
       domainNamesList = await apiCloudClient.customDomainName.list(
-        cloudEnvironmentId: projectId,
+        cloudCapsuleId: projectId,
       );
     }, (final e) {
       logger.error(
@@ -286,7 +286,7 @@ class CloudRemoveCustomDomainCommand
 
     await handleCommonClientExceptions(logger, () async {
       await apiCloudClient.customDomainName.remove(
-        cloudEnvironmentId: projectId,
+        cloudCapsuleId: projectId,
         domainName: domainName,
       );
     }, (final e) {
@@ -335,7 +335,7 @@ class CloudRefreshCustomDomainRecordCommand
 
     await handleCommonClientExceptions(logger, () async {
       final result = await apiCloudClient.customDomainName.refreshRecord(
-        cloudEnvironmentId: projectId,
+        cloudCapsuleId: projectId,
         domainName: domainName,
       );
 

@@ -87,7 +87,7 @@ class EndpointCustomDomainName extends _i1.EndpointRef {
   _i2.Future<_i4.CustomDomainNameWithDefaultDomains> add({
     required String domainName,
     required _i5.DomainNameTarget target,
-    required String cloudEnvironmentId,
+    required String cloudCapsuleId,
   }) =>
       caller.callServerEndpoint<_i4.CustomDomainNameWithDefaultDomains>(
         'customDomainName',
@@ -95,41 +95,40 @@ class EndpointCustomDomainName extends _i1.EndpointRef {
         {
           'domainName': domainName,
           'target': target,
-          'cloudEnvironmentId': cloudEnvironmentId,
+          'cloudCapsuleId': cloudCapsuleId,
         },
       );
 
   _i2.Future<void> remove({
     required String domainName,
-    required String cloudEnvironmentId,
+    required String cloudCapsuleId,
   }) =>
       caller.callServerEndpoint<void>(
         'customDomainName',
         'remove',
         {
           'domainName': domainName,
-          'cloudEnvironmentId': cloudEnvironmentId,
+          'cloudCapsuleId': cloudCapsuleId,
         },
       );
 
-  _i2.Future<_i6.CustomDomainNameList> list(
-          {required String cloudEnvironmentId}) =>
+  _i2.Future<_i6.CustomDomainNameList> list({required String cloudCapsuleId}) =>
       caller.callServerEndpoint<_i6.CustomDomainNameList>(
         'customDomainName',
         'list',
-        {'cloudEnvironmentId': cloudEnvironmentId},
+        {'cloudCapsuleId': cloudCapsuleId},
       );
 
   _i2.Future<_i7.DomainNameStatus> refreshRecord({
     required String domainName,
-    required String cloudEnvironmentId,
+    required String cloudCapsuleId,
   }) =>
       caller.callServerEndpoint<_i7.DomainNameStatus>(
         'customDomainName',
         'refreshRecord',
         {
           'domainName': domainName,
-          'cloudEnvironmentId': cloudEnvironmentId,
+          'cloudCapsuleId': cloudCapsuleId,
         },
       );
 }
@@ -162,7 +161,7 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
   _i2.Future<_i8.EnvironmentVariable> create(
     String name,
     String value,
-    String cloudEnvironmentId,
+    String cloudCapsuleId,
   ) =>
       caller.callServerEndpoint<_i8.EnvironmentVariable>(
         'environmentVariables',
@@ -170,7 +169,7 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
         {
           'name': name,
           'value': value,
-          'cloudEnvironmentId': cloudEnvironmentId,
+          'cloudCapsuleId': cloudCapsuleId,
         },
       );
 
@@ -178,23 +177,23 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
   /// Throws a [NotFoundException] if the environment variable is not found.
   _i2.Future<_i8.EnvironmentVariable> read({
     required String name,
-    required String cloudEnvironmentId,
+    required String cloudCapsuleId,
   }) =>
       caller.callServerEndpoint<_i8.EnvironmentVariable>(
         'environmentVariables',
         'read',
         {
           'name': name,
-          'cloudEnvironmentId': cloudEnvironmentId,
+          'cloudCapsuleId': cloudCapsuleId,
         },
       );
 
-  /// Gets the list of environment variables for the given [cloudEnvironmentId].
-  _i2.Future<List<_i8.EnvironmentVariable>> list(String cloudEnvironmentId) =>
+  /// Gets the list of environment variables for the given [cloudCapsuleId].
+  _i2.Future<List<_i8.EnvironmentVariable>> list(String cloudCapsuleId) =>
       caller.callServerEndpoint<List<_i8.EnvironmentVariable>>(
         'environmentVariables',
         'list',
-        {'cloudEnvironmentId': cloudEnvironmentId},
+        {'cloudCapsuleId': cloudCapsuleId},
       );
 
   /// Creates a new [EnvironmentVariable] with the specified [name] and [value].
@@ -202,7 +201,7 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
   _i2.Future<_i8.EnvironmentVariable> update({
     required String name,
     required String value,
-    required String cloudEnvironmentId,
+    required String cloudCapsuleId,
   }) =>
       caller.callServerEndpoint<_i8.EnvironmentVariable>(
         'environmentVariables',
@@ -210,21 +209,21 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
         {
           'name': name,
           'value': value,
-          'cloudEnvironmentId': cloudEnvironmentId,
+          'cloudCapsuleId': cloudCapsuleId,
         },
       );
 
   /// Permanently deletes an environment variable.
   /// Throws a [NotFoundException] if the environment variable is not found.
   _i2.Future<_i8.EnvironmentVariable> delete({
-    required String cloudEnvironmentId,
+    required String cloudCapsuleId,
     required String name,
   }) =>
       caller.callServerEndpoint<_i8.EnvironmentVariable>(
         'environmentVariables',
         'delete',
         {
-          'cloudEnvironmentId': cloudEnvironmentId,
+          'cloudCapsuleId': cloudCapsuleId,
           'name': name,
         },
       );
@@ -304,24 +303,24 @@ class EndpointDatabase extends _i1.EndpointRef {
   String get name => 'database';
 
   _i2.Future<_i10.DatabaseConnection> getConnectionDetails(
-          {required String cloudEnvironmentId}) =>
+          {required String cloudCapsuleId}) =>
       caller.callServerEndpoint<_i10.DatabaseConnection>(
         'database',
         'getConnectionDetails',
-        {'cloudEnvironmentId': cloudEnvironmentId},
+        {'cloudCapsuleId': cloudCapsuleId},
       );
 
   /// Creates a new super user in the database.
   /// Returns the password for the new user.
   _i2.Future<String> createSuperUser({
-    required String cloudEnvironmentId,
+    required String cloudCapsuleId,
     required String username,
   }) =>
       caller.callServerEndpoint<String>(
         'database',
         'createSuperUser',
         {
-          'cloudEnvironmentId': cloudEnvironmentId,
+          'cloudCapsuleId': cloudCapsuleId,
           'username': username,
         },
       );
@@ -329,14 +328,14 @@ class EndpointDatabase extends _i1.EndpointRef {
   /// Resets the password for a user in the database.
   /// Returns the new password for the user.
   _i2.Future<String> resetDatabasePassword({
-    required String cloudEnvironmentId,
+    required String cloudCapsuleId,
     required String username,
   }) =>
       caller.callServerEndpoint<String>(
         'database',
         'resetDatabasePassword',
         {
-          'cloudEnvironmentId': cloudEnvironmentId,
+          'cloudCapsuleId': cloudCapsuleId,
           'username': username,
         },
       );
@@ -351,11 +350,11 @@ class EndpointInfraResources extends _i1.EndpointRef {
   String get name => 'infraResources';
 
   /// Enables the database for a project.
-  _i2.Future<void> enableDatabase({required String cloudEnvironmentId}) =>
+  _i2.Future<void> enableDatabase({required String cloudCapsuleId}) =>
       caller.callServerEndpoint<void>(
         'infraResources',
         'enableDatabase',
-        {'cloudEnvironmentId': cloudEnvironmentId},
+        {'cloudCapsuleId': cloudCapsuleId},
       );
 }
 
@@ -437,39 +436,39 @@ class EndpointSecrets extends _i1.EndpointRef {
 
   _i2.Future<void> create({
     required Map<String, String> secrets,
-    required String cloudEnvironmentId,
+    required String cloudCapsuleId,
   }) =>
       caller.callServerEndpoint<void>(
         'secrets',
         'create',
         {
           'secrets': secrets,
-          'cloudEnvironmentId': cloudEnvironmentId,
+          'cloudCapsuleId': cloudCapsuleId,
         },
       );
 
   _i2.Future<void> delete({
     required String key,
-    required String cloudEnvironmentId,
+    required String cloudCapsuleId,
   }) =>
       caller.callServerEndpoint<void>(
         'secrets',
         'delete',
         {
           'key': key,
-          'cloudEnvironmentId': cloudEnvironmentId,
+          'cloudCapsuleId': cloudCapsuleId,
         },
       );
 
-  _i2.Future<List<String>> list(String cloudEnvironmentId) =>
+  _i2.Future<List<String>> list(String cloudCapsuleId) =>
       caller.callServerEndpoint<List<String>>(
         'secrets',
         'list',
-        {'cloudEnvironmentId': cloudEnvironmentId},
+        {'cloudCapsuleId': cloudCapsuleId},
       );
 }
 
-/// Endpoint for accessing environment status.
+/// Endpoint for accessing capsule deployment status.
 /// {@category Endpoint}
 class EndpointStatus extends _i1.EndpointRef {
   EndpointStatus(_i1.EndpointCaller caller) : super(caller);
@@ -477,52 +476,52 @@ class EndpointStatus extends _i1.EndpointRef {
   @override
   String get name => 'status';
 
-  /// Gets deploy attempts of the specified environment.
+  /// Gets deploy attempts of the specified capsule.
   /// Gets the recent-most attempts, up till [limit] if specified.
   _i2.Future<List<_i14.DeployAttempt>> getDeployAttempts({
-    required String cloudEnvironmentId,
+    required String cloudCapsuleId,
     int? limit,
   }) =>
       caller.callServerEndpoint<List<_i14.DeployAttempt>>(
         'status',
         'getDeployAttempts',
         {
-          'cloudEnvironmentId': cloudEnvironmentId,
+          'cloudCapsuleId': cloudCapsuleId,
           'limit': limit,
         },
       );
 
-  /// Gets the specified deploy attempt status of the a environment.
+  /// Gets the specified deploy attempt status of the a capsule.
   _i2.Future<List<_i15.DeployAttemptStage>> getDeployAttemptStatus({
-    required String cloudEnvironmentId,
+    required String cloudCapsuleId,
     required String attemptId,
   }) =>
       caller.callServerEndpoint<List<_i15.DeployAttemptStage>>(
         'status',
         'getDeployAttemptStatus',
         {
-          'cloudEnvironmentId': cloudEnvironmentId,
+          'cloudCapsuleId': cloudCapsuleId,
           'attemptId': attemptId,
         },
       );
 
-  /// Gets the deploy attempt id for the specified attempt number of a environment.
-  /// This number enumerate the environment's deploy attempts as latest first, starting from 0.
+  /// Gets the deploy attempt id for the specified attempt number of a capsule.
+  /// This number enumerate the capsule's deploy attempts as latest first, starting from 0.
   _i2.Future<String> getDeployAttemptId({
-    required String cloudEnvironmentId,
+    required String cloudCapsuleId,
     required int attemptNumber,
   }) =>
       caller.callServerEndpoint<String>(
         'status',
         'getDeployAttemptId',
         {
-          'cloudEnvironmentId': cloudEnvironmentId,
+          'cloudCapsuleId': cloudCapsuleId,
           'attemptNumber': attemptNumber,
         },
       );
 }
 
-/// Endpoint for managing tenant users.
+/// Endpoint for managing users.
 /// {@category Endpoint}
 class EndpointUsers extends _i1.EndpointRef {
   EndpointUsers(_i1.EndpointCaller caller) : super(caller);
@@ -530,7 +529,7 @@ class EndpointUsers extends _i1.EndpointRef {
   @override
   String get name => 'users';
 
-  /// Fetches the tenant user for the currently authenticated user.
+  /// Fetches the user for the currently authenticated user.
   _i2.Future<_i16.User> fetchCurrentUser() =>
       caller.callServerEndpoint<_i16.User>(
         'users',
@@ -538,8 +537,8 @@ class EndpointUsers extends _i1.EndpointRef {
         {},
       );
 
-  /// Registers a new tenant user record for the current authenticated user.
-  /// Throws [DuplicateEntryException] if the tenant user already exists.
+  /// Registers a new user record for the current authenticated user.
+  /// Throws [DuplicateEntryException] if the user already exists.
   _i2.Future<_i16.User> registerCurrentUser({String? userDisplayName}) =>
       caller.callServerEndpoint<_i16.User>(
         'users',

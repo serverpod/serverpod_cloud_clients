@@ -45,12 +45,12 @@ void main() {
 
     setUpAll(() async {
       when(() => client.status.getDeployAttempts(
-            cloudEnvironmentId: any(named: 'cloudEnvironmentId'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
             limit: any(named: 'limit'),
           )).thenThrow(ServerpodClientUnauthorized());
 
       when(() => client.status.getDeployAttemptId(
-            cloudEnvironmentId: any(named: 'cloudEnvironmentId'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
             attemptNumber: any(named: 'attemptNumber'),
           )).thenThrow(ServerpodClientUnauthorized());
     });
@@ -159,7 +159,7 @@ void main() {
         setUpAll(() async {
           final attemptStages = [
             DeployAttemptStage(
-              cloudEnvironmentId: projectId,
+              cloudCapsuleId: projectId,
               attemptId: 'abc',
               stageType: DeployStageType.upload,
               stageStatus: DeployProgressStatus.success,
@@ -167,7 +167,7 @@ void main() {
               endedAt: DateTime.parse("2021-12-31 10:20:40"),
             ),
             DeployAttemptStage(
-              cloudEnvironmentId: projectId,
+              cloudCapsuleId: projectId,
               attemptId: 'abc',
               stageType: DeployStageType.build,
               buildId: 'build-id-foo',
@@ -176,7 +176,7 @@ void main() {
               endedAt: DateTime.parse("2021-12-31 10:20:40"),
             ),
             DeployAttemptStage(
-              cloudEnvironmentId: projectId,
+              cloudCapsuleId: projectId,
               attemptId: 'abc',
               stageType: DeployStageType.deploy,
               stageStatus: DeployProgressStatus.success,
@@ -184,7 +184,7 @@ void main() {
               endedAt: DateTime.parse("2021-12-31 10:20:40"),
             ),
             DeployAttemptStage(
-              cloudEnvironmentId: projectId,
+              cloudCapsuleId: projectId,
               attemptId: 'abc',
               stageType: DeployStageType.service,
               stageStatus: DeployProgressStatus.success,
@@ -194,12 +194,12 @@ void main() {
           ];
 
           when(() => client.status.getDeployAttemptStatus(
-                cloudEnvironmentId: projectId,
+                cloudCapsuleId: projectId,
                 attemptId: attemptStages.first.attemptId,
               )).thenAnswer((final _) async => attemptStages);
 
           when(() => client.status.getDeployAttemptId(
-                cloudEnvironmentId: projectId,
+                cloudCapsuleId: projectId,
                 attemptNumber: 0,
               )).thenAnswer((final _) async => attemptStages.first.attemptId);
         });
@@ -283,12 +283,12 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
       group('with incorrect args to get a deploy status', () {
         setUpAll(() async {
           when(() => client.status.getDeployAttemptStatus(
-                cloudEnvironmentId: any(named: 'cloudEnvironmentId'),
+                cloudCapsuleId: any(named: 'cloudCapsuleId'),
                 attemptId: any(named: 'attemptId'),
               )).thenThrow(ServerpodClientNotFound());
 
           when(() => client.status.getDeployAttemptId(
-                cloudEnvironmentId: any(named: 'cloudEnvironmentId'),
+                cloudCapsuleId: any(named: 'cloudCapsuleId'),
                 attemptNumber: any(named: 'attemptNumber'),
               )).thenThrow(ServerpodClientNotFound());
         });
@@ -349,7 +349,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
       setUpAll(() async {
         final attemptStages = [
           DeployAttemptStage(
-            cloudEnvironmentId: projectId,
+            cloudCapsuleId: projectId,
             attemptId: 'abc',
             stageType: DeployStageType.upload,
             stageStatus: DeployProgressStatus.success,
@@ -357,7 +357,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
             endedAt: DateTime.parse("2021-12-31 10:20:40"),
           ),
           DeployAttemptStage(
-            cloudEnvironmentId: projectId,
+            cloudCapsuleId: projectId,
             attemptId: 'abc',
             stageType: DeployStageType.build,
             buildId: 'build-id-foo',
@@ -366,7 +366,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
             endedAt: DateTime.parse("2021-12-31 10:20:40"),
           ),
           DeployAttemptStage(
-            cloudEnvironmentId: projectId,
+            cloudCapsuleId: projectId,
             attemptId: 'abc',
             stageType: DeployStageType.deploy,
             stageStatus: DeployProgressStatus.success,
@@ -374,7 +374,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
             endedAt: DateTime.parse("2021-12-31 10:20:40"),
           ),
           DeployAttemptStage(
-            cloudEnvironmentId: projectId,
+            cloudCapsuleId: projectId,
             attemptId: 'abc',
             stageType: DeployStageType.service,
             stageStatus: DeployProgressStatus.awaiting,
@@ -384,12 +384,12 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
         ];
 
         when(() => client.status.getDeployAttemptStatus(
-              cloudEnvironmentId: projectId,
+              cloudCapsuleId: projectId,
               attemptId: attemptStages.first.attemptId,
             )).thenAnswer((final _) async => attemptStages);
 
         when(() => client.status.getDeployAttemptId(
-              cloudEnvironmentId: projectId,
+              cloudCapsuleId: projectId,
               attemptNumber: 0,
             )).thenAnswer((final _) async => attemptStages.first.attemptId);
       });
@@ -465,7 +465,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
         setUpAll(() async {
           final buildStatuses = [
             DeployAttempt(
-              cloudEnvironmentId: projectId,
+              cloudCapsuleId: projectId,
               attemptId: 'foo',
               status: DeployProgressStatus.success,
               startedAt: DateTime.parse("2021-12-31 10:20:30"),
@@ -473,7 +473,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
               statusInfo: null,
             ),
             DeployAttempt(
-              cloudEnvironmentId: projectId,
+              cloudCapsuleId: projectId,
               attemptId: 'bar',
               status: DeployProgressStatus.failure,
               startedAt: DateTime.parse("2021-12-31 10:10:30"),
@@ -483,7 +483,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
           ];
 
           when(() => client.status.getDeployAttempts(
-                cloudEnvironmentId: projectId,
+                cloudCapsuleId: projectId,
                 limit: any(named: 'limit'),
               )).thenAnswer((final _) async => buildStatuses);
         });

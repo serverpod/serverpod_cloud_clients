@@ -28,14 +28,14 @@ void main() {
   final mockRecords = [
     LogRecord(
       cloudProjectId: projectId,
-      cloudEnvironmentId: '1',
+      cloudCapsuleId: '1',
       recordId: '1',
       timestamp: logTimestamp,
       content: 'Log message 1',
     ),
     LogRecord(
       cloudProjectId: projectId,
-      cloudEnvironmentId: '2',
+      cloudCapsuleId: '2',
       recordId: '2',
       timestamp: logTimestamp,
       content: 'Log message 2',

@@ -91,7 +91,7 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
     if (enableDb) {
       await handleCommonClientExceptions(logger, () async {
         await apiCloudClient.infraResources
-            .enableDatabase(cloudEnvironmentId: projectId);
+            .enableDatabase(cloudCapsuleId: projectId);
       }, (final e) {
         logger.error(
           'Request to create a database for the new project failed: $e',

@@ -17,12 +17,12 @@ import '../../../features/environment_variables/models/environment_variable.dart
 import '../../../features/custom_domain_name/models/custom_domain_name.dart'
     as _i5;
 
-/// Represents an infrastructure environment instance (a deployment target).
-abstract class Environment implements _i1.SerializableModel {
-  Environment._({
+/// Represents an infrastructure capsule instance (a deployment target).
+abstract class Capsule implements _i1.SerializableModel {
+  Capsule._({
     this.id,
     required this.name,
-    required this.cloudEnvironmentId,
+    required this.cloudCapsuleId,
     required this.region,
     required this.projectId,
     this.project,
@@ -30,22 +30,22 @@ abstract class Environment implements _i1.SerializableModel {
     this.domainNames,
   });
 
-  factory Environment({
+  factory Capsule({
     int? id,
     required String name,
-    required String cloudEnvironmentId,
+    required String cloudCapsuleId,
     required _i2.ServerpodRegion region,
     required int projectId,
     _i3.Project? project,
     List<_i4.EnvironmentVariable>? environmentVariables,
     List<_i5.CustomDomainName>? domainNames,
-  }) = _EnvironmentImpl;
+  }) = _CapsuleImpl;
 
-  factory Environment.fromJson(Map<String, dynamic> jsonSerialization) {
-    return Environment(
+  factory Capsule.fromJson(Map<String, dynamic> jsonSerialization) {
+    return Capsule(
       id: jsonSerialization['id'] as int?,
       name: jsonSerialization['name'] as String,
-      cloudEnvironmentId: jsonSerialization['cloudEnvironmentId'] as String,
+      cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
       region:
           _i2.ServerpodRegion.fromJson((jsonSerialization['region'] as int)),
       projectId: jsonSerialization['projectId'] as int,
@@ -69,30 +69,30 @@ abstract class Environment implements _i1.SerializableModel {
   /// the id will be null.
   int? id;
 
-  /// The name of the environment. User-defined.
+  /// The name of the capsule. User-defined.
   String name;
 
-  /// Globally unique identitifier of the environment. Cannot be changed.
-  String cloudEnvironmentId;
+  /// Globally unique identifier of the capsule. Cannot be changed.
+  String cloudCapsuleId;
 
-  /// The region where the environment is hosted. Cannot be changed.
+  /// The region where the capsule is hosted. Cannot be changed.
   _i2.ServerpodRegion region;
 
   int projectId;
 
-  /// The project this environment belongs to. Cannot be changed.
+  /// The project this capsule belongs to. Cannot be changed.
   _i3.Project? project;
 
-  /// Environment variables for this environment.
+  /// Environment variables for this capsule.
   List<_i4.EnvironmentVariable>? environmentVariables;
 
-  /// The domain names for this environment.
+  /// The domain names for this capsule.
   List<_i5.CustomDomainName>? domainNames;
 
-  Environment copyWith({
+  Capsule copyWith({
     int? id,
     String? name,
-    String? cloudEnvironmentId,
+    String? cloudCapsuleId,
     _i2.ServerpodRegion? region,
     int? projectId,
     _i3.Project? project,
@@ -104,7 +104,7 @@ abstract class Environment implements _i1.SerializableModel {
     return {
       if (id != null) 'id': id,
       'name': name,
-      'cloudEnvironmentId': cloudEnvironmentId,
+      'cloudCapsuleId': cloudCapsuleId,
       'region': region.toJson(),
       'projectId': projectId,
       if (project != null) 'project': project?.toJson(),
@@ -124,11 +124,11 @@ abstract class Environment implements _i1.SerializableModel {
 
 class _Undefined {}
 
-class _EnvironmentImpl extends Environment {
-  _EnvironmentImpl({
+class _CapsuleImpl extends Capsule {
+  _CapsuleImpl({
     int? id,
     required String name,
-    required String cloudEnvironmentId,
+    required String cloudCapsuleId,
     required _i2.ServerpodRegion region,
     required int projectId,
     _i3.Project? project,
@@ -137,7 +137,7 @@ class _EnvironmentImpl extends Environment {
   }) : super._(
           id: id,
           name: name,
-          cloudEnvironmentId: cloudEnvironmentId,
+          cloudCapsuleId: cloudCapsuleId,
           region: region,
           projectId: projectId,
           project: project,
@@ -146,20 +146,20 @@ class _EnvironmentImpl extends Environment {
         );
 
   @override
-  Environment copyWith({
+  Capsule copyWith({
     Object? id = _Undefined,
     String? name,
-    String? cloudEnvironmentId,
+    String? cloudCapsuleId,
     _i2.ServerpodRegion? region,
     int? projectId,
     Object? project = _Undefined,
     Object? environmentVariables = _Undefined,
     Object? domainNames = _Undefined,
   }) {
-    return Environment(
+    return Capsule(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
-      cloudEnvironmentId: cloudEnvironmentId ?? this.cloudEnvironmentId,
+      cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
       region: region ?? this.region,
       projectId: projectId ?? this.projectId,
       project: project is _i3.Project? ? project : this.project?.copyWith(),

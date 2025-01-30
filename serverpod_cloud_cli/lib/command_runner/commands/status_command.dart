@@ -109,7 +109,7 @@ class CloudStatusCommand extends CloudCliCommand<StatusOption> {
         await StatusCommands.listDeployAttempts(
           runner.serviceProvider.cloudApiClient,
           logger: logger,
-          environmentId: projectId,
+          cloudCapsuleId: projectId,
           limit: limit,
           inUtc: inUtc,
         );
@@ -147,7 +147,7 @@ class CloudStatusCommand extends CloudCliCommand<StatusOption> {
       await StatusCommands.showDeploymentStatus(
         runner.serviceProvider.cloudApiClient,
         logger: logger,
-        environmentId: projectId,
+        cloudCapsuleId: projectId,
         attemptId: attemptId,
         inUtc: inUtc,
         outputOverallStatus: overallStatus,
@@ -167,7 +167,7 @@ class CloudStatusCommand extends CloudCliCommand<StatusOption> {
     return attemptNumber != null
         ? await StatusFeature.getDeployAttemptId(
             runner.serviceProvider.cloudApiClient,
-            environmentId: projectId,
+            cloudCapsuleId: projectId,
             attemptNumber: attemptNumber,
           )
         : deploymentArg;

@@ -17,7 +17,7 @@ import '../../../domains/status/models/deploy_progress_status.dart' as _i3;
 abstract class DeployAttemptStage implements _i1.SerializableModel {
   DeployAttemptStage._({
     this.id,
-    required this.cloudEnvironmentId,
+    required this.cloudCapsuleId,
     required this.attemptId,
     required this.stageType,
     this.stageInfo,
@@ -30,7 +30,7 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
 
   factory DeployAttemptStage({
     int? id,
-    required String cloudEnvironmentId,
+    required String cloudCapsuleId,
     required String attemptId,
     required _i2.DeployStageType stageType,
     String? stageInfo,
@@ -44,7 +44,7 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
   factory DeployAttemptStage.fromJson(Map<String, dynamic> jsonSerialization) {
     return DeployAttemptStage(
       id: jsonSerialization['id'] as int?,
-      cloudEnvironmentId: jsonSerialization['cloudEnvironmentId'] as String,
+      cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
       attemptId: jsonSerialization['attemptId'] as String,
       stageType: _i2.DeployStageType.fromJson(
           (jsonSerialization['stageType'] as String)),
@@ -67,8 +67,8 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
   /// the id will be null.
   int? id;
 
-  /// The ID of the environment of this deployment.
-  String cloudEnvironmentId;
+  /// The ID of the capsule of this deployment.
+  String cloudCapsuleId;
 
   /// The ID of the deploy attempt.
   String attemptId;
@@ -97,7 +97,7 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
 
   DeployAttemptStage copyWith({
     int? id,
-    String? cloudEnvironmentId,
+    String? cloudCapsuleId,
     String? attemptId,
     _i2.DeployStageType? stageType,
     String? stageInfo,
@@ -111,7 +111,7 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
   Map<String, dynamic> toJson() {
     return {
       if (id != null) 'id': id,
-      'cloudEnvironmentId': cloudEnvironmentId,
+      'cloudCapsuleId': cloudCapsuleId,
       'attemptId': attemptId,
       'stageType': stageType.toJson(),
       if (stageInfo != null) 'stageInfo': stageInfo,
@@ -134,7 +134,7 @@ class _Undefined {}
 class _DeployAttemptStageImpl extends DeployAttemptStage {
   _DeployAttemptStageImpl({
     int? id,
-    required String cloudEnvironmentId,
+    required String cloudCapsuleId,
     required String attemptId,
     required _i2.DeployStageType stageType,
     String? stageInfo,
@@ -145,7 +145,7 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
     String? statusInfo,
   }) : super._(
           id: id,
-          cloudEnvironmentId: cloudEnvironmentId,
+          cloudCapsuleId: cloudCapsuleId,
           attemptId: attemptId,
           stageType: stageType,
           stageInfo: stageInfo,
@@ -159,7 +159,7 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
   @override
   DeployAttemptStage copyWith({
     Object? id = _Undefined,
-    String? cloudEnvironmentId,
+    String? cloudCapsuleId,
     String? attemptId,
     _i2.DeployStageType? stageType,
     Object? stageInfo = _Undefined,
@@ -171,7 +171,7 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
   }) {
     return DeployAttemptStage(
       id: id is int? ? id : this.id,
-      cloudEnvironmentId: cloudEnvironmentId ?? this.cloudEnvironmentId,
+      cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
       attemptId: attemptId ?? this.attemptId,
       stageType: stageType ?? this.stageType,
       stageInfo: stageInfo is String? ? stageInfo : this.stageInfo,

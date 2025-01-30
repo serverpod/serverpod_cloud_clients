@@ -3,22 +3,22 @@ import 'package:serverpod_ground_control_client/serverpod_ground_control_client.
 abstract class StatusFeature {
   static Future<List<DeployAttempt>> getDeployAttemptList(
     final Client cloudApiClient, {
-    required final String environmentId,
+    required final String cloudCapsuleId,
     required final int? limit,
   }) {
     return cloudApiClient.status.getDeployAttempts(
-      cloudEnvironmentId: environmentId,
+      cloudCapsuleId: cloudCapsuleId,
       limit: limit,
     );
   }
 
   static Future<List<DeployAttemptStage>> getDeployAttemptStatus(
     final Client cloudApiClient, {
-    required final String environmentId,
+    required final String cloudCapsuleId,
     required final String attemptId,
   }) {
     return cloudApiClient.status.getDeployAttemptStatus(
-      cloudEnvironmentId: environmentId,
+      cloudCapsuleId: cloudCapsuleId,
       attemptId: attemptId,
     );
   }
@@ -26,11 +26,11 @@ abstract class StatusFeature {
   /// Helper to get the deploy attempt id for a specific attempt number.
   static Future<String> getDeployAttemptId(
     final Client cloudApiClient, {
-    required final String environmentId,
+    required final String cloudCapsuleId,
     required final int attemptNumber,
   }) async {
     return await cloudApiClient.status.getDeployAttemptId(
-      cloudEnvironmentId: environmentId,
+      cloudCapsuleId: cloudCapsuleId,
       attemptNumber: attemptNumber,
     );
   }

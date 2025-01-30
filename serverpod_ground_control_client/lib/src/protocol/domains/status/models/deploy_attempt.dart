@@ -15,7 +15,7 @@ import '../../../domains/status/models/deploy_progress_status.dart' as _i2;
 /// Represents the status information of a deployment attempt.
 abstract class DeployAttempt implements _i1.SerializableModel {
   DeployAttempt._({
-    required this.cloudEnvironmentId,
+    required this.cloudCapsuleId,
     required this.attemptId,
     required this.status,
     this.startedAt,
@@ -24,7 +24,7 @@ abstract class DeployAttempt implements _i1.SerializableModel {
   });
 
   factory DeployAttempt({
-    required String cloudEnvironmentId,
+    required String cloudCapsuleId,
     required String attemptId,
     required _i2.DeployProgressStatus status,
     DateTime? startedAt,
@@ -34,7 +34,7 @@ abstract class DeployAttempt implements _i1.SerializableModel {
 
   factory DeployAttempt.fromJson(Map<String, dynamic> jsonSerialization) {
     return DeployAttempt(
-      cloudEnvironmentId: jsonSerialization['cloudEnvironmentId'] as String,
+      cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
       attemptId: jsonSerialization['attemptId'] as String,
       status: _i2.DeployProgressStatus.fromJson(
           (jsonSerialization['status'] as String)),
@@ -48,8 +48,8 @@ abstract class DeployAttempt implements _i1.SerializableModel {
     );
   }
 
-  /// The ID of the environment of this deployment.
-  String cloudEnvironmentId;
+  /// The ID of the capsule of this deployment.
+  String cloudCapsuleId;
 
   /// The ID of this deploy attempt.
   String attemptId;
@@ -65,7 +65,7 @@ abstract class DeployAttempt implements _i1.SerializableModel {
   String? statusInfo;
 
   DeployAttempt copyWith({
-    String? cloudEnvironmentId,
+    String? cloudCapsuleId,
     String? attemptId,
     _i2.DeployProgressStatus? status,
     DateTime? startedAt,
@@ -75,7 +75,7 @@ abstract class DeployAttempt implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
-      'cloudEnvironmentId': cloudEnvironmentId,
+      'cloudCapsuleId': cloudCapsuleId,
       'attemptId': attemptId,
       'status': status.toJson(),
       if (startedAt != null) 'startedAt': startedAt?.toJson(),
@@ -94,14 +94,14 @@ class _Undefined {}
 
 class _DeployAttemptImpl extends DeployAttempt {
   _DeployAttemptImpl({
-    required String cloudEnvironmentId,
+    required String cloudCapsuleId,
     required String attemptId,
     required _i2.DeployProgressStatus status,
     DateTime? startedAt,
     DateTime? endedAt,
     String? statusInfo,
   }) : super._(
-          cloudEnvironmentId: cloudEnvironmentId,
+          cloudCapsuleId: cloudCapsuleId,
           attemptId: attemptId,
           status: status,
           startedAt: startedAt,
@@ -111,7 +111,7 @@ class _DeployAttemptImpl extends DeployAttempt {
 
   @override
   DeployAttempt copyWith({
-    String? cloudEnvironmentId,
+    String? cloudCapsuleId,
     String? attemptId,
     _i2.DeployProgressStatus? status,
     Object? startedAt = _Undefined,
@@ -119,7 +119,7 @@ class _DeployAttemptImpl extends DeployAttempt {
     Object? statusInfo = _Undefined,
   }) {
     return DeployAttempt(
-      cloudEnvironmentId: cloudEnvironmentId ?? this.cloudEnvironmentId,
+      cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
       attemptId: attemptId ?? this.attemptId,
       status: status ?? this.status,
       startedAt: startedAt is DateTime? ? startedAt : this.startedAt,

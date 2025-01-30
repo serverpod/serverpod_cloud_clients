@@ -232,7 +232,7 @@ void main() {
       final serverBuilder = HttpServerBuilder();
 
       serverBuilder.withSuccessfulResponse(EnvironmentVariable(
-        environmentId: 1,
+        capsuleId: 1,
         name: 'name',
         value: 'value',
       ));
@@ -426,7 +426,7 @@ void main() {
       final serverBuilder = HttpServerBuilder();
       serverBuilder.withSuccessfulResponse(jsonEncode([
         EnvironmentVariable(
-          environmentId: 1,
+          capsuleId: 1,
           name: 'name',
           value: 'value',
         )

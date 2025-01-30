@@ -248,7 +248,7 @@ void main() {
                   name: 'www.domain.com',
                   status: DomainNameStatus.needsSetup,
                   target: DomainNameTarget.api,
-                  environmentId: 1,
+                  capsuleId: 1,
                   dnsRecordVerificationValue: 'projectId.api.serverpod.space',
                   dnsRecordType: DnsRecordType.cname,
                 ),
@@ -658,7 +658,7 @@ void main() {
         serverBuilder.withSuccessfulResponse(jsonEncode(CustomDomainNameList(
           customDomainNames: [
             CustomDomainName(
-              environmentId: 1,
+              capsuleId: 1,
               name: 'api.domain.com',
               status: DomainNameStatus.configured,
               target: DomainNameTarget.api,
@@ -666,7 +666,7 @@ void main() {
               dnsRecordType: DnsRecordType.cname,
             ),
             CustomDomainName(
-              environmentId: 1,
+              capsuleId: 1,
               name: 'web.domain.com',
               status: DomainNameStatus.pending,
               target: DomainNameTarget.web,
@@ -674,7 +674,7 @@ void main() {
               dnsRecordType: DnsRecordType.cname,
             ),
             CustomDomainName(
-              environmentId: 1,
+              capsuleId: 1,
               name: 'insights.domain.com',
               status: DomainNameStatus.needsSetup,
               target: DomainNameTarget.insights,

@@ -59,7 +59,7 @@ class CloudDbConnectionDetailsCommand
       logger,
       () async {
         final connection = await apiCloudClient.database.getConnectionDetails(
-          cloudEnvironmentId: projectId,
+          cloudCapsuleId: projectId,
         );
 
         final portString = connection.port == 5432 ? '' : ':${connection.port}';
@@ -120,7 +120,7 @@ class CloudDbCreateSuperuserCommand
       logger,
       () async {
         final password = await apiCloudClient.database.createSuperUser(
-          cloudEnvironmentId: projectId,
+          cloudCapsuleId: projectId,
           username: username,
         );
 
@@ -173,7 +173,7 @@ class CloudDbResetPasswordCommand
       logger,
       () async {
         final password = await apiCloudClient.database.resetDatabasePassword(
-          cloudEnvironmentId: projectId,
+          cloudCapsuleId: projectId,
           username: username,
         );
 

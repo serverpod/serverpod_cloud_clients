@@ -24,7 +24,7 @@ abstract class CustomDomainName implements _i1.SerializableModel {
     required this.status,
     required this.target,
     DateTime? createdAt,
-    required this.environmentId,
+    required this.capsuleId,
     required this.dnsRecordVerificationValue,
     required this.dnsRecordType,
   }) : createdAt = createdAt ?? DateTime.now();
@@ -35,7 +35,7 @@ abstract class CustomDomainName implements _i1.SerializableModel {
     required _i2.DomainNameStatus status,
     required _i3.DomainNameTarget target,
     DateTime? createdAt,
-    required int environmentId,
+    required int capsuleId,
     required String dnsRecordVerificationValue,
     required _i4.DnsRecordType dnsRecordType,
   }) = _CustomDomainNameImpl;
@@ -51,7 +51,7 @@ abstract class CustomDomainName implements _i1.SerializableModel {
       createdAt: jsonSerialization['createdAt'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
-      environmentId: jsonSerialization['environmentId'] as int,
+      capsuleId: jsonSerialization['capsuleId'] as int,
       dnsRecordVerificationValue:
           jsonSerialization['dnsRecordVerificationValue'] as String,
       dnsRecordType: _i4.DnsRecordType.fromJson(
@@ -72,7 +72,7 @@ abstract class CustomDomainName implements _i1.SerializableModel {
 
   DateTime? createdAt;
 
-  int environmentId;
+  int capsuleId;
 
   String dnsRecordVerificationValue;
 
@@ -84,7 +84,7 @@ abstract class CustomDomainName implements _i1.SerializableModel {
     _i2.DomainNameStatus? status,
     _i3.DomainNameTarget? target,
     DateTime? createdAt,
-    int? environmentId,
+    int? capsuleId,
     String? dnsRecordVerificationValue,
     _i4.DnsRecordType? dnsRecordType,
   });
@@ -96,7 +96,7 @@ abstract class CustomDomainName implements _i1.SerializableModel {
       'status': status.toJson(),
       'target': target.toJson(),
       if (createdAt != null) 'createdAt': createdAt?.toJson(),
-      'environmentId': environmentId,
+      'capsuleId': capsuleId,
       'dnsRecordVerificationValue': dnsRecordVerificationValue,
       'dnsRecordType': dnsRecordType.toJson(),
     };
@@ -117,7 +117,7 @@ class _CustomDomainNameImpl extends CustomDomainName {
     required _i2.DomainNameStatus status,
     required _i3.DomainNameTarget target,
     DateTime? createdAt,
-    required int environmentId,
+    required int capsuleId,
     required String dnsRecordVerificationValue,
     required _i4.DnsRecordType dnsRecordType,
   }) : super._(
@@ -126,7 +126,7 @@ class _CustomDomainNameImpl extends CustomDomainName {
           status: status,
           target: target,
           createdAt: createdAt,
-          environmentId: environmentId,
+          capsuleId: capsuleId,
           dnsRecordVerificationValue: dnsRecordVerificationValue,
           dnsRecordType: dnsRecordType,
         );
@@ -138,7 +138,7 @@ class _CustomDomainNameImpl extends CustomDomainName {
     _i2.DomainNameStatus? status,
     _i3.DomainNameTarget? target,
     Object? createdAt = _Undefined,
-    int? environmentId,
+    int? capsuleId,
     String? dnsRecordVerificationValue,
     _i4.DnsRecordType? dnsRecordType,
   }) {
@@ -148,7 +148,7 @@ class _CustomDomainNameImpl extends CustomDomainName {
       status: status ?? this.status,
       target: target ?? this.target,
       createdAt: createdAt is DateTime? ? createdAt : this.createdAt,
-      environmentId: environmentId ?? this.environmentId,
+      capsuleId: capsuleId ?? this.capsuleId,
       dnsRecordVerificationValue:
           dnsRecordVerificationValue ?? this.dnsRecordVerificationValue,
       dnsRecordType: dnsRecordType ?? this.dnsRecordType,

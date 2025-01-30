@@ -12,13 +12,13 @@ abstract class StatusCommands {
   static Future<void> listDeployAttempts(
     final Client cloudApiClient, {
     required final CommandLogger logger,
-    required final String environmentId,
+    required final String cloudCapsuleId,
     required final int limit,
     final bool inUtc = false,
   }) async {
     final statuses = await StatusFeature.getDeployAttemptList(
       cloudApiClient,
-      environmentId: environmentId,
+      cloudCapsuleId: cloudCapsuleId,
       limit: limit,
     );
 
@@ -32,14 +32,14 @@ abstract class StatusCommands {
   static Future<void> showDeploymentStatus(
     final Client cloudApiClient, {
     required final CommandLogger logger,
-    required final String environmentId,
+    required final String cloudCapsuleId,
     required final String attemptId,
     final bool inUtc = false,
     final bool outputOverallStatus = false,
   }) async {
     final stages = await StatusFeature.getDeployAttemptStatus(
       cloudApiClient,
-      environmentId: environmentId,
+      cloudCapsuleId: cloudCapsuleId,
       attemptId: attemptId,
     );
 
@@ -50,7 +50,7 @@ abstract class StatusCommands {
     }
 
     final List<String> rows = [
-      'Status of $environmentId deploy $attemptId'
+      'Status of $cloudCapsuleId deploy $attemptId'
           ', started at ${stages.first.startedAt?.toTzString(inUtc, _numTimeStampChars)}:',
       ...stages.map(_generateStatusLine),
     ];
@@ -135,7 +135,7 @@ class DeployStatusTable extends TablePrinter {
       final int index, final DeployAttempt attempt) {
     return [
       index.toString(),
-      attempt.cloudEnvironmentId,
+      attempt.cloudCapsuleId,
       attempt.attemptId,
       attempt.status.name.toUpperCase(),
       attempt.startedAt?.toTzString(inUtc, _numTimeStampChars),

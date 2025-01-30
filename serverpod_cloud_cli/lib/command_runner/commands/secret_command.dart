@@ -68,7 +68,7 @@ class CloudCreateSecretCommand
     await handleCommonClientExceptions(logger, () async {
       await apiCloudClient.secrets.create(
         secrets: {name: value},
-        cloudEnvironmentId: projectId,
+        cloudCapsuleId: projectId,
       );
     }, (final e) {
       logger.error(
@@ -178,7 +178,7 @@ class CloudDeleteSecretCommand
 
     await handleCommonClientExceptions(logger, () async {
       await apiCloudClient.secrets.delete(
-        cloudEnvironmentId: projectId,
+        cloudCapsuleId: projectId,
         key: name,
       );
     }, (final e) {
