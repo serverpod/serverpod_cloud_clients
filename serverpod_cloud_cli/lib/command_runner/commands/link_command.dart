@@ -9,7 +9,7 @@ import 'package:serverpod_cloud_cli/util/common.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
 import 'package:serverpod_cloud_cli/util/serverpod_server_folder_detection.dart';
-import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
+import 'package:ground_control_client/ground_control_client.dart';
 
 enum LinkCommandOption implements OptionDefinition {
   projectId(

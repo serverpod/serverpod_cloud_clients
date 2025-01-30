@@ -2,7 +2,7 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
-import 'package:serverpod_ground_control_client/serverpod_ground_control_client_mock.dart';
+import 'package:ground_control_client/ground_control_client_mock.dart';
 import 'package:test/test.dart';
 
 import '../../../test_utils/command_logger_matchers.dart';

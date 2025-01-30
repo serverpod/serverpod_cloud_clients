@@ -7,7 +7,7 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_han
 import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 import 'package:serverpod_cloud_cli/util/table_printer.dart';
-import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
+import 'package:ground_control_client/ground_control_client.dart';
 
 class CloudCustomDomainCommand extends CloudCliCommand {
   @override
