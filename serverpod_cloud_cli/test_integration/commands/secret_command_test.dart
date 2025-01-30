@@ -11,7 +11,7 @@ import 'package:serverpod_cloud_cli/command_runner/commands/secret_command.dart'
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
-import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
+import 'package:ground_control_client/ground_control_client.dart';
 
 import '../../test_utils/command_logger_matchers.dart';
 import '../../test_utils/http_server_builder.dart';

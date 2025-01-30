@@ -9,7 +9,7 @@ import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dar
 import 'package:serverpod_cloud_cli/util/common.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 import 'package:serverpod_cloud_cli/util/serverpod_server_folder_detection.dart';
-import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
+import 'package:ground_control_client/ground_control_client.dart';
 
 enum DeployCommandOption implements OptionDefinition {
   projectId(

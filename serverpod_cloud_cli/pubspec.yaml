@@ -21,7 +21,7 @@ dependencies:
   path: ^1.8.2
   pool: ^1.5.1
   pub_semver: ^2.1.4
-  serverpod_ground_control_client: ^0.0.1
+  ground_control_client: ^0.0.1
   yaml: ^3.1.2
   basic_utils: ^5.7.0
 

@@ -1,7 +1,7 @@
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/util/cli_authentication_key_manager.dart';
-import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
+import 'package:ground_control_client/ground_control_client.dart';
 
 /// A service provider for the Serverpod Cloud CLI.
 /// [initialize] should be called before first use.

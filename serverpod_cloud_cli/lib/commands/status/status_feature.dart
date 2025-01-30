@@ -1,4 +1,4 @@
-import 'package:serverpod_ground_control_client/serverpod_ground_control_client.dart';
+import 'package:ground_control_client/ground_control_client.dart';
 
 abstract class StatusFeature {
   static Future<List<DeployAttempt>> getDeployAttemptList(
