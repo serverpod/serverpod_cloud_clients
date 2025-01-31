@@ -11,7 +11,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../features/project/models/role.dart' as _i2;
-import '../../../features/capsules/models/capsule.dart' as _i3;
+import '../../../domains/capsules/models/capsule.dart' as _i3;
 
 /// Represents a project of a tenant.
 /// Typically a serverpod project.
@@ -68,7 +68,7 @@ abstract class Project implements _i1.SerializableModel {
 
   DateTime? archivedAt;
 
-  /// The canonical name of the project.
+  /// The id of the project, which is also its name.
   /// This must be globally unique.
   /// This is the default production name of the project.
   String cloudProjectId;
@@ -76,7 +76,7 @@ abstract class Project implements _i1.SerializableModel {
   /// The roles for this project.
   List<_i2.Role>? roles;
 
-  /// The capsules of this project.
+  /// The capsules belonging to this project.
   List<_i3.Capsule>? capsules;
 
   Project copyWith({

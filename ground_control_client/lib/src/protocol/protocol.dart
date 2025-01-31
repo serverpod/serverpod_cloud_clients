@@ -10,13 +10,13 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import 'domains/logs/models/log_record.dart' as _i2;
-import 'domains/status/models/deploy_attempt.dart' as _i3;
-import 'domains/status/models/deploy_attempt_stage.dart' as _i4;
-import 'domains/status/models/deploy_progress_status.dart' as _i5;
-import 'domains/status/models/deploy_stage_type.dart' as _i6;
-import 'domains/users/models/user.dart' as _i7;
-import 'features/capsules/models/capsule.dart' as _i8;
+import 'domains/capsules/models/capsule.dart' as _i2;
+import 'domains/logs/models/log_record.dart' as _i3;
+import 'domains/status/models/deploy_attempt.dart' as _i4;
+import 'domains/status/models/deploy_attempt_stage.dart' as _i5;
+import 'domains/status/models/deploy_progress_status.dart' as _i6;
+import 'domains/status/models/deploy_stage_type.dart' as _i7;
+import 'domains/users/models/user.dart' as _i8;
 import 'features/custom_domain_name/exceptions/dns_verification_failed_exception.dart'
     as _i9;
 import 'features/custom_domain_name/models/custom_domain_name.dart' as _i10;
@@ -59,13 +59,13 @@ import 'package:ground_control_client/src/protocol/domains/status/models/deploy_
 import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
     as _i40;
 import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i41;
+export 'domains/capsules/models/capsule.dart';
 export 'domains/logs/models/log_record.dart';
 export 'domains/status/models/deploy_attempt.dart';
 export 'domains/status/models/deploy_attempt_stage.dart';
 export 'domains/status/models/deploy_progress_status.dart';
 export 'domains/status/models/deploy_stage_type.dart';
 export 'domains/users/models/user.dart';
-export 'features/capsules/models/capsule.dart';
 export 'features/custom_domain_name/exceptions/dns_verification_failed_exception.dart';
 export 'features/custom_domain_name/models/custom_domain_name.dart';
 export 'features/custom_domain_name/models/custom_domain_name_list.dart';
@@ -108,26 +108,26 @@ class Protocol extends _i1.SerializationManager {
     Type? t,
   ]) {
     t ??= T;
-    if (t == _i2.LogRecord) {
-      return _i2.LogRecord.fromJson(data) as T;
+    if (t == _i2.Capsule) {
+      return _i2.Capsule.fromJson(data) as T;
     }
-    if (t == _i3.DeployAttempt) {
-      return _i3.DeployAttempt.fromJson(data) as T;
+    if (t == _i3.LogRecord) {
+      return _i3.LogRecord.fromJson(data) as T;
     }
-    if (t == _i4.DeployAttemptStage) {
-      return _i4.DeployAttemptStage.fromJson(data) as T;
+    if (t == _i4.DeployAttempt) {
+      return _i4.DeployAttempt.fromJson(data) as T;
     }
-    if (t == _i5.DeployProgressStatus) {
-      return _i5.DeployProgressStatus.fromJson(data) as T;
+    if (t == _i5.DeployAttemptStage) {
+      return _i5.DeployAttemptStage.fromJson(data) as T;
     }
-    if (t == _i6.DeployStageType) {
-      return _i6.DeployStageType.fromJson(data) as T;
+    if (t == _i6.DeployProgressStatus) {
+      return _i6.DeployProgressStatus.fromJson(data) as T;
     }
-    if (t == _i7.User) {
-      return _i7.User.fromJson(data) as T;
+    if (t == _i7.DeployStageType) {
+      return _i7.DeployStageType.fromJson(data) as T;
     }
-    if (t == _i8.Capsule) {
-      return _i8.Capsule.fromJson(data) as T;
+    if (t == _i8.User) {
+      return _i8.User.fromJson(data) as T;
     }
     if (t == _i9.DNSVerificationFailedException) {
       return _i9.DNSVerificationFailedException.fromJson(data) as T;
@@ -210,27 +210,27 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i35.ServerpodRegion) {
       return _i35.ServerpodRegion.fromJson(data) as T;
     }
-    if (t == _i1.getType<_i2.LogRecord?>()) {
-      return (data != null ? _i2.LogRecord.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i2.Capsule?>()) {
+      return (data != null ? _i2.Capsule.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i3.DeployAttempt?>()) {
-      return (data != null ? _i3.DeployAttempt.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i3.LogRecord?>()) {
+      return (data != null ? _i3.LogRecord.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i4.DeployAttemptStage?>()) {
-      return (data != null ? _i4.DeployAttemptStage.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i4.DeployAttempt?>()) {
+      return (data != null ? _i4.DeployAttempt.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i5.DeployProgressStatus?>()) {
-      return (data != null ? _i5.DeployProgressStatus.fromJson(data) : null)
+    if (t == _i1.getType<_i5.DeployAttemptStage?>()) {
+      return (data != null ? _i5.DeployAttemptStage.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i6.DeployProgressStatus?>()) {
+      return (data != null ? _i6.DeployProgressStatus.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i6.DeployStageType?>()) {
-      return (data != null ? _i6.DeployStageType.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i7.DeployStageType?>()) {
+      return (data != null ? _i7.DeployStageType.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i7.User?>()) {
-      return (data != null ? _i7.User.fromJson(data) : null) as T;
-    }
-    if (t == _i1.getType<_i8.Capsule?>()) {
-      return (data != null ? _i8.Capsule.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i8.User?>()) {
+      return (data != null ? _i8.User.fromJson(data) : null) as T;
     }
     if (t == _i1.getType<_i9.DNSVerificationFailedException?>()) {
       return (data != null
@@ -330,13 +330,6 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i1.getType<_i35.ServerpodRegion?>()) {
       return (data != null ? _i35.ServerpodRegion.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<List<_i26.UserRoleMembership>?>()) {
-      return (data != null
-          ? (data as List)
-              .map((e) => deserialize<_i26.UserRoleMembership>(e))
-              .toList()
-          : null) as dynamic;
-    }
     if (t == _i1.getType<List<_i20.EnvironmentVariable>?>()) {
       return (data != null
           ? (data as List)
@@ -348,6 +341,13 @@ class Protocol extends _i1.SerializationManager {
       return (data != null
           ? (data as List)
               .map((e) => deserialize<_i10.CustomDomainName>(e))
+              .toList()
+          : null) as dynamic;
+    }
+    if (t == _i1.getType<List<_i26.UserRoleMembership>?>()) {
+      return (data != null
+          ? (data as List)
+              .map((e) => deserialize<_i26.UserRoleMembership>(e))
               .toList()
           : null) as dynamic;
     }
@@ -366,9 +366,9 @@ class Protocol extends _i1.SerializationManager {
           ? (data as List).map((e) => deserialize<_i25.Role>(e)).toList()
           : null) as dynamic;
     }
-    if (t == _i1.getType<List<_i8.Capsule>?>()) {
+    if (t == _i1.getType<List<_i2.Capsule>?>()) {
       return (data != null
-          ? (data as List).map((e) => deserialize<_i8.Capsule>(e)).toList()
+          ? (data as List).map((e) => deserialize<_i2.Capsule>(e)).toList()
           : null) as dynamic;
     }
     if (t == List<String>) {
@@ -423,26 +423,26 @@ class Protocol extends _i1.SerializationManager {
   String? getClassNameForObject(Object? data) {
     String? className = super.getClassNameForObject(data);
     if (className != null) return className;
-    if (data is _i2.LogRecord) {
+    if (data is _i2.Capsule) {
+      return 'Capsule';
+    }
+    if (data is _i3.LogRecord) {
       return 'LogRecord';
     }
-    if (data is _i3.DeployAttempt) {
+    if (data is _i4.DeployAttempt) {
       return 'DeployAttempt';
     }
-    if (data is _i4.DeployAttemptStage) {
+    if (data is _i5.DeployAttemptStage) {
       return 'DeployAttemptStage';
     }
-    if (data is _i5.DeployProgressStatus) {
+    if (data is _i6.DeployProgressStatus) {
       return 'DeployProgressStatus';
     }
-    if (data is _i6.DeployStageType) {
+    if (data is _i7.DeployStageType) {
       return 'DeployStageType';
     }
-    if (data is _i7.User) {
+    if (data is _i8.User) {
       return 'User';
-    }
-    if (data is _i8.Capsule) {
-      return 'Capsule';
     }
     if (data is _i9.DNSVerificationFailedException) {
       return 'DNSVerificationFailedException';
@@ -538,26 +538,26 @@ class Protocol extends _i1.SerializationManager {
     if (dataClassName is! String) {
       return super.deserializeByClassName(data);
     }
+    if (dataClassName == 'Capsule') {
+      return deserialize<_i2.Capsule>(data['data']);
+    }
     if (dataClassName == 'LogRecord') {
-      return deserialize<_i2.LogRecord>(data['data']);
+      return deserialize<_i3.LogRecord>(data['data']);
     }
     if (dataClassName == 'DeployAttempt') {
-      return deserialize<_i3.DeployAttempt>(data['data']);
+      return deserialize<_i4.DeployAttempt>(data['data']);
     }
     if (dataClassName == 'DeployAttemptStage') {
-      return deserialize<_i4.DeployAttemptStage>(data['data']);
+      return deserialize<_i5.DeployAttemptStage>(data['data']);
     }
     if (dataClassName == 'DeployProgressStatus') {
-      return deserialize<_i5.DeployProgressStatus>(data['data']);
+      return deserialize<_i6.DeployProgressStatus>(data['data']);
     }
     if (dataClassName == 'DeployStageType') {
-      return deserialize<_i6.DeployStageType>(data['data']);
+      return deserialize<_i7.DeployStageType>(data['data']);
     }
     if (dataClassName == 'User') {
-      return deserialize<_i7.User>(data['data']);
-    }
-    if (dataClassName == 'Capsule') {
-      return deserialize<_i8.Capsule>(data['data']);
+      return deserialize<_i8.User>(data['data']);
     }
     if (dataClassName == 'DNSVerificationFailedException') {
       return deserialize<_i9.DNSVerificationFailedException>(data['data']);
