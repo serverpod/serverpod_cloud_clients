@@ -208,7 +208,9 @@ class CloudProjectListCommand extends CloudCliCommand {
     }
     final tablePrinter = TablePrinter();
     tablePrinter.addHeaders(['Project Id', 'Created At']);
-    for (final project in projects.sortedBy((final p) => p.createdAt)) {
+    for (final project in projects
+        .where((final p) => p.archivedAt == null)
+        .sortedBy((final p) => p.createdAt)) {
       tablePrinter.addRow([
         project.cloudProjectId,
         project.createdAt.toString().substring(0, 19),
