@@ -393,6 +393,7 @@ class EndpointProjects extends _i1.EndpointRef {
       );
 
   /// Deletes a project permanently.
+  /// The id / name of the project is not immediately available for reuse.
   _i2.Future<_i11.Project> deleteProject({required String cloudProjectId}) =>
       caller.callServerEndpoint<_i11.Project>(
         'projects',

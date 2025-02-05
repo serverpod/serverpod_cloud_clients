@@ -37,28 +37,29 @@ import 'features/project/models/account_authorization.dart' as _i21;
 import 'features/project/models/address.dart' as _i22;
 import 'features/project/models/project.dart' as _i23;
 import 'features/project/models/project_config.dart' as _i24;
-import 'features/project/models/role.dart' as _i25;
-import 'features/project/models/user_role_membership.dart' as _i26;
-import 'features/secret_manager/models/secret_resource.dart' as _i27;
-import 'features/secret_manager/models/secret_type.dart' as _i28;
-import 'shared/exceptions/models/duplicate_entry_exception.dart' as _i29;
-import 'shared/exceptions/models/forbidden_exception.dart' as _i30;
-import 'shared/exceptions/models/invalid_value_exception.dart' as _i31;
-import 'shared/exceptions/models/not_found_exception.dart' as _i32;
-import 'shared/exceptions/models/unauthenticated_exception.dart' as _i33;
-import 'shared/exceptions/models/unauthorized_exception.dart' as _i34;
-import 'shared/models/serverpod_region.dart' as _i35;
+import 'features/project/models/project_delete_call_event.dart' as _i25;
+import 'features/project/models/role.dart' as _i26;
+import 'features/project/models/user_role_membership.dart' as _i27;
+import 'features/secret_manager/models/secret_resource.dart' as _i28;
+import 'features/secret_manager/models/secret_type.dart' as _i29;
+import 'shared/exceptions/models/duplicate_entry_exception.dart' as _i30;
+import 'shared/exceptions/models/forbidden_exception.dart' as _i31;
+import 'shared/exceptions/models/invalid_value_exception.dart' as _i32;
+import 'shared/exceptions/models/not_found_exception.dart' as _i33;
+import 'shared/exceptions/models/unauthenticated_exception.dart' as _i34;
+import 'shared/exceptions/models/unauthorized_exception.dart' as _i35;
+import 'shared/models/serverpod_region.dart' as _i36;
 import 'package:ground_control_client/src/protocol/features/environment_variables/models/environment_variable.dart'
-    as _i36;
-import 'package:ground_control_client/src/protocol/features/project/models/project.dart'
     as _i37;
-import 'package:ground_control_client/src/protocol/features/project/models/role.dart'
+import 'package:ground_control_client/src/protocol/features/project/models/project.dart'
     as _i38;
-import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt.dart'
+import 'package:ground_control_client/src/protocol/features/project/models/role.dart'
     as _i39;
-import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
+import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt.dart'
     as _i40;
-import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i41;
+import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
+    as _i41;
+import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i42;
 export 'domains/capsules/models/capsule.dart';
 export 'domains/logs/models/log_record.dart';
 export 'domains/status/models/deploy_attempt.dart';
@@ -82,6 +83,7 @@ export 'features/project/models/account_authorization.dart';
 export 'features/project/models/address.dart';
 export 'features/project/models/project.dart';
 export 'features/project/models/project_config.dart';
+export 'features/project/models/project_delete_call_event.dart';
 export 'features/project/models/role.dart';
 export 'features/project/models/user_role_membership.dart';
 export 'features/secret_manager/models/secret_resource.dart';
@@ -177,38 +179,41 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i24.ProjectConfig) {
       return _i24.ProjectConfig.fromJson(data) as T;
     }
-    if (t == _i25.Role) {
-      return _i25.Role.fromJson(data) as T;
+    if (t == _i25.ProjectDeleteCallEvent) {
+      return _i25.ProjectDeleteCallEvent.fromJson(data) as T;
     }
-    if (t == _i26.UserRoleMembership) {
-      return _i26.UserRoleMembership.fromJson(data) as T;
+    if (t == _i26.Role) {
+      return _i26.Role.fromJson(data) as T;
     }
-    if (t == _i27.SecretResource) {
-      return _i27.SecretResource.fromJson(data) as T;
+    if (t == _i27.UserRoleMembership) {
+      return _i27.UserRoleMembership.fromJson(data) as T;
     }
-    if (t == _i28.SecretType) {
-      return _i28.SecretType.fromJson(data) as T;
+    if (t == _i28.SecretResource) {
+      return _i28.SecretResource.fromJson(data) as T;
     }
-    if (t == _i29.DuplicateEntryException) {
-      return _i29.DuplicateEntryException.fromJson(data) as T;
+    if (t == _i29.SecretType) {
+      return _i29.SecretType.fromJson(data) as T;
     }
-    if (t == _i30.ForbiddenException) {
-      return _i30.ForbiddenException.fromJson(data) as T;
+    if (t == _i30.DuplicateEntryException) {
+      return _i30.DuplicateEntryException.fromJson(data) as T;
     }
-    if (t == _i31.InvalidValueException) {
-      return _i31.InvalidValueException.fromJson(data) as T;
+    if (t == _i31.ForbiddenException) {
+      return _i31.ForbiddenException.fromJson(data) as T;
     }
-    if (t == _i32.NotFoundException) {
-      return _i32.NotFoundException.fromJson(data) as T;
+    if (t == _i32.InvalidValueException) {
+      return _i32.InvalidValueException.fromJson(data) as T;
     }
-    if (t == _i33.UnauthenticatedException) {
-      return _i33.UnauthenticatedException.fromJson(data) as T;
+    if (t == _i33.NotFoundException) {
+      return _i33.NotFoundException.fromJson(data) as T;
     }
-    if (t == _i34.UnauthorizedException) {
-      return _i34.UnauthorizedException.fromJson(data) as T;
+    if (t == _i34.UnauthenticatedException) {
+      return _i34.UnauthenticatedException.fromJson(data) as T;
     }
-    if (t == _i35.ServerpodRegion) {
-      return _i35.ServerpodRegion.fromJson(data) as T;
+    if (t == _i35.UnauthorizedException) {
+      return _i35.UnauthorizedException.fromJson(data) as T;
+    }
+    if (t == _i36.ServerpodRegion) {
+      return _i36.ServerpodRegion.fromJson(data) as T;
     }
     if (t == _i1.getType<_i2.Capsule?>()) {
       return (data != null ? _i2.Capsule.fromJson(data) : null) as T;
@@ -290,45 +295,49 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i1.getType<_i24.ProjectConfig?>()) {
       return (data != null ? _i24.ProjectConfig.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i25.Role?>()) {
-      return (data != null ? _i25.Role.fromJson(data) : null) as T;
-    }
-    if (t == _i1.getType<_i26.UserRoleMembership?>()) {
-      return (data != null ? _i26.UserRoleMembership.fromJson(data) : null)
+    if (t == _i1.getType<_i25.ProjectDeleteCallEvent?>()) {
+      return (data != null ? _i25.ProjectDeleteCallEvent.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i27.SecretResource?>()) {
-      return (data != null ? _i27.SecretResource.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i26.Role?>()) {
+      return (data != null ? _i26.Role.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i28.SecretType?>()) {
-      return (data != null ? _i28.SecretType.fromJson(data) : null) as T;
-    }
-    if (t == _i1.getType<_i29.DuplicateEntryException?>()) {
-      return (data != null ? _i29.DuplicateEntryException.fromJson(data) : null)
+    if (t == _i1.getType<_i27.UserRoleMembership?>()) {
+      return (data != null ? _i27.UserRoleMembership.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i30.ForbiddenException?>()) {
-      return (data != null ? _i30.ForbiddenException.fromJson(data) : null)
+    if (t == _i1.getType<_i28.SecretResource?>()) {
+      return (data != null ? _i28.SecretResource.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i29.SecretType?>()) {
+      return (data != null ? _i29.SecretType.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i30.DuplicateEntryException?>()) {
+      return (data != null ? _i30.DuplicateEntryException.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i31.InvalidValueException?>()) {
-      return (data != null ? _i31.InvalidValueException.fromJson(data) : null)
+    if (t == _i1.getType<_i31.ForbiddenException?>()) {
+      return (data != null ? _i31.ForbiddenException.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i32.NotFoundException?>()) {
-      return (data != null ? _i32.NotFoundException.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i32.InvalidValueException?>()) {
+      return (data != null ? _i32.InvalidValueException.fromJson(data) : null)
+          as T;
     }
-    if (t == _i1.getType<_i33.UnauthenticatedException?>()) {
+    if (t == _i1.getType<_i33.NotFoundException?>()) {
+      return (data != null ? _i33.NotFoundException.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i34.UnauthenticatedException?>()) {
       return (data != null
-          ? _i33.UnauthenticatedException.fromJson(data)
+          ? _i34.UnauthenticatedException.fromJson(data)
           : null) as T;
     }
-    if (t == _i1.getType<_i34.UnauthorizedException?>()) {
-      return (data != null ? _i34.UnauthorizedException.fromJson(data) : null)
+    if (t == _i1.getType<_i35.UnauthorizedException?>()) {
+      return (data != null ? _i35.UnauthorizedException.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i35.ServerpodRegion?>()) {
-      return (data != null ? _i35.ServerpodRegion.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i36.ServerpodRegion?>()) {
+      return (data != null ? _i36.ServerpodRegion.fromJson(data) : null) as T;
     }
     if (t == _i1.getType<List<_i20.EnvironmentVariable>?>()) {
       return (data != null
@@ -344,10 +353,10 @@ class Protocol extends _i1.SerializationManager {
               .toList()
           : null) as dynamic;
     }
-    if (t == _i1.getType<List<_i26.UserRoleMembership>?>()) {
+    if (t == _i1.getType<List<_i27.UserRoleMembership>?>()) {
       return (data != null
           ? (data as List)
-              .map((e) => deserialize<_i26.UserRoleMembership>(e))
+              .map((e) => deserialize<_i27.UserRoleMembership>(e))
               .toList()
           : null) as dynamic;
     }
@@ -361,9 +370,9 @@ class Protocol extends _i1.SerializationManager {
           deserialize<_i14.DomainNameTarget>(e['k']),
           deserialize<String>(e['v'])))) as dynamic;
     }
-    if (t == _i1.getType<List<_i25.Role>?>()) {
+    if (t == _i1.getType<List<_i26.Role>?>()) {
       return (data != null
-          ? (data as List).map((e) => deserialize<_i25.Role>(e)).toList()
+          ? (data as List).map((e) => deserialize<_i26.Role>(e)).toList()
           : null) as dynamic;
     }
     if (t == _i1.getType<List<_i2.Capsule>?>()) {
@@ -375,24 +384,24 @@ class Protocol extends _i1.SerializationManager {
       return (data as List).map((e) => deserialize<String>(e)).toList()
           as dynamic;
     }
-    if (t == _i1.getType<List<_i26.UserRoleMembership>?>()) {
+    if (t == _i1.getType<List<_i27.UserRoleMembership>?>()) {
       return (data != null
           ? (data as List)
-              .map((e) => deserialize<_i26.UserRoleMembership>(e))
+              .map((e) => deserialize<_i27.UserRoleMembership>(e))
               .toList()
           : null) as dynamic;
     }
-    if (t == List<_i36.EnvironmentVariable>) {
+    if (t == List<_i37.EnvironmentVariable>) {
       return (data as List)
-          .map((e) => deserialize<_i36.EnvironmentVariable>(e))
+          .map((e) => deserialize<_i37.EnvironmentVariable>(e))
           .toList() as dynamic;
     }
-    if (t == List<_i37.Project>) {
-      return (data as List).map((e) => deserialize<_i37.Project>(e)).toList()
+    if (t == List<_i38.Project>) {
+      return (data as List).map((e) => deserialize<_i38.Project>(e)).toList()
           as dynamic;
     }
-    if (t == List<_i38.Role>) {
-      return (data as List).map((e) => deserialize<_i38.Role>(e)).toList()
+    if (t == List<_i39.Role>) {
+      return (data as List).map((e) => deserialize<_i39.Role>(e)).toList()
           as dynamic;
     }
     if (t == Map<String, String>) {
@@ -403,18 +412,18 @@ class Protocol extends _i1.SerializationManager {
       return (data as List).map((e) => deserialize<String>(e)).toList()
           as dynamic;
     }
-    if (t == List<_i39.DeployAttempt>) {
+    if (t == List<_i40.DeployAttempt>) {
       return (data as List)
-          .map((e) => deserialize<_i39.DeployAttempt>(e))
+          .map((e) => deserialize<_i40.DeployAttempt>(e))
           .toList() as dynamic;
     }
-    if (t == List<_i40.DeployAttemptStage>) {
+    if (t == List<_i41.DeployAttemptStage>) {
       return (data as List)
-          .map((e) => deserialize<_i40.DeployAttemptStage>(e))
+          .map((e) => deserialize<_i41.DeployAttemptStage>(e))
           .toList() as dynamic;
     }
     try {
-      return _i41.Protocol().deserialize<T>(data, t);
+      return _i42.Protocol().deserialize<T>(data, t);
     } on _i1.DeserializationTypeNotFoundException catch (_) {}
     return super.deserialize<T>(data, t);
   }
@@ -492,40 +501,43 @@ class Protocol extends _i1.SerializationManager {
     if (data is _i24.ProjectConfig) {
       return 'ProjectConfig';
     }
-    if (data is _i25.Role) {
+    if (data is _i25.ProjectDeleteCallEvent) {
+      return 'ProjectDeleteCallEvent';
+    }
+    if (data is _i26.Role) {
       return 'Role';
     }
-    if (data is _i26.UserRoleMembership) {
+    if (data is _i27.UserRoleMembership) {
       return 'UserRoleMembership';
     }
-    if (data is _i27.SecretResource) {
+    if (data is _i28.SecretResource) {
       return 'SecretResource';
     }
-    if (data is _i28.SecretType) {
+    if (data is _i29.SecretType) {
       return 'SecretType';
     }
-    if (data is _i29.DuplicateEntryException) {
+    if (data is _i30.DuplicateEntryException) {
       return 'DuplicateEntryException';
     }
-    if (data is _i30.ForbiddenException) {
+    if (data is _i31.ForbiddenException) {
       return 'ForbiddenException';
     }
-    if (data is _i31.InvalidValueException) {
+    if (data is _i32.InvalidValueException) {
       return 'InvalidValueException';
     }
-    if (data is _i32.NotFoundException) {
+    if (data is _i33.NotFoundException) {
       return 'NotFoundException';
     }
-    if (data is _i33.UnauthenticatedException) {
+    if (data is _i34.UnauthenticatedException) {
       return 'UnauthenticatedException';
     }
-    if (data is _i34.UnauthorizedException) {
+    if (data is _i35.UnauthorizedException) {
       return 'UnauthorizedException';
     }
-    if (data is _i35.ServerpodRegion) {
+    if (data is _i36.ServerpodRegion) {
       return 'ServerpodRegion';
     }
-    className = _i41.Protocol().getClassNameForObject(data);
+    className = _i42.Protocol().getClassNameForObject(data);
     if (className != null) {
       return 'serverpod_auth.$className';
     }
@@ -607,42 +619,45 @@ class Protocol extends _i1.SerializationManager {
     if (dataClassName == 'ProjectConfig') {
       return deserialize<_i24.ProjectConfig>(data['data']);
     }
+    if (dataClassName == 'ProjectDeleteCallEvent') {
+      return deserialize<_i25.ProjectDeleteCallEvent>(data['data']);
+    }
     if (dataClassName == 'Role') {
-      return deserialize<_i25.Role>(data['data']);
+      return deserialize<_i26.Role>(data['data']);
     }
     if (dataClassName == 'UserRoleMembership') {
-      return deserialize<_i26.UserRoleMembership>(data['data']);
+      return deserialize<_i27.UserRoleMembership>(data['data']);
     }
     if (dataClassName == 'SecretResource') {
-      return deserialize<_i27.SecretResource>(data['data']);
+      return deserialize<_i28.SecretResource>(data['data']);
     }
     if (dataClassName == 'SecretType') {
-      return deserialize<_i28.SecretType>(data['data']);
+      return deserialize<_i29.SecretType>(data['data']);
     }
     if (dataClassName == 'DuplicateEntryException') {
-      return deserialize<_i29.DuplicateEntryException>(data['data']);
+      return deserialize<_i30.DuplicateEntryException>(data['data']);
     }
     if (dataClassName == 'ForbiddenException') {
-      return deserialize<_i30.ForbiddenException>(data['data']);
+      return deserialize<_i31.ForbiddenException>(data['data']);
     }
     if (dataClassName == 'InvalidValueException') {
-      return deserialize<_i31.InvalidValueException>(data['data']);
+      return deserialize<_i32.InvalidValueException>(data['data']);
     }
     if (dataClassName == 'NotFoundException') {
-      return deserialize<_i32.NotFoundException>(data['data']);
+      return deserialize<_i33.NotFoundException>(data['data']);
     }
     if (dataClassName == 'UnauthenticatedException') {
-      return deserialize<_i33.UnauthenticatedException>(data['data']);
+      return deserialize<_i34.UnauthenticatedException>(data['data']);
     }
     if (dataClassName == 'UnauthorizedException') {
-      return deserialize<_i34.UnauthorizedException>(data['data']);
+      return deserialize<_i35.UnauthorizedException>(data['data']);
     }
     if (dataClassName == 'ServerpodRegion') {
-      return deserialize<_i35.ServerpodRegion>(data['data']);
+      return deserialize<_i36.ServerpodRegion>(data['data']);
     }
     if (dataClassName.startsWith('serverpod_auth.')) {
       data['className'] = dataClassName.substring(15);
-      return _i41.Protocol().deserializeByClassName(data);
+      return _i42.Protocol().deserializeByClassName(data);
     }
     return super.deserializeByClassName(data);
   }
