@@ -3,36 +3,138 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:uuid/uuid.dart';
 
-/// A class for constructing directories with files.
+/// A class for constructing directories with contents
+/// and removing them after use.
 class DirectoryFactory {
-  final List<DirectoryFactory> _subDirectories;
+  final List<DirectoryFactory> _subdirectories;
   final List<FileFactory> _files;
   final List<SymLinkFactory> _symLinks;
-  final String _directoryName;
+  DirectoryFactory? _parent;
+  String? _path;
+  String _name;
 
-  /// Creates a new directory factory.
+  Directory? _constructedDirectory;
+  Directory? _originalDirectory;
+
+  /// Creates a new directory factory,
+  /// which is used to construct a directory under an existing path,
+  /// with a particular name and contents.
+  ///
   /// The directory name is a random UUID by default.
+  ///
+  /// The path is where the directory should be created,
+  /// the current directory by default.
+  /// It must exist prior to construction.
+  ///
+  /// To create multiple levels of constructed directories,
+  /// use [withParent] instead of [withPath].
   DirectoryFactory({
-    final String? withDirectoryName,
-    final List<DirectoryFactory>? withSubDirectories,
+    final DirectoryFactory? withParent,
+    final String? withPath,
+    final String? withName,
+    final List<DirectoryFactory>? withSubdirectories,
     final List<FileFactory>? withFiles,
     final List<SymLinkFactory>? withSymLinks,
-  })  : _directoryName = withDirectoryName ?? const Uuid().v4(),
-        _subDirectories = withSubDirectories ?? [],
+  })  : _parent = withParent,
+        _path = withPath,
+        _name = withName ?? Uuid().v4(),
+        _subdirectories = withSubdirectories ?? [],
         _files = withFiles ?? [],
         _symLinks = withSymLinks ?? [];
+
+  /// Sets the parent directory factory.
+  /// This has precedence over [withPath].
+  /// The parent directory does not need to exist prior to construction.
+  void withParent(final DirectoryFactory parent) {
+    _parent = parent;
+  }
+
+  /// Sets the path to where the directory should be created.
+  /// The path must exist prior to construction.
+  void withPath(final String path) {
+    _path = path;
+  }
+
+  /// Sets the name of the directory to be created upon construction.
+  void withName(final String name) {
+    _name = name;
+  }
+
+  /// Adds a subdirectory to be created upon construction.
+  void addSubdirectory(final DirectoryFactory subdirectory) {
+    if (subdirectory._path != null) {
+      throw ArgumentError('subdirectory cannot have a location path');
+    }
+    _subdirectories.add(subdirectory);
+  }
+
+  /// Adds file to be created upon construction.
+  void addFile(final FileFactory file) {
+    _files.add(file);
+  }
+
+  /// Adds symbolic link to be created upon construction.
+  void addSymLink(final SymLinkFactory symLink) {
+    _symLinks.add(symLink);
+  }
+
+  /// Returns the constructed directory.
+  /// Throws [StateError] if this factory has not constructed a directory.
+  Directory get directory {
+    final directory = _constructedDirectory;
+    if (directory == null) {
+      throw StateError('directory not constructed');
+    }
+    return directory;
+  }
 
   /// Constructs the directory and all subdirectories and files.
   /// Returns the created directory.
   ///
+  /// Test authors should prefer using `withPath` instead of the [path] argument.
+  ///
   /// The [path] is the path to where the directory should be created.
-  Directory construct(final String path) {
-    final directory = Directory(path);
+  /// If the path is not provided, the preset path or preset parent's path is used,
+  /// or the current directory if none of these is set.
+  ///
+  /// If [stateless] is `true` this factory is kept stateless,
+  /// which means [construct] can be called multiple times
+  /// and [destruct] cannot be called.
+  Directory construct({
+    final String? path,
+    final bool pushCurrentDirectory = false,
+    final bool stateless = false,
+  }) {
+    if (_constructedDirectory != null) {
+      throw StateError('directory already constructed');
+    }
+
+    final locationPath =
+        path ?? _path ?? _parent?.directory.path ?? Directory.current.path;
+    final locationDir = Directory(locationPath);
+    if (!locationDir.existsSync()) {
+      throw StateError('location path does not exist: $locationPath');
+    }
+
+    final directory = Directory(
+      p.join(locationPath, _name),
+    );
+
+    if (directory.existsSync()) {
+      throw StateError('directory already exists: $directory');
+    }
+
+    if (!stateless) {
+      _constructedDirectory = directory;
+    }
+
     directory.createSync(recursive: true);
 
-    for (final subDirectory in _subDirectories) {
-      subDirectory
-          .construct('${directory.path}/${subDirectory._directoryName}');
+    for (final subDirectory in _subdirectories) {
+      subDirectory.construct(
+        path: directory.path,
+        stateless: true,
+      );
     }
 
     for (final file in _files) {
@@ -43,7 +145,28 @@ class DirectoryFactory {
       symlink.construct(directory.path);
     }
 
+    if (pushCurrentDirectory) {
+      _originalDirectory = Directory.current;
+      Directory.current = directory.path;
+    }
+
     return directory;
+  }
+
+  void destruct() {
+    final dir = directory;
+
+    final originalDirectory = _originalDirectory;
+    if (originalDirectory != null) {
+      Directory.current = originalDirectory.path;
+    }
+
+    if (dir.existsSync()) {
+      dir.deleteSync(recursive: true);
+    }
+
+    _constructedDirectory = null;
+    _originalDirectory = null;
   }
 
   factory DirectoryFactory.serverpodServerDir() {
@@ -52,8 +175,10 @@ class DirectoryFactory {
         withName: 'pubspec.yaml',
         withContents: '''
 name: my_project_server
+environment:
+  sdk: '>=3.6.0 <3.7.0'
 dependencies:
-  serverpod: 2.0.0
+  serverpod: ^2.3.0
 ''',
       ),
     ]);

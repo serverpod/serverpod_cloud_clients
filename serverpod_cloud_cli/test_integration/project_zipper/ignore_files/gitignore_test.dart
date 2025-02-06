@@ -1,29 +1,25 @@
-import 'dart:io';
-
 import 'package:archive/archive_io.dart';
 import 'package:cli_tools/cli_tools.dart';
-import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dart';
 import 'package:test/test.dart';
-import 'package:uuid/uuid.dart';
 
 import '../../../test_utils/project_factory.dart';
 
 void main() {
   final logger = VoidLogger();
   final commandLogger = CommandLogger(logger);
-  final testProjectPath = p.join(
-    'test_integration',
-    const Uuid().v4(),
+  final testProjectDirFactory = DirectoryFactory(
+    withPath: 'test_integration',
   );
 
+  setUp(() {
+    testProjectDirFactory.construct();
+  });
+
   tearDown(() {
-    final directory = Directory(testProjectPath);
-    if (directory.existsSync()) {
-      directory.deleteSync(recursive: true);
-    }
+    testProjectDirFactory.destruct();
   });
 
   test(
@@ -31,11 +27,12 @@ void main() {
       () async {
     const String fileToIgnore = 'ignored_file.txt';
     final projectDirectory = DirectoryFactory(
+      withParent: testProjectDirFactory,
       withFiles: [
         FileFactory(withName: '.gitignore', withContents: fileToIgnore),
         FileFactory(withName: fileToIgnore)
       ],
-    ).construct(testProjectPath);
+    ).construct();
 
     await expectLater(
       ProjectZipper.zipProject(
@@ -50,10 +47,11 @@ void main() {
       'Given default ignored file included by .gitignore override when zipping project then file is included',
       () async {
     final projectDirectory = DirectoryFactory(
+      withParent: testProjectDirFactory,
       withFiles: [
         FileFactory(withName: '.gitignore', withContents: '!.gitignore'),
       ],
-    ).construct(testProjectPath);
+    ).construct();
 
     final zippedProject = ProjectZipper.zipProject(
       projectDirectory: projectDirectory,
@@ -71,14 +69,15 @@ void main() {
       'Given default ignored file in subdirectory included by subdirectory .gitignore override when zipping project then file is included',
       () async {
     final projectDirectory = DirectoryFactory(
-      withSubDirectories: [
+      withParent: testProjectDirFactory,
+      withSubdirectories: [
         DirectoryFactory(
           withFiles: [
             FileFactory(withName: '.gitignore', withContents: '!.gitignore'),
           ],
         ),
       ],
-    ).construct(testProjectPath);
+    ).construct();
 
     final zippedProject = ProjectZipper.zipProject(
       projectDirectory: projectDirectory,
@@ -96,17 +95,18 @@ void main() {
       'Given default ignored files in root and subdirectory and subdirectory file is included by subdirectory .gitignore override when zipping project then only the subdirectory file is included',
       () async {
     final projectDirectory = DirectoryFactory(
+      withParent: testProjectDirFactory,
       withFiles: [
         FileFactory(withName: '.gitignore'),
       ],
-      withSubDirectories: [
+      withSubdirectories: [
         DirectoryFactory(
           withFiles: [
             FileFactory(withName: '.gitignore', withContents: '!.gitignore'),
           ],
         ),
       ],
-    ).construct(testProjectPath);
+    ).construct();
 
     final zippedProject = ProjectZipper.zipProject(
       projectDirectory: projectDirectory,
@@ -125,19 +125,20 @@ void main() {
       () async {
     const ignoredDirectoryName = 'ignoredDirectory';
     final projectDirectory = DirectoryFactory(
+      withParent: testProjectDirFactory,
       withFiles: [
         FileFactory(
             withName: '.gitignore', withContents: '$ignoredDirectoryName/*'),
       ],
-      withSubDirectories: [
+      withSubdirectories: [
         DirectoryFactory(
-          withDirectoryName: ignoredDirectoryName,
+          withName: ignoredDirectoryName,
           withFiles: [
             FileFactory(withName: 'my_secret.txt'),
           ],
         ),
       ],
-    ).construct(testProjectPath);
+    ).construct();
 
     await expectLater(
       ProjectZipper.zipProject(

@@ -20,9 +20,10 @@ dependencies:
   collection: ^1.19.0
   path: ^1.8.2
   pool: ^1.5.1
-  pub_semver: ^2.1.4
+  pub_semver: ^2.1.0
+  pubspec_parse: ^1.5.0
   ground_control_client: ^0.0.2
-  yaml: ^3.1.2
+  yaml: ^3.1.0
   basic_utils: ^5.7.0
 
 dev_dependencies:

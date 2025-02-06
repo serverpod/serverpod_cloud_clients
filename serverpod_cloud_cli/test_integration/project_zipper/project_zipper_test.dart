@@ -7,7 +7,6 @@ import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dart';
 import 'package:test/test.dart';
-import 'package:uuid/uuid.dart';
 
 import '../../test_utils/project_factory.dart';
 
@@ -15,23 +14,24 @@ void main() {
   final logger = StdOutLogger(LogLevel.debug);
   final commandLogger = CommandLogger(logger);
 
-  final testProjectPath = p.join(
-    'test_integration',
-    const Uuid().v4(),
+  final testProjectDirFactory = DirectoryFactory(
+    withPath: 'test_integration',
   );
 
+  setUp(() {
+    testProjectDirFactory.construct();
+  });
+
   tearDown(() {
-    final directory = Directory(testProjectPath);
-    if (directory.existsSync()) {
-      directory.deleteSync(recursive: true);
-    }
+    testProjectDirFactory.destruct();
   });
 
   test(
       'Given non existing project directory when zipping project then project directory does not exist exception is thrown.',
       () async {
-    final projectDirectory = Directory(testProjectPath);
-    expect(Directory(testProjectPath).existsSync(), isFalse);
+    final parentDir = testProjectDirFactory.directory;
+    final projectDirectory = Directory(p.join(parentDir.path, 'non-existing'));
+    expect(projectDirectory.existsSync(), isFalse);
 
     await expectLater(
       ProjectZipper.zipProject(
@@ -45,7 +45,9 @@ void main() {
   test(
       'Given an empty project directory when zipping project then empty project exception is thrown.',
       () async {
-    final projectDirectory = DirectoryFactory().construct(testProjectPath);
+    final projectDirectory = DirectoryFactory(
+      withParent: testProjectDirFactory,
+    ).construct();
     expect(projectDirectory.listSync(), isEmpty);
 
     await expectLater(
@@ -62,9 +64,10 @@ void main() {
       () async {
     const symlinkedDirectoryName = 'symlinked_directory';
     final projectDirectory = DirectoryFactory(
-      withSubDirectories: [
+      withParent: testProjectDirFactory,
+      withSubdirectories: [
         DirectoryFactory(
-          withDirectoryName: symlinkedDirectoryName,
+          withName: symlinkedDirectoryName,
           withFiles: [
             FileFactory(withName: 'file1.txt', withContents: 'file1'),
           ],
@@ -76,7 +79,7 @@ void main() {
           withTarget: symlinkedDirectoryName,
         ),
       ],
-    ).construct(testProjectPath);
+    ).construct();
 
     await expectLater(
       ProjectZipper.zipProject(
@@ -91,13 +94,14 @@ void main() {
       'Given project containing non-resolving symlink file when zipping project then non resolving symlink exception is thrown',
       () async {
     final projectDirectory = DirectoryFactory(
+      withParent: testProjectDirFactory,
       withSymLinks: [
         SymLinkFactory(
           withName: 'non-resolving-symlink',
           withTarget: 'non-existing-file',
         ),
       ],
-    ).construct(testProjectPath);
+    ).construct();
 
     await expectLater(
       ProjectZipper.zipProject(
@@ -112,12 +116,13 @@ void main() {
       'Given a project directory with files when zipping then files are included in the root of the zip file.',
       () async {
     final projectDirectory = DirectoryFactory(
+      withParent: testProjectDirFactory,
       withFiles: [
         FileFactory(withName: 'file1.txt', withContents: 'file1'),
         FileFactory(withName: 'file2.txt', withContents: 'file2'),
         FileFactory(withName: 'file3.txt', withContents: 'file3'),
       ],
-    ).construct(testProjectPath);
+    ).construct();
 
     final zippedProject = await ProjectZipper.zipProject(
       projectDirectory: projectDirectory,

@@ -8,7 +8,7 @@ import 'package:serverpod_cloud_cli/project_zipper/project_zipper.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
-import 'package:serverpod_cloud_cli/util/serverpod_server_folder_detection.dart';
+import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 
 enum DeployCommandOption implements OptionDefinition {
@@ -66,10 +66,17 @@ class CloudDeployCommand extends CloudCliCommand<DeployCommandOption> {
       throw ErrorExitException();
     }
 
-    if (!isServerpodServerDirectory(projectDirectory.path)) {
+    final pubspecValidator = TenantProjectPubspec.fromProjectDir(
+      projectDirectory,
+      logger: logger,
+    );
+
+    if (!pubspecValidator.isServerpodServer()) {
       logProjectDirIsNotAServerpodServerDirectory(logger);
       throw ErrorExitException();
     }
+
+    pubspecValidator.validateProjectDependencies(logger: logger);
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 

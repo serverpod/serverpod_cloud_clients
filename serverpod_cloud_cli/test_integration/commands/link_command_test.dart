@@ -28,20 +28,14 @@ void main() {
 
   const projectId = 'projectId';
 
-  final testCacheFolderPath = p.join(
-    'test_integration',
-    const Uuid().v4(),
-  );
-  final testProjectDir = p.join(
-    testCacheFolderPath,
-    'project',
-  );
+  final testCacheDirFactory = DirectoryFactory()..withPath('test_integration');
+
+  setUp(() {
+    testCacheDirFactory.construct();
+  });
 
   tearDown(() {
-    final directory = Directory(testCacheFolderPath);
-    if (directory.existsSync()) {
-      directory.deleteSync(recursive: true);
-    }
+    testCacheDirFactory.destruct();
 
     logger.clear();
   });
@@ -54,14 +48,17 @@ void main() {
     late Uri localServerAddress;
     late Completer requestCompleter;
     late HttpServer server;
+    final testProjectDirFactory = DirectoryFactory.serverpodServerDir()
+      ..withParent(testCacheDirFactory)
+      ..withName('project');
 
     setUp(() async {
-      DirectoryFactory.serverpodServerDir().construct(testProjectDir);
+      testProjectDirFactory.construct();
 
       requestCompleter = Completer();
       await ResourceManager.storeServerpodCloudData(
         cloudData: ServerpodCloudData('my-token'),
-        localStoragePath: testCacheFolderPath,
+        localStoragePath: testCacheDirFactory.directory.path,
       );
 
       final serverBuilder = HttpServerBuilder();
@@ -78,6 +75,7 @@ void main() {
 
     tearDown(() async {
       await server.close(force: true);
+      testProjectDirFactory.destruct();
     });
 
     group('when executing link', () {
@@ -90,9 +88,9 @@ void main() {
           '--api-url',
           localServerAddress.toString(),
           '--scloud-dir',
-          testCacheFolderPath,
+          testCacheDirFactory.directory.path,
           '--project-dir',
-          testProjectDir,
+          testProjectDirFactory.directory.path,
         ]);
       });
 
@@ -121,16 +119,19 @@ void main() {
     setUp(() async {
       await ResourceManager.storeServerpodCloudData(
         cloudData: ServerpodCloudData('my-token'),
-        localStoragePath: testCacheFolderPath,
+        localStoragePath: testCacheDirFactory.directory.path,
       );
     });
 
     group('and serverpod directory', () {
       late Uri localServerAddress;
       late HttpServer server;
+      final testProjectDirFactory = DirectoryFactory.serverpodServerDir()
+        ..withParent(testCacheDirFactory)
+        ..withName('project');
 
       setUp(() async {
-        DirectoryFactory.serverpodServerDir().construct(testProjectDir);
+        testProjectDirFactory.construct();
 
         final serverBuilder = HttpServerBuilder();
 
@@ -145,6 +146,7 @@ void main() {
 
       tearDown(() async {
         await server.close(force: true);
+        testProjectDirFactory.destruct();
       });
 
       group('and scloud.yaml does not already exist when executing link', () {
@@ -157,9 +159,9 @@ void main() {
             '--api-url',
             localServerAddress.toString(),
             '--scloud-dir',
-            testCacheFolderPath,
+            testCacheDirFactory.directory.path,
             '--project-dir',
-            testProjectDir,
+            testProjectDirFactory.directory.path,
           ]);
         });
 
@@ -187,7 +189,10 @@ void main() {
         test('then writes scloud.yaml file', () async {
           await commandResult;
 
-          final file = File(p.join(testProjectDir, 'scloud.yaml'));
+          final file = File(p.join(
+            testProjectDirFactory.directory.path,
+            'scloud.yaml',
+          ));
           expect(file.existsSync(), isTrue);
 
           final content = file.readAsStringSync();
@@ -201,7 +206,10 @@ void main() {
       group('and scloud.yaml exists when executing link', () {
         late Future commandResult;
         setUp(() {
-          final file = File(p.join(testProjectDir, 'scloud.yaml'));
+          final file = File(p.join(
+            testProjectDirFactory.directory.path,
+            'scloud.yaml',
+          ));
           file.writeAsStringSync(jsonToYaml({
             'project': {'projectId': 'otherProjectId'},
           }));
@@ -213,9 +221,9 @@ void main() {
             '--api-url',
             localServerAddress.toString(),
             '--scloud-dir',
-            testCacheFolderPath,
+            testCacheDirFactory.directory.path,
             '--project-dir',
-            testProjectDir,
+            testProjectDirFactory.directory.path,
           ]);
         });
 
@@ -243,7 +251,10 @@ void main() {
         test('then writes updated project id to scloud.yaml file', () async {
           await commandResult;
 
-          final file = File(p.join(testProjectDir, 'scloud.yaml'));
+          final file = File(p.join(
+            testProjectDirFactory.directory.path,
+            'scloud.yaml',
+          ));
           expect(file.existsSync(), isTrue);
 
           final content = file.readAsStringSync();
@@ -257,7 +268,10 @@ void main() {
           () {
         late Future commandResult;
         setUp(() {
-          final file = File(p.join(testProjectDir, 'scloud.yaml'));
+          final file = File(p.join(
+            testProjectDirFactory.directory.path,
+            'scloud.yaml',
+          ));
           file.writeAsStringSync(jsonToYaml({
             'project': ['projectId'],
           }));
@@ -269,9 +283,9 @@ void main() {
             '--api-url',
             localServerAddress.toString(),
             '--scloud-dir',
-            testCacheFolderPath,
+            testCacheDirFactory.directory.path,
             '--project-dir',
-            testProjectDir,
+            testProjectDirFactory.directory.path,
           ]);
         });
 
@@ -305,18 +319,26 @@ void main() {
 
     group('and not a serverpod directory when executing link', () {
       late Future commandResult;
+      final testProjectDirFactory = DirectoryFactory()
+        ..withParent(testCacheDirFactory)
+        ..withName('project');
+
       setUp(() {
-        DirectoryFactory().construct(testProjectDir);
+        testProjectDirFactory.construct();
 
         commandResult = cli.run([
           'link',
           '--project-id',
           projectId,
           '--project-dir',
-          testProjectDir,
+          testProjectDirFactory.directory.path,
           '--scloud-dir',
-          testCacheFolderPath,
+          testCacheDirFactory.directory.path,
         ]);
+      });
+
+      tearDown(() {
+        testProjectDirFactory.destruct();
       });
 
       test('then command throws exit exception', () async {

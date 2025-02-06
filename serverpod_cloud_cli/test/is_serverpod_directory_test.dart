@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:serverpod_cloud_cli/util/serverpod_server_folder_detection.dart';
+import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
 
@@ -17,7 +17,7 @@ void main() {
       'when calling isServerpodServerDirectory '
       'then returns false', () async {
     expect(
-      isServerpodServerDirectory('non_existing_path'),
+      isServerpodServerDirectory(Directory('non_existing_path')),
       isFalse,
     );
   });
@@ -32,7 +32,7 @@ void main() {
         'when calling isServerpodServerDirectory '
         'then returns false', () async {
       expect(
-        isServerpodServerDirectory(tempPath),
+        isServerpodServerDirectory(tempDir),
         isFalse,
       );
     });
@@ -52,7 +52,7 @@ name: myproject
         'when calling isServerpodServerDirectory '
         'then returns false', () async {
       expect(
-        isServerpodServerDirectory(tempPath),
+        isServerpodServerDirectory(tempDir),
         isFalse,
       );
     });
@@ -74,7 +74,7 @@ dependencies:
         'when calling isServerpodServerDirectory '
         'then returns false', () async {
       expect(
-        isServerpodServerDirectory(tempPath),
+        isServerpodServerDirectory(tempDir),
         isFalse,
       );
     });
@@ -96,7 +96,7 @@ dependencies:
         'when calling isServerpodServerDirectory '
         'then returns true', () async {
       expect(
-        isServerpodServerDirectory(tempPath),
+        isServerpodServerDirectory(tempDir),
         isTrue,
       );
     });

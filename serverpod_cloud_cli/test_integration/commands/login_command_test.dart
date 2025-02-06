@@ -16,7 +16,7 @@ import '../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();
-  final version = Version.parse('0.0.1');
+  final version = Version.parse('0.0.2');
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     version: version,

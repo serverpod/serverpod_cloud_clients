@@ -7,8 +7,8 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart'
 import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
+import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
-import 'package:serverpod_cloud_cli/util/serverpod_server_folder_detection.dart';
 import 'package:serverpod_cloud_cli/util/table_printer.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 
@@ -104,7 +104,7 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
       );
     }
 
-    if (isServerpodServerDirectory(Directory.current.path)) {
+    if (isServerpodServerDirectory(Directory.current)) {
       if (File(ConfigFileConstants.fileName).existsSync()) {
         return;
       }
