@@ -42,21 +42,6 @@ import 'protocol.dart' as _i17;
 
 /// Endpoint for managing projects.
 /// {@category Endpoint}
-class EndpointAdmin extends _i1.EndpointRef {
-  EndpointAdmin(_i1.EndpointCaller caller) : super(caller);
-
-  @override
-  String get name => 'admin';
-
-  _i2.Future<void> deleteAllProjects() => caller.callServerEndpoint<void>(
-        'admin',
-        'deleteAllProjects',
-        {},
-      );
-}
-
-/// Endpoint for managing projects.
-/// {@category Endpoint}
 class EndpointAuth extends _i1.EndpointRef {
   EndpointAuth(_i1.EndpointCaller caller) : super(caller);
 
@@ -582,7 +567,6 @@ class Client extends _i1.ServerpodClientShared {
           disconnectStreamsOnLostInternetConnection:
               disconnectStreamsOnLostInternetConnection,
         ) {
-    admin = EndpointAdmin(this);
     auth = EndpointAuth(this);
     customDomainName = EndpointCustomDomainName(this);
     deploy = EndpointDeploy(this);
@@ -597,8 +581,6 @@ class Client extends _i1.ServerpodClientShared {
     users = EndpointUsers(this);
     modules = Modules(this);
   }
-
-  late final EndpointAdmin admin;
 
   late final EndpointAuth auth;
 
@@ -628,7 +610,6 @@ class Client extends _i1.ServerpodClientShared {
 
   @override
   Map<String, _i1.EndpointRef> get endpointRefLookup => {
-        'admin': admin,
         'auth': auth,
         'customDomainName': customDomainName,
         'deploy': deploy,
