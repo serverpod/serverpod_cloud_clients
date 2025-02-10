@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/env_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
@@ -18,10 +17,8 @@ import '../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();
-  final version = Version.parse('0.0.1');
   final cli = CloudCliCommandRunner.create(
     logger: logger,
-    version: version,
   );
 
   final testCacheFolderPath = p.join(

@@ -5,4 +5,3 @@ include: package:serverpod_cloud_lints/lints.yaml
 
 linter:
   rules:
-    avoid_print: false

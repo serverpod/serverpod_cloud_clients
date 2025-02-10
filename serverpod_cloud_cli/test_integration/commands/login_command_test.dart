@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
-import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
@@ -16,10 +15,8 @@ import '../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();
-  final version = Version.parse('0.0.2');
   final cli = CloudCliCommandRunner.create(
     logger: logger,
-    version: version,
   );
 
   final testCacheFolderPath = p.join(
@@ -73,6 +70,7 @@ void main() {
       tokenSent = Completer();
       final loggerFuture = logger.waitForLog();
       unawaited(loggerFuture.then((final _) async {
+        assert(logger.infoCalls.isNotEmpty, 'Expected log info messages.');
         final loggedMessage = logger.infoCalls.first.message;
         final splitMessage = loggedMessage.split('callback=');
         assert(
@@ -84,7 +82,6 @@ void main() {
         final response = await http.get(urlWithToken);
         assert(response.statusCode == 200,
             'Expected token response to have status code 200.');
-
         tokenSent.complete();
       }));
     });

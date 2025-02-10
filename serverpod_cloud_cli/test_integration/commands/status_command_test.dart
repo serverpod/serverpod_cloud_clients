@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/status_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
@@ -16,12 +15,10 @@ import '../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();
-  final version = Version.parse('0.0.1');
   final keyManager = InMemoryKeyManager();
   final client = ClientMock(authenticationKeyManager: keyManager);
   final cli = CloudCliCommandRunner.create(
     logger: logger,
-    version: version,
     serviceProvider: CloudCliServiceProvider(
       apiClientFactory: (final globalCfg) => client,
     ),

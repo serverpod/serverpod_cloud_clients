@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
@@ -17,10 +16,8 @@ import '../../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();
-  final version = Version.parse('0.0.1');
   final cli = CloudCliCommandRunner.create(
     logger: logger,
-    version: version,
   );
 
   final testCacheDirFactory = DirectoryFactory(

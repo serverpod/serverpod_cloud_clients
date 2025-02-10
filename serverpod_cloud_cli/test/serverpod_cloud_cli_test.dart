@@ -7,10 +7,10 @@ import '../test_utils/test_command_logger.dart';
 
 void main() async {
   final logger = TestCommandLogger();
-  final version = Version.parse('0.0.1');
+  final version = Version.parse('0.0.4711');
   final cli = CloudCliCommandRunner.create(
     logger: logger,
-    version: Version.parse('0.0.1'),
+    version: version,
   );
 
   tearDown(() {

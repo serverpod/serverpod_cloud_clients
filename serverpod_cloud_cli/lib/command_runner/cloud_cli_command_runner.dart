@@ -22,6 +22,7 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/cli_version_checker.d
 import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
+import 'package:serverpod_cloud_cli/util/scloud_version.dart';
 
 /// Represents the Serverpod Cloud CLI main command, its global options, and subcommands.
 class CloudCliCommandRunner extends BetterCommandRunner {
@@ -48,12 +49,12 @@ class CloudCliCommandRunner extends BetterCommandRunner {
 
   static CloudCliCommandRunner create({
     required final CommandLogger logger,
-    required final Version version,
+    final Version? version,
     final CloudCliServiceProvider? serviceProvider,
   }) {
     final runner = CloudCliCommandRunner._(
       logger: logger,
-      version: version,
+      version: version ?? cliVersion,
       serviceProvider: serviceProvider ?? CloudCliServiceProvider(),
       logInfo: logger.info,
       logError: logger.error,
