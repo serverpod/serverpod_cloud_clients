@@ -3,7 +3,9 @@ name: Publish cli
 on:
   push:
     tags:
-    - '^serverpod_cloud_cli-v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$'
+      - 'serverpod_cloud_cli-v[0-9]+.[0-9]+.[0-9]+-[a-zA-Z]*'
+      - 'serverpod_cloud_cli-v[0-9]+.[0-9]+.[0-9]'
+  workflow_dispatch:
 
 jobs:
   publish:
