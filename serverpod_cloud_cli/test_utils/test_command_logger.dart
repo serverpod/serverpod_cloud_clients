@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:async';
 import 'dart:io';
 
@@ -197,10 +199,13 @@ class TestCommandLogger extends CommandLogger {
   Completer<void> _somethingLogged = Completer<void>();
   bool? _nextConfirmAnswer;
 
+  final bool printToStdout;
   final Logger _logger;
 
-  TestCommandLogger()
-      : _logger = VoidLogger(),
+  /// Enable [printToStdout] temporarily to aid debugging.
+  TestCommandLogger({
+    this.printToStdout = false,
+  })  : _logger = VoidLogger(),
         super(VoidLogger());
 
   int get totalLogCalls =>
@@ -219,6 +224,10 @@ class TestCommandLogger extends CommandLogger {
     final String message, {
     final bool newParagraph = false,
   }) {
+    if (printToStdout) {
+      print('log box: $message');
+    }
+
     if (!_somethingLogged.isCompleted) {
       _somethingLogged.complete();
     }
@@ -250,6 +259,10 @@ class TestCommandLogger extends CommandLogger {
     final TextLogType type = TextLogType.normal,
     final bool newParagraph = false,
   }) {
+    if (printToStdout) {
+      print('log debug: $message');
+    }
+
     // debug calls should not be asserted in tests
   }
 
@@ -260,6 +273,10 @@ class TestCommandLogger extends CommandLogger {
     final bool newParagraph = false,
     final StackTrace? stackTrace,
   }) {
+    if (printToStdout) {
+      print('log error: $message');
+    }
+
     if (!_somethingLogged.isCompleted) {
       _somethingLogged.complete();
     }
@@ -287,6 +304,10 @@ class TestCommandLogger extends CommandLogger {
     final String message, {
     final bool newParagraph = false,
   }) {
+    if (printToStdout) {
+      print('log info: $message');
+    }
+
     if (!_somethingLogged.isCompleted) {
       _somethingLogged.complete();
     }
@@ -298,6 +319,10 @@ class TestCommandLogger extends CommandLogger {
   void line(
     final String line,
   ) {
+    if (printToStdout) {
+      print('log line: $line');
+    }
+
     if (!_somethingLogged.isCompleted) {
       _somethingLogged.complete();
     }
@@ -311,6 +336,10 @@ class TestCommandLogger extends CommandLogger {
     final String? title,
     final bool newParagraph = false,
   }) {
+    if (printToStdout) {
+      print('log list: $items');
+    }
+
     if (!_somethingLogged.isCompleted) {
       _somethingLogged.complete();
     }
@@ -325,6 +354,10 @@ class TestCommandLogger extends CommandLogger {
     final Future<bool> Function() runner, {
     final bool newParagraph = false,
   }) async {
+    if (printToStdout) {
+      print('log progress: $message');
+    }
+
     if (!_somethingLogged.isCompleted) {
       _somethingLogged.complete();
     }
@@ -341,6 +374,10 @@ class TestCommandLogger extends CommandLogger {
     final bool newParagraph = false,
     final String? followUp,
   }) {
+    if (printToStdout) {
+      print('log success: $message');
+    }
+
     if (!_somethingLogged.isCompleted) {
       _somethingLogged.complete();
     }
@@ -359,6 +396,10 @@ class TestCommandLogger extends CommandLogger {
     final String? message,
     final bool newParagraph = false,
   }) {
+    if (printToStdout) {
+      print('log terminal command: $command, message: $message');
+    }
+
     if (!_somethingLogged.isCompleted) {
       _somethingLogged.complete();
     }
@@ -376,6 +417,10 @@ class TestCommandLogger extends CommandLogger {
     final bool newParagraph = false,
     final String? hint,
   }) {
+    if (printToStdout) {
+      print('log warning: $message');
+    }
+
     if (!_somethingLogged.isCompleted) {
       _somethingLogged.complete();
     }
@@ -393,6 +438,10 @@ class TestCommandLogger extends CommandLogger {
     final bool? defaultValue,
     required final bool Function(OptionDefinition option) checkBypassFlag,
   }) async {
+    if (printToStdout) {
+      print('log confirm: $message');
+    }
+
     final nextConfirmAnswer = _nextConfirmAnswer;
     if (nextConfirmAnswer == null) {
       throw StateError(

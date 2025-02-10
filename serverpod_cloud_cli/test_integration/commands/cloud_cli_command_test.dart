@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
@@ -58,7 +57,6 @@ void main() {
   final logger = TestCommandLogger();
   final runner = CloudCliCommandRunner.create(
     logger: logger,
-    version: Version(0, 0, 0),
   );
   final commandThatRequiresLogin = CommandThatRequiresLogin(logger: logger);
   final commandThatDoesNotRequiredLogin =

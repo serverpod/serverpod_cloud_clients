@@ -2,14 +2,10 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:cli_tools/cli_tools.dart';
-import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
-
-/// The version of the Serverpod Cloud CLI.
-/// This should be updated when a new version is released.
-const String cliVersion = '0.0.1';
+import 'package:serverpod_cloud_cli/util/scloud_version.dart';
 
 void main(final List<String> args) async {
   final logger = CommandLogger.create();
@@ -46,7 +42,7 @@ void main(final List<String> args) async {
 Future<void> _main(final List<String> args, final CommandLogger logger) async {
   final runner = CloudCliCommandRunner.create(
     logger: logger,
-    version: Version.parse(cliVersion),
+    version: cliVersion,
   );
   try {
     await runner.run(args);
