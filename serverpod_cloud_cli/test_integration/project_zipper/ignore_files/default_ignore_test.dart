@@ -1,36 +1,38 @@
+import 'dart:io';
+
 import 'package:cli_tools/cli_tools.dart';
+import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dart';
 import 'package:test/test.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../../test_utils/project_factory.dart';
 
 void main() {
   final logger = VoidLogger();
   final commandLogger = CommandLogger(logger);
-
-  final testProjectDirFactory = DirectoryFactory(
-    withPath: 'test_integration',
+  final testProjectPath = p.join(
+    'test_integration',
+    const Uuid().v4(),
   );
 
-  setUp(() {
-    testProjectDirFactory.construct();
-  });
-
   tearDown(() {
-    testProjectDirFactory.destruct();
+    final directory = Directory(testProjectPath);
+    if (directory.existsSync()) {
+      directory.deleteSync(recursive: true);
+    }
   });
 
   test(
       'Given a project directory only containing file ignored by default ignore rules when zipping project then empty project exception is thrown',
       () {
     final projectDirectory = DirectoryFactory(
-      withParent: testProjectDirFactory,
       withFiles: [
         FileFactory(withName: '.gitignore'),
       ],
-    ).construct();
+    ).construct(testProjectPath);
 
     expect(
       () => ProjectZipper.zipProject(
@@ -45,15 +47,14 @@ void main() {
       'Given only default ignored file in subdirectory when zipping project then empty project exception is thrown',
       () {
     final projectDirectory = DirectoryFactory(
-      withParent: testProjectDirFactory,
-      withSubdirectories: [
+      withSubDirectories: [
         DirectoryFactory(
           withFiles: [
             FileFactory(withName: '.gitignore'),
           ],
         ),
       ],
-    ).construct();
+    ).construct(testProjectPath);
 
     expect(
       () => ProjectZipper.zipProject(

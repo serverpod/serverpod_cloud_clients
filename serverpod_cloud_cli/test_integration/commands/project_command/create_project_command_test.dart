@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
@@ -11,7 +12,6 @@ import 'package:yaml/yaml.dart';
 
 import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/http_server_builder.dart';
-import '../../../test_utils/project_factory.dart';
 import '../../../test_utils/test_command_logger.dart';
 
 void main() {
@@ -20,16 +20,26 @@ void main() {
     logger: logger,
   );
 
-  final testCacheDirFactory = DirectoryFactory(
-    withPath: 'test_integration',
+  final testCacheFolderPath = p.join(
+    'test_integration',
+    const Uuid().v4(),
   );
+  late Directory originalDirectory;
 
   setUp(() {
-    testCacheDirFactory.construct(pushCurrentDirectory: true);
+    Directory(testCacheFolderPath).createSync(recursive: true);
+    originalDirectory = Directory.current;
+    Directory.current = testCacheFolderPath;
   });
 
   tearDown(() {
-    testCacheDirFactory.destruct();
+    Directory.current = originalDirectory;
+
+    final directory = Directory(testCacheFolderPath);
+    if (directory.existsSync()) {
+      directory.deleteSync(recursive: true);
+    }
+
     logger.clear();
   });
 
@@ -42,7 +52,7 @@ void main() {
     setUp(() async {
       await ResourceManager.storeServerpodCloudData(
         cloudData: ServerpodCloudData('my-token'),
-        localStoragePath: testCacheDirFactory.directory.path,
+        localStoragePath: testCacheFolderPath,
       );
 
       final serverBuilder = HttpServerBuilder();
@@ -65,13 +75,17 @@ void main() {
     group(
         'and inside a serverpod directory without scloud.yaml file when calling create',
         () {
-      final testSubdirFactory = DirectoryFactory.serverpodServerDir()
-        ..withParent(testCacheDirFactory);
-
       late Future commandResult;
-
       setUp(() async {
-        testSubdirFactory.construct(pushCurrentDirectory: true);
+        File('pubspec.yaml').writeAsStringSync(jsonToYaml({
+          'name': 'my_project_server',
+          'environment': {
+            'sdk': '>=3.6.0 <3.7.0',
+          },
+          'dependencies': {
+            'serverpod': '^2.3.0',
+          },
+        }));
 
         commandResult = cli.run([
           'project',
@@ -81,12 +95,8 @@ void main() {
           '--api-url',
           localServerAddress.toString(),
           '--scloud-dir',
-          '..',
+          testCacheFolderPath,
         ]);
-      });
-
-      tearDown(() {
-        testSubdirFactory.destruct();
       });
 
       test('then command completes successfully', () async {
@@ -121,19 +131,21 @@ void main() {
     group(
         'and inside a serverpod directory with existing scloud.yaml file when calling create',
         () {
-      final testSubdirFactory = DirectoryFactory.serverpodServerDir()
-        ..withParent(testCacheDirFactory)
-        ..addFile(FileFactory(
-          withName: 'scloud.yaml',
-          withContents: jsonToYaml({
-            'project': {'projectId': 'otherProjectId'},
-          }),
-        ));
-
       late Future commandResult;
-
       setUp(() async {
-        testSubdirFactory.construct(pushCurrentDirectory: true);
+        File('pubspec.yaml').writeAsStringSync(jsonToYaml({
+          'name': 'my_project_server',
+          'environment': {
+            'sdk': '>=3.6.0 <3.7.0',
+          },
+          'dependencies': {
+            'serverpod': '^2.3.0',
+          },
+        }));
+
+        File('scloud.yaml').writeAsStringSync(jsonToYaml({
+          'project': {'projectId': 'otherProjectId'},
+        }));
 
         commandResult = cli.run([
           'project',
@@ -143,12 +155,8 @@ void main() {
           '--api-url',
           localServerAddress.toString(),
           '--scloud-dir',
-          '..',
+          testCacheFolderPath,
         ]);
-      });
-
-      tearDown(() {
-        testSubdirFactory.destruct();
       });
 
       test('then command completes successfully', () async {
@@ -181,20 +189,14 @@ void main() {
     });
 
     group('and inside a dart directory when calling create', () {
-      final testSubdirFactory = DirectoryFactory()
-        ..withParent(testCacheDirFactory)
-        ..addFile(FileFactory(
-          withName: 'pubspec.yaml',
-          withContents: jsonToYaml({
-            'name': 'my_own_server',
-            'dependencies': {'test': '1.0'},
-          }),
-        ));
-
       late Future commandResult;
-
       setUp(() async {
-        testSubdirFactory.construct(pushCurrentDirectory: true);
+        File('pubspec.yaml').writeAsStringSync(jsonToYaml({
+          'name': 'my_own_server',
+          'dependencies': {
+            'test': '1.0',
+          },
+        }));
 
         commandResult = cli.run([
           'project',
@@ -204,12 +206,8 @@ void main() {
           '--api-url',
           localServerAddress.toString(),
           '--scloud-dir',
-          '..',
+          testCacheFolderPath,
         ]);
-      });
-
-      tearDown(() {
-        testSubdirFactory.destruct();
       });
 
       test('then command completes successfully', () async {
@@ -247,7 +245,7 @@ void main() {
           '--api-url',
           localServerAddress.toString(),
           '--scloud-dir',
-          testCacheDirFactory.directory.path,
+          testCacheFolderPath,
         ]);
       });
 

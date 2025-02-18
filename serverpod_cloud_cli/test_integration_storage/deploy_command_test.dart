@@ -3,7 +3,9 @@ import 'dart:io';
 
 import 'package:googleapis/storage/v1.dart';
 import 'package:http/http.dart';
+import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
+import 'package:uuid/uuid.dart';
 
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy_command.dart';
@@ -22,14 +24,21 @@ void main() {
     logger: logger,
   );
 
-  final testCacheDirFactory = DirectoryFactory()..withPath('test_integration');
+  final testCacheFolderPath = p.join(
+    'test_integration',
+    const Uuid().v4(),
+  );
 
-  setUp(() {
-    testCacheDirFactory.construct();
-  });
+  final testProjectDir = p.join(
+    testCacheFolderPath,
+    'project',
+  );
 
   tearDown(() {
-    testCacheDirFactory.destruct();
+    final directory = Directory(testCacheFolderPath);
+    if (directory.existsSync()) {
+      directory.deleteSync(recursive: true);
+    }
 
     logger.clear();
   });
@@ -41,21 +50,17 @@ void main() {
   group(
       'Given unauthenticated and current directory is serverpod server directory',
       () {
-    final projectDirFactory = DirectoryFactory.serverpodServerDir()
-      ..withParent(testCacheDirFactory)
-      ..withName('project');
-
     late Uri localServerAddress;
     late Completer requestCompleter;
     late HttpServer server;
 
     setUp(() async {
-      projectDirFactory.construct();
+      DirectoryFactory.serverpodServerDir().construct(testProjectDir);
 
       requestCompleter = Completer();
       await ResourceManager.storeServerpodCloudData(
         cloudData: ServerpodCloudData('my-token'),
-        localStoragePath: testCacheDirFactory.directory.path,
+        localStoragePath: testCacheFolderPath,
       );
 
       final serverBuilder = HttpServerBuilder();
@@ -71,8 +76,6 @@ void main() {
     });
 
     tearDown(() async {
-      projectDirFactory.destruct();
-
       await server.close(force: true);
     });
 
@@ -86,9 +89,9 @@ void main() {
           '--api-url',
           localServerAddress.toString(),
           '--scloud-dir',
-          testCacheDirFactory.directory.path,
+          testCacheFolderPath,
           '--project-dir',
-          projectDirFactory.directory.path,
+          testProjectDir,
         ]);
       });
 
@@ -117,7 +120,7 @@ void main() {
     setUp(() async {
       await ResourceManager.storeServerpodCloudData(
         cloudData: ServerpodCloudData('my-token'),
-        localStoragePath: testCacheDirFactory.directory.path,
+        localStoragePath: testCacheFolderPath,
       );
     });
 
@@ -132,7 +135,7 @@ void main() {
           '--project-id',
           '123',
           '--scloud-dir',
-          testCacheDirFactory.directory.path,
+          testCacheFolderPath,
         ]);
       });
 
@@ -159,34 +162,24 @@ void main() {
     group(
         'and current directory is not Serverpod server directory when running deploy command',
         () {
-      final projectDirFactory = DirectoryFactory()
-        ..withParent(testCacheDirFactory)
-        ..withName('project')
-        ..addFile(
+      late Future cliCommandFuture;
+      setUp(() async {
+        DirectoryFactory(withFiles: [
           FileFactory(
             withName: 'pubspec.yaml',
             withContents: 'name: my_project',
           ),
-        );
-
-      late Future cliCommandFuture;
-
-      setUp(() async {
-        projectDirFactory.construct();
+        ]).construct(testProjectDir);
 
         cliCommandFuture = cli.run([
           'deploy',
           '--project-id',
           '123',
           '--scloud-dir',
-          testCacheDirFactory.directory.path,
+          testCacheFolderPath,
           '--project-dir',
-          projectDirFactory.directory.path,
+          testProjectDir,
         ]);
-      });
-
-      tearDown(() {
-        projectDirFactory.destruct();
       });
 
       test('then ExitErrorException is thrown.', () async {
@@ -215,10 +208,10 @@ void main() {
         'and current directory is a Serverpod server directory '
         'with outdated sdk dependency '
         'when running deploy command', () {
-      final projectDirFactory = DirectoryFactory()
-        ..withParent(testCacheDirFactory)
-        ..withName('project')
-        ..addFile(
+      late Future cliCommandFuture;
+
+      setUp(() async {
+        DirectoryFactory(withFiles: [
           FileFactory(
             withName: 'pubspec.yaml',
             withContents: '''
@@ -229,26 +222,17 @@ dependencies:
   serverpod: ^2.3.0
 ''',
           ),
-        );
-
-      late Future cliCommandFuture;
-
-      setUp(() async {
-        projectDirFactory.construct();
+        ]).construct(testProjectDir);
 
         cliCommandFuture = cli.run([
           'deploy',
           '--project-id',
           '123',
           '--scloud-dir',
-          testCacheDirFactory.directory.path,
+          testCacheFolderPath,
           '--project-dir',
-          projectDirFactory.directory.path,
+          testProjectDir,
         ]);
-      });
-
-      tearDown(() {
-        projectDirFactory.destruct();
       });
 
       test('then ExitErrorException is thrown.', () async {
@@ -272,10 +256,10 @@ dependencies:
         'and current directory is a Serverpod server directory '
         'with too advanced sdk dependency '
         'when running deploy command', () {
-      final projectDirFactory = DirectoryFactory()
-        ..withParent(testCacheDirFactory)
-        ..withName('project')
-        ..addFile(
+      late Future cliCommandFuture;
+
+      setUp(() async {
+        DirectoryFactory(withFiles: [
           FileFactory(
             withName: 'pubspec.yaml',
             withContents: '''
@@ -286,26 +270,17 @@ dependencies:
   serverpod: ^2.3.0
 ''',
           ),
-        );
-
-      late Future cliCommandFuture;
-
-      setUp(() async {
-        projectDirFactory.construct();
+        ]).construct(testProjectDir);
 
         cliCommandFuture = cli.run([
           'deploy',
           '--project-id',
           '123',
           '--scloud-dir',
-          testCacheDirFactory.directory.path,
+          testCacheFolderPath,
           '--project-dir',
-          projectDirFactory.directory.path,
+          testProjectDir,
         ]);
-      });
-
-      tearDown(() {
-        projectDirFactory.destruct();
       });
 
       test('then ExitErrorException is thrown.', () async {
@@ -329,10 +304,10 @@ dependencies:
         'and current directory is a Serverpod server directory '
         'with outdated serverpod dependency '
         'when running deploy command', () {
-      final projectDirFactory = DirectoryFactory()
-        ..withParent(testCacheDirFactory)
-        ..withName('project')
-        ..addFile(
+      late Future cliCommandFuture;
+
+      setUp(() async {
+        DirectoryFactory(withFiles: [
           FileFactory(
             withName: 'pubspec.yaml',
             withContents: '''
@@ -343,26 +318,17 @@ dependencies:
   serverpod: ^2.2.0
 ''',
           ),
-        );
-
-      late Future cliCommandFuture;
-
-      setUp(() async {
-        projectDirFactory.construct();
+        ]).construct(testProjectDir);
 
         cliCommandFuture = cli.run([
           'deploy',
           '--project-id',
           '123',
           '--scloud-dir',
-          testCacheDirFactory.directory.path,
+          testCacheFolderPath,
           '--project-dir',
-          projectDirFactory.directory.path,
+          testProjectDir,
         ]);
-      });
-
-      tearDown(() {
-        projectDirFactory.destruct();
       });
 
       test('then ExitErrorException is thrown.', () async {
@@ -386,10 +352,10 @@ dependencies:
         'and current directory is a Serverpod server directory '
         'with broad and compatible sdk dependency '
         'when running deploy command', () {
-      final projectDirFactory = DirectoryFactory()
-        ..withParent(testCacheDirFactory)
-        ..withName('project')
-        ..addFile(
+      late Future cliCommandFuture;
+
+      setUp(() async {
+        DirectoryFactory(withFiles: [
           FileFactory(
             withName: 'pubspec.yaml',
             withContents: '''
@@ -400,26 +366,17 @@ dependencies:
   serverpod: ^2.3.0
 ''',
           ),
-        );
-
-      late Future cliCommandFuture;
-
-      setUp(() async {
-        projectDirFactory.construct();
+        ]).construct(testProjectDir);
 
         cliCommandFuture = cli.run([
           'deploy',
           '--project-id',
           '123',
           '--scloud-dir',
-          testCacheDirFactory.directory.path,
+          testCacheFolderPath,
           '--project-dir',
-          projectDirFactory.directory.path,
+          testProjectDir,
         ]);
-      });
-
-      tearDown(() {
-        projectDirFactory.destruct();
       });
 
       test('then no dependency error message is logged', () async {
@@ -436,16 +393,8 @@ dependencies:
     });
 
     group('and current directory is a Serverpod server directory', () {
-      final projectDirFactory = DirectoryFactory.serverpodServerDir()
-        ..withParent(testCacheDirFactory)
-        ..withName('project');
-
       setUp(() async {
-        projectDirFactory.construct();
-      });
-
-      tearDown(() {
-        projectDirFactory.destruct();
+        DirectoryFactory.serverpodServerDir().construct(testProjectDir);
       });
 
       group('and 403 response for creating file upload request', () {
@@ -480,9 +429,9 @@ dependencies:
               '--api-url',
               localServerAddress.toString(),
               '--scloud-dir',
-              testCacheDirFactory.directory.path,
+              testCacheFolderPath,
               '--project-dir',
-              projectDirFactory.directory.path,
+              testProjectDir,
             ]);
           });
 
@@ -512,18 +461,6 @@ dependencies:
         late Uri localServerAddress;
         late HttpServer server;
 
-        const symlinkedDirectoryName = 'symlinked_directory';
-        final targetDirectoryFactory = DirectoryFactory(
-          withName: symlinkedDirectoryName,
-          withFiles: [
-            FileFactory(withName: 'file1.txt', withContents: 'file1'),
-          ],
-        );
-        final symlinkFactory = SymLinkFactory(
-          withName: 'symlinked_directory_link',
-          withTarget: symlinkedDirectoryName,
-        );
-
         setUp(() async {
           final serverBuilder = HttpServerBuilder();
           serverBuilder.withOnRequest((final request) async {
@@ -537,15 +474,27 @@ dependencies:
           localServerAddress = serverAddress;
           server = startedServer;
 
-          targetDirectoryFactory.construct(
-              path: projectDirFactory.directory.path);
-          symlinkFactory.construct(projectDirFactory.directory.path);
+          const symlinkedDirectoryName = 'symlinked_directory';
+          DirectoryFactory(
+            withSubDirectories: [
+              DirectoryFactory(
+                withDirectoryName: symlinkedDirectoryName,
+                withFiles: [
+                  FileFactory(withName: 'file1.txt', withContents: 'file1'),
+                ],
+              ),
+            ],
+            withSymLinks: [
+              SymLinkFactory(
+                withName: 'symlinked_directory_link',
+                withTarget: symlinkedDirectoryName,
+              ),
+            ],
+          ).construct(testProjectDir);
         });
 
         tearDown(() {
           server.close(force: true);
-
-          targetDirectoryFactory.destruct();
         });
 
         group('when deploying through CLI', () {
@@ -558,11 +507,11 @@ dependencies:
               '--project-id',
               '123',
               '--project-dir',
-              projectDirFactory.directory.path,
+              testProjectDir,
               '--api-url',
               localServerAddress.toString(),
               '--scloud-dir',
-              testCacheDirFactory.directory.path,
+              testCacheFolderPath,
             ]);
           });
 
@@ -591,10 +540,6 @@ dependencies:
           () {
         late Uri localServerAddress;
         late HttpServer server;
-        final symlinkFactory = SymLinkFactory(
-          withName: 'non-resolving-symlink',
-          withTarget: 'non-existing-file',
-        );
 
         setUp(() async {
           final serverBuilder = HttpServerBuilder();
@@ -609,7 +554,14 @@ dependencies:
           localServerAddress = serverAddress;
           server = startedServer;
 
-          symlinkFactory.construct(projectDirFactory.directory.path);
+          DirectoryFactory(
+            withSymLinks: [
+              SymLinkFactory(
+                withName: 'non-resolving-symlink',
+                withTarget: 'non-existing-file',
+              ),
+            ],
+          ).construct(testProjectDir);
         });
 
         tearDown(() {
@@ -626,11 +578,11 @@ dependencies:
               '--project-id',
               '123',
               '--project-dir',
-              projectDirFactory.directory.path,
+              testProjectDir,
               '--api-url',
               localServerAddress.toString(),
               '--scloud-dir',
-              testCacheDirFactory.directory.path,
+              testCacheFolderPath,
             ]);
           });
 
@@ -664,12 +616,8 @@ dependencies:
         const uploadDescription =
             '"{\\"url\\":\\"http://localhost:8000/$projectId%2F$projectUuid.zip?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=test-service-bucket%40hosting-example-414217.iam.gserviceaccount.com%2F20240909%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20240909T094501Z&X-Goog-Expires=600&X-Goog-SignedHeaders=accept%3Bcontent-type%3Bhost%3Bx-goog-meta-tenant-project-id&x-goog-signature=2a3432d7e650cd7f32e4b6ddb01051390ae40084fb45f7af25cfaa891f33425d7bf64939b78b9e339b28bcf5238dfb58c67fd8e1eb8957c2df22b1b91d1f01a3ecd1ad4217a570a7e7a80e2999164ca7d920058bfdf52851341fe3c85340da14917026c8efae8f733d5d6548a149ae0558f88307bfcf23f97c2a141317d2be5cf4035488bd7b01137333250be11a174e73096674d8eaffcc7c7d2849044a3eb7669c35f7e421f99ab9557610478c96b68b29962fa1ea002cf76a09a0f302c66157844bd1a2b4b8a36378fd18f8a8dab750d955ff1866c9b20105c56b1f3ebf88c4dcf75043518c74d3d25c54673557b397ba1e31336766004c06ddf7bbbe1940\\",\\"type\\":\\"binary\\",\\"httpMethod\\":\\"PUT\\",\\"headers\\":{\\"content-type\\":\\"application/octet-stream\\",\\"accept\\":\\"*/*\\",\\"x-goog-meta-tenant-project-id\\":\\"$projectId\\",\\"x-goog-meta-upload-id\\":\\"upload-$projectUuid\\",\\"host\\":\\"$bucketName.localhost:8000\\"}}"';
 
-        final projectDirFactory = DirectoryFactory.serverpodServerDir()
-          ..withParent(testCacheDirFactory)
-          ..withName('project2');
-
         setUp(() async {
-          projectDirFactory.construct();
+          DirectoryFactory.serverpodServerDir().construct(testProjectDir);
 
           final serverBuilder = HttpServerBuilder();
           serverBuilder.withOnRequest((final request) async {
@@ -685,8 +633,6 @@ dependencies:
         });
 
         tearDown(() {
-          projectDirFactory.destruct();
-
           server.close(force: true);
         });
 
@@ -702,9 +648,9 @@ dependencies:
               '--api-url',
               localServerAddress.toString(),
               '--scloud-dir',
-              testCacheDirFactory.directory.path,
+              testCacheFolderPath,
               '--project-dir',
-              projectDirFactory.directory.path,
+              testProjectDir,
             ]);
           });
 
@@ -747,12 +693,8 @@ dependencies:
             '}'
             '}"';
 
-        final projectDirFactory = DirectoryFactory.serverpodServerDir()
-          ..withParent(testCacheDirFactory)
-          ..withName('project2');
-
         setUp(() async {
-          projectDirFactory.construct();
+          DirectoryFactory.serverpodServerDir().construct(testProjectDir);
 
           final serverBuilder = HttpServerBuilder();
           serverBuilder.withOnRequest((final request) async {
@@ -768,8 +710,6 @@ dependencies:
         });
 
         tearDown(() {
-          projectDirFactory.destruct();
-
           server.close(force: true);
         });
 
@@ -785,9 +725,9 @@ dependencies:
               '--api-url',
               localServerAddress.toString(),
               '--scloud-dir',
-              testCacheDirFactory.directory.path,
+              testCacheFolderPath,
               '--project-dir',
-              projectDirFactory.directory.path,
+              testProjectDir,
             ]);
           });
 
