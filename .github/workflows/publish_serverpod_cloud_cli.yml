@@ -15,9 +15,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: dart-lang/setup-dart@v1
-      - name: Install dependencies
-        run: dart pub get
-        working-directory: serverpod_cloud_cli
       - name: Publish
         run: dart pub publish --force --skip-validation
         working-directory: serverpod_cloud_cli
