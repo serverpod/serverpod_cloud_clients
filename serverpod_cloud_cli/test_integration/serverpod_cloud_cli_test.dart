@@ -1,5 +1,5 @@
-import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
+import 'package:serverpod_cloud_cli/util/scloud_version.dart';
 import 'package:test/test.dart';
 
 import '../test_utils/command_logger_matchers.dart';
@@ -7,11 +7,8 @@ import '../test_utils/test_command_logger.dart';
 
 void main() async {
   final logger = TestCommandLogger();
-  final version = Version.parse('0.0.4711');
-  final cli = CloudCliCommandRunner.create(
-    logger: logger,
-    version: version,
-  );
+
+  final cli = CloudCliCommandRunner.create(logger: logger);
 
   tearDown(() {
     logger.clear();
@@ -48,7 +45,7 @@ void main() async {
     expect(
       logger.infoCalls.first,
       equalsInfoCall(
-        message: 'Serverpod Cloud CLI version: $version',
+        message: 'Serverpod Cloud CLI version: $cliVersion',
       ),
     );
   });
