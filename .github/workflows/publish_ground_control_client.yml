@@ -15,9 +15,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: dart-lang/setup-dart@v1
-      - name: Install dependencies
-        run: dart pub get
-        working-directory: ground_control_client
       - name: Publish
         run: dart pub publish --force --skip-validation
         working-directory: ground_control_client
