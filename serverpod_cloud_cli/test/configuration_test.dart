@@ -1,4 +1,5 @@
 import 'package:args/args.dart';
+import 'package:args/command_runner.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 import 'package:test/test.dart';
 
@@ -13,7 +14,7 @@ void main() async {
       expect(
         () => [projectIdOpt].prepareForParsing(parser),
         throwsA(allOf(
-          isA<ArgumentError>(),
+          isA<InvalidOptionConfigurationException>(),
           (final e) => e.toString().contains(
                 "An argument option can't have an abbreviation but not a full name",
               ),
@@ -33,7 +34,7 @@ void main() async {
       expect(
         () => [projectIdOpt].prepareForParsing(parser),
         throwsA(allOf(
-          isA<ArgumentError>(),
+          isA<InvalidOptionConfigurationException>(),
           (final e) => e.toString().contains(
                 "Positional options can't be flags",
               ),
@@ -53,7 +54,7 @@ void main() async {
       expect(
         () => [projectIdOpt].prepareForParsing(parser),
         throwsA(allOf(
-          isA<ArgumentError>(),
+          isA<InvalidOptionConfigurationException>(),
           (final e) => e.toString().contains(
                 "An argument option should not have valueRequired specified if mandatory is true, "
                 "since this already guarantees that the value will be passed",
@@ -74,7 +75,7 @@ void main() async {
       expect(
         () => [projectIdOpt].prepareForParsing(parser),
         throwsA(allOf(
-          isA<ArgumentError>(),
+          isA<InvalidOptionConfigurationException>(),
           (final e) => e
               .toString()
               .contains("Mandatory options can't have default values"),
@@ -97,7 +98,7 @@ void main() async {
       expect(
         () => [projectIdOpt].prepareForParsing(parser),
         throwsA(allOf(
-          isA<ArgumentError>(),
+          isA<InvalidOptionConfigurationException>(),
           (final e) => e
               .toString()
               .contains("Mandatory options can't have default values"),
@@ -141,7 +142,7 @@ void main() async {
       test('when misspelled on the command line, then it fails to parse',
           () async {
         expect(() => parser.parse(['--projectid', '123']),
-            throwsA(isA<FormatException>()));
+            throwsA(isA<ArgParserException>()));
       });
 
       test('when present twice on the command line, the value is the last one',
@@ -390,6 +391,7 @@ void main() async {
         args: argResults,
         env: envVars,
       );
+      expect(config.errors, isEmpty);
       expect(config.value(projectIdOpt), equals('123'));
     });
 
@@ -401,19 +403,21 @@ void main() async {
         args: argResults,
         env: envVars,
       );
+      expect(config.errors, isEmpty);
       expect(config.value(projectIdOpt), equals('456'));
     });
 
-    test('when not provided then parsing throws ArgumentError', () async {
+    test('when not provided then parsing has error', () async {
       final argResults = parser.parse([]);
       final envVars = <String, String>{};
-      expect(
-          () => Configuration.fromEnvAndArgs(
-                options: [projectIdOpt],
-                args: argResults,
-                env: envVars,
-              ),
-          throwsA(isA<ArgumentError>()));
+      final config = Configuration.fromEnvAndArgs(
+        options: [projectIdOpt],
+        args: argResults,
+        env: envVars,
+      );
+      expect(config.errors, hasLength(1));
+      expect(config.errors.first, 'option `project-id` is mandatory');
+      expect(() => config.value(projectIdOpt), throwsA(isA<UsageException>()));
     });
   });
 
@@ -434,6 +438,7 @@ void main() async {
         args: argResults,
         env: envVars,
       );
+      expect(config.errors, isEmpty);
       expect(config.value(projectIdOpt), equals('123'));
     });
 
@@ -445,19 +450,21 @@ void main() async {
         args: argResults,
         env: envVars,
       );
+      expect(config.errors, isEmpty);
       expect(config.value(projectIdOpt), equals('456'));
     });
 
-    test('when not provided then parsing throws ArgumentError', () async {
+    test('when not provided then parsing has error', () async {
       final argResults = parser.parse([]);
       final envVars = <String, String>{};
-      expect(
-          () => Configuration.fromEnvAndArgs(
-                options: [projectIdOpt],
-                args: argResults,
-                env: envVars,
-              ),
-          throwsA(isA<ArgumentError>()));
+      final config = Configuration.fromEnvAndArgs(
+        options: [projectIdOpt],
+        args: argResults,
+        env: envVars,
+      );
+      expect(config.errors, hasLength(1));
+      expect(config.errors.first, 'option `project-id` is mandatory');
+      expect(() => config.value(projectIdOpt), throwsA(isA<UsageException>()));
     });
   });
 
@@ -471,7 +478,7 @@ void main() async {
 
     test('when provided as argument then parsing fails', () async {
       expect(() => parser.parse(['--project-id', '123']),
-          throwsA(isA<FormatException>()));
+          throwsA(isA<ArgParserException>()));
     });
 
     test('when provided as env variable then parsing succeeds', () async {
@@ -482,19 +489,22 @@ void main() async {
         args: argResults,
         env: envVars,
       );
+      expect(config.errors, isEmpty);
       expect(config.value(projectIdOpt), equals('456'));
     });
 
-    test('when not provided then parsing throws ArgumentError', () async {
+    test('when not provided then parsing has error', () async {
       final argResults = parser.parse([]);
       final envVars = <String, String>{};
-      expect(
-          () => Configuration.fromEnvAndArgs(
-                options: [projectIdOpt],
-                args: argResults,
-                env: envVars,
-              ),
-          throwsA(isA<ArgumentError>()));
+      final config = Configuration.fromEnvAndArgs(
+        options: [projectIdOpt],
+        args: argResults,
+        env: envVars,
+      );
+      expect(config.errors, hasLength(1));
+      expect(config.errors.first,
+          'environment variable `PROJECT_ID` is mandatory');
+      expect(() => config.value(projectIdOpt), throwsA(isA<UsageException>()));
     });
   });
 
@@ -508,7 +518,7 @@ void main() async {
 
     test('when provided as argument then parsing fails', () async {
       expect(() => parser.parse(['--project-id', '123']),
-          throwsA(isA<FormatException>()));
+          throwsA(isA<ArgParserException>()));
     });
 
     test('when provided as env variable then parsing succeeds', () async {
@@ -519,19 +529,22 @@ void main() async {
         args: argResults,
         env: envVars,
       );
+      expect(config.errors, isEmpty);
       expect(config.value(projectIdOpt), equals('456'));
     });
 
-    test('when not provided then parsing throws ArgumentError', () async {
+    test('when not provided then parsing has error', () async {
       final argResults = parser.parse([]);
       final envVars = <String, String>{};
-      expect(
-          () => Configuration.fromEnvAndArgs(
-                options: [projectIdOpt],
-                args: argResults,
-                env: envVars,
-              ),
-          throwsA(isA<ArgumentError>()));
+      final config = Configuration.fromEnvAndArgs(
+        options: [projectIdOpt],
+        args: argResults,
+        env: envVars,
+      );
+      expect(config.errors, hasLength(1));
+      expect(config.errors.first,
+          'environment variable `PROJECT_ID` is mandatory');
+      expect(() => config.value(projectIdOpt), throwsA(isA<UsageException>()));
     });
   });
 
@@ -554,41 +567,44 @@ void main() async {
       argPos: 2,
     );
 
-    test('when duplicate arg names specified then ArgumentError is thrown',
+    test(
+        'when duplicate arg names specified then InvalidOptionConfigurationException is thrown',
         () async {
       final parser = ArgParser();
       expect(() => [argNameOpt, duplicateOpt].prepareForParsing(parser),
-          throwsA(isA<ArgumentError>()));
+          throwsA(isA<InvalidOptionConfigurationException>()));
     });
 
-    test('when duplicate env names specified then ArgumentError is thrown',
+    test(
+        'when duplicate env names specified then InvalidOptionConfigurationException is thrown',
         () async {
       final parser = ArgParser();
       expect(() => [envNameOpt, duplicateOpt].prepareForParsing(parser),
-          throwsA(isA<ArgumentError>()));
+          throwsA(isA<InvalidOptionConfigurationException>()));
     });
 
-    test('when duplicate arg positions specified then ArgumentError is thrown',
+    test(
+        'when duplicate arg positions specified then InvalidOptionConfigurationException is thrown',
         () async {
       final parser = ArgParser();
       expect(() => [argPosOpt, duplicateOpt].prepareForParsing(parser),
-          throwsA(isA<ArgumentError>()));
+          throwsA(isA<InvalidOptionConfigurationException>()));
     });
 
     test(
-        'when non-consecutive arg positions specified then ArgumentError is thrown',
+        'when non-consecutive arg positions specified then InvalidOptionConfigurationException is thrown',
         () async {
       final parser = ArgParser();
       expect(() => [argPosOpt, argPos2Opt].prepareForParsing(parser),
-          throwsA(isA<ArgumentError>()));
+          throwsA(isA<InvalidOptionConfigurationException>()));
     });
 
     test(
-        'when first arg position does not start at 0 then ArgumentError is thrown',
+        'when first arg position does not start at 0 then InvalidOptionConfigurationException is thrown',
         () async {
       final parser = ArgParser();
       expect(() => [argPos2Opt].prepareForParsing(parser),
-          throwsA(isA<ArgumentError>()));
+          throwsA(isA<InvalidOptionConfigurationException>()));
     });
   });
 
@@ -612,6 +628,7 @@ void main() async {
         args: argResults,
         env: envVars,
       );
+      expect(config.errors, isEmpty);
       expect(config.valueOrNull(positionalOpt), equals('pos-arg'));
     });
 
@@ -623,6 +640,7 @@ void main() async {
         args: argResults,
         env: envVars,
       );
+      expect(config.errors, isEmpty);
       expect(config.valueOrNull(positionalOpt), equals('pos-arg'));
     });
 
@@ -634,6 +652,7 @@ void main() async {
         args: argResults,
         env: envVars,
       );
+      expect(config.errors, isEmpty);
       expect(config.valueOrNull(positionalOpt), equals('pos-arg'));
     });
 
@@ -647,6 +666,7 @@ void main() async {
         args: argResults,
         env: envVars,
       );
+      expect(config.errors, isEmpty);
       expect(() => config.value(positionalOpt), throwsA(isA<StateError>()));
     });
 
@@ -659,6 +679,7 @@ void main() async {
         args: argResults,
         env: envVars,
       );
+      expect(config.errors, isEmpty);
       expect(config.valueOrNull(positionalOpt), isNull);
     });
   });
@@ -684,6 +705,7 @@ void main() async {
         args: argResults,
         env: envVars,
       );
+      expect(config.errors, isEmpty);
       expect(config.value(positionalOpt), equals('pos-arg'));
     });
 
@@ -695,6 +717,7 @@ void main() async {
         args: argResults,
         env: envVars,
       );
+      expect(config.errors, isEmpty);
       expect(config.value(positionalOpt), equals('pos-arg'));
     });
 
@@ -706,19 +729,21 @@ void main() async {
         args: argResults,
         env: envVars,
       );
+      expect(config.errors, isEmpty);
       expect(config.value(positionalOpt), equals('pos-arg'));
     });
 
-    test('when not provided then parsing throws ArgumentError', () async {
+    test('when not provided then parsing has error', () async {
       final argResults = parser.parse([]);
       final envVars = <String, String>{};
-      expect(
-          () => Configuration.fromEnvAndArgs(
-                options: options,
-                args: argResults,
-                env: envVars,
-              ),
-          throwsA(isA<ArgumentError>()));
+      final config = Configuration.fromEnvAndArgs(
+        options: options,
+        args: argResults,
+        env: envVars,
+      );
+      expect(config.errors, hasLength(1));
+      expect(config.errors.first, 'positional argument 0 is mandatory');
+      expect(() => config.value(positionalOpt), throwsA(isA<UsageException>()));
     });
   });
 
@@ -743,6 +768,7 @@ void main() async {
         args: argResults,
         env: envVars,
       );
+      expect(config.errors, isEmpty);
       expect(config.value(positionalOpt), equals('pos-arg'));
     });
 
@@ -754,6 +780,7 @@ void main() async {
         args: argResults,
         env: envVars,
       );
+      expect(config.errors, isEmpty);
       expect(config.value(positionalOpt), equals('pos-arg'));
     });
 
@@ -765,19 +792,21 @@ void main() async {
         args: argResults,
         env: envVars,
       );
+      expect(config.errors, isEmpty);
       expect(config.value(positionalOpt), equals('pos-arg'));
     });
 
-    test('when not provided then parsing throws ArgumentError', () async {
+    test('when not provided then parsing has error', () async {
       final argResults = parser.parse([]);
       final envVars = <String, String>{};
-      expect(
-          () => Configuration.fromEnvAndArgs(
-                options: options,
-                args: argResults,
-                env: envVars,
-              ),
-          throwsA(isA<ArgumentError>()));
+      final config = Configuration.fromEnvAndArgs(
+        options: options,
+        args: argResults,
+        env: envVars,
+      );
+      expect(config.errors, hasLength(1));
+      expect(config.errors.first, 'positional argument 0 is mandatory');
+      expect(() => config.value(positionalOpt), throwsA(isA<UsageException>()));
     });
   });
 
@@ -803,6 +832,7 @@ void main() async {
         args: argResults,
         env: envVars,
       );
+      expect(config.errors, isEmpty);
       expect(config.valueOrNull(firstOpt), equals('1st-arg'));
       expect(config.valueOrNull(secondOpt), isNull);
     });
@@ -816,6 +846,7 @@ void main() async {
         args: argResults,
         env: envVars,
       );
+      expect(config.errors, isEmpty);
       expect(config.valueOrNull(firstOpt), equals('1st-arg'));
       expect(config.valueOrNull(secondOpt), isNull);
     });
@@ -830,6 +861,7 @@ void main() async {
         args: argResults,
         env: envVars,
       );
+      expect(config.errors, isEmpty);
       expect(config.valueOrNull(firstOpt), isNull);
       expect(config.valueOrNull(secondOpt), equals('2st-arg'));
     });
@@ -843,6 +875,7 @@ void main() async {
         args: argResults,
         env: envVars,
       );
+      expect(config.errors, isEmpty);
       expect(config.valueOrNull(firstOpt), equals('1st-arg'));
       expect(config.valueOrNull(secondOpt), equals('2nd-arg'));
     });
@@ -857,6 +890,7 @@ void main() async {
         args: argResults,
         env: envVars,
       );
+      expect(config.errors, isEmpty);
       expect(config.valueOrNull(firstOpt), equals('1st-arg'));
       expect(config.valueOrNull(secondOpt), equals('2nd-arg'));
     });
@@ -871,6 +905,7 @@ void main() async {
         args: argResults,
         env: envVars,
       );
+      expect(config.errors, isEmpty);
       expect(config.valueOrNull(firstOpt), equals('1st-arg'));
       expect(config.valueOrNull(secondOpt), equals('2nd-arg'));
     });
@@ -885,6 +920,7 @@ void main() async {
         args: argResults,
         env: envVars,
       );
+      expect(config.errors, isEmpty);
       expect(config.valueOrNull(firstOpt), equals('1st-arg'));
       expect(config.valueOrNull(secondOpt), equals('2nd-arg'));
     });
@@ -898,6 +934,7 @@ void main() async {
         args: argResults,
         env: envVars,
       );
+      expect(config.errors, isEmpty);
       expect(config.valueOrNull(firstOpt), equals('1st-arg'));
       expect(config.valueOrNull(secondOpt), equals('2nd-arg'));
     });
@@ -913,6 +950,7 @@ void main() async {
         args: argResults,
         env: envVars,
       );
+      expect(config.errors, isEmpty);
       expect(config.valueOrNull(firstOpt), equals('1st-arg'));
       expect(config.valueOrNull(secondOpt), equals('2nd-arg'));
     });
@@ -925,37 +963,45 @@ void main() async {
         args: argResults,
         env: envVars,
       );
+      expect(config.errors, isEmpty);
       expect(config.valueOrNull(firstOpt), isNull);
       expect(config.valueOrNull(secondOpt), isNull);
     });
 
-    test(
-        'when superfluous positional argument provided then parsing throws ArgumentError',
+    test('when superfluous positional argument provided then parsing has error',
         () async {
       final argResults = parser.parse(['1st-arg', '2nd-arg', '3rd-arg']);
       final envVars = <String, String>{};
+
+      final config = Configuration.fromEnvAndArgs(
+        options: options,
+        args: argResults,
+        env: envVars,
+      );
+      expect(config.errors, hasLength(1));
       expect(
-          () => Configuration.fromEnvAndArgs(
-                options: options,
-                args: argResults,
-                env: envVars,
-              ),
-          throwsA(isA<ArgumentError>()));
+          config.errors.first, "Unexpected positional argument(s): '3rd-arg'");
+      expect(config.valueOrNull(firstOpt), equals('1st-arg'));
+      expect(config.valueOrNull(secondOpt), equals('2nd-arg'));
     });
 
     test(
-        'when superfluous positional argument provided after named args then parsing throws ArgumentError',
+        'when superfluous positional argument provided after named args then parsing has error',
         () async {
       final argResults = parser
           .parse(['--first', '1st-arg', '--second', '2nd-arg', '3rd-arg']);
       final envVars = <String, String>{};
+
+      final config = Configuration.fromEnvAndArgs(
+        options: options,
+        args: argResults,
+        env: envVars,
+      );
+      expect(config.errors, hasLength(1));
       expect(
-          () => Configuration.fromEnvAndArgs(
-                options: options,
-                args: argResults,
-                env: envVars,
-              ),
-          throwsA(isA<ArgumentError>()));
+          config.errors.first, "Unexpected positional argument(s): '3rd-arg'");
+      expect(config.valueOrNull(firstOpt), equals('1st-arg'));
+      expect(config.valueOrNull(secondOpt), equals('2nd-arg'));
     });
   });
 }

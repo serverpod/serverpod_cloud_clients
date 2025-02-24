@@ -3,7 +3,7 @@ import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.
 /// Common option value parsers.
 abstract final class OptionParsing {
   /// Parses a date string into a [DateTime] object.
-  /// Throws [ArgumentError] if parsing failed.
+  /// Throws [CloudCliUsageException] if parsing failed.
   /// This is more forgiving than [DateTime.parse], in addition
   /// to the standard T and space separators between date and time
   /// it also allows [-_/:t].

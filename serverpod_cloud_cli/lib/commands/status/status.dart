@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
+import 'package:serverpod_cloud_cli/util/capitalize.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
 import 'package:serverpod_cloud_cli/util/table_printer.dart';
 import 'package:ground_control_client/ground_control_client.dart';
@@ -95,7 +96,7 @@ abstract class StatusCommands {
   }
 
   static String _getStatusPhrase(final DeployAttemptStage stage) {
-    final stageName = _capitalize(stage.stageType.name);
+    final stageName = stage.stageType.name.capitalize();
     final verb = switch (stage.stageStatus) {
       DeployProgressStatus.unknown => '<unknown>',
       DeployProgressStatus.awaiting => 'awaiting...',
@@ -106,9 +107,6 @@ abstract class StatusCommands {
     };
     return '$stageName $verb${stage.statusInfo != null ? ' ${stage.statusInfo}' : ''}';
   }
-
-  static _capitalize(final String s) =>
-      s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 }
 
 const _numTimeStampChars = 19;

@@ -1,4 +1,5 @@
 import 'package:args/args.dart';
+import 'package:args/command_runner.dart';
 import 'package:collection/collection.dart';
 
 /// Common interface to enable same treatment for [ConfigOption] and option enums.
@@ -95,22 +96,25 @@ class ConfigOption implements OptionDefinition {
 
   void _validate() {
     if (argName == null && argAbbrev != null) {
-      throw ArgumentError(
-          "An argument option can't have an abbreviation but not a full name: $this");
+      throw InvalidOptionConfigurationException(this,
+          "An argument option can't have an abbreviation but not a full name");
     }
 
     if (argPos != null && isFlag) {
-      throw ArgumentError("Positional options can't be flags: $this");
+      throw InvalidOptionConfigurationException(
+          this, "Positional options can't be flags");
     }
 
     if (valueRequired && mandatory) {
-      throw ArgumentError(
+      throw InvalidOptionConfigurationException(
+          this,
           "An argument option should not have valueRequired specified if mandatory is true, "
-          "since this already guarantees that the value will be passed: $this");
+          "since this already guarantees that the value will be passed");
     }
 
     if ((defaultFrom != null || defaultsTo != null) && mandatory) {
-      throw ArgumentError("Mandatory options can't have default values: $this");
+      throw InvalidOptionConfigurationException(
+          this, "Mandatory options can't have default values");
     }
   }
 
@@ -120,6 +124,27 @@ class ConfigOption implements OptionDefinition {
 
   @override
   String toString() => argName ?? envName ?? '<unnamed option>';
+
+  String qualifiedString() {
+    if (argName != null) {
+      return isFlag ? 'flag `$argName`' : 'option `$argName`';
+    }
+    if (envName != null) {
+      return 'environment variable `$envName`';
+    }
+    if (argPos != null) {
+      return 'positional argument $argPos';
+    }
+    return '<unnamed option>';
+  }
+}
+
+/// Extension to add a [qualifiedString] shorthand method to [OptionDefinition].
+/// Since enum classes that implement [OptionDefinition] don't inherit
+/// its method implementations, this extension provides this method
+/// implementation instead.
+extension QualifiedString on OptionDefinition {
+  String qualifiedString() => option.qualifiedString();
 }
 
 /// Validates and prepares a set of options for the provided argument parser.
@@ -135,23 +160,23 @@ void prepareOptionsForParsing(
     final argName = opt.option.argName;
     if (argName != null) {
       if (argNameOpts.containsKey(opt.option.argName)) {
-        throw ArgumentError(
-            'Duplicate argument name: ${opt.option.argName} for $opt');
+        throw InvalidOptionConfigurationException(
+            opt, 'Duplicate argument name: ${opt.option.argName} for $opt');
       }
       argNameOpts[argName] = opt;
     }
     final argPos = opt.option.argPos;
     if (argPos != null) {
       if (argPosOpts.containsKey(opt.option.argPos)) {
-        throw ArgumentError(
-            'Duplicate argument position: ${opt.option.argPos} for $opt');
+        throw InvalidOptionConfigurationException(
+            opt, 'Duplicate argument position: ${opt.option.argPos} for $opt');
       }
       argPosOpts[argPos] = opt;
     }
     final envName = opt.option.envName;
     if (envName != null) {
       if (envNameOpts.containsKey(opt.option.envName)) {
-        throw ArgumentError(
+        throw InvalidOptionConfigurationException(opt,
             'Duplicate environment variable name: ${opt.option.envName} for $opt');
       }
       envNameOpts[envName] = opt;
@@ -162,11 +187,16 @@ void prepareOptionsForParsing(
     final orderedPosOpts = argPosOpts.values.sorted(
         (final a, final b) => a.option.argPos!.compareTo(b.option.argPos!));
     if (orderedPosOpts.first.option.argPos != 0) {
-      throw ArgumentError('First positional argument must have index 0.');
+      throw InvalidOptionConfigurationException(
+        orderedPosOpts.first,
+        'First positional argument must have index 0.',
+      );
     }
     if (orderedPosOpts.last.option.argPos != orderedPosOpts.length - 1) {
-      throw ArgumentError(
-          'The positional arguments must have consecutive indices without gaps.');
+      throw InvalidOptionConfigurationException(
+        orderedPosOpts.last,
+        'The positional arguments must have consecutive indices without gaps.',
+      );
     }
   }
 
@@ -184,8 +214,12 @@ extension PrepareOptions on Iterable<OptionDefinition> {
 /// A configuration object that holds resolved values for a set of configuration options.
 class Configuration<T extends OptionDefinition> {
   final Map<T, String?> _config;
+  final List<String> _errors;
 
-  const Configuration._(final Map<T, String?> config) : _config = config;
+  Configuration._(
+    final (Map<T, String?> config, List<String> errors) content,
+  )   : _config = content.$1,
+        _errors = content.$2;
 
   /// Instantiates a configuration with option values resolved from the provided context.
   Configuration.fromEnvAndArgs({
@@ -197,8 +231,11 @@ class Configuration<T extends OptionDefinition> {
   /// Gets the option definitions for this configuration.
   Iterable<T> get options => _config.keys;
 
+  /// Returns the errors that occurred during configuration resolution.
+  Iterable<String> get errors => _errors;
+
   /// Returns the value of the given configuration option.
-  /// Throws [ArgumentError] if the option is mandatory and no value is provided.
+  /// Throws [UsageException] if the option is mandatory and no value is provided.
   /// This method should only be called for options that are guaranteed to have a value,
   /// i.e. are mandatory or have defaults. For other options it throws [StateError].
   /// See also [valueOrNull].
@@ -208,15 +245,16 @@ class Configuration<T extends OptionDefinition> {
         option.option.defaultFrom != null ||
         option.option.defaultsTo != null)) {
       throw StateError(
-          "Can't invoke non-nullable value() for $option which is neither mandatory nor has a default value.");
+          "Can't invoke non-nullable value() for ${option.qualifiedString()} "
+          "which is neither mandatory nor has a default value.");
     }
     final val = valueOrNull(option);
     if (val != null) return val;
-    throw ArgumentError('Option is mandatory.', option.toString());
+    throw UsageException('${option.qualifiedString()} is mandatory', '');
   }
 
   /// Returns the value of the given configuration flag.
-  /// Throws [ArgumentError] if the option is mandatory and no value is provided.
+  /// Throws [UsageException] if the option is mandatory and no value is provided.
   /// This method should only be called for flags that are guaranteed to have a value,
   /// i.e. are mandatory or have defaults. For other flags it throws [StateError].
   /// See also [flagOrNull].
@@ -226,11 +264,12 @@ class Configuration<T extends OptionDefinition> {
         option.option.defaultFrom != null ||
         option.option.defaultsTo != null)) {
       throw StateError(
-          "Can't invoke non-nullable flag() for $option which is neither mandatory nor has a default value.");
+          "Can't invoke non-nullable flag() for ${option.qualifiedString()} "
+          "which is neither mandatory nor has a default value.");
     }
     final val = flagOrNull(option);
     if (val != null) return val;
-    throw ArgumentError('Flag is mandatory.', option.toString());
+    throw UsageException('${option.qualifiedString()} is mandatory', '');
   }
 
   /// Returns the value of the given configuration option.
@@ -242,7 +281,7 @@ class Configuration<T extends OptionDefinition> {
   /// Returns the value of the given configuration flag.
   bool? getFlag(final T option) {
     if (!option.option.isFlag) {
-      throw ArgumentError('Option is not a flag.', option.toString());
+      throw UnsupportedError('${option.qualifiedString()} is not a flag.');
     }
     final String? value = valueOrNull(option);
     return value != null
@@ -250,15 +289,19 @@ class Configuration<T extends OptionDefinition> {
         : null;
   }
 
-  static Map<T, String?> _resolveFromEnvAndArgs<T extends OptionDefinition>(
+  static (Map<T, String?> config, List<String> errors)
+      _resolveFromEnvAndArgs<T extends OptionDefinition>(
     final Iterable<T> options, {
     final ArgResults? args,
     final Map<String, String>? env,
   }) {
     final config = <T, String?>{};
+    final errors = <String>[];
+
     Iterable<String> remainingPosArgs = List<String>.from(args?.rest ?? []);
     final orderedOpts = options.sorted((final a, final b) =>
         (a.option.argPos ?? -1).compareTo(b.option.argPos ?? -1));
+
     for (final opt in orderedOpts) {
       final result = _resolveValue(
         opt.option,
@@ -266,55 +309,85 @@ class Configuration<T extends OptionDefinition> {
         remainingPosArgs: remainingPosArgs,
         env: env ?? {},
       );
-      config[opt] = result.$1;
-      remainingPosArgs = result.$2;
+
+      config[opt] = result.value;
+      remainingPosArgs = result.remainingPosArgs;
+
+      final error = result.error;
+      if (error != null) {
+        errors.add(error);
+      }
     }
+
     if (remainingPosArgs.isNotEmpty) {
-      throw ArgumentError(
+      errors.add(
           "Unexpected positional argument(s): '${remainingPosArgs.join("', '")}'");
     }
-    return config;
+    return (config, errors);
+  }
+}
+
+typedef _OptResolution = ({
+  String? value,
+  String? error,
+  Iterable<String> remainingPosArgs,
+});
+
+/// Returns the resolved value of a configuration option from the provided context.
+/// For options with positional arguments this must be invoked in ascending position order.
+/// Returns a tuple with the resolved value or error, and the remaining positional arguments.
+_OptResolution _resolveValue<T extends OptionDefinition>(
+  final T option, {
+  final ArgResults? args,
+  final Iterable<String> remainingPosArgs = const [],
+  final Map<String, String> env = const {},
+}) {
+  final argOptName = option.option.argName;
+  final argOptPos = option.option.argPos;
+  final envVarName = option.option.envName;
+
+  String? value;
+  String? error;
+  Iterable<String> nextRemainingPosArgs = remainingPosArgs;
+
+  if (argOptName != null && args != null && args.wasParsed(argOptName)) {
+    // Named arguments takes precedence over other config sources.
+    value = option.option.isFlag
+        ? args.flag(argOptName).toString()
+        : args.option(argOptName);
+  } else if (argOptPos != null && remainingPosArgs.isNotEmpty) {
+    // Positional arguments have second highest precedence.
+    value = remainingPosArgs.first;
+    nextRemainingPosArgs = remainingPosArgs.skip(1);
+  } else if (envVarName != null && env.containsKey(envVarName)) {
+    // Environment variables have third highest precedence.
+    value = env[envVarName];
+  } else if (option.option.defaultFrom != null) {
+    // Default value from callback has second lowest precedence.
+    value = option.option.defaultFrom?.call();
+  } else {
+    // Default value has lowest precedence.
+    value = option.option.defaultsTo;
+  }
+  if (value == null &&
+      (option.option.valueRequired || option.option.mandatory)) {
+    error = '${option.qualifiedString()} is mandatory';
   }
 
-  /// Returns the resolved value of a configuration option from the provided context.
-  /// For options with positional arguments this must be invoked in ascending position order.
-  /// Returns a tuple with the resolved value and the remaining positional arguments.
-  static (String?, Iterable<String>) _resolveValue<T extends OptionDefinition>(
-    final T option, {
-    final ArgResults? args,
-    final Iterable<String> remainingPosArgs = const [],
-    final Map<String, String> env = const {},
-  }) {
-    final argOptName = option.option.argName;
-    final argOptPos = option.option.argPos;
-    final envVarName = option.option.envName;
+  return (value: value, error: error, remainingPosArgs: nextRemainingPosArgs);
+}
 
-    String? value;
-    Iterable<String> nextRemainingPosArgs = remainingPosArgs;
-    if (argOptName != null && args != null && args.wasParsed(argOptName)) {
-      // Named arguments takes precedence over other config sources.
-      value = option.option.isFlag
-          ? args.flag(argOptName).toString()
-          : args.option(argOptName);
-    } else if (argOptPos != null && remainingPosArgs.isNotEmpty) {
-      // Positional arguments have second highest precedence.
-      value = remainingPosArgs.first;
-      nextRemainingPosArgs = remainingPosArgs.skip(1);
-    } else if (envVarName != null && env.containsKey(envVarName)) {
-      // Environment variables have third highest precedence.
-      value = env[envVarName];
-    } else if (option.option.defaultFrom != null) {
-      // Default value from callback has second lowest precedence.
-      value = option.option.defaultFrom?.call();
-    } else {
-      // Default value has lowest precedence.
-      value = option.option.defaultsTo;
-    }
+/// Indicates that the option definition is invalid.
+class InvalidOptionConfigurationException implements Exception {
+  final OptionDefinition option;
+  final String? message;
 
-    if (value == null &&
-        (option.option.valueRequired || option.option.mandatory)) {
-      throw ArgumentError('Option/flag is mandatory.', option.toString());
-    }
-    return (value, nextRemainingPosArgs);
+  InvalidOptionConfigurationException(this.option, [this.message]);
+
+  @override
+  String toString() {
+    return message != null
+        ? 'Invalid configuration for ${option.qualifiedString()}: $message'
+        : 'Invalid configuration for ${option.qualifiedString()}';
   }
 }

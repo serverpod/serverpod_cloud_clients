@@ -4,6 +4,7 @@ import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
+import 'package:serverpod_cloud_cli/util/capitalize.dart';
 import 'package:serverpod_cloud_cli/util/cli_authentication_key_manager.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 
@@ -44,6 +45,15 @@ abstract class CloudCliCommand<T extends OptionDefinition>
       args: argResults,
       env: Platform.environment,
     );
+
+    if (config.errors.isNotEmpty) {
+      final buffer = StringBuffer();
+      final errors = config.errors.map(
+        (final e) => '${e.capitalize()}.',
+      );
+      buffer.writeAll(errors, '\n');
+      usageException(buffer.toString());
+    }
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 

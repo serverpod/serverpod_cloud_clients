@@ -21,6 +21,7 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_pro
 import 'package:serverpod_cloud_cli/command_runner/helpers/cli_version_checker.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
+import 'package:serverpod_cloud_cli/util/capitalize.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 import 'package:serverpod_cloud_cli/util/scloud_version.dart';
 
@@ -97,6 +98,15 @@ class CloudCliCommandRunner extends BetterCommandRunner {
       args: topLevelResults,
       env: Platform.environment,
     );
+
+    if (globalConfiguration.errors.isNotEmpty) {
+      final buffer = StringBuffer();
+      final errors = globalConfiguration.errors.map(
+        (final e) => '${e.capitalize()}.',
+      );
+      buffer.writeAll(errors, '\n');
+      usageException(buffer.toString());
+    }
 
     serviceProvider.initialize(
       globalConfiguration: globalConfiguration,
