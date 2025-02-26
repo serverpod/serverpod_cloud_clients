@@ -132,4 +132,53 @@ void main() {
     expect(archiveNames, contains('file2.txt'));
     expect(archiveNames, contains('file3.txt'));
   });
+
+  test(
+      'Given a project directory with a hidden file when zipping then the hidden file is not included in the final output.',
+      () async {
+    final projectDirectory = DirectoryFactory(
+      withFiles: [
+        FileFactory(withName: '.env', withContents: 'my_key=value'),
+        FileFactory(withName: 'my_file.txt', withContents: 'my_key=value'),
+      ],
+    ).construct(testProjectPath);
+
+    final zippedProject = await ProjectZipper.zipProject(
+      projectDirectory: projectDirectory,
+      logger: commandLogger,
+    );
+
+    final archive = ZipDecoder().decodeBytes(zippedProject);
+    final archiveNames = archive.map((final file) => file.name).toList();
+
+    expect(archiveNames, ['my_file.txt']);
+  });
+
+  test(
+      'Given a project directory with a hidden folder when zipping then the hidden folder content is not included in the final output.',
+      () async {
+    final projectDirectory = DirectoryFactory(
+      withFiles: [
+        FileFactory(withName: 'my_file.txt', withContents: 'my_key=value'),
+      ],
+      withSubDirectories: [
+        DirectoryFactory(
+          withDirectoryName: '.hidden',
+          withFiles: [
+            FileFactory(withName: 'file1.txt', withContents: 'file1'),
+          ],
+        ),
+      ],
+    ).construct(testProjectPath);
+
+    final zippedProject = await ProjectZipper.zipProject(
+      projectDirectory: projectDirectory,
+      logger: commandLogger,
+    );
+
+    final archive = ZipDecoder().decodeBytes(zippedProject);
+    final archiveNames = archive.map((final file) => file.name).toList();
+
+    expect(archiveNames, ['my_file.txt']);
+  });
 }

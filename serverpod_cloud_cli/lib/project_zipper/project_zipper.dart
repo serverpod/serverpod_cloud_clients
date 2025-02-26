@@ -95,7 +95,7 @@ abstract final class ProjectZipper {
   }
 
   static const List<String> defaultIgnoreRules = [
-    '.*',
+    '.**',
   ];
 
   static const List<String> recognizedIgnoreRuleFiles = [
