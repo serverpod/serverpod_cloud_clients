@@ -47,13 +47,14 @@ abstract final class ScloudConfig {
     final ProjectConfig projectConfig,
     final Directory projectDirectory,
   ) {
-    final output = ScloudConfig.mergeProjectConfigWithCurrentConfigAsYaml(
+    final output = mergeProjectConfigWithCurrentConfigAsYaml(
       projectConfig,
       projectDirectory.path,
     );
+    final fileContent = ConfigFileConstants.defaultYamlFileHeader + output;
     File(join(projectDirectory.path, ConfigFileConstants.fileName))
       ..createSync(recursive: false)
-      ..writeAsStringSync(output);
+      ..writeAsStringSync(fileContent);
   }
 
   static String? tryReadFile(final String path) {

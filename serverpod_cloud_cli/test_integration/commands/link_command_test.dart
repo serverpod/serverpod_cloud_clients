@@ -193,6 +193,19 @@ void main() {
 
           expect(project['projectId'], projectId);
         });
+
+        test('then includes standard header in scloud.yaml file', () async {
+          await commandResult;
+
+          final file = File(p.join(testProjectDir, 'scloud.yaml'));
+          expect(file.existsSync(), isTrue);
+
+          final content = file.readAsStringSync();
+          expect(
+              content,
+              startsWith(
+                  '# This file configures your Serverpod Cloud project.'));
+        });
       });
 
       group('and scloud.yaml exists when executing link', () {
@@ -247,6 +260,19 @@ void main() {
           final yaml = loadYaml(content) as YamlMap;
           final project = yaml['project'] as YamlMap;
           expect(project['projectId'], projectId);
+        });
+
+        test('then includes standard header in scloud.yaml file', () async {
+          await commandResult;
+
+          final file = File(p.join(testProjectDir, 'scloud.yaml'));
+          expect(file.existsSync(), isTrue);
+
+          final content = file.readAsStringSync();
+          expect(
+              content,
+              startsWith(
+                  '# This file configures your Serverpod Cloud project.'));
         });
       });
 
