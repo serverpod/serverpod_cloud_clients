@@ -1,5 +1,5 @@
 name: serverpod_cloud_cli
-version: 0.1.1
+version: 0.2.0
 description: A CLI tool from Serverpod used to deploy and manage Serverpod Cloud projects.
 repository: https://github.com/serverpod/serverpod_cloud_clients
 homepage: https://serverpod.dev
@@ -22,7 +22,7 @@ dependencies:
   pool: ^1.5.1
   pub_semver: ^2.1.0
   pubspec_parse: ^1.5.0
-  ground_control_client: ^0.0.2
+  ground_control_client: ^0.2.0
   yaml: ^3.1.0
   basic_utils: ^5.7.0
 
