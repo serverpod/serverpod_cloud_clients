@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/link_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
@@ -12,10 +11,10 @@ import 'package:ground_control_client/ground_control_client.dart';
 import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
 
-import '../../test_utils/command_logger_matchers.dart';
-import '../../test_utils/http_server_builder.dart';
-import '../../test_utils/project_factory.dart';
-import '../../test_utils/test_command_logger.dart';
+import '../../../test_utils/command_logger_matchers.dart';
+import '../../../test_utils/http_server_builder.dart';
+import '../../../test_utils/project_factory.dart';
+import '../../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();
@@ -41,10 +40,6 @@ void main() {
     }
 
     logger.clear();
-  });
-
-  test('Given link command when instantiated then requires login', () {
-    expect(CloudLinkCommand(logger: logger).requireLogin, isTrue);
   });
 
   group('Given unauthenticated and servrpod directory', () {
@@ -81,6 +76,7 @@ void main() {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
+          'project',
           'link',
           '--project-id',
           projectId,
@@ -148,6 +144,7 @@ void main() {
         late Future commandResult;
         setUp(() async {
           commandResult = cli.run([
+            'project',
             'link',
             '--project-id',
             projectId,
@@ -217,6 +214,7 @@ void main() {
           }));
 
           commandResult = cli.run([
+            'project',
             'link',
             '--project-id',
             projectId,
@@ -286,6 +284,7 @@ void main() {
           }));
 
           commandResult = cli.run([
+            'project',
             'link',
             '--project-id',
             projectId,
@@ -332,6 +331,7 @@ void main() {
         DirectoryFactory().construct(testProjectDir);
 
         commandResult = cli.run([
+          'project',
           'link',
           '--project-id',
           projectId,

@@ -9,7 +9,7 @@ abstract final class CommandConfigConstants {
   static const projectIdArgName = 'project-id';
   static const projectIdHelpText =
       'The ID of the project. Can be omitted if the project is linked. \n'
-      'See `scloud link --help` for more information.';
+      'See `scloud project link --help` for more information.';
 }
 
 class ProjectIdOption extends ConfigOption {

@@ -6,6 +6,7 @@ import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
+import 'package:serverpod_cloud_cli/util/common.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
@@ -24,6 +25,7 @@ class CloudProjectCommand extends CloudCliCommand {
     addSubcommand(CloudProjectCreateCommand(logger: logger));
     addSubcommand(CloudProjectDeleteCommand(logger: logger));
     addSubcommand(CloudProjectListCommand(logger: logger));
+    addSubcommand(CloudProjectLinkCommand(logger: logger));
   }
 }
 
@@ -132,7 +134,7 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
             'Use the link command to create it in the server '
             'directory of this project:',
         newParagraph: true,
-        'scloud link $projectId',
+        'scloud project link --project-id $projectId',
       );
     }
   }
@@ -217,5 +219,70 @@ class CloudProjectListCommand extends CloudCliCommand {
       ]);
     }
     tablePrinter.writeLines(logger.line);
+  }
+}
+
+enum ProjectLinkCommandOption implements OptionDefinition {
+  projectId(
+    ProjectIdOption(),
+  ),
+  projectDir(
+    ProjectDirOption(
+      helpText: 'The path to the directory of the project to link.',
+    ),
+  );
+
+  const ProjectLinkCommandOption(this.option);
+
+  @override
+  final ConfigOption option;
+}
+
+class CloudProjectLinkCommand
+    extends CloudCliCommand<ProjectLinkCommandOption> {
+  @override
+  String get description =>
+      'Link your local project to an existing Serverpod Cloud project.';
+
+  @override
+  String get name => 'link';
+
+  CloudProjectLinkCommand({required super.logger})
+      : super(options: ProjectLinkCommandOption.values);
+
+  @override
+  Future<void> runWithConfig(
+    final Configuration<ProjectLinkCommandOption> commandConfig,
+  ) async {
+    final projectId = commandConfig.value(ProjectLinkCommandOption.projectId);
+    final projectDirectory =
+        Directory(commandConfig.value(ProjectLinkCommandOption.projectDir));
+
+    final apiCloudClient = runner.serviceProvider.cloudApiClient;
+
+    if (!isServerpodServerDirectory(projectDirectory)) {
+      logProjectDirIsNotAServerpodServerDirectory(logger);
+      throw ErrorExitException();
+    }
+
+    late final ProjectConfig projectConfig;
+    await handleCommonClientExceptions(logger, () async {
+      projectConfig = await apiCloudClient.projects.fetchProjectConfig(
+        cloudProjectId: projectId,
+      );
+    }, (final e) {
+      logger.error('Failed to fetch project config: $e');
+      throw ErrorExitException();
+    });
+
+    try {
+      ScloudConfig.writeToFile(projectConfig, projectDirectory);
+    } catch (e) {
+      logger
+          .error('Failed to write to ${ConfigFileConstants.fileName} file: $e');
+      throw ErrorExitException();
+    }
+
+    logger.success('Successfully linked project!');
   }
 }
