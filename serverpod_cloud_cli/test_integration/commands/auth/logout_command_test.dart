@@ -9,9 +9,9 @@ import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:test/test.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../test_utils/command_logger_matchers.dart';
-import '../../test_utils/http_server_builder.dart';
-import '../../test_utils/test_command_logger.dart';
+import '../../../test_utils/command_logger_matchers.dart';
+import '../../../test_utils/http_server_builder.dart';
+import '../../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();
@@ -65,6 +65,7 @@ void main() {
       late Future runLogoutCommand;
       setUp(() {
         runLogoutCommand = cli.run([
+          'auth',
           'logout',
           '--api-url',
           localServerAddress.toString(),
@@ -136,6 +137,7 @@ void main() {
       late Future runLogoutCommand;
       setUp(() {
         runLogoutCommand = cli.run([
+          'auth',
           'logout',
           '--api-url',
           localServerAddress.toString(),
@@ -181,6 +183,7 @@ void main() {
       'Given no stored credentials when logging out through cli then the command completes with no stored credentials log.',
       () async {
     final runLogoutCommand = cli.run([
+      'auth',
       'logout',
       '--scloud-dir',
       testCacheFolderPath,

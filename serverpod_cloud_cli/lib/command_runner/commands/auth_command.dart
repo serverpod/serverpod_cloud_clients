@@ -8,6 +8,19 @@ import 'package:serverpod_cloud_cli/util/browser_launcher.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 import 'package:serverpod_cloud_cli/util/listener_server.dart';
 
+class CloudAuthCommand extends CloudCliCommand {
+  @override
+  final name = 'auth';
+
+  @override
+  final description = 'Manage user authentication.';
+
+  CloudAuthCommand({required super.logger}) {
+    addSubcommand(CloudLoginCommand(logger: logger));
+    addSubcommand(CloudLogoutCommand(logger: logger));
+  }
+}
+
 enum LoginCommandOption implements OptionDefinition {
   timeoutOpt(
     ConfigOption(
@@ -83,9 +96,14 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
     );
 
     if (storedCloudData != null) {
-      logger.info('Detected an existing login session for Serverpod cloud. '
-          'Log out first to log in again.');
-      return;
+      logger.error(
+        'Detected an existing login session for Serverpod cloud. '
+        'Log out first to log in again.',
+      );
+      logger.terminalCommand(
+        'scloud auth logout',
+      );
+      throw ErrorExitException();
     }
 
     final cloudServer = Uri.parse(serverAddress).replace(
@@ -105,7 +123,7 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
       queryParameters: {'callback': callbackUrl.toString()},
     );
     logger.info(
-        'Please log in to Serverpod Cloud using the opened browser or through this link: $signInUrl');
+        'Please log in to Serverpod Cloud using the opened browser or through this link:\n$signInUrl');
 
     if (openBrowser) {
       try {
@@ -139,5 +157,65 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
     }
 
     logger.success('Successfully logged in to Serverpod cloud.');
+  }
+}
+
+class CloudLogoutCommand extends CloudCliCommand {
+  @override
+  bool get requireLogin => false;
+
+  @override
+  final name = 'logout';
+
+  @override
+  final description =
+      'Log out from Serverpod Cloud and remove stored credentials.';
+
+  CloudLogoutCommand({required super.logger}) : super(options: []);
+
+  @override
+  Future<void> runWithConfig(final Configuration commandConfig) async {
+    final localStoragePath = globalConfiguration.scloudDir;
+
+    final cloudData = await ResourceManager.tryFetchServerpodCloudData(
+      localStoragePath: localStoragePath,
+      logger: logger,
+    );
+
+    if (cloudData == null) {
+      logger.info('No stored Serverpod Cloud credentials found.');
+      return;
+    }
+
+    final cloudClient = runner.serviceProvider.cloudApiClient;
+
+    ErrorExitException? exitException;
+    try {
+      await cloudClient.modules.auth.status.signOutDevice();
+    } catch (e) {
+      logger.error(
+        'Request to sign out from Serverpod Cloud failed: $e',
+      );
+      exitException = ErrorExitException();
+    }
+
+    try {
+      await ResourceManager.removeServerpodCloudData(
+        localStoragePath: localStoragePath,
+      );
+    } catch (e) {
+      logger.error(
+        'Failed to remove stored credentials: $e',
+        hint: 'Please remove these manually. '
+            'They should be located in $localStoragePath.',
+      );
+      exitException = ErrorExitException();
+    }
+
+    if (exitException != null) {
+      throw exitException;
+    }
+
+    logger.success('Successfully logged out from Serverpod cloud.');
   }
 }

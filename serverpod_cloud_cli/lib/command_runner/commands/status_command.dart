@@ -7,7 +7,19 @@ import 'package:serverpod_cloud_cli/commands/logs/logs.dart';
 import 'package:serverpod_cloud_cli/commands/status/status_feature.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 
-abstract final class _StatusOptions {
+class CloudStatusCommand extends CloudCliCommand {
+  @override
+  final name = 'status';
+
+  @override
+  final description = 'Show status information.';
+
+  CloudStatusCommand({required super.logger}) {
+    addSubcommand(CloudDeployStatusCommand(logger: logger));
+  }
+}
+
+abstract final class _DeployStatusOptions {
   static const projectId = ProjectIdOption();
   static const limit = ConfigOption(
     argName: 'limit',
@@ -58,41 +70,42 @@ abstract final class _StatusOptions {
   );
 }
 
-enum StatusOption implements OptionDefinition {
-  projectId(_StatusOptions.projectId),
-  limit(_StatusOptions.limit),
-  utc(_StatusOptions.utc),
-  deploy(_StatusOptions.deploy),
-  list(_StatusOptions.list),
-  log(_StatusOptions.log),
-  overallStatus(_StatusOptions.overallStatus);
+enum DeployStatusOption implements OptionDefinition {
+  projectId(_DeployStatusOptions.projectId),
+  limit(_DeployStatusOptions.limit),
+  utc(_DeployStatusOptions.utc),
+  deploy(_DeployStatusOptions.deploy),
+  list(_DeployStatusOptions.list),
+  log(_DeployStatusOptions.log),
+  overallStatus(_DeployStatusOptions.overallStatus);
 
-  const StatusOption(this.option);
+  const DeployStatusOption(this.option);
 
   @override
   final ConfigOption option;
 }
 
-class CloudStatusCommand extends CloudCliCommand<StatusOption> {
+class CloudDeployStatusCommand extends CloudCliCommand<DeployStatusOption> {
   @override
   String get description => 'Show the deploy status.';
 
   @override
-  String get name => 'status';
+  String get name => 'deploy';
 
-  CloudStatusCommand({required super.logger})
-      : super(options: StatusOption.values);
+  CloudDeployStatusCommand({required super.logger})
+      : super(options: DeployStatusOption.values);
 
   @override
   Future<void> runWithConfig(
-      final Configuration<StatusOption> commandConfig) async {
-    final projectId = commandConfig.value(StatusOption.projectId);
-    final limit = int.tryParse(commandConfig.value(StatusOption.limit)) ?? 10;
-    final inUtc = commandConfig.flag(StatusOption.utc);
-    final deploymentArg = commandConfig.valueOrNull(StatusOption.deploy);
-    final list = commandConfig.flag(StatusOption.list);
-    final log = commandConfig.flag(StatusOption.log);
-    final overallStatus = commandConfig.flag(StatusOption.overallStatus);
+      final Configuration<DeployStatusOption> commandConfig) async {
+    final projectId = commandConfig.value(DeployStatusOption.projectId);
+    final limit =
+        int.tryParse(commandConfig.value(DeployStatusOption.limit)) ?? 10;
+    final inUtc = commandConfig.flag(DeployStatusOption.utc);
+    final deploymentArg = commandConfig.valueOrNull(DeployStatusOption.deploy);
+    final list = commandConfig.flag(DeployStatusOption.list);
+    final log = commandConfig.flag(DeployStatusOption.log);
+    final overallStatus = commandConfig.flag(DeployStatusOption.overallStatus);
 
     if (list && log) {
       logger.error('Cannot use --list and --build-log together.');

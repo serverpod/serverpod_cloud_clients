@@ -32,7 +32,7 @@ void main() {
   const projectId = 'projectId';
 
   test('Given status command when instantiated then requires login', () {
-    expect(CloudStatusCommand(logger: logger).requireLogin, isTrue);
+    expect(CloudDeployStatusCommand(logger: logger).requireLogin, isTrue);
   });
 
   group('Given unauthenticated', () {
@@ -61,6 +61,7 @@ void main() {
       setUp(() async {
         commandResult = cli.run([
           'status',
+          'deploy',
           '--project-id',
           projectId,
         ]);
@@ -90,6 +91,7 @@ void main() {
       setUp(() async {
         commandResult = cli.run([
           'status',
+          'deploy',
           '--build-log',
           '--project-id',
           projectId,
@@ -120,6 +122,7 @@ void main() {
       setUp(() async {
         commandResult = cli.run([
           'status',
+          'deploy',
           '--list',
           '--project-id',
           projectId,
@@ -215,6 +218,7 @@ void main() {
             setUp(() async {
               commandResult = cli.run([
                 'status',
+                'deploy',
                 ...args,
               ]);
             });
@@ -258,6 +262,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
           setUp(() async {
             commandResult = cli.run([
               'status',
+              'deploy',
               '--project-id',
               projectId,
               '--output-overall-status',
@@ -304,6 +309,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
             setUp(() async {
               commandResult = cli.run([
                 'status',
+                'deploy',
                 ...args,
               ]);
             });
@@ -401,6 +407,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
         setUp(() async {
           commandResult = cli.run([
             'status',
+            'deploy',
             '--project-id',
             projectId,
           ]);
@@ -438,6 +445,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
         setUp(() async {
           commandResult = cli.run([
             'status',
+            'deploy',
             '--project-id',
             projectId,
             '--output-overall-status',
@@ -500,6 +508,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
             setUp(() async {
               commandResult = cli.run([
                 'status',
+                'deploy',
                 ...args,
               ]);
             });
@@ -555,6 +564,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
             setUp(() async {
               commandResult = cli.run([
                 'status',
+                'deploy',
                 ...args,
               ]);
             });

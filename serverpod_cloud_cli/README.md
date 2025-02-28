@@ -15,17 +15,15 @@ The Serverpod Cloud CLI has the following commands:
 | Command | Description |
 |---------|-------------|
 | version | Print the version of the Serverpod Cloud CLI. |
-| login   | Log in or create an account in Serverpod Cloud. |
-| logout  | Log out from Serverpod Cloud and remove stored credentials. |
+| auth    | Log in, log out, or create an account in Serverpod Cloud. |
 | db      | Manage Serverpod Cloud DBs. |
 | deploy  | Deploy a Serverpod project to the cloud. |
 | domain  | Manage Serverpod Cloud custom domains. |
 | env     | Manage Serverpod Cloud environment variables for a project. |
-| link    | Link your local project to an existing Serverpod Cloud project. |
 | log     | Fetch Serverpod Cloud logs. |
 | project | Manage Serverpod Cloud projects. |
 | secret  | Manage Serverpod Cloud secrets. |
-| status  | Show the deploy status. |
+| status  | Show status information. |
 
 ## Online documentation
 

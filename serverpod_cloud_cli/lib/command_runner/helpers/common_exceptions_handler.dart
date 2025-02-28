@@ -18,10 +18,10 @@ FutureOr<T> handleCommonClientExceptions<T>(
     );
     logger.terminalCommand(
       message: 'Run the following commands to re-authenticate:',
-      'scloud logout',
+      'scloud auth logout',
     );
     logger.terminalCommand(
-      'scloud login',
+      'scloud auth login',
     );
 
     throw ErrorExitException();

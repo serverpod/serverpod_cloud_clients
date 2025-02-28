@@ -111,7 +111,7 @@ void main() {
       logger.terminalCommandCalls.first,
       equalsTerminalCommandCall(
         message: 'Please run the login command to authenticate and try again:',
-        command: 'scloud login',
+        command: 'scloud auth login',
       ),
     );
   });

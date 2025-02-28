@@ -63,7 +63,7 @@ abstract class CloudCliCommand<T extends OptionDefinition>
       logger.error('This command requires you to be logged in.');
       logger.terminalCommand(
         message: 'Please run the login command to authenticate and try again:',
-        'scloud login',
+        'scloud auth login',
       );
       throw ErrorExitException();
     }

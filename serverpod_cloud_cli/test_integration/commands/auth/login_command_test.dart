@@ -10,8 +10,8 @@ import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:test/test.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../test_utils/command_logger_matchers.dart';
-import '../../test_utils/test_command_logger.dart';
+import '../../../test_utils/command_logger_matchers.dart';
+import '../../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();
@@ -48,16 +48,39 @@ void main() {
     });
 
     test(
+        'when logging in through cli then ErrorExitException with exit code 1 is thrown.',
+        () async {
+      final result =
+          cli.run(['auth', 'login', '--scloud-dir', testCacheFolderPath]);
+
+      await expectLater(
+          result,
+          throwsA(
+            isA<ErrorExitException>()
+                .having((final e) => e.exitCode, 'exitCode', equals(1)),
+          ));
+    });
+
+    test(
         'when logging in through cli then "logout first to log in again" message is logged.',
         () async {
-      await cli.run(['login', '--scloud-dir', testCacheFolderPath]);
+      try {
+        await cli.run(['auth', 'login', '--scloud-dir', testCacheFolderPath]);
+      } catch (_) {}
 
-      expect(logger.infoCalls, isNotEmpty);
+      expect(logger.errorCalls, isNotEmpty);
       expect(
-        logger.infoCalls.first,
-        equalsInfoCall(
+        logger.errorCalls.first,
+        equalsErrorCall(
           message: 'Detected an existing login session for Serverpod cloud. '
               'Log out first to log in again.',
+        ),
+      );
+      expect(logger.terminalCommandCalls, isNotEmpty);
+      expect(
+        logger.terminalCommandCalls.first,
+        equalsTerminalCommandCall(
+          command: 'scloud auth logout',
         ),
       );
     });
@@ -89,8 +112,13 @@ void main() {
     group('when logging in through cli', () {
       late Future cliOnDone;
       setUp(() async {
-        cliOnDone = cli.run(
-            ['login', '--no-browser', '--scloud-dir', testCacheFolderPath]);
+        cliOnDone = cli.run([
+          'auth',
+          'login',
+          '--no-browser',
+          '--scloud-dir',
+          testCacheFolderPath
+        ]);
         await tokenSent.future;
       });
 
@@ -119,6 +147,7 @@ void main() {
       late Future cliOnDone;
       setUp(() async {
         cliOnDone = cli.run([
+          'auth',
           'login',
           '--no-persistent',
           '--no-browser',
@@ -173,8 +202,13 @@ void main() {
     group('when logging in through cli', () {
       late Future cliOnDone;
       setUp(() async {
-        cliOnDone = cli.run(
-            ['login', '--no-browser', '--scloud-dir', testCacheFolderPath]);
+        cliOnDone = cli.run([
+          'auth',
+          'login',
+          '--no-browser',
+          '--scloud-dir',
+          testCacheFolderPath
+        ]);
         await tokenSent.future;
       });
 

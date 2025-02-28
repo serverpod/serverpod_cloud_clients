@@ -41,10 +41,10 @@ void main() {
       containsAllInOrder([
         equalsTerminalCommandCall(
           message: 'Run the following commands to re-authenticate:',
-          command: 'scloud logout',
+          command: 'scloud auth logout',
         ),
         equalsTerminalCommandCall(
-          command: 'scloud login',
+          command: 'scloud auth login',
         ),
       ]),
     );
