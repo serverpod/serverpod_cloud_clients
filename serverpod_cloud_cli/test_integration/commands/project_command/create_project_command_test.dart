@@ -286,7 +286,7 @@ void main() {
                 'an scloud.yaml configuration file has not been created. '
                 'Use the link command to create it in the server directory of this project:',
             newParagraph: true,
-            command: 'scloud project link --project-id $projectId',
+            command: 'scloud project link --project $projectId',
           ),
         );
       });

@@ -50,7 +50,7 @@ void main() {
           'domain.com',
           '--target',
           'some-invalid-target',
-          '--project-id',
+          '--project',
           projectId,
           '--scloud-dir',
           testCacheFolderPath,

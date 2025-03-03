@@ -6,7 +6,7 @@ import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
 abstract final class CommandConfigConstants {
   static const listOptionAbbrev = 'l';
 
-  static const projectIdArgName = 'project-id';
+  static const projectIdArgName = 'project';
   static const projectIdHelpText =
       'The ID of the project. Can be omitted if the project is linked. \n'
       'See `scloud project link --help` for more information.';
@@ -19,7 +19,7 @@ class ProjectIdOption extends ConfigOption {
     super.envName = 'SERVERPOD_CLOUD_PROJECT_ID',
   }) : super(
           argName: CommandConfigConstants.projectIdArgName,
-          argAbbrev: 'i',
+          argAbbrev: 'p',
           defaultFrom: _tryGetProjectIdFromConfig,
           valueRequired: true,
         );

@@ -62,7 +62,7 @@ void main() {
           '--recent',
           '1m',
           '--utc',
-          '--project-id',
+          '--project',
           projectId,
         ]);
       });
@@ -105,7 +105,7 @@ void main() {
           '--utc',
           '--before',
           '2030-12-01T00:00:00Z',
-          '--project-id',
+          '--project',
           projectId,
         ]);
       });
@@ -152,7 +152,7 @@ void main() {
           '--utc',
           '--after',
           '2020-12-01T00:00:00Z',
-          '--project-id',
+          '--project',
           projectId,
         ]);
       });
@@ -202,7 +202,7 @@ void main() {
           '2030-01-01T00:00:00Z',
           '--after',
           '2020-12-01T00:00:00Z',
-          '--project-id',
+          '--project',
           projectId,
         ]);
       });
@@ -246,7 +246,7 @@ void main() {
           'log',
           '--utc',
           '--tail',
-          '--project-id',
+          '--project',
           projectId,
         ]);
       });

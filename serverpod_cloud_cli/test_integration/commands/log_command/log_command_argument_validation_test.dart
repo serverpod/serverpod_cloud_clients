@@ -41,7 +41,7 @@ void main() {
             'log',
             '--recent',
             '1x',
-            '--project-id',
+            '--project',
             projectId,
           ]);
         } catch (_) {}
@@ -74,7 +74,7 @@ void main() {
             'log',
             '--recent',
             'hello',
-            '--project-id',
+            '--project',
             projectId,
           ]);
         } catch (_) {}
@@ -107,7 +107,7 @@ void main() {
             'log',
             '--limit',
             'abc',
-            '--project-id',
+            '--project',
             projectId,
           ]);
         } catch (_) {}
@@ -139,7 +139,7 @@ void main() {
             'log',
             '--before',
             'not-a-date',
-            '--project-id',
+            '--project',
             projectId,
           ]);
         } catch (_) {}
@@ -173,7 +173,7 @@ void main() {
             'log',
             '--after',
             'not-a-date',
-            '--project-id',
+            '--project',
             projectId,
           ]);
         } catch (_) {}
@@ -211,7 +211,7 @@ void main() {
             '2024-01-01T00:00:00Z',
             '--before',
             '2023-01-01T00:00:00Z',
-            '--project-id',
+            '--project',
             projectId,
           ]);
         } catch (_) {}
@@ -246,7 +246,7 @@ void main() {
             '--all',
             '--before',
             '2024-01-01T00:00:00Z',
-            '--project-id',
+            '--project',
             projectId,
           ]);
         } catch (_) {}
@@ -282,7 +282,7 @@ void main() {
             '--all',
             '--after',
             '2024-01-01T00:00:00Z',
-            '--project-id',
+            '--project',
             projectId,
           ]);
         } catch (_) {}
@@ -318,7 +318,7 @@ void main() {
             '--all',
             '--recent',
             '1m',
-            '--project-id',
+            '--project',
             projectId,
           ]);
         } catch (_) {}
@@ -354,7 +354,7 @@ void main() {
             '--all',
             '--before',
             '2024-01-01T00:00:00Z',
-            '--project-id',
+            '--project',
             projectId,
           ]);
         } catch (_) {}
@@ -390,7 +390,7 @@ void main() {
             '--all',
             '--after',
             '2024-01-01T00:00:00Z',
-            '--project-id',
+            '--project',
             projectId,
           ]);
         } catch (_) {}
@@ -426,7 +426,7 @@ void main() {
             '--all',
             '--recent',
             '1m',
-            '--project-id',
+            '--project',
             projectId,
           ]);
         } catch (_) {}
@@ -462,7 +462,7 @@ void main() {
             '--tail',
             '--before',
             '2024-01-01T00:00:00Z',
-            '--project-id',
+            '--project',
             projectId,
           ]);
         } catch (_) {}
@@ -498,7 +498,7 @@ void main() {
             '--tail',
             '--after',
             '2024-01-01T00:00:00Z',
-            '--project-id',
+            '--project',
             projectId,
           ]);
         } catch (_) {}
@@ -534,7 +534,7 @@ void main() {
             '--tail',
             '--recent',
             '1m',
-            '--project-id',
+            '--project',
             projectId,
           ]);
         } catch (_) {}
@@ -571,7 +571,7 @@ void main() {
             '2024-01-01T00:00:00Z',
             '--recent',
             '1m',
-            '--project-id',
+            '--project',
             projectId,
           ]);
         } catch (_) {}
@@ -608,7 +608,7 @@ void main() {
             '2024-01-01T00:00:00Z',
             '--recent',
             '1m',
-            '--project-id',
+            '--project',
             projectId,
           ]);
         } catch (_) {}

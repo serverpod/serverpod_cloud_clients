@@ -134,7 +134,7 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
             'Use the link command to create it in the server '
             'directory of this project:',
         newParagraph: true,
-        'scloud project link --project-id $projectId',
+        'scloud project link --project $projectId',
       );
     }
   }

@@ -84,7 +84,7 @@ void main() {
       setUp(() async {
         commandResult = cli.run([
           'deploy',
-          '--project-id',
+          '--project',
           '123',
           '--api-url',
           localServerAddress.toString(),
@@ -132,7 +132,7 @@ void main() {
           'deploy',
           '--concurrency',
           'invalid',
-          '--project-id',
+          '--project',
           '123',
           '--scloud-dir',
           testCacheFolderPath,
@@ -173,7 +173,7 @@ void main() {
 
         cliCommandFuture = cli.run([
           'deploy',
-          '--project-id',
+          '--project',
           '123',
           '--scloud-dir',
           testCacheFolderPath,
@@ -226,7 +226,7 @@ dependencies:
 
         cliCommandFuture = cli.run([
           'deploy',
-          '--project-id',
+          '--project',
           '123',
           '--scloud-dir',
           testCacheFolderPath,
@@ -274,7 +274,7 @@ dependencies:
 
         cliCommandFuture = cli.run([
           'deploy',
-          '--project-id',
+          '--project',
           '123',
           '--scloud-dir',
           testCacheFolderPath,
@@ -322,7 +322,7 @@ dependencies:
 
         cliCommandFuture = cli.run([
           'deploy',
-          '--project-id',
+          '--project',
           '123',
           '--scloud-dir',
           testCacheFolderPath,
@@ -370,7 +370,7 @@ dependencies:
 
         cliCommandFuture = cli.run([
           'deploy',
-          '--project-id',
+          '--project',
           '123',
           '--scloud-dir',
           testCacheFolderPath,
@@ -424,7 +424,7 @@ dependencies:
               'deploy',
               '--concurrency',
               '1',
-              '--project-id',
+              '--project',
               '123',
               '--api-url',
               localServerAddress.toString(),
@@ -504,7 +504,7 @@ dependencies:
               'deploy',
               '--concurrency',
               '1',
-              '--project-id',
+              '--project',
               '123',
               '--project-dir',
               testProjectDir,
@@ -575,7 +575,7 @@ dependencies:
               'deploy',
               '--concurrency',
               '1',
-              '--project-id',
+              '--project',
               '123',
               '--project-dir',
               testProjectDir,
@@ -643,7 +643,7 @@ dependencies:
               'deploy',
               '--concurrency',
               '1',
-              '--project-id',
+              '--project',
               projectId,
               '--api-url',
               localServerAddress.toString(),
@@ -720,7 +720,7 @@ dependencies:
               'deploy',
               '--concurrency',
               '1',
-              '--project-id',
+              '--project',
               projectId,
               '--api-url',
               localServerAddress.toString(),

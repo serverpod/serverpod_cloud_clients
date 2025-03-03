@@ -148,7 +148,7 @@ class CloudAddCustomDomainCommand
 
     logger.terminalCommand(
       newParagraph: true,
-      'scloud domain refresh-record $domainName --project-id $projectId',
+      'scloud domain refresh-record $domainName --project $projectId',
     );
 
     logger.list(newParagraph: true, [
@@ -158,7 +158,7 @@ class CloudAddCustomDomainCommand
 
     logger.terminalCommand(
       newParagraph: true,
-      'scloud domain list --project-id $projectId',
+      'scloud domain list --project $projectId',
     );
   }
 }

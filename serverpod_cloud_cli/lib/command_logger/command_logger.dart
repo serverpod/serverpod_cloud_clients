@@ -248,7 +248,7 @@ class CommandLogger {
   /// Example:
   /// ```bash
   /// Successfully linked the project! 🚀
-  /// The --project-id flag can now be omitted from commands.
+  /// The --project flag can now be omitted from commands.
   /// ```
   void success(
     final String message, {

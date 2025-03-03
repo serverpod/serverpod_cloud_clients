@@ -29,6 +29,10 @@ abstract class CloudCliCommand<T extends OptionDefinition>
     options.prepareForParsing(argParser);
   }
 
+  @override
+  String? get usageFooter =>
+      '\nSee the full documentation at: https://docs.serverpod.cloud/cli/commands/$name';
+
   /// Gets the command runner [CloudCliCommandRunner].
   @override
   CloudCliCommandRunner get runner => super.runner as CloudCliCommandRunner;

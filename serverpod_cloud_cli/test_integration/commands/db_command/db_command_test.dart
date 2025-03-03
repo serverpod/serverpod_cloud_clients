@@ -67,7 +67,7 @@ void main() {
         commandResult = cli.run([
           'db',
           'connection',
-          '--project-id',
+          '--project',
           projectId,
         ]);
       });
@@ -109,7 +109,7 @@ void main() {
           'db',
           'create-superuser',
           'wernher',
-          '--project-id',
+          '--project',
           projectId,
         ]);
       });
@@ -151,7 +151,7 @@ void main() {
           'db',
           'reset-password',
           'wernher',
-          '--project-id',
+          '--project',
           projectId,
         ]);
       });
@@ -205,7 +205,7 @@ void main() {
         commandResult = cli.run([
           'db',
           'connection',
-          '--project-id',
+          '--project',
           projectId,
         ]);
       });
@@ -257,7 +257,7 @@ void main() {
           'db',
           'create-superuser',
           'wernher',
-          '--project-id',
+          '--project',
           projectId,
         ]);
       });
@@ -299,7 +299,7 @@ $password''',
           'db',
           'reset-password',
           'wernher',
-          '--project-id',
+          '--project',
           projectId,
         ]);
       });

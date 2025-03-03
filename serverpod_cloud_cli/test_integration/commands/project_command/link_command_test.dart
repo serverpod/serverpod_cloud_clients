@@ -78,7 +78,7 @@ void main() {
         commandResult = cli.run([
           'project',
           'link',
-          '--project-id',
+          '--project',
           projectId,
           '--api-url',
           localServerAddress.toString(),
@@ -146,7 +146,7 @@ void main() {
           commandResult = cli.run([
             'project',
             'link',
-            '--project-id',
+            '--project',
             projectId,
             '--api-url',
             localServerAddress.toString(),
@@ -216,7 +216,7 @@ void main() {
           commandResult = cli.run([
             'project',
             'link',
-            '--project-id',
+            '--project',
             projectId,
             '--api-url',
             localServerAddress.toString(),
@@ -286,7 +286,7 @@ void main() {
           commandResult = cli.run([
             'project',
             'link',
-            '--project-id',
+            '--project',
             projectId,
             '--api-url',
             localServerAddress.toString(),
@@ -333,7 +333,7 @@ void main() {
         commandResult = cli.run([
           'project',
           'link',
-          '--project-id',
+          '--project',
           projectId,
           '--project-dir',
           testProjectDir,

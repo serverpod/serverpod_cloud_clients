@@ -109,7 +109,7 @@ void main() async {
 
   group('Given a configuration option definition', () {
     const projectIdOpt = ConfigOption(
-      argName: 'project-id',
+      argName: 'project',
     );
 
     group('added to the arg parser', () {
@@ -117,26 +117,26 @@ void main() async {
       [projectIdOpt].prepareForParsing(parser);
 
       test('then it is listed as an option there', () async {
-        expect(parser.options, contains('project-id'));
+        expect(parser.options, contains('project'));
       });
 
       test('when present on the command line, then it is successfully parsed',
           () async {
-        final results = parser.parse(['--project-id', '123']);
-        expect(results.option('project-id'), '123');
+        final results = parser.parse(['--project', '123']);
+        expect(results.option('project'), '123');
       });
 
       test('when present on the command line, then it is marked as parsed',
           () async {
-        final results = parser.parse(['--project-id', '123']);
-        expect(results.wasParsed('project-id'), isTrue);
+        final results = parser.parse(['--project', '123']);
+        expect(results.wasParsed('project'), isTrue);
       });
 
       test(
           'when not present on the command line, then it is marked as not parsed',
           () async {
         final results = parser.parse(['123']);
-        expect(results.wasParsed('project-id'), isFalse);
+        expect(results.wasParsed('project'), isFalse);
       });
 
       test('when misspelled on the command line, then it fails to parse',
@@ -147,16 +147,15 @@ void main() async {
 
       test('when present twice on the command line, the value is the last one',
           () async {
-        final results =
-            parser.parse(['--project-id', '123', '--project-id', '456']);
-        expect(results.option('project-id'), '456');
+        final results = parser.parse(['--project', '123', '--project', '456']);
+        expect(results.option('project'), '456');
       });
     });
   });
 
   group('Given a configuration option defined for all sources', () {
     const projectIdOpt = ConfigOption(
-      argName: 'project-id',
+      argName: 'project',
       envName: 'PROJECT_ID',
       defaultFrom: _defaultValueFunction,
       defaultsTo: 'constDefaultValue',
@@ -165,7 +164,7 @@ void main() async {
     [projectIdOpt].prepareForParsing(parser);
 
     test('then command line argument has first precedence', () async {
-      final argResults = parser.parse(['--project-id', '123']);
+      final argResults = parser.parse(['--project', '123']);
       final envVars = {'PROJECT_ID': '456'};
       final config = Configuration.fromEnvAndArgs(
         options: [projectIdOpt],
@@ -200,7 +199,7 @@ void main() async {
 
   group('Given a configuration option with a defaultsTo value', () {
     const projectIdOpt = ConfigOption(
-      argName: 'project-id',
+      argName: 'project',
       envName: 'PROJECT_ID',
       defaultsTo: 'constDefaultValue',
     );
@@ -208,7 +207,7 @@ void main() async {
     [projectIdOpt].prepareForParsing(parser);
 
     test('then command line argument has first precedence', () async {
-      final argResults = parser.parse(['--project-id', '123']);
+      final argResults = parser.parse(['--project', '123']);
       final envVars = {'PROJECT_ID': '456'};
       final config = Configuration.fromEnvAndArgs(
         options: [projectIdOpt],
@@ -298,7 +297,7 @@ void main() async {
 
   group('Given an optional configuration option', () {
     const projectIdOpt = ConfigOption(
-      argName: 'project-id',
+      argName: 'project',
       envName: 'PROJECT_ID',
     );
     final parser = ArgParser();
@@ -306,7 +305,7 @@ void main() async {
 
     test('when provided as argument then value() still throws StateError',
         () async {
-      final argResults = parser.parse(['--project-id', '123']);
+      final argResults = parser.parse(['--project', '123']);
       final envVars = <String, String>{};
       final config = Configuration.fromEnvAndArgs(
         options: [projectIdOpt],
@@ -340,7 +339,7 @@ void main() async {
     });
 
     test('when provided as argument then parsing succeeds', () async {
-      final argResults = parser.parse(['--project-id', '123']);
+      final argResults = parser.parse(['--project', '123']);
       final envVars = <String, String>{};
       final config = Configuration.fromEnvAndArgs(
         options: [projectIdOpt],
@@ -376,7 +375,7 @@ void main() async {
 
   group('Given a mandatory configuration option', () {
     const projectIdOpt = ConfigOption(
-      argName: 'project-id',
+      argName: 'project',
       envName: 'PROJECT_ID',
       mandatory: true,
     );
@@ -384,7 +383,7 @@ void main() async {
     [projectIdOpt].prepareForParsing(parser);
 
     test('when provided as argument then parsing succeeds', () async {
-      final argResults = parser.parse(['--project-id', '123']);
+      final argResults = parser.parse(['--project', '123']);
       final envVars = <String, String>{};
       final config = Configuration.fromEnvAndArgs(
         options: [projectIdOpt],
@@ -416,14 +415,14 @@ void main() async {
         env: envVars,
       );
       expect(config.errors, hasLength(1));
-      expect(config.errors.first, 'option `project-id` is mandatory');
+      expect(config.errors.first, 'option `project` is mandatory');
       expect(() => config.value(projectIdOpt), throwsA(isA<UsageException>()));
     });
   });
 
   group('Given a valueRequired configuration option', () {
     const projectIdOpt = ConfigOption(
-      argName: 'project-id',
+      argName: 'project',
       envName: 'PROJECT_ID',
       valueRequired: true,
     );
@@ -431,7 +430,7 @@ void main() async {
     [projectIdOpt].prepareForParsing(parser);
 
     test('when provided as argument then parsing succeeds', () async {
-      final argResults = parser.parse(['--project-id', '123']);
+      final argResults = parser.parse(['--project', '123']);
       final envVars = <String, String>{};
       final config = Configuration.fromEnvAndArgs(
         options: [projectIdOpt],
@@ -463,7 +462,7 @@ void main() async {
         env: envVars,
       );
       expect(config.errors, hasLength(1));
-      expect(config.errors.first, 'option `project-id` is mandatory');
+      expect(config.errors.first, 'option `project` is mandatory');
       expect(() => config.value(projectIdOpt), throwsA(isA<UsageException>()));
     });
   });
@@ -477,7 +476,7 @@ void main() async {
     [projectIdOpt].prepareForParsing(parser);
 
     test('when provided as argument then parsing fails', () async {
-      expect(() => parser.parse(['--project-id', '123']),
+      expect(() => parser.parse(['--project', '123']),
           throwsA(isA<ArgParserException>()));
     });
 
@@ -517,7 +516,7 @@ void main() async {
     [projectIdOpt].prepareForParsing(parser);
 
     test('when provided as argument then parsing fails', () async {
-      expect(() => parser.parse(['--project-id', '123']),
+      expect(() => parser.parse(['--project', '123']),
           throwsA(isA<ArgParserException>()));
     });
 
@@ -613,7 +612,7 @@ void main() async {
       argPos: 0,
     );
     const projectIdOpt = ConfigOption(
-      argName: 'project-id',
+      argName: 'project',
     );
     final options = [positionalOpt, projectIdOpt];
     final parser = ArgParser();
@@ -633,7 +632,7 @@ void main() async {
     });
 
     test('when provided before named argument then parsing succeeds', () async {
-      final argResults = parser.parse(['pos-arg', '--project-id', '123']);
+      final argResults = parser.parse(['pos-arg', '--project', '123']);
       final envVars = <String, String>{};
       final config = Configuration.fromEnvAndArgs(
         options: options,
@@ -645,7 +644,7 @@ void main() async {
     });
 
     test('when provided after named argument then parsing succeeds', () async {
-      final argResults = parser.parse(['--project-id', '123', 'pos-arg']);
+      final argResults = parser.parse(['--project', '123', 'pos-arg']);
       final envVars = <String, String>{};
       final config = Configuration.fromEnvAndArgs(
         options: options,
@@ -690,7 +689,7 @@ void main() async {
       mandatory: true,
     );
     const projectIdOpt = ConfigOption(
-      argName: 'project-id',
+      argName: 'project',
     );
     final options = [positionalOpt, projectIdOpt];
     final parser = ArgParser();
@@ -710,7 +709,7 @@ void main() async {
     });
 
     test('when provided before named argument then parsing succeeds', () async {
-      final argResults = parser.parse(['pos-arg', '--project-id', '123']);
+      final argResults = parser.parse(['pos-arg', '--project', '123']);
       final envVars = <String, String>{};
       final config = Configuration.fromEnvAndArgs(
         options: options,
@@ -722,7 +721,7 @@ void main() async {
     });
 
     test('when provided after named argument then parsing succeeds', () async {
-      final argResults = parser.parse(['--project-id', '123', 'pos-arg']);
+      final argResults = parser.parse(['--project', '123', 'pos-arg']);
       final envVars = <String, String>{};
       final config = Configuration.fromEnvAndArgs(
         options: options,
@@ -753,7 +752,7 @@ void main() async {
       valueRequired: true,
     );
     const projectIdOpt = ConfigOption(
-      argName: 'project-id',
+      argName: 'project',
     );
     final options = [positionalOpt, projectIdOpt];
     final parser = ArgParser();
@@ -773,7 +772,7 @@ void main() async {
     });
 
     test('when provided before named argument then parsing succeeds', () async {
-      final argResults = parser.parse(['pos-arg', '--project-id', '123']);
+      final argResults = parser.parse(['pos-arg', '--project', '123']);
       final envVars = <String, String>{};
       final config = Configuration.fromEnvAndArgs(
         options: options,
@@ -785,7 +784,7 @@ void main() async {
     });
 
     test('when provided after named argument then parsing succeeds', () async {
-      final argResults = parser.parse(['--project-id', '123', 'pos-arg']);
+      final argResults = parser.parse(['--project', '123', 'pos-arg']);
       final envVars = <String, String>{};
       final config = Configuration.fromEnvAndArgs(
         options: options,

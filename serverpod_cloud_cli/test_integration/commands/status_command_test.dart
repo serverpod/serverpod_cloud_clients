@@ -62,7 +62,7 @@ void main() {
         commandResult = cli.run([
           'status',
           'deploy',
-          '--project-id',
+          '--project',
           projectId,
         ]);
       });
@@ -93,7 +93,7 @@ void main() {
           'status',
           'deploy',
           '--build-log',
-          '--project-id',
+          '--project',
           projectId,
         ]);
       });
@@ -124,7 +124,7 @@ void main() {
           'status',
           'deploy',
           '--list',
-          '--project-id',
+          '--project',
           projectId,
         ]);
       });
@@ -250,11 +250,11 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
         }
 
         testCorrectGetRecentStatusCommand(
-            'by named proj opt and default build', ['--project-id', projectId]);
-        testCorrectGetRecentStatusCommand('by named proj opt and build index',
-            ['--project-id', projectId, '0']);
-        testCorrectGetRecentStatusCommand('by named proj opt and build id',
-            ['--project-id', projectId, 'abc']);
+            'by named proj opt and default build', ['--project', projectId]);
+        testCorrectGetRecentStatusCommand(
+            'by named proj opt and build index', ['--project', projectId, '0']);
+        testCorrectGetRecentStatusCommand(
+            'by named proj opt and build id', ['--project', projectId, 'abc']);
 
         group('and with option --output-overall-status', () {
           late Future commandResult;
@@ -263,7 +263,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
             commandResult = cli.run([
               'status',
               'deploy',
-              '--project-id',
+              '--project',
               projectId,
               '--output-overall-status',
             ]);
@@ -338,13 +338,13 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
 
         testIncorrectGetStatusCommand(
             'for named proj opt and non-existing build index',
-            ['--project-id', projectId, '2']);
+            ['--project', projectId, '2']);
         testIncorrectGetStatusCommand(
             'for non-existing project without build index',
-            ['--project-id', 'non-existing']);
+            ['--project', 'non-existing']);
         testIncorrectGetStatusCommand(
             'for non-existing project and build index',
-            ['--project-id', 'non-existing', '0']);
+            ['--project', 'non-existing', '0']);
       });
     });
 
@@ -408,7 +408,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
           commandResult = cli.run([
             'status',
             'deploy',
-            '--project-id',
+            '--project',
             projectId,
           ]);
         });
@@ -446,7 +446,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
           commandResult = cli.run([
             'status',
             'deploy',
-            '--project-id',
+            '--project',
             projectId,
             '--output-overall-status',
           ]);
@@ -547,9 +547,9 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
         }
 
         testCorrectGetStatusesCommand('with named project opt and long option',
-            ['--project-id', projectId, '--list']);
+            ['--project', projectId, '--list']);
         testCorrectGetStatusesCommand('with named project op and short option',
-            ['--project-id', projectId, '-l']);
+            ['--project', projectId, '-l']);
       });
 
       group('with incorrect args to get a deployments list', () {
@@ -588,10 +588,10 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
 
         testIncorrectGetStatusesCommand(
             'for non-existing project and long option',
-            ['--project-id', projectId, 'disallowed-attempt-id', '--list']);
+            ['--project', projectId, 'disallowed-attempt-id', '--list']);
         testIncorrectGetStatusesCommand(
             'for non-existing project and short option',
-            ['--project-id', projectId, 'disallowed-attempt-id', '-l']);
+            ['--project', projectId, 'disallowed-attempt-id', '-l']);
       });
     });
   });

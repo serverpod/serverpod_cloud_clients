@@ -29,6 +29,8 @@ class CloudCliCommandRunner extends BetterCommandRunner {
   final CommandLogger logger;
   final CloudCliServiceProvider serviceProvider;
 
+  final VersionCommand _versionCommand;
+
   /// The curremt global configuration for the Serverpod Cloud CLI.
   /// (Since this object is re-entrant, the global config is regenerated each call to [runCommand].)
   GlobalConfiguration globalConfiguration = GlobalConfiguration();
@@ -40,7 +42,8 @@ class CloudCliCommandRunner extends BetterCommandRunner {
     super.setLogLevel,
     super.logError,
     super.logInfo,
-  }) : super(
+  })  : _versionCommand = VersionCommand(logger: logger),
+        super(
           'scloud',
           'Manage your Serverpod Cloud projects',
           wrapTextColumn: logger.wrapTextColumn,
@@ -73,7 +76,7 @@ class CloudCliCommandRunner extends BetterCommandRunner {
 
     // Add commands (which may in turn have their own options and subcommands)
     runner.addCommands([
-      VersionCommand(logger: logger),
+      runner._versionCommand,
       CloudAuthCommand(logger: logger),
       CloudProjectCommand(logger: logger),
       CloudDeployCommand(logger: logger),
@@ -109,6 +112,10 @@ class CloudCliCommandRunner extends BetterCommandRunner {
       logger: logger,
     );
 
+    if (globalConfiguration.version) {
+      await _versionCommand.run();
+    }
+
     final Version? latestVersion;
     try {
       latestVersion = await CLIVersionChecker.fetchLatestCLIVersion(
@@ -141,6 +148,10 @@ class CloudCliCommandRunner extends BetterCommandRunner {
       serviceProvider.shutdown();
     }
   }
+
+  @override
+  String? get usageFooter =>
+      '\nSee the full documentation at: https://docs.serverpod.cloud/';
 
   static void _configureLogLevel({
     required final CommandLogger logger,
@@ -184,6 +195,15 @@ String _getDefaultStoragePath() {
 
 /// The global configuration options for the Serverpod Cloud CLI.
 enum GlobalOption implements OptionDefinition {
+  version(
+    ConfigOption(
+      argName: 'version',
+      helpText: VersionCommand.usageDescription,
+      isFlag: true,
+      negatable: false,
+      defaultsTo: 'false',
+    ),
+  ),
   scloudDir(
     ConfigOption(
       argName: 'scloud-dir',
@@ -235,6 +255,8 @@ class GlobalConfiguration extends Configuration {
     super.args,
     super.env,
   }) : super.fromEnvAndArgs(options: GlobalOption.values);
+
+  bool get version => flag(GlobalOption.version);
 
   String get scloudDir => value(GlobalOption.scloudDir);
 
