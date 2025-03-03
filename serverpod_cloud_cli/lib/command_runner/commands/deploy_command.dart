@@ -33,6 +33,14 @@ enum DeployCommandOption implements OptionDefinition {
       defaultsTo: '5',
       valueHelp: '5',
     ),
+  ),
+  dryRun(
+    ConfigOption(
+      argName: 'dry-run',
+      helpText: 'Do not actually deploy, just print the deployment steps.',
+      isFlag: true,
+      defaultsTo: 'false',
+    ),
   );
 
   const DeployCommandOption(this.option);
@@ -59,6 +67,7 @@ class CloudDeployCommand extends CloudCliCommand<DeployCommandOption> {
         Directory(commandConfig.value(DeployCommandOption.projectDir));
     final concurrency =
         int.tryParse(commandConfig.value(DeployCommandOption.concurrency));
+    final dryRun = commandConfig.flag(DeployCommandOption.dryRun);
 
     if (concurrency == null) {
       logger.error(
@@ -76,62 +85,78 @@ class CloudDeployCommand extends CloudCliCommand<DeployCommandOption> {
       throw ErrorExitException();
     }
 
-    pubspecValidator.validateProjectDependencies(logger: logger);
-
-    final apiCloudClient = runner.serviceProvider.cloudApiClient;
-
-    late final String uploadDescription;
-    await handleCommonClientExceptions(logger, () async {
-      uploadDescription = await apiCloudClient.deploy.createUploadDescription(
-        projectId,
-      );
-    }, (final e) {
-      logger.error('Failed to fetch upload description: $e');
-      throw ErrorExitException();
-    });
-
-    final List<int> projectZip;
-    try {
-      projectZip = await ProjectZipper.zipProject(
-        projectDirectory: projectDirectory,
-        logger: logger,
-        fileReadPoolSize: concurrency,
-      );
-    } on ProjectZipperExceptions catch (e) {
-      switch (e) {
-        case ProjectDirectoryDoesNotExistException():
-          logger.error(
-            'Project directory does not exist: ${e.path}',
-          );
-          break;
-        case EmptyProjectException():
-          logger.error(
-            'No files to upload.',
-            hint:
-                'Ensure that the correct project directory is selected (either through the --project-dir flag or the current directory) and check '
-                'that `.gitignore` and `.scloudignore` does not filter out all project files.',
-          );
-          break;
-        case DirectorySymLinkException():
-          logger.error(
-            'Serverpod Cloud does not support directory symlinks: `${e.path}`',
-          );
-          break;
-        case NonResolvingSymlinkException():
-          logger.error(
-            'Serverpod Cloud does not support non-resolving symlinks: `${e.path}` => `${e.target}`',
-          );
-          break;
-        case NullZipException():
-          logger.error(
-            'Unknown error occurred while zipping project, please try again.',
-          );
-          break;
+    final issues = pubspecValidator.projectDependencyIssues();
+    if (issues.isNotEmpty) {
+      for (final issue in issues) {
+        logger.error(issue);
       }
       throw ErrorExitException();
     }
 
+    late final List<int> projectZip;
+    final isZipped = await logger.progress('Zipping project...', () async {
+      try {
+        projectZip = await ProjectZipper.zipProject(
+          projectDirectory: projectDirectory,
+          logger: logger,
+          fileReadPoolSize: concurrency,
+        );
+        return true;
+      } on ProjectZipperExceptions catch (e) {
+        switch (e) {
+          case ProjectDirectoryDoesNotExistException():
+            logger.error(
+              'Project directory does not exist: ${e.path}',
+            );
+            break;
+          case EmptyProjectException():
+            logger.error(
+              'No files to upload.',
+              hint:
+                  'Ensure that the correct project directory is selected (either through the --project-dir flag or the current directory) and check '
+                  'that `.gitignore` and `.scloudignore` does not filter out all project files.',
+            );
+            break;
+          case DirectorySymLinkException():
+            logger.error(
+              'Serverpod Cloud does not support directory symlinks: `${e.path}`',
+            );
+            break;
+          case NonResolvingSymlinkException():
+            logger.error(
+              'Serverpod Cloud does not support non-resolving symlinks: `${e.path}` => `${e.target}`',
+            );
+            break;
+          case NullZipException():
+            logger.error(
+              'Unknown error occurred while zipping project, please try again.',
+            );
+            break;
+        }
+        return false;
+      }
+    });
+
+    if (!isZipped) throw ErrorExitException();
+
+    if (dryRun) {
+      logger.info('Dry run, skipping upload.');
+      return;
+    }
+
     final success = await logger.progress('Uploading project...', () async {
+      final apiCloudClient = runner.serviceProvider.cloudApiClient;
+
+      late final String uploadDescription;
+      await handleCommonClientExceptions(logger, () async {
+        uploadDescription = await apiCloudClient.deploy.createUploadDescription(
+          projectId,
+        );
+      }, (final e) {
+        logger.error('Failed to fetch upload description: $e');
+        throw ErrorExitException();
+      });
+
       try {
         final ret = await GoogleCloudStorageUploader(uploadDescription).upload(
           Stream.fromIterable([projectZip]),

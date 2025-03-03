@@ -47,6 +47,21 @@ class ModulesMock extends Mock implements Modules {
 class AuthenticationKeyManagerMock extends Mock
     implements AuthenticationKeyManager {}
 
+class AuthedKeyManagerMock extends AuthenticationKeyManager {
+  Future<bool> get isAuthenticated async => true;
+
+  @override
+  Future<String?> get() async {
+    return 'mock-token';
+  }
+
+  @override
+  Future<void> put(String key) async {}
+
+  @override
+  Future<void> remove() async {}
+}
+
 class InMemoryKeyManager extends AuthenticationKeyManager {
   Future<bool> get isAuthenticated async => await get() != null;
 

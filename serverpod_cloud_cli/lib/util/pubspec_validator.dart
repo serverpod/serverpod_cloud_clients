@@ -21,7 +21,7 @@ bool isServerpodServerDirectory(final Directory dir) {
 class TenantProjectPubspec {
   final Pubspec pubspec;
 
-  TenantProjectPubspec._(
+  TenantProjectPubspec(
     this.pubspec,
   );
 
@@ -50,7 +50,7 @@ class TenantProjectPubspec {
       logger?.error('Failed to parse pubspec.yaml: ${e.toString()}');
       throw ErrorExitException();
     }
-    return TenantProjectPubspec._(pubspec);
+    return TenantProjectPubspec(pubspec);
   }
 
   /// Returns true if the pubspec.yaml appears to represent a Serverpod server.
@@ -62,11 +62,9 @@ class TenantProjectPubspec {
   /// in order to be deployed to Serverpod Cloud.
   ///
   /// If the dependencies are not valid,
-  /// error messages are printed to logger if provided,
-  /// and [ErrorExitException] is thrown.
-  void validateProjectDependencies({
-    final CommandLogger? logger,
-  }) {
+  /// the returned list will contain the error messages.
+  /// If the dependencies are valid, the list will be empty.
+  List<String> projectDependencyIssues() {
     final supportedSdk = VersionConstraint.parse('>=3.6.0 <3.7.0');
     final supportedServerpod = VersionConstraint.parse('>=2.3.0');
 
@@ -77,11 +75,10 @@ class TenantProjectPubspec {
       supportedServerpod,
     );
 
-    if (sdkError != null || serverpodError != null) {
-      if (sdkError != null) logger?.error(sdkError);
-      if (serverpodError != null) logger?.error(serverpodError);
-      throw ErrorExitException();
-    }
+    return [
+      if (sdkError != null) sdkError,
+      if (serverpodError != null) serverpodError,
+    ];
   }
 
   /// The SDK constraint is handled differently than other dependencies.

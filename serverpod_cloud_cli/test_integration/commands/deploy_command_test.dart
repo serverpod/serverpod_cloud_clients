@@ -1,27 +1,32 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:googleapis/storage/v1.dart';
-import 'package:http/http.dart';
+import 'package:ground_control_client/ground_control_client.dart';
+import 'package:ground_control_client/ground_control_client_mock.dart';
+import 'package:http/http.dart' as http;
+import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
+import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:test/test.dart';
-import 'package:uuid/uuid.dart';
 
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
-import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
-import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 
-import '../test_utils/command_logger_matchers.dart';
-import '../test_utils/http_server_builder.dart';
-import '../test_utils/project_factory.dart';
-import '../test_utils/test_command_logger.dart';
+import '../../test_utils/command_logger_matchers.dart';
+import '../../test_utils/project_factory.dart';
+import '../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();
+  final client = ClientMock(authenticationKeyManager: AuthedKeyManagerMock());
   final cli = CloudCliCommandRunner.create(
     logger: logger,
+    serviceProvider: CloudCliServiceProvider(
+      apiClientFactory: (final globalCfg) => client,
+    ),
   );
 
   final testCacheFolderPath = p.join(
@@ -50,34 +55,14 @@ void main() {
   group(
       'Given unauthenticated and current directory is serverpod server directory',
       () {
-    late Uri localServerAddress;
-    late Completer requestCompleter;
-    late HttpServer server;
-
     setUp(() async {
       DirectoryFactory.serverpodServerDir().construct(testProjectDir);
 
-      requestCompleter = Completer();
-      await ResourceManager.storeServerpodCloudData(
-        cloudData: ServerpodCloudData('my-token'),
-        localStoragePath: testCacheFolderPath,
-      );
-
-      final serverBuilder = HttpServerBuilder();
-      serverBuilder.withOnRequest((final request) {
-        requestCompleter.complete();
-        request.response.statusCode = 401;
-        request.response.close();
-      });
-
-      final (startedServer, serverAddress) = await serverBuilder.build();
-      localServerAddress = serverAddress;
-      server = startedServer;
+      when(() => client.deploy.createUploadDescription(any()))
+          .thenThrow(ServerpodClientUnauthorized());
     });
 
-    tearDown(() async {
-      await server.close(force: true);
-    });
+    tearDown(() async {});
 
     group('when executing deploy', () {
       late Future commandResult;
@@ -86,8 +71,6 @@ void main() {
           'deploy',
           '--project',
           '123',
-          '--api-url',
-          localServerAddress.toString(),
           '--scloud-dir',
           testCacheFolderPath,
           '--project-dir',
@@ -96,7 +79,6 @@ void main() {
       });
 
       test('then throws exception', () async {
-        await expectLater(requestCompleter.future, completes);
         await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
       });
 
@@ -117,13 +99,6 @@ void main() {
   });
 
   group('Given authenticated', () {
-    setUp(() async {
-      await ResourceManager.storeServerpodCloudData(
-        cloudData: ServerpodCloudData('my-token'),
-        localStoragePath: testCacheFolderPath,
-      );
-    });
-
     group('and invalid concurrency option value when running deploy command',
         () {
       late Future cliCommandFuture;
@@ -134,8 +109,6 @@ void main() {
           'invalid',
           '--project',
           '123',
-          '--scloud-dir',
-          testCacheFolderPath,
         ]);
       });
 
@@ -167,7 +140,11 @@ void main() {
         DirectoryFactory(withFiles: [
           FileFactory(
             withName: 'pubspec.yaml',
-            withContents: 'name: my_project',
+            withContents: '''
+name: my_project
+environment:
+  sdk: '>=3.1.0 <4.0.0'
+''',
           ),
         ]).construct(testProjectDir);
 
@@ -252,169 +229,15 @@ dependencies:
       });
     });
 
-    group(
-        'and current directory is a Serverpod server directory '
-        'with too advanced sdk dependency '
-        'when running deploy command', () {
-      late Future cliCommandFuture;
-
-      setUp(() async {
-        DirectoryFactory(withFiles: [
-          FileFactory(
-            withName: 'pubspec.yaml',
-            withContents: '''
-name: my_project
-environment:
-  sdk: '>=3.8.0 <4.0.0'
-dependencies:
-  serverpod: ^2.3.0
-''',
-          ),
-        ]).construct(testProjectDir);
-
-        cliCommandFuture = cli.run([
-          'deploy',
-          '--project',
-          '123',
-          '--scloud-dir',
-          testCacheFolderPath,
-          '--project-dir',
-          testProjectDir,
-        ]);
-      });
-
-      test('then ExitErrorException is thrown.', () async {
-        await expectLater(
-          cliCommandFuture,
-          throwsA(isA<ErrorExitException>()),
-        );
-      });
-
-      test('then error message is logged', () async {
-        await cliCommandFuture.catchError((final _) {});
-        expect(logger.errorCalls, isNotEmpty);
-        expect(
-          logger.errorCalls.first.message,
-          contains('Unsupported sdk version constraint'),
-        );
-      });
-    });
-
-    group(
-        'and current directory is a Serverpod server directory '
-        'with outdated serverpod dependency '
-        'when running deploy command', () {
-      late Future cliCommandFuture;
-
-      setUp(() async {
-        DirectoryFactory(withFiles: [
-          FileFactory(
-            withName: 'pubspec.yaml',
-            withContents: '''
-name: my_project
-environment:
-  sdk: '>=3.6.0'
-dependencies:
-  serverpod: ^2.2.0
-''',
-          ),
-        ]).construct(testProjectDir);
-
-        cliCommandFuture = cli.run([
-          'deploy',
-          '--project',
-          '123',
-          '--scloud-dir',
-          testCacheFolderPath,
-          '--project-dir',
-          testProjectDir,
-        ]);
-      });
-
-      test('then ExitErrorException is thrown.', () async {
-        await expectLater(
-          cliCommandFuture,
-          throwsA(isA<ErrorExitException>()),
-        );
-      });
-
-      test('then error message is logged', () async {
-        await cliCommandFuture.catchError((final _) {});
-        expect(logger.errorCalls, isNotEmpty);
-        expect(
-          logger.errorCalls.first.message,
-          contains('Unsupported serverpod version constraint'),
-        );
-      });
-    });
-
-    group(
-        'and current directory is a Serverpod server directory '
-        'with broad and compatible sdk dependency '
-        'when running deploy command', () {
-      late Future cliCommandFuture;
-
-      setUp(() async {
-        DirectoryFactory(withFiles: [
-          FileFactory(
-            withName: 'pubspec.yaml',
-            withContents: '''
-name: my_project
-environment:
-  sdk: '>=3.5.0 <4.0.0'
-dependencies:
-  serverpod: ^2.3.0
-''',
-          ),
-        ]).construct(testProjectDir);
-
-        cliCommandFuture = cli.run([
-          'deploy',
-          '--project',
-          '123',
-          '--scloud-dir',
-          testCacheFolderPath,
-          '--project-dir',
-          testProjectDir,
-        ]);
-      });
-
-      test('then no dependency error message is logged', () async {
-        await cliCommandFuture.catchError((final _) {});
-        expect(logger.errorCalls, isNotEmpty);
-        expect(
-          logger.errorCalls.first.message,
-          isNot(anyOf([
-            contains('Unsupported sdk version constraint'),
-            contains('Unsupported serverpod version constraint'),
-          ])),
-        );
-      });
-    });
-
     group('and current directory is a Serverpod server directory', () {
       setUp(() async {
         DirectoryFactory.serverpodServerDir().construct(testProjectDir);
       });
 
       group('and 403 response for creating file upload request', () {
-        late Uri localServerAddress;
-        late HttpServer server;
-
         setUp(() async {
-          final serverBuilder = HttpServerBuilder();
-          serverBuilder.withOnRequest((final request) {
-            request.response.statusCode = 403;
-            request.response.close();
-          });
-
-          final (startedServer, serverAddress) = await serverBuilder.build();
-          localServerAddress = serverAddress;
-          server = startedServer;
-        });
-
-        tearDown(() {
-          server.close(force: true);
+          when(() => client.deploy.createUploadDescription(any()))
+              .thenThrow(ServerpodClientForbidden());
         });
 
         group('when deploying through CLI', () {
@@ -426,10 +249,6 @@ dependencies:
               '1',
               '--project',
               '123',
-              '--api-url',
-              localServerAddress.toString(),
-              '--scloud-dir',
-              testCacheFolderPath,
               '--project-dir',
               testProjectDir,
             ]);
@@ -458,21 +277,9 @@ dependencies:
       group(
           'Given valid upload description response but project directory contains directory symlink',
           () {
-        late Uri localServerAddress;
-        late HttpServer server;
-
         setUp(() async {
-          final serverBuilder = HttpServerBuilder();
-          serverBuilder.withOnRequest((final request) async {
-            final response = request.response;
-            response.statusCode = 200;
-            response.write('"this-is-an-upload-description"');
-            await response.close();
-          });
-
-          final (startedServer, serverAddress) = await serverBuilder.build();
-          localServerAddress = serverAddress;
-          server = startedServer;
+          when(() => client.deploy.createUploadDescription(any()))
+              .thenAnswer((final _) async => 'this-is-an-upload-description');
 
           const symlinkedDirectoryName = 'symlinked_directory';
           DirectoryFactory(
@@ -493,10 +300,6 @@ dependencies:
           ).construct(testProjectDir);
         });
 
-        tearDown(() {
-          server.close(force: true);
-        });
-
         group('when deploying through CLI', () {
           late Future cliCommandFuture;
           setUp(() async {
@@ -508,10 +311,6 @@ dependencies:
               '123',
               '--project-dir',
               testProjectDir,
-              '--api-url',
-              localServerAddress.toString(),
-              '--scloud-dir',
-              testCacheFolderPath,
             ]);
           });
 
@@ -538,21 +337,26 @@ dependencies:
       group(
           'Given valid upload description response but project contains unresolved symlink',
           () {
-        late Uri localServerAddress;
-        late HttpServer server;
+        const projectId = 'my-project-id';
+        const projectUuid = '586a138e-66f3-4dcb-b2e6-bb2d38ab4a4a';
+        const bucketName = 'bucket';
 
+        final Map<String, dynamic> descriptionContent = {
+          'url':
+              "http://$bucketName.localhost:8000/$projectId%2F$projectUuid.zip?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=test-service-bucket%40hosting-example-414217.iam.gserviceaccount.com%2F20240909%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20240909T094501Z&X-Goog-Expires=600&X-Goog-SignedHeaders=accept%3Bcontent-type%3Bhost%3Bx-goog-meta-tenant-project-id&x-goog-signature=2a3432d7e650cd7f32e4b6ddb01051390ae40084fb45f7af25cfaa891f33425d7bf64939b78b9e339b28bcf5238dfb58c67fd8e1eb8957c2df22b1b91d1f01a3ecd1ad4217a570a7e7a80e2999164ca7d920058bfdf52851341fe3c85340da14917026c8efae8f733d5d6548a149ae0558f88307bfcf23f97c2a141317d2be5cf4035488bd7b01137333250be11a174e73096674d8eaffcc7c7d2849044a3eb7669c35f7e421f99ab9557610478c96b68b29962fa1ea002cf76a09a0f302c66157844bd1a2b4b8a36378fd18f8a8dab750d955ff1866c9b20105c56b1f3ebf88c4dcf75043518c74d3d25c54673557b397ba1e31336766004c06ddf7bbbe1940\\",
+          'type': 'binary',
+          'httpMethod': 'PUT',
+          'headers': {
+            'content-type': 'application/octet-stream',
+            'accept': '*/*',
+            'x-goog-meta-tenant-project-id': projectId,
+            'x-goog-meta-upload-id': 'upload-$projectUuid',
+            'host': '$bucketName.localhost:8000',
+          },
+        };
         setUp(() async {
-          final serverBuilder = HttpServerBuilder();
-          serverBuilder.withOnRequest((final request) async {
-            final response = request.response;
-            response.statusCode = 200;
-            response.write('"this-is-an-upload-description"');
-            await response.close();
-          });
-
-          final (startedServer, serverAddress) = await serverBuilder.build();
-          localServerAddress = serverAddress;
-          server = startedServer;
+          when(() => client.deploy.createUploadDescription(any()))
+              .thenAnswer((final _) async => jsonEncode(descriptionContent));
 
           DirectoryFactory(
             withSymLinks: [
@@ -562,10 +366,6 @@ dependencies:
               ),
             ],
           ).construct(testProjectDir);
-        });
-
-        tearDown(() {
-          server.close(force: true);
         });
 
         group('when deploying through CLI', () {
@@ -579,10 +379,6 @@ dependencies:
               '123',
               '--project-dir',
               testProjectDir,
-              '--api-url',
-              localServerAddress.toString(),
-              '--scloud-dir',
-              testCacheFolderPath,
             ]);
           });
 
@@ -606,34 +402,30 @@ dependencies:
       });
 
       group('and upload description response but with invalid url', () {
-        late Uri localServerAddress;
-        late HttpServer server;
         const projectId = 'my-project-id';
         const projectUuid = '586a138e-66f3-4dcb-b2e6-bb2d38ab4a4a';
         const bucketName = 'bucket';
 
         /// This url is missing the `bucketName` subdomain.
-        const uploadDescription =
-            '"{\\"url\\":\\"http://localhost:8000/$projectId%2F$projectUuid.zip?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=test-service-bucket%40hosting-example-414217.iam.gserviceaccount.com%2F20240909%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20240909T094501Z&X-Goog-Expires=600&X-Goog-SignedHeaders=accept%3Bcontent-type%3Bhost%3Bx-goog-meta-tenant-project-id&x-goog-signature=2a3432d7e650cd7f32e4b6ddb01051390ae40084fb45f7af25cfaa891f33425d7bf64939b78b9e339b28bcf5238dfb58c67fd8e1eb8957c2df22b1b91d1f01a3ecd1ad4217a570a7e7a80e2999164ca7d920058bfdf52851341fe3c85340da14917026c8efae8f733d5d6548a149ae0558f88307bfcf23f97c2a141317d2be5cf4035488bd7b01137333250be11a174e73096674d8eaffcc7c7d2849044a3eb7669c35f7e421f99ab9557610478c96b68b29962fa1ea002cf76a09a0f302c66157844bd1a2b4b8a36378fd18f8a8dab750d955ff1866c9b20105c56b1f3ebf88c4dcf75043518c74d3d25c54673557b397ba1e31336766004c06ddf7bbbe1940\\",\\"type\\":\\"binary\\",\\"httpMethod\\":\\"PUT\\",\\"headers\\":{\\"content-type\\":\\"application/octet-stream\\",\\"accept\\":\\"*/*\\",\\"x-goog-meta-tenant-project-id\\":\\"$projectId\\",\\"x-goog-meta-upload-id\\":\\"upload-$projectUuid\\",\\"host\\":\\"$bucketName.localhost:8000\\"}}"';
+        final Map<String, dynamic> descriptionContent = {
+          'url':
+              "http://localhost:8000/$projectId%2F$projectUuid.zip?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=test-service-bucket%40hosting-example-414217.iam.gserviceaccount.com%2F20240909%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20240909T094501Z&X-Goog-Expires=600&X-Goog-SignedHeaders=accept%3Bcontent-type%3Bhost%3Bx-goog-meta-tenant-project-id&x-goog-signature=2a3432d7e650cd7f32e4b6ddb01051390ae40084fb45f7af25cfaa891f33425d7bf64939b78b9e339b28bcf5238dfb58c67fd8e1eb8957c2df22b1b91d1f01a3ecd1ad4217a570a7e7a80e2999164ca7d920058bfdf52851341fe3c85340da14917026c8efae8f733d5d6548a149ae0558f88307bfcf23f97c2a141317d2be5cf4035488bd7b01137333250be11a174e73096674d8eaffcc7c7d2849044a3eb7669c35f7e421f99ab9557610478c96b68b29962fa1ea002cf76a09a0f302c66157844bd1a2b4b8a36378fd18f8a8dab750d955ff1866c9b20105c56b1f3ebf88c4dcf75043518c74d3d25c54673557b397ba1e31336766004c06ddf7bbbe1940\\",
+          'type': 'binary',
+          'httpMethod': 'PUT',
+          'headers': {
+            'content-type': 'application/octet-stream',
+            'accept': '*/*',
+            'x-goog-meta-tenant-project-id': projectId,
+            'x-goog-meta-upload-id': 'upload-$projectUuid',
+            'host': '$bucketName.localhost:8000',
+          },
+        };
 
         setUp(() async {
           DirectoryFactory.serverpodServerDir().construct(testProjectDir);
 
-          final serverBuilder = HttpServerBuilder();
-          serverBuilder.withOnRequest((final request) async {
-            final response = request.response;
-            response.statusCode = 200;
-            response.write(uploadDescription);
-            await response.close();
-          });
-
-          final (startedServer, serverAddress) = await serverBuilder.build();
-          localServerAddress = serverAddress;
-          server = startedServer;
-        });
-
-        tearDown(() {
-          server.close(force: true);
+          when(() => client.deploy.createUploadDescription(any()))
+              .thenAnswer((final _) async => jsonEncode(descriptionContent));
         });
 
         group('when deploying through CLI', () {
@@ -645,10 +437,6 @@ dependencies:
               '1',
               '--project',
               projectId,
-              '--api-url',
-              localServerAddress.toString(),
-              '--scloud-dir',
-              testCacheFolderPath,
               '--project-dir',
               testProjectDir,
             ]);
@@ -674,43 +462,29 @@ dependencies:
       });
 
       group('and valid upload description response', () {
-        late Uri localServerAddress;
-        late HttpServer server;
         const projectId = 'my-project-id';
         const projectUuid = '586a138e-66f3-4dcb-b2e6-bb2d38ab4a4a';
         const bucketName = 'bucket';
 
-        const uploadDescription = '"{'
-            '\\"url\\": \\"http://$bucketName.localhost:8000/$projectId%2F$projectUuid.zip?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=test-service-bucket%40hosting-example-414217.iam.gserviceaccount.com%2F20240909%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20240909T094501Z&X-Goog-Expires=600&X-Goog-SignedHeaders=accept%3Bcontent-type%3Bhost%3Bx-goog-meta-tenant-project-id&x-goog-signature=2a3432d7e650cd7f32e4b6ddb01051390ae40084fb45f7af25cfaa891f33425d7bf64939b78b9e339b28bcf5238dfb58c67fd8e1eb8957c2df22b1b91d1f01a3ecd1ad4217a570a7e7a80e2999164ca7d920058bfdf52851341fe3c85340da14917026c8efae8f733d5d6548a149ae0558f88307bfcf23f97c2a141317d2be5cf4035488bd7b01137333250be11a174e73096674d8eaffcc7c7d2849044a3eb7669c35f7e421f99ab9557610478c96b68b29962fa1ea002cf76a09a0f302c66157844bd1a2b4b8a36378fd18f8a8dab750d955ff1866c9b20105c56b1f3ebf88c4dcf75043518c74d3d25c54673557b397ba1e31336766004c06ddf7bbbe1940\\",'
-            '\\"type\\": \\"binary\\",'
-            '\\"httpMethod\\": \\"PUT\\",'
-            '\\"headers\\": {'
-            '\\"content-type\\": \\"application/octet-stream\\",'
-            '\\"accept\\": \\"*/*\\",'
-            '\\"x-goog-meta-tenant-project-id\\": \\"$projectId\\",'
-            '\\"x-goog-meta-upload-id\\": \\"upload-$projectUuid\\",'
-            '\\"host\\": \\"$bucketName.localhost:8000\\"'
-            '}'
-            '}"';
+        final Map<String, dynamic> descriptionContent = {
+          'url':
+              "http://$bucketName.localhost:8000/$projectId%2F$projectUuid.zip?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=test-service-bucket%40hosting-example-414217.iam.gserviceaccount.com%2F20240909%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20240909T094501Z&X-Goog-Expires=600&X-Goog-SignedHeaders=accept%3Bcontent-type%3Bhost%3Bx-goog-meta-tenant-project-id&x-goog-signature=2a3432d7e650cd7f32e4b6ddb01051390ae40084fb45f7af25cfaa891f33425d7bf64939b78b9e339b28bcf5238dfb58c67fd8e1eb8957c2df22b1b91d1f01a3ecd1ad4217a570a7e7a80e2999164ca7d920058bfdf52851341fe3c85340da14917026c8efae8f733d5d6548a149ae0558f88307bfcf23f97c2a141317d2be5cf4035488bd7b01137333250be11a174e73096674d8eaffcc7c7d2849044a3eb7669c35f7e421f99ab9557610478c96b68b29962fa1ea002cf76a09a0f302c66157844bd1a2b4b8a36378fd18f8a8dab750d955ff1866c9b20105c56b1f3ebf88c4dcf75043518c74d3d25c54673557b397ba1e31336766004c06ddf7bbbe1940\\",
+          'type': 'binary',
+          'httpMethod': 'PUT',
+          'headers': {
+            'content-type': 'application/octet-stream',
+            'accept': '*/*',
+            'x-goog-meta-tenant-project-id': projectId,
+            'x-goog-meta-upload-id': 'upload-$projectUuid',
+            'host': '$bucketName.localhost:8000',
+          },
+        };
 
         setUp(() async {
           DirectoryFactory.serverpodServerDir().construct(testProjectDir);
 
-          final serverBuilder = HttpServerBuilder();
-          serverBuilder.withOnRequest((final request) async {
-            final response = request.response;
-            response.statusCode = 200;
-            response.write(uploadDescription);
-            await response.close();
-          });
-
-          final (startedServer, serverAddress) = await serverBuilder.build();
-          localServerAddress = serverAddress;
-          server = startedServer;
-        });
-
-        tearDown(() {
-          server.close(force: true);
+          when(() => client.deploy.createUploadDescription(any()))
+              .thenAnswer((final _) async => jsonEncode(descriptionContent));
         });
 
         group('when deploying through CLI', () {
@@ -718,14 +492,8 @@ dependencies:
           setUp(() async {
             cliCommandFuture = cli.run([
               'deploy',
-              '--concurrency',
-              '1',
               '--project',
               projectId,
-              '--api-url',
-              localServerAddress.toString(),
-              '--scloud-dir',
-              testCacheFolderPath,
               '--project-dir',
               testProjectDir,
             ]);
@@ -747,7 +515,7 @@ dependencies:
 
           test('then zipped project is accessible in bucket.', () async {
             await cliCommandFuture;
-            final client = Client();
+            final client = http.Client();
             final storage = StorageApi(
               client,
               rootUrl: 'http://localhost:8000/',
@@ -760,6 +528,57 @@ dependencies:
               ),
             );
           });
+        });
+      });
+    });
+
+    group('and valid upload description response', () {
+      const projectId = 'my-project-id';
+      const projectUuid = '586a138e-66f3-4dcb-b2e6-bb2d38ab4a4a';
+      const bucketName = 'bucket';
+
+      final Map<String, dynamic> descriptionContent = {
+        'url':
+            "http://$bucketName.localhost:8000/$projectId%2F$projectUuid.zip?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=test-service-bucket%40hosting-example-414217.iam.gserviceaccount.com%2F20240909%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20240909T094501Z&X-Goog-Expires=600&X-Goog-SignedHeaders=accept%3Bcontent-type%3Bhost%3Bx-goog-meta-tenant-project-id&x-goog-signature=2a3432d7e650cd7f32e4b6ddb01051390ae40084fb45f7af25cfaa891f33425d7bf64939b78b9e339b28bcf5238dfb58c67fd8e1eb8957c2df22b1b91d1f01a3ecd1ad4217a570a7e7a80e2999164ca7d920058bfdf52851341fe3c85340da14917026c8efae8f733d5d6548a149ae0558f88307bfcf23f97c2a141317d2be5cf4035488bd7b01137333250be11a174e73096674d8eaffcc7c7d2849044a3eb7669c35f7e421f99ab9557610478c96b68b29962fa1ea002cf76a09a0f302c66157844bd1a2b4b8a36378fd18f8a8dab750d955ff1866c9b20105c56b1f3ebf88c4dcf75043518c74d3d25c54673557b397ba1e31336766004c06ddf7bbbe1940\\",
+        'type': 'binary',
+        'httpMethod': 'PUT',
+        'headers': {
+          'content-type': 'application/octet-stream',
+          'accept': '*/*',
+          'x-goog-meta-tenant-project-id': projectId,
+          'x-goog-meta-upload-id': 'upload-$projectUuid',
+          'host': '$bucketName.localhost:8000',
+        },
+      };
+
+      setUp(() async {
+        DirectoryFactory.serverpodServerDir().construct(testProjectDir);
+
+        when(() => client.deploy.createUploadDescription(any()))
+            .thenAnswer((final _) async => jsonEncode(descriptionContent));
+      });
+
+      group('when deploying through CLI with --dry-run', () {
+        late Future cliCommandFuture;
+        setUp(() async {
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--dry-run',
+            '--project',
+            projectId,
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        test('then command completes successfully.', () async {
+          await expectLater(cliCommandFuture, completes);
+        });
+
+        test('then dry run message is logged.', () async {
+          await cliCommandFuture;
+          expect(logger.infoCalls, isNotEmpty);
+          expect(logger.infoCalls.last.message, 'Dry run, skipping upload.');
         });
       });
     });
