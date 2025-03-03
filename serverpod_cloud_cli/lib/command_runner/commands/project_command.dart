@@ -10,6 +10,7 @@ import 'package:serverpod_cloud_cli/util/common.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
+import 'package:serverpod_cloud_cli/util/scloudignore.dart';
 import 'package:serverpod_cloud_cli/util/table_printer.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 
@@ -122,6 +123,15 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
         );
         throw ErrorExitException();
       });
+
+      try {
+        if (!ScloudIgnore.fileExists(rootFolder: Directory.current.path)) {
+          ScloudIgnore.writeTemplate(rootFolder: Directory.current.path);
+        }
+      } catch (e) {
+        logger.error('Failed to write to ${ScloudIgnore.fileName} file: $e');
+        throw ErrorExitException();
+      }
 
       logger.success(
         "Successfully created the ${ConfigFileConstants.fileName} configuration file for '$projectId'.",
@@ -280,6 +290,15 @@ class CloudProjectLinkCommand
     } catch (e) {
       logger
           .error('Failed to write to ${ConfigFileConstants.fileName} file: $e');
+      throw ErrorExitException();
+    }
+
+    try {
+      if (!ScloudIgnore.fileExists(rootFolder: projectDirectory.path)) {
+        ScloudIgnore.writeTemplate(rootFolder: projectDirectory.path);
+      }
+    } catch (e) {
+      logger.error('Failed to write to ${ScloudIgnore.fileName} file: $e');
       throw ErrorExitException();
     }
 

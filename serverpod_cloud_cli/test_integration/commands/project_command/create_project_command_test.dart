@@ -12,6 +12,7 @@ import 'package:yaml/yaml.dart';
 
 import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/http_server_builder.dart';
+import '../../../test_utils/project_factory.dart';
 import '../../../test_utils/test_command_logger.dart';
 
 void main() {
@@ -77,15 +78,7 @@ void main() {
         () {
       late Future commandResult;
       setUp(() async {
-        File('pubspec.yaml').writeAsStringSync(jsonToYaml({
-          'name': 'my_project_server',
-          'environment': {
-            'sdk': '>=3.6.0 <3.7.0',
-          },
-          'dependencies': {
-            'serverpod': '^2.3.0',
-          },
-        }));
+        DirectoryFactory.serverpodServerDir().construct('.');
 
         commandResult = cli.run([
           'project',
@@ -126,6 +119,13 @@ void main() {
         final project = yaml['project'] as YamlMap;
         expect(project['projectId'], projectId);
       });
+
+      test('then writes .scloudignore file', () async {
+        await commandResult;
+
+        final file = File('.scloudignore');
+        expect(file.existsSync(), isTrue);
+      });
     });
 
     group(
@@ -133,15 +133,7 @@ void main() {
         () {
       late Future commandResult;
       setUp(() async {
-        File('pubspec.yaml').writeAsStringSync(jsonToYaml({
-          'name': 'my_project_server',
-          'environment': {
-            'sdk': '>=3.6.0 <3.7.0',
-          },
-          'dependencies': {
-            'serverpod': '^2.3.0',
-          },
-        }));
+        DirectoryFactory.serverpodServerDir().construct('.');
 
         File('scloud.yaml').writeAsStringSync(jsonToYaml({
           'project': {'projectId': 'otherProjectId'},
@@ -185,6 +177,65 @@ void main() {
         final yaml = loadYaml(content) as YamlMap;
         final project = yaml['project'] as YamlMap;
         expect(project['projectId'], 'otherProjectId');
+      });
+    });
+
+    group(
+        'and inside a serverpod directory without .scloudignore file when calling create',
+        () {
+      late Future commandResult;
+      setUp(() async {
+        DirectoryFactory.serverpodServerDir().construct('.');
+
+        commandResult = cli.run([
+          'project',
+          'create',
+          projectId,
+          '--no-enable-db',
+          '--api-url',
+          localServerAddress.toString(),
+          '--scloud-dir',
+          testCacheFolderPath,
+        ]);
+      });
+
+      test('then writes .scloudignore file', () async {
+        await commandResult;
+
+        final file = File('.scloudignore');
+        expect(file.existsSync(), isTrue);
+      });
+    });
+
+    group(
+        'and inside a serverpod directory with a custom .scloudignore file when calling create',
+        () {
+      late Future commandResult;
+      setUp(() async {
+        DirectoryFactory.serverpodServerDir().construct(testCacheFolderPath);
+
+        File('.scloudignore').writeAsStringSync(
+          '# Custom .scloudignore file',
+        );
+
+        commandResult = cli.run([
+          'project',
+          'create',
+          projectId,
+          '--no-enable-db',
+          '--api-url',
+          localServerAddress.toString(),
+          '--scloud-dir',
+          testCacheFolderPath,
+        ]);
+      });
+
+      test('then the content of the .scloudignore file is not changed',
+          () async {
+        await commandResult;
+
+        final content = File('.scloudignore').readAsStringSync();
+        expect(content, '# Custom .scloudignore file');
       });
     });
 

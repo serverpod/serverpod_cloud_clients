@@ -274,6 +274,66 @@ void main() {
         });
       });
 
+      group(
+          'and inside a serverpod directory without .scloudignore file when calling create',
+          () {
+        late Future commandResult;
+        setUp(() async {
+          commandResult = cli.run([
+            'project',
+            'link',
+            '--project',
+            projectId,
+            '--api-url',
+            localServerAddress.toString(),
+            '--scloud-dir',
+            testCacheFolderPath,
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        test('then writes .scloudignore file', () async {
+          await commandResult;
+          final file = File(p.join(testProjectDir, '.scloudignore'));
+          expect(file.existsSync(), isTrue);
+        });
+      });
+
+      group(
+          'and inside a serverpod directory with a custom .scloudignore file when calling create',
+          () {
+        late Future commandResult;
+        setUp(() async {
+          File(p.join(testProjectDir, '.scloudignore')).writeAsStringSync(
+            '# Custom .scloudignore file',
+          );
+
+          commandResult = cli.run([
+            'project',
+            'link',
+            '--project',
+            projectId,
+            '--api-url',
+            localServerAddress.toString(),
+            '--scloud-dir',
+            testCacheFolderPath,
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        test('then the content of the .scloudignore file is not changed',
+            () async {
+          await commandResult;
+
+          final content = File(
+            p.join(testProjectDir, '.scloudignore'),
+          ).readAsStringSync();
+          expect(content, '# Custom .scloudignore file');
+        });
+      });
+
       group('and incorrectly formatted scloud.yaml exists when executing link',
           () {
         late Future commandResult;

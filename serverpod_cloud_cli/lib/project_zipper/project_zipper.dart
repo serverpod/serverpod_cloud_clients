@@ -6,6 +6,7 @@ import 'package:pool/pool.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/project_zipper/helpers/project_files.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dart';
+import 'package:serverpod_cloud_cli/util/scloudignore.dart';
 
 /// [ProjectZipper] is a class that zips a project directory.
 /// It is used to prepare a project for deployment to the cloud.
@@ -100,6 +101,6 @@ abstract final class ProjectZipper {
 
   static const List<String> recognizedIgnoreRuleFiles = [
     '.gitignore',
-    '.scloudignore',
+    ScloudIgnore.fileName,
   ];
 }
