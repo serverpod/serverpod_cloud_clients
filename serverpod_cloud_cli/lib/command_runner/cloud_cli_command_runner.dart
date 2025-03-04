@@ -40,13 +40,14 @@ class CloudCliCommandRunner extends BetterCommandRunner {
     required this.version,
     required this.serviceProvider,
     super.setLogLevel,
-    super.logError,
-    super.logInfo,
   })  : _versionCommand = VersionCommand(logger: logger),
         super(
           'scloud',
           'Manage your Serverpod Cloud projects',
           wrapTextColumn: logger.wrapTextColumn,
+          messageOutput: MessageOutput(
+            logUsage: logger.info,
+          ),
         );
 
   static CloudCliCommandRunner create({
@@ -58,8 +59,6 @@ class CloudCliCommandRunner extends BetterCommandRunner {
       logger: logger,
       version: version ?? cliVersion,
       serviceProvider: serviceProvider ?? CloudCliServiceProvider(),
-      logInfo: logger.info,
-      logError: logger.error,
       setLogLevel: ({
         final String? commandName,
         required final CommandRunnerLogLevel parsedLogLevel,

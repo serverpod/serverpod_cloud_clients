@@ -23,7 +23,9 @@ abstract class CloudCliCommand<T extends OptionDefinition>
     required this.logger,
     this.options = const [],
   }) : super(
-          logInfo: (final String message) => logger.info(message),
+          passOutput: MessageOutput(
+            logUsage: logger.info,
+          ),
           wrapTextColumn: logger.wrapTextColumn,
         ) {
     options.prepareForParsing(argParser);

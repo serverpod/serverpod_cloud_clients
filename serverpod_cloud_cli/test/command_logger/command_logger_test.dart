@@ -49,13 +49,13 @@ void main() {
     });
 
     expect(
-      stderr.output,
-      'ERROR: An error occurred\n',
-    );
-    expect(
       stdout.output,
-      'Try running the command with different arguments.\n',
+      stringContainsInOrder([
+        'ERROR: An error occurred',
+        'Try running the command with different arguments.',
+      ]),
     );
+    expect(stderr.output, '');
   });
 
   test(
@@ -71,13 +71,13 @@ void main() {
     });
 
     expect(
-      stderr.output,
-      '\nERROR: An error occurred\n',
-    );
-    expect(
       stdout.output,
-      'Try running the command with different arguments.\n',
+      stringContainsInOrder([
+        'ERROR: An error occurred',
+        'Try running the command with different arguments.',
+      ]),
     );
+    expect(stderr.output, '');
   });
 
   test(
@@ -92,10 +92,10 @@ void main() {
     });
 
     expect(
-      stderr.output,
+      stdout.output,
       '\nERROR: An error occurred\n',
     );
-    expect(stdout.output, '');
+    expect(stderr.output, '');
   });
 
   test(
@@ -351,11 +351,8 @@ void main() {
       );
     });
 
-    expect(stderr.output, 'WARNING: Invalid value found in config\n');
-    expect(
-      stdout.output,
-      '',
-    );
+    expect(stdout.output, 'WARNING: Invalid value found in config\n');
+    expect(stderr.output, '');
   });
 
   test(
@@ -370,13 +367,12 @@ void main() {
     });
 
     expect(
-        stderr.output,
-        '\n'
-        'WARNING: Invalid value found in config\n');
-    expect(
-      stdout.output,
-      '',
-    );
+        stdout.output,
+        stringContainsInOrder([
+          '\n',
+          'WARNING: Invalid value found in config\n',
+        ]));
+    expect(stderr.output, '');
   });
 
   test(
@@ -388,11 +384,14 @@ void main() {
           hint: 'Try removing the value.');
     });
 
-    expect(stderr.output, 'WARNING: Invalid value found in config\n');
     expect(
       stdout.output,
-      'Try removing the value.\n',
+      stringContainsInOrder([
+        'WARNING: Invalid value found in config',
+        'Try removing the value.',
+      ]),
     );
+    expect(stderr.output, '');
   });
 
   test(
