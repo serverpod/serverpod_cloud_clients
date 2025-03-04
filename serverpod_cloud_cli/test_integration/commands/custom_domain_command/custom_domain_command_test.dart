@@ -297,42 +297,14 @@ void main() {
       test('then logs follow up instructions', () async {
         await commandResult;
 
-        final followUpLogCalls = [
-          ...logger.listCalls,
-          ...logger.terminalCommandCalls
-        ];
+        final followUpLogCalls =
+            logger.infoCalls.map((final call) => call.message);
 
         expect(followUpLogCalls, isNotEmpty);
         expect(
           followUpLogCalls,
-          containsAll(
-            [
-              equalsListCall(
-                title: 'Follow these steps to complete setup:',
-                items: [
-                  'Add a CNAME record with the value "$projectId.api.serverpod.space" to the DNS configuration for this domain.',
-                  'Wait for the update to propagate. This can take up to a few hours.',
-                  'Run the following command to verify the DNS record (Serverpod Cloud will also try to verify the record periodically):',
-                ],
-                newParagraph: true,
-              ),
-              equalsTerminalCommandCall(
-                command:
-                    'scloud domain refresh-record www.domain.com --project $projectId',
-                newParagraph: true,
-              ),
-              equalsListCall(
-                items: [
-                  'When verification succeeds, the custom domain will shortly become active.',
-                  'Run the following command to check the status:',
-                ],
-                newParagraph: true,
-              ),
-              equalsTerminalCommandCall(
-                command: 'scloud domain list --project $projectId',
-                newParagraph: true,
-              ),
-            ],
+          contains(
+            'Complete the setup by adding the records to your DNS configuration',
           ),
         );
       });

@@ -117,6 +117,9 @@ class CloudAddCustomDomainCommand
         logger: logger,
         domainName: domainName,
         projectId: projectId,
+        records: [
+          (type: 'CNAME', value: targetDefaultDomain),
+        ],
       );
       return;
     }
@@ -127,6 +130,17 @@ class CloudAddCustomDomainCommand
       logger: logger,
       domainName: domainName,
       projectId: projectId,
+      records: [
+        (
+          type: 'ANAME',
+          value: targetDefaultDomain,
+        ),
+        (
+          type: 'TXT',
+          value: customDomainNameWithDefaultDomains
+              .customDomainName.dnsRecordVerificationValue
+        ),
+      ],
     );
   }
 
@@ -135,15 +149,40 @@ class CloudAddCustomDomainCommand
     required final String domainName,
     required final String projectId,
     required final String action,
+    required final List<({String type, String value})> records,
   }) {
-    logger.list(
+    logger.info(
+      'Complete the setup by adding the records to your DNS configuration',
       newParagraph: true,
-      title: 'Follow these steps to complete setup:',
+    );
+
+    final tablePrinter = TablePrinter();
+
+    tablePrinter.addHeaders(['Record type', 'Domain name', 'Value']);
+    for (final record in records) {
+      tablePrinter.addRow([record.type, domainName, record.value]);
+    }
+
+    logger.box(tablePrinter.toString(), newParagraph: true);
+
+    logger.info(
+      'Check the status of the setup by running the command:',
+      newParagraph: true,
+    );
+
+    logger.terminalCommand(
+      newParagraph: true,
+      'scloud domain list --project $projectId',
+    );
+
+    logger.list(
+      title: 'Additional context',
       [
-        action,
-        'Wait for the update to propagate. This can take up to a few hours.',
-        'Run the following command to verify the DNS record (Serverpod Cloud will also try to verify the record periodically):',
+        'DNS propagation can take up to 24 hours to complete.',
+        'Serverpod Cloud will periodically verify the record(s).',
+        'To manually force a verification, run the command:',
       ],
+      newParagraph: true,
     );
 
     logger.terminalCommand(
@@ -151,15 +190,7 @@ class CloudAddCustomDomainCommand
       'scloud domain refresh-record $domainName --project $projectId',
     );
 
-    logger.list(newParagraph: true, [
-      'When verification succeeds, the custom domain will shortly become active.',
-      'Run the following command to check the status:'
-    ]);
-
-    logger.terminalCommand(
-      newParagraph: true,
-      'scloud domain list --project $projectId',
-    );
+    logger.info(' ', newParagraph: true);
   }
 }
 
