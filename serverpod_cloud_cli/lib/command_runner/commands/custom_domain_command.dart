@@ -14,13 +14,24 @@ class CloudCustomDomainCommand extends CloudCliCommand {
   final name = 'domain';
 
   @override
-  final description = 'Manage Serverpod Cloud custom domains.';
+  final description = r'''
+Bring your own domain to Serverpod Cloud. 
+
+Get started by adding a custom domain to your project with the command:
+
+  $ scloud domain add example.com <target> --project <project-id>
+
+The valid targets are:
+- api: Serverpod endpoints
+- insights: Serverpod insights
+- web: Relic server (e.g. REST API or a Flutter web app)
+''';
 
   CloudCustomDomainCommand({required super.logger}) {
     addSubcommand(CloudAddCustomDomainCommand(logger: logger));
     addSubcommand(CloudListCustomDomainCommand(logger: logger));
     addSubcommand(CloudRemoveCustomDomainCommand(logger: logger));
-    addSubcommand(CloudRefreshCustomDomainRecordCommand(logger: logger));
+    addSubcommand(CloudVerifyCustomDomainRecordCommand(logger: logger));
   }
 }
 
@@ -35,9 +46,11 @@ abstract final class CustomDomainCommandConfig {
   static const target = ConfigOption(
     argName: 'target',
     argAbbrev: 't',
-    helpText: 'The target of the custom domain.',
+    argPos: 1,
+    helpText:
+        'The Serverpod server target of the custom domain, only one can be specified.',
     mandatory: true,
-    valueHelp: '[api|web|insights]',
+    valueHelp: '[ api | web | insights ]',
   );
 }
 
@@ -55,7 +68,19 @@ enum AddCustomDomainCommandConfig implements OptionDefinition {
 class CloudAddCustomDomainCommand
     extends CloudCliCommand<AddCustomDomainCommandConfig> {
   @override
-  String get description => 'Add a custom domain.';
+  String get description => '''
+Add a custom domain to your project.
+
+You need to have a domain name and a DNS provider that supports 
+TXT, CNAME and/or ANAME records.
+
+You can add domains for each Serverpod server target.
+
+The valid targets are:
+- api: Serverpod endpoints
+- insights: Serverpod insights
+- web: Relic server (e.g. REST API or a Flutter web app)
+''';
 
   @override
   String get name => 'add';
@@ -187,7 +212,7 @@ class CloudAddCustomDomainCommand
 
     logger.terminalCommand(
       newParagraph: true,
-      'scloud domain refresh-record $domainName --project $projectId',
+      'scloud domain verify $domainName --project $projectId',
     );
 
     logger.info(' ', newParagraph: true);
@@ -342,15 +367,15 @@ enum RefreshCustomDomainRecordCommandConfig implements OptionDefinition {
   final ConfigOption option;
 }
 
-class CloudRefreshCustomDomainRecordCommand
+class CloudVerifyCustomDomainRecordCommand
     extends CloudCliCommand<RefreshCustomDomainRecordCommandConfig> {
   @override
-  String get description => 'Refresh a custom domain record.';
+  String get description => 'Verify the DNS record for a custom domain.';
 
   @override
-  String get name => 'refresh-record';
+  String get name => 'verify';
 
-  CloudRefreshCustomDomainRecordCommand({required super.logger})
+  CloudVerifyCustomDomainRecordCommand({required super.logger})
       : super(options: RefreshCustomDomainRecordCommandConfig.values);
 
   @override

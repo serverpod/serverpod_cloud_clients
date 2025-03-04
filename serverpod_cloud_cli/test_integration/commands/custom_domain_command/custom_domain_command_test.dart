@@ -180,12 +180,12 @@ void main() {
       });
     });
 
-    group('when executing domain refresh-record', () {
+    group('when executing domain verify', () {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
           'domain',
-          'refresh-record',
+          'verify',
           'domain.com',
           '--project',
           projectId,
@@ -430,7 +430,7 @@ void main() {
       });
     });
 
-    group('and status is configured when executing domain refresh-record', () {
+    group('and status is configured when executing domain verify', () {
       late Uri localServerAddress;
 
       late Future commandResult;
@@ -446,7 +446,7 @@ void main() {
 
         commandResult = cli.run([
           'domain',
-          'refresh-record',
+          'verify',
           'domain.com',
           '--project',
           projectId,
@@ -475,7 +475,7 @@ void main() {
       });
     });
 
-    group('and status is pending when executing domain refresh-record', () {
+    group('and status is pending when executing domain verify', () {
       late Uri localServerAddress;
 
       late Future commandResult;
@@ -491,7 +491,7 @@ void main() {
 
         commandResult = cli.run([
           'domain',
-          'refresh-record',
+          'verify',
           'domain.com',
           '--project',
           projectId,
@@ -521,7 +521,7 @@ void main() {
       });
     });
 
-    group('and status is needsSetup when executing domain refresh-record', () {
+    group('and status is needsSetup when executing domain verify', () {
       late Uri localServerAddress;
 
       late Future commandResult;
@@ -537,7 +537,7 @@ void main() {
 
         commandResult = cli.run([
           'domain',
-          'refresh-record',
+          'verify',
           'domain.com',
           '--project',
           projectId,
@@ -588,7 +588,7 @@ void main() {
 
         commandResult = cli.run([
           'domain',
-          'refresh-record',
+          'verify',
           'domain.com',
           '--project',
           projectId,
