@@ -5,6 +5,11 @@ class MockStdout implements Stdout {
   final _buffer = StringBuffer();
 
   @override
+  final bool supportsAnsiEscapes;
+
+  MockStdout({this.supportsAnsiEscapes = false});
+
+  @override
   Encoding encoding = utf8;
 
   @override
@@ -45,9 +50,6 @@ class MockStdout implements Stdout {
 
   @override
   IOSink get nonBlocking => throw UnimplementedError();
-
-  @override
-  bool get supportsAnsiEscapes => false;
 
   @override
   int get terminalColumns => 80;

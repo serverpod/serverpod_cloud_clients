@@ -182,6 +182,30 @@ class CommandLogger {
     );
   }
 
+  /// **Raw Messages Guidelines**
+  ///
+  /// Used for raw text output for full control over the output.
+  /// You should normally not use this directly, but rely on prebuilt printers
+  /// like [TablePrinter]. This method is useful when constructing custom
+  /// printers where additional control may be needed.
+  ///
+  /// Setting the [style] to [TextLogStyle.hint] will output the content in a
+  /// dark gray color.
+  ///
+  /// Format:
+  /// ```bash
+  /// <content>
+  /// ```
+  void raw(
+    final String content, {
+    final cli.AnsiStyle? style,
+    final cli.LogLevel logLevel = cli.LogLevel.info,
+  }) {
+    final String characters = style?.wrap(content) ?? content;
+
+    _logger.write(characters, logLevel, newLine: false, newParagraph: false);
+  }
+
   /// **List Guidelines**
   ///
   /// Use when displaying a list of items. Uses info log level.

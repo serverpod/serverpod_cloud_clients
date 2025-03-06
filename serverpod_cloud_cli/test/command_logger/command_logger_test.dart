@@ -4,6 +4,7 @@ import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:test/test.dart';
 
+import '../../test_utils/mock_stdout.dart';
 import '../../test_utils/test_command_logger.dart';
 
 void main() {
@@ -430,5 +431,44 @@ void main() {
       '│ Some information. │\n'
       '└───────────────────┘\n',
     );
+  });
+
+  test(
+      'Given empty standard out '
+      'when calling raw '
+      'then output is printed as is', () async {
+    final (:stdout, :stderr, :stdin) = await collectOutput(() {
+      commandLogger.raw('Some raw text');
+    });
+
+    expect(stdout.output, 'Some raw text');
+  });
+
+  test(
+      'Given empty standard out that supports ANSI escapes '
+      'when calling raw without a style '
+      'then output is printed as is', () async {
+    final (:stdout, :stderr, :stdin) = await collectOutput(
+      stdout: MockStdout(supportsAnsiEscapes: true),
+      () {
+        commandLogger.raw('Some raw text');
+      },
+    );
+
+    expect(stdout.output, 'Some raw text');
+  });
+
+  test(
+      'Given empty standard out that does not support ANSI escapes '
+      'when calling raw with style dark gray '
+      'then output is printed as is', () async {
+    final (:stdout, :stderr, :stdin) = await collectOutput(
+      stdout: MockStdout(supportsAnsiEscapes: false),
+      () {
+        commandLogger.raw('Some raw text', style: AnsiStyle.darkGray);
+      },
+    );
+
+    expect(stdout.output, 'Some raw text');
   });
 }

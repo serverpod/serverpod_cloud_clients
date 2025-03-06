@@ -498,10 +498,13 @@ Future<({MockStdout stdout, MockStdout stderr, MockStdin stdin})>
     collectOutput<T>(
   final FutureOr<T> Function() runner, {
   final List<String> stdinLines = const [],
+  final MockStdout? stdout,
+  final MockStdout? stderr,
+  final MockStdin? stdin,
 }) async {
-  final standardOut = MockStdout();
-  final standardError = MockStdout();
-  final standardIn = MockStdin(stdinLines);
+  final standardOut = stdout ?? MockStdout();
+  final standardError = stderr ?? MockStdout();
+  final standardIn = stdin ?? MockStdin(stdinLines);
 
   await IOOverrides.runZoned(
     () async {
