@@ -20,13 +20,13 @@ abstract final class ProjectFiles {
   ///
   /// The ignore rules are determined by the presence of
   /// [ProjectZipper.recognizedIgnoreRuleFiles] files.
-  static List<String> collectFiles({
+  static (Set<String> collectedFiles, Set<String> ignoredFiles) collectFiles({
     required final Directory projectDirectory,
     required final CommandLogger logger,
   }) {
     final root = p.toUri(p.normalize(projectDirectory.path)).path;
     const beneath = '.';
-    final nonIgnoredFiles = Ignore.listFiles(
+    final (collectedFiles, ignoredFiles) = Ignore.listFiles(
       beneath: beneath,
       listDir: (final dir) {
         final contents = Directory(_resolve(from: root, path: dir))
@@ -110,9 +110,25 @@ abstract final class ProjectFiles {
         );
       },
       isDir: (final dir) => _dirExists(_resolve(from: root, path: dir)),
-    ).map((final path) => _resolve(from: root, path: path)).toList();
+    );
 
-    return nonIgnoredFiles;
+    final collected = collectedFiles
+        .map((final file) => _resolve(from: beneath, path: file))
+        .toSet();
+
+    final ignored = ignoredFiles
+        .map((final file) => _resolve(from: beneath, path: file))
+        .toSet();
+
+    return (collected, ignored);
+  }
+
+  static String resolvePath({
+    required final Directory fromDir,
+    required final String path,
+  }) {
+    final root = p.toUri(p.normalize(fromDir.path)).path;
+    return _resolve(from: root, path: path);
   }
 
   static String _resolve({

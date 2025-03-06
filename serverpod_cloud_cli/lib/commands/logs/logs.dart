@@ -1,5 +1,5 @@
 import 'package:serverpod_cloud_cli/util/common.dart';
-import 'package:serverpod_cloud_cli/util/table_printer.dart';
+import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 
 abstract class LogsFeature {

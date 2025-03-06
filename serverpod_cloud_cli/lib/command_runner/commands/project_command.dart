@@ -11,7 +11,7 @@ import 'package:serverpod_cloud_cli/util/configuration.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
 import 'package:serverpod_cloud_cli/util/scloudignore.dart';
-import 'package:serverpod_cloud_cli/util/table_printer.dart';
+import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 
 class CloudProjectCommand extends CloudCliCommand {

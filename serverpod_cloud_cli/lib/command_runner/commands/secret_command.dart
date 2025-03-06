@@ -3,7 +3,7 @@ import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/util/configuration.dart';
-import 'package:serverpod_cloud_cli/util/table_printer.dart';
+import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 
 class CloudSecretCommand extends CloudCliCommand {
   @override

@@ -1,12 +1,13 @@
 import 'dart:io';
-
 import 'package:archive/archive_io.dart';
 import 'package:cli_tools/cli_tools.dart';
 import 'package:pool/pool.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/project_zipper/helpers/project_files.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dart';
+import 'package:serverpod_cloud_cli/util/printers/file_tree_printer.dart';
 import 'package:serverpod_cloud_cli/util/scloudignore.dart';
+import 'package:path/path.dart' as p;
 
 /// [ProjectZipper] is a class that zips a project directory.
 /// It is used to prepare a project for deployment to the cloud.
@@ -43,16 +44,18 @@ abstract final class ProjectZipper {
       throw ProjectDirectoryDoesNotExistException(projectDirectory.path);
     }
 
-    final filesToUpload = ProjectFiles.collectFiles(
+    final (filesToUpload, filesIgnored) = ProjectFiles.collectFiles(
       projectDirectory: projectDirectory,
       logger: logger,
     );
 
     logger.debug('Found ${filesToUpload.length} files to upload.');
     if (logger.logLevel == LogLevel.debug) {
-      for (final file in filesToUpload) {
-        logger.debug(file, type: TextLogType.bullet);
-      }
+      FileTreePrinter.writeFileTree(
+        filePaths: filesToUpload,
+        ignoredPaths: filesIgnored,
+        write: logger.raw,
+      );
     }
 
     final archive = Archive();
@@ -68,7 +71,9 @@ abstract final class ProjectZipper {
 
         archive.addFile(
           ArchiveFile(
-            path.replaceFirst('${projectDirectory.path}/', ''),
+            p.normalize(
+              path.replaceFirst('${projectDirectory.path}${p.separator}', ''),
+            ),
             length,
             bytes,
           ),
@@ -76,7 +81,13 @@ abstract final class ProjectZipper {
       });
     }
 
-    await Future.wait(filesToUpload.map(addFileToArchive));
+    final fullPaths = filesToUpload.map(
+      (final path) => ProjectFiles.resolvePath(
+        fromDir: projectDirectory,
+        path: path,
+      ),
+    );
+    await Future.wait(fullPaths.map(addFileToArchive));
 
     if (archive.isEmpty) {
       throw const EmptyProjectException();

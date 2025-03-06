@@ -1,6 +1,6 @@
 import 'package:collection/collection.dart';
 
-import 'common.dart';
+import '../common.dart';
 
 /// Helper class for formatting text as a table of rows with aligned columns.
 /// It supports an optional header.

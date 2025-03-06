@@ -163,7 +163,7 @@ final class Ignore {
           candidate == '.' ||
           candidate.isEmpty ||
           path.length > candidate.length && path[candidate.length] == '/',
-    ).isEmpty;
+    ).$1.isEmpty;
   }
 
   /// Returns all the files in the tree under (and including) [beneath] not
@@ -219,7 +219,7 @@ final class Ignore {
   ///   ).forEach(print);
   /// }
   /// ```
-  static List<String> listFiles({
+  static (Set<String> collectedFiles, Set<String> ignoredFiles) listFiles({
     String beneath = '',
     required final Iterable<String> Function(String) listDir,
     required final Ignore? Function(String) ignoreForDir,
@@ -244,7 +244,11 @@ final class Ignore {
     beneath = '/$beneath';
 
     // Will contain all the files that are not ignored.
-    final result = <String>[];
+    final result = <String>{};
+
+    // Will contain all the files that are ignored.
+    final ignoredFiles = <String>{};
+
     // At any given point in the search, this will contain the Ignores from
     // directories leading up to the current entity.
     // The single `null` aligns popping and pushing in this stack with [toVisit]
@@ -258,7 +262,7 @@ final class Ignore {
       final partial = beneath.substring(0, index + 1);
       if (_matchesStack(ignoreStack, partial)) {
         // A directory on the way towards [beneath] was ignored. Empty result.
-        return <String>[];
+        return (<String>{}, <String>{});
       }
       final ignore = ignoreForDir(
         partial == '/' ? '.' : partial.substring(1, partial.length - 1),
@@ -287,6 +291,7 @@ final class Ignore {
       final currentIsDir = isDir(normalizedCurrent);
       if (_matchesStack(ignoreStack, currentIsDir ? '$current/' : current)) {
         // current was ignored. Continue with the next item.
+        ignoredFiles.add(normalizedCurrent);
         continue;
       }
       if (currentIsDir) {
@@ -309,7 +314,7 @@ final class Ignore {
         result.add(normalizedCurrent);
       }
     }
-    return result;
+    return (result, ignoredFiles);
   }
 }
 

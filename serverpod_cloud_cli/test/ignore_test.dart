@@ -53,7 +53,7 @@ void main() {
             candidate == '.' ||
             path.length > candidate.length && path[candidate.length] == '/';
 
-        final r = Ignore.listFiles(
+        final (r, _) = Ignore.listFiles(
           beneath: pathWithoutSlash,
           includeDirs: true,
           listDir: listDir,
@@ -75,7 +75,7 @@ void main() {
         }
 
         // Also test that the logic of walking the tree works.
-        final r2 = Ignore.listFiles(
+        final (r2, _) = Ignore.listFiles(
           includeDirs: true,
           listDir: listDir,
           ignoreForDir: ignoreForDir,

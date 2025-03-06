@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:serverpod_cloud_cli/util/table_printer.dart';
+import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 
 void main() async {
   group('Given an empty TablePrinter', () {
