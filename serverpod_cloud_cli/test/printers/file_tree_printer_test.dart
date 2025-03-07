@@ -202,6 +202,38 @@ void main() {
       ╰─ b.dart
 ''');
     });
+
+    test(
+        'Given a nested directories with different lengths '
+        'when printing the file tree '
+        'then the structure is printed in sorted order', () {
+      final result = BufferLogger();
+
+      FileTreePrinter.writeFileTree(
+        filePaths: {
+          'aa.dart',
+          'web/long/nested/path/to/file.dart',
+          'a/b/c.dart',
+          'a/b/a.dart',
+        },
+        ignoredPaths: {},
+        write: result.raw,
+      );
+
+      expect(result.output, '''
+├─ a
+│  ╰─ b
+│     ├─ a.dart
+│     ╰─ c.dart
+├─ web
+│  ╰─ long
+│     ╰─ nested
+│        ╰─ path
+│           ╰─ to
+│              ╰─ file.dart
+╰─ aa.dart
+''');
+    });
   });
 
   group('Only ignored files - ', () {

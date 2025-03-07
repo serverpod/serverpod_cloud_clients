@@ -113,11 +113,11 @@ abstract final class ProjectFiles {
     );
 
     final collected = collectedFiles
-        .map((final file) => _resolve(from: beneath, path: file))
+        .map((final file) => _resolve(from: root, path: file))
         .toSet();
 
     final ignored = ignoredFiles
-        .map((final file) => _resolve(from: beneath, path: file))
+        .map((final file) => _resolve(from: root, path: file))
         .toSet();
 
     return (collected, ignored);

@@ -20,6 +20,12 @@ import 'package:path/path.dart' as p;
 ///
 /// The [zipProject] method is the main entry point for this class.
 abstract final class ProjectZipper {
+  static String stripRoot(final String rootPath, final String fullPath) {
+    return p.normalize(
+      fullPath.replaceFirst('$rootPath${p.separator}', ''),
+    );
+  }
+
   /// Zips a project directory.
   /// Returns a list of bytes representing the zipped project.
   ///
@@ -40,8 +46,10 @@ abstract final class ProjectZipper {
     required final CommandLogger logger,
     final int fileReadPoolSize = 5,
   }) async {
+    final projectPath = projectDirectory.path;
+
     if (!projectDirectory.existsSync()) {
-      throw ProjectDirectoryDoesNotExistException(projectDirectory.path);
+      throw ProjectDirectoryDoesNotExistException(projectPath);
     }
 
     final (filesToUpload, filesIgnored) = ProjectFiles.collectFiles(
@@ -52,8 +60,12 @@ abstract final class ProjectZipper {
     logger.debug('Found ${filesToUpload.length} files to upload.');
     if (logger.logLevel == LogLevel.debug) {
       FileTreePrinter.writeFileTree(
-        filePaths: filesToUpload,
-        ignoredPaths: filesIgnored,
+        filePaths: filesToUpload
+            .map((final file) => stripRoot(projectPath, file))
+            .toSet(),
+        ignoredPaths: filesIgnored
+            .map((final file) => stripRoot(projectPath, file))
+            .toSet(),
         write: logger.raw,
       );
     }
@@ -70,32 +82,21 @@ abstract final class ProjectZipper {
         final bytes = await file.readAsBytes();
 
         archive.addFile(
-          ArchiveFile(
-            p.normalize(
-              path.replaceFirst('${projectDirectory.path}${p.separator}', ''),
-            ),
-            length,
-            bytes,
-          ),
+          ArchiveFile(stripRoot(projectPath, path), length, bytes),
         );
       });
     }
 
-    final fullPaths = filesToUpload.map(
-      (final path) => ProjectFiles.resolvePath(
-        fromDir: projectDirectory,
-        path: path,
-      ),
-    );
-    await Future.wait(fullPaths.map(addFileToArchive));
+    await Future.wait(filesToUpload.map(addFileToArchive));
 
     if (archive.isEmpty) {
       throw const EmptyProjectException();
     }
 
     final encoded = ZipEncoder().encode(archive);
-    logger
-        .debug('Encoded ${archive.length} files to ${encoded?.length} bytes.');
+    logger.debug(
+      'Encoded ${archive.length} files to ${_formatFileSize(encoded?.length ?? 0)}.',
+    );
 
     if (encoded == null) {
       // This should never happen.
@@ -104,6 +105,15 @@ abstract final class ProjectZipper {
     }
 
     return encoded;
+  }
+
+  static String _formatFileSize(final int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    if (bytes < 1024 * 1024 * 1024) {
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    }
+    return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
   }
 
   static const List<String> defaultIgnoreRules = [

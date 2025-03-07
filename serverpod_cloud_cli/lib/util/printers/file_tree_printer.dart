@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cli_tools/cli_tools.dart';
 import 'package:path/path.dart' as p;
 
@@ -35,14 +37,34 @@ abstract final class FileTreePrinter {
       ...ignoredPaths.map((final path) => _TreeNode(path, true)),
     ];
 
+    // Sort files by directory structure
+    // Files comes after directories, and directories are sorted alphabetically
+    //
+    // Example of sorted output:
+    // a/b/z.dart
+    // a/z/a.dart
+    // z/a.dart
+    // a.dart
     allFiles.sort((final a, final b) {
-      final aDirs = p.split(a.part).length - 1;
-      final bDirs = p.split(b.part).length - 1;
+      final aDirs = p.split(a.part);
+      final bDirs = p.split(b.part);
 
-      if (aDirs > bDirs) return -1;
-      if (aDirs < bDirs) return 1;
+      final minParts = min(aDirs.length, bDirs.length);
 
-      return a.part.compareTo(b.part);
+      for (var i = 0; i < minParts; i++) {
+        final isLast = i == minParts - 1;
+        if (isLast && aDirs.length != bDirs.length) {
+          // If paths are different lengths, directories (longer paths) come first
+          return bDirs.length.compareTo(aDirs.length);
+        }
+
+        // If parts are different at this level, sort alphabetically
+        if (aDirs[i] != bDirs[i]) {
+          return aDirs[i].compareTo(bDirs[i]);
+        }
+      }
+
+      return 0;
     });
 
     final tree = _buildTree(allFiles);
