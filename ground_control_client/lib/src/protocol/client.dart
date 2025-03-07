@@ -40,9 +40,7 @@ import 'package:ground_control_client/src/protocol/domains/status/models/deploy_
     as _i16;
 import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
     as _i17;
-import 'package:ground_control_client/src/protocol/domains/users/models/user.dart'
-    as _i18;
-import 'protocol.dart' as _i19;
+import 'protocol.dart' as _i18;
 
 /// Endpoint for managing projects.
 /// {@category Endpoint}
@@ -540,23 +538,6 @@ class EndpointUsers extends _i1.EndpointRef {
 
   @override
   String get name => 'users';
-
-  /// Fetches the user for the currently authenticated user.
-  _i2.Future<_i18.User> fetchCurrentUser() =>
-      caller.callServerEndpoint<_i18.User>(
-        'users',
-        'fetchCurrentUser',
-        {},
-      );
-
-  /// Registers a new user record for the current authenticated user.
-  /// Throws [DuplicateEntryException] if the user already exists.
-  _i2.Future<_i18.User> registerCurrentUser({String? userDisplayName}) =>
-      caller.callServerEndpoint<_i18.User>(
-        'users',
-        'registerCurrentUser',
-        {'userDisplayName': userDisplayName},
-      );
 }
 
 class Modules {
@@ -583,7 +564,7 @@ class Client extends _i1.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
           host,
-          _i19.Protocol(),
+          _i18.Protocol(),
           securityContext: securityContext,
           authenticationKeyManager: authenticationKeyManager,
           streamingConnectionTimeout: streamingConnectionTimeout,
