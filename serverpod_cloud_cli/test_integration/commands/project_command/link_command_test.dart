@@ -1,75 +1,54 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:mocktail/mocktail.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:path/path.dart' as p;
+
+import 'package:ground_control_client/ground_control_client_mock.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/project_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
-import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
-import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/json_to_yaml.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
 
 import '../../../test_utils/command_logger_matchers.dart';
-import '../../../test_utils/http_server_builder.dart';
 import '../../../test_utils/project_factory.dart';
+import '../../../test_utils/push_current_dir.dart';
 import '../../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();
+  final keyManager = InMemoryKeyManager();
+  final client = ClientMock(authenticationKeyManager: keyManager);
   final cli = CloudCliCommandRunner.create(
     logger: logger,
+    serviceProvider: CloudCliServiceProvider(
+      apiClientFactory: (final globalCfg) => client,
+    ),
   );
 
   const projectId = 'projectId';
 
-  final testCacheFolderPath = p.join(
-    'test_integration',
-    const Uuid().v4(),
-  );
-  final testProjectDir = p.join(
-    testCacheFolderPath,
-    'project',
-  );
-
-  tearDown(() {
-    final directory = Directory(testCacheFolderPath);
-    if (directory.existsSync()) {
-      directory.deleteSync(recursive: true);
-    }
+  tearDown(() async {
+    await keyManager.remove();
 
     logger.clear();
   });
 
-  group('Given unauthenticated and servrpod directory', () {
-    late Uri localServerAddress;
-    late Completer requestCompleter;
-    late HttpServer server;
+  test('Given project link command when instantiated then requires login', () {
+    expect(CloudProjectLinkCommand(logger: logger).requireLogin, isTrue);
+  });
+
+  group('Given unauthenticated and serverpod directory', () {
+    late String testProjectDir;
 
     setUp(() async {
-      DirectoryFactory.serverpodServerDir().construct(testProjectDir);
-
-      requestCompleter = Completer();
-      await ResourceManager.storeServerpodCloudData(
-        cloudData: ServerpodCloudData('my-token'),
-        localStoragePath: testCacheFolderPath,
-      );
-
-      final serverBuilder = HttpServerBuilder();
-      serverBuilder.withOnRequest((final request) {
-        requestCompleter.complete();
-        request.response.statusCode = 401;
-        request.response.close();
-      });
-
-      final (startedServer, serverAddress) = await serverBuilder.build();
-      localServerAddress = serverAddress;
-      server = startedServer;
-    });
-
-    tearDown(() async {
-      await server.close(force: true);
+      testProjectDir =
+          DirectoryFactory.serverpodServerDir().construct(d.sandbox).path;
     });
 
     group('when executing link', () {
@@ -80,17 +59,12 @@ void main() {
           'link',
           '--project',
           projectId,
-          '--api-url',
-          localServerAddress.toString(),
-          '--scloud-dir',
-          testCacheFolderPath,
           '--project-dir',
           testProjectDir,
         ]);
       });
 
       test('then throws exception', () async {
-        await expectLater(requestCompleter.future, completes);
         await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
       });
 
@@ -103,8 +77,7 @@ void main() {
         expect(
             logger.errorCalls.first,
             equalsErrorCall(
-              message:
-                  'The credentials for this session seem to no longer be valid.',
+              message: 'This command requires you to be logged in.',
             ));
       });
     });
@@ -112,32 +85,21 @@ void main() {
 
   group('Given authenticated', () {
     setUp(() async {
-      await ResourceManager.storeServerpodCloudData(
-        cloudData: ServerpodCloudData('my-token'),
-        localStoragePath: testCacheFolderPath,
-      );
+      await keyManager.put('mock-token');
     });
 
     group('and serverpod directory', () {
-      late Uri localServerAddress;
-      late HttpServer server;
+      late String testProjectDir;
 
       setUp(() async {
-        DirectoryFactory.serverpodServerDir().construct(testProjectDir);
+        final projectDir =
+            DirectoryFactory.serverpodServerDir().construct(d.sandbox);
+        testProjectDir = projectDir.path;
 
-        final serverBuilder = HttpServerBuilder();
-
-        serverBuilder.withSuccessfulResponse(
-          ProjectConfig(projectId: projectId),
-        );
-
-        final (startedServer, serverAddress) = await serverBuilder.build();
-        localServerAddress = serverAddress;
-        server = startedServer;
-      });
-
-      tearDown(() async {
-        await server.close(force: true);
+        final projectConfig = ProjectConfig(projectId: projectId);
+        when(() => client.projects.fetchProjectConfig(
+              cloudProjectId: any(named: 'cloudProjectId'),
+            )).thenAnswer((final _) async => Future.value(projectConfig));
       });
 
       group('and scloud.yaml does not already exist when executing link', () {
@@ -148,20 +110,9 @@ void main() {
             'link',
             '--project',
             projectId,
-            '--api-url',
-            localServerAddress.toString(),
-            '--scloud-dir',
-            testCacheFolderPath,
             '--project-dir',
             testProjectDir,
           ]);
-        });
-
-        tearDown(() async {
-          final file = File('scloud.yaml');
-          if (file.existsSync()) {
-            file.deleteSync();
-          }
         });
 
         test('then command completes successfully', () async {
@@ -218,10 +169,6 @@ void main() {
             'link',
             '--project',
             projectId,
-            '--api-url',
-            localServerAddress.toString(),
-            '--scloud-dir',
-            testCacheFolderPath,
             '--project-dir',
             testProjectDir,
           ]);
@@ -284,10 +231,6 @@ void main() {
             'link',
             '--project',
             projectId,
-            '--api-url',
-            localServerAddress.toString(),
-            '--scloud-dir',
-            testCacheFolderPath,
             '--project-dir',
             testProjectDir,
           ]);
@@ -314,10 +257,6 @@ void main() {
             'link',
             '--project',
             projectId,
-            '--api-url',
-            localServerAddress.toString(),
-            '--scloud-dir',
-            testCacheFolderPath,
             '--project-dir',
             testProjectDir,
           ]);
@@ -348,10 +287,6 @@ void main() {
             'link',
             '--project',
             projectId,
-            '--api-url',
-            localServerAddress.toString(),
-            '--scloud-dir',
-            testCacheFolderPath,
             '--project-dir',
             testProjectDir,
           ]);
@@ -386,9 +321,19 @@ void main() {
     });
 
     group('and not a serverpod directory when executing link', () {
+      late String testProjectDir;
       late Future commandResult;
-      setUp(() {
-        DirectoryFactory().construct(testProjectDir);
+
+      setUp(() async {
+        final projectDir =
+            DirectoryFactory(withDirectoryName: 'not_a_serverpod_dir')
+                .construct(d.sandbox);
+        testProjectDir = projectDir.path;
+
+        final projectConfig = ProjectConfig(projectId: projectId);
+        when(() => client.projects.fetchProjectConfig(
+              cloudProjectId: any(named: 'cloudProjectId'),
+            )).thenAnswer((final _) async => Future.value(projectConfig));
 
         commandResult = cli.run([
           'project',
@@ -397,8 +342,6 @@ void main() {
           projectId,
           '--project-dir',
           testProjectDir,
-          '--scloud-dir',
-          testCacheFolderPath,
         ]);
       });
 
@@ -421,6 +364,156 @@ void main() {
             hint: "Provide the project's server directory and try again.",
           ),
         );
+      });
+    });
+
+    group('and a serverpod directory inside a deep directory hierarchy', () {
+      setUp(() async {
+        final descriptor = d.dir('topdir', [
+          d.dir('project_dir', [
+            d.dir('project_server', [
+              d.file('pubspec.yaml', '''
+name: my_project_server
+environment:
+  sdk: '>=3.6.0 <3.7.0'
+dependencies:
+  serverpod: ^2.3.0
+'''),
+            ]),
+            d.dir('project_client', [
+              d.file('pubspec.yaml', '''
+name: my_project_client
+environment:
+  sdk: '>=3.6.0 <3.7.0'
+'''),
+            ]),
+            d.dir('project_flutter', [
+              d.file('pubspec.yaml', '''
+name: my_project_flutter
+environment:
+  sdk: '>=3.6.0 <3.7.0'
+'''),
+            ]),
+          ]),
+        ]);
+        await descriptor.create();
+
+        final projectConfig = ProjectConfig(projectId: projectId);
+        when(() => client.projects.fetchProjectConfig(
+              cloudProjectId: any(named: 'cloudProjectId'),
+            )).thenAnswer((final _) async => Future.value(projectConfig));
+      });
+
+      group('and cur dir is three levels above the project dir', () {
+        late Future commandResult;
+
+        setUp(() async {
+          pushCurrentDirectory(p.join(d.sandbox));
+
+          commandResult = cli.run(['project', 'link', '--project', projectId]);
+        });
+
+        test('then project link command throws exit exception', () async {
+          await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+        });
+
+        test('then project link command logs error message', () async {
+          await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+          expect(logger.errorCalls, isNotEmpty);
+          expect(
+            logger.errorCalls.first,
+            equalsErrorCall(
+              message: 'The provided project directory '
+                  '(either through the --project-dir flag or the current directory) '
+                  'is not a Serverpod server directory.',
+              hint: "Provide the project's server directory and try again.",
+            ),
+          );
+        });
+      });
+
+      group('and cur dir is two levels above the project dir', () {
+        late Future commandResult;
+
+        setUp(() async {
+          pushCurrentDirectory(p.join(d.sandbox, 'topdir'));
+
+          commandResult = cli.run(['project', 'link', '--project', projectId]);
+        });
+
+        test('then project link command completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then project link command logs info message', () async {
+          final expectedProjectDirPath =
+              p.join(p.current, 'project_dir', 'project_server');
+
+          await commandResult;
+          expect(logger.infoCalls, isNotEmpty);
+          expect(
+            logger.infoCalls.first,
+            equalsInfoCall(
+              message: 'Using project directory `$expectedProjectDirPath`',
+            ),
+          );
+        });
+      });
+
+      group('and cur dir is one level above the project dir', () {
+        late Future commandResult;
+
+        setUp(() async {
+          pushCurrentDirectory(p.join(d.sandbox, 'topdir', 'project_dir'));
+
+          commandResult = cli.run(['project', 'link', '--project', projectId]);
+        });
+
+        test('then project link command completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then project link command logs info message', () async {
+          final expectedProjectDirPath = p.join(p.current, 'project_server');
+
+          await commandResult;
+          expect(logger.infoCalls, isNotEmpty);
+          expect(
+            logger.infoCalls.first,
+            equalsInfoCall(
+              message: 'Using project directory `$expectedProjectDirPath`',
+            ),
+          );
+        });
+      });
+
+      group('and cur dir is in the flutter dir', () {
+        late Future commandResult;
+
+        setUp(() async {
+          pushCurrentDirectory(
+              p.join(d.sandbox, 'topdir', 'project_dir', 'project_flutter'));
+
+          commandResult = cli.run(['project', 'link', '--project', projectId]);
+        });
+
+        test('then project link command completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then project link command logs info message', () async {
+          final expectedProjectDirPath =
+              p.join(p.current, '..', 'project_server');
+
+          await commandResult;
+          expect(logger.infoCalls, isNotEmpty);
+          expect(
+            logger.infoCalls.first,
+            equalsInfoCall(
+              message: 'Using project directory `$expectedProjectDirPath`',
+            ),
+          );
+        });
       });
     });
   });

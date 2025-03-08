@@ -16,15 +16,17 @@ environment:
 dependencies:
   archive: ^3.6.1
   args: ^2.6.0
+  basic_utils: ^5.7.0
   cli_tools: ^0.4.0
   collection: ^1.19.0
+  ground_control_client: ^0.2.0
   path: ^1.8.2
   pool: ^1.5.1
   pub_semver: ^2.1.0
   pubspec_parse: ^1.5.0
-  ground_control_client: ^0.2.0
+  rfc_6901: ^0.2.0
+  yaml_codec: ^1.0.0
   yaml: ^3.1.0
-  basic_utils: ^5.7.0
 
 dev_dependencies:
   googleapis: ^13.2.0

@@ -16,7 +16,7 @@ final _schema = YamlMap.wrap({
 
 final _yamlSchema = YamlSchema(_schema);
 
-abstract final class ScloudConfig {
+abstract final class ScloudConfigFile {
   static Map<String, dynamic> parseConfigYaml(final String configYaml) {
     final data = loadYaml(configYaml);
 
@@ -51,15 +51,20 @@ abstract final class ScloudConfig {
       projectConfig,
       projectDirectory.path,
     );
-    final fileContent = ConfigFileConstants.defaultYamlFileHeader + output;
-    File(join(projectDirectory.path, ConfigFileConstants.fileName))
+    final content = ProjectConfigFileConstants.defaultYamlFileHeader + output;
+    final filePath = join(
+      projectDirectory.path,
+      ProjectConfigFileConstants.defaultFileName,
+    );
+    File(filePath)
       ..createSync(recursive: false)
-      ..writeAsStringSync(fileContent);
+      ..writeAsStringSync(content);
   }
 
   static String? tryReadFile(final String path) {
     try {
-      return File(join(path, ConfigFileConstants.fileName)).readAsStringSync();
+      final filePath = join(path, ProjectConfigFileConstants.defaultFileName);
+      return File(filePath).readAsStringSync();
     } catch (e) {
       return null;
     }

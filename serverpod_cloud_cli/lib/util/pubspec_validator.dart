@@ -16,6 +16,17 @@ bool isServerpodServerDirectory(final Directory dir) {
   }
 }
 
+/// Convenience function to check if a pubspec.yaml file is a Serverpod server package.
+///
+/// Returns true if the pubspec.yaml file is a Serverpod server package, false otherwise.
+bool isServerpodServerPackage(final File pubspecFile) {
+  try {
+    return TenantProjectPubspec.fromFile(pubspecFile).isServerpodServer();
+  } catch (_) {
+    return false;
+  }
+}
+
 /// Represents a parsed pubspec.yaml file of a tenant project.
 /// Provides methods to validate its contents.
 class TenantProjectPubspec {
@@ -35,6 +46,18 @@ class TenantProjectPubspec {
     final CommandLogger? logger,
   }) {
     final pubspecFile = File('${projectDirectory.path}/pubspec.yaml');
+    return TenantProjectPubspec.fromFile(pubspecFile, logger: logger);
+  }
+
+  /// Reads and parses the given pubspec.yaml file.
+  ///
+  /// If the pubspec.yaml file is not found or if it cannot be parsed,
+  /// error messages are printed to logger if provided,
+  /// and [ErrorExitException] is thrown.
+  factory TenantProjectPubspec.fromFile(
+    final File pubspecFile, {
+    final CommandLogger? logger,
+  }) {
     if (!pubspecFile.existsSync()) {
       logger?.error(
         'Could not find pubspec.yaml in the project directory.',

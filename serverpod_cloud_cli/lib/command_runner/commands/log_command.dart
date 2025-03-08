@@ -5,7 +5,7 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_han
 import 'package:serverpod_cloud_cli/command_runner/helpers/option_parsing.dart';
 import 'package:serverpod_cloud_cli/commands/logs/logs.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
-import 'package:serverpod_cloud_cli/util/configuration.dart';
+import 'package:serverpod_cloud_cli/util/config/configuration.dart';
 
 enum LogOption implements OptionDefinition {
   projectId(ProjectIdOption()),
