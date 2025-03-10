@@ -1,15 +1,15 @@
 import 'dart:io';
 import 'package:collection/collection.dart';
+import 'package:path/path.dart' as p;
 
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
-import 'package:serverpod_cloud_cli/util/common.dart';
-import 'package:serverpod_cloud_cli/util/configuration.dart';
+import 'package:serverpod_cloud_cli/util/config/configuration.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
-import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
+import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_file.dart';
 import 'package:serverpod_cloud_cli/util/scloudignore.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:ground_control_client/ground_control_client.dart';
@@ -31,17 +31,15 @@ class CloudProjectCommand extends CloudCliCommand {
 }
 
 abstract final class _ProjectOptions {
-  static const projectIdForCreation = ProjectIdOption(
+  static const projectIdForCreation = ProjectIdOption.argsOnly(
     helpText: 'The ID of the project. Can be passed as the first argument.',
     argPos: 0,
-    envName: null,
   );
 
-  static const projectId = ProjectIdOption(
+  static const projectId = ProjectIdOption.argsOnly(
     helpText:
         '${CommandConfigConstants.projectIdHelpText} Can be passed as the first argument.',
     argPos: 0,
-    envName: null,
   );
 
   static const enableDb = ConfigOption(
@@ -107,8 +105,22 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
       );
     }
 
-    if (isServerpodServerDirectory(Directory.current)) {
-      if (File(ConfigFileConstants.fileName).existsSync()) {
+    final specifiedProjectDirPath = globalConfiguration.projectDir;
+    final projectDir = specifiedProjectDirPath != null
+        ? Directory(specifiedProjectDirPath)
+        : Directory.current;
+
+    if (isServerpodServerDirectory(projectDir)) {
+      // write scloud config and ignore files unless the config file already exists
+
+      final configFilePath = globalConfiguration.projectConfigFile ??
+          p.join(
+            projectDir.path,
+            ProjectConfigFileConstants.defaultFileName,
+          );
+
+      final scloudYamlFile = File(configFilePath);
+      if (scloudYamlFile.existsSync()) {
         return;
       }
 
@@ -116,17 +128,15 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
         final projectConfig = await apiCloudClient.projects
             .fetchProjectConfig(cloudProjectId: projectId);
 
-        ScloudConfig.writeToFile(projectConfig, Directory.current);
+        ScloudConfigFile.writeToFile(projectConfig, configFilePath);
       }, (final e) {
-        logger.error(
-          'Failed to fetch project config: $e',
-        );
+        logger.error('Failed to fetch project config: $e');
         throw ErrorExitException();
       });
 
       try {
-        if (!ScloudIgnore.fileExists(rootFolder: Directory.current.path)) {
-          ScloudIgnore.writeTemplate(rootFolder: Directory.current.path);
+        if (!ScloudIgnore.fileExists(rootFolder: projectDir.path)) {
+          ScloudIgnore.writeTemplate(rootFolder: projectDir.path);
         }
       } catch (e) {
         logger.error('Failed to write to ${ScloudIgnore.fileName} file: $e');
@@ -134,12 +144,13 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
       }
 
       logger.success(
-        "Successfully created the ${ConfigFileConstants.fileName} configuration file for '$projectId'.",
+        "Successfully created the ${ProjectConfigFileConstants.defaultFileName} configuration file for '$projectId'.",
       );
     } else {
       logger.terminalCommand(
         message:
-            'Since the current directory is not a Serverpod server directory '
+            'Since the ${specifiedProjectDirPath != null ? 'specified' : 'current'} '
+            'directory is not a Serverpod server directory '
             'an scloud.yaml configuration file has not been created. '
             'Use the link command to create it in the server '
             'directory of this project:',
@@ -235,11 +246,6 @@ class CloudProjectListCommand extends CloudCliCommand {
 enum ProjectLinkCommandOption implements OptionDefinition {
   projectId(
     ProjectIdOption(),
-  ),
-  projectDir(
-    ProjectDirOption(
-      helpText: 'The path to the directory of the project to link.',
-    ),
   );
 
   const ProjectLinkCommandOption(this.option);
@@ -265,15 +271,15 @@ class CloudProjectLinkCommand
     final Configuration<ProjectLinkCommandOption> commandConfig,
   ) async {
     final projectId = commandConfig.value(ProjectLinkCommandOption.projectId);
-    final projectDirectory =
-        Directory(commandConfig.value(ProjectLinkCommandOption.projectDir));
+    final projectDirectory = runner.determineProjectDirectory();
+
+    final configFilePath = globalConfiguration.projectConfigFile ??
+        p.join(
+          projectDirectory.path,
+          ProjectConfigFileConstants.defaultFileName,
+        );
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
-
-    if (!isServerpodServerDirectory(projectDirectory)) {
-      logProjectDirIsNotAServerpodServerDirectory(logger);
-      throw ErrorExitException();
-    }
 
     late final ProjectConfig projectConfig;
     await handleCommonClientExceptions(logger, () async {
@@ -286,10 +292,13 @@ class CloudProjectLinkCommand
     });
 
     try {
-      ScloudConfig.writeToFile(projectConfig, projectDirectory);
+      ScloudConfigFile.writeToFile(
+        projectConfig,
+        configFilePath,
+      );
     } catch (e) {
-      logger
-          .error('Failed to write to ${ConfigFileConstants.fileName} file: $e');
+      logger.error(
+          'Failed to write to ${ProjectConfigFileConstants.defaultFileName} file: $e');
       throw ErrorExitException();
     }
 

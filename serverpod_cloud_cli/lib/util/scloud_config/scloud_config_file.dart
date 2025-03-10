@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:path/path.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/json_to_yaml.dart';
 import 'package:ground_control_client/ground_control_client.dart';
@@ -16,8 +15,8 @@ final _schema = YamlMap.wrap({
 
 final _yamlSchema = YamlSchema(_schema);
 
-abstract final class ScloudConfig {
-  static Map<String, dynamic> parseConfigYaml(final String configYaml) {
+abstract final class ScloudConfigFile {
+  static Map<String, dynamic> _parseConfigYaml(final String configYaml) {
     final data = loadYaml(configYaml);
 
     if (data is! YamlMap) {
@@ -31,48 +30,36 @@ abstract final class ScloudConfig {
     );
   }
 
-  static String getProjectIdFromConfig(final String path) {
-    final yaml = tryReadFile(path);
-    if (yaml == null) {
-      throw Exception('No configuration found.');
-    }
-
-    final cloudConfig = parseConfigYaml(yaml);
-
-    final project = cloudConfig['project'] as YamlMap?;
-    return project?['projectId'];
-  }
-
   static void writeToFile(
     final ProjectConfig projectConfig,
-    final Directory projectDirectory,
+    final String configFilePath,
   ) {
-    final output = mergeProjectConfigWithCurrentConfigAsYaml(
+    final output = _mergeProjectConfigWithCurrentConfigAsYaml(
       projectConfig,
-      projectDirectory.path,
+      configFilePath,
     );
-    final fileContent = ConfigFileConstants.defaultYamlFileHeader + output;
-    File(join(projectDirectory.path, ConfigFileConstants.fileName))
+    final content = ProjectConfigFileConstants.defaultYamlFileHeader + output;
+    File(configFilePath)
       ..createSync(recursive: false)
-      ..writeAsStringSync(fileContent);
+      ..writeAsStringSync(content);
   }
 
-  static String? tryReadFile(final String path) {
+  static String? _tryReadFile(final String filePath) {
     try {
-      return File(join(path, ConfigFileConstants.fileName)).readAsStringSync();
+      return File(filePath).readAsStringSync();
     } catch (e) {
       return null;
     }
   }
 
-  static String mergeProjectConfigWithCurrentConfigAsYaml(
+  static String _mergeProjectConfigWithCurrentConfigAsYaml(
     final ProjectConfig projectConfig,
-    final String path,
+    final String filePath,
   ) {
-    final yaml = tryReadFile(path);
+    final yaml = _tryReadFile(filePath);
 
     final Map<String, dynamic> cloudConfig =
-        yaml == null ? {} : parseConfigYaml(yaml);
+        yaml == null ? {} : _parseConfigYaml(yaml);
 
     if (cloudConfig['project'] == null) {
       cloudConfig['project'] = {};
