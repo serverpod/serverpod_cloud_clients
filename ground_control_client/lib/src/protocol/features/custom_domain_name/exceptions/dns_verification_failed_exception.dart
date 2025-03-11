@@ -26,6 +26,9 @@ abstract class DNSVerificationFailedException
 
   String message;
 
+  /// Returns a shallow copy of this [DNSVerificationFailedException]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   DNSVerificationFailedException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
@@ -43,6 +46,9 @@ class _DNSVerificationFailedExceptionImpl
   _DNSVerificationFailedExceptionImpl({required String message})
       : super._(message: message);
 
+  /// Returns a shallow copy of this [DNSVerificationFailedException]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   @override
   DNSVerificationFailedException copyWith({String? message}) {
     return DNSVerificationFailedException(message: message ?? this.message);

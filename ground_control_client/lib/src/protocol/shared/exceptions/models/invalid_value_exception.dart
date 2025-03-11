@@ -26,6 +26,9 @@ abstract class InvalidValueException
 
   String message;
 
+  /// Returns a shallow copy of this [InvalidValueException]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   InvalidValueException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
@@ -42,6 +45,9 @@ class _InvalidValueExceptionImpl extends InvalidValueException {
   _InvalidValueExceptionImpl({required String message})
       : super._(message: message);
 
+  /// Returns a shallow copy of this [InvalidValueException]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   @override
   InvalidValueException copyWith({String? message}) {
     return InvalidValueException(message: message ?? this.message);

@@ -20,13 +20,13 @@ enum DeployStageType implements _i1.SerializableModel {
   static DeployStageType fromJson(String name) {
     switch (name) {
       case 'upload':
-        return upload;
+        return DeployStageType.upload;
       case 'build':
-        return build;
+        return DeployStageType.build;
       case 'deploy':
-        return deploy;
+        return DeployStageType.deploy;
       case 'service':
-        return service;
+        return DeployStageType.service;
       default:
         throw ArgumentError(
             'Value "$name" cannot be converted to "DeployStageType"');

@@ -54,6 +54,9 @@ abstract class Address implements _i1.SerializableModel {
 
   String country;
 
+  /// Returns a shallow copy of this [Address]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   Address copyWith({
     String? addressLine1,
     String? addressLine2,
@@ -99,6 +102,9 @@ class _AddressImpl extends Address {
           country: country,
         );
 
+  /// Returns a shallow copy of this [Address]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   @override
   Address copyWith({
     String? addressLine1,

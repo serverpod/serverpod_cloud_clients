@@ -48,6 +48,9 @@ abstract class CustomDomainNameWithDefaultDomains
 
   Map<_i3.DomainNameTarget, String> defaultDomainsByTarget;
 
+  /// Returns a shallow copy of this [CustomDomainNameWithDefaultDomains]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   CustomDomainNameWithDefaultDomains copyWith({
     _i2.CustomDomainName? customDomainName,
     Map<_i3.DomainNameTarget, String>? defaultDomainsByTarget,
@@ -77,6 +80,9 @@ class _CustomDomainNameWithDefaultDomainsImpl
           defaultDomainsByTarget: defaultDomainsByTarget,
         );
 
+  /// Returns a shallow copy of this [CustomDomainNameWithDefaultDomains]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   @override
   CustomDomainNameWithDefaultDomains copyWith({
     _i2.CustomDomainName? customDomainName,

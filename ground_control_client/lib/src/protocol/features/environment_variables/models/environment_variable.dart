@@ -71,6 +71,9 @@ abstract class EnvironmentVariable implements _i1.SerializableModel {
   /// The value of the environment variable, e.g. 'localhost'. Can be changed.
   String value;
 
+  /// Returns a shallow copy of this [EnvironmentVariable]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   EnvironmentVariable copyWith({
     int? id,
     DateTime? createdAt,
@@ -120,6 +123,9 @@ class _EnvironmentVariableImpl extends EnvironmentVariable {
           value: value,
         );
 
+  /// Returns a shallow copy of this [EnvironmentVariable]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   @override
   EnvironmentVariable copyWith({
     Object? id = _Undefined,

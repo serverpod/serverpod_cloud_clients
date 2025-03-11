@@ -380,93 +380,90 @@ class Protocol extends _i1.SerializationManager {
           ? (data as List)
               .map((e) => deserialize<_i24.EnvironmentVariable>(e))
               .toList()
-          : null) as dynamic;
+          : null) as T;
     }
     if (t == _i1.getType<List<_i14.CustomDomainName>?>()) {
       return (data != null
           ? (data as List)
               .map((e) => deserialize<_i14.CustomDomainName>(e))
               .toList()
-          : null) as dynamic;
+          : null) as T;
     }
     if (t == _i1.getType<List<_i31.UserRoleMembership>?>()) {
       return (data != null
           ? (data as List)
               .map((e) => deserialize<_i31.UserRoleMembership>(e))
               .toList()
-          : null) as dynamic;
+          : null) as T;
     }
     if (t == List<_i14.CustomDomainName>) {
       return (data as List)
           .map((e) => deserialize<_i14.CustomDomainName>(e))
-          .toList() as dynamic;
+          .toList() as T;
     }
     if (t == Map<_i18.DomainNameTarget, String>) {
       return Map.fromEntries((data as List).map((e) => MapEntry(
           deserialize<_i18.DomainNameTarget>(e['k']),
-          deserialize<String>(e['v'])))) as dynamic;
+          deserialize<String>(e['v'])))) as T;
     }
     if (t == _i1.getType<List<_i30.Role>?>()) {
       return (data != null
           ? (data as List).map((e) => deserialize<_i30.Role>(e)).toList()
-          : null) as dynamic;
+          : null) as T;
     }
     if (t == _i1.getType<List<_i2.Capsule>?>()) {
       return (data != null
           ? (data as List).map((e) => deserialize<_i2.Capsule>(e)).toList()
-          : null) as dynamic;
+          : null) as T;
     }
     if (t == List<String>) {
-      return (data as List).map((e) => deserialize<String>(e)).toList()
-          as dynamic;
+      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
     if (t == _i1.getType<List<_i31.UserRoleMembership>?>()) {
       return (data != null
           ? (data as List)
               .map((e) => deserialize<_i31.UserRoleMembership>(e))
               .toList()
-          : null) as dynamic;
+          : null) as T;
     }
     if (t == List<_i41.RequiredTerms>) {
       return (data as List)
           .map((e) => deserialize<_i41.RequiredTerms>(e))
-          .toList() as dynamic;
+          .toList() as T;
     }
     if (t == List<_i42.AcceptedTermsDTO>) {
       return (data as List)
           .map((e) => deserialize<_i42.AcceptedTermsDTO>(e))
-          .toList() as dynamic;
+          .toList() as T;
     }
     if (t == List<_i43.EnvironmentVariable>) {
       return (data as List)
           .map((e) => deserialize<_i43.EnvironmentVariable>(e))
-          .toList() as dynamic;
+          .toList() as T;
     }
     if (t == List<_i44.Project>) {
       return (data as List).map((e) => deserialize<_i44.Project>(e)).toList()
-          as dynamic;
+          as T;
     }
     if (t == List<_i45.Role>) {
-      return (data as List).map((e) => deserialize<_i45.Role>(e)).toList()
-          as dynamic;
+      return (data as List).map((e) => deserialize<_i45.Role>(e)).toList() as T;
     }
     if (t == Map<String, String>) {
       return (data as Map).map((k, v) =>
-          MapEntry(deserialize<String>(k), deserialize<String>(v))) as dynamic;
+          MapEntry(deserialize<String>(k), deserialize<String>(v))) as T;
     }
     if (t == List<String>) {
-      return (data as List).map((e) => deserialize<String>(e)).toList()
-          as dynamic;
+      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
     if (t == List<_i46.DeployAttempt>) {
       return (data as List)
           .map((e) => deserialize<_i46.DeployAttempt>(e))
-          .toList() as dynamic;
+          .toList() as T;
     }
     if (t == List<_i47.DeployAttemptStage>) {
       return (data as List)
           .map((e) => deserialize<_i47.DeployAttemptStage>(e))
-          .toList() as dynamic;
+          .toList() as T;
     }
     try {
       return _i48.Protocol().deserialize<T>(data, t);

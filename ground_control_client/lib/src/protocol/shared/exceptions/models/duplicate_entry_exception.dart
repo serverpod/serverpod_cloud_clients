@@ -26,6 +26,9 @@ abstract class DuplicateEntryException
 
   String message;
 
+  /// Returns a shallow copy of this [DuplicateEntryException]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   DuplicateEntryException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
@@ -42,6 +45,9 @@ class _DuplicateEntryExceptionImpl extends DuplicateEntryException {
   _DuplicateEntryExceptionImpl({required String message})
       : super._(message: message);
 
+  /// Returns a shallow copy of this [DuplicateEntryException]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   @override
   DuplicateEntryException copyWith({String? message}) {
     return DuplicateEntryException(message: message ?? this.message);

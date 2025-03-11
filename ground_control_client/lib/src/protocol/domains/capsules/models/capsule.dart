@@ -89,6 +89,9 @@ abstract class Capsule implements _i1.SerializableModel {
   /// The domain names for this capsule.
   List<_i5.CustomDomainName>? domainNames;
 
+  /// Returns a shallow copy of this [Capsule]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   Capsule copyWith({
     int? id,
     String? name,
@@ -145,6 +148,9 @@ class _CapsuleImpl extends Capsule {
           domainNames: domainNames,
         );
 
+  /// Returns a shallow copy of this [Capsule]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   @override
   Capsule copyWith({
     Object? id = _Undefined,

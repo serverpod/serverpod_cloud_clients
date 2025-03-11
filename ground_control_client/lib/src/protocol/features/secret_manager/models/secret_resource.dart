@@ -55,6 +55,9 @@ abstract class SecretResource implements _i1.SerializableModel {
 
   DateTime? createdAt;
 
+  /// Returns a shallow copy of this [SecretResource]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   SecretResource copyWith({
     int? id,
     String? cloudCapsuleId,
@@ -96,6 +99,9 @@ class _SecretResourceImpl extends SecretResource {
           createdAt: createdAt,
         );
 
+  /// Returns a shallow copy of this [SecretResource]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   @override
   SecretResource copyWith({
     Object? id = _Undefined,

@@ -19,11 +19,11 @@ enum DomainNameStatus implements _i1.SerializableModel {
   static DomainNameStatus fromJson(String name) {
     switch (name) {
       case 'needsSetup':
-        return needsSetup;
+        return DomainNameStatus.needsSetup;
       case 'pending':
-        return pending;
+        return DomainNameStatus.pending;
       case 'configured':
-        return configured;
+        return DomainNameStatus.configured;
       default:
         throw ArgumentError(
             'Value "$name" cannot be converted to "DomainNameStatus"');

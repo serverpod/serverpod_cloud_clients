@@ -78,6 +78,9 @@ abstract class CustomDomainName implements _i1.SerializableModel {
 
   _i4.DnsRecordType dnsRecordType;
 
+  /// Returns a shallow copy of this [CustomDomainName]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   CustomDomainName copyWith({
     int? id,
     String? name,
@@ -131,6 +134,9 @@ class _CustomDomainNameImpl extends CustomDomainName {
           dnsRecordType: dnsRecordType,
         );
 
+  /// Returns a shallow copy of this [CustomDomainName]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   @override
   CustomDomainName copyWith({
     Object? id = _Undefined,

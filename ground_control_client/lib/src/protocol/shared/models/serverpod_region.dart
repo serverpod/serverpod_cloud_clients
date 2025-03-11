@@ -20,13 +20,13 @@ enum ServerpodRegion implements _i1.SerializableModel {
   static ServerpodRegion fromJson(int index) {
     switch (index) {
       case 0:
-        return usEast;
+        return ServerpodRegion.usEast;
       case 1:
-        return usWest;
+        return ServerpodRegion.usWest;
       case 2:
-        return europe;
+        return ServerpodRegion.europe;
       case 3:
-        return asia;
+        return ServerpodRegion.asia;
       default:
         throw ArgumentError(
             'Value "$index" cannot be converted to "ServerpodRegion"');

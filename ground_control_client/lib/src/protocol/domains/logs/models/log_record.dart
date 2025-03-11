@@ -61,6 +61,9 @@ abstract class LogRecord implements _i1.SerializableModel {
   /// The log message content. May be a string or a string-encoded JSON object.
   String content;
 
+  /// Returns a shallow copy of this [LogRecord]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   LogRecord copyWith({
     String? cloudProjectId,
     String? cloudCapsuleId,
@@ -106,6 +109,9 @@ class _LogRecordImpl extends LogRecord {
           content: content,
         );
 
+  /// Returns a shallow copy of this [LogRecord]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   @override
   LogRecord copyWith({
     String? cloudProjectId,

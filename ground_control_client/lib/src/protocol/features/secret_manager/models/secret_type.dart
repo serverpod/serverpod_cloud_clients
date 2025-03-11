@@ -19,11 +19,11 @@ enum SecretType implements _i1.SerializableModel {
   static SecretType fromJson(String name) {
     switch (name) {
       case 'managed':
-        return managed;
+        return SecretType.managed;
       case 'custom':
-        return custom;
+        return SecretType.custom;
       case 'unknown':
-        return unknown;
+        return SecretType.unknown;
       default:
         throw ArgumentError(
             'Value "$name" cannot be converted to "SecretType"');

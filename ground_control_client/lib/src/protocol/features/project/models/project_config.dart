@@ -22,6 +22,9 @@ abstract class ProjectConfig implements _i1.SerializableModel {
 
   String projectId;
 
+  /// Returns a shallow copy of this [ProjectConfig]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   ProjectConfig copyWith({String? projectId});
   @override
   Map<String, dynamic> toJson() {
@@ -38,6 +41,9 @@ class _ProjectConfigImpl extends ProjectConfig {
   _ProjectConfigImpl({required String projectId})
       : super._(projectId: projectId);
 
+  /// Returns a shallow copy of this [ProjectConfig]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   @override
   ProjectConfig copyWith({String? projectId}) {
     return ProjectConfig(projectId: projectId ?? this.projectId);

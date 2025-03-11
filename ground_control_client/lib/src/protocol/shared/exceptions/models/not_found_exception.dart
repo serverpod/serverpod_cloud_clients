@@ -23,6 +23,9 @@ abstract class NotFoundException
 
   String message;
 
+  /// Returns a shallow copy of this [NotFoundException]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   NotFoundException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
@@ -38,6 +41,9 @@ abstract class NotFoundException
 class _NotFoundExceptionImpl extends NotFoundException {
   _NotFoundExceptionImpl({required String message}) : super._(message: message);
 
+  /// Returns a shallow copy of this [NotFoundException]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   @override
   NotFoundException copyWith({String? message}) {
     return NotFoundException(message: message ?? this.message);

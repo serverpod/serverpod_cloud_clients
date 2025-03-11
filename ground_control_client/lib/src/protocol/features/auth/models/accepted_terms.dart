@@ -53,6 +53,9 @@ abstract class AcceptedTerms implements _i1.SerializableModel {
 
   String identifier;
 
+  /// Returns a shallow copy of this [AcceptedTerms]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   AcceptedTerms copyWith({
     int? id,
     _i2.Terms? termsType,
@@ -94,6 +97,9 @@ class _AcceptedTermsImpl extends AcceptedTerms {
           identifier: identifier,
         );
 
+  /// Returns a shallow copy of this [AcceptedTerms]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   @override
   AcceptedTerms copyWith({
     Object? id = _Undefined,

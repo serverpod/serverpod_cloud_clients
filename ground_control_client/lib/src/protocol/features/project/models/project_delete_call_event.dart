@@ -25,6 +25,9 @@ abstract class ProjectDeleteCallEvent implements _i1.SerializableModel {
 
   String cloudProjectId;
 
+  /// Returns a shallow copy of this [ProjectDeleteCallEvent]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   ProjectDeleteCallEvent copyWith({String? cloudProjectId});
   @override
   Map<String, dynamic> toJson() {
@@ -41,6 +44,9 @@ class _ProjectDeleteCallEventImpl extends ProjectDeleteCallEvent {
   _ProjectDeleteCallEventImpl({required String cloudProjectId})
       : super._(cloudProjectId: cloudProjectId);
 
+  /// Returns a shallow copy of this [ProjectDeleteCallEvent]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   @override
   ProjectDeleteCallEvent copyWith({String? cloudProjectId}) {
     return ProjectDeleteCallEvent(

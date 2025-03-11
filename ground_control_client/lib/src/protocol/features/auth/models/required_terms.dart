@@ -39,6 +39,9 @@ abstract class RequiredTerms implements _i1.SerializableModel {
 
   String termsUrl;
 
+  /// Returns a shallow copy of this [RequiredTerms]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   RequiredTerms copyWith({
     _i2.Terms? termsType,
     String? termsVersion,
@@ -70,6 +73,9 @@ class _RequiredTermsImpl extends RequiredTerms {
           termsUrl: termsUrl,
         );
 
+  /// Returns a shallow copy of this [RequiredTerms]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   @override
   RequiredTerms copyWith({
     _i2.Terms? termsType,

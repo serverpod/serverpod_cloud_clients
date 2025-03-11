@@ -55,6 +55,9 @@ abstract class DatabaseResource implements _i1.SerializableModel {
 
   _i3.DatabaseConnection connection;
 
+  /// Returns a shallow copy of this [DatabaseResource]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   DatabaseResource copyWith({
     int? id,
     String? cloudCapsuleId,
@@ -96,6 +99,9 @@ class _DatabaseResourceImpl extends DatabaseResource {
           connection: connection,
         );
 
+  /// Returns a shallow copy of this [DatabaseResource]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   @override
   DatabaseResource copyWith({
     Object? id = _Undefined,

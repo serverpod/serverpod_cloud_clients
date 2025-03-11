@@ -22,17 +22,17 @@ enum DeployProgressStatus implements _i1.SerializableModel {
   static DeployProgressStatus fromJson(String name) {
     switch (name) {
       case 'unknown':
-        return unknown;
+        return DeployProgressStatus.unknown;
       case 'cancelled':
-        return cancelled;
+        return DeployProgressStatus.cancelled;
       case 'awaiting':
-        return awaiting;
+        return DeployProgressStatus.awaiting;
       case 'running':
-        return running;
+        return DeployProgressStatus.running;
       case 'success':
-        return success;
+        return DeployProgressStatus.success;
       case 'failure':
-        return failure;
+        return DeployProgressStatus.failure;
       default:
         throw ArgumentError(
             'Value "$name" cannot be converted to "DeployProgressStatus"');

@@ -48,6 +48,9 @@ abstract class DatabaseConnection implements _i1.SerializableModel {
 
   bool requiresSsl;
 
+  /// Returns a shallow copy of this [DatabaseConnection]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   DatabaseConnection copyWith({
     String? host,
     int? port,
@@ -87,6 +90,9 @@ class _DatabaseConnectionImpl extends DatabaseConnection {
           requiresSsl: requiresSsl,
         );
 
+  /// Returns a shallow copy of this [DatabaseConnection]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   @override
   DatabaseConnection copyWith({
     String? host,

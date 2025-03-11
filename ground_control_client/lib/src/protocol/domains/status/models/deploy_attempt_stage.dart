@@ -95,6 +95,9 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
   /// Optionally contains user-readable information about the current status of this stage.
   String? statusInfo;
 
+  /// Returns a shallow copy of this [DeployAttemptStage]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   DeployAttemptStage copyWith({
     int? id,
     String? cloudCapsuleId,
@@ -156,6 +159,9 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
           statusInfo: statusInfo,
         );
 
+  /// Returns a shallow copy of this [DeployAttemptStage]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   @override
   DeployAttemptStage copyWith({
     Object? id = _Undefined,

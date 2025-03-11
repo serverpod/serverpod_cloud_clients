@@ -26,6 +26,9 @@ abstract class UnauthorizedException
 
   String message;
 
+  /// Returns a shallow copy of this [UnauthorizedException]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   UnauthorizedException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
@@ -42,6 +45,9 @@ class _UnauthorizedExceptionImpl extends UnauthorizedException {
   _UnauthorizedExceptionImpl({required String message})
       : super._(message: message);
 
+  /// Returns a shallow copy of this [UnauthorizedException]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   @override
   UnauthorizedException copyWith({String? message}) {
     return UnauthorizedException(message: message ?? this.message);

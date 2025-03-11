@@ -17,7 +17,7 @@ enum DatabaseProvider implements _i1.SerializableModel {
   static DatabaseProvider fromJson(String name) {
     switch (name) {
       case 'neon':
-        return neon;
+        return DatabaseProvider.neon;
       default:
         throw ArgumentError(
             'Value "$name" cannot be converted to "DatabaseProvider"');

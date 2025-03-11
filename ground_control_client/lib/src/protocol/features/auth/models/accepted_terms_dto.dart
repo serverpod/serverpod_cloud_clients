@@ -34,6 +34,9 @@ abstract class AcceptedTermsDTO implements _i1.SerializableModel {
 
   String termsVersion;
 
+  /// Returns a shallow copy of this [AcceptedTermsDTO]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   AcceptedTermsDTO copyWith({
     _i2.Terms? termsType,
     String? termsVersion,
@@ -61,6 +64,9 @@ class _AcceptedTermsDTOImpl extends AcceptedTermsDTO {
           termsVersion: termsVersion,
         );
 
+  /// Returns a shallow copy of this [AcceptedTermsDTO]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   @override
   AcceptedTermsDTO copyWith({
     _i2.Terms? termsType,

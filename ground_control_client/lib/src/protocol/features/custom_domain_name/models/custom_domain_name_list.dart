@@ -49,6 +49,9 @@ abstract class CustomDomainNameList implements _i1.SerializableModel {
 
   Map<_i3.DomainNameTarget, String> defaultDomainsByTarget;
 
+  /// Returns a shallow copy of this [CustomDomainNameList]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   CustomDomainNameList copyWith({
     List<_i2.CustomDomainName>? customDomainNames,
     Map<_i3.DomainNameTarget, String>? defaultDomainsByTarget,
@@ -78,6 +81,9 @@ class _CustomDomainNameListImpl extends CustomDomainNameList {
           defaultDomainsByTarget: defaultDomainsByTarget,
         );
 
+  /// Returns a shallow copy of this [CustomDomainNameList]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   @override
   CustomDomainNameList copyWith({
     List<_i2.CustomDomainName>? customDomainNames,

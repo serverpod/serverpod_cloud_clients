@@ -79,6 +79,9 @@ abstract class Project implements _i1.SerializableModel {
   /// The capsules belonging to this project.
   List<_i3.Capsule>? capsules;
 
+  /// Returns a shallow copy of this [Project]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   Project copyWith({
     int? id,
     DateTime? createdAt,
@@ -129,6 +132,9 @@ class _ProjectImpl extends Project {
           capsules: capsules,
         );
 
+  /// Returns a shallow copy of this [Project]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   @override
   Project copyWith({
     Object? id = _Undefined,

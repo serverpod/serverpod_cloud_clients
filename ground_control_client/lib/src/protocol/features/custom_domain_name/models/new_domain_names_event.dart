@@ -39,6 +39,9 @@ abstract class NewCustomDomainNamesEvent implements _i1.SerializableModel {
 
   String cloudCapsuleId;
 
+  /// Returns a shallow copy of this [NewCustomDomainNamesEvent]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   NewCustomDomainNamesEvent copyWith({
     String? domainName,
     int? attempts,
@@ -70,6 +73,9 @@ class _NewCustomDomainNamesEventImpl extends NewCustomDomainNamesEvent {
           cloudCapsuleId: cloudCapsuleId,
         );
 
+  /// Returns a shallow copy of this [NewCustomDomainNamesEvent]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   @override
   NewCustomDomainNamesEvent copyWith({
     String? domainName,

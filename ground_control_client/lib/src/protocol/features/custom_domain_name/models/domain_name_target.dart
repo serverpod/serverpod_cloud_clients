@@ -19,11 +19,11 @@ enum DomainNameTarget implements _i1.SerializableModel {
   static DomainNameTarget fromJson(String name) {
     switch (name) {
       case 'api':
-        return api;
+        return DomainNameTarget.api;
       case 'insights':
-        return insights;
+        return DomainNameTarget.insights;
       case 'web':
-        return web;
+        return DomainNameTarget.web;
       default:
         throw ArgumentError(
             'Value "$name" cannot be converted to "DomainNameTarget"');

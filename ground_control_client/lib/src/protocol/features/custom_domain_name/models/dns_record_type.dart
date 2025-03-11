@@ -18,9 +18,9 @@ enum DnsRecordType implements _i1.SerializableModel {
   static DnsRecordType fromJson(String name) {
     switch (name) {
       case 'txt':
-        return txt;
+        return DnsRecordType.txt;
       case 'cname':
-        return cname;
+        return DnsRecordType.cname;
       default:
         throw ArgumentError(
             'Value "$name" cannot be converted to "DnsRecordType"');

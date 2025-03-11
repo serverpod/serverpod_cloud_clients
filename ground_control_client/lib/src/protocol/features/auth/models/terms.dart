@@ -18,9 +18,9 @@ enum Terms implements _i1.SerializableModel {
   static Terms fromJson(String name) {
     switch (name) {
       case 'termsOfService':
-        return termsOfService;
+        return Terms.termsOfService;
       case 'privacyPolicy':
-        return privacyPolicy;
+        return Terms.privacyPolicy;
       default:
         throw ArgumentError('Value "$name" cannot be converted to "Terms"');
     }

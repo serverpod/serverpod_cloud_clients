@@ -24,6 +24,9 @@ abstract class ForbiddenException
 
   String message;
 
+  /// Returns a shallow copy of this [ForbiddenException]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   ForbiddenException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
@@ -40,6 +43,9 @@ class _ForbiddenExceptionImpl extends ForbiddenException {
   _ForbiddenExceptionImpl({required String message})
       : super._(message: message);
 
+  /// Returns a shallow copy of this [ForbiddenException]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   @override
   ForbiddenException copyWith({String? message}) {
     return ForbiddenException(message: message ?? this.message);

@@ -37,6 +37,9 @@ abstract class AccountAuthorization implements _i1.SerializableModel {
 
   String email;
 
+  /// Returns a shallow copy of this [AccountAuthorization]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   AccountAuthorization copyWith({
     int? id,
     String? email,
@@ -66,6 +69,9 @@ class _AccountAuthorizationImpl extends AccountAuthorization {
           email: email,
         );
 
+  /// Returns a shallow copy of this [AccountAuthorization]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   @override
   AccountAuthorization copyWith({
     Object? id = _Undefined,

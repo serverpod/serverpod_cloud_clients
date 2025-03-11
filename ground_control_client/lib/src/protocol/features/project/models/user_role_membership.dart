@@ -82,6 +82,9 @@ abstract class UserRoleMembership implements _i1.SerializableModel {
   /// The role the user is a member of.
   _i3.Role? role;
 
+  /// Returns a shallow copy of this [UserRoleMembership]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   UserRoleMembership copyWith({
     int? id,
     DateTime? createdAt,
@@ -135,6 +138,9 @@ class _UserRoleMembershipImpl extends UserRoleMembership {
           role: role,
         );
 
+  /// Returns a shallow copy of this [UserRoleMembership]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
   @override
   UserRoleMembership copyWith({
     Object? id = _Undefined,
