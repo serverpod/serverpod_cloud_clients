@@ -1,4 +1,26 @@
+
 # Changelog
+
+## 0.3.0 - 2025-03-11
+
+### Added
+
+- **Run scloud commands outside of server dir** – Will find the scloud.yaml file even when the scloud command is run from outside of the server dir.
+- **Deploy command support for dry-run** – Introduced a `--dry-run` flag to the `deploy` command, allowing users to simulate a deployment without actually uploading files. Works well with `--verbose` for detailed logs.  
+- **Create `.scloudignore` during link and project create commands** – Automatically generates a `.scloudignore` file with helpful comments and commonly ignored files.  
+- **Support for `--version` option** – Added `--version` as an alternative to the `version` subcommand. Also includes CLI doc links in the usage footer.  
+
+### Changed
+
+- **Print file tree for deploy command in verbose mode** – Added a file tree printer that shows the structure of uploaded files when running the deploy command with `--verbose`.  
+- **Rename `domain refresh-record` to `domain verify`** – Shortened and clarified the `domain refresh-record` command to `domain verify`. Improved help descriptions and allowed `--target` as a positional argument.  
+- **Restructure domain add output with clearer instructions** – Improved the instructions for the `domain add` command to make them clearer and more concise.  
+- **Rename `--project-id` to `--project`** – Updated the `--project-id` option to `--project` for consistency and ease of use.  
+
+### Fixed
+
+- **Return friendly error if domain is already used** – Catch unique violation constraints for domain creation and provide a clear client error message instead of a generic 500 error.  
+- **Deterministic ordering of domains** – Ensured that domain lists are always presented in a consistent order.  
 
 ## 0.2.0 - 2025-02-28
 

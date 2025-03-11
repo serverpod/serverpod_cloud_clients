@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.0 - 2025-03-11
+
+### Fixed
+
+- **Return friendly error if domain is already used** – The API now returns a clear error message if a domain creation request fails due to a conflict, instead of a generic 500 error.  
+- **Ensure deterministic ordering of domains** – Updated the domain listing API to return results in a consistent order.  
+
+### Removed
+
+- **Remove unused user endpoints** – Removed internal user object creation and fetching endpoints to simplify user info handling.
+
 ## 0.2.0 - 2025-02-28
 
 ### Fixes
