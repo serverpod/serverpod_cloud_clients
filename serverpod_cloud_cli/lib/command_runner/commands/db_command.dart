@@ -2,7 +2,7 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
-import 'package:serverpod_cloud_cli/util/configuration.dart';
+import 'package:serverpod_cloud_cli/util/config/configuration.dart';
 
 class CloudDbCommand extends CloudCliCommand {
   @override

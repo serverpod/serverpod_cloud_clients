@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:cli_tools/cli_tools.dart';
+import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/custom_domain_command.dart';
@@ -20,7 +21,10 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/cli_version_checker.d
 import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_cloud_cli/util/capitalize.dart';
-import 'package:serverpod_cloud_cli/util/configuration.dart';
+import 'package:serverpod_cloud_cli/util/common.dart';
+import 'package:serverpod_cloud_cli/util/config/configuration.dart';
+import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
+import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
 import 'package:serverpod_cloud_cli/util/scloud_version.dart';
 
 /// Represents the Serverpod Cloud CLI main command, its global options, and subcommands.
@@ -31,9 +35,17 @@ class CloudCliCommandRunner extends BetterCommandRunner {
 
   final VersionCommand _versionCommand;
 
+  GlobalConfiguration? _globalConfiguration;
+
   /// The curremt global configuration for the Serverpod Cloud CLI.
   /// (Since this object is re-entrant, the global config is regenerated each call to [runCommand].)
-  GlobalConfiguration globalConfiguration = GlobalConfiguration();
+  GlobalConfiguration get globalConfiguration {
+    final globalConfig = _globalConfiguration;
+    if (globalConfig == null) {
+      throw StateError('Global configuration not initialized');
+    }
+    return globalConfig;
+  }
 
   CloudCliCommandRunner._({
     required this.logger,
@@ -92,7 +104,7 @@ class CloudCliCommandRunner extends BetterCommandRunner {
 
   @override
   Future<void> runCommand(final ArgResults topLevelResults) async {
-    globalConfiguration = GlobalConfiguration(
+    _globalConfiguration = GlobalConfiguration(
       args: topLevelResults,
       env: Platform.environment,
     );
@@ -152,6 +164,70 @@ class CloudCliCommandRunner extends BetterCommandRunner {
   String? get usageFooter =>
       '\nSee the full documentation at: https://docs.serverpod.cloud/';
 
+  /// Selects and verifies the project directory based on the global configuration,
+  /// files found near the current directory, or user input if enabled.
+  ///
+  /// Verifies that the directory is a valid Serverpod server directory
+  /// using [isServerpodServerDirectory] and gives feedback to the user.
+  ///
+  /// Throws [ExitException] if no valid project directory could be determined.
+  Directory verifiedProjectDirectory() {
+    final projectDirectory = Directory(selectProjectDirectory());
+
+    if (!isServerpodServerDirectory(projectDirectory)) {
+      logProjectDirIsNotAServerpodServerDirectory(logger);
+      throw ErrorExitException();
+    }
+
+    logger.debug('Using project directory `${projectDirectory.path}`');
+    return projectDirectory;
+  }
+
+  /// Selects a project directory based on the global configuration,
+  /// files found near the current directory, or user input if enabled.
+  ///
+  /// As fallback the current directory is returned.
+  ///
+  /// Does not verify that the directory exists and is a valid
+  /// Serverpod server directory.
+  /// See [isServerpodServerDirectory] for verification.
+  String selectProjectDirectory() {
+    // if explicitly set, use the specified directory
+    final specifiedDir = globalConfiguration.projectDir;
+    if (specifiedDir != null) {
+      return specifiedDir;
+    }
+
+    // if scloud.<ext> is set or found, use its directory
+    final configFile = globalConfiguration.projectConfigFile;
+    if (configFile != null) {
+      return p.dirname(configFile);
+    }
+
+    // if server pubspec.yaml is found near the current directory, use its directory
+    final serverPubspecFile = _serverPubspecFileFinder();
+    if (serverPubspecFile != null) {
+      return p.dirname(serverPubspecFile);
+    }
+
+    return Directory.current.path;
+  }
+
+  String? _serverPubspecFileFinder() {
+    final finder = scloudFileFinder(
+      fileBaseName: 'pubspec',
+      supportedExtensions: ['yaml', 'yml'],
+      fileContentCondition: (final filePath) =>
+          isServerpodServerPackage(File(filePath)),
+    );
+    try {
+      return finder(null);
+    } on AmbiguousSearchException catch (e) {
+      logger.error(e.message);
+      return null;
+    }
+  }
+
   static void _configureLogLevel({
     required final CommandLogger logger,
     required final CommandRunnerLogLevel parsedLogLevel,
@@ -209,7 +285,7 @@ enum GlobalOption implements OptionDefinition {
       envName: 'SERVERPOD_CLOUD_DIR',
       helpText:
           'Override the directory path where Serverpod Cloud cache/authentication files are stored.',
-      defaultFrom: _getDefaultStoragePath,
+      fromDefault: _getDefaultStoragePath,
     ),
   ),
   // Developer options and flags
@@ -240,12 +316,47 @@ enum GlobalOption implements OptionDefinition {
       isFlag: true,
       defaultsTo: 'false',
     ),
+  ),
+
+  projectDir(
+    ConfigOption(
+      argName: 'project-dir',
+      argAbbrev: 'd',
+      envName: 'SERVERPOD_CLOUD_PROJECT_DIR',
+      helpText: 'The path to the Serverpod Cloud project server directory.',
+      // (no general default value since significant whether explicitly specified)
+    ),
+  ),
+  projectConfigFile(
+    ConfigOption(
+      argName: 'project-config-file',
+      envName: 'SERVERPOD_CLOUD_PROJECT_CONFIG_FILE',
+      fromCustom: _projectConfigFileFinder,
+      helpText: 'The path to the Serverpod Cloud project configuration file.',
+    ),
+  ),
+  projectConfigContent(
+    ConfigOption(
+      argName: 'project-config-content',
+      envName: 'SERVERPOD_CLOUD_PROJECT_CONFIG_CONTENT',
+      helpText: 'Override the scloud project configuration with a YAML string.',
+    ),
   );
 
   const GlobalOption(this.option);
 
   @override
   final ConfigOption option;
+}
+
+String? _projectConfigFileFinder(final Configuration cfg) {
+  // if the dir option is set, we use it as starting directory
+  final finder = scloudFileFinder<Configuration>(
+    fileBaseName: ProjectConfigFileConstants.fileBaseName,
+    supportedExtensions: ['yaml', 'yml', 'json'],
+    startingDirectory: (final cfg) => cfg.valueOrNull(GlobalOption.projectDir),
+  );
+  return finder(cfg);
 }
 
 /// The current global configuration values for the Serverpod Cloud CLI.
@@ -262,4 +373,11 @@ class GlobalConfiguration extends Configuration {
   String get apiServer => value(GlobalOption.apiServer);
 
   String get consoleServer => value(GlobalOption.consoleServer);
+
+  String? get projectDir => valueOrNull(GlobalOption.projectDir);
+
+  String? get projectConfigFile => valueOrNull(GlobalOption.projectConfigFile);
+
+  String? get projectConfigContent =>
+      valueOrNull(GlobalOption.projectConfigContent);
 }

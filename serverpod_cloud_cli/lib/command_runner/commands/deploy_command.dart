@@ -1,13 +1,10 @@
-import 'dart:io';
-
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dart';
-import 'package:serverpod_cloud_cli/util/common.dart';
-import 'package:serverpod_cloud_cli/util/configuration.dart';
+import 'package:serverpod_cloud_cli/util/config/configuration.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 
@@ -17,11 +14,6 @@ enum DeployCommandOption implements OptionDefinition {
       argPos: 0,
       helpText:
           '${CommandConfigConstants.projectIdHelpText} Can be passed as the first argument.',
-    ),
-  ),
-  projectDir(
-    ProjectDirOption(
-      helpText: 'The path to the directory of the project to deploy.',
     ),
   ),
   concurrency(
@@ -63,8 +55,6 @@ class CloudDeployCommand extends CloudCliCommand<DeployCommandOption> {
   Future<void> runWithConfig(
       final Configuration<DeployCommandOption> commandConfig) async {
     final projectId = commandConfig.value(DeployCommandOption.projectId);
-    final projectDirectory =
-        Directory(commandConfig.value(DeployCommandOption.projectDir));
     final concurrency =
         int.tryParse(commandConfig.value(DeployCommandOption.concurrency));
     final dryRun = commandConfig.flag(DeployCommandOption.dryRun);
@@ -75,15 +65,12 @@ class CloudDeployCommand extends CloudCliCommand<DeployCommandOption> {
       throw ErrorExitException();
     }
 
+    final projectDirectory = runner.verifiedProjectDirectory();
+
     final pubspecValidator = TenantProjectPubspec.fromProjectDir(
       projectDirectory,
       logger: logger,
     );
-
-    if (!pubspecValidator.isServerpodServer()) {
-      logProjectDirIsNotAServerpodServerDirectory(logger);
-      throw ErrorExitException();
-    }
 
     final issues = pubspecValidator.projectDependencyIssues();
     if (issues.isNotEmpty) {

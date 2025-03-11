@@ -6,7 +6,7 @@ import 'dart:io';
 import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/util/configuration.dart';
+import 'package:serverpod_cloud_cli/util/config/configuration.dart';
 
 import 'mock_stdin.dart';
 import 'mock_stdout.dart';

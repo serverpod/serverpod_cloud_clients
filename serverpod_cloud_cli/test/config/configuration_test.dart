@@ -1,6 +1,6 @@
 import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
-import 'package:serverpod_cloud_cli/util/configuration.dart';
+import 'package:serverpod_cloud_cli/util/config/config.dart';
 import 'package:test/test.dart';
 
 void main() async {
@@ -14,7 +14,7 @@ void main() async {
       expect(
         () => [projectIdOpt].prepareForParsing(parser),
         throwsA(allOf(
-          isA<InvalidOptionConfigurationException>(),
+          isA<InvalidOptionConfigurationError>(),
           (final e) => e.toString().contains(
                 "An argument option can't have an abbreviation but not a full name",
               ),
@@ -34,30 +34,9 @@ void main() async {
       expect(
         () => [projectIdOpt].prepareForParsing(parser),
         throwsA(allOf(
-          isA<InvalidOptionConfigurationException>(),
+          isA<InvalidOptionConfigurationError>(),
           (final e) => e.toString().contains(
                 "Positional options can't be flags",
-              ),
-        )),
-      );
-    });
-  });
-
-  group('Given invalid configuration valueRequired and mandatory', () {
-    const projectIdOpt = ConfigOption(
-      valueRequired: true,
-      mandatory: true,
-    );
-    final parser = ArgParser();
-
-    test('when preparing for parsing then throws exception', () async {
-      expect(
-        () => [projectIdOpt].prepareForParsing(parser),
-        throwsA(allOf(
-          isA<InvalidOptionConfigurationException>(),
-          (final e) => e.toString().contains(
-                "An argument option should not have valueRequired specified if mandatory is true, "
-                "since this already guarantees that the value will be passed",
               ),
         )),
       );
@@ -75,7 +54,7 @@ void main() async {
       expect(
         () => [projectIdOpt].prepareForParsing(parser),
         throwsA(allOf(
-          isA<InvalidOptionConfigurationException>(),
+          isA<InvalidOptionConfigurationError>(),
           (final e) => e
               .toString()
               .contains("Mandatory options can't have default values"),
@@ -89,7 +68,7 @@ void main() async {
       () {
     const projectIdOpt = ConfigOption(
       mandatory: true,
-      defaultFrom: _defaultValueFunction,
+      fromDefault: _defaultValueFunction,
     );
 
     final parser = ArgParser();
@@ -98,7 +77,7 @@ void main() async {
       expect(
         () => [projectIdOpt].prepareForParsing(parser),
         throwsA(allOf(
-          isA<InvalidOptionConfigurationException>(),
+          isA<InvalidOptionConfigurationError>(),
           (final e) => e
               .toString()
               .contains("Mandatory options can't have default values"),
@@ -157,7 +136,9 @@ void main() async {
     const projectIdOpt = ConfigOption(
       argName: 'project',
       envName: 'PROJECT_ID',
-      defaultFrom: _defaultValueFunction,
+      configKey: 'config:/projectId',
+      fromCustom: _customValueFunction,
+      fromDefault: _defaultValueFunction,
       defaultsTo: 'constDefaultValue',
     );
     final parser = ArgParser();
@@ -170,6 +151,8 @@ void main() async {
         options: [projectIdOpt],
         args: argResults,
         env: envVars,
+        configBroker:
+            _TestConfigBroker({'config:/projectId': 'configSourceValue'}),
       );
       expect(config.value(projectIdOpt), equals('123'));
     });
@@ -181,19 +164,35 @@ void main() async {
         options: [projectIdOpt],
         args: argResults,
         env: envVars,
+        configBroker:
+            _TestConfigBroker({'config:/projectId': 'configSourceValue'}),
       );
       expect(config.value(projectIdOpt), equals('456'));
     });
 
-    test('then defaultFrom function has second last precedence', () async {
+    test('then configKey has third precedence', () async {
       final argResults = parser.parse([]);
       final envVars = <String, String>{};
       final config = Configuration.fromEnvAndArgs(
         options: [projectIdOpt],
         args: argResults,
         env: envVars,
+        configBroker:
+            _TestConfigBroker({'config:/projectId': 'configSourceValue'}),
       );
-      expect(config.value(projectIdOpt), equals('defaultValueFunction'));
+      expect(config.value(projectIdOpt), equals('configSourceValue'));
+    });
+
+    test('then fromCustom function has fourth precedence', () async {
+      final argResults = parser.parse([]);
+      final envVars = <String, String>{};
+      final config = Configuration.fromEnvAndArgs(
+        options: [projectIdOpt],
+        args: argResults,
+        env: envVars,
+        configBroker: _TestConfigBroker({}),
+      );
+      expect(config.value(projectIdOpt), equals('customValueFunction'));
     });
   });
 
@@ -201,6 +200,8 @@ void main() async {
     const projectIdOpt = ConfigOption(
       argName: 'project',
       envName: 'PROJECT_ID',
+      configKey: 'config:/projectId',
+      fromCustom: _customNullFunction,
       defaultsTo: 'constDefaultValue',
     );
     final parser = ArgParser();
@@ -213,6 +214,8 @@ void main() async {
         options: [projectIdOpt],
         args: argResults,
         env: envVars,
+        configBroker:
+            _TestConfigBroker({'config:/projectId': 'configSourceValue'}),
       );
       expect(config.value(projectIdOpt), equals('123'));
     });
@@ -224,8 +227,23 @@ void main() async {
         options: [projectIdOpt],
         args: argResults,
         env: envVars,
+        configBroker:
+            _TestConfigBroker({'config:/projectId': 'configSourceValue'}),
       );
       expect(config.value(projectIdOpt), equals('456'));
+    });
+
+    test('then configKey has third precedence', () async {
+      final argResults = parser.parse([]);
+      final envVars = <String, String>{};
+      final config = Configuration.fromEnvAndArgs(
+        options: [projectIdOpt],
+        args: argResults,
+        env: envVars,
+        configBroker:
+            _TestConfigBroker({'config:/projectId': 'configSourceValue'}),
+      );
+      expect(config.value(projectIdOpt), equals('configSourceValue'));
     });
 
     test('then defaultsTo value has last precedence', () async {
@@ -235,6 +253,7 @@ void main() async {
         options: [projectIdOpt],
         args: argResults,
         env: envVars,
+        configBroker: _TestConfigBroker({}),
       );
       expect(config.value(projectIdOpt), equals('constDefaultValue'));
     });
@@ -420,97 +439,10 @@ void main() async {
     });
   });
 
-  group('Given a valueRequired configuration option', () {
-    const projectIdOpt = ConfigOption(
-      argName: 'project',
-      envName: 'PROJECT_ID',
-      valueRequired: true,
-    );
-    final parser = ArgParser();
-    [projectIdOpt].prepareForParsing(parser);
-
-    test('when provided as argument then parsing succeeds', () async {
-      final argResults = parser.parse(['--project', '123']);
-      final envVars = <String, String>{};
-      final config = Configuration.fromEnvAndArgs(
-        options: [projectIdOpt],
-        args: argResults,
-        env: envVars,
-      );
-      expect(config.errors, isEmpty);
-      expect(config.value(projectIdOpt), equals('123'));
-    });
-
-    test('when provided as env variable then parsing succeeds', () async {
-      final argResults = parser.parse([]);
-      final envVars = {'PROJECT_ID': '456'};
-      final config = Configuration.fromEnvAndArgs(
-        options: [projectIdOpt],
-        args: argResults,
-        env: envVars,
-      );
-      expect(config.errors, isEmpty);
-      expect(config.value(projectIdOpt), equals('456'));
-    });
-
-    test('when not provided then parsing has error', () async {
-      final argResults = parser.parse([]);
-      final envVars = <String, String>{};
-      final config = Configuration.fromEnvAndArgs(
-        options: [projectIdOpt],
-        args: argResults,
-        env: envVars,
-      );
-      expect(config.errors, hasLength(1));
-      expect(config.errors.first, 'option `project` is mandatory');
-      expect(() => config.value(projectIdOpt), throwsA(isA<UsageException>()));
-    });
-  });
-
   group('Given a mandatory env-only configuration option', () {
     const projectIdOpt = ConfigOption(
       envName: 'PROJECT_ID',
       mandatory: true,
-    );
-    final parser = ArgParser();
-    [projectIdOpt].prepareForParsing(parser);
-
-    test('when provided as argument then parsing fails', () async {
-      expect(() => parser.parse(['--project', '123']),
-          throwsA(isA<ArgParserException>()));
-    });
-
-    test('when provided as env variable then parsing succeeds', () async {
-      final argResults = parser.parse([]);
-      final envVars = {'PROJECT_ID': '456'};
-      final config = Configuration.fromEnvAndArgs(
-        options: [projectIdOpt],
-        args: argResults,
-        env: envVars,
-      );
-      expect(config.errors, isEmpty);
-      expect(config.value(projectIdOpt), equals('456'));
-    });
-
-    test('when not provided then parsing has error', () async {
-      final argResults = parser.parse([]);
-      final envVars = <String, String>{};
-      final config = Configuration.fromEnvAndArgs(
-        options: [projectIdOpt],
-        args: argResults,
-        env: envVars,
-      );
-      expect(config.errors, hasLength(1));
-      expect(config.errors.first,
-          'environment variable `PROJECT_ID` is mandatory');
-      expect(() => config.value(projectIdOpt), throwsA(isA<UsageException>()));
-    });
-  });
-
-  group('Given a valueRequired env-only configuration option', () {
-    const projectIdOpt = ConfigOption(
-      envName: 'PROJECT_ID',
-      valueRequired: true,
     );
     final parser = ArgParser();
     [projectIdOpt].prepareForParsing(parser);
@@ -571,7 +503,7 @@ void main() async {
         () async {
       final parser = ArgParser();
       expect(() => [argNameOpt, duplicateOpt].prepareForParsing(parser),
-          throwsA(isA<InvalidOptionConfigurationException>()));
+          throwsA(isA<InvalidOptionConfigurationError>()));
     });
 
     test(
@@ -579,7 +511,7 @@ void main() async {
         () async {
       final parser = ArgParser();
       expect(() => [envNameOpt, duplicateOpt].prepareForParsing(parser),
-          throwsA(isA<InvalidOptionConfigurationException>()));
+          throwsA(isA<InvalidOptionConfigurationError>()));
     });
 
     test(
@@ -587,7 +519,7 @@ void main() async {
         () async {
       final parser = ArgParser();
       expect(() => [argPosOpt, duplicateOpt].prepareForParsing(parser),
-          throwsA(isA<InvalidOptionConfigurationException>()));
+          throwsA(isA<InvalidOptionConfigurationError>()));
     });
 
     test(
@@ -595,7 +527,7 @@ void main() async {
         () async {
       final parser = ArgParser();
       expect(() => [argPosOpt, argPos2Opt].prepareForParsing(parser),
-          throwsA(isA<InvalidOptionConfigurationException>()));
+          throwsA(isA<InvalidOptionConfigurationError>()));
     });
 
     test(
@@ -603,7 +535,7 @@ void main() async {
         () async {
       final parser = ArgParser();
       expect(() => [argPos2Opt].prepareForParsing(parser),
-          throwsA(isA<InvalidOptionConfigurationException>()));
+          throwsA(isA<InvalidOptionConfigurationError>()));
     });
   });
 
@@ -687,69 +619,6 @@ void main() async {
     const positionalOpt = ConfigOption(
       argPos: 0,
       mandatory: true,
-    );
-    const projectIdOpt = ConfigOption(
-      argName: 'project',
-    );
-    final options = [positionalOpt, projectIdOpt];
-    final parser = ArgParser();
-    options.prepareForParsing(parser);
-
-    test('when provided as lone positional argument then parsing succeeds',
-        () async {
-      final argResults = parser.parse(['pos-arg']);
-      final envVars = <String, String>{};
-      final config = Configuration.fromEnvAndArgs(
-        options: options,
-        args: argResults,
-        env: envVars,
-      );
-      expect(config.errors, isEmpty);
-      expect(config.value(positionalOpt), equals('pos-arg'));
-    });
-
-    test('when provided before named argument then parsing succeeds', () async {
-      final argResults = parser.parse(['pos-arg', '--project', '123']);
-      final envVars = <String, String>{};
-      final config = Configuration.fromEnvAndArgs(
-        options: options,
-        args: argResults,
-        env: envVars,
-      );
-      expect(config.errors, isEmpty);
-      expect(config.value(positionalOpt), equals('pos-arg'));
-    });
-
-    test('when provided after named argument then parsing succeeds', () async {
-      final argResults = parser.parse(['--project', '123', 'pos-arg']);
-      final envVars = <String, String>{};
-      final config = Configuration.fromEnvAndArgs(
-        options: options,
-        args: argResults,
-        env: envVars,
-      );
-      expect(config.errors, isEmpty);
-      expect(config.value(positionalOpt), equals('pos-arg'));
-    });
-
-    test('when not provided then parsing has error', () async {
-      final argResults = parser.parse([]);
-      final envVars = <String, String>{};
-      final config = Configuration.fromEnvAndArgs(
-        options: options,
-        args: argResults,
-        env: envVars,
-      );
-      expect(config.errors, hasLength(1));
-      expect(config.errors.first, 'positional argument 0 is mandatory');
-      expect(() => config.value(positionalOpt), throwsA(isA<UsageException>()));
-    });
-  });
-
-  group('Given a valueRequired positional argument option', () {
-    const positionalOpt = ConfigOption(
-      argPos: 0,
-      valueRequired: true,
     );
     const projectIdOpt = ConfigOption(
       argName: 'project',
@@ -1003,10 +872,111 @@ void main() async {
       expect(config.valueOrNull(secondOpt), equals('2nd-arg'));
     });
   });
+
+  group('Given a configuration source option that depends on another option',
+      () {
+    const projectIdOpt = ConfigOption(
+      configKey: 'config:/project/projectId',
+    );
+    const configFileOpt = ConfigOption(
+      argName: 'file',
+      envName: 'FILE',
+      defaultsTo: 'config.yaml',
+    );
+    final configSource = _dependentConfigBroker(
+      {'config:/project/projectId': '123'},
+      configFileOpt,
+    );
+
+    test('when dependee is specified after depender then parsing succeeds',
+        () async {
+      final options = [configFileOpt, projectIdOpt];
+      final parser = ArgParser();
+      options.prepareForParsing(parser);
+
+      final config = Configuration.fromEnvAndArgs(
+        options: options,
+        args: parser.parse(['--file', 'config.yaml']),
+        env: <String, String>{},
+        configBroker: configSource,
+      );
+      expect(config.errors, isEmpty);
+      expect(config.valueOrNull(projectIdOpt), equals('123'));
+    });
+
+    test('when dependee is specified before depender then parsing fails',
+        () async {
+      final options = [projectIdOpt, configFileOpt];
+      final parser = ArgParser();
+      options.prepareForParsing(parser);
+
+      final config = Configuration.fromEnvAndArgs(
+        options: options,
+        args: parser.parse(['--file', 'config.yaml']),
+        env: <String, String>{},
+        configBroker: configSource,
+      );
+      expect(
+          config.errors,
+          contains(stringContainsInOrder([
+            'Failed to resolve configuration key `config:/project/projectId`',
+            'Out-of-order dependency on not-yet-resolved option `file`',
+          ])));
+      expect(
+        () => config.valueOrNull(projectIdOpt),
+        throwsA(isA<StateError>().having(
+          (final e) => e.message,
+          'message',
+          'No value available for configuration key `config:/project/projectId` due to previous errors',
+        )),
+      );
+    });
+  });
+}
+
+class _TestConfigBroker implements ConfigurationBroker {
+  final Map<String, String> entries;
+  final ConfigOption? requiredOption;
+
+  _TestConfigBroker(
+    this.entries, {
+    this.requiredOption,
+  });
+
+  @override
+  String? valueOrNull(final String key, final Configuration cfg) {
+    if (requiredOption != null) {
+      if (cfg.valueOrNull(requiredOption!) == null) {
+        return null;
+      }
+    }
+    return entries[key];
+  }
+}
+
+/// Makes a [ConfigurationBroker] that returns the values from the given map.
+/// The returned value is null if the required option does not have a value.
+ConfigurationBroker _dependentConfigBroker(
+  final Map<String, String> entries,
+  final ConfigOption requiredOption,
+) {
+  return _TestConfigBroker(entries, requiredOption: requiredOption);
 }
 
 /// Default value function for testing.
 /// Needs to be a top-level function (or static method) in order to use it with a const constructor.
 String _defaultValueFunction() {
   return 'defaultValueFunction';
+}
+
+/// Custom value function for testing.
+/// Needs to be a top-level function (or static method) in order to use it with a const constructor.
+String? _customValueFunction(final Configuration cfg) {
+  return 'customValueFunction';
+}
+
+/// Custom value function for testing.
+/// Needs to be a top-level function (or static method) in order to use it with a const constructor.
+String? _customNullFunction(final Configuration cfg) {
+  return null;
 }

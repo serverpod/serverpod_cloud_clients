@@ -1,7 +1,39 @@
 import 'dart:io';
 
+import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:path/path.dart' as p;
 import 'package:uuid/uuid.dart';
+
+/// Constructors for Serverpod project directories and files.
+class ProjectFactory {
+  /// Returns descriptor for a Serverpod server directory with a valid pubspec.yaml file.
+  /// Use `descriptor.create()` to create the directory.
+  static d.DirectoryDescriptor serverpodServerDir({
+    final String withDirectoryName = 'serverpod_server',
+    final String withPackageName = 'my_project_server',
+  }) {
+    return d.dir(withDirectoryName, [
+      serverpodServerPubspec(withPackageName: withPackageName),
+    ]);
+  }
+
+  /// Returns descriptor for a valid Serverpod server pubspec.yaml file.
+  /// Use `descriptor.create()` to create the file.
+  static d.FileDescriptor serverpodServerPubspec({
+    final String withPackageName = 'my_project_server',
+  }) {
+    return d.file(
+      'pubspec.yaml',
+      '''
+name: $withPackageName
+environment:
+  sdk: '>=3.6.0 <3.7.0'
+dependencies:
+  serverpod: ^2.3.0
+''',
+    );
+  }
+}
 
 /// A class for constructing directories with files.
 class DirectoryFactory {

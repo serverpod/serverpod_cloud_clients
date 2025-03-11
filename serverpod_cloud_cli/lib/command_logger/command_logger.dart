@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:cli_tools/cli_tools.dart' as cli;
 import 'package:collection/collection.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/util/configuration.dart';
+import 'package:serverpod_cloud_cli/util/config/configuration.dart';
 
 /// Logger that logs using the provided [cli.Logger].
 /// This interface is created to make it easier to follow the UX guidelines, as outlined in this issue: https://github.com/serverpod/serverpod_cloud/issues/371

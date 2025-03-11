@@ -6,7 +6,8 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart
 import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
 import 'package:serverpod_cloud_cli/util/capitalize.dart';
 import 'package:serverpod_cloud_cli/util/cli_authentication_key_manager.dart';
-import 'package:serverpod_cloud_cli/util/configuration.dart';
+import 'package:serverpod_cloud_cli/util/config/configuration.dart';
+import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
 
 import 'exit_exceptions.dart';
 
@@ -50,6 +51,10 @@ abstract class CloudCliCommand<T extends OptionDefinition>
       options: options,
       args: argResults,
       env: Platform.environment,
+      configBroker: scloudCliConfigBroker(
+        globalConfig: globalConfiguration,
+        logger: logger,
+      ),
     );
 
     if (config.errors.isNotEmpty) {

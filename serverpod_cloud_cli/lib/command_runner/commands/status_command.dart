@@ -5,7 +5,7 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_han
 import 'package:serverpod_cloud_cli/commands/status/status.dart';
 import 'package:serverpod_cloud_cli/commands/logs/logs.dart';
 import 'package:serverpod_cloud_cli/commands/status/status_feature.dart';
-import 'package:serverpod_cloud_cli/util/configuration.dart';
+import 'package:serverpod_cloud_cli/util/config/configuration.dart';
 
 class CloudStatusCommand extends CloudCliCommand {
   @override

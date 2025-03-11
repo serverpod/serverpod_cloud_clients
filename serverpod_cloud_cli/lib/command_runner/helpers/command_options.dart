@@ -1,6 +1,4 @@
-import 'dart:io';
-
-import 'package:serverpod_cloud_cli/util/configuration.dart';
+import 'package:serverpod_cloud_cli/util/config/config.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
 
 abstract final class CommandConfigConstants {
@@ -16,31 +14,22 @@ class ProjectIdOption extends ConfigOption {
   const ProjectIdOption({
     super.argPos,
     super.helpText = CommandConfigConstants.projectIdHelpText,
-    super.envName = 'SERVERPOD_CLOUD_PROJECT_ID',
   }) : super(
           argName: CommandConfigConstants.projectIdArgName,
           argAbbrev: 'p',
-          defaultFrom: _tryGetProjectIdFromConfig,
-          valueRequired: true,
+          envName: 'SERVERPOD_CLOUD_PROJECT_ID',
+          configKey: '$scloudConfigDomainPrefix:/project/projectId',
+          mandatory: true,
         );
-}
 
-String? _tryGetProjectIdFromConfig() {
-  try {
-    return ScloudConfig.getProjectIdFromConfig(Directory.current.path);
-  } catch (_) {
-    return null;
-  }
-}
-
-class ProjectDirOption extends ConfigOption {
-  const ProjectDirOption({required final String helpText})
-      : super(
-          argName: 'project-dir',
-          argAbbrev: 'd',
-          helpText: helpText,
-          defaultFrom: _getCurrentPath,
-          envName: 'SERVERPOD_CLOUD_PROJECT_DIR',
+  /// Used for commands that require explicit command line argument for the project ID.
+  const ProjectIdOption.argsOnly({
+    super.argPos,
+    super.helpText = CommandConfigConstants.projectIdHelpText,
+  }) : super(
+          argName: CommandConfigConstants.projectIdArgName,
+          argAbbrev: 'p',
+          mandatory: true,
         );
 }
 
@@ -64,12 +53,4 @@ class ValueOption extends ConfigOption {
           mandatory: true,
           argPos: argPos,
         );
-}
-
-String _getCurrentPath() {
-  if (Platform.environment.containsKey('GENERATING_DOCS')) {
-    return "<current directory>";
-  }
-
-  return Directory.current.path;
 }

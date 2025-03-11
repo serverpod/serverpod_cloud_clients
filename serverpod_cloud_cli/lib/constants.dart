@@ -3,8 +3,10 @@ abstract class HostConstants {
   static const serverpodCloudApi = 'https://api.serverpod.cloud';
 }
 
-abstract final class ConfigFileConstants {
-  static const fileName = 'scloud.yaml';
+abstract final class ProjectConfigFileConstants {
+  static const fileBaseName = 'scloud';
+
+  static const defaultFileName = '$fileBaseName.yaml';
 
   static const defaultYamlFileHeader = '''
 # This file configures your Serverpod Cloud project.

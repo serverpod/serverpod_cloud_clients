@@ -1,263 +1,251 @@
 import 'dart:async';
-import 'dart:io';
 
+import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
-import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
-import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
-import 'package:serverpod_cloud_cli/util/scloud_config/json_to_yaml.dart';
-import 'package:ground_control_client/ground_control_client.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test/test.dart';
-import 'package:yaml/yaml.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
+import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
+import 'package:ground_control_client/ground_control_client.dart';
+import 'package:ground_control_client/ground_control_client_mock.dart';
 
 import '../../../test_utils/command_logger_matchers.dart';
-import '../../../test_utils/http_server_builder.dart';
 import '../../../test_utils/project_factory.dart';
+import '../../../test_utils/push_current_dir.dart';
 import '../../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();
+  final client = ClientMock(authenticationKeyManager: AuthedKeyManagerMock());
   final cli = CloudCliCommandRunner.create(
     logger: logger,
+    serviceProvider: CloudCliServiceProvider(
+      apiClientFactory: (final globalCfg) => client,
+    ),
   );
-
-  final testCacheFolderPath = p.join(
-    'test_integration',
-    const Uuid().v4(),
-  );
-  late Directory originalDirectory;
-
-  setUp(() {
-    Directory(testCacheFolderPath).createSync(recursive: true);
-    originalDirectory = Directory.current;
-    Directory.current = testCacheFolderPath;
-  });
-
-  tearDown(() {
-    Directory.current = originalDirectory;
-
-    final directory = Directory(testCacheFolderPath);
-    if (directory.existsSync()) {
-      directory.deleteSync(recursive: true);
-    }
-
-    logger.clear();
-  });
 
   const projectId = 'projectId';
 
-  group('Given authenticated', () {
-    late Uri localServerAddress;
-    late HttpServer server;
+  tearDown(() {
+    logger.clear();
+  });
 
+  group('Given authenticated', () {
     setUp(() async {
-      await ResourceManager.storeServerpodCloudData(
-        cloudData: ServerpodCloudData('my-token'),
-        localStoragePath: testCacheFolderPath,
+      when(() => client.projects.createProject(
+            cloudProjectId: any(named: 'cloudProjectId'),
+          )).thenAnswer(
+        (final invocation) async => Future.value(
+          Project(cloudProjectId: invocation.namedArguments[#cloudProjectId]),
+        ),
       );
 
-      final serverBuilder = HttpServerBuilder();
-
-      serverBuilder.withMethodResponse('projects', 'createProject',
-          (final _) => (200, Project(cloudProjectId: projectId)));
-
-      serverBuilder.withMethodResponse('projects', 'fetchProjectConfig',
-          (final _) => (200, ProjectConfig(projectId: projectId)));
-
-      final (startedServer, serverAddress) = await serverBuilder.build();
-      localServerAddress = serverAddress;
-      server = startedServer;
+      when(() => client.projects.fetchProjectConfig(
+            cloudProjectId: any(named: 'cloudProjectId'),
+          )).thenAnswer(
+        (final invocation) async => Future.value(
+          ProjectConfig(projectId: invocation.namedArguments[#cloudProjectId]),
+        ),
+      );
     });
 
-    tearDown(() async {
-      await server.close(force: true);
-    });
+    group('and inside a serverpod directory', () {
+      late String serverDir;
 
-    group(
-        'and inside a serverpod directory without scloud.yaml file when calling create',
-        () {
-      late Future commandResult;
       setUp(() async {
-        DirectoryFactory.serverpodServerDir().construct('.');
-
-        commandResult = cli.run([
-          'project',
-          'create',
-          projectId,
-          '--no-enable-db',
-          '--api-url',
-          localServerAddress.toString(),
-          '--scloud-dir',
-          testCacheFolderPath,
-        ]);
+        await ProjectFactory.serverpodServerDir(
+          withDirectoryName: 'server_dir',
+        ).create();
+        serverDir = p.join(d.sandbox, 'server_dir');
+        pushCurrentDirectory(serverDir);
       });
 
-      test('then command completes successfully', () async {
-        await expectLater(commandResult, completes);
+      group('without scloud.yaml file when calling create', () {
+        late Future commandResult;
+        setUp(() async {
+          commandResult = cli.run([
+            'project',
+            'create',
+            projectId,
+            '--no-enable-db',
+          ]);
+        });
+
+        test('then command completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then logs success message', () async {
+          await commandResult;
+
+          expect(logger.successCalls, isNotEmpty);
+          expect(
+            logger.successCalls.first,
+            equalsSuccessCall(
+              message: "Successfully created new project '$projectId'.",
+            ),
+          );
+        });
+
+        test('then writes scloud.yaml file', () async {
+          await commandResult;
+
+          final expected = d.dir(serverDir, [
+            d.file(
+              'scloud.yaml',
+              contains('''
+project:
+  projectId: "$projectId"
+'''),
+            ),
+          ]);
+          await expectLater(expected.validate(), completes);
+        });
+
+        test('then writes .scloudignore file', () async {
+          await commandResult;
+
+          final expected = d.dir(serverDir, [
+            d.file(
+              '.scloudignore',
+              contains('# .scloudignore'),
+            ),
+          ]);
+          await expectLater(expected.validate(), completes);
+        });
       });
 
-      test('then logs success message', () async {
-        await commandResult;
+      group('with existing scloud.yaml file when calling create', () {
+        late Future commandResult;
+        setUp(() async {
+          await d.dir(serverDir, [
+            ProjectFactory.serverpodServerPubspec(),
+            d.file('scloud.yaml', '''
+project:
+  projectId: "otherProjectId"
+'''),
+          ]).create();
 
-        expect(logger.successCalls, isNotEmpty);
-        expect(
-          logger.successCalls.first,
-          equalsSuccessCall(
-            message: "Successfully created new project '$projectId'.",
-          ),
-        );
+          commandResult = cli.run([
+            'project',
+            'create',
+            projectId,
+            '--no-enable-db',
+          ]);
+        });
+
+        test('then command completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then logs success message', () async {
+          await commandResult;
+
+          expect(logger.successCalls, isNotEmpty);
+          expect(
+            logger.successCalls.first,
+            equalsSuccessCall(
+              message: "Successfully created new project '$projectId'.",
+            ),
+          );
+        });
+
+        test('then does not update existing scloud.yaml file', () async {
+          await commandResult;
+
+          final expected = d.dir(serverDir, [
+            d.file(
+              'scloud.yaml',
+              contains('''
+project:
+  projectId: "otherProjectId"
+'''),
+            ),
+          ]);
+          await expectLater(expected.validate(), completes);
+        });
       });
 
-      test('then writes scloud.yaml file', () async {
-        await commandResult;
+      group('without .scloudignore file when calling create', () {
+        late Future commandResult;
+        setUp(() async {
+          await ProjectFactory.serverpodServerDir(
+            withDirectoryName: serverDir,
+          ).create();
 
-        final file = File('scloud.yaml');
-        expect(file.existsSync(), isTrue);
+          commandResult = cli.run([
+            'project',
+            'create',
+            projectId,
+            '--no-enable-db',
+          ]);
+        });
 
-        final content = file.readAsStringSync();
-        final yaml = loadYaml(content) as YamlMap;
-        final project = yaml['project'] as YamlMap;
-        expect(project['projectId'], projectId);
+        test('then writes .scloudignore file', () async {
+          await commandResult;
+
+          final expected = d.dir(serverDir, [
+            d.file(
+              '.scloudignore',
+              contains('# .scloudignore'),
+            ),
+          ]);
+          await expectLater(expected.validate(), completes);
+        });
       });
 
-      test('then writes .scloudignore file', () async {
-        await commandResult;
+      group('with a custom .scloudignore file when calling create', () {
+        late Future commandResult;
+        setUp(() async {
+          await d.dir(serverDir, [
+            ProjectFactory.serverpodServerPubspec(),
+            d.file('.scloudignore', '# Custom .scloudignore file'),
+          ]).create();
 
-        final file = File('.scloudignore');
-        expect(file.existsSync(), isTrue);
-      });
-    });
+          commandResult = cli.run([
+            'project',
+            'create',
+            projectId,
+            '--no-enable-db',
+          ]);
+        });
 
-    group(
-        'and inside a serverpod directory with existing scloud.yaml file when calling create',
-        () {
-      late Future commandResult;
-      setUp(() async {
-        DirectoryFactory.serverpodServerDir().construct('.');
+        test('then the content of the .scloudignore file is not changed',
+            () async {
+          await commandResult;
 
-        File('scloud.yaml').writeAsStringSync(jsonToYaml({
-          'project': {'projectId': 'otherProjectId'},
-        }));
-
-        commandResult = cli.run([
-          'project',
-          'create',
-          projectId,
-          '--no-enable-db',
-          '--api-url',
-          localServerAddress.toString(),
-          '--scloud-dir',
-          testCacheFolderPath,
-        ]);
-      });
-
-      test('then command completes successfully', () async {
-        await expectLater(commandResult, completes);
-      });
-
-      test('then logs success message', () async {
-        await commandResult;
-
-        expect(logger.successCalls, isNotEmpty);
-        expect(
-          logger.successCalls.first,
-          equalsSuccessCall(
-            message: "Successfully created new project '$projectId'.",
-          ),
-        );
-      });
-
-      test('then does not update existing scloud.yaml file', () async {
-        await commandResult;
-
-        final file = File('scloud.yaml');
-        expect(file.existsSync(), isTrue);
-
-        final content = file.readAsStringSync();
-        final yaml = loadYaml(content) as YamlMap;
-        final project = yaml['project'] as YamlMap;
-        expect(project['projectId'], 'otherProjectId');
-      });
-    });
-
-    group(
-        'and inside a serverpod directory without .scloudignore file when calling create',
-        () {
-      late Future commandResult;
-      setUp(() async {
-        DirectoryFactory.serverpodServerDir().construct('.');
-
-        commandResult = cli.run([
-          'project',
-          'create',
-          projectId,
-          '--no-enable-db',
-          '--api-url',
-          localServerAddress.toString(),
-          '--scloud-dir',
-          testCacheFolderPath,
-        ]);
-      });
-
-      test('then writes .scloudignore file', () async {
-        await commandResult;
-
-        final file = File('.scloudignore');
-        expect(file.existsSync(), isTrue);
-      });
-    });
-
-    group(
-        'and inside a serverpod directory with a custom .scloudignore file when calling create',
-        () {
-      late Future commandResult;
-      setUp(() async {
-        DirectoryFactory.serverpodServerDir().construct(testCacheFolderPath);
-
-        File('.scloudignore').writeAsStringSync(
-          '# Custom .scloudignore file',
-        );
-
-        commandResult = cli.run([
-          'project',
-          'create',
-          projectId,
-          '--no-enable-db',
-          '--api-url',
-          localServerAddress.toString(),
-          '--scloud-dir',
-          testCacheFolderPath,
-        ]);
-      });
-
-      test('then the content of the .scloudignore file is not changed',
-          () async {
-        await commandResult;
-
-        final content = File('.scloudignore').readAsStringSync();
-        expect(content, '# Custom .scloudignore file');
+          final expected = d.dir(serverDir, [
+            d.file(
+              '.scloudignore',
+              contains('# Custom .scloudignore file'),
+            ),
+          ]);
+          await expectLater(expected.validate(), completes);
+        });
       });
     });
 
     group('and inside a dart directory when calling create', () {
       late Future commandResult;
+      late String dartDir;
+
       setUp(() async {
-        File('pubspec.yaml').writeAsStringSync(jsonToYaml({
-          'name': 'my_own_server',
-          'dependencies': {
-            'test': '1.0',
-          },
-        }));
+        await d.dir('dart_dir', [
+          ProjectFactory.serverpodServerPubspec(),
+          d.file('pubspec.yaml', '''
+name: my_own_server
+dependencies:
+  test: 1.0
+'''),
+        ]).create();
+        dartDir = p.join(d.sandbox, 'dart_dir');
+        pushCurrentDirectory(dartDir);
 
         commandResult = cli.run([
           'project',
           'create',
           projectId,
           '--no-enable-db',
-          '--api-url',
-          localServerAddress.toString(),
-          '--scloud-dir',
-          testCacheFolderPath,
         ]);
       });
 
@@ -280,23 +268,27 @@ void main() {
       test('then does not write scloud.yaml file', () async {
         await commandResult;
 
-        final file = File('scloud.yaml');
-        expect(file.existsSync(), isFalse);
+        final expected = d.dir(dartDir, [
+          d.nothing('scloud.yaml'),
+        ]);
+        await expectLater(expected.validate(), completes);
       });
     });
 
-    group('and outside a serverpod directory when calling create', () {
+    group('and in a non-serverpod directory when calling create', () {
       late Future commandResult;
+      late String otherDir;
+
       setUp(() async {
+        await d.dir('other_dir').create();
+        otherDir = p.join(d.sandbox, 'other_dir');
+        pushCurrentDirectory(otherDir);
+
         commandResult = cli.run([
           'project',
           'create',
           projectId,
           '--no-enable-db',
-          '--api-url',
-          localServerAddress.toString(),
-          '--scloud-dir',
-          testCacheFolderPath,
         ]);
       });
 
@@ -319,8 +311,10 @@ void main() {
       test('then does not write scloud.yaml file', () async {
         await commandResult;
 
-        final file = File('scloud.yaml');
-        expect(file.existsSync(), isFalse);
+        final expected = d.dir(otherDir, [
+          d.nothing('scloud.yaml'),
+        ]);
+        await expectLater(expected.validate(), completes);
       });
 
       test(
@@ -332,14 +326,151 @@ void main() {
         expect(
           logger.terminalCommandCalls.last,
           equalsTerminalCommandCall(
-            message:
-                'Since the current directory is not a Serverpod server directory '
+            message: 'Since no Serverpod server directory was identified, '
                 'an scloud.yaml configuration file has not been created. '
                 'Use the link command to create it in the server directory of this project:',
             newParagraph: true,
             command: 'scloud project link --project $projectId',
           ),
         );
+      });
+    });
+
+    group('and in a directory 3 levels up from a serverpod directory', () {
+      late Future commandResult;
+
+      setUp(() async {
+        await d.dir('grandparent_dir', [
+          d.dir('parent_dir', [
+            d.dir('server_dir', [
+              ProjectFactory.serverpodServerPubspec(),
+            ])
+          ])
+        ]).create();
+        pushCurrentDirectory(d.sandbox);
+      });
+
+      group('when calling create without --project-dir option', () {
+        setUp(() async {
+          commandResult = cli.run([
+            'project',
+            'create',
+            projectId,
+            '--no-enable-db',
+          ]);
+        });
+
+        test('then command completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then logs success message', () async {
+          await commandResult;
+
+          expect(logger.successCalls, isNotEmpty);
+          expect(
+            logger.successCalls.first,
+            equalsSuccessCall(
+              message: "Successfully created new project '$projectId'.",
+            ),
+          );
+        });
+
+        test('then does not write scloud.yaml file', () async {
+          await commandResult;
+
+          final expected = d.dir('grandparent_dir', [
+            d.dir('parent_dir', [
+              d.nothing('scloud.yaml'),
+              d.dir('server_dir', [
+                d.nothing('scloud.yaml'),
+              ]),
+            ]),
+          ]);
+          await expectLater(expected.validate(), completes);
+        });
+
+        test(
+            'then informs the user that they have to run the link '
+            'command in the project server folder', () async {
+          await commandResult;
+
+          expect(logger.terminalCommandCalls, isNotEmpty);
+          expect(
+            logger.terminalCommandCalls.last,
+            equalsTerminalCommandCall(
+              message: 'Since no Serverpod server directory was identified, '
+                  'an scloud.yaml configuration file has not been created. '
+                  'Use the link command to create it in the server directory of this project:',
+              newParagraph: true,
+              command: 'scloud project link --project $projectId',
+            ),
+          );
+        });
+      });
+
+      group('when calling create with --project-dir option', () {
+        setUp(() async {
+          commandResult = cli.run([
+            'project',
+            'create',
+            projectId,
+            '--project-dir',
+            'grandparent_dir/parent_dir/server_dir',
+            '--no-enable-db',
+          ]);
+        });
+
+        test('then command completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then logs success message', () async {
+          await commandResult;
+
+          expect(logger.successCalls, isNotEmpty);
+          expect(
+            logger.successCalls.first,
+            equalsSuccessCall(
+              message: "Successfully created new project '$projectId'.",
+            ),
+          );
+        });
+
+        test('then writes scloud.yaml file', () async {
+          await commandResult;
+
+          final expected = d.dir('grandparent_dir', [
+            d.dir('parent_dir', [
+              d.dir('server_dir', [
+                d.file(
+                  'scloud.yaml',
+                  contains('''
+project:
+  projectId: "$projectId"
+'''),
+                ),
+              ]),
+            ]),
+          ]);
+          await expectLater(expected.validate(), completes);
+        });
+
+        test('then writes .scloudignore file', () async {
+          await commandResult;
+
+          final expected = d.dir('grandparent_dir', [
+            d.dir('parent_dir', [
+              d.dir('server_dir', [
+                d.file(
+                  '.scloudignore',
+                  contains('# .scloudignore'),
+                ),
+              ]),
+            ]),
+          ]);
+          await expectLater(expected.validate(), completes);
+        });
       });
     });
   });
