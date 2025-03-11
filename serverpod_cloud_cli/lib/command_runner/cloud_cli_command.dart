@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:args/command_runner.dart';
 import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
@@ -32,9 +33,21 @@ abstract class CloudCliCommand<T extends OptionDefinition>
     options.prepareForParsing(argParser);
   }
 
+  /// Gets the top parent command for this command.
+  Command get _topCommand {
+    Command command = this;
+    do {
+      if (command.parent case final Command par) {
+        command = par;
+      } else {
+        return command;
+      }
+    } while (true);
+  }
+
   @override
   String? get usageFooter =>
-      '\nSee the full documentation at: https://docs.serverpod.cloud/cli/commands/$name';
+      '\nSee the full documentation at: https://docs.serverpod.cloud/cli/commands/${_topCommand.name}';
 
   /// Gets the command runner [CloudCliCommandRunner].
   @override
