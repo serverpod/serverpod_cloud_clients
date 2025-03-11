@@ -7,6 +7,8 @@ import 'package:serverpod_cloud_cli/commands/logs/logs.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
 import 'package:serverpod_cloud_cli/util/config/configuration.dart';
 
+import 'categories.dart';
+
 enum LogOption implements OptionDefinition {
   projectId(ProjectIdOption()),
   limit(ConfigOption(
@@ -68,6 +70,9 @@ class CloudLogCommand extends CloudCliCommand<LogOption> {
 
   @override
   final description = 'Fetch Serverpod Cloud logs.';
+
+  @override
+  String get category => CommandCategories.observe;
 
   CloudLogCommand({required super.logger}) : super(options: LogOption.values);
 

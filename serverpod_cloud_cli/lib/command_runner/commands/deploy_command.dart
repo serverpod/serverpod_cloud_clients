@@ -8,6 +8,8 @@ import 'package:serverpod_cloud_cli/util/config/configuration.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 
+import 'categories.dart';
+
 enum DeployCommandOption implements OptionDefinition {
   projectId(
     ProjectIdOption(
@@ -47,6 +49,9 @@ class CloudDeployCommand extends CloudCliCommand<DeployCommandOption> {
 
   @override
   String get name => 'deploy';
+
+  @override
+  String get category => CommandCategories.control;
 
   CloudDeployCommand({required super.logger})
       : super(options: DeployCommandOption.values);

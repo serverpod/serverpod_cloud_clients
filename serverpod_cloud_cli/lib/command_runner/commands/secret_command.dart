@@ -5,12 +5,17 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_han
 import 'package:serverpod_cloud_cli/util/config/configuration.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 
+import 'categories.dart';
+
 class CloudSecretCommand extends CloudCliCommand {
   @override
   final name = 'secret';
 
   @override
   final description = 'Manage Serverpod Cloud secrets.';
+
+  @override
+  String get category => CommandCategories.control;
 
   CloudSecretCommand({required super.logger}) {
     addSubcommand(CloudCreateSecretCommand(logger: logger));

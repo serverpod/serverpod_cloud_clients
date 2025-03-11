@@ -14,12 +14,17 @@ import 'package:serverpod_cloud_cli/util/scloudignore.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 
+import 'categories.dart';
+
 class CloudProjectCommand extends CloudCliCommand {
   @override
   final name = 'project';
 
   @override
   final description = 'Manage Serverpod Cloud projects.';
+
+  @override
+  String get category => CommandCategories.manage;
 
   CloudProjectCommand({required super.logger}) {
     // Subcommands

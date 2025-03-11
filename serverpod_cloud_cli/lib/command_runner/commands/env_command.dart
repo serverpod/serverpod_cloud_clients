@@ -6,6 +6,8 @@ import 'package:serverpod_cloud_cli/util/config/configuration.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 
+import 'categories.dart';
+
 class CloudEnvCommand extends CloudCliCommand {
   @override
   final name = 'env';
@@ -13,6 +15,9 @@ class CloudEnvCommand extends CloudCliCommand {
   @override
   final description =
       'Manage Serverpod Cloud environment variables for a project.';
+
+  @override
+  String get category => CommandCategories.control;
 
   CloudEnvCommand({required super.logger}) {
     addSubcommand(CloudEnvCreateCommand(logger: logger));

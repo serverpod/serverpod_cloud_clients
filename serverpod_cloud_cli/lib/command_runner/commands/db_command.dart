@@ -4,12 +4,17 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart'
 import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/util/config/configuration.dart';
 
+import 'categories.dart';
+
 class CloudDbCommand extends CloudCliCommand {
   @override
   final name = 'db';
 
   @override
   final description = 'Manage Serverpod Cloud DBs.';
+
+  @override
+  String get category => CommandCategories.control;
 
   CloudDbCommand({required super.logger}) {
     addSubcommand(CloudDbConnectionDetailsCommand(logger: logger));

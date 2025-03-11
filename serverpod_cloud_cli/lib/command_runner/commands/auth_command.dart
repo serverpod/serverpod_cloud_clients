@@ -8,12 +8,17 @@ import 'package:serverpod_cloud_cli/util/browser_launcher.dart';
 import 'package:serverpod_cloud_cli/util/config/configuration.dart';
 import 'package:serverpod_cloud_cli/util/listener_server.dart';
 
+import 'categories.dart';
+
 class CloudAuthCommand extends CloudCliCommand {
   @override
   final name = 'auth';
 
   @override
   final description = 'Manage user authentication.';
+
+  @override
+  String get category => CommandCategories.manage;
 
   CloudAuthCommand({required super.logger}) {
     addSubcommand(CloudLoginCommand(logger: logger));

@@ -7,12 +7,17 @@ import 'package:serverpod_cloud_cli/commands/logs/logs.dart';
 import 'package:serverpod_cloud_cli/commands/status/status_feature.dart';
 import 'package:serverpod_cloud_cli/util/config/configuration.dart';
 
+import 'categories.dart';
+
 class CloudStatusCommand extends CloudCliCommand {
   @override
   final name = 'status';
 
   @override
   final description = 'Show status information.';
+
+  @override
+  String get category => CommandCategories.observe;
 
   CloudStatusCommand({required super.logger}) {
     addSubcommand(CloudDeployStatusCommand(logger: logger));
@@ -87,10 +92,10 @@ enum DeployStatusOption implements OptionDefinition {
 
 class CloudDeployStatusCommand extends CloudCliCommand<DeployStatusOption> {
   @override
-  String get description => 'Show the deploy status.';
+  String get name => 'deploy';
 
   @override
-  String get name => 'deploy';
+  String get description => 'Show the deploy status.';
 
   CloudDeployStatusCommand({required super.logger})
       : super(options: DeployStatusOption.values);

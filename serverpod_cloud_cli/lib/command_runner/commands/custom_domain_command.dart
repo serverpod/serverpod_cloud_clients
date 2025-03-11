@@ -9,6 +9,8 @@ import 'package:serverpod_cloud_cli/util/config/configuration.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 
+import 'categories.dart';
+
 class CloudCustomDomainCommand extends CloudCliCommand {
   @override
   final name = 'domain';
@@ -26,6 +28,9 @@ The valid targets are:
 - insights: Serverpod insights
 - web: Relic server (e.g. REST API or a Flutter web app)
 ''';
+
+  @override
+  String get category => CommandCategories.control;
 
   CloudCustomDomainCommand({required super.logger}) {
     addSubcommand(CloudAddCustomDomainCommand(logger: logger));
