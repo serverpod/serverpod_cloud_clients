@@ -40,7 +40,9 @@ import 'package:ground_control_client/src/protocol/domains/status/models/deploy_
     as _i16;
 import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
     as _i17;
-import 'protocol.dart' as _i18;
+import 'package:ground_control_client/src/protocol/domains/users/models/user.dart'
+    as _i18;
+import 'protocol.dart' as _i19;
 
 /// Endpoint for managing projects.
 /// {@category Endpoint}
@@ -538,6 +540,13 @@ class EndpointUsers extends _i1.EndpointRef {
 
   @override
   String get name => 'users';
+
+  /// Reads the current user's information.
+  _i2.Future<_i18.User> readUser() => caller.callServerEndpoint<_i18.User>(
+        'users',
+        'readUser',
+        {},
+      );
 }
 
 class Modules {
@@ -564,7 +573,7 @@ class Client extends _i1.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
           host,
-          _i18.Protocol(),
+          _i19.Protocol(),
           securityContext: securityContext,
           authenticationKeyManager: authenticationKeyManager,
           streamingConnectionTimeout: streamingConnectionTimeout,

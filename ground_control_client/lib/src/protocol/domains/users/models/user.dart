@@ -21,6 +21,8 @@ abstract class User implements _i1.SerializableModel {
     this.archivedAt,
     required this.userAuthId,
     this.displayName,
+    this.email,
+    this.image,
     this.memberships,
     int? maxOwnedProjects,
   })  : createdAt = createdAt ?? DateTime.now(),
@@ -34,6 +36,8 @@ abstract class User implements _i1.SerializableModel {
     DateTime? archivedAt,
     required String userAuthId,
     String? displayName,
+    String? email,
+    Uri? image,
     List<_i2.UserRoleMembership>? memberships,
     int? maxOwnedProjects,
   }) = _UserImpl;
@@ -50,6 +54,10 @@ abstract class User implements _i1.SerializableModel {
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['archivedAt']),
       userAuthId: jsonSerialization['userAuthId'] as String,
       displayName: jsonSerialization['displayName'] as String?,
+      email: jsonSerialization['email'] as String?,
+      image: jsonSerialization['image'] == null
+          ? null
+          : _i1.UriJsonExtension.fromJson(jsonSerialization['image']),
       memberships: (jsonSerialization['memberships'] as List?)
           ?.map((e) =>
               _i2.UserRoleMembership.fromJson((e as Map<String, dynamic>)))
@@ -74,6 +82,12 @@ abstract class User implements _i1.SerializableModel {
 
   String? displayName;
 
+  /// The email address of the user.
+  String? email;
+
+  /// The image url of the user.
+  Uri? image;
+
   /// The role memberships of this user.
   List<_i2.UserRoleMembership>? memberships;
 
@@ -91,6 +105,8 @@ abstract class User implements _i1.SerializableModel {
     DateTime? archivedAt,
     String? userAuthId,
     String? displayName,
+    String? email,
+    Uri? image,
     List<_i2.UserRoleMembership>? memberships,
     int? maxOwnedProjects,
   });
@@ -103,6 +119,8 @@ abstract class User implements _i1.SerializableModel {
       if (archivedAt != null) 'archivedAt': archivedAt?.toJson(),
       'userAuthId': userAuthId,
       if (displayName != null) 'displayName': displayName,
+      if (email != null) 'email': email,
+      if (image != null) 'image': image?.toJson(),
       if (memberships != null)
         'memberships': memberships?.toJson(valueToJson: (v) => v.toJson()),
       if (maxOwnedProjects != null) 'maxOwnedProjects': maxOwnedProjects,
@@ -125,6 +143,8 @@ class _UserImpl extends User {
     DateTime? archivedAt,
     required String userAuthId,
     String? displayName,
+    String? email,
+    Uri? image,
     List<_i2.UserRoleMembership>? memberships,
     int? maxOwnedProjects,
   }) : super._(
@@ -134,6 +154,8 @@ class _UserImpl extends User {
           archivedAt: archivedAt,
           userAuthId: userAuthId,
           displayName: displayName,
+          email: email,
+          image: image,
           memberships: memberships,
           maxOwnedProjects: maxOwnedProjects,
         );
@@ -149,6 +171,8 @@ class _UserImpl extends User {
     Object? archivedAt = _Undefined,
     String? userAuthId,
     Object? displayName = _Undefined,
+    Object? email = _Undefined,
+    Object? image = _Undefined,
     Object? memberships = _Undefined,
     Object? maxOwnedProjects = _Undefined,
   }) {
@@ -159,6 +183,8 @@ class _UserImpl extends User {
       archivedAt: archivedAt is DateTime? ? archivedAt : this.archivedAt,
       userAuthId: userAuthId ?? this.userAuthId,
       displayName: displayName is String? ? displayName : this.displayName,
+      email: email is String? ? email : this.email,
+      image: image is Uri? ? image : this.image,
       memberships: memberships is List<_i2.UserRoleMembership>?
           ? memberships
           : this.memberships?.map((e0) => e0.copyWith()).toList(),
