@@ -3,33 +3,51 @@ import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
 
 abstract final class CommandConfigConstants {
   static const listOptionAbbrev = 'l';
-
-  static const projectIdArgName = 'project';
-  static const projectIdHelpText =
-      'The ID of the project. Can be omitted if the project is linked. \n'
-      'See `scloud project link --help` for more information.';
 }
 
 class ProjectIdOption extends ConfigOption {
+  static const _projectIdArgName = 'project';
+  static const _projectIdArgAbbrev = 'p';
+
+  static const _helpText = 'The ID of the project. \n'
+      'Can be omitted for existing projects that are linked. '
+      'See `scloud project link --help`.';
+  static const _helpTextFirstArg = 'The ID of the project. '
+      'Can be passed as the first argument.\n'
+      'Can be omitted for existing projects that are linked. '
+      'See `scloud project link --help`.';
+
   const ProjectIdOption({
-    super.argPos,
-    super.helpText = CommandConfigConstants.projectIdHelpText,
+    final bool asFirstArg = false,
   }) : super(
-          argName: CommandConfigConstants.projectIdArgName,
-          argAbbrev: 'p',
+          argName: _projectIdArgName,
+          argAbbrev: _projectIdArgAbbrev,
+          argPos: asFirstArg ? 0 : null,
           envName: 'SERVERPOD_CLOUD_PROJECT_ID',
           configKey: '$scloudConfigDomainPrefix:/project/projectId',
           mandatory: true,
+          helpText: asFirstArg ? _helpTextFirstArg : _helpText,
         );
 
   /// Used for commands that require explicit command line argument for the project ID.
   const ProjectIdOption.argsOnly({
-    super.argPos,
-    super.helpText = CommandConfigConstants.projectIdHelpText,
+    final bool asFirstArg = false,
   }) : super(
-          argName: CommandConfigConstants.projectIdArgName,
-          argAbbrev: 'p',
+          argName: _projectIdArgName,
+          argAbbrev: _projectIdArgAbbrev,
+          argPos: asFirstArg ? 0 : null,
           mandatory: true,
+          helpText: asFirstArg ? _helpTextFirstArg : _helpText,
+        );
+
+  /// Used for commands that interactively ask for the project ID.
+  const ProjectIdOption.nonMandatory({
+    final bool asFirstArg = false,
+  }) : super(
+          argName: _projectIdArgName,
+          argAbbrev: _projectIdArgAbbrev,
+          argPos: asFirstArg ? 0 : null,
+          helpText: asFirstArg ? _helpTextFirstArg : _helpText,
         );
 }
 

@@ -19,6 +19,8 @@ abstract class CloudCliCommand<T extends OptionDefinition>
   /// The option definitions for this command.
   final List<T> options;
 
+  /// Whether the command requires the user to be logged in.
+  /// The default is true, subclasses can override to false.
   final bool requireLogin = true;
 
   CloudCliCommand({

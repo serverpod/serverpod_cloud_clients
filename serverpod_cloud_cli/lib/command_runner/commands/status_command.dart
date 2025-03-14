@@ -1,7 +1,7 @@
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
-import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
+import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/commands/status/status.dart';
 import 'package:serverpod_cloud_cli/commands/logs/logs.dart';
 import 'package:serverpod_cloud_cli/commands/status/status_feature.dart';
@@ -132,7 +132,7 @@ class CloudDeployStatusCommand extends CloudCliCommand<DeployStatusOption> {
           inUtc: inUtc,
         );
       }, (final e) {
-        logger.error('Failed to get deployments list: $e');
+        logger.error('Failed to get deployments list', exception: e);
         throw ErrorExitException();
       });
       return;
@@ -151,7 +151,7 @@ class CloudDeployStatusCommand extends CloudCliCommand<DeployStatusOption> {
           inUtc: inUtc,
         );
       }, (final e) {
-        logger.error('Failed to get build log: $e');
+        logger.error('Failed to get build log', exception: e);
         throw ErrorExitException();
       });
 
@@ -171,7 +171,7 @@ class CloudDeployStatusCommand extends CloudCliCommand<DeployStatusOption> {
         outputOverallStatus: overallStatus,
       );
     }, (final e) {
-      logger.error('Failed to get deployment status: $e');
+      logger.error('Failed to get deployment status', exception: e);
       throw ErrorExitException();
     });
   }

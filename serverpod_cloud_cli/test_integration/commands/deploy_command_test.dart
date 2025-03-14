@@ -172,9 +172,7 @@ environment:
         expect(
           logger.errorCalls.first,
           equalsErrorCall(
-            message: 'The provided project directory '
-                '(either through the --project-dir flag or the current directory) '
-                'is not a Serverpod server directory.',
+            message: '`$testProjectDir` is not a Serverpod server directory.',
             hint: "Provide the project's server directory and try again.",
           ),
         );
@@ -455,7 +453,7 @@ dependencies:
             expect(logger.errorCalls, isNotEmpty);
             expect(
               logger.errorCalls.first.message,
-              startsWith('Failed to upload project:'),
+              startsWith('Failed to upload project'),
             );
           });
         });
@@ -510,6 +508,14 @@ dependencies:
                 equalsSuccessCall(
                   message: 'Project uploaded successfully!',
                   trailingRocket: true,
+                  followUp: '''
+
+When the server has started, you can access it at:
+API:      https://$projectId.api.serverpod.space/
+Web:      https://$projectId.web.serverpod.space/
+Insights: https://$projectId.insights.serverpod.space/
+
+See the `scloud domain` command to set up a custom domain.''',
                 ));
           });
 

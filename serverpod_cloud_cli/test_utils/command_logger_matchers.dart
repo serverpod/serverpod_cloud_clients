@@ -7,12 +7,14 @@ import 'package:collection/collection.dart';
 /// Test matcher to assert TestCommandLogger.error calls
 Matcher equalsErrorCall({
   required final String message,
+  final Exception? exception,
   final String? hint,
   final bool newParagraph = false,
   final StackTrace? stackTrace,
 }) {
   return _ErrorCallMatcher(ErrorCall(
     message: message,
+    exception: exception,
     hint: hint,
     newParagraph: newParagraph,
     stackTrace: stackTrace,
@@ -28,6 +30,7 @@ class _ErrorCallMatcher extends Matcher {
   bool matches(final Object? item, final Map matchState) {
     if (item is! ErrorCall) return false;
     return item.message == errorCall.message &&
+        item.exception?.toString() == errorCall.exception?.toString() &&
         item.hint == errorCall.hint &&
         item.newParagraph == errorCall.newParagraph &&
         item.stackTrace == errorCall.stackTrace;
@@ -37,6 +40,7 @@ class _ErrorCallMatcher extends Matcher {
   Description describe(final Description description) {
     return description.add(
       'an error log with message "${errorCall.message}", '
+      'exception "${errorCall.exception}", '
       'hint "${errorCall.hint}", newParagraph ${errorCall.newParagraph}, '
       'and stackTrace ${errorCall.stackTrace}',
     );
@@ -54,6 +58,10 @@ class _ErrorCallMatcher extends Matcher {
     }
     if (item.message != errorCall.message) {
       return mismatchDescription.add('message is not "${errorCall.message}"');
+    }
+    if (item.exception?.toString() != errorCall.exception?.toString()) {
+      return mismatchDescription
+          .add('exception is not "${errorCall.exception}"');
     }
     if (item.hint != errorCall.hint) {
       return mismatchDescription.add('hint is not "${errorCall.hint}"');
@@ -526,6 +534,61 @@ class _ConfirmCallMatcher extends Matcher {
     if (item.defaultValue != confirmCall.defaultValue) {
       return mismatchDescription
           .add('defaultValue is not ${confirmCall.defaultValue}');
+    }
+
+    return super
+        .describeMismatch(item, mismatchDescription, matchState, verbose);
+  }
+}
+
+/// Test matcher to assert TestCommandLogger.input calls
+equalsInputCall({
+  required final String message,
+  final String? defaultValue,
+}) {
+  return _InputCallMatcher(
+    InputCall(
+      message: message,
+      defaultValue: defaultValue,
+    ),
+  );
+}
+
+class _InputCallMatcher extends Matcher {
+  final InputCall inputCall;
+
+  _InputCallMatcher(this.inputCall);
+
+  @override
+  bool matches(final Object? item, final Map matchState) {
+    if (item is! InputCall) return false;
+    return item.message == inputCall.message &&
+        item.defaultValue == inputCall.defaultValue;
+  }
+
+  @override
+  Description describe(final Description description) {
+    return description.add(
+      'an input log with message "${inputCall.message}" and defaultValue ${inputCall.defaultValue}',
+    );
+  }
+
+  @override
+  Description describeMismatch(
+    final item,
+    final Description mismatchDescription,
+    final Map matchState,
+    final bool verbose,
+  ) {
+    if (item is! InputCall) {
+      return mismatchDescription.add('is not an InputCall');
+    }
+    if (item.message != inputCall.message) {
+      return mismatchDescription.add('message is not "${inputCall.message}"');
+    }
+    if (item.defaultValue != inputCall.defaultValue) {
+      return mismatchDescription
+          .add('defaultValue is not ${inputCall.defaultValue}');
     }
 
     return super

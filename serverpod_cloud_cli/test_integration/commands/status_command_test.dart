@@ -287,12 +287,12 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
           when(() => client.status.getDeployAttemptStatus(
                 cloudCapsuleId: any(named: 'cloudCapsuleId'),
                 attemptId: any(named: 'attemptId'),
-              )).thenThrow(ServerpodClientNotFound());
+              )).thenThrow(NotFoundException(message: 'not found'));
 
           when(() => client.status.getDeployAttemptId(
                 cloudCapsuleId: any(named: 'cloudCapsuleId'),
                 attemptNumber: any(named: 'attemptNumber'),
-              )).thenThrow(ServerpodClientNotFound());
+              )).thenThrow(NotFoundException(message: 'not found'));
         });
 
         tearDownAll(() async {
@@ -317,20 +317,18 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
             test('then throws ExitErrorException', () async {
               await expectLater(
                   commandResult, throwsA(isA<ErrorExitException>()));
-
-              expect(logger.errorCalls, isNotEmpty);
-              expect(
-                logger.errorCalls.first.message,
-                startsWith('Failed to get deployment status'),
-              );
             });
+
             test('then outputs error message', () async {
               await commandResult.onError((final e, final s) {});
 
               expect(logger.errorCalls, isNotEmpty);
               expect(
-                logger.errorCalls.first.message,
-                startsWith('Failed to get deployment status'),
+                logger.errorCalls.first,
+                equalsErrorCall(
+                  message: 'The requested resource did not exist.',
+                  hint: 'not found',
+                ),
               );
             });
           });

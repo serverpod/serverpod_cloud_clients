@@ -173,7 +173,7 @@ void main() {
         expect(logger.errorCalls, isNotEmpty);
         expect(
           logger.errorCalls.first.message,
-          contains('Request to sign out from Serverpod Cloud failed:'),
+          contains('Request to sign out from Serverpod Cloud failed'),
         );
       });
     });

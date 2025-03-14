@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:cli_tools/cli_tools.dart' as cli;
 import 'package:collection/collection.dart';
-import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/util/config/configuration.dart';
+import 'package:serverpod_cloud_cli/shared/helpers/exception_user_message.dart';
+import 'package:serverpod_cloud_cli/util/common.dart';
 
 /// Logger that logs using the provided [cli.Logger].
 /// This interface is created to make it easier to follow the UX guidelines, as outlined in this issue: https://github.com/serverpod/serverpod_cloud/issues/371
@@ -92,12 +92,23 @@ class CommandLogger {
   /// ```
   void error(
     final String message, {
+    final Exception? exception,
     final String? hint,
     final bool newParagraph = false,
     final StackTrace? stackTrace,
   }) {
+    final String msg;
+    if (exception != null) {
+      final separator = isPunctuation(message[message.length - 1]) ? '' : ': ';
+      final eMessage = userFriendlyExceptionMessage(exception);
+      final suffix = isPunctuation(eMessage[eMessage.length - 1]) ? '' : '.';
+      msg = '$message$separator$eMessage$suffix';
+    } else {
+      msg = message;
+    }
+
     _logger.error(
-      message,
+      msg,
       newParagraph: newParagraph,
       stackTrace: stackTrace,
     );
@@ -368,9 +379,9 @@ class CommandLogger {
   Future<bool> confirm(
     final String message, {
     final bool? defaultValue,
-    required final bool Function(OptionDefinition option) checkBypassFlag,
+    required final bool Function() checkBypassFlag,
   }) async {
-    if (checkBypassFlag(GlobalOption.skipConfirmation)) {
+    if (checkBypassFlag()) {
       return true;
     }
 
@@ -379,5 +390,37 @@ class CommandLogger {
       defaultValue: defaultValue,
       logger: _logger,
     );
+  }
+
+  /// ***Input Request Guidelines***
+  ///
+  /// Prompts the user for a string.
+  /// Accepts an optional [defaultValue] to specify what happens when the user simply presses Enter.
+  /// Returns the string the user entered / accepted.
+  ///
+  /// Format:
+  /// ```bash
+  /// <message prompt>:
+  /// ```
+  Future<String> input(
+    final String message, {
+    final String? defaultValue,
+  }) async {
+    // TODO: Replace implementation with cli.input() when that is properly exposed by cli_tools
+    final defaultDescription = defaultValue == null ? '' : ' ($defaultValue)';
+
+    _logger.write(
+      '$message$defaultDescription: ',
+      cli.LogLevel.info,
+      newLine: false,
+      newParagraph: false,
+    );
+    final input = stdin.readLineSync()?.trim();
+    final missingInput = input == null || input.isEmpty;
+    if (missingInput) {
+      return defaultValue ?? '';
+    }
+
+    return input;
   }
 }

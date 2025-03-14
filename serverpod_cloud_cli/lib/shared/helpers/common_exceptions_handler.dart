@@ -8,7 +8,7 @@ import 'package:ground_control_client/ground_control_client.dart';
 FutureOr<T> handleCommonClientExceptions<T>(
   final CommandLogger logger,
   final FutureOr<T> Function() callback,
-  final T Function(dynamic e) onUnhandledException,
+  final T Function(Exception e) onUnhandledException,
 ) async {
   try {
     return await callback();
@@ -47,7 +47,7 @@ FutureOr<T> handleCommonClientExceptions<T>(
     throw ErrorExitException();
   } on ExitException catch (_) {
     rethrow;
-  } catch (e) {
+  } on Exception catch (e) {
     return onUnhandledException(e);
   }
 }
