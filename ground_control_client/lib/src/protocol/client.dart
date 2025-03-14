@@ -44,7 +44,7 @@ import 'package:ground_control_client/src/protocol/domains/users/models/user.dar
     as _i18;
 import 'protocol.dart' as _i19;
 
-/// Endpoint for managing projects.
+/// Endpoint for authentication.
 /// {@category Endpoint}
 class EndpointAuth extends _i1.EndpointRef {
   EndpointAuth(_i1.EndpointCaller caller) : super(caller);
@@ -85,6 +85,22 @@ class EndpointAuth extends _i1.EndpointRef {
           'email': email,
           'verificationCode': verificationCode,
         },
+      );
+}
+
+/// Endpoint for authentication.
+/// {@category Endpoint}
+class EndpointAuthWithAuth extends _i1.EndpointRef {
+  EndpointAuthWithAuth(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'authWithAuth';
+
+  _i2.Future<_i5.AuthenticationResponse> createCliToken() =>
+      caller.callServerEndpoint<_i5.AuthenticationResponse>(
+        'authWithAuth',
+        'createCliToken',
+        {},
       );
 }
 
@@ -584,6 +600,7 @@ class Client extends _i1.ServerpodClientShared {
               disconnectStreamsOnLostInternetConnection,
         ) {
     auth = EndpointAuth(this);
+    authWithAuth = EndpointAuthWithAuth(this);
     customDomainName = EndpointCustomDomainName(this);
     deploy = EndpointDeploy(this);
     environmentVariables = EndpointEnvironmentVariables(this);
@@ -599,6 +616,8 @@ class Client extends _i1.ServerpodClientShared {
   }
 
   late final EndpointAuth auth;
+
+  late final EndpointAuthWithAuth authWithAuth;
 
   late final EndpointCustomDomainName customDomainName;
 
@@ -627,6 +646,7 @@ class Client extends _i1.ServerpodClientShared {
   @override
   Map<String, _i1.EndpointRef> get endpointRefLookup => {
         'auth': auth,
+        'authWithAuth': authWithAuth,
         'customDomainName': customDomainName,
         'deploy': deploy,
         'environmentVariables': environmentVariables,
