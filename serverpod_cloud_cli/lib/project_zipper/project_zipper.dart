@@ -21,9 +21,7 @@ import 'package:path/path.dart' as p;
 /// The [zipProject] method is the main entry point for this class.
 abstract final class ProjectZipper {
   static String stripRoot(final String rootPath, final String fullPath) {
-    return p.normalize(
-      fullPath.replaceFirst('$rootPath${p.separator}', ''),
-    );
+    return p.relative(p.normalize(fullPath), from: rootPath);
   }
 
   /// Zips a project directory.

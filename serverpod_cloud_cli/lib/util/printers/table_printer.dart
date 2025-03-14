@@ -5,17 +5,37 @@ import '../common.dart';
 /// Helper class for formatting text as a table of rows with aligned columns.
 /// It supports an optional header.
 class TablePrinter {
+  static const defaultColumnSeparator = ' | ';
+  static const defaultHeaderDividerColumnSeparator = '-+-';
+
   final List<String?> _columnHeaders;
   final List<int?> _columnMinWidths;
   final List<List<String?>> _rows;
+  final String _columnSeparator;
+  final String _headerDividerColumnSeparator;
 
   TablePrinter({
     final Iterable<String?>? headers,
     final Iterable<int?>? columnMinWidths,
     final Iterable<List<String?>>? rows,
+    final String? columnSeparator,
+    final String? headerDividerColumnSeparator,
   })  : _columnHeaders = List.from(headers ?? <String?>[]),
         _columnMinWidths = List.from(columnMinWidths ?? <int?>[]),
-        _rows = List.from(rows ?? <List<String?>>[]);
+        _rows = List.from(rows ?? <List<String?>>[]),
+        _columnSeparator = columnSeparator ?? defaultColumnSeparator,
+        _headerDividerColumnSeparator =
+            headerDividerColumnSeparator ?? defaultHeaderDividerColumnSeparator;
+
+  /// Convenience constructor for creating a table with aligned columns
+  /// and no header. By default the columns are separated by a single space.
+  TablePrinter.columns({
+    required final Iterable<List<String?>> rows,
+    final String? columnSeparator,
+  }) : this(
+          rows: rows,
+          columnSeparator: columnSeparator ?? ' ',
+        );
 
   /// Adds column headers to the table.
   /// Can be called multiple times.
@@ -98,11 +118,11 @@ class TablePrinter {
       columnWidths.length,
       (final colIx) => (_columnHeaders.elementAtOrNull(colIx) ?? '')
           .padRight(columnWidths[colIx]),
-    ).join(' | ');
+    ).join(_columnSeparator);
 
     final headerDivider = columnWidths.map((final width) {
       return '-' * (width);
-    }).join('-+-');
+    }).join(_headerDividerColumnSeparator);
 
     return [headerNames, headerDivider];
   }
@@ -112,7 +132,7 @@ class TablePrinter {
       columnWidths.length,
       (final colIx) =>
           (row.elementAtOrNull(colIx) ?? '').padRight(columnWidths[colIx]),
-    ).join(' | ');
+    ).join(_columnSeparator);
     return line;
   }
 

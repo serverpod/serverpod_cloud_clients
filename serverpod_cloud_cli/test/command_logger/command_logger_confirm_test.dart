@@ -17,7 +17,7 @@ void main() {
       () {
         result = commandLogger.confirm(
           'Are you sure?',
-          checkBypassFlag: (final _) => false,
+          checkBypassFlag: () => false,
         );
       },
     );
@@ -38,7 +38,7 @@ void main() {
       () {
         result = commandLogger.confirm(
           'Are you sure?',
-          checkBypassFlag: (final _) => false,
+          checkBypassFlag: () => false,
         );
       },
     );
@@ -59,7 +59,7 @@ void main() {
       () {
         result = commandLogger.confirm(
           'Are you sure?',
-          checkBypassFlag: (final _) => false,
+          checkBypassFlag: () => false,
         );
       },
     );
@@ -80,7 +80,7 @@ void main() {
       () async {
         result = commandLogger.confirm(
           'Are you sure?',
-          checkBypassFlag: (final _) => false,
+          checkBypassFlag: () => false,
         );
       },
     );
@@ -101,7 +101,7 @@ void main() {
       () async {
         result = commandLogger.confirm(
           'Are you sure?',
-          checkBypassFlag: (final _) => false,
+          checkBypassFlag: () => false,
         );
       },
     );
@@ -122,7 +122,7 @@ void main() {
       () async {
         result = commandLogger.confirm(
           'Are you sure?',
-          checkBypassFlag: (final _) => false,
+          checkBypassFlag: () => false,
         );
       },
     );
@@ -143,7 +143,7 @@ void main() {
       () {
         result = commandLogger.confirm(
           'Are you sure?',
-          checkBypassFlag: (final _) => false,
+          checkBypassFlag: () => false,
         );
       },
     );
@@ -172,7 +172,7 @@ void main() {
         result = await commandLogger.confirm(
           'Are you sure?',
           defaultValue: false,
-          checkBypassFlag: (final _) => false,
+          checkBypassFlag: () => false,
         );
       },
     );
@@ -194,7 +194,7 @@ void main() {
         result = commandLogger.confirm(
           'Are you sure?',
           defaultValue: true,
-          checkBypassFlag: (final _) => false,
+          checkBypassFlag: () => false,
         );
       },
     );
@@ -215,7 +215,7 @@ void main() {
       () {
         result = commandLogger.confirm(
           'Are you sure?',
-          checkBypassFlag: (final _) => false,
+          checkBypassFlag: () => false,
         );
       },
     );
@@ -241,7 +241,7 @@ void main() {
       () async {
         await commandLogger.confirm(
           'Are you sure?',
-          checkBypassFlag: (final _) => false,
+          checkBypassFlag: () => false,
         );
       },
     );
@@ -259,7 +259,7 @@ void main() {
         await commandLogger.confirm(
           'Are you sure?',
           defaultValue: true,
-          checkBypassFlag: (final _) => false,
+          checkBypassFlag: () => false,
         );
       },
     );
@@ -277,7 +277,7 @@ void main() {
         await commandLogger.confirm(
           'Are you sure?',
           defaultValue: false,
-          checkBypassFlag: (final _) => false,
+          checkBypassFlag: () => false,
         );
       },
     );
@@ -296,7 +296,7 @@ void main() {
         result = await commandLogger.confirm(
           'Are you sure?',
           defaultValue: false,
-          checkBypassFlag: (final _) => true,
+          checkBypassFlag: () => true,
         );
       },
     );
