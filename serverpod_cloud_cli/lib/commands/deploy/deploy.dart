@@ -116,9 +116,16 @@ abstract class Deploy {
       throw ErrorExitException();
     }
 
+    const tenantHost = 'serverpod.space';
+
     logger.success(
       'Project uploaded successfully!',
       trailingRocket: true,
+      followUp: '\nWhen the server has started, you can access it at:\n'
+          'API:      https://$projectId.api.$tenantHost/\n'
+          'Web:      https://$projectId.web.$tenantHost/\n'
+          'Insights: https://$projectId.insights.$tenantHost/\n\n'
+          'See the `scloud domain` command to set up a custom domain.',
     );
   }
 }

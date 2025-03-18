@@ -508,6 +508,14 @@ dependencies:
                 equalsSuccessCall(
                   message: 'Project uploaded successfully!',
                   trailingRocket: true,
+                  followUp: '''
+
+When the server has started, you can access it at:
+API:      https://$projectId.api.serverpod.space/
+Web:      https://$projectId.web.serverpod.space/
+Insights: https://$projectId.insights.serverpod.space/
+
+See the `scloud domain` command to set up a custom domain.''',
                 ));
           });
 
