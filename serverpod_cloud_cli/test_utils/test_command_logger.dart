@@ -5,8 +5,6 @@ import 'dart:io';
 
 import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
-import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/util/config/configuration.dart';
 
 import 'mock_stdin.dart';
 import 'mock_stdout.dart';
@@ -31,12 +29,14 @@ class BoxCall {
 
 class ErrorCall {
   final String message;
+  final Exception? exception;
   final String? hint;
   final bool newParagraph;
   final StackTrace? stackTrace;
 
   ErrorCall({
     required this.message,
+    this.exception,
     this.hint,
     this.newParagraph = false,
     this.stackTrace,
@@ -46,6 +46,7 @@ class ErrorCall {
   String toString() {
     return {
       'message': message,
+      'exception': exception,
       'hint': hint,
       'newParagraph': newParagraph,
       'stackTrace': stackTrace,
@@ -162,6 +163,24 @@ class ConfirmCall {
   }
 }
 
+class InputCall {
+  final String message;
+  final String? defaultValue;
+
+  InputCall({
+    required this.message,
+    required this.defaultValue,
+  });
+
+  @override
+  String toString() {
+    return {
+      'message': message,
+      'defaultValue': defaultValue,
+    }.toString();
+  }
+}
+
 class TerminalCommandCall {
   final String command;
   final String? message;
@@ -195,9 +214,12 @@ class TestCommandLogger extends CommandLogger {
   final List<TerminalCommandCall> terminalCommandCalls = [];
   final List<WarningCall> warningCalls = [];
   final List<ConfirmCall> confirmCalls = [];
+  final List<InputCall> inputCalls = [];
 
   Completer<void> _somethingLogged = Completer<void>();
-  bool? _nextConfirmAnswer;
+
+  final List<bool> _nextConfirmAnswers = [];
+  final List<String> _nextInputAnswers = [];
 
   final bool printToStdout;
   final Logger _logger;
@@ -251,6 +273,8 @@ class TestCommandLogger extends CommandLogger {
     terminalCommandCalls.clear();
     warningCalls.clear();
     boxCalls.clear();
+    confirmCalls.clear();
+    inputCalls.clear();
   }
 
   @override
@@ -269,6 +293,7 @@ class TestCommandLogger extends CommandLogger {
   @override
   void error(
     final String message, {
+    final Exception? exception,
     final String? hint,
     final bool newParagraph = false,
     final StackTrace? stackTrace,
@@ -283,6 +308,7 @@ class TestCommandLogger extends CommandLogger {
 
     errorCalls.add(ErrorCall(
       message: message,
+      exception: exception,
       hint: hint,
       newParagraph: newParagraph,
       stackTrace: stackTrace,
@@ -436,40 +462,62 @@ class TestCommandLogger extends CommandLogger {
   Future<bool> confirm(
     final String message, {
     final bool? defaultValue,
-    required final bool Function(OptionDefinition option) checkBypassFlag,
   }) async {
     if (printToStdout) {
       print('log confirm: $message');
     }
 
-    final nextConfirmAnswer = _nextConfirmAnswer;
-    if (nextConfirmAnswer == null) {
+    if (_nextConfirmAnswers.isEmpty) {
       throw StateError(
         'No answer set for confirm call. '
         'Use TestCommandLogger.answerNextConfirmWith() to set the answer.',
       );
     }
-
-    if (checkBypassFlag(GlobalOption.skipConfirmation)) {
-      throw StateError(
-        'Dont bypass confirmation in unit or integration tests. '
-        'Use TestCommandLogger.answerNextConfirmWith() to set the answer.',
-      );
-    }
+    final nextConfirmAnswer = _nextConfirmAnswers.removeAt(0);
 
     confirmCalls.add(ConfirmCall(
       message: message,
       defaultValue: defaultValue,
     ));
 
-    final result = nextConfirmAnswer;
-    _nextConfirmAnswer = false;
+    return nextConfirmAnswer;
+  }
 
-    return result;
+  @override
+  Future<String> input(
+    final String message, {
+    final String? defaultValue,
+  }) async {
+    if (printToStdout) {
+      print('log input: $message');
+    }
+
+    if (_nextInputAnswers.isEmpty) {
+      throw StateError(
+        'No answer set for input call. '
+        'Use TestCommandLogger.answerNextInputsWith() to set the answer.',
+      );
+    }
+    final nextInputAnswer = _nextInputAnswers.removeAt(0);
+
+    inputCalls.add(InputCall(
+      message: message,
+      defaultValue: defaultValue,
+    ));
+
+    return nextInputAnswer;
   }
 
   void answerNextConfirmWith(final bool answer) {
-    _nextConfirmAnswer = answer;
+    _nextConfirmAnswers.add(answer);
+  }
+
+  void answerNextConfirmsWith(final Iterable<bool> answers) {
+    _nextConfirmAnswers.addAll(answers);
+  }
+
+  void answerNextInputsWith(final Iterable<String> answers) {
+    _nextInputAnswers.addAll(answers);
   }
 }
 

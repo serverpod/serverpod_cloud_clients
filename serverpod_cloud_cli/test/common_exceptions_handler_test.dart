@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
-import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
+import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:test/test.dart';
 

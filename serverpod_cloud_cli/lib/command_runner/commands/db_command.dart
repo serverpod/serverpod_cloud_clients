@@ -1,7 +1,7 @@
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
-import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
+import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/util/config/configuration.dart';
 
 import 'categories.dart';
@@ -83,7 +83,7 @@ This psql command can be used to connect to the database (it will prompt for the
         );
       },
       (final e) {
-        logger.error('Failed to get connection details: $e');
+        logger.error('Failed to get connection details', exception: e);
 
         throw ErrorExitException();
       },
@@ -136,7 +136,7 @@ $password''',
         );
       },
       (final e) {
-        logger.error('Failed to create superuser: $e');
+        logger.error('Failed to create superuser', exception: e);
 
         throw ErrorExitException();
       },
@@ -189,7 +189,7 @@ $password''',
         );
       },
       (final e) {
-        logger.error('Failed to reset password: $e');
+        logger.error('Failed to reset password', exception: e);
 
         throw ErrorExitException();
       },

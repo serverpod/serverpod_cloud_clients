@@ -1,7 +1,7 @@
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
-import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
+import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/util/config/configuration.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 
@@ -77,7 +77,8 @@ class CloudCreateSecretCommand
       );
     }, (final e) {
       logger.error(
-        'Failed to create a new secret: $e',
+        'Failed to create a new secret',
+        exception: e,
       );
 
       throw ErrorExitException();
@@ -122,7 +123,8 @@ class CloudListSecretsCommand
       );
     }, (final e) {
       logger.error(
-        'Failed to list secrets: $e',
+        'Failed to list secrets',
+        exception: e,
       );
 
       throw ErrorExitException();
@@ -172,7 +174,6 @@ class CloudDeleteSecretCommand
     final shouldDelete = await logger.confirm(
       'Are you sure you want to delete the secret "$name"?',
       defaultValue: false,
-      checkBypassFlag: runner.globalConfiguration.flag,
     );
 
     if (!shouldDelete) {
@@ -188,7 +189,8 @@ class CloudDeleteSecretCommand
       );
     }, (final e) {
       logger.error(
-        'Failed to delete the secret: $e',
+        'Failed to delete the secret',
+        exception: e,
       );
 
       throw ErrorExitException();

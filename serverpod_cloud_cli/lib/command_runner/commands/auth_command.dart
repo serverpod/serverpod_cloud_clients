@@ -133,8 +133,11 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
     if (openBrowser) {
       try {
         await BrowserLauncher.openUrl(signInUrl);
-      } catch (e) {
-        logger.debug('Failed to open browser: $e');
+      } on Exception catch (e) {
+        logger.error(
+          'Failed to open browser',
+          exception: e,
+        );
       }
     }
 
@@ -197,20 +200,19 @@ class CloudLogoutCommand extends CloudCliCommand {
     ErrorExitException? exitException;
     try {
       await cloudClient.modules.auth.status.signOutDevice();
-    } catch (e) {
-      logger.error(
-        'Request to sign out from Serverpod Cloud failed: $e',
-      );
-      exitException = ErrorExitException();
+    } on Exception catch (e) {
+      // TODO: warning logging can be removed when we are out of the beta phase
+      logger.warning('Ignoring error response from server: $e');
     }
 
     try {
       await ResourceManager.removeServerpodCloudData(
         localStoragePath: localStoragePath,
       );
-    } catch (e) {
+    } on Exception catch (e) {
       logger.error(
-        'Failed to remove stored credentials: $e',
+        'Failed to remove stored credentials',
+        exception: e,
         hint: 'Please remove these manually. '
             'They should be located in $localStoragePath.',
       );

@@ -9,9 +9,9 @@ class CloudCliUsageException extends UsageException {
   @override
   String toString() {
     final buffer = StringBuffer();
-    buffer.writeln(message);
+    buffer.write(message);
     if (hint != null) {
-      buffer.writeln(hint);
+      buffer.write('\n$hint');
     }
     if (usage != '') {
       buffer.writeln('\n\n$usage');

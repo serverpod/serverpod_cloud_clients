@@ -1,7 +1,7 @@
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
-import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
+import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/util/config/configuration.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:ground_control_client/ground_control_client.dart';
@@ -114,7 +114,8 @@ class CloudEnvCreateCommand extends CloudCliCommand<CreateEnvCommandConfig> {
       );
     }, (final e) {
       logger.error(
-        'Failed to create a new environment variable: $e',
+        'Failed to create a new environment variable',
+        exception: e,
       );
 
       throw ErrorExitException();
@@ -153,7 +154,8 @@ class CloudEnvUpdateCommand extends CloudCliCommand<UpdateEnvCommandConfig> {
       );
     }, (final e) {
       logger.error(
-        'Failed to update the environment variable: $e',
+        'Failed to update the environment variable',
+        exception: e,
       );
 
       throw ErrorExitException();
@@ -183,7 +185,6 @@ class CloudEnvDeleteCommand extends CloudCliCommand<DeleteEnvCommandConfig> {
     final shouldDelete = await logger.confirm(
       'Are you sure you want to delete the environment variable "$variableName"?',
       defaultValue: false,
-      checkBypassFlag: runner.globalConfiguration.flag,
     );
 
     if (!shouldDelete) {
@@ -199,7 +200,8 @@ class CloudEnvDeleteCommand extends CloudCliCommand<DeleteEnvCommandConfig> {
       );
     }, (final e) {
       logger.error(
-        'Failed to delete the environment variable: $e',
+        'Failed to delete the environment variable',
+        exception: e,
       );
 
       throw ErrorExitException();
@@ -233,7 +235,8 @@ class CloudEnvListCommand extends CloudCliCommand<ListEnvCommandConfig> {
       );
     }, (final e) {
       logger.error(
-        'Failed to list environment variables: $e',
+        'Failed to list environment variables',
+        exception: e,
       );
 
       throw ErrorExitException();

@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:test/test.dart';
@@ -163,17 +162,26 @@ void main() {
         await expectLater(signOutRequestCompleter.future, completes);
       });
 
-      test('then the command throws exit exception.', () async {
-        await expectLater(runLogoutCommand, throwsA(isA<ErrorExitException>()));
+      test('then a "server request to sign out" warning is logged.', () async {
+        await runLogoutCommand;
+
+        expect(logger.warningCalls, isNotEmpty);
+        expect(
+          logger.warningCalls.first.message,
+          equals('Ignoring error response from server: '
+              'ServerpodClientException: Not found, statusCode = 404'),
+        );
       });
 
-      test('then a "request to sign out" error is logged.', () async {
-        await runLogoutCommand.onError((final e, final s) {});
+      test('then a "logged out" message is logged', () async {
+        await runLogoutCommand;
 
-        expect(logger.errorCalls, isNotEmpty);
+        expect(logger.successCalls, isNotEmpty);
         expect(
-          logger.errorCalls.first.message,
-          contains('Request to sign out from Serverpod Cloud failed:'),
+          logger.successCalls.first,
+          equalsSuccessCall(
+            message: 'Successfully logged out from Serverpod cloud.',
+          ),
         );
       });
     });

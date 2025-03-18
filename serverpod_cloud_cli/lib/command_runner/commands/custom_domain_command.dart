@@ -3,7 +3,7 @@ import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
-import 'package:serverpod_cloud_cli/command_runner/helpers/common_exceptions_handler.dart';
+import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
 import 'package:serverpod_cloud_cli/util/config/configuration.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
@@ -121,7 +121,8 @@ The valid targets are:
       },
       (final e) {
         logger.error(
-          'Could not add the custom domain: $e',
+          'Could not add the custom domain',
+          exception: e,
         );
 
         throw ErrorExitException();
@@ -260,7 +261,8 @@ class CloudListCustomDomainCommand
       );
     }, (final e) {
       logger.error(
-        'Failed to list custom domains: $e',
+        'Failed to list custom domains',
+        exception: e,
       );
 
       throw ErrorExitException();
@@ -336,7 +338,6 @@ class CloudRemoveCustomDomainCommand
     final shouldDelete = await logger.confirm(
       'Are you sure you want to delete the custom domain "$domainName"?',
       defaultValue: false,
-      checkBypassFlag: runner.globalConfiguration.flag,
     );
 
     if (!shouldDelete) {
@@ -352,7 +353,8 @@ class CloudRemoveCustomDomainCommand
       );
     }, (final e) {
       logger.error(
-        'Failed to remove custom domain: $e',
+        'Failed to remove custom domain',
+        exception: e,
       );
 
       throw ErrorExitException();
@@ -423,7 +425,8 @@ class CloudVerifyCustomDomainRecordCommand
       }
 
       logger.error(
-        'Failed to refresh custom domain record: $e',
+        'Failed to refresh custom domain record',
+        exception: e,
       );
 
       throw ErrorExitException();

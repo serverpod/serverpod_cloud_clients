@@ -19,11 +19,26 @@ extension TimezonedString on DateTime {
   }
 }
 
-void logProjectDirIsNotAServerpodServerDirectory(final CommandLogger logger) {
-  logger.error(
-    'The provided project directory (either through the '
-    '--project-dir flag or the current directory) '
-    'is not a Serverpod server directory.',
-    hint: "Provide the project's server directory and try again.",
-  );
+void logProjectDirIsNotAServerpodServerDirectory(
+  final CommandLogger logger, [
+  final String? projectDir,
+]) {
+  if (projectDir != null) {
+    logger.error(
+      '`$projectDir` is not a Serverpod server directory.',
+      hint: "Provide the project's server directory and try again.",
+    );
+  } else {
+    logger.error(
+      'The provided project directory (either through the '
+      '--project-dir flag or found near the current directory) '
+      'is not a Serverpod server directory.',
+      hint: "Provide the project's server directory and try again.",
+    );
+  }
+}
+
+/// Returns true if the character is a punctuation mark.
+bool isPunctuation(final String char) {
+  return RegExp(r'\p{P}', unicode: true).hasMatch(char);
 }

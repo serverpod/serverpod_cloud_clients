@@ -1,5 +1,9 @@
+import 'package:args/args.dart';
 import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
+import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart'
+    show GlobalConfiguration, GlobalOption;
+import 'package:serverpod_cloud_cli/util/config/configuration.dart';
 import 'package:test/test.dart';
 
 import '../../test_utils/test_command_logger.dart';
@@ -17,7 +21,6 @@ void main() {
       () {
         result = commandLogger.confirm(
           'Are you sure?',
-          checkBypassFlag: (final _) => false,
         );
       },
     );
@@ -38,7 +41,6 @@ void main() {
       () {
         result = commandLogger.confirm(
           'Are you sure?',
-          checkBypassFlag: (final _) => false,
         );
       },
     );
@@ -59,7 +61,6 @@ void main() {
       () {
         result = commandLogger.confirm(
           'Are you sure?',
-          checkBypassFlag: (final _) => false,
         );
       },
     );
@@ -80,7 +81,6 @@ void main() {
       () async {
         result = commandLogger.confirm(
           'Are you sure?',
-          checkBypassFlag: (final _) => false,
         );
       },
     );
@@ -101,7 +101,6 @@ void main() {
       () async {
         result = commandLogger.confirm(
           'Are you sure?',
-          checkBypassFlag: (final _) => false,
         );
       },
     );
@@ -122,7 +121,6 @@ void main() {
       () async {
         result = commandLogger.confirm(
           'Are you sure?',
-          checkBypassFlag: (final _) => false,
         );
       },
     );
@@ -143,7 +141,6 @@ void main() {
       () {
         result = commandLogger.confirm(
           'Are you sure?',
-          checkBypassFlag: (final _) => false,
         );
       },
     );
@@ -172,7 +169,6 @@ void main() {
         result = await commandLogger.confirm(
           'Are you sure?',
           defaultValue: false,
-          checkBypassFlag: (final _) => false,
         );
       },
     );
@@ -194,7 +190,6 @@ void main() {
         result = commandLogger.confirm(
           'Are you sure?',
           defaultValue: true,
-          checkBypassFlag: (final _) => false,
         );
       },
     );
@@ -215,7 +210,6 @@ void main() {
       () {
         result = commandLogger.confirm(
           'Are you sure?',
-          checkBypassFlag: (final _) => false,
         );
       },
     );
@@ -241,7 +235,6 @@ void main() {
       () async {
         await commandLogger.confirm(
           'Are you sure?',
-          checkBypassFlag: (final _) => false,
         );
       },
     );
@@ -259,7 +252,6 @@ void main() {
         await commandLogger.confirm(
           'Are you sure?',
           defaultValue: true,
-          checkBypassFlag: (final _) => false,
         );
       },
     );
@@ -277,7 +269,6 @@ void main() {
         await commandLogger.confirm(
           'Are you sure?',
           defaultValue: false,
-          checkBypassFlag: (final _) => false,
         );
       },
     );
@@ -287,8 +278,15 @@ void main() {
 
   test(
       'Given empty standard out '
-      'when calling confirm with checkBypassFlag returning true '
+      'when calling confirm with skip-confirmation option set '
       'then should immediately return true', () async {
+    final parser = ArgParser();
+    GlobalOption.values.prepareForParsing(parser);
+    final argResults = parser.parse(['--skip-confirmation']);
+    commandLogger.configuration = GlobalConfiguration(
+      args: argResults,
+    );
+
     late final bool result;
 
     final (:stdout, :stderr, :stdin) = await collectOutput(
@@ -296,7 +294,6 @@ void main() {
         result = await commandLogger.confirm(
           'Are you sure?',
           defaultValue: false,
-          checkBypassFlag: (final _) => true,
         );
       },
     );

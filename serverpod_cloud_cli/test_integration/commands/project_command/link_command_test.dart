@@ -1,16 +1,17 @@
 import 'dart:async';
 
 import 'package:mocktail/mocktail.dart';
-import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:path/path.dart' as p;
+import 'package:test_descriptor/test_descriptor.dart' as d;
+import 'package:test/test.dart';
 
+import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_mock.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/project_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
-import 'package:ground_control_client/ground_control_client.dart';
-import 'package:test/test.dart';
+import 'package:serverpod_cloud_cli/util/scloud_config/yaml_schema.dart';
 
 import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/project_factory.dart';
@@ -322,8 +323,9 @@ project:
             logger.errorCalls.first,
             equalsErrorCall(
               message:
-                  'Failed to write to ${p.join(testProjectDir, 'scloud.yaml')} file: '
-                  'SchemaValidationException: At path "project": Expected YamlMap, got YamlList',
+                  'Failed to write to ${p.join(testProjectDir, 'scloud.yaml')} file',
+              exception: SchemaValidationException(
+                  'At path "project": Expected YamlMap, got YamlList'),
             ),
           );
         });
@@ -361,9 +363,7 @@ project:
         expect(
           logger.errorCalls.first,
           equalsErrorCall(
-            message: 'The provided project directory '
-                '(either through the --project-dir flag or the current directory) '
-                'is not a Serverpod server directory.',
+            message: '`$testProjectDir` is not a Serverpod server directory.',
             hint: "Provide the project's server directory and try again.",
           ),
         );
@@ -418,7 +418,7 @@ environment:
             logger.errorCalls.first,
             equalsErrorCall(
               message: 'The provided project directory '
-                  '(either through the --project-dir flag or the current directory) '
+                  '(either through the --project-dir flag or found near the current directory) '
                   'is not a Serverpod server directory.',
               hint: "Provide the project's server directory and try again.",
             ),

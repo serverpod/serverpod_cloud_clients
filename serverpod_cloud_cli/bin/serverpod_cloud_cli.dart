@@ -69,5 +69,5 @@ String _formatInternalError(
 
 https://github.com/serverpod/serverpod/issues
 ${zonedError ? 'Zoned error' : ''}
-$error''';
+${error.runtimeType} $error''';
 }

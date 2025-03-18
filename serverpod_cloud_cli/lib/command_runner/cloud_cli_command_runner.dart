@@ -10,6 +10,7 @@ import 'package:serverpod_cloud_cli/command_runner/commands/db_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/env_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/auth_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/launch_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/log_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/project_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/secret_command.dart';
@@ -20,6 +21,7 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_pro
 import 'package:serverpod_cloud_cli/command_runner/helpers/cli_version_checker.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
 import 'package:serverpod_cloud_cli/util/capitalize.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
 import 'package:serverpod_cloud_cli/util/config/configuration.dart';
@@ -97,6 +99,7 @@ class CloudCliCommandRunner extends BetterCommandRunner {
       CloudStatusCommand(logger: logger),
       CloudSecretCommand(logger: logger),
       CloudDbCommand(logger: logger),
+      CloudLaunchCommand(logger: logger),
     ]);
 
     return runner;
@@ -117,6 +120,8 @@ class CloudCliCommandRunner extends BetterCommandRunner {
       buffer.writeAll(errors, '\n');
       usageException(buffer.toString());
     }
+
+    logger.configuration = globalConfiguration;
 
     serviceProvider.initialize(
       globalConfiguration: globalConfiguration,
@@ -164,18 +169,20 @@ class CloudCliCommandRunner extends BetterCommandRunner {
   String? get usageFooter =>
       '\nSee the full documentation at: https://docs.serverpod.cloud/';
 
-  /// Selects and verifies the project directory based on the global configuration,
-  /// files found near the current directory, or user input if enabled.
+  /// Selects and verifies the project directory that is either specified by the global
+  /// configuration, or files found near the current directory.
   ///
   /// Verifies that the directory is a valid Serverpod server directory
   /// using [isServerpodServerDirectory] and gives feedback to the user.
   ///
   /// Throws [ExitException] if no valid project directory could be determined.
   Directory verifiedProjectDirectory() {
-    final projectDirectory = Directory(selectProjectDirectory());
+    final selectedProjectDir = selectProjectDirectory();
+    final projectDirectory =
+        Directory(selectedProjectDir ?? Directory.current.path);
 
     if (!isServerpodServerDirectory(projectDirectory)) {
-      logProjectDirIsNotAServerpodServerDirectory(logger);
+      logProjectDirIsNotAServerpodServerDirectory(logger, selectedProjectDir);
       throw ErrorExitException();
     }
 
@@ -183,15 +190,14 @@ class CloudCliCommandRunner extends BetterCommandRunner {
     return projectDirectory;
   }
 
-  /// Selects a project directory based on the global configuration,
-  /// files found near the current directory, or user input if enabled.
-  ///
-  /// As fallback the current directory is returned.
+  /// Selects a project directory that is either specified by the global
+  /// configuration, or files found near the current directory.
+  /// If no project directory is specified nor found then null is returned.
   ///
   /// Does not verify that the directory exists and is a valid
   /// Serverpod server directory.
   /// See [isServerpodServerDirectory] for verification.
-  String selectProjectDirectory() {
+  String? selectProjectDirectory() {
     // if explicitly set, use the specified directory
     final specifiedDir = globalConfiguration.projectDir;
     if (specifiedDir != null) {
@@ -210,7 +216,7 @@ class CloudCliCommandRunner extends BetterCommandRunner {
       return p.dirname(serverPubspecFile);
     }
 
-    return Directory.current.path;
+    return null;
   }
 
   String? _serverPubspecFileFinder() {
@@ -354,7 +360,15 @@ String? _projectConfigFileFinder(final Configuration cfg) {
   final finder = scloudFileFinder<Configuration>(
     fileBaseName: ProjectConfigFileConstants.fileBaseName,
     supportedExtensions: ['yaml', 'yml', 'json'],
-    startingDirectory: (final cfg) => cfg.valueOrNull(GlobalOption.projectDir),
+    startingDirectory: (final cfg) {
+      final specifiedDir = cfg.valueOrNull(GlobalOption.projectDir);
+      if (specifiedDir != null && !Directory(specifiedDir).existsSync()) {
+        throw CloudCliUsageException(
+          'The specified project directory `$specifiedDir` does not exist',
+        );
+      }
+      return specifiedDir;
+    },
   );
   return finder(cfg);
 }
@@ -373,6 +387,8 @@ class GlobalConfiguration extends Configuration {
   String get apiServer => value(GlobalOption.apiServer);
 
   String get consoleServer => value(GlobalOption.consoleServer);
+
+  bool get skipConfirmation => flag(GlobalOption.skipConfirmation);
 
   String? get projectDir => valueOrNull(GlobalOption.projectDir);
 
