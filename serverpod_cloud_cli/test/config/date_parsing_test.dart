@@ -1,21 +1,24 @@
-import 'package:serverpod_cloud_cli/command_runner/helpers/option_parsing.dart';
-import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
+import 'package:serverpod_cloud_cli/util/config/options.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('OptionParsing.parseDate() - ', () {
+  group('Given a DateTimeParser', () {
+    final dateTimeParser = DateTimeParser();
+
     test(
-        'When calling parseDate() with empty string then it throws CloudCliUsageException.',
+        'When calling parseDate() with empty string then it throws FormatException.',
         () {
-      expect(() => OptionParsing.parseDate(''),
-          throwsA(isA<CloudCliUsageException>()));
+      expect(
+        () => dateTimeParser.parse(''),
+        throwsA(isA<FormatException>()),
+      );
     });
 
     test(
         'When calling parseDate() with 2020-01-01 then it successfully returns a DateTime.',
         () {
       expect(
-        OptionParsing.parseDate('2020-01-01'),
+        dateTimeParser.parse('2020-01-01'),
         equals(DateTime(2020, 1, 1)),
       );
     });
@@ -24,7 +27,7 @@ void main() {
         'When calling parseDate() with 20200101 then it successfully returns a DateTime.',
         () {
       expect(
-        OptionParsing.parseDate('20200101'),
+        dateTimeParser.parse('20200101'),
         equals(DateTime(2020, 1, 1)),
       );
     });
@@ -33,7 +36,7 @@ void main() {
         'When calling parseDate() with 2020-01-01 12:20:40 then it successfully returns a DateTime.',
         () {
       expect(
-        OptionParsing.parseDate('2020-01-01 12:20:40'),
+        dateTimeParser.parse('2020-01-01 12:20:40'),
         equals(DateTime(2020, 1, 1, 12, 20, 40)),
       );
     });
@@ -42,7 +45,7 @@ void main() {
         'When calling parseDate() with 2020-01-01T12:20:40Z then it successfully returns a DateTime.',
         () {
       expect(
-        OptionParsing.parseDate('2020-01-01T12:20:40Z'),
+        dateTimeParser.parse('2020-01-01T12:20:40Z'),
         equals(DateTime.utc(2020, 1, 1, 12, 20, 40)),
       );
     });
@@ -51,7 +54,7 @@ void main() {
         'When calling parseDate() with 2020-01-01T12:20:40.001z then it successfully returns a DateTime.',
         () {
       expect(
-        OptionParsing.parseDate('2020-01-01T12:20:40.001z'),
+        dateTimeParser.parse('2020-01-01T12:20:40.001z'),
         equals(DateTime.utc(2020, 1, 1, 12, 20, 40, 1)),
       );
     });
@@ -60,7 +63,7 @@ void main() {
         'When calling parseDate() with 2020-01-01t12:20:40 then it successfully returns a DateTime.',
         () {
       expect(
-        OptionParsing.parseDate('2020-01-01t12:20:40'),
+        dateTimeParser.parse('2020-01-01t12:20:40'),
         equals(DateTime(2020, 1, 1, 12, 20, 40)),
       );
     });
@@ -69,7 +72,7 @@ void main() {
         'When calling parseDate() with 2020-01-01-12:20:40 then it successfully returns a DateTime.',
         () {
       expect(
-        OptionParsing.parseDate('2020-01-01-12:20:40'),
+        dateTimeParser.parse('2020-01-01-12:20:40'),
         equals(DateTime(2020, 1, 1, 12, 20, 40)),
       );
     });
@@ -78,7 +81,7 @@ void main() {
         'When calling parseDate() with 2020-01-01:12:20:40 then it successfully returns a DateTime.',
         () {
       expect(
-        OptionParsing.parseDate('2020-01-01:12:20:40'),
+        dateTimeParser.parse('2020-01-01:12:20:40'),
         equals(DateTime(2020, 1, 1, 12, 20, 40)),
       );
     });
@@ -87,7 +90,7 @@ void main() {
         'When calling parseDate() with 2020-01-01_12:20:40 then it successfully returns a DateTime.',
         () {
       expect(
-        OptionParsing.parseDate('2020-01-01_12:20:40'),
+        dateTimeParser.parse('2020-01-01_12:20:40'),
         equals(DateTime(2020, 1, 1, 12, 20, 40)),
       );
     });
@@ -96,17 +99,17 @@ void main() {
         'When calling parseDate() with 2020-01-01/12:20:40 then it successfully returns a DateTime.',
         () {
       expect(
-        OptionParsing.parseDate('2020-01-01/12:20:40'),
+        dateTimeParser.parse('2020-01-01/12:20:40'),
         equals(DateTime(2020, 1, 1, 12, 20, 40)),
       );
     });
 
     test(
-        'When calling parseDate() with 2020-01-01x12:20:40 then it throws CloudCliUsageException.',
+        'When calling parseDate() with 2020-01-01x12:20:40 then it throws FormatException.',
         () {
       expect(
-        () => OptionParsing.parseDate('2020-01-01x12:20:40'),
-        throwsA(isA<CloudCliUsageException>()),
+        () => dateTimeParser.parse('2020-01-01x12:20:40'),
+        throwsA(isA<FormatException>()),
       );
     });
   });

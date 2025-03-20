@@ -7,18 +7,18 @@ void main() {
   group(
       'Given a MultiDomainConfigBroker with two domains and correctly configured options',
       () {
-    const yamlContentOpt = ConfigOption(
+    const yamlContentOpt = StringOption(
       argName: 'yaml-content',
       envName: 'YAML_CONTENT',
     );
-    const jsonContentOpt = ConfigOption(
+    const jsonContentOpt = StringOption(
       argName: 'json-content',
       envName: 'JSON_CONTENT',
     );
-    const yamlProjectIdOpt = ConfigOption(
+    const yamlProjectIdOpt = StringOption(
       configKey: 'yamlOption:/project/projectId',
     );
-    const jsonProjectIdOpt = ConfigOption(
+    const jsonProjectIdOpt = StringOption(
       configKey: 'jsonOption:/project/projectId',
     );
     final options = [
@@ -61,8 +61,8 @@ project:
       );
 
       expect(config.errors, isEmpty);
-      expect(config.valueOrNull(yamlProjectIdOpt), equals('123'));
-      expect(config.valueOrNull(jsonProjectIdOpt), isNull);
+      expect(config.optionalValue(yamlProjectIdOpt), equals('123'));
+      expect(config.optionalValue(jsonProjectIdOpt), isNull);
     });
 
     test(
@@ -86,8 +86,8 @@ project:
       );
 
       expect(config.errors, isEmpty);
-      expect(config.valueOrNull(yamlProjectIdOpt), isNull);
-      expect(config.valueOrNull(jsonProjectIdOpt), equals('123'));
+      expect(config.optionalValue(yamlProjectIdOpt), isNull);
+      expect(config.optionalValue(jsonProjectIdOpt), equals('123'));
     });
 
     test(
@@ -113,10 +113,10 @@ projectId:123
             'Failed to resolve configuration key `yamlOption:/project/projectId`: Error on line',
           )));
       expect(
-        () => config.valueOrNull(yamlProjectIdOpt),
+        () => config.optionalValue(yamlProjectIdOpt),
         throwsA(isA<StateError>()),
       );
-      expect(config.valueOrNull(jsonProjectIdOpt), isNull);
+      expect(config.optionalValue(jsonProjectIdOpt), isNull);
     });
 
     test(
@@ -145,27 +145,27 @@ projectId:123
             'Failed to resolve configuration key `jsonOption:/project/projectId`: FormatException: Unexpected character',
           )));
       expect(
-        () => config.valueOrNull(jsonProjectIdOpt),
+        () => config.optionalValue(jsonProjectIdOpt),
         throwsA(isA<StateError>()),
       );
-      expect(config.valueOrNull(yamlProjectIdOpt), isNull);
+      expect(config.optionalValue(yamlProjectIdOpt), isNull);
     });
   });
 
   group(
       'Given a MultiDomainConfigBroker with a domain and misconfigured options',
       () {
-    const yamlContentOpt = ConfigOption(
+    const yamlContentOpt = StringOption(
       argName: 'yaml-content',
       envName: 'YAML_CONTENT',
     );
-    const yamlProjectIdOpt = ConfigOption(
+    const yamlProjectIdOpt = StringOption(
       configKey: 'yamlOption:/project/projectId',
     );
-    const missingDomainOpt = ConfigOption(
+    const missingDomainOpt = StringOption(
       configKey: '/project/projectId',
     );
-    const unknownDomainOpt = ConfigOption(
+    const unknownDomainOpt = StringOption(
       configKey: 'unknown:/project/projectId',
     );
     final options = [

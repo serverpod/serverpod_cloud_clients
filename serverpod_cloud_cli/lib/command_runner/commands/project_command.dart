@@ -6,7 +6,7 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/commands/project/project.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
-import 'package:serverpod_cloud_cli/util/config/configuration.dart';
+import 'package:serverpod_cloud_cli/util/config/config.dart';
 
 import 'categories.dart';
 
@@ -38,22 +38,21 @@ abstract final class _ProjectOptions {
     asFirstArg: true,
   );
 
-  static const enableDb = ConfigOption(
+  static const enableDb = FlagOption(
     argName: 'enable-db',
-    isFlag: true,
     helpText: 'Flag to enable the database for the project.',
     mandatory: true,
   );
 }
 
-enum ProjectCreateOption implements OptionDefinition {
+enum ProjectCreateOption<V> implements OptionDefinition<V> {
   projectId(_ProjectOptions.projectIdForCreation),
   enableDb(_ProjectOptions.enableDb);
 
   const ProjectCreateOption(this.option);
 
   @override
-  final ConfigOption option;
+  final ConfigOptionBase<V> option;
 }
 
 class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
@@ -70,7 +69,7 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
   @override
   Future<void> runWithConfig(final Configuration commandConfig) async {
     final projectId = commandConfig.value(ProjectCreateOption.projectId);
-    final enableDb = commandConfig.flag(ProjectCreateOption.enableDb);
+    final enableDb = commandConfig.value(ProjectCreateOption.enableDb);
     final projectDir =
         runner.selectProjectDirectory() ?? Directory.current.path;
     final configFilePath = globalConfiguration.projectConfigFile ??
@@ -138,7 +137,7 @@ enum ProjectLinkCommandOption implements OptionDefinition {
   const ProjectLinkCommandOption(this.option);
 
   @override
-  final ConfigOption option;
+  final StringOption option;
 }
 
 class CloudProjectLinkCommand

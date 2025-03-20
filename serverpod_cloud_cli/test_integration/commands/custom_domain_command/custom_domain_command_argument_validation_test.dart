@@ -1,15 +1,14 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:args/command_runner.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:test/test.dart';
 
-import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/test_command_logger.dart';
 
 void main() {
@@ -57,22 +56,15 @@ void main() {
         ]);
       });
 
-      test('then command throws ExitErrorException', () async {
-        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
-      });
-
-      test('then logs error message', () async {
-        try {
-          await commandResult;
-        } catch (_) {}
-
-        expect(logger.errorCalls, isNotEmpty);
-        expect(
-          logger.errorCalls.first,
-          equalsErrorCall(
-            message: 'Invalid target value "some-invalid-target".',
-            hint: 'Valid values are: [api, insights, web]',
-          ),
+      test('then command throws UsageException', () async {
+        await expectLater(
+          commandResult,
+          throwsA(isA<UsageException>().having(
+            (final e) => e.message,
+            'message',
+            contains(
+                'Invalid value for option `target`: "some-invalid-target" is not in api|insights|web'),
+          )),
         );
       });
     });

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:args/command_runner.dart';
 import 'package:googleapis/storage/v1.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_mock.dart';
@@ -112,22 +113,14 @@ void main() {
         ]);
       });
 
-      test('then ExitErrorException is thrown.', () async {
+      test('then UsageException is thrown.', () async {
         await expectLater(
           cliCommandFuture,
-          throwsA(isA<ErrorExitException>()),
-        );
-      });
-
-      test('then error message is logged', () async {
-        await cliCommandFuture.catchError((final _) {});
-        expect(logger.errorCalls, isNotEmpty);
-        expect(
-          logger.errorCalls.first,
-          equalsErrorCall(
-            message:
-                'Failed to parse --concurrency option, value must be an integer.',
-          ),
+          throwsA(isA<UsageException>().having(
+            (final e) => e.message,
+            'message',
+            contains('Invalid value for option `concurrency` <integer>'),
+          )),
         );
       });
     });

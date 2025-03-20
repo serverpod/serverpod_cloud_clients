@@ -1,11 +1,10 @@
 import 'package:args/args.dart';
-import 'package:args/command_runner.dart';
 import 'package:serverpod_cloud_cli/util/config/config.dart';
 import 'package:test/test.dart';
 
 void main() async {
   group('Given invalid configuration abbrevation without full name', () {
-    const projectIdOpt = ConfigOption(
+    const projectIdOpt = StringOption(
       argAbbrev: 'p',
     );
     final parser = ArgParser();
@@ -24,7 +23,8 @@ void main() async {
   });
 
   group('Given invalid configuration positional argument and isFlag', () {
-    const projectIdOpt = ConfigOption(
+    const projectIdOpt = ConfigOptionBase<bool>(
+      valueParser: BoolParser(),
       argPos: 0,
       isFlag: true,
     );
@@ -33,18 +33,19 @@ void main() async {
     test('when preparing for parsing then throws exception', () async {
       expect(
         () => [projectIdOpt].prepareForParsing(parser),
-        throwsA(allOf(
-          isA<InvalidOptionConfigurationError>(),
-          (final e) => e.toString().contains(
-                "Positional options can't be flags",
-              ),
-        )),
+        throwsA(
+          isA<InvalidOptionConfigurationError>().having(
+            (final e) => e.message,
+            'message',
+            contains("Positional options can't be flags"),
+          ),
+        ),
       );
     });
   });
 
   group('Given invalid configuration mandatory with default value', () {
-    const projectIdOpt = ConfigOption(
+    const projectIdOpt = StringOption(
       mandatory: true,
       defaultsTo: 'default',
     );
@@ -66,7 +67,7 @@ void main() async {
   group(
       'Given invalid configuration mandatory with default value from function',
       () {
-    const projectIdOpt = ConfigOption(
+    const projectIdOpt = StringOption(
       mandatory: true,
       fromDefault: _defaultValueFunction,
     );
@@ -87,7 +88,7 @@ void main() async {
   });
 
   group('Given a configuration option definition', () {
-    const projectIdOpt = ConfigOption(
+    const projectIdOpt = StringOption(
       argName: 'project',
     );
 
@@ -133,7 +134,7 @@ void main() async {
   });
 
   group('Given a configuration option defined for all sources', () {
-    const projectIdOpt = ConfigOption(
+    const projectIdOpt = StringOption(
       argName: 'project',
       envName: 'PROJECT_ID',
       configKey: 'config:/projectId',
@@ -197,7 +198,7 @@ void main() async {
   });
 
   group('Given a configuration option with a defaultsTo value', () {
-    const projectIdOpt = ConfigOption(
+    const projectIdOpt = StringOption(
       argName: 'project',
       envName: 'PROJECT_ID',
       configKey: 'config:/projectId',
@@ -260,11 +261,10 @@ void main() async {
   });
 
   group('Given a configuration flag option', () {
-    const verboseFlag = ConfigOption(
+    const verboseFlag = FlagOption(
       argName: 'verbose',
       envName: 'VERBOSE',
-      defaultsTo: 'false',
-      isFlag: true,
+      defaultsTo: false,
     );
     final parser = ArgParser();
     [verboseFlag].prepareForParsing(parser);
@@ -277,7 +277,7 @@ void main() async {
         args: argResults,
         env: envVars,
       );
-      expect(config.flag(verboseFlag), isTrue);
+      expect(config.value(verboseFlag), isTrue);
     });
 
     test('then env variable has second precedence', () async {
@@ -288,16 +288,15 @@ void main() async {
         args: argResults,
         env: envVars,
       );
-      expect(config.flag(verboseFlag), isTrue);
+      expect(config.value(verboseFlag), isTrue);
     });
   });
 
   group('Given a configuration flag option', () {
-    const verboseFlag = ConfigOption(
+    const verboseFlag = FlagOption(
       argName: 'verbose',
       envName: 'VERBOSE',
-      defaultsTo: 'true',
-      isFlag: true,
+      defaultsTo: true,
     );
     final parser = ArgParser();
     [verboseFlag].prepareForParsing(parser);
@@ -310,12 +309,13 @@ void main() async {
         args: argResults,
         env: envVars,
       );
-      expect(config.flag(verboseFlag), isTrue);
+      expect(config.errors, isEmpty);
+      expect(config.value(verboseFlag), isTrue);
     });
   });
 
   group('Given an optional configuration option', () {
-    const projectIdOpt = ConfigOption(
+    const projectIdOpt = StringOption(
       argName: 'project',
       envName: 'PROJECT_ID',
     );
@@ -365,7 +365,7 @@ void main() async {
         args: argResults,
         env: envVars,
       );
-      expect(config.valueOrNull(projectIdOpt), equals('123'));
+      expect(config.optionalValue(projectIdOpt), equals('123'));
     });
 
     test('when provided as env variable then parsing succeeds', () async {
@@ -376,7 +376,7 @@ void main() async {
         args: argResults,
         env: envVars,
       );
-      expect(config.valueOrNull(projectIdOpt), equals('456'));
+      expect(config.optionalValue(projectIdOpt), equals('456'));
     });
 
     test('when not provided then parsing succeeds and results in null',
@@ -388,12 +388,12 @@ void main() async {
         args: argResults,
         env: envVars,
       );
-      expect(config.valueOrNull(projectIdOpt), isNull);
+      expect(config.optionalValue(projectIdOpt), isNull);
     });
   });
 
   group('Given a mandatory configuration option', () {
-    const projectIdOpt = ConfigOption(
+    const projectIdOpt = StringOption(
       argName: 'project',
       envName: 'PROJECT_ID',
       mandatory: true,
@@ -435,12 +435,20 @@ void main() async {
       );
       expect(config.errors, hasLength(1));
       expect(config.errors.first, 'option `project` is mandatory');
-      expect(() => config.value(projectIdOpt), throwsA(isA<UsageException>()));
+      expect(
+        () => config.value(projectIdOpt),
+        throwsA(isA<StateError>().having(
+          (final e) => e.message,
+          'message',
+          contains(
+              'No value available for option `project` due to previous errors'),
+        )),
+      );
     });
   });
 
   group('Given a mandatory env-only configuration option', () {
-    const projectIdOpt = ConfigOption(
+    const projectIdOpt = StringOption(
       envName: 'PROJECT_ID',
       mandatory: true,
     );
@@ -475,26 +483,34 @@ void main() async {
       expect(config.errors, hasLength(1));
       expect(config.errors.first,
           'environment variable `PROJECT_ID` is mandatory');
-      expect(() => config.value(projectIdOpt), throwsA(isA<UsageException>()));
+      expect(
+        () => config.value(projectIdOpt),
+        throwsA(isA<StateError>().having(
+          (final e) => e.message,
+          'message',
+          contains(
+              'No value available for environment variable `PROJECT_ID` due to previous errors'),
+        )),
+      );
     });
   });
 
   group('Given invalid combinations of options', () {
-    const argNameOpt = ConfigOption(
+    const argNameOpt = StringOption(
       argName: 'arg-name',
     );
-    const envNameOpt = ConfigOption(
+    const envNameOpt = StringOption(
       envName: 'env-name',
     );
-    const duplicateOpt = ConfigOption(
+    const duplicateOpt = StringOption(
       argName: 'arg-name',
       envName: 'env-name',
       argPos: 0,
     );
-    const argPosOpt = ConfigOption(
+    const argPosOpt = StringOption(
       argPos: 0,
     );
-    const argPos2Opt = ConfigOption(
+    const argPos2Opt = StringOption(
       argPos: 2,
     );
 
@@ -540,10 +556,10 @@ void main() async {
   });
 
   group('Given an optional positional argument option', () {
-    const positionalOpt = ConfigOption(
+    const positionalOpt = StringOption(
       argPos: 0,
     );
-    const projectIdOpt = ConfigOption(
+    const projectIdOpt = StringOption(
       argName: 'project',
     );
     final options = [positionalOpt, projectIdOpt];
@@ -560,7 +576,7 @@ void main() async {
         env: envVars,
       );
       expect(config.errors, isEmpty);
-      expect(config.valueOrNull(positionalOpt), equals('pos-arg'));
+      expect(config.optionalValue(positionalOpt), equals('pos-arg'));
     });
 
     test('when provided before named argument then parsing succeeds', () async {
@@ -572,7 +588,7 @@ void main() async {
         env: envVars,
       );
       expect(config.errors, isEmpty);
-      expect(config.valueOrNull(positionalOpt), equals('pos-arg'));
+      expect(config.optionalValue(positionalOpt), equals('pos-arg'));
     });
 
     test('when provided after named argument then parsing succeeds', () async {
@@ -584,7 +600,7 @@ void main() async {
         env: envVars,
       );
       expect(config.errors, isEmpty);
-      expect(config.valueOrNull(positionalOpt), equals('pos-arg'));
+      expect(config.optionalValue(positionalOpt), equals('pos-arg'));
     });
 
     test(
@@ -611,16 +627,16 @@ void main() async {
         env: envVars,
       );
       expect(config.errors, isEmpty);
-      expect(config.valueOrNull(positionalOpt), isNull);
+      expect(config.optionalValue(positionalOpt), isNull);
     });
   });
 
   group('Given a mandatory positional argument option', () {
-    const positionalOpt = ConfigOption(
+    const positionalOpt = StringOption(
       argPos: 0,
       mandatory: true,
     );
-    const projectIdOpt = ConfigOption(
+    const projectIdOpt = StringOption(
       argName: 'project',
     );
     final options = [positionalOpt, projectIdOpt];
@@ -674,16 +690,24 @@ void main() async {
       );
       expect(config.errors, hasLength(1));
       expect(config.errors.first, 'positional argument 0 is mandatory');
-      expect(() => config.value(positionalOpt), throwsA(isA<UsageException>()));
+      expect(
+        () => config.value(positionalOpt),
+        throwsA(isA<StateError>().having(
+          (final e) => e.message,
+          'message',
+          contains(
+              'No value available for positional argument 0 due to previous errors'),
+        )),
+      );
     });
   });
 
   group('Given two argument options that can be both positional and named', () {
-    const firstOpt = ConfigOption(
+    const firstOpt = StringOption(
       argName: 'first',
       argPos: 0,
     );
-    const secondOpt = ConfigOption(
+    const secondOpt = StringOption(
       argName: 'second',
       argPos: 1,
     );
@@ -701,8 +725,8 @@ void main() async {
         env: envVars,
       );
       expect(config.errors, isEmpty);
-      expect(config.valueOrNull(firstOpt), equals('1st-arg'));
-      expect(config.valueOrNull(secondOpt), isNull);
+      expect(config.optionalValue(firstOpt), equals('1st-arg'));
+      expect(config.optionalValue(secondOpt), isNull);
     });
 
     test('when provided as lone named argument then parsing succeeds',
@@ -715,8 +739,8 @@ void main() async {
         env: envVars,
       );
       expect(config.errors, isEmpty);
-      expect(config.valueOrNull(firstOpt), equals('1st-arg'));
-      expect(config.valueOrNull(secondOpt), isNull);
+      expect(config.optionalValue(firstOpt), equals('1st-arg'));
+      expect(config.optionalValue(secondOpt), isNull);
     });
 
     test(
@@ -730,8 +754,8 @@ void main() async {
         env: envVars,
       );
       expect(config.errors, isEmpty);
-      expect(config.valueOrNull(firstOpt), isNull);
-      expect(config.valueOrNull(secondOpt), equals('2st-arg'));
+      expect(config.optionalValue(firstOpt), isNull);
+      expect(config.optionalValue(secondOpt), equals('2st-arg'));
     });
 
     test('when provided as two positional args then parsing succeeds',
@@ -744,8 +768,8 @@ void main() async {
         env: envVars,
       );
       expect(config.errors, isEmpty);
-      expect(config.valueOrNull(firstOpt), equals('1st-arg'));
-      expect(config.valueOrNull(secondOpt), equals('2nd-arg'));
+      expect(config.optionalValue(firstOpt), equals('1st-arg'));
+      expect(config.optionalValue(secondOpt), equals('2nd-arg'));
     });
 
     test(
@@ -759,8 +783,8 @@ void main() async {
         env: envVars,
       );
       expect(config.errors, isEmpty);
-      expect(config.valueOrNull(firstOpt), equals('1st-arg'));
-      expect(config.valueOrNull(secondOpt), equals('2nd-arg'));
+      expect(config.optionalValue(firstOpt), equals('1st-arg'));
+      expect(config.optionalValue(secondOpt), equals('2nd-arg'));
     });
 
     test(
@@ -774,8 +798,8 @@ void main() async {
         env: envVars,
       );
       expect(config.errors, isEmpty);
-      expect(config.valueOrNull(firstOpt), equals('1st-arg'));
-      expect(config.valueOrNull(secondOpt), equals('2nd-arg'));
+      expect(config.optionalValue(firstOpt), equals('1st-arg'));
+      expect(config.optionalValue(secondOpt), equals('2nd-arg'));
     });
 
     test(
@@ -789,8 +813,8 @@ void main() async {
         env: envVars,
       );
       expect(config.errors, isEmpty);
-      expect(config.valueOrNull(firstOpt), equals('1st-arg'));
-      expect(config.valueOrNull(secondOpt), equals('2nd-arg'));
+      expect(config.optionalValue(firstOpt), equals('1st-arg'));
+      expect(config.optionalValue(secondOpt), equals('2nd-arg'));
     });
 
     test('when provided as 2 named arguments then parsing succeeds', () async {
@@ -803,8 +827,8 @@ void main() async {
         env: envVars,
       );
       expect(config.errors, isEmpty);
-      expect(config.valueOrNull(firstOpt), equals('1st-arg'));
-      expect(config.valueOrNull(secondOpt), equals('2nd-arg'));
+      expect(config.optionalValue(firstOpt), equals('1st-arg'));
+      expect(config.optionalValue(secondOpt), equals('2nd-arg'));
     });
 
     test(
@@ -819,8 +843,8 @@ void main() async {
         env: envVars,
       );
       expect(config.errors, isEmpty);
-      expect(config.valueOrNull(firstOpt), equals('1st-arg'));
-      expect(config.valueOrNull(secondOpt), equals('2nd-arg'));
+      expect(config.optionalValue(firstOpt), equals('1st-arg'));
+      expect(config.optionalValue(secondOpt), equals('2nd-arg'));
     });
 
     test('when not provided then parsing succeeds and both are null', () async {
@@ -832,8 +856,8 @@ void main() async {
         env: envVars,
       );
       expect(config.errors, isEmpty);
-      expect(config.valueOrNull(firstOpt), isNull);
-      expect(config.valueOrNull(secondOpt), isNull);
+      expect(config.optionalValue(firstOpt), isNull);
+      expect(config.optionalValue(secondOpt), isNull);
     });
 
     test('when superfluous positional argument provided then parsing has error',
@@ -849,8 +873,8 @@ void main() async {
       expect(config.errors, hasLength(1));
       expect(
           config.errors.first, "Unexpected positional argument(s): '3rd-arg'");
-      expect(config.valueOrNull(firstOpt), equals('1st-arg'));
-      expect(config.valueOrNull(secondOpt), equals('2nd-arg'));
+      expect(config.optionalValue(firstOpt), equals('1st-arg'));
+      expect(config.optionalValue(secondOpt), equals('2nd-arg'));
     });
 
     test(
@@ -868,17 +892,17 @@ void main() async {
       expect(config.errors, hasLength(1));
       expect(
           config.errors.first, "Unexpected positional argument(s): '3rd-arg'");
-      expect(config.valueOrNull(firstOpt), equals('1st-arg'));
-      expect(config.valueOrNull(secondOpt), equals('2nd-arg'));
+      expect(config.optionalValue(firstOpt), equals('1st-arg'));
+      expect(config.optionalValue(secondOpt), equals('2nd-arg'));
     });
   });
 
   group('Given a configuration source option that depends on another option',
       () {
-    const projectIdOpt = ConfigOption(
+    const projectIdOpt = StringOption(
       configKey: 'config:/project/projectId',
     );
-    const configFileOpt = ConfigOption(
+    const configFileOpt = StringOption(
       argName: 'file',
       envName: 'FILE',
       defaultsTo: 'config.yaml',
@@ -901,7 +925,7 @@ void main() async {
         configBroker: configSource,
       );
       expect(config.errors, isEmpty);
-      expect(config.valueOrNull(projectIdOpt), equals('123'));
+      expect(config.optionalValue(projectIdOpt), equals('123'));
     });
 
     test('when dependee is specified before depender then parsing fails',
@@ -923,7 +947,7 @@ void main() async {
             'Out-of-order dependency on not-yet-resolved option `file`',
           ])));
       expect(
-        () => config.valueOrNull(projectIdOpt),
+        () => config.optionalValue(projectIdOpt),
         throwsA(isA<StateError>().having(
           (final e) => e.message,
           'message',
@@ -932,11 +956,76 @@ void main() async {
       );
     });
   });
+
+  group('Given two typed argument options', () {
+    const strOpt = StringOption(
+      argName: 'string',
+    );
+    const intOpt = IntOption(
+      argName: 'int',
+    );
+
+    test(
+        'when constructing Configuration '
+        'with direct option values of correct type '
+        'then it succeeds', () async {
+      final config = Configuration.fromValues(
+        values: <OptionDefinition, Object>{
+          strOpt: '1',
+          intOpt: 2,
+        },
+      );
+
+      expect(config.errors, isEmpty);
+      expect(config.optionalValue(strOpt), equals('1'));
+      expect(config.optionalValue(intOpt), equals(2));
+    });
+
+    test(
+        'when constructing Configuration '
+        'with direct option values of incorrect type '
+        'then construction throws TypeError', () async {
+      expect(
+        () => Configuration.fromValues(
+          values: <OptionDefinition, Object>{
+            strOpt: 1,
+            intOpt: '2',
+          },
+        ),
+        throwsA(isA<TypeError>().having(
+          (final e) => e.toString(),
+          'toString()',
+          contains("type 'int' is not a subtype of type 'String' of 'value'"),
+        )),
+      );
+    });
+
+    test(
+        'when accessing an unknown option '
+        'then an ArgumentError is thrown', () async {
+      final config = Configuration.fromValues(
+        values: <OptionDefinition, Object>{
+          strOpt: '1',
+          intOpt: 2,
+        },
+      );
+
+      final unknownOption = IntOption(argName: 'otherInt');
+      expect(
+        () => config.optionalValue(unknownOption),
+        throwsA(isA<ArgumentError>().having(
+          (final e) => e.message,
+          'message',
+          'option `otherInt` is not part of this configuration',
+        )),
+      );
+    });
+  });
 }
 
 class _TestConfigBroker implements ConfigurationBroker {
   final Map<String, String> entries;
-  final ConfigOption? requiredOption;
+  final StringOption? requiredOption;
 
   _TestConfigBroker(
     this.entries, {
@@ -946,7 +1035,7 @@ class _TestConfigBroker implements ConfigurationBroker {
   @override
   String? valueOrNull(final String key, final Configuration cfg) {
     if (requiredOption != null) {
-      if (cfg.valueOrNull(requiredOption!) == null) {
+      if (cfg.optionalValue(requiredOption!) == null) {
         return null;
       }
     }
@@ -958,7 +1047,7 @@ class _TestConfigBroker implements ConfigurationBroker {
 /// The returned value is null if the required option does not have a value.
 ConfigurationBroker _dependentConfigBroker(
   final Map<String, String> entries,
-  final ConfigOption requiredOption,
+  final StringOption requiredOption,
 ) {
   return _TestConfigBroker(entries, requiredOption: requiredOption);
 }

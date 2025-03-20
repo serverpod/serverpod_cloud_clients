@@ -5,7 +5,7 @@ import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dar
 import 'package:serverpod_cloud_cli/commands/status/status.dart';
 import 'package:serverpod_cloud_cli/commands/logs/logs.dart';
 import 'package:serverpod_cloud_cli/commands/status/status_feature.dart';
-import 'package:serverpod_cloud_cli/util/config/configuration.dart';
+import 'package:serverpod_cloud_cli/util/config/config.dart';
 
 import 'categories.dart';
 
@@ -26,22 +26,21 @@ class CloudStatusCommand extends CloudCliCommand {
 
 abstract final class _DeployStatusOptions {
   static const projectId = ProjectIdOption();
-  static const limit = ConfigOption(
+  static const limit = StringOption(
     argName: 'limit',
     helpText: 'The maximum number of records to fetch.',
     defaultsTo: '10',
   );
-  static const utc = ConfigOption(
+  static const utc = FlagOption(
     argName: 'utc',
     argAbbrev: 'u',
     helpText: 'Display timestamps in UTC timezone instead of local.',
-    isFlag: true,
     negatable: true,
-    defaultsTo: "false",
+    defaultsTo: false,
     envName: 'SERVERPOD_CLOUD_DISPLAY_UTC',
   );
 
-  static const deploy = ConfigOption(
+  static const deploy = StringOption(
     argName: 'deploy',
     argPos: 0,
     helpText:
@@ -49,33 +48,30 @@ abstract final class _DeployStatusOptions {
     valueHelp: '<uuid|integer>',
     defaultsTo: '0',
   );
-  static const list = ConfigOption(
+  static const list = FlagOption(
     argName: 'list',
     argAbbrev: CommandConfigConstants.listOptionAbbrev,
-    isFlag: true,
-    defaultsTo: 'false',
+    defaultsTo: false,
     helpText: "List recent deployments.",
     negatable: false,
   );
-  static const log = ConfigOption(
+  static const log = FlagOption(
     argName: 'build-log',
     argAbbrev: 'b',
-    isFlag: true,
-    defaultsTo: 'false',
+    defaultsTo: false,
     helpText: "View a deployment's build log, or latest by default.",
     negatable: false,
   );
-  static const overallStatus = ConfigOption(
+  static const overallStatus = FlagOption(
     argName: 'output-overall-status',
-    isFlag: true,
-    defaultsTo: 'false',
+    defaultsTo: false,
     helpText: "View a deployment's overall status as a single word, one of: "
         "success, failure, awaiting, running, cancelled, unknown.",
     negatable: false,
   );
 }
 
-enum DeployStatusOption implements OptionDefinition {
+enum DeployStatusOption<V> implements OptionDefinition<V> {
   projectId(_DeployStatusOptions.projectId),
   limit(_DeployStatusOptions.limit),
   utc(_DeployStatusOptions.utc),
@@ -87,7 +83,7 @@ enum DeployStatusOption implements OptionDefinition {
   const DeployStatusOption(this.option);
 
   @override
-  final ConfigOption option;
+  final ConfigOptionBase<V> option;
 }
 
 class CloudDeployStatusCommand extends CloudCliCommand<DeployStatusOption> {
@@ -106,11 +102,12 @@ class CloudDeployStatusCommand extends CloudCliCommand<DeployStatusOption> {
     final projectId = commandConfig.value(DeployStatusOption.projectId);
     final limit =
         int.tryParse(commandConfig.value(DeployStatusOption.limit)) ?? 10;
-    final inUtc = commandConfig.flag(DeployStatusOption.utc);
-    final deploymentArg = commandConfig.valueOrNull(DeployStatusOption.deploy);
-    final list = commandConfig.flag(DeployStatusOption.list);
-    final log = commandConfig.flag(DeployStatusOption.log);
-    final overallStatus = commandConfig.flag(DeployStatusOption.overallStatus);
+    final inUtc = commandConfig.value(DeployStatusOption.utc);
+    final deploymentArg =
+        commandConfig.optionalValue(DeployStatusOption.deploy);
+    final list = commandConfig.value(DeployStatusOption.list);
+    final log = commandConfig.value(DeployStatusOption.log);
+    final overallStatus = commandConfig.value(DeployStatusOption.overallStatus);
 
     if (list && log) {
       logger.error('Cannot use --list and --build-log together.');

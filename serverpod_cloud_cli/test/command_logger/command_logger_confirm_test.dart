@@ -280,11 +280,8 @@ void main() {
       'Given empty standard out '
       'when calling confirm with skip-confirmation option set '
       'then should immediately return true', () async {
-    final parser = ArgParser();
-    GlobalOption.values.prepareForParsing(parser);
-    final argResults = parser.parse(['--skip-confirmation']);
-    commandLogger.configuration = GlobalConfiguration(
-      args: argResults,
+    commandLogger.configuration = GlobalConfigTestInit.fromArgsAndEnv(
+      args: ['--skip-confirmation'],
     );
 
     late final bool result;
@@ -301,4 +298,19 @@ void main() {
     expect(stdout.output, isEmpty);
     expect(result, isTrue);
   });
+}
+
+extension GlobalConfigTestInit on GlobalConfiguration {
+  static GlobalConfiguration fromArgsAndEnv({
+    final Iterable<String>? args,
+    final Map<String, String>? env,
+  }) {
+    final parser = ArgParser();
+    GlobalOption.values.prepareForParsing(parser);
+    final argResults = parser.parse(args ?? []);
+    return GlobalConfiguration(
+      args: argResults,
+      env: env,
+    );
+  }
 }

@@ -97,6 +97,8 @@ abstract class CloudCliCommand<T extends OptionDefinition>
     try {
       await runWithConfig(config);
     } on CloudCliUsageException catch (e) {
+      // TODO: Don't catch CloudCliUsageException,
+      // it's a UsageException and is handled by the caller.
       logger.error(e.message, hint: e.hint);
       throw ErrorExitException();
     }

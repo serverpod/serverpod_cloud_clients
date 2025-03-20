@@ -2,66 +2,62 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart';
-import 'package:serverpod_cloud_cli/command_runner/helpers/option_parsing.dart';
 import 'package:serverpod_cloud_cli/commands/logs/logs.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
-import 'package:serverpod_cloud_cli/util/config/configuration.dart';
+import 'package:serverpod_cloud_cli/util/config/config.dart';
 
 import 'categories.dart';
 
-enum LogOption implements OptionDefinition {
+enum LogOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption()),
-  limit(ConfigOption(
+  limit(IntOption(
     argName: 'limit',
     helpText: 'The maximum number of log records to fetch.',
-    defaultsTo: '50',
+    defaultsTo: 50,
+    min: 0,
   )),
-  utc(ConfigOption(
+  utc(FlagOption(
     argName: 'utc',
     argAbbrev: 'u',
     helpText: 'Display timestamps in UTC timezone instead of local.',
-    isFlag: true,
-    defaultsTo: "false",
+    defaultsTo: false,
     envName: 'SERVERPOD_CLOUD_DISPLAY_UTC',
   )),
-  recent(ConfigOption(
+  recent(DurationOption(
     argName: 'recent',
     argAbbrev: 'r',
+    argPos: 0,
     helpText:
         'Fetch records from the recent period length; s (seconds) by default. '
         'Can also be specified as the first argument.',
-    valueHelp: '<integer>[s|m|h|d]',
-    argPos: 0,
+    min: Duration.zero,
   )),
-  before(ConfigOption(
+  before(DateTimeOption(
     argName: 'before',
     helpText: 'Fetch records from before this timestamp.',
-    valueHelp: 'YYYY-MM-DDtHH:MM:SSz',
   )),
-  after(ConfigOption(
+  after(DateTimeOption(
     argName: 'after',
     helpText: 'Fetch records from after this timestamp.',
-    valueHelp: 'YYYY-MM-DDtHH:MM:SSz',
   )),
-  all(ConfigOption(
+  all(FlagOption(
     argName: 'all',
     helpText: 'Fetch all records (up to specified limit or server limit).',
-    isFlag: true,
-    defaultsTo: 'false',
+    defaultsTo: false,
+    negatable: false,
     hide: true,
   )),
-  tail(ConfigOption(
+  tail(FlagOption(
     argName: 'tail',
     helpText: 'Tail the log and get real time updates.',
-    isFlag: true,
     negatable: false,
-    defaultsTo: 'false',
+    defaultsTo: false,
   ));
 
   const LogOption(this.option);
 
   @override
-  final ConfigOption option;
+  final ConfigOptionBase<V> option;
 }
 
 class CloudLogCommand extends CloudCliCommand<LogOption> {
@@ -76,53 +72,18 @@ class CloudLogCommand extends CloudCliCommand<LogOption> {
 
   CloudLogCommand({required super.logger}) : super(options: LogOption.values);
 
-  static DateTime _parseRecentOpt(final String recentOpt) {
-    const pattern = r'^(\d+)([smhd])?$';
-    final regex = RegExp(pattern);
-    final match = regex.firstMatch(recentOpt);
-
-    if (match == null || match.groupCount != 2) {
-      throw CloudCliUsageException(
-        'Failed to parse --recent value "$recentOpt", the required pattern is <integer>[s|m|h|d]',
-      );
-    }
-    final valueStr = match.group(1);
-    final unit = match.group(2) ?? 's';
-    final value = int.parse(valueStr ?? '');
-    final now = DateTime.now();
-    switch (unit) {
-      case 's':
-        return now.subtract(Duration(seconds: value));
-      case 'm':
-        return now.subtract(Duration(minutes: value));
-      case 'h':
-        return now.subtract(Duration(hours: value));
-      case 'd':
-        return now.subtract(Duration(days: value));
-      default:
-        throw CloudCliUsageException(
-            'Failed to parse --recent option, invalid unit "$unit".');
-    }
-  }
-
   @override
   Future<void> runWithConfig(
     final Configuration<LogOption> commandConfig,
   ) async {
     final projectId = commandConfig.value(LogOption.projectId);
-    final limit = int.tryParse(commandConfig.value(LogOption.limit));
-    final inUtc = commandConfig.flag(LogOption.utc);
-    final recentOpt = commandConfig.valueOrNull(LogOption.recent);
-    final beforeOpt = commandConfig.valueOrNull(LogOption.before);
-    final afterOpt = commandConfig.valueOrNull(LogOption.after);
-    final tailOpt = commandConfig.flagOrNull(LogOption.tail);
-    final internalAllOpt = commandConfig.flag(LogOption.all);
-
-    if (limit == null) {
-      throw CloudCliUsageException(
-        'The --limit value must be an integer.',
-      );
-    }
+    final limit = commandConfig.value(LogOption.limit);
+    final inUtc = commandConfig.value(LogOption.utc);
+    final recentOpt = commandConfig.optionalValue(LogOption.recent);
+    final beforeOpt = commandConfig.optionalValue(LogOption.before);
+    final afterOpt = commandConfig.optionalValue(LogOption.after);
+    final tailOpt = commandConfig.optionalValue(LogOption.tail);
+    final internalAllOpt = commandConfig.value(LogOption.all);
 
     final DateTime? before, after;
     final anyTimeSpanIsSet =
@@ -155,8 +116,8 @@ class CloudLogCommand extends CloudCliCommand<LogOption> {
         );
       }
 
-      before = beforeOpt != null ? OptionParsing.parseDate(beforeOpt) : null;
-      after = afterOpt != null ? OptionParsing.parseDate(afterOpt) : null;
+      before = beforeOpt;
+      after = afterOpt;
       if (before != null && after != null && before.isBefore(after)) {
         throw CloudCliUsageException(
           'The --before value must be after --after value.',
@@ -165,7 +126,7 @@ class CloudLogCommand extends CloudCliCommand<LogOption> {
     } else {
       // If no range specified, default to fetch recent logs
       before = null;
-      after = _parseRecentOpt(recentOpt ?? '1m');
+      after = DateTime.now().subtract(recentOpt ?? Duration(minutes: 10));
     }
 
     if (tailOpt == true) {

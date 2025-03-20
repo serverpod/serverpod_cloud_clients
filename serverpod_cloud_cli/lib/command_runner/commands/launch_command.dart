@@ -4,23 +4,21 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart'
 import 'package:serverpod_cloud_cli/commands/launch/launch.dart';
 import 'package:serverpod_cloud_cli/util/config/config.dart';
 
-enum LaunchOption implements OptionDefinition {
+enum LaunchOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption.nonMandatory()),
-  enableDb(ConfigOption(
+  enableDb(FlagOption(
     argName: 'enable-db',
-    isFlag: true,
     helpText: 'Flag to enable the database for the project.',
   )),
-  deploy(ConfigOption(
+  deploy(FlagOption(
     argName: 'deploy',
-    isFlag: true,
     helpText: 'Flag to immediately deploy the project.',
   ));
 
   const LaunchOption(this.option);
 
   @override
-  final ConfigOption option;
+  final ConfigOptionBase<V> option;
 }
 
 class CloudLaunchCommand extends CloudCliCommand<LaunchOption> {
@@ -43,9 +41,9 @@ class CloudLaunchCommand extends CloudCliCommand<LaunchOption> {
     final foundProjectDir =
         specifiedProjectDir == null ? runner.selectProjectDirectory() : null;
 
-    final projectId = commandConfig.valueOrNull(LaunchOption.projectId);
-    final enableDb = commandConfig.flagOrNull(LaunchOption.enableDb);
-    final deploy = commandConfig.flagOrNull(LaunchOption.deploy);
+    final projectId = commandConfig.optionalValue(LaunchOption.projectId);
+    final enableDb = commandConfig.optionalValue(LaunchOption.enableDb);
+    final deploy = commandConfig.optionalValue(LaunchOption.deploy);
 
     await Launch.launch(
       runner.serviceProvider.cloudApiClient,

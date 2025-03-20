@@ -1,3 +1,4 @@
+import 'package:args/command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
@@ -47,21 +48,15 @@ void main() {
         } catch (_) {}
       });
 
-      test('then throws ExitErrorException', () async {
-        await expectLater(result, throwsA(isA<ErrorExitException>()));
-      });
-
-      test('then logs error', () async {
-        try {
-          await result;
-        } catch (_) {}
-
-        expect(
-          logger.errorCalls.last,
-          equalsErrorCall(
-            message: 'Failed to parse --recent value "1x", '
-                'the required pattern is <integer>[s|m|h|d]',
-          ),
+      test('then throws UsageException', () async {
+        await expectLater(
+          result,
+          throwsA(isA<UsageException>().having(
+            (final e) => e.message,
+            'message',
+            contains(
+                'Invalid value for option `recent` <integer[s|m|h|d]>: Invalid duration value "1x"'),
+          )),
         );
       });
     });
@@ -80,21 +75,15 @@ void main() {
         } catch (_) {}
       });
 
-      test('then throws ExitErrorException', () async {
-        await expectLater(result, throwsA(isA<ErrorExitException>()));
-      });
-
-      test('then logs error', () async {
-        try {
-          await result;
-        } catch (_) {}
-
-        expect(
-          logger.errorCalls.last,
-          equalsErrorCall(
-            message: 'Failed to parse --recent value "hello", '
-                'the required pattern is <integer>[s|m|h|d]',
-          ),
+      test('then throws UsageException', () async {
+        await expectLater(
+          result,
+          throwsA(isA<UsageException>().having(
+            (final e) => e.message,
+            'message',
+            contains(
+                'Invalid value for option `recent` <integer[s|m|h|d]>: Invalid duration value "hello"'),
+          )),
         );
       });
     });
@@ -102,31 +91,23 @@ void main() {
     group('when running log command with invalid --limit value', () {
       late Future result;
       setUp(() async {
-        try {
-          result = cli.run([
-            'log',
-            '--limit',
-            'abc',
-            '--project',
-            projectId,
-          ]);
-        } catch (_) {}
+        result = cli.run([
+          'log',
+          '--limit',
+          'abc',
+          '--project',
+          projectId,
+        ]);
       });
 
-      test('then throws ExitErrorException', () async {
-        await expectLater(result, throwsA(isA<ErrorExitException>()));
-      });
-
-      test('then logs error', () async {
-        try {
-          await result;
-        } catch (_) {}
-
-        expect(
-          logger.errorCalls.last,
-          equalsErrorCall(
-            message: 'The --limit value must be an integer.',
-          ),
+      test('then throws UsageException', () async {
+        await expectLater(
+          result,
+          throwsA(isA<UsageException>().having(
+            (final e) => e.message,
+            'message',
+            contains('Invalid value for option `limit` <integer>'),
+          )),
         );
       });
     });
@@ -145,22 +126,15 @@ void main() {
         } catch (_) {}
       });
 
-      test('then throws ExitErrorException', () async {
-        await expectLater(result, throwsA(isA<ErrorExitException>()));
-      });
-
-      test('then logs error', () async {
-        try {
-          await result;
-        } catch (_) {}
-
-        expect(
-          logger.errorCalls.last,
-          equalsErrorCall(
-            message: 'Failed to parse date-time option "not-a-date".',
-            hint: 'Value must be an ISO date-time: '
-                'YYYY-MM-DD HH:MM:SSz (or shorter) Alternate date/time separators: Tt-_/:',
-          ),
+      test('then throws UsageException', () async {
+        await expectLater(
+          result,
+          throwsA(isA<UsageException>().having(
+            (final e) => e.message,
+            'message',
+            contains(
+                'Invalid value for option `before` <YYYY-MM-DDtHH:MM:SSz>'),
+          )),
         );
       });
     });
@@ -179,22 +153,14 @@ void main() {
         } catch (_) {}
       });
 
-      test('then throws ExitErrorException', () async {
-        await expectLater(result, throwsA(isA<ErrorExitException>()));
-      });
-
-      test('then logs error', () async {
-        try {
-          await result;
-        } catch (_) {}
-
-        expect(
-          logger.errorCalls.last,
-          equalsErrorCall(
-            message: 'Failed to parse date-time option "not-a-date".',
-            hint: 'Value must be an ISO date-time: '
-                'YYYY-MM-DD HH:MM:SSz (or shorter) Alternate date/time separators: Tt-_/:',
-          ),
+      test('then throws UsageException', () async {
+        await expectLater(
+          result,
+          throwsA(isA<UsageException>().having(
+            (final e) => e.message,
+            'message',
+            contains('Invalid value for option `after` <YYYY-MM-DDtHH:MM:SSz>'),
+          )),
         );
       });
     });

@@ -2,7 +2,7 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart';
-import 'package:serverpod_cloud_cli/util/config/configuration.dart';
+import 'package:serverpod_cloud_cli/util/config/config.dart';
 
 import 'categories.dart';
 
@@ -24,7 +24,7 @@ class CloudDbCommand extends CloudCliCommand {
 }
 
 abstract final class _CommonDbOptions {
-  static const dbUsername = ConfigOption(
+  static const dbUsername = StringOption(
     argName: 'username',
     argPos: 0,
     helpText: 'The username of the DB user to create.',
@@ -38,7 +38,7 @@ enum DbConnectionDetailsOption implements OptionDefinition {
   const DbConnectionDetailsOption(this.option);
 
   @override
-  final ConfigOption option;
+  final StringOption option;
 }
 
 class CloudDbConnectionDetailsCommand
@@ -98,7 +98,7 @@ enum DbCreateSuperuserOption implements OptionDefinition {
   const DbCreateSuperuserOption(this.option);
 
   @override
-  final ConfigOption option;
+  final StringOption option;
 }
 
 class CloudDbCreateSuperuserCommand
@@ -151,7 +151,7 @@ enum DbResetPasswordOption implements OptionDefinition {
   const DbResetPasswordOption(this.option);
 
   @override
-  final ConfigOption option;
+  final StringOption option;
 }
 
 class CloudDbResetPasswordCommand
