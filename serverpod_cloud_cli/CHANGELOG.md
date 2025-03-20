@@ -1,6 +1,19 @@
 
 # Changelog
 
+## 0.3.1 - 2025-03-20
+
+### Added
+
+ - **New scloud launch command** - CLI wizard to create and deploy a project interactively.
+ - **Deployed service URLs**: The deploy command prints the URLs of the deployed services.
+ - **Subcommand categories** - `scloud` command usage shows subcommands by category.
+
+### Fixed
+
+ - **Option handling** - `--project-config-file` option correctly handles a project directory that is inaccessible.
+ - **scloud help text footer** - Corrected docs URLs in `scloud` command help footer.
+
 ## 0.3.0 - 2025-03-11
 
 ### Added
@@ -24,7 +37,7 @@
 
 ## 0.2.0 - 2025-02-28
 
-### Fixes
+### Fixed
 
 - Moved link command to a subcommand of project.
 - Files in hidden folders are recursively ignored during upload.
@@ -41,7 +54,7 @@
 
 ## 0.1.1 - 2025-02-18
 
-### Fixes
+### Fixed
 
 - New registration flow
 
@@ -61,8 +74,8 @@
 
 ## 0.0.2 - 2025-02-05
 
-- Initial beta version.
+Initial beta version.
 
-## 0.0.1
+## 0.0.1 - 2024-05-09
 
-- Initial version.
+Initial version.

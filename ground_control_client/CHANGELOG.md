@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1
+
+ - **Better authentication** - Support account selection when user already is authenticated.
+
 ## 0.3.0 - 2025-03-11
 
 ### Fixed
