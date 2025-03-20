@@ -50,7 +50,11 @@ FileFinder<T> scloudFileFinder<T>({
   return (final T arg) {
     // search in current directory and N levels down
     // If several are found, throw StateError
-    final startDir = startingDirectory?.call(arg) ?? Directory.current.path;
+    final startDir = p.absolute(
+      p.normalize(
+        startingDirectory?.call(arg) ?? Directory.current.path,
+      ),
+    );
     final foundFile = _findUnambiguousFile(
       startDir,
       filenames,
@@ -62,10 +66,11 @@ FileFinder<T> scloudFileFinder<T>({
     }
 
     // if there is a pubspec.yaml file in the current directory,
+    // and the current directory is not a root directory,
     // go one level up and search again with depth 1,
     // this covers the case where the current directory is client/ or flutter/
     final pubspecFile = File(p.join(startDir, 'pubspec.yaml'));
-    if (pubspecFile.existsSync()) {
+    if (pubspecFile.existsSync() && startDir != p.rootPrefix(startDir)) {
       final upDir = Directory(p.normalize(p.join(startDir, '..')));
       final foundFile = _findUnambiguousFile(
         upDir.path,
@@ -108,15 +113,27 @@ List<String> _findFile(
 }) {
   final foundFiles = <String>[];
   for (final filename in filenames) {
-    final file = File(p.join(dir, filename)).absolute;
-    if (file.existsSync()) {
-      if (fileContentCondition?.call(file.path) ?? true) {
-        foundFiles.add(file.path);
+    final file = File(p.join(dir, filename));
+    try {
+      if (file.existsSync()) {
+        if (fileContentCondition?.call(file.path) ?? true) {
+          foundFiles.add(file.path);
+        }
       }
+    } on FileSystemException catch (_) {
+      // skip files that cannot be accessed
     }
   }
+
   if (subDirLevels > 0) {
-    final subEntities = Directory(dir).listSync(followLinks: false);
+    final List<FileSystemEntity> subEntities;
+    try {
+      subEntities = Directory(dir).listSync(followLinks: false);
+    } on FileSystemException catch (_) {
+      // skip directories that cannot be accessed
+      return foundFiles;
+    }
+
     for (final subDir in subEntities.whereType<Directory>()) {
       foundFiles.addAll(
         _findFile(

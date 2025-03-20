@@ -21,7 +21,6 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_pro
 import 'package:serverpod_cloud_cli/command_runner/helpers/cli_version_checker.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
-import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
 import 'package:serverpod_cloud_cli/util/capitalize.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
 import 'package:serverpod_cloud_cli/util/config/configuration.dart';
@@ -356,16 +355,14 @@ enum GlobalOption implements OptionDefinition {
 }
 
 String? _projectConfigFileFinder(final Configuration cfg) {
-  // if the dir option is set, we use it as starting directory
+  // if the dir option is set and it exists, we use it as starting directory
   final finder = scloudFileFinder<Configuration>(
     fileBaseName: ProjectConfigFileConstants.fileBaseName,
     supportedExtensions: ['yaml', 'yml', 'json'],
     startingDirectory: (final cfg) {
       final specifiedDir = cfg.valueOrNull(GlobalOption.projectDir);
       if (specifiedDir != null && !Directory(specifiedDir).existsSync()) {
-        throw CloudCliUsageException(
-          'The specified project directory `$specifiedDir` does not exist',
-        );
+        return null;
       }
       return specifiedDir;
     },

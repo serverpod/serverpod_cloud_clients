@@ -472,6 +472,41 @@ project:
           await expectLater(expected.validate(), completes);
         });
       });
+
+      group('when calling create with non-existing --project-dir option ', () {
+        setUp(() async {
+          commandResult = cli.run([
+            'project',
+            'create',
+            projectId,
+            '--project-dir',
+            'grandparent_dir/parent_dir/non_existing_dir',
+            '--no-enable-db',
+          ]);
+        });
+
+        test('then command completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test(
+            'then informs the user that no serverpod server directory was identified',
+            () async {
+          await commandResult;
+
+          expect(logger.terminalCommandCalls, isNotEmpty);
+          expect(
+            logger.terminalCommandCalls.last,
+            equalsTerminalCommandCall(
+              message: 'Since no Serverpod server directory was identified, '
+                  'an scloud.yaml configuration file has not been created. '
+                  'Use the link command to create it in the server directory of this project:',
+              newParagraph: true,
+              command: 'scloud project link --project $projectId',
+            ),
+          );
+        });
+      });
     });
   });
 }
