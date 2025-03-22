@@ -511,8 +511,8 @@ dependencies:
                   followUp: '''
 
 When the server has started, you can access it at:
+Web:      https://$projectId.serverpod.space/
 API:      https://$projectId.api.serverpod.space/
-Web:      https://$projectId.web.serverpod.space/
 Insights: https://$projectId.insights.serverpod.space/
 
 See the `scloud domain` command to set up a custom domain.''',

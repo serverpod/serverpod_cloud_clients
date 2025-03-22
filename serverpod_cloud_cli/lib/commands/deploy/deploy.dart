@@ -122,8 +122,8 @@ abstract class Deploy {
       'Project uploaded successfully!',
       trailingRocket: true,
       followUp: '\nWhen the server has started, you can access it at:\n'
+          'Web:      https://$projectId.$tenantHost/\n'
           'API:      https://$projectId.api.$tenantHost/\n'
-          'Web:      https://$projectId.web.$tenantHost/\n'
           'Insights: https://$projectId.insights.$tenantHost/\n\n'
           'See the `scloud domain` command to set up a custom domain.',
     );

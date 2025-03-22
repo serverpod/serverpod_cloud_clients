@@ -253,7 +253,7 @@ void main() {
                   DomainNameTarget.api: '$projectId.api.serverpod.space',
                   DomainNameTarget.insights:
                       '$projectId.insights.serverpod.space',
-                  DomainNameTarget.web: '$projectId.web.serverpod.space',
+                  DomainNameTarget.web: '$projectId.serverpod.space',
                 }),
           );
         });
@@ -636,10 +636,10 @@ void main() {
             ),
             CustomDomainName(
               capsuleId: 1,
-              name: 'web.domain.com',
+              name: 'domain.com',
               status: DomainNameStatus.pending,
               target: DomainNameTarget.web,
-              dnsRecordVerificationValue: 'projectId.web.serverpod.space',
+              dnsRecordVerificationValue: 'projectId.serverpod.space',
               dnsRecordType: DnsRecordType.cname,
             ),
             CustomDomainName(
@@ -655,7 +655,7 @@ void main() {
             DomainNameTarget.api: 'my-magical-project.api.serverpod.space',
             DomainNameTarget.insights:
                 'my-magical-project.insights.serverpod.space',
-            DomainNameTarget.web: 'my-magical-project.web.serverpod.space',
+            DomainNameTarget.web: 'my-magical-project.serverpod.space',
           },
         )));
 
@@ -698,7 +698,7 @@ void main() {
               line: 'my-magical-project.insights.serverpod.space | insights',
             ),
             equalsLineCall(
-              line: 'my-magical-project.web.serverpod.space      | web     ',
+              line: 'my-magical-project.serverpod.space          | web     ',
             ),
             equalsLineCall(
               line:
@@ -714,7 +714,7 @@ void main() {
             ),
             equalsLineCall(
               line:
-                  'web.domain.com      | my-magical-project.web.serverpod.space      | Certificate creation pending',
+                  'domain.com          | my-magical-project.serverpod.space          | Certificate creation pending',
             ),
             equalsLineCall(
               line:
@@ -738,7 +738,7 @@ void main() {
             DomainNameTarget.api: 'my-magical-project.api.serverpod.space',
             DomainNameTarget.insights:
                 'my-magical-project.insights.serverpod.space',
-            DomainNameTarget.web: 'my-magical-project.web.serverpod.space',
+            DomainNameTarget.web: 'my-magical-project.serverpod.space',
           },
         )));
 
@@ -782,7 +782,7 @@ void main() {
               line: 'my-magical-project.insights.serverpod.space | insights',
             ),
             equalsLineCall(
-              line: 'my-magical-project.web.serverpod.space      | web     ',
+              line: 'my-magical-project.serverpod.space          | web     ',
             ),
             equalsLineCall(
               line: 'Custom domain name | Target | Status',
