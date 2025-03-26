@@ -536,7 +536,8 @@ project:
             logger.inputCalls,
             containsAllInOrder([
               equalsInputCall(
-                message: 'Enter the project ID',
+                message: 'Choose project id',
+                defaultValue: 'default: my-project-server',
               ),
             ]),
           );
@@ -634,7 +635,8 @@ project:
                 message: 'Enter the project directory',
               ),
               equalsInputCall(
-                message: 'Enter the project ID',
+                message: 'Choose project id',
+                defaultValue: 'default: my-project-server',
               ),
             ]),
           );
@@ -648,11 +650,11 @@ project:
             logger.confirmCalls,
             containsAllInOrder([
               equalsConfirmCall(
-                message: 'Do you want to enable the database for the project?',
+                message: 'Enable the database for the project?',
                 defaultValue: true,
               ),
               equalsConfirmCall(
-                message: 'Do you want to deploy the project right away?',
+                message: 'Deploy the project right away?',
                 defaultValue: true,
               ),
               equalsConfirmCall(
@@ -709,7 +711,7 @@ project:
 
       group(
           'when executing launch with all settings provided interactively '
-          'and a suggested project dir is found '
+          'and a project dir is found '
           'and declining confirmation', () {
         late Future commandResult;
         setUp(() async {
@@ -734,22 +736,32 @@ project:
           expect(commandResult, throwsA(isA<ErrorExitException>()));
         });
 
-        test('then logs input messages with suggested project dir as default',
+        test('then logs info message that found project dir is selected',
             () async {
+          await commandResult.catchError((final _) {});
+
+          expect(logger.infoCalls, isNotEmpty);
+          expect(
+            logger.infoCalls,
+            containsAllInOrder([
+              equalsInfoCall(
+                message:
+                    'Found project directory: ${p.relative(testProjectDir)}',
+              ),
+            ]),
+          );
+        });
+
+        test('then logs input message for project id', () async {
           await commandResult.catchError((final _) {});
 
           expect(logger.inputCalls, isNotEmpty);
           expect(
-            logger.inputCalls,
-            containsAllInOrder([
-              equalsInputCall(
-                message: 'Enter the project directory',
-                defaultValue: p.relative(testProjectDir, from: d.sandbox),
-              ),
-              equalsInputCall(
-                message: 'Enter the project ID',
-              ),
-            ]),
+            logger.inputCalls.first,
+            equalsInputCall(
+              message: 'Choose project id',
+              defaultValue: 'default: my-project-server',
+            ),
           );
         });
 
@@ -761,11 +773,11 @@ project:
             logger.confirmCalls,
             containsAllInOrder([
               equalsConfirmCall(
-                message: 'Do you want to enable the database for the project?',
+                message: 'Enable the database for the project?',
                 defaultValue: true,
               ),
               equalsConfirmCall(
-                message: 'Do you want to deploy the project right away?',
+                message: 'Deploy the project right away?',
                 defaultValue: true,
               ),
               equalsConfirmCall(
@@ -784,7 +796,7 @@ project:
             logger.boxCalls.single.message,
             stringContainsInOrder([
               'Project setup',
-              'Project directory $testProjectDir',
+              'Project directory ${p.relative(testProjectDir)}',
               'Project Id        $projectId',
               'Enable DB         yes',
               'Perform deploy    yes',
@@ -801,9 +813,9 @@ project:
         test('then logs cancellation info message', () async {
           await commandResult.catchError((final _) {});
 
-          expect(logger.infoCalls, hasLength(1));
+          expect(logger.infoCalls, isNotEmpty);
           expect(
-            logger.infoCalls.single,
+            logger.infoCalls.last,
             equalsInfoCall(
               message: 'Setup cancelled.',
             ),
@@ -860,7 +872,8 @@ project:
                 message: 'Enter the project directory',
               ),
               equalsInputCall(
-                message: 'Enter the project ID',
+                message: 'Choose project id',
+                defaultValue: 'default: my-project-server',
               ),
             ]),
           );
@@ -874,11 +887,11 @@ project:
             logger.confirmCalls,
             containsAllInOrder([
               equalsConfirmCall(
-                message: 'Do you want to enable the database for the project?',
+                message: 'Enable the database for the project?',
                 defaultValue: true,
               ),
               equalsConfirmCall(
-                message: 'Do you want to deploy the project right away?',
+                message: 'Deploy the project right away?',
                 defaultValue: true,
               ),
               equalsConfirmCall(
@@ -970,10 +983,12 @@ project:
                 message: 'Enter the project directory',
               ),
               equalsInputCall(
-                message: 'Enter the project ID',
+                message: 'Choose project id',
+                defaultValue: 'default: my-project-server',
               ),
               equalsInputCall(
-                message: 'Enter the project ID',
+                message: 'Choose project id',
+                defaultValue: 'default: my-project-server',
               ),
             ]),
           );
@@ -987,11 +1002,11 @@ project:
             logger.confirmCalls,
             containsAllInOrder([
               equalsConfirmCall(
-                message: 'Do you want to enable the database for the project?',
+                message: 'Enable the database for the project?',
                 defaultValue: true,
               ),
               equalsConfirmCall(
-                message: 'Do you want to deploy the project right away?',
+                message: 'Deploy the project right away?',
                 defaultValue: true,
               ),
               equalsConfirmCall(

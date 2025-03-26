@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cli_tools/cli_tools.dart' as cli;
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
@@ -79,17 +80,18 @@ abstract class Launch {
       logProjectDirIsNotAServerpodServerDirectory(logger, specifiedProjectDir);
     }
 
-    String? defaultProjectDir = foundProjectDir;
-    if (defaultProjectDir != null) {
-      defaultProjectDir = p.relative(defaultProjectDir, from: p.current);
+    if (foundProjectDir != null) {
+      if (isServerpodServerDirectory(Directory(foundProjectDir))) {
+        projectSetup.projectDir = p.relative(foundProjectDir);
+        logger.info('Found project directory: ${projectSetup.projectDir}');
+        return;
+      }
     }
 
     do {
       final projectDir = await logger.input(
         'Enter the project directory',
-        defaultValue: defaultProjectDir,
       );
-      defaultProjectDir = null;
 
       if (projectDir.isEmpty) {
         logger.error('Project directory is required.');
@@ -109,32 +111,70 @@ abstract class Launch {
     final CommandLogger logger,
     final ProjectLaunch projectSetup,
   ) async {
+    const defaultPrefix = 'default: ';
+    const invalidProjectIdMessage =
+        'Invalid project ID. Must be 6-32 characters long '
+        'and contain only lowercase letters, numbers, and hyphens.';
+
     final specifiedProjectId = projectSetup.projectId;
     if (specifiedProjectId != null) {
-      try {
-        validateProjectIdFormat(specifiedProjectId);
+      if (isValidProjectIdFormat(specifiedProjectId)) {
+        projectSetup.projectId = specifiedProjectId;
         return;
-      } on FormatException catch (e) {
-        logger.error(e.message);
       }
+
+      logger.error(invalidProjectIdMessage);
     }
 
+    final defaultProjectId = _getDefaultProjectId(projectSetup.projectDir);
+
+    logger.raw(
+      r'''
+The project id is the unique identifier for the project.
+The default API domain will be: <project-id>.api.serverpod.space
+''',
+      style: cli.AnsiStyle.darkGray,
+    );
+
     do {
-      final projectId = await logger.input('Enter the project ID');
+      final defaultValue =
+          defaultProjectId != null ? '$defaultPrefix$defaultProjectId' : null;
+      var projectId = await logger.input(
+        'Choose project id',
+        defaultValue: defaultValue,
+      );
 
       if (projectId.isEmpty) {
         logger.error('Project ID is required.');
         continue;
       }
 
-      try {
-        validateProjectIdFormat(projectId);
+      if (defaultProjectId != null && projectId.startsWith(defaultPrefix)) {
+        projectId = defaultProjectId;
+      }
+
+      if (isValidProjectIdFormat(projectId)) {
         projectSetup.projectId = projectId;
         return;
-      } on FormatException catch (e) {
-        logger.error(e.message);
       }
+
+      logger.error(invalidProjectIdMessage);
     } while (true);
+  }
+
+  static String? _getDefaultProjectId(final String? projectDir) {
+    if (projectDir != null) {
+      final pubspec = TenantProjectPubspec.fromProjectDir(
+        Directory(projectDir),
+      );
+      if (pubspec.isServerpodServer()) {
+        final name = pubspec.pubspec.name.toLowerCase().replaceAll('_', '-');
+        if (isValidProjectIdFormat(name)) {
+          return name;
+        }
+      }
+    }
+    return null;
   }
 
   static Future<void> selectEnableDb(
@@ -146,7 +186,7 @@ abstract class Launch {
     }
 
     final enableDb = await logger.confirm(
-      'Do you want to enable the database for the project?',
+      'Enable the database for the project?',
       defaultValue: true,
     );
 
@@ -162,7 +202,7 @@ abstract class Launch {
     }
 
     final performDeploy = await logger.confirm(
-      'Do you want to deploy the project right away?',
+      'Deploy the project right away?',
       defaultValue: true,
     );
 
