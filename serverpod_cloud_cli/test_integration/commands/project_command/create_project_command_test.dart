@@ -238,7 +238,7 @@ dependencies:
   test: 1.0
 '''),
         ]).create();
-        dartDir = p.join(d.sandbox, 'dart_dir');
+        dartDir = p.absolute(d.sandbox, 'dart_dir');
         pushCurrentDirectory(dartDir);
 
         commandResult = cli.run([
@@ -281,7 +281,7 @@ dependencies:
 
       setUp(() async {
         await d.dir('other_dir').create();
-        otherDir = p.join(d.sandbox, 'other_dir');
+        otherDir = p.absolute(d.sandbox, 'other_dir');
         pushCurrentDirectory(otherDir);
 
         commandResult = cli.run([
@@ -387,7 +387,7 @@ dependencies:
               ]),
             ]),
           ]);
-          await expectLater(expected.validate(), completes);
+          await expectLater(expected.validate(d.sandbox), completes);
         });
 
         test(
