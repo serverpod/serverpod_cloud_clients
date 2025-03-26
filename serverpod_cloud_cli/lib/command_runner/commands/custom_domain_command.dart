@@ -4,8 +4,7 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart';
-import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
-import 'package:serverpod_cloud_cli/util/config/configuration.dart';
+import 'package:serverpod_cloud_cli/util/config/config.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 
@@ -48,18 +47,18 @@ abstract final class CustomDomainCommandConfig {
     argPos: 0,
   );
 
-  static const target = ConfigOption(
+  static const target = EnumOption<DomainNameTarget>(
     argName: 'target',
     argAbbrev: 't',
     argPos: 1,
     helpText:
         'The Serverpod server target of the custom domain, only one can be specified.',
     mandatory: true,
-    valueHelp: '[ api | web | insights ]',
+    enumParser: EnumParser(DomainNameTarget.values),
   );
 }
 
-enum AddCustomDomainCommandConfig implements OptionDefinition {
+enum AddCustomDomainCommandConfig<V> implements OptionDefinition<V> {
   projectId(CustomDomainCommandConfig.projectId),
   domainName(CustomDomainCommandConfig.domainName),
   target(CustomDomainCommandConfig.target);
@@ -67,7 +66,7 @@ enum AddCustomDomainCommandConfig implements OptionDefinition {
   const AddCustomDomainCommandConfig(this.option);
 
   @override
-  final ConfigOption option;
+  final ConfigOptionBase<V> option;
 }
 
 class CloudAddCustomDomainCommand
@@ -105,8 +104,6 @@ The valid targets are:
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
-    final parsedTarget = _domainNameTargetfromString(target);
-
     late CustomDomainNameWithDefaultDomains customDomainNameWithDefaultDomains;
 
     await handleCommonClientExceptions(
@@ -115,7 +112,7 @@ The valid targets are:
         customDomainNameWithDefaultDomains =
             await apiCloudClient.customDomainName.add(
           domainName: domainName,
-          target: parsedTarget,
+          target: target,
           cloudCapsuleId: projectId,
         );
       },
@@ -132,7 +129,7 @@ The valid targets are:
     logger.success('Custom domain added successfully!', newParagraph: true);
 
     final targetDefaultDomain =
-        customDomainNameWithDefaultDomains.defaultDomainsByTarget[parsedTarget];
+        customDomainNameWithDefaultDomains.defaultDomainsByTarget[target];
 
     if (targetDefaultDomain == null) {
       logger.error(
@@ -225,13 +222,13 @@ The valid targets are:
   }
 }
 
-enum ListCustomDomainCommandConfig implements OptionDefinition {
+enum ListCustomDomainCommandConfig<V> implements OptionDefinition<V> {
   projectId(CustomDomainCommandConfig.projectId);
 
   const ListCustomDomainCommandConfig(this.option);
 
   @override
-  final ConfigOption option;
+  final ConfigOptionBase<V> option;
 }
 
 class CloudListCustomDomainCommand
@@ -305,14 +302,14 @@ class CloudListCustomDomainCommand
   }
 }
 
-enum RemoveCustomDomainCommandConfig implements OptionDefinition {
+enum RemoveCustomDomainCommandConfig<V> implements OptionDefinition<V> {
   projectId(CustomDomainCommandConfig.projectId),
   domainName(CustomDomainCommandConfig.domainName);
 
   const RemoveCustomDomainCommandConfig(this.option);
 
   @override
-  final ConfigOption option;
+  final ConfigOptionBase<V> option;
 }
 
 class CloudRemoveCustomDomainCommand
@@ -364,14 +361,14 @@ class CloudRemoveCustomDomainCommand
   }
 }
 
-enum RefreshCustomDomainRecordCommandConfig implements OptionDefinition {
+enum RefreshCustomDomainRecordCommandConfig<V> implements OptionDefinition<V> {
   projectId(CustomDomainCommandConfig.projectId),
   domainName(CustomDomainCommandConfig.domainName);
 
   const RefreshCustomDomainRecordCommandConfig(this.option);
 
   @override
-  final ConfigOption option;
+  final ConfigOptionBase<V> option;
 }
 
 class CloudVerifyCustomDomainRecordCommand
@@ -431,21 +428,5 @@ class CloudVerifyCustomDomainRecordCommand
 
       throw ErrorExitException();
     });
-  }
-}
-
-DomainNameTarget _domainNameTargetfromString(final String value) {
-  switch (value) {
-    case 'api':
-      return DomainNameTarget.api;
-    case 'web':
-      return DomainNameTarget.web;
-    case 'insights':
-      return DomainNameTarget.insights;
-    default:
-      throw CloudCliUsageException(
-        'Invalid target value "$value".',
-        hint: 'Valid values are: [${DomainNameTarget.values.join(', ')}]',
-      );
   }
 }

@@ -62,9 +62,9 @@ abstract class CloudCliCommand<T extends OptionDefinition>
   /// Runs this command. Subclasses should instead override [runWithConfig].
   @override
   Future<void> run() async {
-    final config = Configuration.fromEnvAndArgs(
+    final config = Configuration.resolve(
       options: options,
-      args: argResults,
+      argResults: argResults,
       env: Platform.environment,
       configBroker: scloudCliConfigBroker(
         globalConfig: globalConfiguration,
@@ -97,6 +97,8 @@ abstract class CloudCliCommand<T extends OptionDefinition>
     try {
       await runWithConfig(config);
     } on CloudCliUsageException catch (e) {
+      // TODO: Don't catch CloudCliUsageException,
+      // it's a UsageException and is handled by the caller.
       logger.error(e.message, hint: e.hint);
       throw ErrorExitException();
     }

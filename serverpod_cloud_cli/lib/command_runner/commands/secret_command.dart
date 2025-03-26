@@ -2,7 +2,7 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart';
-import 'package:serverpod_cloud_cli/util/config/configuration.dart';
+import 'package:serverpod_cloud_cli/util/config/config.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 
 import 'categories.dart';
@@ -46,7 +46,7 @@ enum CreateSecretCommandConfig implements OptionDefinition {
   const CreateSecretCommandConfig(this.option);
 
   @override
-  final ConfigOption option;
+  final StringOption option;
 }
 
 class CloudCreateSecretCommand
@@ -94,7 +94,7 @@ enum ListSecretsCommandConfig implements OptionDefinition {
   const ListSecretsCommandConfig(this.option);
 
   @override
-  final ConfigOption option;
+  final StringOption option;
 }
 
 class CloudListSecretsCommand
@@ -150,7 +150,7 @@ enum DeleteSecretCommandConfig implements OptionDefinition {
   const DeleteSecretCommandConfig(this.option);
 
   @override
-  final ConfigOption option;
+  final StringOption option;
 }
 
 class CloudDeleteSecretCommand

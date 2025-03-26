@@ -6,7 +6,7 @@
 /// {@endtemplate}
 abstract interface class ConfigurationSource {
   /// {@macro config_source.valueOrNull}
-  String? valueOrNull(final String key);
+  Object? valueOrNull(final String key);
 }
 
 /// Simple [ConfigurationSource] adapter for a [Map<String, String>].

@@ -5,7 +5,7 @@ abstract final class CommandConfigConstants {
   static const listOptionAbbrev = 'l';
 }
 
-class ProjectIdOption extends ConfigOption {
+class ProjectIdOption extends StringOption {
   static const _projectIdArgName = 'project';
   static const _projectIdArgAbbrev = 'p';
 
@@ -51,7 +51,7 @@ class ProjectIdOption extends ConfigOption {
         );
 }
 
-class NameOption extends ConfigOption {
+class NameOption extends StringOption {
   const NameOption({
     required String super.helpText,
     required int super.argPos,
@@ -61,7 +61,7 @@ class NameOption extends ConfigOption {
         );
 }
 
-class ValueOption extends ConfigOption {
+class ValueOption extends StringOption {
   const ValueOption({
     required final String helpText,
     required final int argPos,

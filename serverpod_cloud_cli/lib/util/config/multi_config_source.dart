@@ -25,9 +25,9 @@ import 'configuration.dart';
 /// - If the regex has one or more capturing groups:\
 ///   The value key is the string captured by the first group.
 /// {@endtemplate}
-class MultiDomainConfigBroker<T extends OptionDefinition>
-    implements ConfigurationBroker<T> {
-  final Map<Pattern, ConfigSourceProvider<T>> _configSourceProviders;
+class MultiDomainConfigBroker<O extends OptionDefinition>
+    implements ConfigurationBroker<O> {
+  final Map<Pattern, ConfigSourceProvider<O>> _configSourceProviders;
 
   /// Creates a [MultiDomainConfigBroker] with the given
   /// configuration source providers, each identified by matching the
@@ -40,7 +40,7 @@ class MultiDomainConfigBroker<T extends OptionDefinition>
   ///
   /// {@macro multi_domain_config_broker.regex}
   MultiDomainConfigBroker.regex(
-    final Map<String, ConfigSourceProvider<T>> regexDomains,
+    final Map<String, ConfigSourceProvider<O>> regexDomains,
   ) : this._({
           for (final entry in regexDomains.entries)
             RegExp(entry.key): entry.value,
@@ -55,16 +55,16 @@ class MultiDomainConfigBroker<T extends OptionDefinition>
   /// The domain prefixes must not contain colons, and it is recommended
   /// to only use lowercase letters, numbers, and underscores.
   MultiDomainConfigBroker.prefix(
-    final Map<String, ConfigSourceProvider<T>> prefixDomains,
+    final Map<String, ConfigSourceProvider<O>> prefixDomains,
   ) : this._({
           for (final entry in prefixDomains.entries)
             '${entry.key}:': entry.value,
         });
 
   @override
-  String? valueOrNull(
+  Object? valueOrNull(
     final String qualifiedKey,
-    final Configuration<T> cfg,
+    final Configuration<O> cfg,
   ) {
     final matchingProvider = _configSourceProviders.entries
         .map(

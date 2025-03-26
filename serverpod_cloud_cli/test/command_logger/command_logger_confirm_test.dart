@@ -1,9 +1,6 @@
-import 'package:args/args.dart';
 import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
-import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart'
-    show GlobalConfiguration, GlobalOption;
-import 'package:serverpod_cloud_cli/util/config/configuration.dart';
+import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:test/test.dart';
 
 import '../../test_utils/test_command_logger.dart';
@@ -280,11 +277,8 @@ void main() {
       'Given empty standard out '
       'when calling confirm with skip-confirmation option set '
       'then should immediately return true', () async {
-    final parser = ArgParser();
-    GlobalOption.values.prepareForParsing(parser);
-    final argResults = parser.parse(['--skip-confirmation']);
     commandLogger.configuration = GlobalConfiguration(
-      args: argResults,
+      args: ['--skip-confirmation'],
     );
 
     late final bool result;

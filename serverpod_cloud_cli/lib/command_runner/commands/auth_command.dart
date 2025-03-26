@@ -5,7 +5,7 @@ import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_cloud_cli/util/browser_launcher.dart';
-import 'package:serverpod_cloud_cli/util/config/configuration.dart';
+import 'package:serverpod_cloud_cli/util/config/config.dart';
 import 'package:serverpod_cloud_cli/util/listener_server.dart';
 
 import 'categories.dart';
@@ -26,37 +26,35 @@ class CloudAuthCommand extends CloudCliCommand {
   }
 }
 
-enum LoginCommandOption implements OptionDefinition {
+enum LoginCommandOption<V> implements OptionDefinition<V> {
   timeoutOpt(
-    ConfigOption(
+    DurationOption(
       argName: 'timeout',
       argAbbrev: 't',
-      helpText:
-          'The time in seconds to wait for the authentication to complete.',
-      defaultsTo: '300',
+      helpText: 'The time to wait for the authentication to complete.',
+      defaultsTo: Duration(seconds: 300),
+      min: Duration.zero,
     ),
   ),
   persistentOpt(
-    ConfigOption(
+    FlagOption(
       argName: 'persistent',
       helpText: 'Store the authentication credentials.',
-      isFlag: true,
-      defaultsTo: 'true',
+      defaultsTo: true,
       negatable: true,
     ),
   ),
   browserOpt(
-    ConfigOption(
+    FlagOption(
       argName: 'browser',
       helpText: 'Allow CLI to open browser for logging in.',
-      isFlag: true,
-      defaultsTo: 'true',
+      defaultsTo: true,
       negatable: true,
     ),
   ),
   // Developer options and flags
   signinPathOpt(
-    ConfigOption(
+    StringOption(
       argName: 'sign-in-path',
       helpText: 'The path to the sign-in endpoint on the server.',
       hide: true,
@@ -67,7 +65,7 @@ enum LoginCommandOption implements OptionDefinition {
   const LoginCommandOption(this.option);
 
   @override
-  final ConfigOption option;
+  final ConfigOptionBase<V> option;
 }
 
 class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
@@ -86,11 +84,10 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
   @override
   Future<void> runWithConfig(
       final Configuration<LoginCommandOption> commandConfig) async {
-    final timeLimit = Duration(
-        seconds: int.parse(commandConfig.value(LoginCommandOption.timeoutOpt)));
+    final timeLimit = commandConfig.value(LoginCommandOption.timeoutOpt);
     final signInPath = commandConfig.value(LoginCommandOption.signinPathOpt);
-    final persistent = commandConfig.flag(LoginCommandOption.persistentOpt);
-    final openBrowser = commandConfig.flag(LoginCommandOption.browserOpt);
+    final persistent = commandConfig.value(LoginCommandOption.persistentOpt);
+    final openBrowser = commandConfig.value(LoginCommandOption.browserOpt);
 
     final localStoragePath = globalConfiguration.scloudDir;
     final serverAddress = globalConfiguration.consoleServer;

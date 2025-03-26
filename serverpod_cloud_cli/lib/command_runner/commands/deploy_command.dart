@@ -1,40 +1,38 @@
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
-import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/commands/deploy/deploy.dart';
-import 'package:serverpod_cloud_cli/util/config/configuration.dart';
+import 'package:serverpod_cloud_cli/util/config/config.dart';
 
 import 'categories.dart';
 
-enum DeployCommandOption implements OptionDefinition {
+enum DeployCommandOption<V> implements OptionDefinition<V> {
   projectId(
     ProjectIdOption(
       asFirstArg: true,
     ),
   ),
   concurrency(
-    ConfigOption(
+    IntOption(
       argName: 'concurrency',
       argAbbrev: 'c',
       helpText:
           'Number of concurrent files processed when zipping the project.',
-      defaultsTo: '5',
-      valueHelp: '5',
+      defaultsTo: 5,
+      min: 1,
     ),
   ),
   dryRun(
-    ConfigOption(
+    FlagOption(
       argName: 'dry-run',
       helpText: 'Do not actually deploy, just print the deployment steps.',
-      isFlag: true,
-      defaultsTo: 'false',
+      defaultsTo: false,
     ),
   );
 
   const DeployCommandOption(this.option);
 
   @override
-  final ConfigOption option;
+  final ConfigOptionBase<V> option;
 }
 
 class CloudDeployCommand extends CloudCliCommand<DeployCommandOption> {
@@ -54,15 +52,8 @@ class CloudDeployCommand extends CloudCliCommand<DeployCommandOption> {
   Future<void> runWithConfig(
       final Configuration<DeployCommandOption> commandConfig) async {
     final projectId = commandConfig.value(DeployCommandOption.projectId);
-    final concurrency =
-        int.tryParse(commandConfig.value(DeployCommandOption.concurrency));
-    final dryRun = commandConfig.flag(DeployCommandOption.dryRun);
-
-    if (concurrency == null) {
-      logger.error(
-          'Failed to parse --concurrency option, value must be an integer.');
-      throw ErrorExitException();
-    }
+    final concurrency = commandConfig.value(DeployCommandOption.concurrency);
+    final dryRun = commandConfig.value(DeployCommandOption.dryRun);
 
     final projectDirectory = runner.verifiedProjectDirectory();
 

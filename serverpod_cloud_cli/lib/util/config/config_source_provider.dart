@@ -6,18 +6,18 @@ import 'configuration_parser.dart';
 /// based on the current configuration.
 ///
 /// It is lazily invoked and should cache the [ConfigurationSource].
-abstract class ConfigSourceProvider<T extends OptionDefinition> {
+abstract class ConfigSourceProvider<O extends OptionDefinition> {
   /// Get the [ConfigurationSource] given the current configuration.
   /// This is lazily invoked and should cache the [ConfigurationSource]
   /// for subsequent invocations.
-  ConfigurationSource getConfigSource(final Configuration<T> cfg);
+  ConfigurationSource getConfigSource(final Configuration<O> cfg);
 }
 
 /// A [ConfigSourceProvider] that uses the value of an option
 /// as data source.
-class OptionContentConfigProvider<T extends OptionDefinition>
-    extends ConfigSourceProvider<T> {
-  final T contentOption;
+class OptionContentConfigProvider<O extends OptionDefinition<String>>
+    extends ConfigSourceProvider<O> {
+  final O contentOption;
   final ConfigEncoding format;
   ConfigurationSource? _configProvider;
 
@@ -27,10 +27,10 @@ class OptionContentConfigProvider<T extends OptionDefinition>
   });
 
   @override
-  ConfigurationSource getConfigSource(final Configuration<T> cfg) {
+  ConfigurationSource getConfigSource(final Configuration<O> cfg) {
     var provider = _configProvider;
     if (provider == null) {
-      final optionValue = cfg.valueOrNull(contentOption) ?? '';
+      final optionValue = cfg.optionalValue(contentOption) ?? '';
       provider = ConfigurationParser.fromString(
         optionValue,
         format: format,

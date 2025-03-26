@@ -2,7 +2,7 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart';
-import 'package:serverpod_cloud_cli/util/config/configuration.dart';
+import 'package:serverpod_cloud_cli/util/config/config.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 
@@ -51,7 +51,7 @@ enum CreateEnvCommandConfig implements OptionDefinition {
   const CreateEnvCommandConfig(this.option);
 
   @override
-  final ConfigOption option;
+  final StringOption option;
 }
 
 enum UpdateEnvCommandConfig implements OptionDefinition {
@@ -62,7 +62,7 @@ enum UpdateEnvCommandConfig implements OptionDefinition {
   const UpdateEnvCommandConfig(this.option);
 
   @override
-  final ConfigOption option;
+  final StringOption option;
 }
 
 enum DeleteEnvCommandConfig implements OptionDefinition {
@@ -72,7 +72,7 @@ enum DeleteEnvCommandConfig implements OptionDefinition {
   const DeleteEnvCommandConfig(this.option);
 
   @override
-  final ConfigOption option;
+  final StringOption option;
 }
 
 enum ListEnvCommandConfig implements OptionDefinition {
@@ -81,7 +81,7 @@ enum ListEnvCommandConfig implements OptionDefinition {
   const ListEnvCommandConfig(this.option);
 
   @override
-  final ConfigOption option;
+  final StringOption option;
 }
 
 class CloudEnvCreateCommand extends CloudCliCommand<CreateEnvCommandConfig> {

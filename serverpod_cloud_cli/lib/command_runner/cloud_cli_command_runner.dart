@@ -21,9 +21,10 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_pro
 import 'package:serverpod_cloud_cli/command_runner/helpers/cli_version_checker.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
 import 'package:serverpod_cloud_cli/util/capitalize.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
-import 'package:serverpod_cloud_cli/util/config/configuration.dart';
+import 'package:serverpod_cloud_cli/util/config/config.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
 import 'package:serverpod_cloud_cli/util/scloud_version.dart';
@@ -107,7 +108,7 @@ class CloudCliCommandRunner extends BetterCommandRunner {
   @override
   Future<void> runCommand(final ArgResults topLevelResults) async {
     _globalConfiguration = GlobalConfiguration(
-      args: topLevelResults,
+      argResults: topLevelResults,
       env: Platform.environment,
     );
 
@@ -274,18 +275,17 @@ String _getDefaultStoragePath() {
 }
 
 /// The global configuration options for the Serverpod Cloud CLI.
-enum GlobalOption implements OptionDefinition {
+enum GlobalOption<V> implements OptionDefinition<V> {
   version(
-    ConfigOption(
+    FlagOption(
       argName: 'version',
       helpText: VersionCommand.usageDescription,
-      isFlag: true,
       negatable: false,
-      defaultsTo: 'false',
+      defaultsTo: false,
     ),
   ),
   scloudDir(
-    ConfigOption(
+    StringOption(
       argName: 'scloud-dir',
       envName: 'SERVERPOD_CLOUD_DIR',
       helpText:
@@ -295,7 +295,7 @@ enum GlobalOption implements OptionDefinition {
   ),
   // Developer options and flags
   apiServer(
-    ConfigOption(
+    StringOption(
       argName: 'api-url',
       envName: 'SERVERPOD_CLOUD_API_SERVER_URL',
       helpText: 'The URL to the Serverpod cloud api server.',
@@ -304,7 +304,7 @@ enum GlobalOption implements OptionDefinition {
     ),
   ),
   consoleServer(
-    ConfigOption(
+    StringOption(
       argName: 'console-url',
       envName: 'SERVERPOD_CLOUD_CONSOLE_SERVER_URL',
       helpText: 'The URL to the Serverpod cloud console server.',
@@ -313,27 +313,27 @@ enum GlobalOption implements OptionDefinition {
     ),
   ),
   skipConfirmation(
-    ConfigOption(
+    FlagOption(
       argName: 'skip-confirmation',
       helpText:
           'Should be used in CI environment to bypass confirmation prompts.',
       hide: true,
-      isFlag: true,
-      defaultsTo: 'false',
+      defaultsTo: false,
     ),
   ),
 
   projectDir(
-    ConfigOption(
+    StringOption(
       argName: 'project-dir',
       argAbbrev: 'd',
       envName: 'SERVERPOD_CLOUD_PROJECT_DIR',
       helpText: 'The path to the Serverpod Cloud project server directory.',
       // (no general default value since significant whether explicitly specified)
+      customValidator: _validateDirExists,
     ),
   ),
   projectConfigFile(
-    ConfigOption(
+    StringOption(
       argName: 'project-config-file',
       envName: 'SERVERPOD_CLOUD_PROJECT_CONFIG_FILE',
       fromCustom: _projectConfigFileFinder,
@@ -341,7 +341,7 @@ enum GlobalOption implements OptionDefinition {
     ),
   ),
   projectConfigContent(
-    ConfigOption(
+    StringOption(
       argName: 'project-config-content',
       envName: 'SERVERPOD_CLOUD_PROJECT_CONFIG_CONTENT',
       helpText: 'Override the scloud project configuration with a YAML string.',
@@ -351,7 +351,7 @@ enum GlobalOption implements OptionDefinition {
   const GlobalOption(this.option);
 
   @override
-  final ConfigOption option;
+  final ConfigOptionBase<V> option;
 }
 
 String? _projectConfigFileFinder(final Configuration cfg) {
@@ -360,7 +360,7 @@ String? _projectConfigFileFinder(final Configuration cfg) {
     fileBaseName: ProjectConfigFileConstants.fileBaseName,
     supportedExtensions: ['yaml', 'yml', 'json'],
     startingDirectory: (final cfg) {
-      final specifiedDir = cfg.valueOrNull(GlobalOption.projectDir);
+      final specifiedDir = cfg.optionalValue(GlobalOption.projectDir);
       if (specifiedDir != null && !Directory(specifiedDir).existsSync()) {
         return null;
       }
@@ -370,14 +370,22 @@ String? _projectConfigFileFinder(final Configuration cfg) {
   return finder(cfg);
 }
 
+void _validateDirExists(final String value) {
+  if (!Directory(value).existsSync()) {
+    throw CloudCliUsageException(
+        'The specified directory `$value` does not exist');
+  }
+}
+
 /// The current global configuration values for the Serverpod Cloud CLI.
 class GlobalConfiguration extends Configuration {
   GlobalConfiguration({
+    super.argResults,
     super.args,
     super.env,
-  }) : super.fromEnvAndArgs(options: GlobalOption.values);
+  }) : super.resolve(options: GlobalOption.values);
 
-  bool get version => flag(GlobalOption.version);
+  bool get version => value(GlobalOption.version);
 
   String get scloudDir => value(GlobalOption.scloudDir);
 
@@ -385,12 +393,13 @@ class GlobalConfiguration extends Configuration {
 
   String get consoleServer => value(GlobalOption.consoleServer);
 
-  bool get skipConfirmation => flag(GlobalOption.skipConfirmation);
+  bool get skipConfirmation => value(GlobalOption.skipConfirmation);
 
-  String? get projectDir => valueOrNull(GlobalOption.projectDir);
+  String? get projectDir => optionalValue(GlobalOption.projectDir);
 
-  String? get projectConfigFile => valueOrNull(GlobalOption.projectConfigFile);
+  String? get projectConfigFile =>
+      optionalValue(GlobalOption.projectConfigFile);
 
   String? get projectConfigContent =>
-      valueOrNull(GlobalOption.projectConfigContent);
+      optionalValue(GlobalOption.projectConfigContent);
 }

@@ -62,8 +62,7 @@ class _JyConfigSource implements ConfigurationSource {
   _JyConfigSource(this._jyDocument);
 
   @override
-  String? valueOrNull(final String pointerKey) {
-    final value = _jyDocument.valueAtPointer(pointerKey);
-    return value?.toString();
+  Object? valueOrNull(final String pointerKey) {
+    return _jyDocument.valueAtPointer(pointerKey);
   }
 }
