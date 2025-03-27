@@ -129,7 +129,7 @@ class CloudProjectListCommand extends CloudCliCommand {
   }
 }
 
-enum ProjectLinkCommandOption implements OptionDefinition {
+enum ProjectLinkCommandOption<V> implements OptionDefinition<V> {
   projectId(
     ProjectIdOption(),
   );
@@ -137,7 +137,7 @@ enum ProjectLinkCommandOption implements OptionDefinition {
   const ProjectLinkCommandOption(this.option);
 
   @override
-  final StringOption option;
+  final ConfigOptionBase<V> option;
 }
 
 class CloudProjectLinkCommand

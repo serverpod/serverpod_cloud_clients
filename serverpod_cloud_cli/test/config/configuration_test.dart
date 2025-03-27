@@ -966,6 +966,144 @@ void main() async {
       );
     });
   });
+
+  group('Given a Configuration with an options enum', () {
+    final Configuration<_TestOption> config = Configuration.fromValues(
+      values: <_TestOption, Object>{
+        _TestOption.stringOpt: '1',
+        _TestOption.intOpt: 2,
+      },
+    );
+
+    test(
+        'when getting the string option value via the enum name '
+        'then it succeeds', () async {
+      final value = config.findValueOf(enumName: _TestOption.stringOpt.name);
+      expect(value, equals('1'));
+    });
+
+    test(
+        'when getting the string option value via the arg name '
+        'then it succeeds', () async {
+      final value = config.findValueOf(argName: 'string');
+      expect(value, equals('1'));
+    });
+
+    test(
+        'when getting the string option value via the arg pos  '
+        'then it succeeds', () async {
+      final value = config.findValueOf(argPos: 0);
+      expect(value, equals('1'));
+    });
+
+    test(
+        'when getting the string option value via the env name '
+        'then it succeeds', () async {
+      final value = config.findValueOf(envName: 'STRING');
+      expect(value, equals('1'));
+    });
+
+    test(
+        'when getting the string option value via the config key '
+        'then it succeeds', () async {
+      final value = config.findValueOf(configKey: 'config:/string');
+      expect(value, equals('1'));
+    });
+
+    test(
+        'when getting the int option value via the enum name '
+        'then it succeeds', () async {
+      final value = config.findValueOf(enumName: _TestOption.intOpt.name);
+      expect(value, equals(2));
+    });
+
+    test(
+        'when getting the int option value via the arg name '
+        'then it succeeds', () async {
+      final value = config.findValueOf(argName: 'int');
+      expect(value, equals(2));
+    });
+
+    test(
+        'when getting the int option value via the arg pos '
+        'then it succeeds', () async {
+      final value = config.findValueOf(argPos: 1);
+      expect(value, equals(2));
+    });
+
+    test(
+        'when getting the int option value via the env name '
+        'then it succeeds', () async {
+      final value = config.findValueOf(envName: 'INT');
+      expect(value, equals(2));
+    });
+
+    test(
+        'when getting the int option value via the config key '
+        'then it succeeds', () async {
+      final value = config.findValueOf(configKey: 'config:/int');
+      expect(value, equals(2));
+    });
+
+    test(
+        'when getting an unknown option value via the enum name '
+        'then it returns null', () async {
+      final value = config.findValueOf(enumName: 'unknown');
+      expect(value, isNull);
+    });
+
+    test(
+        'when getting an unknown option value via the arg name '
+        'then it succeeds', () async {
+      final value = config.findValueOf(argName: 'unknown');
+      expect(value, isNull);
+    });
+
+    test(
+        'when getting an unknown option value via the arg pos '
+        'then it succeeds', () async {
+      final value = config.findValueOf(argPos: 2);
+      expect(value, isNull);
+    });
+
+    test(
+        'when getting an unknown option value via the env name '
+        'then it succeeds', () async {
+      final value = config.findValueOf(envName: 'UNKNOWN');
+      expect(value, isNull);
+    });
+
+    test(
+        'when getting an unknown option value via the config key '
+        'then it succeeds', () async {
+      final value = config.findValueOf(configKey: 'config:/unknown');
+      expect(value, isNull);
+    });
+  });
+}
+
+enum _TestOption<V> implements OptionDefinition<V> {
+  stringOpt(
+    StringOption(
+      argName: 'string',
+      argPos: 0,
+      envName: 'STRING',
+      configKey: 'config:/string',
+    ),
+  ),
+  intOpt(
+    IntOption(
+      argName: 'int',
+      argPos: 1,
+      envName: 'INT',
+      configKey: 'config:/int',
+    ),
+  );
+
+  const _TestOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
 }
 
 class _TestConfigBroker implements ConfigurationBroker {

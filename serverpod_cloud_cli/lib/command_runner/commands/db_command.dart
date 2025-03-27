@@ -32,13 +32,13 @@ abstract final class _CommonDbOptions {
   );
 }
 
-enum DbConnectionDetailsOption implements OptionDefinition {
+enum DbConnectionDetailsOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption());
 
   const DbConnectionDetailsOption(this.option);
 
   @override
-  final StringOption option;
+  final ConfigOptionBase<V> option;
 }
 
 class CloudDbConnectionDetailsCommand
@@ -91,14 +91,14 @@ This psql command can be used to connect to the database (it will prompt for the
   }
 }
 
-enum DbCreateSuperuserOption implements OptionDefinition {
+enum DbCreateSuperuserOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption()),
   username(_CommonDbOptions.dbUsername);
 
   const DbCreateSuperuserOption(this.option);
 
   @override
-  final StringOption option;
+  final ConfigOptionBase<V> option;
 }
 
 class CloudDbCreateSuperuserCommand
@@ -144,14 +144,14 @@ $password''',
   }
 }
 
-enum DbResetPasswordOption implements OptionDefinition {
+enum DbResetPasswordOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption()),
   username(_CommonDbOptions.dbUsername);
 
   const DbResetPasswordOption(this.option);
 
   @override
-  final StringOption option;
+  final ConfigOptionBase<V> option;
 }
 
 class CloudDbResetPasswordCommand

@@ -38,7 +38,7 @@ abstract final class SecretCommandConfig {
   );
 }
 
-enum CreateSecretCommandConfig implements OptionDefinition {
+enum CreateSecretCommandConfig<V> implements OptionDefinition<V> {
   projectId(SecretCommandConfig.projectId),
   name(SecretCommandConfig.name),
   value(SecretCommandConfig.value);
@@ -46,7 +46,7 @@ enum CreateSecretCommandConfig implements OptionDefinition {
   const CreateSecretCommandConfig(this.option);
 
   @override
-  final StringOption option;
+  final ConfigOptionBase<V> option;
 }
 
 class CloudCreateSecretCommand
@@ -88,13 +88,13 @@ class CloudCreateSecretCommand
   }
 }
 
-enum ListSecretsCommandConfig implements OptionDefinition {
+enum ListSecretsCommandConfig<V> implements OptionDefinition<V> {
   projectId(SecretCommandConfig.projectId);
 
   const ListSecretsCommandConfig(this.option);
 
   @override
-  final StringOption option;
+  final ConfigOptionBase<V> option;
 }
 
 class CloudListSecretsCommand
@@ -143,14 +143,14 @@ class CloudListSecretsCommand
   }
 }
 
-enum DeleteSecretCommandConfig implements OptionDefinition {
+enum DeleteSecretCommandConfig<V> implements OptionDefinition<V> {
   projectId(SecretCommandConfig.projectId),
   name(SecretCommandConfig.name);
 
   const DeleteSecretCommandConfig(this.option);
 
   @override
-  final StringOption option;
+  final ConfigOptionBase<V> option;
 }
 
 class CloudDeleteSecretCommand

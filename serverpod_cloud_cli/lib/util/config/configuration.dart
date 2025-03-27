@@ -140,7 +140,16 @@ class ConfigOptionBase<V> implements OptionDefinition<V> {
     );
   }
 
-  void _validateDefinition() {
+  /// Validates the configuration option definition.
+  ///
+  /// This method is called by [prepareOptionsForParsing] to validate
+  /// the configuration option definition.
+  /// Throws an error if the definition is invalid.
+  ///
+  /// Subclasses may override this method to perform specific validations.
+  /// If they do, they must also call the super implementation.
+  @mustCallSuper
+  void validateDefinition() {
     if (argName == null && argAbbrev != null) {
       throw InvalidOptionConfigurationError(this,
           "An argument option can't have an abbreviation but not a full name");
@@ -512,7 +521,7 @@ void prepareOptionsForParsing(
   final argPosOpts = <int, OptionDefinition>{};
   final envNameOpts = <String, OptionDefinition>{};
   for (final opt in options) {
-    opt.option._validateDefinition();
+    opt.option.validateDefinition();
     final argName = opt.option.argName;
     if (argName != null) {
       if (argNameOpts.containsKey(opt.option.argName)) {
@@ -654,6 +663,28 @@ class Configuration<O extends OptionDefinition> {
           (envName != null && o.option.envName == envName) ||
           (configKey != null && o.option.configKey == configKey);
     });
+  }
+
+  /// Returns the value of a configuration option
+  /// identified by name, position, or key.
+  ///
+  /// Returns `null` if the option is not found or is not set.
+  V? findValueOf<V>({
+    final String? enumName,
+    final String? argName,
+    final int? argPos,
+    final String? envName,
+    final String? configKey,
+  }) {
+    final option = findOption(
+      enumName: enumName,
+      argName: argName,
+      argPos: argPos,
+      envName: envName,
+      configKey: configKey,
+    );
+    if (option == null) return null;
+    return optionalValue<V>(option as OptionDefinition<V>);
   }
 
   /// Returns the value of a configuration option

@@ -43,7 +43,7 @@ abstract final class EnvCommandConfig {
   );
 }
 
-enum CreateEnvCommandConfig implements OptionDefinition {
+enum CreateEnvCommandConfig<V> implements OptionDefinition<V> {
   projectId(EnvCommandConfig.projectId),
   variableName(EnvCommandConfig.variableName),
   variableValue(EnvCommandConfig.variableValue);
@@ -51,10 +51,10 @@ enum CreateEnvCommandConfig implements OptionDefinition {
   const CreateEnvCommandConfig(this.option);
 
   @override
-  final StringOption option;
+  final ConfigOptionBase<V> option;
 }
 
-enum UpdateEnvCommandConfig implements OptionDefinition {
+enum UpdateEnvCommandConfig<V> implements OptionDefinition<V> {
   projectId(EnvCommandConfig.projectId),
   variableName(EnvCommandConfig.variableName),
   variableValue(EnvCommandConfig.variableValue);
@@ -62,26 +62,26 @@ enum UpdateEnvCommandConfig implements OptionDefinition {
   const UpdateEnvCommandConfig(this.option);
 
   @override
-  final StringOption option;
+  final ConfigOptionBase<V> option;
 }
 
-enum DeleteEnvCommandConfig implements OptionDefinition {
+enum DeleteEnvCommandConfig<V> implements OptionDefinition<V> {
   projectId(EnvCommandConfig.projectId),
   variableName(EnvCommandConfig.variableName);
 
   const DeleteEnvCommandConfig(this.option);
 
   @override
-  final StringOption option;
+  final ConfigOptionBase<V> option;
 }
 
-enum ListEnvCommandConfig implements OptionDefinition {
+enum ListEnvCommandConfig<V> implements OptionDefinition<V> {
   projectId(EnvCommandConfig.projectId);
 
   const ListEnvCommandConfig(this.option);
 
   @override
-  final StringOption option;
+  final ConfigOptionBase<V> option;
 }
 
 class CloudEnvCreateCommand extends CloudCliCommand<CreateEnvCommandConfig> {
