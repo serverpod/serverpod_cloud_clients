@@ -1,3 +1,4 @@
+import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
@@ -179,12 +180,30 @@ class CloudDeployStatusCommand extends CloudCliCommand<DeployStatusOption> {
   ) async {
     deploymentArg ??= '0';
     final attemptNumber = int.tryParse(deploymentArg);
-    return attemptNumber != null
-        ? await StatusFeature.getDeployAttemptId(
-            runner.serviceProvider.cloudApiClient,
-            cloudCapsuleId: projectId,
-            attemptNumber: attemptNumber,
-          )
-        : deploymentArg;
+    if (attemptNumber == null) {
+      return deploymentArg;
+    }
+    try {
+      return await StatusFeature.getDeployAttemptId(
+        runner.serviceProvider.cloudApiClient,
+        cloudCapsuleId: projectId,
+        attemptNumber: attemptNumber,
+      );
+    } on NotFoundException catch (_) {
+      if (deploymentArg == '0') {
+        logger.error('No deployment status found.');
+        logger.terminalCommand(
+          message: 'Run this command to deploy:',
+          'scloud deploy',
+        );
+        throw ErrorExitException();
+      }
+      logger.error('No such deployment status found.');
+      logger.terminalCommand(
+        message: 'Run this command to see recent deployments:',
+        'scloud status deploy --list',
+      );
+      throw ErrorExitException();
+    }
   }
 }

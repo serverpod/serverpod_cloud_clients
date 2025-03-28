@@ -23,6 +23,14 @@ abstract class StatusCommands {
       limit: limit,
     );
 
+    if (statuses.isEmpty) {
+      logger.terminalCommand(
+        message: 'No deployment status found. Run this command to deploy:',
+        'scloud deploy',
+      );
+      return;
+    }
+
     final table = DeployStatusTable(inUtc: inUtc)..addRows(statuses);
     table.writeLines(logger.line);
   }

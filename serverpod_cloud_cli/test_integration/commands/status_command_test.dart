@@ -282,7 +282,8 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
         });
       });
 
-      group('with incorrect args to get a deploy status', () {
+      group('with args to get most recent deploy status which does not exist',
+          () {
         setUpAll(() async {
           when(() => client.status.getDeployAttemptStatus(
                 cloudCapsuleId: any(named: 'cloudCapsuleId'),
@@ -300,7 +301,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
         });
 
         @isTestGroup
-        void testIncorrectGetStatusCommand(
+        void testGetStatusWithMissingDeployCommand(
           final String description,
           final List<String> args,
         ) {
@@ -324,25 +325,115 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
 
               expect(logger.errorCalls, isNotEmpty);
               expect(
-                logger.errorCalls.first,
-                equalsErrorCall(
-                  message: 'The requested resource did not exist.',
-                  hint: 'not found',
+                logger.errorCalls.first.message,
+                'No deployment status found.',
+              );
+            });
+
+            test('then outputs terminal command hint', () async {
+              await commandResult.onError((final e, final s) {});
+
+              expect(logger.terminalCommandCalls, isNotEmpty);
+              expect(
+                logger.terminalCommandCalls.first,
+                equalsTerminalCommandCall(
+                  message: 'Run this command to deploy:',
+                  command: 'scloud deploy',
                 ),
               );
             });
           });
         }
 
-        testIncorrectGetStatusCommand(
-            'for named proj opt and non-existing build index',
-            ['--project', projectId, '2']);
-        testIncorrectGetStatusCommand(
-            'for non-existing project without build index',
-            ['--project', 'non-existing']);
-        testIncorrectGetStatusCommand(
-            'for non-existing project and build index',
-            ['--project', 'non-existing', '0']);
+        testGetStatusWithMissingDeployCommand(
+          'for named proj opt without deploy index',
+          ['--project', projectId],
+        );
+        testGetStatusWithMissingDeployCommand(
+          'for named proj opt with deploy index 0',
+          ['--project', projectId, '0'],
+        );
+        testGetStatusWithMissingDeployCommand(
+          'for non-existing project without deploy index',
+          ['--project', 'non-existing'],
+        );
+        testGetStatusWithMissingDeployCommand(
+          'for non-existing project with deploy index 0',
+          ['--project', 'non-existing', '0'],
+        );
+      });
+
+      group('with args to get a specific deploy status which does not exist',
+          () {
+        setUpAll(() async {
+          when(() => client.status.getDeployAttemptStatus(
+                cloudCapsuleId: any(named: 'cloudCapsuleId'),
+                attemptId: any(named: 'attemptId'),
+              )).thenThrow(NotFoundException(message: 'not found'));
+
+          when(() => client.status.getDeployAttemptId(
+                cloudCapsuleId: any(named: 'cloudCapsuleId'),
+                attemptNumber: any(named: 'attemptNumber'),
+              )).thenThrow(NotFoundException(message: 'not found'));
+        });
+
+        tearDownAll(() async {
+          reset(client.status);
+        });
+
+        @isTestGroup
+        void testGetSpecificMissingStatusCommand(
+          final String description,
+          final List<String> args,
+        ) {
+          group('$description with args="${args.join(' ')}"', () {
+            late Future commandResult;
+            setUp(() async {
+              commandResult = cli.run([
+                'status',
+                'deploy',
+                ...args,
+              ]);
+            });
+
+            test('then throws ExitErrorException', () async {
+              await expectLater(
+                  commandResult, throwsA(isA<ErrorExitException>()));
+            });
+
+            test('then outputs error message', () async {
+              await commandResult.onError((final e, final s) {});
+
+              expect(logger.errorCalls, isNotEmpty);
+              expect(
+                logger.errorCalls.first.message,
+                'No such deployment status found.',
+              );
+            });
+
+            test('then outputs terminal command hint', () async {
+              await commandResult.onError((final e, final s) {});
+
+              expect(logger.terminalCommandCalls, isNotEmpty);
+              expect(
+                logger.terminalCommandCalls.first,
+                equalsTerminalCommandCall(
+                  message: 'Run this command to see recent deployments:',
+                  command: 'scloud status deploy --list',
+                ),
+              );
+            });
+          });
+        }
+
+        testGetSpecificMissingStatusCommand(
+          'for named proj opt with non-existing deploy index',
+          ['--project', projectId, '2'],
+        );
+        testGetSpecificMissingStatusCommand(
+          'for non-existing project with non-existing deploy index',
+          ['--project', 'non-existing', '2'],
+        );
       });
     });
 
