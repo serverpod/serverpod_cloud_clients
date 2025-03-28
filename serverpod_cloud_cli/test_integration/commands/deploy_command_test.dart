@@ -274,20 +274,22 @@ dependencies:
               (final _) async => BucketUploadDescription.uploadDescription);
 
           const symlinkedDirectoryName = 'symlinked_directory';
-          DirectoryFactory.serverpodServerDir(withSubDirectories: [
-            DirectoryFactory(
-              withDirectoryName: symlinkedDirectoryName,
-              withFiles: [
-                FileFactory(withName: 'file1.txt', withContents: 'file1'),
-              ],
-              withSymLinks: [
-                SymLinkFactory(
-                  withName: 'symlinked_directory_link',
-                  withTarget: symlinkedDirectoryName,
-                ),
-              ],
-            ),
-          ]).construct(testProjectDir);
+          DirectoryFactory(
+            withSubDirectories: [
+              DirectoryFactory(
+                withDirectoryName: symlinkedDirectoryName,
+                withFiles: [
+                  FileFactory(withName: 'file1.txt', withContents: 'file1'),
+                ],
+              ),
+            ],
+            withSymLinks: [
+              SymLinkFactory(
+                withName: 'symlinked_directory_link',
+                withTarget: symlinkedDirectoryName,
+              ),
+            ],
+          ).construct(testProjectDir);
         });
 
         group('when deploying through CLI', () {
@@ -304,8 +306,22 @@ dependencies:
             ]);
           });
 
-          test('then the upload succeeds.', () async {
-            await expectLater(cliCommandFuture, completes);
+          test('then ExitErrorException is thrown.', () async {
+            await expectLater(
+              cliCommandFuture,
+              throwsA(isA<ErrorExitException>()),
+            );
+          });
+
+          test('then directory symlinks are unsupported message is logged.',
+              () async {
+            await cliCommandFuture.catchError((final _) {});
+            expect(logger.errorCalls, isNotEmpty);
+            expect(
+              logger.errorCalls.first.message,
+              startsWith(
+                  'Serverpod Cloud does not support directory symlinks:'),
+            );
           });
         });
       });
@@ -341,8 +357,21 @@ dependencies:
             ]);
           });
 
-          test('then the upload succeeds.', () async {
-            await expectLater(cliCommandFuture, completes);
+          test('then ExitErrorException is thrown.', () async {
+            await expectLater(
+              cliCommandFuture,
+              throwsA(isA<ErrorExitException>()),
+            );
+          });
+
+          test('then non-resolving symlinks message is logged.', () async {
+            await cliCommandFuture.catchError((final _) {});
+            expect(logger.errorCalls, isNotEmpty);
+            expect(
+              logger.errorCalls.first.message,
+              startsWith(
+                  'Serverpod Cloud does not support non-resolving symlinks:'),
+            );
           });
         });
       });

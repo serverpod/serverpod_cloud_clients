@@ -58,7 +58,7 @@ void main() {
   });
 
   test(
-      'Given a project containing a symlink to a directory when zipping then the directory symlink is included in the zip file.',
+      'Given a project containing a symlink to a directory when zipping then a directory symlink exception is thrown.',
       () async {
     const symlinkedDirectoryName = 'symlinked_directory';
     final projectDirectory = DirectoryFactory(
@@ -78,25 +78,17 @@ void main() {
       ],
     ).construct(testProjectPath);
 
-    final zippedProject = await ProjectZipper.zipProject(
-      projectDirectory: projectDirectory,
-      logger: commandLogger,
-    );
-
-    final archive = ZipDecoder().decodeBytes(zippedProject);
-    final archiveNames = archive.map((final file) => file.name).toList();
-
-    expect(
-      archiveNames,
-      containsAll([
-        'symlinked_directory_link/file1.txt',
-        'symlinked_directory/file1.txt',
-      ]),
+    await expectLater(
+      ProjectZipper.zipProject(
+        projectDirectory: projectDirectory,
+        logger: commandLogger,
+      ),
+      throwsA(isA<DirectorySymLinkException>()),
     );
   });
 
   test(
-      'Given a project containing non-resolving symlink file when zipping the project then the non resolving symlink is ignored',
+      'Given a project containing non-resolving symlink file when zipping the project then a non resolving symlink exception is thrown.',
       () async {
     final projectDirectory = DirectoryFactory(
       withFiles: [
@@ -110,15 +102,13 @@ void main() {
       ],
     ).construct(testProjectPath);
 
-    final zippedProject = await ProjectZipper.zipProject(
-      projectDirectory: projectDirectory,
-      logger: commandLogger,
+    await expectLater(
+      ProjectZipper.zipProject(
+        projectDirectory: projectDirectory,
+        logger: commandLogger,
+      ),
+      throwsA(isA<NonResolvingSymlinkException>()),
     );
-
-    final archive = ZipDecoder().decodeBytes(zippedProject);
-    final archiveNames = archive.map((final file) => file.name).toList();
-
-    expect(archiveNames, containsAll(['file1.txt']));
   });
 
   test(

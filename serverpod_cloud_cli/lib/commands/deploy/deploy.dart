@@ -56,6 +56,16 @@ abstract class Deploy {
                   'that `.gitignore` and `.scloudignore` does not filter out all project files.',
             );
             break;
+          case DirectorySymLinkException():
+            logger.error(
+              'Serverpod Cloud does not support directory symlinks: `${e.path}`',
+            );
+            break;
+          case NonResolvingSymlinkException():
+            logger.error(
+              'Serverpod Cloud does not support non-resolving symlinks: `${e.path}` => `${e.target}`',
+            );
+            break;
           case NullZipException():
             logger.error(
               'Unknown error occurred while zipping project, please try again.',
