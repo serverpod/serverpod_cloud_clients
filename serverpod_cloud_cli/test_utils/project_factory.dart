@@ -78,19 +78,29 @@ class DirectoryFactory {
     return directory;
   }
 
-  factory DirectoryFactory.serverpodServerDir() {
-    return DirectoryFactory(withFiles: [
-      FileFactory(
-        withName: 'pubspec.yaml',
-        withContents: '''
+  factory DirectoryFactory.serverpodServerDir({
+    final String? withDirectoryName,
+    final List<DirectoryFactory>? withSubDirectories,
+    final List<FileFactory>? withFiles,
+    final List<SymLinkFactory>? withSymLinks,
+  }) {
+    return DirectoryFactory(
+        withDirectoryName: withDirectoryName,
+        withSubDirectories: withSubDirectories,
+        withSymLinks: withSymLinks,
+        withFiles: [
+          ...?withFiles,
+          FileFactory(
+            withName: 'pubspec.yaml',
+            withContents: '''
 name: my_project_server
 environment:
-  sdk: '>=3.6.0 <3.7.0'
+  sdk: '>=3.6.0 <4.0.0'
 dependencies:
   serverpod: ^2.3.0
 ''',
-      ),
-    ]);
+          ),
+        ]);
   }
 }
 

@@ -58,7 +58,7 @@ void main() {
   });
 
   test(
-      'Given a project containing a symlink to a directory when zipping then directory symlink exception is thrown.',
+      'Given a project containing a symlink to a directory when zipping then the directory symlink is included in the zip file.',
       () async {
     const symlinkedDirectoryName = 'symlinked_directory';
     final projectDirectory = DirectoryFactory(
@@ -78,19 +78,30 @@ void main() {
       ],
     ).construct(testProjectPath);
 
-    await expectLater(
-      ProjectZipper.zipProject(
-        projectDirectory: projectDirectory,
-        logger: commandLogger,
-      ),
-      throwsA(isA<DirectorySymLinkException>()),
+    final zippedProject = await ProjectZipper.zipProject(
+      projectDirectory: projectDirectory,
+      logger: commandLogger,
+    );
+
+    final archive = ZipDecoder().decodeBytes(zippedProject);
+    final archiveNames = archive.map((final file) => file.name).toList();
+
+    expect(
+      archiveNames,
+      containsAll([
+        'symlinked_directory_link/file1.txt',
+        'symlinked_directory/file1.txt',
+      ]),
     );
   });
 
   test(
-      'Given project containing non-resolving symlink file when zipping project then non resolving symlink exception is thrown',
+      'Given a project containing non-resolving symlink file when zipping the project then the non resolving symlink is ignored',
       () async {
     final projectDirectory = DirectoryFactory(
+      withFiles: [
+        FileFactory(withName: 'file1.txt', withContents: 'file1'),
+      ],
       withSymLinks: [
         SymLinkFactory(
           withName: 'non-resolving-symlink',
@@ -99,13 +110,15 @@ void main() {
       ],
     ).construct(testProjectPath);
 
-    await expectLater(
-      ProjectZipper.zipProject(
-        projectDirectory: projectDirectory,
-        logger: commandLogger,
-      ),
-      throwsA(isA<NonResolvingSymlinkException>()),
+    final zippedProject = await ProjectZipper.zipProject(
+      projectDirectory: projectDirectory,
+      logger: commandLogger,
     );
+
+    final archive = ZipDecoder().decodeBytes(zippedProject);
+    final archiveNames = archive.map((final file) => file.name).toList();
+
+    expect(archiveNames, containsAll(['file1.txt']));
   });
 
   test(

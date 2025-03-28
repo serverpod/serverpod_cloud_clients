@@ -11,7 +11,6 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper.dart';
-import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/ignore.dart';
 
 abstract final class ProjectFiles {
@@ -32,16 +31,6 @@ abstract final class ProjectFiles {
         final contents = Directory(_resolve(from: root, path: dir))
             .listSync(recursive: true);
         return contents.map((final entity) {
-          final path = entity.path;
-          if (_linkExists(path)) {
-            final target = Link(path).targetSync();
-            if (_dirExists(path)) {
-              throw DirectorySymLinkException(path);
-            }
-            if (!_fileExists(entity.path)) {
-              throw NonResolvingSymlinkException(path, target);
-            }
-          }
           final relative = p.relative(entity.path, from: root);
           if (Platform.isWindows) {
             return p.posix.joinAll(p.split(relative));
@@ -141,7 +130,6 @@ abstract final class ProjectFiles {
     return p.join(from, path);
   }
 
-  static bool _linkExists(final String link) => Link(link).existsSync();
   static bool _dirExists(final String dir) => Directory(dir).existsSync();
   static bool _fileExists(final String file) => File(file).existsSync();
   static String _readTextFile(final String path) =>

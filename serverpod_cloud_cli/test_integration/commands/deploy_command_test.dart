@@ -16,6 +16,7 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 
+import '../../test_utils/bucket_upload_description.dart';
 import '../../test_utils/command_logger_matchers.dart';
 import '../../test_utils/project_factory.dart';
 import '../../test_utils/test_command_logger.dart';
@@ -266,29 +267,27 @@ dependencies:
       });
 
       group(
-          'Given valid upload description response but project directory contains directory symlink',
+          'and valid upload description response and the project directory contains directory symlink',
           () {
         setUp(() async {
-          when(() => client.deploy.createUploadDescription(any()))
-              .thenAnswer((final _) async => 'this-is-an-upload-description');
+          when(() => client.deploy.createUploadDescription(any())).thenAnswer(
+              (final _) async => BucketUploadDescription.uploadDescription);
 
           const symlinkedDirectoryName = 'symlinked_directory';
-          DirectoryFactory(
-            withSubDirectories: [
-              DirectoryFactory(
-                withDirectoryName: symlinkedDirectoryName,
-                withFiles: [
-                  FileFactory(withName: 'file1.txt', withContents: 'file1'),
-                ],
-              ),
-            ],
-            withSymLinks: [
-              SymLinkFactory(
-                withName: 'symlinked_directory_link',
-                withTarget: symlinkedDirectoryName,
-              ),
-            ],
-          ).construct(testProjectDir);
+          DirectoryFactory.serverpodServerDir(withSubDirectories: [
+            DirectoryFactory(
+              withDirectoryName: symlinkedDirectoryName,
+              withFiles: [
+                FileFactory(withName: 'file1.txt', withContents: 'file1'),
+              ],
+              withSymLinks: [
+                SymLinkFactory(
+                  withName: 'symlinked_directory_link',
+                  withTarget: symlinkedDirectoryName,
+                ),
+              ],
+            ),
+          ]).construct(testProjectDir);
         });
 
         group('when deploying through CLI', () {
@@ -299,28 +298,14 @@ dependencies:
               '--concurrency',
               '1',
               '--project',
-              '123',
+              BucketUploadDescription.projectId,
               '--project-dir',
               testProjectDir,
             ]);
           });
 
-          test('then ExitErrorException is thrown.', () async {
-            await expectLater(
-              cliCommandFuture,
-              throwsA(isA<ErrorExitException>()),
-            );
-          });
-
-          test('then directory symlinks are unsupported message is logged.',
-              () async {
-            await cliCommandFuture.catchError((final _) {});
-            expect(logger.errorCalls, isNotEmpty);
-            expect(
-              logger.errorCalls.first.message,
-              startsWith(
-                  'Serverpod Cloud does not support directory symlinks:'),
-            );
+          test('then the upload succeeds.', () async {
+            await expectLater(cliCommandFuture, completes);
           });
         });
       });
@@ -328,26 +313,9 @@ dependencies:
       group(
           'Given valid upload description response but project contains unresolved symlink',
           () {
-        const projectId = 'my-project-id';
-        const projectUuid = '586a138e-66f3-4dcb-b2e6-bb2d38ab4a4a';
-        const bucketName = 'bucket';
-
-        final Map<String, dynamic> descriptionContent = {
-          'url':
-              "http://$bucketName.localhost:8000/$projectId%2F$projectUuid.zip?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=test-service-bucket%40hosting-example-414217.iam.gserviceaccount.com%2F20240909%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20240909T094501Z&X-Goog-Expires=600&X-Goog-SignedHeaders=accept%3Bcontent-type%3Bhost%3Bx-goog-meta-tenant-project-id&x-goog-signature=2a3432d7e650cd7f32e4b6ddb01051390ae40084fb45f7af25cfaa891f33425d7bf64939b78b9e339b28bcf5238dfb58c67fd8e1eb8957c2df22b1b91d1f01a3ecd1ad4217a570a7e7a80e2999164ca7d920058bfdf52851341fe3c85340da14917026c8efae8f733d5d6548a149ae0558f88307bfcf23f97c2a141317d2be5cf4035488bd7b01137333250be11a174e73096674d8eaffcc7c7d2849044a3eb7669c35f7e421f99ab9557610478c96b68b29962fa1ea002cf76a09a0f302c66157844bd1a2b4b8a36378fd18f8a8dab750d955ff1866c9b20105c56b1f3ebf88c4dcf75043518c74d3d25c54673557b397ba1e31336766004c06ddf7bbbe1940\\",
-          'type': 'binary',
-          'httpMethod': 'PUT',
-          'headers': {
-            'content-type': 'application/octet-stream',
-            'accept': '*/*',
-            'x-goog-meta-tenant-project-id': projectId,
-            'x-goog-meta-upload-id': 'upload-$projectUuid',
-            'host': '$bucketName.localhost:8000',
-          },
-        };
         setUp(() async {
-          when(() => client.deploy.createUploadDescription(any()))
-              .thenAnswer((final _) async => jsonEncode(descriptionContent));
+          when(() => client.deploy.createUploadDescription(any())).thenAnswer(
+              (final _) async => BucketUploadDescription.uploadDescription);
 
           DirectoryFactory(
             withSymLinks: [
@@ -367,27 +335,14 @@ dependencies:
               '--concurrency',
               '1',
               '--project',
-              '123',
+              BucketUploadDescription.projectId,
               '--project-dir',
               testProjectDir,
             ]);
           });
 
-          test('then ExitErrorException is thrown.', () async {
-            await expectLater(
-              cliCommandFuture,
-              throwsA(isA<ErrorExitException>()),
-            );
-          });
-
-          test('then non-resolving symlinks message is logged.', () async {
-            await cliCommandFuture.catchError((final _) {});
-            expect(logger.errorCalls, isNotEmpty);
-            expect(
-              logger.errorCalls.first.message,
-              startsWith(
-                  'Serverpod Cloud does not support non-resolving symlinks:'),
-            );
+          test('then the upload succeeds.', () async {
+            await expectLater(cliCommandFuture, completes);
           });
         });
       });
@@ -453,29 +408,12 @@ dependencies:
       });
 
       group('and valid upload description response', () {
-        const projectId = 'my-project-id';
-        const projectUuid = '586a138e-66f3-4dcb-b2e6-bb2d38ab4a4a';
-        const bucketName = 'bucket';
-
-        final Map<String, dynamic> descriptionContent = {
-          'url':
-              "http://$bucketName.localhost:8000/$projectId%2F$projectUuid.zip?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=test-service-bucket%40hosting-example-414217.iam.gserviceaccount.com%2F20240909%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20240909T094501Z&X-Goog-Expires=600&X-Goog-SignedHeaders=accept%3Bcontent-type%3Bhost%3Bx-goog-meta-tenant-project-id&x-goog-signature=2a3432d7e650cd7f32e4b6ddb01051390ae40084fb45f7af25cfaa891f33425d7bf64939b78b9e339b28bcf5238dfb58c67fd8e1eb8957c2df22b1b91d1f01a3ecd1ad4217a570a7e7a80e2999164ca7d920058bfdf52851341fe3c85340da14917026c8efae8f733d5d6548a149ae0558f88307bfcf23f97c2a141317d2be5cf4035488bd7b01137333250be11a174e73096674d8eaffcc7c7d2849044a3eb7669c35f7e421f99ab9557610478c96b68b29962fa1ea002cf76a09a0f302c66157844bd1a2b4b8a36378fd18f8a8dab750d955ff1866c9b20105c56b1f3ebf88c4dcf75043518c74d3d25c54673557b397ba1e31336766004c06ddf7bbbe1940\\",
-          'type': 'binary',
-          'httpMethod': 'PUT',
-          'headers': {
-            'content-type': 'application/octet-stream',
-            'accept': '*/*',
-            'x-goog-meta-tenant-project-id': projectId,
-            'x-goog-meta-upload-id': 'upload-$projectUuid',
-            'host': '$bucketName.localhost:8000',
-          },
-        };
-
         setUp(() async {
           DirectoryFactory.serverpodServerDir().construct(testProjectDir);
 
-          when(() => client.deploy.createUploadDescription(any()))
-              .thenAnswer((final _) async => jsonEncode(descriptionContent));
+          when(() => client.deploy.createUploadDescription(any())).thenAnswer(
+            (final _) async => BucketUploadDescription.uploadDescription,
+          );
         });
 
         group('when deploying through CLI', () {
@@ -484,7 +422,7 @@ dependencies:
             cliCommandFuture = cli.run([
               'deploy',
               '--project',
-              projectId,
+              BucketUploadDescription.projectId,
               '--project-dir',
               testProjectDir,
             ]);
@@ -504,9 +442,9 @@ dependencies:
                   followUp: '''
 
 When the server has started, you can access it at:
-Web:      https://$projectId.serverpod.space/
-API:      https://$projectId.api.serverpod.space/
-Insights: https://$projectId.insights.serverpod.space/
+Web:      https://${BucketUploadDescription.projectId}.serverpod.space/
+API:      https://${BucketUploadDescription.projectId}.api.serverpod.space/
+Insights: https://${BucketUploadDescription.projectId}.insights.serverpod.space/
 
 See the `scloud domain` command to set up a custom domain.''',
                 ));
@@ -521,7 +459,10 @@ See the `scloud domain` command to set up a custom domain.''',
             );
 
             await expectLater(
-              storage.objects.get(bucketName, '$projectId/$projectUuid.zip'),
+              storage.objects.get(
+                BucketUploadDescription.bucketName,
+                BucketUploadDescription.uploadedFilePath,
+              ),
               completion(
                 isNotNull,
               ),
@@ -532,29 +473,11 @@ See the `scloud domain` command to set up a custom domain.''',
     });
 
     group('and valid upload description response', () {
-      const projectId = 'my-project-id';
-      const projectUuid = '586a138e-66f3-4dcb-b2e6-bb2d38ab4a4a';
-      const bucketName = 'bucket';
-
-      final Map<String, dynamic> descriptionContent = {
-        'url':
-            "http://$bucketName.localhost:8000/$projectId%2F$projectUuid.zip?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=test-service-bucket%40hosting-example-414217.iam.gserviceaccount.com%2F20240909%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20240909T094501Z&X-Goog-Expires=600&X-Goog-SignedHeaders=accept%3Bcontent-type%3Bhost%3Bx-goog-meta-tenant-project-id&x-goog-signature=2a3432d7e650cd7f32e4b6ddb01051390ae40084fb45f7af25cfaa891f33425d7bf64939b78b9e339b28bcf5238dfb58c67fd8e1eb8957c2df22b1b91d1f01a3ecd1ad4217a570a7e7a80e2999164ca7d920058bfdf52851341fe3c85340da14917026c8efae8f733d5d6548a149ae0558f88307bfcf23f97c2a141317d2be5cf4035488bd7b01137333250be11a174e73096674d8eaffcc7c7d2849044a3eb7669c35f7e421f99ab9557610478c96b68b29962fa1ea002cf76a09a0f302c66157844bd1a2b4b8a36378fd18f8a8dab750d955ff1866c9b20105c56b1f3ebf88c4dcf75043518c74d3d25c54673557b397ba1e31336766004c06ddf7bbbe1940\\",
-        'type': 'binary',
-        'httpMethod': 'PUT',
-        'headers': {
-          'content-type': 'application/octet-stream',
-          'accept': '*/*',
-          'x-goog-meta-tenant-project-id': projectId,
-          'x-goog-meta-upload-id': 'upload-$projectUuid',
-          'host': '$bucketName.localhost:8000',
-        },
-      };
-
       setUp(() async {
         DirectoryFactory.serverpodServerDir().construct(testProjectDir);
 
-        when(() => client.deploy.createUploadDescription(any()))
-            .thenAnswer((final _) async => jsonEncode(descriptionContent));
+        when(() => client.deploy.createUploadDescription(any())).thenAnswer(
+            (final _) async => BucketUploadDescription.uploadDescription);
       });
 
       group('when deploying through CLI with --dry-run', () {
@@ -564,7 +487,7 @@ See the `scloud domain` command to set up a custom domain.''',
             'deploy',
             '--dry-run',
             '--project',
-            projectId,
+            BucketUploadDescription.projectId,
             '--project-dir',
             testProjectDir,
           ]);
