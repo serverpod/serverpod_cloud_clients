@@ -60,7 +60,7 @@ class TenantProjectPubspec {
   }) {
     if (!pubspecFile.existsSync()) {
       logger?.error(
-        'Could not find pubspec.yaml in the project directory.',
+        'Could not find `pubspec.yaml` in directory `${pubspecFile.parent.path}`.',
         hint: "Provide the project's server directory and try again.",
       );
       throw ErrorExitException();

@@ -74,14 +74,13 @@ abstract class Launch {
   ) async {
     final specifiedProjectDir = projectSetup.projectDir;
     if (specifiedProjectDir != null) {
-      if (isServerpodServerDirectory(Directory(specifiedProjectDir))) {
+      if (_validateProjectDir(logger, specifiedProjectDir)) {
         return;
       }
-      logProjectDirIsNotAServerpodServerDirectory(logger, specifiedProjectDir);
     }
 
     if (foundProjectDir != null) {
-      if (isServerpodServerDirectory(Directory(foundProjectDir))) {
+      if (_validateProjectDir(logger, foundProjectDir)) {
         projectSetup.projectDir = p.relative(foundProjectDir);
         logger.info('Found project directory: ${projectSetup.projectDir}');
         return;
@@ -98,13 +97,45 @@ abstract class Launch {
         continue;
       }
 
-      if (isServerpodServerDirectory(Directory(projectDir))) {
+      if (_validateProjectDir(logger, projectDir)) {
         projectSetup.projectDir = projectDir;
         return;
       }
 
       logProjectDirIsNotAServerpodServerDirectory(logger, projectDir);
     } while (true);
+  }
+
+  static bool _validateProjectDir(
+    final CommandLogger logger,
+    final String projectDir,
+  ) {
+    final TenantProjectPubspec pubspecValidator;
+    try {
+      pubspecValidator = TenantProjectPubspec.fromProjectDir(
+        Directory(projectDir),
+        logger: logger,
+      );
+    } on Exception catch (_) {
+      return false;
+    }
+
+    if (pubspecValidator.isServerpodServer()) {
+      final issues = pubspecValidator.projectDependencyIssues();
+      if (issues.isEmpty) {
+        return true;
+      }
+
+      logger.error(
+        '`$projectDir` is a Serverpod server directory, but it is not valid:\n'
+        '${issues.join('\n')}',
+        hint: "Resolve the issues and try again.",
+      );
+      throw ErrorExitException();
+    } else {
+      logProjectDirIsNotAServerpodServerDirectory(logger, projectDir);
+    }
+    return false;
   }
 
   static Future<void> selectProjectId(

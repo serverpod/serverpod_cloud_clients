@@ -412,7 +412,8 @@ project:
           expect(
             logger.errorCalls.single,
             equalsErrorCall(
-                message: '`${d.sandbox}` is not a Serverpod server directory.',
+                message:
+                    'Could not find `pubspec.yaml` in directory `${d.sandbox}`.',
                 hint: "Provide the project's server directory and try again."),
           );
         });
@@ -1059,6 +1060,112 @@ project:
           ]);
           await expectLater(expected.validate(), completes);
         });
+      });
+    });
+
+    group(
+        'and a Serverpod server directory with invalid pubspec '
+        'when executing launch with all settings provided interactively '
+        'and declining confirmation', () {
+      late String invalidProjectDir;
+      late String validProjectDir;
+      late Future commandResult;
+
+      setUp(() async {
+        await d.dir('invalid_server_dir', [
+          d.file('pubspec.yaml', '''
+name: my_project_server
+environment:
+  sdk: '>=3.6.0 <3.7.0'
+dependencies:
+  serverpod: 2.1.0  # too old version
+'''),
+        ]).create();
+        invalidProjectDir = p.join(d.sandbox, 'invalid_server_dir');
+
+        await ProjectFactory.serverpodServerDir(
+          withDirectoryName: 'server_dir',
+        ).create();
+        validProjectDir = p.join(d.sandbox, 'server_dir');
+
+        logger.answerNextInputsWith([
+          invalidProjectDir,
+          validProjectDir,
+          projectId,
+        ]);
+        logger.answerNextConfirmsWith([
+          true, // enable db
+          true, // perform deploy
+          false, // do not apply setup
+        ]);
+
+        commandResult = cli.run([
+          'launch',
+        ]);
+      });
+
+      test('then throws ErrorExitException', () async {
+        expect(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then logs input messages', () async {
+        await commandResult.catchError((final _) {});
+
+        expect(logger.inputCalls, hasLength(1));
+        expect(
+          logger.inputCalls.single,
+          equalsInputCall(
+            message: 'Enter the project directory',
+          ),
+        );
+      });
+
+      test('then logs error message for invalid project directory', () async {
+        await commandResult.catchError((final _) {});
+
+        expect(logger.errorCalls, hasLength(1));
+        expect(
+          logger.errorCalls.single,
+          equalsErrorCall(
+            message:
+                '`$invalidProjectDir` is a Serverpod server directory, but it is not valid:\n'
+                'Unsupported serverpod version constraint: 2.1.0 (must adher to: >=2.3.0)',
+            hint: "Resolve the issues and try again.",
+          ),
+        );
+      });
+
+      test('then logs no confirmation message', () async {
+        await commandResult.catchError((final _) {});
+
+        expect(logger.confirmCalls, isEmpty);
+      });
+
+      test('then logs setup message box', () async {
+        await commandResult.catchError((final _) {});
+
+        expect(logger.boxCalls, hasLength(0));
+      });
+
+      test('then logs no success messages', () async {
+        await commandResult.catchError((final _) {});
+
+        expect(logger.successCalls, isEmpty);
+      });
+
+      test('then logs no cancellation info message', () async {
+        await commandResult.catchError((final _) {});
+
+        expect(logger.infoCalls, isEmpty);
+      });
+
+      test('then does not write scloud.yaml file', () async {
+        await commandResult.catchError((final _) {});
+
+        final expected = d.dir(validProjectDir, [
+          d.nothing('scloud.yaml'),
+        ]);
+        await expectLater(expected.validate(), completes);
       });
     });
   });

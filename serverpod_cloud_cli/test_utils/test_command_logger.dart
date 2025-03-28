@@ -263,8 +263,8 @@ class TestCommandLogger extends CommandLogger {
   }
 
   void clear() {
-    errorCalls.clear();
     flushCallsCount = 0;
+    errorCalls.clear();
     infoCalls.clear();
     lineCalls.clear();
     listCalls.clear();
@@ -275,6 +275,8 @@ class TestCommandLogger extends CommandLogger {
     boxCalls.clear();
     confirmCalls.clear();
     inputCalls.clear();
+    _nextConfirmAnswers.clear();
+    _nextInputAnswers.clear();
   }
 
   @override
