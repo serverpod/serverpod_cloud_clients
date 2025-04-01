@@ -1,6 +1,18 @@
 
 # Changelog
 
+## [0.4.0] - 2025-03-31
+
+### Added
+
+- **Improved status feedback** - The CLI now provides specific guidance when no deployments are found.
+- **Project directory validation** - The CLI now validates the server directory at the start of the launch command, providing clearer error messages.
+- **Launch command improvements** - The CLI now auto-selects the project directory and ID, simplifying the launch process and displaying default values more clearly.
+
+### Fixed
+
+- **Tenant web server domain** - Fixed an issue where the tenant web server domain erroneously included "web".
+
 ## 0.3.1 - 2025-03-20
 
 ### Added
