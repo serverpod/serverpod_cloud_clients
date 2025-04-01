@@ -108,7 +108,22 @@ class CloudProjectDeleteCommand extends CloudCliCommand {
   }
 }
 
-class CloudProjectListCommand extends CloudCliCommand {
+enum ProjectListCommandOption<V> implements OptionDefinition<V> {
+  all(FlagOption(
+    argName: 'all',
+    helpText: 'Include deleted projects.',
+    defaultsTo: false,
+    negatable: false,
+  ));
+
+  const ProjectListCommandOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class CloudProjectListCommand
+    extends CloudCliCommand<ProjectListCommandOption> {
   @override
   final name = 'list';
 
@@ -118,13 +133,19 @@ class CloudProjectListCommand extends CloudCliCommand {
   @override
   final bool takesArguments = false;
 
-  CloudProjectListCommand({required super.logger}) : super(options: []);
+  CloudProjectListCommand({required super.logger})
+      : super(options: ProjectListCommandOption.values);
 
   @override
-  Future<void> runWithConfig(final Configuration commandConfig) async {
+  Future<void> runWithConfig(
+    final Configuration<ProjectListCommandOption> commandConfig,
+  ) async {
+    final showArchived = commandConfig.value(ProjectListCommandOption.all);
+
     await ProjectCommands.listProjects(
       runner.serviceProvider.cloudApiClient,
       logger: logger,
+      showArchived: showArchived,
     );
   }
 }

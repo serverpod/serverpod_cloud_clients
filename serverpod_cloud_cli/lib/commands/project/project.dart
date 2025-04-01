@@ -132,6 +132,7 @@ abstract class ProjectCommands {
   static Future<void> listProjects(
     final Client cloudApiClient, {
     required final CommandLogger logger,
+    final bool showArchived = false,
   }) async {
     late List<Project> projects;
     await handleCommonClientExceptions(logger, () async {
@@ -144,18 +145,26 @@ abstract class ProjectCommands {
       throw ErrorExitException();
     });
 
-    if (projects.isEmpty) {
+    final activeProjects = showArchived
+        ? projects
+        : projects.where((final p) => p.archivedAt == null);
+
+    if (activeProjects.isEmpty) {
       logger.info('No projects available.');
       return;
     }
+
     final tablePrinter = TablePrinter();
-    tablePrinter.addHeaders(['Project Id', 'Created At']);
-    for (final project in projects
-        .where((final p) => p.archivedAt == null)
-        .sortedBy((final p) => p.createdAt)) {
+    tablePrinter.addHeaders([
+      'Project Id',
+      'Created At',
+      if (showArchived) 'Deleted At',
+    ]);
+    for (final project in activeProjects.sortedBy((final p) => p.createdAt)) {
       tablePrinter.addRow([
         project.cloudProjectId,
         project.createdAt.toString().substring(0, 19),
+        if (showArchived) project.archivedAt?.toString().substring(0, 19),
       ]);
     }
     tablePrinter.writeLines(logger.line);

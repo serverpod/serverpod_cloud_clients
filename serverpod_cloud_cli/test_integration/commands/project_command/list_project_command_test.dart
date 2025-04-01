@@ -111,7 +111,7 @@ void main() {
       reset(client.projects);
     });
 
-    group('when executing project list', () {
+    group('when executing project list without options', () {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
@@ -144,10 +144,44 @@ void main() {
 
         expect(logger.lineCalls, isNotEmpty);
         expect(
+          logger.lineCalls.map((final call) => call.line),
+          isNot(contains('projectId2')),
+        );
+      });
+    });
+
+    group('when executing project list with --all', () {
+      late Future commandResult;
+      setUp(() async {
+        commandResult = cli.run([
+          'project',
+          'list',
+          '--all',
+        ]);
+      });
+
+      test('then completes successfully', () async {
+        await expectLater(commandResult, completes);
+      });
+
+      test('then outputs the ordered list of projects', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isNotEmpty);
+        expect(
           logger.lineCalls,
-          isNot(contains(
-            equalsLineCall(line: 'projectId2 | 2024-12-31 12:20:30'),
-          )),
+          containsAllInOrder([
+            equalsLineCall(
+                line: 'Project Id | Created At          | Deleted At         '),
+            equalsLineCall(
+                line: '-----------+---------------------+--------------------'),
+            equalsLineCall(
+                line: 'projectId3 | 2024-12-30 10:20:30 |                    '),
+            equalsLineCall(
+                line: 'projectId  | 2024-12-31 10:20:30 |                    '),
+            equalsLineCall(
+                line: 'projectId2 | 2024-12-31 12:20:30 | 2025-01-01 14:20:30'),
+          ]),
         );
       });
     });
