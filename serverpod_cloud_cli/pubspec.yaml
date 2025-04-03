@@ -13,6 +13,7 @@ topics:
 environment:
   sdk: ">=3.6.0 <4.0.0"
 
+
 dependencies:
   archive: ^3.6.1
   args: ^2.6.0
@@ -36,5 +37,7 @@ dev_dependencies:
   uuid: ^4.1.0
   mocktail: ^1.0.4
   test_descriptor: ^2.0.0
+  serverpod_cloud_lints: ^1.0.0
+
 executables:
   scloud: serverpod_cloud_cli

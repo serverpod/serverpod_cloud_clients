@@ -1,0 +1,9 @@
+# Overrides to disable workspace resolution, used for e2e tests
+# since `dart pub global activate --source path` does not work with workspaces.
+# See: https://github.com/dart-lang/pub/issues/4553
+
+resolution:
+
+dependency_overrides:
+  serverpod_cloud_lints:
+    path: ../lints
