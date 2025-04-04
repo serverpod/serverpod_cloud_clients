@@ -49,7 +49,7 @@ abstract class CloudCliCommand<T extends OptionDefinition>
 
   @override
   String? get usageFooter =>
-      '\nSee the full documentation at: https://docs.serverpod.cloud/cli/commands/${_topCommand.name}';
+      '\nSee the full documentation at: https://docs.serverpod.cloud/references/cli/commands/${_topCommand.name}';
 
   /// Gets the command runner [CloudCliCommandRunner].
   @override
