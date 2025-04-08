@@ -54,7 +54,7 @@ class CloudCliServiceProvider {
         address,
         authenticationKeyManager: CliAuthenticationKeyManager(
           logger: _logger,
-          localStoragePath: localStoragePath,
+          localStoragePath: localStoragePath.path,
         ),
       );
     }

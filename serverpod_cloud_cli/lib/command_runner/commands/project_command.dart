@@ -72,7 +72,7 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
     final enableDb = commandConfig.value(ProjectCreateOption.enableDb);
     final projectDir =
         runner.selectProjectDirectory() ?? Directory.current.path;
-    final configFilePath = globalConfiguration.projectConfigFile ??
+    final configFilePath = globalConfiguration.projectConfigFile?.path ??
         p.join(projectDir, ProjectConfigFileConstants.defaultFileName);
 
     await ProjectCommands.createProject(
@@ -179,7 +179,7 @@ class CloudProjectLinkCommand
   ) async {
     final projectId = commandConfig.value(ProjectLinkCommandOption.projectId);
     final projectDirectory = runner.verifiedProjectDirectory();
-    final configFilePath = globalConfiguration.projectConfigFile ??
+    final configFilePath = globalConfiguration.projectConfigFile?.path ??
         p.join(
           projectDirectory.path,
           ProjectConfigFileConstants.defaultFileName,

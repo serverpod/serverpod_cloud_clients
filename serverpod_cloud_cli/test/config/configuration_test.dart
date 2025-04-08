@@ -854,6 +854,270 @@ void main() async {
     });
   });
 
+  group('Given two options that are mutually exclusive', () {
+    const firstOpt = StringOption(
+      argName: 'first',
+      envName: 'FIRST',
+      group: MutuallyExclusive('mutex-group'),
+    );
+    const secondOpt = StringOption(
+      argName: 'second',
+      envName: 'SECOND',
+      group: MutuallyExclusive('mutex-group'),
+    );
+    final options = [firstOpt, secondOpt];
+
+    test(
+        'when the first of the mut-ex options is provided as argument then parsing succeeds',
+        () async {
+      final args = ['--first', '1st-arg'];
+      final config = Configuration.resolve(
+        options: options,
+        args: args,
+      );
+      expect(config.errors, isEmpty);
+      expect(config.optionalValue(firstOpt), equals('1st-arg'));
+      expect(config.optionalValue(secondOpt), isNull);
+    });
+
+    test(
+        'when the second of the mut-ex options is provided as argument then parsing succeeds',
+        () async {
+      final args = ['--second', '2nd-arg'];
+      final config = Configuration.resolve(
+        options: options,
+        args: args,
+      );
+      expect(config.errors, isEmpty);
+      expect(config.optionalValue(firstOpt), isNull);
+      expect(config.optionalValue(secondOpt), equals('2nd-arg'));
+    });
+
+    test(
+        'when the first of the mut-ex options is provided as env var then parsing succeeds',
+        () async {
+      final config = Configuration.resolve(
+        options: options,
+        env: {'FIRST': '1st-arg'},
+      );
+      expect(config.errors, isEmpty);
+      expect(config.optionalValue(firstOpt), equals('1st-arg'));
+      expect(config.optionalValue(secondOpt), isNull);
+    });
+
+    test(
+        'when the second of the mut-ex options is provided as env var then parsing succeeds',
+        () async {
+      final config = Configuration.resolve(
+        options: options,
+        env: {'SECOND': '2nd-arg'},
+      );
+      expect(config.errors, isEmpty);
+      expect(config.optionalValue(firstOpt), isNull);
+      expect(config.optionalValue(secondOpt), equals('2nd-arg'));
+    });
+
+    test(
+        'when both mut-ex options are provided as arguments then parsing has error',
+        () async {
+      final args = ['--first', '1st-arg', '--second', '2nd-arg'];
+      final config = Configuration.resolve(
+        options: options,
+        args: args,
+      );
+      expect(config.errors, hasLength(1));
+      expect(
+        config.errors.single,
+        'These options are mutually exclusive: first, second',
+      );
+    });
+
+    test(
+        'when both mut-ex options are provided as arg and env var then parsing has error',
+        () async {
+      final config = Configuration.resolve(
+        options: options,
+        args: ['--first', '1st-arg'],
+        env: {'SECOND': '2nd-arg'},
+      );
+      expect(config.errors, hasLength(1));
+      expect(
+        config.errors.single,
+        'These options are mutually exclusive: first, second',
+      );
+    });
+
+    test(
+        'when neither of the mut-ex options are provided then parsing succeeds',
+        () async {
+      final config = Configuration.resolve(
+        options: options,
+      );
+      expect(config.errors, isEmpty);
+      expect(config.optionalValue(firstOpt), isNull);
+      expect(config.optionalValue(secondOpt), isNull);
+    });
+  });
+
+  group('Given two options that are mandatory and mutually exclusive', () {
+    const group = MutuallyExclusive('mutex-group', mandatory: true);
+    const firstOpt = StringOption(
+      argName: 'first',
+      envName: 'FIRST',
+      group: group,
+    );
+    const secondOpt = StringOption(
+      argName: 'second',
+      envName: 'SECOND',
+      group: group,
+    );
+    final options = [firstOpt, secondOpt];
+
+    test(
+        'when the first of the mut-ex options is provided as argument then parsing succeeds',
+        () async {
+      final args = ['--first', '1st-arg'];
+      final config = Configuration.resolve(
+        options: options,
+        args: args,
+      );
+      expect(config.errors, isEmpty);
+      expect(config.optionalValue(firstOpt), equals('1st-arg'));
+      expect(config.optionalValue(secondOpt), isNull);
+    });
+
+    test(
+        'when the second of the mut-ex options is provided as argument then parsing succeeds',
+        () async {
+      final args = ['--second', '2nd-arg'];
+      final config = Configuration.resolve(
+        options: options,
+        args: args,
+      );
+      expect(config.errors, isEmpty);
+      expect(config.optionalValue(firstOpt), isNull);
+      expect(config.optionalValue(secondOpt), equals('2nd-arg'));
+    });
+
+    test(
+        'when the first of the mut-ex options is provided as env var then parsing succeeds',
+        () async {
+      final config = Configuration.resolve(
+        options: options,
+        env: {'FIRST': '1st-arg'},
+      );
+      expect(config.errors, isEmpty);
+      expect(config.optionalValue(firstOpt), equals('1st-arg'));
+      expect(config.optionalValue(secondOpt), isNull);
+    });
+
+    test(
+        'when the second of the mut-ex options is provided as env var then parsing succeeds',
+        () async {
+      final config = Configuration.resolve(
+        options: options,
+        env: {'SECOND': '2nd-arg'},
+      );
+      expect(config.errors, isEmpty);
+      expect(config.optionalValue(firstOpt), isNull);
+      expect(config.optionalValue(secondOpt), equals('2nd-arg'));
+    });
+
+    test(
+        'when both mut-ex options are provided as arguments then parsing has error',
+        () async {
+      final args = ['--first', '1st-arg', '--second', '2nd-arg'];
+      final config = Configuration.resolve(
+        options: options,
+        args: args,
+      );
+      expect(config.errors, hasLength(1));
+      expect(
+        config.errors.single,
+        'These options are mutually exclusive: first, second',
+      );
+    });
+
+    test(
+        'when both mut-ex options are provided as arg and env var then parsing has error',
+        () async {
+      final config = Configuration.resolve(
+        options: options,
+        args: ['--first', '1st-arg'],
+        env: {'SECOND': '2nd-arg'},
+      );
+      expect(config.errors, hasLength(1));
+      expect(
+        config.errors.single,
+        'These options are mutually exclusive: first, second',
+      );
+    });
+
+    test(
+        'when neither of the mut-ex options are provided then parsing has error',
+        () async {
+      final config = Configuration.resolve(
+        options: options,
+        args: [],
+        env: {},
+      );
+      expect(config.errors, hasLength(1));
+      expect(
+        config.errors.single,
+        'Option group mutex-group requires one of the options to be provided.',
+      );
+    });
+  });
+
+  group('Given four mutually exclusive options in two option groups', () {
+    const firstOpt = StringOption(
+      argName: 'first',
+      group: MutuallyExclusive('mutex-group-a'),
+    );
+    const secondOpt = StringOption(
+      argName: 'second',
+      group: MutuallyExclusive('mutex-group-a'),
+    );
+    const thirdOpt = StringOption(
+      argName: 'third',
+      group: MutuallyExclusive('mutex-group-b'),
+    );
+    const fourthOpt = StringOption(
+      argName: 'fourth',
+      group: MutuallyExclusive('mutex-group-b'),
+    );
+    final options = [firstOpt, secondOpt, thirdOpt, fourthOpt];
+
+    test('when one option from each group is provided then parsing succeeds',
+        () async {
+      final args = ['--first', '1st-arg', '--third', '3rd-arg'];
+      final config = Configuration.resolve(
+        options: options,
+        args: args,
+      );
+      expect(config.errors, isEmpty);
+      expect(config.optionalValue(firstOpt), equals('1st-arg'));
+      expect(config.optionalValue(secondOpt), isNull);
+      expect(config.optionalValue(thirdOpt), equals('3rd-arg'));
+      expect(config.optionalValue(fourthOpt), isNull);
+    });
+
+    test(
+        'when two options from the same group are provided then parsing has error',
+        () async {
+      final args = ['--first', '1st-arg', '--second', '2nd-arg'];
+      final config = Configuration.resolve(
+        options: options,
+        args: args,
+      );
+      expect(config.errors, hasLength(1));
+      expect(
+        config.errors.single,
+        'These options are mutually exclusive: first, second',
+      );
+    });
+  });
+
   group('Given a configuration source option that depends on another option',
       () {
     const projectIdOpt = StringOption(

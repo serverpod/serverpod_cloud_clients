@@ -3,18 +3,56 @@ import 'package:args/command_runner.dart';
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 
+import 'option_resolution.dart';
+
 /// Common interface to enable same treatment for [ConfigOptionBase] and option enums.
 abstract class OptionDefinition<V> {
   ConfigOptionBase<V> get option;
 }
 
+/// An option group allows grouping options together under a common name,
+/// and optionally provide option value validation on the group as a whole.
+///
+/// [name] might be used as group header in usage information
+/// so it is recommended to format it appropriately, e.g. `File mode`.
+///
+/// An [OptionGroup] is uniquely identified by its [name].
+class OptionGroup {
+  final String name;
+
+  const OptionGroup(this.name);
+
+  /// Validates the values of the options in this group,
+  /// returning a descriptive error message if the values are invalid.
+  ///
+  /// Subclasses may override this method to perform specific validations.
+  String? validate(
+    final Map<OptionDefinition, OptionResolution> optionResolutions,
+  ) {
+    return null;
+  }
+
+  @override
+  bool operator ==(final Object other) {
+    if (identical(this, other)) return true;
+    return other is OptionGroup && other.name == name;
+  }
+
+  @override
+  int get hashCode => name.hashCode;
+}
+
 /// A [ValueParser] converts a source string value to the specific option value type.
 ///
+/// {@template value_parser}
 /// Must throw a [FormatException] with an appropriate message
 /// if the value cannot be parsed.
+/// {@endtemplate}
 abstract class ValueParser<V> {
   const ValueParser();
 
+  /// Converts a source string value to the specific option value type.
+  /// {@macro value_parser}
   V parse(final String value);
 
   /// Returns a usage documentation friendly string representation of the value.
@@ -88,6 +126,7 @@ class ConfigOptionBase<V> implements OptionDefinition<V> {
 
   final String? helpText;
   final String? valueHelp;
+  final OptionGroup? group;
 
   final void Function(V value)? customValidator;
   final bool mandatory;
@@ -105,6 +144,7 @@ class ConfigOptionBase<V> implements OptionDefinition<V> {
     this.defaultsTo,
     this.helpText,
     this.valueHelp,
+    this.group,
     this.customValidator,
     this.mandatory = false,
     this.hide = false,
@@ -203,20 +243,27 @@ class ConfigOptionBase<V> implements OptionDefinition<V> {
   /// Returns the resolved value of this configuration option from the provided context.
   /// For options with positional arguments this must be invoked in ascending position order.
   /// Returns the result with the resolved value or error.
-  _OptionResolution<V> _resolveValue(
+  OptionResolution<V> _resolveValue(
     final Configuration cfg, {
     final ArgResults? args,
     final Iterator<String>? posArgs,
     final Map<String, String>? env,
     final ConfigurationBroker? configBroker,
   }) {
-    final res = _doResolve(
-      cfg,
-      args: args,
-      posArgs: posArgs,
-      env: env,
-      configBroker: configBroker,
-    );
+    OptionResolution<V> res;
+    try {
+      res = _doResolve(
+        cfg,
+        args: args,
+        posArgs: posArgs,
+        env: env,
+        configBroker: configBroker,
+      );
+    } on Exception catch (e) {
+      return OptionResolution.error(
+        'Failed to resolve ${option.qualifiedString()}: $e',
+      );
+    }
 
     if (res.error != null) {
       return res;
@@ -226,25 +273,30 @@ class ConfigOptionBase<V> implements OptionDefinition<V> {
     if (stringValue != null) {
       // value provided by string-based config source, parse to the designated type
       try {
-        res.value = option.option.valueParser.parse(stringValue);
+        res = res.copyWithValue(
+          option.option.valueParser.parse(stringValue),
+        );
       } on FormatException catch (e) {
-        res.error = _makeFormatErrorMessage(e);
-        return res;
+        return res.copyWithError(
+          _makeFormatErrorMessage(e),
+        );
       }
     }
 
-    res.error = _validateOptionValue(res.value);
+    final error = _validateOptionValue(res.value);
+    if (error != null) return res.copyWithError(error);
+
     return res;
   }
 
-  _OptionResolution<V> _doResolve(
+  OptionResolution<V> _doResolve(
     final Configuration cfg, {
     final ArgResults? args,
     final Iterator<String>? posArgs,
     final Map<String, String>? env,
     final ConfigurationBroker? configBroker,
   }) {
-    _OptionResolution<V>? result;
+    OptionResolution<V>? result;
 
     result = _resolveNamedArg(args);
     if (result != null) return result;
@@ -264,33 +316,42 @@ class ConfigOptionBase<V> implements OptionDefinition<V> {
     result = _resolveDefaultValue();
     if (result != null) return result;
 
-    return _OptionResolution();
+    return OptionResolution.noValue();
   }
 
-  _OptionResolution<V>? _resolveNamedArg(final ArgResults? args) {
+  OptionResolution<V>? _resolveNamedArg(final ArgResults? args) {
     final argOptName = argName;
     if (argOptName == null || args == null || !args.wasParsed(argOptName)) {
       return null;
     }
-    return _OptionResolution(stringValue: args.option(argOptName));
+    return OptionResolution(
+      stringValue: args.option(argOptName),
+      source: OptionSource.arg,
+    );
   }
 
-  _OptionResolution<V>? _resolvePosArg(final Iterator<String>? posArgs) {
+  OptionResolution<V>? _resolvePosArg(final Iterator<String>? posArgs) {
     final argOptPos = argPos;
     if (argOptPos == null || posArgs == null) return null;
     if (!posArgs.moveNext()) return null;
-    return _OptionResolution(stringValue: posArgs.current);
+    return OptionResolution(
+      stringValue: posArgs.current,
+      source: OptionSource.arg,
+    );
   }
 
-  _OptionResolution<V>? _resolveEnvVar(final Map<String, String>? env) {
+  OptionResolution<V>? _resolveEnvVar(final Map<String, String>? env) {
     final envVarName = envName;
     if (envVarName == null || env == null || !env.containsKey(envVarName)) {
       return null;
     }
-    return _OptionResolution(stringValue: env[envVarName]);
+    return OptionResolution(
+      stringValue: env[envVarName],
+      source: OptionSource.envVar,
+    );
   }
 
-  _OptionResolution<V>? _resolveConfigValue(
+  OptionResolution<V>? _resolveConfigValue(
     final Configuration cfg,
     final ConfigurationBroker? configBroker,
   ) {
@@ -298,24 +359,40 @@ class ConfigOptionBase<V> implements OptionDefinition<V> {
     if (configBroker == null || key == null) return null;
     final value = configBroker.valueOrNull(key, cfg);
     if (value == null) return null;
-    if (value is String) return _OptionResolution(stringValue: value);
-    if (value is V) return _OptionResolution(value: value as V);
-    return _OptionResolution(
-      error: '${option.qualifiedString()} value $value '
-          'is of type ${value.runtimeType}, not $V.',
+    if (value is String) {
+      return OptionResolution(
+        stringValue: value,
+        source: OptionSource.config,
+      );
+    }
+    if (value is V) {
+      return OptionResolution(
+        value: value as V,
+        source: OptionSource.config,
+      );
+    }
+    return OptionResolution.error(
+      '${option.qualifiedString()} value $value '
+      'is of type ${value.runtimeType}, not $V.',
     );
   }
 
-  _OptionResolution<V>? _resolveCustomValue(final Configuration cfg) {
+  OptionResolution<V>? _resolveCustomValue(final Configuration cfg) {
     final value = fromCustom?.call(cfg);
     if (value == null) return null;
-    return _OptionResolution(value: value);
+    return OptionResolution(
+      value: value,
+      source: OptionSource.custom,
+    );
   }
 
-  _OptionResolution<V>? _resolveDefaultValue() {
+  OptionResolution<V>? _resolveDefaultValue() {
     final value = fromDefault?.call() ?? defaultsTo;
     if (value == null) return null;
-    return _OptionResolution(value: value);
+    return OptionResolution(
+      value: value,
+      source: OptionSource.defaultValue,
+    );
   }
 
   /// Returns an error message if the value is invalid, or null if valid.
@@ -329,32 +406,26 @@ class ConfigOptionBase<V> implements OptionDefinition<V> {
         validateValue(value);
       } on FormatException catch (e) {
         return _makeFormatErrorMessage(e);
+      } on UsageException catch (e) {
+        return _makeErrorMessage(e.message);
       }
     }
     return null;
   }
 
-  String? _makeFormatErrorMessage(final FormatException e) {
+  String _makeFormatErrorMessage(final FormatException e) {
     const prefix = 'FormatException: ';
     var message = e.toString();
     if (message.startsWith(prefix)) {
       message = message.substring(prefix.length);
     }
+    return _makeErrorMessage(message);
+  }
+
+  String _makeErrorMessage(final String message) {
     final help = valueHelp != null ? ' <$valueHelp>' : '';
     return 'Invalid value for ${qualifiedString()}$help: $message';
   }
-}
-
-class _OptionResolution<V> {
-  String? stringValue;
-  V? value;
-  String? error;
-
-  _OptionResolution({
-    this.stringValue,
-    this.value,
-    this.error,
-  });
 }
 
 /// Parses a boolean value from a string.
@@ -381,6 +452,8 @@ class FlagOption extends ConfigOptionBase<bool> {
     super.defaultsTo,
     super.helpText,
     super.valueHelp,
+    super.group,
+    super.customValidator,
     super.mandatory,
     super.hide,
     this.negatable = true,
@@ -405,12 +478,15 @@ class FlagOption extends ConfigOptionBase<bool> {
   }
 
   @override
-  _OptionResolution<bool>? _resolveNamedArg(final ArgResults? args) {
+  OptionResolution<bool>? _resolveNamedArg(final ArgResults? args) {
     final argOptName = argName;
     if (argOptName == null || args == null || !args.wasParsed(argOptName)) {
       return null;
     }
-    return _OptionResolution(value: args.flag(argOptName));
+    return OptionResolution(
+      value: args.flag(argOptName),
+      source: OptionSource.arg,
+    );
   }
 }
 
@@ -457,6 +533,8 @@ class MultiOption<T> extends ConfigOptionBase<List<T>> {
     super.defaultsTo,
     super.helpText,
     super.valueHelp,
+    super.group,
+    super.customValidator,
     super.mandatory,
     super.hide,
   }) : super(
@@ -483,17 +561,18 @@ class MultiOption<T> extends ConfigOptionBase<List<T>> {
   }
 
   @override
-  _OptionResolution<List<T>>? _resolveNamedArg(final ArgResults? args) {
+  OptionResolution<List<T>>? _resolveNamedArg(final ArgResults? args) {
     final argOptName = argName;
     if (argOptName == null || args == null || !args.wasParsed(argOptName)) {
       return null;
     }
     final multiParser = valueParser as MultiParser<T>;
-    return _OptionResolution(
+    return OptionResolution(
       value: args
           .multiOption(argOptName)
           .map(multiParser.elementParser.parse)
           .toList(),
+      source: OptionSource.arg,
     );
   }
 }
@@ -520,8 +599,10 @@ void prepareOptionsForParsing(
   final argNameOpts = <String, OptionDefinition>{};
   final argPosOpts = <int, OptionDefinition>{};
   final envNameOpts = <String, OptionDefinition>{};
+
   for (final opt in options) {
     opt.option.validateDefinition();
+
     final argName = opt.option.argName;
     if (argName != null) {
       if (argNameOpts.containsKey(opt.option.argName)) {
@@ -530,6 +611,7 @@ void prepareOptionsForParsing(
       }
       argNameOpts[argName] = opt;
     }
+
     final argPos = opt.option.argPos;
     if (argPos != null) {
       if (argPosOpts.containsKey(opt.option.argPos)) {
@@ -538,6 +620,7 @@ void prepareOptionsForParsing(
       }
       argPosOpts[argPos] = opt;
     }
+
     final envName = opt.option.envName;
     if (envName != null) {
       if (envNameOpts.containsKey(opt.option.envName)) {
@@ -551,12 +634,14 @@ void prepareOptionsForParsing(
   if (argPosOpts.isNotEmpty) {
     final orderedPosOpts = argPosOpts.values.sorted(
         (final a, final b) => a.option.argPos!.compareTo(b.option.argPos!));
+
     if (orderedPosOpts.first.option.argPos != 0) {
       throw InvalidOptionConfigurationError(
         orderedPosOpts.first,
         'First positional argument must have index 0.',
       );
     }
+
     if (orderedPosOpts.last.option.argPos != orderedPosOpts.length - 1) {
       throw InvalidOptionConfigurationError(
         orderedPosOpts.last,
@@ -589,7 +674,7 @@ abstract interface class ConfigurationBroker<O extends OptionDefinition> {
 /// A configuration object that holds the values for a set of configuration options.
 class Configuration<O extends OptionDefinition> {
   final List<O> _options;
-  final Map<O, Object?> _config;
+  final Map<O, OptionResolution> _config;
   final List<String> _errors;
 
   /// Creates a configuration with the provided option values.
@@ -598,20 +683,17 @@ class Configuration<O extends OptionDefinition> {
   /// instead the caller is responsible for checking if [errors] is non-empty.
   Configuration.fromValues({
     required final Map<O, Object?> values,
-  })  : _options = List<O>.from(values.keys),
-        _config = Map<O, Object?>.from(values),
-        _errors = <String>[] {
-    for (final opt in _options) {
-      final error = opt.option._validateOptionValue(values[opt]);
-      if (error != null) {
-        _errors.add(error);
-      }
-    }
-  }
+  }) : this.resolve(
+          options: values.keys,
+          presetValues: values,
+        );
 
   /// Creates a configuration with option values resolved from the provided context.
   ///
   /// [argResults] is used if provided. Otherwise [args] is used if provided.
+  ///
+  /// If [presetValues] is provided, the values present will override the other sources,
+  /// including if they are null.
   ///
   /// This does not throw upon value parsing or validation errors,
   /// instead the caller is responsible for checking if [errors] is non-empty.
@@ -621,8 +703,9 @@ class Configuration<O extends OptionDefinition> {
     final Iterable<String>? args,
     final Map<String, String>? env,
     final ConfigurationBroker? configBroker,
+    final Map<O, Object?>? presetValues,
   })  : _options = List<O>.from(options),
-        _config = <O, Object?>{},
+        _config = <O, OptionResolution>{},
         _errors = <String>[] {
     if (argResults == null && args != null) {
       final parser = ArgParser();
@@ -634,6 +717,7 @@ class Configuration<O extends OptionDefinition> {
       args: argResults,
       env: env,
       configBroker: configBroker,
+      presetValues: presetValues,
     );
   }
 
@@ -724,58 +808,114 @@ class Configuration<O extends OptionDefinition> {
           "${option.qualifiedString()} is not part of this configuration");
     }
 
-    if (!_config.containsKey(option)) {
-      if (errors.isNotEmpty) {
-        throw InvalidParseStateError(
-            'No value available for ${option.qualifiedString()} due to previous errors');
-      }
+    final resolution = _config[option];
+
+    if (resolution == null) {
       throw InvalidOptionConfigurationError(option,
           "Out-of-order dependency on not-yet-resolved ${option.qualifiedString()}");
     }
 
-    return _config[option] as V?;
+    if (resolution.error != null) {
+      throw InvalidParseStateError(
+          'No value available for ${option.qualifiedString()} due to previous errors');
+    }
+
+    return resolution.value as V?;
   }
 
   void _resolveWithArgResults({
     final ArgResults? args,
     final Map<String, String>? env,
     final ConfigurationBroker? configBroker,
+    final Map<O, Object?>? presetValues,
   }) {
     final posArgs = (args?.rest ?? []).iterator;
     final orderedOpts = _options.sorted((final a, final b) =>
         (a.option.argPos ?? -1).compareTo(b.option.argPos ?? -1));
 
-    for (final opt in orderedOpts) {
-      try {
-        final result = opt.option._resolveValue(
-          this,
-          args: args,
-          posArgs: posArgs,
-          env: env,
-          configBroker: configBroker,
-        );
+    final optionGroups = <OptionGroup, Map<O, OptionResolution>>{};
 
-        final error = result.error;
+    for (final opt in orderedOpts) {
+      OptionResolution resolution;
+      try {
+        if (presetValues != null && presetValues.containsKey(opt)) {
+          resolution = _resolvePresetValue(opt, presetValues[opt]);
+        } else {
+          resolution = opt.option._resolveValue(
+            this,
+            args: args,
+            posArgs: posArgs,
+            env: env,
+            configBroker: configBroker,
+          );
+        }
+
+        final group = opt.option.group;
+        if (group != null) {
+          optionGroups.update(
+            group,
+            (final value) => {...value, opt: resolution},
+            ifAbsent: () => {opt: resolution},
+          );
+        }
+
+        final error = resolution.error;
         if (error != null) {
           _errors.add(error);
-        } else {
-          _config[opt] = result.value;
         }
-      } on Exception catch (e) {
-        _errors.add('Failed to resolve ${opt.qualifiedString()}: $e');
-      } on InvalidParseStateError catch (_) {
-        // ignored since these follow from previous errors
+      } on InvalidParseStateError catch (e) {
+        // Represents an option resolution that depends on another option
+        // whose resolution failed, so this resolution fails in turn.
+        // Not adding to _errors to avoid double reporting.
+        resolution = OptionResolution.error(e.message);
       }
+
+      _config[opt] = resolution;
     }
 
-    final remainingPosArgs = <String>[];
-    while (posArgs.moveNext()) {
-      remainingPosArgs.add(posArgs.current);
-    }
+    _validateGroups(optionGroups);
+
+    final remainingPosArgs = posArgs.restAsList();
     if (remainingPosArgs.isNotEmpty) {
       _errors.add(
           "Unexpected positional argument(s): '${remainingPosArgs.join("', '")}'");
     }
+  }
+
+  OptionResolution _resolvePresetValue(
+    final O option,
+    final Object? value,
+  ) {
+    final resolution = value == null
+        ? OptionResolution.noValue()
+        : OptionResolution(value: value, source: OptionSource.preset);
+
+    final error = option.option._validateOptionValue(value);
+    if (error != null) return resolution.copyWithError(error);
+    return resolution;
+  }
+
+  void _validateGroups(
+    final Map<OptionGroup, Map<O, OptionResolution>> optionGroups,
+  ) {
+    optionGroups.forEach((final group, final optionResolutions) {
+      final error = group.validate(optionResolutions);
+      if (error != null) {
+        _errors.add(error);
+      }
+    });
+  }
+}
+
+extension _RestAsList<T> on Iterator<T> {
+  /// Returns the remaining elements of this iterator as a list.
+  /// Consumes the iterator.
+  List<T> restAsList() {
+    final list = <T>[];
+    while (moveNext()) {
+      list.add(current);
+    }
+    return list;
   }
 }
 

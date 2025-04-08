@@ -44,7 +44,7 @@ void main() {
 
     test(
         'when the YAML content option has data '
-        ' then the correct value is retrieved', () async {
+        'then the correct value is retrieved', () async {
       final config = Configuration.resolve(
         options: options,
         args: [
@@ -64,7 +64,7 @@ project:
 
     test(
         'when the JSON content option has data '
-        ' then the correct value is retrieved', () async {
+        'then the correct value is retrieved', () async {
       final config = Configuration.resolve(
         options: options,
         args: [
@@ -87,7 +87,7 @@ project:
 
     test(
         'when the YAML content option has data of the wrong type '
-        ' then the correct value is retrieved', () async {
+        'then an appropriate error is registered', () async {
       final config = Configuration.resolve(
         options: options,
         args: [
@@ -116,7 +116,7 @@ project:
 
     test(
         'when the JSON content option has data of the wrong type '
-        ' then the correct value is retrieved', () async {
+        'then an appropriate error is registered', () async {
       final config = Configuration.resolve(
         options: options,
         args: [
@@ -148,7 +148,7 @@ project:
 
     test(
         'when the YAML content option has malformed data '
-        ' then an appropriate error is registered', () async {
+        'then an appropriate error is registered', () async {
       final config = Configuration.resolve(
         options: options,
         args: [
@@ -175,7 +175,7 @@ projectId:123
 
     test(
         'when the JSON content option has malformed data '
-        ' then an appropriate error is registered', () async {
+        'then an appropriate error is registered', () async {
       final config = Configuration.resolve(
         options: options,
         args: [
@@ -240,7 +240,7 @@ projectId:123
 
     test(
         'when creating the configuration '
-        ' then the expected errors are registered', () async {
+        'then the expected errors are registered', () async {
       expect(
         () => Configuration.resolve(
           options: options,

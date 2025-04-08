@@ -48,7 +48,7 @@ class CloudLaunchCommand extends CloudCliCommand<LaunchOption> {
     await Launch.launch(
       runner.serviceProvider.cloudApiClient,
       logger: logger,
-      specifiedProjectDir: specifiedProjectDir,
+      specifiedProjectDir: specifiedProjectDir?.path,
       foundProjectDir: foundProjectDir,
       projectId: projectId,
       enableDb: enableDb,

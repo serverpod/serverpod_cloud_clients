@@ -27,10 +27,11 @@ class CloudStatusCommand extends CloudCliCommand {
 
 abstract final class _DeployStatusOptions {
   static const projectId = ProjectIdOption();
-  static const limit = StringOption(
+  static const limit = IntOption(
     argName: 'limit',
     helpText: 'The maximum number of records to fetch.',
-    defaultsTo: '10',
+    defaultsTo: 10,
+    min: 1,
   );
   static const utc = FlagOption(
     argName: 'utc',
@@ -49,11 +50,15 @@ abstract final class _DeployStatusOptions {
     valueHelp: '<uuid|integer>',
     defaultsTo: '0',
   );
+
+  static const _modeGroup = MutuallyExclusive('Mode', allowDefaults: true);
+
   static const list = FlagOption(
     argName: 'list',
     argAbbrev: CommandConfigConstants.listOptionAbbrev,
     defaultsTo: false,
     helpText: "List recent deployments.",
+    group: _modeGroup,
     negatable: false,
   );
   static const log = FlagOption(
@@ -61,6 +66,7 @@ abstract final class _DeployStatusOptions {
     argAbbrev: 'b',
     defaultsTo: false,
     helpText: "View a deployment's build log, or latest by default.",
+    group: _modeGroup,
     negatable: false,
   );
   static const overallStatus = FlagOption(
@@ -68,6 +74,7 @@ abstract final class _DeployStatusOptions {
     defaultsTo: false,
     helpText: "View a deployment's overall status as a single word, one of: "
         "success, failure, awaiting, running, cancelled, unknown.",
+    group: _modeGroup,
     negatable: false,
   );
 }
@@ -101,19 +108,13 @@ class CloudDeployStatusCommand extends CloudCliCommand<DeployStatusOption> {
   Future<void> runWithConfig(
       final Configuration<DeployStatusOption> commandConfig) async {
     final projectId = commandConfig.value(DeployStatusOption.projectId);
-    final limit =
-        int.tryParse(commandConfig.value(DeployStatusOption.limit)) ?? 10;
+    final limit = commandConfig.value(DeployStatusOption.limit);
     final inUtc = commandConfig.value(DeployStatusOption.utc);
     final deploymentArg =
         commandConfig.optionalValue(DeployStatusOption.deploy);
     final list = commandConfig.value(DeployStatusOption.list);
     final log = commandConfig.value(DeployStatusOption.log);
     final overallStatus = commandConfig.value(DeployStatusOption.overallStatus);
-
-    if (list && log) {
-      logger.error('Cannot use --list and --build-log together.');
-      throw ErrorExitException();
-    }
 
     if (list) {
       // list recent deployments

@@ -93,7 +93,7 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
     final serverAddress = globalConfiguration.consoleServer;
 
     final storedCloudData = await ResourceManager.tryFetchServerpodCloudData(
-      localStoragePath: localStoragePath,
+      localStoragePath: localStoragePath.path,
       logger: logger,
     );
 
@@ -157,7 +157,7 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
     if (persistent) {
       await ResourceManager.storeServerpodCloudData(
         cloudData: ServerpodCloudData(token),
-        localStoragePath: localStoragePath,
+        localStoragePath: localStoragePath.path,
       );
     }
 
@@ -183,7 +183,7 @@ class CloudLogoutCommand extends CloudCliCommand {
     final localStoragePath = globalConfiguration.scloudDir;
 
     final cloudData = await ResourceManager.tryFetchServerpodCloudData(
-      localStoragePath: localStoragePath,
+      localStoragePath: localStoragePath.path,
       logger: logger,
     );
 
@@ -204,7 +204,7 @@ class CloudLogoutCommand extends CloudCliCommand {
 
     try {
       await ResourceManager.removeServerpodCloudData(
-        localStoragePath: localStoragePath,
+        localStoragePath: localStoragePath.path,
       );
     } on Exception catch (e) {
       logger.error(

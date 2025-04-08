@@ -491,8 +491,8 @@ project:
               (final e) => e.message,
               'message',
               equals(
-                'Failed to resolve option `project-dir`: The specified directory '
-                '`grandparent_dir/parent_dir/non_existing_dir` does not exist.',
+                'Invalid value for option `project-dir`: Directory '
+                '"grandparent_dir/parent_dir/non_existing_dir" does not exist.',
               ),
             )),
           );

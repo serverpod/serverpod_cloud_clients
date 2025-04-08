@@ -61,7 +61,7 @@ class _ScloudProjectConfigProvider<T extends OptionDefinition>
       logger?.info('No scloud project configuration file found.');
     } else {
       logger?.info('Using scloud project configuration file $configFile');
-      return ConfigurationParser.fromFile(configFile);
+      return ConfigurationParser.fromFile(configFile.path);
     }
 
     return MapConfigSource({}); // empty configuration content
