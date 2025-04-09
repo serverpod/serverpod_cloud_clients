@@ -1,6 +1,16 @@
 
 # Changelog
 
+## 0.5.0 - 2025-04-09
+
+### Added
+
+- **Secrets and environment variables from file** - You can now create secrets and environment variables from a file using the `--from-file` option with the `scloud secret create`, `scloud env create`, and `scloud env update` commands.
+
+### Fixed
+
+- **Updated command docs URL** - Updated the URL to the command reference documentation in the CLI usage footer.
+
 ## [0.4.0] - 2025-03-31
 
 ### Added
