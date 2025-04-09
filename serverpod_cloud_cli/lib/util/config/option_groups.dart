@@ -35,7 +35,7 @@ class MutuallyExclusive extends OptionGroup {
     }
 
     if (mandatory && providedCount == 0) {
-      return 'Option group $name requires one of the options to be provided.';
+      return 'Option group $name requires one of the options to be provided';
     }
 
     return null;

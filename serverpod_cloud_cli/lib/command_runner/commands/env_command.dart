@@ -41,12 +41,17 @@ abstract final class EnvCommandConfig {
     helpText:
         'The value of the environment variable. Can be passed as the second argument.',
   );
+
+  static const valueFile = ValueFileOption(
+    helpText: 'The name of the file with the environment variable value.',
+  );
 }
 
 enum CreateEnvCommandConfig<V> implements OptionDefinition<V> {
   projectId(EnvCommandConfig.projectId),
   variableName(EnvCommandConfig.variableName),
-  variableValue(EnvCommandConfig.variableValue);
+  variableValue(EnvCommandConfig.variableValue),
+  valueFile(EnvCommandConfig.valueFile);
 
   const CreateEnvCommandConfig(this.option);
 
@@ -57,7 +62,8 @@ enum CreateEnvCommandConfig<V> implements OptionDefinition<V> {
 enum UpdateEnvCommandConfig<V> implements OptionDefinition<V> {
   projectId(EnvCommandConfig.projectId),
   variableName(EnvCommandConfig.variableName),
-  variableValue(EnvCommandConfig.variableValue);
+  variableValue(EnvCommandConfig.variableValue),
+  valueFile(EnvCommandConfig.valueFile);
 
   const UpdateEnvCommandConfig(this.option);
 
@@ -102,14 +108,25 @@ class CloudEnvCreateCommand extends CloudCliCommand<CreateEnvCommandConfig> {
     final variableName =
         commandConfig.value(CreateEnvCommandConfig.variableName);
     final variableValue =
-        commandConfig.value(CreateEnvCommandConfig.variableValue);
+        commandConfig.optionalValue(CreateEnvCommandConfig.variableValue);
+    final valueFile =
+        commandConfig.optionalValue(CreateEnvCommandConfig.valueFile);
+
+    String valueToSet;
+    if (variableValue != null) {
+      valueToSet = variableValue;
+    } else if (valueFile != null) {
+      valueToSet = valueFile.readAsStringSync();
+    } else {
+      throw StateError('Expected one of the value options to be set.');
+    }
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
     await handleCommonClientExceptions(logger, () async {
       await apiCloudClient.environmentVariables.create(
         variableName,
-        variableValue,
+        valueToSet,
         projectId,
       );
     }, (final e) {
@@ -142,14 +159,25 @@ class CloudEnvUpdateCommand extends CloudCliCommand<UpdateEnvCommandConfig> {
     final variableName =
         commandConfig.value(UpdateEnvCommandConfig.variableName);
     final variableValue =
-        commandConfig.value(UpdateEnvCommandConfig.variableValue);
+        commandConfig.optionalValue(UpdateEnvCommandConfig.variableValue);
+    final valueFile =
+        commandConfig.optionalValue(UpdateEnvCommandConfig.valueFile);
+
+    String valueToSet;
+    if (variableValue != null) {
+      valueToSet = variableValue;
+    } else if (valueFile != null) {
+      valueToSet = valueFile.readAsStringSync();
+    } else {
+      throw StateError('Expected one of the value options to be set.');
+    }
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
     await handleCommonClientExceptions(logger, () async {
       await apiCloudClient.environmentVariables.update(
         name: variableName,
-        value: variableValue,
+        value: valueToSet,
         cloudCapsuleId: projectId,
       );
     }, (final e) {

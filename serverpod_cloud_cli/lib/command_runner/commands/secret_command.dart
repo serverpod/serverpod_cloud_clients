@@ -28,20 +28,25 @@ abstract final class SecretCommandConfig {
   static const projectId = ProjectIdOption();
 
   static const name = NameOption(
-    helpText: 'The name of the secret. Can be passed as the first argument.',
     argPos: 0,
+    helpText: 'The name of the secret. Can be passed as the first argument.',
   );
 
   static const value = ValueOption(
     argPos: 1,
     helpText: 'The value of the secret. Can be passed as the second argument.',
   );
+
+  static const valueFile = ValueFileOption(
+    helpText: 'The name of the file with the secret value.',
+  );
 }
 
 enum CreateSecretCommandConfig<V> implements OptionDefinition<V> {
   projectId(SecretCommandConfig.projectId),
   name(SecretCommandConfig.name),
-  value(SecretCommandConfig.value);
+  value(SecretCommandConfig.value),
+  valueFile(SecretCommandConfig.valueFile);
 
   const CreateSecretCommandConfig(this.option);
 
@@ -66,13 +71,24 @@ class CloudCreateSecretCommand
   ) async {
     final projectId = commandConfig.value(CreateSecretCommandConfig.projectId);
     final name = commandConfig.value(CreateSecretCommandConfig.name);
-    final value = commandConfig.value(CreateSecretCommandConfig.value);
+    final value = commandConfig.optionalValue(CreateSecretCommandConfig.value);
+    final valueFile =
+        commandConfig.optionalValue(CreateSecretCommandConfig.valueFile);
+
+    String valueToSet;
+    if (value != null) {
+      valueToSet = value;
+    } else if (valueFile != null) {
+      valueToSet = valueFile.readAsStringSync();
+    } else {
+      throw StateError('Expected one of the value options to be set.');
+    }
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
     await handleCommonClientExceptions(logger, () async {
       await apiCloudClient.secrets.create(
-        secrets: {name: value},
+        secrets: {name: valueToSet},
         cloudCapsuleId: projectId,
       );
     }, (final e) {

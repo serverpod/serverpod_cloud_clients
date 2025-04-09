@@ -1,36 +1,34 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
 
+import 'package:args/command_runner.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
+import 'package:test_descriptor/test_descriptor.dart' as d;
+import 'package:test/test.dart';
+
+import 'package:ground_control_client/ground_control_client_mock.dart';
+import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/env_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
-import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
-import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
-import 'package:ground_control_client/ground_control_client.dart';
-import 'package:test/test.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 
 import '../../test_utils/command_logger_matchers.dart';
-import '../../test_utils/http_server_builder.dart';
 import '../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();
+  final keyManager = InMemoryKeyManager();
+  final client = ClientMock(authenticationKeyManager: keyManager);
   final cli = CloudCliCommandRunner.create(
     logger: logger,
+    serviceProvider: CloudCliServiceProvider(
+      apiClientFactory: (final globalCfg) => client,
+    ),
   );
 
-  final testCacheFolderPath = p.join(
-    'test_integration',
-    const Uuid().v4(),
-  );
-
-  tearDown(() {
-    final directory = Directory(testCacheFolderPath);
-    if (directory.existsSync()) {
-      directory.deleteSync(recursive: true);
-    }
+  tearDown(() async {
+    await keyManager.remove();
 
     logger.clear();
   });
@@ -42,36 +40,17 @@ void main() {
   });
 
   group('Given unauthenticated', () {
-    late Uri localServerAddress;
-    late Completer requestCompleter;
-    late HttpServer server;
-
     setUp(() async {
-      requestCompleter = Completer();
-      await ResourceManager.storeServerpodCloudData(
-        cloudData: ServerpodCloudData('my-token'),
-        localStoragePath: testCacheFolderPath,
-      );
-
-      final serverBuilder = HttpServerBuilder();
-      serverBuilder.withOnRequest((final request) {
-        requestCompleter.complete();
-        request.response.statusCode = 401;
-        request.response.close();
-      });
-
-      final (startedServer, serverAddress) = await serverBuilder.build();
-      localServerAddress = serverAddress;
-      server = startedServer;
-    });
-
-    tearDown(() async {
-      await server.close(force: true);
+      await keyManager.put('mock-token');
     });
 
     group('when executing env create', () {
       late Future commandResult;
+
       setUp(() async {
+        when(() => client.environmentVariables.create(any(), any(), any()))
+            .thenThrow(ServerpodClientUnauthorized());
+
         commandResult = cli.run([
           'env',
           'create',
@@ -79,15 +58,10 @@ void main() {
           'value',
           '--project',
           projectId,
-          '--api-url',
-          localServerAddress.toString(),
-          '--scloud-dir',
-          testCacheFolderPath,
         ]);
       });
 
       test('then throws exception', () async {
-        await expectLater(requestCompleter.future, completes);
         await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
       });
 
@@ -108,7 +82,14 @@ void main() {
 
     group('when executing env update', () {
       late Future commandResult;
+
       setUp(() async {
+        when(() => client.environmentVariables.update(
+              name: any(named: 'name'),
+              value: any(named: 'value'),
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            )).thenThrow(ServerpodClientUnauthorized());
+
         commandResult = cli.run([
           'env',
           'update',
@@ -116,15 +97,10 @@ void main() {
           'value',
           '--project',
           projectId,
-          '--api-url',
-          localServerAddress.toString(),
-          '--scloud-dir',
-          testCacheFolderPath,
         ]);
       });
 
       test('then throws exception', () async {
-        await expectLater(requestCompleter.future, completes);
         await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
       });
 
@@ -143,9 +119,15 @@ void main() {
       });
     });
 
-    group('when executing env and confirming prompt', () {
+    group('when executing env delete and confirming prompt', () {
       late Future commandResult;
+
       setUp(() async {
+        when(() => client.environmentVariables.delete(
+              name: any(named: 'name'),
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            )).thenThrow(ServerpodClientUnauthorized());
+
         logger.answerNextConfirmWith(true);
         commandResult = cli.run([
           'env',
@@ -153,15 +135,10 @@ void main() {
           'key',
           '--project',
           projectId,
-          '--api-url',
-          localServerAddress.toString(),
-          '--scloud-dir',
-          testCacheFolderPath,
         ]);
       });
 
       test('then throws exception', () async {
-        await expectLater(requestCompleter.future, completes);
         await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
       });
 
@@ -182,21 +159,20 @@ void main() {
 
     group('when executing env list', () {
       late Future commandResult;
+
       setUp(() async {
+        when(() => client.environmentVariables.list(any()))
+            .thenThrow(ServerpodClientUnauthorized());
+
         commandResult = cli.run([
           'env',
           'list',
           '--project',
           projectId,
-          '--api-url',
-          localServerAddress.toString(),
-          '--scloud-dir',
-          testCacheFolderPath,
         ]);
       });
 
       test('then throws exception', () async {
-        await expectLater(requestCompleter.future, completes);
         await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
       });
 
@@ -217,103 +193,386 @@ void main() {
   });
 
   group('Given authenticated', () {
-    late Uri localServerAddress;
-    late HttpServer server;
-
     setUp(() async {
-      await ResourceManager.storeServerpodCloudData(
-        cloudData: ServerpodCloudData('my-token'),
-        localStoragePath: testCacheFolderPath,
-      );
-
-      final serverBuilder = HttpServerBuilder();
-
-      serverBuilder.withSuccessfulResponse(EnvironmentVariable(
-        capsuleId: 1,
-        name: 'name',
-        value: 'value',
-      ));
-
-      final (startedServer, serverAddress) = await serverBuilder.build();
-      localServerAddress = serverAddress;
-      server = startedServer;
-    });
-
-    tearDown(() async {
-      await server.close(force: true);
+      await keyManager.put('mock-token');
     });
 
     group('when executing env create', () {
-      late Future commandResult;
       setUp(() async {
-        commandResult = cli.run([
-          'env',
-          'create',
-          'key',
-          'value',
-          '--project',
-          projectId,
-          '--api-url',
-          localServerAddress.toString(),
-          '--scloud-dir',
-          testCacheFolderPath,
-        ]);
+        when(() => client.environmentVariables.create(
+              any(that: equals('key')),
+              any(that: equals('value')),
+              any(),
+            )).thenAnswer((final invocation) async => Future.value(
+              EnvironmentVariable(
+                name: invocation.positionalArguments[0],
+                value: invocation.positionalArguments[1],
+                capsuleId: 0,
+              ),
+            ));
       });
 
-      test('then command completes successfully', () async {
-        await expectLater(commandResult, completes);
+      group('with value arg', () {
+        late Future commandResult;
+
+        setUp(() async {
+          commandResult = cli.run([
+            'env',
+            'create',
+            'key',
+            'value',
+            '--project',
+            projectId,
+          ]);
+        });
+
+        test('then command completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then logs success message', () async {
+          await commandResult;
+
+          expect(logger.successCalls, isNotEmpty);
+          expect(
+            logger.successCalls.first,
+            equalsSuccessCall(
+              message: 'Successfully created environment variable.',
+            ),
+          );
+        });
       });
 
-      test('then logs success message', () async {
-        await commandResult;
+      group('with value file arg', () {
+        late Future commandResult;
 
-        expect(logger.successCalls, isNotEmpty);
-        expect(
-          logger.successCalls.first,
-          equalsSuccessCall(
-            message: 'Successfully created environment variable.',
-          ),
-        );
+        setUp(() async {
+          await d.file('value.txt', 'value').create();
+
+          commandResult = cli.run([
+            'env',
+            'create',
+            'key',
+            '--from-file',
+            p.join(d.sandbox, 'value.txt'),
+            '--project',
+            projectId,
+          ]);
+        });
+
+        test('then command completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then logs success message', () async {
+          await commandResult;
+
+          expect(logger.successCalls, isNotEmpty);
+          expect(
+            logger.successCalls.first,
+            equalsSuccessCall(
+              message: 'Successfully created environment variable.',
+            ),
+          );
+        });
+      });
+
+      group('with both value arg and value file arg', () {
+        late Future commandResult;
+
+        setUp(() async {
+          await d.file('value.txt', 'value').create();
+
+          commandResult = cli.run([
+            'env',
+            'create',
+            'key',
+            'value',
+            '--from-file',
+            p.join(d.sandbox, 'value.txt'),
+            '--project',
+            projectId,
+          ]);
+        });
+
+        test('then command throws UsageException', () async {
+          await expectLater(
+            commandResult,
+            throwsA(isA<UsageException>().having(
+              (final e) => e.message,
+              'message',
+              equals(
+                'These options are mutually exclusive: from-file, value.',
+              ),
+            )),
+          );
+        });
+      });
+
+      group('with neither value arg nor file arg', () {
+        late Future commandResult;
+
+        setUp(() async {
+          commandResult = cli.run([
+            'env',
+            'create',
+            'key',
+            '--project',
+            projectId,
+          ]);
+        });
+
+        test('then command throws UsageException', () async {
+          await expectLater(
+            commandResult,
+            throwsA(isA<UsageException>().having(
+              (final e) => e.message,
+              'message',
+              equals(
+                'Option group Value requires one of the options to be provided.',
+              ),
+            )),
+          );
+        });
+      });
+    });
+
+    group('when executing env create', () {
+      setUp(() async {
+        when(() => client.environmentVariables.create(
+              any(that: equals('key')),
+              any(that: equals('value1\nline2')),
+              any(),
+            )).thenAnswer((final invocation) async => Future.value(
+              EnvironmentVariable(
+                name: invocation.positionalArguments[0],
+                value: invocation.positionalArguments[1],
+                capsuleId: 0,
+              ),
+            ));
+      });
+
+      group('with multi-line value arg', () {
+        late Future commandResult;
+
+        setUp(() async {
+          commandResult = cli.run([
+            'env',
+            'create',
+            'key',
+            'value1\nline2',
+            '--project',
+            projectId,
+          ]);
+        });
+
+        test('then command completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then logs success message', () async {
+          await commandResult;
+
+          expect(logger.successCalls, isNotEmpty);
+          expect(
+            logger.successCalls.first,
+            equalsSuccessCall(
+              message: 'Successfully created environment variable.',
+            ),
+          );
+        });
+      });
+
+      group('with multi-line value file arg', () {
+        late Future commandResult;
+
+        setUp(() async {
+          await d.file('value.txt', 'value1\nline2').create();
+
+          commandResult = cli.run([
+            'env',
+            'create',
+            'key',
+            '--from-file',
+            p.join(d.sandbox, 'value.txt'),
+            '--project',
+            projectId,
+          ]);
+        });
+
+        test('then command completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then logs success message', () async {
+          await commandResult;
+
+          expect(logger.successCalls, isNotEmpty);
+          expect(
+            logger.successCalls.first,
+            equalsSuccessCall(
+              message: 'Successfully created environment variable.',
+            ),
+          );
+        });
       });
     });
 
     group('when executing env update', () {
-      late Future commandResult;
       setUp(() async {
-        commandResult = cli.run([
-          'env',
-          'update',
-          'key',
-          'value',
-          '--project',
-          projectId,
-          '--api-url',
-          localServerAddress.toString(),
-          '--scloud-dir',
-          testCacheFolderPath,
-        ]);
+        when(() => client.environmentVariables.update(
+              name: any(named: 'name', that: equals('key')),
+              value: any(named: 'value', that: equals('value')),
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            )).thenAnswer((final invocation) async => Future.value(
+              EnvironmentVariable(
+                name: invocation.namedArguments[#name],
+                value: invocation.namedArguments[#value],
+                capsuleId: 0,
+              ),
+            ));
       });
 
-      test('then completes successfully', () async {
-        await expectLater(commandResult, completes);
+      group('with value arg', () {
+        late Future commandResult;
+
+        setUp(() async {
+          commandResult = cli.run([
+            'env',
+            'update',
+            'key',
+            'value',
+            '--project',
+            projectId,
+          ]);
+        });
+
+        test('then completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then logs success message', () async {
+          await commandResult;
+
+          expect(logger.successCalls, isNotEmpty);
+          expect(
+            logger.successCalls.first,
+            equalsSuccessCall(
+              message: 'Successfully updated environment variable: key.',
+            ),
+          );
+        });
       });
 
-      test('then logs success message', () async {
-        await commandResult;
+      group('with value file arg', () {
+        late Future commandResult;
 
-        expect(logger.successCalls, isNotEmpty);
-        expect(
-          logger.successCalls.first,
-          equalsSuccessCall(
-            message: 'Successfully updated environment variable: key.',
-          ),
-        );
+        setUp(() async {
+          await d.file('value.txt', 'value').create();
+
+          commandResult = cli.run([
+            'env',
+            'update',
+            'key',
+            '--from-file',
+            p.join(d.sandbox, 'value.txt'),
+            '--project',
+            projectId,
+          ]);
+        });
+
+        test('then completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then logs success message', () async {
+          await commandResult;
+
+          expect(logger.successCalls, isNotEmpty);
+          expect(
+            logger.successCalls.first,
+            equalsSuccessCall(
+              message: 'Successfully updated environment variable: key.',
+            ),
+          );
+        });
+      });
+
+      group('with both value arg and value file arg', () {
+        late Future commandResult;
+
+        setUp(() async {
+          await d.file('value.txt', 'value').create();
+
+          commandResult = cli.run([
+            'env',
+            'update',
+            'key',
+            'value',
+            '--from-file',
+            p.join(d.sandbox, 'value.txt'),
+            '--project',
+            projectId,
+          ]);
+        });
+
+        test('then command throws UsageException', () async {
+          await expectLater(
+            commandResult,
+            throwsA(isA<UsageException>().having(
+              (final e) => e.message,
+              'message',
+              equals(
+                'These options are mutually exclusive: from-file, value.',
+              ),
+            )),
+          );
+        });
+      });
+
+      group('with neither value arg nor file arg', () {
+        late Future commandResult;
+
+        setUp(() async {
+          commandResult = cli.run([
+            'env',
+            'update',
+            'key',
+            '--project',
+            projectId,
+          ]);
+        });
+
+        test('then command throws UsageException', () async {
+          await expectLater(
+            commandResult,
+            throwsA(isA<UsageException>().having(
+              (final e) => e.message,
+              'message',
+              equals(
+                'Option group Value requires one of the options to be provided.',
+              ),
+            )),
+          );
+        });
       });
     });
 
     group('when executing env delete and confirming prompt', () {
       late Future commandResult;
+
       setUp(() async {
+        when(() => client.environmentVariables.delete(
+              name: any(named: 'name'),
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            )).thenAnswer((final invocation) async => Future.value(
+              EnvironmentVariable(
+                name: invocation.namedArguments[#name],
+                value: 'placeholder',
+                capsuleId: 0,
+              ),
+            ));
+
         logger.answerNextConfirmWith(true);
         commandResult = cli.run([
           'env',
@@ -321,10 +580,6 @@ void main() {
           'key',
           '--project',
           projectId,
-          '--api-url',
-          localServerAddress.toString(),
-          '--scloud-dir',
-          testCacheFolderPath,
         ]);
       });
 
@@ -363,6 +618,7 @@ void main() {
 
     group('when executing env delete and rejecting prompt', () {
       late Future commandResult;
+
       setUp(() async {
         logger.answerNextConfirmWith(false);
         commandResult = cli.run([
@@ -371,10 +627,6 @@ void main() {
           'key',
           '--project',
           projectId,
-          '--api-url',
-          localServerAddress.toString(),
-          '--scloud-dir',
-          testCacheFolderPath,
         ]);
       });
 
@@ -406,65 +658,45 @@ void main() {
         expect(logger.successCalls, isEmpty);
       });
     });
-  });
 
-  group('Given authenticated when executing env list', () {
-    late Uri localServerAddress;
-    late HttpServer server;
+    group('when executing env list', () {
+      late Future commandResult;
 
-    late Future commandResult;
+      setUp(() async {
+        when(() => client.environmentVariables.list(any()))
+            .thenAnswer((final invocation) async => Future.value([
+                  EnvironmentVariable(
+                    name: 'name',
+                    value: 'value',
+                    capsuleId: 0,
+                  ),
+                ]));
 
-    setUp(() async {
-      await ResourceManager.storeServerpodCloudData(
-        cloudData: ServerpodCloudData('my-token'),
-        localStoragePath: testCacheFolderPath,
-      );
+        commandResult = cli.run([
+          'env',
+          'list',
+          '--project',
+          projectId,
+        ]);
+      });
 
-      final serverBuilder = HttpServerBuilder();
-      serverBuilder.withSuccessfulResponse(jsonEncode([
-        EnvironmentVariable(
-          capsuleId: 1,
-          name: 'name',
-          value: 'value',
-        )
-      ]));
+      test('then completes successfully', () async {
+        await expectLater(commandResult, completes);
+      });
 
-      final (startedServer, serverAddress) = await serverBuilder.build();
-      localServerAddress = serverAddress;
-      server = startedServer;
+      test('then logs success message', () async {
+        await commandResult;
 
-      commandResult = cli.run([
-        'env',
-        'list',
-        '--project',
-        projectId,
-        '--api-url',
-        localServerAddress.toString(),
-        '--scloud-dir',
-        testCacheFolderPath,
-      ]);
-    });
-
-    tearDown(() async {
-      await server.close(force: true);
-    });
-
-    test('then completes successfully', () async {
-      await expectLater(commandResult, completes);
-    });
-
-    test('then logs success message', () async {
-      await commandResult;
-
-      expect(logger.lineCalls, isNotEmpty);
-      expect(
-        logger.lineCalls,
-        containsAllInOrder([
-          equalsLineCall(line: 'Name | Value'),
-          equalsLineCall(line: '-----+------'),
-          equalsLineCall(line: 'name | value'),
-        ]),
-      );
+        expect(logger.lineCalls, isNotEmpty);
+        expect(
+          logger.lineCalls,
+          containsAllInOrder([
+            equalsLineCall(line: 'Name | Value'),
+            equalsLineCall(line: '-----+------'),
+            equalsLineCall(line: 'name | value'),
+          ]),
+        );
+      });
     });
   });
 }

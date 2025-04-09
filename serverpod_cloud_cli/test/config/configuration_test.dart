@@ -1064,7 +1064,7 @@ void main() async {
       expect(config.errors, hasLength(1));
       expect(
         config.errors.single,
-        'Option group mutex-group requires one of the options to be provided.',
+        'Option group mutex-group requires one of the options to be provided',
       );
     });
   });

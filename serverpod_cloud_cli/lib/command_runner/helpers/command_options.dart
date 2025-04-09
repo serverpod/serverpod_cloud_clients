@@ -56,19 +56,29 @@ class NameOption extends StringOption {
     required String super.helpText,
     required int super.argPos,
   }) : super(
-          mandatory: true,
           argName: 'name',
+          mandatory: true,
         );
 }
 
+const _valueGroup = MutuallyExclusive('Value', mandatory: true);
+
 class ValueOption extends StringOption {
   const ValueOption({
-    required final String helpText,
-    required final int argPos,
+    required String super.helpText,
+    required int super.argPos,
   }) : super(
           argName: 'value',
-          helpText: helpText,
-          mandatory: true,
-          argPos: argPos,
+          group: _valueGroup,
+        );
+}
+
+class ValueFileOption extends FileOption {
+  const ValueFileOption({
+    required String super.helpText,
+  }) : super(
+          argName: 'from-file',
+          group: _valueGroup,
+          mode: PathExistMode.mustExist,
         );
 }

@@ -1,37 +1,34 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
 
+import 'package:args/command_runner.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
+import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test/test.dart';
 
+import 'package:ground_control_client/ground_control_client_mock.dart';
+import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/secret_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
-import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
-import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
-import 'package:ground_control_client/ground_control_client.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 
 import '../../test_utils/command_logger_matchers.dart';
-import '../../test_utils/http_server_builder.dart';
 import '../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();
+  final keyManager = InMemoryKeyManager();
+  final client = ClientMock(authenticationKeyManager: keyManager);
   final cli = CloudCliCommandRunner.create(
     logger: logger,
+    serviceProvider: CloudCliServiceProvider(
+      apiClientFactory: (final globalCfg) => client,
+    ),
   );
 
-  final testCacheFolderPath = p.join(
-    'test_integration',
-    const Uuid().v4(),
-  );
-
-  tearDown(() {
-    final directory = Directory(testCacheFolderPath);
-    if (directory.existsSync()) {
-      directory.deleteSync(recursive: true);
-    }
+  tearDown(() async {
+    await keyManager.remove();
 
     logger.clear();
   });
@@ -43,36 +40,19 @@ void main() {
   });
 
   group('Given unauthenticated', () {
-    late Uri localServerAddress;
-    late Completer requestCompleter;
-    late HttpServer server;
-
     setUp(() async {
-      requestCompleter = Completer();
-      await ResourceManager.storeServerpodCloudData(
-        cloudData: ServerpodCloudData('my-token'),
-        localStoragePath: testCacheFolderPath,
-      );
-
-      final serverBuilder = HttpServerBuilder();
-      serverBuilder.withOnRequest((final request) {
-        requestCompleter.complete();
-        request.response.statusCode = 401;
-        request.response.close();
-      });
-
-      final (startedServer, serverAddress) = await serverBuilder.build();
-      localServerAddress = serverAddress;
-      server = startedServer;
-    });
-
-    tearDown(() async {
-      await server.close(force: true);
+      await keyManager.put('mock-token');
     });
 
     group('when executing secrets create', () {
       late Future commandResult;
+
       setUp(() async {
+        when(() => client.secrets.create(
+              secrets: any(named: 'secrets'),
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            )).thenThrow(ServerpodClientUnauthorized());
+
         commandResult = cli.run([
           'secret',
           'create',
@@ -80,15 +60,10 @@ void main() {
           'value',
           '--project',
           projectId,
-          '--api-url',
-          localServerAddress.toString(),
-          '--scloud-dir',
-          testCacheFolderPath,
         ]);
       });
 
       test('then throws exception', () async {
-        await expectLater(requestCompleter.future, completes);
         await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
       });
 
@@ -109,7 +84,13 @@ void main() {
 
     group('when executing secrets delete and confirming prompt', () {
       late Future commandResult;
+
       setUp(() async {
+        when(() => client.secrets.delete(
+              key: any(named: 'key'),
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            )).thenThrow(ServerpodClientUnauthorized());
+
         logger.answerNextConfirmWith(true);
         commandResult = cli.run([
           'secret',
@@ -117,15 +98,10 @@ void main() {
           'key',
           '--project',
           projectId,
-          '--api-url',
-          localServerAddress.toString(),
-          '--scloud-dir',
-          testCacheFolderPath,
         ]);
       });
 
       test('then throws exception', () async {
-        await expectLater(requestCompleter.future, completes);
         await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
       });
 
@@ -146,21 +122,20 @@ void main() {
 
     group('when executing secrets list', () {
       late Future commandResult;
+
       setUp(() async {
+        when(() => client.secrets.list(any()))
+            .thenThrow(ServerpodClientUnauthorized());
+
         commandResult = cli.run([
           'secret',
           'list',
           '--project',
           projectId,
-          '--api-url',
-          localServerAddress.toString(),
-          '--scloud-dir',
-          testCacheFolderPath,
         ]);
       });
 
       test('then throws exception', () async {
-        await expectLater(requestCompleter.future, completes);
         await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
       });
 
@@ -181,42 +156,164 @@ void main() {
   });
 
   group('Given authenticated', () {
-    late Uri localServerAddress;
-    late HttpServer server;
-
     setUp(() async {
-      await ResourceManager.storeServerpodCloudData(
-        cloudData: ServerpodCloudData('my-token'),
-        localStoragePath: testCacheFolderPath,
-      );
-
-      final serverBuilder = HttpServerBuilder();
-
-      serverBuilder.withSuccessfulResponse();
-
-      final (startedServer, serverAddress) = await serverBuilder.build();
-      localServerAddress = serverAddress;
-      server = startedServer;
-    });
-
-    tearDown(() async {
-      await server.close(force: true);
+      await keyManager.put('mock-token');
     });
 
     group('when executing secrets create', () {
-      late Future commandResult;
       setUp(() async {
+        when(() => client.secrets.create(
+              secrets: any(
+                named: 'secrets',
+                that: equals({'key': 'value'}),
+              ),
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            )).thenAnswer((final _) async => Future.value());
+      });
+
+      group('with value arg', () {
+        late Future commandResult;
+
+        setUp(() async {
+          commandResult = cli.run([
+            'secret',
+            'create',
+            'key',
+            'value',
+            '--project',
+            projectId,
+          ]);
+        });
+
+        test('then command completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then logs success message', () async {
+          await commandResult;
+
+          expect(logger.successCalls, isNotEmpty);
+          expect(
+            logger.successCalls.first,
+            equalsSuccessCall(message: 'Successfully created secret.'),
+          );
+        });
+      });
+
+      group('with value file arg', () {
+        late Future commandResult;
+
+        setUp(() async {
+          await d.file('value.txt', 'value').create();
+
+          commandResult = cli.run([
+            'secret',
+            'create',
+            'key',
+            '--from-file',
+            p.join(d.sandbox, 'value.txt'),
+            '--project',
+            projectId,
+          ]);
+        });
+
+        test('then command completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then logs success message', () async {
+          await commandResult;
+
+          expect(logger.successCalls, isNotEmpty);
+          expect(
+            logger.successCalls.first,
+            equalsSuccessCall(message: 'Successfully created secret.'),
+          );
+        });
+      });
+
+      group('with both value arg and value file arg', () {
+        late Future commandResult;
+
+        setUp(() async {
+          await d.file('value.txt', 'value').create();
+
+          commandResult = cli.run([
+            'secret',
+            'create',
+            'key',
+            'value',
+            '--from-file',
+            p.join(d.sandbox, 'value.txt'),
+            '--project',
+            projectId,
+          ]);
+        });
+
+        test('then command throws UsageException', () async {
+          await expectLater(
+            commandResult,
+            throwsA(isA<UsageException>().having(
+              (final e) => e.message,
+              'message',
+              equals('These options are mutually exclusive: from-file, value.'),
+            )),
+          );
+        });
+      });
+
+      group('with neither value arg nor file arg', () {
+        late Future commandResult;
+
+        setUp(() async {
+          commandResult = cli.run([
+            'secret',
+            'create',
+            'key',
+            '--project',
+            projectId,
+          ]);
+        });
+
+        test('then command throws UsageException', () async {
+          await expectLater(
+            commandResult,
+            throwsA(isA<UsageException>().having(
+              (final e) => e.message,
+              'message',
+              equals(
+                'Option group Value requires one of the options to be provided.',
+              ),
+            )),
+          );
+        });
+      });
+    });
+
+    group(
+        'when executing secrets create '
+        'with multi-line value file arg', () {
+      late Future commandResult;
+
+      setUp(() async {
+        when(() => client.secrets.create(
+              secrets: any(
+                named: 'secrets',
+                that: equals({'key': 'value1\nline2'}),
+              ),
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            )).thenAnswer((final _) async => Future.value());
+
+        await d.file('value.txt', 'value1\nline2').create();
+
         commandResult = cli.run([
           'secret',
           'create',
           'key',
-          'value',
+          '--from-file',
+          p.join(d.sandbox, 'value.txt'),
           '--project',
           projectId,
-          '--api-url',
-          localServerAddress.toString(),
-          '--scloud-dir',
-          testCacheFolderPath,
         ]);
       });
 
@@ -237,7 +334,13 @@ void main() {
 
     group('when executing secrets delete and confirming prompt', () {
       late Future commandResult;
+
       setUp(() async {
+        when(() => client.secrets.delete(
+              key: any(named: 'key'),
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            )).thenAnswer((final _) async => Future.value());
+
         logger.answerNextConfirmWith(true);
         commandResult = cli.run([
           'secret',
@@ -245,10 +348,6 @@ void main() {
           'key',
           '--project',
           projectId,
-          '--api-url',
-          localServerAddress.toString(),
-          '--scloud-dir',
-          testCacheFolderPath,
         ]);
       });
 
@@ -282,7 +381,13 @@ void main() {
 
     group('when executing secrets delete and rejecting prompt', () {
       late Future commandResult;
+
       setUp(() async {
+        when(() => client.secrets.delete(
+              key: any(named: 'key'),
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            )).thenAnswer((final _) async => Future.value());
+
         logger.answerNextConfirmWith(false);
         commandResult = cli.run([
           'secret',
@@ -290,10 +395,6 @@ void main() {
           'key',
           '--project',
           projectId,
-          '--api-url',
-          localServerAddress.toString(),
-          '--scloud-dir',
-          testCacheFolderPath,
         ]);
       });
 
@@ -324,67 +425,45 @@ void main() {
         expect(logger.successCalls, isEmpty);
       });
     });
-  });
 
-  group('Given authenticated when executing secrets list', () {
-    late Uri localServerAddress;
-    late HttpServer server;
+    group('when executing secrets list', () {
+      late Future commandResult;
 
-    late Future commandResult;
+      setUp(() async {
+        when(() => client.secrets.list(any()))
+            .thenAnswer((final _) async => Future.value([
+                  'SECRET_1',
+                  'SECRET_2',
+                  'SECRET_3',
+                ]));
 
-    setUp(() async {
-      await ResourceManager.storeServerpodCloudData(
-        cloudData: ServerpodCloudData('my-token'),
-        localStoragePath: testCacheFolderPath,
-      );
+        commandResult = cli.run([
+          'secret',
+          'list',
+          '--project',
+          projectId,
+        ]);
+      });
 
-      final serverBuilder = HttpServerBuilder();
-      serverBuilder.withSuccessfulResponse(jsonEncode([
-        'SECRET_1',
-        'SECRET_2',
-        'SECRET_3',
-      ]));
+      test('then completes successfully', () async {
+        await expectLater(commandResult, completes);
+      });
 
-      final (startedServer, serverAddress) = await serverBuilder.build();
-      localServerAddress = serverAddress;
-      server = startedServer;
+      test('then logs table', () async {
+        await commandResult;
 
-      commandResult = cli.run([
-        'secret',
-        'list',
-        '--project',
-        projectId,
-        '--api-url',
-        localServerAddress.toString(),
-        '--scloud-dir',
-        testCacheFolderPath,
-      ]);
-    });
-
-    tearDown(() async {
-      await server.close(force: true);
-    });
-
-    setUp(() async {});
-
-    test('then completes successfully', () async {
-      await expectLater(commandResult, completes);
-    });
-
-    test('then logs table', () async {
-      await commandResult;
-
-      expect(logger.lineCalls, isNotEmpty);
-      expect(
-        logger.lineCalls,
-        containsAllInOrder([
-          equalsLineCall(line: 'Secret name'),
-          equalsLineCall(line: '-----------'),
-          equalsLineCall(line: 'SECRET_1   '),
-          equalsLineCall(line: 'SECRET_2   '),
-          equalsLineCall(line: 'SECRET_3   '),
-        ]),
-      );
+        expect(logger.lineCalls, isNotEmpty);
+        expect(
+          logger.lineCalls,
+          containsAllInOrder([
+            equalsLineCall(line: 'Secret name'),
+            equalsLineCall(line: '-----------'),
+            equalsLineCall(line: 'SECRET_1   '),
+            equalsLineCall(line: 'SECRET_2   '),
+            equalsLineCall(line: 'SECRET_3   '),
+          ]),
+        );
+      });
     });
   });
 }
