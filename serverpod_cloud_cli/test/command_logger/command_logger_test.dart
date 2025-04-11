@@ -213,7 +213,7 @@ void main() {
       if (Platform.isWindows) {
         expect(
           stdout.output,
-          'Operation successful\n',
+          'Operation successful \n',
         );
       } else {
         expect(

@@ -85,7 +85,7 @@ void main() {
       ),
       throwsA(isA<DirectorySymLinkException>()),
     );
-  });
+  }, onPlatform: {'windows': Skip('Symlinks are not supported on Windows')});
 
   test(
       'Given a project containing non-resolving symlink file when zipping the project then a non resolving symlink exception is thrown.',
@@ -109,7 +109,7 @@ void main() {
       ),
       throwsA(isA<NonResolvingSymlinkException>()),
     );
-  });
+  }, onPlatform: {'windows': Skip('Symlinks are not supported on Windows')});
 
   test(
       'Given a project directory with files when zipping then files are included in the root of the zip file.',
