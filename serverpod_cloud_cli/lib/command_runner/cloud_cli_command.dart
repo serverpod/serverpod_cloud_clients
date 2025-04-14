@@ -91,16 +91,16 @@ abstract class CloudCliCommand<T extends OptionDefinition>
         message: 'Please run the login command to authenticate and try again:',
         'scloud auth login',
       );
-      throw ErrorExitException();
+      throw ErrorExitException('This command requires you to be logged in.');
     }
 
     try {
       await runWithConfig(config);
-    } on CloudCliUsageException catch (e) {
+    } on CloudCliUsageException catch (e, stackTrace) {
       // TODO: Don't catch CloudCliUsageException,
       // it's a UsageException and is handled by the caller.
       logger.error(e.message, hint: e.hint);
-      throw ErrorExitException();
+      throw ErrorExitException(e.message, e, stackTrace);
     }
   }
 

@@ -5,6 +5,7 @@ import 'package:ground_control_client/ground_control_client.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/file_uploader_factory.dart';
 import 'package:serverpod_cloud_cli/commands/deploy/deploy.dart';
 import 'package:serverpod_cloud_cli/commands/project/project.dart';
 import 'package:serverpod_cloud_cli/commands/status/status.dart';
@@ -18,7 +19,8 @@ import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 
 abstract class Launch {
   static Future<void> launch(
-    final Client cloudApiClient, {
+    final Client cloudApiClient,
+    final FileUploaderFactory fileUploaderFactory, {
     required final CommandLogger logger,
     required final String? specifiedProjectDir,
     required final String? foundProjectDir,
@@ -60,7 +62,12 @@ abstract class Launch {
     );
 
     await handleCommonClientExceptions(logger, () async {
-      await performLaunch(cloudApiClient, logger, projectSetup);
+      await performLaunch(
+        cloudApiClient,
+        fileUploaderFactory,
+        logger,
+        projectSetup,
+      );
     }, (final e) {
       logger.error('Failed to perform launch', exception: e);
       throw ErrorExitException();
@@ -258,6 +265,7 @@ The default API domain will be: <project-id>.api.serverpod.space
 
   static Future<void> performLaunch(
     final Client cloudApiClient,
+    final FileUploaderFactory fileUploaderFactory,
     final CommandLogger logger,
     final ProjectLaunch projectSetup,
   ) async {
@@ -290,6 +298,7 @@ The default API domain will be: <project-id>.api.serverpod.space
 
     await Deploy.deploy(
       cloudApiClient,
+      fileUploaderFactory,
       logger: logger,
       projectId: projectId,
       projectDir: projectDir,

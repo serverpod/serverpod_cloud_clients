@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:googleapis/storage/v1.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test/test.dart';
@@ -24,10 +22,12 @@ void main() {
   final logger = TestCommandLogger();
   final keyManager = InMemoryKeyManager();
   final client = ClientMock(authenticationKeyManager: keyManager);
+  final mockFileUploader = MockFileUploader();
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
       apiClientFactory: (final globalCfg) => client,
+      fileUploaderFactory: (final _) => mockFileUploader,
     ),
   );
 
@@ -49,7 +49,8 @@ void main() {
     },
   };
 
-  tearDown(() async {
+  setUp(() {
+    mockFileUploader.init();
     logger.clear();
   });
 
@@ -279,18 +280,7 @@ project:
         });
 
         test('then zipped project is accessible in bucket.', () async {
-          final client = http.Client();
-          final storage = StorageApi(
-            client,
-            rootUrl: 'http://localhost:8000/',
-          );
-
-          await expectLater(
-            storage.objects.get(bucketName, '$projectId/$projectUuid.zip'),
-            completion(
-              isNotNull,
-            ),
-          );
+          await expectLater(mockFileUploader.uploadedData, isNotEmpty);
         });
       });
 

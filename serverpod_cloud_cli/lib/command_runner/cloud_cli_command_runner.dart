@@ -137,9 +137,10 @@ class CloudCliCommandRunner extends BetterCommandRunner {
         logger: logger,
         localStoragePath: globalConfiguration.scloudDir.path,
       );
-    } catch (e) {
+    } catch (e, stackTrace) {
       logger.debug('Failed to fetch latest CLI version: $e');
-      throw ErrorExitException();
+      throw ErrorExitException(
+          'Failed to fetch latest CLI version', e, stackTrace);
     }
 
     if (latestVersion != null && version < latestVersion) {
@@ -154,7 +155,9 @@ class CloudCliCommandRunner extends BetterCommandRunner {
         isRequiredUpdate: isRequiredUpdate,
       );
 
-      if (isRequiredUpdate) throw ErrorExitException();
+      if (isRequiredUpdate) {
+        throw ErrorExitException('You need to update the CLI to continue.');
+      }
     }
 
     try {
@@ -182,7 +185,8 @@ class CloudCliCommandRunner extends BetterCommandRunner {
 
     if (!isServerpodServerDirectory(projectDirectory)) {
       logProjectDirIsNotAServerpodServerDirectory(logger, selectedProjectDir);
-      throw ErrorExitException();
+      throw ErrorExitException(
+          'The directory is not a Serverpod server directory.');
     }
 
     logger.debug('Using project directory `${projectDirectory.path}`');

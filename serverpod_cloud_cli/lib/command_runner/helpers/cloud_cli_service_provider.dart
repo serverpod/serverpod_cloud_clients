@@ -3,11 +3,14 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart
 import 'package:serverpod_cloud_cli/util/cli_authentication_key_manager.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 
+import 'file_uploader_factory.dart';
+
 /// A service provider for the Serverpod Cloud CLI.
 /// [initialize] should be called before first use.
 /// [shutdown] should be called after last use.
 class CloudCliServiceProvider {
   final Client Function(GlobalConfiguration globalCfg)? _apiClientFactory;
+  final FileUploaderFactory _fileUploaderFactory;
 
   late GlobalConfiguration _globalConfiguration;
   late CommandLogger _logger;
@@ -16,7 +19,9 @@ class CloudCliServiceProvider {
 
   CloudCliServiceProvider({
     final Client Function(GlobalConfiguration globalCfg)? apiClientFactory,
-  }) : _apiClientFactory = apiClientFactory;
+    final FileUploaderFactory? fileUploaderFactory,
+  })  : _apiClientFactory = apiClientFactory,
+        _fileUploaderFactory = fileUploaderFactory ?? _createGcsFileUploader;
 
   void initialize({
     required final GlobalConfiguration globalConfiguration,
@@ -62,4 +67,12 @@ class CloudCliServiceProvider {
     _cloudApiClient = cloudApiClient;
     return cloudApiClient;
   }
+
+  FileUploaderFactory get fileUploaderFactory => _fileUploaderFactory;
+}
+
+FileUploaderClient _createGcsFileUploader(
+  final String uploadDescription,
+) {
+  return GoogleCloudStorageUploader(uploadDescription);
 }

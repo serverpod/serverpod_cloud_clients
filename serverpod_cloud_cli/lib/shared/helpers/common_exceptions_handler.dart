@@ -12,7 +12,7 @@ FutureOr<T> handleCommonClientExceptions<T>(
 ) async {
   try {
     return await callback();
-  } on ServerpodClientUnauthorized {
+  } on ServerpodClientUnauthorized catch (e, stackTrace) {
     logger.error(
       'The credentials for this session seem to no longer be valid.',
     );
@@ -24,27 +24,43 @@ FutureOr<T> handleCommonClientExceptions<T>(
       'scloud auth login',
     );
 
-    throw ErrorExitException();
-  } on UnauthorizedException {
+    throw ErrorExitException(
+      'The credentials for this session seem to no longer be valid.',
+      e,
+      stackTrace,
+    );
+  } on UnauthorizedException catch (e, stackTrace) {
     logger.error(
       'You are not authorized to perform this action.',
     );
 
-    throw ErrorExitException();
-  } on ForbiddenException catch (e) {
+    throw ErrorExitException(
+      'You are not authorized to perform this action.',
+      e,
+      stackTrace,
+    );
+  } on ForbiddenException catch (e, stackTrace) {
     logger.error(
       'The action was not allowed.',
       hint: e.message,
     );
 
-    throw ErrorExitException();
-  } on NotFoundException catch (e) {
+    throw ErrorExitException(
+      'The action was not allowed.',
+      e,
+      stackTrace,
+    );
+  } on NotFoundException catch (e, stackTrace) {
     logger.error(
       'The requested resource did not exist.',
       hint: e.message,
     );
 
-    throw ErrorExitException();
+    throw ErrorExitException(
+      'The requested resource did not exist.',
+      e,
+      stackTrace,
+    );
   } on ExitException catch (_) {
     rethrow;
   } on Exception catch (e) {

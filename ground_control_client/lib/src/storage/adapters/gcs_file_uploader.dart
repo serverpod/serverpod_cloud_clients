@@ -3,12 +3,14 @@ import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 
+import '../file_uploader_client.dart';
+
 /// The file uploader uploads files to Serverpod's cloud storage. On the server
 /// you can setup a custom storage service, such as S3 or Google Cloud. To
 /// directly upload a file, you first need to retrieve an upload description
 /// from your server. After the file is uploaded, make sure to notify the server
 /// by calling the verifyDirectFileUpload on the current Session object.
-class GoogleCloudStorageUploader {
+class GoogleCloudStorageUploader implements FileUploaderClient {
   late final _UploadDescription _uploadDescription;
   bool _attemptedUpload = false;
 
@@ -20,12 +22,14 @@ class GoogleCloudStorageUploader {
 
   /// Uploads a file contained by a [ByteData] object, returns true if
   /// successful.
+  @override
   Future<bool> uploadByteData(ByteData byteData) async {
     var stream = http.ByteStream.fromBytes(byteData.buffer.asUint8List());
     return upload(stream, byteData.lengthInBytes);
   }
 
   /// Uploads a file from a [Stream], returns true if successful.
+  @override
   Future<bool> upload(Stream<List<int>> stream, int length) async {
     if (_attemptedUpload) {
       throw Exception(

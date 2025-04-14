@@ -151,7 +151,7 @@ class CloudDeployStatusCommand extends CloudCliCommand<DeployStatusOption> {
         );
       }, (final e) {
         logger.error('Failed to get build log', exception: e);
-        throw ErrorExitException();
+        throw ErrorExitException('Failed to get build log', e);
       });
 
       return;

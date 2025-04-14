@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/file_uploader_factory.dart';
 import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper.dart';
@@ -10,7 +11,8 @@ import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 
 abstract class Deploy {
   static Future<void> deploy(
-    final Client cloudApiClient, {
+    final Client cloudApiClient,
+    final FileUploaderFactory fileUploaderFactory, {
     required final CommandLogger logger,
     required final String projectId,
     required final String projectDir,
@@ -29,7 +31,7 @@ abstract class Deploy {
       for (final issue in issues) {
         logger.error(issue);
       }
-      throw ErrorExitException();
+      throw ErrorExitException(issues.first);
     }
 
     late final List<int> projectZip;
@@ -76,7 +78,7 @@ abstract class Deploy {
       }
     });
 
-    if (!isZipped) throw ErrorExitException();
+    if (!isZipped) throw ErrorExitException('Failed to zip project.');
 
     if (dryRun) {
       logger.info('Dry run, skipping upload.');
@@ -91,11 +93,12 @@ abstract class Deploy {
         );
       }, (final e) {
         logger.error('Failed to fetch upload description', exception: e);
-        throw ErrorExitException();
+        throw ErrorExitException('Failed to fetch upload description', e);
       });
 
       try {
-        final ret = await GoogleCloudStorageUploader(uploadDescription).upload(
+        final fileUploader = fileUploaderFactory(uploadDescription);
+        final ret = await fileUploader.upload(
           Stream.fromIterable([projectZip]),
           projectZip.length,
         );
@@ -103,17 +106,14 @@ abstract class Deploy {
           logger.error('Failed to upload project, please try again.');
         }
         return ret;
-      } on Exception catch (e) {
-        logger.error(
-          'Failed to upload project',
-          exception: e,
-        );
-        return false;
+      } on Exception catch (e, stackTrace) {
+        logger.error('Failed to upload project', exception: e);
+        throw ErrorExitException('Failed to upload project', e, stackTrace);
       }
     });
 
     if (!success) {
-      throw ErrorExitException();
+      throw ErrorExitException('Failed to upload project.');
     }
 
     const tenantHost = 'serverpod.space';

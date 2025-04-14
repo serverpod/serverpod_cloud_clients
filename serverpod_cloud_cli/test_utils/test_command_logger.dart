@@ -302,6 +302,15 @@ class TestCommandLogger extends CommandLogger {
   }) {
     if (printToStdout) {
       print('log error: $message');
+      if (exception != null) {
+        print('  exception: $exception');
+      }
+      if (stackTrace != null) {
+        print('  stackTrace: $stackTrace');
+      }
+      if (hint != null) {
+        print('  hint: $hint');
+      }
     }
 
     if (!_somethingLogged.isCompleted) {

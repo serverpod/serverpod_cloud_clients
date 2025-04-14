@@ -47,9 +47,9 @@ Future<void> _main(final List<String> args, final CommandLogger logger) async {
   );
   try {
     await runner.run(args);
-  } on UsageException catch (e) {
+  } on UsageException catch (e, stackTrace) {
     logger.error(e.toString());
-    throw ErrorExitException();
+    throw ErrorExitException(e.message, e, stackTrace);
   }
 }
 

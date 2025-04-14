@@ -59,6 +59,7 @@ class CloudDeployCommand extends CloudCliCommand<DeployCommandOption> {
 
     await Deploy.deploy(
       runner.serviceProvider.cloudApiClient,
+      runner.serviceProvider.fileUploaderFactory,
       logger: logger,
       projectId: projectId,
       projectDir: projectDirectory.path,

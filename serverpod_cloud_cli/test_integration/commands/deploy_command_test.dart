@@ -1,52 +1,49 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:args/command_runner.dart';
-import 'package:googleapis/storage/v1.dart';
-import 'package:ground_control_client/ground_control_client.dart';
-import 'package:ground_control_client/ground_control_client_mock.dart';
-import 'package:http/http.dart' as http;
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
-import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test/test.dart';
 
+import 'package:ground_control_client/ground_control_client_mock.dart';
+import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 
 import '../../test_utils/bucket_upload_description.dart';
 import '../../test_utils/command_logger_matchers.dart';
 import '../../test_utils/project_factory.dart';
+import '../../test_utils/push_current_dir.dart';
 import '../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();
   final client = ClientMock(authenticationKeyManager: AuthedKeyManagerMock());
+  final mockFileUploader = MockFileUploader();
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
       apiClientFactory: (final globalCfg) => client,
+      fileUploaderFactory: (final _) => mockFileUploader,
     ),
   );
 
-  final testCacheFolderPath = p.join(
-    'test_integration',
-    const Uuid().v4(),
-  );
+  late String testCacheFolderPath;
 
-  final testProjectDir = p.join(
-    testCacheFolderPath,
-    'project',
-  );
+  late String testProjectDir;
+
+  setUp(() {
+    testCacheFolderPath = d.sandbox;
+    testProjectDir = p.join(testCacheFolderPath, 'project');
+
+    mockFileUploader.init();
+  });
 
   tearDown(() {
-    final directory = Directory(testCacheFolderPath);
-    if (directory.existsSync()) {
-      directory.deleteSync(recursive: true);
-    }
-
     logger.clear();
   });
 
@@ -324,6 +321,8 @@ dependencies:
             );
           });
         });
+      }, onPlatform: {
+        'windows': Skip('Symlinks are not supported on Windows')
       });
 
       group(
@@ -374,6 +373,8 @@ dependencies:
             );
           });
         });
+      }, onPlatform: {
+        'windows': Skip('Symlinks are not supported on Windows')
       });
 
       group('and upload description response but with invalid url', () {
@@ -401,6 +402,8 @@ dependencies:
 
           when(() => client.deploy.createUploadDescription(any()))
               .thenAnswer((final _) async => jsonEncode(descriptionContent));
+
+          mockFileUploader.init(uploadResponse: false);
         });
 
         group('when deploying through CLI', () {
@@ -481,21 +484,8 @@ See the `scloud domain` command to set up a custom domain.''',
 
           test('then zipped project is accessible in bucket.', () async {
             await cliCommandFuture;
-            final client = http.Client();
-            final storage = StorageApi(
-              client,
-              rootUrl: 'http://localhost:8000/',
-            );
 
-            await expectLater(
-              storage.objects.get(
-                BucketUploadDescription.bucketName,
-                BucketUploadDescription.uploadedFilePath,
-              ),
-              completion(
-                isNotNull,
-              ),
-            );
+            expect(mockFileUploader.uploadedData, isNotEmpty);
           });
         });
       });
@@ -531,6 +521,71 @@ See the `scloud domain` command to set up a custom domain.''',
           expect(logger.infoCalls, isNotEmpty);
           expect(logger.infoCalls.last.message, 'Dry run, skipping upload.');
         });
+      });
+    });
+  });
+
+  group('and a directory structure and a valid upload description response',
+      () {
+    setUp(() async {
+      DirectoryFactory.serverpodServerDir(
+        withFiles: [
+          FileFactory(
+            withName: 'scloud.yaml',
+            withContents: '''
+project:
+  projectId: "my-project-id"
+''',
+          ),
+        ],
+        withSubDirectories: [
+          DirectoryFactory(
+            withDirectoryName: 'subdir',
+            withSubDirectories: [
+              DirectoryFactory(
+                withDirectoryName: 'subsubdir',
+                withFiles: [
+                  FileFactory(
+                    withName: 'subsubdir_file.txt',
+                    withContents: 'file_content',
+                  ),
+                ],
+              ),
+            ],
+            withFiles: [
+              FileFactory(
+                withName: 'subdir_file.txt',
+                withContents: 'file_content',
+              ),
+            ],
+          ),
+        ],
+      ).construct(testProjectDir);
+      when(() => client.deploy.createUploadDescription(any())).thenAnswer(
+          (final _) async => BucketUploadDescription.uploadDescription);
+    });
+
+    group(
+        'when deploying through CLI without explicit project dir and with --dry-run',
+        () {
+      late Future cliCommandFuture;
+      setUp(() async {
+        pushCurrentDirectory(testCacheFolderPath);
+
+        cliCommandFuture = cli.run([
+          'deploy',
+          '--dry-run',
+        ]);
+      });
+
+      test('then command completes successfully.', () async {
+        await expectLater(cliCommandFuture, completes);
+      });
+
+      test('then dry run message is logged.', () async {
+        await cliCommandFuture;
+        expect(logger.infoCalls, isNotEmpty);
+        expect(logger.infoCalls.last.message, 'Dry run, skipping upload.');
       });
     });
   });

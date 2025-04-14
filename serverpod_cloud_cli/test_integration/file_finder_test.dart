@@ -251,7 +251,7 @@ void main() {
         final result = finder(p.join(d.sandbox, 'starting_dir'));
         expect(result, isNull);
       });
-    });
+    }, onPlatform: {'windows': Skip('chmod not supported on Windows')});
 
     group(
         'and an scloud.yaml file that is non-readable '
@@ -286,7 +286,7 @@ void main() {
         expect(result, isNotNull);
         expect(result, equals(filePath));
       });
-    });
+    }, onPlatform: {'windows': Skip('chmod not supported on Windows')});
 
     group(
         'and an scloud.yaml file in inacessible subdir '
@@ -335,6 +335,6 @@ void main() {
               ),
             ));
       });
-    });
+    }, onPlatform: {'windows': Skip('chmod not supported on Windows')});
   });
 }
