@@ -1,6 +1,13 @@
 
 # Changelog
 
+## [0.5.1] - 2025-04-14
+
+### Fixed
+
+- **scloud deploy path bug** - Absolute drive paths on Windows no longer cause the zipper to fail.
+- **Windows compatibility** - Fixed multiple issues to ensure the scloud CLI and its tests run correctly on Windows.
+
 ## 0.5.0 - 2025-04-09
 
 ### Added
