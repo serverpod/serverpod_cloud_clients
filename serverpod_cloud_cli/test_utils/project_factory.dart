@@ -6,36 +6,51 @@ import 'package:uuid/uuid.dart';
 
 /// Constructors for Serverpod project directories and files.
 class ProjectFactory {
+  static const defaultDirectoryName = 'serverpod_server';
+  static const defaultPackageName = 'my_project_server';
+  static const validSdkVersion = '">=3.6.0 <3.7.0"';
+  static const validServerpodVersion = '"^2.3.0"';
+
   /// Returns descriptor for a Serverpod server directory with a valid pubspec.yaml file.
   /// Use `descriptor.create()` to create the directory.
   static d.DirectoryDescriptor serverpodServerDir({
-    final String withDirectoryName = 'serverpod_server',
-    final String withPackageName = 'my_project_server',
+    final String withDirectoryName = defaultDirectoryName,
+    final String withPackageName = defaultPackageName,
+    final String? withResolution,
+    final Iterable<d.Descriptor>? contents,
   }) {
     return d.dir(withDirectoryName, [
       serverpodServerPubspec(withPackageName: withPackageName),
+      ...?contents,
     ]);
   }
 
   /// Returns descriptor for a valid Serverpod server pubspec.yaml file.
   /// Use `descriptor.create()` to create the file.
   static d.FileDescriptor serverpodServerPubspec({
-    final String withPackageName = 'my_project_server',
+    final String withPackageName = defaultPackageName,
+    final String? withResolution,
   }) {
+    final String resolutionString =
+        withResolution != null ? 'resolution: $withResolution' : '';
     return d.file(
       'pubspec.yaml',
       '''
 name: $withPackageName
 environment:
-  sdk: '>=3.6.0 <3.7.0'
+  sdk: $validSdkVersion
+$resolutionString
 dependencies:
-  serverpod: ^2.3.0
+  serverpod: $validServerpodVersion
 ''',
     );
   }
 }
 
 /// A class for constructing directories with files.
+///
+/// This is retained for its symlink capability. For other use cases,
+/// use [ProjectFactory] and the test_descriptor package instead.
 class DirectoryFactory {
   final List<DirectoryFactory> _subDirectories;
   final List<FileFactory> _files;
@@ -76,31 +91,6 @@ class DirectoryFactory {
     }
 
     return directory;
-  }
-
-  factory DirectoryFactory.serverpodServerDir({
-    final String? withDirectoryName,
-    final List<DirectoryFactory>? withSubDirectories,
-    final List<FileFactory>? withFiles,
-    final List<SymLinkFactory>? withSymLinks,
-  }) {
-    return DirectoryFactory(
-        withDirectoryName: withDirectoryName,
-        withSubDirectories: withSubDirectories,
-        withSymLinks: withSymLinks,
-        withFiles: [
-          ...?withFiles,
-          FileFactory(
-            withName: 'pubspec.yaml',
-            withContents: '''
-name: my_project_server
-environment:
-  sdk: '>=3.6.0 <4.0.0'
-dependencies:
-  serverpod: ^2.3.0
-''',
-          ),
-        ]);
   }
 }
 

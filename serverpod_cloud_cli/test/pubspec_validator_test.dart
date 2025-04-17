@@ -42,7 +42,7 @@ dependencies:
 '''));
 
     final result = pubspec.projectDependencyIssues();
-    expect(result, contains('No sdk constraint found in pubspec.yaml'));
+    expect(result, contains('No sdk constraint found in package my_project'));
   });
 
   test(
@@ -136,6 +136,27 @@ dependencies:
   });
 
   test(
+      'Given a pubspec with a flutter dependency, when the projectDependencyIssues method is called, then the result contains the flutter error',
+      () {
+    final pubspec = TenantProjectPubspec(Pubspec.parse('''
+name: my_project
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+  flutter: '3.29.0'
+dependencies:
+  serverpod: ^2.3.0
+'''));
+
+    final result = pubspec.projectDependencyIssues();
+    expect(
+      result,
+      contains(
+        'A Flutter dependency is not allowed in a server package: my_project',
+      ),
+    );
+  });
+
+  test(
       'Given a pubspec without serverpod dependency and without sdk constraint, when the projectDependencyIssues method is called, then the result contains both errors',
       () {
     final pubspec = TenantProjectPubspec(Pubspec.parse('''
@@ -149,7 +170,7 @@ dependencies:
         result,
         allOf([
           contains('No serverpod dependency found in pubspec.yaml'),
-          contains('No sdk constraint found in pubspec.yaml'),
+          contains('No sdk constraint found in package my_project'),
         ]));
   });
 }

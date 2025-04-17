@@ -74,17 +74,10 @@ abstract class ProjectCommands {
         throw ErrorExitException();
       });
 
-      try {
-        if (!ScloudIgnore.fileExists(rootFolder: projectDir)) {
-          ScloudIgnore.writeTemplate(rootFolder: projectDir);
-        }
-      } on Exception catch (e) {
-        logger.error(
-          'Failed to write to ${ScloudIgnore.fileName} file',
-          exception: e,
-        );
-        throw ErrorExitException();
-      }
+      ScloudIgnore.writeTemplateIfNotExists(
+        logger: logger,
+        rootFolder: projectDir,
+      );
 
       logger.success(
         "Successfully created the '$configFilePath' configuration file for '$projectId'.",
@@ -206,17 +199,10 @@ abstract class ProjectCommands {
       throw ErrorExitException();
     }
 
-    try {
-      if (!ScloudIgnore.fileExists(rootFolder: projectDirectory)) {
-        ScloudIgnore.writeTemplate(rootFolder: projectDirectory);
-      }
-    } on Exception catch (e) {
-      logger.error(
-        'Failed to write to ${ScloudIgnore.fileName} file',
-        exception: e,
-      );
-      throw ErrorExitException();
-    }
+    ScloudIgnore.writeTemplateIfNotExists(
+      logger: logger,
+      rootFolder: projectDirectory,
+    );
 
     logger.success('Successfully linked project!');
   }

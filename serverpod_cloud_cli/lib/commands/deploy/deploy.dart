@@ -9,6 +9,8 @@ import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dar
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 
+import 'prepare_workspace.dart';
+
 abstract class Deploy {
   static Future<void> deploy(
     final Client cloudApiClient,
@@ -34,12 +36,27 @@ abstract class Deploy {
       throw ErrorExitException(issues.first);
     }
 
+    final Directory rootDirectory;
+    final Iterable<String> includedSubPaths;
+    if (pubspecValidator.isWorkspaceResolved()) {
+      (rootDirectory, includedSubPaths) =
+          WorkspaceProject.prepareWorkspacePaths(
+        logger,
+        projectDirectory,
+        pubspecValidator.pubspec.name,
+      );
+    } else {
+      rootDirectory = projectDirectory;
+      includedSubPaths = const ['.'];
+    }
+
     late final List<int> projectZip;
     final isZipped = await logger.progress('Zipping project...', () async {
       try {
         projectZip = await ProjectZipper.zipProject(
-          projectDirectory: projectDirectory,
           logger: logger,
+          rootDirectory: rootDirectory,
+          beneath: includedSubPaths,
           fileReadPoolSize: concurrency,
         );
         return true;

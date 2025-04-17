@@ -22,11 +22,17 @@ abstract final class ProjectFiles {
   ///
   /// The ignore rules are determined by the presence of
   /// [ProjectZipper.recognizedIgnoreRuleFiles] files.
+  ///
+  /// The [beneath] parameter contains the relative path below the
+  /// [rootDirectory] to collect files from.
+  /// The default value is `'.'`, which means that all files in the
+  /// [rootDirectory] will be collected.
   static (Set<String> collectedFiles, Set<String> ignoredFiles) collectFiles({
-    required final Directory projectDirectory,
     required final CommandLogger logger,
+    required final Directory rootDirectory,
+    final String beneath = '.',
   }) {
-    final uri = p.toUri(p.normalize(projectDirectory.path));
+    final uri = p.toUri(p.normalize(rootDirectory.path));
 
     var root = uri.path;
     // On Windows, uri.path causes absolute paths on a drive to be prefixed with a slash, remove it.
@@ -34,7 +40,6 @@ abstract final class ProjectFiles {
       root = root.substring(1);
     }
 
-    const beneath = '.';
     final (collectedFiles, ignoredFiles) = Ignore.listFiles(
       beneath: beneath,
       listDir: (final dir) {

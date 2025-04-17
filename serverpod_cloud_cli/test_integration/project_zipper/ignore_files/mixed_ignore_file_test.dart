@@ -42,7 +42,7 @@ void main() {
     ).construct(testProjectPath);
 
     final zippedProject = ProjectZipper.zipProject(
-      projectDirectory: projectDirectory,
+      rootDirectory: projectDirectory,
       logger: commandLogger,
     );
 
@@ -70,7 +70,7 @@ void main() {
 
     expect(
       () => ProjectZipper.zipProject(
-        projectDirectory: projectDirectory,
+        rootDirectory: projectDirectory,
         logger: commandLogger,
       ),
       throwsA(isA<EmptyProjectException>()),

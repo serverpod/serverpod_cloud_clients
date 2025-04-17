@@ -1,9 +1,12 @@
 import 'dart:io';
 
 import 'package:path/path.dart';
+import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
+import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 
 abstract final class ScloudIgnore {
   static const String fileName = '.scloudignore';
+  static const String scloudDirName = '.scloud';
 
   static const String template = '''
 # .scloudignore
@@ -42,6 +45,9 @@ config/test.yaml
 
 # Opting out of ignoring web files.
 !web/**
+
+# Opting out of ignoring the $scloudDirName directory.
+!$scloudDirName/**
 ''';
 
   static bool fileExists({
@@ -56,5 +62,20 @@ config/test.yaml
   }) {
     final file = File(join(rootFolder, fileName));
     file.writeAsStringSync(template);
+  }
+
+  static void writeTemplateIfNotExists({
+    required final CommandLogger logger,
+    final String rootFolder = '.',
+  }) {
+    try {
+      if (!ScloudIgnore.fileExists(rootFolder: rootFolder)) {
+        ScloudIgnore.writeTemplate(rootFolder: rootFolder);
+      }
+    } on Exception catch (e, s) {
+      final message = 'Failed to write to ${ScloudIgnore.fileName} file';
+      logger.error(message, exception: e);
+      throw ErrorExitException(message, e, s);
+    }
   }
 }

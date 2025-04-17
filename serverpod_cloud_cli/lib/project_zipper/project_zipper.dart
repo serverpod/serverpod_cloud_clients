@@ -27,8 +27,10 @@ abstract final class ProjectZipper {
   /// Zips a project directory.
   /// Returns a list of bytes representing the zipped project.
   ///
-  /// The [projectDirectory] is the directory to zip.
   /// The [logger] is used to log debug information and warnings.
+  /// The [rootDirectory] is the directory under which contents will be zipped.
+  /// The [beneath] is the list of relative paths under [rootDirectory] that will be included,
+  /// all by default.
   /// The [fileReadPoolSize] is the number of files that are processed concurrently.
   ///
   /// All exceptions thrown by this method are subclasses of [ProjectZipperExceptions].
@@ -40,20 +42,28 @@ abstract final class ProjectZipper {
   /// Throws [NonResolvingSymlinkException] if the project directory contains
   /// a non-resolving symlink.
   static Future<List<int>> zipProject({
-    required final Directory projectDirectory,
     required final CommandLogger logger,
+    required final Directory rootDirectory,
+    final Iterable<String> beneath = const ['.'],
     final int fileReadPoolSize = 5,
   }) async {
-    final projectPath = projectDirectory.path;
+    final projectPath = rootDirectory.path;
 
-    if (!projectDirectory.existsSync()) {
+    if (!rootDirectory.existsSync()) {
       throw ProjectDirectoryDoesNotExistException(projectPath);
     }
 
-    final (filesToUpload, filesIgnored) = ProjectFiles.collectFiles(
-      projectDirectory: projectDirectory,
-      logger: logger,
-    );
+    final filesToUpload = <String>{};
+    final filesIgnored = <String>{};
+    for (final b in beneath) {
+      final (included, ignored) = ProjectFiles.collectFiles(
+        logger: logger,
+        rootDirectory: rootDirectory,
+        beneath: b,
+      );
+      filesToUpload.addAll(included);
+      filesIgnored.addAll(ignored);
+    }
 
     logger.debug('Found ${filesToUpload.length} files to upload.');
     if (logger.logLevel == LogLevel.debug) {
