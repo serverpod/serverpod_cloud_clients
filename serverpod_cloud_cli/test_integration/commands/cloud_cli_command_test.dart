@@ -1,3 +1,6 @@
+@Tags(['concurrency_one']) // due to current directory manipulation
+library;
+
 import 'dart:io';
 
 import 'package:path/path.dart' as p;

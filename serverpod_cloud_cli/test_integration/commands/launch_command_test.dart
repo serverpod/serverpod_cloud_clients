@@ -1,3 +1,6 @@
+@Tags(['concurrency_one']) // due to current directory manipulation
+library;
+
 import 'dart:async';
 import 'dart:convert';
 
