@@ -1,18 +1,10 @@
-enum OptionSource {
-  noValue,
-  preset,
-  arg,
-  envVar,
-  config,
-  custom,
-  defaultValue,
-}
+import 'source_type.dart';
 
 final class OptionResolution<V> {
   final String? stringValue;
   final V? value;
   final String? error;
-  final OptionSource source;
+  final ValueSourceType source;
 
   const OptionResolution._({
     required this.source,
@@ -28,13 +20,13 @@ final class OptionResolution<V> {
   }) : error = null;
 
   const OptionResolution.noValue()
-      : source = OptionSource.noValue,
+      : source = ValueSourceType.noValue,
         stringValue = null,
         value = null,
         error = null;
 
   const OptionResolution.error(this.error)
-      : source = OptionSource.noValue,
+      : source = ValueSourceType.noValue,
         stringValue = null,
         value = null;
 
@@ -53,11 +45,11 @@ final class OptionResolution<V> {
       );
 
   /// Whether the option has a proper value (without errors).
-  bool get hasValue => source != OptionSource.noValue && error == null;
+  bool get hasValue => source != ValueSourceType.noValue && error == null;
 
   /// Whether the option has a value that was specified explicitly (not default).
-  bool get isSpecified => hasValue && source != OptionSource.defaultValue;
+  bool get isSpecified => hasValue && source != ValueSourceType.defaultValue;
 
   /// Whether the option has the default value.
-  bool get isDefault => hasValue && source == OptionSource.defaultValue;
+  bool get isDefault => hasValue && source == ValueSourceType.defaultValue;
 }

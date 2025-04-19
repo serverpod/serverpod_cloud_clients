@@ -1,3 +1,4 @@
+import 'package:meta/meta.dart';
 import 'package:serverpod_cloud_cli/util/config/configuration.dart';
 
 /// ValueParser that returns the input string unchanged.
@@ -14,6 +15,7 @@ class StringParser extends ValueParser<String> {
 class StringOption extends ConfigOptionBase<String> {
   const StringOption({
     super.argName,
+    super.argAliases,
     super.argAbbrev,
     super.argPos,
     super.envName,
@@ -23,12 +25,64 @@ class StringOption extends ConfigOptionBase<String> {
     super.defaultsTo,
     super.helpText,
     super.valueHelp,
+    super.allowedHelp,
     super.group,
+    super.allowedValues,
     super.customValidator,
     super.mandatory,
     super.hide,
   }) : super(
           valueParser: const StringParser(),
+        );
+}
+
+/// Convenience class for multi-value configuration option for strings.
+class MultiStringOption extends MultiOption<String> {
+  /// Creates a MultiStringOption which splits input strings on commas.
+  const MultiStringOption({
+    super.argName,
+    super.argAliases,
+    super.argAbbrev,
+    super.envName,
+    super.configKey,
+    super.fromCustom,
+    super.fromDefault,
+    super.defaultsTo,
+    super.helpText,
+    super.valueHelp,
+    super.allowedHelp,
+    super.group,
+    super.allowedValues,
+    super.customValidator,
+    super.mandatory,
+    super.hide,
+  }) : super(
+          multiParser: const MultiParser(elementParser: StringParser()),
+        );
+
+  /// Creates a MultiStringOption which treats input strings as single elements.
+  const MultiStringOption.noSplit({
+    super.argName,
+    super.argAliases,
+    super.argAbbrev,
+    super.envName,
+    super.configKey,
+    super.fromCustom,
+    super.fromDefault,
+    super.defaultsTo,
+    super.helpText,
+    super.valueHelp,
+    super.allowedHelp,
+    super.group,
+    super.allowedValues,
+    super.customValidator,
+    super.mandatory,
+    super.hide,
+  }) : super(
+          multiParser: const MultiParser(
+            elementParser: StringParser(),
+            separator: null,
+          ),
         );
 }
 
@@ -62,6 +116,7 @@ class EnumOption<E extends Enum> extends ConfigOptionBase<E> {
   const EnumOption({
     required final EnumParser<E> enumParser,
     super.argName,
+    super.argAliases,
     super.argAbbrev,
     super.argPos,
     super.envName,
@@ -71,7 +126,9 @@ class EnumOption<E extends Enum> extends ConfigOptionBase<E> {
     super.defaultsTo,
     super.helpText,
     super.valueHelp,
+    super.allowedHelp,
     super.group,
+    super.allowedValues,
     super.customValidator,
     super.mandatory,
     super.hide,
@@ -95,6 +152,7 @@ class ComparableValueOption<V extends Comparable> extends ConfigOptionBase<V> {
   const ComparableValueOption({
     required super.valueParser,
     super.argName,
+    super.argAliases,
     super.argAbbrev,
     super.argPos,
     super.envName,
@@ -104,7 +162,9 @@ class ComparableValueOption<V extends Comparable> extends ConfigOptionBase<V> {
     super.defaultsTo,
     super.helpText,
     super.valueHelp,
+    super.allowedHelp,
     super.group,
+    super.allowedValues,
     super.customValidator,
     super.mandatory,
     super.hide,
@@ -113,6 +173,7 @@ class ComparableValueOption<V extends Comparable> extends ConfigOptionBase<V> {
   });
 
   @override
+  @mustCallSuper
   void validateValue(final V value) {
     super.validateValue(value);
 
@@ -148,6 +209,7 @@ class IntParser extends ValueParser<int> {
 class IntOption extends ComparableValueOption<int> {
   const IntOption({
     super.argName,
+    super.argAliases,
     super.argAbbrev,
     super.argPos,
     super.envName,
@@ -157,7 +219,9 @@ class IntOption extends ComparableValueOption<int> {
     super.defaultsTo,
     super.helpText,
     super.valueHelp = 'integer',
+    super.allowedHelp,
     super.group,
+    super.allowedValues,
     super.customValidator,
     super.mandatory,
     super.hide,
@@ -194,6 +258,7 @@ class DateTimeParser extends ValueParser<DateTime> {
 class DateTimeOption extends ComparableValueOption<DateTime> {
   const DateTimeOption({
     super.argName,
+    super.argAliases,
     super.argAbbrev,
     super.argPos,
     super.envName,
@@ -203,7 +268,9 @@ class DateTimeOption extends ComparableValueOption<DateTime> {
     super.defaultsTo,
     super.helpText,
     super.valueHelp = 'YYYY-MM-DDtHH:MM:SSz',
+    super.allowedHelp,
     super.group,
+    super.allowedValues,
     super.customValidator,
     super.mandatory,
     super.hide,
@@ -288,6 +355,7 @@ class DurationParser extends ValueParser<Duration> {
 class DurationOption extends ComparableValueOption<Duration> {
   const DurationOption({
     super.argName,
+    super.argAliases,
     super.argAbbrev,
     super.argPos,
     super.envName,
@@ -297,7 +365,9 @@ class DurationOption extends ComparableValueOption<Duration> {
     super.defaultsTo,
     super.helpText,
     super.valueHelp = 'integer[s|m|h|d]',
+    super.allowedHelp,
     super.group,
+    super.allowedValues,
     super.customValidator,
     super.mandatory,
     super.hide,

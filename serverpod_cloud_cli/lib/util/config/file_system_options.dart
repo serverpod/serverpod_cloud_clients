@@ -27,6 +27,7 @@ class DirOption extends ConfigOptionBase<Directory> {
 
   const DirOption({
     super.argName,
+    super.argAliases,
     super.argAbbrev,
     super.argPos,
     super.envName,
@@ -90,6 +91,7 @@ class FileOption extends ConfigOptionBase<File> {
 
   const FileOption({
     super.argName,
+    super.argAliases,
     super.argAbbrev,
     super.argPos,
     super.envName,

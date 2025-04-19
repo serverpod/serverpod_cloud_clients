@@ -171,6 +171,17 @@ void main() async {
       );
       expect(config.value(projectIdOpt), equals('customValueFunction'));
     });
+
+    test('when provided twice via args then the last value is used', () async {
+      // Note: This is the behavior of ArgParser.
+      // It may be considered to make this a usage error instead.
+      final args = ['--project', '123', '--project', '456'];
+      final config = Configuration.resolve(
+        options: [projectIdOpt],
+        args: args,
+      );
+      expect(config.value(projectIdOpt), equals('456'));
+    });
   });
 
   group('Given a configuration option with a defaultsTo value', () {
@@ -849,6 +860,88 @@ void main() async {
       expect(config.errors, hasLength(1));
       expect(
           config.errors.first, "Unexpected positional argument(s): '3rd-arg'");
+      expect(config.optionalValue(firstOpt), equals('1st-arg'));
+      expect(config.optionalValue(secondOpt), equals('2nd-arg'));
+    });
+  });
+
+  group('Given two options that have aliases', () {
+    const firstOpt = StringOption(
+      argName: 'first',
+      argAliases: ['alias-first-a', 'alias-first-b'],
+    );
+    const secondOpt = StringOption(
+      argName: 'second',
+      argAliases: ['alias-second-a', 'alias-second-b'],
+    );
+    final options = [firstOpt, secondOpt];
+
+    test(
+        'when the first option is provided using primary name then parsing succeeds',
+        () async {
+      final args = ['--first', '1st-arg'];
+      final config = Configuration.resolve(
+        options: options,
+        args: args,
+      );
+      expect(config.errors, isEmpty);
+      expect(config.optionalValue(firstOpt), equals('1st-arg'));
+      expect(config.optionalValue(secondOpt), isNull);
+    });
+
+    test(
+        'when the first option is provided using first alias then parsing succeeds',
+        () async {
+      final args = ['--alias-first-a', '1st-arg'];
+      final config = Configuration.resolve(
+        options: options,
+        args: args,
+      );
+      expect(config.errors, isEmpty);
+      expect(config.optionalValue(firstOpt), equals('1st-arg'));
+      expect(config.optionalValue(secondOpt), isNull);
+    });
+
+    test(
+        'when the first option is provided using second alias then parsing succeeds',
+        () async {
+      final args = ['--alias-first-b', '1st-arg'];
+      final config = Configuration.resolve(
+        options: options,
+        args: args,
+      );
+      expect(config.errors, isEmpty);
+      expect(config.optionalValue(firstOpt), equals('1st-arg'));
+      expect(config.optionalValue(secondOpt), isNull);
+    });
+
+    test(
+        'when the first option is provided twice using aliases then the last value is used',
+        () async {
+      final args = ['--alias-first-a', '1st-arg', '--alias-first-b', '2nd-arg'];
+      final config = Configuration.resolve(
+        options: options,
+        args: args,
+      );
+      expect(config.errors, isEmpty);
+      expect(config.optionalValue(firstOpt), equals('2nd-arg'));
+      expect(config.optionalValue(secondOpt), isNull);
+    });
+
+    test(
+        'when both options are provided using their aliases then parsing succeeds',
+        () async {
+      final args = [
+        '--alias-first-a',
+        '1st-arg',
+        '--alias-second-b',
+        '2nd-arg'
+      ];
+      final config = Configuration.resolve(
+        options: options,
+        args: args,
+      );
+      expect(config.errors, isEmpty);
       expect(config.optionalValue(firstOpt), equals('1st-arg'));
       expect(config.optionalValue(secondOpt), equals('2nd-arg'));
     });

@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 
 import 'option_resolution.dart';
+import 'source_type.dart';
 
 /// Common interface to enable same treatment for [ConfigOptionBase] and option enums.
 abstract class OptionDefinition<V> {
@@ -116,6 +117,7 @@ class ConfigOptionBase<V> implements OptionDefinition<V> {
   final ValueParser<V> valueParser;
 
   final String? argName;
+  final List<String>? argAliases;
   final String? argAbbrev;
   final int? argPos;
   final String? envName;
@@ -126,8 +128,10 @@ class ConfigOptionBase<V> implements OptionDefinition<V> {
 
   final String? helpText;
   final String? valueHelp;
+  final Map<String, String>? allowedHelp;
   final OptionGroup? group;
 
+  final List<V>? allowedValues;
   final void Function(V value)? customValidator;
   final bool mandatory;
   final bool hide;
@@ -135,6 +139,7 @@ class ConfigOptionBase<V> implements OptionDefinition<V> {
   const ConfigOptionBase({
     required this.valueParser,
     this.argName,
+    this.argAliases,
     this.argAbbrev,
     this.argPos,
     this.envName,
@@ -144,7 +149,9 @@ class ConfigOptionBase<V> implements OptionDefinition<V> {
     this.defaultsTo,
     this.helpText,
     this.valueHelp,
+    this.allowedHelp,
     this.group,
+    this.allowedValues,
     this.customValidator,
     this.mandatory = false,
     this.hide = false,
@@ -174,9 +181,12 @@ class ConfigOptionBase<V> implements OptionDefinition<V> {
       abbr: argAbbrev,
       help: helpText,
       valueHelp: valueHelpString(),
+      allowed: allowedValues?.map(valueParser.format),
+      allowedHelp: allowedHelp,
       defaultsTo: defaultValueString(),
       mandatory: mandatory,
       hide: hide,
+      aliases: argAliases ?? const [],
     );
   }
 
@@ -209,6 +219,11 @@ class ConfigOptionBase<V> implements OptionDefinition<V> {
   /// If they do, they must also call the super implementation.
   @mustCallSuper
   void validateValue(final V value) {
+    if (allowedValues?.contains(value) == false) {
+      throw UsageException(
+          '`$value` is not an allowed value for ${qualifiedString()}', '');
+    }
+
     customValidator?.call(value);
   }
 
@@ -326,7 +341,7 @@ class ConfigOptionBase<V> implements OptionDefinition<V> {
     }
     return OptionResolution(
       stringValue: args.option(argOptName),
-      source: OptionSource.arg,
+      source: ValueSourceType.arg,
     );
   }
 
@@ -336,7 +351,7 @@ class ConfigOptionBase<V> implements OptionDefinition<V> {
     if (!posArgs.moveNext()) return null;
     return OptionResolution(
       stringValue: posArgs.current,
-      source: OptionSource.arg,
+      source: ValueSourceType.arg,
     );
   }
 
@@ -347,7 +362,7 @@ class ConfigOptionBase<V> implements OptionDefinition<V> {
     }
     return OptionResolution(
       stringValue: env[envVarName],
-      source: OptionSource.envVar,
+      source: ValueSourceType.envVar,
     );
   }
 
@@ -362,13 +377,13 @@ class ConfigOptionBase<V> implements OptionDefinition<V> {
     if (value is String) {
       return OptionResolution(
         stringValue: value,
-        source: OptionSource.config,
+        source: ValueSourceType.config,
       );
     }
     if (value is V) {
       return OptionResolution(
         value: value as V,
-        source: OptionSource.config,
+        source: ValueSourceType.config,
       );
     }
     return OptionResolution.error(
@@ -382,7 +397,7 @@ class ConfigOptionBase<V> implements OptionDefinition<V> {
     if (value == null) return null;
     return OptionResolution(
       value: value,
-      source: OptionSource.custom,
+      source: ValueSourceType.custom,
     );
   }
 
@@ -391,7 +406,7 @@ class ConfigOptionBase<V> implements OptionDefinition<V> {
     if (value == null) return null;
     return OptionResolution(
       value: value,
-      source: OptionSource.defaultValue,
+      source: ValueSourceType.defaultValue,
     );
   }
 
@@ -441,9 +456,11 @@ class BoolParser extends ValueParser<bool> {
 /// Boolean value configuration option.
 class FlagOption extends ConfigOptionBase<bool> {
   final bool negatable;
+  final bool hideNegatedUsage;
 
   const FlagOption({
     super.argName,
+    super.argAliases,
     super.argAbbrev,
     super.envName,
     super.configKey,
@@ -457,6 +474,7 @@ class FlagOption extends ConfigOptionBase<bool> {
     super.mandatory,
     super.hide,
     this.negatable = true,
+    this.hideNegatedUsage = false,
   }) : super(
           valueParser: const BoolParser(),
         );
@@ -473,7 +491,9 @@ class FlagOption extends ConfigOptionBase<bool> {
       help: helpText,
       defaultsTo: defaultValue(),
       negatable: negatable,
+      hideNegatedUsage: hideNegatedUsage,
       hide: hide,
+      aliases: argAliases ?? const [],
     );
   }
 
@@ -485,7 +505,7 @@ class FlagOption extends ConfigOptionBase<bool> {
     }
     return OptionResolution(
       value: args.flag(argOptName),
-      source: OptionSource.arg,
+      source: ValueSourceType.arg,
     );
   }
 }
@@ -496,11 +516,13 @@ class FlagOption extends ConfigOptionBase<bool> {
 ///
 /// The [separator] is the pattern that separates the elements,
 /// if the input is a single string. It is comma by default.
+/// If it is null, the input is treated as a single element.
+///
 /// The [joiner] is the string that joins the elements in the
 /// formatted display string, also comma by default.
 class MultiParser<T> extends ValueParser<List<T>> {
   final ValueParser<T> elementParser;
-  final Pattern separator;
+  final Pattern? separator;
   final String joiner;
 
   const MultiParser({
@@ -511,7 +533,9 @@ class MultiParser<T> extends ValueParser<List<T>> {
 
   @override
   List<T> parse(final String value) {
-    return value.split(separator).map(elementParser.parse).toList();
+    final sep = separator;
+    if (sep == null) return [elementParser.parse(value)];
+    return value.split(sep).map(elementParser.parse).toList();
   }
 
   @override
@@ -522,9 +546,12 @@ class MultiParser<T> extends ValueParser<List<T>> {
 
 /// Multi-value configuration option.
 class MultiOption<T> extends ConfigOptionBase<List<T>> {
+  final List<T>? allowedElementValues;
+
   const MultiOption({
     required final MultiParser<T> multiParser,
     super.argName,
+    super.argAliases,
     super.argAbbrev,
     super.envName,
     super.configKey,
@@ -533,11 +560,14 @@ class MultiOption<T> extends ConfigOptionBase<List<T>> {
     super.defaultsTo,
     super.helpText,
     super.valueHelp,
+    super.allowedHelp,
     super.group,
+    final List<T>? allowedValues,
     super.customValidator,
     super.mandatory,
     super.hide,
-  }) : super(
+  })  : allowedElementValues = allowedValues,
+        super(
           valueParser: multiParser,
         );
 
@@ -554,9 +584,12 @@ class MultiOption<T> extends ConfigOptionBase<List<T>> {
       abbr: argAbbrev,
       help: helpText,
       valueHelp: valueHelpString(),
+      allowed: allowedElementValues?.map(multiParser.elementParser.format),
+      allowedHelp: allowedHelp,
       defaultsTo: defaultValue()?.map(multiParser.elementParser.format),
       hide: hide,
       splitCommas: multiParser.separator == ',',
+      aliases: argAliases ?? const [],
     );
   }
 
@@ -572,8 +605,24 @@ class MultiOption<T> extends ConfigOptionBase<List<T>> {
           .multiOption(argOptName)
           .map(multiParser.elementParser.parse)
           .toList(),
-      source: OptionSource.arg,
+      source: ValueSourceType.arg,
     );
+  }
+
+  @override
+  @mustCallSuper
+  void validateValue(final List<T> value) {
+    super.validateValue(value);
+
+    final allowed = allowedElementValues;
+    if (allowed != null) {
+      for (final v in value) {
+        if (allowed.contains(v) == false) {
+          throw UsageException(
+              '`$v` is not an allowed value for ${qualifiedString()}', '');
+        }
+      }
+    }
   }
 }
 
@@ -710,7 +759,16 @@ class Configuration<O extends OptionDefinition> {
     if (argResults == null && args != null) {
       final parser = ArgParser();
       options.prepareForParsing(parser);
-      argResults = parser.parse(args);
+
+      try {
+        argResults = parser.parse(args);
+      } on FormatException catch (e) {
+        _errors.add(e.message);
+        for (var o in _options) {
+          _config[o] = OptionResolution.error('Previous ArgParser error');
+        }
+        return;
+      }
     }
 
     _resolveWithArgResults(
@@ -771,6 +829,16 @@ class Configuration<O extends OptionDefinition> {
     return optionalValue<V>(option as OptionDefinition<V>);
   }
 
+  /// Returns the options that have a value matching
+  /// the source type test.
+  Iterable<O> optionsWhereSource(
+    final bool Function(ValueSourceType source) test,
+  ) {
+    return _config.entries
+        .where((final e) => test(e.value.source))
+        .map((final e) => e.key);
+  }
+
   /// Returns the value of a configuration option
   /// that is guaranteed to be non-null.
   ///
@@ -791,11 +859,8 @@ class Configuration<O extends OptionDefinition> {
     final val = optionalValue(option);
     if (val != null) return val;
 
-    if (errors.isNotEmpty) {
-      throw InvalidParseStateError(
-          'No value available for ${option.qualifiedString()} due to previous errors');
-    }
-    throw UsageException('${option.qualifiedString()} is mandatory', '');
+    throw InvalidParseStateError(
+        'No value available for ${option.qualifiedString()} due to previous errors');
   }
 
   /// Returns the value of an optional configuration option.
@@ -803,6 +868,19 @@ class Configuration<O extends OptionDefinition> {
   ///
   /// Throws [ArgumentError] if the option is unknown.
   V? optionalValue<V>(final OptionDefinition<V> option) {
+    final resolution = _getOptionResolution(option);
+
+    return resolution.value as V?;
+  }
+
+  /// Returns the source type of the given option's value.
+  ValueSourceType valueSourceType(final O option) {
+    final resolution = _getOptionResolution(option);
+
+    return resolution.source;
+  }
+
+  OptionResolution _getOptionResolution<V>(final OptionDefinition<V> option) {
     if (!_options.contains(option)) {
       throw ArgumentError(
           "${option.qualifiedString()} is not part of this configuration");
@@ -820,7 +898,7 @@ class Configuration<O extends OptionDefinition> {
           'No value available for ${option.qualifiedString()} due to previous errors');
     }
 
-    return resolution.value as V?;
+    return resolution;
   }
 
   void _resolveWithArgResults({
@@ -888,7 +966,7 @@ class Configuration<O extends OptionDefinition> {
   ) {
     final resolution = value == null
         ? OptionResolution.noValue()
-        : OptionResolution(value: value, source: OptionSource.preset);
+        : OptionResolution(value: value, source: ValueSourceType.preset);
 
     final error = option.option._validateOptionValue(value);
     if (error != null) return resolution.copyWithError(error);
