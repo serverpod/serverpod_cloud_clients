@@ -15,7 +15,7 @@ environment:
 
 
 dependencies:
-  archive: ^3.6.1
+  archive: ^4.0.6
   args: ^2.6.0
   basic_utils: ^5.7.0
   cli_tools: ^0.4.0
