@@ -146,6 +146,53 @@ void main() async {
     });
   });
 
+  group('Given an IntOption with an allow-list', () {
+    const typedOpt = IntOption(
+      argName: 'number',
+      envName: 'NUMBER',
+      mandatory: true,
+      allowedValues: [100, 200],
+    );
+
+    test('when passed a valid value then it is parsed correctly', () async {
+      final config = Configuration.resolve(
+        options: [typedOpt],
+        args: ['--number', '100'],
+      );
+      expect(config.value(typedOpt), equals(100));
+    });
+
+    test('when passed an invalid integer value as arg then it reports an error',
+        () async {
+      final config = Configuration.resolve(
+        options: [typedOpt],
+        args: ['--number', '99'],
+      );
+
+      expect(config.errors, hasLength(1));
+      expect(
+        config.errors.single,
+        equals('"99" is not an allowed value for option "--number".'),
+      );
+    });
+
+    test(
+        'when passed an invalid integer value as env var then it reports an error',
+        () async {
+      final config = Configuration.resolve(
+        options: [typedOpt],
+        env: <String, String>{'NUMBER': '99'},
+      );
+
+      expect(config.errors, hasLength(1));
+      expect(
+        config.errors.single,
+        equals('Invalid value for option `number` <integer>: '
+            '`99` is not an allowed value for option `number`'),
+      );
+    });
+  });
+
   group('Given a ranged DurationOption', () {
     const typedOpt = DurationOption(
       argName: 'duration',
@@ -384,7 +431,7 @@ void main() async {
     });
   });
 
-  group('Given a MultiOption of integers', () {
+  group('Given a MultiOption of integers without default value', () {
     const typedOpt = MultiOption(
       multiParser: MultiParser(elementParser: IntParser()),
       argName: 'many',
@@ -538,6 +585,249 @@ void main() async {
         configBroker: _TestConfigBroker({'many': '123,456'}),
       );
       expect(config.optionalValue(typedOpt), equals([123, 456]));
+    });
+  });
+
+  group('Given a MultiOption of integers with default value', () {
+    const typedOpt = MultiOption(
+      multiParser: MultiParser(elementParser: IntParser()),
+      argName: 'many',
+      envName: 'SERVERPOD_MANY',
+      configKey: 'many',
+      defaultsTo: [12, 45],
+    );
+
+    test('when passed no values then it produces the default value', () async {
+      final config = Configuration.resolve(
+        options: [typedOpt],
+        args: [],
+      );
+      expect(config.optionalValue(typedOpt), equals([12, 45]));
+    });
+
+    test('when passed a single arg value then it is parsed correctly',
+        () async {
+      final config = Configuration.resolve(
+        options: [typedOpt],
+        args: ['--many', '123'],
+      );
+      expect(config.optionalValue(typedOpt), equals([123]));
+    });
+
+    test('when passed several arg values then it is parsed correctly',
+        () async {
+      final config = Configuration.resolve(
+        options: [typedOpt],
+        args: ['--many', '123', '--many', '456'],
+      );
+      expect(config.optionalValue(typedOpt), equals([123, 456]));
+    });
+
+    test(
+        'when passed several comma-separated arg values then it is parsed correctly',
+        () async {
+      final config = Configuration.resolve(
+        options: [typedOpt],
+        args: ['--many', '123,456'],
+      );
+      expect(config.optionalValue(typedOpt), equals([123, 456]));
+    });
+
+    test('when passed empty env value then it reports a parse error', () async {
+      final config = Configuration.resolve(
+        options: [typedOpt],
+        env: <String, String>{'SERVERPOD_MANY': ''},
+      );
+      expect(config.errors, hasLength(1));
+      expect(
+        config.errors.single,
+        startsWith(
+            'Invalid value for option `many`: Invalid number (at character 1)'),
+      );
+    });
+
+    test(
+        'when passed several comma-separated env values then it is parsed correctly',
+        () async {
+      final config = Configuration.resolve(
+        options: [typedOpt],
+        env: <String, String>{'SERVERPOD_MANY': '123,456'},
+      );
+      expect(config.optionalValue(typedOpt), equals([123, 456]));
+    });
+
+    test('when passed several arg and env values then args take precedence',
+        () async {
+      final config = Configuration.resolve(
+        options: [typedOpt],
+        args: ['--many', '12', '--many', '45'],
+        env: <String, String>{'SERVERPOD_MANY': '123,456'},
+      );
+      expect(config.optionalValue(typedOpt), equals([12, 45]));
+    });
+  });
+
+  group('Given a mandatory MultiOption of integers with alias', () {
+    const typedOpt = MultiOption(
+      multiParser: MultiParser(elementParser: IntParser()),
+      argName: 'many',
+      argAliases: ['alias-many'],
+      envName: 'SERVERPOD_MANY',
+      configKey: 'many',
+      mandatory: true,
+    );
+
+    test('when passed no values then it reports a parse error', () async {
+      final config = Configuration.resolve(
+        options: [typedOpt],
+        args: [],
+      );
+      expect(config.errors, hasLength(1));
+      expect(
+        config.errors.single,
+        equals('option `many` is mandatory'),
+      );
+    });
+
+    test('when passed a single arg value then it is parsed correctly',
+        () async {
+      final config = Configuration.resolve(
+        options: [typedOpt],
+        args: ['--many', '123'],
+      );
+      expect(config.optionalValue(typedOpt), equals([123]));
+    });
+
+    test('when passed several arg values then it is parsed correctly',
+        () async {
+      final config = Configuration.resolve(
+        options: [typedOpt],
+        args: ['--many', '123', '--many', '456'],
+      );
+      expect(config.optionalValue(typedOpt), equals([123, 456]));
+    });
+
+    test(
+        'when passed several arg values using both regular name and alias '
+        'then it is parsed correctly', () async {
+      final config = Configuration.resolve(
+        options: [typedOpt],
+        args: ['--many', '123', '--alias-many', '456'],
+      );
+      expect(config.optionalValue(typedOpt), equals([123, 456]));
+    });
+
+    test(
+        'when passed several comma-separated arg values then it is parsed correctly',
+        () async {
+      final config = Configuration.resolve(
+        options: [typedOpt],
+        args: ['--many', '123,456'],
+      );
+      expect(config.optionalValue(typedOpt), equals([123, 456]));
+    });
+
+    test('when passed empty env value then it reports a parse error', () async {
+      final config = Configuration.resolve(
+        options: [typedOpt],
+        env: <String, String>{'SERVERPOD_MANY': ''},
+      );
+      expect(config.errors, hasLength(1));
+      expect(
+        config.errors.single,
+        startsWith(
+            'Invalid value for option `many`: Invalid number (at character 1)'),
+      );
+    });
+
+    test(
+        'when passed several comma-separated env values then it is parsed correctly',
+        () async {
+      final config = Configuration.resolve(
+        options: [typedOpt],
+        env: <String, String>{'SERVERPOD_MANY': '123,456'},
+      );
+      expect(config.optionalValue(typedOpt), equals([123, 456]));
+    });
+  });
+
+  group('Given a MultiStringOption with an allow-list', () {
+    const typedOpt = MultiStringOption(
+      argName: 'many',
+      envName: 'MANY',
+      configKey: 'many',
+      allowedValues: ['foo', 'bar', ''],
+    );
+
+    test('when passed no value then it is parsed correctly', () async {
+      final config = Configuration.resolve(
+        options: [typedOpt],
+        args: [],
+      );
+      expect(config.optionalValue(typedOpt), isNull);
+    });
+
+    test('when passed a valid value then it is parsed correctly', () async {
+      final config = Configuration.resolve(
+        options: [typedOpt],
+        args: ['--many', 'foo'],
+      );
+      expect(config.optionalValue(typedOpt), equals(['foo']));
+    });
+
+    test('when passed a valid empty value then it is parsed correctly',
+        () async {
+      final config = Configuration.resolve(
+        options: [typedOpt],
+        args: ['--many', ''],
+      );
+      expect(config.optionalValue(typedOpt), equals(['']));
+    });
+
+    test('when passed an invalid value as arg then it reports an error',
+        () async {
+      final config = Configuration.resolve(
+        options: [typedOpt],
+        args: ['--many', 'wrong'],
+      );
+
+      expect(config.errors, hasLength(1));
+      expect(
+        config.errors.single,
+        equals('"wrong" is not an allowed value for option "--many".'),
+      );
+      expect(() => config.optionalValue(typedOpt), throwsA(isA<StateError>()));
+    });
+
+    test('when passed an invalid value as env var then it reports an error',
+        () async {
+      final config = Configuration.resolve(
+        options: [typedOpt],
+        env: <String, String>{'MANY': 'wrong'},
+      );
+
+      expect(config.errors, hasLength(1));
+      expect(
+        config.errors.single,
+        equals(
+            'Invalid value for option `many`: `wrong` is not an allowed value for option `many`'),
+      );
+      expect(() => config.optionalValue(typedOpt), throwsA(isA<StateError>()));
+    });
+
+    test('when passed a valid and an invalid value then it reports an error',
+        () async {
+      final config = Configuration.resolve(
+        options: [typedOpt],
+        args: ['--many', 'foo', '--many', 'wrong'],
+      );
+
+      expect(config.errors, hasLength(1));
+      expect(
+        config.errors.single,
+        equals('"wrong" is not an allowed value for option "--many".'),
+      );
+      expect(() => config.optionalValue(typedOpt), throwsA(isA<StateError>()));
     });
   });
 }
