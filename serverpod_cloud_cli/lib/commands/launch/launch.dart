@@ -206,7 +206,13 @@ The default API domain will be: <project-id>.api.serverpod.space
         Directory(projectDir),
       );
       if (pubspec.isServerpodServer()) {
-        final name = pubspec.pubspec.name.toLowerCase().replaceAll('_', '-');
+        var name = pubspec.pubspec.name.toLowerCase().replaceAll('_', '-');
+
+        const serverSuffix = '-server';
+        if (name.length > serverSuffix.length && name.endsWith(serverSuffix)) {
+          name = name.substring(0, name.length - serverSuffix.length);
+        }
+
         if (isValidProjectIdFormat(name)) {
           return name;
         }

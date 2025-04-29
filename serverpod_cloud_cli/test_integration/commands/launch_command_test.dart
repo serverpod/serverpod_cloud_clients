@@ -531,7 +531,7 @@ project:
             containsAllInOrder([
               equalsInputCall(
                 message: 'Choose project id',
-                defaultValue: 'default: my-project-server',
+                defaultValue: 'default: my-project',
               ),
             ]),
           );
@@ -630,7 +630,7 @@ project:
               ),
               equalsInputCall(
                 message: 'Choose project id',
-                defaultValue: 'default: my-project-server',
+                defaultValue: 'default: my-project',
               ),
             ]),
           );
@@ -754,7 +754,7 @@ project:
             logger.inputCalls.first,
             equalsInputCall(
               message: 'Choose project id',
-              defaultValue: 'default: my-project-server',
+              defaultValue: 'default: my-project',
             ),
           );
         });
@@ -867,7 +867,7 @@ project:
               ),
               equalsInputCall(
                 message: 'Choose project id',
-                defaultValue: 'default: my-project-server',
+                defaultValue: 'default: my-project',
               ),
             ]),
           );
@@ -978,11 +978,11 @@ project:
               ),
               equalsInputCall(
                 message: 'Choose project id',
-                defaultValue: 'default: my-project-server',
+                defaultValue: 'default: my-project',
               ),
               equalsInputCall(
                 message: 'Choose project id',
-                defaultValue: 'default: my-project-server',
+                defaultValue: 'default: my-project',
               ),
             ]),
           );
