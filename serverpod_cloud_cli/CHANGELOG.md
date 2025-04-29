@@ -1,6 +1,12 @@
 
 # Changelog
 
+## [0.5.2] - 2025-04-29
+
+### Fixed
+
+- **Project naming** - The `-server` suffix is now dropped from the suggested project name when creating a new Serverpod project.
+
 ## [0.5.1] - 2025-04-14
 
 ### Fixed
