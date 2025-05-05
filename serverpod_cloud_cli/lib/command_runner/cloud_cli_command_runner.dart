@@ -180,8 +180,16 @@ class CloudCliCommandRunner extends BetterCommandRunner {
   /// Throws [ExitException] if no valid project directory could be determined.
   Directory verifiedProjectDirectory() {
     final selectedProjectDir = selectProjectDirectory();
-    final projectDirectory =
-        Directory(selectedProjectDir ?? Directory.current.path);
+    if (selectedProjectDir == null) {
+      logger.error(
+        'No valid Serverpod server directory selected.',
+        hint:
+            "Provide the project's server directory with the `--project-dir` option and try again.",
+      );
+      throw ErrorExitException('No project directory selected.');
+    }
+
+    final projectDirectory = Directory(selectedProjectDir);
 
     if (!isServerpodServerDirectory(projectDirectory)) {
       logProjectDirIsNotAServerpodServerDirectory(logger, selectedProjectDir);

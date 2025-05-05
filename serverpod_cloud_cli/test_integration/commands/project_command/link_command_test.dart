@@ -48,8 +48,8 @@ void main() {
     late String testProjectDir;
 
     setUp(() async {
-      testProjectDir =
-          DirectoryFactory.serverpodServerDir().construct(d.sandbox).path;
+      await ProjectFactory.serverpodServerDir().create();
+      testProjectDir = p.join(d.sandbox, ProjectFactory.defaultDirectoryName);
     });
 
     group('when executing link', () {
@@ -420,10 +420,9 @@ environment:
           expect(
             logger.errorCalls.first,
             equalsErrorCall(
-              message: 'The provided project directory '
-                  '(either through the --project-dir flag or found near the current directory) '
-                  'is not a Serverpod server directory.',
-              hint: "Provide the project's server directory and try again.",
+              message: 'No valid Serverpod server directory selected.',
+              hint:
+                  "Provide the project's server directory with the `--project-dir` option and try again.",
             ),
           );
         });

@@ -39,7 +39,7 @@ void main() {
 
     await expectLater(
       ProjectZipper.zipProject(
-        projectDirectory: projectDirectory,
+        rootDirectory: projectDirectory,
         logger: commandLogger,
       ),
       throwsA(isA<EmptyProjectException>()),
@@ -56,7 +56,7 @@ void main() {
     ).construct(testProjectPath);
 
     final zippedProject = ProjectZipper.zipProject(
-      projectDirectory: projectDirectory,
+      rootDirectory: projectDirectory,
       logger: commandLogger,
     );
 
@@ -81,7 +81,7 @@ void main() {
     ).construct(testProjectPath);
 
     final zippedProject = ProjectZipper.zipProject(
-      projectDirectory: projectDirectory,
+      rootDirectory: projectDirectory,
       logger: commandLogger,
     );
 
@@ -109,7 +109,7 @@ void main() {
     ).construct(testProjectPath);
 
     final zippedProject = ProjectZipper.zipProject(
-      projectDirectory: projectDirectory,
+      rootDirectory: projectDirectory,
       logger: commandLogger,
     );
 
@@ -141,7 +141,7 @@ void main() {
 
     await expectLater(
       ProjectZipper.zipProject(
-        projectDirectory: projectDirectory,
+        rootDirectory: projectDirectory,
         logger: commandLogger,
       ),
       throwsA(isA<EmptyProjectException>()),

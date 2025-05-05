@@ -76,9 +76,15 @@ class TenantProjectPubspec {
     return TenantProjectPubspec(pubspec);
   }
 
+  /// Returns true if the pubspec.yaml has a workspace resolution directive.
+  bool isWorkspaceResolved() {
+    return pubspec.resolution == 'workspace';
+  }
+
   /// Returns true if the pubspec.yaml appears to represent a Serverpod server.
   bool isServerpodServer() {
-    return pubspec.dependencies['serverpod'] != null;
+    return pubspec.workspace == null &&
+        pubspec.dependencies['serverpod'] != null;
   }
 
   /// Validates the pubspec.yaml dependencies of a customer project
@@ -87,15 +93,18 @@ class TenantProjectPubspec {
   /// If the dependencies are not valid,
   /// the returned list will contain the error messages.
   /// If the dependencies are valid, the list will be empty.
-  List<String> projectDependencyIssues() {
+  List<String> projectDependencyIssues({
+    final bool requireServerpod = true,
+  }) {
     final supportedSdk = VersionConstraint.parse('>=3.6.0 <3.7.0');
     final supportedServerpod = VersionConstraint.parse('>=2.3.0');
 
-    final sdkError = _validateSdkConstraint(supportedSdk);
+    final sdkError = _validateEnvironmentConstraints(supportedSdk);
 
     final serverpodError = _validateHostedDependencyConstraint(
-      'serverpod',
-      supportedServerpod,
+      packageName: 'serverpod',
+      supported: supportedServerpod,
+      requireDependency: requireServerpod,
     );
 
     return [
@@ -104,32 +113,44 @@ class TenantProjectPubspec {
     ];
   }
 
-  /// The SDK constraint is handled differently than other dependencies.
-  /// It represents what SDK versions are supported by the project,
-  /// including the SDK the deployed project is built with.
-  String? _validateSdkConstraint(
+  /// The environment constraints are handled differently than other dependencies.
+  /// They represent what SDK versions are supported by the project,
+  /// including the SDK the deployed project is built with,
+  /// and a possible but unsupported Flutter dependency.
+  String? _validateEnvironmentConstraints(
     final VersionConstraint supportedSdk,
   ) {
     final sdkConstraint = pubspec.environment['sdk'];
     if (sdkConstraint == null) {
-      return 'No sdk constraint found in pubspec.yaml';
+      return 'No sdk constraint found in package ${pubspec.name}';
     }
     if (!sdkConstraint.allowsAll(supportedSdk)) {
-      return 'Unsupported sdk version constraint: $sdkConstraint'
+      return 'Unsupported sdk version constraint in package ${pubspec.name}: $sdkConstraint'
           ' (must accept: $supportedSdk)';
     }
+
+    final flutterConstraint = pubspec.environment['flutter'];
+    if (flutterConstraint != null) {
+      return 'A Flutter dependency is not allowed in a server package: ${pubspec.name}';
+    }
+
     return null;
   }
 
   /// Validates that the given dependency is hosted
   /// and is within the supported range.
-  String? _validateHostedDependencyConstraint(
-    final String packageName,
-    final VersionConstraint supported,
-  ) {
+  String? _validateHostedDependencyConstraint({
+    required final String packageName,
+    required final VersionConstraint supported,
+    required final bool requireDependency,
+  }) {
     final dependency = pubspec.dependencies[packageName];
     if (dependency == null) {
-      return 'No $packageName dependency found in pubspec.yaml';
+      if (requireDependency) {
+        return 'No $packageName dependency found in pubspec.yaml';
+      } else {
+        return null;
+      }
     }
     if (dependency is! HostedDependency) {
       return '$packageName dependency is not a hosted dependency: $dependency';

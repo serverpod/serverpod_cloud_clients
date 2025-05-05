@@ -369,20 +369,22 @@ class TestCommandLogger extends CommandLogger {
 
   @override
   void list(
-    final List<String> items, {
+    final Iterable<String> items, {
     final String? title,
     final bool newParagraph = false,
   }) {
+    final itemList = items.toList();
     if (printToStdout) {
-      print('log list: $items');
+      print('log list: $itemList');
     }
 
     if (!_somethingLogged.isCompleted) {
       _somethingLogged.complete();
     }
 
-    listCalls
-        .add(ListCall(items: items, title: title, newParagraph: newParagraph));
+    listCalls.add(
+      ListCall(items: itemList, title: title, newParagraph: newParagraph),
+    );
   }
 
   @override

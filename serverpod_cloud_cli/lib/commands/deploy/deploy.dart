@@ -8,6 +8,9 @@ import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dar
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
+import 'package:serverpod_cloud_cli/util/scloudignore.dart' show ScloudIgnore;
+
+import 'prepare_workspace.dart';
 
 abstract class Deploy {
   static Future<void> deploy(
@@ -34,12 +37,37 @@ abstract class Deploy {
       throw ErrorExitException(issues.first);
     }
 
+    final Directory rootDirectory;
+    final Iterable<String> includedSubPaths;
+    if (pubspecValidator.isWorkspaceResolved()) {
+      try {
+        (rootDirectory, includedSubPaths) =
+            WorkspaceProject.prepareWorkspacePaths(
+          projectDirectory,
+        );
+      } on WorkspaceException catch (e, s) {
+        e.errors?.forEach(logger.error);
+        throw ErrorExitException(e.errors?.first, e, s);
+      }
+
+      logger.list(
+        title: 'Including workspace packages',
+        includedSubPaths.where(
+          (final path) => path != ScloudIgnore.scloudDirName,
+        ),
+      );
+    } else {
+      rootDirectory = projectDirectory;
+      includedSubPaths = const ['.'];
+    }
+
     late final List<int> projectZip;
     final isZipped = await logger.progress('Zipping project...', () async {
       try {
         projectZip = await ProjectZipper.zipProject(
-          projectDirectory: projectDirectory,
           logger: logger,
+          rootDirectory: rootDirectory,
+          beneath: includedSubPaths,
           fileReadPoolSize: concurrency,
         );
         return true;

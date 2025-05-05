@@ -3,6 +3,7 @@ library;
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:mocktail/mocktail.dart';
@@ -16,6 +17,7 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
+import 'package:yaml_codec/yaml_codec.dart';
 
 import '../../test_utils/bucket_upload_description.dart';
 import '../../test_utils/command_logger_matchers.dart';
@@ -35,18 +37,8 @@ void main() {
     ),
   );
 
-  late String testCacheFolderPath;
-
-  late String testProjectDir;
-
   setUp(() {
-    testCacheFolderPath = d.sandbox;
-    testProjectDir = p.join(testCacheFolderPath, 'project');
-
     mockFileUploader.init();
-  });
-
-  tearDown(() {
     logger.clear();
   });
 
@@ -58,7 +50,7 @@ void main() {
       'Given unauthenticated and current directory is serverpod server directory',
       () {
     setUp(() async {
-      DirectoryFactory.serverpodServerDir().construct(testProjectDir);
+      await ProjectFactory.serverpodServerDir().create();
 
       when(() => client.deploy.createUploadDescription(any()))
           .thenThrow(ServerpodClientUnauthorized());
@@ -73,10 +65,8 @@ void main() {
           'deploy',
           '--project',
           '123',
-          '--scloud-dir',
-          testCacheFolderPath,
           '--project-dir',
-          testProjectDir,
+          p.join(d.sandbox, ProjectFactory.defaultDirectoryName),
         ]);
       });
 
@@ -129,25 +119,23 @@ void main() {
     group(
         'and current directory is not Serverpod server directory when running deploy command',
         () {
+      late String testProjectDir;
       late Future cliCommandFuture;
+
       setUp(() async {
-        DirectoryFactory(withFiles: [
-          FileFactory(
-            withName: 'pubspec.yaml',
-            withContents: '''
+        await d.dir('project', [
+          d.file('pubspec.yaml', '''
 name: my_project
 environment:
   sdk: '>=3.1.0 <4.0.0'
-''',
-          ),
-        ]).construct(testProjectDir);
+'''),
+        ]).create();
+        testProjectDir = p.join(d.sandbox, 'project');
 
         cliCommandFuture = cli.run([
           'deploy',
           '--project',
           '123',
-          '--scloud-dir',
-          testCacheFolderPath,
           '--project-dir',
           testProjectDir,
         ]);
@@ -177,28 +165,25 @@ environment:
         'and current directory is a Serverpod server directory '
         'with outdated sdk dependency '
         'when running deploy command', () {
+      late String testProjectDir;
       late Future cliCommandFuture;
 
       setUp(() async {
-        DirectoryFactory(withFiles: [
-          FileFactory(
-            withName: 'pubspec.yaml',
-            withContents: '''
+        await d.dir('project', [
+          d.file('pubspec.yaml', '''
 name: my_project
 environment:
   sdk: '>=3.1.0 <3.6.0'
 dependencies:
   serverpod: ^2.3.0
-''',
-          ),
-        ]).construct(testProjectDir);
+''')
+        ]).create();
+        testProjectDir = p.join(d.sandbox, 'project');
 
         cliCommandFuture = cli.run([
           'deploy',
           '--project',
           '123',
-          '--scloud-dir',
-          testCacheFolderPath,
           '--project-dir',
           testProjectDir,
         ]);
@@ -222,8 +207,11 @@ dependencies:
     });
 
     group('and current directory is a Serverpod server directory', () {
+      late String testProjectDir;
+
       setUp(() async {
-        DirectoryFactory.serverpodServerDir().construct(testProjectDir);
+        await ProjectFactory.serverpodServerDir().create();
+        testProjectDir = p.join(d.sandbox, ProjectFactory.defaultDirectoryName);
       });
 
       group('and 403 response for creating file upload request', () {
@@ -401,8 +389,6 @@ dependencies:
         };
 
         setUp(() async {
-          DirectoryFactory.serverpodServerDir().construct(testProjectDir);
-
           when(() => client.deploy.createUploadDescription(any()))
               .thenAnswer((final _) async => jsonEncode(descriptionContent));
 
@@ -444,8 +430,6 @@ dependencies:
 
       group('and valid upload description response', () {
         setUp(() async {
-          DirectoryFactory.serverpodServerDir().construct(testProjectDir);
-
           when(() => client.deploy.createUploadDescription(any())).thenAnswer(
             (final _) async => BucketUploadDescription.uploadDescription,
           );
@@ -495,8 +479,11 @@ See the `scloud domain` command to set up a custom domain.''',
     });
 
     group('and valid upload description response', () {
+      late String testProjectDir;
+
       setUp(() async {
-        DirectoryFactory.serverpodServerDir().construct(testProjectDir);
+        await ProjectFactory.serverpodServerDir().create();
+        testProjectDir = p.join(d.sandbox, ProjectFactory.defaultDirectoryName);
 
         when(() => client.deploy.createUploadDescription(any())).thenAnswer(
             (final _) async => BucketUploadDescription.uploadDescription);
@@ -528,42 +515,25 @@ See the `scloud domain` command to set up a custom domain.''',
     });
   });
 
-  group('and a directory structure and a valid upload description response',
+  group(
+      'and a non-workspace directory structure and a valid upload description response',
       () {
     setUp(() async {
-      DirectoryFactory.serverpodServerDir(
-        withFiles: [
-          FileFactory(
-            withName: 'scloud.yaml',
-            withContents: '''
+      await ProjectFactory.serverpodServerDir(
+        contents: [
+          d.file('scloud.yaml', '''
 project:
   projectId: "my-project-id"
-''',
-          ),
+'''),
+          d.dir('subdir', [
+            d.file('subdir_file.txt', 'file_content'),
+            d.dir('subsubdir', [
+              d.file('subsubdir_file.txt', 'file_content'),
+            ]),
+          ]),
         ],
-        withSubDirectories: [
-          DirectoryFactory(
-            withDirectoryName: 'subdir',
-            withSubDirectories: [
-              DirectoryFactory(
-                withDirectoryName: 'subsubdir',
-                withFiles: [
-                  FileFactory(
-                    withName: 'subsubdir_file.txt',
-                    withContents: 'file_content',
-                  ),
-                ],
-              ),
-            ],
-            withFiles: [
-              FileFactory(
-                withName: 'subdir_file.txt',
-                withContents: 'file_content',
-              ),
-            ],
-          ),
-        ],
-      ).construct(testProjectDir);
+      ).create();
+
       when(() => client.deploy.createUploadDescription(any())).thenAnswer(
           (final _) async => BucketUploadDescription.uploadDescription);
     });
@@ -573,7 +543,7 @@ project:
         () {
       late Future cliCommandFuture;
       setUp(() async {
-        pushCurrentDirectory(testCacheFolderPath);
+        pushCurrentDirectory(d.sandbox);
 
         cliCommandFuture = cli.run([
           'deploy',
@@ -589,6 +559,268 @@ project:
         await cliCommandFuture;
         expect(logger.infoCalls, isNotEmpty);
         expect(logger.infoCalls.last.message, 'Dry run, skipping upload.');
+      });
+    });
+  });
+
+  group('and a non-workspace serverpod project with a flutter dependency', () {
+    setUp(() async {
+      await d.dir(
+        'project',
+        [
+          d.file('pubspec.yaml', '''
+name: "project"
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+  flutter: ^3.29.0
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+'''),
+          d.file('scloud.yaml', '''
+project:
+  projectId: "my-project-id"
+'''),
+        ],
+      ).create();
+
+      when(() => client.deploy.createUploadDescription(any())).thenAnswer(
+          (final _) async => BucketUploadDescription.uploadDescription);
+    });
+
+    group('when deploying through CLI and with --dry-run', () {
+      late Future cliCommandFuture;
+      setUp(() async {
+        pushCurrentDirectory(d.sandbox);
+
+        cliCommandFuture = cli.run([
+          'deploy',
+          '--dry-run',
+        ]);
+      });
+
+      test('then command throws ErrorExitException.', () async {
+        await expectLater(
+          cliCommandFuture,
+          throwsA(isA<ErrorExitException>()),
+        );
+      });
+
+      test('then an unsupported flutter dependency error message is logged.',
+          () async {
+        await cliCommandFuture.catchError((final _) {});
+
+        expect(logger.errorCalls, hasLength(1));
+        expect(
+          logger.errorCalls.single.message,
+          equals(
+              'A Flutter dependency is not allowed in a server package: project'),
+        );
+      });
+    });
+  });
+
+  group('and a valid workspace directory structure', () {
+    setUp(() async {
+      await d.dir('monorepo', [
+        d.file('pubspec.yaml', '''
+name: monorepo
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+  flutter: 3.29.0
+workspace:
+  - packages/dart_utilities
+  - project/project_server
+'''),
+        d.dir('packages', [
+          d.dir('dart_utilities', [
+            d.file('pubspec.yaml', '''
+name: dart_utilities
+version: 1.0.0
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+resolution: workspace
+'''),
+          ]),
+        ]),
+        d.dir('project', [
+          d.dir('project_server', [
+            d.file('pubspec.yaml', '''
+name: project_server
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+resolution: workspace
+dependencies:
+  serverpod: ^2.3.0
+  dart_utilities: ^1.0.0
+'''),
+          ]),
+        ]),
+      ]).create();
+
+      when(() => client.deploy.createUploadDescription(any())).thenAnswer(
+          (final _) async => BucketUploadDescription.uploadDescription);
+    });
+
+    group(
+        'when deploying through CLI without explicit project dir and with --dry-run',
+        () {
+      late Future cliCommandFuture;
+      setUp(() async {
+        pushCurrentDirectory(p.join(d.sandbox, 'monorepo', 'project'));
+
+        cliCommandFuture = cli.run([
+          'deploy',
+          '--project',
+          BucketUploadDescription.projectId,
+          '--dry-run',
+        ]);
+      });
+
+      test('then command completes successfully.', () async {
+        await expectLater(cliCommandFuture, completes);
+      });
+
+      test('then the included packages are logged.', () async {
+        await cliCommandFuture;
+
+        expect(logger.listCalls, hasLength(1));
+        expect(
+          logger.listCalls.single,
+          equalsListCall(
+            title: 'Including workspace packages',
+            items: [
+              'project/project_server',
+              'packages/dart_utilities',
+            ],
+          ),
+        );
+      });
+
+      test('then .scloud/scloud_server_dir file is created.', () async {
+        await cliCommandFuture;
+
+        final descriptor = d.dir('.scloud', [
+          d.file('scloud_server_dir', 'project/project_server'),
+        ]);
+
+        await expectLater(
+          descriptor.validate(p.join(d.sandbox, 'monorepo')),
+          completes,
+        );
+      });
+
+      test('then .scloud/scloud_ws_pubspec.yaml file is created.', () async {
+        await cliCommandFuture;
+
+        final fileDescriptor = d.file('scloud_ws_pubspec.yaml', isNotEmpty);
+        final descriptor = d.dir('.scloud', [
+          fileDescriptor,
+        ]);
+
+        await expectLater(
+          descriptor.validate(p.join(d.sandbox, 'monorepo')),
+          completes,
+        );
+
+        final content = File(
+          p.join(d.sandbox, 'monorepo', '.scloud', 'scloud_ws_pubspec.yaml'),
+        ).readAsStringSync();
+        final doc = yamlDecode(content);
+        expect(doc, containsPair('name', 'monorepo'));
+        expect(doc, containsPair('environment', isNot(contains('flutter'))));
+        expect(
+          doc,
+          containsPair('environment', containsPair('sdk', isNotEmpty)),
+        );
+        expect(
+          doc,
+          containsPair(
+            'workspace',
+            containsAll([
+              'project/project_server',
+              'packages/dart_utilities',
+            ]),
+          ),
+        );
+      });
+    });
+  });
+
+  group(
+      'and an invalid workspace directory structure with an indirect flutter dependency',
+      () {
+    setUp(() async {
+      await d.dir('monorepo', [
+        d.file('pubspec.yaml', '''
+name: monorepo
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+  flutter: 3.29.0
+workspace:
+  - packages/flutter_utilities
+  - project/project_server
+'''),
+        d.dir('packages', [
+          d.dir('flutter_utilities', [
+            d.file('pubspec.yaml', '''
+name: flutter_utilities
+version: 1.0.0
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+  flutter: 3.29.0
+resolution: workspace
+'''),
+          ]),
+        ]),
+        d.dir('project', [
+          d.dir('project_server', [
+            d.file('pubspec.yaml', '''
+name: project_server
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+resolution: workspace
+dependencies:
+  serverpod: ^2.3.0
+  flutter_utilities: ^1.0.0
+'''),
+          ]),
+        ]),
+      ]).create();
+
+      when(() => client.deploy.createUploadDescription(any())).thenAnswer(
+          (final _) async => BucketUploadDescription.uploadDescription);
+    });
+
+    group('when deploying through CLI and with --dry-run', () {
+      late Future cliCommandFuture;
+      setUp(() async {
+        pushCurrentDirectory(p.join(d.sandbox, 'monorepo', 'project'));
+
+        cliCommandFuture = cli.run([
+          'deploy',
+          '--project',
+          BucketUploadDescription.projectId,
+          '--dry-run',
+        ]);
+      });
+
+      test('then command throws ErrorExitException.', () async {
+        await expectLater(
+          cliCommandFuture,
+          throwsA(isA<ErrorExitException>()),
+        );
+      });
+
+      test('then an unsupported flutter dependency error message is logged.',
+          () async {
+        await cliCommandFuture.catchError((final _) {});
+
+        expect(logger.errorCalls, hasLength(1));
+        expect(
+          logger.errorCalls.single.message,
+          equals(
+              'A Flutter dependency is not allowed in a server package: flutter_utilities'),
+        );
       });
     });
   });

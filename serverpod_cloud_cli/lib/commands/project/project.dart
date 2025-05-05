@@ -75,15 +75,13 @@ abstract class ProjectCommands {
       });
 
       try {
-        if (!ScloudIgnore.fileExists(rootFolder: projectDir)) {
-          ScloudIgnore.writeTemplate(rootFolder: projectDir);
-        }
-      } on Exception catch (e) {
-        logger.error(
-          'Failed to write to ${ScloudIgnore.fileName} file',
-          exception: e,
+        ScloudIgnore.writeTemplateIfNotExists(
+          rootFolder: projectDir,
         );
-        throw ErrorExitException();
+      } on Exception catch (e, s) {
+        final message = 'Failed to write to ${ScloudIgnore.fileName} file';
+        logger.error(message, exception: e);
+        throw ErrorExitException(message, e, s);
       }
 
       logger.success(
@@ -207,15 +205,13 @@ abstract class ProjectCommands {
     }
 
     try {
-      if (!ScloudIgnore.fileExists(rootFolder: projectDirectory)) {
-        ScloudIgnore.writeTemplate(rootFolder: projectDirectory);
-      }
-    } on Exception catch (e) {
-      logger.error(
-        'Failed to write to ${ScloudIgnore.fileName} file',
-        exception: e,
+      ScloudIgnore.writeTemplateIfNotExists(
+        rootFolder: projectDirectory,
       );
-      throw ErrorExitException();
+    } on Exception catch (e, s) {
+      final message = 'Failed to write to ${ScloudIgnore.fileName} file';
+      logger.error(message, exception: e);
+      throw ErrorExitException(message, e, s);
     }
 
     logger.success('Successfully linked project!');

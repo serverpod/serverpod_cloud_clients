@@ -4,6 +4,7 @@ import 'package:path/path.dart';
 
 abstract final class ScloudIgnore {
   static const String fileName = '.scloudignore';
+  static const String scloudDirName = '.scloud';
 
   static const String template = '''
 # .scloudignore
@@ -42,6 +43,9 @@ config/test.yaml
 
 # Opting out of ignoring web files.
 !web/**
+
+# Opting out of ignoring the $scloudDirName directory.
+!$scloudDirName/**
 ''';
 
   static bool fileExists({
@@ -56,5 +60,13 @@ config/test.yaml
   }) {
     final file = File(join(rootFolder, fileName));
     file.writeAsStringSync(template);
+  }
+
+  static void writeTemplateIfNotExists({
+    final String rootFolder = '.',
+  }) {
+    if (!ScloudIgnore.fileExists(rootFolder: rootFolder)) {
+      ScloudIgnore.writeTemplate(rootFolder: rootFolder);
+    }
   }
 }

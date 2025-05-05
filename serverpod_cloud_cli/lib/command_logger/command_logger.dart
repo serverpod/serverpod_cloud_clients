@@ -240,7 +240,7 @@ class CommandLogger {
   ///  • second step
   /// ```
   void list(
-    final List<String> items, {
+    final Iterable<String> items, {
     final String? title,
     final bool newParagraph = false,
   }) {
@@ -254,7 +254,7 @@ class CommandLogger {
 
     items.forEachIndexed((final i, final item) {
       _logger.info(
-        items[i],
+        item,
         type: cli.TextLogType.bullet,
         newParagraph: i == 0 && newParagraph && title == null,
       );

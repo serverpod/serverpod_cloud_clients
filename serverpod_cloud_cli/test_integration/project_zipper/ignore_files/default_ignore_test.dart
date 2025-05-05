@@ -36,7 +36,7 @@ void main() {
 
     expect(
       () => ProjectZipper.zipProject(
-        projectDirectory: projectDirectory,
+        rootDirectory: projectDirectory,
         logger: commandLogger,
       ),
       throwsA(isA<EmptyProjectException>()),
@@ -58,7 +58,7 @@ void main() {
 
     expect(
       () => ProjectZipper.zipProject(
-        projectDirectory: projectDirectory,
+        rootDirectory: projectDirectory,
         logger: commandLogger,
       ),
       throwsA(isA<EmptyProjectException>()),

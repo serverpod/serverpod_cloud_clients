@@ -33,7 +33,7 @@ void main() {
 
     await expectLater(
       ProjectZipper.zipProject(
-        projectDirectory: projectDirectory,
+        rootDirectory: projectDirectory,
         logger: commandLogger,
       ),
       throwsA(isA<ProjectDirectoryDoesNotExistException>()),
@@ -48,7 +48,7 @@ void main() {
 
     await expectLater(
       ProjectZipper.zipProject(
-        projectDirectory: projectDirectory,
+        rootDirectory: projectDirectory,
         logger: commandLogger,
       ),
       throwsA(isA<EmptyProjectException>()),
@@ -78,7 +78,7 @@ void main() {
 
     await expectLater(
       ProjectZipper.zipProject(
-        projectDirectory: projectDirectory,
+        rootDirectory: projectDirectory,
         logger: commandLogger,
       ),
       throwsA(isA<DirectorySymLinkException>()),
@@ -102,7 +102,7 @@ void main() {
 
     await expectLater(
       ProjectZipper.zipProject(
-        projectDirectory: projectDirectory,
+        rootDirectory: projectDirectory,
         logger: commandLogger,
       ),
       throwsA(isA<NonResolvingSymlinkException>()),
@@ -121,7 +121,7 @@ void main() {
     ).construct(testProjectPath);
 
     final zippedProject = await ProjectZipper.zipProject(
-      projectDirectory: projectDirectory,
+      rootDirectory: projectDirectory,
       logger: commandLogger,
     );
 
@@ -145,7 +145,7 @@ void main() {
     ).construct(testProjectPath);
 
     final zippedProject = await ProjectZipper.zipProject(
-      projectDirectory: projectDirectory,
+      rootDirectory: projectDirectory,
       logger: commandLogger,
     );
 
@@ -173,7 +173,7 @@ void main() {
     ).construct(testProjectPath);
 
     final zippedProject = await ProjectZipper.zipProject(
-      projectDirectory: projectDirectory,
+      rootDirectory: projectDirectory,
       logger: commandLogger,
     );
 
