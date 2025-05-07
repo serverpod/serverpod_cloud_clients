@@ -1,6 +1,12 @@
 
 # Changelog
 
+## [0.6.0] - 2025-05-06
+
+### Added
+
+- **Dart workspace support** - You can now deploy Dart workspace projects to Serverpod Cloud. No new options or configuration is needed.
+
 ## [0.5.2] - 2025-04-29
 
 ### Fixed
