@@ -1,6 +1,6 @@
+import 'package:cli_tools/config.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/util/config/config.dart';
 
 /// The prefix for the scloud configuration domain.
 /// Used in qualified keys, e.g: `scloud:/project/projectId`

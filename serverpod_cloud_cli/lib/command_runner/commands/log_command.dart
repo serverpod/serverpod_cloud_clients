@@ -1,10 +1,10 @@
+import 'package:cli_tools/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/commands/logs/logs.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
-import 'package:serverpod_cloud_cli/util/config/config.dart';
 
 import 'categories.dart';
 

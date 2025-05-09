@@ -4,6 +4,7 @@ import 'package:args/args.dart';
 import 'package:cli_tools/cli_tools.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
+
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/custom_domain_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/db_command.dart';
@@ -21,15 +22,13 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_pro
 import 'package:serverpod_cloud_cli/command_runner/helpers/cli_version_checker.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
-import 'package:serverpod_cloud_cli/util/capitalize.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
-import 'package:serverpod_cloud_cli/util/config/config.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
 import 'package:serverpod_cloud_cli/util/scloud_version.dart';
 
 /// Represents the Serverpod Cloud CLI main command, its global options, and subcommands.
-class CloudCliCommandRunner extends BetterCommandRunner {
+class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   final Version version;
   final CommandLogger logger;
   final CloudCliServiceProvider serviceProvider;
@@ -39,13 +38,23 @@ class CloudCliCommandRunner extends BetterCommandRunner {
   GlobalConfiguration? _globalConfiguration;
 
   /// The curremt global configuration for the Serverpod Cloud CLI.
-  /// (Since this object is re-entrant, the global config is regenerated each call to [runCommand].)
+  @override
   GlobalConfiguration get globalConfiguration {
     final globalConfig = _globalConfiguration;
     if (globalConfig == null) {
       throw StateError('Global configuration not initialized');
     }
     return globalConfig;
+  }
+
+  /// Sets the curremt global configuration for the Serverpod Cloud CLI.
+  /// (Since this object is re-entrant, the global config is regenerated
+  /// each call to [run].)
+  @override
+  set globalConfiguration(final Configuration<GlobalOption> configuration) {
+    _globalConfiguration = GlobalConfiguration.from(
+      configuration: configuration,
+    );
   }
 
   CloudCliCommandRunner._({
@@ -57,9 +66,10 @@ class CloudCliCommandRunner extends BetterCommandRunner {
         super(
           'scloud',
           'Manage your Serverpod Cloud projects',
+          globalOptions: GlobalOption.values,
           wrapTextColumn: logger.wrapTextColumn,
           messageOutput: MessageOutput(
-            logUsage: logger.info,
+            usageLogger: logger.info,
           ),
         );
 
@@ -83,9 +93,6 @@ class CloudCliCommandRunner extends BetterCommandRunner {
       ),
     );
 
-    // Add global options
-    GlobalOption.values.prepareForParsing(runner.argParser);
-
     // Add commands (which may in turn have their own options and subcommands)
     runner.addCommands([
       runner._versionCommand,
@@ -106,22 +113,6 @@ class CloudCliCommandRunner extends BetterCommandRunner {
 
   @override
   Future<void> runCommand(final ArgResults topLevelResults) async {
-    _globalConfiguration = GlobalConfiguration(
-      argResults: topLevelResults,
-      env: Platform.environment,
-    );
-
-    if (globalConfiguration.errors.isNotEmpty) {
-      final buffer = StringBuffer();
-      final errors = globalConfiguration.errors.map(
-        (final e) => '${e.capitalize()}.',
-      );
-      buffer.writeAll(errors, '\n');
-      usageException(buffer.toString());
-    }
-
-    logger.configuration = globalConfiguration;
-
     serviceProvider.initialize(
       globalConfiguration: globalConfiguration,
       logger: logger,
@@ -379,8 +370,12 @@ File? _projectConfigFileFinder(final Configuration cfg) {
 }
 
 /// The current global configuration values for the Serverpod Cloud CLI.
-class GlobalConfiguration extends Configuration {
-  GlobalConfiguration({
+class GlobalConfiguration extends Configuration<GlobalOption> {
+  GlobalConfiguration.from({
+    required super.configuration,
+  }) : super.from();
+
+  GlobalConfiguration.resolve({
     super.argResults,
     super.args,
     super.env,

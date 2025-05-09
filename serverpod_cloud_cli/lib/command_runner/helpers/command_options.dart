@@ -1,4 +1,4 @@
-import 'package:serverpod_cloud_cli/util/config/config.dart';
+import 'package:cli_tools/config.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
 
 abstract final class CommandConfigConstants {
@@ -61,7 +61,10 @@ class NameOption extends StringOption {
         );
 }
 
-const _valueGroup = MutuallyExclusive('Value', mandatory: true);
+const _valueGroup = MutuallyExclusive(
+  'Value',
+  mode: MutuallyExclusiveMode.mandatory,
+);
 
 class ValueOption extends StringOption {
   const ValueOption({

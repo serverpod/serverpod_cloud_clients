@@ -277,7 +277,7 @@ void main() {
       'Given empty standard out '
       'when calling confirm with skip-confirmation option set '
       'then should immediately return true', () async {
-    commandLogger.configuration = GlobalConfiguration(
+    commandLogger.configuration = GlobalConfiguration.resolve(
       args: ['--skip-confirmation'],
     );
 

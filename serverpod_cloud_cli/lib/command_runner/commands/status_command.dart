@@ -1,3 +1,4 @@
+import 'package:cli_tools/config.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
@@ -6,7 +7,6 @@ import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dar
 import 'package:serverpod_cloud_cli/commands/status/status.dart';
 import 'package:serverpod_cloud_cli/commands/logs/logs.dart';
 import 'package:serverpod_cloud_cli/commands/status/status_feature.dart';
-import 'package:serverpod_cloud_cli/util/config/config.dart';
 
 import 'categories.dart';
 
@@ -51,7 +51,10 @@ abstract final class _DeployStatusOptions {
     defaultsTo: '0',
   );
 
-  static const _modeGroup = MutuallyExclusive('Mode', allowDefaults: true);
+  static const _modeGroup = MutuallyExclusive(
+    'Mode',
+    mode: MutuallyExclusiveMode.allowDefaults,
+  );
 
   static const list = FlagOption(
     argName: 'list',

@@ -1,8 +1,8 @@
+import 'package:cli_tools/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/commands/launch/launch.dart';
-import 'package:serverpod_cloud_cli/util/config/config.dart';
 
 enum LaunchOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption.nonMandatory()),
