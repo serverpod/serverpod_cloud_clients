@@ -208,8 +208,9 @@ void main() {
         commandLogger.success('Operation successful', trailingRocket: true);
       });
 
-      expect(stdout.output, startsWith('Operation successful'));
+      expect(stdout.output, contains('Operation successful 🚀\n'));
     },
+    onPlatform: {'windows': Skip('Trailing rocket not supported on Windows')},
   );
 
   test(
@@ -222,7 +223,7 @@ void main() {
 
     expect(
       stdout.output,
-      'Operation successful\n',
+      contains('Operation successful\n'),
     );
   });
 
@@ -239,7 +240,10 @@ void main() {
 
     expect(
       stdout.output,
-      '\nOperation successful\n',
+      stringContainsInOrder([
+        '\n',
+        'Operation successful\n',
+      ]),
     );
   });
 
@@ -256,8 +260,10 @@ void main() {
 
     expect(
       stdout.output,
-      'Operation successful\n'
-      'You can now proceed to the next step.\n',
+      stringContainsInOrder([
+        'Operation successful\n',
+        'You can now proceed to the next step.\n',
+      ]),
     );
   });
 

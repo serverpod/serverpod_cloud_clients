@@ -75,6 +75,8 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
     final configFilePath = globalConfiguration.projectConfigFile?.path ??
         p.join(projectDir, ProjectConfigFileConstants.defaultFileName);
 
+    logger.debug('Using project directory `$projectDir`');
+
     await ProjectCommands.createProject(
       runner.serviceProvider.cloudApiClient,
       logger: logger,
@@ -184,6 +186,8 @@ class CloudProjectLinkCommand
           projectDirectory.path,
           ProjectConfigFileConstants.defaultFileName,
         );
+
+    logger.debug('Using project directory `${projectDirectory.path}`');
 
     await ProjectCommands.linkProject(
       runner.serviceProvider.cloudApiClient,

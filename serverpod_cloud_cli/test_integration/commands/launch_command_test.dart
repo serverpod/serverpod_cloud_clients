@@ -221,27 +221,18 @@ void main() {
             logger.successCalls,
             containsAllInOrder([
               equalsSuccessCall(
-                message: "Successfully created new project '$projectId'.",
-              ),
-              equalsSuccessCall(
-                message:
-                    "Successfully requested to create a database for the new project '$projectId'.",
-              ),
-              equalsSuccessCall(
-                message:
-                    "Successfully created the '${p.join(testProjectDir, 'scloud.yaml')}' configuration file for '$projectId'.",
+                message: "Serverpod Cloud project created.",
+                newParagraph: true,
               ),
               equalsSuccessCall(
                 message: 'Project uploaded successfully!',
                 trailingRocket: true,
+                newParagraph: true,
                 followUp: '''
-
 When the server has started, you can access it at:
 Web:      https://$projectId.serverpod.space/
 API:      https://$projectId.api.serverpod.space/
-Insights: https://$projectId.insights.serverpod.space/
-
-See the `scloud domain` command to set up a custom domain.''',
+Insights: https://$projectId.insights.serverpod.space/''',
               ),
             ]),
           );
@@ -259,13 +250,21 @@ See the `scloud domain` command to set up a custom domain.''',
         });
 
         test('then logs status deploy hint message', () async {
-          expect(logger.terminalCommandCalls, hasLength(1));
+          expect(logger.terminalCommandCalls, hasLength(2));
           expect(
-            logger.terminalCommandCalls.single,
-            equalsTerminalCommandCall(
-              command: 'scloud status deploy -p $projectId',
-              message: 'Run this command to see the current deployment status:',
-            ),
+            logger.terminalCommandCalls,
+            containsAllInOrder([
+              equalsTerminalCommandCall(
+                command: 'scloud domain',
+                message: 'Set up your custom domain by running:',
+                newParagraph: true,
+              ),
+              equalsTerminalCommandCall(
+                command: 'scloud status deploy -p $projectId',
+                message:
+                    'Run this command to see the current deployment status:',
+              ),
+            ]),
           );
         });
 

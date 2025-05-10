@@ -458,15 +458,29 @@ dependencies:
                 equalsSuccessCall(
                   message: 'Project uploaded successfully!',
                   trailingRocket: true,
+                  newParagraph: true,
                   followUp: '''
-
 When the server has started, you can access it at:
 Web:      https://${BucketUploadDescription.projectId}.serverpod.space/
 API:      https://${BucketUploadDescription.projectId}.api.serverpod.space/
-Insights: https://${BucketUploadDescription.projectId}.insights.serverpod.space/
-
-See the `scloud domain` command to set up a custom domain.''',
+Insights: https://${BucketUploadDescription.projectId}.insights.serverpod.space/''',
                 ));
+          });
+
+          test(
+              'then command executes successfully and logs deploy command hint.',
+              () async {
+            await expectLater(cliCommandFuture, completes);
+
+            expect(logger.terminalCommandCalls, isNotEmpty);
+            expect(
+              logger.terminalCommandCalls.last,
+              equalsTerminalCommandCall(
+                message: 'Set up your custom domain by running:',
+                command: 'scloud domain',
+                newParagraph: true,
+              ),
+            );
           });
 
           test('then zipped project is accessible in bucket.', () async {

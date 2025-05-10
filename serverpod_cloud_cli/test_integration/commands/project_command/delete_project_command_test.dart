@@ -118,7 +118,8 @@ void main() {
         expect(
           logger.successCalls.first,
           equalsSuccessCall(
-            message: 'Successfully deleted the project "my-proj".',
+            message: 'Deleted the project "my-proj".',
+            newParagraph: true,
           ),
         );
       });

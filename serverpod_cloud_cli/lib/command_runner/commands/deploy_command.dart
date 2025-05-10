@@ -56,6 +56,7 @@ class CloudDeployCommand extends CloudCliCommand<DeployCommandOption> {
     final dryRun = commandConfig.value(DeployCommandOption.dryRun);
 
     final projectDirectory = runner.verifiedProjectDirectory();
+    logger.debug('Using project directory `${projectDirectory.path}`');
 
     await Deploy.deploy(
       runner.serviceProvider.cloudApiClient,

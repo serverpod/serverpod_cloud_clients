@@ -48,8 +48,8 @@ class _ScloudProjectConfigProvider<T extends OptionDefinition>
   ConfigurationSource _makeConfigSource(final Configuration<T> cfg) {
     final configContent = globalConfig.projectConfigContent;
     if (configContent != null) {
-      logger?.info('Using scloud project configuration from '
-          '`${GlobalOption.projectConfigContent}`');
+      logger?.debug('Using scloud project configuration from '
+          '`${GlobalOption.projectConfigContent.qualifiedString()}`');
       return ConfigurationParser.fromString(
         configContent,
         format: ConfigEncoding.yaml,
@@ -60,7 +60,8 @@ class _ScloudProjectConfigProvider<T extends OptionDefinition>
     if (configFile == null) {
       logger?.info('No scloud project configuration file found.');
     } else {
-      logger?.info('Using scloud project configuration file $configFile');
+      logger?.debug('Using scloud project configuration file '
+          '${configFile.path}');
       return ConfigurationParser.fromFile(configFile.path);
     }
 
