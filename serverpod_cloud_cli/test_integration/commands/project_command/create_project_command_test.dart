@@ -82,11 +82,12 @@ void main() {
         test('then logs success message', () async {
           await commandResult;
 
-          expect(logger.successCalls, isNotEmpty);
+          expect(logger.successCalls, hasLength(1));
           expect(
-            logger.successCalls.first,
+            logger.successCalls.single,
             equalsSuccessCall(
-              message: "Successfully created new project '$projectId'.",
+              message: "Serverpod Cloud project created.",
+              newParagraph: true,
             ),
           );
         });
@@ -145,11 +146,12 @@ project:
         test('then logs success message', () async {
           await commandResult;
 
-          expect(logger.successCalls, isNotEmpty);
+          expect(logger.successCalls, hasLength(1));
           expect(
-            logger.successCalls.first,
+            logger.successCalls.single,
             equalsSuccessCall(
-              message: "Successfully created new project '$projectId'.",
+              message: "Serverpod Cloud project created.",
+              newParagraph: true,
             ),
           );
         });
@@ -260,11 +262,12 @@ dependencies:
       test('then logs success message', () async {
         await commandResult;
 
-        expect(logger.successCalls, isNotEmpty);
+        expect(logger.successCalls, hasLength(1));
         expect(
-          logger.successCalls.first,
+          logger.successCalls.single,
           equalsSuccessCall(
-            message: "Successfully created new project '$projectId'.",
+            message: "Serverpod Cloud project created.",
+            newParagraph: true,
           ),
         );
       });
@@ -303,11 +306,12 @@ dependencies:
       test('then logs success message', () async {
         await commandResult;
 
-        expect(logger.successCalls, isNotEmpty);
+        expect(logger.successCalls, hasLength(1));
         expect(
-          logger.successCalls.first,
+          logger.successCalls.single,
           equalsSuccessCall(
-            message: "Successfully created new project '$projectId'.",
+            message: "Serverpod Cloud project created.",
+            newParagraph: true,
           ),
         );
       });
@@ -371,11 +375,12 @@ dependencies:
         test('then logs success message', () async {
           await commandResult;
 
-          expect(logger.successCalls, isNotEmpty);
+          expect(logger.successCalls, hasLength(1));
           expect(
-            logger.successCalls.first,
+            logger.successCalls.single,
             equalsSuccessCall(
-              message: "Successfully created new project '$projectId'.",
+              message: "Serverpod Cloud project created.",
+              newParagraph: true,
             ),
           );
         });
@@ -432,11 +437,12 @@ dependencies:
         test('then logs success message', () async {
           await commandResult;
 
-          expect(logger.successCalls, isNotEmpty);
+          expect(logger.successCalls, hasLength(1));
           expect(
-            logger.successCalls.first,
+            logger.successCalls.single,
             equalsSuccessCall(
-              message: "Successfully created new project '$projectId'.",
+              message: "Serverpod Cloud project created.",
+              newParagraph: true,
             ),
           );
         });

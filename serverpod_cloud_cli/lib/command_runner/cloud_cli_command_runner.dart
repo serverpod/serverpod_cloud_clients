@@ -55,6 +55,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     _globalConfiguration = GlobalConfiguration.from(
       configuration: configuration,
     );
+    logger.configuration = _globalConfiguration;
   }
 
   CloudCliCommandRunner._({
@@ -188,7 +189,6 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
           'The directory is not a Serverpod server directory.');
     }
 
-    logger.debug('Using project directory `${projectDirectory.path}`');
     return projectDirectory;
   }
 
@@ -278,6 +278,10 @@ Directory _getDefaultStorageDir() {
 
 /// The global configuration options for the Serverpod Cloud CLI.
 enum GlobalOption<V> implements OptionDefinition<V> {
+  quiet(BetterCommandRunnerFlags.quietOption),
+  verbose(BetterCommandRunnerFlags.verboseOption),
+  analytics(BetterCommandRunnerFlags.analyticsOption),
+
   version(
     FlagOption(
       argName: 'version',

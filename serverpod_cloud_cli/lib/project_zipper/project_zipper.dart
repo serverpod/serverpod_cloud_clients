@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:archive/archive_io.dart';
-import 'package:cli_tools/cli_tools.dart';
 import 'package:pool/pool.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/project_zipper/helpers/project_files.dart';

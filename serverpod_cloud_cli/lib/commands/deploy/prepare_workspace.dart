@@ -63,7 +63,7 @@ abstract class WorkspaceProject {
 
     // Find workspace root directory by traversing up until we find a pubspec.yaml with workspace field
     final (workspaceRootDir, workspacePubspec) =
-        _findWorkspaceRoot(projectDirectory);
+        findWorkspaceRoot(projectDirectory);
 
     // create map with all workspace packages, map from package name to [WorkspacePackage]
     final allWorkspacePackages = <String, WorkspacePackage>{};
@@ -190,8 +190,11 @@ abstract class WorkspaceProject {
   }
 
   /// Finds the workspace root directory above the project directory.
+  /// Returns a tuple with the workspace root directory and a [Pubspec] object
+  /// for its pubspec.yaml file.
+  ///
   /// Throws [WorkspaceException] if no workspace root is found.
-  static (Directory, Pubspec) _findWorkspaceRoot(
+  static (Directory, Pubspec) findWorkspaceRoot(
     final Directory projectDir,
   ) {
     var currentDir = projectDir.absolute;

@@ -22,6 +22,8 @@ abstract class Deploy {
     required final int concurrency,
     required final bool dryRun,
   }) async {
+    logger.init('Deploying Serverpod Cloud project "$projectId".');
+
     final projectDirectory = Directory(projectDir);
 
     final pubspecValidator = TenantProjectPubspec.fromProjectDir(
@@ -55,6 +57,7 @@ abstract class Deploy {
         includedSubPaths.where(
           (final path) => path != ScloudIgnore.scloudDirName,
         ),
+        level: LogLevel.debug,
       );
     } else {
       rootDirectory = projectDirectory;
@@ -62,49 +65,53 @@ abstract class Deploy {
     }
 
     late final List<int> projectZip;
-    final isZipped = await logger.progress('Zipping project...', () async {
-      try {
-        projectZip = await ProjectZipper.zipProject(
-          logger: logger,
-          rootDirectory: rootDirectory,
-          beneath: includedSubPaths,
-          fileReadPoolSize: concurrency,
-        );
-        return true;
-      } on ProjectZipperExceptions catch (e) {
-        switch (e) {
-          case ProjectDirectoryDoesNotExistException():
-            logger.error(
-              'Project directory does not exist: ${e.path}',
-            );
-            break;
-          case EmptyProjectException():
-            logger.error(
-              'No files to upload.',
-              hint:
-                  'Ensure that the correct project directory is selected (either through the --project-dir flag or the current directory) and check '
-                  'that `.gitignore` and `.scloudignore` does not filter out all project files.',
-            );
-            break;
-          case DirectorySymLinkException():
-            logger.error(
-              'Serverpod Cloud does not support directory symlinks: `${e.path}`',
-            );
-            break;
-          case NonResolvingSymlinkException():
-            logger.error(
-              'Serverpod Cloud does not support non-resolving symlinks: `${e.path}` => `${e.target}`',
-            );
-            break;
-          case NullZipException():
-            logger.error(
-              'Unknown error occurred while zipping project, please try again.',
-            );
-            break;
+    final isZipped = await logger.progress(
+      'Zipping project...',
+      newParagraph: true,
+      () async {
+        try {
+          projectZip = await ProjectZipper.zipProject(
+            logger: logger,
+            rootDirectory: rootDirectory,
+            beneath: includedSubPaths,
+            fileReadPoolSize: concurrency,
+          );
+          return true;
+        } on ProjectZipperExceptions catch (e) {
+          switch (e) {
+            case ProjectDirectoryDoesNotExistException():
+              logger.error(
+                'Project directory does not exist: ${e.path}',
+              );
+              break;
+            case EmptyProjectException():
+              logger.error(
+                'No files to upload.',
+                hint:
+                    'Ensure that the correct project directory is selected (either through the --project-dir flag or the current directory) and check '
+                    'that `.gitignore` and `.scloudignore` does not filter out all project files.',
+              );
+              break;
+            case DirectorySymLinkException():
+              logger.error(
+                'Serverpod Cloud does not support directory symlinks: `${e.path}`',
+              );
+              break;
+            case NonResolvingSymlinkException():
+              logger.error(
+                'Serverpod Cloud does not support non-resolving symlinks: `${e.path}` => `${e.target}`',
+              );
+              break;
+            case NullZipException():
+              logger.error(
+                'Unknown error occurred while zipping project, please try again.',
+              );
+              break;
+          }
+          return false;
         }
-        return false;
-      }
-    });
+      },
+    );
 
     if (!isZipped) throw ErrorExitException('Failed to zip project.');
 
@@ -149,11 +156,16 @@ abstract class Deploy {
     logger.success(
       'Project uploaded successfully!',
       trailingRocket: true,
-      followUp: '\nWhen the server has started, you can access it at:\n'
+      newParagraph: true,
+      followUp: 'When the server has started, you can access it at:\n'
           'Web:      https://$projectId.$tenantHost/\n'
           'API:      https://$projectId.api.$tenantHost/\n'
-          'Insights: https://$projectId.insights.$tenantHost/\n\n'
-          'See the `scloud domain` command to set up a custom domain.',
+          'Insights: https://$projectId.insights.$tenantHost/',
+    );
+    logger.terminalCommand(
+      message: 'Set up your custom domain by running:',
+      'scloud domain',
+      newParagraph: true,
     );
   }
 }

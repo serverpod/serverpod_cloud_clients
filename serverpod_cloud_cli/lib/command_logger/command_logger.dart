@@ -1,10 +1,13 @@
 import 'dart:io';
 
-import 'package:cli_tools/cli_tools.dart' as cli;
+import 'package:cli_tools/logger.dart' as cli;
+import 'package:cli_tools/prompts.dart' as prompts;
 import 'package:collection/collection.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/shared/helpers/exception_user_message.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
+
+export 'package:cli_tools/logger.dart' show LogLevel;
 
 /// Logger that logs using the provided [cli.Logger].
 /// This interface is created to make it easier to follow the UX guidelines, as outlined in this issue: https://github.com/serverpod/serverpod_cloud/issues/371
@@ -72,7 +75,7 @@ class CommandLogger {
   /// These messages are not intended to be shown to the user.
   void debug(
     final String message, {
-    final cli.TextLogType type = cli.TextLogType.normal,
+    final cli.LogType type = cli.TextLogType.normal,
     final bool newParagraph = false,
   }) {
     _logger.debug(
@@ -80,6 +83,62 @@ class CommandLogger {
       type: type,
       newParagraph: newParagraph,
     );
+  }
+
+  /// **Information Messages Guidelines**
+  ///
+  /// Used for messages to the user when the message does not fit into
+  /// success, error or warning types.
+  /// Can be used for general information.
+  ///
+  /// Tone: Neutral and informative.
+  ///
+  /// Format:
+  /// ```bash
+  /// <Informational message>
+  /// ```
+  /// Example:
+  /// ```bash
+  /// The current project is set to my-project.
+  /// ```
+  void info(
+    final String message, {
+    final bool newParagraph = false,
+  }) {
+    _logger.info(
+      message,
+      type: cli.TextLogType.normal,
+      newParagraph: newParagraph,
+    );
+  }
+
+  /// **Warning Messages Guidelines**
+  ///
+  /// Use if the CLI can continue to run but the user should still be warned
+  /// that something went wrong or is not as expected.
+  /// Ensure to always provide actionable guidance on how to resolve the issue.
+  ///
+  /// Format:
+  /// ```bash
+  /// WARNING: <Short description>
+  /// <Actionable suggestion/hint>
+  /// ```
+  void warning(
+    final String message, {
+    final bool newParagraph = false,
+    final String? hint,
+  }) {
+    _logger.warning(
+      message,
+      newParagraph: newParagraph,
+    );
+
+    if (hint != null) {
+      _logger.info(
+        hint,
+        type: cli.TextLogType.hint,
+      );
+    }
   }
 
   /// **Error Messages Guidelines**
@@ -127,75 +186,22 @@ class CommandLogger {
     }
   }
 
-  Future<void> flush() async {
-    await _logger.flush();
-  }
-
-  /// **Information Messages Guidelines**
+  /// **Log Messages Guidelines**
   ///
-  /// Used for messages to the user when the message does not fit into
-  /// success, error or warning types.
-  /// Can be used for general information.
-  ///
-  /// Tone: Neutral and informative.
-  ///
-  /// Format:
-  /// ```bash
-  /// <Informational message>
-  /// ```
-  /// Example:
-  /// ```bash
-  /// The current project is set to my-project.
-  /// ```
-  void info(
+  /// Used for messages with a dynamic log level and type.
+  /// You should usually not use this directly, but rely on prebuilt methods
+  /// like [info], [error] and [success].
+  void log(
     final String message, {
+    required final cli.LogLevel level,
     final bool newParagraph = false,
+    final cli.LogType type = cli.TextLogType.normal,
   }) {
-    _logger.info(
+    _logger.log(
       message,
-      type: cli.TextLogType.normal,
+      level,
       newParagraph: newParagraph,
-    );
-  }
-
-  /// **Box Messages Guidelines**
-  ///
-  /// Same as [info] but with a box around the message.
-  void box(
-    final String message, {
-    final bool newParagraph = false,
-  }) {
-    _logger.info(
-      message,
-      type: const cli.BoxLogType(newParagraph: true),
-      newParagraph: newParagraph,
-    );
-  }
-
-  /// **Line Output Guidelines**
-  ///
-  /// Used for line-oriented output that should not be modified or formatted
-  /// other than each line being appended with a newline.
-  /// Typical use cases are logs, tables, and line-oriented text data dumps.
-  ///
-  /// Format:
-  /// ```bash
-  /// <line of text>
-  /// ```
-  /// Example:
-  /// ```bash
-  /// Fetching logs from oldest to newest. Display time zone: local (CET).
-  /// Timestamp                   | Level   | Content
-  /// ----------------------------+---------+--------
-  /// 2024-11-26 16:38:44.113541  | INFO    | Webserver listening on port 8082
-  /// ```
-  void line(
-    final String line,
-  ) {
-    _logger.info(
-      '$line\n',
-      type: cli.RawLogType(),
-      newParagraph: false,
+      type: type,
     );
   }
 
@@ -223,6 +229,58 @@ class CommandLogger {
     _logger.write(characters, logLevel, newLine: false, newParagraph: false);
   }
 
+  Future<void> flush() async {
+    await _logger.flush();
+  }
+
+  ///////////////////////
+  // Special output formats
+
+  /// **Box Messages Guidelines**
+  ///
+  /// Displays a box around the message.
+  void box(
+    final String message, {
+    final bool newParagraph = false,
+    final cli.LogLevel level = cli.LogLevel.info,
+  }) {
+    _logger.log(
+      message,
+      level,
+      type: const cli.BoxLogType(newParagraph: true),
+      newParagraph: newParagraph,
+    );
+  }
+
+  /// **Line Output Guidelines**
+  ///
+  /// Used for line-oriented output that should not be modified or formatted
+  /// other than each line being appended with a newline.
+  /// Typical use cases are logs, tables, and line-oriented text data dumps.
+  ///
+  /// Format:
+  /// ```bash
+  /// <line of text>
+  /// ```
+  /// Example:
+  /// ```bash
+  /// Fetching logs from oldest to newest. Display time zone: local (CET).
+  /// Timestamp                   | Level   | Content
+  /// ----------------------------+---------+--------
+  /// 2024-11-26 16:38:44.113541  | INFO    | Webserver listening on port 8082
+  /// ```
+  void line(
+    final String line, {
+    final cli.LogLevel level = cli.LogLevel.info,
+  }) {
+    _logger.log(
+      '$line\n',
+      level,
+      type: cli.RawLogType(),
+      newParagraph: false,
+    );
+  }
+
   /// **List Guidelines**
   ///
   /// Use when displaying a list of items. Uses info log level.
@@ -242,41 +300,54 @@ class CommandLogger {
   void list(
     final Iterable<String> items, {
     final String? title,
+    final cli.LogLevel level = cli.LogLevel.info,
     final bool newParagraph = false,
   }) {
     if (title != null) {
-      _logger.info(
+      _logger.log(
         title,
+        level,
         type: cli.TextLogType.normal,
         newParagraph: newParagraph,
       );
     }
 
     items.forEachIndexed((final i, final item) {
-      _logger.info(
+      _logger.log(
         item,
+        level,
         type: cli.TextLogType.bullet,
         newParagraph: i == 0 && newParagraph && title == null,
       );
     });
   }
 
-  /// **Progress Messages Guidelines**
+  /// **Init Messages Guidelines**
+  ///
+  /// Used for messages that are displayed when initializing (starting)
+  /// an operation or procedure.
+  ///
+  /// Tone: Neutral and informative
   ///
   /// Format:
   /// ```bash
-  /// <Resource or action that is awaited>
+  /// <initializing message>
   /// ```
   /// Example:
   /// ```bash
-  /// Waiting for authentication to complete...
+  /// Creating Serverpod Cloud project "$name".
   /// ```
-  Future<bool> progress(
-    final String message,
-    final Future<bool> Function() runner, {
+  void init(
+    final String message, {
+    final cli.LogLevel level = cli.LogLevel.info,
     final bool newParagraph = false,
-  }) async {
-    return _logger.progress(message, runner, newParagraph: newParagraph);
+  }) {
+    _logger.log(
+      message,
+      level,
+      type: cli.TextLogType.init,
+      newParagraph: newParagraph,
+    );
   }
 
   /// **Success Messages Guidelines**
@@ -293,19 +364,22 @@ class CommandLogger {
   /// ```
   void success(
     final String message, {
+    final cli.LogLevel level = cli.LogLevel.info,
     final bool trailingRocket = false,
     final bool newParagraph = false,
     final String? followUp,
   }) {
-    _logger.info(
+    _logger.log(
       '$message${trailingRocket ? ' 🚀' : ''}',
-      type: cli.TextLogType.header,
+      level,
+      type: cli.TextLogType.success,
       newParagraph: newParagraph,
     );
 
     if (followUp != null) {
-      _logger.info(
+      _logger.log(
         followUp,
+        level,
         type: cli.TextLogType.normal,
       );
     }
@@ -326,51 +400,46 @@ class CommandLogger {
   void terminalCommand(
     final String command, {
     final String? message,
+    final cli.LogLevel level = cli.LogLevel.info,
     final bool newParagraph = false,
   }) {
     if (message != null) {
-      _logger.info(
+      _logger.log(
         message,
+        level,
         newParagraph: newParagraph,
         type: cli.TextLogType.normal,
       );
     }
 
-    _logger.info(
+    _logger.log(
       command,
+      level,
       type: cli.TextLogType.command,
       newParagraph: newParagraph && message == null,
     );
   }
 
-  /// **Warning Messages Guidelines**
-  ///
-  /// Use if the CLI can continue to run but the user should still be warned
-  /// that something went wrong or is not as expected.
-  /// Ensure to always provide actionable guidance on how to resolve the issue.
+  /// **Progress Messages Guidelines**
   ///
   /// Format:
   /// ```bash
-  /// WARNING: <Short description>
-  /// <Actionable suggestion/hint>
+  /// <Resource or action that is awaited>
   /// ```
-  void warning(
-    final String message, {
+  /// Example:
+  /// ```bash
+  /// Waiting for authentication to complete...
+  /// ```
+  Future<bool> progress(
+    final String message,
+    final Future<bool> Function() runner, {
     final bool newParagraph = false,
-    final String? hint,
-  }) {
-    _logger.warning(
-      message,
-      newParagraph: newParagraph,
-    );
-
-    if (hint != null) {
-      _logger.info(
-        hint,
-        type: cli.TextLogType.hint,
-      );
-    }
+  }) async {
+    return _logger.progress(message, runner, newParagraph: newParagraph);
   }
+
+  ///////////////////////
+  // User input
 
   /// ***Confirmation Messages Guidelines***
   ///
@@ -390,7 +459,7 @@ class CommandLogger {
       return true;
     }
 
-    return cli.confirm(
+    return prompts.confirm(
       message,
       defaultValue: defaultValue,
       logger: _logger,
@@ -411,21 +480,10 @@ class CommandLogger {
     final String message, {
     final String? defaultValue,
   }) async {
-    // TODO: Replace implementation with cli.input() when that is properly exposed by cli_tools
-    final defaultDescription = defaultValue == null ? '' : ' ($defaultValue)';
-
-    _logger.write(
-      '$message$defaultDescription: ',
-      cli.LogLevel.info,
-      newLine: false,
-      newParagraph: false,
+    return prompts.input(
+      message,
+      defaultValue: defaultValue,
+      logger: _logger,
     );
-    final input = stdin.readLineSync()?.trim();
-    final missingInput = input == null || input.isEmpty;
-    if (missingInput) {
-      return defaultValue ?? '';
-    }
-
-    return input;
   }
 }

@@ -244,6 +244,7 @@ class TestCommandLogger extends CommandLogger {
   @override
   void box(
     final String message, {
+    final LogLevel level = LogLevel.info,
     final bool newParagraph = false,
   }) {
     if (printToStdout) {
@@ -282,7 +283,7 @@ class TestCommandLogger extends CommandLogger {
   @override
   void debug(
     final String message, {
-    final TextLogType type = TextLogType.normal,
+    final LogType type = TextLogType.normal,
     final bool newParagraph = false,
   }) {
     if (printToStdout) {
@@ -354,8 +355,9 @@ class TestCommandLogger extends CommandLogger {
 
   @override
   void line(
-    final String line,
-  ) {
+    final String line, {
+    final LogLevel level = LogLevel.info,
+  }) {
     if (printToStdout) {
       print('log line: $line');
     }
@@ -370,6 +372,7 @@ class TestCommandLogger extends CommandLogger {
   @override
   void list(
     final Iterable<String> items, {
+    final LogLevel level = LogLevel.info,
     final String? title,
     final bool newParagraph = false,
   }) {
@@ -409,6 +412,7 @@ class TestCommandLogger extends CommandLogger {
   @override
   void success(
     final String message, {
+    final LogLevel level = LogLevel.info,
     final bool trailingRocket = false,
     final bool newParagraph = false,
     final String? followUp,
@@ -433,6 +437,7 @@ class TestCommandLogger extends CommandLogger {
   void terminalCommand(
     final String command, {
     final String? message,
+    final LogLevel level = LogLevel.info,
     final bool newParagraph = false,
   }) {
     if (printToStdout) {
