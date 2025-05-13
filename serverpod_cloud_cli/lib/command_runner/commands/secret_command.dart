@@ -1,8 +1,7 @@
 import 'package:cli_tools/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
-import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
-import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 
 import 'categories.dart';
@@ -86,19 +85,14 @@ class CloudCreateSecretCommand
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
-    await handleCommonClientExceptions(logger, () async {
+    try {
       await apiCloudClient.secrets.create(
         secrets: {name: valueToSet},
         cloudCapsuleId: projectId,
       );
-    }, (final e) {
-      logger.error(
-        'Failed to create a new secret',
-        exception: e,
-      );
-
-      throw ErrorExitException();
-    });
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Failed to create a new secret');
+    }
 
     logger.success('Successfully created secret.');
   }
@@ -133,18 +127,13 @@ class CloudListSecretsCommand
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
     late List<String> secrets;
-    await handleCommonClientExceptions(logger, () async {
+    try {
       secrets = await apiCloudClient.secrets.list(
         projectId,
       );
-    }, (final e) {
-      logger.error(
-        'Failed to list secrets',
-        exception: e,
-      );
-
-      throw ErrorExitException();
-    });
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Failed to list secrets');
+    }
 
     final secretsPrinter = TablePrinter();
     secretsPrinter.addHeaders(['Secret name']);
@@ -193,24 +182,19 @@ class CloudDeleteSecretCommand
     );
 
     if (!shouldDelete) {
-      throw ErrorExitException();
+      throw UserAbortException();
     }
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
-    await handleCommonClientExceptions(logger, () async {
+    try {
       await apiCloudClient.secrets.delete(
         cloudCapsuleId: projectId,
         key: name,
       );
-    }, (final e) {
-      logger.error(
-        'Failed to delete the secret',
-        exception: e,
-      );
-
-      throw ErrorExitException();
-    });
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Failed to delete the secret');
+    }
 
     logger.success('Successfully deleted secret: $name.');
   }

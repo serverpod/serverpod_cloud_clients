@@ -1,12 +1,12 @@
 import 'package:cli_tools/config.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
-import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
-import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/commands/status/status.dart';
 import 'package:serverpod_cloud_cli/commands/logs/logs.dart';
 import 'package:serverpod_cloud_cli/commands/status/status_feature.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
 
 import 'categories.dart';
 
@@ -122,10 +122,9 @@ class CloudDeployStatusCommand extends CloudCliCommand<DeployStatusOption> {
     if (list) {
       // list recent deployments
       if (deploymentArg != null && deploymentArg != '0') {
-        logger.error('Cannot specify deploy id with --list.');
-        throw ErrorExitException();
+        throw CloudCliUsageException('Cannot specify deploy id with --list.');
       }
-      await handleCommonClientExceptions(logger, () async {
+      try {
         await StatusCommands.listDeployAttempts(
           runner.serviceProvider.cloudApiClient,
           logger: logger,
@@ -133,16 +132,15 @@ class CloudDeployStatusCommand extends CloudCliCommand<DeployStatusOption> {
           limit: limit,
           inUtc: inUtc,
         );
-      }, (final e) {
-        logger.error('Failed to get deployments list', exception: e);
-        throw ErrorExitException();
-      });
+      } on Exception catch (e, s) {
+        throw FailureException.nested(e, s, 'Failed to get deployments list');
+      }
       return;
     }
 
     if (log) {
       // view build log
-      await handleCommonClientExceptions(logger, () async {
+      try {
         final attemptId = await _getDeployAttemptId(projectId, deploymentArg);
 
         await LogsFeature.fetchBuildLog(
@@ -152,16 +150,15 @@ class CloudDeployStatusCommand extends CloudCliCommand<DeployStatusOption> {
           attemptId: attemptId,
           inUtc: inUtc,
         );
-      }, (final e) {
-        logger.error('Failed to get build log', exception: e);
-        throw ErrorExitException('Failed to get build log', e);
-      });
+      } on Exception catch (e, s) {
+        throw FailureException.nested(e, s, 'Failed to get build log');
+      }
 
       return;
     }
 
     // view a specific deployment
-    await handleCommonClientExceptions(logger, () async {
+    try {
       final attemptId = await _getDeployAttemptId(projectId, deploymentArg);
 
       await StatusCommands.showDeploymentStatus(
@@ -172,10 +169,9 @@ class CloudDeployStatusCommand extends CloudCliCommand<DeployStatusOption> {
         inUtc: inUtc,
         outputOverallStatus: overallStatus,
       );
-    }, (final e) {
-      logger.error('Failed to get deployment status', exception: e);
-      throw ErrorExitException();
-    });
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Failed to get deployment status');
+    }
   }
 
   Future<String> _getDeployAttemptId(
@@ -195,19 +191,16 @@ class CloudDeployStatusCommand extends CloudCliCommand<DeployStatusOption> {
       );
     } on NotFoundException catch (_) {
       if (deploymentArg == '0') {
-        logger.error('No deployment status found.');
-        logger.terminalCommand(
-          message: 'Run this command to deploy:',
-          'scloud deploy',
+        throw FailureException(
+          error: 'No deployment status found.',
+          hint: 'Run this command to deploy: scloud deploy',
         );
-        throw ErrorExitException();
       }
-      logger.error('No such deployment status found.');
-      logger.terminalCommand(
-        message: 'Run this command to see recent deployments:',
-        'scloud status deploy --list',
+      throw FailureException(
+        error: 'No such deployment status found.',
+        hint: 'Run this command to see recent deployments: '
+            'scloud status deploy --list',
       );
-      throw ErrorExitException();
     }
   }
 }

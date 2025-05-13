@@ -4,7 +4,7 @@ import 'package:meta/meta.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/status_command.dart';
-import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_mock.dart';
@@ -325,20 +325,10 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
 
               expect(logger.errorCalls, isNotEmpty);
               expect(
-                logger.errorCalls.first.message,
-                'No deployment status found.',
-              );
-            });
-
-            test('then outputs terminal command hint', () async {
-              await commandResult.onError((final e, final s) {});
-
-              expect(logger.terminalCommandCalls, isNotEmpty);
-              expect(
-                logger.terminalCommandCalls.first,
-                equalsTerminalCommandCall(
-                  message: 'Run this command to deploy:',
-                  command: 'scloud deploy',
+                logger.errorCalls.first,
+                equalsErrorCall(
+                  message: 'No deployment status found.',
+                  hint: 'Run this command to deploy: scloud deploy',
                 ),
               );
             });
@@ -406,20 +396,11 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
 
               expect(logger.errorCalls, isNotEmpty);
               expect(
-                logger.errorCalls.first.message,
-                'No such deployment status found.',
-              );
-            });
-
-            test('then outputs terminal command hint', () async {
-              await commandResult.onError((final e, final s) {});
-
-              expect(logger.terminalCommandCalls, isNotEmpty);
-              expect(
-                logger.terminalCommandCalls.first,
-                equalsTerminalCommandCall(
-                  message: 'Run this command to see recent deployments:',
-                  command: 'scloud status deploy --list',
+                logger.errorCalls.first,
+                equalsErrorCall(
+                  message: 'No such deployment status found.',
+                  hint: 'Run this command to see recent deployments: '
+                      'scloud status deploy --list',
                 ),
               );
             });

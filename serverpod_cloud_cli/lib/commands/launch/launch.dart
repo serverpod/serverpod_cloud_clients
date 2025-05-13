@@ -4,14 +4,13 @@ import 'package:cli_tools/cli_tools.dart' as cli;
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
-import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/file_uploader_factory.dart';
 import 'package:serverpod_cloud_cli/commands/deploy/deploy.dart';
 import 'package:serverpod_cloud_cli/commands/project/project.dart';
 import 'package:serverpod_cloud_cli/commands/status/status.dart';
 import 'package:serverpod_cloud_cli/commands/status/status_feature.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
-import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:serverpod_cloud_cli/util/project_id_validator.dart';
@@ -63,17 +62,12 @@ abstract class Launch {
       projectSetup,
     );
 
-    await handleCommonClientExceptions(logger, () async {
-      await performLaunch(
-        cloudApiClient,
-        fileUploaderFactory,
-        logger,
-        projectSetup,
-      );
-    }, (final e) {
-      logger.error('Failed to perform launch', exception: e);
-      throw ErrorExitException();
-    });
+    await performLaunch(
+      cloudApiClient,
+      fileUploaderFactory,
+      logger,
+      projectSetup,
+    );
   }
 
   static Future<void> selectProjectDir(
@@ -123,8 +117,10 @@ abstract class Launch {
     try {
       pubspecValidator = TenantProjectPubspec.fromProjectDir(
         Directory(projectDir),
-        logger: logger,
       );
+    } on FailureException catch (e) {
+      logger.error(e.errors.join('\n'), hint: e.hint);
+      return false;
     } on Exception catch (_) {
       return false;
     }
@@ -135,12 +131,12 @@ abstract class Launch {
         return true;
       }
 
-      logger.error(
-        '`$projectDir` is a Serverpod server directory, but it is not valid:\n'
-        '${issues.join('\n')}',
-        hint: "Resolve the issues and try again.",
+      throw FailureException(
+        error:
+            '`$projectDir` is a Serverpod server directory, but it is not valid:',
+        errors: issues,
+        hint: 'Resolve the issues and try again.',
       );
-      throw ErrorExitException();
     } else {
       logProjectDirIsNotAServerpodServerDirectory(logger, projectDir);
     }
@@ -267,7 +263,7 @@ The default API domain will be: <project-id>.api.serverpod.space
 
     if (!confirm) {
       logger.info('Setup cancelled.');
-      throw ErrorExitException();
+      throw UserAbortException();
     }
   }
 

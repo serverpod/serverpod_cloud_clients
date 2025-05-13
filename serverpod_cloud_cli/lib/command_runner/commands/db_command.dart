@@ -1,8 +1,7 @@
 import 'package:cli_tools/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
-import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
-import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart';
 
 import 'categories.dart';
 
@@ -60,34 +59,29 @@ class CloudDbConnectionDetailsCommand
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
-    await handleCommonClientExceptions(
-      logger,
-      () async {
-        final connection = await apiCloudClient.database.getConnectionDetails(
-          cloudCapsuleId: projectId,
-        );
+    try {
+      final connection = await apiCloudClient.database.getConnectionDetails(
+        cloudCapsuleId: projectId,
+      );
 
-        final portString = connection.port == 5432 ? '' : ':${connection.port}';
-        final connectionString =
-            'postgresql://${connection.host}$portString/${connection.name}'
-            '?sslmode=${connection.requiresSsl ? 'require' : 'disable'}';
-        logger.success(
-          '''
+      final portString = connection.port == 5432 ? '' : ':${connection.port}';
+      final connectionString =
+          'postgresql://${connection.host}$portString/${connection.name}'
+          '?sslmode=${connection.requiresSsl ? 'require' : 'disable'}';
+      logger.success(
+        '''
 Connection details:
   Host: ${connection.host}
   Port: ${connection.port}
   Database: ${connection.name}''',
-          followUp: '''
+        followUp: '''
 This psql command can be used to connect to the database (it will prompt for the password):
   psql "$connectionString" --user <username>''',
-        );
-      },
-      (final e) {
-        logger.error('Failed to get connection details', exception: e);
-
-        throw ErrorExitException();
-      },
-    );
+      );
+    } on Exception catch (e, stackTrace) {
+      throw FailureException.nested(
+          e, stackTrace, 'Failed to get connection details');
+    }
   }
 }
 
@@ -121,26 +115,21 @@ class CloudDbCreateSuperuserCommand
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
-    await handleCommonClientExceptions(
-      logger,
-      () async {
-        final password = await apiCloudClient.database.createSuperUser(
-          cloudCapsuleId: projectId,
-          username: username,
-        );
+    try {
+      final password = await apiCloudClient.database.createSuperUser(
+        cloudCapsuleId: projectId,
+        username: username,
+      );
 
-        logger.success(
-          '''
+      logger.success(
+        '''
 DB superuser created. The password is only shown this once:
 $password''',
-        );
-      },
-      (final e) {
-        logger.error('Failed to create superuser', exception: e);
-
-        throw ErrorExitException();
-      },
-    );
+      );
+    } on Exception catch (e, stackTrace) {
+      throw FailureException.nested(
+          e, stackTrace, 'Failed to create superuser');
+    }
   }
 }
 
@@ -174,25 +163,19 @@ class CloudDbResetPasswordCommand
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
-    await handleCommonClientExceptions(
-      logger,
-      () async {
-        final password = await apiCloudClient.database.resetDatabasePassword(
-          cloudCapsuleId: projectId,
-          username: username,
-        );
+    try {
+      final password = await apiCloudClient.database.resetDatabasePassword(
+        cloudCapsuleId: projectId,
+        username: username,
+      );
 
-        logger.success(
-          '''
+      logger.success(
+        '''
 DB password is reset. The new password is only shown this once:
 $password''',
-        );
-      },
-      (final e) {
-        logger.error('Failed to reset password', exception: e);
-
-        throw ErrorExitException();
-      },
-    );
+      );
+    } on Exception catch (e, stackTrace) {
+      throw FailureException.nested(e, stackTrace, 'Failed to reset password');
+    }
   }
 }

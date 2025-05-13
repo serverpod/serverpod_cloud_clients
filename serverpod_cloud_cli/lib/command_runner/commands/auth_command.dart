@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:cli_tools/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
-import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_cloud_cli/util/browser_launcher.dart';
@@ -105,7 +105,7 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
       logger.terminalCommand(
         'scloud auth logout',
       );
-      throw ErrorExitException();
+      throw FailureException();
     }
 
     final cloudServer = Uri.parse(serverAddress).replace(
@@ -146,12 +146,10 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
 
     final token = await tokenFuture;
     if (token == null) {
-      logger.error(
-        'Failed to get authentication token.',
+      throw FailureException(
+        error: 'Failed to get authentication token.',
         hint: 'Please try to log in again.',
       );
-
-      throw ErrorExitException();
     }
 
     if (persistent) {

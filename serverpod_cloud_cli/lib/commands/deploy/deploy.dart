@@ -2,9 +2,8 @@ import 'dart:io';
 
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
-import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/file_uploader_factory.dart';
-import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
@@ -28,29 +27,18 @@ abstract class Deploy {
 
     final pubspecValidator = TenantProjectPubspec.fromProjectDir(
       projectDirectory,
-      logger: logger,
     );
 
     final issues = pubspecValidator.projectDependencyIssues();
     if (issues.isNotEmpty) {
-      for (final issue in issues) {
-        logger.error(issue);
-      }
-      throw ErrorExitException(issues.first);
+      throw FailureException(errors: issues);
     }
 
     final Directory rootDirectory;
     final Iterable<String> includedSubPaths;
     if (pubspecValidator.isWorkspaceResolved()) {
-      try {
-        (rootDirectory, includedSubPaths) =
-            WorkspaceProject.prepareWorkspacePaths(
-          projectDirectory,
-        );
-      } on WorkspaceException catch (e, s) {
-        e.errors?.forEach(logger.error);
-        throw ErrorExitException(e.errors?.first, e, s);
-      }
+      (rootDirectory, includedSubPaths) =
+          WorkspaceProject.prepareWorkspacePaths(projectDirectory);
 
       logger.list(
         title: 'Including workspace packages',
@@ -122,14 +110,14 @@ abstract class Deploy {
 
     final success = await logger.progress('Uploading project...', () async {
       late final String uploadDescription;
-      await handleCommonClientExceptions(logger, () async {
+      try {
         uploadDescription = await cloudApiClient.deploy.createUploadDescription(
           projectId,
         );
-      }, (final e) {
-        logger.error('Failed to fetch upload description', exception: e);
-        throw ErrorExitException('Failed to fetch upload description', e);
-      });
+      } on Exception catch (e, stackTrace) {
+        throw FailureException.nested(
+            e, stackTrace, 'Failed to fetch upload description');
+      }
 
       try {
         final fileUploader = fileUploaderFactory(uploadDescription);
@@ -142,8 +130,8 @@ abstract class Deploy {
         }
         return ret;
       } on Exception catch (e, stackTrace) {
-        logger.error('Failed to upload project', exception: e);
-        throw ErrorExitException('Failed to upload project', e, stackTrace);
+        throw FailureException.nested(
+            e, stackTrace, 'Failed to upload project');
       }
     });
 

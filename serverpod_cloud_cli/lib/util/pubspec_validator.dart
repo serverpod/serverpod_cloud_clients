@@ -2,8 +2,7 @@ import 'dart:io';
 
 import 'package:pub_semver/pub_semver.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
-import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
-import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
 /// Convenience function to check if a directory is a Serverpod server directory.
 ///
@@ -42,11 +41,10 @@ class TenantProjectPubspec {
   /// error messages are printed to logger if provided,
   /// and [ErrorExitException] is thrown.
   factory TenantProjectPubspec.fromProjectDir(
-    final Directory projectDirectory, {
-    final CommandLogger? logger,
-  }) {
+    final Directory projectDirectory,
+  ) {
     final pubspecFile = File('${projectDirectory.path}/pubspec.yaml');
-    return TenantProjectPubspec.fromFile(pubspecFile, logger: logger);
+    return TenantProjectPubspec.fromFile(pubspecFile);
   }
 
   /// Reads and parses the given pubspec.yaml file.
@@ -54,24 +52,23 @@ class TenantProjectPubspec {
   /// If the pubspec.yaml file is not found or if it cannot be parsed,
   /// error messages are printed to logger if provided,
   /// and [ErrorExitException] is thrown.
-  factory TenantProjectPubspec.fromFile(
-    final File pubspecFile, {
-    final CommandLogger? logger,
-  }) {
+  factory TenantProjectPubspec.fromFile(final File pubspecFile) {
     if (!pubspecFile.existsSync()) {
-      logger?.error(
-        'Could not find `pubspec.yaml` in directory `${pubspecFile.parent.path}`.',
+      throw FailureException(
+        error:
+            'Could not find `pubspec.yaml` in directory `${pubspecFile.parent.path}`.',
         hint: "Provide the project's server directory and try again.",
       );
-      throw ErrorExitException();
     }
 
     final Pubspec pubspec;
     try {
       pubspec = Pubspec.parse(pubspecFile.readAsStringSync());
     } catch (e) {
-      logger?.error('Failed to parse pubspec.yaml: ${e.toString()}');
-      throw ErrorExitException();
+      throw FailureException(
+        error: 'Failed to parse pubspec.yaml: ${e.toString()}',
+        hint: 'Please fix the errors and try again.',
+      );
     }
     return TenantProjectPubspec(pubspec);
   }

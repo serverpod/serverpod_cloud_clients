@@ -1,8 +1,7 @@
 import 'package:cli_tools/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
-import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
-import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 
@@ -123,20 +122,16 @@ class CloudEnvCreateCommand extends CloudCliCommand<CreateEnvCommandConfig> {
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
-    await handleCommonClientExceptions(logger, () async {
+    try {
       await apiCloudClient.environmentVariables.create(
         variableName,
         valueToSet,
         projectId,
       );
-    }, (final e) {
-      logger.error(
-        'Failed to create a new environment variable',
-        exception: e,
-      );
-
-      throw ErrorExitException();
-    });
+    } on Exception catch (e, s) {
+      throw FailureException.nested(
+          e, s, 'Failed to create a new environment variable');
+    }
 
     logger.success('Successfully created environment variable.');
   }
@@ -174,20 +169,16 @@ class CloudEnvUpdateCommand extends CloudCliCommand<UpdateEnvCommandConfig> {
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
-    await handleCommonClientExceptions(logger, () async {
+    try {
       await apiCloudClient.environmentVariables.update(
         name: variableName,
         value: valueToSet,
         cloudCapsuleId: projectId,
       );
-    }, (final e) {
-      logger.error(
-        'Failed to update the environment variable',
-        exception: e,
-      );
-
-      throw ErrorExitException();
-    });
+    } on Exception catch (e, s) {
+      throw FailureException.nested(
+          e, s, 'Failed to update the environment variable');
+    }
 
     logger.success('Successfully updated environment variable: $variableName.');
   }
@@ -216,24 +207,20 @@ class CloudEnvDeleteCommand extends CloudCliCommand<DeleteEnvCommandConfig> {
     );
 
     if (!shouldDelete) {
-      throw ErrorExitException();
+      throw UserAbortException();
     }
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
-    await handleCommonClientExceptions(logger, () async {
+    try {
       await apiCloudClient.environmentVariables.delete(
         name: variableName,
         cloudCapsuleId: projectId,
       );
-    }, (final e) {
-      logger.error(
-        'Failed to delete the environment variable',
-        exception: e,
-      );
-
-      throw ErrorExitException();
-    });
+    } on Exception catch (e, s) {
+      throw FailureException.nested(
+          e, s, 'Failed to delete the environment variable');
+    }
 
     logger.success('Successfully deleted environment variable: $variableName.');
   }
@@ -257,18 +244,14 @@ class CloudEnvListCommand extends CloudCliCommand<ListEnvCommandConfig> {
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
     late List<EnvironmentVariable> environmentVariables;
-    await handleCommonClientExceptions(logger, () async {
+    try {
       environmentVariables = await apiCloudClient.environmentVariables.list(
         projectId,
       );
-    }, (final e) {
-      logger.error(
-        'Failed to list environment variables',
-        exception: e,
-      );
-
-      throw ErrorExitException();
-    });
+    } on Exception catch (e, s) {
+      throw FailureException.nested(
+          e, s, 'Failed to list environment variables');
+    }
 
     final tablePrinter = TablePrinter();
     tablePrinter.addHeaders(['Name', 'Value']);

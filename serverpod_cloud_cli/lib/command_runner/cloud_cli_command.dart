@@ -4,11 +4,12 @@ import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart'
+    show processCommonClientExceptions;
 import 'package:serverpod_cloud_cli/util/cli_authentication_key_manager.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_broker.dart'
     show scloudCliConfigBroker;
-
-import 'exit_exceptions.dart';
 
 abstract class CloudCliCommand<O extends OptionDefinition>
     extends BetterCommand<O, void> {
@@ -67,12 +68,55 @@ abstract class CloudCliCommand<O extends OptionDefinition>
 
     try {
       await super.run();
+    } on FailureException catch (e, stackTrace) {
+      _processFailureException(e, stackTrace);
     } on CloudCliUsageException catch (e, stackTrace) {
       // TODO: Don't catch CloudCliUsageException,
       // it's a UsageException and is handled by the caller.
       logger.error(e.message, hint: e.hint);
       throw ErrorExitException(e.message, e, stackTrace);
+    } on UsageException catch (_) {
+      rethrow;
+    } on ErrorExitException catch (_) {
+      rethrow;
+    } on Exception catch (e, stackTrace) {
+      processCommonClientExceptions(logger, e, stackTrace);
+      logger.error(
+        'Error when running command `$name`',
+        exception: e,
+        stackTrace: stackTrace,
+      );
+      throw ErrorExitException(e.toString(), e, stackTrace);
     }
+  }
+
+  /// Process a [FailureException] by displaying relevant messages to the user
+  /// and throw an [ErrorExitException].
+  Never _processFailureException(
+    final FailureException e,
+    final StackTrace stackTrace,
+  ) {
+    final nested = e.nestedException;
+    if (nested != null) {
+      processCommonClientExceptions(logger, nested, stackTrace);
+    }
+
+    if (e.errors.isNotEmpty) {
+      logger.error(
+        e.errors.join('\n'),
+        hint: e.hint,
+        exception: nested,
+        stackTrace: stackTrace,
+      );
+    } else if (e.hint case final String hint) {
+      logger.log(
+        hint,
+        level: LogLevel.info,
+        type: TextLogType.hint,
+      );
+    }
+
+    throw ErrorExitException(e.reason, e.nestedException, e.nestedStackTrace);
   }
 
   @override

@@ -4,10 +4,9 @@ import 'package:collection/collection.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
-import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/commands/deploy/prepare_workspace.dart'
-    show WorkspaceException, WorkspaceProject;
-import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart';
+    show WorkspaceProject;
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_file.dart';
@@ -25,7 +24,7 @@ abstract class ProjectCommands {
   }) async {
     logger.init('Creating Serverpod Cloud project "$projectId".');
 
-    await handleCommonClientExceptions(logger, () async {
+    try {
       await logger.progress(
         'Registering Serverpod Cloud project.',
         newParagraph: true,
@@ -36,30 +35,23 @@ abstract class ProjectCommands {
           return true;
         },
       );
-    }, (final e) {
-      logger.error(
-        'Request to create a new project failed',
-        exception: e,
-      );
-
-      throw ErrorExitException();
-    });
+    } on Exception catch (e, s) {
+      throw FailureException.nested(
+          e, s, 'Request to create a new project failed');
+    }
 
     if (enableDb) {
       await logger.progress(
         'Requesting database creation.',
         () async {
-          await handleCommonClientExceptions(logger, () async {
+          try {
             await cloudApiClient.infraResources
                 .enableDatabase(cloudCapsuleId: projectId);
-          }, (final e) {
-            logger.error(
-              'Request to create a database for the new project failed',
-              exception: e,
-            );
-            throw ErrorExitException();
-          });
-          return true;
+            return true;
+          } on Exception catch (e, s) {
+            throw FailureException.nested(e, s,
+                'Request to create a database for the new project failed');
+          }
         },
       );
     }
@@ -123,19 +115,15 @@ abstract class ProjectCommands {
     );
 
     if (!shouldDelete) {
-      throw ErrorExitException();
+      throw UserAbortException();
     }
 
-    await handleCommonClientExceptions(logger, () async {
+    try {
       await cloudApiClient.projects.deleteProject(cloudProjectId: projectId);
-    }, (final e) {
-      logger.error(
-        'Request to delete the project failed',
-        exception: e,
-      );
-
-      throw ErrorExitException();
-    });
+    } on Exception catch (e, s) {
+      throw FailureException.nested(
+          e, s, 'Request to delete the project failed');
+    }
 
     logger.success(
       'Deleted the project "$projectId".',
@@ -149,15 +137,11 @@ abstract class ProjectCommands {
     final bool showArchived = false,
   }) async {
     late List<Project> projects;
-    await handleCommonClientExceptions(logger, () async {
+    try {
       projects = await cloudApiClient.projects.listProjects();
-    }, (final e) {
-      logger.error(
-        'Request to list projects failed',
-        exception: e,
-      );
-      throw ErrorExitException();
-    });
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Request to list projects failed');
+    }
 
     final activeProjects = showArchived
         ? projects
@@ -222,19 +206,13 @@ abstract class ProjectCommands {
     final Client cloudApiClient,
     final String projectId,
   ) async {
-    return await handleCommonClientExceptions(
-      logger,
-      () => cloudApiClient.projects.fetchProjectConfig(
+    try {
+      return await cloudApiClient.projects.fetchProjectConfig(
         cloudProjectId: projectId,
-      ),
-      (final e) {
-        logger.error(
-          'Failed to fetch project config',
-          exception: e,
-        );
-        throw ErrorExitException();
-      },
-    );
+      );
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Failed to fetch project config');
+    }
   }
 
   static void _writeProjectFiles(
@@ -258,9 +236,8 @@ abstract class ProjectCommands {
         "Wrote the '$relativePath' configuration file for '${projectConfig.projectId}'.",
       );
     } on Exception catch (e, s) {
-      final message = 'Failed to write to the $configFilePath file';
-      logger.error(message, exception: e);
-      throw ErrorExitException(message, e, s);
+      throw FailureException.nested(
+          e, s, 'Failed to write to the $configFilePath file');
     }
 
     try {
@@ -269,9 +246,8 @@ abstract class ProjectCommands {
       );
       logger.debug("Wrote the '${ScloudIgnore.fileName}' file.");
     } on Exception catch (e, s) {
-      final message = 'Failed to write to ${ScloudIgnore.fileName} file';
-      logger.error(message, exception: e);
-      throw ErrorExitException(message, e, s);
+      throw FailureException.nested(
+          e, s, 'Failed to write to ${ScloudIgnore.fileName} file');
     }
 
     if (workspaceRootDir != null) {
@@ -283,9 +259,8 @@ abstract class ProjectCommands {
           );
         }
       } on Exception catch (e, s) {
-        final message = 'Failed to write to the .gitignore file';
-        logger.error(message, exception: e);
-        throw ErrorExitException(message, e, s);
+        throw FailureException.nested(
+            e, s, 'Failed to write to the .gitignore file');
       }
     }
   }
@@ -296,18 +271,12 @@ abstract class ProjectCommands {
   ) {
     final projectPubspec = TenantProjectPubspec.fromProjectDir(
       projectDir,
-      logger: logger,
     );
 
     if (projectPubspec.isWorkspaceResolved()) {
-      try {
-        final (workspaceRootDir, workspacePubspec) =
-            WorkspaceProject.findWorkspaceRoot(projectDir);
-        return workspaceRootDir;
-      } on WorkspaceException catch (e, s) {
-        e.errors?.forEach(logger.error);
-        throw ErrorExitException(e.errors?.first, e, s);
-      }
+      final (workspaceRootDir, workspacePubspec) =
+          WorkspaceProject.findWorkspaceRoot(projectDir);
+      return workspaceRootDir;
     }
 
     return null;

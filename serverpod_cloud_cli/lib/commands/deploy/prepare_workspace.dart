@@ -4,34 +4,21 @@ import 'package:path/path.dart' as p;
 import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:yaml_codec/yaml_codec.dart';
 
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart'
+    show FailureException;
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:serverpod_cloud_cli/util/scloudignore.dart';
 
-class WorkspaceException implements Exception {
-  final Iterable<String>? errors;
-
-  final Object? nestedException;
-  final StackTrace? nestedStackTrace;
-
+class WorkspaceException extends FailureException {
   WorkspaceException([
-    this.errors,
-    this.nestedException,
-    this.nestedStackTrace,
-  ]);
-
-  @override
-  String toString() {
-    final errs = errors;
-    final errorStr = errs == null ? '' : ': ${errs.join('\n')}';
-    final str = '$runtimeType$errorStr';
-    if (nestedException == null) {
-      return str;
-    }
-    if (nestedStackTrace == null) {
-      return '$str\n  nested exception is: $nestedException';
-    }
-    return '$str\n  nested exception is: $nestedException\n$nestedStackTrace';
-  }
+    final Iterable<String>? errors,
+    final Exception? nestedException,
+    final StackTrace? nestedStackTrace,
+  ]) : super(
+          errors: errors,
+          nestedException: nestedException,
+          nestedStackTrace: nestedStackTrace,
+        );
 }
 
 class WorkspacePackage {

@@ -7,7 +7,7 @@ import 'package:test/test.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 
 import '../test_utils/command_logger_matchers.dart';

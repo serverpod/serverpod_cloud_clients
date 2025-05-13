@@ -17,7 +17,7 @@ import 'package:serverpod_cloud_cli/command_runner/commands/project_command.dart
 import 'package:serverpod_cloud_cli/command_runner/commands/secret_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/status_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/version_command.dart';
-import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cli_version_checker.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
@@ -384,6 +384,10 @@ class GlobalConfiguration extends Configuration<GlobalOption> {
     super.args,
     super.env,
   }) : super.resolve(options: GlobalOption.values);
+
+  bool get quiet => value(GlobalOption.quiet);
+
+  bool get verbose => value(GlobalOption.verbose);
 
   bool get version => value(GlobalOption.version);
 

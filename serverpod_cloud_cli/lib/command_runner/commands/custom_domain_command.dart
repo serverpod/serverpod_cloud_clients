@@ -2,9 +2,8 @@ import 'package:basic_utils/basic_utils.dart';
 import 'package:cli_tools/config.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
-import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
-import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 
@@ -106,25 +105,17 @@ The valid targets are:
 
     late CustomDomainNameWithDefaultDomains customDomainNameWithDefaultDomains;
 
-    await handleCommonClientExceptions(
-      logger,
-      () async {
-        customDomainNameWithDefaultDomains =
-            await apiCloudClient.customDomainName.add(
-          domainName: domainName,
-          target: target,
-          cloudCapsuleId: projectId,
-        );
-      },
-      (final e) {
-        logger.error(
-          'Could not add the custom domain',
-          exception: e,
-        );
-
-        throw ErrorExitException();
-      },
-    );
+    try {
+      customDomainNameWithDefaultDomains =
+          await apiCloudClient.customDomainName.add(
+        domainName: domainName,
+        target: target,
+        cloudCapsuleId: projectId,
+      );
+    } on Exception catch (e, stackTrace) {
+      throw FailureException.nested(
+          e, stackTrace, 'Could not add the custom domain');
+    }
 
     logger.success('Custom domain added successfully!', newParagraph: true);
 
@@ -132,10 +123,9 @@ The valid targets are:
         customDomainNameWithDefaultDomains.defaultDomainsByTarget[target];
 
     if (targetDefaultDomain == null) {
-      logger.error(
-        'Could not find the target domain for "$target".',
+      throw FailureException(
+        error: 'Could not find the target domain for "$target".',
       );
-      throw ErrorExitException();
     }
 
     if (DomainUtils.isSubDomain(domainName)) {
@@ -252,18 +242,14 @@ class CloudListCustomDomainCommand
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
     late CustomDomainNameList domainNamesList;
-    await handleCommonClientExceptions(logger, () async {
+    try {
       domainNamesList = await apiCloudClient.customDomainName.list(
         cloudCapsuleId: projectId,
       );
-    }, (final e) {
-      logger.error(
-        'Failed to list custom domains',
-        exception: e,
-      );
-
-      throw ErrorExitException();
-    });
+    } on Exception catch (e, stackTrace) {
+      throw FailureException.nested(
+          e, stackTrace, 'Failed to list custom domains');
+    }
 
     final defaultDomainPrinter = TablePrinter();
     defaultDomainPrinter.addHeaders(['Default domain name', 'Target']);
@@ -338,24 +324,20 @@ class CloudRemoveCustomDomainCommand
     );
 
     if (!shouldDelete) {
-      throw ErrorExitException();
+      throw UserAbortException();
     }
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
-    await handleCommonClientExceptions(logger, () async {
+    try {
       await apiCloudClient.customDomainName.remove(
         cloudCapsuleId: projectId,
         domainName: domainName,
       );
-    }, (final e) {
-      logger.error(
-        'Failed to remove custom domain',
-        exception: e,
-      );
-
-      throw ErrorExitException();
-    });
+    } on Exception catch (e, stackTrace) {
+      throw FailureException.nested(
+          e, stackTrace, 'Failed to remove custom domain');
+    }
 
     logger.success('Successfully removed custom domain: $domainName.');
   }
@@ -393,7 +375,7 @@ class CloudVerifyCustomDomainRecordCommand
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
-    await handleCommonClientExceptions(logger, () async {
+    try {
       final result = await apiCloudClient.customDomainName.refreshRecord(
         cloudCapsuleId: projectId,
         domainName: domainName,
@@ -413,20 +395,17 @@ class CloudVerifyCustomDomainRecordCommand
       }
 
       return;
-    }, (final e) {
-      if (e is DNSVerificationFailedException) {
-        logger.error(
-          'Failed to verify the DNS record for the custom domain: ${e.message}',
-        );
-        return;
-      }
-
+    } on DNSVerificationFailedException catch (e) {
       logger.error(
-        'Failed to refresh custom domain record',
-        exception: e,
+        'Failed to verify the DNS record for the custom domain: ${e.message}',
       );
-
-      throw ErrorExitException();
-    });
+      return;
+    } on Exception catch (e, stackTrace) {
+      throw FailureException.nested(
+        e,
+        stackTrace,
+        'Failed to refresh custom domain record',
+      );
+    }
   }
 }

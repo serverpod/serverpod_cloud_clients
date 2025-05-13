@@ -1,8 +1,7 @@
 import 'package:cli_tools/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
-import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
-import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart';
 import 'package:serverpod_cloud_cli/commands/logs/logs.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
 
@@ -130,7 +129,7 @@ class CloudLogCommand extends CloudCliCommand<LogOption> {
     }
 
     if (tailOpt == true) {
-      await handleCommonClientExceptions(logger, () async {
+      try {
         await LogsFeature.tailContainerLog(
           runner.serviceProvider.cloudApiClient,
           writeln: logger.line,
@@ -138,15 +137,14 @@ class CloudLogCommand extends CloudCliCommand<LogOption> {
           limit: limit,
           inUtc: inUtc,
         );
-      }, (final e) {
-        logger.error('Error while tailing log records', exception: e);
-        throw ErrorExitException();
-      });
+      } on Exception catch (e, s) {
+        throw FailureException.nested(e, s, 'Error while tailing log records');
+      }
 
       return;
     }
 
-    await handleCommonClientExceptions(logger, () async {
+    try {
       await LogsFeature.fetchContainerLog(
         runner.serviceProvider.cloudApiClient,
         writeln: logger.line,
@@ -156,9 +154,8 @@ class CloudLogCommand extends CloudCliCommand<LogOption> {
         limit: limit,
         inUtc: inUtc,
       );
-    }, (final e) {
-      logger.error('Error while fetching log records', exception: e);
-      throw ErrorExitException();
-    });
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Error while fetching log records');
+    }
   }
 }

@@ -1,6 +1,4 @@
-import 'dart:async';
-
-import 'package:serverpod_cloud_cli/command_runner/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:test/test.dart';
@@ -16,17 +14,12 @@ void main() {
   });
 
   test(
-      'Given a callback that throws ServerpodClientUnauthorized '
-      'when calling handleCommonClientExceptions then '
-      'should rethrow ExitErrorException and log error message', () {
+      'Given a ServerpodClientUnauthorized '
+      'when calling processCommonClientExceptions then '
+      'should throw ExitErrorException and log error message', () {
     expect(
-      () => handleCommonClientExceptions(
-        logger,
-        () {
-          throw ServerpodClientUnauthorized();
-        },
-        (final e) => fail('callback should not have been called'),
-      ),
+      () => processCommonClientExceptions(
+          logger, ServerpodClientUnauthorized(), StackTrace.current),
       throwsA(isA<ErrorExitException>()),
     );
 
@@ -51,17 +44,12 @@ void main() {
   });
 
   test(
-      'Given a callback that throws UnauthorizedException '
-      'when calling handleCommonClientExceptions '
-      'then should rethrow ExitErrorException and log error message', () {
+      'Given a UnauthorizedException '
+      'when calling processCommonClientExceptions '
+      'then should throw ExitErrorException and log error message', () {
     expect(
-      () => handleCommonClientExceptions(
-        logger,
-        () {
-          throw UnauthorizedException(message: 'some error');
-        },
-        (final e) => fail('callback should not have been called'),
-      ),
+      () => processCommonClientExceptions(logger,
+          UnauthorizedException(message: 'some error'), StackTrace.current),
       throwsA(isA<ErrorExitException>()),
     );
 
@@ -74,19 +62,17 @@ void main() {
   });
 
   test(
-      'Given a callback that throws ForbiddenException '
-      'when calling handleCommonClientExceptions '
-      'then should rethrow ExitErrorException and log error message', () {
+      'Given a ForbiddenException '
+      'when calling processCommonClientExceptions '
+      'then should throw ExitErrorException and log error message', () {
     expect(
-      () => handleCommonClientExceptions(
-        logger,
-        () {
-          throw ForbiddenException(
-              message:
-                  'The maximum number of projects that can be created has been reached (5).');
-        },
-        (final e) => fail('callback should not have been called'),
-      ),
+      () => processCommonClientExceptions(
+          logger,
+          ForbiddenException(
+            message:
+                'The maximum number of projects that can be created has been reached (5).',
+          ),
+          StackTrace.current),
       throwsA(isA<ErrorExitException>()),
     );
 
@@ -101,17 +87,12 @@ void main() {
   });
 
   test(
-      'Given a callback that throws NotFoundException '
-      'when calling handleCommonClientExceptions '
-      'then should rethrow ExitErrorException and log error message', () {
+      'Given a NotFoundException '
+      'when calling processCommonClientExceptions '
+      'then should throw ExitErrorException and log error message', () {
     expect(
-      () => handleCommonClientExceptions(
-        logger,
-        () {
-          throw NotFoundException(message: 'No such project.');
-        },
-        (final e) => fail('callback should not have been called'),
-      ),
+      () => processCommonClientExceptions(logger,
+          NotFoundException(message: 'No such project.'), StackTrace.current),
       throwsA(isA<ErrorExitException>()),
     );
 
@@ -125,22 +106,13 @@ void main() {
   });
 
   test(
-      'Given a callback that throws an exception that is not commonly handled '
-      'when calling handleCommonClientExceptions '
-      'then should trigger the onUnhandledException callback', () {
-    final completer = Completer<void>();
-
-    handleCommonClientExceptions(
-      logger,
-      () {
-        throw Exception();
-      },
-      (final e) => completer.complete(),
-    );
-
+      'Given an exception that is not commonly handled '
+      'when calling processCommonClientExceptions '
+      'then should not throw an exception', () {
     expect(
-      completer.isCompleted,
-      isTrue,
+      () => processCommonClientExceptions(
+          logger, Exception(), StackTrace.current),
+      returnsNormally,
     );
   });
 }

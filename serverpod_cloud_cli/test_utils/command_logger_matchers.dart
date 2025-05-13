@@ -10,14 +10,12 @@ Matcher equalsErrorCall({
   final Exception? exception,
   final String? hint,
   final bool newParagraph = false,
-  final StackTrace? stackTrace,
 }) {
   return _ErrorCallMatcher(ErrorCall(
     message: message,
     exception: exception,
     hint: hint,
     newParagraph: newParagraph,
-    stackTrace: stackTrace,
   ));
 }
 
@@ -32,8 +30,7 @@ class _ErrorCallMatcher extends Matcher {
     return item.message == errorCall.message &&
         item.exception?.toString() == errorCall.exception?.toString() &&
         item.hint == errorCall.hint &&
-        item.newParagraph == errorCall.newParagraph &&
-        item.stackTrace == errorCall.stackTrace;
+        item.newParagraph == errorCall.newParagraph;
   }
 
   @override
@@ -41,8 +38,8 @@ class _ErrorCallMatcher extends Matcher {
     return description.add(
       'an error log with message "${errorCall.message}", '
       'exception "${errorCall.exception}", '
-      'hint "${errorCall.hint}", newParagraph ${errorCall.newParagraph}, '
-      'and stackTrace ${errorCall.stackTrace}',
+      'hint "${errorCall.hint}", '
+      'newParagraph ${errorCall.newParagraph}',
     );
   }
 
@@ -69,10 +66,6 @@ class _ErrorCallMatcher extends Matcher {
     if (item.newParagraph != errorCall.newParagraph) {
       return mismatchDescription
           .add('newParagraph is not ${errorCall.newParagraph}');
-    }
-    if (item.stackTrace != errorCall.stackTrace) {
-      return mismatchDescription
-          .add('stackTrace is not ${errorCall.stackTrace}');
     }
 
     return super

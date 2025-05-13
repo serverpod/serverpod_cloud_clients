@@ -175,7 +175,7 @@ class CommandLogger {
     _logger.error(
       msg,
       newParagraph: newParagraph,
-      stackTrace: stackTrace,
+      stackTrace: configuration?.verbose == true ? stackTrace : null,
     );
 
     if (hint != null) {
