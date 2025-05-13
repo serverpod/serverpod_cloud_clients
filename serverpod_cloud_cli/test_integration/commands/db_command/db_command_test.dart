@@ -273,7 +273,7 @@ void main() {
         expect(
           logger.successCalls.single.message,
           '''
-DB superuser created. The password on the next line is only shown this once:
+DB superuser created. The password is only shown this once:
 $password''',
         );
       });
@@ -315,7 +315,7 @@ $password''',
         expect(
           logger.successCalls.single.message,
           '''
-DB password is reset. The new password on the next line is only shown this once:
+DB password is reset. The new password is only shown this once:
 $password''',
         );
       });

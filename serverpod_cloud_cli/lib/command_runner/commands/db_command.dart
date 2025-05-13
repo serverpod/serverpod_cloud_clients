@@ -131,7 +131,7 @@ class CloudDbCreateSuperuserCommand
 
         logger.success(
           '''
-DB superuser created. The password on the next line is only shown this once:
+DB superuser created. The password is only shown this once:
 $password''',
         );
       },
@@ -184,7 +184,7 @@ class CloudDbResetPasswordCommand
 
         logger.success(
           '''
-DB password is reset. The new password on the next line is only shown this once:
+DB password is reset. The new password is only shown this once:
 $password''',
         );
       },
