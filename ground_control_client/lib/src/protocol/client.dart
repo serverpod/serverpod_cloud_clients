@@ -435,6 +435,49 @@ class EndpointProjects extends _i1.EndpointRef {
         'fetchProjectConfig',
         {'cloudProjectId': cloudProjectId},
       );
+
+  /// Attaches an existing user to a project by assigning the specified roles.
+  ///
+  /// Throws [NotFoundException] if the user, project, or any of the roles
+  /// do not exist.
+  _i2.Future<void> attachUser({
+    required String cloudProjectId,
+    required String email,
+    required List<String> assignRoleNames,
+  }) =>
+      caller.callServerEndpoint<void>(
+        'projects',
+        'attachUser',
+        {
+          'cloudProjectId': cloudProjectId,
+          'email': email,
+          'assignRoleNames': assignRoleNames,
+        },
+      );
+
+  /// Detaches an existing user from a project by removing the specified roles.
+  /// If any of the roles do not exist or are not previously assigned to the
+  /// user, they are simply ignored.
+  /// If [unassignAllRoles] is true, all roles on the project are unassigned
+  /// from the user.
+  ///
+  /// Throws [NotFoundException] if the user or project does not exist.
+  _i2.Future<void> detachUser({
+    required String cloudProjectId,
+    required String email,
+    List<String>? unassignRoleNames,
+    bool? unassignAllRoles,
+  }) =>
+      caller.callServerEndpoint<void>(
+        'projects',
+        'detachUser',
+        {
+          'cloudProjectId': cloudProjectId,
+          'email': email,
+          'unassignRoleNames': unassignRoleNames,
+          'unassignAllRoles': unassignAllRoles,
+        },
+      );
 }
 
 /// Endpoint for managing access roles.
