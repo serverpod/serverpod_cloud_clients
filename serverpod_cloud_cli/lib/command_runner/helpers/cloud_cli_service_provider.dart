@@ -61,6 +61,7 @@ class CloudCliServiceProvider {
           logger: _logger,
           localStoragePath: localStoragePath.path,
         ),
+        connectionTimeout: _globalConfiguration.connectionTimeout,
       );
     }
 

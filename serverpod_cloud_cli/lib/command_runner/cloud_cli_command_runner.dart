@@ -299,6 +299,40 @@ enum GlobalOption<V> implements OptionDefinition<V> {
       fromDefault: _getDefaultStorageDir,
     ),
   ),
+  projectDir(
+    DirOption(
+      argName: 'project-dir',
+      argAbbrev: 'd',
+      envName: 'SERVERPOD_CLOUD_PROJECT_DIR',
+      helpText: 'The path to the Serverpod Cloud project server directory.',
+      // (no general default value since significant whether explicitly specified)
+      mode: PathExistMode.mustExist,
+    ),
+  ),
+  projectConfigFile(
+    FileOption(
+      argName: 'project-config-file',
+      envName: 'SERVERPOD_CLOUD_PROJECT_CONFIG_FILE',
+      fromCustom: _projectConfigFileFinder,
+      helpText: 'The path to the Serverpod Cloud project configuration file.',
+    ),
+  ),
+  projectConfigContent(
+    StringOption(
+      argName: 'project-config-content',
+      envName: 'SERVERPOD_CLOUD_PROJECT_CONFIG_CONTENT',
+      helpText: 'Override the scloud project configuration with a YAML string.',
+    ),
+  ),
+  connectionTimeout(
+    DurationOption(
+      argName: 'connection-timeout',
+      envName: 'SERVERPOD_CLOUD_CONNECTION_TIMEOUT',
+      defaultsTo: Duration(seconds: 60),
+      helpText: 'The timeout for the connection to the Serverpod Cloud API.',
+    ),
+  ),
+
   // Developer options and flags
   apiServer(
     StringOption(
@@ -325,32 +359,6 @@ enum GlobalOption<V> implements OptionDefinition<V> {
           'Should be used in CI environment to bypass confirmation prompts.',
       hide: true,
       defaultsTo: false,
-    ),
-  ),
-
-  projectDir(
-    DirOption(
-      argName: 'project-dir',
-      argAbbrev: 'd',
-      envName: 'SERVERPOD_CLOUD_PROJECT_DIR',
-      helpText: 'The path to the Serverpod Cloud project server directory.',
-      // (no general default value since significant whether explicitly specified)
-      mode: PathExistMode.mustExist,
-    ),
-  ),
-  projectConfigFile(
-    FileOption(
-      argName: 'project-config-file',
-      envName: 'SERVERPOD_CLOUD_PROJECT_CONFIG_FILE',
-      fromCustom: _projectConfigFileFinder,
-      helpText: 'The path to the Serverpod Cloud project configuration file.',
-    ),
-  ),
-  projectConfigContent(
-    StringOption(
-      argName: 'project-config-content',
-      envName: 'SERVERPOD_CLOUD_PROJECT_CONFIG_CONTENT',
-      helpText: 'Override the scloud project configuration with a YAML string.',
     ),
   );
 
@@ -393,16 +401,18 @@ class GlobalConfiguration extends Configuration<GlobalOption> {
 
   Directory get scloudDir => value(GlobalOption.scloudDir);
 
-  String get apiServer => value(GlobalOption.apiServer);
-
-  String get consoleServer => value(GlobalOption.consoleServer);
-
-  bool get skipConfirmation => value(GlobalOption.skipConfirmation);
-
   Directory? get projectDir => optionalValue(GlobalOption.projectDir);
 
   File? get projectConfigFile => optionalValue(GlobalOption.projectConfigFile);
 
   String? get projectConfigContent =>
       optionalValue(GlobalOption.projectConfigContent);
+
+  Duration get connectionTimeout => value(GlobalOption.connectionTimeout);
+
+  String get apiServer => value(GlobalOption.apiServer);
+
+  String get consoleServer => value(GlobalOption.consoleServer);
+
+  bool get skipConfirmation => value(GlobalOption.skipConfirmation);
 }
