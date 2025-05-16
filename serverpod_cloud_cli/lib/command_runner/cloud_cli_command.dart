@@ -98,7 +98,11 @@ abstract class CloudCliCommand<O extends OptionDefinition>
   ) {
     final nested = e.nestedException;
     if (nested != null) {
-      processCommonClientExceptions(logger, nested, stackTrace);
+      processCommonClientExceptions(
+        logger,
+        nested,
+        e.nestedStackTrace ?? stackTrace,
+      );
     }
 
     if (e.errors.isNotEmpty) {
@@ -106,7 +110,7 @@ abstract class CloudCliCommand<O extends OptionDefinition>
         e.errors.join('\n'),
         hint: e.hint,
         exception: nested,
-        stackTrace: stackTrace,
+        stackTrace: e.nestedStackTrace,
       );
     } else if (e.hint case final String hint) {
       logger.log(
