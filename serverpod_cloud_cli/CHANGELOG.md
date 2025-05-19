@@ -1,6 +1,20 @@
 
 # Changelog
 
+## [0.7.0] - 2025-05-19
+
+### Changed
+
+- **Configurable GC API timeout** - The connection timeout for the Ground Control API is now configurable via the `scloud` command and the `SERVERPOD_CLOUD_CONNECTION_TIMEOUT` environment variable, with a default of 60 seconds.
+- **Improved exception handling** - Introduced `FailureException` for consistent exception handling across `scloud`, simplifying error message output and exception translations.
+- **Updated command output** - The output of `project`, `deploy`, and `launch` commands has been revised to more closely resemble the style of the `serverpod` command.
+- **Updated cli_tools dependency** - Updated the `cli_tools` dependency to version 0.5.0, replacing the local config library with the new config library in `cli_tools`.
+
+### Fixed
+
+- **Password string matching in E2E tests** - Fixed an issue where long lines in password creation/change output were not correctly matched in E2E tests due to line wrapping.
+- **Global options not applied to logger** - Fixed a bug where global options such as `--skip-confirmation` flag had no effect on the logger.
+
 ## [0.6.0] - 2025-05-06
 
 ### Added
