@@ -461,14 +461,15 @@ class EndpointProjects extends _i1.EndpointRef {
   /// If [unassignAllRoles] is true, all roles on the project are unassigned
   /// from the user.
   ///
+  /// Returns the list of role names that were actually unassigned.
   /// Throws [NotFoundException] if the user or project does not exist.
-  _i2.Future<void> detachUser({
+  _i2.Future<List<String>> detachUser({
     required String cloudProjectId,
     required String email,
     List<String>? unassignRoleNames,
     bool? unassignAllRoles,
   }) =>
-      caller.callServerEndpoint<void>(
+      caller.callServerEndpoint<List<String>>(
         'projects',
         'detachUser',
         {
