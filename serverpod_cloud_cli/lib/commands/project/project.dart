@@ -200,6 +200,69 @@ abstract class ProjectCommands {
     );
   }
 
+  static Future<void> inviteUser(
+    final Client cloudApiClient, {
+    required final CommandLogger logger,
+    required final String projectId,
+    required final String email,
+    required final List<String> assignRoleNames,
+  }) async {
+    try {
+      await cloudApiClient.projects.attachUser(
+        cloudProjectId: projectId,
+        email: email,
+        assignRoleNames: assignRoleNames,
+      );
+    } on NotFoundException catch (e) {
+      throw FailureException(error: e.message);
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Failed to invite user to project');
+    }
+
+    logger.success(
+      'User invited to the project with roles: ${assignRoleNames.join(', ')}.',
+      newParagraph: true,
+    );
+  }
+
+  static Future<void> revokeUser(
+    final Client cloudApiClient, {
+    required final CommandLogger logger,
+    required final String projectId,
+    required final String email,
+    final List<String> unassignRoleNames = const [],
+    final bool unassignAllRoles = false,
+  }) async {
+    final List<String> actuallyUnassigned;
+    try {
+      actuallyUnassigned = await cloudApiClient.projects.detachUser(
+        cloudProjectId: projectId,
+        email: email,
+        unassignRoleNames: unassignRoleNames,
+        unassignAllRoles: unassignAllRoles,
+      );
+    } on NotFoundException catch (e) {
+      throw FailureException(error: e.message);
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Failed to revoke user from project');
+    }
+
+    if (actuallyUnassigned.isEmpty) {
+      logger.info(
+        unassignAllRoles
+            ? 'The user has no access roles to revoke on the project.'
+            : 'The user does not have any of the specified project roles.',
+      );
+    } else {
+      logger.success(
+        unassignAllRoles
+            ? 'Revoked all access roles of the user from the project: ${actuallyUnassigned.join(', ')}'
+            : 'Revoked access roles of the user from the project: ${actuallyUnassigned.join(', ')}',
+        newParagraph: true,
+      );
+    }
+  }
+
   /// Fetches the project config from the server.
   static Future<ProjectConfig> _fetchProjectConfig(
     final CommandLogger logger,
