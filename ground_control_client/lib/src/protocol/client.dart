@@ -436,18 +436,18 @@ class EndpointProjects extends _i1.EndpointRef {
         {'cloudProjectId': cloudProjectId},
       );
 
-  /// Attaches an existing user to a project by assigning the specified roles.
+  /// Invites a user to a project by assigning the specified project roles.
   ///
-  /// Throws [NotFoundException] if the user, project, or any of the roles
+  /// Throws [NotFoundException] if the project or any of the roles
   /// do not exist.
-  _i2.Future<void> attachUser({
+  _i2.Future<void> inviteUser({
     required String cloudProjectId,
     required String email,
     required List<String> assignRoleNames,
   }) =>
       caller.callServerEndpoint<void>(
         'projects',
-        'attachUser',
+        'inviteUser',
         {
           'cloudProjectId': cloudProjectId,
           'email': email,
@@ -455,15 +455,15 @@ class EndpointProjects extends _i1.EndpointRef {
         },
       );
 
-  /// Detaches an existing user from a project by removing the specified roles.
+  /// Revokes a user from a project by unassigning the specified project roles.
   /// If any of the roles do not exist or are not previously assigned to the
   /// user, they are simply ignored.
   /// If [unassignAllRoles] is true, all roles on the project are unassigned
   /// from the user.
   ///
   /// Returns the list of role names that were actually unassigned.
-  /// Throws [NotFoundException] if the user or project does not exist.
-  _i2.Future<List<String>> detachUser({
+  /// Throws [NotFoundException] if the project does not exist.
+  _i2.Future<List<String>> revokeUser({
     required String cloudProjectId,
     required String email,
     List<String>? unassignRoleNames,
@@ -471,7 +471,7 @@ class EndpointProjects extends _i1.EndpointRef {
   }) =>
       caller.callServerEndpoint<List<String>>(
         'projects',
-        'detachUser',
+        'revokeUser',
         {
           'cloudProjectId': cloudProjectId,
           'email': email,

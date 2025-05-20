@@ -208,7 +208,7 @@ abstract class ProjectCommands {
     required final List<String> assignRoleNames,
   }) async {
     try {
-      await cloudApiClient.projects.attachUser(
+      await cloudApiClient.projects.inviteUser(
         cloudProjectId: projectId,
         email: email,
         assignRoleNames: assignRoleNames,
@@ -235,7 +235,7 @@ abstract class ProjectCommands {
   }) async {
     final List<String> actuallyUnassigned;
     try {
-      actuallyUnassigned = await cloudApiClient.projects.detachUser(
+      actuallyUnassigned = await cloudApiClient.projects.revokeUser(
         cloudProjectId: projectId,
         email: email,
         unassignRoleNames: unassignRoleNames,

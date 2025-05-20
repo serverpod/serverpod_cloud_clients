@@ -208,6 +208,9 @@ void _emailValidator(final value) {
   }
 }
 
+const _projectRoleNames = ['owners'];
+const _projectRoleHelp = {'owners': 'Owners have full access to the project.'};
+
 enum ProjectInviteUserOption<V> implements OptionDefinition<V> {
   projectId(
     _ProjectOptions.projectId,
@@ -226,6 +229,8 @@ enum ProjectInviteUserOption<V> implements OptionDefinition<V> {
       argName: 'role',
       argAbbrev: 'r',
       helpText: 'One or more project roles to assign.',
+      allowedValues: _projectRoleNames,
+      allowedHelp: _projectRoleHelp,
       mandatory: true,
     ),
   );
@@ -287,6 +292,8 @@ enum ProjectRevokeUserOption<V> implements OptionDefinition<V> {
       argName: 'role',
       argAbbrev: 'r',
       helpText: 'One or more project roles to revoke.',
+      allowedValues: _projectRoleNames,
+      allowedHelp: _projectRoleHelp,
       group: MutuallyExclusive('Roles', mode: MutuallyExclusiveMode.mandatory),
     ),
   ),

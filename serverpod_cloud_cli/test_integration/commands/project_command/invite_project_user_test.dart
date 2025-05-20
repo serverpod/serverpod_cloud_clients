@@ -60,7 +60,7 @@ void main() {
           '--user',
           'test@example.com',
           '--role',
-          'owner',
+          'owners',
         ]);
       });
 
@@ -91,7 +91,7 @@ void main() {
           '--user',
           'test@example.com',
           '--role',
-          'owner',
+          'owners',
         ]);
       });
 
@@ -120,7 +120,7 @@ void main() {
     group('when executing project invite user', () {
       late Future commandResult;
       setUp(() async {
-        when(() => client.projects.attachUser(
+        when(() => client.projects.inviteUser(
               cloudProjectId: any(named: 'cloudProjectId'),
               email: any(named: 'email'),
               assignRoleNames: any(named: 'assignRoleNames'),
@@ -136,7 +136,7 @@ void main() {
           '--user',
           'test@example.com',
           '--role',
-          'owner',
+          'owners',
         ]);
       });
 
@@ -148,7 +148,7 @@ void main() {
         expect(
           logger.successCalls.single,
           equalsSuccessCall(
-            message: 'User invited to the project with roles: owner.',
+            message: 'User invited to the project with roles: owners.',
             newParagraph: true,
           ),
         );
@@ -158,7 +158,7 @@ void main() {
     group('when executing project invite with non-existent user', () {
       late Future commandResult;
       setUp(() async {
-        when(() => client.projects.attachUser(
+        when(() => client.projects.inviteUser(
               cloudProjectId: any(named: 'cloudProjectId'),
               email: any(named: 'email'),
               assignRoleNames: any(named: 'assignRoleNames'),
@@ -174,7 +174,7 @@ void main() {
           '--user',
           'test@example.com',
           '--role',
-          'owner',
+          'owners',
         ]);
       });
 
@@ -197,13 +197,13 @@ void main() {
     group('when executing project revoke user with specific role', () {
       late Future commandResult;
       setUp(() async {
-        when(() => client.projects.detachUser(
+        when(() => client.projects.revokeUser(
               cloudProjectId: any(named: 'cloudProjectId'),
               email: any(named: 'email'),
               unassignRoleNames: any(named: 'unassignRoleNames'),
               unassignAllRoles: any(named: 'unassignAllRoles'),
             )).thenAnswer(
-          (final invocation) async => Future.value(['owner']),
+          (final invocation) async => Future.value(['owners']),
         );
 
         commandResult = cli.run([
@@ -214,7 +214,7 @@ void main() {
           '--user',
           'test@example.com',
           '--role',
-          'owner',
+          'owners',
         ]);
       });
 
@@ -226,7 +226,8 @@ void main() {
         expect(
           logger.successCalls.single,
           equalsSuccessCall(
-            message: 'Revoked access roles of the user from the project: owner',
+            message:
+                'Revoked access roles of the user from the project: owners',
             newParagraph: true,
           ),
         );
@@ -238,13 +239,13 @@ void main() {
         () {
       late Future commandResult;
       setUp(() async {
-        when(() => client.projects.detachUser(
+        when(() => client.projects.revokeUser(
               cloudProjectId: any(named: 'cloudProjectId'),
               email: any(named: 'email'),
               unassignRoleNames: any(named: 'unassignRoleNames'),
               unassignAllRoles: any(named: 'unassignAllRoles'),
             )).thenAnswer(
-          (final invocation) async => Future.value(['owner']),
+          (final invocation) async => Future.value(['owners']),
         );
 
         commandResult = cli.run([
@@ -267,7 +268,7 @@ void main() {
           logger.successCalls.single,
           equalsSuccessCall(
             message:
-                "Revoked all access roles of the user from the project: owner",
+                "Revoked all access roles of the user from the project: owners",
             newParagraph: true,
           ),
         );
@@ -278,7 +279,7 @@ void main() {
         () {
       late Future commandResult;
       setUp(() async {
-        when(() => client.projects.detachUser(
+        when(() => client.projects.revokeUser(
               cloudProjectId: any(named: 'cloudProjectId'),
               email: any(named: 'email'),
               unassignRoleNames: any(named: 'unassignRoleNames'),
@@ -295,7 +296,7 @@ void main() {
           '--user',
           'test@example.com',
           '--role',
-          'owner',
+          'owners',
         ]);
       });
 
@@ -319,7 +320,7 @@ void main() {
         () {
       late Future commandResult;
       setUp(() async {
-        when(() => client.projects.detachUser(
+        when(() => client.projects.revokeUser(
               cloudProjectId: any(named: 'cloudProjectId'),
               email: any(named: 'email'),
               unassignRoleNames: any(named: 'unassignRoleNames'),
