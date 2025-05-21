@@ -67,7 +67,9 @@ import 'package:ground_control_client/src/protocol/domains/status/models/deploy_
     as _i46;
 import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
     as _i47;
-import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i48;
+import 'package:ground_control_client/src/protocol/domains/users/models/user.dart'
+    as _i48;
+import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i49;
 export 'domains/capsules/models/capsule.dart';
 export 'domains/logs/models/log_record.dart';
 export 'domains/status/models/deploy_attempt.dart';
@@ -470,8 +472,11 @@ class Protocol extends _i1.SerializationManager {
           .map((e) => deserialize<_i47.DeployAttemptStage>(e))
           .toList() as T;
     }
+    if (t == List<_i48.User>) {
+      return (data as List).map((e) => deserialize<_i48.User>(e)).toList() as T;
+    }
     try {
-      return _i48.Protocol().deserialize<T>(data, t);
+      return _i49.Protocol().deserialize<T>(data, t);
     } on _i1.DeserializationTypeNotFoundException catch (_) {}
     return super.deserialize<T>(data, t);
   }
@@ -597,7 +602,7 @@ class Protocol extends _i1.SerializationManager {
     if (data is _i40.ServerpodRegion) {
       return 'ServerpodRegion';
     }
-    className = _i48.Protocol().getClassNameForObject(data);
+    className = _i49.Protocol().getClassNameForObject(data);
     if (className != null) {
       return 'serverpod_auth.$className';
     }
@@ -729,7 +734,7 @@ class Protocol extends _i1.SerializationManager {
     }
     if (dataClassName.startsWith('serverpod_auth.')) {
       data['className'] = dataClassName.substring(15);
-      return _i48.Protocol().deserializeByClassName(data);
+      return _i49.Protocol().deserializeByClassName(data);
     }
     return super.deserializeByClassName(data);
   }

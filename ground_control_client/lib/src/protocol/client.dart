@@ -607,6 +607,15 @@ class EndpointUsers extends _i1.EndpointRef {
         'readUser',
         {},
       );
+
+  /// Reads all users that have a role in the specified project.
+  _i2.Future<List<_i18.User>> listUsersInProject(
+          {required String cloudProjectId}) =>
+      caller.callServerEndpoint<List<_i18.User>>(
+        'users',
+        'listUsersInProject',
+        {'cloudProjectId': cloudProjectId},
+      );
 }
 
 class Modules {
