@@ -119,7 +119,6 @@ void main() {
           '--scloud-dir',
           testCacheFolderPath
         ]);
-        await tokenSent.future;
       });
 
       tearDown(() async {
@@ -129,11 +128,16 @@ void main() {
       });
 
       test('then cli command completes.', () async {
+        await tokenSent.future;
+
         await expectLater(cliOnDone, completes);
       });
 
       test('then the cloud data with token is stored.', () async {
+        await tokenSent.future;
+
         await cliOnDone;
+
         final storedCloudData =
             await ResourceManager.tryFetchServerpodCloudData(
           logger: logger,
@@ -154,7 +158,6 @@ void main() {
           '--scloud-dir',
           testCacheFolderPath,
         ]);
-        await tokenSent.future;
       });
 
       tearDown(() async {
@@ -164,11 +167,16 @@ void main() {
       });
 
       test('then cli command completes.', () async {
+        await tokenSent.future;
+
         await expectLater(cliOnDone, completes);
       });
 
       test('then no cloud data is stored.', () async {
+        await tokenSent.future;
+
         await cliOnDone;
+
         final storedCloudData =
             await ResourceManager.tryFetchServerpodCloudData(
           logger: logger,
@@ -209,7 +217,6 @@ void main() {
           '--scloud-dir',
           testCacheFolderPath
         ]);
-        await tokenSent.future;
       });
 
       tearDown(() async {
@@ -219,12 +226,17 @@ void main() {
       });
 
       test('then cli command completes throws an exit exception.', () async {
+        await tokenSent.future;
+
         await expectLater(cliOnDone, throwsA(isA<ErrorExitException>()));
       });
 
       test('then no cloud data is stored.', () async {
+        await tokenSent.future;
+
         // Silence the error message.
         await cliOnDone.catchError((final _) {});
+
         final storedCloudData =
             await ResourceManager.tryFetchServerpodCloudData(
           logger: logger,

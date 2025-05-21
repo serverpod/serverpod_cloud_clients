@@ -1,6 +1,3 @@
-@Tags(['concurrency_one']) // due to current directory manipulation
-library;
-
 import 'dart:async';
 
 import 'package:ground_control_client/ground_control_client.dart'
@@ -18,7 +15,7 @@ import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/test_command_logger.dart';
 
 void main() {
-  final logger = TestCommandLogger(printToStdout: true);
+  final logger = TestCommandLogger();
   final keyManager = InMemoryKeyManager();
   final client = ClientMock(authenticationKeyManager: keyManager);
   final cli = CloudCliCommandRunner.create(
