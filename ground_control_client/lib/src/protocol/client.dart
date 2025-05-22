@@ -438,6 +438,46 @@ class EndpointProjects extends _i1.EndpointRef {
 
   /// Invites a user to a project by assigning the specified project roles.
   ///
+  /// @Deprecated Use [inviteUser] instead.
+  @Deprecated('Use inviteUser instead.')
+  _i2.Future<void> attachUser({
+    required String cloudProjectId,
+    required String email,
+    required List<String> assignRoleNames,
+  }) =>
+      caller.callServerEndpoint<void>(
+        'projects',
+        'attachUser',
+        {
+          'cloudProjectId': cloudProjectId,
+          'email': email,
+          'assignRoleNames': assignRoleNames,
+        },
+      );
+
+  /// Revokes a user from a project by unassigning the specified project roles.
+  ///
+  /// @Deprecated Use [revokeUser] instead.
+  @Deprecated('Use revokeUser instead.')
+  _i2.Future<List<String>> detachUser({
+    required String cloudProjectId,
+    required String email,
+    List<String>? unassignRoleNames,
+    bool? unassignAllRoles,
+  }) =>
+      caller.callServerEndpoint<List<String>>(
+        'projects',
+        'detachUser',
+        {
+          'cloudProjectId': cloudProjectId,
+          'email': email,
+          'unassignRoleNames': unassignRoleNames,
+          'unassignAllRoles': unassignAllRoles,
+        },
+      );
+
+  /// Invites a user to a project by assigning the specified project roles.
+  ///
   /// Throws [NotFoundException] if the project or any of the roles
   /// do not exist.
   _i2.Future<void> inviteUser({
