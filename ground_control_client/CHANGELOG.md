@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0] - 2025-05-22
+
+### Added
+
+- **User listing** - You can now list users in a Serverpod Cloud project with `scloud user list`.
+- **Project invite/revoke subcommands** - Added `scloud project invite` and `scloud project revoke` to manage user access to projects.
+
 ## [0.7.0] - 2025-05-19
 
 ## [0.6.0] - 2025-05-06
