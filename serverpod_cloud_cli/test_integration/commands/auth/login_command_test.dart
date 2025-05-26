@@ -208,17 +208,6 @@ void main() {
     });
 
     group('when logging in through cli', () {
-      late Future cliOnDone;
-      setUp(() async {
-        cliOnDone = cli.run([
-          'auth',
-          'login',
-          '--no-browser',
-          '--scloud-dir',
-          testCacheFolderPath
-        ]);
-      });
-
       tearDown(() async {
         await ResourceManager.removeServerpodCloudData(
           localStoragePath: testCacheFolderPath,
@@ -226,16 +215,38 @@ void main() {
       });
 
       test('then cli command completes throws an exit exception.', () async {
-        await tokenSent.future;
+        final cliOnDone = cli.run([
+          'auth',
+          'login',
+          '--no-browser',
+          '--scloud-dir',
+          testCacheFolderPath
+        ]);
 
-        await expectLater(cliOnDone, throwsA(isA<ErrorExitException>()));
+        await expectLater(
+          Future.wait([
+            cliOnDone,
+            tokenSent.future,
+          ]),
+          throwsA(isA<ErrorExitException>()),
+        );
       });
 
       test('then no cloud data is stored.', () async {
-        await tokenSent.future;
+        final cliOnDone = cli.run([
+          'auth',
+          'login',
+          '--no-browser',
+          '--scloud-dir',
+          testCacheFolderPath
+        ]);
 
         // Silence the error message.
-        await cliOnDone.catchError((final _) {});
+        final cliFuture = cliOnDone.catchError((final _) {});
+
+        await tokenSent.future;
+
+        await cliFuture;
 
         final storedCloudData =
             await ResourceManager.tryFetchServerpodCloudData(
