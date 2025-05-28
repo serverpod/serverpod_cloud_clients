@@ -477,6 +477,7 @@ class EndpointProjects extends _i1.EndpointRef {
       );
 
   /// Invites a user to a project by assigning the specified project roles.
+  /// If the user does not exist, a user invitation email is sent.
   ///
   /// Throws [NotFoundException] if the project or any of the roles
   /// do not exist.
