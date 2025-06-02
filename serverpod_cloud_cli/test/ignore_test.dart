@@ -194,7 +194,8 @@ void main() {
           }
         },
         skip: Platform.isMacOS || // System `git` on mac has issues...
-            c.skipOnWindows && Platform.isWindows,
+            // c.skipOnWindows &&  // the git-running tests on Windows are VERY slow
+            Platform.isWindows,
       );
     }
 
