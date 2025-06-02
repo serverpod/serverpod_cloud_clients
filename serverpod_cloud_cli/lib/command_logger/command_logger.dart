@@ -161,6 +161,7 @@ class CommandLogger {
     final String? hint,
     final bool newParagraph = false,
     final StackTrace? stackTrace,
+    final bool forcePrintStackTrace = false,
   }) {
     final String msg;
     if (exception != null) {
@@ -175,7 +176,9 @@ class CommandLogger {
     _logger.error(
       msg,
       newParagraph: newParagraph,
-      stackTrace: configuration?.verbose == true ? stackTrace : null,
+      stackTrace: configuration?.verbose == true || forcePrintStackTrace
+          ? stackTrace
+          : null,
     );
 
     if (hint != null) {

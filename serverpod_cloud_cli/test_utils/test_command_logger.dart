@@ -300,6 +300,7 @@ class TestCommandLogger extends CommandLogger {
     final String? hint,
     final bool newParagraph = false,
     final StackTrace? stackTrace,
+    final bool forcePrintStackTrace = false,
   }) {
     if (printToStdout) {
       print('log error: $message');

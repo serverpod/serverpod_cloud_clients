@@ -23,6 +23,7 @@ void main(final List<String> args) async {
         logger.error(
           _formatInternalError(error),
           stackTrace: stackTrace,
+          forcePrintStackTrace: true,
         );
         await _preExit(logger);
         exit(ExitException.codeError);
@@ -32,6 +33,7 @@ void main(final List<String> args) async {
       logger.error(
         _formatInternalError(error, zonedError: true),
         stackTrace: stackTrace,
+        forcePrintStackTrace: true,
       );
       await _preExit(logger);
       exit(ExitException.codeError);
