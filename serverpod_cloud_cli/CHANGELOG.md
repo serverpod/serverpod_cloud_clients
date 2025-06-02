@@ -1,6 +1,13 @@
 
 # Changelog
 
+## [0.8.1] - 2025-06-02
+
+### Fixed
+
+- **`project user list` command** - Fixed data serialization error
+- **Always print stacktrace in "yikes" message** - The "yikes" last resort error message will now always print the stack trace, enabling users to create an issue with full error information.
+
 ## [0.8.0] - 2025-05-22
 
 ### Added
