@@ -10,6 +10,7 @@ topics:
   - client
 
 environment:
+  # Note, this range must include all the supported customer Dart SDK versions.
   sdk: ">=3.6.0 <4.0.0"
 
 

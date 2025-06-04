@@ -55,7 +55,7 @@ void main() {
             (final e) => e.message,
             'message',
             contains(
-                'Invalid value for option `recent` <integer[s|m|h|d]>: Invalid duration value "1x"'),
+                'Invalid value for option `recent` <integer[us|ms|s|m|h|d]>: Invalid duration value "1x"'),
           )),
         );
       });
@@ -82,7 +82,7 @@ void main() {
             (final e) => e.message,
             'message',
             contains(
-                'Invalid value for option `recent` <integer[s|m|h|d]>: Invalid duration value "hello"'),
+                'Invalid value for option `recent` <integer[us|ms|s|m|h|d]>: Invalid duration value "hello"'),
           )),
         );
       });
