@@ -32,25 +32,13 @@ class CloudProjectCommand extends CloudCliCommand {
   }
 }
 
-abstract final class _ProjectOptions {
-  static const projectIdForCreation = ProjectIdOption.argsOnly(
-    asFirstArg: true,
-  );
-
-  static const projectId = ProjectIdOption.argsOnly(
-    asFirstArg: true,
-  );
-
-  static const enableDb = FlagOption(
+enum ProjectCreateOption<V> implements OptionDefinition<V> {
+  projectId(ProjectIdOption.argsOnly(asFirstArg: true)),
+  enableDb(FlagOption(
     argName: 'enable-db',
     helpText: 'Flag to enable the database for the project.',
     mandatory: true,
-  );
-}
-
-enum ProjectCreateOption<V> implements OptionDefinition<V> {
-  projectId(_ProjectOptions.projectIdForCreation),
-  enableDb(_ProjectOptions.enableDb);
+  ));
 
   const ProjectCreateOption(this.option);
 
@@ -91,6 +79,15 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
   }
 }
 
+enum ProjectDeleteOption<V> implements OptionDefinition<V> {
+  projectId(ProjectIdOption.argsOnly(asFirstArg: true));
+
+  const ProjectDeleteOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
 class CloudProjectDeleteCommand extends CloudCliCommand {
   @override
   final name = 'delete';
@@ -99,11 +96,11 @@ class CloudProjectDeleteCommand extends CloudCliCommand {
   final description = 'Delete a Serverpod Cloud project.';
 
   CloudProjectDeleteCommand({required super.logger})
-      : super(options: [_ProjectOptions.projectId]);
+      : super(options: ProjectDeleteOption.values);
 
   @override
   Future<void> runWithConfig(final Configuration commandConfig) async {
-    final projectId = commandConfig.value(_ProjectOptions.projectId);
+    final projectId = commandConfig.value(ProjectDeleteOption.projectId);
 
     await ProjectCommands.deleteProject(
       runner.serviceProvider.cloudApiClient,
@@ -213,7 +210,7 @@ const _projectRoleHelp = {'owners': 'Owners have full access to the project.'};
 
 enum ProjectInviteUserOption<V> implements OptionDefinition<V> {
   projectId(
-    _ProjectOptions.projectId,
+    ProjectIdOption(asFirstArg: true),
   ),
   user(
     StringOption(
@@ -275,7 +272,7 @@ class ProjectInviteUserCommand
 
 enum ProjectRevokeUserOption<V> implements OptionDefinition<V> {
   projectId(
-    _ProjectOptions.projectId,
+    ProjectIdOption(asFirstArg: true),
   ),
   user(
     StringOption(
