@@ -153,9 +153,7 @@ class CloudProjectListCommand
 }
 
 enum ProjectLinkCommandOption<V> implements OptionDefinition<V> {
-  projectId(
-    ProjectIdOption(),
-  );
+  projectId(ProjectIdOption.argsOnly(asFirstArg: true));
 
   const ProjectLinkCommandOption(this.option);
 
