@@ -55,21 +55,21 @@ import 'shared/exceptions/models/unauthenticated_exception.dart' as _i39;
 import 'shared/exceptions/models/unauthorized_exception.dart' as _i40;
 import 'shared/models/serverpod_region.dart' as _i41;
 import 'shared/services/pubsub/registry/pubsub_entry.dart' as _i42;
-import 'package:ground_control_client/src/protocol/features/auth/models/required_terms.dart'
-    as _i43;
-import 'package:ground_control_client/src/protocol/features/auth/models/accepted_terms_dto.dart'
-    as _i44;
-import 'package:ground_control_client/src/protocol/features/environment_variables/models/environment_variable.dart'
-    as _i45;
-import 'package:ground_control_client/src/protocol/features/project/models/project.dart'
-    as _i46;
-import 'package:ground_control_client/src/protocol/features/project/models/role.dart'
-    as _i47;
-import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt.dart'
-    as _i48;
-import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
-    as _i49;
 import 'package:ground_control_client/src/protocol/domains/users/models/user.dart'
+    as _i43;
+import 'package:ground_control_client/src/protocol/features/auth/models/required_terms.dart'
+    as _i44;
+import 'package:ground_control_client/src/protocol/features/auth/models/accepted_terms_dto.dart'
+    as _i45;
+import 'package:ground_control_client/src/protocol/features/environment_variables/models/environment_variable.dart'
+    as _i46;
+import 'package:ground_control_client/src/protocol/features/project/models/project.dart'
+    as _i47;
+import 'package:ground_control_client/src/protocol/features/project/models/role.dart'
+    as _i48;
+import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt.dart'
+    as _i49;
+import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
     as _i50;
 import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i51;
 export 'domains/capsules/models/capsule.dart';
@@ -444,23 +444,26 @@ class Protocol extends _i1.SerializationManager {
               .toList()
           : null) as T;
     }
-    if (t == List<_i43.RequiredTerms>) {
+    if (t == List<_i43.User>) {
+      return (data as List).map((e) => deserialize<_i43.User>(e)).toList() as T;
+    }
+    if (t == List<_i44.RequiredTerms>) {
       return (data as List)
-          .map((e) => deserialize<_i43.RequiredTerms>(e))
+          .map((e) => deserialize<_i44.RequiredTerms>(e))
           .toList() as T;
     }
-    if (t == List<_i44.AcceptedTermsDTO>) {
+    if (t == List<_i45.AcceptedTermsDTO>) {
       return (data as List)
-          .map((e) => deserialize<_i44.AcceptedTermsDTO>(e))
+          .map((e) => deserialize<_i45.AcceptedTermsDTO>(e))
           .toList() as T;
     }
-    if (t == List<_i45.EnvironmentVariable>) {
+    if (t == List<_i46.EnvironmentVariable>) {
       return (data as List)
-          .map((e) => deserialize<_i45.EnvironmentVariable>(e))
+          .map((e) => deserialize<_i46.EnvironmentVariable>(e))
           .toList() as T;
     }
-    if (t == List<_i46.Project>) {
-      return (data as List).map((e) => deserialize<_i46.Project>(e)).toList()
+    if (t == List<_i47.Project>) {
+      return (data as List).map((e) => deserialize<_i47.Project>(e)).toList()
           as T;
     }
     if (t == List<String>) {
@@ -471,25 +474,22 @@ class Protocol extends _i1.SerializationManager {
           ? (data as List).map((e) => deserialize<String>(e)).toList()
           : null) as T;
     }
-    if (t == List<_i47.Role>) {
-      return (data as List).map((e) => deserialize<_i47.Role>(e)).toList() as T;
+    if (t == List<_i48.Role>) {
+      return (data as List).map((e) => deserialize<_i48.Role>(e)).toList() as T;
     }
     if (t == Map<String, String>) {
       return (data as Map).map((k, v) =>
           MapEntry(deserialize<String>(k), deserialize<String>(v))) as T;
     }
-    if (t == List<_i48.DeployAttempt>) {
+    if (t == List<_i49.DeployAttempt>) {
       return (data as List)
-          .map((e) => deserialize<_i48.DeployAttempt>(e))
+          .map((e) => deserialize<_i49.DeployAttempt>(e))
           .toList() as T;
     }
-    if (t == List<_i49.DeployAttemptStage>) {
+    if (t == List<_i50.DeployAttemptStage>) {
       return (data as List)
-          .map((e) => deserialize<_i49.DeployAttemptStage>(e))
+          .map((e) => deserialize<_i50.DeployAttemptStage>(e))
           .toList() as T;
-    }
-    if (t == List<_i50.User>) {
-      return (data as List).map((e) => deserialize<_i50.User>(e)).toList() as T;
     }
     try {
       return _i51.Protocol().deserialize<T>(data, t);
