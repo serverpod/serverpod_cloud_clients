@@ -28,6 +28,8 @@ import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
 import 'package:serverpod_cloud_cli/util/scloud_version.dart';
 
+import 'commands/admin/admin_command.dart';
+
 /// Represents the Serverpod Cloud CLI main command, its global options, and subcommands.
 class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   final Version version;
@@ -79,6 +81,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     required final CommandLogger logger,
     final Version? version,
     final CloudCliServiceProvider? serviceProvider,
+    bool? adminUserMode,
   }) {
     final runner = CloudCliCommandRunner._(
       logger: logger,
@@ -95,6 +98,12 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
       ),
     );
 
+    adminUserMode ??= bool.tryParse(
+          Platform.environment['SERVERPOD_CLOUD_ADMIN_USER_MODE'] ?? 'false',
+          caseSensitive: false,
+        ) ??
+        false;
+
     // Add commands (which may in turn have their own options and subcommands)
     runner.addCommands([
       runner._versionCommand,
@@ -109,6 +118,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
       CloudDbCommand(logger: logger),
       CloudLaunchCommand(logger: logger),
       CloudUserCommand(logger: logger),
+      if (adminUserMode) CloudAdminCommand(logger: logger),
     ]);
 
     return runner;
