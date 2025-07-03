@@ -34,6 +34,8 @@ class EndpointAuthWithAuthMock extends Mock implements EndpointAuthWithAuth {}
 
 class EndpointAdminUsersMock extends Mock implements EndpointAdminUsers {}
 
+class EndpointAdminProjectsMock extends Mock implements EndpointAdminProjects {}
+
 // Modules mocks
 
 class EndpointEmailMock extends Mock implements EndpointEmail {}
@@ -139,6 +141,9 @@ class ClientMock extends Mock implements Client {
 
   @override
   final EndpointAdminUsers adminUsers = EndpointAdminUsersMock();
+
+  @override
+  final EndpointAdminProjects adminProjects = EndpointAdminProjectsMock();
 
   @override
   final Modules modules = ModulesMock();

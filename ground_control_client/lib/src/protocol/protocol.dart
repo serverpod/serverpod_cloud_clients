@@ -55,15 +55,15 @@ import 'shared/exceptions/models/unauthenticated_exception.dart' as _i39;
 import 'shared/exceptions/models/unauthorized_exception.dart' as _i40;
 import 'shared/models/serverpod_region.dart' as _i41;
 import 'shared/services/pubsub/registry/pubsub_entry.dart' as _i42;
-import 'package:ground_control_client/src/protocol/domains/users/models/user.dart'
-    as _i43;
-import 'package:ground_control_client/src/protocol/features/auth/models/required_terms.dart'
-    as _i44;
-import 'package:ground_control_client/src/protocol/features/auth/models/accepted_terms_dto.dart'
-    as _i45;
-import 'package:ground_control_client/src/protocol/features/environment_variables/models/environment_variable.dart'
-    as _i46;
 import 'package:ground_control_client/src/protocol/features/project/models/project.dart'
+    as _i43;
+import 'package:ground_control_client/src/protocol/domains/users/models/user.dart'
+    as _i44;
+import 'package:ground_control_client/src/protocol/features/auth/models/required_terms.dart'
+    as _i45;
+import 'package:ground_control_client/src/protocol/features/auth/models/accepted_terms_dto.dart'
+    as _i46;
+import 'package:ground_control_client/src/protocol/features/environment_variables/models/environment_variable.dart'
     as _i47;
 import 'package:ground_control_client/src/protocol/features/project/models/role.dart'
     as _i48;
@@ -444,27 +444,27 @@ class Protocol extends _i1.SerializationManager {
               .toList()
           : null) as T;
     }
-    if (t == List<_i43.User>) {
-      return (data as List).map((e) => deserialize<_i43.User>(e)).toList() as T;
-    }
-    if (t == List<_i44.RequiredTerms>) {
-      return (data as List)
-          .map((e) => deserialize<_i44.RequiredTerms>(e))
-          .toList() as T;
-    }
-    if (t == List<_i45.AcceptedTermsDTO>) {
-      return (data as List)
-          .map((e) => deserialize<_i45.AcceptedTermsDTO>(e))
-          .toList() as T;
-    }
-    if (t == List<_i46.EnvironmentVariable>) {
-      return (data as List)
-          .map((e) => deserialize<_i46.EnvironmentVariable>(e))
-          .toList() as T;
-    }
-    if (t == List<_i47.Project>) {
-      return (data as List).map((e) => deserialize<_i47.Project>(e)).toList()
+    if (t == List<_i43.Project>) {
+      return (data as List).map((e) => deserialize<_i43.Project>(e)).toList()
           as T;
+    }
+    if (t == List<_i44.User>) {
+      return (data as List).map((e) => deserialize<_i44.User>(e)).toList() as T;
+    }
+    if (t == List<_i45.RequiredTerms>) {
+      return (data as List)
+          .map((e) => deserialize<_i45.RequiredTerms>(e))
+          .toList() as T;
+    }
+    if (t == List<_i46.AcceptedTermsDTO>) {
+      return (data as List)
+          .map((e) => deserialize<_i46.AcceptedTermsDTO>(e))
+          .toList() as T;
+    }
+    if (t == List<_i47.EnvironmentVariable>) {
+      return (data as List)
+          .map((e) => deserialize<_i47.EnvironmentVariable>(e))
+          .toList() as T;
     }
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList() as T;

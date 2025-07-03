@@ -33,14 +33,7 @@ abstract final class _DeployStatusOptions {
     defaultsTo: 10,
     min: 1,
   );
-  static const utc = FlagOption(
-    argName: 'utc',
-    argAbbrev: 'u',
-    helpText: 'Display timestamps in UTC timezone instead of local.',
-    negatable: true,
-    defaultsTo: false,
-    envName: 'SERVERPOD_CLOUD_DISPLAY_UTC',
-  );
+  static const utc = UtcOption();
 
   static const deploy = StringOption(
     argName: 'deploy',
