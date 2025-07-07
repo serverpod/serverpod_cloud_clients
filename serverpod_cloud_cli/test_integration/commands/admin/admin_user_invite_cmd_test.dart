@@ -1,14 +1,13 @@
 import 'dart:async';
 
+import 'package:ground_control_client/ground_control_client_mock.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/admin/admin_command.dart'
-    show AdminInviteUserCommand;
 import 'package:test/test.dart';
 
-import 'package:ground_control_client/ground_control_client_mock.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/admin/admin_users_commands.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
 import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/test_command_logger.dart';

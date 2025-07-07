@@ -15,13 +15,7 @@ enum LogOption<V> implements OptionDefinition<V> {
     defaultsTo: 50,
     min: 0,
   )),
-  utc(FlagOption(
-    argName: 'utc',
-    argAbbrev: 'u',
-    helpText: 'Display timestamps in UTC timezone instead of local.',
-    defaultsTo: false,
-    envName: 'SERVERPOD_CLOUD_DISPLAY_UTC',
-  )),
+  utc(UtcOption()),
   recent(DurationOption(
     argName: 'recent',
     argAbbrev: 'r',

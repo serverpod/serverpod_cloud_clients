@@ -91,3 +91,15 @@ class ValueFileOption extends FileOption {
           mode: PathExistMode.mustExist,
         );
 }
+
+class UtcOption extends FlagOption {
+  const UtcOption()
+      : super(
+          argName: 'utc',
+          argAbbrev: 'u',
+          helpText: 'Display timestamps in UTC timezone instead of local.',
+          negatable: true,
+          defaultsTo: false,
+          envName: 'SERVERPOD_CLOUD_DISPLAY_UTC',
+        );
+}
