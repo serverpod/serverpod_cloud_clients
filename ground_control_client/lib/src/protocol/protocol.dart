@@ -10,7 +10,7 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import 'domains/capsules/models/capsule.dart' as _i2;
+import 'features/custom_domain_name/models/custom_domain_name.dart' as _i2;
 import 'domains/logs/models/log_record.dart' as _i3;
 import 'domains/status/models/deploy_attempt.dart' as _i4;
 import 'domains/status/models/deploy_attempt_stage.dart' as _i5;
@@ -25,7 +25,7 @@ import 'features/auth/models/required_terms.dart' as _i13;
 import 'features/auth/models/terms.dart' as _i14;
 import 'features/custom_domain_name/exceptions/dns_verification_failed_exception.dart'
     as _i15;
-import 'features/custom_domain_name/models/custom_domain_name.dart' as _i16;
+import 'domains/capsules/models/capsule.dart' as _i16;
 import 'features/custom_domain_name/models/custom_domain_name_list.dart'
     as _i17;
 import 'features/custom_domain_name/models/dns_record_type.dart' as _i18;
@@ -40,7 +40,7 @@ import 'features/database/models/database_resource.dart' as _i25;
 import 'features/environment_variables/models/environment_variable.dart'
     as _i26;
 import 'features/project/models/address.dart' as _i27;
-import 'features/project/models/project.dart' as _i28;
+import 'shared/services/pubsub/registry/pubsub_entry.dart' as _i28;
 import 'features/project/models/project_config.dart' as _i29;
 import 'features/project/models/project_delete_call_event.dart' as _i30;
 import 'features/project/models/role.dart' as _i31;
@@ -54,7 +54,7 @@ import 'shared/exceptions/models/not_found_exception.dart' as _i38;
 import 'shared/exceptions/models/unauthenticated_exception.dart' as _i39;
 import 'shared/exceptions/models/unauthorized_exception.dart' as _i40;
 import 'shared/models/serverpod_region.dart' as _i41;
-import 'shared/services/pubsub/registry/pubsub_entry.dart' as _i42;
+import 'features/project/models/project.dart' as _i42;
 import 'package:ground_control_client/src/protocol/features/project/models/project.dart'
     as _i43;
 import 'package:ground_control_client/src/protocol/domains/users/models/user.dart'
@@ -128,8 +128,8 @@ class Protocol extends _i1.SerializationManager {
     Type? t,
   ]) {
     t ??= T;
-    if (t == _i2.Capsule) {
-      return _i2.Capsule.fromJson(data) as T;
+    if (t == _i2.CustomDomainName) {
+      return _i2.CustomDomainName.fromJson(data) as T;
     }
     if (t == _i3.LogRecord) {
       return _i3.LogRecord.fromJson(data) as T;
@@ -170,8 +170,8 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i15.DNSVerificationFailedException) {
       return _i15.DNSVerificationFailedException.fromJson(data) as T;
     }
-    if (t == _i16.CustomDomainName) {
-      return _i16.CustomDomainName.fromJson(data) as T;
+    if (t == _i16.Capsule) {
+      return _i16.Capsule.fromJson(data) as T;
     }
     if (t == _i17.CustomDomainNameList) {
       return _i17.CustomDomainNameList.fromJson(data) as T;
@@ -206,8 +206,8 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i27.Address) {
       return _i27.Address.fromJson(data) as T;
     }
-    if (t == _i28.Project) {
-      return _i28.Project.fromJson(data) as T;
+    if (t == _i28.PubsubEntry) {
+      return _i28.PubsubEntry.fromJson(data) as T;
     }
     if (t == _i29.ProjectConfig) {
       return _i29.ProjectConfig.fromJson(data) as T;
@@ -248,11 +248,11 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i41.ServerpodRegion) {
       return _i41.ServerpodRegion.fromJson(data) as T;
     }
-    if (t == _i42.PubsubEntry) {
-      return _i42.PubsubEntry.fromJson(data) as T;
+    if (t == _i42.Project) {
+      return _i42.Project.fromJson(data) as T;
     }
-    if (t == _i1.getType<_i2.Capsule?>()) {
-      return (data != null ? _i2.Capsule.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i2.CustomDomainName?>()) {
+      return (data != null ? _i2.CustomDomainName.fromJson(data) : null) as T;
     }
     if (t == _i1.getType<_i3.LogRecord?>()) {
       return (data != null ? _i3.LogRecord.fromJson(data) : null) as T;
@@ -297,8 +297,8 @@ class Protocol extends _i1.SerializationManager {
           ? _i15.DNSVerificationFailedException.fromJson(data)
           : null) as T;
     }
-    if (t == _i1.getType<_i16.CustomDomainName?>()) {
-      return (data != null ? _i16.CustomDomainName.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i16.Capsule?>()) {
+      return (data != null ? _i16.Capsule.fromJson(data) : null) as T;
     }
     if (t == _i1.getType<_i17.CustomDomainNameList?>()) {
       return (data != null ? _i17.CustomDomainNameList.fromJson(data) : null)
@@ -340,8 +340,8 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i1.getType<_i27.Address?>()) {
       return (data != null ? _i27.Address.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i28.Project?>()) {
-      return (data != null ? _i28.Project.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i28.PubsubEntry?>()) {
+      return (data != null ? _i28.PubsubEntry.fromJson(data) : null) as T;
     }
     if (t == _i1.getType<_i29.ProjectConfig?>()) {
       return (data != null ? _i29.ProjectConfig.fromJson(data) : null) as T;
@@ -390,22 +390,8 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i1.getType<_i41.ServerpodRegion?>()) {
       return (data != null ? _i41.ServerpodRegion.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i42.PubsubEntry?>()) {
-      return (data != null ? _i42.PubsubEntry.fromJson(data) : null) as T;
-    }
-    if (t == _i1.getType<List<_i26.EnvironmentVariable>?>()) {
-      return (data != null
-          ? (data as List)
-              .map((e) => deserialize<_i26.EnvironmentVariable>(e))
-              .toList()
-          : null) as T;
-    }
-    if (t == _i1.getType<List<_i16.CustomDomainName>?>()) {
-      return (data != null
-          ? (data as List)
-              .map((e) => deserialize<_i16.CustomDomainName>(e))
-              .toList()
-          : null) as T;
+    if (t == _i1.getType<_i42.Project?>()) {
+      return (data != null ? _i42.Project.fromJson(data) : null) as T;
     }
     if (t == _i1.getType<List<_i32.UserRoleMembership>?>()) {
       return (data != null
@@ -414,25 +400,29 @@ class Protocol extends _i1.SerializationManager {
               .toList()
           : null) as T;
     }
-    if (t == List<_i16.CustomDomainName>) {
+    if (t == _i1.getType<List<_i26.EnvironmentVariable>?>()) {
+      return (data != null
+          ? (data as List)
+              .map((e) => deserialize<_i26.EnvironmentVariable>(e))
+              .toList()
+          : null) as T;
+    }
+    if (t == _i1.getType<List<_i2.CustomDomainName>?>()) {
+      return (data != null
+          ? (data as List)
+              .map((e) => deserialize<_i2.CustomDomainName>(e))
+              .toList()
+          : null) as T;
+    }
+    if (t == List<_i2.CustomDomainName>) {
       return (data as List)
-          .map((e) => deserialize<_i16.CustomDomainName>(e))
+          .map((e) => deserialize<_i2.CustomDomainName>(e))
           .toList() as T;
     }
     if (t == Map<_i20.DomainNameTarget, String>) {
       return Map.fromEntries((data as List).map((e) => MapEntry(
           deserialize<_i20.DomainNameTarget>(e['k']),
           deserialize<String>(e['v'])))) as T;
-    }
-    if (t == _i1.getType<List<_i31.Role>?>()) {
-      return (data != null
-          ? (data as List).map((e) => deserialize<_i31.Role>(e)).toList()
-          : null) as T;
-    }
-    if (t == _i1.getType<List<_i2.Capsule>?>()) {
-      return (data != null
-          ? (data as List).map((e) => deserialize<_i2.Capsule>(e)).toList()
-          : null) as T;
     }
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList() as T;
@@ -442,6 +432,16 @@ class Protocol extends _i1.SerializationManager {
           ? (data as List)
               .map((e) => deserialize<_i32.UserRoleMembership>(e))
               .toList()
+          : null) as T;
+    }
+    if (t == _i1.getType<List<_i31.Role>?>()) {
+      return (data != null
+          ? (data as List).map((e) => deserialize<_i31.Role>(e)).toList()
+          : null) as T;
+    }
+    if (t == _i1.getType<List<_i16.Capsule>?>()) {
+      return (data != null
+          ? (data as List).map((e) => deserialize<_i16.Capsule>(e)).toList()
           : null) as T;
     }
     if (t == List<_i43.Project>) {
@@ -501,8 +501,8 @@ class Protocol extends _i1.SerializationManager {
   String? getClassNameForObject(Object? data) {
     String? className = super.getClassNameForObject(data);
     if (className != null) return className;
-    if (data is _i2.Capsule) {
-      return 'Capsule';
+    if (data is _i2.CustomDomainName) {
+      return 'CustomDomainName';
     }
     if (data is _i3.LogRecord) {
       return 'LogRecord';
@@ -543,8 +543,8 @@ class Protocol extends _i1.SerializationManager {
     if (data is _i15.DNSVerificationFailedException) {
       return 'DNSVerificationFailedException';
     }
-    if (data is _i16.CustomDomainName) {
-      return 'CustomDomainName';
+    if (data is _i16.Capsule) {
+      return 'Capsule';
     }
     if (data is _i17.CustomDomainNameList) {
       return 'CustomDomainNameList';
@@ -579,8 +579,8 @@ class Protocol extends _i1.SerializationManager {
     if (data is _i27.Address) {
       return 'Address';
     }
-    if (data is _i28.Project) {
-      return 'Project';
+    if (data is _i28.PubsubEntry) {
+      return 'PubsubEntry';
     }
     if (data is _i29.ProjectConfig) {
       return 'ProjectConfig';
@@ -621,8 +621,8 @@ class Protocol extends _i1.SerializationManager {
     if (data is _i41.ServerpodRegion) {
       return 'ServerpodRegion';
     }
-    if (data is _i42.PubsubEntry) {
-      return 'PubsubEntry';
+    if (data is _i42.Project) {
+      return 'Project';
     }
     className = _i51.Protocol().getClassNameForObject(data);
     if (className != null) {
@@ -637,8 +637,8 @@ class Protocol extends _i1.SerializationManager {
     if (dataClassName is! String) {
       return super.deserializeByClassName(data);
     }
-    if (dataClassName == 'Capsule') {
-      return deserialize<_i2.Capsule>(data['data']);
+    if (dataClassName == 'CustomDomainName') {
+      return deserialize<_i2.CustomDomainName>(data['data']);
     }
     if (dataClassName == 'LogRecord') {
       return deserialize<_i3.LogRecord>(data['data']);
@@ -679,8 +679,8 @@ class Protocol extends _i1.SerializationManager {
     if (dataClassName == 'DNSVerificationFailedException') {
       return deserialize<_i15.DNSVerificationFailedException>(data['data']);
     }
-    if (dataClassName == 'CustomDomainName') {
-      return deserialize<_i16.CustomDomainName>(data['data']);
+    if (dataClassName == 'Capsule') {
+      return deserialize<_i16.Capsule>(data['data']);
     }
     if (dataClassName == 'CustomDomainNameList') {
       return deserialize<_i17.CustomDomainNameList>(data['data']);
@@ -715,8 +715,8 @@ class Protocol extends _i1.SerializationManager {
     if (dataClassName == 'Address') {
       return deserialize<_i27.Address>(data['data']);
     }
-    if (dataClassName == 'Project') {
-      return deserialize<_i28.Project>(data['data']);
+    if (dataClassName == 'PubsubEntry') {
+      return deserialize<_i28.PubsubEntry>(data['data']);
     }
     if (dataClassName == 'ProjectConfig') {
       return deserialize<_i29.ProjectConfig>(data['data']);
@@ -757,8 +757,8 @@ class Protocol extends _i1.SerializationManager {
     if (dataClassName == 'ServerpodRegion') {
       return deserialize<_i41.ServerpodRegion>(data['data']);
     }
-    if (dataClassName == 'PubsubEntry') {
-      return deserialize<_i42.PubsubEntry>(data['data']);
+    if (dataClassName == 'Project') {
+      return deserialize<_i42.Project>(data['data']);
     }
     if (dataClassName.startsWith('serverpod_auth.')) {
       data['className'] = dataClassName.substring(15);
