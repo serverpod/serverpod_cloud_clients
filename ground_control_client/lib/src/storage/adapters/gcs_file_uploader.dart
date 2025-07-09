@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 
 import '../file_uploader_client.dart';
 
@@ -13,10 +13,22 @@ import '../file_uploader_client.dart';
 class GoogleCloudStorageUploader implements FileUploaderClient {
   late final _UploadDescription _uploadDescription;
   bool _attemptedUpload = false;
+  int retryCount = 0;
+  int _maxRetries = 2;
+  late final Dio _dio;
 
   /// Creates a new FileUploader from an [uploadDescription] created by the
-  /// server.
-  GoogleCloudStorageUploader(String uploadDescription) {
+  /// server. Optionally, you can pass a [Dio] instance to use for the upload to control
+  /// the timeout and other settings.
+  GoogleCloudStorageUploader(String uploadDescription, {Dio? dio}) {
+    _dio = dio ??
+        Dio(
+          BaseOptions(
+            connectTimeout: const Duration(seconds: 100),
+            sendTimeout: const Duration(seconds: 200),
+            receiveTimeout: const Duration(seconds: 100),
+          ),
+        );
     _uploadDescription = _UploadDescription(uploadDescription);
   }
 
@@ -24,7 +36,7 @@ class GoogleCloudStorageUploader implements FileUploaderClient {
   /// successful.
   @override
   Future<bool> uploadByteData(ByteData byteData) async {
-    var stream = http.ByteStream.fromBytes(byteData.buffer.asUint8List());
+    var stream = Stream.fromIterable([byteData.buffer.asUint8List()]);
     return upload(stream, byteData.lengthInBytes);
   }
 
@@ -37,22 +49,35 @@ class GoogleCloudStorageUploader implements FileUploaderClient {
     }
     _attemptedUpload = true;
 
+    final broadcastStream =
+        stream.isBroadcast ? stream : stream.asBroadcastStream();
+
     switch (_uploadDescription.type) {
       case _UploadType.binary:
-        final http.Response result;
+        final Response result;
         try {
           result = switch (_uploadDescription.httpMethod) {
-            'PUT' => await http.put(
+            'PUT' => await _dio.putUri(
                 _uploadDescription.url,
-                body: await _readStreamData(stream),
-                headers: _uploadDescription.headers,
+                data: broadcastStream,
+                options: Options(headers: _uploadDescription.headers),
               ),
-            _ => await http.post(
+            _ => await _dio.postUri(
                 _uploadDescription.url,
-                body: await _readStreamData(stream),
-                headers: _uploadDescription.headers,
+                data: broadcastStream,
+                options: Options(headers: _uploadDescription.headers),
               ),
           };
+        } on DioException catch (e) {
+          if (_shouldRetry(e)) {
+            return await _retryUpload(
+              broadcastStream,
+              length,
+            );
+          }
+          throw Exception(
+            'Failed to upload binary file, error: ${_uploadDioErrorFormatter(e)}',
+          );
         } catch (e) {
           throw Exception('Failed to upload binary file, error: $e');
         }
@@ -61,23 +86,47 @@ class GoogleCloudStorageUploader implements FileUploaderClient {
           return true;
         }
         throw Exception('Failed to upload binary file, '
-            'response code ${result.statusCode}, body: ${result.body}, '
+            'response code ${result.statusCode}, body: ${result.data}, '
             '$_uploadDescription');
 
       case _UploadType.multipart:
-        var request = http.MultipartRequest('POST', _uploadDescription.url);
-        var multipartFile = http.MultipartFile(
-            _uploadDescription.field!, stream, length,
-            filename: _uploadDescription.fileName);
+        var multipartFile = MultipartFile.fromStream(
+          () => broadcastStream,
+          length,
+          filename: _uploadDescription.fileName,
+        );
+        final formData = FormData.fromMap({
+          'files': [
+            multipartFile,
+          ],
+        });
 
-        request.files.add(multipartFile);
         for (var key in _uploadDescription.requestFields.keys) {
-          request.fields[key] = _uploadDescription.requestFields[key]!;
+          formData.fields.add(
+            MapEntry(
+              key,
+              _uploadDescription.requestFields[key]!,
+            ),
+          );
         }
 
-        final http.StreamedResponse result;
+        final Response result;
         try {
-          result = await request.send();
+          result = await _dio.postUri(
+            _uploadDescription.url,
+            data: formData,
+            options: Options(headers: _uploadDescription.headers),
+          );
+        } on DioException catch (e) {
+          if (_shouldRetry(e)) {
+            return await _retryUpload(
+              broadcastStream,
+              length,
+            );
+          }
+          throw Exception(
+            'Failed to upload multipart file, error: ${_uploadDioErrorFormatter(e)}',
+          );
         } catch (e) {
           throw Exception('Failed to upload multipart file, error: $e');
         }
@@ -85,18 +134,39 @@ class GoogleCloudStorageUploader implements FileUploaderClient {
           return true;
         }
         throw Exception('Failed to upload multipart file, '
-            'response code ${result.statusCode}, body: ${result.stream.bytesToString()}, '
+            'response code ${result.statusCode}, body: ${result.data}, '
             '$_uploadDescription');
     }
   }
 
-  Future<List<int>> _readStreamData(Stream<List<int>> stream) async {
-    // TODO: Find more efficient solution?
-    var data = <int>[];
-    await for (var segment in stream) {
-      data += segment;
+  Future<bool> _retryUpload(
+    final Stream<List<int>> stream,
+    final int length,
+  ) async {
+    retryCount++;
+    _attemptedUpload = false;
+    print('\nRetrying upload... $retryCount of $_maxRetries');
+    return upload(stream, length);
+  }
+
+  String _uploadDioErrorFormatter(DioException e) {
+    switch (e.type) {
+      case DioExceptionType.connectionTimeout:
+        return 'Connection Timeout. Please check your internet connection and try again.';
+      case DioExceptionType.sendTimeout:
+        return 'Send Timeout. Please check your internet connection and try again.';
+      case DioExceptionType.receiveTimeout:
+        return 'Receive Timeout. Please check your internet connection and try again.';
+      default:
+        return e.toString();
     }
-    return data;
+  }
+
+  bool _shouldRetry(DioException e) {
+    return retryCount < _maxRetries &&
+        (e.type == DioExceptionType.connectionTimeout ||
+            e.type == DioExceptionType.sendTimeout ||
+            e.type == DioExceptionType.receiveTimeout);
   }
 }
 
