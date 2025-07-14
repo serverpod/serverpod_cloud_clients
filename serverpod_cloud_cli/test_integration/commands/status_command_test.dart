@@ -415,6 +415,39 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
           'for non-existing project with non-existing deploy index',
           ['--project', 'non-existing', '2'],
         );
+
+        group(
+            'for named proj opt with non-existing deploy id with args="--project $projectId non-existing"',
+            () {
+          late Future commandResult;
+          setUp(() async {
+            commandResult = cli.run([
+              'status',
+              'deploy',
+              '--project',
+              projectId,
+              'non-existing',
+            ]);
+          });
+
+          test('then throws ExitErrorException', () async {
+            await expectLater(
+                commandResult, throwsA(isA<ErrorExitException>()));
+          });
+
+          test('then outputs error message', () async {
+            await commandResult.onError((final e, final s) {});
+
+            expect(logger.errorCalls, isNotEmpty);
+            expect(
+              logger.errorCalls.first,
+              equalsErrorCall(
+                message: 'The requested resource did not exist.',
+                hint: 'not found',
+              ),
+            );
+          });
+        });
       });
     });
 
