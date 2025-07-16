@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
@@ -129,6 +130,10 @@ abstract class Deploy {
           logger.error('Failed to upload project, please try again.');
         }
         return ret;
+      } on DioException catch (e) {
+        throw FailureException(
+          error: 'Failed to upload project: ${_uploadDioExceptionFormatter(e)}',
+        );
       } on Exception catch (e, stackTrace) {
         throw FailureException.nested(
             e, stackTrace, 'Failed to upload project');
@@ -155,5 +160,20 @@ abstract class Deploy {
       'scloud domain',
       newParagraph: true,
     );
+  }
+
+  static String _uploadDioExceptionFormatter(final DioException e) {
+    switch (e.type) {
+      case DioExceptionType.connectionTimeout:
+        return 'Connection Timeout. Please check your internet connection and try again.';
+      case DioExceptionType.sendTimeout:
+        return 'Send Timeout. Please check your internet connection and try again.';
+      case DioExceptionType.receiveTimeout:
+        return 'Receive Timeout. Please check your internet connection and try again.';
+      case DioExceptionType.connectionError:
+        return 'Connection Error. Please check your internet connection and try again.';
+      default:
+        return e.toString();
+    }
   }
 }

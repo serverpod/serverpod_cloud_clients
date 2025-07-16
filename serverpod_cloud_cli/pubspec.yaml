@@ -30,6 +30,7 @@ dependencies:
   yaml_codec: ^1.0.0
   yaml: ^3.1.0
   email_validator: ^3.0.0
+  dio: ^5.8.0+1
 
 dev_dependencies:
   http: ^1.2.2
