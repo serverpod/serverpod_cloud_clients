@@ -22,9 +22,7 @@ abstract class User implements _i1.SerializableModel {
     this.archivedAt,
     _i2.UserAccountStatus? accountStatus,
     this.userAuthId,
-    this.displayName,
     required this.email,
-    this.image,
     this.memberships,
     this.maxOwnedProjects,
   })  : createdAt = createdAt ?? DateTime.now(),
@@ -38,9 +36,7 @@ abstract class User implements _i1.SerializableModel {
     DateTime? archivedAt,
     _i2.UserAccountStatus? accountStatus,
     String? userAuthId,
-    String? displayName,
     required String email,
-    Uri? image,
     List<_i3.UserRoleMembership>? memberships,
     int? maxOwnedProjects,
   }) = _UserImpl;
@@ -58,11 +54,7 @@ abstract class User implements _i1.SerializableModel {
       accountStatus: _i2.UserAccountStatus.fromJson(
           (jsonSerialization['accountStatus'] as String)),
       userAuthId: jsonSerialization['userAuthId'] as String?,
-      displayName: jsonSerialization['displayName'] as String?,
       email: jsonSerialization['email'] as String,
-      image: jsonSerialization['image'] == null
-          ? null
-          : _i1.UriJsonExtension.fromJson(jsonSerialization['image']),
       memberships: (jsonSerialization['memberships'] as List?)
           ?.map((e) =>
               _i3.UserRoleMembership.fromJson((e as Map<String, dynamic>)))
@@ -88,13 +80,8 @@ abstract class User implements _i1.SerializableModel {
   /// External user authentication id. Must be unique.
   String? userAuthId;
 
-  String? displayName;
-
   /// The email address of the user.
   String email;
-
-  /// The image url of the user.
-  Uri? image;
 
   /// The role memberships of this user.
   List<_i3.UserRoleMembership>? memberships;
@@ -112,9 +99,7 @@ abstract class User implements _i1.SerializableModel {
     DateTime? archivedAt,
     _i2.UserAccountStatus? accountStatus,
     String? userAuthId,
-    String? displayName,
     String? email,
-    Uri? image,
     List<_i3.UserRoleMembership>? memberships,
     int? maxOwnedProjects,
   });
@@ -127,9 +112,7 @@ abstract class User implements _i1.SerializableModel {
       if (archivedAt != null) 'archivedAt': archivedAt?.toJson(),
       'accountStatus': accountStatus.toJson(),
       if (userAuthId != null) 'userAuthId': userAuthId,
-      if (displayName != null) 'displayName': displayName,
       'email': email,
-      if (image != null) 'image': image?.toJson(),
       if (memberships != null)
         'memberships': memberships?.toJson(valueToJson: (v) => v.toJson()),
       if (maxOwnedProjects != null) 'maxOwnedProjects': maxOwnedProjects,
@@ -152,9 +135,7 @@ class _UserImpl extends User {
     DateTime? archivedAt,
     _i2.UserAccountStatus? accountStatus,
     String? userAuthId,
-    String? displayName,
     required String email,
-    Uri? image,
     List<_i3.UserRoleMembership>? memberships,
     int? maxOwnedProjects,
   }) : super._(
@@ -164,9 +145,7 @@ class _UserImpl extends User {
           archivedAt: archivedAt,
           accountStatus: accountStatus,
           userAuthId: userAuthId,
-          displayName: displayName,
           email: email,
-          image: image,
           memberships: memberships,
           maxOwnedProjects: maxOwnedProjects,
         );
@@ -182,9 +161,7 @@ class _UserImpl extends User {
     Object? archivedAt = _Undefined,
     _i2.UserAccountStatus? accountStatus,
     Object? userAuthId = _Undefined,
-    Object? displayName = _Undefined,
     String? email,
-    Object? image = _Undefined,
     Object? memberships = _Undefined,
     Object? maxOwnedProjects = _Undefined,
   }) {
@@ -195,9 +172,7 @@ class _UserImpl extends User {
       archivedAt: archivedAt is DateTime? ? archivedAt : this.archivedAt,
       accountStatus: accountStatus ?? this.accountStatus,
       userAuthId: userAuthId is String? ? userAuthId : this.userAuthId,
-      displayName: displayName is String? ? displayName : this.displayName,
       email: email ?? this.email,
-      image: image is Uri? ? image : this.image,
       memberships: memberships is List<_i3.UserRoleMembership>?
           ? memberships
           : this.memberships?.map((e0) => e0.copyWith()).toList(),
