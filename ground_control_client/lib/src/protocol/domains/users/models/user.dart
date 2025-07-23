@@ -12,6 +12,7 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/users/models/user_account_status.dart' as _i2;
 import '../../../features/project/models/user_role_membership.dart' as _i3;
+import '../../../domains/billing/models/owner.dart' as _i4;
 
 /// Represents a Serverpod cloud customer user.
 abstract class User implements _i1.SerializableModel {
@@ -25,6 +26,8 @@ abstract class User implements _i1.SerializableModel {
     required this.email,
     this.memberships,
     this.maxOwnedProjects,
+    this.ownerId,
+    this.owner,
   })  : createdAt = createdAt ?? DateTime.now(),
         updatedAt = updatedAt ?? DateTime.now(),
         accountStatus = accountStatus ?? _i2.UserAccountStatus.registered;
@@ -39,6 +42,8 @@ abstract class User implements _i1.SerializableModel {
     required String email,
     List<_i3.UserRoleMembership>? memberships,
     int? maxOwnedProjects,
+    _i1.UuidValue? ownerId,
+    _i4.Owner? owner,
   }) = _UserImpl;
 
   factory User.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -60,6 +65,13 @@ abstract class User implements _i1.SerializableModel {
               _i3.UserRoleMembership.fromJson((e as Map<String, dynamic>)))
           .toList(),
       maxOwnedProjects: jsonSerialization['maxOwnedProjects'] as int?,
+      ownerId: jsonSerialization['ownerId'] == null
+          ? null
+          : _i1.UuidValueJsonExtension.fromJson(jsonSerialization['ownerId']),
+      owner: jsonSerialization['owner'] == null
+          ? null
+          : _i4.Owner.fromJson(
+              (jsonSerialization['owner'] as Map<String, dynamic>)),
     );
   }
 
@@ -89,6 +101,11 @@ abstract class User implements _i1.SerializableModel {
   /// Max number of projects this user can own.
   int? maxOwnedProjects;
 
+  _i1.UuidValue? ownerId;
+
+  /// The owner container for all projects and billing info managed by this user.
+  _i4.Owner? owner;
+
   /// Returns a shallow copy of this [User]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
@@ -102,6 +119,8 @@ abstract class User implements _i1.SerializableModel {
     String? email,
     List<_i3.UserRoleMembership>? memberships,
     int? maxOwnedProjects,
+    _i1.UuidValue? ownerId,
+    _i4.Owner? owner,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -116,6 +135,8 @@ abstract class User implements _i1.SerializableModel {
       if (memberships != null)
         'memberships': memberships?.toJson(valueToJson: (v) => v.toJson()),
       if (maxOwnedProjects != null) 'maxOwnedProjects': maxOwnedProjects,
+      if (ownerId != null) 'ownerId': ownerId?.toJson(),
+      if (owner != null) 'owner': owner?.toJson(),
     };
   }
 
@@ -138,6 +159,8 @@ class _UserImpl extends User {
     required String email,
     List<_i3.UserRoleMembership>? memberships,
     int? maxOwnedProjects,
+    _i1.UuidValue? ownerId,
+    _i4.Owner? owner,
   }) : super._(
           id: id,
           createdAt: createdAt,
@@ -148,6 +171,8 @@ class _UserImpl extends User {
           email: email,
           memberships: memberships,
           maxOwnedProjects: maxOwnedProjects,
+          ownerId: ownerId,
+          owner: owner,
         );
 
   /// Returns a shallow copy of this [User]
@@ -164,6 +189,8 @@ class _UserImpl extends User {
     String? email,
     Object? memberships = _Undefined,
     Object? maxOwnedProjects = _Undefined,
+    Object? ownerId = _Undefined,
+    Object? owner = _Undefined,
   }) {
     return User(
       id: id is int? ? id : this.id,
@@ -178,6 +205,8 @@ class _UserImpl extends User {
           : this.memberships?.map((e0) => e0.copyWith()).toList(),
       maxOwnedProjects:
           maxOwnedProjects is int? ? maxOwnedProjects : this.maxOwnedProjects,
+      ownerId: ownerId is _i1.UuidValue? ? ownerId : this.ownerId,
+      owner: owner is _i4.Owner? ? owner : this.owner?.copyWith(),
     );
   }
 }
