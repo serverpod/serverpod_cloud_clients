@@ -11,7 +11,7 @@ import 'package:test/test.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:ground_control_client/ground_control_client.dart';
-import 'package:ground_control_client/ground_control_client_mock.dart';
+import 'package:ground_control_client/ground_control_client_test_tools.dart';
 
 import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/project_factory.dart';

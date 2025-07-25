@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:ground_control_client/ground_control_client_mock.dart';
+import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
