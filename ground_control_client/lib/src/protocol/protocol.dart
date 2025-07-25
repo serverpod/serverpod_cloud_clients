@@ -490,13 +490,13 @@ class Protocol extends _i1.SerializationManager {
           .map((e) => deserialize<_i49.AcceptedTermsDTO>(e))
           .toList() as T;
     }
+    if (t == List<String>) {
+      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
+    }
     if (t == List<_i50.EnvironmentVariable>) {
       return (data as List)
           .map((e) => deserialize<_i50.EnvironmentVariable>(e))
           .toList() as T;
-    }
-    if (t == List<String>) {
-      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
     if (t == _i1.getType<List<String>?>()) {
       return (data != null

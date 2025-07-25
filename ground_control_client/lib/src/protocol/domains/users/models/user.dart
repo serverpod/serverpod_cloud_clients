@@ -101,6 +101,7 @@ abstract class User implements _i1.SerializableModel {
   /// Max number of projects this user can own.
   int? maxOwnedProjects;
 
+  /// The owner id of the user.
   _i1.UuidValue? ownerId;
 
   /// The owner container for all projects and billing info managed by this user.

@@ -10,8 +10,9 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../domains/billing/models/billing_info.dart' as _i2;
-import '../../../features/project/models/project.dart' as _i3;
+import '../../../domains/users/models/user.dart' as _i2;
+import '../../../domains/billing/models/billing_info.dart' as _i3;
+import '../../../features/project/models/project.dart' as _i4;
 
 abstract class Owner implements _i1.SerializableModel {
   Owner._({
@@ -19,6 +20,7 @@ abstract class Owner implements _i1.SerializableModel {
     required this.externalBillingId,
     required this.billingPortalUrl,
     required this.billingEmails,
+    this.user,
     this.billingInfo,
     this.projects,
   }) : id = id ?? _i1.Uuid().v4obj();
@@ -28,8 +30,9 @@ abstract class Owner implements _i1.SerializableModel {
     required String externalBillingId,
     required Uri billingPortalUrl,
     required List<String> billingEmails,
-    _i2.BillingInfo? billingInfo,
-    List<_i3.Project>? projects,
+    _i2.User? user,
+    _i3.BillingInfo? billingInfo,
+    List<_i4.Project>? projects,
   }) = _OwnerImpl;
 
   factory Owner.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -41,12 +44,16 @@ abstract class Owner implements _i1.SerializableModel {
       billingEmails: (jsonSerialization['billingEmails'] as List)
           .map((e) => e as String)
           .toList(),
+      user: jsonSerialization['user'] == null
+          ? null
+          : _i2.User.fromJson(
+              (jsonSerialization['user'] as Map<String, dynamic>)),
       billingInfo: jsonSerialization['billingInfo'] == null
           ? null
-          : _i2.BillingInfo.fromJson(
+          : _i3.BillingInfo.fromJson(
               (jsonSerialization['billingInfo'] as Map<String, dynamic>)),
       projects: (jsonSerialization['projects'] as List?)
-          ?.map((e) => _i3.Project.fromJson((e as Map<String, dynamic>)))
+          ?.map((e) => _i4.Project.fromJson((e as Map<String, dynamic>)))
           .toList(),
     );
   }
@@ -62,9 +69,11 @@ abstract class Owner implements _i1.SerializableModel {
 
   List<String> billingEmails;
 
-  _i2.BillingInfo? billingInfo;
+  _i2.User? user;
 
-  List<_i3.Project>? projects;
+  _i3.BillingInfo? billingInfo;
+
+  List<_i4.Project>? projects;
 
   /// Returns a shallow copy of this [Owner]
   /// with some or all fields replaced by the given arguments.
@@ -74,8 +83,9 @@ abstract class Owner implements _i1.SerializableModel {
     String? externalBillingId,
     Uri? billingPortalUrl,
     List<String>? billingEmails,
-    _i2.BillingInfo? billingInfo,
-    List<_i3.Project>? projects,
+    _i2.User? user,
+    _i3.BillingInfo? billingInfo,
+    List<_i4.Project>? projects,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -84,6 +94,7 @@ abstract class Owner implements _i1.SerializableModel {
       'externalBillingId': externalBillingId,
       'billingPortalUrl': billingPortalUrl.toJson(),
       'billingEmails': billingEmails.toJson(),
+      if (user != null) 'user': user?.toJson(),
       if (billingInfo != null) 'billingInfo': billingInfo?.toJson(),
       if (projects != null)
         'projects': projects?.toJson(valueToJson: (v) => v.toJson()),
@@ -104,13 +115,15 @@ class _OwnerImpl extends Owner {
     required String externalBillingId,
     required Uri billingPortalUrl,
     required List<String> billingEmails,
-    _i2.BillingInfo? billingInfo,
-    List<_i3.Project>? projects,
+    _i2.User? user,
+    _i3.BillingInfo? billingInfo,
+    List<_i4.Project>? projects,
   }) : super._(
           id: id,
           externalBillingId: externalBillingId,
           billingPortalUrl: billingPortalUrl,
           billingEmails: billingEmails,
+          user: user,
           billingInfo: billingInfo,
           projects: projects,
         );
@@ -124,6 +137,7 @@ class _OwnerImpl extends Owner {
     String? externalBillingId,
     Uri? billingPortalUrl,
     List<String>? billingEmails,
+    Object? user = _Undefined,
     Object? billingInfo = _Undefined,
     Object? projects = _Undefined,
   }) {
@@ -133,10 +147,11 @@ class _OwnerImpl extends Owner {
       billingPortalUrl: billingPortalUrl ?? this.billingPortalUrl,
       billingEmails:
           billingEmails ?? this.billingEmails.map((e0) => e0).toList(),
-      billingInfo: billingInfo is _i2.BillingInfo?
+      user: user is _i2.User? ? user : this.user?.copyWith(),
+      billingInfo: billingInfo is _i3.BillingInfo?
           ? billingInfo
           : this.billingInfo?.copyWith(),
-      projects: projects is List<_i3.Project>?
+      projects: projects is List<_i4.Project>?
           ? projects
           : this.projects?.map((e0) => e0.copyWith()).toList(),
     );
