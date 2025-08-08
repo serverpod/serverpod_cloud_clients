@@ -1,6 +1,24 @@
 
 # Changelog
 
+## [0.9.0] - 2025-08-08
+
+### Added
+
+- **Billing screen form** - Added a fully functional billing form to the console, allowing users to input billing data and be redirected to the billing dashboard.
+
+### Fixed
+
+- **Scloud verification of tenant SDK version** - Updated version checks to align with Dart 3.8 and refactored tests for robustness.
+- **Timeout error handling** - Improved error handling for timeouts by refactoring `gcs_file_uploader` to use `dio`, adding retries, and including test cases.
+- **Invalid stages in deployment status** - Removed stages with an unknown status from the deployment status, returning null if the stage list is empty.
+- **User onboarding bugs** - Corrected URL encoding in GC emails and fixed the project ID option in the project link command.
+- **Project ID option for invite and revoke commands** - Configured the project ID option for invite and revoke subcommands to read values from `scloud.yaml` and updated help text.
+
+### Changed
+
+- **Public scloud README** - Fixed broken links, updated the command reference, and touched up the text.
+
 ## [0.8.1] - 2025-06-02
 
 ### Fixed
