@@ -231,20 +231,19 @@ project:
       });
     });
 
-    group('and inside a dart directory when calling create', () {
+    group('and inside a dart (but not Serverpod) directory when calling create',
+        () {
       late Future commandResult;
-      late String dartDir;
 
       setUp(() async {
         await d.dir('dart_dir', [
-          ProjectFactory.serverpodServerPubspec(),
           d.file('pubspec.yaml', '''
 name: my_own_server
 dependencies:
   test: 1.0
 '''),
         ]).create();
-        dartDir = p.absolute(d.sandbox, 'dart_dir');
+        final dartDir = p.absolute(d.sandbox, 'dart_dir');
         pushCurrentDirectory(dartDir);
 
         commandResult = cli.run([
@@ -275,20 +274,19 @@ dependencies:
       test('then does not write scloud.yaml file', () async {
         await commandResult;
 
-        final expected = d.dir(dartDir, [
+        final expected = d.dir('dart_dir', [
           d.nothing('scloud.yaml'),
         ]);
         await expectLater(expected.validate(), completes);
       });
     });
 
-    group('and in a non-serverpod directory when calling create', () {
+    group('and in a non-dart directory when calling create', () {
       late Future commandResult;
-      late String otherDir;
 
       setUp(() async {
         await d.dir('other_dir').create();
-        otherDir = p.absolute(d.sandbox, 'other_dir');
+        final otherDir = p.absolute(d.sandbox, 'other_dir');
         pushCurrentDirectory(otherDir);
 
         commandResult = cli.run([
@@ -319,7 +317,7 @@ dependencies:
       test('then does not write scloud.yaml file', () async {
         await commandResult;
 
-        final expected = d.dir(otherDir, [
+        final expected = d.dir('other_dir', [
           d.nothing('scloud.yaml'),
         ]);
         await expectLater(expected.validate(), completes);
@@ -396,7 +394,7 @@ dependencies:
               ]),
             ]),
           ]);
-          await expectLater(expected.validate(d.sandbox), completes);
+          await expectLater(expected.validate(), completes);
         });
 
         test(
