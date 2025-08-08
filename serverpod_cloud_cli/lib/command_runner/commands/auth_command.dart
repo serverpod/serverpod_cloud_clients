@@ -194,7 +194,7 @@ class CloudLogoutCommand extends CloudCliCommand {
 
     ErrorExitException? exitException;
     try {
-      await cloudClient.modules.auth.status.signOutDevice();
+      await cloudClient.auth.logoutDevice();
     } on Exception catch (e) {
       // TODO: warning logging can be removed when we are out of the beta phase
       logger.warning('Ignoring error response from server: $e');

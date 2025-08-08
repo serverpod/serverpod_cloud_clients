@@ -1,8 +1,7 @@
 import 'package:mocktail/mocktail.dart';
 import 'package:ground_control_client/src/protocol/client.dart';
-import 'package:serverpod_auth_client/module.dart' show EndpointEmail;
-import 'package:serverpod_auth_client/serverpod_auth_client.dart'
-    show Caller, AuthenticationKeyManager;
+import 'package:serverpod_client/serverpod_client.dart'
+    show AuthenticationKeyManager;
 
 class EndpointCustomDomainNameMock extends Mock
     implements EndpointCustomDomainName {}
@@ -39,22 +38,8 @@ class EndpointAdminProjectsMock extends Mock implements EndpointAdminProjects {}
 
 class EndpointBillingMock extends Mock implements EndpointBilling {}
 
-// Modules mocks
-
-class EndpointEmailMock extends Mock implements EndpointEmail {}
-
-class AuthModule extends Mock implements Caller {
-  @override
-  final EndpointEmail email = EndpointEmailMock();
-}
-
-class ModulesMock extends Mock implements Modules {
-  @override
-  final AuthModule auth = AuthModule();
-}
-
-class AuthenticationKeyManagerMock extends Mock
-    implements AuthenticationKeyManager {}
+/// Modules mocks
+class ModulesMock extends Mock implements Modules {}
 
 class AuthedKeyManagerMock extends AuthenticationKeyManager {
   Future<bool> get isAuthenticated async => true;

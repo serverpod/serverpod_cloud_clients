@@ -10,9 +10,6 @@ Future<void> main() async {
     authenticationKeyManager: _SimpleAuthenticationKeyManager(),
   );
 
-  var isSignedIn = await client.modules.auth.status.isSignedIn();
-  print('Is signed in: $isSignedIn');
-
   client.close();
 }
 
