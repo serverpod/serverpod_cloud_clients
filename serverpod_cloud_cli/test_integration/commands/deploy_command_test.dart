@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
+import 'package:serverpod_cloud_cli/constants.dart' show VersionConstants;
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test/test.dart';
 
@@ -173,9 +174,9 @@ environment:
           d.file('pubspec.yaml', '''
 name: my_project
 environment:
-  sdk: '>=3.1.0 <3.6.0'
+  sdk: '>=3.1.0 <${VersionConstants.minSupportedSdkVersion}'
 dependencies:
-  serverpod: ^2.3.0
+  serverpod: ${ProjectFactory.validServerpodVersion}
 ''')
         ]).create();
         testProjectDir = p.join(d.sandbox, 'project');
@@ -664,7 +665,7 @@ environment:
   sdk: ${ProjectFactory.validSdkVersion}
 resolution: workspace
 dependencies:
-  serverpod: ^2.3.0
+  serverpod: ${ProjectFactory.validServerpodVersion}
   dart_utilities: ^1.0.0
 '''),
           ]),
@@ -794,7 +795,7 @@ environment:
   sdk: ${ProjectFactory.validSdkVersion}
 resolution: workspace
 dependencies:
-  serverpod: ^2.3.0
+  serverpod: ${ProjectFactory.validServerpodVersion}
   flutter_utilities: ^1.0.0
 '''),
           ]),

@@ -62,7 +62,7 @@ environment:
   sdk: ${ProjectFactory.validSdkVersion}
 resolution: workspace
 dependencies:
-  serverpod: ^2.3.0
+  serverpod: ${ProjectFactory.validServerpodVersion}
   dart_utilities: ^1.0.0
 '''),
           ]),
@@ -190,7 +190,7 @@ environment:
   sdk: ${ProjectFactory.validSdkVersion}
 resolution: workspace
 dependencies:
-  serverpod: ^2.3.0
+  serverpod: ${ProjectFactory.validServerpodVersion}
   flutter_utilities: ^1.0.0
 '''),
           ]),
@@ -244,7 +244,7 @@ environment:
   sdk: ${ProjectFactory.validSdkVersion}
 resolution: workspace
 dependencies:
-  serverpod: ^2.3.0
+  serverpod: ${ProjectFactory.validServerpodVersion}
   dart_utilities: ^1.0.0
 '''),
           ]),

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:serverpod_cloud_cli/constants.dart' show VersionConstants;
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:path/path.dart' as p;
 import 'package:uuid/uuid.dart';
@@ -8,8 +9,11 @@ import 'package:uuid/uuid.dart';
 class ProjectFactory {
   static const defaultDirectoryName = 'serverpod_server';
   static const defaultPackageName = 'my_project_server';
-  static const validSdkVersion = '">=3.6.0 <3.7.0"';
-  static const validServerpodVersion = '"^2.3.0"';
+  static const validSdkVersion =
+      '"^${VersionConstants.minSupportedSdkVersion}"';
+  static const highValidSdkVersion = '"^3.8.3"';
+  static const validServerpodVersion =
+      '"^${VersionConstants.minSupportedServerpodVersion}"';
 
   /// Returns descriptor for a Serverpod server directory with a valid pubspec.yaml file.
   /// Use `descriptor.create()` to create the directory.

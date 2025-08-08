@@ -1,6 +1,9 @@
 import 'package:pubspec_parse/pubspec_parse.dart';
+import 'package:serverpod_cloud_cli/constants.dart' show VersionConstants;
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:test/test.dart';
+
+import '../test_utils/project_factory.dart';
 
 void main() {
   test(
@@ -11,7 +14,7 @@ name: my_project
 environment:
   sdk: '>=3.2.0 <4.0.0'
 dependencies:
-  serverpod: ^2.3.0
+  serverpod: ${ProjectFactory.validServerpodVersion}
 '''));
 
     final result = pubspec.isServerpodServer();
@@ -38,7 +41,7 @@ environment:
 name: my_project
 environment:
 dependencies:
-  serverpod: ^2.3.0
+  serverpod: ${ProjectFactory.validServerpodVersion}
 '''));
 
     final result = pubspec.projectDependencyIssues();
@@ -51,9 +54,9 @@ dependencies:
     final pubspec = TenantProjectPubspec(Pubspec.parse('''
 name: my_project
 environment:
-  sdk: '>=3.8.0 <4.0.0'
+  sdk: '>=3.999.0 <4.0.0'
 dependencies:
-  serverpod: ^2.3.0
+  serverpod: ${ProjectFactory.validServerpodVersion}
 '''));
 
     final result = pubspec.projectDependencyIssues();
@@ -69,7 +72,7 @@ name: my_project
 environment:
   sdk: '>=3.1.0 <3.2.0'
 dependencies:
-  serverpod: ^2.3.0
+  serverpod: ${ProjectFactory.validServerpodVersion}
 '''));
 
     final result = pubspec.projectDependencyIssues();
@@ -94,14 +97,14 @@ dependencies:
   });
 
   test(
-      'Given a pubspec with a serverpod dependency and a compatible sdk version, when the projectDependencyIssues method is called, then the result is empty',
+      'Given a pubspec with a serverpod dependency and a compatible sdk version range, when the projectDependencyIssues method is called, then the result is empty',
       () {
     final pubspec = TenantProjectPubspec(Pubspec.parse('''
 name: my_project
 environment:
   sdk: '>=3.2.0 <4.0.0'
 dependencies:
-  serverpod: ^2.3.0
+  serverpod: ${ProjectFactory.validServerpodVersion}
 '''));
 
     final result = pubspec.projectDependencyIssues();
@@ -109,7 +112,37 @@ dependencies:
   });
 
   test(
-      'Given a pubspec with a serverpod dependency and a compatible sdk version, when the projectDependencyIssues method is called, then the result is empty',
+      'Given a pubspec with a serverpod dependency and the min compatible sdk version, when the projectDependencyIssues method is called, then the result is empty',
+      () {
+    final pubspec = TenantProjectPubspec(Pubspec.parse('''
+name: my_project
+environment:
+  sdk: "${VersionConstants.minSupportedSdkVersion}"
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+'''));
+
+    final result = pubspec.projectDependencyIssues();
+    expect(result, isEmpty);
+  });
+
+  test(
+      'Given a pubspec with a serverpod dependency and a high but compatible sdk version, when the projectDependencyIssues method is called, then the result is empty',
+      () {
+    final pubspec = TenantProjectPubspec(Pubspec.parse('''
+name: my_project
+environment:
+  sdk: ${ProjectFactory.highValidSdkVersion}
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+'''));
+
+    final result = pubspec.projectDependencyIssues();
+    expect(result, isEmpty);
+  });
+
+  test(
+      'Given a pubspec without dependencies section and a compatible sdk version, when the projectDependencyIssues method is called, then the result contains the serverpod error',
       () {
     final pubspec = TenantProjectPubspec(Pubspec.parse('''
 name: my_project
@@ -144,7 +177,7 @@ environment:
   sdk: '>=3.2.0 <4.0.0'
   flutter: '3.29.0'
 dependencies:
-  serverpod: ^2.3.0
+  serverpod: ${ProjectFactory.validServerpodVersion}
 '''));
 
     final result = pubspec.projectDependencyIssues();

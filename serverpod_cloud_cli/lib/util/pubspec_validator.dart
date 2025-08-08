@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:pub_semver/pub_semver.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
+import 'package:serverpod_cloud_cli/constants.dart' show VersionConstants;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
 /// Convenience function to check if a directory is a Serverpod server directory.
@@ -93,8 +94,12 @@ class TenantProjectPubspec {
   List<String> projectDependencyIssues({
     final bool requireServerpod = true,
   }) {
-    final supportedSdk = VersionConstraint.parse('>=3.6.0 <3.7.0');
-    final supportedServerpod = VersionConstraint.parse('>=2.3.0');
+    final supportedSdk = VersionConstraint.parse(
+      VersionConstants.supportedSdkConstraint,
+    );
+    final supportedServerpod = VersionConstraint.parse(
+      VersionConstants.supportedServerpodConstraint,
+    );
 
     final sdkError = _validateEnvironmentConstraints(supportedSdk);
 
@@ -121,7 +126,7 @@ class TenantProjectPubspec {
     if (sdkConstraint == null) {
       return 'No sdk constraint found in package ${pubspec.name}';
     }
-    if (!sdkConstraint.allowsAll(supportedSdk)) {
+    if (!supportedSdk.allowsAny(sdkConstraint)) {
       return 'Unsupported sdk version constraint in package ${pubspec.name}: $sdkConstraint'
           ' (must accept: $supportedSdk)';
     }

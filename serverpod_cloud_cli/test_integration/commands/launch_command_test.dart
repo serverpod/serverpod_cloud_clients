@@ -6,6 +6,7 @@ import 'dart:convert';
 
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
+import 'package:serverpod_cloud_cli/constants.dart' show VersionConstants;
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test/test.dart';
 
@@ -1068,7 +1069,7 @@ project:
           d.file('pubspec.yaml', '''
 name: my_project_server
 environment:
-  sdk: '>=3.6.0 <3.7.0'
+  sdk: ${ProjectFactory.validSdkVersion}
 dependencies:
   serverpod: 2.1.0  # too old version
 '''),
@@ -1121,7 +1122,7 @@ dependencies:
           equalsErrorCall(
             message:
                 '`$invalidProjectDir` is a Serverpod server directory, but it is not valid:\n'
-                'Unsupported serverpod version constraint: 2.1.0 (must adher to: >=2.3.0)',
+                'Unsupported serverpod version constraint: 2.1.0 (must adher to: ${VersionConstants.supportedServerpodConstraint})',
             hint: "Resolve the issues and try again.",
           ),
         );

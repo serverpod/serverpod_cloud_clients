@@ -3,6 +3,22 @@ abstract class HostConstants {
   static const serverpodCloudApi = 'https://api.serverpod.cloud';
 }
 
+abstract final class VersionConstants {
+  /// The minimum SDK version supported for tenant projects in Serverpod Cloud.
+  static const minSupportedSdkVersion = '3.8.0';
+
+  /// The constraint for which SDK versions are supported for tenant projects
+  /// in Serverpod Cloud. This is the highest tested version plus 0.1.
+  static const supportedSdkConstraint = '>=$minSupportedSdkVersion <3.9.0';
+
+  /// The minimum Serverpod version supported for tenant projects in Serverpod Cloud.
+  static const minSupportedServerpodVersion = '2.3.0';
+
+  /// The constraint for which Serverpod versions are supported for tenant
+  /// projects in Serverpod Cloud.
+  static const supportedServerpodConstraint = '>=$minSupportedServerpodVersion';
+}
+
 abstract final class ProjectConfigFileConstants {
   static const fileBaseName = 'scloud';
 

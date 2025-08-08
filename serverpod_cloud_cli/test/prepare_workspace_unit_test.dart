@@ -5,6 +5,8 @@ import 'package:test/test.dart';
 
 import 'package:serverpod_cloud_cli/commands/deploy/prepare_workspace.dart';
 
+import '../test_utils/project_factory.dart';
+
 void main() {
   group('WorkspaceProjectLogic.getWorkspaceDependencies -', () {
     test(
@@ -203,14 +205,14 @@ dependencies:
         final pubspecA = Pubspec.parse('''
 name: package_a
 environment:
-  sdk: ">=3.6.0 <3.7.0"
+  sdk: ${ProjectFactory.validSdkVersion}
 dependencies:
-  serverpod: ^2.3.0
+  serverpod: ${ProjectFactory.validServerpodVersion}
 ''');
         final pubspecB = Pubspec.parse('''
 name: package_b
 environment:
-  sdk: ">=3.6.0 <3.7.0"
+  sdk: ${ProjectFactory.validSdkVersion}
 dependencies:
 ''');
         expect(
@@ -252,9 +254,9 @@ dependencies:
         final pubspecA = Pubspec.parse('''
 name: package_a
 environment:
-  sdk: ">=3.6.0 <3.7.0"
+  sdk: ${ProjectFactory.validSdkVersion}
 dependencies:
-  serverpod: ^2.3.0
+  serverpod: ${ProjectFactory.validServerpodVersion}
 ''');
         final pubspecB = Pubspec.parse('''
 name: package_b
@@ -322,7 +324,7 @@ dependencies:
         final pubspecA = Pubspec.parse('''
 name: package_a
 environment:
-  sdk: ">=3.6.0 <3.7.0"
+  sdk: ${ProjectFactory.validSdkVersion}
 dev_dependencies:
   test: any
 ''');
@@ -340,7 +342,7 @@ dev_dependencies:
         final pubspecA = Pubspec.parse('''
 name: package_a
 environment:
-  sdk: ">=3.6.0 <3.7.0"
+  sdk: ${ProjectFactory.validSdkVersion}
 dependencies:
 ''');
         // The logic sets requireServerpod: false, so this should not throw
@@ -368,7 +370,7 @@ dependencies:
 dev_dependencies:
   test: any
 environment:
-  sdk: ">=3.6.0 <3.7.0"
+  sdk: ${ProjectFactory.validSdkVersion}
   flutter: ">=3.0.0 <4.0.0"
 ''';
         final includedPaths = ['packages/a'];
@@ -379,7 +381,7 @@ environment:
         expect(result, isNot(contains('packages/b')));
         expect(result, isNot(contains('dependencies:')));
         expect(result, isNot(contains('dev_dependencies:')));
-        expect(result, contains('sdk: ">=3.6.0 <3.7.0"'));
+        expect(result, contains('sdk: ${ProjectFactory.validSdkVersion}'));
         expect(result, isNot(contains('flutter:')));
       },
     );
@@ -412,13 +414,13 @@ name: root
 workspace:
   - packages/a
 environment:
-  sdk: ">=3.6.0 <3.7.0"
+  sdk: ${ProjectFactory.validSdkVersion}
   flutter: ">=3.0.0 <4.0.0"
 ''';
         final includedPaths = ['packages/a'];
         final result = WorkspaceProjectLogic.makeScloudRootPubspecContent(
             rootPubspec, includedPaths);
-        expect(result, contains('sdk: ">=3.6.0 <3.7.0"'));
+        expect(result, contains('sdk: ${ProjectFactory.validSdkVersion}'));
         expect(result, isNot(contains('flutter:')));
       },
     );

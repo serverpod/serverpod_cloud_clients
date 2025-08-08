@@ -391,14 +391,14 @@ project:
               d.file('pubspec.yaml', '''
 name: my_project_client
 environment:
-  sdk: '>=3.6.0 <3.7.0'
+  sdk: ${ProjectFactory.validSdkVersion}
 '''),
             ]),
             d.dir('project_flutter', [
               d.file('pubspec.yaml', '''
 name: my_project_flutter
 environment:
-  sdk: '>=3.6.0 <3.7.0'
+  sdk: ${ProjectFactory.validSdkVersion}
 '''),
             ]),
           ]),
@@ -879,7 +879,7 @@ workspace:
               d.file('pubspec.yaml', '''
 name: my_project_client
 environment:
-  sdk: '>=3.6.0 <3.7.0'
+  sdk: ${ProjectFactory.validSdkVersion}
 resolution: workspace
 '''),
             ]),
