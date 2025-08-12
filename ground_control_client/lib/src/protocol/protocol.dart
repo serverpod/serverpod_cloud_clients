@@ -7,6 +7,7 @@
 // ignore_for_file: public_member_api_docs
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
+// ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
@@ -538,140 +539,97 @@ class Protocol extends _i1.SerializationManager {
   String? getClassNameForObject(Object? data) {
     String? className = super.getClassNameForObject(data);
     if (className != null) return className;
-    if (data is _i2.RequiredTerms) {
-      return 'RequiredTerms';
-    }
-    if (data is _i3.Owner) {
-      return 'Owner';
-    }
-    if (data is _i4.Subscription) {
-      return 'Subscription';
-    }
-    if (data is _i5.Capsule) {
-      return 'Capsule';
-    }
-    if (data is _i6.CapsuleResource) {
-      return 'CapsuleResource';
-    }
-    if (data is _i7.LogRecord) {
-      return 'LogRecord';
-    }
-    if (data is _i8.DeployAttempt) {
-      return 'DeployAttempt';
-    }
-    if (data is _i9.DeployAttemptStage) {
-      return 'DeployAttemptStage';
-    }
-    if (data is _i10.DeployProgressStatus) {
-      return 'DeployProgressStatus';
-    }
-    if (data is _i11.DeployStageType) {
-      return 'DeployStageType';
-    }
-    if (data is _i12.AccountAuthorization) {
-      return 'AccountAuthorization';
-    }
-    if (data is _i13.User) {
-      return 'User';
-    }
-    if (data is _i14.UserAccountStatus) {
-      return 'UserAccountStatus';
-    }
-    if (data is _i15.AcceptedTerms) {
-      return 'AcceptedTerms';
-    }
-    if (data is _i16.AcceptedTermsDTO) {
-      return 'AcceptedTermsDTO';
-    }
-    if (data is _i17.BillingInfo) {
-      return 'BillingInfo';
-    }
-    if (data is _i18.Terms) {
-      return 'Terms';
-    }
-    if (data is _i19.DNSVerificationFailedException) {
-      return 'DNSVerificationFailedException';
-    }
-    if (data is _i20.CustomDomainName) {
-      return 'CustomDomainName';
-    }
-    if (data is _i21.CustomDomainNameList) {
-      return 'CustomDomainNameList';
-    }
-    if (data is _i22.DnsRecordType) {
-      return 'DnsRecordType';
-    }
-    if (data is _i23.DomainNameStatus) {
-      return 'DomainNameStatus';
-    }
-    if (data is _i24.DomainNameTarget) {
-      return 'DomainNameTarget';
-    }
-    if (data is _i25.NewCustomDomainNamesEvent) {
-      return 'NewCustomDomainNamesEvent';
-    }
-    if (data is _i26.CustomDomainNameWithDefaultDomains) {
-      return 'CustomDomainNameWithDefaultDomains';
-    }
-    if (data is _i27.DatabaseConnection) {
-      return 'DatabaseConnection';
-    }
-    if (data is _i28.DatabaseProvider) {
-      return 'DatabaseProvider';
-    }
-    if (data is _i29.DatabaseResource) {
-      return 'DatabaseResource';
-    }
-    if (data is _i30.EnvironmentVariable) {
-      return 'EnvironmentVariable';
-    }
-    if (data is _i31.PubsubEntry) {
-      return 'PubsubEntry';
-    }
-    if (data is _i32.Project) {
-      return 'Project';
-    }
-    if (data is _i33.ProjectConfig) {
-      return 'ProjectConfig';
-    }
-    if (data is _i34.ProjectDeleteCallEvent) {
-      return 'ProjectDeleteCallEvent';
-    }
-    if (data is _i35.Role) {
-      return 'Role';
-    }
-    if (data is _i36.UserRoleMembership) {
-      return 'UserRoleMembership';
-    }
-    if (data is _i37.SecretResource) {
-      return 'SecretResource';
-    }
-    if (data is _i38.SecretType) {
-      return 'SecretType';
-    }
-    if (data is _i39.DuplicateEntryException) {
-      return 'DuplicateEntryException';
-    }
-    if (data is _i40.ForbiddenException) {
-      return 'ForbiddenException';
-    }
-    if (data is _i41.InvalidValueException) {
-      return 'InvalidValueException';
-    }
-    if (data is _i42.NotFoundException) {
-      return 'NotFoundException';
-    }
-    if (data is _i43.UnauthenticatedException) {
-      return 'UnauthenticatedException';
-    }
-    if (data is _i44.UnauthorizedException) {
-      return 'UnauthorizedException';
-    }
-    if (data is _i45.ServerpodRegion) {
-      return 'ServerpodRegion';
-    }
-    if (data is _i46.Address) {
-      return 'Address';
+    switch (data) {
+      case _i2.RequiredTerms():
+        return 'RequiredTerms';
+      case _i3.Owner():
+        return 'Owner';
+      case _i4.Subscription():
+        return 'Subscription';
+      case _i5.Capsule():
+        return 'Capsule';
+      case _i6.CapsuleResource():
+        return 'CapsuleResource';
+      case _i7.LogRecord():
+        return 'LogRecord';
+      case _i8.DeployAttempt():
+        return 'DeployAttempt';
+      case _i9.DeployAttemptStage():
+        return 'DeployAttemptStage';
+      case _i10.DeployProgressStatus():
+        return 'DeployProgressStatus';
+      case _i11.DeployStageType():
+        return 'DeployStageType';
+      case _i12.AccountAuthorization():
+        return 'AccountAuthorization';
+      case _i13.User():
+        return 'User';
+      case _i14.UserAccountStatus():
+        return 'UserAccountStatus';
+      case _i15.AcceptedTerms():
+        return 'AcceptedTerms';
+      case _i16.AcceptedTermsDTO():
+        return 'AcceptedTermsDTO';
+      case _i17.BillingInfo():
+        return 'BillingInfo';
+      case _i18.Terms():
+        return 'Terms';
+      case _i19.DNSVerificationFailedException():
+        return 'DNSVerificationFailedException';
+      case _i20.CustomDomainName():
+        return 'CustomDomainName';
+      case _i21.CustomDomainNameList():
+        return 'CustomDomainNameList';
+      case _i22.DnsRecordType():
+        return 'DnsRecordType';
+      case _i23.DomainNameStatus():
+        return 'DomainNameStatus';
+      case _i24.DomainNameTarget():
+        return 'DomainNameTarget';
+      case _i25.NewCustomDomainNamesEvent():
+        return 'NewCustomDomainNamesEvent';
+      case _i26.CustomDomainNameWithDefaultDomains():
+        return 'CustomDomainNameWithDefaultDomains';
+      case _i27.DatabaseConnection():
+        return 'DatabaseConnection';
+      case _i28.DatabaseProvider():
+        return 'DatabaseProvider';
+      case _i29.DatabaseResource():
+        return 'DatabaseResource';
+      case _i30.EnvironmentVariable():
+        return 'EnvironmentVariable';
+      case _i31.PubsubEntry():
+        return 'PubsubEntry';
+      case _i32.Project():
+        return 'Project';
+      case _i33.ProjectConfig():
+        return 'ProjectConfig';
+      case _i34.ProjectDeleteCallEvent():
+        return 'ProjectDeleteCallEvent';
+      case _i35.Role():
+        return 'Role';
+      case _i36.UserRoleMembership():
+        return 'UserRoleMembership';
+      case _i37.SecretResource():
+        return 'SecretResource';
+      case _i38.SecretType():
+        return 'SecretType';
+      case _i39.DuplicateEntryException():
+        return 'DuplicateEntryException';
+      case _i40.ForbiddenException():
+        return 'ForbiddenException';
+      case _i41.InvalidValueException():
+        return 'InvalidValueException';
+      case _i42.NotFoundException():
+        return 'NotFoundException';
+      case _i43.UnauthenticatedException():
+        return 'UnauthenticatedException';
+      case _i44.UnauthorizedException():
+        return 'UnauthorizedException';
+      case _i45.ServerpodRegion():
+        return 'ServerpodRegion';
+      case _i46.Address():
+        return 'Address';
     }
     className = _i55.Protocol().getClassNameForObject(data);
     if (className != null) {
