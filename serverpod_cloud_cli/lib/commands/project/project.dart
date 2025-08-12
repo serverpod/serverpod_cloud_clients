@@ -274,7 +274,7 @@ abstract class ProjectCommands {
         cloudProjectId: projectId,
       );
     } on Exception catch (e, s) {
-      throw FailureException.nested(e, s, 'Failed to fetch project config');
+      throw FailureException.nested(e, s, 'Failed to fetch the project config');
     }
   }
 
