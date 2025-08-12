@@ -16,6 +16,7 @@ import '../../../features/environment_variables/models/environment_variable.dart
     as _i4;
 import '../../../features/custom_domain_name/models/custom_domain_name.dart'
     as _i5;
+import '../../../domains/capsules/models/capsule_resource_config.dart' as _i6;
 
 /// Represents an infrastructure capsule instance (a deployment target).
 abstract class Capsule implements _i1.SerializableModel {
@@ -28,6 +29,7 @@ abstract class Capsule implements _i1.SerializableModel {
     this.project,
     this.environmentVariables,
     this.domainNames,
+    this.resourceConfig,
   });
 
   factory Capsule({
@@ -39,6 +41,7 @@ abstract class Capsule implements _i1.SerializableModel {
     _i3.Project? project,
     List<_i4.EnvironmentVariable>? environmentVariables,
     List<_i5.CustomDomainName>? domainNames,
+    _i6.CapsuleResource? resourceConfig,
   }) = _CapsuleImpl;
 
   factory Capsule.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -61,6 +64,10 @@ abstract class Capsule implements _i1.SerializableModel {
           ?.map(
               (e) => _i5.CustomDomainName.fromJson((e as Map<String, dynamic>)))
           .toList(),
+      resourceConfig: jsonSerialization['resourceConfig'] == null
+          ? null
+          : _i6.CapsuleResource.fromJson(
+              (jsonSerialization['resourceConfig'] as Map<String, dynamic>)),
     );
   }
 
@@ -89,6 +96,9 @@ abstract class Capsule implements _i1.SerializableModel {
   /// The domain names for this capsule.
   List<_i5.CustomDomainName>? domainNames;
 
+  /// The resource config for the capsule.
+  _i6.CapsuleResource? resourceConfig;
+
   /// Returns a shallow copy of this [Capsule]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
@@ -101,6 +111,7 @@ abstract class Capsule implements _i1.SerializableModel {
     _i3.Project? project,
     List<_i4.EnvironmentVariable>? environmentVariables,
     List<_i5.CustomDomainName>? domainNames,
+    _i6.CapsuleResource? resourceConfig,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -116,6 +127,7 @@ abstract class Capsule implements _i1.SerializableModel {
             environmentVariables?.toJson(valueToJson: (v) => v.toJson()),
       if (domainNames != null)
         'domainNames': domainNames?.toJson(valueToJson: (v) => v.toJson()),
+      if (resourceConfig != null) 'resourceConfig': resourceConfig?.toJson(),
     };
   }
 
@@ -137,6 +149,7 @@ class _CapsuleImpl extends Capsule {
     _i3.Project? project,
     List<_i4.EnvironmentVariable>? environmentVariables,
     List<_i5.CustomDomainName>? domainNames,
+    _i6.CapsuleResource? resourceConfig,
   }) : super._(
           id: id,
           name: name,
@@ -146,6 +159,7 @@ class _CapsuleImpl extends Capsule {
           project: project,
           environmentVariables: environmentVariables,
           domainNames: domainNames,
+          resourceConfig: resourceConfig,
         );
 
   /// Returns a shallow copy of this [Capsule]
@@ -161,6 +175,7 @@ class _CapsuleImpl extends Capsule {
     Object? project = _Undefined,
     Object? environmentVariables = _Undefined,
     Object? domainNames = _Undefined,
+    Object? resourceConfig = _Undefined,
   }) {
     return Capsule(
       id: id is int? ? id : this.id,
@@ -176,6 +191,9 @@ class _CapsuleImpl extends Capsule {
       domainNames: domainNames is List<_i5.CustomDomainName>?
           ? domainNames
           : this.domainNames?.map((e0) => e0.copyWith()).toList(),
+      resourceConfig: resourceConfig is _i6.CapsuleResource?
+          ? resourceConfig
+          : this.resourceConfig?.copyWith(),
     );
   }
 }
