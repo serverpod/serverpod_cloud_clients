@@ -1,6 +1,12 @@
 
 # Changelog
 
+## [0.10.0] - 2025-08-13
+
+### Added
+
+- **New auth module** - Migrated Ground Control, the `scloud` command, and the console app to use the new auth module.
+
 ## [0.9.0] - 2025-08-08
 
 ### Added
