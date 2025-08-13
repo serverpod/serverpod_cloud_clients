@@ -22,34 +22,43 @@ import 'package:ground_control_client/src/protocol/features/auth/models/required
     as _i6;
 import 'package:ground_control_client/src/protocol/features/auth/models/accepted_terms_dto.dart'
     as _i7;
-import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i8;
+import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
+    as _i8;
+import 'package:uuid/uuid_value.dart' as _i9;
 import 'package:ground_control_client/src/protocol/domains/billing/models/owner.dart'
-    as _i9;
-import 'package:ground_control_client/src/protocol/domains/billing/models/billing_info.dart'
     as _i10;
-import 'package:ground_control_client/src/protocol/features/custom_domain_name/models/view_models/custom_domain_name_with_default_domains.dart'
+import 'package:ground_control_client/src/protocol/domains/billing/models/billing_info.dart'
     as _i11;
-import 'package:ground_control_client/src/protocol/features/custom_domain_name/models/domain_name_target.dart'
+import 'package:ground_control_client/src/protocol/features/custom_domain_name/models/view_models/custom_domain_name_with_default_domains.dart'
     as _i12;
-import 'package:ground_control_client/src/protocol/features/custom_domain_name/models/custom_domain_name_list.dart'
+import 'package:ground_control_client/src/protocol/features/custom_domain_name/models/domain_name_target.dart'
     as _i13;
-import 'package:ground_control_client/src/protocol/features/custom_domain_name/models/domain_name_status.dart'
+import 'package:ground_control_client/src/protocol/features/custom_domain_name/models/custom_domain_name_list.dart'
     as _i14;
-import 'package:ground_control_client/src/protocol/features/environment_variables/models/environment_variable.dart'
+import 'package:ground_control_client/src/protocol/features/custom_domain_name/models/domain_name_status.dart'
     as _i15;
-import 'package:ground_control_client/src/protocol/domains/logs/models/log_record.dart'
+import 'package:ground_control_client/src/protocol/features/environment_variables/models/environment_variable.dart'
     as _i16;
-import 'package:ground_control_client/src/protocol/features/database/models/database_connection.dart'
+import 'package:ground_control_client/src/protocol/domains/logs/models/log_record.dart'
     as _i17;
-import 'package:ground_control_client/src/protocol/features/project/models/project_config.dart'
+import 'package:ground_control_client/src/protocol/features/database/models/database_connection.dart'
     as _i18;
-import 'package:ground_control_client/src/protocol/features/project/models/role.dart'
+import 'package:ground_control_client/src/protocol/features/project/models/project_config.dart'
     as _i19;
-import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt.dart'
+import 'package:ground_control_client/src/protocol/features/project/models/role.dart'
     as _i20;
-import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
+import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt.dart'
     as _i21;
-import 'protocol.dart' as _i22;
+import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
+    as _i22;
+import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
+    as _i23;
+import 'package:serverpod_auth_migration_client/serverpod_auth_migration_client.dart'
+    as _i24;
+import 'package:serverpod_auth_bridge_client/serverpod_auth_bridge_client.dart'
+    as _i25;
+import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i26;
+import 'protocol.dart' as _i27;
 
 /// Endpoint for global administrator projects access.
 /// {@category Endpoint}
@@ -124,14 +133,26 @@ class EndpointAuth extends _i1.EndpointRef {
         {},
       );
 
-  _i2.Future<bool> createAccountRequest(
-    String email,
-    String password,
-    List<_i7.AcceptedTermsDTO> acceptedTerms,
-  ) =>
-      caller.callServerEndpoint<bool>(
+  /// Starts the registration for a new user account with an email-based login.
+  ///
+  /// Upon successful completion of this method, an email will have been sent
+  /// to [email] with a verification link, which the user must open to complete
+  /// the registration.
+  ///
+  /// Throws [UserAccountRegistrationDeniedException] if the user is not
+  /// authorized to start an account registration, or has not
+  /// accepted the required terms of service.
+  ///
+  /// Throws [EmailAccountPasswordPolicyViolationException] if the password
+  /// does not meet the policy requirements.
+  _i2.Future<void> startEmailAccountRegistration({
+    required String email,
+    required String password,
+    required List<_i7.AcceptedTermsDTO> acceptedTerms,
+  }) =>
+      caller.callServerEndpoint<void>(
         'auth',
-        'createAccountRequest',
+        'startEmailAccountRegistration',
         {
           'email': email,
           'password': password,
@@ -139,16 +160,88 @@ class EndpointAuth extends _i1.EndpointRef {
         },
       );
 
-  _i2.Future<_i8.AuthenticationResponse> createAccountAndSignIn(
-    String email,
-    String verificationCode,
-  ) =>
-      caller.callServerEndpoint<_i8.AuthenticationResponse>(
+  /// Completes a new account registration, creating a new auth user with a
+  /// profile, and creating a new authenticated session for the user.
+  ///
+  /// If the registration failed, one of the following exceptions is thrown:
+  /// - [EmailAccountRequestExpiredException]
+  /// - [EmailAccountRequestNotFoundException]
+  /// - [EmailAccountRequestTooManyAttemptsException]
+  /// - [EmailAccountRequestUnauthorizedException]
+  _i2.Future<_i8.AuthSuccess> finishEmailAccountRegistration({
+    required _i9.UuidValue accountRequestId,
+    required String verificationCode,
+  }) =>
+      caller.callServerEndpoint<_i8.AuthSuccess>(
         'auth',
-        'createAccountAndSignIn',
+        'finishEmailAccountRegistration',
+        {
+          'accountRequestId': accountRequestId,
+          'verificationCode': verificationCode,
+        },
+      );
+
+  /// Logs in the user and returns a new session.
+  ///
+  /// In case an expected error occurs, this throws a
+  /// `EmailAccountLoginException`.
+  _i2.Future<_i8.AuthSuccess> login({
+    required String email,
+    required String password,
+  }) =>
+      caller.callServerEndpoint<_i8.AuthSuccess>(
+        'auth',
+        'login',
         {
           'email': email,
+          'password': password,
+        },
+      );
+
+  /// Log out the user from the current device.
+  /// (The user may still be logged in on other devices.)
+  _i2.Future<void> logoutDevice() => caller.callServerEndpoint<void>(
+        'auth',
+        'logoutDevice',
+        {},
+      );
+
+  /// Requests a password reset for [email].
+  ///
+  /// Throws [EmailAccountPasswordResetRequestTooManyAttemptsException] if the
+  /// user has made too many requests.
+  _i2.Future<void> startPasswordReset({required String email}) =>
+      caller.callServerEndpoint<void>(
+        'auth',
+        'startPasswordReset',
+        {'email': email},
+      );
+
+  /// Completes a password reset request by setting a new password.
+  ///
+  /// If the reset was successful, a new session key is returned.
+  ///
+  /// If the reset failed, one of the following exceptions is thrown:
+  /// - [EmailAccountPasswordPolicyViolationException]
+  /// - [EmailAccountPasswordResetRequestExpiredException]
+  /// - [EmailAccountPasswordResetRequestNotFoundException]
+  /// - [EmailAccountPasswordResetRequestUnauthorizedException]
+  /// - [EmailAccountPasswordResetTooManyAttemptsException]
+  ///
+  /// Destroys all the user's current sessions, and creates a new authenticated
+  /// session for the user.
+  _i2.Future<_i8.AuthSuccess> finishPasswordReset({
+    required _i9.UuidValue passwordResetRequestId,
+    required String verificationCode,
+    required String newPassword,
+  }) =>
+      caller.callServerEndpoint<_i8.AuthSuccess>(
+        'auth',
+        'finishPasswordReset',
+        {
+          'passwordResetRequestId': passwordResetRequestId,
           'verificationCode': verificationCode,
+          'newPassword': newPassword,
         },
       );
 }
@@ -161,8 +254,9 @@ class EndpointAuthWithAuth extends _i1.EndpointRef {
   @override
   String get name => 'authWithAuth';
 
-  _i2.Future<_i8.AuthenticationResponse> createCliToken() =>
-      caller.callServerEndpoint<_i8.AuthenticationResponse>(
+  /// Creates a new authenticated session for the current user to use as CLI token.
+  _i2.Future<_i8.AuthSuccess> createCliToken() =>
+      caller.callServerEndpoint<_i8.AuthSuccess>(
         'authWithAuth',
         'createCliToken',
         {},
@@ -182,7 +276,7 @@ class EndpointBilling extends _i1.EndpointRef {
   /// billing address and email addresses.
   ///
   /// Returns the [Owner] object.
-  _i2.Future<_i9.Owner> readOwner() => caller.callServerEndpoint<_i9.Owner>(
+  _i2.Future<_i10.Owner> readOwner() => caller.callServerEndpoint<_i10.Owner>(
         'billing',
         'readOwner',
         {},
@@ -200,11 +294,11 @@ class EndpointBilling extends _i1.EndpointRef {
   /// All data is overwritten.
   ///
   /// Returns the updated [Owner] object.
-  _i2.Future<_i9.Owner> updateOwner({
+  _i2.Future<_i10.Owner> updateOwner({
     required List<String> billingEmails,
-    required _i10.BillingInfo billingInfo,
+    required _i11.BillingInfo billingInfo,
   }) =>
-      caller.callServerEndpoint<_i9.Owner>(
+      caller.callServerEndpoint<_i10.Owner>(
         'billing',
         'updateOwner',
         {
@@ -221,12 +315,12 @@ class EndpointCustomDomainName extends _i1.EndpointRef {
   @override
   String get name => 'customDomainName';
 
-  _i2.Future<_i11.CustomDomainNameWithDefaultDomains> add({
+  _i2.Future<_i12.CustomDomainNameWithDefaultDomains> add({
     required String domainName,
-    required _i12.DomainNameTarget target,
+    required _i13.DomainNameTarget target,
     required String cloudCapsuleId,
   }) =>
-      caller.callServerEndpoint<_i11.CustomDomainNameWithDefaultDomains>(
+      caller.callServerEndpoint<_i12.CustomDomainNameWithDefaultDomains>(
         'customDomainName',
         'add',
         {
@@ -249,19 +343,19 @@ class EndpointCustomDomainName extends _i1.EndpointRef {
         },
       );
 
-  _i2.Future<_i13.CustomDomainNameList> list(
+  _i2.Future<_i14.CustomDomainNameList> list(
           {required String cloudCapsuleId}) =>
-      caller.callServerEndpoint<_i13.CustomDomainNameList>(
+      caller.callServerEndpoint<_i14.CustomDomainNameList>(
         'customDomainName',
         'list',
         {'cloudCapsuleId': cloudCapsuleId},
       );
 
-  _i2.Future<_i14.DomainNameStatus> refreshRecord({
+  _i2.Future<_i15.DomainNameStatus> refreshRecord({
     required String domainName,
     required String cloudCapsuleId,
   }) =>
-      caller.callServerEndpoint<_i14.DomainNameStatus>(
+      caller.callServerEndpoint<_i15.DomainNameStatus>(
         'customDomainName',
         'refreshRecord',
         {
@@ -296,12 +390,12 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
 
   /// Creates a new [EnvironmentVariable] with the specified [name] and [value].
   /// Throws a [DuplicateEntryException] if an environment variable with the same name already exists.
-  _i2.Future<_i15.EnvironmentVariable> create(
+  _i2.Future<_i16.EnvironmentVariable> create(
     String name,
     String value,
     String cloudCapsuleId,
   ) =>
-      caller.callServerEndpoint<_i15.EnvironmentVariable>(
+      caller.callServerEndpoint<_i16.EnvironmentVariable>(
         'environmentVariables',
         'create',
         {
@@ -313,11 +407,11 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
 
   /// Fetches the specified environment variable.
   /// Throws a [NotFoundException] if the environment variable is not found.
-  _i2.Future<_i15.EnvironmentVariable> read({
+  _i2.Future<_i16.EnvironmentVariable> read({
     required String name,
     required String cloudCapsuleId,
   }) =>
-      caller.callServerEndpoint<_i15.EnvironmentVariable>(
+      caller.callServerEndpoint<_i16.EnvironmentVariable>(
         'environmentVariables',
         'read',
         {
@@ -327,8 +421,8 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
       );
 
   /// Gets the list of environment variables for the given [cloudCapsuleId].
-  _i2.Future<List<_i15.EnvironmentVariable>> list(String cloudCapsuleId) =>
-      caller.callServerEndpoint<List<_i15.EnvironmentVariable>>(
+  _i2.Future<List<_i16.EnvironmentVariable>> list(String cloudCapsuleId) =>
+      caller.callServerEndpoint<List<_i16.EnvironmentVariable>>(
         'environmentVariables',
         'list',
         {'cloudCapsuleId': cloudCapsuleId},
@@ -336,12 +430,12 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
 
   /// Creates a new [EnvironmentVariable] with the specified [name] and [value].
   /// Throws a [NotFoundException] if the environment variable is not found.
-  _i2.Future<_i15.EnvironmentVariable> update({
+  _i2.Future<_i16.EnvironmentVariable> update({
     required String name,
     required String value,
     required String cloudCapsuleId,
   }) =>
-      caller.callServerEndpoint<_i15.EnvironmentVariable>(
+      caller.callServerEndpoint<_i16.EnvironmentVariable>(
         'environmentVariables',
         'update',
         {
@@ -353,11 +447,11 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
 
   /// Permanently deletes an environment variable.
   /// Throws a [NotFoundException] if the environment variable is not found.
-  _i2.Future<_i15.EnvironmentVariable> delete({
+  _i2.Future<_i16.EnvironmentVariable> delete({
     required String cloudCapsuleId,
     required String name,
   }) =>
-      caller.callServerEndpoint<_i15.EnvironmentVariable>(
+      caller.callServerEndpoint<_i16.EnvironmentVariable>(
         'environmentVariables',
         'delete',
         {
@@ -376,14 +470,14 @@ class EndpointLogs extends _i1.EndpointRef {
   String get name => 'logs';
 
   /// Fetches log records from the specified project.
-  _i2.Stream<_i16.LogRecord> fetchRecords({
+  _i2.Stream<_i17.LogRecord> fetchRecords({
     required String cloudProjectId,
     DateTime? beforeTime,
     DateTime? afterTime,
     int? limit,
   }) =>
-      caller.callStreamingServerEndpoint<_i2.Stream<_i16.LogRecord>,
-          _i16.LogRecord>(
+      caller.callStreamingServerEndpoint<_i2.Stream<_i17.LogRecord>,
+          _i17.LogRecord>(
         'logs',
         'fetchRecords',
         {
@@ -398,12 +492,12 @@ class EndpointLogs extends _i1.EndpointRef {
   /// Tails log records from the specified project.
   /// Continues until the client unsubscribes, [limit] is reached,
   /// or the internal max limit is reached.
-  _i2.Stream<_i16.LogRecord> tailRecords({
+  _i2.Stream<_i17.LogRecord> tailRecords({
     required String cloudProjectId,
     int? limit,
   }) =>
-      caller.callStreamingServerEndpoint<_i2.Stream<_i16.LogRecord>,
-          _i16.LogRecord>(
+      caller.callStreamingServerEndpoint<_i2.Stream<_i17.LogRecord>,
+          _i17.LogRecord>(
         'logs',
         'tailRecords',
         {
@@ -414,13 +508,13 @@ class EndpointLogs extends _i1.EndpointRef {
       );
 
   /// Fetches the build log records for the specified deploy attempt.
-  _i2.Stream<_i16.LogRecord> fetchBuildLog({
+  _i2.Stream<_i17.LogRecord> fetchBuildLog({
     required String cloudProjectId,
     required String attemptId,
     int? limit,
   }) =>
-      caller.callStreamingServerEndpoint<_i2.Stream<_i16.LogRecord>,
-          _i16.LogRecord>(
+      caller.callStreamingServerEndpoint<_i2.Stream<_i17.LogRecord>,
+          _i17.LogRecord>(
         'logs',
         'fetchBuildLog',
         {
@@ -440,9 +534,9 @@ class EndpointDatabase extends _i1.EndpointRef {
   @override
   String get name => 'database';
 
-  _i2.Future<_i17.DatabaseConnection> getConnectionDetails(
+  _i2.Future<_i18.DatabaseConnection> getConnectionDetails(
           {required String cloudCapsuleId}) =>
-      caller.callServerEndpoint<_i17.DatabaseConnection>(
+      caller.callServerEndpoint<_i18.DatabaseConnection>(
         'database',
         'getConnectionDetails',
         {'cloudCapsuleId': cloudCapsuleId},
@@ -539,9 +633,9 @@ class EndpointProjects extends _i1.EndpointRef {
         {'cloudProjectId': cloudProjectId},
       );
 
-  _i2.Future<_i18.ProjectConfig> fetchProjectConfig(
+  _i2.Future<_i19.ProjectConfig> fetchProjectConfig(
           {required String cloudProjectId}) =>
-      caller.callServerEndpoint<_i18.ProjectConfig>(
+      caller.callServerEndpoint<_i19.ProjectConfig>(
         'projects',
         'fetchProjectConfig',
         {'cloudProjectId': cloudProjectId},
@@ -642,9 +736,9 @@ class EndpointRoles extends _i1.EndpointRef {
   String get name => 'roles';
 
   /// Fetches the user roles for a project.
-  _i2.Future<List<_i19.Role>> fetchRolesForProject(
+  _i2.Future<List<_i20.Role>> fetchRolesForProject(
           {required String cloudProjectId}) =>
-      caller.callServerEndpoint<List<_i19.Role>>(
+      caller.callServerEndpoint<List<_i20.Role>>(
         'roles',
         'fetchRolesForProject',
         {'cloudProjectId': cloudProjectId},
@@ -702,11 +796,11 @@ class EndpointStatus extends _i1.EndpointRef {
 
   /// Gets deploy attempts of the specified capsule.
   /// Gets the recent-most attempts, up till [limit] if specified.
-  _i2.Future<List<_i20.DeployAttempt>> getDeployAttempts({
+  _i2.Future<List<_i21.DeployAttempt>> getDeployAttempts({
     required String cloudCapsuleId,
     int? limit,
   }) =>
-      caller.callServerEndpoint<List<_i20.DeployAttempt>>(
+      caller.callServerEndpoint<List<_i21.DeployAttempt>>(
         'status',
         'getDeployAttempts',
         {
@@ -716,11 +810,11 @@ class EndpointStatus extends _i1.EndpointRef {
       );
 
   /// Gets the specified deploy attempt status of the a capsule.
-  _i2.Future<List<_i21.DeployAttemptStage>> getDeployAttemptStatus({
+  _i2.Future<List<_i22.DeployAttemptStage>> getDeployAttemptStatus({
     required String cloudCapsuleId,
     required String attemptId,
   }) =>
-      caller.callServerEndpoint<List<_i21.DeployAttemptStage>>(
+      caller.callServerEndpoint<List<_i22.DeployAttemptStage>>(
         'status',
         'getDeployAttemptStatus',
         {
@@ -772,10 +866,22 @@ class EndpointUsers extends _i1.EndpointRef {
 
 class Modules {
   Modules(Client client) {
-    auth = _i8.Caller(client);
+    serverpod_auth_idp = _i23.Caller(client);
+    serverpod_auth_migration = _i24.Caller(client);
+    serverpod_auth_bridge = _i25.Caller(client);
+    auth = _i26.Caller(client);
+    serverpod_auth_core = _i8.Caller(client);
   }
 
-  late final _i8.Caller auth;
+  late final _i23.Caller serverpod_auth_idp;
+
+  late final _i24.Caller serverpod_auth_migration;
+
+  late final _i25.Caller serverpod_auth_bridge;
+
+  late final _i26.Caller auth;
+
+  late final _i8.Caller serverpod_auth_core;
 }
 
 class Client extends _i1.ServerpodClientShared {
@@ -794,7 +900,7 @@ class Client extends _i1.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
           host,
-          _i22.Protocol(),
+          _i27.Protocol(),
           securityContext: securityContext,
           authenticationKeyManager: authenticationKeyManager,
           streamingConnectionTimeout: streamingConnectionTimeout,
@@ -878,6 +984,11 @@ class Client extends _i1.ServerpodClientShared {
       };
 
   @override
-  Map<String, _i1.ModuleEndpointCaller> get moduleLookup =>
-      {'auth': modules.auth};
+  Map<String, _i1.ModuleEndpointCaller> get moduleLookup => {
+        'serverpod_auth_idp': modules.serverpod_auth_idp,
+        'serverpod_auth_migration': modules.serverpod_auth_migration,
+        'serverpod_auth_bridge': modules.serverpod_auth_bridge,
+        'auth': modules.auth,
+        'serverpod_auth_core': modules.serverpod_auth_core,
+      };
 }

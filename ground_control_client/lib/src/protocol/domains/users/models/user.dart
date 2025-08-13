@@ -15,7 +15,7 @@ import '../../../domains/users/models/user_account_status.dart' as _i2;
 import '../../../features/project/models/user_role_membership.dart' as _i3;
 import '../../../domains/billing/models/owner.dart' as _i4;
 
-/// Represents a Serverpod cloud customer user.
+/// Represents a Serverpod cloud customer user, invited or registered.
 abstract class User implements _i1.SerializableModel {
   User._({
     this.id,
@@ -91,6 +91,7 @@ abstract class User implements _i1.SerializableModel {
   _i2.UserAccountStatus accountStatus;
 
   /// External user authentication id. Must be unique.
+  /// Not set for invitees.
   String? userAuthId;
 
   /// The email address of the user.
