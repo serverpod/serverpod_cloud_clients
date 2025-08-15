@@ -1,4 +1,4 @@
-import 'package:cli_tools/config.dart';
+import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
 
 abstract final class CommandConfigConstants {

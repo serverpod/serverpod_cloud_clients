@@ -3,7 +3,7 @@ library;
 
 import 'dart:io';
 
-import 'package:cli_tools/config.dart';
+import 'package:config/config.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 

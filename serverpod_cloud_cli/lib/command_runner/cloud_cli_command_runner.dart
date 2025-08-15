@@ -1,7 +1,8 @@
 import 'dart:io';
 
 import 'package:args/args.dart';
-import 'package:cli_tools/cli_tools.dart';
+import 'package:cli_tools/better_command_runner.dart';
+import 'package:config/config.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 

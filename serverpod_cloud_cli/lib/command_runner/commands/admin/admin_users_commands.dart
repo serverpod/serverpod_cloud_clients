@@ -1,4 +1,4 @@
-import 'package:cli_tools/config.dart';
+import 'package:config/config.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:ground_control_client/ground_control_client.dart'
     show UserAccountStatus;
