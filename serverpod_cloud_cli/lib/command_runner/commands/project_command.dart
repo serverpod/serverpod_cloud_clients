@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:cli_tools/config.dart';
+import 'package:config/config.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:path/path.dart' as p;
 
