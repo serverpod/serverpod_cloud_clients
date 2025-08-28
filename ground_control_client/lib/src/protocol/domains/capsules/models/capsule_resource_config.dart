@@ -18,18 +18,39 @@ abstract class CapsuleResource implements _i1.SerializableModel {
     this.id,
     required this.cloudCapsuleId,
     this.capsule,
-    required this.computeSize,
+    String? computeRequestCpu,
+    String? computeRequestMemory,
+    String? computeRequestEphemeralStorage,
+    String? computeLimitCpu,
+    String? computeLimitMemory,
+    String? computeLimitEphemeralStorage,
     bool? computeScalingEnabled,
-    required this.computeResourceQuota,
-  }) : computeScalingEnabled = computeScalingEnabled ?? false;
+    int? computeScalingMinReplicas,
+    int? computeScalingMaxReplicas,
+  })  : computeRequestCpu = computeRequestCpu ?? '250m',
+        computeRequestMemory = computeRequestMemory ?? '256Mi',
+        computeRequestEphemeralStorage =
+            computeRequestEphemeralStorage ?? '1Gi',
+        computeLimitCpu = computeLimitCpu ?? '1',
+        computeLimitMemory = computeLimitMemory ?? '256Mi',
+        computeLimitEphemeralStorage = computeLimitEphemeralStorage ?? '1Gi',
+        computeScalingEnabled = computeScalingEnabled ?? false,
+        computeScalingMinReplicas = computeScalingMinReplicas ?? 1,
+        computeScalingMaxReplicas = computeScalingMaxReplicas ?? 1;
 
   factory CapsuleResource({
     int? id,
     required int cloudCapsuleId,
     _i2.Capsule? capsule,
-    required String computeSize,
+    String? computeRequestCpu,
+    String? computeRequestMemory,
+    String? computeRequestEphemeralStorage,
+    String? computeLimitCpu,
+    String? computeLimitMemory,
+    String? computeLimitEphemeralStorage,
     bool? computeScalingEnabled,
-    required String computeResourceQuota,
+    int? computeScalingMinReplicas,
+    int? computeScalingMaxReplicas,
   }) = _CapsuleResourceImpl;
 
   factory CapsuleResource.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -40,9 +61,19 @@ abstract class CapsuleResource implements _i1.SerializableModel {
           ? null
           : _i2.Capsule.fromJson(
               (jsonSerialization['capsule'] as Map<String, dynamic>)),
-      computeSize: jsonSerialization['computeSize'] as String,
+      computeRequestCpu: jsonSerialization['computeRequestCpu'] as String,
+      computeRequestMemory: jsonSerialization['computeRequestMemory'] as String,
+      computeRequestEphemeralStorage:
+          jsonSerialization['computeRequestEphemeralStorage'] as String,
+      computeLimitCpu: jsonSerialization['computeLimitCpu'] as String,
+      computeLimitMemory: jsonSerialization['computeLimitMemory'] as String,
+      computeLimitEphemeralStorage:
+          jsonSerialization['computeLimitEphemeralStorage'] as String,
       computeScalingEnabled: jsonSerialization['computeScalingEnabled'] as bool,
-      computeResourceQuota: jsonSerialization['computeResourceQuota'] as String,
+      computeScalingMinReplicas:
+          jsonSerialization['computeScalingMinReplicas'] as int,
+      computeScalingMaxReplicas:
+          jsonSerialization['computeScalingMaxReplicas'] as int,
     );
   }
 
@@ -57,14 +88,32 @@ abstract class CapsuleResource implements _i1.SerializableModel {
   /// The capsule this resource config belongs to.
   _i2.Capsule? capsule;
 
-  /// The size of the capsule compute.
-  String computeSize;
+  /// The compute request cpu.
+  String computeRequestCpu;
+
+  /// The compute request memory.
+  String computeRequestMemory;
+
+  /// The compute request ephemeral storage.
+  String computeRequestEphemeralStorage;
+
+  /// The compute limit cpu.
+  String computeLimitCpu;
+
+  /// The compute limit memory.
+  String computeLimitMemory;
+
+  /// The compute limit ephemeral storage.
+  String computeLimitEphemeralStorage;
 
   /// Flag to enable horizontal scaling for the capsule compute.
   bool computeScalingEnabled;
 
-  /// The resource quota for the capsule compute.
-  String computeResourceQuota;
+  /// The minimum number of compute instances to scale to.
+  int computeScalingMinReplicas;
+
+  /// The maximum number of compute instances to scale to.
+  int computeScalingMaxReplicas;
 
   /// Returns a shallow copy of this [CapsuleResource]
   /// with some or all fields replaced by the given arguments.
@@ -73,9 +122,15 @@ abstract class CapsuleResource implements _i1.SerializableModel {
     int? id,
     int? cloudCapsuleId,
     _i2.Capsule? capsule,
-    String? computeSize,
+    String? computeRequestCpu,
+    String? computeRequestMemory,
+    String? computeRequestEphemeralStorage,
+    String? computeLimitCpu,
+    String? computeLimitMemory,
+    String? computeLimitEphemeralStorage,
     bool? computeScalingEnabled,
-    String? computeResourceQuota,
+    int? computeScalingMinReplicas,
+    int? computeScalingMaxReplicas,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -83,9 +138,15 @@ abstract class CapsuleResource implements _i1.SerializableModel {
       if (id != null) 'id': id,
       'cloudCapsuleId': cloudCapsuleId,
       if (capsule != null) 'capsule': capsule?.toJson(),
-      'computeSize': computeSize,
+      'computeRequestCpu': computeRequestCpu,
+      'computeRequestMemory': computeRequestMemory,
+      'computeRequestEphemeralStorage': computeRequestEphemeralStorage,
+      'computeLimitCpu': computeLimitCpu,
+      'computeLimitMemory': computeLimitMemory,
+      'computeLimitEphemeralStorage': computeLimitEphemeralStorage,
       'computeScalingEnabled': computeScalingEnabled,
-      'computeResourceQuota': computeResourceQuota,
+      'computeScalingMinReplicas': computeScalingMinReplicas,
+      'computeScalingMaxReplicas': computeScalingMaxReplicas,
     };
   }
 
@@ -102,16 +163,28 @@ class _CapsuleResourceImpl extends CapsuleResource {
     int? id,
     required int cloudCapsuleId,
     _i2.Capsule? capsule,
-    required String computeSize,
+    String? computeRequestCpu,
+    String? computeRequestMemory,
+    String? computeRequestEphemeralStorage,
+    String? computeLimitCpu,
+    String? computeLimitMemory,
+    String? computeLimitEphemeralStorage,
     bool? computeScalingEnabled,
-    required String computeResourceQuota,
+    int? computeScalingMinReplicas,
+    int? computeScalingMaxReplicas,
   }) : super._(
           id: id,
           cloudCapsuleId: cloudCapsuleId,
           capsule: capsule,
-          computeSize: computeSize,
+          computeRequestCpu: computeRequestCpu,
+          computeRequestMemory: computeRequestMemory,
+          computeRequestEphemeralStorage: computeRequestEphemeralStorage,
+          computeLimitCpu: computeLimitCpu,
+          computeLimitMemory: computeLimitMemory,
+          computeLimitEphemeralStorage: computeLimitEphemeralStorage,
           computeScalingEnabled: computeScalingEnabled,
-          computeResourceQuota: computeResourceQuota,
+          computeScalingMinReplicas: computeScalingMinReplicas,
+          computeScalingMaxReplicas: computeScalingMaxReplicas,
         );
 
   /// Returns a shallow copy of this [CapsuleResource]
@@ -122,18 +195,34 @@ class _CapsuleResourceImpl extends CapsuleResource {
     Object? id = _Undefined,
     int? cloudCapsuleId,
     Object? capsule = _Undefined,
-    String? computeSize,
+    String? computeRequestCpu,
+    String? computeRequestMemory,
+    String? computeRequestEphemeralStorage,
+    String? computeLimitCpu,
+    String? computeLimitMemory,
+    String? computeLimitEphemeralStorage,
     bool? computeScalingEnabled,
-    String? computeResourceQuota,
+    int? computeScalingMinReplicas,
+    int? computeScalingMaxReplicas,
   }) {
     return CapsuleResource(
       id: id is int? ? id : this.id,
       cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
       capsule: capsule is _i2.Capsule? ? capsule : this.capsule?.copyWith(),
-      computeSize: computeSize ?? this.computeSize,
+      computeRequestCpu: computeRequestCpu ?? this.computeRequestCpu,
+      computeRequestMemory: computeRequestMemory ?? this.computeRequestMemory,
+      computeRequestEphemeralStorage:
+          computeRequestEphemeralStorage ?? this.computeRequestEphemeralStorage,
+      computeLimitCpu: computeLimitCpu ?? this.computeLimitCpu,
+      computeLimitMemory: computeLimitMemory ?? this.computeLimitMemory,
+      computeLimitEphemeralStorage:
+          computeLimitEphemeralStorage ?? this.computeLimitEphemeralStorage,
       computeScalingEnabled:
           computeScalingEnabled ?? this.computeScalingEnabled,
-      computeResourceQuota: computeResourceQuota ?? this.computeResourceQuota,
+      computeScalingMinReplicas:
+          computeScalingMinReplicas ?? this.computeScalingMinReplicas,
+      computeScalingMaxReplicas:
+          computeScalingMaxReplicas ?? this.computeScalingMaxReplicas,
     );
   }
 }
