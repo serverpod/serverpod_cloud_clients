@@ -85,7 +85,7 @@ void main() {
                   Role(
                     id: 11,
                     projectId: 1,
-                    name: 'Owners',
+                    name: 'Admin',
                     projectScopes: ['P0-all'],
                     memberships: [
                       UserRoleMembership(
@@ -108,7 +108,7 @@ void main() {
                   Role(
                     id: 12,
                     projectId: 2,
-                    name: 'Owners',
+                    name: 'Admin',
                     projectScopes: ['P0-all'],
                     memberships: [
                       UserRoleMembership(
@@ -144,16 +144,16 @@ void main() {
           containsAllInOrder([
             equalsLineCall(
                 line:
-                    'Project Id | Created at (local)  | Archived at (local) | Owners                  '),
+                    'Project Id | Created at (local)  | Archived at (local) | Admin                  '),
             equalsLineCall(
                 line:
-                    '-----------+---------------------+---------------------+-------------------------'),
+                    '-----------+---------------------+---------------------+------------------------'),
             equalsLineCall(
                 line:
-                    'projectId  | 2025-07-02 11:00:00 |                     | Owners: test@example.com'),
+                    'projectId  | 2025-07-02 11:00:00 |                     | Admin: test@example.com'),
             equalsLineCall(
                 line:
-                    'projectId2 | 2025-07-02 12:00:00 | 2025-07-02 12:10:00 | Owners: test@example.com'),
+                    'projectId2 | 2025-07-02 12:00:00 | 2025-07-02 12:10:00 | Admin: test@example.com'),
           ]),
         );
       });

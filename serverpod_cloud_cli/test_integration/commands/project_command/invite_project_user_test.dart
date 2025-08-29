@@ -57,7 +57,7 @@ void main() {
           '--user',
           'test@example.com',
           '--role',
-          'owners',
+          'admin',
         ]);
       });
 
@@ -88,7 +88,7 @@ void main() {
           '--user',
           'test@example.com',
           '--role',
-          'owners',
+          'admin',
         ]);
       });
 
@@ -133,7 +133,7 @@ void main() {
           '--user',
           'test@example.com',
           '--role',
-          'owners',
+          'admin',
         ]);
       });
 
@@ -145,7 +145,7 @@ void main() {
         expect(
           logger.successCalls.single,
           equalsSuccessCall(
-            message: 'User invited to the project with roles: owners.',
+            message: 'User invited to the project with roles: admin.',
             newParagraph: true,
           ),
         );
@@ -171,7 +171,7 @@ void main() {
           '--user',
           'test@example.com',
           '--role',
-          'owners',
+          'admin',
         ]);
       });
 
@@ -200,7 +200,7 @@ void main() {
               unassignRoleNames: any(named: 'unassignRoleNames'),
               unassignAllRoles: any(named: 'unassignAllRoles'),
             )).thenAnswer(
-          (final invocation) async => Future.value(['owners']),
+          (final invocation) async => Future.value(['admin']),
         );
 
         commandResult = cli.run([
@@ -211,7 +211,7 @@ void main() {
           '--user',
           'test@example.com',
           '--role',
-          'owners',
+          'admin',
         ]);
       });
 
@@ -223,8 +223,7 @@ void main() {
         expect(
           logger.successCalls.single,
           equalsSuccessCall(
-            message:
-                'Revoked access roles of the user from the project: owners',
+            message: 'Revoked access roles of the user from the project: admin',
             newParagraph: true,
           ),
         );
@@ -242,7 +241,7 @@ void main() {
               unassignRoleNames: any(named: 'unassignRoleNames'),
               unassignAllRoles: any(named: 'unassignAllRoles'),
             )).thenAnswer(
-          (final invocation) async => Future.value(['owners']),
+          (final invocation) async => Future.value(['admin']),
         );
 
         commandResult = cli.run([
@@ -265,7 +264,7 @@ void main() {
           logger.successCalls.single,
           equalsSuccessCall(
             message:
-                "Revoked all access roles of the user from the project: owners",
+                "Revoked all access roles of the user from the project: admin",
             newParagraph: true,
           ),
         );
@@ -293,7 +292,7 @@ void main() {
           '--user',
           'test@example.com',
           '--role',
-          'owners',
+          'admin',
         ]);
       });
 

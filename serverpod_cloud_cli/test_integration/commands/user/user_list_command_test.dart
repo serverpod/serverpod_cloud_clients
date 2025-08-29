@@ -87,7 +87,7 @@ void main() {
                   roleId: 1,
                   role: Role(
                     projectId: 1,
-                    name: 'Owners',
+                    name: 'Admin',
                     projectScopes: [],
                   ),
                 ),
@@ -119,7 +119,7 @@ void main() {
             equalsLineCall(
                 line: '-----------------+-----------+--------------'),
             equalsLineCall(
-                line: 'test@example.com | projectId | Owners       '),
+                line: 'test@example.com | projectId | Admin        '),
           ]),
         );
       });

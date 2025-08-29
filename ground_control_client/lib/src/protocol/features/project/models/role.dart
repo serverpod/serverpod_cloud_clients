@@ -84,7 +84,7 @@ abstract class Role implements _i1.SerializableModel {
   /// A role belongs to a project. Cannot be changed.
   _i2.Project? project;
 
-  /// The name of the role, e.g. 'Owners'. Can be changed.
+  /// The name of the role, e.g. 'Admin'. Can be changed.
   String name;
 
   /// The access scopes this role has in the project.

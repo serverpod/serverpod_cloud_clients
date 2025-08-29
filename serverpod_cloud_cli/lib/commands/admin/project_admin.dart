@@ -21,19 +21,19 @@ abstract class ProjectAdminCommands {
         'Project Id',
         'Created at ($timezoneName)',
         'Archived at ($timezoneName)',
-        'Owners',
+        'Admin',
       ],
       rows: projects.map((final p) => [
             p.cloudProjectId,
             p.createdAt.toTzString(inUtc, 19),
             p.archivedAt?.toTzString(inUtc, 19),
-            _formatProjectOwners(p),
+            _formatProjectAdmins(p),
           ]),
     );
     table.writeLines(logger.line);
   }
 
-  static String _formatProjectOwners(final Project project) {
+  static String _formatProjectAdmins(final Project project) {
     return project.roles
             ?.map(
               (final r) => '${r.name}: ${(r.memberships ?? []).map(

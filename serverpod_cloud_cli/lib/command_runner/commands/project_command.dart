@@ -203,8 +203,8 @@ void _emailValidator(final value) {
   }
 }
 
-const _projectRoleNames = ['owners'];
-const _projectRoleHelp = {'owners': 'Owners have full access to the project.'};
+const _projectRoleNames = ['admin'];
+const _projectRoleHelp = {'admin': 'Admins have full access to the project.'};
 
 enum ProjectInviteUserOption<V> implements OptionDefinition<V> {
   projectId(
