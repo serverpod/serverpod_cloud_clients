@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'package:ground_control_client/ground_control_client.dart'
-    show Project, Role, User, UserRoleMembership;
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
@@ -77,51 +75,24 @@ void main() {
               includeArchived: any(named: 'includeArchived', that: isTrue),
             )).thenAnswer(
           (final invocation) async => Future.value([
-            Project(
-                id: 1,
-                createdAt: DateTime.parse('2025-07-02T11:00:00'),
-                cloudProjectId: 'projectId',
-                roles: [
-                  Role(
-                    id: 11,
-                    projectId: 1,
-                    name: 'Admin',
-                    projectScopes: ['P0-all'],
-                    memberships: [
-                      UserRoleMembership(
-                        userId: 1,
-                        roleId: 11,
-                        user: User(
-                          id: 21,
-                          email: 'test@example.com',
-                        ),
-                      ),
-                    ],
-                  ),
-                ]),
-            Project(
-                id: 2,
-                createdAt: DateTime.parse('2025-07-02T12:00:00'),
-                archivedAt: DateTime.parse('2025-07-02T12:10:00'),
-                cloudProjectId: 'projectId2',
-                roles: [
-                  Role(
-                    id: 12,
-                    projectId: 2,
-                    name: 'Admin',
-                    projectScopes: ['P0-all'],
-                    memberships: [
-                      UserRoleMembership(
-                        userId: 21,
-                        roleId: 12,
-                        user: User(
-                          id: 21,
-                          email: 'test@example.com',
-                        ),
-                      ),
-                    ],
-                  ),
-                ]),
+            ProjectBuilder()
+                .withCreatedAt(DateTime.parse('2025-07-02T11:00:00'))
+                .withCloudProjectId('projectId')
+                .withUserOwner(
+                  UserBuilder().withEmail('test@example.com').build(),
+                )
+                .build(),
+            ProjectBuilder()
+                .withCreatedAt(DateTime.parse('2025-07-02T11:00:00'))
+                .withArchivedAt(DateTime.parse('2025-07-02T12:10:00'))
+                .withCloudProjectId('projectId2')
+                .withUserOwner(
+                  UserBuilder().withEmail('test@example.com').build(),
+                )
+                .withDeveloperUser(
+                  UserBuilder().withEmail('dev@example.com').build(),
+                )
+                .build(),
           ]),
         );
 
@@ -144,16 +115,16 @@ void main() {
           containsAllInOrder([
             equalsLineCall(
                 line:
-                    'Project Id | Created at (local)  | Archived at (local) | Admin                  '),
+                    'Project Id | Created at (local)  | Archived at (local) | Owner            | Users                                              '),
             equalsLineCall(
                 line:
-                    '-----------+---------------------+---------------------+------------------------'),
+                    '-----------+---------------------+---------------------+------------------+----------------------------------------------------'),
             equalsLineCall(
                 line:
-                    'projectId  | 2025-07-02 11:00:00 |                     | Admin: test@example.com'),
+                    'projectId  | 2025-07-02 11:00:00 |                     | test@example.com | Admin: test@example.com                            '),
             equalsLineCall(
                 line:
-                    'projectId2 | 2025-07-02 12:00:00 | 2025-07-02 12:10:00 | Admin: test@example.com'),
+                    'projectId2 | 2025-07-02 11:00:00 | 2025-07-02 12:10:00 | test@example.com | Admin: test@example.com; Developer: dev@example.com'),
           ]),
         );
       });

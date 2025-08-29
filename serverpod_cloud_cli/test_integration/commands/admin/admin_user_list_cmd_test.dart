@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:ground_control_client/ground_control_client.dart'
-    show User, UserAccountStatus;
+    show UserAccountStatus;
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
@@ -78,21 +78,19 @@ void main() {
               includeArchived: any(named: 'includeArchived'),
             )).thenAnswer(
           (final invocation) async => Future.value([
-            User(
-              createdAt: DateTime.parse('2025-07-02T11:00:00'),
-              userAuthId: 'userAuthId',
-              email: 'test@example.com',
-              accountStatus: UserAccountStatus.registered,
-              maxOwnedProjects: 5,
-            ),
-            User(
-              createdAt: DateTime.parse('2025-07-02T12:00:00'),
-              archivedAt: DateTime.parse('2025-07-02T12:10:00'),
-              userAuthId: 'userAuthId2',
-              email: 'test2@example.com',
-              accountStatus: UserAccountStatus.invited,
-              maxOwnedProjects: 5,
-            ),
+            UserBuilder()
+                .withEmail('test@example.com')
+                .withCreatedAt(DateTime.parse('2025-07-02T11:00:00'))
+                .withMaxOwnedProjects(5)
+                .withAccountStatus(UserAccountStatus.registered)
+                .build(),
+            UserBuilder()
+                .withEmail('test2@example.com')
+                .withCreatedAt(DateTime.parse('2025-07-02T12:00:00'))
+                .withMaxOwnedProjects(5)
+                .withAccountStatus(UserAccountStatus.invited)
+                .withArchivedAt(DateTime.parse('2025-07-02T12:10:00'))
+                .build(),
           ]),
         );
 
