@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.1] - 2025-09-01
+
+### Fixed
+
+- **Rename Owners role to Admin** - To avoid confusion, the "Owners" role has been renamed to "Admin".
+
 ## [0.10.0] - 2025-08-13
 
 ### Added
