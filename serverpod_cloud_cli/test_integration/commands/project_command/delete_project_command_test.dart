@@ -4,6 +4,7 @@ library;
 import 'dart:async';
 import 'dart:io';
 
+import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
@@ -68,7 +69,8 @@ void main() {
         serverBuilder.withMethodResponse(
           'projects',
           'deleteProject',
-          (final _) => (200, Project(cloudProjectId: projectId)),
+          (final _) =>
+              (200, ProjectBuilder().withCloudProjectId(projectId).build()),
         );
 
         final (startedServer, serverAddress) = await serverBuilder.build();
@@ -138,7 +140,8 @@ void main() {
         serverBuilder.withMethodResponse(
           'projects',
           'deleteProject',
-          (final _) => (200, Project(cloudProjectId: projectId)),
+          (final _) =>
+              (200, ProjectBuilder().withCloudProjectId(projectId).build()),
         );
 
         final (startedServer, serverAddress) = await serverBuilder.build();

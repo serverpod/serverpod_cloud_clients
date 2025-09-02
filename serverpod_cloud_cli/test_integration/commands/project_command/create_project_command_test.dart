@@ -40,7 +40,9 @@ void main() {
             cloudProjectId: any(named: 'cloudProjectId'),
           )).thenAnswer(
         (final invocation) async => Future.value(
-          Project(cloudProjectId: invocation.namedArguments[#cloudProjectId]),
+          ProjectBuilder()
+              .withCloudProjectId(invocation.namedArguments[#cloudProjectId])
+              .build(),
         ),
       );
 

@@ -21,26 +21,32 @@ abstract class ProjectAdminCommands {
         'Project Id',
         'Created at ($timezoneName)',
         'Archived at ($timezoneName)',
-        'Admin',
+        'Owner',
+        'Users',
       ],
       rows: projects.map((final p) => [
             p.cloudProjectId,
             p.createdAt.toTzString(inUtc, 19),
             p.archivedAt?.toTzString(inUtc, 19),
-            _formatProjectAdmins(p),
+            p.owner?.user?.email ?? '',
+            _formatProjectUsers(p),
           ]),
     );
     table.writeLines(logger.line);
   }
 
-  static String _formatProjectAdmins(final Project project) {
-    return project.roles
-            ?.map(
-              (final r) => '${r.name}: ${(r.memberships ?? []).map(
-                    (final m) => m.user?.email,
-                  ).join(', ')}',
-            )
-            .join('; ') ??
+  static String _formatProjectUsers(final Project project) {
+    return project.roles?.map(
+          (final r) {
+            final memberships = r.memberships;
+            if (memberships == null) return '';
+
+            final users = memberships.map((final m) => m.user?.email).nonNulls;
+            if (users.isEmpty) return '';
+
+            return '${r.name}: ${users.join(', ')}';
+          },
+        ).join('; ') ??
         '';
   }
 }

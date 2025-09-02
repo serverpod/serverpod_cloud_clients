@@ -86,21 +86,19 @@ void main() {
 
     setUpAll(() async {
       final projects = [
-        Project(
-          createdAt: DateTime.parse("2024-12-31 10:20:30"),
-          archivedAt: null,
-          cloudProjectId: 'projectId',
-        ),
-        Project(
-          createdAt: DateTime.parse("2024-12-31 12:20:30"),
-          archivedAt: DateTime.parse("2025-01-01 14:20:30"),
-          cloudProjectId: 'projectId2',
-        ),
-        Project(
-          createdAt: DateTime.parse("2024-12-30 10:20:30"),
-          archivedAt: null,
-          cloudProjectId: 'projectId3',
-        ),
+        ProjectBuilder()
+            .withCloudProjectId('projectId')
+            .withCreatedAt(DateTime.parse("2024-12-31 10:20:30"))
+            .build(),
+        ProjectBuilder()
+            .withCloudProjectId('projectId2')
+            .withCreatedAt(DateTime.parse("2024-12-31 12:20:30"))
+            .withArchivedAt(DateTime.parse("2025-01-01 14:20:30"))
+            .build(),
+        ProjectBuilder()
+            .withCloudProjectId('projectId3')
+            .withCreatedAt(DateTime.parse("2024-12-30 10:20:30"))
+            .build(),
       ];
 
       when(() => client.projects.listProjects())
