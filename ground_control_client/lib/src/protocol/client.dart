@@ -471,7 +471,8 @@ class EndpointLogs extends _i1.EndpointRef {
 
   /// Fetches log records from the specified project.
   _i2.Stream<_i17.LogRecord> fetchRecords({
-    required String cloudProjectId,
+    String? cloudProjectId,
+    String? cloudCapsuleId,
     DateTime? beforeTime,
     DateTime? afterTime,
     int? limit,
@@ -482,6 +483,7 @@ class EndpointLogs extends _i1.EndpointRef {
         'fetchRecords',
         {
           'cloudProjectId': cloudProjectId,
+          'cloudCapsuleId': cloudCapsuleId,
           'beforeTime': beforeTime,
           'afterTime': afterTime,
           'limit': limit,
@@ -493,7 +495,8 @@ class EndpointLogs extends _i1.EndpointRef {
   /// Continues until the client unsubscribes, [limit] is reached,
   /// or the internal max limit is reached.
   _i2.Stream<_i17.LogRecord> tailRecords({
-    required String cloudProjectId,
+    String? cloudProjectId,
+    String? cloudCapsuleId,
     int? limit,
   }) =>
       caller.callStreamingServerEndpoint<_i2.Stream<_i17.LogRecord>,
@@ -502,6 +505,7 @@ class EndpointLogs extends _i1.EndpointRef {
         'tailRecords',
         {
           'cloudProjectId': cloudProjectId,
+          'cloudCapsuleId': cloudCapsuleId,
           'limit': limit,
         },
         {},
@@ -509,7 +513,8 @@ class EndpointLogs extends _i1.EndpointRef {
 
   /// Fetches the build log records for the specified deploy attempt.
   _i2.Stream<_i17.LogRecord> fetchBuildLog({
-    required String cloudProjectId,
+    String? cloudProjectId,
+    String? cloudCapsuleId,
     required String attemptId,
     int? limit,
   }) =>
@@ -519,6 +524,7 @@ class EndpointLogs extends _i1.EndpointRef {
         'fetchBuildLog',
         {
           'cloudProjectId': cloudProjectId,
+          'cloudCapsuleId': cloudCapsuleId,
           'attemptId': attemptId,
           'limit': limit,
         },
