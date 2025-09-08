@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.11.0] - 2025-09-08
+
+### Added
+
+- **Display user information in admin project list** - The CLI admin project list now includes the project owner and a list of all users with their roles.
+
 ## [0.10.1] - 2025-09-01
 
 ### Fixed
