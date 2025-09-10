@@ -13,6 +13,7 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../features/project/models/project.dart' as _i2;
 
+/// DEPRECATED, will likely be removed
 abstract class Subscription implements _i1.SerializableModel {
   Subscription._({
     _i1.UuidValue? id,

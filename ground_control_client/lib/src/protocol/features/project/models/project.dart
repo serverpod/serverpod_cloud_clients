@@ -99,6 +99,7 @@ abstract class Project implements _i1.SerializableModel {
   _i2.Owner? owner;
 
   /// The subscription for this project.
+  /// DEPRECATED, will likely be removed
   _i3.Subscription? subscription;
 
   /// The roles for this project.
