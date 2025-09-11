@@ -74,7 +74,6 @@ void main() {
       setUp(() async {
         when(() => client.adminUsers.inviteUser(
               email: any(named: 'email'),
-              maxOwnedProjectsQuota: any(named: 'maxOwnedProjectsQuota'),
             )).thenAnswer(
           (final invocation) async => Future.value(),
         );
@@ -84,8 +83,6 @@ void main() {
           'invite-user',
           '--user',
           'test@example.com',
-          '--max-owned-projects',
-          '5',
         ]);
       });
 

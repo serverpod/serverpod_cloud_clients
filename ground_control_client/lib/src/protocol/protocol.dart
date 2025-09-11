@@ -54,9 +54,9 @@ import 'features/project/models/user_role_membership.dart' as _i37;
 import 'features/secret_manager/models/secret_resource.dart' as _i38;
 import 'features/secret_manager/models/secret_type.dart' as _i39;
 import 'shared/exceptions/models/duplicate_entry_exception.dart' as _i40;
-import 'shared/exceptions/models/forbidden_exception.dart' as _i41;
-import 'shared/exceptions/models/invalid_value_exception.dart' as _i42;
-import 'shared/exceptions/models/not_found_exception.dart' as _i43;
+import 'shared/exceptions/models/invalid_value_exception.dart' as _i41;
+import 'shared/exceptions/models/not_found_exception.dart' as _i42;
+import 'shared/exceptions/models/resource_denied_exception.dart' as _i43;
 import 'shared/exceptions/models/unauthenticated_exception.dart' as _i44;
 import 'shared/exceptions/models/unauthorized_exception.dart' as _i45;
 import 'shared/models/serverpod_region.dart' as _i46;
@@ -126,9 +126,9 @@ export 'features/project/models/user_role_membership.dart';
 export 'features/secret_manager/models/secret_resource.dart';
 export 'features/secret_manager/models/secret_type.dart';
 export 'shared/exceptions/models/duplicate_entry_exception.dart';
-export 'shared/exceptions/models/forbidden_exception.dart';
 export 'shared/exceptions/models/invalid_value_exception.dart';
 export 'shared/exceptions/models/not_found_exception.dart';
+export 'shared/exceptions/models/resource_denied_exception.dart';
 export 'shared/exceptions/models/unauthenticated_exception.dart';
 export 'shared/exceptions/models/unauthorized_exception.dart';
 export 'shared/models/serverpod_region.dart';
@@ -265,14 +265,14 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i40.DuplicateEntryException) {
       return _i40.DuplicateEntryException.fromJson(data) as T;
     }
-    if (t == _i41.ForbiddenException) {
-      return _i41.ForbiddenException.fromJson(data) as T;
+    if (t == _i41.InvalidValueException) {
+      return _i41.InvalidValueException.fromJson(data) as T;
     }
-    if (t == _i42.InvalidValueException) {
-      return _i42.InvalidValueException.fromJson(data) as T;
+    if (t == _i42.NotFoundException) {
+      return _i42.NotFoundException.fromJson(data) as T;
     }
-    if (t == _i43.NotFoundException) {
-      return _i43.NotFoundException.fromJson(data) as T;
+    if (t == _i43.ResourceDeniedException) {
+      return _i43.ResourceDeniedException.fromJson(data) as T;
     }
     if (t == _i44.UnauthenticatedException) {
       return _i44.UnauthenticatedException.fromJson(data) as T;
@@ -418,16 +418,16 @@ class Protocol extends _i1.SerializationManager {
       return (data != null ? _i40.DuplicateEntryException.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i41.ForbiddenException?>()) {
-      return (data != null ? _i41.ForbiddenException.fromJson(data) : null)
+    if (t == _i1.getType<_i41.InvalidValueException?>()) {
+      return (data != null ? _i41.InvalidValueException.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i42.InvalidValueException?>()) {
-      return (data != null ? _i42.InvalidValueException.fromJson(data) : null)
-          as T;
+    if (t == _i1.getType<_i42.NotFoundException?>()) {
+      return (data != null ? _i42.NotFoundException.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i43.NotFoundException?>()) {
-      return (data != null ? _i43.NotFoundException.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i43.ResourceDeniedException?>()) {
+      return (data != null ? _i43.ResourceDeniedException.fromJson(data) : null)
+          as T;
     }
     if (t == _i1.getType<_i44.UnauthenticatedException?>()) {
       return (data != null
@@ -649,12 +649,12 @@ class Protocol extends _i1.SerializationManager {
         return 'SecretType';
       case _i40.DuplicateEntryException():
         return 'DuplicateEntryException';
-      case _i41.ForbiddenException():
-        return 'ForbiddenException';
-      case _i42.InvalidValueException():
+      case _i41.InvalidValueException():
         return 'InvalidValueException';
-      case _i43.NotFoundException():
+      case _i42.NotFoundException():
         return 'NotFoundException';
+      case _i43.ResourceDeniedException():
+        return 'ResourceDeniedException';
       case _i44.UnauthenticatedException():
         return 'UnauthenticatedException';
       case _i45.UnauthorizedException():
@@ -811,14 +811,14 @@ class Protocol extends _i1.SerializationManager {
     if (dataClassName == 'DuplicateEntryException') {
       return deserialize<_i40.DuplicateEntryException>(data['data']);
     }
-    if (dataClassName == 'ForbiddenException') {
-      return deserialize<_i41.ForbiddenException>(data['data']);
-    }
     if (dataClassName == 'InvalidValueException') {
-      return deserialize<_i42.InvalidValueException>(data['data']);
+      return deserialize<_i41.InvalidValueException>(data['data']);
     }
     if (dataClassName == 'NotFoundException') {
-      return deserialize<_i43.NotFoundException>(data['data']);
+      return deserialize<_i42.NotFoundException>(data['data']);
+    }
+    if (dataClassName == 'ResourceDeniedException') {
+      return deserialize<_i43.ResourceDeniedException>(data['data']);
     }
     if (dataClassName == 'UnauthenticatedException') {
       return deserialize<_i44.UnauthenticatedException>(data['data']);

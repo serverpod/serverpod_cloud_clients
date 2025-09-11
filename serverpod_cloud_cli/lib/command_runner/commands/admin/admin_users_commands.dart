@@ -74,14 +74,6 @@ enum AdminInviteUserOption<V> implements OptionDefinition<V> {
       mandatory: true,
       customValidator: _emailValidator,
     ),
-  ),
-  maxOwnedProjects(
-    IntOption(
-      argName: 'max-owned-projects',
-      helpText:
-          'The number of projects the user may own. If unspecified, the default value is used.',
-      min: 0,
-    ),
   );
 
   const AdminInviteUserOption(this.option);
@@ -105,14 +97,11 @@ class AdminInviteUserCommand extends CloudCliCommand<AdminInviteUserOption> {
     final Configuration<AdminInviteUserOption> commandConfig,
   ) async {
     final email = commandConfig.value(AdminInviteUserOption.user);
-    final maxOwnedProjects =
-        commandConfig.optionalValue(AdminInviteUserOption.maxOwnedProjects);
 
     await UserAdminCommands.inviteUser(
       runner.serviceProvider.cloudApiClient,
       logger: logger,
       email: email,
-      maxOwnedProjectsQuota: maxOwnedProjects,
     );
   }
 }

@@ -8,7 +8,6 @@ class ProjectBuilder {
   DateTime? _archivedAt;
   String _cloudProjectId;
   Owner? _owner;
-  Subscription? _subscription;
   List<Role>? _roles;
   List<Capsule>? _capsules;
 
@@ -18,7 +17,6 @@ class ProjectBuilder {
         _updatedAt = DateTime.now(),
         _archivedAt = null,
         _cloudProjectId = 'test-project',
-        _subscription = null,
         _roles = [],
         _capsules = [] {
     withUserOwner(UserBuilder().build());
@@ -72,11 +70,6 @@ class ProjectBuilder {
     return this;
   }
 
-  ProjectBuilder withSubscription(final Subscription? subscription) {
-    _subscription = subscription;
-    return this;
-  }
-
   ProjectBuilder withRoles(final List<Role>? roles) {
     _roles = roles;
     return this;
@@ -96,7 +89,6 @@ class ProjectBuilder {
       cloudProjectId: _cloudProjectId,
       owner: _owner,
       ownerId: _owner?.id ?? Uuid().v4obj(),
-      subscription: _subscription,
       roles: _roles,
       capsules: _capsules,
     );

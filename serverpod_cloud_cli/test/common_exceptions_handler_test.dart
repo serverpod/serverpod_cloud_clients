@@ -62,13 +62,13 @@ void main() {
   });
 
   test(
-      'Given a ForbiddenException '
+      'Given a ResourceDeniedException '
       'when calling processCommonClientExceptions '
       'then should throw ExitErrorException and log error message', () {
     expect(
       () => processCommonClientExceptions(
           logger,
-          ForbiddenException(
+          ResourceDeniedException(
             message:
                 'The maximum number of projects that can be created has been reached (5).',
           ),
@@ -79,7 +79,7 @@ void main() {
     expect(
       logger.errorCalls.last,
       equalsErrorCall(
-        message: 'The action was not allowed.',
+        message: 'The resource was not allowed.',
         hint:
             'The maximum number of projects that can be created has been reached (5).',
       ),
