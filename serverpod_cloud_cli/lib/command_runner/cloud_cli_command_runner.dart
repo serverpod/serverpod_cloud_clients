@@ -76,6 +76,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
           messageOutput: MessageOutput(
             usageLogger: logger.info,
           ),
+          experimentalCompletionCommand: true,
         );
 
   static CloudCliCommandRunner create({

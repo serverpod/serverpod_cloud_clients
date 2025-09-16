@@ -13,3 +13,7 @@ build/
 doc/api/
 
 pubspec_overrides.yaml
+
+# Generated completion files for 'completely'
+completely.yaml
+completely.bash
