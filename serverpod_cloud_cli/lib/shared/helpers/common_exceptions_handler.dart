@@ -42,9 +42,9 @@ void processCommonClientExceptions(
         stackTrace,
       );
 
-    case ForbiddenException():
+    case ResourceDeniedException():
       logger.error(
-        'The action was not allowed.',
+        'The resource was not allowed.',
         hint: e.message,
       );
 

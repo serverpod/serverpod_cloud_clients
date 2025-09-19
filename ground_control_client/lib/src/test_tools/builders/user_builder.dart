@@ -10,7 +10,6 @@ class UserBuilder {
   String? _userAuthId;
   String _email;
   List<UserRoleMembership>? _memberships;
-  int? _maxOwnedProjects;
   _i1.UuidValue? _ownerId;
   Owner? _owner;
 
@@ -22,8 +21,7 @@ class UserBuilder {
         _accountStatus = UserAccountStatus.registered,
         _userAuthId = 'auth-user-123',
         _email = 'test@example.com',
-        _memberships = [],
-        _maxOwnedProjects = null {
+        _memberships = [] {
     _ownerId = Uuid().v4obj();
   }
 
@@ -67,11 +65,6 @@ class UserBuilder {
     return this;
   }
 
-  UserBuilder withMaxOwnedProjects(final int? maxOwnedProjects) {
-    _maxOwnedProjects = maxOwnedProjects;
-    return this;
-  }
-
   UserBuilder withOwnerId(final _i1.UuidValue? ownerId) {
     _ownerId = ownerId;
     return this;
@@ -92,7 +85,6 @@ class UserBuilder {
       userAuthId: _userAuthId,
       email: _email,
       memberships: _memberships,
-      maxOwnedProjects: _maxOwnedProjects,
       ownerId: _owner?.id ?? _ownerId,
       owner: _owner,
     );

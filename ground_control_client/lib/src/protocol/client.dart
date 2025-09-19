@@ -104,17 +104,11 @@ class EndpointAdminUsers extends _i1.EndpointRef {
 
   /// Invites a user to Serverpod Cloud.
   /// If the user does not exist, a user invitation email is sent.
-  _i2.Future<void> inviteUser({
-    required String email,
-    int? maxOwnedProjectsQuota,
-  }) =>
+  _i2.Future<void> inviteUser({required String email}) =>
       caller.callServerEndpoint<void>(
         'adminUsers',
         'inviteUser',
-        {
-          'email': email,
-          'maxOwnedProjectsQuota': maxOwnedProjectsQuota,
-        },
+        {'email': email},
       );
 }
 
@@ -532,6 +526,39 @@ class EndpointLogs extends _i1.EndpointRef {
       );
 }
 
+/// Endpoint for managing subscription plans.
+/// {@category Endpoint}
+class EndpointPlans extends _i1.EndpointRef {
+  EndpointPlans(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'plans';
+
+  /// Procures a subscription plan.
+  _i2.Future<void> procurePlan({required String planName}) =>
+      caller.callServerEndpoint<void>(
+        'plans',
+        'procurePlan',
+        {'planName': planName},
+      );
+
+  /// Fetches the names of the procured subscription plans.
+  _i2.Future<List<String>> listProcuredPlanNames() =>
+      caller.callServerEndpoint<List<String>>(
+        'plans',
+        'listProcuredPlanNames',
+        {},
+      );
+
+  /// Fetches the names of the available subscription plans.
+  _i2.Future<List<String>> listPlanNames() =>
+      caller.callServerEndpoint<List<String>>(
+        'plans',
+        'listPlanNames',
+        {},
+      );
+}
+
 /// Endpoint for database management.
 /// {@category Endpoint}
 class EndpointDatabase extends _i1.EndpointRef {
@@ -925,6 +952,7 @@ class Client extends _i1.ServerpodClientShared {
     deploy = EndpointDeploy(this);
     environmentVariables = EndpointEnvironmentVariables(this);
     logs = EndpointLogs(this);
+    plans = EndpointPlans(this);
     database = EndpointDatabase(this);
     infraResources = EndpointInfraResources(this);
     projects = EndpointProjects(this);
@@ -953,6 +981,8 @@ class Client extends _i1.ServerpodClientShared {
 
   late final EndpointLogs logs;
 
+  late final EndpointPlans plans;
+
   late final EndpointDatabase database;
 
   late final EndpointInfraResources infraResources;
@@ -980,6 +1010,7 @@ class Client extends _i1.ServerpodClientShared {
         'deploy': deploy,
         'environmentVariables': environmentVariables,
         'logs': logs,
+        'plans': plans,
         'database': database,
         'infraResources': infraResources,
         'projects': projects,

@@ -81,13 +81,11 @@ void main() {
             UserBuilder()
                 .withEmail('test@example.com')
                 .withCreatedAt(DateTime.parse('2025-07-02T11:00:00'))
-                .withMaxOwnedProjects(5)
                 .withAccountStatus(UserAccountStatus.registered)
                 .build(),
             UserBuilder()
                 .withEmail('test2@example.com')
                 .withCreatedAt(DateTime.parse('2025-07-02T12:00:00'))
-                .withMaxOwnedProjects(5)
                 .withAccountStatus(UserAccountStatus.invited)
                 .withArchivedAt(DateTime.parse('2025-07-02T12:10:00'))
                 .build(),
@@ -113,16 +111,16 @@ void main() {
           containsAllInOrder([
             equalsLineCall(
                 line:
-                    'User              | Account status | Max owned projects | Created at (local)  | Archived at (local)'),
+                    'User              | Account status | Created at (local)  | Archived at (local)'),
             equalsLineCall(
                 line:
-                    '------------------+----------------+--------------------+---------------------+--------------------'),
+                    '------------------+----------------+---------------------+--------------------'),
             equalsLineCall(
                 line:
-                    'test@example.com  | registered     | 5                  | 2025-07-02 11:00:00 |                    '),
+                    'test@example.com  | registered     | 2025-07-02 11:00:00 |                    '),
             equalsLineCall(
                 line:
-                    'test2@example.com | invited        | 5                  | 2025-07-02 12:00:00 | 2025-07-02 12:10:00'),
+                    'test2@example.com | invited        | 2025-07-02 12:00:00 | 2025-07-02 12:10:00'),
           ]),
         );
       });

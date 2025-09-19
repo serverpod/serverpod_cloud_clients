@@ -25,14 +25,12 @@ abstract class UserAdminCommands {
       headers: [
         'User',
         'Account status',
-        'Max owned projects',
         'Created at ($timezoneName)',
         'Archived at ($timezoneName)',
       ],
       rows: users.map((final user) => [
             user.email,
             user.accountStatus.toString(),
-            user.maxOwnedProjects?.toString(),
             user.createdAt.toTzString(inUtc, 19),
             user.archivedAt?.toTzString(inUtc, 19),
           ]),
@@ -44,12 +42,10 @@ abstract class UserAdminCommands {
     final Client cloudApiClient, {
     required final CommandLogger logger,
     required final String email,
-    final int? maxOwnedProjectsQuota,
   }) async {
     try {
       await cloudApiClient.adminUsers.inviteUser(
         email: email,
-        maxOwnedProjectsQuota: maxOwnedProjectsQuota,
       );
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Failed to invite user');

@@ -24,6 +24,17 @@ abstract class ProjectCommands {
   }) async {
     logger.init('Creating Serverpod Cloud project "$projectId".');
 
+    // Check that the user is on a plan and automatically procure one if not.
+    // This behavior will be changed in the future.
+    final planNames = await cloudApiClient.plans.listProcuredPlanNames();
+    if (planNames.isEmpty) {
+      const defaultPlanName = 'closed-beta';
+      await cloudApiClient.plans.procurePlan(planName: defaultPlanName);
+      logger.info('On plan: $defaultPlanName');
+    } else {
+      logger.debug('On plan: ${planNames.first}');
+    }
+
     try {
       await logger.progress(
         'Registering Serverpod Cloud project.',
