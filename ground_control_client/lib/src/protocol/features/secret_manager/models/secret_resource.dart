@@ -19,6 +19,8 @@ abstract class SecretResource implements _i1.SerializableModel {
     required this.cloudCapsuleId,
     required this.secretId,
     required this.secretType,
+    this.latestVersionId,
+    this.activeVersionId,
     this.createdAt,
   });
 
@@ -27,6 +29,8 @@ abstract class SecretResource implements _i1.SerializableModel {
     required String cloudCapsuleId,
     required String secretId,
     required _i2.SecretType secretType,
+    String? latestVersionId,
+    String? activeVersionId,
     DateTime? createdAt,
   }) = _SecretResourceImpl;
 
@@ -37,6 +41,8 @@ abstract class SecretResource implements _i1.SerializableModel {
       secretId: jsonSerialization['secretId'] as String,
       secretType:
           _i2.SecretType.fromJson((jsonSerialization['secretType'] as String)),
+      latestVersionId: jsonSerialization['latestVersionId'] as String?,
+      activeVersionId: jsonSerialization['activeVersionId'] as String?,
       createdAt: jsonSerialization['createdAt'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
@@ -54,6 +60,10 @@ abstract class SecretResource implements _i1.SerializableModel {
 
   _i2.SecretType secretType;
 
+  String? latestVersionId;
+
+  String? activeVersionId;
+
   DateTime? createdAt;
 
   /// Returns a shallow copy of this [SecretResource]
@@ -64,6 +74,8 @@ abstract class SecretResource implements _i1.SerializableModel {
     String? cloudCapsuleId,
     String? secretId,
     _i2.SecretType? secretType,
+    String? latestVersionId,
+    String? activeVersionId,
     DateTime? createdAt,
   });
   @override
@@ -73,6 +85,8 @@ abstract class SecretResource implements _i1.SerializableModel {
       'cloudCapsuleId': cloudCapsuleId,
       'secretId': secretId,
       'secretType': secretType.toJson(),
+      if (latestVersionId != null) 'latestVersionId': latestVersionId,
+      if (activeVersionId != null) 'activeVersionId': activeVersionId,
       if (createdAt != null) 'createdAt': createdAt?.toJson(),
     };
   }
@@ -91,12 +105,16 @@ class _SecretResourceImpl extends SecretResource {
     required String cloudCapsuleId,
     required String secretId,
     required _i2.SecretType secretType,
+    String? latestVersionId,
+    String? activeVersionId,
     DateTime? createdAt,
   }) : super._(
           id: id,
           cloudCapsuleId: cloudCapsuleId,
           secretId: secretId,
           secretType: secretType,
+          latestVersionId: latestVersionId,
+          activeVersionId: activeVersionId,
           createdAt: createdAt,
         );
 
@@ -109,6 +127,8 @@ class _SecretResourceImpl extends SecretResource {
     String? cloudCapsuleId,
     String? secretId,
     _i2.SecretType? secretType,
+    Object? latestVersionId = _Undefined,
+    Object? activeVersionId = _Undefined,
     Object? createdAt = _Undefined,
   }) {
     return SecretResource(
@@ -116,6 +136,10 @@ class _SecretResourceImpl extends SecretResource {
       cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
       secretId: secretId ?? this.secretId,
       secretType: secretType ?? this.secretType,
+      latestVersionId:
+          latestVersionId is String? ? latestVersionId : this.latestVersionId,
+      activeVersionId:
+          activeVersionId is String? ? activeVersionId : this.activeVersionId,
       createdAt: createdAt is DateTime? ? createdAt : this.createdAt,
     );
   }
