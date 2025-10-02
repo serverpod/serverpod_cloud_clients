@@ -373,6 +373,14 @@ enum GlobalOption<V> implements OptionDefinition<V> {
       hide: true,
       defaultsTo: false,
     ),
+  ),
+  authToken(
+    StringOption(
+      argName: 'auth-token',
+      envName: 'SERVERPOD_CLOUD_AUTH_TOKEN',
+      helpText: 'The authentication token to use for the Serverpod Cloud API.',
+      hide: true,
+    ),
   );
 
   const GlobalOption(this.option);
@@ -428,4 +436,6 @@ class GlobalConfiguration extends Configuration<GlobalOption> {
   String get consoleServer => value(GlobalOption.consoleServer);
 
   bool get skipConfirmation => value(GlobalOption.skipConfirmation);
+
+  String? get authToken => optionalValue(GlobalOption.authToken);
 }
