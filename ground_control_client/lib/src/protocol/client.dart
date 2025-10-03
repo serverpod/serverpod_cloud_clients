@@ -60,6 +60,51 @@ import 'package:serverpod_auth_bridge_client/serverpod_auth_bridge_client.dart'
 import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i26;
 import 'protocol.dart' as _i27;
 
+/// Endpoint for global administrator to handle procurement for users.
+/// {@category Endpoint}
+class EndpointAdminProcurement extends _i1.EndpointRef {
+  EndpointAdminProcurement(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'adminProcurement';
+
+  /// Procures a product for a user.
+  /// If [productVersion] is not provided, the latest version is used.
+  /// If [overrideChecks] is true, the product availability checks are overridden.
+  ///
+  /// Throws a [NotFoundException] if the user or product is not found.
+  /// Throws a [InvalidValueException] if the user has no owner (not fully registered).
+  _i2.Future<void> procureProduct({
+    required String userEmail,
+    required String productName,
+    int? productVersion,
+    bool? overrideChecks,
+  }) =>
+      caller.callServerEndpoint<void>(
+        'adminProcurement',
+        'procureProduct',
+        {
+          'userEmail': userEmail,
+          'productName': productName,
+          'productVersion': productVersion,
+          'overrideChecks': overrideChecks,
+        },
+      );
+
+  /// Fetches a user's procured products.
+  /// Returns a list of `(String, String)` with the product ID and its type.
+  ///
+  /// Throws a [NotFoundException] if the user is not found.
+  /// Throws a [InvalidValueException] if the user has no owner (not fully registered).
+  _i2.Future<List<(String, String)>> listProcuredProducts(
+          {required String userEmail}) =>
+      caller.callServerEndpoint<List<(String, String)>>(
+        'adminProcurement',
+        'listProcuredProducts',
+        {'userEmail': userEmail},
+      );
+}
+
 /// Endpoint for global administrator projects access.
 /// {@category Endpoint}
 class EndpointAdminProjects extends _i1.EndpointRef {
@@ -949,6 +994,7 @@ class Client extends _i1.ServerpodClientShared {
           disconnectStreamsOnLostInternetConnection:
               disconnectStreamsOnLostInternetConnection,
         ) {
+    adminProcurement = EndpointAdminProcurement(this);
     adminProjects = EndpointAdminProjects(this);
     adminUsers = EndpointAdminUsers(this);
     auth = EndpointAuth(this);
@@ -968,6 +1014,8 @@ class Client extends _i1.ServerpodClientShared {
     users = EndpointUsers(this);
     modules = Modules(this);
   }
+
+  late final EndpointAdminProcurement adminProcurement;
 
   late final EndpointAdminProjects adminProjects;
 
@@ -1007,6 +1055,7 @@ class Client extends _i1.ServerpodClientShared {
 
   @override
   Map<String, _i1.EndpointRef> get endpointRefLookup => {
+        'adminProcurement': adminProcurement,
         'adminProjects': adminProjects,
         'adminUsers': adminUsers,
         'auth': auth,
