@@ -53,6 +53,13 @@ void main() {
           ProjectConfig(projectId: invocation.namedArguments[#cloudProjectId]),
         ),
       );
+
+      when(() => client.plans.listProcuredPlanNames()).thenAnswer(
+        (final invocation) async => Future.value([]),
+      );
+
+      when(() => client.plans.procurePlan(planName: any(named: 'planName')))
+          .thenAnswer((final invocation) async => Future.value());
     });
 
     group('and inside a serverpod directory', () {

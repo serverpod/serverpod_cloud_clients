@@ -151,6 +151,13 @@ void main() {
             cloudCapsuleId: projectId,
             attemptId: attemptStages.first.attemptId,
           )).thenAnswer((final _) async => attemptStages);
+
+      when(() => client.plans.listProcuredPlanNames()).thenAnswer(
+        (final invocation) async => Future.value([]),
+      );
+
+      when(() => client.plans.procurePlan(planName: any(named: 'planName')))
+          .thenAnswer((final invocation) async => Future.value());
     });
 
     tearDownAll(() async {
