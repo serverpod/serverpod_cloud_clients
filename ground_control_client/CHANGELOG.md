@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.11.0] - 2025-10-03
+
+### Added
+
+- **Subscription plan and products** - Introduced handling of subscription plans and procuring add-on products.
+
+### Removed
+
+- **Obsolete max-projects quota handling** - Removed obsolete handling of max-projects quota from `scloud`.
+
 ## [0.10.1] - 2025-09-01
 
 ### Fixed

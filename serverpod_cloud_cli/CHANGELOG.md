@@ -1,6 +1,16 @@
 
 # Changelog
 
+## [0.11.0] - 2025-10-03
+
+### Added
+
+- **Expanded project list details** - The admin project list in the CLI now includes the project owner and a full list of users with their roles in the project.
+
+### Removed
+
+- **Obsolete max-projects quota handling** - Removed obsolete handling of max-projects quota from `scloud`.
+
 ## [0.10.1] - 2025-09-01
 
 ### Fixed
