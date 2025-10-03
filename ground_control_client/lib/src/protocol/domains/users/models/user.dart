@@ -101,8 +101,11 @@ abstract class User implements _i1.SerializableModel {
   List<_i3.UserRoleMembership>? memberships;
 
   /// Max number of projects this user can own.
+  /// DEPRECATED, no longer used and will be removed
   int? maxOwnedProjects;
 
+  /// Max number of projects this user can own.
+  /// DEPRECATED, no longer used and will be removed
   /// The owner id of the user.
   _i1.UuidValue? ownerId;
 
