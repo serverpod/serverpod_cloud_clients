@@ -36,6 +36,9 @@ class EndpointAdminUsersMock extends Mock implements EndpointAdminUsers {}
 
 class EndpointAdminProjectsMock extends Mock implements EndpointAdminProjects {}
 
+class EndpointAdminProcurementMock extends Mock
+    implements EndpointAdminProcurement {}
+
 class EndpointBillingMock extends Mock implements EndpointBilling {}
 
 class EndpointPlansMock extends Mock implements EndpointPlans {}
@@ -89,6 +92,9 @@ class ClientMock extends Mock implements Client {
   final AuthenticationKeyManager authenticationKeyManager;
 
   @override
+  final Modules modules = ModulesMock();
+
+  @override
   final EndpointCustomDomainName customDomainName =
       EndpointCustomDomainNameMock();
 
@@ -136,7 +142,8 @@ class ClientMock extends Mock implements Client {
   final EndpointAdminProjects adminProjects = EndpointAdminProjectsMock();
 
   @override
-  final Modules modules = ModulesMock();
+  final EndpointAdminProcurement adminProcurement =
+      EndpointAdminProcurementMock();
 
   @override
   final EndpointBilling billing = EndpointBillingMock();

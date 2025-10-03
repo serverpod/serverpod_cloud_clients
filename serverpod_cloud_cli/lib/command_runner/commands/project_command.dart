@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:config/config.dart';
-import 'package:email_validator/email_validator.dart';
 import 'package:path/path.dart' as p;
 
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
@@ -197,12 +196,6 @@ class CloudProjectLinkCommand
   }
 }
 
-void _emailValidator(final value) {
-  if (!EmailValidator.validate(value)) {
-    throw FormatException('Invalid email address: $value');
-  }
-}
-
 const _projectRoleNames = ['admin'];
 const _projectRoleHelp = {'admin': 'Admins have full access to the project.'};
 
@@ -211,13 +204,7 @@ enum ProjectInviteUserOption<V> implements OptionDefinition<V> {
     ProjectIdOption(asFirstArg: true),
   ),
   user(
-    StringOption(
-      argName: 'user',
-      argAbbrev: 'u',
-      helpText: 'The email address of the user.',
-      mandatory: true,
-      customValidator: _emailValidator,
-    ),
+    UserEmailOption(mandatory: true),
   ),
   roles(
     MultiStringOption(
@@ -273,14 +260,7 @@ enum ProjectRevokeUserOption<V> implements OptionDefinition<V> {
     ProjectIdOption(asFirstArg: true),
   ),
   user(
-    StringOption(
-      argName: 'user',
-      argAbbrev: 'u',
-      argPos: 1,
-      helpText: 'The email address of the user.',
-      mandatory: true,
-      customValidator: _emailValidator,
-    ),
+    UserEmailOption(argPos: 1, mandatory: true),
   ),
   roles(
     MultiStringOption(

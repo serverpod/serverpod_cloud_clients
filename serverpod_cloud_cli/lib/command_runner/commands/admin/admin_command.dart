@@ -1,5 +1,6 @@
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 
+import 'admin_product_commands.dart';
 import 'admin_projects_commands.dart';
 import 'admin_users_commands.dart';
 
@@ -23,5 +24,6 @@ class CloudAdminCommand extends CloudCliCommand {
     addSubcommand(AdminListUsersCommand(logger: logger));
     addSubcommand(AdminInviteUserCommand(logger: logger));
     addSubcommand(AdminListProjectsCommand(logger: logger));
+    addSubcommand(AdminProductCommand(logger: logger));
   }
 }

@@ -1,5 +1,4 @@
 import 'package:config/config.dart';
-import 'package:email_validator/email_validator.dart';
 import 'package:ground_control_client/ground_control_client.dart'
     show UserAccountStatus;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
@@ -65,15 +64,7 @@ class AdminListUsersCommand extends CloudCliCommand<AdminListUsersOption> {
 
 enum AdminInviteUserOption<V> implements OptionDefinition<V> {
   user(
-    StringOption(
-      argName: 'user',
-      argAbbrev: 'u',
-      argPos: 0,
-      helpText: 'The user email address. '
-          'Can be specified as first argument.',
-      mandatory: true,
-      customValidator: _emailValidator,
-    ),
+    UserEmailOption(argPos: 0, mandatory: true),
   );
 
   const AdminInviteUserOption(this.option);
@@ -103,11 +94,5 @@ class AdminInviteUserCommand extends CloudCliCommand<AdminInviteUserOption> {
       logger: logger,
       email: email,
     );
-  }
-}
-
-void _emailValidator(final value) {
-  if (!EmailValidator.validate(value)) {
-    throw FormatException('Invalid email address: $value');
   }
 }

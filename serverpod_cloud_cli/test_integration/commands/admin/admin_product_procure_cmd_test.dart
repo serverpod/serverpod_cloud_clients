@@ -2,12 +2,11 @@ import 'dart:async';
 
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:test/test.dart';
-
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/admin/admin_users_commands.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/admin/admin_product_commands.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:test/test.dart';
 
 import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/test_command_logger.dart';
@@ -30,20 +29,22 @@ void main() {
     logger.clear();
   });
 
-  test('Given admin invite-user command when instantiated then requires login',
+  test(
+      'Given admin product procure command when instantiated then requires login',
       () {
-    expect(AdminInviteUserCommand(logger: logger).requireLogin, isTrue);
+    expect(AdminProcureCommand(logger: logger).requireLogin, isTrue);
   });
 
   group('Given unauthenticated', () {
-    group('when executing admin invite-user', () {
+    group('when executing admin product procure', () {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
           'admin',
-          'invite-user',
-          '--user',
+          'product',
+          'procure',
           'test@example.com',
+          'test-plan',
         ]);
       });
 
@@ -69,20 +70,24 @@ void main() {
       await keyManager.put('mock-token');
     });
 
-    group('when executing admin invite-user', () {
+    group('when executing admin product procure', () {
       late Future commandResult;
       setUp(() async {
-        when(() => client.adminUsers.inviteUser(
-              email: any(named: 'email'),
+        when(() => client.adminProcurement.procureProduct(
+              userEmail: any(named: 'userEmail'),
+              productName: any(named: 'productName'),
+              productVersion: any(named: 'productVersion'),
+              overrideChecks: any(named: 'overrideChecks'),
             )).thenAnswer(
           (final invocation) async => Future.value(),
         );
 
         commandResult = cli.run([
           'admin',
-          'invite-user',
-          '--user',
+          'product',
+          'procure',
           'test@example.com',
+          'test-plan',
         ]);
       });
 
@@ -96,7 +101,7 @@ void main() {
         expect(
           logger.successCalls.first,
           equalsSuccessCall(
-            message: 'User invited to Serverpod Cloud.',
+            message: 'The product has been procured for the user.',
             newParagraph: true,
           ),
         );

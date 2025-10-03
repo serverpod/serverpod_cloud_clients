@@ -1,6 +1,8 @@
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
 
+import 'email_validator.dart';
+
 abstract final class CommandConfigConstants {
   static const listOptionAbbrev = 'l';
 }
@@ -101,5 +103,19 @@ class UtcOption extends FlagOption {
           negatable: true,
           defaultsTo: false,
           envName: 'SERVERPOD_CLOUD_DISPLAY_UTC',
+        );
+}
+
+class UserEmailOption extends StringOption {
+  const UserEmailOption({
+    super.argPos,
+    super.mandatory,
+  }) : super(
+          argName: 'user',
+          argAbbrev: 'u',
+          customValidator: emailValidator,
+          // a bit convoluted due to Dart's const requirements:
+          helpText: 'The user email address.'
+              '${argPos == 0 ? ' Can be passed as the first argument.' : argPos == 1 ? ' Can be passed as the second argument.' : ''}',
         );
 }
