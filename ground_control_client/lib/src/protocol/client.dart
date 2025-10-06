@@ -149,17 +149,11 @@ class EndpointAdminUsers extends _i1.EndpointRef {
 
   /// Invites a user to Serverpod Cloud.
   /// If the user does not exist, a user invitation email is sent.
-  _i2.Future<void> inviteUser({
-    required String email,
-    int? maxOwnedProjectsQuota,
-  }) =>
+  _i2.Future<void> inviteUser({required String email}) =>
       caller.callServerEndpoint<void>(
         'adminUsers',
         'inviteUser',
-        {
-          'email': email,
-          'maxOwnedProjectsQuota': maxOwnedProjectsQuota,
-        },
+        {'email': email},
       );
 }
 
