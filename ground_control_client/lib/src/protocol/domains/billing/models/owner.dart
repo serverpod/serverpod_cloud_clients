@@ -19,6 +19,7 @@ abstract class Owner implements _i1.SerializableModel {
   Owner._({
     _i1.UuidValue? id,
     required this.externalBillingId,
+    this.externalPaymentId,
     required this.billingPortalUrl,
     required this.billingEmails,
     this.user,
@@ -29,6 +30,7 @@ abstract class Owner implements _i1.SerializableModel {
   factory Owner({
     _i1.UuidValue? id,
     required String externalBillingId,
+    String? externalPaymentId,
     required Uri billingPortalUrl,
     required List<String> billingEmails,
     _i2.User? user,
@@ -40,6 +42,7 @@ abstract class Owner implements _i1.SerializableModel {
     return Owner(
       id: _i1.UuidValueJsonExtension.fromJson(jsonSerialization['id']),
       externalBillingId: jsonSerialization['externalBillingId'] as String,
+      externalPaymentId: jsonSerialization['externalPaymentId'] as String?,
       billingPortalUrl:
           _i1.UriJsonExtension.fromJson(jsonSerialization['billingPortalUrl']),
       billingEmails: (jsonSerialization['billingEmails'] as List)
@@ -66,6 +69,8 @@ abstract class Owner implements _i1.SerializableModel {
 
   String externalBillingId;
 
+  String? externalPaymentId;
+
   Uri billingPortalUrl;
 
   List<String> billingEmails;
@@ -82,6 +87,7 @@ abstract class Owner implements _i1.SerializableModel {
   Owner copyWith({
     _i1.UuidValue? id,
     String? externalBillingId,
+    String? externalPaymentId,
     Uri? billingPortalUrl,
     List<String>? billingEmails,
     _i2.User? user,
@@ -93,6 +99,7 @@ abstract class Owner implements _i1.SerializableModel {
     return {
       'id': id.toJson(),
       'externalBillingId': externalBillingId,
+      if (externalPaymentId != null) 'externalPaymentId': externalPaymentId,
       'billingPortalUrl': billingPortalUrl.toJson(),
       'billingEmails': billingEmails.toJson(),
       if (user != null) 'user': user?.toJson(),
@@ -114,6 +121,7 @@ class _OwnerImpl extends Owner {
   _OwnerImpl({
     _i1.UuidValue? id,
     required String externalBillingId,
+    String? externalPaymentId,
     required Uri billingPortalUrl,
     required List<String> billingEmails,
     _i2.User? user,
@@ -122,6 +130,7 @@ class _OwnerImpl extends Owner {
   }) : super._(
           id: id,
           externalBillingId: externalBillingId,
+          externalPaymentId: externalPaymentId,
           billingPortalUrl: billingPortalUrl,
           billingEmails: billingEmails,
           user: user,
@@ -136,6 +145,7 @@ class _OwnerImpl extends Owner {
   Owner copyWith({
     _i1.UuidValue? id,
     String? externalBillingId,
+    Object? externalPaymentId = _Undefined,
     Uri? billingPortalUrl,
     List<String>? billingEmails,
     Object? user = _Undefined,
@@ -145,6 +155,9 @@ class _OwnerImpl extends Owner {
     return Owner(
       id: id ?? this.id,
       externalBillingId: externalBillingId ?? this.externalBillingId,
+      externalPaymentId: externalPaymentId is String?
+          ? externalPaymentId
+          : this.externalPaymentId,
       billingPortalUrl: billingPortalUrl ?? this.billingPortalUrl,
       billingEmails:
           billingEmails ?? this.billingEmails.map((e0) => e0).toList(),
