@@ -703,6 +703,17 @@ class EndpointProjects extends _i1.EndpointRef {
   @override
   String get name => 'projects';
 
+  /// Validates a project ID by checking format rules and database existence.
+  /// Throws [InvalidValueException] for format violations.
+  /// Throws [DuplicateEntryException] if the project ID already exists.
+  /// Returns true if the project ID is valid and available.
+  _i2.Future<bool> validateProjectId(String projectId) =>
+      caller.callServerEndpoint<bool>(
+        'projects',
+        'validateProjectId',
+        {'projectId': projectId},
+      );
+
   /// Creates a new project with basic setup.
   /// The [cloudProjectId] must be globally unique.
   _i2.Future<_i3.Project> createProject({required String cloudProjectId}) =>
