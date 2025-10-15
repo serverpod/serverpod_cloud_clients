@@ -19,6 +19,23 @@ abstract class UserAdminCommands {
       includeArchived: includeArchived,
     );
 
+    final userPlanMap = <String, String>{};
+    for (final user in users) {
+      switch (user.accountStatus) {
+        case UserAccountStatus.registered:
+          final procuredProducts = await cloudApiClient.adminProcurement
+              .listProcuredProducts(userEmail: user.email);
+          final procuredPlans = procuredProducts
+              .where((final p) => p.$2 == 'PlanProduct')
+              .map((final p) => p.$1);
+          userPlanMap[user.email] = procuredPlans.join(', ');
+          break;
+        case UserAccountStatus.invited:
+          userPlanMap[user.email] = '';
+          break;
+      }
+    }
+
     final timezoneName = inUtc ? 'UTC' : 'local';
 
     final table = TablePrinter(
@@ -27,12 +44,14 @@ abstract class UserAdminCommands {
         'Account status',
         'Created at ($timezoneName)',
         'Archived at ($timezoneName)',
+        'Subscribed Plans',
       ],
       rows: users.map((final user) => [
             user.email,
             user.accountStatus.toString(),
             user.createdAt.toTzString(inUtc, 19),
             user.archivedAt?.toTzString(inUtc, 19),
+            userPlanMap[user.email] ?? '',
           ]),
     );
     table.writeLines(logger.line);

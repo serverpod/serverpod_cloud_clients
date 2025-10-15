@@ -91,6 +91,13 @@ void main() {
                 .build(),
           ]),
         );
+        when(() => client.adminProcurement.listProcuredProducts(
+              userEmail: any(named: 'userEmail'),
+            )).thenAnswer(
+          (final invocation) async => Future.value([
+            ('test-plan', 'PlanProduct'),
+          ]),
+        );
 
         commandResult = cli.run([
           'admin',
@@ -111,16 +118,16 @@ void main() {
           containsAllInOrder([
             equalsLineCall(
                 line:
-                    'User              | Account status | Created at (local)  | Archived at (local)'),
+                    'User              | Account status | Created at (local)  | Archived at (local) | Subscribed Plans'),
             equalsLineCall(
                 line:
-                    '------------------+----------------+---------------------+--------------------'),
+                    '------------------+----------------+---------------------+---------------------+-----------------'),
             equalsLineCall(
                 line:
-                    'test@example.com  | registered     | 2025-07-02 11:00:00 |                    '),
+                    'test@example.com  | registered     | 2025-07-02 11:00:00 |                     | test-plan       '),
             equalsLineCall(
                 line:
-                    'test2@example.com | invited        | 2025-07-02 12:00:00 | 2025-07-02 12:10:00'),
+                    'test2@example.com | invited        | 2025-07-02 12:00:00 | 2025-07-02 12:10:00 |                 '),
           ]),
         );
       });
