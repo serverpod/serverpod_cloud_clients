@@ -118,6 +118,10 @@ void main() {
         ),
       );
 
+      when(() => client.projects.listProjects()).thenAnswer(
+        (final _) async => Future.value([]),
+      );
+
       when(() => client.projects.fetchProjectConfig(
             cloudProjectId: any(named: 'cloudProjectId'),
           )).thenAnswer(
@@ -206,10 +210,10 @@ void main() {
             logger.boxCalls.single.message,
             stringContainsInOrder([
               'Project setup',
-              'Project directory $testProjectDir',
-              'Project Id        $projectId',
-              'Enable DB         yes',
-              'Perform deploy    yes',
+              'Project directory  $testProjectDir',
+              'Project id         $projectId',
+              'Enable DB          yes',
+              'Perform deploy     yes',
             ]),
           );
         });
@@ -332,10 +336,10 @@ project:
             logger.boxCalls.single.message,
             stringContainsInOrder([
               'Project setup',
-              'Project directory $testProjectDir',
-              'Project Id        $projectId',
-              'Enable DB         yes',
-              'Perform deploy    yes',
+              'Project directory  $testProjectDir',
+              'Project id         $projectId',
+              'Enable DB          yes',
+              'Perform deploy     yes',
             ]),
           );
         });
@@ -443,10 +447,10 @@ project:
             logger.boxCalls.single.message,
             stringContainsInOrder([
               'Project setup',
-              'Project directory $testProjectDir',
-              'Project Id        $projectId',
-              'Enable DB         yes',
-              'Perform deploy    yes',
+              'Project directory  $testProjectDir',
+              'Project id         $projectId',
+              'Enable DB          yes',
+              'Perform deploy     yes',
             ]),
           );
         });
@@ -539,7 +543,7 @@ project:
             logger.inputCalls,
             containsAllInOrder([
               equalsInputCall(
-                message: 'Choose project id',
+                message: 'Enter a new project id',
                 defaultValue: 'default: my-project',
               ),
             ]),
@@ -554,10 +558,10 @@ project:
             logger.boxCalls.single.message,
             stringContainsInOrder([
               'Project setup',
-              'Project directory $testProjectDir',
-              'Project Id        $projectId',
-              'Enable DB         yes',
-              'Perform deploy    yes',
+              'Project directory  $testProjectDir',
+              'Project id         $projectId',
+              'Enable DB          yes',
+              'Perform deploy     yes',
             ]),
           );
         });
@@ -638,7 +642,7 @@ project:
                 message: 'Enter the project directory',
               ),
               equalsInputCall(
-                message: 'Choose project id',
+                message: 'Enter a new project id',
                 defaultValue: 'default: my-project',
               ),
             ]),
@@ -676,10 +680,10 @@ project:
             logger.boxCalls.single.message,
             stringContainsInOrder([
               'Project setup',
-              'Project directory $testProjectDir',
-              'Project Id        $projectId',
-              'Enable DB         yes',
-              'Perform deploy    yes',
+              'Project directory  $testProjectDir',
+              'Project id         $projectId',
+              'Enable DB          yes',
+              'Perform deploy     yes',
             ]),
           );
         });
@@ -762,7 +766,7 @@ project:
           expect(
             logger.inputCalls.first,
             equalsInputCall(
-              message: 'Choose project id',
+              message: 'Enter a new project id',
               defaultValue: 'default: my-project',
             ),
           );
@@ -799,10 +803,10 @@ project:
             logger.boxCalls.single.message,
             stringContainsInOrder([
               'Project setup',
-              'Project directory ${p.relative(testProjectDir)}',
-              'Project Id        $projectId',
-              'Enable DB         yes',
-              'Perform deploy    yes',
+              'Project directory  ${p.relative(testProjectDir)}',
+              'Project id         $projectId',
+              'Enable DB          yes',
+              'Perform deploy     yes',
             ]),
           );
         });
@@ -875,7 +879,7 @@ project:
                 message: 'Enter the project directory',
               ),
               equalsInputCall(
-                message: 'Choose project id',
+                message: 'Enter a new project id',
                 defaultValue: 'default: my-project',
               ),
             ]),
@@ -913,10 +917,10 @@ project:
             logger.boxCalls.single.message,
             stringContainsInOrder([
               'Project setup',
-              'Project directory $testProjectDir',
-              'Project Id        $projectId',
-              'Enable DB         yes',
-              'Perform deploy    yes',
+              'Project directory  $testProjectDir',
+              'Project id         $projectId',
+              'Enable DB          yes',
+              'Perform deploy     yes',
             ]),
           );
         });
@@ -986,11 +990,11 @@ project:
                 message: 'Enter the project directory',
               ),
               equalsInputCall(
-                message: 'Choose project id',
+                message: 'Enter a new project id',
                 defaultValue: 'default: my-project',
               ),
               equalsInputCall(
-                message: 'Choose project id',
+                message: 'Enter a new project id',
                 defaultValue: 'default: my-project',
               ),
             ]),
@@ -1028,10 +1032,10 @@ project:
             logger.boxCalls.single.message,
             stringContainsInOrder([
               'Project setup',
-              'Project directory $testProjectDir',
-              'Project Id        $projectId',
-              'Enable DB         yes',
-              'Perform deploy    yes',
+              'Project directory  $testProjectDir',
+              'Project id         $projectId',
+              'Enable DB          yes',
+              'Perform deploy     yes',
             ]),
           );
         });
@@ -1048,6 +1052,486 @@ project:
           expect(logger.infoCalls, hasLength(1));
           expect(
             logger.infoCalls.single,
+            equalsInfoCall(
+              message: 'Setup cancelled.',
+            ),
+          );
+        });
+
+        test('then does not write scloud.yaml file', () async {
+          await commandResult.catchError((final _) {});
+
+          final expected = d.dir(testProjectDir, [
+            d.nothing('scloud.yaml'),
+          ]);
+          await expectLater(expected.validate(), completes);
+        });
+      });
+
+      group(
+          'when executing launch with all settings provided interactively '
+          'and 2 pre-existing projects are found but not selected '
+          'and declining confirmation', () {
+        setUpAll(() async {
+          when(() => client.projects.listProjects()).thenAnswer(
+            (final _) async => Future.value([
+              ProjectBuilder()
+                  .withCloudProjectId('pre-existing-project-1')
+                  .build(),
+              ProjectBuilder()
+                  .withCloudProjectId('pre-existing-project-2')
+                  .build(),
+            ]),
+          );
+        });
+
+        late Future commandResult;
+
+        setUp(() async {
+          logger.answerNextInputsWith([
+            testProjectDir,
+            '',
+            projectId,
+          ]);
+          logger.answerNextConfirmsWith([
+            true, // enable db
+            true, // perform deploy
+            false, // do not apply setup
+          ]);
+
+          commandResult = cli.run([
+            'launch',
+          ]);
+        });
+
+        test('then throws ErrorExitException', () async {
+          expect(commandResult, throwsA(isA<ErrorExitException>()));
+        });
+
+        test('then logs input messages', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(logger.inputCalls, isNotEmpty);
+          expect(
+            logger.inputCalls,
+            containsAllInOrder([
+              equalsInputCall(
+                message: 'Enter the project directory',
+              ),
+              equalsInputCall(
+                message: 'Enter a new project id',
+                defaultValue: 'default: my-project',
+              ),
+            ]),
+          );
+        });
+
+        test('then logs confirmation messages', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(logger.confirmCalls, isNotEmpty);
+          expect(
+            logger.confirmCalls,
+            containsAllInOrder([
+              equalsConfirmCall(
+                message: 'Enable the database for the project?',
+                defaultValue: true,
+              ),
+              equalsConfirmCall(
+                message: 'Deploy the project right away?',
+                defaultValue: true,
+              ),
+              equalsConfirmCall(
+                message: 'Continue and apply this setup?',
+                defaultValue: true,
+              ),
+            ]),
+          );
+        });
+
+        test('then logs setup message box', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(logger.boxCalls, hasLength(1));
+          expect(
+            logger.boxCalls.single.message,
+            stringContainsInOrder([
+              'Project setup',
+              'Project directory  $testProjectDir',
+              'Project id         $projectId',
+              'Enable DB          yes',
+              'Perform deploy     yes',
+            ]),
+          );
+        });
+
+        test('then logs no success messages', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(logger.successCalls, isEmpty);
+        });
+
+        test('then logs cancellation info message', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(logger.infoCalls, hasLength(6));
+          expect(
+            logger.infoCalls.last,
+            equalsInfoCall(
+              message: 'Setup cancelled.',
+            ),
+          );
+        });
+
+        test('then does not write scloud.yaml file', () async {
+          await commandResult.catchError((final _) {});
+
+          final expected = d.dir(testProjectDir, [
+            d.nothing('scloud.yaml'),
+          ]);
+          await expectLater(expected.validate(), completes);
+        });
+      });
+
+      group(
+          'when executing launch with all settings provided interactively '
+          'and 2 pre-existing projects are found and selected '
+          'and declining confirmation', () {
+        setUpAll(() async {
+          when(() => client.projects.listProjects()).thenAnswer(
+            (final _) async => Future.value([
+              ProjectBuilder()
+                  .withCloudProjectId('pre-existing-project-1')
+                  .build(),
+              ProjectBuilder()
+                  .withCloudProjectId('pre-existing-project-2')
+                  .build(),
+            ]),
+          );
+        });
+
+        late Future commandResult;
+
+        setUp(() async {
+          logger.answerNextInputsWith([
+            testProjectDir,
+            '1',
+            projectId,
+          ]);
+          logger.answerNextConfirmsWith([
+            true, // perform deploy
+            false, // do not apply setup
+          ]);
+
+          commandResult = cli.run([
+            'launch',
+          ]);
+        });
+
+        test('then throws ErrorExitException', () async {
+          expect(commandResult, throwsA(isA<ErrorExitException>()));
+        });
+
+        test('then logs input messages', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(logger.inputCalls, isNotEmpty);
+          expect(
+            logger.inputCalls,
+            containsAllInOrder([
+              equalsInputCall(
+                message: 'Enter the project directory',
+              ),
+              equalsInputCall(
+                message: 'Enter a project number from the list, or blank',
+              ),
+            ]),
+          );
+        });
+
+        test('then logs confirmation messages', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(logger.confirmCalls, isNotEmpty);
+          expect(
+            logger.confirmCalls,
+            containsAllInOrder([
+              equalsConfirmCall(
+                message: 'Deploy the project right away?',
+                defaultValue: true,
+              ),
+              equalsConfirmCall(
+                message: 'Continue and apply this setup?',
+                defaultValue: true,
+              ),
+            ]),
+          );
+        });
+
+        test('then logs setup message box', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(logger.boxCalls, hasLength(1));
+          expect(
+            logger.boxCalls.single.message,
+            stringContainsInOrder([
+              'Project setup',
+              'Project directory    $testProjectDir',
+              'Existing project id  pre-existing-project',
+              'Perform deploy       yes',
+            ]),
+          );
+        });
+
+        test('then logs no success messages', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(logger.successCalls, isEmpty);
+        });
+
+        test('then logs cancellation info message', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(logger.infoCalls, hasLength(6));
+          expect(
+            logger.infoCalls.last,
+            equalsInfoCall(
+              message: 'Setup cancelled.',
+            ),
+          );
+        });
+
+        test('then does not write scloud.yaml file', () async {
+          await commandResult.catchError((final _) {});
+
+          final expected = d.dir(testProjectDir, [
+            d.nothing('scloud.yaml'),
+          ]);
+          await expectLater(expected.validate(), completes);
+        });
+      });
+
+      group(
+          'when executing launch with all settings provided interactively '
+          'and 1 pre-existing project is found but not selected '
+          'and declining confirmation', () {
+        setUpAll(() async {
+          when(() => client.projects.listProjects()).thenAnswer(
+            (final _) async => Future.value([
+              ProjectBuilder()
+                  .withCloudProjectId('pre-existing-project')
+                  .build(),
+            ]),
+          );
+        });
+
+        late Future commandResult;
+
+        setUp(() async {
+          logger.answerNextInputsWith([
+            testProjectDir,
+            projectId,
+          ]);
+          logger.answerNextConfirmsWith([
+            false, // decline using existing project
+            true, // enable db
+            true, // perform deploy
+            false, // do not apply setup
+          ]);
+
+          commandResult = cli.run([
+            'launch',
+          ]);
+        });
+
+        test('then throws ErrorExitException', () async {
+          expect(commandResult, throwsA(isA<ErrorExitException>()));
+        });
+
+        test('then logs input messages', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(logger.inputCalls, isNotEmpty);
+          expect(
+            logger.inputCalls,
+            containsAllInOrder([
+              equalsInputCall(
+                message: 'Enter the project directory',
+              ),
+              equalsInputCall(
+                message: 'Enter a new project id',
+                defaultValue: 'default: my-project',
+              ),
+            ]),
+          );
+        });
+
+        test('then logs confirmation messages', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(logger.confirmCalls, isNotEmpty);
+          expect(
+            logger.confirmCalls,
+            containsAllInOrder([
+              equalsConfirmCall(
+                message: 'Enable the database for the project?',
+                defaultValue: true,
+              ),
+              equalsConfirmCall(
+                message: 'Deploy the project right away?',
+                defaultValue: true,
+              ),
+              equalsConfirmCall(
+                message: 'Continue and apply this setup?',
+                defaultValue: true,
+              ),
+            ]),
+          );
+        });
+
+        test('then logs setup message box', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(logger.boxCalls, hasLength(1));
+          expect(
+            logger.boxCalls.single.message,
+            stringContainsInOrder([
+              'Project setup',
+              'Project directory  $testProjectDir',
+              'Project id         $projectId',
+              'Enable DB          yes',
+              'Perform deploy     yes',
+            ]),
+          );
+        });
+
+        test('then logs no success messages', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(logger.successCalls, isEmpty);
+        });
+
+        test('then logs cancellation info message', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(logger.infoCalls, hasLength(3));
+          expect(
+            logger.infoCalls.last,
+            equalsInfoCall(
+              message: 'Setup cancelled.',
+            ),
+          );
+        });
+
+        test('then does not write scloud.yaml file', () async {
+          await commandResult.catchError((final _) {});
+
+          final expected = d.dir(testProjectDir, [
+            d.nothing('scloud.yaml'),
+          ]);
+          await expectLater(expected.validate(), completes);
+        });
+      });
+
+      group(
+          'when executing launch with all settings provided interactively '
+          'and 1 pre-existing project is found and selected '
+          'and declining confirmation', () {
+        setUpAll(() async {
+          when(() => client.projects.listProjects()).thenAnswer(
+            (final _) async => Future.value([
+              ProjectBuilder()
+                  .withCloudProjectId('pre-existing-project')
+                  .build(),
+            ]),
+          );
+        });
+
+        late Future commandResult;
+
+        setUp(() async {
+          logger.answerNextInputsWith([
+            testProjectDir,
+            projectId,
+          ]);
+          logger.answerNextConfirmsWith([
+            true, // confirm using existing project
+            true, // perform deploy
+            false, // do not apply setup
+          ]);
+
+          commandResult = cli.run([
+            'launch',
+          ]);
+        });
+
+        test('then throws ErrorExitException', () async {
+          expect(commandResult, throwsA(isA<ErrorExitException>()));
+        });
+
+        test('then logs input messages', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(logger.inputCalls, isNotEmpty);
+          expect(
+            logger.inputCalls,
+            containsAllInOrder([
+              equalsInputCall(
+                message: 'Enter the project directory',
+              ),
+            ]),
+          );
+        });
+
+        test('then logs confirmation messages', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(logger.confirmCalls, isNotEmpty);
+          expect(
+            logger.confirmCalls,
+            containsAllInOrder([
+              equalsConfirmCall(
+                message: 'Continue with pre-existing-project?',
+              ),
+              equalsConfirmCall(
+                message: 'Deploy the project right away?',
+                defaultValue: true,
+              ),
+              equalsConfirmCall(
+                message: 'Continue and apply this setup?',
+                defaultValue: true,
+              ),
+            ]),
+          );
+        });
+
+        test('then logs setup message box', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(logger.boxCalls, hasLength(1));
+          expect(
+            logger.boxCalls.single.message,
+            stringContainsInOrder([
+              'Project setup',
+              'Project directory    $testProjectDir',
+              'Existing project id  pre-existing-project',
+              'Perform deploy       yes',
+            ]),
+          );
+        });
+
+        test('then logs no success messages', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(logger.successCalls, isEmpty);
+        });
+
+        test('then logs cancellation info message', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(logger.infoCalls, hasLength(3));
+          expect(
+            logger.infoCalls.last,
             equalsInfoCall(
               message: 'Setup cancelled.',
             ),

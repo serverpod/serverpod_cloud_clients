@@ -43,14 +43,17 @@ abstract class Launch {
     );
 
     await selectProjectId(
+      cloudApiClient,
       logger,
       projectSetup,
     );
 
-    await selectEnableDb(
-      logger,
-      projectSetup,
-    );
+    if (projectSetup.preexistingProject != true) {
+      await selectEnableDb(
+        logger,
+        projectSetup,
+      );
+    }
 
     await selectPerformDeploy(
       logger,
@@ -144,6 +147,7 @@ abstract class Launch {
   }
 
   static Future<void> selectProjectId(
+    final Client cloudApiClient,
     final CommandLogger logger,
     final ProjectLaunch projectSetup,
   ) async {
@@ -162,6 +166,13 @@ abstract class Launch {
       logger.error(invalidProjectIdMessage);
     }
 
+    final selectedId = await _selectExistingProject(cloudApiClient, logger);
+    if (selectedId != null) {
+      projectSetup.projectId = selectedId;
+      projectSetup.preexistingProject = true;
+      return;
+    }
+
     final defaultProjectId = _getDefaultProjectId(projectSetup.projectDir);
 
     logger.raw(
@@ -176,7 +187,7 @@ The default API domain will be: <project-id>.api.serverpod.space
       final defaultValue =
           defaultProjectId != null ? '$defaultPrefix$defaultProjectId' : null;
       var projectId = await logger.input(
-        'Choose project id',
+        'Enter a new project id',
         defaultValue: defaultValue,
       );
 
@@ -195,6 +206,85 @@ The default API domain will be: <project-id>.api.serverpod.space
       }
 
       logger.error(invalidProjectIdMessage);
+    } while (true);
+  }
+
+  static Future<String?> _selectExistingProject(
+    final Client cloudApiClient,
+    final CommandLogger logger,
+  ) async {
+    final projects = await _fetchExistingProjects(cloudApiClient);
+    if (projects.isEmpty) {
+      return null;
+    }
+    if (projects.length == 1) {
+      return _confirmSingleExistingProject(logger, projects.single);
+    }
+    return _selectFromSeveralExistingProjects(logger, projects);
+  }
+
+  static Future<List<Project>> _fetchExistingProjects(
+    final Client cloudApiClient,
+  ) async {
+    try {
+      final projects = await cloudApiClient.projects.listProjects();
+      final activeProjects = projects.where((final p) => p.archivedAt == null);
+      return activeProjects.toList();
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Request to list projects failed');
+    }
+  }
+
+  static Future<String?> _confirmSingleExistingProject(
+    final CommandLogger logger,
+    final Project project,
+  ) async {
+    logger.info(
+      'Found an existing Cloud project: ${project.cloudProjectId}',
+      newParagraph: true,
+    );
+
+    final confirm = await logger.confirm(
+      'Continue with ${project.cloudProjectId}?',
+    );
+    logger.info(' ');
+    return confirm ? project.cloudProjectId : null;
+  }
+
+  static Future<String?> _selectFromSeveralExistingProjects(
+    final CommandLogger logger,
+    final List<Project> projects,
+  ) async {
+    final existingIds = projects.map((final p) => p.cloudProjectId).toList();
+    logger.info(
+      'Found existing Cloud projects.\n'
+      'Do you want to deploy to one of them instead of creating a new one?',
+      newParagraph: true,
+    );
+    for (int i = 0; i < existingIds.length; i++) {
+      logger.info('${i + 1}. ${existingIds[i]}');
+    }
+    logger.info('(blank - create a new project)');
+
+    do {
+      final projectNum = await logger.input(
+        'Enter a project number from the list, or blank',
+      );
+
+      if (projectNum.isEmpty || projectNum == 'q') {
+        logger.info(' ');
+        return null;
+      }
+
+      final projectIx = int.tryParse(projectNum);
+      if (projectIx != null &&
+          projectIx >= 1 &&
+          projectIx <= existingIds.length) {
+        logger.info(' ');
+        return existingIds[projectIx - 1];
+      }
+
+      logger.error('Value must be a number from the list, or empty to skip.');
     } while (true);
   }
 
@@ -277,20 +367,22 @@ The default API domain will be: <project-id>.api.serverpod.space
 
     final projectId = projectSetup.projectId!;
     final projectDir = projectSetup.projectDir!;
-    final enableDb = projectSetup.enableDb!;
     final performDeploy = projectSetup.performDeploy!;
 
-    await ProjectCommands.createProject(
-      cloudApiClient,
-      logger: logger,
-      projectId: projectId,
-      enableDb: enableDb,
-      projectDir: projectDir,
-      configFilePath: p.join(
-        projectDir,
-        ProjectConfigFileConstants.defaultFileName,
-      ),
-    );
+    if (projectSetup.preexistingProject != true) {
+      final enableDb = projectSetup.enableDb!;
+      await ProjectCommands.createProject(
+        cloudApiClient,
+        logger: logger,
+        projectId: projectId,
+        enableDb: enableDb,
+        projectDir: projectDir,
+        configFilePath: p.join(
+          projectDir,
+          ProjectConfigFileConstants.defaultFileName,
+        ),
+      );
+    }
 
     if (!performDeploy) {
       logger.terminalCommand(
@@ -343,23 +435,31 @@ class ProjectLaunch {
   String? projectDir;
   String? projectId;
   bool? enableDb;
+  bool? preexistingProject;
   bool? performDeploy;
 
   ProjectLaunch({
     this.projectDir,
     this.projectId,
     this.enableDb,
+    this.preexistingProject,
     this.performDeploy,
   });
 
   @override
   String toString() {
-    final text = TablePrinter.columns(rows: [
-      ['Project directory', projectDir],
-      ['Project Id', projectId],
-      ['Enable DB', enableDb == true ? 'yes' : 'no'],
-      ['Perform deploy', performDeploy == true ? 'yes' : 'no'],
-    ]).toString();
+    final text = TablePrinter.columns(
+      rows: [
+        ['Project directory', projectDir],
+        if (preexistingProject != true) ...[
+          ['Project id', projectId],
+          ['Enable DB', enableDb == true ? 'yes' : 'no'],
+        ] else
+          ['Existing project id', projectId],
+        ['Perform deploy', performDeploy == true ? 'yes' : 'no'],
+      ],
+      columnSeparator: '  ',
+    ).toString();
     return text.substring(0, text.length - 1); // trims last newline
   }
 }
