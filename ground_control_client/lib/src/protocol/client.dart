@@ -123,6 +123,15 @@ class EndpointAdminProjects extends _i1.EndpointRef {
         'listProjects',
         {'includeArchived': includeArchived},
       );
+
+  /// Redeploys a capsule using its current image.
+  /// Triggers a deploymentUpdated event to redeploy the infrastructure.
+  _i2.Future<void> redeployCapsule(String cloudProjectId) =>
+      caller.callServerEndpoint<void>(
+        'adminProjects',
+        'redeployCapsule',
+        {'cloudProjectId': cloudProjectId},
+      );
 }
 
 /// Endpoint for global administrator users access.

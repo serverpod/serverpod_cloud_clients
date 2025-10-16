@@ -1,5 +1,6 @@
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 
@@ -33,6 +34,23 @@ abstract class ProjectAdminCommands {
           ]),
     );
     table.writeLines(logger.line);
+  }
+
+  static Future<void> redeployProject(
+    final Client cloudApiClient, {
+    required final CommandLogger logger,
+    required final String projectId,
+  }) async {
+    try {
+      await cloudApiClient.adminProjects.redeployCapsule(projectId);
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Failed to redeploy project');
+    }
+
+    logger.success(
+      'Redeployment triggered for project: $projectId',
+      newParagraph: true,
+    );
   }
 
   static String _formatProjectUsers(final Project project) {

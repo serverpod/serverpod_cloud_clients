@@ -2,6 +2,7 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 
 import 'admin_product_commands.dart';
 import 'admin_projects_commands.dart';
+import 'admin_redeploy_command.dart';
 import 'admin_users_commands.dart';
 
 /// The admin command is used internally for Serverpod Cloud administration.
@@ -24,6 +25,7 @@ class CloudAdminCommand extends CloudCliCommand {
     addSubcommand(AdminListUsersCommand(logger: logger));
     addSubcommand(AdminInviteUserCommand(logger: logger));
     addSubcommand(AdminListProjectsCommand(logger: logger));
+    addSubcommand(AdminRedeployCommand(logger: logger));
     addSubcommand(AdminProductCommand(logger: logger));
   }
 }
