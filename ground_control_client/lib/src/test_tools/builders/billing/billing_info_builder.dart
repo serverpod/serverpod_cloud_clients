@@ -14,6 +14,8 @@ class BillingInfoBuilder {
   String? _state;
   String _country;
   String? _vatNumber;
+  String? _vatType;
+  BillingCustomerType _customerType;
 
   BillingInfoBuilder({Owner? owner})
       : _id = Uuid().v4obj(),
@@ -28,7 +30,9 @@ class BillingInfoBuilder {
         _city = 'New York',
         _state = 'New York',
         _country = 'US',
-        _vatNumber = 'SE1234567890';
+        _vatNumber = 'SE1234567890',
+        _vatType = null,
+        _customerType = BillingCustomerType.private;
 
   BillingInfoBuilder withId(UuidValue? id) {
     _id = id;
@@ -98,6 +102,16 @@ class BillingInfoBuilder {
     return this;
   }
 
+  BillingInfoBuilder withVatType(String? vatType) {
+    _vatType = vatType;
+    return this;
+  }
+
+  BillingInfoBuilder withCustomerType(BillingCustomerType customerType) {
+    _customerType = customerType;
+    return this;
+  }
+
   BillingInfo build() {
     return BillingInfo(
       id: _id,
@@ -113,6 +127,8 @@ class BillingInfoBuilder {
       state: _state,
       country: _country,
       vatNumber: _vatNumber,
+      vatType: _vatType,
+      customerType: _customerType,
     );
   }
 }
