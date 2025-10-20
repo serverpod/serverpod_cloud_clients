@@ -30,7 +30,7 @@ class BillingInfoBuilder {
         _city = 'New York',
         _state = 'New York',
         _country = 'US',
-        _vatNumber = 'SE1234567890',
+        _vatNumber = null,
         _vatType = null,
         _customerType = BillingCustomerType.private;
 
@@ -109,6 +109,21 @@ class BillingInfoBuilder {
 
   BillingInfoBuilder withCustomerType(BillingCustomerType customerType) {
     _customerType = customerType;
+    return this;
+  }
+
+  BillingInfoBuilder withBusinessUser() {
+    _customerType = BillingCustomerType.business;
+    _vatNumber = 'SE123456789123';
+    _vatType = 'eu_vat';
+    _country = 'SE';
+    return this;
+  }
+
+  BillingInfoBuilder withPrivateUser() {
+    _customerType = BillingCustomerType.private;
+    _vatNumber = null;
+    _vatType = null;
     return this;
   }
 
