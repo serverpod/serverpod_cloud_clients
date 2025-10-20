@@ -76,10 +76,8 @@ abstract class BillingInfo implements _i1.SerializableModel {
       country: jsonSerialization['country'] as String,
       vatNumber: jsonSerialization['vatNumber'] as String?,
       vatType: jsonSerialization['vatType'] as String?,
-      customerType: jsonSerialization['customerType'] == null
-          ? null
-          : _i2.BillingCustomerType.fromJson(
-              (jsonSerialization['customerType'] as String)),
+      customerType: _i2.BillingCustomerType.fromJson(
+          (jsonSerialization['customerType'] as String)),
     );
   }
 
@@ -114,7 +112,7 @@ abstract class BillingInfo implements _i1.SerializableModel {
 
   String? vatType;
 
-  _i2.BillingCustomerType? customerType;
+  _i2.BillingCustomerType customerType;
 
   /// Returns a shallow copy of this [BillingInfo]
   /// with some or all fields replaced by the given arguments.
@@ -153,7 +151,7 @@ abstract class BillingInfo implements _i1.SerializableModel {
       'country': country,
       if (vatNumber != null) 'vatNumber': vatNumber,
       if (vatType != null) 'vatType': vatType,
-      if (customerType != null) 'customerType': customerType?.toJson(),
+      'customerType': customerType.toJson(),
     };
   }
 
@@ -219,7 +217,7 @@ class _BillingInfoImpl extends BillingInfo {
     String? country,
     Object? vatNumber = _Undefined,
     Object? vatType = _Undefined,
-    Object? customerType = _Undefined,
+    _i2.BillingCustomerType? customerType,
   }) {
     return BillingInfo(
       id: id ?? this.id,
@@ -236,9 +234,7 @@ class _BillingInfoImpl extends BillingInfo {
       country: country ?? this.country,
       vatNumber: vatNumber is String? ? vatNumber : this.vatNumber,
       vatType: vatType is String? ? vatType : this.vatType,
-      customerType: customerType is _i2.BillingCustomerType?
-          ? customerType
-          : this.customerType,
+      customerType: customerType ?? this.customerType,
     );
   }
 }
