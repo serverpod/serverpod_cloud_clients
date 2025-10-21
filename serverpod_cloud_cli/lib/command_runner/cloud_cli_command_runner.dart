@@ -30,6 +30,8 @@ import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
 import 'package:serverpod_cloud_cli/util/scloud_version.dart';
 
 import 'commands/admin/admin_command.dart';
+import 'completion/completion_script_carapace.dart';
+import 'completion/completion_script_completely.dart';
 
 /// Represents the Serverpod Cloud CLI main command, its global options, and subcommands.
 class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
@@ -76,6 +78,11 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
           messageOutput: MessageOutput(
             usageLogger: logger.info,
           ),
+          enableCompletionCommand: true,
+          embeddedCompletions: [
+            completionScriptCompletely,
+            completionScriptCarapace,
+          ],
         );
 
   static CloudCliCommandRunner create({

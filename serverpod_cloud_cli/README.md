@@ -1,28 +1,52 @@
-![Serverpod banner](https://github.com/serverpod/serverpod/raw/main/misc/images/github-header.webp)
+[![Serverpod banner](https://github.com/serverpod/serverpod/raw/main/misc/images/github-header.webp)](https://github.com/serverpod/serverpod)
 
 # Serverpod Cloud CLI
 
-`scloud`, the Serverpod Cloud command, is your command line interface for the Serverpod Cloud platform.
-It is used to manage, deploy, and monitor Serverpod Cloud projects.
+The Serverpod Cloud CLI provides all you need to create, manage, and deploy your
+Serverpod projects in Serverpod Cloud.
 
-## Commands
+> If you're new to developing with Serverpod, check out the [create a Serverpod project guide](https://docs.serverpod.dev/get-started) in the Serverpod framework docs!
 
-The Serverpod Cloud CLI has the following commands:
 
-| Command | Description |
-|---------|-------------|
-| version | Print the version of the Serverpod Cloud CLI. |
-| auth    | Log in, log out, or create an account in Serverpod Cloud. |
-| project | Manage Serverpod Cloud projects. |
-| user    | Manage Serverpod Cloud users. |
-| db      | Manage Serverpod Cloud DBs. |
-| deploy  | Deploy a Serverpod project to the cloud. |
-| domain  | Manage Serverpod Cloud custom domains. |
-| env     | Manage Serverpod Cloud environment variables for a project. |
-| launch  | Guided launch of a new Serverpod Cloud project. |
-| secret  | Manage Serverpod Cloud secrets. |
-| log     | Fetch Serverpod Cloud logs. |
-| status  | Show status information. |
+## Getting Started
+
+Run the following to install the CLI:
+
+```sh
+dart pub global activate serverpod_cloud_cli
+```
+
+Log in to your Serverpod Cloud account using the CLI:
+<br/>(If you don't have a Serverpod Cloud account yet, visit [Serverpod Cloud](https://serverpod.cloud/).)
+
+```sh
+scloud auth login
+```
+
+Go to your Serverpod server directory (e.g. `./myproject/myproject_server`)
+and run the [`launch` command](https://docs.serverpod.cloud/references/cli/commands/launch)
+to get an interactive, guided set up of a new Serverpod Cloud project:
+
+```sh
+scloud launch
+```
+
+If the project requires any environment variables or secrets, they can be added with the [`env`](https://docs.serverpod.cloud/references/cli/commands/env) and [`secret`](https://docs.serverpod.cloud/references/cli/commands/secret) commands. Once the project is ready to be deployed, run the following command:
+
+```sh
+scloud deploy
+```
+
+To follow the progress of the deployment, use the [`status deploy` command](https://docs.serverpod.cloud/references/cli/commands/status):
+
+```sh
+scloud status deploy
+```
+
+That's it, you have now deployed your Serverpod app! 🚀
+
+For more information on the different commands, see the commands section in the side menu. For instance, to view the service's domains or to add your own custom domains, see the [`domain` command](https://docs.serverpod.cloud/references/cli/commands/domain).
+
 
 ## Online documentation
 
