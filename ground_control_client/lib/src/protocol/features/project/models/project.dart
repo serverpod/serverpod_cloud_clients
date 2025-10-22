@@ -12,9 +12,8 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/billing/models/owner.dart' as _i2;
-import '../../../domains/billing/models/subscription.dart' as _i3;
-import '../../../features/project/models/role.dart' as _i4;
-import '../../../domains/capsules/models/capsule.dart' as _i5;
+import '../../../features/project/models/role.dart' as _i3;
+import '../../../domains/capsules/models/capsule.dart' as _i4;
 
 /// Represents a project of a tenant.
 /// Typically a serverpod project.
@@ -27,7 +26,6 @@ abstract class Project implements _i1.SerializableModel {
     required this.cloudProjectId,
     required this.ownerId,
     this.owner,
-    this.subscription,
     this.roles,
     this.capsules,
   })  : createdAt = createdAt ?? DateTime.now(),
@@ -41,9 +39,8 @@ abstract class Project implements _i1.SerializableModel {
     required String cloudProjectId,
     required _i1.UuidValue ownerId,
     _i2.Owner? owner,
-    _i3.Subscription? subscription,
-    List<_i4.Role>? roles,
-    List<_i5.Capsule>? capsules,
+    List<_i3.Role>? roles,
+    List<_i4.Capsule>? capsules,
   }) = _ProjectImpl;
 
   factory Project.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -63,15 +60,11 @@ abstract class Project implements _i1.SerializableModel {
           ? null
           : _i2.Owner.fromJson(
               (jsonSerialization['owner'] as Map<String, dynamic>)),
-      subscription: jsonSerialization['subscription'] == null
-          ? null
-          : _i3.Subscription.fromJson(
-              (jsonSerialization['subscription'] as Map<String, dynamic>)),
       roles: (jsonSerialization['roles'] as List?)
-          ?.map((e) => _i4.Role.fromJson((e as Map<String, dynamic>)))
+          ?.map((e) => _i3.Role.fromJson((e as Map<String, dynamic>)))
           .toList(),
       capsules: (jsonSerialization['capsules'] as List?)
-          ?.map((e) => _i5.Capsule.fromJson((e as Map<String, dynamic>)))
+          ?.map((e) => _i4.Capsule.fromJson((e as Map<String, dynamic>)))
           .toList(),
     );
   }
@@ -98,15 +91,11 @@ abstract class Project implements _i1.SerializableModel {
   /// The owner of the project.
   _i2.Owner? owner;
 
-  /// The subscription for this project.
-  /// DEPRECATED, will likely be removed
-  _i3.Subscription? subscription;
-
   /// The roles for this project.
-  List<_i4.Role>? roles;
+  List<_i3.Role>? roles;
 
   /// The capsules belonging to this project.
-  List<_i5.Capsule>? capsules;
+  List<_i4.Capsule>? capsules;
 
   /// Returns a shallow copy of this [Project]
   /// with some or all fields replaced by the given arguments.
@@ -119,9 +108,8 @@ abstract class Project implements _i1.SerializableModel {
     String? cloudProjectId,
     _i1.UuidValue? ownerId,
     _i2.Owner? owner,
-    _i3.Subscription? subscription,
-    List<_i4.Role>? roles,
-    List<_i5.Capsule>? capsules,
+    List<_i3.Role>? roles,
+    List<_i4.Capsule>? capsules,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -133,7 +121,6 @@ abstract class Project implements _i1.SerializableModel {
       'cloudProjectId': cloudProjectId,
       'ownerId': ownerId.toJson(),
       if (owner != null) 'owner': owner?.toJson(),
-      if (subscription != null) 'subscription': subscription?.toJson(),
       if (roles != null) 'roles': roles?.toJson(valueToJson: (v) => v.toJson()),
       if (capsules != null)
         'capsules': capsules?.toJson(valueToJson: (v) => v.toJson()),
@@ -157,9 +144,8 @@ class _ProjectImpl extends Project {
     required String cloudProjectId,
     required _i1.UuidValue ownerId,
     _i2.Owner? owner,
-    _i3.Subscription? subscription,
-    List<_i4.Role>? roles,
-    List<_i5.Capsule>? capsules,
+    List<_i3.Role>? roles,
+    List<_i4.Capsule>? capsules,
   }) : super._(
           id: id,
           createdAt: createdAt,
@@ -168,7 +154,6 @@ class _ProjectImpl extends Project {
           cloudProjectId: cloudProjectId,
           ownerId: ownerId,
           owner: owner,
-          subscription: subscription,
           roles: roles,
           capsules: capsules,
         );
@@ -185,7 +170,6 @@ class _ProjectImpl extends Project {
     String? cloudProjectId,
     _i1.UuidValue? ownerId,
     Object? owner = _Undefined,
-    Object? subscription = _Undefined,
     Object? roles = _Undefined,
     Object? capsules = _Undefined,
   }) {
@@ -197,13 +181,10 @@ class _ProjectImpl extends Project {
       cloudProjectId: cloudProjectId ?? this.cloudProjectId,
       ownerId: ownerId ?? this.ownerId,
       owner: owner is _i2.Owner? ? owner : this.owner?.copyWith(),
-      subscription: subscription is _i3.Subscription?
-          ? subscription
-          : this.subscription?.copyWith(),
-      roles: roles is List<_i4.Role>?
+      roles: roles is List<_i3.Role>?
           ? roles
           : this.roles?.map((e0) => e0.copyWith()).toList(),
-      capsules: capsules is List<_i5.Capsule>?
+      capsules: capsules is List<_i4.Capsule>?
           ? capsules
           : this.capsules?.map((e0) => e0.copyWith()).toList(),
     );
