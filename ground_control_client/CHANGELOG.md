@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.0] - 2025-10-21
+
+### Added
+
+- **CLI completion** - The CLI now supports command line completion in most shells, making it easier to use `scloud` and `xcloud` commands.
+- **Launch command proposes existing projects** - The `scloud launch` command now lists available projects and prompts users to select one for deployment, instead of creating a new one.
+
 ## [0.11.0] - 2025-10-03
 
 ### Added
