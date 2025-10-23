@@ -744,11 +744,19 @@ class EndpointProjects extends _i1.EndpointRef {
 
   /// Creates a new project with basic setup.
   /// The [cloudProjectId] must be globally unique.
-  _i2.Future<_i3.Project> createProject({required String cloudProjectId}) =>
+  /// [underSubscriptionId] optionally specify a subscription to procure the
+  /// project under, or the user's primary subscription will be used.
+  _i2.Future<_i3.Project> createProject({
+    required String cloudProjectId,
+    String? underSubscriptionId,
+  }) =>
       caller.callServerEndpoint<_i3.Project>(
         'projects',
         'createProject',
-        {'cloudProjectId': cloudProjectId},
+        {
+          'cloudProjectId': cloudProjectId,
+          'underSubscriptionId': underSubscriptionId,
+        },
       );
 
   /// Fetches the specified project.
