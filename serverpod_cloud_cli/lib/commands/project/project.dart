@@ -22,16 +22,24 @@ abstract class ProjectCommands {
     required final String projectDir,
     required final String configFilePath,
   }) async {
-    logger.init('Creating Serverpod Cloud project "$projectId".');
-
     // Check that the user is on a plan and automatically procure one if not.
     // This behavior will be changed in the future.
     final planNames = await cloudApiClient.plans.listProcuredPlanNames();
     if (planNames.isEmpty) {
       const defaultPlanName = 'closed-beta';
-      await cloudApiClient.plans.procurePlan(planName: defaultPlanName);
+      try {
+        await cloudApiClient.plans.procurePlan(planName: defaultPlanName);
+      } on ResourceDeniedException catch (e) {
+        final setupUrl = _getConsoleSetupAccountUrl();
+        throw FailureException(
+            error:
+                "Couldn't procure the plan '$defaultPlanName':\n${e.message}",
+            hint: 'Visit $setupUrl to set up your account.');
+      }
+      logger.init('Creating Serverpod Cloud project "$projectId".');
       logger.info('On plan: $defaultPlanName');
     } else {
+      logger.init('Creating Serverpod Cloud project "$projectId".');
       logger.debug('On plan: ${planNames.first}');
     }
 
@@ -374,5 +382,15 @@ abstract class ProjectCommands {
     }
     gitIgnoreFile.writeAsStringSync('$content$scloudIgnoreTemplate');
     return true;
+  }
+
+  static String _getConsoleSetupAccountUrl() {
+    const prodConsoleHost = 'https://console.serverpod.cloud';
+    const setupLandingPath = '/projects/create';
+
+    final hostFromEnv =
+        Platform.environment['SERVERPOD_CLOUD_CONSOLE_SERVER_URL'];
+    final consoleHost = hostFromEnv ?? prodConsoleHost;
+    return '$consoleHost$setupLandingPath';
   }
 }
