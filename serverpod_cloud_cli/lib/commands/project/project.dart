@@ -26,7 +26,7 @@ abstract class ProjectCommands {
     // This behavior will be changed in the future.
     final planNames = await cloudApiClient.plans.listProcuredPlanNames();
     if (planNames.isEmpty) {
-      const defaultPlanName = 'closed-beta';
+      const defaultPlanName = 'early-access';
       try {
         await cloudApiClient.plans.procurePlan(planName: defaultPlanName);
       } on ResourceDeniedException catch (e) {
