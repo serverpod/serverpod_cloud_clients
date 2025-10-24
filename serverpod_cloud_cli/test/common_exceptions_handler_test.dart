@@ -62,13 +62,13 @@ void main() {
   });
 
   test(
-      'Given a ResourceDeniedException '
+      'Given a ProcurementDeniedException '
       'when calling processCommonClientExceptions '
       'then should throw ExitErrorException and log error message', () {
     expect(
       () => processCommonClientExceptions(
           logger,
-          ResourceDeniedException(
+          ProcurementDeniedException(
             message:
                 'The maximum number of projects that can be created has been reached (5).',
           ),
@@ -79,9 +79,11 @@ void main() {
     expect(
       logger.errorCalls.last,
       equalsErrorCall(
-        message: 'The resource was not allowed.',
-        hint:
+        message:
             'The maximum number of projects that can be created has been reached (5).',
+        hint:
+            'To see your account, visit: https://console.serverpod.cloud/projects\n',
+        newParagraph: true,
       ),
     );
   });

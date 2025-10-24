@@ -12,29 +12,29 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
-/// Exception thrown when a resource is denied to the user / organization
-/// due to insufficient quota, allowance, or other subscription limit.
+/// Exception thrown when a procurement is denied to the user / organization
+/// due to insufficient allowance or other subscription limits.
 ///
-/// This is distinct from access authorization.
-abstract class ResourceDeniedException
+/// This is distinct from access authorization, and from quota limits.
+abstract class ProcurementDeniedException
     implements _i1.SerializableException, _i1.SerializableModel {
-  ResourceDeniedException._({required this.message});
+  ProcurementDeniedException._({required this.message});
 
-  factory ResourceDeniedException({required String message}) =
-      _ResourceDeniedExceptionImpl;
+  factory ProcurementDeniedException({required String message}) =
+      _ProcurementDeniedExceptionImpl;
 
-  factory ResourceDeniedException.fromJson(
+  factory ProcurementDeniedException.fromJson(
       Map<String, dynamic> jsonSerialization) {
-    return ResourceDeniedException(
+    return ProcurementDeniedException(
         message: jsonSerialization['message'] as String);
   }
 
   String message;
 
-  /// Returns a shallow copy of this [ResourceDeniedException]
+  /// Returns a shallow copy of this [ProcurementDeniedException]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
-  ResourceDeniedException copyWith({String? message});
+  ProcurementDeniedException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
     return {'message': message};
@@ -46,15 +46,15 @@ abstract class ResourceDeniedException
   }
 }
 
-class _ResourceDeniedExceptionImpl extends ResourceDeniedException {
-  _ResourceDeniedExceptionImpl({required String message})
+class _ProcurementDeniedExceptionImpl extends ProcurementDeniedException {
+  _ProcurementDeniedExceptionImpl({required String message})
       : super._(message: message);
 
-  /// Returns a shallow copy of this [ResourceDeniedException]
+  /// Returns a shallow copy of this [ProcurementDeniedException]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
   @override
-  ResourceDeniedException copyWith({String? message}) {
-    return ResourceDeniedException(message: message ?? this.message);
+  ProcurementDeniedException copyWith({String? message}) {
+    return ProcurementDeniedException(message: message ?? this.message);
   }
 }

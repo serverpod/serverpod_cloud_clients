@@ -59,7 +59,7 @@ import 'features/secret_manager/models/secret_type.dart' as _i42;
 import 'shared/exceptions/models/duplicate_entry_exception.dart' as _i43;
 import 'shared/exceptions/models/invalid_value_exception.dart' as _i44;
 import 'shared/exceptions/models/not_found_exception.dart' as _i45;
-import 'shared/exceptions/models/resource_denied_exception.dart' as _i46;
+import 'shared/exceptions/models/procurement_denied_exception.dart' as _i46;
 import 'shared/exceptions/models/unauthenticated_exception.dart' as _i47;
 import 'shared/exceptions/models/unauthorized_exception.dart' as _i48;
 import 'shared/models/serverpod_region.dart' as _i49;
@@ -136,7 +136,7 @@ export 'features/secret_manager/models/secret_type.dart';
 export 'shared/exceptions/models/duplicate_entry_exception.dart';
 export 'shared/exceptions/models/invalid_value_exception.dart';
 export 'shared/exceptions/models/not_found_exception.dart';
-export 'shared/exceptions/models/resource_denied_exception.dart';
+export 'shared/exceptions/models/procurement_denied_exception.dart';
 export 'shared/exceptions/models/unauthenticated_exception.dart';
 export 'shared/exceptions/models/unauthorized_exception.dart';
 export 'shared/models/serverpod_region.dart';
@@ -288,8 +288,8 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i45.NotFoundException) {
       return _i45.NotFoundException.fromJson(data) as T;
     }
-    if (t == _i46.ResourceDeniedException) {
-      return _i46.ResourceDeniedException.fromJson(data) as T;
+    if (t == _i46.ProcurementDeniedException) {
+      return _i46.ProcurementDeniedException.fromJson(data) as T;
     }
     if (t == _i47.UnauthenticatedException) {
       return _i47.UnauthenticatedException.fromJson(data) as T;
@@ -453,9 +453,10 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i1.getType<_i45.NotFoundException?>()) {
       return (data != null ? _i45.NotFoundException.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i46.ResourceDeniedException?>()) {
-      return (data != null ? _i46.ResourceDeniedException.fromJson(data) : null)
-          as T;
+    if (t == _i1.getType<_i46.ProcurementDeniedException?>()) {
+      return (data != null
+          ? _i46.ProcurementDeniedException.fromJson(data)
+          : null) as T;
     }
     if (t == _i1.getType<_i47.UnauthenticatedException?>()) {
       return (data != null
@@ -709,8 +710,8 @@ class Protocol extends _i1.SerializationManager {
         return 'InvalidValueException';
       case _i45.NotFoundException():
         return 'NotFoundException';
-      case _i46.ResourceDeniedException():
-        return 'ResourceDeniedException';
+      case _i46.ProcurementDeniedException():
+        return 'ProcurementDeniedException';
       case _i47.UnauthenticatedException():
         return 'UnauthenticatedException';
       case _i48.UnauthorizedException():
@@ -882,8 +883,8 @@ class Protocol extends _i1.SerializationManager {
     if (dataClassName == 'NotFoundException') {
       return deserialize<_i45.NotFoundException>(data['data']);
     }
-    if (dataClassName == 'ResourceDeniedException') {
-      return deserialize<_i46.ResourceDeniedException>(data['data']);
+    if (dataClassName == 'ProcurementDeniedException') {
+      return deserialize<_i46.ProcurementDeniedException>(data['data']);
     }
     if (dataClassName == 'UnauthenticatedException') {
       return deserialize<_i47.UnauthenticatedException>(data['data']);

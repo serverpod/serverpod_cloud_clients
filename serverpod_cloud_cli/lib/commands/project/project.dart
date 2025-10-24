@@ -13,6 +13,26 @@ import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_file.dart';
 import 'package:serverpod_cloud_cli/util/scloudignore.dart';
 
 abstract class ProjectCommands {
+  static const defaultPlanName = 'early-access';
+
+  /// Subcommand to check if the user is subscribed to a plan,
+  /// and if not whether a plan can be procured.
+  /// If [planName] is not provided, the default plan will be assumed.
+  /// Throws an exception if there is no subscription and the plan cannot be
+  /// procured.
+  static Future<void> checkPlanAvailability(
+    final Client cloudApiClient, {
+    required final CommandLogger logger,
+    final String? planName,
+  }) async {
+    final planNames = await cloudApiClient.plans.listProcuredPlanNames();
+    if (planNames.isEmpty) {
+      await cloudApiClient.plans.checkPlanAvailability(
+        planName: planName ?? defaultPlanName,
+      );
+    }
+  }
+
   /// Subcommand to create a new tenant project.
   static Future<void> createProject(
     final Client cloudApiClient, {
@@ -26,16 +46,7 @@ abstract class ProjectCommands {
     // This behavior will be changed in the future.
     final planNames = await cloudApiClient.plans.listProcuredPlanNames();
     if (planNames.isEmpty) {
-      const defaultPlanName = 'early-access';
-      try {
-        await cloudApiClient.plans.procurePlan(planName: defaultPlanName);
-      } on ResourceDeniedException catch (e) {
-        final setupUrl = _getConsoleSetupAccountUrl();
-        throw FailureException(
-            error:
-                "Couldn't procure the plan '$defaultPlanName':\n${e.message}",
-            hint: 'Visit $setupUrl to set up your account.');
-      }
+      await cloudApiClient.plans.procurePlan(planName: defaultPlanName);
       logger.init('Creating Serverpod Cloud project "$projectId".');
       logger.info('On plan: $defaultPlanName');
     } else {
@@ -382,15 +393,5 @@ abstract class ProjectCommands {
     }
     gitIgnoreFile.writeAsStringSync('$content$scloudIgnoreTemplate');
     return true;
-  }
-
-  static String _getConsoleSetupAccountUrl() {
-    const prodConsoleHost = 'https://console.serverpod.cloud';
-    const setupLandingPath = '/projects/create';
-
-    final hostFromEnv =
-        Platform.environment['SERVERPOD_CLOUD_CONSOLE_SERVER_URL'];
-    final consoleHost = hostFromEnv ?? prodConsoleHost;
-    return '$consoleHost$setupLandingPath';
   }
 }

@@ -27,6 +27,11 @@ abstract class Launch {
     required final bool? enableDb,
     required final bool? performDeploy,
   }) async {
+    await ProjectCommands.checkPlanAvailability(
+      cloudApiClient,
+      logger: logger,
+    );
+
     logger.init('Launching new Serverpod Cloud project.\n');
 
     final projectSetup = ProjectLaunch(

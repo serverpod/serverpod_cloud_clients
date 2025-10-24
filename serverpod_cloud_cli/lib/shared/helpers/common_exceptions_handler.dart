@@ -1,6 +1,7 @@
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:ground_control_client/ground_control_client.dart';
+import 'package:serverpod_cloud_cli/shared/helpers/console_urls.dart';
 
 /// If the exception is a common client exception, process it by displaying
 /// relevant messages to the user and throwing an [ErrorExitException].
@@ -42,17 +43,24 @@ void processCommonClientExceptions(
         stackTrace,
       );
 
-    case ResourceDeniedException():
-      logger.error(
-        'The resource was not allowed.',
-        hint: e.message,
-      );
-
-      throw ErrorExitException(
-        'The action was not allowed.',
-        e,
-        stackTrace,
-      );
+    case ProcurementDeniedException():
+      final baseUrl = getConsoleBaseUrl();
+      if (e.message.contains('no valid payment method')) {
+        final setupUrl = '$baseUrl/projects/create';
+        logger.error(
+          "You need a payment method!",
+          hint: 'To set up your account, visit: $setupUrl\n',
+          newParagraph: true,
+        );
+      } else {
+        final projectsUrl = '$baseUrl/projects';
+        logger.error(
+          e.message,
+          hint: 'To see your account, visit: $projectsUrl\n',
+          newParagraph: true,
+        );
+      }
+      throw ErrorExitException('The procurement was not allowed.');
 
     case NotFoundException():
       logger.error(

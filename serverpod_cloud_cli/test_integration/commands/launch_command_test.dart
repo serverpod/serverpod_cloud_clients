@@ -162,6 +162,10 @@ void main() {
 
       when(() => client.plans.procurePlan(planName: any(named: 'planName')))
           .thenAnswer((final invocation) async => Future.value());
+
+      when(() => client.plans
+              .checkPlanAvailability(planName: any(named: 'planName')))
+          .thenAnswer((final invocation) async => Future.value());
     });
 
     tearDownAll(() async {

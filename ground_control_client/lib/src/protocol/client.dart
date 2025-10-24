@@ -650,6 +650,17 @@ class EndpointPlans extends _i1.EndpointRef {
         {},
       );
 
+  /// Checks if a plan is available for procurement.
+  ///
+  /// - Throws [NotFoundException] if the product is not found.
+  /// - Throws [ProcurementDeniedException] if the product is not available.
+  _i2.Future<void> checkPlanAvailability({required String planName}) =>
+      caller.callServerEndpoint<void>(
+        'plans',
+        'checkPlanAvailability',
+        {'planName': planName},
+      );
+
   /// Fetches the names of the available subscription plans.
   _i2.Future<List<String>> listPlanNames() =>
       caller.callServerEndpoint<List<String>>(
