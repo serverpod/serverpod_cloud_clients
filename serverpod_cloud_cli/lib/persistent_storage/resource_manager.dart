@@ -3,18 +3,23 @@ import 'dart:io';
 import 'package:cli_tools/cli_tools.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
-import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
+import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_auth_data.dart';
 
 abstract class ResourceManager {
-  static Directory get localStorageDirectory => Directory(
-      p.join(LocalStorageManager.homeDirectory.path, '.serverpod_cloud'));
+  /// The directory where Serverpod tools store local data.
+  static Directory get _localStorageDirectory =>
+      Directory(p.join(LocalStorageManager.homeDirectory.path, '.serverpod'));
 
-  static Future<void> removeServerpodCloudData({
+  /// The directory where Serverpod Cloud CLI stores its local data.
+  static Directory get localCloudStorageDirectory =>
+      Directory(p.join(_localStorageDirectory.path, 'cloud'));
+
+  static Future<void> removeServerpodCloudAuthData({
     required final String localStoragePath,
   }) async {
     try {
       await LocalStorageManager.removeFile(
-        fileName: ResourceManagerConstants.serverpodCloudDataFilePath,
+        fileName: ResourceManagerConstants.serverpodCloudAuthFilePath,
         localStoragePath: localStoragePath,
       );
     } on DeleteException catch (e) {
@@ -24,14 +29,14 @@ abstract class ResourceManager {
     }
   }
 
-  static Future<void> storeServerpodCloudData({
-    required final ServerpodCloudData cloudData,
+  static Future<void> storeServerpodCloudAuthData({
+    required final ServerpodCloudAuthData authData,
     required final String localStoragePath,
   }) async {
     try {
       await LocalStorageManager.storeJsonFile(
-        fileName: ResourceManagerConstants.serverpodCloudDataFilePath,
-        json: cloudData.toJson(),
+        fileName: ResourceManagerConstants.serverpodCloudAuthFilePath,
+        json: authData.toJson(),
         localStoragePath: localStoragePath,
       );
     } on CreateException catch (e) {
@@ -49,19 +54,22 @@ abstract class ResourceManager {
     }
   }
 
-  static Future<ServerpodCloudData?> tryFetchServerpodCloudData({
+  static Future<ServerpodCloudAuthData?> tryFetchServerpodCloudAuthData({
     required final String localStoragePath,
     required final CommandLogger logger,
   }) async {
     try {
-      return await LocalStorageManager.tryFetchAndDeserializeJsonFile(
-        fileName: ResourceManagerConstants.serverpodCloudDataFilePath,
+      final authData = await LocalStorageManager.tryFetchAndDeserializeJsonFile(
+        fileName: ResourceManagerConstants.serverpodCloudAuthFilePath,
         localStoragePath: localStoragePath,
-        fromJson: ServerpodCloudData.fromJson,
+        fromJson: ServerpodCloudAuthData.fromJson,
       );
+      if (authData != null) {
+        return authData;
+      }
     } on ReadException catch (_) {
       logger.error(
-          'Could not read file at location ${ResourceManagerConstants.serverpodCloudDataFilePath}.',
+          'Could not read file ${ResourceManagerConstants.serverpodCloudAuthFilePath}.',
           hint:
               'Please check that the Serverpod Cloud CLI has the correct permissions to '
               'read the file. If the problem persists, try deleting the file.');
@@ -69,6 +77,47 @@ abstract class ResourceManager {
     } on DeserializationException catch (_) {
       return null;
     }
+
+    // Transparently migrate old local auth data to new file path.
+    // TODO: Remove this code when users have had time to run scloud which
+    // automatically executes this.
+    return await _tryMigrateAuthData(localStoragePath: localStoragePath);
+  }
+
+  static Future<ServerpodCloudAuthData?> _tryMigrateAuthData({
+    required final String localStoragePath,
+  }) async {
+    const oldServerpodCloudStorageDir = '.serverpod_cloud';
+    const oldServerpodCloudDataFilePath = 'serverpod_cloud_data.yaml';
+
+    final oldAuthDirPath = p.join(
+      LocalStorageManager.homeDirectory.path,
+      oldServerpodCloudStorageDir,
+    );
+
+    // try to read the auth data from the old location
+    final authData = await LocalStorageManager.tryFetchAndDeserializeJsonFile(
+      localStoragePath: oldAuthDirPath,
+      fileName: oldServerpodCloudDataFilePath,
+      fromJson: ServerpodCloudAuthData.fromJson,
+    );
+    if (authData == null) {
+      return null;
+    }
+
+    // store the auth data to the new location
+    await storeServerpodCloudAuthData(
+      authData: authData,
+      localStoragePath: localStoragePath,
+    );
+
+    // remove the old file
+    await LocalStorageManager.removeFile(
+      localStoragePath: oldAuthDirPath,
+      fileName: oldServerpodCloudDataFilePath,
+    );
+
+    return authData;
   }
 
   static Future<void> storeLatestCliVersion({
@@ -76,7 +125,7 @@ abstract class ResourceManager {
     required final PackageVersionData cliVersionData,
     String? localStoragePath,
   }) async {
-    localStoragePath ??= localStorageDirectory.path;
+    localStoragePath ??= localCloudStorageDirectory.path;
 
     try {
       await LocalStorageManager.storeJsonFile(
@@ -96,7 +145,7 @@ abstract class ResourceManager {
     String? localStoragePath,
     required final CommandLogger logger,
   }) async {
-    localStoragePath ??= localStorageDirectory.path;
+    localStoragePath ??= localCloudStorageDirectory.path;
 
     void deleteFile(final File file) {
       try {
@@ -126,6 +175,6 @@ abstract class ResourceManager {
 }
 
 abstract class ResourceManagerConstants {
-  static const serverpodCloudDataFilePath = 'serverpod_cloud_data.yaml';
+  static const serverpodCloudAuthFilePath = 'serverpod_cloud_auth.json';
   static const latestVersionFilePath = 'latest_cli_version.json';
 }

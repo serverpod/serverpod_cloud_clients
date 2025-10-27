@@ -1,6 +1,6 @@
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
+import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_auth_data.dart';
 import 'package:serverpod_cloud_cli/util/cli_authentication_key_manager.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 
@@ -58,7 +58,7 @@ class CloudCliServiceProvider {
 
       final authTokenOverride = _globalConfiguration.authToken;
       final cloudDataOverride = authTokenOverride != null
-          ? ServerpodCloudData(authTokenOverride)
+          ? ServerpodCloudAuthData(authTokenOverride)
           : null;
 
       cloudApiClient = Client(

@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
-import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
+import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_auth_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:test/test.dart';
 import 'package:uuid/uuid.dart';
@@ -35,14 +35,14 @@ void main() {
 
   group('Given stored credentials', () {
     setUp(() async {
-      await ResourceManager.storeServerpodCloudData(
-        cloudData: ServerpodCloudData('my-token'),
+      await ResourceManager.storeServerpodCloudAuthData(
+        authData: ServerpodCloudAuthData('my-token'),
         localStoragePath: testCacheFolderPath,
       );
     });
 
     tearDown(() async {
-      await ResourceManager.removeServerpodCloudData(
+      await ResourceManager.removeServerpodCloudAuthData(
         localStoragePath: testCacheFolderPath,
       );
     });
@@ -122,7 +122,7 @@ void main() {
       });
 
       tearDown(() async {
-        await ResourceManager.removeServerpodCloudData(
+        await ResourceManager.removeServerpodCloudAuthData(
           localStoragePath: testCacheFolderPath,
         );
       });
@@ -139,7 +139,7 @@ void main() {
         await cliOnDone;
 
         final storedCloudData =
-            await ResourceManager.tryFetchServerpodCloudData(
+            await ResourceManager.tryFetchServerpodCloudAuthData(
           logger: logger,
           localStoragePath: testCacheFolderPath,
         );
@@ -161,7 +161,7 @@ void main() {
       });
 
       tearDown(() async {
-        await ResourceManager.removeServerpodCloudData(
+        await ResourceManager.removeServerpodCloudAuthData(
           localStoragePath: testCacheFolderPath,
         );
       });
@@ -178,7 +178,7 @@ void main() {
         await cliOnDone;
 
         final storedCloudData =
-            await ResourceManager.tryFetchServerpodCloudData(
+            await ResourceManager.tryFetchServerpodCloudAuthData(
           logger: logger,
           localStoragePath: testCacheFolderPath,
         );
@@ -209,7 +209,7 @@ void main() {
 
     group('when logging in through cli', () {
       tearDown(() async {
-        await ResourceManager.removeServerpodCloudData(
+        await ResourceManager.removeServerpodCloudAuthData(
           localStoragePath: testCacheFolderPath,
         );
       });
@@ -249,7 +249,7 @@ void main() {
         await cliFuture;
 
         final storedCloudData =
-            await ResourceManager.tryFetchServerpodCloudData(
+            await ResourceManager.tryFetchServerpodCloudAuthData(
           logger: logger,
           localStoragePath: testCacheFolderPath,
         );

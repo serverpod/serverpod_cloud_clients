@@ -4,7 +4,7 @@ import 'package:cli_tools/cli_tools.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
-import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
+import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_auth_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:test/test.dart';
 import 'package:uuid/uuid.dart';
@@ -28,14 +28,15 @@ void main() {
     test(
         'Given cloud data when doing storage roundtrip then cloud data values are preserved.',
         () async {
-      final storedArtefact = ServerpodCloudData('my-token');
+      final storedArtefact = ServerpodCloudAuthData('my-token');
 
-      await ResourceManager.storeServerpodCloudData(
-        cloudData: storedArtefact,
+      await ResourceManager.storeServerpodCloudAuthData(
+        authData: storedArtefact,
         localStoragePath: testCacheFolderPath,
       );
 
-      final fetchedArtefact = await ResourceManager.tryFetchServerpodCloudData(
+      final fetchedArtefact =
+          await ResourceManager.tryFetchServerpodCloudAuthData(
         logger: commandLogger,
         localStoragePath: testCacheFolderPath,
       );
@@ -46,20 +47,20 @@ void main() {
     test(
         'Given cloud data on disk when removing cloud data then file is deleted.',
         () async {
-      final storedArtefact = ServerpodCloudData('my-token');
+      final storedArtefact = ServerpodCloudAuthData('my-token');
 
-      await ResourceManager.storeServerpodCloudData(
-        cloudData: storedArtefact,
+      await ResourceManager.storeServerpodCloudAuthData(
+        authData: storedArtefact,
         localStoragePath: testCacheFolderPath,
       );
 
-      await ResourceManager.removeServerpodCloudData(
+      await ResourceManager.removeServerpodCloudAuthData(
         localStoragePath: testCacheFolderPath,
       );
 
       final serverpodCloudDataFile = File(p.join(
         testCacheFolderPath,
-        ResourceManagerConstants.serverpodCloudDataFilePath,
+        ResourceManagerConstants.serverpodCloudAuthFilePath,
       ));
       expect(serverpodCloudDataFile.existsSync(), isFalse);
     });
@@ -68,14 +69,14 @@ void main() {
       late File file;
       setUp(() async {
         file = File(p.join(testCacheFolderPath,
-            ResourceManagerConstants.serverpodCloudDataFilePath));
+            ResourceManagerConstants.serverpodCloudAuthFilePath));
         file.createSync(recursive: true);
         file.writeAsStringSync(
             'This is corrupted content and :will not be :parsed as json');
       });
 
       test('when fetching file from disk then null is returned.', () async {
-        final cloudData = await ResourceManager.tryFetchServerpodCloudData(
+        final cloudData = await ResourceManager.tryFetchServerpodCloudAuthData(
           logger: commandLogger,
           localStoragePath: testCacheFolderPath,
         );

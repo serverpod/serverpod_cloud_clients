@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:cli_tools/cli_tools.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
-import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
+import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_auth_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_cloud_cli/util/cli_authentication_key_manager.dart';
 import 'package:test/test.dart';
@@ -26,9 +26,9 @@ void main() {
     late String testKey;
     setUp(() async {
       testKey = 'my-key-${const Uuid().v4()}';
-      final cloudData = ServerpodCloudData(testKey);
-      await ResourceManager.storeServerpodCloudData(
-        cloudData: cloudData,
+      final cloudData = ServerpodCloudAuthData(testKey);
+      await ResourceManager.storeServerpodCloudAuthData(
+        authData: cloudData,
         localStoragePath: testCacheFolderPath,
       );
     });
@@ -60,7 +60,7 @@ void main() {
       });
 
       test('then new key is stored on disk.', () async {
-        final cloudData = await ResourceManager.tryFetchServerpodCloudData(
+        final cloudData = await ResourceManager.tryFetchServerpodCloudAuthData(
           localStoragePath: testCacheFolderPath,
           logger: logger,
         );
@@ -85,7 +85,7 @@ void main() {
       });
 
       test('then key is removed from disk.', () async {
-        final cloudData = await ResourceManager.tryFetchServerpodCloudData(
+        final cloudData = await ResourceManager.tryFetchServerpodCloudAuthData(
           localStoragePath: testCacheFolderPath,
           logger: logger,
         );
@@ -119,7 +119,7 @@ void main() {
     });
 
     test('then the key is stored on disk.', () async {
-      final cloudData = await ResourceManager.tryFetchServerpodCloudData(
+      final cloudData = await ResourceManager.tryFetchServerpodCloudAuthData(
         localStoragePath: testCacheFolderPath,
         logger: logger,
       );
@@ -148,7 +148,7 @@ void main() {
     late CliAuthenticationKeyManager keyManager;
     setUp(() async {
       testKey = 'my-key-${const Uuid().v4()}';
-      final cloudData = ServerpodCloudData(testKey);
+      final cloudData = ServerpodCloudAuthData(testKey);
       keyManager = CliAuthenticationKeyManager(
         logger: logger,
         localStoragePath: testCacheFolderPath,
@@ -164,7 +164,7 @@ void main() {
     test('when getting the authentication key then no key is stored on disk.',
         () async {
       await keyManager.get();
-      final cloudData = await ResourceManager.tryFetchServerpodCloudData(
+      final cloudData = await ResourceManager.tryFetchServerpodCloudAuthData(
         localStoragePath: testCacheFolderPath,
         logger: logger,
       );
@@ -178,7 +178,7 @@ void main() {
       final newKey = 'new-key-${const Uuid().v4()}';
       await keyManager.put(newKey);
 
-      final cloudData = await ResourceManager.tryFetchServerpodCloudData(
+      final cloudData = await ResourceManager.tryFetchServerpodCloudAuthData(
         localStoragePath: testCacheFolderPath,
         logger: logger,
       );

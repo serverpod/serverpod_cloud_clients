@@ -293,7 +293,7 @@ To update to the latest version, run "dart pub global activate serverpod_cloud_c
 }
 
 Directory _getDefaultStorageDir() {
-  return ResourceManager.localStorageDirectory;
+  return ResourceManager.localCloudStorageDirectory;
 }
 
 /// The global configuration options for the Serverpod Cloud CLI.

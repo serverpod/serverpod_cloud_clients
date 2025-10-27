@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
+import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_auth_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:test/test.dart';
 import 'package:uuid/uuid.dart';
@@ -39,8 +39,8 @@ void main() {
 
     setUp(() async {
       signOutRequestCompleter = Completer();
-      await ResourceManager.storeServerpodCloudData(
-        cloudData: ServerpodCloudData('my-token'),
+      await ResourceManager.storeServerpodCloudAuthData(
+        authData: ServerpodCloudAuthData('my-token'),
         localStoragePath: testCacheFolderPath,
       );
 
@@ -76,7 +76,7 @@ void main() {
       test('then the stored credentials are removed', () async {
         await runLogoutCommand;
 
-        final cloudData = await ResourceManager.tryFetchServerpodCloudData(
+        final cloudData = await ResourceManager.tryFetchServerpodCloudAuthData(
           localStoragePath: testCacheFolderPath,
           logger: logger,
         );
@@ -110,8 +110,8 @@ void main() {
     late HttpServer server;
     setUp(() async {
       signOutRequestCompleter = Completer();
-      await ResourceManager.storeServerpodCloudData(
-        cloudData: ServerpodCloudData('my-token'),
+      await ResourceManager.storeServerpodCloudAuthData(
+        authData: ServerpodCloudAuthData('my-token'),
         localStoragePath: testCacheFolderPath,
       );
 
@@ -148,7 +148,7 @@ void main() {
       test('then the stored credentials are removed.', () async {
         await runLogoutCommand.onError((final e, final s) {});
 
-        final cloudData = await ResourceManager.tryFetchServerpodCloudData(
+        final cloudData = await ResourceManager.tryFetchServerpodCloudAuthData(
           localStoragePath: testCacheFolderPath,
           logger: logger,
         );

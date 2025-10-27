@@ -1,5 +1,5 @@
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
-import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
+import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_auth_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 
@@ -10,12 +10,12 @@ extension IsAuthenticated on AuthenticationKeyManager {
 class CliAuthenticationKeyManager extends AuthenticationKeyManager {
   final CommandLogger _logger;
   final String _localStoragePath;
-  ServerpodCloudData? _cloudData;
+  ServerpodCloudAuthData? _cloudData;
 
   CliAuthenticationKeyManager({
     required final CommandLogger logger,
     required final String localStoragePath,
-    final ServerpodCloudData? cloudDataOverride,
+    final ServerpodCloudAuthData? cloudDataOverride,
   })  : _localStoragePath = localStoragePath,
         _logger = logger,
         _cloudData = cloudDataOverride;
@@ -27,7 +27,7 @@ class CliAuthenticationKeyManager extends AuthenticationKeyManager {
       return cloudData.token;
     }
 
-    _cloudData = await ResourceManager.tryFetchServerpodCloudData(
+    _cloudData = await ResourceManager.tryFetchServerpodCloudAuthData(
       localStoragePath: _localStoragePath,
       logger: _logger,
     );
@@ -38,8 +38,8 @@ class CliAuthenticationKeyManager extends AuthenticationKeyManager {
   @override
   Future<void> put(final String key) async {
     _cloudData = null;
-    return ResourceManager.storeServerpodCloudData(
-      cloudData: ServerpodCloudData(key),
+    return ResourceManager.storeServerpodCloudAuthData(
+      authData: ServerpodCloudAuthData(key),
       localStoragePath: _localStoragePath,
     );
   }
@@ -47,7 +47,7 @@ class CliAuthenticationKeyManager extends AuthenticationKeyManager {
   @override
   Future<void> remove() async {
     _cloudData = null;
-    return ResourceManager.removeServerpodCloudData(
+    return ResourceManager.removeServerpodCloudAuthData(
       localStoragePath: _localStoragePath,
     );
   }

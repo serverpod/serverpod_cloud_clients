@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
-import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_data.dart';
+import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_auth_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_cloud_cli/util/browser_launcher.dart';
 import 'package:serverpod_cloud_cli/util/listener_server.dart';
@@ -92,7 +92,8 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
     final localStoragePath = globalConfiguration.scloudDir;
     final serverAddress = globalConfiguration.consoleServer;
 
-    final storedCloudData = await ResourceManager.tryFetchServerpodCloudData(
+    final storedCloudData =
+        await ResourceManager.tryFetchServerpodCloudAuthData(
       localStoragePath: localStoragePath.path,
       logger: logger,
     );
@@ -153,8 +154,8 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
     }
 
     if (persistent) {
-      await ResourceManager.storeServerpodCloudData(
-        cloudData: ServerpodCloudData(token),
+      await ResourceManager.storeServerpodCloudAuthData(
+        authData: ServerpodCloudAuthData(token),
         localStoragePath: localStoragePath.path,
       );
     }
@@ -180,7 +181,7 @@ class CloudLogoutCommand extends CloudCliCommand {
   Future<void> runWithConfig(final Configuration commandConfig) async {
     final localStoragePath = globalConfiguration.scloudDir;
 
-    final cloudData = await ResourceManager.tryFetchServerpodCloudData(
+    final cloudData = await ResourceManager.tryFetchServerpodCloudAuthData(
       localStoragePath: localStoragePath.path,
       logger: logger,
     );
@@ -201,7 +202,7 @@ class CloudLogoutCommand extends CloudCliCommand {
     }
 
     try {
-      await ResourceManager.removeServerpodCloudData(
+      await ResourceManager.removeServerpodCloudAuthData(
         localStoragePath: localStoragePath.path,
       );
     } on Exception catch (e) {
