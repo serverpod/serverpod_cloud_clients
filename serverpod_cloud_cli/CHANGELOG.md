@@ -1,6 +1,16 @@
 
 # Changelog
 
+## 0.13.0 - 2025-10-27
+
+### Added
+
+- **Improved scloud UX** -  Improved error messaging when billing information is missing.
+
+### Fixed
+
+- **Improved plan procurement** - Improved error feedback on failed plan procurement and fixed issues related to active subscriptions.
+
 ## [0.12.0] - 2025-10-21
 
 ### Added
