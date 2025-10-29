@@ -5,7 +5,9 @@ import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_auth_data.dart';
+import 'package:serverpod_cloud_cli/persistent_storage/models/scloud_settings_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:test/test.dart';
 import 'package:uuid/uuid.dart';
 
@@ -180,6 +182,103 @@ void main() {
         await cliVersionFuture;
         expect(file.existsSync(), isFalse);
       });
+    });
+  });
+
+  group('Given settings', () {
+    test(
+        'with no set values '
+        'when doing storage roundtrip then null values are preserved.',
+        () async {
+      final storedSettings = ServerpodCloudSettingsData();
+
+      await ResourceManager.storeSettings(
+        settings: storedSettings,
+        localStoragePath: testCacheFolderPath,
+      );
+
+      final fetchedSettings = await ResourceManager.tryLoadSettings(
+        localStoragePath: testCacheFolderPath,
+      );
+
+      expect(fetchedSettings, isNotNull);
+      expect(fetchedSettings?.enableAnalytics, isNull);
+    });
+
+    test(
+        'with a set value '
+        'when doing storage roundtrip then settings values are preserved.',
+        () async {
+      final storedSettings = ServerpodCloudSettingsData()
+        ..enableAnalytics = true;
+
+      await ResourceManager.storeSettings(
+        settings: storedSettings,
+        localStoragePath: testCacheFolderPath,
+      );
+
+      final fetchedSettings = await ResourceManager.tryLoadSettings(
+        localStoragePath: testCacheFolderPath,
+      );
+
+      expect(fetchedSettings, isNotNull);
+      expect(fetchedSettings?.enableAnalytics, true);
+    });
+
+    test(
+        'when storing with invalid file path '
+        'then FailureException is thrown', () async {
+      final storedSettings = ServerpodCloudSettingsData()
+        ..enableAnalytics = true;
+
+      final invalidPath =
+          Platform.isWindows ? 'C:\\invalid:path' : '/invalid_path';
+      expect(
+        () => ResourceManager.storeSettings(
+          settings: storedSettings,
+          localStoragePath: invalidPath,
+        ),
+        throwsA(isA<FailureException>()),
+      );
+    });
+
+    test('when storing then file has correct JSON structure', () async {
+      final storedSettings = ServerpodCloudSettingsData()
+        ..enableAnalytics = false;
+
+      await ResourceManager.storeSettings(
+        settings: storedSettings,
+        localStoragePath: testCacheFolderPath,
+      );
+
+      final file = File(p.join(
+          testCacheFolderPath, ResourceManagerConstants.settingsFilePath));
+      expect(file.existsSync(), isTrue);
+      expect(file.readAsStringSync(), equals(r'''
+{
+  "enable_analytics": false
+}'''));
+    });
+  });
+
+  group('Given corrupt settings file on disk ', () {
+    late File file;
+    setUp(() async {
+      file = File(p.join(
+          testCacheFolderPath, ResourceManagerConstants.settingsFilePath));
+      file.createSync(recursive: true);
+      file.writeAsStringSync(
+          'This is corrupted content and will not be parsed as json');
+    });
+
+    test('when fetching file from disk then FailureException is thrown.',
+        () async {
+      expect(
+        () => ResourceManager.tryLoadSettings(
+          localStoragePath: testCacheFolderPath,
+        ),
+        throwsA(isA<FailureException>()),
+      );
     });
   });
 }

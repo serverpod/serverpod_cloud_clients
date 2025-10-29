@@ -4,6 +4,10 @@ import 'package:cli_tools/cli_tools.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_auth_data.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:uuid/uuid.dart';
+
+import 'models/scloud_settings_data.dart';
 
 abstract class ResourceManager {
   /// The directory where Serverpod tools store local data.
@@ -13,6 +17,29 @@ abstract class ResourceManager {
   /// The directory where Serverpod Cloud CLI stores its local data.
   static Directory get localCloudStorageDirectory =>
       Directory(p.join(_localStorageDirectory.path, 'cloud'));
+
+  /// Gets a persistent, anonymous id for the current user.
+  /// This method is copied from serverpod CLI.
+  static String get uniqueUserId {
+    const uuidFilePath = 'uuid';
+    try {
+      final userIdFile =
+          File(p.join(_localStorageDirectory.path, uuidFilePath));
+      final userId = userIdFile.readAsStringSync();
+      return userId;
+    } catch (e) {
+      // Failed to read userId from file, it's probably not created.
+    }
+    final userId = const Uuid().v4();
+    try {
+      final userIdFile =
+          File(p.join(_localStorageDirectory.path, uuidFilePath));
+      userIdFile.createSync(recursive: true);
+      userIdFile.writeAsStringSync(userId);
+    } finally {}
+
+    return userId;
+  }
 
   static Future<void> removeServerpodCloudAuthData({
     required final String localStoragePath,
@@ -172,9 +199,39 @@ abstract class ResourceManager {
 
     return null;
   }
+
+  static Future<void> storeSettings({
+    required final ServerpodCloudSettingsData settings,
+    required final String localStoragePath,
+  }) async {
+    try {
+      await LocalStorageManager.storeJsonFile(
+        fileName: ResourceManagerConstants.settingsFilePath,
+        json: settings.toJson(),
+        localStoragePath: localStoragePath,
+      );
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Failed to store settings.');
+    }
+  }
+
+  static Future<ServerpodCloudSettingsData?> tryLoadSettings({
+    required final String localStoragePath,
+  }) async {
+    try {
+      return await LocalStorageManager.tryFetchAndDeserializeJsonFile(
+        fileName: ResourceManagerConstants.settingsFilePath,
+        localStoragePath: localStoragePath,
+        fromJson: ServerpodCloudSettingsData.fromJson,
+      );
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Failed to load settings.');
+    }
+  }
 }
 
 abstract class ResourceManagerConstants {
   static const serverpodCloudAuthFilePath = 'serverpod_cloud_auth.json';
   static const latestVersionFilePath = 'latest_cli_version.json';
+  static const settingsFilePath = 'settings.json';
 }

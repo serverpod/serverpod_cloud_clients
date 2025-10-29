@@ -99,9 +99,7 @@ void main() {
       });
 
       test('then logs confirm message', () async {
-        try {
-          await commandResult;
-        } catch (_) {}
+        await commandResult;
 
         expect(logger.confirmCalls, isNotEmpty);
         expect(

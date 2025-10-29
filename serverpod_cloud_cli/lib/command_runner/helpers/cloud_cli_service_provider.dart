@@ -1,6 +1,7 @@
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_auth_data.dart';
+import 'package:serverpod_cloud_cli/persistent_storage/scloud_settings.dart';
 import 'package:serverpod_cloud_cli/util/cli_authentication_key_manager.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 
@@ -13,10 +14,12 @@ class CloudCliServiceProvider {
   final Client Function(GlobalConfiguration globalCfg)? _apiClientFactory;
   final FileUploaderFactory _fileUploaderFactory;
 
+  bool _initialized = false;
   late GlobalConfiguration _globalConfiguration;
   late CommandLogger _logger;
 
   Client? _cloudApiClient;
+  ScloudSettings? _scloudSettings;
 
   CloudCliServiceProvider({
     final Client Function(GlobalConfiguration globalCfg)? apiClientFactory,
@@ -24,10 +27,16 @@ class CloudCliServiceProvider {
   })  : _apiClientFactory = apiClientFactory,
         _fileUploaderFactory = fileUploaderFactory ?? _createGcsFileUploader;
 
+  bool get initialized => _initialized;
+
   void initialize({
     required final GlobalConfiguration globalConfiguration,
     required final CommandLogger logger,
   }) {
+    if (_initialized) {
+      throw StateError('CloudCliServiceProvider already initialized');
+    }
+    _initialized = true;
     _globalConfiguration = globalConfiguration;
     _logger = logger;
   }
@@ -35,6 +44,7 @@ class CloudCliServiceProvider {
   void shutdown() {
     _cloudApiClient?.close();
     _cloudApiClient = null;
+    _initialized = false; // enables re-initialization in test runs
   }
 
   /// Gets a [Client] for the Serverpod Cloud.
@@ -77,6 +87,10 @@ class CloudCliServiceProvider {
   }
 
   FileUploaderFactory get fileUploaderFactory => _fileUploaderFactory;
+
+  ScloudSettings get scloudSettings => _scloudSettings ??= ScloudSettings(
+        localStoragePath: _globalConfiguration.scloudDir.path,
+      );
 }
 
 FileUploaderClient _createGcsFileUploader(

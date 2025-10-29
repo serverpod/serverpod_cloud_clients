@@ -24,12 +24,14 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_pro
 import 'package:serverpod_cloud_cli/command_runner/helpers/cli_version_checker.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
+import 'package:serverpod_cloud_cli/util/activation_checker.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
 import 'package:serverpod_cloud_cli/util/scloud_version.dart';
 
 import 'commands/admin/admin_command.dart';
+import 'commands/settings_command.dart';
 import 'completion/completion_script_carapace.dart';
 import 'completion/completion_script_completely.dart';
 
@@ -37,7 +39,7 @@ import 'completion/completion_script_completely.dart';
 class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   final Version version;
   final CommandLogger logger;
-  final CloudCliServiceProvider serviceProvider;
+  final CloudCliServiceProvider _serviceProvider;
 
   final VersionCommand _versionCommand;
 
@@ -64,12 +66,26 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     logger.configuration = _globalConfiguration;
   }
 
+  /// Gets the initialized service provider for the Serverpod Cloud CLI.
+  /// Must not be called before the [run] method has been invoked.
+  CloudCliServiceProvider get serviceProvider {
+    if (!_serviceProvider.initialized) {
+      _serviceProvider.initialize(
+        globalConfiguration: globalConfiguration,
+        logger: logger,
+      );
+    }
+    return _serviceProvider;
+  }
+
   CloudCliCommandRunner._({
     required this.logger,
     required this.version,
-    required this.serviceProvider,
+    required final CloudCliServiceProvider serviceProvider,
+    super.onAnalyticsEvent,
     super.setLogLevel,
-  })  : _versionCommand = VersionCommand(logger: logger),
+  })  : _serviceProvider = serviceProvider,
+        _versionCommand = VersionCommand(logger: logger),
         super(
           'scloud',
           'Manage your Serverpod Cloud projects',
@@ -89,12 +105,14 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     required final CommandLogger logger,
     final Version? version,
     final CloudCliServiceProvider? serviceProvider,
+    final OnAnalyticsEvent? onAnalyticsEvent,
     bool? adminUserMode,
   }) {
     final runner = CloudCliCommandRunner._(
       logger: logger,
       version: version ?? cliVersion,
       serviceProvider: serviceProvider ?? CloudCliServiceProvider(),
+      onAnalyticsEvent: onAnalyticsEvent,
       setLogLevel: ({
         final String? commandName,
         required final CommandRunnerLogLevel parsedLogLevel,
@@ -126,6 +144,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
       CloudDbCommand(logger: logger),
       CloudLaunchCommand(logger: logger),
       CloudUserCommand(logger: logger),
+      CliUserSettingsCommand(logger: logger),
       if (adminUserMode) CloudAdminCommand(logger: logger, hidden: false),
     ]);
 
@@ -134,11 +153,6 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
 
   @override
   Future<void> runCommand(final ArgResults topLevelResults) async {
-    serviceProvider.initialize(
-      globalConfiguration: globalConfiguration,
-      logger: logger,
-    );
-
     if (globalConfiguration.version) {
       await _versionCommand.run();
     }
@@ -177,6 +191,52 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     } finally {
       serviceProvider.shutdown();
     }
+  }
+
+  @override
+  Future<bool> determineAnalyticsSettings() async {
+    if (onAnalyticsEvent == null) {
+      return false;
+    }
+
+    final analyticsOptionValue = globalConfiguration.analytics;
+    if (analyticsOptionValue != null) {
+      // explicitly set via option for this run
+      return analyticsOptionValue;
+    }
+
+    if (!_isTenantUser()) {
+      return false;
+    }
+
+    final analyticsEnabled = await _getAnalyticsSetting();
+    return analyticsEnabled;
+  }
+
+  Future<bool> _getAnalyticsSetting() async {
+    final settings = serviceProvider.scloudSettings;
+    final analyticsEnabled = await settings.enableAnalytics;
+    if (analyticsEnabled != null) {
+      return analyticsEnabled;
+    }
+
+    final confirm = await logger.confirm(
+      'Do you agree to sending anonymous command usage analytics to Serverpod?',
+      defaultValue: true,
+    );
+    await settings.setEnableAnalytics(confirm);
+    return confirm;
+  }
+
+  /// Returns true if the user likely is a production tenant user.
+  bool _isTenantUser() {
+    if (!isActivatedFromPub()) {
+      return false;
+    }
+    if (globalConfiguration.apiServer != HostConstants.serverpodCloudApi) {
+      return false;
+    }
+    return true;
   }
 
   @override
@@ -300,7 +360,14 @@ Directory _getDefaultStorageDir() {
 enum GlobalOption<V> implements OptionDefinition<V> {
   quiet(BetterCommandRunnerFlags.quietOption),
   verbose(BetterCommandRunnerFlags.verboseOption),
-  analytics(BetterCommandRunnerFlags.analyticsOption),
+
+  analytics(FlagOption(
+    argName: BetterCommandRunnerFlags.analytics,
+    argAbbrev: BetterCommandRunnerFlags.analyticsAbbr,
+    envName: 'SERVERPOD_CLOUD_COMMAND_ANALYTICS',
+    negatable: true,
+    helpText: 'Toggles if analytics data is sent.',
+  )),
 
   version(
     FlagOption(
@@ -426,6 +493,8 @@ class GlobalConfiguration extends Configuration<GlobalOption> {
   bool get verbose => value(GlobalOption.verbose);
 
   bool get version => value(GlobalOption.version);
+
+  bool? get analytics => optionalValue(GlobalOption.analytics);
 
   Directory get scloudDir => value(GlobalOption.scloudDir);
 

@@ -1,7 +1,7 @@
 /// This file is auto-generated.
 library;
 
-import 'package:cli_tools/better_command_runner.dart' show CompletionTarget;
+import 'package:cli_tools/better_command_runner.dart' show CompletionTool;
 
 const String _completionScript = r'''
 # yaml-language-server: $schema=https://carapace.sh/schemas/command.json
@@ -9,8 +9,8 @@ name: scloud
 persistentFlags:
   -q, --quiet: "Suppress all cli output. Is overridden by  -v, --verbose."
   -v, --verbose: "Prints additional information useful for development. Overrides --q, --quiet."
-  -a, --analytics: "Toggles if analytics data is sent. "
-  --no-analytics: "Toggles if analytics data is sent. "
+  -a, --analytics: "Toggles if analytics data is sent."
+  --no-analytics: "Toggles if analytics data is sent."
   --version: "Prints the version of the Serverpod Cloud CLI."
   --scloud-dir=: "Override the directory path where Serverpod Cloud cache/authentication files are stored."
   -d, --project-dir=: "The path to the Serverpod Cloud project server directory."
@@ -31,22 +31,22 @@ commands:
     commands:
       - name: generate
         flags:
-          -t, --target=!: "The target tool format"
+          -t, --tool=!: "The completion tool to target"
           -e, --exec-name=: "Override the name of the executable"
           -f, --file=: "Write the specification to a file instead of stdout"
         completion:
           flag:
-            target: ["completely", "carapace"]
+            tool: ["completely", "carapace"]
             file: ["$files"]
 
       - name: install
         flags:
-          -t, --target=!: "The target tool format"
+          -t, --tool=!: "The completion tool to target"
           -e, --exec-name=: "Override the name of the executable"
           -d, --write-dir=: "Override the directory to write the script to"
         completion:
           flag:
-            target: ["completely", "carapace"]
+            tool: ["completely", "carapace"]
             write-dir: ["$directories"]
 
   - name: version
@@ -262,11 +262,18 @@ commands:
         flags:
           -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
 
+  - name: settings
+    flags:
+      --analytics: "Toggles if analytics data is sent."
+      --no-analytics: "Toggles if analytics data is sent."
+    exclusiveFlags:
+      - [analytics, no-analytics]
+
 
 ''';
 
 /// Embedded script for command line completion for `carapace`.
 const completionScriptCarapace = (
-  target: CompletionTarget.carapace,
+  tool: CompletionTool.carapace,
   script: _completionScript,
 );

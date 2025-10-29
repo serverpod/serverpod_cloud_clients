@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:cli_tools/analytics.dart';
 import 'package:cli_tools/better_command_runner.dart' show ExitException;
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
+import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/scloud_version.dart';
 
@@ -46,6 +48,7 @@ Future<void> _main(final List<String> args, final CommandLogger logger) async {
   final runner = CloudCliCommandRunner.create(
     logger: logger,
     version: cliVersion,
+    onAnalyticsEvent: _reportMixPanelEvent,
   );
   try {
     await runner.run(args);
@@ -73,3 +76,15 @@ https://github.com/serverpod/serverpod/issues
 ${zonedError ? 'Zoned error' : ''}
 ${error.runtimeType} $error''';
 }
+
+void _reportMixPanelEvent(final String event) {
+  _analytics.track(event: event);
+}
+
+const _mixPanelToken = 'd0aaf1b76185d37938f3767bdb685760';
+final Analytics _analytics = MixPanelAnalytics(
+  uniqueUserId: ResourceManager.uniqueUserId,
+  projectToken: _mixPanelToken,
+  version: cliVersion.canonicalizedVersion,
+  endpoint: 'https://api-eu.mixpanel.com/track',
+);
