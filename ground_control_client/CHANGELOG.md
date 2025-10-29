@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.14.0] - 2025-10-29
+
+### Added
+
+- **Cost confirmation prompt** - Added a prompt to confirm the cost impact when creating new projects with `scloud project create` and `scloud launch`.
+- **Analytics via MixPanel** - Implemented analytics collection using MixPanel, with user consent and opt-out options. Analytics are suppressed for non-production environments or non-pub.dev installations, but can be forced via command line flags or environment variables.
+
+### Changed
+
+- **`launch` command project options** - Renamed the `--project` option to `--new-project` in the `launch` command for clarity, and re-added `--project` to specify an existing project.
+- **Skip confirmation option** - Unhidden the `--skip-confirmation` option, allowing users to bypass the cost confirmation prompt in scripts and CI environments.
+
 ## 0.13.0 - 2025-10-27
 
 ### Added
