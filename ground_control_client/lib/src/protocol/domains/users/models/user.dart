@@ -26,7 +26,6 @@ abstract class User implements _i1.SerializableModel {
     this.userAuthId,
     required this.email,
     this.memberships,
-    this.maxOwnedProjects,
     this.ownerId,
     this.owner,
   })  : createdAt = createdAt ?? DateTime.now(),
@@ -42,7 +41,6 @@ abstract class User implements _i1.SerializableModel {
     String? userAuthId,
     required String email,
     List<_i3.UserRoleMembership>? memberships,
-    int? maxOwnedProjects,
     _i1.UuidValue? ownerId,
     _i4.Owner? owner,
   }) = _UserImpl;
@@ -65,7 +63,6 @@ abstract class User implements _i1.SerializableModel {
           ?.map((e) =>
               _i3.UserRoleMembership.fromJson((e as Map<String, dynamic>)))
           .toList(),
-      maxOwnedProjects: jsonSerialization['maxOwnedProjects'] as int?,
       ownerId: jsonSerialization['ownerId'] == null
           ? null
           : _i1.UuidValueJsonExtension.fromJson(jsonSerialization['ownerId']),
@@ -100,12 +97,6 @@ abstract class User implements _i1.SerializableModel {
   /// The role memberships of this user.
   List<_i3.UserRoleMembership>? memberships;
 
-  /// Max number of projects this user can own.
-  /// DEPRECATED, no longer used and will be removed
-  int? maxOwnedProjects;
-
-  /// Max number of projects this user can own.
-  /// DEPRECATED, no longer used and will be removed
   /// The owner id of the user.
   _i1.UuidValue? ownerId;
 
@@ -124,7 +115,6 @@ abstract class User implements _i1.SerializableModel {
     String? userAuthId,
     String? email,
     List<_i3.UserRoleMembership>? memberships,
-    int? maxOwnedProjects,
     _i1.UuidValue? ownerId,
     _i4.Owner? owner,
   });
@@ -140,7 +130,6 @@ abstract class User implements _i1.SerializableModel {
       'email': email,
       if (memberships != null)
         'memberships': memberships?.toJson(valueToJson: (v) => v.toJson()),
-      if (maxOwnedProjects != null) 'maxOwnedProjects': maxOwnedProjects,
       if (ownerId != null) 'ownerId': ownerId?.toJson(),
       if (owner != null) 'owner': owner?.toJson(),
     };
@@ -164,7 +153,6 @@ class _UserImpl extends User {
     String? userAuthId,
     required String email,
     List<_i3.UserRoleMembership>? memberships,
-    int? maxOwnedProjects,
     _i1.UuidValue? ownerId,
     _i4.Owner? owner,
   }) : super._(
@@ -176,7 +164,6 @@ class _UserImpl extends User {
           userAuthId: userAuthId,
           email: email,
           memberships: memberships,
-          maxOwnedProjects: maxOwnedProjects,
           ownerId: ownerId,
           owner: owner,
         );
@@ -194,7 +181,6 @@ class _UserImpl extends User {
     Object? userAuthId = _Undefined,
     String? email,
     Object? memberships = _Undefined,
-    Object? maxOwnedProjects = _Undefined,
     Object? ownerId = _Undefined,
     Object? owner = _Undefined,
   }) {
@@ -209,8 +195,6 @@ class _UserImpl extends User {
       memberships: memberships is List<_i3.UserRoleMembership>?
           ? memberships
           : this.memberships?.map((e0) => e0.copyWith()).toList(),
-      maxOwnedProjects:
-          maxOwnedProjects is int? ? maxOwnedProjects : this.maxOwnedProjects,
       ownerId: ownerId is _i1.UuidValue? ? ownerId : this.ownerId,
       owner: owner is _i4.Owner? ? owner : this.owner?.copyWith(),
     );
