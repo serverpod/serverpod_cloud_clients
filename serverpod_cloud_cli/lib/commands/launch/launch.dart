@@ -11,6 +11,7 @@ import 'package:serverpod_cloud_cli/commands/project/project.dart';
 import 'package:serverpod_cloud_cli/commands/status/status.dart';
 import 'package:serverpod_cloud_cli/commands/status/status_feature.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
+import 'package:serverpod_cloud_cli/shared/user_interaction/user_confirmations.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:serverpod_cloud_cli/util/project_id_validator.dart';
@@ -23,7 +24,8 @@ abstract class Launch {
     required final CommandLogger logger,
     required final String? specifiedProjectDir,
     required final String? foundProjectDir,
-    required final String? projectId,
+    required final String? newProjectId,
+    required final String? existingProjectId,
     required final bool? enableDb,
     required final bool? performDeploy,
   }) async {
@@ -32,12 +34,19 @@ abstract class Launch {
       logger: logger,
     );
 
+    if (newProjectId != null && existingProjectId != null) {
+      throw ArgumentError(
+        'Cannot specify both newProjectId and existingProjectId.',
+      );
+    }
+
     logger.init('Launching new Serverpod Cloud project.\n');
 
     final projectSetup = ProjectLaunch(
       projectDir: specifiedProjectDir,
-      projectId: projectId,
+      projectId: newProjectId ?? existingProjectId,
       enableDb: enableDb,
+      preexistingProject: existingProjectId != null,
       performDeploy: performDeploy,
     );
 
@@ -163,8 +172,8 @@ abstract class Launch {
 
     final specifiedProjectId = projectSetup.projectId;
     if (specifiedProjectId != null) {
-      if (isValidProjectIdFormat(specifiedProjectId)) {
-        projectSetup.projectId = specifiedProjectId;
+      if (projectSetup.preexistingProject == true ||
+          isValidProjectIdFormat(specifiedProjectId)) {
         return;
       }
 
@@ -177,6 +186,8 @@ abstract class Launch {
       projectSetup.preexistingProject = true;
       return;
     }
+
+    await UserConfirmations.confirmNewProjectCostAcceptance(logger);
 
     final defaultProjectId = _getDefaultProjectId(projectSetup.projectDir);
 
@@ -246,7 +257,6 @@ The default API domain will be: <project-id>.api.serverpod.space
   ) async {
     logger.info(
       'Found an existing Cloud project: ${project.cloudProjectId}',
-      newParagraph: true,
     );
 
     final confirm = await logger.confirm(
@@ -264,7 +274,6 @@ The default API domain will be: <project-id>.api.serverpod.space
     logger.info(
       'Found existing Cloud projects.\n'
       'Do you want to deploy to one of them instead of creating a new one?',
-      newParagraph: true,
     );
     for (int i = 0; i < existingIds.length; i++) {
       logger.info('${i + 1}. ${existingIds[i]}');
@@ -386,6 +395,7 @@ The default API domain will be: <project-id>.api.serverpod.space
           projectDir,
           ProjectConfigFileConstants.defaultFileName,
         ),
+        skipConfirmation: true,
       );
     }
 
@@ -457,7 +467,7 @@ class ProjectLaunch {
       rows: [
         ['Project directory', projectDir],
         if (preexistingProject != true) ...[
-          ['Project id', projectId],
+          ['New project id', projectId],
           ['Enable DB', enableDb == true ? 'yes' : 'no'],
         ] else
           ['Existing project id', projectId],

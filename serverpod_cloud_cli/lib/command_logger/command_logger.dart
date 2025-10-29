@@ -459,6 +459,7 @@ class CommandLogger {
     final bool? defaultValue,
   }) async {
     if (configuration?.skipConfirmation == true) {
+      info('$message: y');
       return true;
     }
 

@@ -7,6 +7,7 @@ import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/commands/deploy/prepare_workspace.dart'
     show WorkspaceProject;
+import 'package:serverpod_cloud_cli/shared/user_interaction/user_confirmations.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_file.dart';
@@ -41,7 +42,12 @@ abstract class ProjectCommands {
     required final bool enableDb,
     required final String projectDir,
     required final String configFilePath,
+    final bool skipConfirmation = false,
   }) async {
+    if (!skipConfirmation) {
+      await UserConfirmations.confirmNewProjectCostAcceptance(logger);
+    }
+
     // Check that the user is on a plan and automatically procure one if not.
     // This behavior will be changed in the future.
     final planNames = await cloudApiClient.plans.listProcuredPlanNames();

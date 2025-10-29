@@ -6,6 +6,7 @@ import 'dart:async';
 import 'package:args/command_runner.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test/test.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
@@ -73,9 +74,48 @@ void main() {
         pushCurrentDirectory(serverDir);
       });
 
+      group('when calling create and declining new project cost acceptance',
+          () {
+        late Future commandResult;
+        setUp(() async {
+          logger.answerNextConfirmWith(
+            false, // decline new project cost acceptance
+          );
+
+          commandResult = cli.run([
+            'project',
+            'create',
+            projectId,
+            '--no-enable-db',
+          ]);
+        });
+
+        test('then command completes successfully', () async {
+          await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+        });
+
+        test('then logs confirmation question', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(logger.confirmCalls, hasLength(1));
+          expect(
+            logger.confirmCalls.single,
+            equalsConfirmCall(
+              message:
+                  'Depending on your subscription, a new project may incur additional costs. Continue?',
+              defaultValue: true,
+            ),
+          );
+        });
+      });
+
       group('without scloud.yaml file when calling create', () {
         late Future commandResult;
         setUp(() async {
+          logger.answerNextConfirmWith(
+            true, // accept new project cost acceptance
+          );
+
           commandResult = cli.run([
             'project',
             'create',
@@ -86,6 +126,20 @@ void main() {
 
         test('then command completes successfully', () async {
           await expectLater(commandResult, completes);
+        });
+
+        test('then logs confirmation question', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(logger.confirmCalls, hasLength(1));
+          expect(
+            logger.confirmCalls.single,
+            equalsConfirmCall(
+              message:
+                  'Depending on your subscription, a new project may incur additional costs. Continue?',
+              defaultValue: true,
+            ),
+          );
         });
 
         test('then logs success message', () async {
@@ -140,6 +194,9 @@ project:
 '''),
           ]).create();
 
+          logger.answerNextConfirmWith(
+            true, // accept new project cost acceptance
+          );
           commandResult = cli.run([
             'project',
             'create',
@@ -188,6 +245,9 @@ project:
             withDirectoryName: serverDir,
           ).create();
 
+          logger.answerNextConfirmWith(
+            true, // accept new project cost acceptance
+          );
           commandResult = cli.run([
             'project',
             'create',
@@ -217,6 +277,9 @@ project:
             d.file('.scloudignore', '# Custom .scloudignore file'),
           ]).create();
 
+          logger.answerNextConfirmWith(
+            true, // accept new project cost acceptance
+          );
           commandResult = cli.run([
             'project',
             'create',
@@ -255,6 +318,9 @@ dependencies:
         final dartDir = p.absolute(d.sandbox, 'dart_dir');
         pushCurrentDirectory(dartDir);
 
+        logger.answerNextConfirmWith(
+          true, // accept new project cost acceptance
+        );
         commandResult = cli.run([
           'project',
           'create',
@@ -298,6 +364,9 @@ dependencies:
         final otherDir = p.absolute(d.sandbox, 'other_dir');
         pushCurrentDirectory(otherDir);
 
+        logger.answerNextConfirmWith(
+          true, // accept new project cost acceptance
+        );
         commandResult = cli.run([
           'project',
           'create',
@@ -367,6 +436,9 @@ dependencies:
 
       group('when calling create without --project-dir option', () {
         setUp(() async {
+          logger.answerNextConfirmWith(
+            true, // accept new project cost acceptance
+          );
           commandResult = cli.run([
             'project',
             'create',
@@ -427,6 +499,9 @@ dependencies:
 
       group('when calling create with --project-dir option', () {
         setUp(() async {
+          logger.answerNextConfirmWith(
+            true, // accept new project cost acceptance
+          );
           commandResult = cli.run([
             'project',
             'create',

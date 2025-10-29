@@ -17,6 +17,7 @@ persistentFlags:
   --project-config-file=: "The path to the Serverpod Cloud project configuration file."
   --project-config-content=: "Override the scloud project configuration with a YAML string."
   --connection-timeout=: "The timeout for the connection to the Serverpod Cloud API."
+  --skip-confirmation: "Automatically accept confirmation prompts. For use in non-interactive environments."
 exclusiveFlags:
   - [analytics, no-analytics]
 completion:
@@ -246,7 +247,8 @@ commands:
 
   - name: launch
     flags:
-      -p, --project=: "The ID of the project."
+      --project=: "The ID of an existing project to use."
+      --new-project=: "The ID of a new project to create."
       --enable-db: "Flag to enable the database for the project."
       --no-enable-db: "Flag to enable the database for the project."
       --deploy: "Flag to immediately deploy the project."

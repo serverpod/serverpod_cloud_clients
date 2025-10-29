@@ -78,7 +78,7 @@ void main() {
       setUp(() async {
         commandResult = cli.run([
           'launch',
-          '--project',
+          '--new-project',
           projectId,
           '--project-dir',
           testProjectDir,
@@ -187,11 +187,11 @@ void main() {
           'and approving confirmation', () {
         late Future commandResult;
         setUp(() async {
-          logger.answerNextConfirmWith(true);
+          logger.answerNextConfirmsWith([true, true]);
 
           commandResult = cli.run([
             'launch',
-            '--project',
+            '--new-project',
             projectId,
             '--project-dir',
             testProjectDir,
@@ -215,7 +215,7 @@ void main() {
             stringContainsInOrder([
               'Project setup',
               'Project directory  $testProjectDir',
-              'Project id         $projectId',
+              'New project id     $projectId',
               'Enable DB          yes',
               'Perform deploy     yes',
             ]),
@@ -313,7 +313,7 @@ project:
 
           commandResult = cli.run([
             'launch',
-            '--project',
+            '--new-project',
             projectId,
             '--project-dir',
             testProjectDir,
@@ -341,7 +341,7 @@ project:
             stringContainsInOrder([
               'Project setup',
               'Project directory  $testProjectDir',
-              'Project id         $projectId',
+              'New project id     $projectId',
               'Enable DB          yes',
               'Perform deploy     yes',
             ]),
@@ -402,7 +402,7 @@ project:
 
           commandResult = cli.run([
             'launch',
-            '--project',
+            '--new-project',
             projectId,
             '--project-dir',
             d.sandbox,
@@ -452,7 +452,7 @@ project:
             stringContainsInOrder([
               'Project setup',
               'Project directory  $testProjectDir',
-              'Project id         $projectId',
+              'New project id     $projectId',
               'Enable DB          yes',
               'Perform deploy     yes',
             ]),
@@ -509,11 +509,11 @@ project:
           logger.answerNextInputsWith([
             projectId,
           ]);
-          logger.answerNextConfirmWith(false);
+          logger.answerNextConfirmsWith([true, false]);
 
           commandResult = cli.run([
             'launch',
-            '--project',
+            '--new-project',
             'invalid-project-id_%^&',
             '--project-dir',
             testProjectDir,
@@ -563,7 +563,7 @@ project:
             stringContainsInOrder([
               'Project setup',
               'Project directory  $testProjectDir',
-              'Project id         $projectId',
+              'New project id     $projectId',
               'Enable DB          yes',
               'Perform deploy     yes',
             ]),
@@ -573,13 +573,20 @@ project:
         test('then logs confirmation-to-apply message', () async {
           await commandResult.catchError((final _) {});
 
-          expect(logger.confirmCalls, hasLength(1));
+          expect(logger.confirmCalls, hasLength(2));
           expect(
-            logger.confirmCalls.single,
-            equalsConfirmCall(
-              message: 'Continue and apply this setup?',
-              defaultValue: true,
-            ),
+            logger.confirmCalls,
+            containsAllInOrder([
+              equalsConfirmCall(
+                message:
+                    'Depending on your subscription, a new project may incur additional costs. Continue?',
+                defaultValue: true,
+              ),
+              equalsConfirmCall(
+                message: 'Continue and apply this setup?',
+                defaultValue: true,
+              ),
+            ]),
           );
         });
 
@@ -613,6 +620,43 @@ project:
 
       group(
           'when executing launch with all settings provided interactively '
+          'and declining project cost question', () {
+        late Future commandResult;
+        setUp(() async {
+          logger.answerNextInputsWith([
+            testProjectDir,
+            projectId,
+          ]);
+          logger.answerNextConfirmsWith([
+            false, // decline new project cost acceptance
+          ]);
+
+          commandResult = cli.run([
+            'launch',
+          ]);
+        });
+
+        test('then throws ErrorExitException', () async {
+          expect(commandResult, throwsA(isA<ErrorExitException>()));
+        });
+
+        test('then logs confirmation question', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(logger.confirmCalls, hasLength(1));
+          expect(
+            logger.confirmCalls.single,
+            equalsConfirmCall(
+              message:
+                  'Depending on your subscription, a new project may incur additional costs. Continue?',
+              defaultValue: true,
+            ),
+          );
+        });
+      });
+
+      group(
+          'when executing launch with all settings provided interactively '
           'and declining confirmation', () {
         late Future commandResult;
         setUp(() async {
@@ -621,6 +665,7 @@ project:
             projectId,
           ]);
           logger.answerNextConfirmsWith([
+            true, // confirm new project cost acceptance
             true, // enable db
             true, // perform deploy
             false, // do not apply setup
@@ -685,7 +730,7 @@ project:
             stringContainsInOrder([
               'Project setup',
               'Project directory  $testProjectDir',
-              'Project id         $projectId',
+              'New project id     $projectId',
               'Enable DB          yes',
               'Perform deploy     yes',
             ]),
@@ -733,6 +778,7 @@ project:
             projectId,
           ]);
           logger.answerNextConfirmsWith([
+            true, // confirm new project cost acceptance
             true, // enable db
             true, // perform deploy
             false, // do not apply setup
@@ -808,7 +854,7 @@ project:
             stringContainsInOrder([
               'Project setup',
               'Project directory  ${p.relative(testProjectDir)}',
-              'Project id         $projectId',
+              'New project id     $projectId',
               'Enable DB          yes',
               'Perform deploy     yes',
             ]),
@@ -855,6 +901,7 @@ project:
             projectId,
           ]);
           logger.answerNextConfirmsWith([
+            true, // confirm new project cost acceptance
             true, // enable db
             true, // perform deploy
             false, // do not apply setup
@@ -922,7 +969,7 @@ project:
             stringContainsInOrder([
               'Project setup',
               'Project directory  $testProjectDir',
-              'Project id         $projectId',
+              'New project id     $projectId',
               'Enable DB          yes',
               'Perform deploy     yes',
             ]),
@@ -969,6 +1016,7 @@ project:
             projectId,
           ]);
           logger.answerNextConfirmsWith([
+            true, // confirm new project cost acceptance
             true, // enable db
             true, // perform deploy
             false, // do not apply setup
@@ -1037,7 +1085,7 @@ project:
             stringContainsInOrder([
               'Project setup',
               'Project directory  $testProjectDir',
-              'Project id         $projectId',
+              'New project id     $projectId',
               'Enable DB          yes',
               'Perform deploy     yes',
             ]),
@@ -1098,6 +1146,7 @@ project:
             projectId,
           ]);
           logger.answerNextConfirmsWith([
+            true, // confirm new project cost acceptance
             true, // enable db
             true, // perform deploy
             false, // do not apply setup
@@ -1162,7 +1211,7 @@ project:
             stringContainsInOrder([
               'Project setup',
               'Project directory  $testProjectDir',
-              'Project id         $projectId',
+              'New project id     $projectId',
               'Enable DB          yes',
               'Perform deploy     yes',
             ]),
@@ -1338,6 +1387,7 @@ project:
           ]);
           logger.answerNextConfirmsWith([
             false, // decline using existing project
+            true, // confirm new project cost acceptance
             true, // enable db
             true, // perform deploy
             false, // do not apply setup
@@ -1402,7 +1452,7 @@ project:
             stringContainsInOrder([
               'Project setup',
               'Project directory  $testProjectDir',
-              'Project id         $projectId',
+              'New project id     $projectId',
               'Enable DB          yes',
               'Perform deploy     yes',
             ]),

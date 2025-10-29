@@ -1,11 +1,19 @@
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
-import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/commands/launch/launch.dart';
 
 enum LaunchOption<V> implements OptionDefinition<V> {
-  projectId(ProjectIdOption.nonMandatory()),
+  projectId(StringOption(
+    argName: 'project',
+    helpText: 'The ID of an existing project to use.',
+    group: _projectGroup,
+  )),
+  newProjectId(StringOption(
+    argName: 'new-project',
+    helpText: 'The ID of a new project to create.',
+    group: _projectGroup,
+  )),
   enableDb(FlagOption(
     argName: 'enable-db',
     helpText: 'Flag to enable the database for the project.',
@@ -19,6 +27,9 @@ enum LaunchOption<V> implements OptionDefinition<V> {
 
   @override
   final ConfigOptionBase<V> option;
+
+  static const _projectGroup =
+      MutuallyExclusive('Project', mode: MutuallyExclusiveMode.noDefaults);
 }
 
 class CloudLaunchCommand extends CloudCliCommand<LaunchOption> {
@@ -41,7 +52,9 @@ class CloudLaunchCommand extends CloudCliCommand<LaunchOption> {
     final foundProjectDir =
         specifiedProjectDir == null ? runner.selectProjectDirectory() : null;
 
-    final projectId = commandConfig.optionalValue(LaunchOption.projectId);
+    final existingProjectId =
+        commandConfig.optionalValue(LaunchOption.projectId);
+    final newProjectId = commandConfig.optionalValue(LaunchOption.newProjectId);
     final enableDb = commandConfig.optionalValue(LaunchOption.enableDb);
     final deploy = commandConfig.optionalValue(LaunchOption.deploy);
 
@@ -51,7 +64,8 @@ class CloudLaunchCommand extends CloudCliCommand<LaunchOption> {
       logger: logger,
       specifiedProjectDir: specifiedProjectDir?.path,
       foundProjectDir: foundProjectDir,
-      projectId: projectId,
+      newProjectId: newProjectId,
+      existingProjectId: existingProjectId,
       enableDb: enableDb,
       performDeploy: deploy,
     );

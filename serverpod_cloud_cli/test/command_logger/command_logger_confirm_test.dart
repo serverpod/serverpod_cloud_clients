@@ -291,7 +291,7 @@ void main() {
       },
     );
 
-    expect(stdout.output, isEmpty);
+    expect(stdout.output, 'Are you sure?: y\n');
     expect(result, isTrue);
   });
 }

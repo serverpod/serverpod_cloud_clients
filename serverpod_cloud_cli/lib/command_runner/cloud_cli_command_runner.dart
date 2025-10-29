@@ -419,6 +419,15 @@ enum GlobalOption<V> implements OptionDefinition<V> {
       helpText: 'The timeout for the connection to the Serverpod Cloud API.',
     ),
   ),
+  skipConfirmation(
+    FlagOption(
+      argName: 'skip-confirmation',
+      helpText: 'Automatically accept confirmation prompts.'
+          ' For use in non-interactive environments.',
+      negatable: false,
+      defaultsTo: false,
+    ),
+  ),
 
   // Developer options and flags
   apiServer(
@@ -437,15 +446,6 @@ enum GlobalOption<V> implements OptionDefinition<V> {
       helpText: 'The URL to the Serverpod cloud console server.',
       hide: true,
       defaultsTo: HostConstants.serverpodCloudConsole,
-    ),
-  ),
-  skipConfirmation(
-    FlagOption(
-      argName: 'skip-confirmation',
-      helpText:
-          'Should be used in CI environment to bypass confirmation prompts.',
-      hide: true,
-      defaultsTo: false,
     ),
   ),
   authToken(

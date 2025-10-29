@@ -541,7 +541,7 @@ _scloud_completions() {
       ;;
 
     'db create-superuser'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --project -p --username")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation --project -p --username")" -- "$cur")
       ;;
 
     'deploy'*'--scloud-dir')
@@ -561,7 +561,7 @@ _scloud_completions() {
       ;;
 
     'completion generate'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --tool -t --exec-name -e --file -f")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation --tool -t --exec-name -e --file -f")" -- "$cur")
       ;;
 
     'domain'*'--scloud-dir')
@@ -573,7 +573,7 @@ _scloud_completions() {
       ;;
 
     'completion install'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --tool -t --exec-name -e --write-dir -d")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation --tool -t --exec-name -e --write-dir -d")" -- "$cur")
       ;;
 
     'auth'*'--project-dir')
@@ -601,7 +601,7 @@ _scloud_completions() {
       ;;
 
     'db reset-password'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --project -p --username")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation --project -p --username")" -- "$cur")
       ;;
 
     'auth'*'--scloud-dir')
@@ -669,15 +669,15 @@ _scloud_completions() {
       ;;
 
     'project create'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --project -p --enable-db --no-enable-db")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation --project -p --enable-db --no-enable-db")" -- "$cur")
       ;;
 
     'project delete'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --project -p")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation --project -p")" -- "$cur")
       ;;
 
     'project revoke'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --project -p --user -u --role -r --all")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation --project -p --user -u --role -r --all")" -- "$cur")
       ;;
 
     'secret list'*'-d')
@@ -685,7 +685,7 @@ _scloud_completions() {
       ;;
 
     'project invite'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --project -p --user -u --role -r")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation --project -p --user -u --role -r")" -- "$cur")
       ;;
 
     'auth logout'*'-d')
@@ -701,11 +701,11 @@ _scloud_completions() {
       ;;
 
     'secret delete'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --project -p --name")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation --project -p --name")" -- "$cur")
       ;;
 
     'domain remove'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --project -p --name")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation --project -p --name")" -- "$cur")
       ;;
 
     'domain add'*'-t')
@@ -717,7 +717,7 @@ _scloud_completions() {
       ;;
 
     'db connection'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --project -p")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation --project -p")" -- "$cur")
       ;;
 
     'env create'*'-d')
@@ -729,11 +729,11 @@ _scloud_completions() {
       ;;
 
     'secret create'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --project -p --name --value --from-file")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation --project -p --name --value --from-file")" -- "$cur")
       ;;
 
     'domain verify'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --project -p --name")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation --project -p --name")" -- "$cur")
       ;;
 
     'completion'*'-d')
@@ -741,7 +741,7 @@ _scloud_completions() {
       ;;
 
     'status deploy'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --project -p --limit --utc --no-utc -u --deploy --list -l --build-log -b --output-overall-status")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation --project -p --limit --utc --no-utc -u --deploy --list -l --build-log -b --output-overall-status")" -- "$cur")
       ;;
 
     'env delete'*'-d')
@@ -753,11 +753,11 @@ _scloud_completions() {
       ;;
 
     'project link'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --project -p")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation --project -p")" -- "$cur")
       ;;
 
     'project list'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --all")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation --all")" -- "$cur")
       ;;
 
     'user list'*'-d')
@@ -773,35 +773,35 @@ _scloud_completions() {
       ;;
 
     'domain list'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --project -p")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation --project -p")" -- "$cur")
       ;;
 
     'secret list'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --project -p")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation --project -p")" -- "$cur")
       ;;
 
     'auth logout'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation")" -- "$cur")
       ;;
 
     'env delete'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --project -p --name")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation --project -p --name")" -- "$cur")
       ;;
 
     'env create'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --project -p --name --value --from-file")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation --project -p --name --value --from-file")" -- "$cur")
       ;;
 
     'env update'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --project -p --name --value --from-file")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation --project -p --name --value --from-file")" -- "$cur")
       ;;
 
     'completion'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "generate install --quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "generate install --quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation")" -- "$cur")
       ;;
 
     'domain add'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --project -p --name --target -t")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation --project -p --name --target -t")" -- "$cur")
       ;;
 
     'version'*'-d')
@@ -809,7 +809,7 @@ _scloud_completions() {
       ;;
 
     'auth login'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --timeout -t --persistent --no-persistent --browser --no-browser")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation --timeout -t --persistent --no-persistent --browser --no-browser")" -- "$cur")
       ;;
 
     'project'*'-d')
@@ -821,7 +821,7 @@ _scloud_completions() {
       ;;
 
     'user list'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --project -p")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation --project -p")" -- "$cur")
       ;;
 
     'domain'*'-d')
@@ -841,11 +841,11 @@ _scloud_completions() {
       ;;
 
     'settings'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --analytics --no-analytics")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation --analytics --no-analytics")" -- "$cur")
       ;;
 
     'env list'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --project -p")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation --project -p")" -- "$cur")
       ;;
 
     'user'*'-d')
@@ -853,11 +853,11 @@ _scloud_completions() {
       ;;
 
     'version'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation")" -- "$cur")
       ;;
 
     'project'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "create delete list link invite revoke --quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "create delete list link invite revoke --quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation")" -- "$cur")
       ;;
 
     'auth'*'-d')
@@ -869,7 +869,7 @@ _scloud_completions() {
       ;;
 
     'deploy'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --project -p --concurrency -c --dry-run --no-dry-run")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation --project -p --concurrency -c --dry-run --no-dry-run")" -- "$cur")
       ;;
 
     'log'*'-d')
@@ -877,19 +877,19 @@ _scloud_completions() {
       ;;
 
     'status'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "deploy --quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "deploy --quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation")" -- "$cur")
       ;;
 
     'domain'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "add list remove verify --quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "add list remove verify --quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation")" -- "$cur")
       ;;
 
     'launch'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --project -p --enable-db --no-enable-db --deploy --no-deploy")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation --project --new-project --enable-db --no-enable-db --deploy --no-deploy")" -- "$cur")
       ;;
 
     'secret'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "create list delete --quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "create list delete --quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation")" -- "$cur")
       ;;
 
     'db'*'-d')
@@ -897,23 +897,23 @@ _scloud_completions() {
       ;;
 
     'auth'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "login logout --quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "login logout --quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation")" -- "$cur")
       ;;
 
     'user'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "list --quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "list --quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation")" -- "$cur")
       ;;
 
     'log'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --project -p --limit --utc --no-utc -u --recent -r --before --after --tail")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation --project -p --limit --utc --no-utc -u --recent -r --before --after --tail")" -- "$cur")
       ;;
 
     'env'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "create list update delete --quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "create list update delete --quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation")" -- "$cur")
       ;;
 
     'db'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "connection create-superuser reset-password --quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "connection create-superuser reset-password --quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation")" -- "$cur")
       ;;
 
     *'-d')
@@ -921,7 +921,7 @@ _scloud_completions() {
       ;;
 
     *)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "completion version auth project deploy env domain log status secret db launch user settings --quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "completion version auth project deploy env domain log status secret db launch user settings --quiet -q --verbose -v --analytics --no-analytics -a --version --scloud-dir --project-dir -d --project-config-file --project-config-content --connection-timeout --skip-confirmation")" -- "$cur")
       ;;
 
   esac
