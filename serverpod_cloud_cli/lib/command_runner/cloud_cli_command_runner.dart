@@ -41,6 +41,9 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   final CommandLogger logger;
   final CloudCliServiceProvider _serviceProvider;
 
+  /// If true, analytics will be not be suppressed for non-production usage.
+  final bool _enableAnalyticsForAllEnvs;
+
   final VersionCommand _versionCommand;
 
   GlobalConfiguration? _globalConfiguration;
@@ -82,10 +85,12 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     required this.logger,
     required this.version,
     required final CloudCliServiceProvider serviceProvider,
+    required final bool enableAnalyticsForAllEnvs,
     super.onAnalyticsEvent,
     super.setLogLevel,
   })  : _serviceProvider = serviceProvider,
         _versionCommand = VersionCommand(logger: logger),
+        _enableAnalyticsForAllEnvs = enableAnalyticsForAllEnvs,
         super(
           'scloud',
           'Manage your Serverpod Cloud projects',
@@ -106,12 +111,14 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     final Version? version,
     final CloudCliServiceProvider? serviceProvider,
     final OnAnalyticsEvent? onAnalyticsEvent,
+    final bool enableAnalyticsForAllEnvs = false,
     bool? adminUserMode,
   }) {
     final runner = CloudCliCommandRunner._(
       logger: logger,
       version: version ?? cliVersion,
       serviceProvider: serviceProvider ?? CloudCliServiceProvider(),
+      enableAnalyticsForAllEnvs: enableAnalyticsForAllEnvs,
       onAnalyticsEvent: onAnalyticsEvent,
       setLogLevel: ({
         final String? commandName,
@@ -205,7 +212,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
       return analyticsOptionValue;
     }
 
-    if (!_isTenantUser()) {
+    if (!_enableAnalyticsForAllEnvs && !_isTenantUser()) {
       return false;
     }
 

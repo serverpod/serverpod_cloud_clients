@@ -44,6 +44,7 @@ class CloudCliServiceProvider {
   void shutdown() {
     _cloudApiClient?.close();
     _cloudApiClient = null;
+    _scloudSettings = null;
     _initialized = false; // enables re-initialization in test runs
   }
 

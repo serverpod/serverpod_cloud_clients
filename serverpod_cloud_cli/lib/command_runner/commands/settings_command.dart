@@ -16,6 +16,9 @@ enum CliUserSettingsOption<V> implements OptionDefinition<V> {
 
 class CliUserSettingsCommand extends CloudCliCommand<CliUserSettingsOption> {
   @override
+  bool get requireLogin => false;
+
+  @override
   final name = 'settings';
 
   @override
