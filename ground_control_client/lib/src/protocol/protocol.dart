@@ -33,32 +33,31 @@ import 'domains/billing/models/billing_customer_type.dart' as _i19;
 import 'features/auth/models/accepted_terms_dto.dart' as _i20;
 import 'features/auth/models/required_terms.dart' as _i21;
 import 'features/auth/models/terms.dart' as _i22;
-import 'features/custom_domain_name/exceptions/dns_verification_failed_exception.dart'
+import 'features/custom_domains/exceptions/dns_verification_failed_exception.dart'
     as _i23;
-import 'features/custom_domain_name/models/custom_domain_name.dart' as _i24;
-import 'features/custom_domain_name/models/custom_domain_name_list.dart'
-    as _i25;
-import 'features/custom_domain_name/models/dns_record_type.dart' as _i26;
-import 'features/custom_domain_name/models/domain_name_status.dart' as _i27;
-import 'features/custom_domain_name/models/domain_name_target.dart' as _i28;
-import 'features/custom_domain_name/models/new_domain_names_event.dart' as _i29;
-import 'features/custom_domain_name/models/view_models/custom_domain_name_with_default_domains.dart'
+import 'features/custom_domains/models/custom_domain_name.dart' as _i24;
+import 'features/custom_domains/models/custom_domain_name_list.dart' as _i25;
+import 'features/custom_domains/models/dns_record_type.dart' as _i26;
+import 'features/custom_domains/models/domain_name_status.dart' as _i27;
+import 'features/custom_domains/models/domain_name_target.dart' as _i28;
+import 'features/custom_domains/models/new_domain_names_event.dart' as _i29;
+import 'features/custom_domains/models/view_models/custom_domain_name_with_default_domains.dart'
     as _i30;
-import 'features/database/models/database_connection.dart' as _i31;
-import 'features/database/models/database_provider.dart' as _i32;
-import 'features/database/models/database_resource.dart' as _i33;
+import 'features/databases/models/database_connection.dart' as _i31;
+import 'features/databases/models/database_provider.dart' as _i32;
+import 'features/databases/models/database_resource.dart' as _i33;
 import 'features/environment_variables/models/environment_variable.dart'
     as _i34;
 import 'shared/services/pubsub/registry/pubsub_entry.dart' as _i35;
-import 'features/project/models/project.dart' as _i36;
-import 'features/project/models/project_config.dart' as _i37;
-import 'features/project/models/project_delete_call_event.dart' as _i38;
-import 'features/project/models/project_info/project_info.dart' as _i39;
-import 'features/project/models/project_info/timestamp.dart' as _i40;
-import 'features/project/models/role.dart' as _i41;
-import 'features/project/models/user_role_membership.dart' as _i42;
-import 'features/secret_manager/models/secret_resource.dart' as _i43;
-import 'features/secret_manager/models/secret_type.dart' as _i44;
+import 'features/projects/models/project.dart' as _i36;
+import 'features/projects/models/project_config.dart' as _i37;
+import 'features/projects/models/project_delete_call_event.dart' as _i38;
+import 'features/projects/models/project_info/project_info.dart' as _i39;
+import 'features/projects/models/project_info/timestamp.dart' as _i40;
+import 'features/projects/models/role.dart' as _i41;
+import 'features/projects/models/user_role_membership.dart' as _i42;
+import 'features/secrets/models/secret_resource.dart' as _i43;
+import 'features/secrets/models/secret_type.dart' as _i44;
 import 'shared/exceptions/models/duplicate_entry_exception.dart' as _i45;
 import 'shared/exceptions/models/invalid_value_exception.dart' as _i46;
 import 'shared/exceptions/models/not_found_exception.dart' as _i47;
@@ -66,10 +65,10 @@ import 'shared/exceptions/models/procurement_denied_exception.dart' as _i48;
 import 'shared/exceptions/models/unauthenticated_exception.dart' as _i49;
 import 'shared/exceptions/models/unauthorized_exception.dart' as _i50;
 import 'shared/models/serverpod_region.dart' as _i51;
-import 'features/project/models/address.dart' as _i52;
-import 'package:ground_control_client/src/protocol/features/project/models/project.dart'
+import 'features/projects/models/address.dart' as _i52;
+import 'package:ground_control_client/src/protocol/features/projects/models/project.dart'
     as _i53;
-import 'package:ground_control_client/src/protocol/features/project/models/project_info/project_info.dart'
+import 'package:ground_control_client/src/protocol/features/projects/models/project_info/project_info.dart'
     as _i54;
 import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt.dart'
     as _i55;
@@ -83,7 +82,7 @@ import 'package:ground_control_client/src/protocol/domains/billing/models/paymen
     as _i59;
 import 'package:ground_control_client/src/protocol/features/environment_variables/models/environment_variable.dart'
     as _i60;
-import 'package:ground_control_client/src/protocol/features/project/models/role.dart'
+import 'package:ground_control_client/src/protocol/features/projects/models/role.dart'
     as _i61;
 import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
     as _i62;
@@ -117,28 +116,28 @@ export 'features/auth/models/accepted_terms.dart';
 export 'features/auth/models/accepted_terms_dto.dart';
 export 'features/auth/models/required_terms.dart';
 export 'features/auth/models/terms.dart';
-export 'features/custom_domain_name/exceptions/dns_verification_failed_exception.dart';
-export 'features/custom_domain_name/models/custom_domain_name.dart';
-export 'features/custom_domain_name/models/custom_domain_name_list.dart';
-export 'features/custom_domain_name/models/dns_record_type.dart';
-export 'features/custom_domain_name/models/domain_name_status.dart';
-export 'features/custom_domain_name/models/domain_name_target.dart';
-export 'features/custom_domain_name/models/new_domain_names_event.dart';
-export 'features/custom_domain_name/models/view_models/custom_domain_name_with_default_domains.dart';
-export 'features/database/models/database_connection.dart';
-export 'features/database/models/database_provider.dart';
-export 'features/database/models/database_resource.dart';
+export 'features/custom_domains/exceptions/dns_verification_failed_exception.dart';
+export 'features/custom_domains/models/custom_domain_name.dart';
+export 'features/custom_domains/models/custom_domain_name_list.dart';
+export 'features/custom_domains/models/dns_record_type.dart';
+export 'features/custom_domains/models/domain_name_status.dart';
+export 'features/custom_domains/models/domain_name_target.dart';
+export 'features/custom_domains/models/new_domain_names_event.dart';
+export 'features/custom_domains/models/view_models/custom_domain_name_with_default_domains.dart';
+export 'features/databases/models/database_connection.dart';
+export 'features/databases/models/database_provider.dart';
+export 'features/databases/models/database_resource.dart';
 export 'features/environment_variables/models/environment_variable.dart';
-export 'features/project/models/address.dart';
-export 'features/project/models/project.dart';
-export 'features/project/models/project_config.dart';
-export 'features/project/models/project_delete_call_event.dart';
-export 'features/project/models/project_info/project_info.dart';
-export 'features/project/models/project_info/timestamp.dart';
-export 'features/project/models/role.dart';
-export 'features/project/models/user_role_membership.dart';
-export 'features/secret_manager/models/secret_resource.dart';
-export 'features/secret_manager/models/secret_type.dart';
+export 'features/projects/models/address.dart';
+export 'features/projects/models/project.dart';
+export 'features/projects/models/project_config.dart';
+export 'features/projects/models/project_delete_call_event.dart';
+export 'features/projects/models/project_info/project_info.dart';
+export 'features/projects/models/project_info/timestamp.dart';
+export 'features/projects/models/role.dart';
+export 'features/projects/models/user_role_membership.dart';
+export 'features/secrets/models/secret_resource.dart';
+export 'features/secrets/models/secret_type.dart';
 export 'shared/exceptions/models/duplicate_entry_exception.dart';
 export 'shared/exceptions/models/invalid_value_exception.dart';
 export 'shared/exceptions/models/not_found_exception.dart';

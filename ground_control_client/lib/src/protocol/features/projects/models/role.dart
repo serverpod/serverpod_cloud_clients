@@ -11,8 +11,8 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../features/project/models/project.dart' as _i2;
-import '../../../features/project/models/user_role_membership.dart' as _i3;
+import '../../../features/projects/models/project.dart' as _i2;
+import '../../../features/projects/models/user_role_membership.dart' as _i3;
 
 /// Represents an access role for a specific project.
 /// Roles are assigned to users via membership, giving them the role's access scopes.

@@ -12,7 +12,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/users/models/user.dart' as _i2;
-import '../../../features/project/models/role.dart' as _i3;
+import '../../../features/projects/models/role.dart' as _i3;
 
 /// Represents a membership of a user in a role.
 abstract class UserRoleMembership implements _i1.SerializableModel {

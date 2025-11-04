@@ -11,8 +11,9 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../../features/project/models/project.dart' as _i2;
-import '../../../../features/project/models/project_info/timestamp.dart' as _i3;
+import '../../../../features/projects/models/project.dart' as _i2;
+import '../../../../features/projects/models/project_info/timestamp.dart'
+    as _i3;
 
 /// Augments a project object with ancillary information.
 ///

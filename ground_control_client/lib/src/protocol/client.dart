@@ -12,9 +12,9 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import 'dart:async' as _i2;
-import 'package:ground_control_client/src/protocol/features/project/models/project.dart'
+import 'package:ground_control_client/src/protocol/features/projects/models/project.dart'
     as _i3;
-import 'package:ground_control_client/src/protocol/features/project/models/project_info/project_info.dart'
+import 'package:ground_control_client/src/protocol/features/projects/models/project_info/project_info.dart'
     as _i4;
 import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt.dart'
     as _i5;
@@ -37,23 +37,23 @@ import 'package:ground_control_client/src/protocol/domains/billing/models/paymen
     as _i14;
 import 'package:ground_control_client/src/protocol/domains/billing/models/payment_method.dart'
     as _i15;
-import 'package:ground_control_client/src/protocol/features/custom_domain_name/models/view_models/custom_domain_name_with_default_domains.dart'
+import 'package:ground_control_client/src/protocol/features/custom_domains/models/view_models/custom_domain_name_with_default_domains.dart'
     as _i16;
-import 'package:ground_control_client/src/protocol/features/custom_domain_name/models/domain_name_target.dart'
+import 'package:ground_control_client/src/protocol/features/custom_domains/models/domain_name_target.dart'
     as _i17;
-import 'package:ground_control_client/src/protocol/features/custom_domain_name/models/custom_domain_name_list.dart'
+import 'package:ground_control_client/src/protocol/features/custom_domains/models/custom_domain_name_list.dart'
     as _i18;
-import 'package:ground_control_client/src/protocol/features/custom_domain_name/models/domain_name_status.dart'
+import 'package:ground_control_client/src/protocol/features/custom_domains/models/domain_name_status.dart'
     as _i19;
 import 'package:ground_control_client/src/protocol/features/environment_variables/models/environment_variable.dart'
     as _i20;
 import 'package:ground_control_client/src/protocol/domains/logs/models/log_record.dart'
     as _i21;
-import 'package:ground_control_client/src/protocol/features/database/models/database_connection.dart'
+import 'package:ground_control_client/src/protocol/features/databases/models/database_connection.dart'
     as _i22;
-import 'package:ground_control_client/src/protocol/features/project/models/project_config.dart'
+import 'package:ground_control_client/src/protocol/features/projects/models/project_config.dart'
     as _i23;
-import 'package:ground_control_client/src/protocol/features/project/models/role.dart'
+import 'package:ground_control_client/src/protocol/features/projects/models/role.dart'
     as _i24;
 import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
     as _i25;

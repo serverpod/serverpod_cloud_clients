@@ -11,10 +11,8 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../features/custom_domain_name/models/custom_domain_name.dart'
-    as _i2;
-import '../../../features/custom_domain_name/models/domain_name_target.dart'
-    as _i3;
+import '../../../features/custom_domains/models/custom_domain_name.dart' as _i2;
+import '../../../features/custom_domains/models/domain_name_target.dart' as _i3;
 
 abstract class CustomDomainNameList implements _i1.SerializableModel {
   CustomDomainNameList._({
