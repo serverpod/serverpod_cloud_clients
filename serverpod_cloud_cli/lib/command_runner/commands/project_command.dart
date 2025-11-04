@@ -26,6 +26,7 @@ class CloudProjectCommand extends CloudCliCommand {
     addSubcommand(CloudProjectDeleteCommand(logger: logger));
     addSubcommand(CloudProjectListCommand(logger: logger));
     addSubcommand(CloudProjectLinkCommand(logger: logger));
+    addSubcommand(CloudProjectShowCommand(logger: logger));
     addSubcommand(ProjectInviteUserCommand(logger: logger));
     addSubcommand(ProjectRevokeUserCommand(logger: logger));
   }
@@ -192,6 +193,41 @@ class CloudProjectLinkCommand
       projectId: projectId,
       projectDirectory: projectDirectory.path,
       configFilePath: configFilePath,
+    );
+  }
+}
+
+enum ProjectShowCommandOption<V> implements OptionDefinition<V> {
+  projectId(ProjectIdOption.argsOnly(asFirstArg: true));
+
+  const ProjectShowCommandOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class CloudProjectShowCommand
+    extends CloudCliCommand<ProjectShowCommandOption> {
+  @override
+  String get description =>
+      'Show details about a Serverpod Cloud project.';
+
+  @override
+  String get name => 'show';
+
+  CloudProjectShowCommand({required super.logger})
+      : super(options: ProjectShowCommandOption.values);
+
+  @override
+  Future<void> runWithConfig(
+    final Configuration<ProjectShowCommandOption> commandConfig,
+  ) async {
+    final projectId = commandConfig.value(ProjectShowCommandOption.projectId);
+
+    await ProjectCommands.showProject(
+      runner.serviceProvider.cloudApiClient,
+      logger: logger,
+      projectId: projectId,
     );
   }
 }

@@ -11,9 +11,8 @@ abstract class ProjectAdminCommands {
     final bool inUtc = false,
     final bool includeArchived = false,
   }) async {
-    final projects = await cloudApiClient.adminProjects.listProjectsInfo(
+    final projects = await cloudApiClient.adminProjects.listProjects(
       includeArchived: includeArchived,
-      includeLatestDeployAttemptTime: true,
     );
 
     final timezoneName = inUtc ? 'UTC' : 'local';
@@ -21,19 +20,17 @@ abstract class ProjectAdminCommands {
     final table = TablePrinter(
       headers: [
         'Project Id',
-        'Created At ($timezoneName)',
-        'Archived At ($timezoneName)',
-        'Last Deploy Attempt',
+        'Created at ($timezoneName)',
+        'Archived at ($timezoneName)',
         'Owner',
         'Users',
       ],
       rows: projects.map((final p) => [
-            p.project.cloudProjectId,
-            p.project.createdAt.toTzString(inUtc, 19),
-            p.project.archivedAt?.toTzString(inUtc, 19),
-            p.latestDeployAttemptTime?.timestamp?.toTzString(inUtc, 19),
-            p.project.owner?.user?.email ?? '',
-            _formatProjectUsers(p.project),
+            p.cloudProjectId,
+            p.createdAt.toTzString(inUtc, 19),
+            p.archivedAt?.toTzString(inUtc, 19),
+            p.owner?.user?.email ?? '',
+            _formatProjectUsers(p),
           ]),
     );
     table.writeLines(logger.line);

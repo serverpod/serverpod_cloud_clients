@@ -118,10 +118,7 @@ void main() {
         ),
       );
 
-      when(() => client.projects.listProjectsInfo(
-            includeLatestDeployAttemptTime:
-                any(named: 'includeLatestDeployAttemptTime'),
-          )).thenAnswer(
+      when(() => client.projects.listProjects()).thenAnswer(
         (final _) async => Future.value([]),
       );
 
@@ -1128,18 +1125,13 @@ project:
           'and 2 pre-existing projects are found but not selected '
           'and declining confirmation', () {
         setUpAll(() async {
-          when(() => client.projects.listProjectsInfo(
-                includeLatestDeployAttemptTime:
-                    any(named: 'includeLatestDeployAttemptTime'),
-              )).thenAnswer(
+          when(() => client.projects.listProjects()).thenAnswer(
             (final _) async => Future.value([
-              ProjectInfoBuilder()
-                  .withProject(ProjectBuilder()
-                      .withCloudProjectId('pre-existing-project-1'))
+              ProjectBuilder()
+                  .withCloudProjectId('pre-existing-project-1')
                   .build(),
-              ProjectInfoBuilder()
-                  .withProject(ProjectBuilder()
-                      .withCloudProjectId('pre-existing-project-2'))
+              ProjectBuilder()
+                  .withCloudProjectId('pre-existing-project-2')
                   .build(),
             ]),
           );
@@ -1259,18 +1251,13 @@ project:
           'and 2 pre-existing projects are found and selected '
           'and declining confirmation', () {
         setUpAll(() async {
-          when(() => client.projects.listProjectsInfo(
-                includeLatestDeployAttemptTime:
-                    any(named: 'includeLatestDeployAttemptTime'),
-              )).thenAnswer(
+          when(() => client.projects.listProjects()).thenAnswer(
             (final _) async => Future.value([
-              ProjectInfoBuilder()
-                  .withProject(ProjectBuilder()
-                      .withCloudProjectId('pre-existing-project-1'))
+              ProjectBuilder()
+                  .withCloudProjectId('pre-existing-project-1')
                   .build(),
-              ProjectInfoBuilder()
-                  .withProject(ProjectBuilder()
-                      .withCloudProjectId('pre-existing-project-2'))
+              ProjectBuilder()
+                  .withCloudProjectId('pre-existing-project-2')
                   .build(),
             ]),
           );
@@ -1382,14 +1369,10 @@ project:
           'and 1 pre-existing project is found but not selected '
           'and declining confirmation', () {
         setUpAll(() async {
-          when(() => client.projects.listProjectsInfo(
-                includeLatestDeployAttemptTime:
-                    any(named: 'includeLatestDeployAttemptTime'),
-              )).thenAnswer(
+          when(() => client.projects.listProjects()).thenAnswer(
             (final _) async => Future.value([
-              ProjectInfoBuilder()
-                  .withProject(ProjectBuilder()
-                      .withCloudProjectId('pre-existing-project'))
+              ProjectBuilder()
+                  .withCloudProjectId('pre-existing-project')
                   .build(),
             ]),
           );
@@ -1509,14 +1492,10 @@ project:
           'and 1 pre-existing project is found and selected '
           'and declining confirmation', () {
         setUpAll(() async {
-          when(() => client.projects.listProjectsInfo(
-                includeLatestDeployAttemptTime:
-                    any(named: 'includeLatestDeployAttemptTime'),
-              )).thenAnswer(
+          when(() => client.projects.listProjects()).thenAnswer(
             (final _) async => Future.value([
-              ProjectInfoBuilder()
-                  .withProject(ProjectBuilder()
-                      .withCloudProjectId('pre-existing-project'))
+              ProjectBuilder()
+                  .withCloudProjectId('pre-existing-project')
                   .build(),
             ]),
           );

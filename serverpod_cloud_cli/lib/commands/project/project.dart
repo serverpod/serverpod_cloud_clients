@@ -172,18 +172,16 @@ abstract class ProjectCommands {
     required final CommandLogger logger,
     final bool showArchived = false,
   }) async {
-    late List<ProjectInfo> projects;
+    late List<Project> projects;
     try {
-      projects = await cloudApiClient.projects.listProjectsInfo(
-        includeLatestDeployAttemptTime: true,
-      );
+      projects = await cloudApiClient.projects.listProjects();
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Request to list projects failed');
     }
 
     final activeProjects = showArchived
         ? projects
-        : projects.where((final p) => p.project.archivedAt == null);
+        : projects.where((final p) => p.archivedAt == null);
 
     if (activeProjects.isEmpty) {
       logger.info('No projects available.');
@@ -194,17 +192,13 @@ abstract class ProjectCommands {
     tablePrinter.addHeaders([
       'Project Id',
       'Created At',
-      'Last Deploy Attempt',
       if (showArchived) 'Deleted At',
     ]);
-    for (final project
-        in activeProjects.sortedBy((final p) => p.project.createdAt)) {
+    for (final project in activeProjects.sortedBy((final p) => p.createdAt)) {
       tablePrinter.addRow([
-        project.project.cloudProjectId,
-        project.project.createdAt.toString().substring(0, 19),
-        project.latestDeployAttemptTime?.timestamp?.toString().substring(0, 19),
-        if (showArchived)
-          project.project.archivedAt?.toString().substring(0, 19),
+        project.cloudProjectId,
+        project.createdAt.toString().substring(0, 19),
+        if (showArchived) project.archivedAt?.toString().substring(0, 19),
       ]);
     }
     tablePrinter.writeLines(logger.line);
@@ -302,6 +296,56 @@ abstract class ProjectCommands {
             : 'Revoked access roles of the user from the project: ${actuallyUnassigned.join(', ')}',
         newParagraph: true,
       );
+    }
+  }
+
+  static Future<void> showProject(
+    final Client cloudApiClient, {
+    required final CommandLogger logger,
+    required final String projectId,
+  }) async {
+    late Project project;
+    try {
+      project = await cloudApiClient.projects.fetchProject(
+        cloudProjectId: projectId,
+      );
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Failed to fetch project details');
+    }
+
+    // Display project information
+    logger.line('');
+    logger.line('Project: ${project.cloudProjectId}');
+    logger.line('');
+
+    // Show basic information
+    logger.line('Status:');
+    final status = project.archivedAt != null ? 'Archived' : 'Active';
+    logger.line('  Project Status: $status');
+    logger.line('  Created At: ${project.createdAt.toString().substring(0, 19)}');
+    if (project.archivedAt != null) {
+      logger.line('  Archived At: ${project.archivedAt!.toString().substring(0, 19)}');
+    }
+    logger.line('');
+
+    // Show capsules (deployments)
+    final capsules = project.capsules ?? [];
+    if (capsules.isNotEmpty) {
+      logger.line('Deployments:');
+      for (final capsule in capsules) {
+        logger.line('  - ${capsule.name} (${capsule.cloudCapsuleId})');
+        logger.line('    Region: ${capsule.region.name}');
+        if (capsule.domainNames?.isNotEmpty ?? false) {
+          logger.line('    URLs:');
+          for (final domain in capsule.domainNames!) {
+            logger.line('      - ${domain.domainName}');
+          }
+        }
+      }
+      logger.line('');
+    } else {
+      logger.line('Deployments: None');
+      logger.line('');
     }
   }
 

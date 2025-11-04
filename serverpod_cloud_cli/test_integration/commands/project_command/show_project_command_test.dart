@@ -32,8 +32,8 @@ void main() {
     logger.clear();
   });
 
-  test('Given project list command when instantiated then requires login', () {
-    expect(CloudProjectListCommand(logger: logger).requireLogin, isTrue);
+  test('Given project show command when instantiated then requires login', () {
+    expect(CloudProjectShowCommand(logger: logger).requireLogin, isTrue);
   });
 
   group('Given unauthenticated', () {
@@ -42,7 +42,7 @@ void main() {
     });
 
     setUpAll(() async {
-      when(() => client.projects.listProjects())
+      when(() => client.projects.fetchProject(cloudProjectId: any(named: 'cloudProjectId')))
           .thenThrow(ServerpodClientUnauthorized());
     });
 
@@ -50,12 +50,13 @@ void main() {
       reset(client.projects);
     });
 
-    group('when executing project list', () {
+    group('when executing project show', () {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
           'project',
-          'list',
+          'show',
+          'test-project',
         ]);
       });
 
@@ -79,42 +80,32 @@ void main() {
     });
   });
 
-  group('Given authenticated', () {
+  group('Given authenticated and existing project', () {
     setUp(() async {
       await keyManager.put('mock-token');
     });
 
     setUpAll(() async {
-      final projects = [
-        ProjectBuilder()
-            .withCloudProjectId('projectId')
-            .withCreatedAt(DateTime.parse("2024-12-31 10:20:30"))
-            .build(),
-        ProjectBuilder()
-            .withCloudProjectId('projectId2')
-            .withCreatedAt(DateTime.parse("2024-12-31 12:20:30"))
-            .withArchivedAt(DateTime.parse("2025-01-01 14:20:30"))
-            .build(),
-        ProjectBuilder()
-            .withCloudProjectId('projectId3')
-            .withCreatedAt(DateTime.parse("2024-12-30 10:20:30"))
-            .build(),
-      ];
+      final project = ProjectBuilder()
+          .withCloudProjectId('test-project')
+          .withCreatedAt(DateTime.parse("2024-12-31 10:20:30"))
+          .build();
 
-      when(() => client.projects.listProjects())
-          .thenAnswer((final _) async => projects);
+      when(() => client.projects.fetchProject(cloudProjectId: 'test-project'))
+          .thenAnswer((final _) async => project);
     });
 
     tearDownAll(() {
       reset(client.projects);
     });
 
-    group('when executing project list without options', () {
+    group('when executing project show', () {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
           'project',
-          'list',
+          'show',
+          'test-project',
         ]);
       });
 
@@ -122,39 +113,41 @@ void main() {
         await expectLater(commandResult, completes);
       });
 
-      test('then outputs the ordered list of projects', () async {
+      test('then outputs the project details', () async {
         await commandResult;
 
         expect(logger.lineCalls, isNotEmpty);
         expect(
           logger.lineCalls,
           containsAllInOrder([
-            equalsLineCall(line: 'Project Id | Created At         '),
-            equalsLineCall(line: '-----------+--------------------'),
-            equalsLineCall(line: 'projectId3 | 2024-12-30 10:20:30'),
-            equalsLineCall(line: 'projectId  | 2024-12-31 10:20:30'),
+            equalsLineCall(line: 'Project: test-project'),
+            equalsLineCall(line: 'Status:'),
+            equalsLineCall(line: '  Project Status: Active'),
+            equalsLineCall(line: '  Created At: 2024-12-31 10:20:30'),
+            equalsLineCall(line: 'Deployments: None'),
           ]),
-        );
-      });
-
-      test('then outputs list of projects exluding those archived', () async {
-        await commandResult;
-
-        expect(logger.lineCalls, isNotEmpty);
-        expect(
-          logger.lineCalls.map((final call) => call.line),
-          isNot(contains('projectId2')),
         );
       });
     });
 
-    group('when executing project list with --all', () {
+    group('when executing project show for archived project', () {
+      setUpAll(() async {
+        final archivedProject = ProjectBuilder()
+            .withCloudProjectId('archived-project')
+            .withCreatedAt(DateTime.parse("2024-12-31 10:20:30"))
+            .withArchivedAt(DateTime.parse("2025-01-15 14:30:00"))
+            .build();
+
+        when(() => client.projects.fetchProject(cloudProjectId: 'archived-project'))
+            .thenAnswer((final _) async => archivedProject);
+      });
+
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
           'project',
-          'list',
-          '--all',
+          'show',
+          'archived-project',
         ]);
       });
 
@@ -162,23 +155,16 @@ void main() {
         await expectLater(commandResult, completes);
       });
 
-      test('then outputs the ordered list of projects', () async {
+      test('then outputs archived status', () async {
         await commandResult;
 
         expect(logger.lineCalls, isNotEmpty);
         expect(
           logger.lineCalls,
           containsAllInOrder([
-            equalsLineCall(
-                line: 'Project Id | Created At          | Deleted At         '),
-            equalsLineCall(
-                line: '-----------+---------------------+--------------------'),
-            equalsLineCall(
-                line: 'projectId3 | 2024-12-30 10:20:30 |                    '),
-            equalsLineCall(
-                line: 'projectId  | 2024-12-31 10:20:30 |                    '),
-            equalsLineCall(
-                line: 'projectId2 | 2024-12-31 12:20:30 | 2025-01-01 14:20:30'),
+            equalsLineCall(line: 'Project: archived-project'),
+            equalsLineCall(line: '  Project Status: Archived'),
+            equalsLineCall(line: '  Archived At: 2025-01-15 14:30:00'),
           ]),
         );
       });
