@@ -30,19 +30,19 @@ void main() {
     logger.clear();
   });
 
-  test(
-      'Given admin list-projects command when instantiated then requires login',
+  test('Given admin project list command when instantiated then requires login',
       () {
     expect(AdminListProjectsCommand(logger: logger).requireLogin, isTrue);
   });
 
   group('Given unauthenticated', () {
-    group('when executing admin list-projects', () {
+    group('when executing admin project list', () {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
           'admin',
-          'list-projects',
+          'project',
+          'list',
         ]);
       });
 
@@ -68,7 +68,7 @@ void main() {
       await keyManager.put('mock-token');
     });
 
-    group('when executing admin list-projects', () {
+    group('when executing admin project list', () {
       late Future commandResult;
       setUp(() async {
         when(() => client.adminProjects.listProjectsInfo(
@@ -102,7 +102,8 @@ void main() {
 
         commandResult = cli.run([
           'admin',
-          'list-projects',
+          'project',
+          'list',
           '--include-archived',
         ]);
       });

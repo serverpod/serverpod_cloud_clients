@@ -71,19 +71,19 @@ import 'package:ground_control_client/src/protocol/features/project/models/proje
     as _i53;
 import 'package:ground_control_client/src/protocol/features/project/models/project_info/project_info.dart'
     as _i54;
-import 'package:ground_control_client/src/protocol/domains/users/models/user.dart'
-    as _i55;
-import 'package:ground_control_client/src/protocol/features/auth/models/required_terms.dart'
-    as _i56;
-import 'package:ground_control_client/src/protocol/features/auth/models/accepted_terms_dto.dart'
-    as _i57;
-import 'package:ground_control_client/src/protocol/domains/billing/models/payment_method.dart'
-    as _i58;
-import 'package:ground_control_client/src/protocol/features/environment_variables/models/environment_variable.dart'
-    as _i59;
-import 'package:ground_control_client/src/protocol/features/project/models/role.dart'
-    as _i60;
 import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt.dart'
+    as _i55;
+import 'package:ground_control_client/src/protocol/domains/users/models/user.dart'
+    as _i56;
+import 'package:ground_control_client/src/protocol/features/auth/models/required_terms.dart'
+    as _i57;
+import 'package:ground_control_client/src/protocol/features/auth/models/accepted_terms_dto.dart'
+    as _i58;
+import 'package:ground_control_client/src/protocol/domains/billing/models/payment_method.dart'
+    as _i59;
+import 'package:ground_control_client/src/protocol/features/environment_variables/models/environment_variable.dart'
+    as _i60;
+import 'package:ground_control_client/src/protocol/features/project/models/role.dart'
     as _i61;
 import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
     as _i62;
@@ -574,30 +574,35 @@ class Protocol extends _i1.SerializationManager {
           .map((e) => deserialize<_i54.ProjectInfo>(e))
           .toList() as T;
     }
-    if (t == List<_i55.User>) {
-      return (data as List).map((e) => deserialize<_i55.User>(e)).toList() as T;
-    }
-    if (t == List<_i56.RequiredTerms>) {
+    if (t == List<_i55.DeployAttempt>) {
       return (data as List)
-          .map((e) => deserialize<_i56.RequiredTerms>(e))
+          .map((e) => deserialize<_i55.DeployAttempt>(e))
           .toList() as T;
     }
-    if (t == List<_i57.AcceptedTermsDTO>) {
+    if (t == List<_i56.User>) {
+      return (data as List).map((e) => deserialize<_i56.User>(e)).toList() as T;
+    }
+    if (t == List<_i57.RequiredTerms>) {
       return (data as List)
-          .map((e) => deserialize<_i57.AcceptedTermsDTO>(e))
+          .map((e) => deserialize<_i57.RequiredTerms>(e))
+          .toList() as T;
+    }
+    if (t == List<_i58.AcceptedTermsDTO>) {
+      return (data as List)
+          .map((e) => deserialize<_i58.AcceptedTermsDTO>(e))
           .toList() as T;
     }
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
-    if (t == List<_i58.PaymentMethod>) {
+    if (t == List<_i59.PaymentMethod>) {
       return (data as List)
-          .map((e) => deserialize<_i58.PaymentMethod>(e))
+          .map((e) => deserialize<_i59.PaymentMethod>(e))
           .toList() as T;
     }
-    if (t == List<_i59.EnvironmentVariable>) {
+    if (t == List<_i60.EnvironmentVariable>) {
       return (data as List)
-          .map((e) => deserialize<_i59.EnvironmentVariable>(e))
+          .map((e) => deserialize<_i60.EnvironmentVariable>(e))
           .toList() as T;
     }
     if (t == _i1.getType<List<String>?>()) {
@@ -605,17 +610,12 @@ class Protocol extends _i1.SerializationManager {
           ? (data as List).map((e) => deserialize<String>(e)).toList()
           : null) as T;
     }
-    if (t == List<_i60.Role>) {
-      return (data as List).map((e) => deserialize<_i60.Role>(e)).toList() as T;
+    if (t == List<_i61.Role>) {
+      return (data as List).map((e) => deserialize<_i61.Role>(e)).toList() as T;
     }
     if (t == Map<String, String>) {
       return (data as Map).map((k, v) =>
           MapEntry(deserialize<String>(k), deserialize<String>(v))) as T;
-    }
-    if (t == List<_i61.DeployAttempt>) {
-      return (data as List)
-          .map((e) => deserialize<_i61.DeployAttempt>(e))
-          .toList() as T;
     }
     if (t == List<_i62.DeployAttemptStage>) {
       return (data as List)

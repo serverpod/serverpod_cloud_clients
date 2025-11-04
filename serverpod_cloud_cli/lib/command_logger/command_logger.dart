@@ -398,7 +398,7 @@ class CommandLogger {
   /// Example:
   /// ```bash
   /// Run the following command to see all projects:
-  ///  $ scloud projects list
+  ///  $ scloud project list
   /// ```
   void terminalCommand(
     final String command, {

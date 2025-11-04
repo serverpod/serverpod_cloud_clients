@@ -1,10 +1,16 @@
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
-import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/commands/admin/project_admin.dart';
 
 enum AdminRedeployOption<V> implements OptionDefinition<V> {
-  projectId(ProjectIdOption(asFirstArg: true));
+  projectId(StringOption(
+    argName: 'project',
+    argAbbrev: 'p',
+    argPos: 0,
+    mandatory: true,
+    helpText: 'The ID of the project. '
+        'Can be passed as the first argument.',
+  ));
 
   const AdminRedeployOption(this.option);
 
