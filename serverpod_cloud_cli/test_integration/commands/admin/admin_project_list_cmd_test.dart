@@ -71,27 +71,31 @@ void main() {
     group('when executing admin list-projects', () {
       late Future commandResult;
       setUp(() async {
-        when(() => client.adminProjects.listProjects(
+        when(() => client.adminProjects.listProjectsInfo(
               includeArchived: any(named: 'includeArchived', that: isTrue),
+              includeLatestDeployAttemptTime:
+                  any(named: 'includeLatestDeployAttemptTime', that: isTrue),
             )).thenAnswer(
           (final invocation) async => Future.value([
-            ProjectBuilder()
-                .withCreatedAt(DateTime.parse('2025-07-02T11:00:00'))
-                .withCloudProjectId('projectId')
-                .withUserOwner(
-                  UserBuilder().withEmail('test@example.com').build(),
-                )
+            ProjectInfoBuilder()
+                .withProject(ProjectBuilder()
+                    .withCreatedAt(DateTime.parse('2025-07-02T11:00:00'))
+                    .withCloudProjectId('projectId')
+                    .withUserOwner(
+                      UserBuilder().withEmail('test@example.com').build(),
+                    ))
                 .build(),
-            ProjectBuilder()
-                .withCreatedAt(DateTime.parse('2025-07-02T11:00:00'))
-                .withArchivedAt(DateTime.parse('2025-07-02T12:10:00'))
-                .withCloudProjectId('projectId2')
-                .withUserOwner(
-                  UserBuilder().withEmail('test@example.com').build(),
-                )
-                .withDeveloperUser(
-                  UserBuilder().withEmail('dev@example.com').build(),
-                )
+            ProjectInfoBuilder()
+                .withProject(ProjectBuilder()
+                    .withCreatedAt(DateTime.parse('2025-07-02T11:00:00'))
+                    .withArchivedAt(DateTime.parse('2025-07-02T12:10:00'))
+                    .withCloudProjectId('projectId2')
+                    .withUserOwner(
+                      UserBuilder().withEmail('test@example.com').build(),
+                    )
+                    .withDeveloperUser(
+                      UserBuilder().withEmail('dev@example.com').build(),
+                    ))
                 .build(),
           ]),
         );
@@ -115,16 +119,16 @@ void main() {
           containsAllInOrder([
             equalsLineCall(
                 line:
-                    'Project Id | Created at (local)  | Archived at (local) | Owner            | Users                                              '),
+                    'Project Id | Created At (local)  | Archived At (local) | Last Deploy Attempt | Owner            | Users                                              '),
             equalsLineCall(
                 line:
-                    '-----------+---------------------+---------------------+------------------+----------------------------------------------------'),
+                    '-----------+---------------------+---------------------+---------------------+------------------+----------------------------------------------------'),
             equalsLineCall(
                 line:
-                    'projectId  | 2025-07-02 11:00:00 |                     | test@example.com | Admin: test@example.com                            '),
+                    'projectId  | 2025-07-02 11:00:00 |                     |                     | test@example.com | Admin: test@example.com                            '),
             equalsLineCall(
                 line:
-                    'projectId2 | 2025-07-02 11:00:00 | 2025-07-02 12:10:00 | test@example.com | Admin: test@example.com; Developer: dev@example.com'),
+                    'projectId2 | 2025-07-02 11:00:00 | 2025-07-02 12:10:00 |                     | test@example.com | Admin: test@example.com; Developer: dev@example.com'),
           ]),
         );
       });

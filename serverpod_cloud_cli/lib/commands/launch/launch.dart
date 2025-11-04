@@ -229,7 +229,7 @@ The default API domain will be: <project-id>.api.serverpod.space
     final Client cloudApiClient,
     final CommandLogger logger,
   ) async {
-    final projects = await _fetchExistingProjects(cloudApiClient);
+    final projects = await _fetchExistingUndeployedProjects(cloudApiClient);
     if (projects.isEmpty) {
       return null;
     }
@@ -239,13 +239,18 @@ The default API domain will be: <project-id>.api.serverpod.space
     return _selectFromSeveralExistingProjects(logger, projects);
   }
 
-  static Future<List<Project>> _fetchExistingProjects(
+  static Future<List<Project>> _fetchExistingUndeployedProjects(
     final Client cloudApiClient,
   ) async {
     try {
-      final projects = await cloudApiClient.projects.listProjects();
-      final activeProjects = projects.where((final p) => p.archivedAt == null);
-      return activeProjects.toList();
+      final projects = await cloudApiClient.projects.listProjectsInfo(
+        includeLatestDeployAttemptTime: true,
+      );
+      return projects
+          .where((final p) => p.project.archivedAt == null)
+          .where((final p) => p.latestDeployAttemptTime?.timestamp == null)
+          .map((final p) => p.project)
+          .toList();
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Request to list projects failed');
     }
@@ -256,7 +261,7 @@ The default API domain will be: <project-id>.api.serverpod.space
     final Project project,
   ) async {
     logger.info(
-      'Found an existing Cloud project: ${project.cloudProjectId}',
+      'Found an existing undeployed Cloud project: ${project.cloudProjectId}',
     );
 
     final confirm = await logger.confirm(
@@ -272,7 +277,7 @@ The default API domain will be: <project-id>.api.serverpod.space
   ) async {
     final existingIds = projects.map((final p) => p.cloudProjectId).toList();
     logger.info(
-      'Found existing Cloud projects.\n'
+      'Found existing undeployed Cloud projects.\n'
       'Do you want to deploy to one of them instead of creating a new one?',
     );
     for (int i = 0; i < existingIds.length; i++) {

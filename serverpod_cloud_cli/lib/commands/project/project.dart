@@ -172,16 +172,18 @@ abstract class ProjectCommands {
     required final CommandLogger logger,
     final bool showArchived = false,
   }) async {
-    late List<Project> projects;
+    late List<ProjectInfo> projects;
     try {
-      projects = await cloudApiClient.projects.listProjects();
+      projects = await cloudApiClient.projects.listProjectsInfo(
+        includeLatestDeployAttemptTime: true,
+      );
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Request to list projects failed');
     }
 
     final activeProjects = showArchived
         ? projects
-        : projects.where((final p) => p.archivedAt == null);
+        : projects.where((final p) => p.project.archivedAt == null);
 
     if (activeProjects.isEmpty) {
       logger.info('No projects available.');
@@ -192,13 +194,17 @@ abstract class ProjectCommands {
     tablePrinter.addHeaders([
       'Project Id',
       'Created At',
+      'Last Deploy Attempt',
       if (showArchived) 'Deleted At',
     ]);
-    for (final project in activeProjects.sortedBy((final p) => p.createdAt)) {
+    for (final project
+        in activeProjects.sortedBy((final p) => p.project.createdAt)) {
       tablePrinter.addRow([
-        project.cloudProjectId,
-        project.createdAt.toString().substring(0, 19),
-        if (showArchived) project.archivedAt?.toString().substring(0, 19),
+        project.project.cloudProjectId,
+        project.project.createdAt.toString().substring(0, 19),
+        project.latestDeployAttemptTime?.timestamp?.toString().substring(0, 19),
+        if (showArchived)
+          project.project.archivedAt?.toString().substring(0, 19),
       ]);
     }
     tablePrinter.writeLines(logger.line);
