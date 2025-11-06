@@ -391,6 +391,10 @@ enum GlobalOption<V> implements OptionDefinition<V> {
       helpText:
           'Override the directory path where Serverpod Cloud cache/authentication files are stored.',
       fromDefault: _getDefaultStorageDir,
+      // This is only hidden since it currently prints the resolved home directory
+      // which is then included in the auto-generated CLI docs, which doesn't work.
+      // TODO: Remove this once this cli_tools issue is fixed: https://github.com/serverpod/cli_tools/issues/80
+      hide: true,
     ),
   ),
   projectDir(
