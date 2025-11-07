@@ -40,7 +40,7 @@ class CloudLaunchCommand extends CloudCliCommand<LaunchOption> {
   final description = 'Guided launch of a new Serverpod Cloud project.';
 
   @override
-  String get category => CommandCategories.control;
+  String get category => CommandCategories.gettingStarted;
 
   @override
   CloudLaunchCommand({required super.logger})
