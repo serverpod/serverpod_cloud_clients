@@ -4,6 +4,7 @@ import 'package:ground_control_client/ground_control_client_test_tools.dart';
 class OwnerBuilder {
   UuidValue? _id;
   String _externalBillingId;
+  String _externalPaymentId;
   Uri _billingPortalUrl;
   List<String> _billingEmails;
   BillingInfo? _billingInfo;
@@ -13,6 +14,7 @@ class OwnerBuilder {
   OwnerBuilder()
       : _id = Uuid().v4obj(),
         _externalBillingId = 'default-external-billing-id',
+        _externalPaymentId = 'default-external-payment-id',
         _billingPortalUrl = Uri.parse('https://billing.example.com'),
         _billingEmails = [],
         _projects = [],
@@ -74,6 +76,7 @@ class OwnerBuilder {
     return Owner(
       id: _id,
       externalBillingId: _externalBillingId,
+      externalPaymentId: _externalPaymentId,
       billingPortalUrl: _billingPortalUrl,
       billingEmails: _billingEmails,
       billingInfo: _billingInfo,
