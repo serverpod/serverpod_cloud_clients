@@ -31,6 +31,11 @@ class OwnerBuilder {
     return this;
   }
 
+  OwnerBuilder withExternalPaymentId(String externalPaymentId) {
+    _externalPaymentId = externalPaymentId;
+    return this;
+  }
+
   OwnerBuilder withBillingPortalUrl(Uri billingPortalUrl) {
     _billingPortalUrl = billingPortalUrl;
     return this;
