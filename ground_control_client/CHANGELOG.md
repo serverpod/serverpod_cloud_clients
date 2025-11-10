@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.15.0] - 2025-11-10
+
+### Added
+
+- **Global options reference** - Added a global options reference page under the scloud reference section to document the usage of global options.
+- **Project deployment status** - Project listings now include the last deployment timestamp. The `launch` command now only suggests existing projects that have never been deployed.
+
+### Changed
+
+- **Launch command location** - Moved the `launch` command into the "Getting started" command group to improve discoverability for new users.
+
 ## [0.14.0] - 2025-10-29
 
 ### Added
