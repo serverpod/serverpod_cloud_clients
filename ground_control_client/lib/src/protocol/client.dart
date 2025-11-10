@@ -368,6 +368,20 @@ class EndpointBilling extends _i1.EndpointRef {
         {},
       );
 
+  @Deprecated('Use updateOwnerBilling instead')
+  _i2.Future<_i12.Owner> updateOwner({
+    required List<String> billingEmails,
+    required _i13.BillingInfo billingInfo,
+  }) =>
+      caller.callServerEndpoint<_i12.Owner>(
+        'billing',
+        'updateOwner',
+        {
+          'billingEmails': billingEmails,
+          'billingInfo': billingInfo,
+        },
+      );
+
   /// Updates the owner's billing information.
   ///
   /// This endpoint updates the owner's billing information, including the
@@ -380,13 +394,13 @@ class EndpointBilling extends _i1.EndpointRef {
   /// All data is overwritten.
   ///
   /// Returns the updated [Owner] object.
-  _i2.Future<_i12.Owner> updateOwner({
+  _i2.Future<_i12.Owner> updateOwnerBilling({
     required List<String> billingEmails,
     required _i13.BillingInfo billingInfo,
   }) =>
       caller.callServerEndpoint<_i12.Owner>(
         'billing',
-        'updateOwner',
+        'updateOwnerBilling',
         {
           'billingEmails': billingEmails,
           'billingInfo': billingInfo,

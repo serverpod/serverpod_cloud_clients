@@ -22,6 +22,7 @@ abstract class Owner implements _i1.SerializableModel {
     required this.externalPaymentId,
     required this.billingPortalUrl,
     required this.billingEmails,
+    this.primarySubscriptionId,
     this.user,
     this.billingInfo,
     this.projects,
@@ -33,6 +34,7 @@ abstract class Owner implements _i1.SerializableModel {
     required String externalPaymentId,
     required Uri billingPortalUrl,
     required List<String> billingEmails,
+    String? primarySubscriptionId,
     _i2.User? user,
     _i3.BillingInfo? billingInfo,
     List<_i4.Project>? projects,
@@ -48,6 +50,8 @@ abstract class Owner implements _i1.SerializableModel {
       billingEmails: (jsonSerialization['billingEmails'] as List)
           .map((e) => e as String)
           .toList(),
+      primarySubscriptionId:
+          jsonSerialization['primarySubscriptionId'] as String?,
       user: jsonSerialization['user'] == null
           ? null
           : _i2.User.fromJson(
@@ -75,6 +79,10 @@ abstract class Owner implements _i1.SerializableModel {
 
   List<String> billingEmails;
 
+  /// The id of the primary (default) subscription of this owner.
+  /// Null if the owner has no subscription.
+  String? primarySubscriptionId;
+
   _i2.User? user;
 
   _i3.BillingInfo? billingInfo;
@@ -90,6 +98,7 @@ abstract class Owner implements _i1.SerializableModel {
     String? externalPaymentId,
     Uri? billingPortalUrl,
     List<String>? billingEmails,
+    String? primarySubscriptionId,
     _i2.User? user,
     _i3.BillingInfo? billingInfo,
     List<_i4.Project>? projects,
@@ -102,6 +111,8 @@ abstract class Owner implements _i1.SerializableModel {
       'externalPaymentId': externalPaymentId,
       'billingPortalUrl': billingPortalUrl.toJson(),
       'billingEmails': billingEmails.toJson(),
+      if (primarySubscriptionId != null)
+        'primarySubscriptionId': primarySubscriptionId,
       if (user != null) 'user': user?.toJson(),
       if (billingInfo != null) 'billingInfo': billingInfo?.toJson(),
       if (projects != null)
@@ -124,6 +135,7 @@ class _OwnerImpl extends Owner {
     required String externalPaymentId,
     required Uri billingPortalUrl,
     required List<String> billingEmails,
+    String? primarySubscriptionId,
     _i2.User? user,
     _i3.BillingInfo? billingInfo,
     List<_i4.Project>? projects,
@@ -133,6 +145,7 @@ class _OwnerImpl extends Owner {
           externalPaymentId: externalPaymentId,
           billingPortalUrl: billingPortalUrl,
           billingEmails: billingEmails,
+          primarySubscriptionId: primarySubscriptionId,
           user: user,
           billingInfo: billingInfo,
           projects: projects,
@@ -148,6 +161,7 @@ class _OwnerImpl extends Owner {
     String? externalPaymentId,
     Uri? billingPortalUrl,
     List<String>? billingEmails,
+    Object? primarySubscriptionId = _Undefined,
     Object? user = _Undefined,
     Object? billingInfo = _Undefined,
     Object? projects = _Undefined,
@@ -159,6 +173,9 @@ class _OwnerImpl extends Owner {
       billingPortalUrl: billingPortalUrl ?? this.billingPortalUrl,
       billingEmails:
           billingEmails ?? this.billingEmails.map((e0) => e0).toList(),
+      primarySubscriptionId: primarySubscriptionId is String?
+          ? primarySubscriptionId
+          : this.primarySubscriptionId,
       user: user is _i2.User? ? user : this.user?.copyWith(),
       billingInfo: billingInfo is _i3.BillingInfo?
           ? billingInfo
