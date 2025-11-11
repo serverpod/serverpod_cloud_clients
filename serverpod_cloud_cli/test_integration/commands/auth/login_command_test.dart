@@ -51,7 +51,7 @@ void main() {
         'when logging in through cli then ErrorExitException with exit code 1 is thrown.',
         () async {
       final result =
-          cli.run(['auth', 'login', '--scloud-dir', testCacheFolderPath]);
+          cli.run(['auth', 'login', '--config-dir', testCacheFolderPath]);
 
       await expectLater(
           result,
@@ -65,7 +65,7 @@ void main() {
         'when logging in through cli then "logout first to log in again" message is logged.',
         () async {
       try {
-        await cli.run(['auth', 'login', '--scloud-dir', testCacheFolderPath]);
+        await cli.run(['auth', 'login', '--config-dir', testCacheFolderPath]);
       } catch (_) {}
 
       expect(logger.errorCalls, isNotEmpty);
@@ -116,7 +116,7 @@ void main() {
           'auth',
           'login',
           '--no-browser',
-          '--scloud-dir',
+          '--config-dir',
           testCacheFolderPath
         ]);
       });
@@ -155,7 +155,7 @@ void main() {
           'login',
           '--no-persistent',
           '--no-browser',
-          '--scloud-dir',
+          '--config-dir',
           testCacheFolderPath,
         ]);
       });
@@ -219,7 +219,7 @@ void main() {
           'auth',
           'login',
           '--no-browser',
-          '--scloud-dir',
+          '--config-dir',
           testCacheFolderPath
         ]);
 
@@ -237,7 +237,7 @@ void main() {
           'auth',
           'login',
           '--no-browser',
-          '--scloud-dir',
+          '--config-dir',
           testCacheFolderPath
         ]);
 

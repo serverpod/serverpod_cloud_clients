@@ -45,7 +45,7 @@ void main() {
           'when invoking command'
           ' then does not ask user for consent', () async {
         await cli.run([
-          '--scloud-dir',
+          '--config-dir',
           settingsDir,
           'version',
         ]);
@@ -56,7 +56,7 @@ void main() {
           'when invoking command'
           ' then does not send analytics event', () async {
         await cli.run([
-          '--scloud-dir',
+          '--config-dir',
           settingsDir,
           'version',
         ]);
@@ -67,7 +67,7 @@ void main() {
           'when invoking command with analytics option set to true'
           ' then does not ask user for consent', () async {
         await cli.run([
-          '--scloud-dir',
+          '--config-dir',
           settingsDir,
           'version',
           '--analytics',
@@ -79,7 +79,7 @@ void main() {
           'when invoking command with analytics option set to true'
           ' then sends analytics event', () async {
         await cli.run([
-          '--scloud-dir',
+          '--config-dir',
           settingsDir,
           'version',
           '--analytics',
@@ -91,7 +91,7 @@ void main() {
     group('and having set analytics enabled', () {
       setUp(() async {
         await cli.run([
-          '--scloud-dir',
+          '--config-dir',
           settingsDir,
           'settings',
           '--analytics',
@@ -102,7 +102,7 @@ void main() {
           'when invoking command'
           ' then does not ask user for consent', () async {
         await cli.run([
-          '--scloud-dir',
+          '--config-dir',
           settingsDir,
           'version',
         ]);
@@ -113,7 +113,7 @@ void main() {
           'when invoking command'
           ' then does not send analytics event', () async {
         await cli.run([
-          '--scloud-dir',
+          '--config-dir',
           settingsDir,
           'version',
         ]);
@@ -148,7 +148,7 @@ void main() {
           ' then asks user for consent', () async {
         logger.answerNextConfirmsWith([false]);
         await cli.run([
-          '--scloud-dir',
+          '--config-dir',
           settingsDir,
           'version',
         ]);
@@ -169,7 +169,7 @@ void main() {
           ' then does not send analytics event', () async {
         logger.answerNextConfirmsWith([false]);
         await cli.run([
-          '--scloud-dir',
+          '--config-dir',
           settingsDir,
           'version',
         ]);
@@ -183,7 +183,7 @@ void main() {
           ' then sends analytics event', () async {
         logger.answerNextConfirmsWith([true]);
         await cli.run([
-          '--scloud-dir',
+          '--config-dir',
           settingsDir,
           'version',
         ]);
@@ -195,7 +195,7 @@ void main() {
         setUp(() async {
           logger.answerNextConfirmWith(false);
           await cli.run([
-            '--scloud-dir',
+            '--config-dir',
             settingsDir,
             'version',
           ]);
@@ -206,7 +206,7 @@ void main() {
             'when invoking command again'
             ' then does not ask user for consent', () async {
           await cli.run([
-            '--scloud-dir',
+            '--config-dir',
             settingsDir,
             'version',
           ]);
@@ -217,7 +217,7 @@ void main() {
             'when invoking command again'
             ' then does not send analytics event', () async {
           await cli.run([
-            '--scloud-dir',
+            '--config-dir',
             settingsDir,
             'version',
           ]);
@@ -228,7 +228,7 @@ void main() {
             'when invoking command again with analytics option set to true'
             ' then sends analytics event', () async {
           await cli.run([
-            '--scloud-dir',
+            '--config-dir',
             settingsDir,
             'version',
             '--analytics',
@@ -239,7 +239,7 @@ void main() {
         group('followed by changing analytics to enabled', () {
           setUp(() async {
             await cli.run([
-              '--scloud-dir',
+              '--config-dir',
               settingsDir,
               'settings',
               '--analytics',
@@ -252,7 +252,7 @@ void main() {
               'when invoking command'
               ' then does not ask user for consent', () async {
             await cli.run([
-              '--scloud-dir',
+              '--config-dir',
               settingsDir,
               'version',
             ]);
@@ -263,7 +263,7 @@ void main() {
               'when invoking command'
               ' then sends analytics event', () async {
             await cli.run([
-              '--scloud-dir',
+              '--config-dir',
               settingsDir,
               'version',
             ]);
@@ -274,7 +274,7 @@ void main() {
               'when invoking command with analytics option set to false'
               ' then does not send analytics event', () async {
             await cli.run([
-              '--scloud-dir',
+              '--config-dir',
               settingsDir,
               'version',
               '--no-analytics',
@@ -288,7 +288,7 @@ void main() {
         setUp(() async {
           logger.answerNextConfirmWith(true);
           await cli.run([
-            '--scloud-dir',
+            '--config-dir',
             settingsDir,
             'version',
           ]);
@@ -300,7 +300,7 @@ void main() {
             'when invoking command again'
             ' then does not ask user for consent', () async {
           await cli.run([
-            '--scloud-dir',
+            '--config-dir',
             settingsDir,
             'version',
           ]);
@@ -311,7 +311,7 @@ void main() {
             'when invoking command again'
             ' then sends analytics event', () async {
           await cli.run([
-            '--scloud-dir',
+            '--config-dir',
             settingsDir,
             'version',
           ]);
@@ -322,7 +322,7 @@ void main() {
             'when invoking command again with analytics option set to false'
             ' then does not send analytics event', () async {
           await cli.run([
-            '--scloud-dir',
+            '--config-dir',
             settingsDir,
             'version',
             '--no-analytics',
@@ -333,7 +333,7 @@ void main() {
         group('followed by changing analytics to disabled', () {
           setUp(() async {
             await cli.run([
-              '--scloud-dir',
+              '--config-dir',
               settingsDir,
               'settings',
               '--no-analytics',
@@ -346,7 +346,7 @@ void main() {
               'when invoking command'
               ' then does not ask user for consent', () async {
             await cli.run([
-              '--scloud-dir',
+              '--config-dir',
               settingsDir,
               'version',
             ]);
@@ -357,7 +357,7 @@ void main() {
               'when invoking command'
               ' then does not send analytics event', () async {
             await cli.run([
-              '--scloud-dir',
+              '--config-dir',
               settingsDir,
               'version',
             ]);
@@ -368,7 +368,7 @@ void main() {
               'when invoking command with analytics option set to true'
               ' then sends analytics event', () async {
             await cli.run([
-              '--scloud-dir',
+              '--config-dir',
               settingsDir,
               'version',
               '--analytics',

@@ -51,7 +51,7 @@ void main() {
 
       commandResult = cli.run([
         'version',
-        '--scloud-dir',
+        '--config-dir',
         testCacheFolderPath,
       ]);
     });
@@ -89,7 +89,7 @@ void main() {
         () async {
           return cli.run([
             'version',
-            '--scloud-dir',
+            '--config-dir',
             testCacheFolderPath,
           ]);
         },
@@ -139,7 +139,7 @@ void main() {
 
       commandResult = cli.run([
         'version',
-        '--scloud-dir',
+        '--config-dir',
         testCacheFolderPath,
       ]);
     });
@@ -190,7 +190,7 @@ void main() {
 
       commandResult = cli.run([
         'version',
-        '--scloud-dir',
+        '--config-dir',
         testCacheFolderPath,
       ]);
     });
@@ -240,7 +240,7 @@ void main() {
 
       commandResult = cli.run([
         'version',
-        '--scloud-dir',
+        '--config-dir',
         testCacheFolderPath,
       ]);
     });

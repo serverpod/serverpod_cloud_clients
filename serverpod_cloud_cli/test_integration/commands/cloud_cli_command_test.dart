@@ -98,7 +98,7 @@ void main() {
       runner.run(
         [
           commandThatRequiresLogin.name,
-          '--scloud-dir',
+          '--config-dir',
           testCacheFolderPath,
         ],
       ),
@@ -132,7 +132,7 @@ void main() {
       runner.run(
         [
           commandThatRequiresLogin.name,
-          '--scloud-dir',
+          '--config-dir',
           testCacheFolderPath,
         ],
       ),
@@ -148,7 +148,7 @@ void main() {
       runner.run(
         [
           commandThatDoesNotRequiredLogin.name,
-          '--scloud-dir',
+          '--config-dir',
           testCacheFolderPath,
         ],
       ),

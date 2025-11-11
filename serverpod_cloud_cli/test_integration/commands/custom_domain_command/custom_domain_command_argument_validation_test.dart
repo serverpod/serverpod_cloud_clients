@@ -51,7 +51,7 @@ void main() {
           'some-invalid-target',
           '--project',
           projectId,
-          '--scloud-dir',
+          '--config-dir',
           testCacheFolderPath,
         ]);
       });

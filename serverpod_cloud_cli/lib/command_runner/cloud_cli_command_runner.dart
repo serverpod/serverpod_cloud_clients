@@ -386,7 +386,7 @@ enum GlobalOption<V> implements OptionDefinition<V> {
   ),
   scloudDir(
     DirOption(
-      argName: 'scloud-dir',
+      argName: 'config-dir',
       envName: 'SERVERPOD_CLOUD_DIR',
       helpText:
           'Override the directory path where Serverpod Cloud cache/authentication files are stored.',

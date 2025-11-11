@@ -83,7 +83,7 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
-          '--scloud-dir',
+          '--config-dir',
           testCacheFolderPath,
         ]);
       });
@@ -118,7 +118,7 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
-          '--scloud-dir',
+          '--config-dir',
           testCacheFolderPath,
         ]);
       });
@@ -155,7 +155,7 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
-          '--scloud-dir',
+          '--config-dir',
           testCacheFolderPath,
         ]);
       });
@@ -191,7 +191,7 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
-          '--scloud-dir',
+          '--config-dir',
           testCacheFolderPath,
         ]);
       });
@@ -272,7 +272,7 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
-          '--scloud-dir',
+          '--config-dir',
           testCacheFolderPath,
         ]);
       });
@@ -334,7 +334,7 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
-          '--scloud-dir',
+          '--config-dir',
           testCacheFolderPath,
         ]);
       });
@@ -396,7 +396,7 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
-          '--scloud-dir',
+          '--config-dir',
           testCacheFolderPath,
         ]);
       });
@@ -452,7 +452,7 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
-          '--scloud-dir',
+          '--config-dir',
           testCacheFolderPath,
         ]);
       });
@@ -497,7 +497,7 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
-          '--scloud-dir',
+          '--config-dir',
           testCacheFolderPath,
         ]);
       });
@@ -543,7 +543,7 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
-          '--scloud-dir',
+          '--config-dir',
           testCacheFolderPath,
         ]);
       });
@@ -594,7 +594,7 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
-          '--scloud-dir',
+          '--config-dir',
           testCacheFolderPath,
         ]);
       });
@@ -670,7 +670,7 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
-          '--scloud-dir',
+          '--config-dir',
           testCacheFolderPath,
         ]);
       });
@@ -753,7 +753,7 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
-          '--scloud-dir',
+          '--config-dir',
           testCacheFolderPath,
         ]);
       });
