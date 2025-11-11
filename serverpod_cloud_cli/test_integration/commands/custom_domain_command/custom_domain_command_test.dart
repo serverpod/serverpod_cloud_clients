@@ -70,12 +70,12 @@ void main() {
       await server.close(force: true);
     });
 
-    group('when executing domain add', () {
+    group('when executing domain attach', () {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
           'domain',
-          'add',
+          'attach',
           'domain.com',
           '--target',
           'api',
@@ -143,13 +143,13 @@ void main() {
       });
     });
 
-    group('when executing domain remove and confirming prompt', () {
+    group('when executing domain detach and confirming prompt', () {
       late Future commandResult;
       setUp(() async {
         logger.answerNextConfirmWith(true);
         commandResult = cli.run([
           'domain',
-          'remove',
+          'detach',
           'domain.com',
           '--project',
           projectId,
@@ -232,7 +232,7 @@ void main() {
       await server.close(force: true);
     });
 
-    group('when executing domain add', () {
+    group('when executing domain attach', () {
       late Future commandResult;
       setUp(() async {
         final serverBuilder = HttpServerBuilder();
@@ -264,7 +264,7 @@ void main() {
 
         commandResult = cli.run([
           'domain',
-          'add',
+          'attach',
           'www.domain.com',
           '--target',
           'api',
@@ -288,7 +288,7 @@ void main() {
         expect(
           logger.successCalls.first,
           equalsSuccessCall(
-            message: 'Custom domain added successfully!',
+            message: 'Custom domain attached successfully!',
             newParagraph: true,
           ),
         );
@@ -310,7 +310,7 @@ void main() {
       });
     });
 
-    group('when executing domain remove and confirming prompt', () {
+    group('when executing domain detach and confirming prompt', () {
       late Future commandResult;
       setUp(() async {
         final serverBuilder = HttpServerBuilder();
@@ -328,7 +328,7 @@ void main() {
 
         commandResult = cli.run([
           'domain',
-          'remove',
+          'detach',
           'domain.com',
           '--project',
           projectId,
@@ -366,13 +366,13 @@ void main() {
         expect(
           logger.successCalls.first,
           equalsSuccessCall(
-            message: 'Successfully removed custom domain: domain.com.',
+            message: 'Successfully detached custom domain: domain.com.',
           ),
         );
       });
     });
 
-    group('when executing domain remove and rejecting prompt', () {
+    group('when executing domain detach and rejecting prompt', () {
       late Future commandResult;
       setUp(() async {
         final serverBuilder = HttpServerBuilder();
@@ -390,7 +390,7 @@ void main() {
 
         commandResult = cli.run([
           'domain',
-          'remove',
+          'detach',
           'domain.com',
           '--project',
           projectId,

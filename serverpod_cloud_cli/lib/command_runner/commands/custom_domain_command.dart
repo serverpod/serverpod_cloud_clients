@@ -17,9 +17,9 @@ class CloudCustomDomainCommand extends CloudCliCommand {
   final description = r'''
 Bring your own domain to Serverpod Cloud. 
 
-Get started by adding a custom domain to your project with the command:
+Get started by attaching a custom domain to your project with the command:
 
-  $ scloud domain add example.com <target> --project <project-id>
+  $ scloud domain attach example.com <target> --project <project-id>
 
 The valid targets are:
 - api: Serverpod endpoints
@@ -31,9 +31,9 @@ The valid targets are:
   String get category => CommandCategories.control;
 
   CloudCustomDomainCommand({required super.logger}) {
-    addSubcommand(CloudAddCustomDomainCommand(logger: logger));
+    addSubcommand(CloudAttachCustomDomainCommand(logger: logger));
     addSubcommand(CloudListCustomDomainCommand(logger: logger));
-    addSubcommand(CloudRemoveCustomDomainCommand(logger: logger));
+    addSubcommand(CloudDetachCustomDomainCommand(logger: logger));
     addSubcommand(CloudVerifyCustomDomainRecordCommand(logger: logger));
   }
 }
@@ -57,27 +57,27 @@ abstract final class CustomDomainCommandConfig {
   );
 }
 
-enum AddCustomDomainCommandConfig<V> implements OptionDefinition<V> {
+enum AttachCustomDomainCommandConfig<V> implements OptionDefinition<V> {
   projectId(CustomDomainCommandConfig.projectId),
   domainName(CustomDomainCommandConfig.domainName),
   target(CustomDomainCommandConfig.target);
 
-  const AddCustomDomainCommandConfig(this.option);
+  const AttachCustomDomainCommandConfig(this.option);
 
   @override
   final ConfigOptionBase<V> option;
 }
 
-class CloudAddCustomDomainCommand
-    extends CloudCliCommand<AddCustomDomainCommandConfig> {
+class CloudAttachCustomDomainCommand
+    extends CloudCliCommand<AttachCustomDomainCommandConfig> {
   @override
   String get description => '''
-Add a custom domain to your project.
+Attach a custom domain to your project.
 
 You need to have a domain name and a DNS provider that supports 
 TXT, CNAME and/or ANAME records.
 
-You can add domains for each Serverpod server target.
+You can attach domains for each Serverpod server target.
 
 The valid targets are:
 - api: Serverpod endpoints
@@ -86,20 +86,20 @@ The valid targets are:
 ''';
 
   @override
-  String get name => 'add';
+  String get name => 'attach';
 
-  CloudAddCustomDomainCommand({required super.logger})
-      : super(options: AddCustomDomainCommandConfig.values);
+  CloudAttachCustomDomainCommand({required super.logger})
+      : super(options: AttachCustomDomainCommandConfig.values);
 
   @override
   Future<void> runWithConfig(
-    final Configuration<AddCustomDomainCommandConfig> commandConfig,
+    final Configuration<AttachCustomDomainCommandConfig> commandConfig,
   ) async {
     final projectId =
-        commandConfig.value(AddCustomDomainCommandConfig.projectId);
+        commandConfig.value(AttachCustomDomainCommandConfig.projectId);
     final domainName =
-        commandConfig.value(AddCustomDomainCommandConfig.domainName);
-    final target = commandConfig.value(AddCustomDomainCommandConfig.target);
+        commandConfig.value(AttachCustomDomainCommandConfig.domainName);
+    final target = commandConfig.value(AttachCustomDomainCommandConfig.target);
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
@@ -117,7 +117,7 @@ The valid targets are:
           e, stackTrace, 'Could not add the custom domain');
     }
 
-    logger.success('Custom domain added successfully!', newParagraph: true);
+    logger.success('Custom domain attached successfully!', newParagraph: true);
 
     final targetDefaultDomain =
         customDomainNameWithDefaultDomains.defaultDomainsByTarget[target];
@@ -288,35 +288,35 @@ class CloudListCustomDomainCommand
   }
 }
 
-enum RemoveCustomDomainCommandConfig<V> implements OptionDefinition<V> {
+enum DetachCustomDomainCommandConfig<V> implements OptionDefinition<V> {
   projectId(CustomDomainCommandConfig.projectId),
   domainName(CustomDomainCommandConfig.domainName);
 
-  const RemoveCustomDomainCommandConfig(this.option);
+  const DetachCustomDomainCommandConfig(this.option);
 
   @override
   final ConfigOptionBase<V> option;
 }
 
-class CloudRemoveCustomDomainCommand
-    extends CloudCliCommand<RemoveCustomDomainCommandConfig> {
+class CloudDetachCustomDomainCommand
+    extends CloudCliCommand<DetachCustomDomainCommandConfig> {
   @override
-  String get description => 'Remove a custom domain.';
+  String get description => 'Detach a custom domain.';
 
   @override
-  String get name => 'remove';
+  String get name => 'detach';
 
-  CloudRemoveCustomDomainCommand({required super.logger})
-      : super(options: RemoveCustomDomainCommandConfig.values);
+  CloudDetachCustomDomainCommand({required super.logger})
+      : super(options: DetachCustomDomainCommandConfig.values);
 
   @override
   Future<void> runWithConfig(
-    final Configuration<RemoveCustomDomainCommandConfig> commandConfig,
+    final Configuration<DetachCustomDomainCommandConfig> commandConfig,
   ) async {
     final projectId =
-        commandConfig.value(RemoveCustomDomainCommandConfig.projectId);
+        commandConfig.value(DetachCustomDomainCommandConfig.projectId);
     final domainName =
-        commandConfig.value(RemoveCustomDomainCommandConfig.domainName);
+        commandConfig.value(DetachCustomDomainCommandConfig.domainName);
 
     final shouldDelete = await logger.confirm(
       'Are you sure you want to delete the custom domain "$domainName"?',
@@ -339,7 +339,7 @@ class CloudRemoveCustomDomainCommand
           e, stackTrace, 'Failed to remove custom domain');
     }
 
-    logger.success('Successfully removed custom domain: $domainName.');
+    logger.success('Successfully detached custom domain: $domainName.');
   }
 }
 

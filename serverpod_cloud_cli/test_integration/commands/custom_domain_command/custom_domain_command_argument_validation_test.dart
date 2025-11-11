@@ -40,12 +40,12 @@ void main() {
       );
     });
 
-    group('when executing domain add with invalid target', () {
+    group('when executing domain attach with invalid target', () {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
           'domain',
-          'add',
+          'attach',
           'domain.com',
           '--target',
           'some-invalid-target',

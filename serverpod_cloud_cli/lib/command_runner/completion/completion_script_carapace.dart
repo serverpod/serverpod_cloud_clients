@@ -152,7 +152,7 @@ commands:
   - name: domain
 
     commands:
-      - name: add
+      - name: attach
         flags:
           -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
           --name=!: "The custom domain name. Can be passed as the first argument."
@@ -165,7 +165,7 @@ commands:
         flags:
           -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
 
-      - name: remove
+      - name: detach
         flags:
           -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
           --name=!: "The custom domain name. Can be passed as the first argument."
