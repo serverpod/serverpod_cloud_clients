@@ -12,7 +12,6 @@ persistentFlags:
   -a, --analytics: "Toggles if analytics data is sent."
   --no-analytics: "Toggles if analytics data is sent."
   --version: "Prints the version of the Serverpod Cloud CLI."
-  --scloud-dir=: "Override the directory path where Serverpod Cloud cache/authentication files are stored."
   -d, --project-dir=: "The path to the Serverpod Cloud project server directory."
   --project-config-file=: "The path to the Serverpod Cloud project configuration file."
   --project-config-content=: "Override the scloud project configuration with a YAML string."
@@ -22,7 +21,6 @@ exclusiveFlags:
   - [analytics, no-analytics]
 completion:
   flag:
-    scloud-dir: ["$directories"]
     project-dir: ["$directories"]
     project-config-file: ["$files"]
 
@@ -119,9 +117,13 @@ commands:
     exclusiveFlags:
       - [dry-run, no-dry-run]
 
-  - name: env
+  - name: variable
 
     commands:
+      - name: list
+        flags:
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
+
       - name: create
         flags:
           -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
@@ -131,10 +133,6 @@ commands:
         completion:
           flag:
             from-file: ["$files"]
-
-      - name: list
-        flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
 
       - name: update
         flags:

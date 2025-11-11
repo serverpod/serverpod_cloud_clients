@@ -9,7 +9,7 @@ import 'package:test/test.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/env_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/variable_command.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 
@@ -35,8 +35,8 @@ void main() {
 
   const projectId = 'projectId';
 
-  test('Given env command when instantiated then requires login', () {
-    expect(CloudEnvCommand(logger: logger).requireLogin, isTrue);
+  test('Given variable command when instantiated then requires login', () {
+    expect(CloudVariableCommand(logger: logger).requireLogin, isTrue);
   });
 
   group('Given unauthenticated', () {
@@ -44,7 +44,7 @@ void main() {
       await keyManager.put('mock-token');
     });
 
-    group('when executing env create', () {
+    group('when executing variable create', () {
       late Future commandResult;
 
       setUp(() async {
@@ -52,7 +52,7 @@ void main() {
             .thenThrow(ServerpodClientUnauthorized());
 
         commandResult = cli.run([
-          'env',
+          'variable',
           'create',
           'key',
           'value',
@@ -80,7 +80,7 @@ void main() {
       });
     });
 
-    group('when executing env update', () {
+    group('when executing variable update', () {
       late Future commandResult;
 
       setUp(() async {
@@ -91,7 +91,7 @@ void main() {
             )).thenThrow(ServerpodClientUnauthorized());
 
         commandResult = cli.run([
-          'env',
+          'variable',
           'update',
           'key',
           'value',
@@ -119,7 +119,7 @@ void main() {
       });
     });
 
-    group('when executing env delete and confirming prompt', () {
+    group('when executing variable delete and confirming prompt', () {
       late Future commandResult;
 
       setUp(() async {
@@ -130,7 +130,7 @@ void main() {
 
         logger.answerNextConfirmWith(true);
         commandResult = cli.run([
-          'env',
+          'variable',
           'delete',
           'key',
           '--project',
@@ -157,7 +157,7 @@ void main() {
       });
     });
 
-    group('when executing env list', () {
+    group('when executing variable list', () {
       late Future commandResult;
 
       setUp(() async {
@@ -165,7 +165,7 @@ void main() {
             .thenThrow(ServerpodClientUnauthorized());
 
         commandResult = cli.run([
-          'env',
+          'variable',
           'list',
           '--project',
           projectId,
@@ -197,7 +197,7 @@ void main() {
       await keyManager.put('mock-token');
     });
 
-    group('when executing env create', () {
+    group('when executing variable create', () {
       setUp(() async {
         when(() => client.environmentVariables.create(
               any(that: equals('key')),
@@ -217,7 +217,7 @@ void main() {
 
         setUp(() async {
           commandResult = cli.run([
-            'env',
+            'variable',
             'create',
             'key',
             'value',
@@ -250,7 +250,7 @@ void main() {
           await d.file('value.txt', 'value').create();
 
           commandResult = cli.run([
-            'env',
+            'variable',
             'create',
             'key',
             '--from-file',
@@ -284,7 +284,7 @@ void main() {
           await d.file('value.txt', 'value').create();
 
           commandResult = cli.run([
-            'env',
+            'variable',
             'create',
             'key',
             'value',
@@ -314,7 +314,7 @@ void main() {
 
         setUp(() async {
           commandResult = cli.run([
-            'env',
+            'variable',
             'create',
             'key',
             '--project',
@@ -337,7 +337,7 @@ void main() {
       });
     });
 
-    group('when executing env create', () {
+    group('when executing variable create', () {
       setUp(() async {
         when(() => client.environmentVariables.create(
               any(that: equals('key')),
@@ -357,7 +357,7 @@ void main() {
 
         setUp(() async {
           commandResult = cli.run([
-            'env',
+            'variable',
             'create',
             'key',
             'value1\nline2',
@@ -390,7 +390,7 @@ void main() {
           await d.file('value.txt', 'value1\nline2').create();
 
           commandResult = cli.run([
-            'env',
+            'variable',
             'create',
             'key',
             '--from-file',
@@ -418,7 +418,7 @@ void main() {
       });
     });
 
-    group('when executing env update', () {
+    group('when executing variable update', () {
       setUp(() async {
         when(() => client.environmentVariables.update(
               name: any(named: 'name', that: equals('key')),
@@ -438,7 +438,7 @@ void main() {
 
         setUp(() async {
           commandResult = cli.run([
-            'env',
+            'variable',
             'update',
             'key',
             'value',
@@ -471,7 +471,7 @@ void main() {
           await d.file('value.txt', 'value').create();
 
           commandResult = cli.run([
-            'env',
+            'variable',
             'update',
             'key',
             '--from-file',
@@ -505,7 +505,7 @@ void main() {
           await d.file('value.txt', 'value').create();
 
           commandResult = cli.run([
-            'env',
+            'variable',
             'update',
             'key',
             'value',
@@ -535,7 +535,7 @@ void main() {
 
         setUp(() async {
           commandResult = cli.run([
-            'env',
+            'variable',
             'update',
             'key',
             '--project',
@@ -558,7 +558,7 @@ void main() {
       });
     });
 
-    group('when executing env delete and confirming prompt', () {
+    group('when executing variable delete and confirming prompt', () {
       late Future commandResult;
 
       setUp(() async {
@@ -575,7 +575,7 @@ void main() {
 
         logger.answerNextConfirmWith(true);
         commandResult = cli.run([
-          'env',
+          'variable',
           'delete',
           'key',
           '--project',
@@ -616,13 +616,13 @@ void main() {
       });
     });
 
-    group('when executing env delete and rejecting prompt', () {
+    group('when executing variable delete and rejecting prompt', () {
       late Future commandResult;
 
       setUp(() async {
         logger.answerNextConfirmWith(false);
         commandResult = cli.run([
-          'env',
+          'variable',
           'delete',
           'key',
           '--project',
@@ -659,7 +659,7 @@ void main() {
       });
     });
 
-    group('when executing env list', () {
+    group('when executing variable list', () {
       late Future commandResult;
 
       setUp(() async {
@@ -673,7 +673,7 @@ void main() {
                 ]));
 
         commandResult = cli.run([
-          'env',
+          'variable',
           'list',
           '--project',
           projectId,

@@ -153,7 +153,7 @@ class CommandLogger {
   /// ```bash
   /// ERROR: Could not update the environment variable.
   /// The variable does not exist, double check the name by running the list command:
-  ///  $ scloud env list
+  ///  $ scloud variable list
   /// ```
   void error(
     final String message, {

@@ -31,7 +31,7 @@ to get an interactive, guided set up of a new Serverpod Cloud project:
 scloud launch
 ```
 
-If the project requires any environment variables or secrets, they can be added with the [`env`](https://docs.serverpod.cloud/references/cli/commands/env) and [`secret`](https://docs.serverpod.cloud/references/cli/commands/secret) commands. Once the project is ready to be deployed, run the following command:
+If the project requires any environment variables or secrets, they can be added with the [`variable`](https://docs.serverpod.cloud/references/cli/commands/variable) and [`secret`](https://docs.serverpod.cloud/references/cli/commands/secret) commands. Once the project is ready to be deployed, run the following command:
 
 ```sh
 scloud deploy
