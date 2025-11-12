@@ -29,8 +29,7 @@ class CloudAuthCommand extends CloudCliCommand {
 enum LoginCommandOption<V> implements OptionDefinition<V> {
   timeoutOpt(
     DurationOption(
-      argName: 'timeout',
-      argAbbrev: 't',
+      argName: 'time-limit',
       helpText: 'The time to wait for the authentication to complete.',
       defaultsTo: Duration(seconds: 300),
       min: Duration.zero,

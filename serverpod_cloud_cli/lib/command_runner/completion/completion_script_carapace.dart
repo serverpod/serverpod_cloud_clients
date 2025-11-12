@@ -15,7 +15,7 @@ persistentFlags:
   -d, --project-dir=: "The path to the Serverpod Cloud project server directory."
   --project-config-file=: "The path to the Serverpod Cloud project configuration file."
   --project-config-content=: "Override the scloud project configuration with a YAML string."
-  --connection-timeout=: "The timeout for the connection to the Serverpod Cloud API."
+  --timeout=: "The timeout for the connection to the Serverpod Cloud API."
   --yes: "Automatically accept confirmation prompts. For use in non-interactive environments."
 exclusiveFlags:
   - [analytics, no-analytics]
@@ -55,7 +55,7 @@ commands:
     commands:
       - name: login
         flags:
-          -t, --timeout=: "The time to wait for the authentication to complete."
+          --time-limit=: "The time to wait for the authentication to complete."
           --persistent: "Store the authentication credentials."
           --no-persistent: "Store the authentication credentials."
           --browser: "Allow CLI to open browser for logging in."
