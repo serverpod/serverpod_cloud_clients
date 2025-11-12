@@ -34,7 +34,7 @@ void main() {
   });
 
   test('Given user list command when instantiated then requires login', () {
-    expect(UserListCommand(logger: logger).requireLogin, isTrue);
+    expect(ProjectUserListCommand(logger: logger).requireLogin, isTrue);
   });
 
   group('Given unauthenticated', () {
@@ -42,6 +42,7 @@ void main() {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
+          'project',
           'user',
           'list',
           '--project',
@@ -97,6 +98,7 @@ void main() {
         );
 
         commandResult = cli.run([
+          'project',
           'user',
           'list',
           '--project',

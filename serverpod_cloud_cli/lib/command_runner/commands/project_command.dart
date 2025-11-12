@@ -6,6 +6,7 @@ import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/commands/project/project.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/user_command.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 
 import 'categories.dart';
@@ -26,8 +27,7 @@ class CloudProjectCommand extends CloudCliCommand {
     addSubcommand(CloudProjectDeleteCommand(logger: logger));
     addSubcommand(CloudProjectListCommand(logger: logger));
     addSubcommand(CloudProjectLinkCommand(logger: logger));
-    addSubcommand(ProjectInviteUserCommand(logger: logger));
-    addSubcommand(ProjectRevokeUserCommand(logger: logger));
+    addSubcommand(CloudProjectUserCommand(logger: logger));
   }
 }
 
@@ -192,132 +192,6 @@ class CloudProjectLinkCommand
       projectId: projectId,
       projectDirectory: projectDirectory.path,
       configFilePath: configFilePath,
-    );
-  }
-}
-
-const _projectRoleNames = ['admin'];
-const _projectRoleHelp = {'admin': 'Admins have full access to the project.'};
-
-enum ProjectInviteUserOption<V> implements OptionDefinition<V> {
-  projectId(
-    ProjectIdOption(asFirstArg: true),
-  ),
-  user(
-    UserEmailOption(mandatory: true),
-  ),
-  roles(
-    MultiStringOption(
-      argName: 'role',
-      argAbbrev: 'r',
-      helpText: 'One or more project roles to assign.',
-      allowedValues: _projectRoleNames,
-      allowedHelp: _projectRoleHelp,
-      mandatory: true,
-    ),
-  );
-
-  const ProjectInviteUserOption(this.option);
-
-  @override
-  final ConfigOptionBase<V> option;
-}
-
-class ProjectInviteUserCommand
-    extends CloudCliCommand<ProjectInviteUserOption> {
-  @override
-  String get description => 'Invite a user to a Serverpod Cloud project.';
-
-  @override
-  String get name => 'invite';
-
-  @override
-  String get category => 'User Roles';
-
-  ProjectInviteUserCommand({required super.logger})
-      : super(options: ProjectInviteUserOption.values);
-
-  @override
-  Future<void> runWithConfig(
-    final Configuration<ProjectInviteUserOption> commandConfig,
-  ) async {
-    final projectId = commandConfig.value(ProjectInviteUserOption.projectId);
-    final userEmail = commandConfig.value(ProjectInviteUserOption.user);
-    final roles = commandConfig.value(ProjectInviteUserOption.roles);
-
-    await ProjectCommands.inviteUser(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      projectId: projectId,
-      email: userEmail,
-      assignRoleNames: roles,
-    );
-  }
-}
-
-enum ProjectRevokeUserOption<V> implements OptionDefinition<V> {
-  projectId(
-    ProjectIdOption(asFirstArg: true),
-  ),
-  user(
-    UserEmailOption(argPos: 1, mandatory: true),
-  ),
-  roles(
-    MultiStringOption(
-      argName: 'role',
-      argAbbrev: 'r',
-      helpText: 'One or more project roles to revoke.',
-      allowedValues: _projectRoleNames,
-      allowedHelp: _projectRoleHelp,
-      group: MutuallyExclusive('Roles', mode: MutuallyExclusiveMode.mandatory),
-    ),
-  ),
-  allRoles(
-    FlagOption(
-      argName: 'all',
-      helpText: 'Revoke all roles of this project from the user.',
-      negatable: false,
-      group: MutuallyExclusive('Roles', mode: MutuallyExclusiveMode.mandatory),
-    ),
-  );
-
-  const ProjectRevokeUserOption(this.option);
-
-  @override
-  final ConfigOptionBase<V> option;
-}
-
-class ProjectRevokeUserCommand
-    extends CloudCliCommand<ProjectRevokeUserOption> {
-  @override
-  String get description => 'Revoke a user from a Serverpod Cloud project.';
-
-  @override
-  String get name => 'revoke';
-
-  @override
-  String get category => 'User Roles';
-
-  ProjectRevokeUserCommand({required super.logger})
-      : super(options: ProjectRevokeUserOption.values);
-
-  @override
-  Future<void> runWithConfig(
-    final Configuration<ProjectRevokeUserOption> commandConfig,
-  ) async {
-    final projectId = commandConfig.value(ProjectRevokeUserOption.projectId);
-    final userEmail = commandConfig.value(ProjectRevokeUserOption.user);
-    final roles = commandConfig.optionalValue(ProjectRevokeUserOption.roles);
-    final allRoles =
-        commandConfig.optionalValue(ProjectRevokeUserOption.allRoles);
-
-    await ProjectCommands.revokeUser(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      projectId: projectId,
-      email: userEmail,
-      unassignRoleNames: roles ?? const [],
-      unassignAllRoles: allRoles ?? false,
     );
   }
 }

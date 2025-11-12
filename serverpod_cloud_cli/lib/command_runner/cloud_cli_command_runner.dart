@@ -17,7 +17,6 @@ import 'package:serverpod_cloud_cli/command_runner/commands/log_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/project_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/secret_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deployments_command.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/user_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/version_command.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
@@ -150,7 +149,6 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
       CloudSecretCommand(logger: logger),
       CloudDbCommand(logger: logger),
       CloudLaunchCommand(logger: logger),
-      CloudUserCommand(logger: logger),
       CliUserSettingsCommand(logger: logger),
       if (adminUserMode) CloudAdminCommand(logger: logger, hidden: false),
     ]);

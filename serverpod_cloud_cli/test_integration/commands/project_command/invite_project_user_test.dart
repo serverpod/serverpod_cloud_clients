@@ -7,7 +7,7 @@ import 'package:test/test.dart';
 
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/project_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/user_command.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 
@@ -36,13 +36,13 @@ void main() {
   test(
       'Given project invite user command when instantiated then requires login',
       () {
-    expect(ProjectInviteUserCommand(logger: logger).requireLogin, isTrue);
+    expect(ProjectUserInviteCommand(logger: logger).requireLogin, isTrue);
   });
 
   test(
       'Given project revoke user command when instantiated then requires login',
       () {
-    expect(ProjectRevokeUserCommand(logger: logger).requireLogin, isTrue);
+    expect(ProjectUserRevokeCommand(logger: logger).requireLogin, isTrue);
   });
 
   group('Given unauthenticated', () {
@@ -51,13 +51,11 @@ void main() {
       setUp(() async {
         commandResult = cli.run([
           'project',
+          'user',
           'invite',
+          'test@example.com',
           '--project',
           projectId,
-          '--user',
-          'test@example.com',
-          '--role',
-          'admin',
         ]);
       });
 
@@ -82,13 +80,11 @@ void main() {
       setUp(() async {
         commandResult = cli.run([
           'project',
+          'user',
           'revoke',
+          'test@example.com',
           '--project',
           projectId,
-          '--user',
-          'test@example.com',
-          '--role',
-          'admin',
         ]);
       });
 
@@ -127,13 +123,11 @@ void main() {
 
         commandResult = cli.run([
           'project',
+          'user',
           'invite',
+          'test@example.com',
           '--project',
           projectId,
-          '--user',
-          'test@example.com',
-          '--role',
-          'admin',
         ]);
       });
 
@@ -165,13 +159,11 @@ void main() {
 
         commandResult = cli.run([
           'project',
+          'user',
           'invite',
+          'test@example.com',
           '--project',
           projectId,
-          '--user',
-          'test@example.com',
-          '--role',
-          'admin',
         ]);
       });
 
@@ -191,7 +183,7 @@ void main() {
       });
     });
 
-    group('when executing project revoke user with specific role', () {
+    group('when executing project revoke user and user has roles', () {
       late Future commandResult;
       setUp(() async {
         when(() => client.projects.revokeUser(
@@ -205,53 +197,11 @@ void main() {
 
         commandResult = cli.run([
           'project',
+          'user',
           'revoke',
+          'test@example.com',
           '--project',
           projectId,
-          '--user',
-          'test@example.com',
-          '--role',
-          'admin',
-        ]);
-      });
-
-      test('then command completes successfully and logs success message',
-          () async {
-        await expectLater(commandResult, completes);
-
-        expect(logger.successCalls, hasLength(1));
-        expect(
-          logger.successCalls.single,
-          equalsSuccessCall(
-            message: 'Revoked access roles of the user from the project: admin',
-            newParagraph: true,
-          ),
-        );
-      });
-    });
-
-    group(
-        'when executing project revoke user for all roles and user has a role',
-        () {
-      late Future commandResult;
-      setUp(() async {
-        when(() => client.projects.revokeUser(
-              cloudProjectId: any(named: 'cloudProjectId'),
-              email: any(named: 'email'),
-              unassignRoleNames: any(named: 'unassignRoleNames'),
-              unassignAllRoles: any(named: 'unassignAllRoles'),
-            )).thenAnswer(
-          (final invocation) async => Future.value(['admin']),
-        );
-
-        commandResult = cli.run([
-          'project',
-          'revoke',
-          '--project',
-          projectId,
-          '--user',
-          'test@example.com',
-          '--all',
         ]);
       });
 
@@ -271,8 +221,7 @@ void main() {
       });
     });
 
-    group('when executing project revoke user with specific, non-assigned role',
-        () {
+    group('when executing project revoke user but user has no roles', () {
       late Future commandResult;
       setUp(() async {
         when(() => client.projects.revokeUser(
@@ -286,57 +235,15 @@ void main() {
 
         commandResult = cli.run([
           'project',
+          'user',
           'revoke',
+          'test@example.com',
           '--project',
           projectId,
-          '--user',
-          'test@example.com',
-          '--role',
-          'admin',
         ]);
       });
 
       test('then command completes successfully and logs info message',
-          () async {
-        await expectLater(commandResult, completes);
-
-        expect(logger.infoCalls, hasLength(1));
-        expect(
-          logger.infoCalls.single,
-          equalsInfoCall(
-            message:
-                'The user does not have any of the specified project roles.',
-          ),
-        );
-      });
-    });
-
-    group(
-        'when executing project revoke user for all roles but user has no roles',
-        () {
-      late Future commandResult;
-      setUp(() async {
-        when(() => client.projects.revokeUser(
-              cloudProjectId: any(named: 'cloudProjectId'),
-              email: any(named: 'email'),
-              unassignRoleNames: any(named: 'unassignRoleNames'),
-              unassignAllRoles: any(named: 'unassignAllRoles'),
-            )).thenAnswer(
-          (final invocation) async => Future.value([]),
-        );
-
-        commandResult = cli.run([
-          'project',
-          'revoke',
-          '--project',
-          projectId,
-          '--user',
-          'test@example.com',
-          '--all',
-        ]);
-      });
-
-      test('then command completes successfully and logs success message',
           () async {
         await expectLater(commandResult, completes);
 
