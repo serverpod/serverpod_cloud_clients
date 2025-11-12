@@ -41,8 +41,12 @@ abstract class CloudCliCommand<O extends OptionDefinition>
   }
 
   @override
-  String? get usageFooter =>
-      '\nSee the full documentation at: https://docs.serverpod.cloud/references/cli/commands/${_topCommand.name}';
+  String? get usageFooter => '''${usageExamples ?? ''}
+See the full documentation at: https://docs.serverpod.cloud/references/cli/commands/${_topCommand.name}
+''';
+
+  /// Commands can override this getter to add examples to the usage help text.
+  String? get usageExamples => null;
 
   /// Gets the command runner [CloudCliCommandRunner].
   @override

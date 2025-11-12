@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:meta/meta.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/status_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/deployments_command.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:ground_control_client/ground_control_client.dart';
@@ -31,8 +31,21 @@ void main() {
   });
   const projectId = 'projectId';
 
-  test('Given status command when instantiated then requires login', () {
-    expect(CloudDeployStatusCommand(logger: logger).requireLogin, isTrue);
+  test('Given deployments show command when instantiated then requires login',
+      () {
+    expect(CloudDeploymentsShowCommand(logger: logger).requireLogin, isTrue);
+  });
+
+  test('Given deployments list command when instantiated then requires login',
+      () {
+    expect(CloudDeploymentsListCommand(logger: logger).requireLogin, isTrue);
+  });
+
+  test(
+      'Given deployments build-log command when instantiated then requires login',
+      () {
+    expect(
+        CloudDeploymentsBuildLogCommand(logger: logger).requireLogin, isTrue);
   });
 
   group('Given unauthenticated', () {
@@ -56,12 +69,12 @@ void main() {
       reset(client.status);
     });
 
-    group('when executing status', () {
+    group('when executing deployments show', () {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
-          'status',
-          'deploy',
+          'deployments',
+          'show',
           '--project',
           projectId,
         ]);
@@ -86,13 +99,12 @@ void main() {
       });
     });
 
-    group('when executing status --build-log', () {
+    group('when executing deployments build-log', () {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
-          'status',
-          'deploy',
-          '--build-log',
+          'deployments',
+          'build-log',
           '--project',
           projectId,
         ]);
@@ -117,13 +129,12 @@ void main() {
       });
     });
 
-    group('when executing status --list', () {
+    group('when executing deployments list', () {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
-          'status',
-          'deploy',
-          '--list',
+          'deployments',
+          'list',
           '--project',
           projectId,
         ]);
@@ -154,7 +165,7 @@ void main() {
       await keyManager.put('mock-token');
     });
 
-    group('and a successful status, when running status command', () {
+    group('and a successful status, when running deployments show command', () {
       group('with correct args to get the most recent deploy status', () {
         setUpAll(() async {
           final attemptStages = [
@@ -217,8 +228,8 @@ void main() {
             late Future commandResult;
             setUp(() async {
               commandResult = cli.run([
-                'status',
-                'deploy',
+                'deployments',
+                'show',
                 ...args,
               ]);
             });
@@ -261,8 +272,8 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
 
           setUp(() async {
             commandResult = cli.run([
-              'status',
-              'deploy',
+              'deployments',
+              'show',
               '--project',
               projectId,
               '--output-overall-status',
@@ -309,8 +320,8 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
             late Future commandResult;
             setUp(() async {
               commandResult = cli.run([
-                'status',
-                'deploy',
+                'deployments',
+                'show',
                 ...args,
               ]);
             });
@@ -380,8 +391,8 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
             late Future commandResult;
             setUp(() async {
               commandResult = cli.run([
-                'status',
-                'deploy',
+                'deployments',
+                'show',
                 ...args,
               ]);
             });
@@ -400,7 +411,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
                 equalsErrorCall(
                   message: 'No such deployment status found.',
                   hint: 'Run this command to see recent deployments: '
-                      'scloud status deploy --list',
+                      'scloud deployments list',
                 ),
               );
             });
@@ -422,8 +433,8 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
           late Future commandResult;
           setUp(() async {
             commandResult = cli.run([
-              'status',
-              'deploy',
+              'deployments',
+              'show',
               '--project',
               projectId,
               'non-existing',
@@ -504,13 +515,14 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
         reset(client.status);
       });
 
-      group('when running status command to get the deploy status', () {
+      group('when running deployments show command to get the deploy status',
+          () {
         late Future commandResult;
 
         setUp(() async {
           commandResult = cli.run([
-            'status',
-            'deploy',
+            'deployments',
+            'show',
             '--project',
             projectId,
           ]);
@@ -541,14 +553,15 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
         });
       });
 
-      group('when running status command with --output-overall-status option',
+      group(
+          'when running deployments show command with --output-overall-status option',
           () {
         late Future commandResult;
 
         setUp(() async {
           commandResult = cli.run([
-            'status',
-            'deploy',
+            'deployments',
+            'show',
             '--project',
             projectId,
             '--output-overall-status',
@@ -568,7 +581,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
       });
     });
 
-    group('when running status list command', () {
+    group('when running deployments list command', () {
       group('with correct args to get the deployments list', () {
         setUpAll(() async {
           final buildStatuses = [
@@ -610,8 +623,8 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
 
             setUp(() async {
               commandResult = cli.run([
-                'status',
-                'deploy',
+                'deployments',
+                'list',
                 ...args,
               ]);
             });
@@ -649,52 +662,8 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
           });
         }
 
-        testCorrectGetStatusesCommand('with named project opt and long option',
-            ['--project', projectId, '--list']);
-        testCorrectGetStatusesCommand('with named project op and short option',
-            ['--project', projectId, '-l']);
-      });
-
-      group('with incorrect args to get a deployments list', () {
-        @isTestGroup
-        void testIncorrectGetStatusesCommand(
-          final String description,
-          final List<String> args,
-        ) {
-          group('$description with args="${args.join(' ')}"', () {
-            late Future commandResult;
-
-            setUp(() async {
-              commandResult = cli.run([
-                'status',
-                'deploy',
-                ...args,
-              ]);
-            });
-
-            test('then throws ExitErrorException', () async {
-              await expectLater(
-                  commandResult, throwsA(isA<ErrorExitException>()));
-            });
-            test('then outputs error message', () async {
-              await commandResult.onError((final e, final s) {});
-
-              expect(logger.errorCalls, isNotEmpty);
-              expect(
-                logger.errorCalls.first,
-                equalsErrorCall(
-                    message: 'Cannot specify deploy id with --list.'),
-              );
-            });
-          });
-        }
-
-        testIncorrectGetStatusesCommand(
-            'for non-existing project and long option',
-            ['--project', projectId, 'disallowed-attempt-id', '--list']);
-        testIncorrectGetStatusesCommand(
-            'for non-existing project and short option',
-            ['--project', projectId, 'disallowed-attempt-id', '-l']);
+        testCorrectGetStatusesCommand(
+            'with named project opt', ['--project', projectId]);
       });
     });
   });

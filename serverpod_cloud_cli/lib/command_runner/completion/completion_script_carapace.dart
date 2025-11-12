@@ -188,19 +188,34 @@ commands:
     exclusiveFlags:
       - [utc, no-utc]
 
-  - name: status
+  - name: deployments
 
     commands:
-      - name: deploy
+      - name: show
+        flags:
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
+          -u, --utc: "Display timestamps in UTC timezone instead of local."
+          --no-utc: "Display timestamps in UTC timezone instead of local."
+          --deploy=: "View a specific deployment, with uuid or sequence number, 0 for latest. Can be passed as the first argument."
+          --output-overall-status: "View a deployment's overall status as a single word, one of: success, failure, awaiting, running, cancelled, unknown."
+        exclusiveFlags:
+          - [utc, no-utc]
+
+      - name: list
         flags:
           -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
           --limit=: "The maximum number of records to fetch."
           -u, --utc: "Display timestamps in UTC timezone instead of local."
           --no-utc: "Display timestamps in UTC timezone instead of local."
+        exclusiveFlags:
+          - [utc, no-utc]
+
+      - name: build-log
+        flags:
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
+          -u, --utc: "Display timestamps in UTC timezone instead of local."
+          --no-utc: "Display timestamps in UTC timezone instead of local."
           --deploy=: "View a specific deployment, with uuid or sequence number, 0 for latest. Can be passed as the first argument."
-          -l, --list: "List recent deployments."
-          -b, --build-log: "View a deployment's build log, or latest by default."
-          --output-overall-status: "View a deployment's overall status as a single word, one of: success, failure, awaiting, running, cancelled, unknown."
         exclusiveFlags:
           - [utc, no-utc]
 

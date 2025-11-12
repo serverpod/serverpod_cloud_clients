@@ -445,7 +445,7 @@ The default API domain will be: <project-id>.api.serverpod.space
       attemptId: attemptId,
     );
     logger.terminalCommand(
-      'scloud status deploy -p $projectId',
+      'scloud deployments show -p $projectId',
       message: 'Run this command to see the current deployment status:',
     );
   }

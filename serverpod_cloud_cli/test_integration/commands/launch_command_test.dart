@@ -270,7 +270,7 @@ Insights: https://$projectId.insights.serverpod.space/''',
           );
         });
 
-        test('then logs status deploy hint message', () async {
+        test('then logs deployments show hint message', () async {
           expect(logger.terminalCommandCalls, hasLength(2));
           expect(
             logger.terminalCommandCalls,
@@ -281,7 +281,7 @@ Insights: https://$projectId.insights.serverpod.space/''',
                 newParagraph: true,
               ),
               equalsTerminalCommandCall(
-                command: 'scloud status deploy -p $projectId',
+                command: 'scloud deployments show -p $projectId',
                 message:
                     'Run this command to see the current deployment status:',
               ),
