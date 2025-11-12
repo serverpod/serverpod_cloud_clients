@@ -12,6 +12,7 @@ persistentFlags:
   -a, --analytics: "Toggles if analytics data is sent."
   --no-analytics: "Toggles if analytics data is sent."
   --version: "Prints the version of the Serverpod Cloud CLI."
+  --token=: "The authentication token to use for subsequent commands."
   -d, --project-dir=: "The path to the Serverpod Cloud project server directory."
   --project-config-file=: "The path to the Serverpod Cloud project configuration file."
   --project-config-content=: "Override the scloud project configuration with a YAML string."
@@ -89,24 +90,22 @@ commands:
         flags:
           -p, --project=!: "The ID of the project. Can be passed as the first argument."
 
-      - name: invite
-        flags:
-          -p, --project=!: "The ID of the project. Can be passed as the first argument.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
-          -u, --user=!: "The user email address."
-          -r, --role=*!: "One or more project roles to assign."
-        completion:
-          flag:
-            role: ["admin"]
+      - name: user
 
-      - name: revoke
-        flags:
-          -p, --project=!: "The ID of the project. Can be passed as the first argument.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
-          -u, --user=!: "The user email address. Can be passed as the second argument."
-          -r, --role=*: "One or more project roles to revoke."
-          --all: "Revoke all roles of this project from the user."
-        completion:
-          flag:
-            role: ["admin"]
+        commands:
+          - name: list
+            flags:
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
+
+          - name: invite
+            flags:
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
+              -u, --user=!: "The user email address. Can be passed as the first argument."
+
+          - name: revoke
+            flags:
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
+              -u, --user=!: "The user email address. Can be passed as the first argument."
 
   - name: deploy
     flags:
@@ -267,13 +266,6 @@ commands:
     exclusiveFlags:
       - [enable-db, no-enable-db]
       - [deploy, no-deploy]
-
-  - name: user
-
-    commands:
-      - name: list
-        flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
 
   - name: settings
     flags:

@@ -382,6 +382,13 @@ enum GlobalOption<V> implements OptionDefinition<V> {
       defaultsTo: false,
     ),
   ),
+  authToken(
+    StringOption(
+      argName: 'token',
+      envName: 'SERVERPOD_CLOUD_TOKEN',
+      helpText: 'The authentication token to use for the current command.',
+    ),
+  ),
   scloudDir(
     DirOption(
       argName: 'config-dir',
@@ -455,14 +462,6 @@ enum GlobalOption<V> implements OptionDefinition<V> {
       helpText: 'The URL to the Serverpod cloud console server.',
       hide: true,
       defaultsTo: HostConstants.serverpodCloudConsole,
-    ),
-  ),
-  authToken(
-    StringOption(
-      argName: 'auth-token',
-      envName: 'SERVERPOD_CLOUD_AUTH_TOKEN',
-      helpText: 'The authentication token to use for the Serverpod Cloud API.',
-      hide: true,
     ),
   );
 

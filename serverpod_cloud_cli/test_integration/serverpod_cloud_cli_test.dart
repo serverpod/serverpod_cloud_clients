@@ -49,12 +49,11 @@ void main() async {
       ),
     );
   });
-
   group(
       'Given a cli command runner '
       'when running any command with the auth token option ', () {
     setUp(() async {
-      await cli.run(['version', '--auth-token', 'test-token']);
+      await cli.run(['version', '--token', 'test-token']);
     });
 
     test('then the auth token is set in the global configuration.', () {
