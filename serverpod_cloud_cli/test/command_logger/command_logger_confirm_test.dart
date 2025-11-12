@@ -274,10 +274,10 @@ void main() {
 
   test(
       'Given empty standard out '
-      'when calling confirm with skip-confirmation option set '
+      'when calling confirm with --yes option set '
       'then should immediately return true', () async {
     commandLogger.configuration = GlobalConfiguration.resolve(
-      args: ['--skip-confirmation'],
+      args: ['--yes'],
     );
 
     late final bool result;

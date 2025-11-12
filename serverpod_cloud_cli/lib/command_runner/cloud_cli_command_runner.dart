@@ -432,7 +432,7 @@ enum GlobalOption<V> implements OptionDefinition<V> {
   ),
   skipConfirmation(
     FlagOption(
-      argName: 'skip-confirmation',
+      argName: 'yes',
       helpText: 'Automatically accept confirmation prompts.'
           ' For use in non-interactive environments.',
       negatable: false,

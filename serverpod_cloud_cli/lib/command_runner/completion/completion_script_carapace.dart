@@ -16,7 +16,7 @@ persistentFlags:
   --project-config-file=: "The path to the Serverpod Cloud project configuration file."
   --project-config-content=: "Override the scloud project configuration with a YAML string."
   --connection-timeout=: "The timeout for the connection to the Serverpod Cloud API."
-  --skip-confirmation: "Automatically accept confirmation prompts. For use in non-interactive environments."
+  --yes: "Automatically accept confirmation prompts. For use in non-interactive environments."
 exclusiveFlags:
   - [analytics, no-analytics]
 completion:
@@ -113,9 +113,7 @@ commands:
       -p, --project=!: "The ID of the project. Can be passed as the first argument.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
       -c, --concurrency=: "Number of concurrent files processed when zipping the project."
       --dry-run: "Do not actually deploy, just print the deployment steps."
-      --no-dry-run: "Do not actually deploy, just print the deployment steps."
-    exclusiveFlags:
-      - [dry-run, no-dry-run]
+      --show-files: "Display the file tree that will be uploaded."
 
   - name: variable
 
