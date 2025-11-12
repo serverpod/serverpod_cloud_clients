@@ -21,6 +21,7 @@ abstract class Deploy {
     required final String projectDir,
     required final int concurrency,
     required final bool dryRun,
+    required final bool showFiles,
   }) async {
     logger.init('Deploying Serverpod Cloud project "$projectId".');
 
@@ -64,6 +65,7 @@ abstract class Deploy {
             rootDirectory: rootDirectory,
             beneath: includedSubPaths,
             fileReadPoolSize: concurrency,
+            showFiles: showFiles,
           );
           return true;
         } on ProjectZipperExceptions catch (e) {

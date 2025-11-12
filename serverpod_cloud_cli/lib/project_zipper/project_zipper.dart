@@ -45,6 +45,7 @@ abstract final class ProjectZipper {
     required final Directory rootDirectory,
     final Iterable<String> beneath = const ['.'],
     final int fileReadPoolSize = 5,
+    final bool showFiles = false,
   }) async {
     final projectPath = rootDirectory.path;
 
@@ -65,7 +66,7 @@ abstract final class ProjectZipper {
     }
 
     logger.debug('Found ${filesToUpload.length} files to upload.');
-    if (logger.logLevel == LogLevel.debug) {
+    if (showFiles) {
       FileTreePrinter.writeFileTree(
         filePaths: filesToUpload
             .map((final file) => stripRoot(projectPath, file))

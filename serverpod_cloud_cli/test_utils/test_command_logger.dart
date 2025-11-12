@@ -202,6 +202,21 @@ class TerminalCommandCall {
   }
 }
 
+class RawCall {
+  final String content;
+  final AnsiStyle? style;
+
+  RawCall({required this.content, this.style});
+
+  @override
+  String toString() {
+    return {
+      'content': content,
+      'style': style,
+    }.toString();
+  }
+}
+
 class TestCommandLogger extends CommandLogger {
   final List<BoxCall> boxCalls = [];
   final List<ErrorCall> errorCalls = [];
@@ -215,6 +230,7 @@ class TestCommandLogger extends CommandLogger {
   final List<WarningCall> warningCalls = [];
   final List<ConfirmCall> confirmCalls = [];
   final List<InputCall> inputCalls = [];
+  final List<RawCall> rawCalls = [];
 
   Completer<void> _somethingLogged = Completer<void>();
 
@@ -276,6 +292,7 @@ class TestCommandLogger extends CommandLogger {
     boxCalls.clear();
     confirmCalls.clear();
     inputCalls.clear();
+    rawCalls.clear();
     _nextConfirmAnswers.clear();
     _nextInputAnswers.clear();
   }
@@ -475,6 +492,23 @@ class TestCommandLogger extends CommandLogger {
       newParagraph: newParagraph,
       hint: hint,
     ));
+  }
+
+  @override
+  void raw(
+    final String content, {
+    final AnsiStyle? style,
+    final LogLevel logLevel = LogLevel.info,
+  }) {
+    if (printToStdout) {
+      print('log raw: $content');
+    }
+
+    if (!_somethingLogged.isCompleted) {
+      _somethingLogged.complete();
+    }
+
+    rawCalls.add(RawCall(content: content, style: style));
   }
 
   @override

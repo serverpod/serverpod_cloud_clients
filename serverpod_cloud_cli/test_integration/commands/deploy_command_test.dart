@@ -527,6 +527,71 @@ Insights: https://${BucketUploadDescription.projectId}.insights.serverpod.space/
           expect(logger.infoCalls.last.message, 'Dry run, skipping upload.');
         });
       });
+
+      group('when deploying through CLI with --show-files and --dry-run', () {
+        late Future cliCommandFuture;
+        setUp(() async {
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--show-files',
+            '--dry-run',
+            '--project',
+            BucketUploadDescription.projectId,
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        test('then command completes successfully.', () async {
+          await expectLater(cliCommandFuture, completes);
+        });
+
+        test('then file tree is printed to stdout.', () async {
+          await cliCommandFuture;
+
+          expect(logger.rawCalls, isNotEmpty);
+          final rawOutput =
+              logger.rawCalls.map((final call) => call.content).join('');
+          expect(rawOutput, contains('pubspec.yaml'));
+          expect(
+            rawOutput,
+            anyOf(contains('╰─'), contains('├─')),
+          );
+        });
+
+        test('then dry run message is logged.', () async {
+          await cliCommandFuture;
+          expect(logger.infoCalls, isNotEmpty);
+          expect(logger.infoCalls.last.message, 'Dry run, skipping upload.');
+        });
+      });
+
+      group('when deploying through CLI without --show-files', () {
+        late Future cliCommandFuture;
+        setUp(() async {
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--dry-run',
+            '--project',
+            BucketUploadDescription.projectId,
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        test('then command completes successfully.', () async {
+          await expectLater(cliCommandFuture, completes);
+        });
+
+        test('then file tree is not printed to stdout.', () async {
+          await cliCommandFuture;
+
+          final rawOutput =
+              logger.rawCalls.map((final call) => call.content).join('');
+          expect(rawOutput, isNot(contains('╰─')));
+          expect(rawOutput, isNot(contains('├─')));
+        });
+      });
     });
   });
 
