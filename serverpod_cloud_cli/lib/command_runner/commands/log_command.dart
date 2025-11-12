@@ -61,7 +61,7 @@ class CloudLogCommand extends CloudCliCommand<LogOption> {
   final description = 'Fetch Serverpod Cloud logs.';
 
   @override
-  String get category => CommandCategories.observe;
+  String get category => CommandCategories.control;
 
   @override
   String get usageExamples => '''\n

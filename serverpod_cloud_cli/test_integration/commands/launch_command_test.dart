@@ -281,7 +281,7 @@ Insights: https://$projectId.insights.serverpod.space/''',
                 newParagraph: true,
               ),
               equalsTerminalCommandCall(
-                command: 'scloud deployments show -p $projectId',
+                command: 'scloud deployment show -p $projectId',
                 message:
                     'Run this command to see the current deployment status:',
               ),

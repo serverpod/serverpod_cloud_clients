@@ -186,7 +186,7 @@ commands:
     exclusiveFlags:
       - [utc, no-utc]
 
-  - name: deployments
+  - name: deployment
 
     commands:
       - name: show

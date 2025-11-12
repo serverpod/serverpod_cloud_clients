@@ -73,7 +73,7 @@ void main() {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
-          'deployments',
+          'deployment',
           'show',
           '--project',
           projectId,
@@ -103,7 +103,7 @@ void main() {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
-          'deployments',
+          'deployment',
           'build-log',
           '--project',
           projectId,
@@ -133,7 +133,7 @@ void main() {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
-          'deployments',
+          'deployment',
           'list',
           '--project',
           projectId,
@@ -228,7 +228,7 @@ void main() {
             late Future commandResult;
             setUp(() async {
               commandResult = cli.run([
-                'deployments',
+                'deployment',
                 'show',
                 ...args,
               ]);
@@ -272,7 +272,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
 
           setUp(() async {
             commandResult = cli.run([
-              'deployments',
+              'deployment',
               'show',
               '--project',
               projectId,
@@ -320,7 +320,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
             late Future commandResult;
             setUp(() async {
               commandResult = cli.run([
-                'deployments',
+                'deployment',
                 'show',
                 ...args,
               ]);
@@ -391,7 +391,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
             late Future commandResult;
             setUp(() async {
               commandResult = cli.run([
-                'deployments',
+                'deployment',
                 'show',
                 ...args,
               ]);
@@ -411,7 +411,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
                 equalsErrorCall(
                   message: 'No such deployment status found.',
                   hint: 'Run this command to see recent deployments: '
-                      'scloud deployments list',
+                      'scloud deployment list',
                 ),
               );
             });
@@ -433,7 +433,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
           late Future commandResult;
           setUp(() async {
             commandResult = cli.run([
-              'deployments',
+              'deployment',
               'show',
               '--project',
               projectId,
@@ -521,7 +521,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
 
         setUp(() async {
           commandResult = cli.run([
-            'deployments',
+            'deployment',
             'show',
             '--project',
             projectId,
@@ -560,7 +560,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
 
         setUp(() async {
           commandResult = cli.run([
-            'deployments',
+            'deployment',
             'show',
             '--project',
             projectId,
@@ -623,7 +623,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
 
             setUp(() async {
               commandResult = cli.run([
-                'deployments',
+                'deployment',
                 'list',
                 ...args,
               ]);

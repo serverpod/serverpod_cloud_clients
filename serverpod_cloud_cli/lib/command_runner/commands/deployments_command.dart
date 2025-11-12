@@ -11,13 +11,13 @@ import 'categories.dart';
 
 class CloudDeploymentsCommand extends CloudCliCommand {
   @override
-  final name = 'deployments';
+  final name = 'deployment';
 
   @override
   final description = 'Manage deployments.';
 
   @override
-  String get category => CommandCategories.observe;
+  String get category => CommandCategories.control;
 
   CloudDeploymentsCommand({required super.logger}) {
     addSubcommand(CloudDeploymentsShowCommand(logger: logger));
@@ -72,17 +72,17 @@ Examples
 
   Show the status of the latest deployment.
   
-    \$ scloud deployments show
+    \$ scloud deployment show
 
 
   Show the status of a specific deployment by sequence number.
   
-    \$ scloud deployments show 3
+    \$ scloud deployment show 3
 
 
   Show the status of a specific deployment by UUID.
   
-    \$ scloud deployments show 550e8400-e29b-41d4-a716-446655440000
+    \$ scloud deployment show 550e8400-e29b-41d4-a716-446655440000
 
 ''';
 
@@ -156,12 +156,12 @@ Examples
 
   List the 10 most recent deployments.
   
-    \$ scloud deployments list
+    \$ scloud deployment list
 
 
   List the 20 most recent deployments.
   
-    \$ scloud deployments list --limit 20
+    \$ scloud deployment list --limit 20
 
 ''';
 
@@ -227,17 +227,17 @@ Examples
 
   View the build log of the latest deployment.
   
-    \$ scloud deployments build-log
+    \$ scloud deployment build-log
 
 
   View the build log of a specific deployment by sequence number.
   
-    \$ scloud deployments build-log 3
+    \$ scloud deployment build-log 3
 
 
   View the build log of a specific deployment by UUID.
   
-    \$ scloud deployments build-log 550e8400-e29b-41d4-a716-446655440000
+    \$ scloud deployment build-log 550e8400-e29b-41d4-a716-446655440000
 
 ''';
 
@@ -298,7 +298,7 @@ Future<String> _getDeployAttemptId(
     throw FailureException(
       error: 'No such deployment status found.',
       hint: 'Run this command to see recent deployments: '
-          'scloud deployments list',
+          'scloud deployment list',
     );
   }
 }
