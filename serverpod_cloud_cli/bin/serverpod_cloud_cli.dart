@@ -86,5 +86,5 @@ final Analytics _analytics = MixPanelAnalytics(
   uniqueUserId: ResourceManager.uniqueUserId,
   projectToken: _mixPanelToken,
   version: cliVersion.canonicalizedVersion,
-  endpoint: 'https://api-eu.mixpanel.com/track',
+  endpoint: 'https://api-eu.mixpanel.com/track?ip=1',
 );
