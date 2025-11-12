@@ -180,8 +180,8 @@ commands:
       -u, --utc: "Display timestamps in UTC timezone instead of local."
       --no-utc: "Display timestamps in UTC timezone instead of local."
       -r, --recent=: "Fetch records from the recent period length; s (seconds) by default. Can also be specified as the first argument."
-      --before=: "Fetch records from before this timestamp."
-      --after=: "Fetch records from after this timestamp."
+      --until=: "Fetch records from before this timestamp."
+      --since=: "Fetch records from after this timestamp."
       --tail: "Tail the log and get real time updates."
     exclusiveFlags:
       - [utc, no-utc]

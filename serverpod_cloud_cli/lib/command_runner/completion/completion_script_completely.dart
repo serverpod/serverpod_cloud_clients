@@ -777,7 +777,7 @@ _scloud_completions() {
       ;;
 
     'log'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --project-dir -d --project-config-file --project-config-content --timeout --yes --project -p --limit --utc --no-utc -u --recent -r --before --after --tail")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --project-dir -d --project-config-file --project-config-content --timeout --yes --project -p --limit --utc --no-utc -u --recent -r --until --since --tail")" -- "$cur")
       ;;
 
     *'-d')

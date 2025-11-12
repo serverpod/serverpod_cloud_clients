@@ -91,7 +91,7 @@ void main() {
       });
     });
 
-    group('when calling with --utc flag and --before value', () {
+    group('when calling with --utc flag and --until value', () {
       setUp(() async {
         when(() => client.logs.fetchRecords(
               cloudProjectId: projectId,
@@ -103,7 +103,7 @@ void main() {
         await cli.run([
           'log',
           '--utc',
-          '--before',
+          '--until',
           '2030-12-01T00:00:00Z',
           '--project',
           projectId,
@@ -138,7 +138,7 @@ void main() {
       });
     });
 
-    group('when calling with --utc flag and --after value', () {
+    group('when calling with --utc flag and --since value', () {
       setUp(() async {
         when(() => client.logs.fetchRecords(
               cloudProjectId: projectId,
@@ -150,7 +150,7 @@ void main() {
         await cli.run([
           'log',
           '--utc',
-          '--after',
+          '--since',
           '2020-12-01T00:00:00Z',
           '--project',
           projectId,
@@ -185,7 +185,7 @@ void main() {
       });
     });
 
-    group('when calling with --utc flag and both --after and --before value',
+    group('when calling with --utc flag and both --since and --until value',
         () {
       setUp(() async {
         when(() => client.logs.fetchRecords(
@@ -198,9 +198,9 @@ void main() {
         await cli.run([
           'log',
           '--utc',
-          '--before',
+          '--until',
           '2030-01-01T00:00:00Z',
-          '--after',
+          '--since',
           '2020-12-01T00:00:00Z',
           '--project',
           projectId,

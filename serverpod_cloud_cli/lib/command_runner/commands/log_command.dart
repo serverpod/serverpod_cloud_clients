@@ -25,12 +25,12 @@ enum LogOption<V> implements OptionDefinition<V> {
         'Can also be specified as the first argument.',
     min: Duration.zero,
   )),
-  before(DateTimeOption(
-    argName: 'before',
+  until(DateTimeOption(
+    argName: 'until',
     helpText: 'Fetch records from before this timestamp.',
   )),
-  after(DateTimeOption(
-    argName: 'after',
+  since(DateTimeOption(
+    argName: 'since',
     helpText: 'Fetch records from after this timestamp.',
   )),
   all(FlagOption(
@@ -63,6 +63,44 @@ class CloudLogCommand extends CloudCliCommand<LogOption> {
   @override
   String get category => CommandCategories.observe;
 
+  @override
+  String get usageExamples => '''\n
+Examples
+
+  View the most recent logs (default: last 10 minutes).
+  
+    \$ scloud log
+
+
+  View logs from the last hour.
+  
+    \$ scloud log 1h
+
+
+  View logs since a specific time, you can use the following formats:
+  
+    \$ scloud log --since 2025-01-15T14:00:00Z
+
+    \$ scloud log --since "2025-01-15 14:00"
+
+    \$ scloud log --since 2025-01-15
+
+  View logs in a time range.
+  
+    \$ scloud log --since 2025-01-15 --until 2025-01-16
+
+
+  Stream logs in real-time.
+  
+    \$ scloud log --tail
+
+
+  View logs with UTC timestamps and a custom limit.
+  
+    \$ scloud log --utc --limit 100
+
+''';
+
   CloudLogCommand({required super.logger}) : super(options: LogOption.values);
 
   @override
@@ -73,19 +111,19 @@ class CloudLogCommand extends CloudCliCommand<LogOption> {
     final limit = commandConfig.value(LogOption.limit);
     final inUtc = commandConfig.value(LogOption.utc);
     final recentOpt = commandConfig.optionalValue(LogOption.recent);
-    final beforeOpt = commandConfig.optionalValue(LogOption.before);
-    final afterOpt = commandConfig.optionalValue(LogOption.after);
+    final untilOpt = commandConfig.optionalValue(LogOption.until);
+    final sinceOpt = commandConfig.optionalValue(LogOption.since);
     final tailOpt = commandConfig.optionalValue(LogOption.tail);
     final internalAllOpt = commandConfig.value(LogOption.all);
 
     final DateTime? before, after;
     final anyTimeSpanIsSet =
-        recentOpt != null || beforeOpt != null || afterOpt != null;
+        recentOpt != null || untilOpt != null || sinceOpt != null;
     if (internalAllOpt) {
       if (anyTimeSpanIsSet) {
         throw CloudCliUsageException(
           'The --all option cannot be combined with '
-          '--before, --after, or --recent.',
+          '--until, --since, or --recent.',
         );
       }
 
@@ -95,25 +133,25 @@ class CloudLogCommand extends CloudCliCommand<LogOption> {
       if (anyTimeSpanIsSet) {
         throw CloudCliUsageException(
           'The --tail option cannot be combined with '
-          '--before, --after, or --recent.',
+          '--until, --since, or --recent.',
         );
       }
 
       before = null;
       after = null;
-    } else if (beforeOpt != null || afterOpt != null) {
+    } else if (untilOpt != null || sinceOpt != null) {
       if (recentOpt != null) {
         throw CloudCliUsageException(
           'The --recent option cannot be combined with '
-          '--before or --after.',
+          '--until or --since.',
         );
       }
 
-      before = beforeOpt;
-      after = afterOpt;
+      before = untilOpt;
+      after = sinceOpt;
       if (before != null && after != null && before.isBefore(after)) {
         throw CloudCliUsageException(
-          'The --before value must be after --after value.',
+          'The --until value must be after --since value.',
         );
       }
     } else {

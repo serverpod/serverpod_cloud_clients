@@ -112,13 +112,13 @@ void main() {
       });
     });
 
-    group('when running log command with invalid --before value', () {
+    group('when running log command with invalid --until value', () {
       late Future result;
       setUp(() async {
         try {
           result = cli.run([
             'log',
-            '--before',
+            '--until',
             'not-a-date',
             '--project',
             projectId,
@@ -132,20 +132,19 @@ void main() {
           throwsA(isA<UsageException>().having(
             (final e) => e.message,
             'message',
-            contains(
-                'Invalid value for option `before` <YYYY-MM-DDtHH:MM:SSz>'),
+            contains('Invalid value for option `until` <YYYY-MM-DDtHH:MM:SSz>'),
           )),
         );
       });
     });
 
-    group('when running log command with invalid --after value', () {
+    group('when running log command with invalid --since value', () {
       late Future result;
       setUp(() async {
         try {
           result = cli.run([
             'log',
-            '--after',
+            '--since',
             'not-a-date',
             '--project',
             projectId,
@@ -159,23 +158,23 @@ void main() {
           throwsA(isA<UsageException>().having(
             (final e) => e.message,
             'message',
-            contains('Invalid value for option `after` <YYYY-MM-DDtHH:MM:SSz>'),
+            contains('Invalid value for option `since` <YYYY-MM-DDtHH:MM:SSz>'),
           )),
         );
       });
     });
 
     group(
-        'when running log command with --after value that is after the --before value',
+        'when running log command with --since value that is after the --until value',
         () {
       late Future result;
       setUp(() async {
         try {
           result = cli.run([
             'log',
-            '--after',
+            '--since',
             '2024-01-01T00:00:00Z',
-            '--before',
+            '--until',
             '2023-01-01T00:00:00Z',
             '--project',
             projectId,
@@ -195,14 +194,14 @@ void main() {
         expect(
           logger.errorCalls.last,
           equalsErrorCall(
-            message: 'The --before value must be after --after value.',
+            message: 'The --until value must be after --since value.',
           ),
         );
       });
     });
 
     group(
-        'when running log command with the hidden --all value together with --before flag',
+        'when running log command with the hidden --all value together with --until flag',
         () {
       late Future result;
       setUp(() async {
@@ -210,7 +209,7 @@ void main() {
           result = cli.run([
             'log',
             '--all',
-            '--before',
+            '--until',
             '2024-01-01T00:00:00Z',
             '--project',
             projectId,
@@ -231,14 +230,14 @@ void main() {
           logger.errorCalls.last,
           equalsErrorCall(
             message: 'The --all option cannot be combined with '
-                '--before, --after, or --recent.',
+                '--until, --since, or --recent.',
           ),
         );
       });
     });
 
     group(
-        'when running log command with the hidden --all value together with --after flag',
+        'when running log command with the hidden --all value together with --since flag',
         () {
       late Future result;
       setUp(() async {
@@ -246,7 +245,7 @@ void main() {
           result = cli.run([
             'log',
             '--all',
-            '--after',
+            '--since',
             '2024-01-01T00:00:00Z',
             '--project',
             projectId,
@@ -267,7 +266,7 @@ void main() {
           logger.errorCalls.last,
           equalsErrorCall(
             message: 'The --all option cannot be combined with '
-                '--before, --after, or --recent.',
+                '--until, --since, or --recent.',
           ),
         );
       });
@@ -303,14 +302,50 @@ void main() {
           logger.errorCalls.last,
           equalsErrorCall(
             message: 'The --all option cannot be combined with '
-                '--before, --after, or --recent.',
+                '--until, --since, or --recent.',
           ),
         );
       });
     });
 
     group(
-        'when running log command with --tail flag together with --before flag',
+        'when running log command with --tail flag together with --until flag',
+        () {
+      late Future result;
+      setUp(() async {
+        try {
+          result = cli.run([
+            'log',
+            '--tail',
+            '--until',
+            '2024-01-01T00:00:00Z',
+            '--project',
+            projectId,
+          ]);
+        } catch (_) {}
+      });
+
+      test('then throws ExitErrorException', () async {
+        await expectLater(result, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then logs error', () async {
+        try {
+          await result;
+        } catch (_) {}
+
+        expect(
+          logger.errorCalls.last,
+          equalsErrorCall(
+            message: 'The --tail option cannot be combined with '
+                '--until, --since, or --recent.',
+          ),
+        );
+      });
+    });
+
+    group(
+        'when running log command with the hidden --all value together with --since flag',
         () {
       late Future result;
       setUp(() async {
@@ -318,7 +353,7 @@ void main() {
           result = cli.run([
             'log',
             '--all',
-            '--before',
+            '--since',
             '2024-01-01T00:00:00Z',
             '--project',
             projectId,
@@ -339,43 +374,7 @@ void main() {
           logger.errorCalls.last,
           equalsErrorCall(
             message: 'The --all option cannot be combined with '
-                '--before, --after, or --recent.',
-          ),
-        );
-      });
-    });
-
-    group(
-        'when running log command with the hidden --all value together with --after flag',
-        () {
-      late Future result;
-      setUp(() async {
-        try {
-          result = cli.run([
-            'log',
-            '--all',
-            '--after',
-            '2024-01-01T00:00:00Z',
-            '--project',
-            projectId,
-          ]);
-        } catch (_) {}
-      });
-
-      test('then throws ExitErrorException', () async {
-        await expectLater(result, throwsA(isA<ErrorExitException>()));
-      });
-
-      test('then logs error', () async {
-        try {
-          await result;
-        } catch (_) {}
-
-        expect(
-          logger.errorCalls.last,
-          equalsErrorCall(
-            message: 'The --all option cannot be combined with '
-                '--before, --after, or --recent.',
+                '--until, --since, or --recent.',
           ),
         );
       });
@@ -411,14 +410,14 @@ void main() {
           logger.errorCalls.last,
           equalsErrorCall(
             message: 'The --all option cannot be combined with '
-                '--before, --after, or --recent.',
+                '--until, --since, or --recent.',
           ),
         );
       });
     });
 
     group(
-        'when running log command with --tail flag together with --before flag',
+        'when running log command with --tail flag together with --until flag',
         () {
       late Future result;
       setUp(() async {
@@ -426,7 +425,7 @@ void main() {
           result = cli.run([
             'log',
             '--tail',
-            '--before',
+            '--until',
             '2024-01-01T00:00:00Z',
             '--project',
             projectId,
@@ -447,14 +446,14 @@ void main() {
           logger.errorCalls.last,
           equalsErrorCall(
             message: 'The --tail option cannot be combined with '
-                '--before, --after, or --recent.',
+                '--until, --since, or --recent.',
           ),
         );
       });
     });
 
     group(
-        'when running log command with --tail flag together with --after flag',
+        'when running log command with --tail flag together with --since flag',
         () {
       late Future result;
       setUp(() async {
@@ -462,7 +461,7 @@ void main() {
           result = cli.run([
             'log',
             '--tail',
-            '--after',
+            '--since',
             '2024-01-01T00:00:00Z',
             '--project',
             projectId,
@@ -483,7 +482,7 @@ void main() {
           logger.errorCalls.last,
           equalsErrorCall(
             message: 'The --tail option cannot be combined with '
-                '--before, --after, or --recent.',
+                '--until, --since, or --recent.',
           ),
         );
       });
@@ -519,21 +518,21 @@ void main() {
           logger.errorCalls.last,
           equalsErrorCall(
             message: 'The --tail option cannot be combined with '
-                '--before, --after, or --recent.',
+                '--until, --since, or --recent.',
           ),
         );
       });
     });
 
     group(
-        'when running log command with --before option together with --recent option',
+        'when running log command with --until option together with --recent option',
         () {
       late Future result;
       setUp(() async {
         try {
           result = cli.run([
             'log',
-            '--before',
+            '--until',
             '2024-01-01T00:00:00Z',
             '--recent',
             '1m',
@@ -556,21 +555,21 @@ void main() {
           logger.errorCalls.last,
           equalsErrorCall(
             message: 'The --recent option cannot be combined with '
-                '--before or --after.',
+                '--until or --since.',
           ),
         );
       });
     });
 
     group(
-        'when running log command with --after option together with --recent option',
+        'when running log command with --since option together with --recent option',
         () {
       late Future result;
       setUp(() async {
         try {
           result = cli.run([
             'log',
-            '--after',
+            '--since',
             '2024-01-01T00:00:00Z',
             '--recent',
             '1m',
@@ -593,7 +592,7 @@ void main() {
           logger.errorCalls.last,
           equalsErrorCall(
             message: 'The --recent option cannot be combined with '
-                '--before or --after.',
+                '--until or --since.',
           ),
         );
       });
