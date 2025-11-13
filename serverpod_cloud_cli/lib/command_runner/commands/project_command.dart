@@ -164,7 +164,18 @@ class CloudProjectLinkCommand
     extends CloudCliCommand<ProjectLinkCommandOption> {
   @override
   String get description =>
-      'Link your local project to an existing Serverpod Cloud project.';
+      'Link your local project to an existing Serverpod Cloud project.\n'
+      '\n'
+      'This command creates or updates the project configuration files in your local '
+      'codebase to connect it to an existing Serverpod Cloud project. It will:\n'
+      '  - Create or update the scloud.yaml configuration file with the project ID\n'
+      '  - Create a .scloudignore file if it does not exist\n'
+      '  - Update .gitignore to exclude the .scloud/ directory (if in a workspace)\n'
+      '\n'
+      'The scloud.yaml file contains the project ID and is used by other scloud commands '
+      'to identify which Serverpod Cloud project to use. This file can be safely '
+      'committed to version control as it only contains the project identifier, not '
+      'sensitive credentials.';
 
   @override
   String get name => 'link';
