@@ -12,7 +12,7 @@ persistentFlags:
   -a, --analytics: "Toggles if analytics data is sent."
   --no-analytics: "Toggles if analytics data is sent."
   --version: "Prints the version of the Serverpod Cloud CLI."
-  --token=: "The authentication token to use for subsequent commands."
+  --token=: "The authentication token to use for the current command."
   -d, --project-dir=: "The path to the Serverpod Cloud project server directory."
   --project-config-file=: "The path to the Serverpod Cloud project configuration file."
   --project-config-content=: "Override the scloud project configuration with a YAML string."
@@ -245,15 +245,18 @@ commands:
         flags:
           -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
 
-      - name: create-superuser
-        flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
-          --username=!: "The username of the DB user to create."
+      - name: user
 
-      - name: reset-password
-        flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
-          --username=!: "The username of the DB user to create."
+        commands:
+          - name: create
+            flags:
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
+              --username=!: "The username of the DB user to create."
+
+          - name: reset-password
+            flags:
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
+              --username=!: "The username of the DB user to create."
 
   - name: launch
     flags:

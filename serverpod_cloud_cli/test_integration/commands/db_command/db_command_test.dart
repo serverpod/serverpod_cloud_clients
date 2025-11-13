@@ -35,15 +35,16 @@ void main() {
         CloudDbConnectionDetailsCommand(logger: logger).requireLogin, isTrue);
   });
 
-  test(
-      'Given db create-superuser command when instantiated then requires login',
+  test('Given db user create command when instantiated then requires login',
       () {
-    expect(CloudDbCreateSuperuserCommand(logger: logger).requireLogin, isTrue);
+    expect(CloudDbUserCreateCommand(logger: logger).requireLogin, isTrue);
   });
 
-  test('Given db reset-password command when instantiated then requires login',
+  test(
+      'Given db user reset-password command when instantiated then requires login',
       () {
-    expect(CloudDbResetPasswordCommand(logger: logger).requireLogin, isTrue);
+    expect(
+        CloudDbUserResetPasswordCommand(logger: logger).requireLogin, isTrue);
   });
 
   group('Given unauthenticated', () {
@@ -91,7 +92,7 @@ void main() {
       });
     });
 
-    group('when executing db create-superuser', () {
+    group('when executing db user create', () {
       setUpAll(() {
         when(() => client.database.createSuperUser(
               cloudCapsuleId: any(named: 'cloudCapsuleId'),
@@ -107,7 +108,8 @@ void main() {
       setUp(() {
         commandResult = cli.run([
           'db',
-          'create-superuser',
+          'user',
+          'create',
           'wernher',
           '--project',
           projectId,
@@ -133,7 +135,7 @@ void main() {
       });
     });
 
-    group('when executing db reset-password', () {
+    group('when executing db user reset-password', () {
       setUpAll(() {
         when(() => client.database.resetDatabasePassword(
               cloudCapsuleId: any(named: 'cloudCapsuleId'),
@@ -149,6 +151,7 @@ void main() {
       setUp(() {
         commandResult = cli.run([
           'db',
+          'user',
           'reset-password',
           'wernher',
           '--project',
@@ -237,7 +240,7 @@ void main() {
       });
     });
 
-    group('when executing db create-superuser', () {
+    group('when executing db user create', () {
       const password = 'von Braun';
 
       setUpAll(() {
@@ -255,7 +258,8 @@ void main() {
       setUp(() {
         commandResult = cli.run([
           'db',
-          'create-superuser',
+          'user',
+          'create',
           'wernher',
           '--project',
           projectId,
@@ -279,7 +283,7 @@ $password''',
       });
     });
 
-    group('when executing db reset-password', () {
+    group('when executing db user reset-password', () {
       const password = 'von Braun';
 
       setUpAll(() {
@@ -297,6 +301,7 @@ $password''',
       setUp(() {
         commandResult = cli.run([
           'db',
+          'user',
           'reset-password',
           'wernher',
           '--project',

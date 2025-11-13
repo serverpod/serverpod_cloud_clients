@@ -17,8 +17,20 @@ class CloudDbCommand extends CloudCliCommand {
 
   CloudDbCommand({required super.logger}) {
     addSubcommand(CloudDbConnectionDetailsCommand(logger: logger));
-    addSubcommand(CloudDbCreateSuperuserCommand(logger: logger));
-    addSubcommand(CloudDbResetPasswordCommand(logger: logger));
+    addSubcommand(CloudDbUserCommand(logger: logger));
+  }
+}
+
+class CloudDbUserCommand extends CloudCliCommand {
+  @override
+  final name = 'user';
+
+  @override
+  final description = 'Manage database users.';
+
+  CloudDbUserCommand({required super.logger}) {
+    addSubcommand(CloudDbUserCreateCommand(logger: logger));
+    addSubcommand(CloudDbUserResetPasswordCommand(logger: logger));
   }
 }
 
@@ -85,33 +97,32 @@ This psql command can be used to connect to the database (it will prompt for the
   }
 }
 
-enum DbCreateSuperuserOption<V> implements OptionDefinition<V> {
+enum DbUserCreateOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption()),
   username(_CommonDbOptions.dbUsername);
 
-  const DbCreateSuperuserOption(this.option);
+  const DbUserCreateOption(this.option);
 
   @override
   final ConfigOptionBase<V> option;
 }
 
-class CloudDbCreateSuperuserCommand
-    extends CloudCliCommand<DbCreateSuperuserOption> {
+class CloudDbUserCreateCommand extends CloudCliCommand<DbUserCreateOption> {
   @override
-  final name = 'create-superuser';
+  final name = 'create';
 
   @override
   final description = 'Create a new superuser in the Serverpod Cloud DB.';
 
-  CloudDbCreateSuperuserCommand({required super.logger})
-      : super(options: DbCreateSuperuserOption.values);
+  CloudDbUserCreateCommand({required super.logger})
+      : super(options: DbUserCreateOption.values);
 
   @override
   Future<void> runWithConfig(
-    final Configuration<DbCreateSuperuserOption> commandConfig,
+    final Configuration<DbUserCreateOption> commandConfig,
   ) async {
-    final projectId = commandConfig.value(DbCreateSuperuserOption.projectId);
-    final username = commandConfig.value(DbCreateSuperuserOption.username);
+    final projectId = commandConfig.value(DbUserCreateOption.projectId);
+    final username = commandConfig.value(DbUserCreateOption.username);
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
@@ -133,33 +144,33 @@ $password''',
   }
 }
 
-enum DbResetPasswordOption<V> implements OptionDefinition<V> {
+enum DbUserResetPasswordOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption()),
   username(_CommonDbOptions.dbUsername);
 
-  const DbResetPasswordOption(this.option);
+  const DbUserResetPasswordOption(this.option);
 
   @override
   final ConfigOptionBase<V> option;
 }
 
-class CloudDbResetPasswordCommand
-    extends CloudCliCommand<DbResetPasswordOption> {
+class CloudDbUserResetPasswordCommand
+    extends CloudCliCommand<DbUserResetPasswordOption> {
   @override
   final name = 'reset-password';
 
   @override
   final description = 'Reset a password in the Serverpod Cloud DB.';
 
-  CloudDbResetPasswordCommand({required super.logger})
-      : super(options: DbResetPasswordOption.values);
+  CloudDbUserResetPasswordCommand({required super.logger})
+      : super(options: DbUserResetPasswordOption.values);
 
   @override
   Future<void> runWithConfig(
-    final Configuration<DbResetPasswordOption> commandConfig,
+    final Configuration<DbUserResetPasswordOption> commandConfig,
   ) async {
-    final projectId = commandConfig.value(DbResetPasswordOption.projectId);
-    final username = commandConfig.value(DbResetPasswordOption.username);
+    final projectId = commandConfig.value(DbUserResetPasswordOption.projectId);
+    final username = commandConfig.value(DbUserResetPasswordOption.username);
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
