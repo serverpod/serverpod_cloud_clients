@@ -1,7 +1,8 @@
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
-import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart'
+    show DateTimeOrDurationOption, ProjectIdOption, UtcOption;
 import 'package:serverpod_cloud_cli/commands/logs/logs.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
 
@@ -16,22 +17,17 @@ enum LogOption<V> implements OptionDefinition<V> {
     min: 0,
   )),
   utc(UtcOption()),
-  recent(DurationOption(
-    argName: 'recent',
-    argAbbrev: 'r',
-    argPos: 0,
-    helpText:
-        'Fetch records from the recent period length; s (seconds) by default. '
-        'Can also be specified as the first argument.',
-    min: Duration.zero,
-  )),
-  until(DateTimeOption(
+  until(DateTimeOrDurationOption(
     argName: 'until',
-    helpText: 'Fetch records from before this timestamp.',
+    helpText: 'Fetch records from before this timestamp. Accepts ISO date '
+        '(e.g. "2024-01-15T10:30:00Z") or relative from now (e.g. "5m", "3h", "1d"). '
+        'Can also be specified as the first argument.',
   )),
-  since(DateTimeOption(
+  since(DateTimeOrDurationOption(
     argName: 'since',
-    helpText: 'Fetch records from after this timestamp.',
+    argPos: 0,
+    helpText: 'Fetch records from after this timestamp. Accepts ISO date '
+        '(e.g. "2024-01-15T10:30:00Z") or relative from now (e.g. "5m", "3h", "1d").',
   )),
   all(FlagOption(
     argName: 'all',
@@ -72,12 +68,14 @@ Examples
     \$ scloud log
 
 
-  View logs from the last hour.
+  View logs from the last hour using duration.
   
     \$ scloud log 1h
 
+    \$ scloud log --since 1h
 
-  View logs since a specific time, you can use the following formats:
+
+  View logs since a specific time using ISO date format:
   
     \$ scloud log --since 2025-01-15T14:00:00Z
 
@@ -85,9 +83,20 @@ Examples
 
     \$ scloud log --since 2025-01-15
 
-  View logs in a time range.
+
+  View logs in a time range using durations:
+  
+    \$ scloud log --since 1h --until 5m
+
+
+  View logs in a time range using ISO dates:
   
     \$ scloud log --since 2025-01-15 --until 2025-01-16
+
+
+  Mix ISO dates and durations:
+  
+    \$ scloud log --since 2025-01-15T14:00:00Z --until 30m
 
 
   Stream logs in real-time.
@@ -110,54 +119,33 @@ Examples
     final projectId = commandConfig.value(LogOption.projectId);
     final limit = commandConfig.value(LogOption.limit);
     final inUtc = commandConfig.value(LogOption.utc);
-    final recentOpt = commandConfig.optionalValue(LogOption.recent);
-    final untilOpt = commandConfig.optionalValue(LogOption.until);
-    final sinceOpt = commandConfig.optionalValue(LogOption.since);
+    final until = commandConfig.optionalValue(LogOption.until);
+    final since = commandConfig.optionalValue(LogOption.since);
     final tailOpt = commandConfig.optionalValue(LogOption.tail);
     final internalAllOpt = commandConfig.value(LogOption.all);
 
-    final DateTime? before, after;
-    final anyTimeSpanIsSet =
-        recentOpt != null || untilOpt != null || sinceOpt != null;
+    DateTime? defaultSince;
+    final anyTimeSpanIsSet = until != null || since != null;
     if (internalAllOpt) {
       if (anyTimeSpanIsSet) {
         throw CloudCliUsageException(
-          'The --all option cannot be combined with '
-          '--until, --since, or --recent.',
+          'The --all option cannot be combined with --until or --since.',
         );
       }
-
-      before = null;
-      after = null;
     } else if (tailOpt == true) {
       if (anyTimeSpanIsSet) {
         throw CloudCliUsageException(
-          'The --tail option cannot be combined with '
-          '--until, --since, or --recent.',
+          'The --tail option cannot be combined with --until or --since.',
         );
       }
-
-      before = null;
-      after = null;
-    } else if (untilOpt != null || sinceOpt != null) {
-      if (recentOpt != null) {
-        throw CloudCliUsageException(
-          'The --recent option cannot be combined with '
-          '--until or --since.',
-        );
-      }
-
-      before = untilOpt;
-      after = sinceOpt;
-      if (before != null && after != null && before.isBefore(after)) {
+    } else if (until != null || since != null) {
+      if (until != null && since != null && until.isBefore(since)) {
         throw CloudCliUsageException(
           'The --until value must be after --since value.',
         );
       }
-    } else {
-      // If no range specified, default to fetch recent logs
-      before = null;
-      after = DateTime.now().subtract(recentOpt ?? Duration(minutes: 10));
+    } else if (until == null && since == null) {
+      defaultSince = DateTime.now().subtract(Duration(minutes: 10));
     }
 
     if (tailOpt == true) {
@@ -181,8 +169,8 @@ Examples
         runner.serviceProvider.cloudApiClient,
         writeln: logger.line,
         projectId: projectId,
-        before: before,
-        after: after,
+        before: until,
+        after: since ?? defaultSince,
         limit: limit,
         inUtc: inUtc,
       );

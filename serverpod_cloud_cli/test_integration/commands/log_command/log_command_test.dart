@@ -48,7 +48,7 @@ void main() {
       await keyManager.remove();
     });
 
-    group('when calling with --utc flag and --recent value', () {
+    group('when calling with --utc flag and --since duration value', () {
       setUp(() async {
         when(() => client.logs.fetchRecords(
               cloudProjectId: projectId,
@@ -59,7 +59,50 @@ void main() {
 
         await cli.run([
           'log',
-          '--recent',
+          '--since',
+          '1m',
+          '--utc',
+          '--project',
+          projectId,
+        ]);
+      });
+
+      test('then logs output stream', () async {
+        expect(
+          logger.lineCalls,
+          containsAllInOrder([
+            equalsLineCall(
+              line: 'Timestamp                   | Level   | Content',
+            ),
+            equalsLineCall(
+              line: '----------------------------+---------+--------',
+            ),
+            equalsLineCall(
+              line: '2024-01-01 00:00:00.000Z    |         | Log message 1',
+            ),
+            equalsLineCall(
+              line: '2024-01-01 00:00:00.000Z    |         | Log message 2',
+            ),
+            equalsLineCall(
+              line: '-- End of log stream -- 2 records (limit 50) --',
+            ),
+          ]),
+        );
+      });
+    });
+
+    group('when calling with --utc flag and --until duration value', () {
+      setUp(() async {
+        when(() => client.logs.fetchRecords(
+              cloudProjectId: projectId,
+              beforeTime: any(named: 'beforeTime'),
+              afterTime: any(named: 'afterTime'),
+              limit: 50,
+            )).thenAnswer((final _) => Stream.fromIterable(mockRecords));
+
+        await cli.run([
+          'log',
+          '--until',
           '1m',
           '--utc',
           '--project',

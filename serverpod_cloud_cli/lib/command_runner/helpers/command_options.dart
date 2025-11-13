@@ -119,3 +119,63 @@ class UserEmailOption extends StringOption {
               '${argPos == 0 ? ' Can be passed as the first argument.' : argPos == 1 ? ' Can be passed as the second argument.' : ''}',
         );
 }
+
+class DateTimeOrDurationParser extends ValueParser<DateTime> {
+  const DateTimeOrDurationParser();
+
+  @override
+  DateTime parse(final String value) {
+    final result = _parseDateTimeOrDuration(value);
+    if (result == null) {
+      throw FormatException(
+        'Invalid value: expected ISO date string (e.g., "2024-01-15T10:30:00Z") '
+        'or duration string (e.g., "5m", "3h", "1d"). Value was: "$value"',
+      );
+    }
+    return result;
+  }
+
+  DateTime? _parseDateTimeOrDuration(final String value) {
+    try {
+      return const DateTimeParser().parse(value);
+    } on FormatException {
+      final duration = _tryParseDuration(value);
+      if (duration != null) {
+        return DateTime.now().subtract(duration);
+      }
+      return null;
+    }
+  }
+
+  Duration? _tryParseDuration(final String value) {
+    try {
+      return const DurationParser().parse(value);
+    } on FormatException {
+      return null;
+    }
+  }
+}
+
+class DateTimeOrDurationOption extends ComparableValueOption<DateTime> {
+  const DateTimeOrDurationOption({
+    super.argName,
+    super.argAliases,
+    super.argAbbrev,
+    super.argPos,
+    super.envName,
+    super.configKey,
+    super.fromCustom,
+    super.fromDefault,
+    super.defaultsTo,
+    super.helpText,
+    super.valueHelp = 'YYYY-MM-DDtHH:MM:SSz or duration[us|ms|s|m|h|d]',
+    super.allowedHelp,
+    super.group,
+    super.allowedValues,
+    super.customValidator,
+    super.mandatory,
+    super.hide,
+    super.min,
+    super.max,
+  }) : super(valueParser: const DateTimeOrDurationParser());
+}

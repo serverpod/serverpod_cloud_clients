@@ -177,9 +177,8 @@ commands:
       --limit=: "The maximum number of log records to fetch."
       -u, --utc: "Display timestamps in UTC timezone instead of local."
       --no-utc: "Display timestamps in UTC timezone instead of local."
-      -r, --recent=: "Fetch records from the recent period length; s (seconds) by default. Can also be specified as the first argument."
-      --until=: "Fetch records from before this timestamp."
-      --since=: "Fetch records from after this timestamp."
+      --until=: "Fetch records from before this timestamp. Accepts ISO date string (e.g., \"2024-01-15T10:30:00Z\") or duration string (e.g., \"5m\", \"3h\", \"1d\"). Can also be specified as the first argument."
+      --since=: "Fetch records from after this timestamp. Accepts ISO date string (e.g., \"2024-01-15T10:30:00Z\") or duration string (e.g., \"5m\", \"3h\", \"1d\")."
       --tail: "Tail the log and get real time updates."
     exclusiveFlags:
       - [utc, no-utc]
