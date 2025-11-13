@@ -14,8 +14,7 @@ persistentFlags:
   --version: "Prints the version of the Serverpod Cloud CLI."
   --token=: "The authentication token to use for the current command."
   -d, --project-dir=: "The path to the Serverpod Cloud project server directory."
-  --project-config-file=: "The path to the Serverpod Cloud project configuration file."
-  --project-config-content=: "Override the scloud project configuration with a YAML string."
+  --project-config-file=: "The path to the Serverpod Cloud project configuration file (defaults to <server-package>/scloud.yaml)"
   --timeout=: "The timeout for the connection to the Serverpod Cloud API."
   --yes: "Automatically accept confirmation prompts. For use in non-interactive environments."
 exclusiveFlags:

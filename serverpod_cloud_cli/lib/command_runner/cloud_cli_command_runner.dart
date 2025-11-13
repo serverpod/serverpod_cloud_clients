@@ -417,14 +417,8 @@ enum GlobalOption<V> implements OptionDefinition<V> {
       argName: 'project-config-file',
       envName: 'SERVERPOD_CLOUD_PROJECT_CONFIG_FILE',
       fromCustom: _projectConfigFileFinder,
-      helpText: 'The path to the Serverpod Cloud project configuration file.',
-    ),
-  ),
-  projectConfigContent(
-    StringOption(
-      argName: 'project-config-content',
-      envName: 'SERVERPOD_CLOUD_PROJECT_CONFIG_CONTENT',
-      helpText: 'Override the scloud project configuration with a YAML string.',
+      helpText:
+          'The path to the Serverpod Cloud project configuration file (defaults to <server-package>/scloud.yaml)',
     ),
   ),
   connectionTimeout(
@@ -446,6 +440,14 @@ enum GlobalOption<V> implements OptionDefinition<V> {
   ),
 
   // Developer options and flags
+  projectConfigContent(
+    StringOption(
+      argName: 'project-config-content',
+      envName: 'SERVERPOD_CLOUD_PROJECT_CONFIG_CONTENT',
+      helpText: 'Override the scloud project configuration with a YAML string.',
+      hide: true,
+    ),
+  ),
   apiServer(
     StringOption(
       argName: 'api-url',
