@@ -1,6 +1,29 @@
 
 # Changelog
 
+## [0.16.0] - 2025-11-13
+
+### Added
+
+- **Auth flow trigger** - Automatically trigger the authentication flow when a user tries to use a command that requires authentication but isn't logged in.
+- **`--show-files` flag** - Introduce a new `--show-files` flag to the `scloud deploy` command to print the file tree that will be uploaded.
+
+### Changed
+
+- **`--before` and `--after` flags** - Rename the `--before` flag to `--until` and the `--after` flag to `--since` for the `scloud log` command.
+- **`--connection-timeout` flag** - Rename the global `--connection-timeout` flag to `--timeout`. The auth flag `--timeout` is renamed to `--time-limit`.
+- **`--skip-confirmation` flag** - Rename the global `--skip-confirmation` flag to `--yes`.
+- **`deployment` command** - Move the `scloud status deploy` command to a new `scloud deployment show` command.
+- **`--scloud-dir` flag** - Rename the global `--scloud-dir` flag to `--config-dir`.
+- **`domain` subcommands** - Rename the `add` subcommand to `attach` and the `remove` subcommand to `detach` for the `scloud domain` command.
+- **`env` command** - Rename the `scloud env` command to `scloud variable`.
+- **`db user` commands** - Move the `create user` and `reset-password` commands under the `user` subcommand of `db`, like `scloud db user create`
+- **Project link documentation** - Clarify the purpose of the `link` command in the help text.
+
+### Fixed
+
+- **Global token flag** - Make the `--token` flag visible for end users.
+
 ## [0.15.0] - 2025-11-10
 
 ### Added
