@@ -26,23 +26,23 @@ abstract class ProductAdminCommands {
     table.writeLines(logger.line);
   }
 
-  static Future<void> procureProduct(
+  static Future<void> procurePlan(
     final Client cloudApiClient, {
     required final CommandLogger logger,
     required final String userEmail,
-    required final String productName,
-    final int? productVersion,
+    required final String planName,
+    final int? planVersion,
     final bool? overrideChecks,
   }) async {
-    await cloudApiClient.adminProcurement.procureProduct(
+    await cloudApiClient.adminProcurement.procurePlan(
       userEmail: userEmail,
-      productName: productName,
-      productVersion: productVersion,
+      planProductName: planName,
+      planProductVersion: planVersion,
       overrideChecks: overrideChecks,
     );
 
     logger.success(
-      'The product has been procured for the user.',
+      'The plan $planName has been procured for the user.',
       newParagraph: true,
     );
   }

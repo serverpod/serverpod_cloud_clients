@@ -74,25 +74,25 @@ class EndpointAdminProcurement extends _i1.EndpointRef {
   @override
   String get name => 'adminProcurement';
 
-  /// Procures a product for a user.
-  /// If [productVersion] is not provided, the latest version is used.
+  /// Procures a plan for a user.
+  /// If [planProductVersion] is not provided, the latest version is used.
   /// If [overrideChecks] is true, the product availability checks are overridden.
   ///
   /// Throws a [NotFoundException] if the user or product is not found.
   /// Throws a [InvalidValueException] if the user has no owner (not fully registered).
-  _i2.Future<void> procureProduct({
+  _i2.Future<void> procurePlan({
     required String userEmail,
-    required String productName,
-    int? productVersion,
+    required String planProductName,
+    int? planProductVersion,
     bool? overrideChecks,
   }) =>
       caller.callServerEndpoint<void>(
         'adminProcurement',
-        'procureProduct',
+        'procurePlan',
         {
           'userEmail': userEmail,
-          'productName': productName,
-          'productVersion': productVersion,
+          'planProductName': planProductName,
+          'planProductVersion': planProductVersion,
           'overrideChecks': overrideChecks,
         },
       );

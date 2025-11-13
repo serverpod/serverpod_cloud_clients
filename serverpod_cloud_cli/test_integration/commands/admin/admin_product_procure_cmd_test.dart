@@ -31,7 +31,7 @@ void main() {
   test(
       'Given admin product procure command when instantiated then requires login',
       () {
-    expect(AdminProcureCommand(logger: logger).requireLogin, isTrue);
+    expect(AdminProcurePlanCommand(logger: logger).requireLogin, isTrue);
   });
 
   group('Given authenticated', () {
@@ -42,10 +42,10 @@ void main() {
     group('when executing admin product procure', () {
       late Future commandResult;
       setUp(() async {
-        when(() => client.adminProcurement.procureProduct(
+        when(() => client.adminProcurement.procurePlan(
               userEmail: any(named: 'userEmail'),
-              productName: any(named: 'productName'),
-              productVersion: any(named: 'productVersion'),
+              planProductName: any(named: 'planProductName'),
+              planProductVersion: any(named: 'planProductVersion'),
               overrideChecks: any(named: 'overrideChecks'),
             )).thenAnswer(
           (final invocation) async => Future.value(),
@@ -54,7 +54,7 @@ void main() {
         commandResult = cli.run([
           'admin',
           'product',
-          'procure',
+          'procure-plan',
           'test@example.com',
           'test-plan',
         ]);
@@ -70,7 +70,7 @@ void main() {
         expect(
           logger.successCalls.first,
           equalsSuccessCall(
-            message: 'The product has been procured for the user.',
+            message: 'The plan test-plan has been procured for the user.',
             newParagraph: true,
           ),
         );
