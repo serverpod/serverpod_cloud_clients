@@ -7,7 +7,6 @@ import 'package:test/test.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/admin_users_commands.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
-import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
 import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/test_command_logger.dart';
@@ -33,35 +32,6 @@ void main() {
   test('Given admin invite-user command when instantiated then requires login',
       () {
     expect(AdminInviteUserCommand(logger: logger).requireLogin, isTrue);
-  });
-
-  group('Given unauthenticated', () {
-    group('when executing admin invite-user', () {
-      late Future commandResult;
-      setUp(() async {
-        commandResult = cli.run([
-          'admin',
-          'invite-user',
-          '--user',
-          'test@example.com',
-        ]);
-      });
-
-      test('then throws exception', () async {
-        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
-      });
-
-      test('then logs error', () async {
-        await commandResult.catchError((final _) {});
-
-        expect(logger.errorCalls, isNotEmpty);
-        expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message: 'This command requires you to be logged in.',
-            ));
-      });
-    });
   });
 
   group('Given authenticated', () {

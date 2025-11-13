@@ -5,9 +5,7 @@ import 'package:test/test.dart';
 
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/project_command.dart';
-import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
-import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 
 import '../../../test_utils/command_logger_matchers.dart';
@@ -34,51 +32,6 @@ void main() {
 
   test('Given project list command when instantiated then requires login', () {
     expect(CloudProjectListCommand(logger: logger).requireLogin, isTrue);
-  });
-
-  group('Given unauthenticated', () {
-    setUp(() async {
-      await keyManager.put('mock-token');
-    });
-
-    setUpAll(() async {
-      when(() => client.projects.listProjectsInfo(
-            includeLatestDeployAttemptTime:
-                any(named: 'includeLatestDeployAttemptTime'),
-          )).thenThrow(ServerpodClientUnauthorized());
-    });
-
-    tearDownAll(() {
-      reset(client.projects);
-    });
-
-    group('when executing project list', () {
-      late Future commandResult;
-      setUp(() async {
-        commandResult = cli.run([
-          'project',
-          'list',
-        ]);
-      });
-
-      test('then throws exception', () async {
-        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
-      });
-
-      test('then logs error', () async {
-        try {
-          await commandResult;
-        } catch (_) {}
-
-        expect(logger.errorCalls, isNotEmpty);
-        expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message:
-                  'The credentials for this session seem to no longer be valid.',
-            ));
-      });
-    });
   });
 
   group('Given authenticated', () {

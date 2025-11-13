@@ -1,20 +1,21 @@
 @Tags(['concurrency_one']) // due to current directory manipulation
 library;
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:config/config.dart';
+import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
+import 'package:uuid/uuid.dart';
 
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_auth_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 
-import '../../test_utils/command_logger_matchers.dart';
 import '../../test_utils/test_command_logger.dart';
 
 class CommandThatRequiresLogin extends CloudCliCommand {
@@ -93,30 +94,49 @@ void main() {
 
   test(
       'Given command that requires login and user is not logged in '
-      'when calling run then throws exception', () async {
-    await expectLater(
-      runner.run(
-        [
-          commandThatRequiresLogin.name,
-          '--config-dir',
-          testCacheFolderPath,
-        ],
-      ),
-      throwsA(isA<ErrorExitException>()),
+      'when calling run then auto-auth is triggered and completes successfully',
+      () async {
+    const testToken = 'myTestToken';
+    late Completer tokenSent;
+    tokenSent = Completer();
+    final loggerFuture = logger.waitForLog();
+    unawaited(loggerFuture.then((final _) async {
+      assert(logger.infoCalls.isNotEmpty, 'Expected log info messages.');
+      final loggedMessage = logger.infoCalls.first.message;
+      final splitMessage = loggedMessage.split('callback=');
+      assert(splitMessage.length == 2, 'Expected callback URL in log message.');
+
+      final callbackUrl = Uri.parse(Uri.decodeFull(splitMessage[1]));
+      final urlWithToken =
+          callbackUrl.replace(queryParameters: {'token': testToken});
+      final response = await http.get(urlWithToken);
+      assert(response.statusCode == 200,
+          'Expected token response to have status code 200.');
+      tokenSent.complete();
+    }));
+
+    final cliOnDone = runner.run(
+      [
+        commandThatRequiresLogin.name,
+        '--no-browser',
+        '--config-dir',
+        testCacheFolderPath,
+      ],
     );
 
-    expect(
-      logger.errorCalls.first,
-      equalsErrorCall(
-        message: 'This command requires you to be logged in.',
-      ),
+    await tokenSent.future;
+
+    await expectLater(cliOnDone, completes);
+
+    final storedCloudData =
+        await ResourceManager.tryFetchServerpodCloudAuthData(
+      logger: logger,
+      localStoragePath: testCacheFolderPath,
     );
-    expect(
-      logger.terminalCommandCalls.first,
-      equalsTerminalCommandCall(
-        message: 'Please run the login command to authenticate and try again:',
-        command: 'scloud auth login',
-      ),
+    expect(storedCloudData?.token, testToken);
+
+    await ResourceManager.removeServerpodCloudAuthData(
+      localStoragePath: testCacheFolderPath,
     );
   });
 
@@ -154,5 +174,24 @@ void main() {
       ),
       completes,
     );
+  });
+
+  test(
+      'Given command that requires login and user is not logged in '
+      'when calling run with --help flag then no auth is triggered', () async {
+    await expectLater(
+      runner.run(
+        [
+          commandThatRequiresLogin.name,
+          '--help',
+          '--no-browser',
+          '--config-dir',
+          testCacheFolderPath,
+        ],
+      ),
+      completes,
+      reason: 'The command should complete successfully with --help flag.',
+    );
+    expect(logger.errorCalls, isEmpty);
   });
 }

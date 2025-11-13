@@ -35,34 +35,6 @@ void main() {
     expect(AdminRedeployCommand(logger: logger).requireLogin, isTrue);
   });
 
-  group('Given unauthenticated', () {
-    group('when executing admin redeploy', () {
-      late Future commandResult;
-      setUp(() async {
-        commandResult = cli.run([
-          'admin',
-          'redeploy',
-          'test-project',
-        ]);
-      });
-
-      test('then throws exception', () async {
-        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
-      });
-
-      test('then logs error', () async {
-        await commandResult.catchError((final _) {});
-
-        expect(logger.errorCalls, isNotEmpty);
-        expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message: 'This command requires you to be logged in.',
-            ));
-      });
-    });
-  });
-
   group('Given authenticated', () {
     setUp(() async {
       await keyManager.put('mock-token');

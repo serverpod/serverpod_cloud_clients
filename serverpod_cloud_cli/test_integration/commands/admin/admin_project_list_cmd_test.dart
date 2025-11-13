@@ -7,7 +7,6 @@ import 'package:test/test.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/admin_projects_commands.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
-import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
 import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/test_command_logger.dart';
@@ -33,34 +32,6 @@ void main() {
   test('Given admin project list command when instantiated then requires login',
       () {
     expect(AdminListProjectsCommand(logger: logger).requireLogin, isTrue);
-  });
-
-  group('Given unauthenticated', () {
-    group('when executing admin project list', () {
-      late Future commandResult;
-      setUp(() async {
-        commandResult = cli.run([
-          'admin',
-          'project',
-          'list',
-        ]);
-      });
-
-      test('then throws exception', () async {
-        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
-      });
-
-      test('then logs error', () async {
-        await commandResult.catchError((final _) {});
-
-        expect(logger.errorCalls, isNotEmpty);
-        expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message: 'This command requires you to be logged in.',
-            ));
-      });
-    });
   });
 
   group('Given authenticated', () {

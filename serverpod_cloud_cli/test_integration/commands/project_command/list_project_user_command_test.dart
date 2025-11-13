@@ -8,7 +8,6 @@ import 'package:test/test.dart';
 
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 
 import '../../../test_utils/command_logger_matchers.dart';
@@ -35,36 +34,6 @@ void main() {
 
   test('Given user list command when instantiated then requires login', () {
     expect(ProjectUserListCommand(logger: logger).requireLogin, isTrue);
-  });
-
-  group('Given unauthenticated', () {
-    group('when executing user list', () {
-      late Future commandResult;
-      setUp(() async {
-        commandResult = cli.run([
-          'project',
-          'user',
-          'list',
-          '--project',
-          projectId,
-        ]);
-      });
-
-      test('then throws exception', () async {
-        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
-      });
-
-      test('then logs error', () async {
-        await commandResult.catchError((final _) {});
-
-        expect(logger.errorCalls, isNotEmpty);
-        expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message: 'This command requires you to be logged in.',
-            ));
-      });
-    });
   });
 
   group('Given authenticated', () {

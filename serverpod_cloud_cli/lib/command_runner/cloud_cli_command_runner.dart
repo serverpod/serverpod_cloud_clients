@@ -457,6 +457,15 @@ enum GlobalOption<V> implements OptionDefinition<V> {
       defaultsTo: HostConstants.serverpodCloudApi,
     ),
   ),
+  browserOpt(
+    FlagOption(
+      argName: 'browser',
+      helpText: 'Allow CLI to open browser for logging in.',
+      defaultsTo: true,
+      negatable: true,
+      hide: true,
+    ),
+  ),
   consoleServer(
     StringOption(
       argName: 'console-url',
@@ -499,6 +508,8 @@ class GlobalConfiguration extends Configuration<GlobalOption> {
   }) : super.resolve(options: GlobalOption.values);
 
   bool get quiet => value(GlobalOption.quiet);
+
+  bool get browser => value(GlobalOption.browserOpt);
 
   bool get verbose => value(GlobalOption.verbose);
 

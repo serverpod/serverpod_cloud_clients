@@ -45,66 +45,6 @@ void main() {
     expect(ProjectUserRevokeCommand(logger: logger).requireLogin, isTrue);
   });
 
-  group('Given unauthenticated', () {
-    group('when executing project invite user', () {
-      late Future commandResult;
-      setUp(() async {
-        commandResult = cli.run([
-          'project',
-          'user',
-          'invite',
-          'test@example.com',
-          '--project',
-          projectId,
-        ]);
-      });
-
-      test('then throws exception', () async {
-        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
-      });
-
-      test('then logs error', () async {
-        await commandResult.catchError((final _) {});
-
-        expect(logger.errorCalls, isNotEmpty);
-        expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message: 'This command requires you to be logged in.',
-            ));
-      });
-    });
-
-    group('when executing project revoke user', () {
-      late Future commandResult;
-      setUp(() async {
-        commandResult = cli.run([
-          'project',
-          'user',
-          'revoke',
-          'test@example.com',
-          '--project',
-          projectId,
-        ]);
-      });
-
-      test('then throws exception', () async {
-        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
-      });
-
-      test('then logs error', () async {
-        await commandResult.catchError((final _) {});
-
-        expect(logger.errorCalls, isNotEmpty);
-        expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message: 'This command requires you to be logged in.',
-            ));
-      });
-    });
-  });
-
   group('Given authenticated', () {
     setUp(() async {
       await keyManager.put('mock-token');

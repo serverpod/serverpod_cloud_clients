@@ -45,46 +45,6 @@ void main() {
     expect(CloudProjectLinkCommand(logger: logger).requireLogin, isTrue);
   });
 
-  group('Given unauthenticated and serverpod directory', () {
-    late String testProjectDir;
-
-    setUp(() async {
-      await ProjectFactory.serverpodServerDir().create();
-      testProjectDir = p.join(d.sandbox, ProjectFactory.defaultDirectoryName);
-    });
-
-    group('when executing link', () {
-      late Future commandResult;
-      setUp(() async {
-        commandResult = cli.run([
-          'project',
-          'link',
-          '--project',
-          projectId,
-          '--project-dir',
-          testProjectDir,
-        ]);
-      });
-
-      test('then throws exception', () async {
-        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
-      });
-
-      test('then logs error', () async {
-        try {
-          await commandResult;
-        } catch (_) {}
-
-        expect(logger.errorCalls, isNotEmpty);
-        expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message: 'This command requires you to be logged in.',
-            ));
-      });
-    });
-  });
-
   group('Given authenticated', () {
     setUp(() async {
       await keyManager.put('mock-token');

@@ -1,12 +1,8 @@
-import 'dart:async';
-
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/commands/auth/auth_login.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
-import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_auth_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
-import 'package:serverpod_cloud_cli/util/browser_launcher.dart';
-import 'package:serverpod_cloud_cli/util/listener_server.dart';
 
 import 'categories.dart';
 
@@ -89,7 +85,6 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
     final openBrowser = commandConfig.value(LoginCommandOption.browserOpt);
 
     final localStoragePath = globalConfiguration.scloudDir;
-    final serverAddress = globalConfiguration.consoleServer;
 
     final storedCloudData =
         await ResourceManager.tryFetchServerpodCloudAuthData(
@@ -108,58 +103,14 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
       throw FailureException();
     }
 
-    final cloudServer = Uri.parse(serverAddress).replace(
-      path: signInPath,
-    );
-
-    final callbackUrlFuture = Completer<Uri>();
-    final tokenFuture = ListenerServer.listenForAuthenticationToken(
-      onConnected: (final Uri callbackUrl) =>
-          callbackUrlFuture.complete(callbackUrl),
-      timeLimit: timeLimit,
+    await AuthLoginCommands.login(
       logger: logger,
+      globalConfig: globalConfiguration,
+      timeLimit: timeLimit,
+      persistent: persistent,
+      openBrowser: openBrowser,
+      signInPath: signInPath,
     );
-
-    final callbackUrl = await callbackUrlFuture.future;
-    final signInUrl = cloudServer.replace(
-      queryParameters: {'callback': callbackUrl.toString()},
-    );
-    logger.info(
-        'Please log in to Serverpod Cloud using the opened browser or through this link:\n$signInUrl');
-
-    if (openBrowser) {
-      try {
-        await BrowserLauncher.openUrl(signInUrl);
-      } on Exception catch (e) {
-        logger.error(
-          'Failed to open browser',
-          exception: e,
-        );
-      }
-    }
-
-    await logger.progress('Waiting for authentication to complete...',
-        () async {
-      final token = await tokenFuture;
-      return token != null;
-    });
-
-    final token = await tokenFuture;
-    if (token == null) {
-      throw FailureException(
-        error: 'Failed to get authentication token.',
-        hint: 'Please try to log in again.',
-      );
-    }
-
-    if (persistent) {
-      await ResourceManager.storeServerpodCloudAuthData(
-        authData: ServerpodCloudAuthData(token),
-        localStoragePath: localStoragePath.path,
-      );
-    }
-
-    logger.success('Successfully logged in to Serverpod cloud.');
   }
 }
 

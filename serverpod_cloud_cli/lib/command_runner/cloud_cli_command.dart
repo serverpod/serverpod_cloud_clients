@@ -5,6 +5,7 @@ import 'package:cli_tools/logger.dart' show TextLogType;
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
+import 'package:serverpod_cloud_cli/commands/auth/auth_login.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart'
@@ -59,19 +60,23 @@ See the full documentation at: https://docs.serverpod.cloud/references/cli/comma
   /// Runs this command. Subclasses should instead override [runWithConfig].
   @override
   Future<void> run() async {
-    final apiCloudClient = runner.serviceProvider.cloudApiClient;
+    final client = runner.serviceProvider.cloudApiClient;
+    final isAuthenticated =
+        await client.authenticationKeyManager?.isAuthenticated == true;
 
-    if (requireLogin &&
-        await apiCloudClient.authenticationKeyManager?.isAuthenticated !=
-            true) {
-      logger.error('This command requires you to be logged in.');
-      logger.terminalCommand(
-        message: 'Please run the login command to authenticate and try again:',
-        'scloud auth login',
+    if (requireLogin && !isAuthenticated) {
+      await AuthLoginCommands.login(
+        logger: logger,
+        globalConfig: globalConfiguration,
+        persistent: true,
+        openBrowser: globalConfiguration.browser,
       );
-      throw ErrorExitException('This command requires you to be logged in.');
     }
 
+    await _runCommand();
+  }
+
+  Future<void> _runCommand() async {
     try {
       await super.run();
     } on FailureException catch (e, stackTrace) {
