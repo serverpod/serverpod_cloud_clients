@@ -1,6 +1,12 @@
 
 # Changelog
 
+## [0.16.1] - 2025-11-19
+
+### Fixed
+
+- **Dart version validation** - Allow Dart 3.9 and 3.10 to be uploaded.
+
 ## [0.16.0] - 2025-11-13
 
 ### Added
