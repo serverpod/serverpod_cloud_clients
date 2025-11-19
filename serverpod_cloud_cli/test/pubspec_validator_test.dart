@@ -65,6 +65,26 @@ dependencies:
   });
 
   test(
+      'Given a pubspec with a serverpod dependency and sdk version just above the supported range, when the projectDependencyIssues method is called, then the result contains the sdk error',
+      () {
+    final pubspec = TenantProjectPubspec(Pubspec.parse('''
+name: my_project
+environment:
+  sdk: '3.11.0'
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+'''));
+
+    final result = pubspec.projectDependencyIssues();
+    expect(
+      result,
+      isNotEmpty,
+      reason: 'Version was allowed but expected to be rejected',
+    );
+    expect(result.first, contains('Unsupported sdk version constraint'));
+  });
+
+  test(
       'Given a pubspec with a serverpod dependency and a too old sdk version, when the projectDependencyIssues method is called, then the result contains the sdk error',
       () {
     final pubspec = TenantProjectPubspec(Pubspec.parse('''
