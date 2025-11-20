@@ -6,5 +6,6 @@ export 'billing/payment_setup_intent_builder.dart';
 export 'role_builder.dart';
 export 'project_builder.dart';
 export 'project_info_builder.dart';
+export 'subscription_info_builder.dart';
 export 'user_builder.dart';
 export 'user_role_membership_builder.dart';
