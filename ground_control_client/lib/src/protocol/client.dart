@@ -1084,6 +1084,25 @@ class EndpointStatus extends _i1.EndpointRef {
       );
 }
 
+/// Bespoke endpoint for the 2025 Hackathon.
+/// {@category Endpoint}
+class EndpointHackathon extends _i1.EndpointRef {
+  EndpointHackathon(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'hackathon';
+
+  /// Invites a user to the 2025 Serverpod Hackathon.
+  ///
+  /// If the user email already exists, a [DuplicateEntryException] is thrown.
+  _i2.Future<void> inviteUser({required String email}) =>
+      caller.callServerEndpoint<void>(
+        'hackathon',
+        'inviteUser',
+        {'email': email},
+      );
+}
+
 /// Endpoint for managing users.
 /// {@category Endpoint}
 class EndpointUsers extends _i1.EndpointRef {
@@ -1172,6 +1191,7 @@ class Client extends _i1.ServerpodClientShared {
     roles = EndpointRoles(this);
     secrets = EndpointSecrets(this);
     status = EndpointStatus(this);
+    hackathon = EndpointHackathon(this);
     users = EndpointUsers(this);
     modules = Modules(this);
   }
@@ -1210,6 +1230,8 @@ class Client extends _i1.ServerpodClientShared {
 
   late final EndpointStatus status;
 
+  late final EndpointHackathon hackathon;
+
   late final EndpointUsers users;
 
   late final Modules modules;
@@ -1233,6 +1255,7 @@ class Client extends _i1.ServerpodClientShared {
         'roles': roles,
         'secrets': secrets,
         'status': status,
+        'hackathon': hackathon,
         'users': users,
       };
 
