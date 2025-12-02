@@ -45,7 +45,7 @@ import 'package:ground_control_client/src/protocol/features/custom_domains/model
     as _i18;
 import 'package:ground_control_client/src/protocol/features/custom_domains/models/domain_name_status.dart'
     as _i19;
-import 'package:ground_control_client/src/protocol/features/environment_variables/models/environment_variable.dart'
+import 'package:ground_control_client/src/protocol/domains/environment_variables/models/variable.dart'
     as _i20;
 import 'package:ground_control_client/src/protocol/domains/logs/models/log_record.dart'
     as _i21;
