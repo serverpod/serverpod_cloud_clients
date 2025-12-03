@@ -425,19 +425,11 @@ The default API domain will be: <project-id>.api.serverpod.space
 
     logger.info(' '); // blank line
 
-    String? attemptId;
-    do {
-      try {
-        attemptId = await StatusFeature.getDeployAttemptId(
-          cloudApiClient,
-          cloudCapsuleId: projectId,
-          attemptNumber: 0,
-        );
-      } on NotFoundException catch (_) {
-        logger.debug('Waiting for deployment status...');
-        await Future.delayed(const Duration(seconds: 5));
-      }
-    } while (attemptId == null);
+    final attemptId = await _getDeployAttemptId(
+      cloudApiClient,
+      logger,
+      projectId,
+    );
 
     await StatusCommands.showDeploymentStatus(
       cloudApiClient,
@@ -449,6 +441,42 @@ The default API domain will be: <project-id>.api.serverpod.space
       'scloud deployment show -p $projectId',
       message: 'Run this command to see the current deployment status:',
     );
+  }
+
+  static Future<String> _getDeployAttemptId(
+    final Client cloudApiClient,
+    final CommandLogger logger,
+    final String projectId,
+  ) async {
+    String? attemptId;
+    await logger.progress(
+      'Waiting for deployment status.',
+      () async {
+        for (int i = 0; i < 3; i++) {
+          try {
+            attemptId = await StatusFeature.getDeployAttemptId(
+              cloudApiClient,
+              cloudCapsuleId: projectId,
+              attemptNumber: 0,
+            );
+            return true;
+          } on NotFoundException catch (_) {
+            logger.debug('Waiting for deployment status...');
+            await Future.delayed(const Duration(seconds: 5));
+          }
+        }
+        return false;
+      },
+    );
+    final id = attemptId;
+    if (id == null) {
+      throw FailureException(
+        error: 'Failed to get deployment status.',
+        hint: 'Run this command to see recent deployments: '
+            'scloud deployment list',
+      );
+    }
+    return id;
   }
 }
 
