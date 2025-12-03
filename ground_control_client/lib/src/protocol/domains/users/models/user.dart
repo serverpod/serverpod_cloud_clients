@@ -14,6 +14,7 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/users/models/user_account_status.dart' as _i2;
 import '../../../features/projects/models/user_role_membership.dart' as _i3;
 import '../../../domains/billing/models/owner.dart' as _i4;
+import '../../../domains/users/models/user_label_mapping.dart' as _i5;
 
 /// Represents a Serverpod cloud customer user, invited or registered.
 abstract class User implements _i1.SerializableModel {
@@ -28,6 +29,7 @@ abstract class User implements _i1.SerializableModel {
     this.memberships,
     this.ownerId,
     this.owner,
+    this.labels,
   })  : createdAt = createdAt ?? DateTime.now(),
         updatedAt = updatedAt ?? DateTime.now(),
         accountStatus = accountStatus ?? _i2.UserAccountStatus.registered;
@@ -43,6 +45,7 @@ abstract class User implements _i1.SerializableModel {
     List<_i3.UserRoleMembership>? memberships,
     _i1.UuidValue? ownerId,
     _i4.Owner? owner,
+    List<_i5.UserLabelMapping>? labels,
   }) = _UserImpl;
 
   factory User.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -70,6 +73,10 @@ abstract class User implements _i1.SerializableModel {
           ? null
           : _i4.Owner.fromJson(
               (jsonSerialization['owner'] as Map<String, dynamic>)),
+      labels: (jsonSerialization['labels'] as List?)
+          ?.map(
+              (e) => _i5.UserLabelMapping.fromJson((e as Map<String, dynamic>)))
+          .toList(),
     );
   }
 
@@ -103,6 +110,9 @@ abstract class User implements _i1.SerializableModel {
   /// The owner container for all projects and billing info managed by this user.
   _i4.Owner? owner;
 
+  /// The labels of the user.
+  List<_i5.UserLabelMapping>? labels;
+
   /// Returns a shallow copy of this [User]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
@@ -117,6 +127,7 @@ abstract class User implements _i1.SerializableModel {
     List<_i3.UserRoleMembership>? memberships,
     _i1.UuidValue? ownerId,
     _i4.Owner? owner,
+    List<_i5.UserLabelMapping>? labels,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -132,6 +143,8 @@ abstract class User implements _i1.SerializableModel {
         'memberships': memberships?.toJson(valueToJson: (v) => v.toJson()),
       if (ownerId != null) 'ownerId': ownerId?.toJson(),
       if (owner != null) 'owner': owner?.toJson(),
+      if (labels != null)
+        'labels': labels?.toJson(valueToJson: (v) => v.toJson()),
     };
   }
 
@@ -155,6 +168,7 @@ class _UserImpl extends User {
     List<_i3.UserRoleMembership>? memberships,
     _i1.UuidValue? ownerId,
     _i4.Owner? owner,
+    List<_i5.UserLabelMapping>? labels,
   }) : super._(
           id: id,
           createdAt: createdAt,
@@ -166,6 +180,7 @@ class _UserImpl extends User {
           memberships: memberships,
           ownerId: ownerId,
           owner: owner,
+          labels: labels,
         );
 
   /// Returns a shallow copy of this [User]
@@ -183,6 +198,7 @@ class _UserImpl extends User {
     Object? memberships = _Undefined,
     Object? ownerId = _Undefined,
     Object? owner = _Undefined,
+    Object? labels = _Undefined,
   }) {
     return User(
       id: id is int? ? id : this.id,
@@ -197,6 +213,9 @@ class _UserImpl extends User {
           : this.memberships?.map((e0) => e0.copyWith()).toList(),
       ownerId: ownerId is _i1.UuidValue? ? ownerId : this.ownerId,
       owner: owner is _i4.Owner? ? owner : this.owner?.copyWith(),
+      labels: labels is List<_i5.UserLabelMapping>?
+          ? labels
+          : this.labels?.map((e0) => e0.copyWith()).toList(),
     );
   }
 }
