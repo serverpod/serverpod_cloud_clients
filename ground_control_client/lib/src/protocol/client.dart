@@ -51,22 +51,24 @@ import 'package:ground_control_client/src/protocol/domains/logs/models/log_recor
     as _i21;
 import 'package:ground_control_client/src/protocol/domains/products/models/subscription_info.dart'
     as _i22;
-import 'package:ground_control_client/src/protocol/features/databases/models/database_connection.dart'
+import 'package:ground_control_client/src/protocol/domains/products/models/plan_info.dart'
     as _i23;
-import 'package:ground_control_client/src/protocol/features/projects/models/project_config.dart'
+import 'package:ground_control_client/src/protocol/features/databases/models/database_connection.dart'
     as _i24;
-import 'package:ground_control_client/src/protocol/features/projects/models/role.dart'
+import 'package:ground_control_client/src/protocol/features/projects/models/project_config.dart'
     as _i25;
-import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
+import 'package:ground_control_client/src/protocol/features/projects/models/role.dart'
     as _i26;
-import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
+import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
     as _i27;
-import 'package:serverpod_auth_migration_client/serverpod_auth_migration_client.dart'
+import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
     as _i28;
-import 'package:serverpod_auth_bridge_client/serverpod_auth_bridge_client.dart'
+import 'package:serverpod_auth_migration_client/serverpod_auth_migration_client.dart'
     as _i29;
-import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i30;
-import 'protocol.dart' as _i31;
+import 'package:serverpod_auth_bridge_client/serverpod_auth_bridge_client.dart'
+    as _i30;
+import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i31;
+import 'protocol.dart' as _i32;
 
 /// Endpoint for global administrator to handle procurement for users.
 /// {@category Endpoint}
@@ -731,7 +733,14 @@ class EndpointPlans extends _i1.EndpointRef {
         },
       );
 
-  /// Fetches the names of the available subscription plans.
+  _i2.Future<_i23.PlanInfo> getPlanInfo({required String planProductName}) =>
+      caller.callServerEndpoint<_i23.PlanInfo>(
+        'plans',
+        'getPlanInfo',
+        {'planProductName': planProductName},
+      );
+
+  /// Fetches the names of all the subscription plans.
   _i2.Future<List<String>> listPlanNames() =>
       caller.callServerEndpoint<List<String>>(
         'plans',
@@ -748,9 +757,9 @@ class EndpointDatabase extends _i1.EndpointRef {
   @override
   String get name => 'database';
 
-  _i2.Future<_i23.DatabaseConnection> getConnectionDetails(
+  _i2.Future<_i24.DatabaseConnection> getConnectionDetails(
           {required String cloudCapsuleId}) =>
-      caller.callServerEndpoint<_i23.DatabaseConnection>(
+      caller.callServerEndpoint<_i24.DatabaseConnection>(
         'database',
         'getConnectionDetails',
         {'cloudCapsuleId': cloudCapsuleId},
@@ -878,9 +887,9 @@ class EndpointProjects extends _i1.EndpointRef {
         {'cloudProjectId': cloudProjectId},
       );
 
-  _i2.Future<_i24.ProjectConfig> fetchProjectConfig(
+  _i2.Future<_i25.ProjectConfig> fetchProjectConfig(
           {required String cloudProjectId}) =>
-      caller.callServerEndpoint<_i24.ProjectConfig>(
+      caller.callServerEndpoint<_i25.ProjectConfig>(
         'projects',
         'fetchProjectConfig',
         {'cloudProjectId': cloudProjectId},
@@ -981,9 +990,9 @@ class EndpointRoles extends _i1.EndpointRef {
   String get name => 'roles';
 
   /// Fetches the user roles for a project.
-  _i2.Future<List<_i25.Role>> fetchRolesForProject(
+  _i2.Future<List<_i26.Role>> fetchRolesForProject(
           {required String cloudProjectId}) =>
-      caller.callServerEndpoint<List<_i25.Role>>(
+      caller.callServerEndpoint<List<_i26.Role>>(
         'roles',
         'fetchRolesForProject',
         {'cloudProjectId': cloudProjectId},
@@ -1055,11 +1064,11 @@ class EndpointStatus extends _i1.EndpointRef {
       );
 
   /// Gets the specified deploy attempt status of the a capsule.
-  _i2.Future<List<_i26.DeployAttemptStage>> getDeployAttemptStatus({
+  _i2.Future<List<_i27.DeployAttemptStage>> getDeployAttemptStatus({
     required String cloudCapsuleId,
     required String attemptId,
   }) =>
-      caller.callServerEndpoint<List<_i26.DeployAttemptStage>>(
+      caller.callServerEndpoint<List<_i27.DeployAttemptStage>>(
         'status',
         'getDeployAttemptStatus',
         {
@@ -1130,20 +1139,20 @@ class EndpointUsers extends _i1.EndpointRef {
 
 class Modules {
   Modules(Client client) {
-    serverpod_auth_idp = _i27.Caller(client);
-    serverpod_auth_migration = _i28.Caller(client);
-    serverpod_auth_bridge = _i29.Caller(client);
-    auth = _i30.Caller(client);
+    serverpod_auth_idp = _i28.Caller(client);
+    serverpod_auth_migration = _i29.Caller(client);
+    serverpod_auth_bridge = _i30.Caller(client);
+    auth = _i31.Caller(client);
     serverpod_auth_core = _i10.Caller(client);
   }
 
-  late final _i27.Caller serverpod_auth_idp;
+  late final _i28.Caller serverpod_auth_idp;
 
-  late final _i28.Caller serverpod_auth_migration;
+  late final _i29.Caller serverpod_auth_migration;
 
-  late final _i29.Caller serverpod_auth_bridge;
+  late final _i30.Caller serverpod_auth_bridge;
 
-  late final _i30.Caller auth;
+  late final _i31.Caller auth;
 
   late final _i10.Caller serverpod_auth_core;
 }
@@ -1164,7 +1173,7 @@ class Client extends _i1.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
           host,
-          _i31.Protocol(),
+          _i32.Protocol(),
           securityContext: securityContext,
           authenticationKeyManager: authenticationKeyManager,
           streamingConnectionTimeout: streamingConnectionTimeout,
