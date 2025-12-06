@@ -14,6 +14,7 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/billing/models/owner.dart' as _i2;
 import '../../../features/projects/models/role.dart' as _i3;
 import '../../../domains/capsules/models/capsule.dart' as _i4;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i5;
 
 /// Represents a project of a tenant.
 /// Typically a serverpod project.
@@ -28,8 +29,8 @@ abstract class Project implements _i1.SerializableModel {
     this.owner,
     this.roles,
     this.capsules,
-  })  : createdAt = createdAt ?? DateTime.now(),
-        updatedAt = updatedAt ?? DateTime.now();
+  }) : createdAt = createdAt ?? DateTime.now(),
+       updatedAt = updatedAt ?? DateTime.now();
 
   factory Project({
     int? id,
@@ -46,26 +47,32 @@ abstract class Project implements _i1.SerializableModel {
   factory Project.fromJson(Map<String, dynamic> jsonSerialization) {
     return Project(
       id: jsonSerialization['id'] as int?,
-      createdAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
-      updatedAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
+      createdAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['createdAt'],
+      ),
+      updatedAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['updatedAt'],
+      ),
       archivedAt: jsonSerialization['archivedAt'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['archivedAt']),
       cloudProjectId: jsonSerialization['cloudProjectId'] as String,
-      ownerId:
-          _i1.UuidValueJsonExtension.fromJson(jsonSerialization['ownerId']),
+      ownerId: _i1.UuidValueJsonExtension.fromJson(
+        jsonSerialization['ownerId'],
+      ),
       owner: jsonSerialization['owner'] == null
           ? null
-          : _i2.Owner.fromJson(
-              (jsonSerialization['owner'] as Map<String, dynamic>)),
-      roles: (jsonSerialization['roles'] as List?)
-          ?.map((e) => _i3.Role.fromJson((e as Map<String, dynamic>)))
-          .toList(),
-      capsules: (jsonSerialization['capsules'] as List?)
-          ?.map((e) => _i4.Capsule.fromJson((e as Map<String, dynamic>)))
-          .toList(),
+          : _i5.Protocol().deserialize<_i2.Owner>(jsonSerialization['owner']),
+      roles: jsonSerialization['roles'] == null
+          ? null
+          : _i5.Protocol().deserialize<List<_i3.Role>>(
+              jsonSerialization['roles'],
+            ),
+      capsules: jsonSerialization['capsules'] == null
+          ? null
+          : _i5.Protocol().deserialize<List<_i4.Capsule>>(
+              jsonSerialization['capsules'],
+            ),
     );
   }
 
@@ -114,6 +121,7 @@ abstract class Project implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'Project',
       if (id != null) 'id': id,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
@@ -147,16 +155,16 @@ class _ProjectImpl extends Project {
     List<_i3.Role>? roles,
     List<_i4.Capsule>? capsules,
   }) : super._(
-          id: id,
-          createdAt: createdAt,
-          updatedAt: updatedAt,
-          archivedAt: archivedAt,
-          cloudProjectId: cloudProjectId,
-          ownerId: ownerId,
-          owner: owner,
-          roles: roles,
-          capsules: capsules,
-        );
+         id: id,
+         createdAt: createdAt,
+         updatedAt: updatedAt,
+         archivedAt: archivedAt,
+         cloudProjectId: cloudProjectId,
+         ownerId: ownerId,
+         owner: owner,
+         roles: roles,
+         capsules: capsules,
+       );
 
   /// Returns a shallow copy of this [Project]
   /// with some or all fields replaced by the given arguments.

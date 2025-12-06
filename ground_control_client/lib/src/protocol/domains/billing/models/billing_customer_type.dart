@@ -24,7 +24,8 @@ enum BillingCustomerType implements _i1.SerializableModel {
         return BillingCustomerType.business;
       default:
         throw ArgumentError(
-            'Value "$name" cannot be converted to "BillingCustomerType"');
+          'Value "$name" cannot be converted to "BillingCustomerType"',
+        );
     }
   }
 

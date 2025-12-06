@@ -30,7 +30,8 @@ enum ServerpodRegion implements _i1.SerializableModel {
         return ServerpodRegion.asia;
       default:
         throw ArgumentError(
-            'Value "$index" cannot be converted to "ServerpodRegion"');
+          'Value "$index" cannot be converted to "ServerpodRegion"',
+        );
     }
   }
 

@@ -13,6 +13,7 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../features/databases/models/database_provider.dart' as _i2;
 import '../../../features/databases/models/database_connection.dart' as _i3;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 abstract class DatabaseResource implements _i1.SerializableModel {
   DatabaseResource._({
@@ -37,9 +38,11 @@ abstract class DatabaseResource implements _i1.SerializableModel {
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
       providerId: jsonSerialization['providerId'] as String,
       provider: _i2.DatabaseProvider.fromJson(
-          (jsonSerialization['provider'] as String)),
-      connection: _i3.DatabaseConnection.fromJson(
-          (jsonSerialization['connection'] as Map<String, dynamic>)),
+        (jsonSerialization['provider'] as String),
+      ),
+      connection: _i4.Protocol().deserialize<_i3.DatabaseConnection>(
+        jsonSerialization['connection'],
+      ),
     );
   }
 
@@ -69,6 +72,7 @@ abstract class DatabaseResource implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'DatabaseResource',
       if (id != null) 'id': id,
       'cloudCapsuleId': cloudCapsuleId,
       'providerId': providerId,
@@ -93,12 +97,12 @@ class _DatabaseResourceImpl extends DatabaseResource {
     required _i2.DatabaseProvider provider,
     required _i3.DatabaseConnection connection,
   }) : super._(
-          id: id,
-          cloudCapsuleId: cloudCapsuleId,
-          providerId: providerId,
-          provider: provider,
-          connection: connection,
-        );
+         id: id,
+         cloudCapsuleId: cloudCapsuleId,
+         providerId: providerId,
+         provider: provider,
+         connection: connection,
+       );
 
   /// Returns a shallow copy of this [DatabaseResource]
   /// with some or all fields replaced by the given arguments.

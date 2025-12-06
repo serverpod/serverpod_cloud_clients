@@ -39,14 +39,17 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
 
   factory SubscriptionInfo.fromJson(Map<String, dynamic> jsonSerialization) {
     return SubscriptionInfo(
-      createdAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
-      startDate:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['startDate']),
+      createdAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['createdAt'],
+      ),
+      startDate: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['startDate'],
+      ),
       trialEndDate: jsonSerialization['trialEndDate'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(
-              jsonSerialization['trialEndDate']),
+              jsonSerialization['trialEndDate'],
+            ),
       subscriptionId: jsonSerialization['subscriptionId'] as String,
       planProductId: jsonSerialization['planProductId'] as String,
       planName: jsonSerialization['planName'] as String,
@@ -95,6 +98,7 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'SubscriptionInfo',
       'createdAt': createdAt.toJson(),
       'startDate': startDate.toJson(),
       if (trialEndDate != null) 'trialEndDate': trialEndDate?.toJson(),
@@ -125,15 +129,15 @@ class _SubscriptionInfoImpl extends SubscriptionInfo {
     String? planDescription,
     int? projectsLimit,
   }) : super._(
-          createdAt: createdAt,
-          startDate: startDate,
-          trialEndDate: trialEndDate,
-          subscriptionId: subscriptionId,
-          planProductId: planProductId,
-          planName: planName,
-          planDescription: planDescription,
-          projectsLimit: projectsLimit,
-        );
+         createdAt: createdAt,
+         startDate: startDate,
+         trialEndDate: trialEndDate,
+         subscriptionId: subscriptionId,
+         planProductId: planProductId,
+         planName: planName,
+         planDescription: planDescription,
+         projectsLimit: projectsLimit,
+       );
 
   /// Returns a shallow copy of this [SubscriptionInfo]
   /// with some or all fields replaced by the given arguments.
@@ -152,13 +156,15 @@ class _SubscriptionInfoImpl extends SubscriptionInfo {
     return SubscriptionInfo(
       createdAt: createdAt ?? this.createdAt,
       startDate: startDate ?? this.startDate,
-      trialEndDate:
-          trialEndDate is DateTime? ? trialEndDate : this.trialEndDate,
+      trialEndDate: trialEndDate is DateTime?
+          ? trialEndDate
+          : this.trialEndDate,
       subscriptionId: subscriptionId ?? this.subscriptionId,
       planProductId: planProductId ?? this.planProductId,
       planName: planName ?? this.planName,
-      planDescription:
-          planDescription is String? ? planDescription : this.planDescription,
+      planDescription: planDescription is String?
+          ? planDescription
+          : this.planDescription,
       projectsLimit: projectsLimit is int? ? projectsLimit : this.projectsLimit,
     );
   }

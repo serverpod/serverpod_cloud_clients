@@ -30,7 +30,8 @@ enum BillingMappingType implements _i1.SerializableModel {
         return BillingMappingType.priceId;
       default:
         throw ArgumentError(
-            'Value "$name" cannot be converted to "BillingMappingType"');
+          'Value "$name" cannot be converted to "BillingMappingType"',
+        );
     }
   }
 

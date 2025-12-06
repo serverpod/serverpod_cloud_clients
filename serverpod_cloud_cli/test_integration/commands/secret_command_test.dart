@@ -18,8 +18,9 @@ import '../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();
-  final keyManager = InMemoryKeyManager();
-  final client = ClientMock(authenticationKeyManager: keyManager);
+  final client = ClientMock(
+    authKeyProvider: InMemoryKeyManager.authenticated(),
+  );
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
@@ -28,8 +29,6 @@ void main() {
   );
 
   tearDown(() async {
-    await keyManager.remove();
-
     logger.clear();
   });
 
@@ -40,10 +39,6 @@ void main() {
   });
 
   group('Given unauthenticated', () {
-    setUp(() async {
-      await keyManager.put('mock-token');
-    });
-
     group('when executing secrets create', () {
       late Future commandResult;
 
@@ -156,10 +151,6 @@ void main() {
   });
 
   group('Given authenticated', () {
-    setUp(() async {
-      await keyManager.put('mock-token');
-    });
-
     group('when executing secrets create', () {
       setUp(() async {
         when(() => client.secrets.create(

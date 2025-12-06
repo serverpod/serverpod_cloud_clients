@@ -1,6 +1,6 @@
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_auth_data.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/build_token_provider.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/scloud_settings.dart';
 import 'package:serverpod_cloud_cli/util/cli_authentication_key_manager.dart';
 import 'package:ground_control_client/ground_control_client.dart';
@@ -68,19 +68,16 @@ class CloudCliServiceProvider {
           serverAddress.endsWith('/') ? serverAddress : '$serverAddress/';
 
       final authTokenOverride = _globalConfiguration.authToken;
-      final cloudDataOverride = authTokenOverride != null
-          ? ServerpodCloudAuthData(authTokenOverride)
-          : null;
+      final TokenProvider tokenProvider = BuildTokenProvider.build(
+        authTokenOverride: authTokenOverride,
+        localStoragePath: localStoragePath.path,
+        logger: _logger,
+      );
 
       cloudApiClient = Client(
         address,
-        authenticationKeyManager: CliAuthenticationKeyManager(
-          logger: _logger,
-          localStoragePath: localStoragePath.path,
-          cloudDataOverride: cloudDataOverride,
-        ),
         connectionTimeout: _globalConfiguration.connectionTimeout,
-      );
+      )..authKeyProvider = CliKeyProvider(tokenProvider);
     }
 
     _cloudApiClient = cloudApiClient;

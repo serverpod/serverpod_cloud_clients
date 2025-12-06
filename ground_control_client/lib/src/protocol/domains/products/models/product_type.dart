@@ -33,7 +33,8 @@ enum ProductType implements _i1.SerializableModel {
         return ProductType.database;
       default:
         throw ArgumentError(
-            'Value "$name" cannot be converted to "ProductType"');
+          'Value "$name" cannot be converted to "ProductType"',
+        );
     }
   }
 

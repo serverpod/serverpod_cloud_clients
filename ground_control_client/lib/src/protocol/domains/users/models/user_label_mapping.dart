@@ -13,6 +13,7 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/users/models/user.dart' as _i2;
 import '../../../domains/users/models/user_label.dart' as _i3;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 /// Associates users (including invited, not yet registered) with user labels.
 abstract class UserLabelMapping implements _i1.SerializableModel {
@@ -35,13 +36,13 @@ abstract class UserLabelMapping implements _i1.SerializableModel {
   factory UserLabelMapping.fromJson(Map<String, dynamic> jsonSerialization) {
     return UserLabelMapping(
       id: jsonSerialization['id'] as int?,
-      createdAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+      createdAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['createdAt'],
+      ),
       userId: jsonSerialization['userId'] as int,
       user: jsonSerialization['user'] == null
           ? null
-          : _i2.User.fromJson(
-              (jsonSerialization['user'] as Map<String, dynamic>)),
+          : _i4.Protocol().deserialize<_i2.User>(jsonSerialization['user']),
       label: _i3.UserLabel.fromJson((jsonSerialization['label'] as String)),
     );
   }
@@ -74,6 +75,7 @@ abstract class UserLabelMapping implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'UserLabelMapping',
       if (id != null) 'id': id,
       'createdAt': createdAt.toJson(),
       'userId': userId,
@@ -98,12 +100,12 @@ class _UserLabelMappingImpl extends UserLabelMapping {
     _i2.User? user,
     required _i3.UserLabel label,
   }) : super._(
-          id: id,
-          createdAt: createdAt,
-          userId: userId,
-          user: user,
-          label: label,
-        );
+         id: id,
+         createdAt: createdAt,
+         userId: userId,
+         user: user,
+         label: label,
+       );
 
   /// Returns a shallow copy of this [UserLabelMapping]
   /// with some or all fields replaced by the given arguments.

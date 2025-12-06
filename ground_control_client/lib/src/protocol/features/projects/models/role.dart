@@ -13,6 +13,7 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../features/projects/models/project.dart' as _i2;
 import '../../../features/projects/models/user_role_membership.dart' as _i3;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 /// Represents an access role for a specific project.
 /// Roles are assigned to users via membership, giving them the role's access scopes.
@@ -27,8 +28,8 @@ abstract class Role implements _i1.SerializableModel {
     required this.name,
     required this.projectScopes,
     this.memberships,
-  })  : createdAt = createdAt ?? DateTime.now(),
-        updatedAt = updatedAt ?? DateTime.now();
+  }) : createdAt = createdAt ?? DateTime.now(),
+       updatedAt = updatedAt ?? DateTime.now();
 
   factory Role({
     int? id,
@@ -45,26 +46,30 @@ abstract class Role implements _i1.SerializableModel {
   factory Role.fromJson(Map<String, dynamic> jsonSerialization) {
     return Role(
       id: jsonSerialization['id'] as int?,
-      createdAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
-      updatedAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
+      createdAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['createdAt'],
+      ),
+      updatedAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['updatedAt'],
+      ),
       archivedAt: jsonSerialization['archivedAt'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['archivedAt']),
       projectId: jsonSerialization['projectId'] as int,
       project: jsonSerialization['project'] == null
           ? null
-          : _i2.Project.fromJson(
-              (jsonSerialization['project'] as Map<String, dynamic>)),
+          : _i4.Protocol().deserialize<_i2.Project>(
+              jsonSerialization['project'],
+            ),
       name: jsonSerialization['name'] as String,
-      projectScopes: (jsonSerialization['projectScopes'] as List)
-          .map((e) => e as String)
-          .toList(),
-      memberships: (jsonSerialization['memberships'] as List?)
-          ?.map((e) =>
-              _i3.UserRoleMembership.fromJson((e as Map<String, dynamic>)))
-          .toList(),
+      projectScopes: _i4.Protocol().deserialize<List<String>>(
+        jsonSerialization['projectScopes'],
+      ),
+      memberships: jsonSerialization['memberships'] == null
+          ? null
+          : _i4.Protocol().deserialize<List<_i3.UserRoleMembership>>(
+              jsonSerialization['memberships'],
+            ),
     );
   }
 
@@ -110,6 +115,7 @@ abstract class Role implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'Role',
       if (id != null) 'id': id,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
@@ -143,16 +149,16 @@ class _RoleImpl extends Role {
     required List<String> projectScopes,
     List<_i3.UserRoleMembership>? memberships,
   }) : super._(
-          id: id,
-          createdAt: createdAt,
-          updatedAt: updatedAt,
-          archivedAt: archivedAt,
-          projectId: projectId,
-          project: project,
-          name: name,
-          projectScopes: projectScopes,
-          memberships: memberships,
-        );
+         id: id,
+         createdAt: createdAt,
+         updatedAt: updatedAt,
+         archivedAt: archivedAt,
+         projectId: projectId,
+         project: project,
+         name: name,
+         projectScopes: projectScopes,
+         memberships: memberships,
+       );
 
   /// Returns a shallow copy of this [Role]
   /// with some or all fields replaced by the given arguments.

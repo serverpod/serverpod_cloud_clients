@@ -66,8 +66,8 @@ void main() async {
     test('then the auth token is set in the authentication key manager.',
         () async {
       await expectLater(
-        cli.serviceProvider.cloudApiClient.authenticationKeyManager?.get(),
-        completion('test-token'),
+        cli.serviceProvider.cloudApiClient.authKeyProvider?.authHeaderValue,
+        completion('Bearer test-token'),
       );
     });
   });

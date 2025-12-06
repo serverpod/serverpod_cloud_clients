@@ -19,9 +19,11 @@ abstract class ProjectDeleteCallEvent implements _i1.SerializableModel {
       _ProjectDeleteCallEventImpl;
 
   factory ProjectDeleteCallEvent.fromJson(
-      Map<String, dynamic> jsonSerialization) {
+    Map<String, dynamic> jsonSerialization,
+  ) {
     return ProjectDeleteCallEvent(
-        cloudProjectId: jsonSerialization['cloudProjectId'] as String);
+      cloudProjectId: jsonSerialization['cloudProjectId'] as String,
+    );
   }
 
   String cloudProjectId;
@@ -32,7 +34,10 @@ abstract class ProjectDeleteCallEvent implements _i1.SerializableModel {
   ProjectDeleteCallEvent copyWith({String? cloudProjectId});
   @override
   Map<String, dynamic> toJson() {
-    return {'cloudProjectId': cloudProjectId};
+    return {
+      '__className__': 'ProjectDeleteCallEvent',
+      'cloudProjectId': cloudProjectId,
+    };
   }
 
   @override
@@ -43,7 +48,7 @@ abstract class ProjectDeleteCallEvent implements _i1.SerializableModel {
 
 class _ProjectDeleteCallEventImpl extends ProjectDeleteCallEvent {
   _ProjectDeleteCallEventImpl({required String cloudProjectId})
-      : super._(cloudProjectId: cloudProjectId);
+    : super._(cloudProjectId: cloudProjectId);
 
   /// Returns a shallow copy of this [ProjectDeleteCallEvent]
   /// with some or all fields replaced by the given arguments.
@@ -51,6 +56,7 @@ class _ProjectDeleteCallEventImpl extends ProjectDeleteCallEvent {
   @override
   ProjectDeleteCallEvent copyWith({String? cloudProjectId}) {
     return ProjectDeleteCallEvent(
-        cloudProjectId: cloudProjectId ?? this.cloudProjectId);
+      cloudProjectId: cloudProjectId ?? this.cloudProjectId,
+    );
   }
 }

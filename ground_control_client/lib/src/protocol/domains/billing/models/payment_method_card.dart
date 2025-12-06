@@ -68,6 +68,7 @@ abstract class PaymentMethodCard implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'PaymentMethodCard',
       'brand': brand,
       'last4': last4,
       'expMonth': expMonth,
@@ -94,13 +95,13 @@ class _PaymentMethodCardImpl extends PaymentMethodCard {
     String? funding,
     String? country,
   }) : super._(
-          brand: brand,
-          last4: last4,
-          expMonth: expMonth,
-          expYear: expYear,
-          funding: funding,
-          country: country,
-        );
+         brand: brand,
+         last4: last4,
+         expMonth: expMonth,
+         expYear: expYear,
+         funding: funding,
+         country: country,
+       );
 
   /// Returns a shallow copy of this [PaymentMethodCard]
   /// with some or all fields replaced by the given arguments.

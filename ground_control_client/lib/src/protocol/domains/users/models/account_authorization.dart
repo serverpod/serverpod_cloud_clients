@@ -25,7 +25,8 @@ abstract class AccountAuthorization implements _i1.SerializableModel {
   }) = _AccountAuthorizationImpl;
 
   factory AccountAuthorization.fromJson(
-      Map<String, dynamic> jsonSerialization) {
+    Map<String, dynamic> jsonSerialization,
+  ) {
     return AccountAuthorization(
       id: jsonSerialization['id'] as int?,
       email: jsonSerialization['email'] as String,
@@ -49,6 +50,7 @@ abstract class AccountAuthorization implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'AccountAuthorization',
       if (id != null) 'id': id,
       'email': email,
     };
@@ -67,9 +69,9 @@ class _AccountAuthorizationImpl extends AccountAuthorization {
     int? id,
     required String email,
   }) : super._(
-          id: id,
-          email: email,
-        );
+         id: id,
+         email: email,
+       );
 
   /// Returns a shallow copy of this [AccountAuthorization]
   /// with some or all fields replaced by the given arguments.
