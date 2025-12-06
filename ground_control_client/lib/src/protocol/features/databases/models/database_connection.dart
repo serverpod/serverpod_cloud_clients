@@ -62,6 +62,7 @@ abstract class DatabaseConnection implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'DatabaseConnection',
       'host': host,
       'port': port,
       'name': name,
@@ -84,12 +85,12 @@ class _DatabaseConnectionImpl extends DatabaseConnection {
     required String user,
     bool? requiresSsl,
   }) : super._(
-          host: host,
-          port: port,
-          name: name,
-          user: user,
-          requiresSsl: requiresSsl,
-        );
+         host: host,
+         port: port,
+         name: name,
+         user: user,
+         requiresSsl: requiresSsl,
+       );
 
   /// Returns a shallow copy of this [DatabaseConnection]
   /// with some or all fields replaced by the given arguments.

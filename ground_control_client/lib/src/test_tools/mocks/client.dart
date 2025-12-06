@@ -1,7 +1,9 @@
 import 'package:mocktail/mocktail.dart';
 import 'package:ground_control_client/src/protocol/client.dart';
+import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
+    show wrapAsBearerAuthHeaderValue;
 import 'package:serverpod_client/serverpod_client.dart'
-    show AuthenticationKeyManager;
+    show ClientAuthKeyProvider;
 
 class EndpointCustomDomainNameMock extends Mock
     implements EndpointCustomDomainName {}
@@ -46,50 +48,31 @@ class EndpointPlansMock extends Mock implements EndpointPlans {}
 /// Modules mocks
 class ModulesMock extends Mock implements Modules {}
 
-class AuthedKeyManagerMock extends AuthenticationKeyManager {
-  Future<bool> get isAuthenticated async => true;
+class InMemoryKeyManager implements ClientAuthKeyProvider {
+  Future<bool> get isAuthenticated async => await authHeaderValue != null;
+
+  final String? _token;
+
+  InMemoryKeyManager([this._token]);
 
   @override
-  Future<String?> get() async {
-    return 'mock-token';
-  }
+  Future<String?> get authHeaderValue async =>
+      _token != null ? wrapAsBearerAuthHeaderValue(_token) : null;
 
-  @override
-  Future<void> put(String key) async {}
+  factory InMemoryKeyManager.authenticated() =>
+      InMemoryKeyManager('mock-token');
 
-  @override
-  Future<void> remove() async {}
-}
-
-class InMemoryKeyManager extends AuthenticationKeyManager {
-  Future<bool> get isAuthenticated async => await get() != null;
-
-  String? _key;
-
-  @override
-  Future<String?> get() async {
-    return _key;
-  }
-
-  @override
-  Future<void> put(String key) async {
-    _key = key;
-  }
-
-  @override
-  Future<void> remove() async {
-    _key = null;
-  }
+  factory InMemoryKeyManager.unauthenticated() => InMemoryKeyManager(null);
 }
 
 class ClientMock extends Mock implements Client {
   ClientMock({
-    AuthenticationKeyManager? authenticationKeyManager,
-  }) : authenticationKeyManager =
-            authenticationKeyManager ?? InMemoryKeyManager();
+    ClientAuthKeyProvider? authKeyProvider,
+  }) : authKeyProvider =
+            authKeyProvider ?? InMemoryKeyManager.unauthenticated();
 
   @override
-  final AuthenticationKeyManager authenticationKeyManager;
+  final ClientAuthKeyProvider authKeyProvider;
 
   @override
   final Modules modules = ModulesMock();

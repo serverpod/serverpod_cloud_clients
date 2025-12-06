@@ -48,11 +48,13 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
       attemptId: jsonSerialization['attemptId'] as String,
       stageType: _i2.DeployStageType.fromJson(
-          (jsonSerialization['stageType'] as String)),
+        (jsonSerialization['stageType'] as String),
+      ),
       stageInfo: jsonSerialization['stageInfo'] as String?,
       buildId: jsonSerialization['buildId'] as String?,
       stageStatus: _i3.DeployProgressStatus.fromJson(
-          (jsonSerialization['stageStatus'] as String)),
+        (jsonSerialization['stageStatus'] as String),
+      ),
       startedAt: jsonSerialization['startedAt'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['startedAt']),
@@ -114,6 +116,7 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'DeployAttemptStage',
       if (id != null) 'id': id,
       'cloudCapsuleId': cloudCapsuleId,
       'attemptId': attemptId,
@@ -148,17 +151,17 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
     DateTime? endedAt,
     String? statusInfo,
   }) : super._(
-          id: id,
-          cloudCapsuleId: cloudCapsuleId,
-          attemptId: attemptId,
-          stageType: stageType,
-          stageInfo: stageInfo,
-          buildId: buildId,
-          stageStatus: stageStatus,
-          startedAt: startedAt,
-          endedAt: endedAt,
-          statusInfo: statusInfo,
-        );
+         id: id,
+         cloudCapsuleId: cloudCapsuleId,
+         attemptId: attemptId,
+         stageType: stageType,
+         stageInfo: stageInfo,
+         buildId: buildId,
+         stageStatus: stageStatus,
+         startedAt: startedAt,
+         endedAt: endedAt,
+         statusInfo: statusInfo,
+       );
 
   /// Returns a shallow copy of this [DeployAttemptStage]
   /// with some or all fields replaced by the given arguments.

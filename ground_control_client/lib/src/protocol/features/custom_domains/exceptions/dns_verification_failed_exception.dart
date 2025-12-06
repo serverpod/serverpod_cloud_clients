@@ -20,9 +20,11 @@ abstract class DNSVerificationFailedException
       _DNSVerificationFailedExceptionImpl;
 
   factory DNSVerificationFailedException.fromJson(
-      Map<String, dynamic> jsonSerialization) {
+    Map<String, dynamic> jsonSerialization,
+  ) {
     return DNSVerificationFailedException(
-        message: jsonSerialization['message'] as String);
+      message: jsonSerialization['message'] as String,
+    );
   }
 
   String message;
@@ -33,19 +35,22 @@ abstract class DNSVerificationFailedException
   DNSVerificationFailedException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
-    return {'message': message};
+    return {
+      '__className__': 'DNSVerificationFailedException',
+      'message': message,
+    };
   }
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return 'DNSVerificationFailedException(message: $message)';
   }
 }
 
 class _DNSVerificationFailedExceptionImpl
     extends DNSVerificationFailedException {
   _DNSVerificationFailedExceptionImpl({required String message})
-      : super._(message: message);
+    : super._(message: message);
 
   /// Returns a shallow copy of this [DNSVerificationFailedException]
   /// with some or all fields replaced by the given arguments.

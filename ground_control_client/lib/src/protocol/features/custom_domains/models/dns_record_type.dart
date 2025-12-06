@@ -24,7 +24,8 @@ enum DnsRecordType implements _i1.SerializableModel {
         return DnsRecordType.cname;
       default:
         throw ArgumentError(
-            'Value "$name" cannot be converted to "DnsRecordType"');
+          'Value "$name" cannot be converted to "DnsRecordType"',
+        );
     }
   }
 

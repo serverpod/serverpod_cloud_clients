@@ -15,6 +15,7 @@ import '../../../../features/custom_domains/models/custom_domain_name.dart'
     as _i2;
 import '../../../../features/custom_domains/models/domain_name_target.dart'
     as _i3;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 abstract class CustomDomainNameWithDefaultDomains
     implements _i1.SerializableModel {
@@ -29,19 +30,16 @@ abstract class CustomDomainNameWithDefaultDomains
   }) = _CustomDomainNameWithDefaultDomainsImpl;
 
   factory CustomDomainNameWithDefaultDomains.fromJson(
-      Map<String, dynamic> jsonSerialization) {
+    Map<String, dynamic> jsonSerialization,
+  ) {
     return CustomDomainNameWithDefaultDomains(
-      customDomainName: _i2.CustomDomainName.fromJson(
-          (jsonSerialization['customDomainName'] as Map<String, dynamic>)),
-      defaultDomainsByTarget:
-          (jsonSerialization['defaultDomainsByTarget'] as List)
-              .fold<Map<_i3.DomainNameTarget, String>>(
-                  {},
-                  (t, e) => {
-                        ...t,
-                        _i3.DomainNameTarget.fromJson((e['k'] as String)):
-                            e['v'] as String
-                      }),
+      customDomainName: _i4.Protocol().deserialize<_i2.CustomDomainName>(
+        jsonSerialization['customDomainName'],
+      ),
+      defaultDomainsByTarget: _i4.Protocol()
+          .deserialize<Map<_i3.DomainNameTarget, String>>(
+            jsonSerialization['defaultDomainsByTarget'],
+          ),
     );
   }
 
@@ -59,9 +57,11 @@ abstract class CustomDomainNameWithDefaultDomains
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'CustomDomainNameWithDefaultDomains',
       'customDomainName': customDomainName.toJson(),
-      'defaultDomainsByTarget':
-          defaultDomainsByTarget.toJson(keyToJson: (k) => k.toJson()),
+      'defaultDomainsByTarget': defaultDomainsByTarget.toJson(
+        keyToJson: (k) => k.toJson(),
+      ),
     };
   }
 
@@ -77,9 +77,9 @@ class _CustomDomainNameWithDefaultDomainsImpl
     required _i2.CustomDomainName customDomainName,
     required Map<_i3.DomainNameTarget, String> defaultDomainsByTarget,
   }) : super._(
-          customDomainName: customDomainName,
-          defaultDomainsByTarget: defaultDomainsByTarget,
-        );
+         customDomainName: customDomainName,
+         defaultDomainsByTarget: defaultDomainsByTarget,
+       );
 
   /// Returns a shallow copy of this [CustomDomainNameWithDefaultDomains]
   /// with some or all fields replaced by the given arguments.
@@ -91,15 +91,17 @@ class _CustomDomainNameWithDefaultDomainsImpl
   }) {
     return CustomDomainNameWithDefaultDomains(
       customDomainName: customDomainName ?? this.customDomainName.copyWith(),
-      defaultDomainsByTarget: defaultDomainsByTarget ??
-          this.defaultDomainsByTarget.map((
-                key0,
-                value0,
-              ) =>
-                  MapEntry(
-                    key0,
-                    value0,
-                  )),
+      defaultDomainsByTarget:
+          defaultDomainsByTarget ??
+          this.defaultDomainsByTarget.map(
+            (
+              key0,
+              value0,
+            ) => MapEntry(
+              key0,
+              value0,
+            ),
+          ),
     );
   }
 }

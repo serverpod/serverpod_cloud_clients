@@ -15,11 +15,11 @@ environment:
 
 
 dependencies:
-  serverpod_client: 3.0.0-alpha.2
-  serverpod_auth_client: 3.0.0-alpha.2
-  serverpod_auth_idp_client: 3.0.0-alpha.2
-  serverpod_auth_migration_client: 3.0.0-alpha.2
-  serverpod_auth_bridge_client: 3.0.0-alpha.2
+  serverpod_client: 3.0.0-rc.4
+  serverpod_auth_client: 3.0.0-rc.4
+  serverpod_auth_idp_client: 3.0.0-rc.4
+  serverpod_auth_migration_client: 3.0.0-rc.4
+  serverpod_auth_bridge_client: 3.0.0-rc.4
 
   http: ^1.0.0
   mocktail: ^1.0.4

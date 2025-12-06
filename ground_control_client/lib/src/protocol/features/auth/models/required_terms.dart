@@ -51,6 +51,7 @@ abstract class RequiredTerms implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'RequiredTerms',
       'termsType': termsType.toJson(),
       'termsVersion': termsVersion,
       'termsUrl': termsUrl,
@@ -69,10 +70,10 @@ class _RequiredTermsImpl extends RequiredTerms {
     required String termsVersion,
     required String termsUrl,
   }) : super._(
-          termsType: termsType,
-          termsVersion: termsVersion,
-          termsUrl: termsUrl,
-        );
+         termsType: termsType,
+         termsVersion: termsVersion,
+         termsUrl: termsUrl,
+       );
 
   /// Returns a shallow copy of this [RequiredTerms]
   /// with some or all fields replaced by the given arguments.

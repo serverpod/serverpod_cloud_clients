@@ -24,9 +24,11 @@ abstract class ProcurementDeniedException
       _ProcurementDeniedExceptionImpl;
 
   factory ProcurementDeniedException.fromJson(
-      Map<String, dynamic> jsonSerialization) {
+    Map<String, dynamic> jsonSerialization,
+  ) {
     return ProcurementDeniedException(
-        message: jsonSerialization['message'] as String);
+      message: jsonSerialization['message'] as String,
+    );
   }
 
   String message;
@@ -37,18 +39,21 @@ abstract class ProcurementDeniedException
   ProcurementDeniedException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
-    return {'message': message};
+    return {
+      '__className__': 'ProcurementDeniedException',
+      'message': message,
+    };
   }
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return 'ProcurementDeniedException(message: $message)';
   }
 }
 
 class _ProcurementDeniedExceptionImpl extends ProcurementDeniedException {
   _ProcurementDeniedExceptionImpl({required String message})
-      : super._(message: message);
+    : super._(message: message);
 
   /// Returns a shallow copy of this [ProcurementDeniedException]
   /// with some or all fields replaced by the given arguments.

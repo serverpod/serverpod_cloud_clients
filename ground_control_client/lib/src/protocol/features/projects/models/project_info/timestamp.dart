@@ -19,10 +19,10 @@ abstract class Timestamp implements _i1.SerializableModel {
 
   factory Timestamp.fromJson(Map<String, dynamic> jsonSerialization) {
     return Timestamp(
-        timestamp: jsonSerialization['timestamp'] == null
-            ? null
-            : _i1.DateTimeJsonExtension.fromJson(
-                jsonSerialization['timestamp']));
+      timestamp: jsonSerialization['timestamp'] == null
+          ? null
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['timestamp']),
+    );
   }
 
   DateTime? timestamp;
@@ -33,7 +33,10 @@ abstract class Timestamp implements _i1.SerializableModel {
   Timestamp copyWith({DateTime? timestamp});
   @override
   Map<String, dynamic> toJson() {
-    return {if (timestamp != null) 'timestamp': timestamp?.toJson()};
+    return {
+      '__className__': 'Timestamp',
+      if (timestamp != null) 'timestamp': timestamp?.toJson(),
+    };
   }
 
   @override
@@ -53,6 +56,7 @@ class _TimestampImpl extends Timestamp {
   @override
   Timestamp copyWith({Object? timestamp = _Undefined}) {
     return Timestamp(
-        timestamp: timestamp is DateTime? ? timestamp : this.timestamp);
+      timestamp: timestamp is DateTime? ? timestamp : this.timestamp,
+    );
   }
 }

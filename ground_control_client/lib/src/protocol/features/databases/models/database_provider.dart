@@ -21,7 +21,8 @@ enum DatabaseProvider implements _i1.SerializableModel {
         return DatabaseProvider.neon;
       default:
         throw ArgumentError(
-            'Value "$name" cannot be converted to "DatabaseProvider"');
+          'Value "$name" cannot be converted to "DatabaseProvider"',
+        );
     }
   }
 

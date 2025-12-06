@@ -30,7 +30,8 @@ enum DeployStageType implements _i1.SerializableModel {
         return DeployStageType.service;
       default:
         throw ArgumentError(
-            'Value "$name" cannot be converted to "DeployStageType"');
+          'Value "$name" cannot be converted to "DeployStageType"',
+        );
     }
   }
 

@@ -37,8 +37,9 @@ abstract class LogRecord implements _i1.SerializableModel {
       cloudProjectId: jsonSerialization['cloudProjectId'] as String,
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
       recordId: jsonSerialization['recordId'] as String,
-      timestamp:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['timestamp']),
+      timestamp: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['timestamp'],
+      ),
       severity: jsonSerialization['severity'] as String?,
       content: jsonSerialization['content'] as String,
     );
@@ -76,6 +77,7 @@ abstract class LogRecord implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'LogRecord',
       'cloudProjectId': cloudProjectId,
       'cloudCapsuleId': cloudCapsuleId,
       'recordId': recordId,
@@ -102,13 +104,13 @@ class _LogRecordImpl extends LogRecord {
     String? severity,
     required String content,
   }) : super._(
-          cloudProjectId: cloudProjectId,
-          cloudCapsuleId: cloudCapsuleId,
-          recordId: recordId,
-          timestamp: timestamp,
-          severity: severity,
-          content: content,
-        );
+         cloudProjectId: cloudProjectId,
+         cloudCapsuleId: cloudCapsuleId,
+         recordId: recordId,
+         timestamp: timestamp,
+         severity: severity,
+         content: content,
+       );
 
   /// Returns a shallow copy of this [LogRecord]
   /// with some or all fields replaced by the given arguments.

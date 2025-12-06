@@ -35,12 +35,14 @@ abstract class PubsubEntry implements _i1.SerializableModel {
   factory PubsubEntry.fromJson(Map<String, dynamic> jsonSerialization) {
     return PubsubEntry(
       id: jsonSerialization['id'] as int?,
-      createdAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+      createdAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['createdAt'],
+      ),
       publishedAt: jsonSerialization['publishedAt'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(
-              jsonSerialization['publishedAt']),
+              jsonSerialization['publishedAt'],
+            ),
       messageId: jsonSerialization['messageId'] as String,
       topic: jsonSerialization['topic'] as String,
       subscriber: jsonSerialization['subscriber'] as String,
@@ -81,6 +83,7 @@ abstract class PubsubEntry implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'PubsubEntry',
       if (id != null) 'id': id,
       'createdAt': createdAt.toJson(),
       if (publishedAt != null) 'publishedAt': publishedAt?.toJson(),
@@ -107,13 +110,13 @@ class _PubsubEntryImpl extends PubsubEntry {
     required String topic,
     required String subscriber,
   }) : super._(
-          id: id,
-          createdAt: createdAt,
-          publishedAt: publishedAt,
-          messageId: messageId,
-          topic: topic,
-          subscriber: subscriber,
-        );
+         id: id,
+         createdAt: createdAt,
+         publishedAt: publishedAt,
+         messageId: messageId,
+         topic: topic,
+         subscriber: subscriber,
+       );
 
   /// Returns a shallow copy of this [PubsubEntry]
   /// with some or all fields replaced by the given arguments.

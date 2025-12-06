@@ -27,7 +27,8 @@ enum UserAccountStatus implements _i1.SerializableModel {
         return UserAccountStatus.registered;
       default:
         throw ArgumentError(
-            'Value "$name" cannot be converted to "UserAccountStatus"');
+          'Value "$name" cannot be converted to "UserAccountStatus"',
+        );
     }
   }
 

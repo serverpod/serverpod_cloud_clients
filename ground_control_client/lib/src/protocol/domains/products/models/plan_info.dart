@@ -42,7 +42,8 @@ abstract class PlanInfo implements _i1.SerializableModel {
       trialEndDate: jsonSerialization['trialEndDate'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(
-              jsonSerialization['trialEndDate']),
+              jsonSerialization['trialEndDate'],
+            ),
       projectsLimit: jsonSerialization['projectsLimit'] as int?,
     );
   }
@@ -82,6 +83,7 @@ abstract class PlanInfo implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'PlanInfo',
       'productId': productId,
       'name': name,
       if (description != null) 'description': description,
@@ -108,13 +110,13 @@ class _PlanInfoImpl extends PlanInfo {
     DateTime? trialEndDate,
     int? projectsLimit,
   }) : super._(
-          productId: productId,
-          name: name,
-          description: description,
-          trialLength: trialLength,
-          trialEndDate: trialEndDate,
-          projectsLimit: projectsLimit,
-        );
+         productId: productId,
+         name: name,
+         description: description,
+         trialLength: trialLength,
+         trialEndDate: trialEndDate,
+         projectsLimit: projectsLimit,
+       );
 
   /// Returns a shallow copy of this [PlanInfo]
   /// with some or all fields replaced by the given arguments.
@@ -133,8 +135,9 @@ class _PlanInfoImpl extends PlanInfo {
       name: name ?? this.name,
       description: description is String? ? description : this.description,
       trialLength: trialLength is int? ? trialLength : this.trialLength,
-      trialEndDate:
-          trialEndDate is DateTime? ? trialEndDate : this.trialEndDate,
+      trialEndDate: trialEndDate is DateTime?
+          ? trialEndDate
+          : this.trialEndDate,
       projectsLimit: projectsLimit is int? ? projectsLimit : this.projectsLimit,
     );
   }

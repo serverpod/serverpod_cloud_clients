@@ -14,6 +14,7 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/users/models/user.dart' as _i2;
 import '../../../domains/billing/models/billing_info.dart' as _i3;
 import '../../../features/projects/models/project.dart' as _i4;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i5;
 
 abstract class Owner implements _i1.SerializableModel {
   Owner._({
@@ -45,30 +46,31 @@ abstract class Owner implements _i1.SerializableModel {
       id: _i1.UuidValueJsonExtension.fromJson(jsonSerialization['id']),
       externalBillingId: jsonSerialization['externalBillingId'] as String,
       externalPaymentId: jsonSerialization['externalPaymentId'] as String,
-      billingPortalUrl:
-          _i1.UriJsonExtension.fromJson(jsonSerialization['billingPortalUrl']),
-      billingEmails: (jsonSerialization['billingEmails'] as List)
-          .map((e) => e as String)
-          .toList(),
+      billingPortalUrl: _i1.UriJsonExtension.fromJson(
+        jsonSerialization['billingPortalUrl'],
+      ),
+      billingEmails: _i5.Protocol().deserialize<List<String>>(
+        jsonSerialization['billingEmails'],
+      ),
       primarySubscriptionId:
           jsonSerialization['primarySubscriptionId'] as String?,
       user: jsonSerialization['user'] == null
           ? null
-          : _i2.User.fromJson(
-              (jsonSerialization['user'] as Map<String, dynamic>)),
+          : _i5.Protocol().deserialize<_i2.User>(jsonSerialization['user']),
       billingInfo: jsonSerialization['billingInfo'] == null
           ? null
-          : _i3.BillingInfo.fromJson(
-              (jsonSerialization['billingInfo'] as Map<String, dynamic>)),
-      projects: (jsonSerialization['projects'] as List?)
-          ?.map((e) => _i4.Project.fromJson((e as Map<String, dynamic>)))
-          .toList(),
+          : _i5.Protocol().deserialize<_i3.BillingInfo>(
+              jsonSerialization['billingInfo'],
+            ),
+      projects: jsonSerialization['projects'] == null
+          ? null
+          : _i5.Protocol().deserialize<List<_i4.Project>>(
+              jsonSerialization['projects'],
+            ),
     );
   }
 
-  /// The database id, set if the object has been inserted into the
-  /// database or if it has been fetched from the database. Otherwise,
-  /// the id will be null.
+  /// The id of the object.
   _i1.UuidValue id;
 
   String externalBillingId;
@@ -106,6 +108,7 @@ abstract class Owner implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'Owner',
       'id': id.toJson(),
       'externalBillingId': externalBillingId,
       'externalPaymentId': externalPaymentId,
@@ -140,16 +143,16 @@ class _OwnerImpl extends Owner {
     _i3.BillingInfo? billingInfo,
     List<_i4.Project>? projects,
   }) : super._(
-          id: id,
-          externalBillingId: externalBillingId,
-          externalPaymentId: externalPaymentId,
-          billingPortalUrl: billingPortalUrl,
-          billingEmails: billingEmails,
-          primarySubscriptionId: primarySubscriptionId,
-          user: user,
-          billingInfo: billingInfo,
-          projects: projects,
-        );
+         id: id,
+         externalBillingId: externalBillingId,
+         externalPaymentId: externalPaymentId,
+         billingPortalUrl: billingPortalUrl,
+         billingEmails: billingEmails,
+         primarySubscriptionId: primarySubscriptionId,
+         user: user,
+         billingInfo: billingInfo,
+         projects: projects,
+       );
 
   /// Returns a shallow copy of this [Owner]
   /// with some or all fields replaced by the given arguments.

@@ -14,6 +14,7 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../../features/projects/models/project.dart' as _i2;
 import '../../../../features/projects/models/project_info/timestamp.dart'
     as _i3;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 /// Augments a project object with ancillary information.
 ///
@@ -33,13 +34,15 @@ abstract class ProjectInfo implements _i1.SerializableModel {
 
   factory ProjectInfo.fromJson(Map<String, dynamic> jsonSerialization) {
     return ProjectInfo(
-      project: _i2.Project.fromJson(
-          (jsonSerialization['project'] as Map<String, dynamic>)),
-      latestDeployAttemptTime: jsonSerialization['latestDeployAttemptTime'] ==
-              null
+      project: _i4.Protocol().deserialize<_i2.Project>(
+        jsonSerialization['project'],
+      ),
+      latestDeployAttemptTime:
+          jsonSerialization['latestDeployAttemptTime'] == null
           ? null
-          : _i3.Timestamp.fromJson((jsonSerialization['latestDeployAttemptTime']
-              as Map<String, dynamic>)),
+          : _i4.Protocol().deserialize<_i3.Timestamp>(
+              jsonSerialization['latestDeployAttemptTime'],
+            ),
     );
   }
 
@@ -60,6 +63,7 @@ abstract class ProjectInfo implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'ProjectInfo',
       'project': project.toJson(),
       if (latestDeployAttemptTime != null)
         'latestDeployAttemptTime': latestDeployAttemptTime?.toJson(),
@@ -79,9 +83,9 @@ class _ProjectInfoImpl extends ProjectInfo {
     required _i2.Project project,
     _i3.Timestamp? latestDeployAttemptTime,
   }) : super._(
-          project: project,
-          latestDeployAttemptTime: latestDeployAttemptTime,
-        );
+         project: project,
+         latestDeployAttemptTime: latestDeployAttemptTime,
+       );
 
   /// Returns a shallow copy of this [ProjectInfo]
   /// with some or all fields replaced by the given arguments.
