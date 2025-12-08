@@ -1,6 +1,12 @@
 
 # Changelog
 
+## [0.17.0] - 2025-12-08
+
+### Changed
+
+- **Migration to Serverpod 3** - Changing to new Serverpod auth packages
+
 ## [0.16.1] - 2025-11-19
 
 ### Fixed
