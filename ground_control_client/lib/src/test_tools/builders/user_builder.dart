@@ -10,6 +10,7 @@ class UserBuilder {
   String? _userAuthId;
   String _email;
   List<UserRoleMembership>? _memberships;
+  List<UserLabelMapping>? _labels;
   _i1.UuidValue? _ownerId;
   Owner? _owner;
 
@@ -75,6 +76,18 @@ class UserBuilder {
     return this;
   }
 
+  UserBuilder withLabels(final List<UserLabel> labels) {
+    _labels = labels
+        .map(
+          (final label) => UserLabelMapping(
+            userId: _id ?? 1,
+            label: label,
+          ),
+        )
+        .toList();
+    return this;
+  }
+
   User build() {
     return User(
       id: _id,
@@ -85,6 +98,7 @@ class UserBuilder {
       userAuthId: _userAuthId,
       email: _email,
       memberships: _memberships,
+      labels: _labels,
       ownerId: _owner?.id ?? _ownerId,
       owner: _owner,
     );
