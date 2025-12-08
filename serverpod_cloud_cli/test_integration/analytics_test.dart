@@ -13,8 +13,7 @@ void main() {
 
   final List<String> analyticsEvents = [];
 
-  final keyManager = InMemoryKeyManager();
-  final client = ClientMock(authenticationKeyManager: keyManager);
+  final client = ClientMock();
 
   setUp(() async {
     logger.clear();

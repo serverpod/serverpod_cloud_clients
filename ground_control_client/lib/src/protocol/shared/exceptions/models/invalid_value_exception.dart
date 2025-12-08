@@ -20,9 +20,11 @@ abstract class InvalidValueException
       _InvalidValueExceptionImpl;
 
   factory InvalidValueException.fromJson(
-      Map<String, dynamic> jsonSerialization) {
+    Map<String, dynamic> jsonSerialization,
+  ) {
     return InvalidValueException(
-        message: jsonSerialization['message'] as String);
+      message: jsonSerialization['message'] as String,
+    );
   }
 
   String message;
@@ -33,18 +35,21 @@ abstract class InvalidValueException
   InvalidValueException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
-    return {'message': message};
+    return {
+      '__className__': 'InvalidValueException',
+      'message': message,
+    };
   }
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return 'InvalidValueException(message: $message)';
   }
 }
 
 class _InvalidValueExceptionImpl extends InvalidValueException {
   _InvalidValueExceptionImpl({required String message})
-      : super._(message: message);
+    : super._(message: message);
 
   /// Returns a shallow copy of this [InvalidValueException]
   /// with some or all fields replaced by the given arguments.

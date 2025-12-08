@@ -15,6 +15,7 @@ import '../../../domains/users/models/user_account_status.dart' as _i2;
 import '../../../features/projects/models/user_role_membership.dart' as _i3;
 import '../../../domains/billing/models/owner.dart' as _i4;
 import '../../../domains/users/models/user_label_mapping.dart' as _i5;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i6;
 
 /// Represents a Serverpod cloud customer user, invited or registered.
 abstract class User implements _i1.SerializableModel {
@@ -30,9 +31,9 @@ abstract class User implements _i1.SerializableModel {
     this.ownerId,
     this.owner,
     this.labels,
-  })  : createdAt = createdAt ?? DateTime.now(),
-        updatedAt = updatedAt ?? DateTime.now(),
-        accountStatus = accountStatus ?? _i2.UserAccountStatus.registered;
+  }) : createdAt = createdAt ?? DateTime.now(),
+       updatedAt = updatedAt ?? DateTime.now(),
+       accountStatus = accountStatus ?? _i2.UserAccountStatus.registered;
 
   factory User({
     int? id,
@@ -51,32 +52,36 @@ abstract class User implements _i1.SerializableModel {
   factory User.fromJson(Map<String, dynamic> jsonSerialization) {
     return User(
       id: jsonSerialization['id'] as int?,
-      createdAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
-      updatedAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
+      createdAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['createdAt'],
+      ),
+      updatedAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['updatedAt'],
+      ),
       archivedAt: jsonSerialization['archivedAt'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['archivedAt']),
       accountStatus: _i2.UserAccountStatus.fromJson(
-          (jsonSerialization['accountStatus'] as String)),
+        (jsonSerialization['accountStatus'] as String),
+      ),
       userAuthId: jsonSerialization['userAuthId'] as String?,
       email: jsonSerialization['email'] as String,
-      memberships: (jsonSerialization['memberships'] as List?)
-          ?.map((e) =>
-              _i3.UserRoleMembership.fromJson((e as Map<String, dynamic>)))
-          .toList(),
+      memberships: jsonSerialization['memberships'] == null
+          ? null
+          : _i6.Protocol().deserialize<List<_i3.UserRoleMembership>>(
+              jsonSerialization['memberships'],
+            ),
       ownerId: jsonSerialization['ownerId'] == null
           ? null
           : _i1.UuidValueJsonExtension.fromJson(jsonSerialization['ownerId']),
       owner: jsonSerialization['owner'] == null
           ? null
-          : _i4.Owner.fromJson(
-              (jsonSerialization['owner'] as Map<String, dynamic>)),
-      labels: (jsonSerialization['labels'] as List?)
-          ?.map(
-              (e) => _i5.UserLabelMapping.fromJson((e as Map<String, dynamic>)))
-          .toList(),
+          : _i6.Protocol().deserialize<_i4.Owner>(jsonSerialization['owner']),
+      labels: jsonSerialization['labels'] == null
+          ? null
+          : _i6.Protocol().deserialize<List<_i5.UserLabelMapping>>(
+              jsonSerialization['labels'],
+            ),
     );
   }
 
@@ -132,6 +137,7 @@ abstract class User implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'User',
       if (id != null) 'id': id,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
@@ -170,18 +176,18 @@ class _UserImpl extends User {
     _i4.Owner? owner,
     List<_i5.UserLabelMapping>? labels,
   }) : super._(
-          id: id,
-          createdAt: createdAt,
-          updatedAt: updatedAt,
-          archivedAt: archivedAt,
-          accountStatus: accountStatus,
-          userAuthId: userAuthId,
-          email: email,
-          memberships: memberships,
-          ownerId: ownerId,
-          owner: owner,
-          labels: labels,
-        );
+         id: id,
+         createdAt: createdAt,
+         updatedAt: updatedAt,
+         archivedAt: archivedAt,
+         accountStatus: accountStatus,
+         userAuthId: userAuthId,
+         email: email,
+         memberships: memberships,
+         ownerId: ownerId,
+         owner: owner,
+         labels: labels,
+       );
 
   /// Returns a shallow copy of this [User]
   /// with some or all fields replaced by the given arguments.

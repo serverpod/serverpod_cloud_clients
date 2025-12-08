@@ -24,8 +24,9 @@ import '../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();
-  final keyManager = InMemoryKeyManager();
-  final client = ClientMock(authenticationKeyManager: keyManager);
+  final client = ClientMock(
+    authKeyProvider: InMemoryKeyManager.authenticated(),
+  );
   final mockFileUploader = MockFileUploader();
   final cli = CloudCliCommandRunner.create(
     logger: logger,
@@ -65,7 +66,7 @@ void main() {
 
   group('Given authenticated', () {
     setUpAll(() async {
-      await keyManager.put('mock-token');
+      client.authKeyProvider = InMemoryKeyManager.authenticated();
 
       when(() => client.projects.createProject(
             cloudProjectId: any(named: 'cloudProjectId'),
@@ -128,10 +129,6 @@ void main() {
       when(() => client.plans
               .checkPlanAvailability(planName: any(named: 'planName')))
           .thenAnswer((final invocation) async => Future.value());
-    });
-
-    tearDownAll(() async {
-      await keyManager.remove();
     });
 
     group('and serverpod directory', () {

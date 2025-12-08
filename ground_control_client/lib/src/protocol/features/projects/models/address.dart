@@ -69,6 +69,7 @@ abstract class Address implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'Address',
       'addressLine1': addressLine1,
       if (addressLine2 != null) 'addressLine2': addressLine2,
       'postalCode': postalCode,
@@ -95,13 +96,13 @@ class _AddressImpl extends Address {
     String? state,
     required String country,
   }) : super._(
-          addressLine1: addressLine1,
-          addressLine2: addressLine2,
-          postalCode: postalCode,
-          city: city,
-          state: state,
-          country: country,
-        );
+         addressLine1: addressLine1,
+         addressLine2: addressLine2,
+         postalCode: postalCode,
+         city: city,
+         state: state,
+         country: country,
+       );
 
   /// Returns a shallow copy of this [Address]
   /// with some or all fields replaced by the given arguments.

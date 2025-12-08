@@ -38,7 +38,8 @@ abstract class DeployAttempt implements _i1.SerializableModel {
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
       attemptId: jsonSerialization['attemptId'] as String,
       status: _i2.DeployProgressStatus.fromJson(
-          (jsonSerialization['status'] as String)),
+        (jsonSerialization['status'] as String),
+      ),
       startedAt: jsonSerialization['startedAt'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['startedAt']),
@@ -79,6 +80,7 @@ abstract class DeployAttempt implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'DeployAttempt',
       'cloudCapsuleId': cloudCapsuleId,
       'attemptId': attemptId,
       'status': status.toJson(),
@@ -105,13 +107,13 @@ class _DeployAttemptImpl extends DeployAttempt {
     DateTime? endedAt,
     String? statusInfo,
   }) : super._(
-          cloudCapsuleId: cloudCapsuleId,
-          attemptId: attemptId,
-          status: status,
-          startedAt: startedAt,
-          endedAt: endedAt,
-          statusInfo: statusInfo,
-        );
+         cloudCapsuleId: cloudCapsuleId,
+         attemptId: attemptId,
+         status: status,
+         startedAt: startedAt,
+         endedAt: endedAt,
+         statusInfo: statusInfo,
+       );
 
   /// Returns a shallow copy of this [DeployAttempt]
   /// with some or all fields replaced by the given arguments.

@@ -62,7 +62,7 @@ See the full documentation at: https://docs.serverpod.cloud/references/cli/comma
   Future<void> run() async {
     final client = runner.serviceProvider.cloudApiClient;
     final isAuthenticated =
-        await client.authenticationKeyManager?.isAuthenticated == true;
+        await client.authKeyProvider?.isAuthenticated == true;
 
     if (requireLogin && !isAuthenticated) {
       await AuthLoginCommands.login(

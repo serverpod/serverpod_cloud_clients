@@ -26,7 +26,8 @@ abstract class NewCustomDomainNamesEvent implements _i1.SerializableModel {
   }) = _NewCustomDomainNamesEventImpl;
 
   factory NewCustomDomainNamesEvent.fromJson(
-      Map<String, dynamic> jsonSerialization) {
+    Map<String, dynamic> jsonSerialization,
+  ) {
     return NewCustomDomainNamesEvent(
       domainName: jsonSerialization['domainName'] as String,
       attempts: jsonSerialization['attempts'] as int,
@@ -51,6 +52,7 @@ abstract class NewCustomDomainNamesEvent implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'NewCustomDomainNamesEvent',
       'domainName': domainName,
       'attempts': attempts,
       'cloudCapsuleId': cloudCapsuleId,
@@ -69,10 +71,10 @@ class _NewCustomDomainNamesEventImpl extends NewCustomDomainNamesEvent {
     required int attempts,
     required String cloudCapsuleId,
   }) : super._(
-          domainName: domainName,
-          attempts: attempts,
-          cloudCapsuleId: cloudCapsuleId,
-        );
+         domainName: domainName,
+         attempts: attempts,
+         cloudCapsuleId: cloudCapsuleId,
+       );
 
   /// Returns a shallow copy of this [NewCustomDomainNamesEvent]
   /// with some or all fields replaced by the given arguments.

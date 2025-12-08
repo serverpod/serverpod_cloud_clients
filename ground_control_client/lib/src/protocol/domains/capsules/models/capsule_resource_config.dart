@@ -12,6 +12,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/capsules/models/capsule.dart' as _i2;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i3;
 
 abstract class CapsuleResource implements _i1.SerializableModel {
   CapsuleResource._({
@@ -27,16 +28,15 @@ abstract class CapsuleResource implements _i1.SerializableModel {
     bool? computeScalingEnabled,
     int? computeScalingMinReplicas,
     int? computeScalingMaxReplicas,
-  })  : computeRequestCpu = computeRequestCpu ?? '250m',
-        computeRequestMemory = computeRequestMemory ?? '256Mi',
-        computeRequestEphemeralStorage =
-            computeRequestEphemeralStorage ?? '1Gi',
-        computeLimitCpu = computeLimitCpu ?? '1',
-        computeLimitMemory = computeLimitMemory ?? '256Mi',
-        computeLimitEphemeralStorage = computeLimitEphemeralStorage ?? '1Gi',
-        computeScalingEnabled = computeScalingEnabled ?? false,
-        computeScalingMinReplicas = computeScalingMinReplicas ?? 1,
-        computeScalingMaxReplicas = computeScalingMaxReplicas ?? 1;
+  }) : computeRequestCpu = computeRequestCpu ?? '250m',
+       computeRequestMemory = computeRequestMemory ?? '256Mi',
+       computeRequestEphemeralStorage = computeRequestEphemeralStorage ?? '1Gi',
+       computeLimitCpu = computeLimitCpu ?? '1',
+       computeLimitMemory = computeLimitMemory ?? '256Mi',
+       computeLimitEphemeralStorage = computeLimitEphemeralStorage ?? '1Gi',
+       computeScalingEnabled = computeScalingEnabled ?? false,
+       computeScalingMinReplicas = computeScalingMinReplicas ?? 1,
+       computeScalingMaxReplicas = computeScalingMaxReplicas ?? 1;
 
   factory CapsuleResource({
     int? id,
@@ -59,8 +59,9 @@ abstract class CapsuleResource implements _i1.SerializableModel {
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as int,
       capsule: jsonSerialization['capsule'] == null
           ? null
-          : _i2.Capsule.fromJson(
-              (jsonSerialization['capsule'] as Map<String, dynamic>)),
+          : _i3.Protocol().deserialize<_i2.Capsule>(
+              jsonSerialization['capsule'],
+            ),
       computeRequestCpu: jsonSerialization['computeRequestCpu'] as String,
       computeRequestMemory: jsonSerialization['computeRequestMemory'] as String,
       computeRequestEphemeralStorage:
@@ -135,6 +136,7 @@ abstract class CapsuleResource implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'CapsuleResource',
       if (id != null) 'id': id,
       'cloudCapsuleId': cloudCapsuleId,
       if (capsule != null) 'capsule': capsule?.toJson(),
@@ -173,19 +175,19 @@ class _CapsuleResourceImpl extends CapsuleResource {
     int? computeScalingMinReplicas,
     int? computeScalingMaxReplicas,
   }) : super._(
-          id: id,
-          cloudCapsuleId: cloudCapsuleId,
-          capsule: capsule,
-          computeRequestCpu: computeRequestCpu,
-          computeRequestMemory: computeRequestMemory,
-          computeRequestEphemeralStorage: computeRequestEphemeralStorage,
-          computeLimitCpu: computeLimitCpu,
-          computeLimitMemory: computeLimitMemory,
-          computeLimitEphemeralStorage: computeLimitEphemeralStorage,
-          computeScalingEnabled: computeScalingEnabled,
-          computeScalingMinReplicas: computeScalingMinReplicas,
-          computeScalingMaxReplicas: computeScalingMaxReplicas,
-        );
+         id: id,
+         cloudCapsuleId: cloudCapsuleId,
+         capsule: capsule,
+         computeRequestCpu: computeRequestCpu,
+         computeRequestMemory: computeRequestMemory,
+         computeRequestEphemeralStorage: computeRequestEphemeralStorage,
+         computeLimitCpu: computeLimitCpu,
+         computeLimitMemory: computeLimitMemory,
+         computeLimitEphemeralStorage: computeLimitEphemeralStorage,
+         computeScalingEnabled: computeScalingEnabled,
+         computeScalingMinReplicas: computeScalingMinReplicas,
+         computeScalingMaxReplicas: computeScalingMaxReplicas,
+       );
 
   /// Returns a shallow copy of this [CapsuleResource]
   /// with some or all fields replaced by the given arguments.

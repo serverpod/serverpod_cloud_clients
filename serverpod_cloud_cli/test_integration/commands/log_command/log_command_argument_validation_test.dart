@@ -10,8 +10,9 @@ import '../../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();
-  final keyManager = InMemoryKeyManager();
-  final client = ClientMock(authenticationKeyManager: keyManager);
+  final client = ClientMock(
+    authKeyProvider: InMemoryKeyManager.authenticated(),
+  );
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
@@ -26,14 +27,6 @@ void main() {
   });
 
   group('Input validation - Given stored credentials', () {
-    setUp(() async {
-      await keyManager.put('mock-token');
-    });
-
-    tearDown(() async {
-      await keyManager.remove();
-    });
-
     group('when running log command with invalid --limit value', () {
       late Future result;
       setUp(() async {

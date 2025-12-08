@@ -39,8 +39,9 @@ abstract class SecretResource implements _i1.SerializableModel {
       id: jsonSerialization['id'] as int?,
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
       secretId: jsonSerialization['secretId'] as String,
-      secretType:
-          _i2.SecretType.fromJson((jsonSerialization['secretType'] as String)),
+      secretType: _i2.SecretType.fromJson(
+        (jsonSerialization['secretType'] as String),
+      ),
       latestVersionId: jsonSerialization['latestVersionId'] as String?,
       activeVersionId: jsonSerialization['activeVersionId'] as String?,
       createdAt: jsonSerialization['createdAt'] == null
@@ -81,6 +82,7 @@ abstract class SecretResource implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'SecretResource',
       if (id != null) 'id': id,
       'cloudCapsuleId': cloudCapsuleId,
       'secretId': secretId,
@@ -109,14 +111,14 @@ class _SecretResourceImpl extends SecretResource {
     String? activeVersionId,
     DateTime? createdAt,
   }) : super._(
-          id: id,
-          cloudCapsuleId: cloudCapsuleId,
-          secretId: secretId,
-          secretType: secretType,
-          latestVersionId: latestVersionId,
-          activeVersionId: activeVersionId,
-          createdAt: createdAt,
-        );
+         id: id,
+         cloudCapsuleId: cloudCapsuleId,
+         secretId: secretId,
+         secretType: secretType,
+         latestVersionId: latestVersionId,
+         activeVersionId: activeVersionId,
+         createdAt: createdAt,
+       );
 
   /// Returns a shallow copy of this [SecretResource]
   /// with some or all fields replaced by the given arguments.
@@ -136,10 +138,12 @@ class _SecretResourceImpl extends SecretResource {
       cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
       secretId: secretId ?? this.secretId,
       secretType: secretType ?? this.secretType,
-      latestVersionId:
-          latestVersionId is String? ? latestVersionId : this.latestVersionId,
-      activeVersionId:
-          activeVersionId is String? ? activeVersionId : this.activeVersionId,
+      latestVersionId: latestVersionId is String?
+          ? latestVersionId
+          : this.latestVersionId,
+      activeVersionId: activeVersionId is String?
+          ? activeVersionId
+          : this.activeVersionId,
       createdAt: createdAt is DateTime? ? createdAt : this.createdAt,
     );
   }

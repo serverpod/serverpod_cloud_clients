@@ -13,6 +13,7 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../features/custom_domains/models/custom_domain_name.dart' as _i2;
 import '../../../features/custom_domains/models/domain_name_target.dart' as _i3;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 abstract class CustomDomainNameList implements _i1.SerializableModel {
   CustomDomainNameList._({
@@ -26,21 +27,16 @@ abstract class CustomDomainNameList implements _i1.SerializableModel {
   }) = _CustomDomainNameListImpl;
 
   factory CustomDomainNameList.fromJson(
-      Map<String, dynamic> jsonSerialization) {
+    Map<String, dynamic> jsonSerialization,
+  ) {
     return CustomDomainNameList(
-      customDomainNames: (jsonSerialization['customDomainNames'] as List)
-          .map(
-              (e) => _i2.CustomDomainName.fromJson((e as Map<String, dynamic>)))
-          .toList(),
-      defaultDomainsByTarget:
-          (jsonSerialization['defaultDomainsByTarget'] as List)
-              .fold<Map<_i3.DomainNameTarget, String>>(
-                  {},
-                  (t, e) => {
-                        ...t,
-                        _i3.DomainNameTarget.fromJson((e['k'] as String)):
-                            e['v'] as String
-                      }),
+      customDomainNames: _i4.Protocol().deserialize<List<_i2.CustomDomainName>>(
+        jsonSerialization['customDomainNames'],
+      ),
+      defaultDomainsByTarget: _i4.Protocol()
+          .deserialize<Map<_i3.DomainNameTarget, String>>(
+            jsonSerialization['defaultDomainsByTarget'],
+          ),
     );
   }
 
@@ -58,10 +54,13 @@ abstract class CustomDomainNameList implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
-      'customDomainNames':
-          customDomainNames.toJson(valueToJson: (v) => v.toJson()),
-      'defaultDomainsByTarget':
-          defaultDomainsByTarget.toJson(keyToJson: (k) => k.toJson()),
+      '__className__': 'CustomDomainNameList',
+      'customDomainNames': customDomainNames.toJson(
+        valueToJson: (v) => v.toJson(),
+      ),
+      'defaultDomainsByTarget': defaultDomainsByTarget.toJson(
+        keyToJson: (k) => k.toJson(),
+      ),
     };
   }
 
@@ -76,9 +75,9 @@ class _CustomDomainNameListImpl extends CustomDomainNameList {
     required List<_i2.CustomDomainName> customDomainNames,
     required Map<_i3.DomainNameTarget, String> defaultDomainsByTarget,
   }) : super._(
-          customDomainNames: customDomainNames,
-          defaultDomainsByTarget: defaultDomainsByTarget,
-        );
+         customDomainNames: customDomainNames,
+         defaultDomainsByTarget: defaultDomainsByTarget,
+       );
 
   /// Returns a shallow copy of this [CustomDomainNameList]
   /// with some or all fields replaced by the given arguments.
@@ -89,17 +88,20 @@ class _CustomDomainNameListImpl extends CustomDomainNameList {
     Map<_i3.DomainNameTarget, String>? defaultDomainsByTarget,
   }) {
     return CustomDomainNameList(
-      customDomainNames: customDomainNames ??
+      customDomainNames:
+          customDomainNames ??
           this.customDomainNames.map((e0) => e0.copyWith()).toList(),
-      defaultDomainsByTarget: defaultDomainsByTarget ??
-          this.defaultDomainsByTarget.map((
-                key0,
-                value0,
-              ) =>
-                  MapEntry(
-                    key0,
-                    value0,
-                  )),
+      defaultDomainsByTarget:
+          defaultDomainsByTarget ??
+          this.defaultDomainsByTarget.map(
+            (
+              key0,
+              value0,
+            ) => MapEntry(
+              key0,
+              value0,
+            ),
+          ),
     );
   }
 }

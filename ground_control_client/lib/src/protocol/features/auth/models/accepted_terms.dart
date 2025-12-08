@@ -35,8 +35,9 @@ abstract class AcceptedTerms implements _i1.SerializableModel {
       id: jsonSerialization['id'] as int?,
       termsType: _i2.Terms.fromJson((jsonSerialization['termsType'] as String)),
       termsVersion: jsonSerialization['termsVersion'] as String,
-      createdAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+      createdAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['createdAt'],
+      ),
       identifier: jsonSerialization['identifier'] as String,
     );
   }
@@ -67,6 +68,7 @@ abstract class AcceptedTerms implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'AcceptedTerms',
       if (id != null) 'id': id,
       'termsType': termsType.toJson(),
       'termsVersion': termsVersion,
@@ -91,12 +93,12 @@ class _AcceptedTermsImpl extends AcceptedTerms {
     DateTime? createdAt,
     required String identifier,
   }) : super._(
-          id: id,
-          termsType: termsType,
-          termsVersion: termsVersion,
-          createdAt: createdAt,
-          identifier: identifier,
-        );
+         id: id,
+         termsType: termsType,
+         termsVersion: termsVersion,
+         createdAt: createdAt,
+         identifier: identifier,
+       );
 
   /// Returns a shallow copy of this [AcceptedTerms]
   /// with some or all fields replaced by the given arguments.

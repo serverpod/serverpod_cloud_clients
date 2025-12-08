@@ -27,7 +27,8 @@ enum DomainNameTarget implements _i1.SerializableModel {
         return DomainNameTarget.web;
       default:
         throw ArgumentError(
-            'Value "$name" cannot be converted to "DomainNameTarget"');
+          'Value "$name" cannot be converted to "DomainNameTarget"',
+        );
     }
   }
 

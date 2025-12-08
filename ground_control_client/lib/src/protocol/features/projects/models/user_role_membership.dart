@@ -13,6 +13,7 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/users/models/user.dart' as _i2;
 import '../../../features/projects/models/role.dart' as _i3;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 /// Represents a membership of a user in a role.
 abstract class UserRoleMembership implements _i1.SerializableModel {
@@ -25,8 +26,8 @@ abstract class UserRoleMembership implements _i1.SerializableModel {
     this.user,
     required this.roleId,
     this.role,
-  })  : createdAt = createdAt ?? DateTime.now(),
-        updatedAt = updatedAt ?? DateTime.now();
+  }) : createdAt = createdAt ?? DateTime.now(),
+       updatedAt = updatedAt ?? DateTime.now();
 
   factory UserRoleMembership({
     int? id,
@@ -42,23 +43,23 @@ abstract class UserRoleMembership implements _i1.SerializableModel {
   factory UserRoleMembership.fromJson(Map<String, dynamic> jsonSerialization) {
     return UserRoleMembership(
       id: jsonSerialization['id'] as int?,
-      createdAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
-      updatedAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
+      createdAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['createdAt'],
+      ),
+      updatedAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['updatedAt'],
+      ),
       archivedAt: jsonSerialization['archivedAt'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['archivedAt']),
       userId: jsonSerialization['userId'] as int,
       user: jsonSerialization['user'] == null
           ? null
-          : _i2.User.fromJson(
-              (jsonSerialization['user'] as Map<String, dynamic>)),
+          : _i4.Protocol().deserialize<_i2.User>(jsonSerialization['user']),
       roleId: jsonSerialization['roleId'] as int,
       role: jsonSerialization['role'] == null
           ? null
-          : _i3.Role.fromJson(
-              (jsonSerialization['role'] as Map<String, dynamic>)),
+          : _i4.Protocol().deserialize<_i3.Role>(jsonSerialization['role']),
     );
   }
 
@@ -99,6 +100,7 @@ abstract class UserRoleMembership implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'UserRoleMembership',
       if (id != null) 'id': id,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
@@ -129,15 +131,15 @@ class _UserRoleMembershipImpl extends UserRoleMembership {
     required int roleId,
     _i3.Role? role,
   }) : super._(
-          id: id,
-          createdAt: createdAt,
-          updatedAt: updatedAt,
-          archivedAt: archivedAt,
-          userId: userId,
-          user: user,
-          roleId: roleId,
-          role: role,
-        );
+         id: id,
+         createdAt: createdAt,
+         updatedAt: updatedAt,
+         archivedAt: archivedAt,
+         userId: userId,
+         user: user,
+         roleId: roleId,
+         role: role,
+       );
 
   /// Returns a shallow copy of this [UserRoleMembership]
   /// with some or all fields replaced by the given arguments.

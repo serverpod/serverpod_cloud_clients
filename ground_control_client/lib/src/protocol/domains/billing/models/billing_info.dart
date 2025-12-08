@@ -13,6 +13,7 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/billing/models/billing_customer_type.dart' as _i2;
 import '../../../domains/billing/models/owner.dart' as _i3;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 abstract class BillingInfo implements _i1.SerializableModel {
   BillingInfo._({
@@ -31,8 +32,8 @@ abstract class BillingInfo implements _i1.SerializableModel {
     this.vatNumber,
     this.vatType,
     _i2.BillingCustomerType? customerType,
-  })  : id = id ?? _i1.Uuid().v4obj(),
-        customerType = customerType ?? _i2.BillingCustomerType.private;
+  }) : id = id ?? _i1.Uuid().v4obj(),
+       customerType = customerType ?? _i2.BillingCustomerType.private;
 
   factory BillingInfo({
     _i1.UuidValue? id,
@@ -61,12 +62,12 @@ abstract class BillingInfo implements _i1.SerializableModel {
       updatedAt: jsonSerialization['updatedAt'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
-      ownerId:
-          _i1.UuidValueJsonExtension.fromJson(jsonSerialization['ownerId']),
+      ownerId: _i1.UuidValueJsonExtension.fromJson(
+        jsonSerialization['ownerId'],
+      ),
       owner: jsonSerialization['owner'] == null
           ? null
-          : _i3.Owner.fromJson(
-              (jsonSerialization['owner'] as Map<String, dynamic>)),
+          : _i4.Protocol().deserialize<_i3.Owner>(jsonSerialization['owner']),
       companyName: jsonSerialization['companyName'] as String?,
       addressLine1: jsonSerialization['addressLine1'] as String,
       addressLine2: jsonSerialization['addressLine2'] as String?,
@@ -77,13 +78,12 @@ abstract class BillingInfo implements _i1.SerializableModel {
       vatNumber: jsonSerialization['vatNumber'] as String?,
       vatType: jsonSerialization['vatType'] as String?,
       customerType: _i2.BillingCustomerType.fromJson(
-          (jsonSerialization['customerType'] as String)),
+        (jsonSerialization['customerType'] as String),
+      ),
     );
   }
 
-  /// The database id, set if the object has been inserted into the
-  /// database or if it has been fetched from the database. Otherwise,
-  /// the id will be null.
+  /// The id of the object.
   _i1.UuidValue id;
 
   DateTime? createdAt;
@@ -137,6 +137,7 @@ abstract class BillingInfo implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'BillingInfo',
       'id': id.toJson(),
       if (createdAt != null) 'createdAt': createdAt?.toJson(),
       if (updatedAt != null) 'updatedAt': updatedAt?.toJson(),
@@ -181,22 +182,22 @@ class _BillingInfoImpl extends BillingInfo {
     String? vatType,
     _i2.BillingCustomerType? customerType,
   }) : super._(
-          id: id,
-          createdAt: createdAt,
-          updatedAt: updatedAt,
-          ownerId: ownerId,
-          owner: owner,
-          companyName: companyName,
-          addressLine1: addressLine1,
-          addressLine2: addressLine2,
-          postalCode: postalCode,
-          city: city,
-          state: state,
-          country: country,
-          vatNumber: vatNumber,
-          vatType: vatType,
-          customerType: customerType,
-        );
+         id: id,
+         createdAt: createdAt,
+         updatedAt: updatedAt,
+         ownerId: ownerId,
+         owner: owner,
+         companyName: companyName,
+         addressLine1: addressLine1,
+         addressLine2: addressLine2,
+         postalCode: postalCode,
+         city: city,
+         state: state,
+         country: country,
+         vatNumber: vatNumber,
+         vatType: vatType,
+         customerType: customerType,
+       );
 
   /// Returns a shallow copy of this [BillingInfo]
   /// with some or all fields replaced by the given arguments.

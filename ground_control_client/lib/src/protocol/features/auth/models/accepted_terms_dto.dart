@@ -45,6 +45,7 @@ abstract class AcceptedTermsDTO implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'AcceptedTermsDTO',
       'termsType': termsType.toJson(),
       'termsVersion': termsVersion,
     };
@@ -61,9 +62,9 @@ class _AcceptedTermsDTOImpl extends AcceptedTermsDTO {
     required _i2.Terms termsType,
     required String termsVersion,
   }) : super._(
-          termsType: termsType,
-          termsVersion: termsVersion,
-        );
+         termsType: termsType,
+         termsVersion: termsVersion,
+       );
 
   /// Returns a shallow copy of this [AcceptedTermsDTO]
   /// with some or all fields replaced by the given arguments.

@@ -50,6 +50,7 @@ abstract class PaymentSetupIntent implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'PaymentSetupIntent',
       'id': id,
       'clientSecret': clientSecret,
       'status': status,
@@ -68,10 +69,10 @@ class _PaymentSetupIntentImpl extends PaymentSetupIntent {
     required String clientSecret,
     required String status,
   }) : super._(
-          id: id,
-          clientSecret: clientSecret,
-          status: status,
-        );
+         id: id,
+         clientSecret: clientSecret,
+         status: status,
+       );
 
   /// Returns a shallow copy of this [PaymentSetupIntent]
   /// with some or all fields replaced by the given arguments.

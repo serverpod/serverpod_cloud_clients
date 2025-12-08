@@ -36,7 +36,8 @@ enum DeployProgressStatus implements _i1.SerializableModel {
         return DeployProgressStatus.failure;
       default:
         throw ArgumentError(
-            'Value "$name" cannot be converted to "DeployProgressStatus"');
+          'Value "$name" cannot be converted to "DeployProgressStatus"',
+        );
     }
   }
 

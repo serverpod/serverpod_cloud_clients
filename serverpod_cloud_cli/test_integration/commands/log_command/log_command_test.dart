@@ -10,8 +10,9 @@ import '../../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();
-  final keyManager = InMemoryKeyManager();
-  final client = ClientMock(authenticationKeyManager: keyManager);
+  final client = ClientMock(
+    authKeyProvider: InMemoryKeyManager.authenticated(),
+  );
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
@@ -41,11 +42,11 @@ void main() {
 
   group('Given stored credentials', () {
     setUp(() async {
-      await keyManager.put('mock-token');
+      client.authKeyProvider = InMemoryKeyManager.authenticated();
     });
 
     tearDown(() async {
-      await keyManager.remove();
+      client.authKeyProvider = InMemoryKeyManager.unauthenticated();
     });
 
     group('when calling with --utc flag and --since duration value', () {

@@ -12,6 +12,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/capsules/models/capsule.dart' as _i2;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i3;
 
 abstract class EnvironmentVariable implements _i1.SerializableModel {
   EnvironmentVariable._({
@@ -22,8 +23,8 @@ abstract class EnvironmentVariable implements _i1.SerializableModel {
     this.capsule,
     required this.name,
     required this.value,
-  })  : createdAt = createdAt ?? DateTime.now(),
-        updatedAt = updatedAt ?? DateTime.now();
+  }) : createdAt = createdAt ?? DateTime.now(),
+       updatedAt = updatedAt ?? DateTime.now();
 
   factory EnvironmentVariable({
     int? id,
@@ -38,15 +39,18 @@ abstract class EnvironmentVariable implements _i1.SerializableModel {
   factory EnvironmentVariable.fromJson(Map<String, dynamic> jsonSerialization) {
     return EnvironmentVariable(
       id: jsonSerialization['id'] as int?,
-      createdAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
-      updatedAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
+      createdAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['createdAt'],
+      ),
+      updatedAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['updatedAt'],
+      ),
       capsuleId: jsonSerialization['capsuleId'] as int,
       capsule: jsonSerialization['capsule'] == null
           ? null
-          : _i2.Capsule.fromJson(
-              (jsonSerialization['capsule'] as Map<String, dynamic>)),
+          : _i3.Protocol().deserialize<_i2.Capsule>(
+              jsonSerialization['capsule'],
+            ),
       name: jsonSerialization['name'] as String,
       value: jsonSerialization['value'] as String,
     );
@@ -87,6 +91,7 @@ abstract class EnvironmentVariable implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'EnvironmentVariable',
       if (id != null) 'id': id,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
@@ -115,14 +120,14 @@ class _EnvironmentVariableImpl extends EnvironmentVariable {
     required String name,
     required String value,
   }) : super._(
-          id: id,
-          createdAt: createdAt,
-          updatedAt: updatedAt,
-          capsuleId: capsuleId,
-          capsule: capsule,
-          name: name,
-          value: value,
-        );
+         id: id,
+         createdAt: createdAt,
+         updatedAt: updatedAt,
+         capsuleId: capsuleId,
+         capsule: capsule,
+         name: name,
+         value: value,
+       );
 
   /// Returns a shallow copy of this [EnvironmentVariable]
   /// with some or all fields replaced by the given arguments.

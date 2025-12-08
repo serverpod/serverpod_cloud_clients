@@ -22,9 +22,11 @@ abstract class UserAccountRegistrationDeniedException
       _UserAccountRegistrationDeniedExceptionImpl;
 
   factory UserAccountRegistrationDeniedException.fromJson(
-      Map<String, dynamic> jsonSerialization) {
+    Map<String, dynamic> jsonSerialization,
+  ) {
     return UserAccountRegistrationDeniedException(
-        message: jsonSerialization['message'] as String);
+      message: jsonSerialization['message'] as String,
+    );
   }
 
   String message;
@@ -35,19 +37,22 @@ abstract class UserAccountRegistrationDeniedException
   UserAccountRegistrationDeniedException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
-    return {'message': message};
+    return {
+      '__className__': 'UserAccountRegistrationDeniedException',
+      'message': message,
+    };
   }
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return 'UserAccountRegistrationDeniedException(message: $message)';
   }
 }
 
 class _UserAccountRegistrationDeniedExceptionImpl
     extends UserAccountRegistrationDeniedException {
   _UserAccountRegistrationDeniedExceptionImpl({required String message})
-      : super._(message: message);
+    : super._(message: message);
 
   /// Returns a shallow copy of this [UserAccountRegistrationDeniedException]
   /// with some or all fields replaced by the given arguments.
@@ -55,6 +60,7 @@ class _UserAccountRegistrationDeniedExceptionImpl
   @override
   UserAccountRegistrationDeniedException copyWith({String? message}) {
     return UserAccountRegistrationDeniedException(
-        message: message ?? this.message);
+      message: message ?? this.message,
+    );
   }
 }

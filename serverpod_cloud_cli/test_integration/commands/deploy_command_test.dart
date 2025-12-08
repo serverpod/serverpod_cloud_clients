@@ -28,7 +28,9 @@ import '../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();
-  final client = ClientMock(authenticationKeyManager: AuthedKeyManagerMock());
+  final client = ClientMock(
+    authKeyProvider: InMemoryKeyManager.authenticated(),
+  );
   final mockFileUploader = MockFileUploader();
   final cli = CloudCliCommandRunner.create(
     logger: logger,
@@ -48,7 +50,7 @@ void main() {
   });
 
   group(
-      'Given unauthenticated and current directory is serverpod server directory',
+      'Given rejected auth key and current directory is serverpod server directory',
       () {
     setUp(() async {
       await ProjectFactory.serverpodServerDir().create();

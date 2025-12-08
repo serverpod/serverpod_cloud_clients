@@ -27,7 +27,8 @@ enum SecretType implements _i1.SerializableModel {
         return SecretType.unknown;
       default:
         throw ArgumentError(
-            'Value "$name" cannot be converted to "SecretType"');
+          'Value "$name" cannot be converted to "SecretType"',
+        );
     }
   }
 

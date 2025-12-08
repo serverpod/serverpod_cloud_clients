@@ -12,6 +12,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/billing/models/payment_method_card.dart' as _i2;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i3;
 
 abstract class PaymentMethod implements _i1.SerializableModel {
   PaymentMethod._({
@@ -32,8 +33,9 @@ abstract class PaymentMethod implements _i1.SerializableModel {
       type: jsonSerialization['type'] as String,
       card: jsonSerialization['card'] == null
           ? null
-          : _i2.PaymentMethodCard.fromJson(
-              (jsonSerialization['card'] as Map<String, dynamic>)),
+          : _i3.Protocol().deserialize<_i2.PaymentMethodCard>(
+              jsonSerialization['card'],
+            ),
     );
   }
 
@@ -54,6 +56,7 @@ abstract class PaymentMethod implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'PaymentMethod',
       'id': id,
       'type': type,
       if (card != null) 'card': card?.toJson(),
@@ -74,10 +77,10 @@ class _PaymentMethodImpl extends PaymentMethod {
     required String type,
     _i2.PaymentMethodCard? card,
   }) : super._(
-          id: id,
-          type: type,
-          card: card,
-        );
+         id: id,
+         type: type,
+         card: card,
+       );
 
   /// Returns a shallow copy of this [PaymentMethod]
   /// with some or all fields replaced by the given arguments.

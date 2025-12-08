@@ -20,9 +20,11 @@ abstract class DuplicateEntryException
       _DuplicateEntryExceptionImpl;
 
   factory DuplicateEntryException.fromJson(
-      Map<String, dynamic> jsonSerialization) {
+    Map<String, dynamic> jsonSerialization,
+  ) {
     return DuplicateEntryException(
-        message: jsonSerialization['message'] as String);
+      message: jsonSerialization['message'] as String,
+    );
   }
 
   String message;
@@ -33,18 +35,21 @@ abstract class DuplicateEntryException
   DuplicateEntryException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
-    return {'message': message};
+    return {
+      '__className__': 'DuplicateEntryException',
+      'message': message,
+    };
   }
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return 'DuplicateEntryException(message: $message)';
   }
 }
 
 class _DuplicateEntryExceptionImpl extends DuplicateEntryException {
   _DuplicateEntryExceptionImpl({required String message})
-      : super._(message: message);
+    : super._(message: message);
 
   /// Returns a shallow copy of this [DuplicateEntryException]
   /// with some or all fields replaced by the given arguments.

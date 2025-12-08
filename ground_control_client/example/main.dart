@@ -7,28 +7,22 @@ var url = 'http://localhost:8080/';
 Future<void> main() async {
   var client = Client(
     url,
-    authenticationKeyManager: _SimpleAuthenticationKeyManager(),
-  );
+  )..authKeyProvider = _SimpleAuthenticationKeyManager('mock-token');
 
   client.close();
 }
 
 // Simple implementation for managing authentication keys.
-class _SimpleAuthenticationKeyManager extends AuthenticationKeyManager {
+class _SimpleAuthenticationKeyManager implements ClientAuthKeyProvider {
   String? _key;
 
-  @override
-  Future<String?> get() async {
-    return _key;
-  }
+  _SimpleAuthenticationKeyManager(this._key);
 
   @override
-  Future<void> put(String key) async {
-    _key = key;
-  }
-
-  @override
-  Future<void> remove() async {
-    _key = null;
+  Future<String?> get authHeaderValue async {
+    return switch (_key) {
+      final String key => wrapAsBearerAuthHeaderValue(key),
+      null => null,
+    };
   }
 }

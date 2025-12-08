@@ -43,9 +43,11 @@ abstract class CustomDomainName implements _i1.SerializableModel {
       id: jsonSerialization['id'] as int?,
       name: jsonSerialization['name'] as String,
       status: _i2.DomainNameStatus.fromJson(
-          (jsonSerialization['status'] as String)),
+        (jsonSerialization['status'] as String),
+      ),
       target: _i3.DomainNameTarget.fromJson(
-          (jsonSerialization['target'] as String)),
+        (jsonSerialization['target'] as String),
+      ),
       createdAt: jsonSerialization['createdAt'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
@@ -53,7 +55,8 @@ abstract class CustomDomainName implements _i1.SerializableModel {
       dnsRecordVerificationValue:
           jsonSerialization['dnsRecordVerificationValue'] as String,
       dnsRecordType: _i4.DnsRecordType.fromJson(
-          (jsonSerialization['dnsRecordType'] as String)),
+        (jsonSerialization['dnsRecordType'] as String),
+      ),
     );
   }
 
@@ -92,6 +95,7 @@ abstract class CustomDomainName implements _i1.SerializableModel {
   @override
   Map<String, dynamic> toJson() {
     return {
+      '__className__': 'CustomDomainName',
       if (id != null) 'id': id,
       'name': name,
       'status': status.toJson(),
@@ -122,15 +126,15 @@ class _CustomDomainNameImpl extends CustomDomainName {
     required String dnsRecordVerificationValue,
     required _i4.DnsRecordType dnsRecordType,
   }) : super._(
-          id: id,
-          name: name,
-          status: status,
-          target: target,
-          createdAt: createdAt,
-          capsuleId: capsuleId,
-          dnsRecordVerificationValue: dnsRecordVerificationValue,
-          dnsRecordType: dnsRecordType,
-        );
+         id: id,
+         name: name,
+         status: status,
+         target: target,
+         createdAt: createdAt,
+         capsuleId: capsuleId,
+         dnsRecordVerificationValue: dnsRecordVerificationValue,
+         dnsRecordType: dnsRecordType,
+       );
 
   /// Returns a shallow copy of this [CustomDomainName]
   /// with some or all fields replaced by the given arguments.
