@@ -77,10 +77,18 @@ enum AdminProcurePlanOption<V> implements OptionDefinition<V> {
       min: 0,
     ),
   ),
+  trialPeriod(
+    IntOption(
+      argName: 'trial-period',
+      helpText:
+          'Override the default trial period of the plan, in number of days.',
+      min: 0,
+    ),
+  ),
   overrideChecks(
     FlagOption(
       argName: 'override',
-      helpText: 'Override product availability checks.',
+      helpText: 'Override the product availability checks.',
       negatable: false,
       defaultsTo: false,
     ),
@@ -112,6 +120,8 @@ class AdminProcurePlanCommand extends CloudCliCommand<AdminProcurePlanOption> {
     final productName = commandConfig.value(AdminProcurePlanOption.productName);
     final ver =
         commandConfig.optionalValue(AdminProcurePlanOption.productVersion);
+    final trialPeriod =
+        commandConfig.optionalValue(AdminProcurePlanOption.trialPeriod);
     final override = commandConfig.value(AdminProcurePlanOption.overrideChecks);
 
     await ProductAdminCommands.procurePlan(
@@ -120,6 +130,7 @@ class AdminProcurePlanCommand extends CloudCliCommand<AdminProcurePlanOption> {
       userEmail: userEmail,
       planName: productName,
       planVersion: ver,
+      trialPeriodOverride: trialPeriod,
       overrideChecks: override,
     );
   }

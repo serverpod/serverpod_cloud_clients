@@ -32,12 +32,14 @@ abstract class ProductAdminCommands {
     required final String userEmail,
     required final String planName,
     final int? planVersion,
+    final int? trialPeriodOverride,
     final bool? overrideChecks,
   }) async {
     await cloudApiClient.adminProcurement.procurePlan(
       userEmail: userEmail,
       planProductName: planName,
       planProductVersion: planVersion,
+      trialPeriodOverride: trialPeriodOverride,
       overrideChecks: overrideChecks,
     );
 

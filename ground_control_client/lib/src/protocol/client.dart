@@ -79,6 +79,7 @@ class EndpointAdminProcurement extends _i1.EndpointRef {
 
   /// Procures a plan for a user.
   /// If [planProductVersion] is not provided, the latest version is used.
+  /// If [trialPeriodOverride] is provided, it will override the trial period (number of days).
   /// If [overrideChecks] is true, the product availability checks are overridden.
   ///
   /// Throws a [NotFoundException] if the user or product is not found.
@@ -87,6 +88,7 @@ class EndpointAdminProcurement extends _i1.EndpointRef {
     required String userEmail,
     required String planProductName,
     int? planProductVersion,
+    int? trialPeriodOverride,
     bool? overrideChecks,
   }) => caller.callServerEndpoint<void>(
     'adminProcurement',
@@ -95,6 +97,7 @@ class EndpointAdminProcurement extends _i1.EndpointRef {
       'userEmail': userEmail,
       'planProductName': planProductName,
       'planProductVersion': planProductVersion,
+      'trialPeriodOverride': trialPeriodOverride,
       'overrideChecks': overrideChecks,
     },
   );
