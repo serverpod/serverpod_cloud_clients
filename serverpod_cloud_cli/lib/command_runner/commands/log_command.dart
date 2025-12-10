@@ -13,21 +13,21 @@ enum LogOption<V> implements OptionDefinition<V> {
   limit(IntOption(
     argName: 'limit',
     helpText: 'The maximum number of log records to fetch.',
-    defaultsTo: 50,
+    defaultsTo: 100,
     min: 0,
   )),
   utc(UtcOption()),
   until(DateTimeOrDurationOption(
     argName: 'until',
     helpText: 'Fetch records from before this timestamp. Accepts ISO date '
-        '(e.g. "2024-01-15T10:30:00Z") or relative from now (e.g. "5m", "3h", "1d"). '
-        'Can also be specified as the first argument.',
+        '(e.g. "2024-01-15T10:30:00Z") or relative from now (e.g. "5m", "3h", "1d").',
   )),
   since(DateTimeOrDurationOption(
     argName: 'since',
     argPos: 0,
     helpText: 'Fetch records from after this timestamp. Accepts ISO date '
-        '(e.g. "2024-01-15T10:30:00Z") or relative from now (e.g. "5m", "3h", "1d").',
+        '(e.g. "2024-01-15T10:30:00Z") or relative from now (e.g. "5m", "3h", "1d").'
+        ' Can also be specified as the first argument.',
   )),
   all(FlagOption(
     argName: 'all',
@@ -39,8 +39,8 @@ enum LogOption<V> implements OptionDefinition<V> {
   tail(FlagOption(
     argName: 'tail',
     helpText: 'Tail the log and get real time updates.',
-    negatable: false,
     defaultsTo: false,
+    negatable: false,
   ));
 
   const LogOption(this.option);
@@ -119,8 +119,8 @@ Examples
     final projectId = commandConfig.value(LogOption.projectId);
     final limit = commandConfig.value(LogOption.limit);
     final inUtc = commandConfig.value(LogOption.utc);
-    final until = commandConfig.optionalValue(LogOption.until);
-    final since = commandConfig.optionalValue(LogOption.since);
+    var until = commandConfig.optionalValue(LogOption.until);
+    var since = commandConfig.optionalValue(LogOption.since);
     final tailOpt = commandConfig.optionalValue(LogOption.tail);
     final internalAllOpt = commandConfig.value(LogOption.all);
 
@@ -128,15 +128,15 @@ Examples
     final anyTimeSpanIsSet = until != null || since != null;
     if (internalAllOpt) {
       if (anyTimeSpanIsSet) {
-        throw CloudCliUsageException(
-          'The --all option cannot be combined with --until or --since.',
-        );
+        logger.warning(
+            'The --all option cannot be combined with --until or --since.');
+        until = null;
+        since = null;
       }
     } else if (tailOpt == true) {
       if (anyTimeSpanIsSet) {
-        throw CloudCliUsageException(
-          'The --tail option cannot be combined with --until or --since.',
-        );
+        logger.warning(
+            'The --tail option cannot be combined with --until or --since.');
       }
     } else if (until != null || since != null) {
       if (until != null && since != null && until.isBefore(since)) {
@@ -145,7 +145,7 @@ Examples
         );
       }
     } else if (until == null && since == null) {
-      defaultSince = DateTime.now().subtract(Duration(minutes: 10));
+      defaultSince = DateTime.now().subtract(Duration(minutes: 30));
     }
 
     if (tailOpt == true) {

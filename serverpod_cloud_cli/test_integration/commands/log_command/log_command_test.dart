@@ -55,7 +55,7 @@ void main() {
               cloudProjectId: projectId,
               beforeTime: null,
               afterTime: any(named: 'afterTime'),
-              limit: 50,
+              limit: any(named: 'limit'),
             )).thenAnswer((final _) => Stream.fromIterable(mockRecords));
 
         await cli.run([
@@ -85,7 +85,7 @@ void main() {
               line: '2024-01-01 00:00:00.000Z    |         | Log message 2',
             ),
             equalsLineCall(
-              line: '-- End of log stream -- 2 records (limit 50) --',
+              line: '-- End of log stream -- 2 records (limit 100) --',
             ),
           ]),
         );
@@ -98,7 +98,7 @@ void main() {
               cloudProjectId: projectId,
               beforeTime: any(named: 'beforeTime'),
               afterTime: any(named: 'afterTime'),
-              limit: 50,
+              limit: any(named: 'limit'),
             )).thenAnswer((final _) => Stream.fromIterable(mockRecords));
 
         await cli.run([
@@ -128,7 +128,7 @@ void main() {
               line: '2024-01-01 00:00:00.000Z    |         | Log message 2',
             ),
             equalsLineCall(
-              line: '-- End of log stream -- 2 records (limit 50) --',
+              line: '-- End of log stream -- 2 records (limit 100) --',
             ),
           ]),
         );
@@ -141,7 +141,7 @@ void main() {
               cloudProjectId: projectId,
               beforeTime: DateTime.parse('2030-12-01T00:00:00Z'),
               afterTime: null,
-              limit: 50,
+              limit: any(named: 'limit'),
             )).thenAnswer((final _) => Stream.fromIterable(mockRecords));
 
         await cli.run([
@@ -175,7 +175,7 @@ void main() {
               line: '2024-01-01 00:00:00.000Z    |         | Log message 2',
             ),
             equalsLineCall(
-              line: '-- End of log stream -- 2 records (limit 50) --',
+              line: '-- End of log stream -- 2 records (limit 100) --',
             ),
           ]),
         );
@@ -188,7 +188,7 @@ void main() {
               cloudProjectId: projectId,
               beforeTime: null,
               afterTime: DateTime.parse('2020-12-01T00:00:00Z'),
-              limit: 50,
+              limit: any(named: 'limit'),
             )).thenAnswer((final _) => Stream.fromIterable(mockRecords));
 
         await cli.run([
@@ -222,7 +222,7 @@ void main() {
               line: '2024-01-01 00:00:00.000Z    |         | Log message 2',
             ),
             equalsLineCall(
-              line: '-- End of log stream -- 2 records (limit 50) --',
+              line: '-- End of log stream -- 2 records (limit 100) --',
             ),
           ]),
         );
@@ -236,7 +236,7 @@ void main() {
               cloudProjectId: projectId,
               beforeTime: DateTime.parse('2030-01-01T00:00:00Z'),
               afterTime: DateTime.parse('2020-12-01T00:00:00Z'),
-              limit: 50,
+              limit: any(named: 'limit'),
             )).thenAnswer((final _) => Stream.fromIterable(mockRecords));
 
         await cli.run([
@@ -272,7 +272,7 @@ void main() {
               line: '2024-01-01 00:00:00.000Z    |         | Log message 2',
             ),
             equalsLineCall(
-              line: '-- End of log stream -- 2 records (limit 50) --',
+              line: '-- End of log stream -- 2 records (limit 100) --',
             ),
           ]),
         );
@@ -283,7 +283,7 @@ void main() {
       setUp(() async {
         when(() => client.logs.tailRecords(
               cloudProjectId: projectId,
-              limit: 50,
+              limit: any(named: 'limit'),
             )).thenAnswer((final _) => Stream.fromIterable(mockRecords));
 
         await cli.run([
@@ -315,7 +315,7 @@ void main() {
               line: '2024-01-01 00:00:00.000Z    |         | Log message 2',
             ),
             equalsLineCall(
-              line: '-- End of log stream -- 2 records (limit 50) --',
+              line: '-- End of log stream -- 2 records (limit 100) --',
             ),
           ]),
         );

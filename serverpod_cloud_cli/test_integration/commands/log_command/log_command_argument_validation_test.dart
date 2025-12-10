@@ -208,18 +208,14 @@ void main() {
         } catch (_) {}
       });
 
-      test('then throws ExitErrorException', () async {
-        await expectLater(result, throwsA(isA<ErrorExitException>()));
-      });
-
-      test('then logs error', () async {
+      test('then logs warning', () async {
         try {
           await result;
         } catch (_) {}
 
         expect(
-          logger.errorCalls.last,
-          equalsErrorCall(
+          logger.warningCalls.last,
+          equalsWarningCall(
             message:
                 'The --all option cannot be combined with --until or --since.',
           ),
@@ -244,18 +240,14 @@ void main() {
         } catch (_) {}
       });
 
-      test('then throws ExitErrorException', () async {
-        await expectLater(result, throwsA(isA<ErrorExitException>()));
-      });
-
-      test('then logs error', () async {
+      test('then logs warning', () async {
         try {
           await result;
         } catch (_) {}
 
         expect(
-          logger.errorCalls.last,
-          equalsErrorCall(
+          logger.warningCalls.last,
+          equalsWarningCall(
             message:
                 'The --all option cannot be combined with --until or --since.',
           ),
@@ -280,18 +272,14 @@ void main() {
         } catch (_) {}
       });
 
-      test('then throws ExitErrorException', () async {
-        await expectLater(result, throwsA(isA<ErrorExitException>()));
-      });
-
-      test('then logs error', () async {
+      test('then logs warning', () async {
         try {
           await result;
         } catch (_) {}
 
         expect(
-          logger.errorCalls.last,
-          equalsErrorCall(
+          logger.warningCalls.last,
+          equalsWarningCall(
             message:
                 'The --all option cannot be combined with --until or --since.',
           ),
@@ -316,18 +304,14 @@ void main() {
         } catch (_) {}
       });
 
-      test('then throws ExitErrorException', () async {
-        await expectLater(result, throwsA(isA<ErrorExitException>()));
-      });
-
-      test('then logs error', () async {
+      test('then logs warning', () async {
         try {
           await result;
         } catch (_) {}
 
         expect(
-          logger.errorCalls.last,
-          equalsErrorCall(
+          logger.warningCalls.last,
+          equalsWarningCall(
             message:
                 'The --tail option cannot be combined with --until or --since.',
           ),
@@ -352,18 +336,14 @@ void main() {
         } catch (_) {}
       });
 
-      test('then throws ExitErrorException', () async {
-        await expectLater(result, throwsA(isA<ErrorExitException>()));
-      });
-
-      test('then logs error', () async {
+      test('then logs warning', () async {
         try {
           await result;
         } catch (_) {}
 
         expect(
-          logger.errorCalls.last,
-          equalsErrorCall(
+          logger.warningCalls.last,
+          equalsWarningCall(
             message:
                 'The --all option cannot be combined with --until or --since.',
           ),
@@ -388,18 +368,14 @@ void main() {
         } catch (_) {}
       });
 
-      test('then throws ExitErrorException', () async {
-        await expectLater(result, throwsA(isA<ErrorExitException>()));
-      });
-
-      test('then logs error', () async {
+      test('then logs warning', () async {
         try {
           await result;
         } catch (_) {}
 
         expect(
-          logger.errorCalls.last,
-          equalsErrorCall(
+          logger.warningCalls.last,
+          equalsWarningCall(
             message:
                 'The --tail option cannot be combined with --until or --since.',
           ),
@@ -424,18 +400,14 @@ void main() {
         } catch (_) {}
       });
 
-      test('then throws ExitErrorException', () async {
-        await expectLater(result, throwsA(isA<ErrorExitException>()));
-      });
-
-      test('then logs error', () async {
+      test('then logs warning', () async {
         try {
           await result;
         } catch (_) {}
 
         expect(
-          logger.errorCalls.last,
-          equalsErrorCall(
+          logger.warningCalls.last,
+          equalsWarningCall(
             message:
                 'The --tail option cannot be combined with --until or --since.',
           ),

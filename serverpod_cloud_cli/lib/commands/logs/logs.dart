@@ -98,6 +98,9 @@ abstract class LogsFeature {
     } finally {
       writeln('-- End of log stream --'
           ' $count records ${limit != null ? '(limit $limit)' : ''} --');
+      if (count == limit) {
+        writeln('   (Use the --limit option to increase the limit.)');
+      }
     }
   }
 
