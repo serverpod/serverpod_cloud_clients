@@ -96,3 +96,28 @@ class AdminInviteUserCommand extends CloudCliCommand<AdminInviteUserOption> {
     );
   }
 }
+
+class AdminInviteHackathonUserCommand
+    extends CloudCliCommand<AdminInviteUserOption> {
+  @override
+  final name = 'invite-hackathon-user';
+
+  @override
+  final description = 'Invite a user to the 2025 Serverpod Hackathon.';
+
+  AdminInviteHackathonUserCommand({required super.logger})
+      : super(options: AdminInviteUserOption.values);
+
+  @override
+  Future<void> runWithConfig(
+    final Configuration<AdminInviteUserOption> commandConfig,
+  ) async {
+    final email = commandConfig.value(AdminInviteUserOption.user);
+
+    await UserAdminCommands.inviteHackathonUser(
+      runner.serviceProvider.cloudApiClient,
+      logger: logger,
+      email: email,
+    );
+  }
+}

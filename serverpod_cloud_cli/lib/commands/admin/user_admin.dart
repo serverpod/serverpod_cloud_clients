@@ -75,4 +75,23 @@ abstract class UserAdminCommands {
       newParagraph: true,
     );
   }
+
+  static Future<void> inviteHackathonUser(
+    final Client cloudApiClient, {
+    required final CommandLogger logger,
+    required final String email,
+  }) async {
+    try {
+      await cloudApiClient.hackathon.inviteUser(
+        email: email,
+      );
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Failed to invite hackathon user');
+    }
+
+    logger.success(
+      'User invited to the 2025 Serverpod Hackathon.',
+      newParagraph: true,
+    );
+  }
 }

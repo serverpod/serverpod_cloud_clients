@@ -24,6 +24,7 @@ class CloudAdminCommand extends CloudCliCommand {
   }) {
     addSubcommand(AdminListUsersCommand(logger: logger));
     addSubcommand(AdminInviteUserCommand(logger: logger));
+    addSubcommand(AdminInviteHackathonUserCommand(logger: logger));
     addSubcommand(AdminProjectCommand(logger: logger));
     addSubcommand(AdminRedeployCommand(logger: logger));
     addSubcommand(AdminProductCommand(logger: logger));
