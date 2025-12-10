@@ -123,11 +123,12 @@ void main() {
         (final invocation) async => Future.value([]),
       );
 
-      when(() => client.plans.procurePlan(planName: any(named: 'planName')))
+      when(() => client.plans
+              .procurePlan(planProductName: any(named: 'planProductName')))
           .thenAnswer((final invocation) async => Future.value());
 
-      when(() => client.plans
-              .checkPlanAvailability(planName: any(named: 'planName')))
+      when(() => client.plans.checkPlanAvailability(
+              planProductName: any(named: 'planProductName')))
           .thenAnswer((final invocation) async => Future.value());
     });
 

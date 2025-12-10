@@ -18,18 +18,18 @@ abstract class ProjectCommands {
 
   /// Subcommand to check if the user is subscribed to a plan,
   /// and if not whether a plan can be procured.
-  /// If [planName] is not provided, the default plan will be assumed.
+  /// If [planProductName] is not provided, the default plan will be assumed.
   /// Throws an exception if there is no subscription and the plan cannot be
   /// procured.
   static Future<void> checkPlanAvailability(
     final Client cloudApiClient, {
     required final CommandLogger logger,
-    final String? planName,
+    final String? planProductName,
   }) async {
     final planNames = await cloudApiClient.plans.listProcuredPlanNames();
     if (planNames.isEmpty) {
       await cloudApiClient.plans.checkPlanAvailability(
-        planName: planName ?? defaultPlanName,
+        planProductName: planProductName ?? defaultPlanName,
       );
     }
   }
@@ -52,7 +52,7 @@ abstract class ProjectCommands {
     // This behavior will be changed in the future.
     final planNames = await cloudApiClient.plans.listProcuredPlanNames();
     if (planNames.isEmpty) {
-      await cloudApiClient.plans.procurePlan(planName: defaultPlanName);
+      await cloudApiClient.plans.procurePlan(planProductName: defaultPlanName);
       logger.init('Creating Serverpod Cloud project "$projectId".');
       logger.info('On plan: $defaultPlanName');
     } else {
