@@ -203,14 +203,12 @@ void main() {
                 newParagraph: true,
               ),
               equalsSuccessCall(
-                message: 'Project uploaded successfully!',
+                message: 'When the server has started, you can access it at:\n',
                 trailingRocket: true,
                 newParagraph: true,
-                followUp: '''
-When the server has started, you can access it at:
-Web:      https://$projectId.serverpod.space/
-API:      https://$projectId.api.serverpod.space/
-Insights: https://$projectId.insights.serverpod.space/''',
+                followUp: '   Web:      https://$projectId.serverpod.space/\n'
+                    '   API:      https://$projectId.api.serverpod.space/\n'
+                    '   Insights: https://$projectId.insights.serverpod.space/',
               ),
             ]),
           );
@@ -228,19 +226,13 @@ Insights: https://$projectId.insights.serverpod.space/''',
         });
 
         test('then logs deployments show hint message', () async {
-          expect(logger.terminalCommandCalls, hasLength(2));
+          expect(logger.terminalCommandCalls, hasLength(1));
           expect(
             logger.terminalCommandCalls,
             containsAllInOrder([
               equalsTerminalCommandCall(
-                command: 'scloud domain',
-                message: 'Set up your custom domain by running:',
-                newParagraph: true,
-              ),
-              equalsTerminalCommandCall(
-                command: 'scloud deployment show -p $projectId',
-                message:
-                    'Run this command to see the current deployment status:',
+                command: 'scloud deployment show',
+                message: 'View the deployment status:',
               ),
             ]),
           );

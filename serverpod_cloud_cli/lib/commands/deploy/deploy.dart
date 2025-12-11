@@ -107,7 +107,9 @@ abstract class Deploy {
     if (!isZipped) throw ErrorExitException('Failed to zip project.');
 
     if (dryRun) {
-      logger.info('Dry run, skipping upload.');
+      await logger.progress('Dry run, skipping upload.', () async {
+        return true;
+      });
       return;
     }
 
@@ -145,23 +147,6 @@ abstract class Deploy {
     if (!success) {
       throw ErrorExitException('Failed to upload project.');
     }
-
-    const tenantHost = 'serverpod.space';
-
-    logger.success(
-      'Project uploaded successfully!',
-      trailingRocket: true,
-      newParagraph: true,
-      followUp: 'When the server has started, you can access it at:\n'
-          'Web:      https://$projectId.$tenantHost/\n'
-          'API:      https://$projectId.api.$tenantHost/\n'
-          'Insights: https://$projectId.insights.$tenantHost/',
-    );
-    logger.terminalCommand(
-      message: 'Set up your custom domain by running:',
-      'scloud domain',
-      newParagraph: true,
-    );
   }
 
   static String _uploadDioExceptionFormatter(final DioException e) {

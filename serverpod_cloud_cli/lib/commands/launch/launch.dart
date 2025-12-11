@@ -437,9 +437,21 @@ The default API domain will be: <project-id>.api.serverpod.space
       cloudCapsuleId: projectId,
       attemptId: attemptId,
     );
+
+    const tenantHost = 'serverpod.space';
+
+    logger.success(
+      'When the server has started, you can access it at:\n',
+      trailingRocket: true,
+      newParagraph: true,
+      followUp: '   Web:      https://$projectId.$tenantHost/\n'
+          '   API:      https://$projectId.api.$tenantHost/\n'
+          '   Insights: https://$projectId.insights.$tenantHost/',
+    );
+
     logger.terminalCommand(
-      'scloud deployment show -p $projectId',
-      message: 'Run this command to see the current deployment status:',
+      'scloud deployment show',
+      message: 'View the deployment status:',
     );
   }
 

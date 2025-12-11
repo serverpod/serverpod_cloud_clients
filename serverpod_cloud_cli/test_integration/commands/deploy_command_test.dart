@@ -450,42 +450,6 @@ dependencies:
             ]);
           });
 
-          test(
-              'then command executes successfully and logs Project uploaded successfully message.',
-              () async {
-            await expectLater(cliCommandFuture, completes);
-
-            expect(logger.successCalls, isNotEmpty);
-            expect(
-                logger.successCalls.last,
-                equalsSuccessCall(
-                  message: 'Project uploaded successfully!',
-                  trailingRocket: true,
-                  newParagraph: true,
-                  followUp: '''
-When the server has started, you can access it at:
-Web:      https://${BucketUploadDescription.projectId}.serverpod.space/
-API:      https://${BucketUploadDescription.projectId}.api.serverpod.space/
-Insights: https://${BucketUploadDescription.projectId}.insights.serverpod.space/''',
-                ));
-          });
-
-          test(
-              'then command executes successfully and logs deploy command hint.',
-              () async {
-            await expectLater(cliCommandFuture, completes);
-
-            expect(logger.terminalCommandCalls, isNotEmpty);
-            expect(
-              logger.terminalCommandCalls.last,
-              equalsTerminalCommandCall(
-                message: 'Set up your custom domain by running:',
-                command: 'scloud domain',
-                newParagraph: true,
-              ),
-            );
-          });
-
           test('then zipped project is accessible in bucket.', () async {
             await cliCommandFuture;
 
@@ -525,8 +489,9 @@ Insights: https://${BucketUploadDescription.projectId}.insights.serverpod.space/
 
         test('then dry run message is logged.', () async {
           await cliCommandFuture;
-          expect(logger.infoCalls, isNotEmpty);
-          expect(logger.infoCalls.last.message, 'Dry run, skipping upload.');
+          expect(logger.progressCalls, isNotEmpty);
+          expect(
+              logger.progressCalls.last.message, 'Dry run, skipping upload.');
         });
       });
 
@@ -563,8 +528,9 @@ Insights: https://${BucketUploadDescription.projectId}.insights.serverpod.space/
 
         test('then dry run message is logged.', () async {
           await cliCommandFuture;
-          expect(logger.infoCalls, isNotEmpty);
-          expect(logger.infoCalls.last.message, 'Dry run, skipping upload.');
+          expect(logger.progressCalls, isNotEmpty);
+          expect(
+              logger.progressCalls.last.message, 'Dry run, skipping upload.');
         });
       });
 
@@ -639,8 +605,8 @@ project:
 
       test('then dry run message is logged.', () async {
         await cliCommandFuture;
-        expect(logger.infoCalls, isNotEmpty);
-        expect(logger.infoCalls.last.message, 'Dry run, skipping upload.');
+        expect(logger.progressCalls, isNotEmpty);
+        expect(logger.progressCalls.last.message, 'Dry run, skipping upload.');
       });
     });
   });
