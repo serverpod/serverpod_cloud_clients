@@ -1117,6 +1117,14 @@ class EndpointUsers extends _i1.EndpointRef {
     'listUsersInProject',
     {'cloudProjectId': cloudProjectId},
   );
+
+  /// Updates the display name of the current user.
+  _i2.Future<_i6.User> updateDisplayName({required String displayName}) =>
+      caller.callServerEndpoint<_i6.User>(
+        'users',
+        'updateDisplayName',
+        {'displayName': displayName},
+      );
 }
 
 class Modules {
