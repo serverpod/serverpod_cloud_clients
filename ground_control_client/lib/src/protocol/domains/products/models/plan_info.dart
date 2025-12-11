@@ -18,6 +18,7 @@ abstract class PlanInfo implements _i1.SerializableModel {
   PlanInfo._({
     required this.productId,
     required this.name,
+    required this.displayName,
     this.description,
     this.trialLength,
     this.trialEndDate,
@@ -27,6 +28,7 @@ abstract class PlanInfo implements _i1.SerializableModel {
   factory PlanInfo({
     required String productId,
     required String name,
+    required String displayName,
     String? description,
     int? trialLength,
     DateTime? trialEndDate,
@@ -37,6 +39,7 @@ abstract class PlanInfo implements _i1.SerializableModel {
     return PlanInfo(
       productId: jsonSerialization['productId'] as String,
       name: jsonSerialization['name'] as String,
+      displayName: jsonSerialization['displayName'] as String,
       description: jsonSerialization['description'] as String?,
       trialLength: jsonSerialization['trialLength'] as int?,
       trialEndDate: jsonSerialization['trialEndDate'] == null
@@ -51,9 +54,12 @@ abstract class PlanInfo implements _i1.SerializableModel {
   /// The id of the product.
   String productId;
 
+  /// Deprecated: Use displayName instead.
+  String name;
+
   /// The user-friendly name of the product.
   /// (This is not the same as the technical product ID name.)
-  String name;
+  String displayName;
 
   /// The user-friendly description of the product.
   String? description;
@@ -75,6 +81,7 @@ abstract class PlanInfo implements _i1.SerializableModel {
   PlanInfo copyWith({
     String? productId,
     String? name,
+    String? displayName,
     String? description,
     int? trialLength,
     DateTime? trialEndDate,
@@ -86,6 +93,7 @@ abstract class PlanInfo implements _i1.SerializableModel {
       '__className__': 'PlanInfo',
       'productId': productId,
       'name': name,
+      'displayName': displayName,
       if (description != null) 'description': description,
       if (trialLength != null) 'trialLength': trialLength,
       if (trialEndDate != null) 'trialEndDate': trialEndDate?.toJson(),
@@ -105,6 +113,7 @@ class _PlanInfoImpl extends PlanInfo {
   _PlanInfoImpl({
     required String productId,
     required String name,
+    required String displayName,
     String? description,
     int? trialLength,
     DateTime? trialEndDate,
@@ -112,6 +121,7 @@ class _PlanInfoImpl extends PlanInfo {
   }) : super._(
          productId: productId,
          name: name,
+         displayName: displayName,
          description: description,
          trialLength: trialLength,
          trialEndDate: trialEndDate,
@@ -125,6 +135,7 @@ class _PlanInfoImpl extends PlanInfo {
   PlanInfo copyWith({
     String? productId,
     String? name,
+    String? displayName,
     Object? description = _Undefined,
     Object? trialLength = _Undefined,
     Object? trialEndDate = _Undefined,
@@ -133,6 +144,7 @@ class _PlanInfoImpl extends PlanInfo {
     return PlanInfo(
       productId: productId ?? this.productId,
       name: name ?? this.name,
+      displayName: displayName ?? this.displayName,
       description: description is String? ? description : this.description,
       trialLength: trialLength is int? ? trialLength : this.trialLength,
       trialEndDate: trialEndDate is DateTime?

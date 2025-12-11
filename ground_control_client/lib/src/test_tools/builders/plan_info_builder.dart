@@ -2,7 +2,7 @@ import 'package:ground_control_client/ground_control_client.dart';
 
 class PlanInfoBuilder {
   String _productId;
-  String _name;
+  String _displayName;
   String? _description;
   int? _trialLength;
   DateTime? _trialEndDate;
@@ -10,7 +10,7 @@ class PlanInfoBuilder {
 
   PlanInfoBuilder()
       : _productId = 'early-access:0',
-        _name = 'Early Access',
+        _displayName = 'Early Access',
         _description = 'A test plan description',
         _trialLength = 7,
         _trialEndDate = null,
@@ -18,7 +18,7 @@ class PlanInfoBuilder {
 
   PlanInfoBuilder withHackathon2025() {
     _productId = 'hackathon-25:0';
-    _name = 'Hackathon 2025';
+    _displayName = 'Hackathon 2025';
     _description = 'A test plan description';
     _trialLength = 91;
     _trialEndDate = DateTime.now().add(Duration(days: 91));
@@ -43,8 +43,8 @@ class PlanInfoBuilder {
     return this;
   }
 
-  PlanInfoBuilder withName(final String name) {
-    _name = name;
+  PlanInfoBuilder withDisplayName(final String displayName) {
+    _displayName = displayName;
     return this;
   }
 
@@ -71,7 +71,8 @@ class PlanInfoBuilder {
   PlanInfo build() {
     return PlanInfo(
       productId: _productId,
-      name: _name,
+      name: _displayName,
+      displayName: _displayName,
       description: _description,
       trialLength: _trialLength,
       trialEndDate: _trialEndDate,

@@ -6,7 +6,7 @@ class SubscriptionInfoBuilder {
   DateTime? _trialEndDate;
   String _subscriptionId;
   String _planProductId;
-  String _planName;
+  String _planDisplayName;
   String? _planDescription;
   int? _projectsLimit;
 
@@ -16,7 +16,7 @@ class SubscriptionInfoBuilder {
         _trialEndDate = DateTime.now().add(Duration(days: 7)),
         _subscriptionId = 'test-subscription-id',
         _planProductId = 'early-access:0',
-        _planName = 'Early Access',
+        _planDisplayName = 'Early Access',
         _planDescription = 'A test plan description',
         _projectsLimit = 1;
 
@@ -41,12 +41,13 @@ class SubscriptionInfoBuilder {
   }
 
   SubscriptionInfoBuilder withPlanProductId(final String planProductId) {
+    assert(planProductId.contains(':'), 'Plan product ID must contain a colon');
     _planProductId = planProductId;
     return this;
   }
 
-  SubscriptionInfoBuilder withPlanName(final String planName) {
-    _planName = planName;
+  SubscriptionInfoBuilder withPlanDisplayName(final String planDisplayName) {
+    _planDisplayName = planDisplayName;
     return this;
   }
 
@@ -67,7 +68,8 @@ class SubscriptionInfoBuilder {
       trialEndDate: _trialEndDate,
       subscriptionId: _subscriptionId,
       planProductId: _planProductId,
-      planName: _planName,
+      planName: _planDisplayName,
+      planDisplayName: _planDisplayName,
       planDescription: _planDescription,
       projectsLimit: _projectsLimit,
     );

@@ -22,6 +22,7 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
     required this.subscriptionId,
     required this.planProductId,
     required this.planName,
+    required this.planDisplayName,
     this.planDescription,
     this.projectsLimit,
   });
@@ -33,6 +34,7 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
     required String subscriptionId,
     required String planProductId,
     required String planName,
+    required String planDisplayName,
     String? planDescription,
     int? projectsLimit,
   }) = _SubscriptionInfoImpl;
@@ -53,6 +55,7 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
       subscriptionId: jsonSerialization['subscriptionId'] as String,
       planProductId: jsonSerialization['planProductId'] as String,
       planName: jsonSerialization['planName'] as String,
+      planDisplayName: jsonSerialization['planDisplayName'] as String,
       planDescription: jsonSerialization['planDescription'] as String?,
       projectsLimit: jsonSerialization['projectsLimit'] as int?,
     );
@@ -73,8 +76,11 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
   /// The id of the plan's product.
   String planProductId;
 
-  /// The name of the plan.
+  /// Deprecated: Use planDisplayName instead.
   String planName;
+
+  /// The display name of the plan.
+  String planDisplayName;
 
   /// The plan's description, if any.
   String? planDescription;
@@ -92,6 +98,7 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
     String? subscriptionId,
     String? planProductId,
     String? planName,
+    String? planDisplayName,
     String? planDescription,
     int? projectsLimit,
   });
@@ -105,6 +112,7 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
       'subscriptionId': subscriptionId,
       'planProductId': planProductId,
       'planName': planName,
+      'planDisplayName': planDisplayName,
       if (planDescription != null) 'planDescription': planDescription,
       if (projectsLimit != null) 'projectsLimit': projectsLimit,
     };
@@ -126,6 +134,7 @@ class _SubscriptionInfoImpl extends SubscriptionInfo {
     required String subscriptionId,
     required String planProductId,
     required String planName,
+    required String planDisplayName,
     String? planDescription,
     int? projectsLimit,
   }) : super._(
@@ -135,6 +144,7 @@ class _SubscriptionInfoImpl extends SubscriptionInfo {
          subscriptionId: subscriptionId,
          planProductId: planProductId,
          planName: planName,
+         planDisplayName: planDisplayName,
          planDescription: planDescription,
          projectsLimit: projectsLimit,
        );
@@ -150,6 +160,7 @@ class _SubscriptionInfoImpl extends SubscriptionInfo {
     String? subscriptionId,
     String? planProductId,
     String? planName,
+    String? planDisplayName,
     Object? planDescription = _Undefined,
     Object? projectsLimit = _Undefined,
   }) {
@@ -162,6 +173,7 @@ class _SubscriptionInfoImpl extends SubscriptionInfo {
       subscriptionId: subscriptionId ?? this.subscriptionId,
       planProductId: planProductId ?? this.planProductId,
       planName: planName ?? this.planName,
+      planDisplayName: planDisplayName ?? this.planDisplayName,
       planDescription: planDescription is String?
           ? planDescription
           : this.planDescription,
