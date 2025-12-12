@@ -43,6 +43,9 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   /// If true, analytics will be not be suppressed for non-production usage.
   final bool _enableAnalyticsForAllEnvs;
 
+  /// If true, the admin subcommands are enabled.
+  final bool _adminUserMode;
+
   final VersionCommand _versionCommand;
 
   GlobalConfiguration? _globalConfiguration;
@@ -85,11 +88,13 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     required this.version,
     required final CloudCliServiceProvider serviceProvider,
     required final bool enableAnalyticsForAllEnvs,
+    required final bool adminUserMode,
     super.onAnalyticsEvent,
     super.setLogLevel,
   }) : _serviceProvider = serviceProvider,
        _versionCommand = VersionCommand(logger: logger),
        _enableAnalyticsForAllEnvs = enableAnalyticsForAllEnvs,
+       _adminUserMode = adminUserMode,
        super(
          'scloud',
          'Manage your Serverpod Cloud projects',
@@ -111,11 +116,19 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     final bool enableAnalyticsForAllEnvs = false,
     bool? adminUserMode,
   }) {
+    adminUserMode ??=
+        bool.tryParse(
+          Platform.environment['SERVERPOD_CLOUD_ADMIN_USER_MODE'] ?? 'false',
+          caseSensitive: false,
+        ) ??
+        false;
+
     final runner = CloudCliCommandRunner._(
       logger: logger,
       version: version ?? cliVersion,
       serviceProvider: serviceProvider ?? CloudCliServiceProvider(),
       enableAnalyticsForAllEnvs: enableAnalyticsForAllEnvs,
+      adminUserMode: adminUserMode,
       onAnalyticsEvent: onAnalyticsEvent,
       setLogLevel:
           ({
@@ -127,13 +140,6 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
             commandName: commandName,
           ),
     );
-
-    adminUserMode ??=
-        bool.tryParse(
-          Platform.environment['SERVERPOD_CLOUD_ADMIN_USER_MODE'] ?? 'false',
-          caseSensitive: false,
-        ) ??
-        false;
 
     // Add commands (which may in turn have their own options and subcommands)
     runner.addCommands([
@@ -237,6 +243,9 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
 
   /// Returns true if the user likely is a production tenant user.
   bool _isTenantUser() {
+    if (_adminUserMode) {
+      return false;
+    }
     if (!isActivatedFromPub()) {
       return false;
     }
