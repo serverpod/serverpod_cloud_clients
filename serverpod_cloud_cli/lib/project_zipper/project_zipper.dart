@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:archive/archive_io.dart';
 import 'package:pool/pool.dart';
@@ -31,6 +32,11 @@ abstract final class ProjectZipper {
   /// The [beneath] is the list of relative paths under [rootDirectory] that will be included,
   /// all by default.
   /// The [fileReadPoolSize] is the number of files that are processed concurrently.
+  /// The [fileContentModifier] is an optional callback that can modify file content before
+  /// it is added to the archive. It receives the relative path and a content reader function.
+  /// The callback should return the modified content as a string, or null if no modification
+  /// is needed (in which case the file will be added as binary). The content reader is only
+  /// called when the modifier decides it needs to read the file content.
   ///
   /// All exceptions thrown by this method are subclasses of [ProjectZipperExceptions].
   /// Throws [ProjectDirectoryDoesNotExistException] if the project directory
@@ -46,6 +52,11 @@ abstract final class ProjectZipper {
     final Iterable<String> beneath = const ['.'],
     final int fileReadPoolSize = 5,
     final bool showFiles = false,
+    final Future<String?> Function(
+      String relativePath,
+      Future<String> Function() contentReader,
+    )?
+    fileContentModifier,
   }) async {
     final projectPath = rootDirectory.path;
 
@@ -86,12 +97,24 @@ abstract final class ProjectZipper {
       if (!file.existsSync()) return;
 
       await fileReadPool.withResource(() async {
-        final length = await file.length();
-        final bytes = await file.readAsBytes();
+        final relativePath = stripRoot(projectPath, path);
 
-        archive.addFile(
-          ArchiveFile(stripRoot(projectPath, path), length, bytes),
-        );
+        List<int> bytes;
+        if (fileContentModifier != null) {
+          final modifiedContent = await fileContentModifier(
+            relativePath,
+            () => file.readAsString(),
+          );
+          if (modifiedContent != null) {
+            bytes = utf8.encode(modifiedContent);
+          } else {
+            bytes = await file.readAsBytes();
+          }
+        } else {
+          bytes = await file.readAsBytes();
+        }
+
+        archive.addFile(ArchiveFile(relativePath, bytes.length, bytes));
       });
     }
 

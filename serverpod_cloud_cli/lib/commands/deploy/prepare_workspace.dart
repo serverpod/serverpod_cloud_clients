@@ -203,6 +203,28 @@ abstract class WorkspaceProject {
     );
   }
 
+  /// Strips dev_dependencies from pubspec.yaml content in memory.
+  /// Returns the modified content, or the original content if no changes were needed.
+  static String stripDevDependenciesFromPubspecContent(
+    final String pubspecContent,
+  ) {
+    try {
+      final pubspecYaml = yamlDecode(pubspecContent);
+      if (pubspecYaml is! Map) {
+        return pubspecContent;
+      }
+
+      if (pubspecYaml.containsKey('dev_dependencies')) {
+        final modifiedPubspec = Map.from(pubspecYaml);
+        modifiedPubspec.remove('dev_dependencies');
+        return yamlEncode(modifiedPubspec);
+      }
+      return pubspecContent;
+    } on Exception {
+      return pubspecContent;
+    }
+  }
+
   /// Throws a [WorkspaceException] with one or more error messages.
   static Never _throwWorkspaceException({
     final String? message,
