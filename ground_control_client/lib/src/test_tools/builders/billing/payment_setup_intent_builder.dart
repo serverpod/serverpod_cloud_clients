@@ -6,9 +6,9 @@ class PaymentSetupIntentBuilder {
   String _status;
 
   PaymentSetupIntentBuilder()
-      : _id = 'seti_test_123',
-        _clientSecret = 'mock_secret',
-        _status = 'requires_payment_method';
+    : _id = 'seti_test_123',
+      _clientSecret = 'mock_secret',
+      _status = 'requires_payment_method';
 
   PaymentSetupIntentBuilder withId(String id) {
     _id = id;

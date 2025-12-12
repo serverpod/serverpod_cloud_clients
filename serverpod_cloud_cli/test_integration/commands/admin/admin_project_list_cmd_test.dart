@@ -28,40 +28,50 @@ void main() {
     logger.clear();
   });
 
-  test('Given admin project list command when instantiated then requires login',
-      () {
-    expect(AdminListProjectsCommand(logger: logger).requireLogin, isTrue);
-  });
+  test(
+    'Given admin project list command when instantiated then requires login',
+    () {
+      expect(AdminListProjectsCommand(logger: logger).requireLogin, isTrue);
+    },
+  );
 
   group('Given authenticated', () {
     group('when executing admin project list', () {
       late Future commandResult;
       setUp(() async {
-        when(() => client.adminProjects.listProjectsInfo(
-              includeArchived: any(named: 'includeArchived', that: isTrue),
-              includeLatestDeployAttemptTime:
-                  any(named: 'includeLatestDeployAttemptTime', that: isTrue),
-            )).thenAnswer(
+        when(
+          () => client.adminProjects.listProjectsInfo(
+            includeArchived: any(named: 'includeArchived', that: isTrue),
+            includeLatestDeployAttemptTime: any(
+              named: 'includeLatestDeployAttemptTime',
+              that: isTrue,
+            ),
+          ),
+        ).thenAnswer(
           (final invocation) async => Future.value([
             ProjectInfoBuilder()
-                .withProject(ProjectBuilder()
-                    .withCreatedAt(DateTime.parse('2025-07-02T11:00:00'))
-                    .withCloudProjectId('projectId')
-                    .withUserOwner(
-                      UserBuilder().withEmail('test@example.com').build(),
-                    ))
+                .withProject(
+                  ProjectBuilder()
+                      .withCreatedAt(DateTime.parse('2025-07-02T11:00:00'))
+                      .withCloudProjectId('projectId')
+                      .withUserOwner(
+                        UserBuilder().withEmail('test@example.com').build(),
+                      ),
+                )
                 .build(),
             ProjectInfoBuilder()
-                .withProject(ProjectBuilder()
-                    .withCreatedAt(DateTime.parse('2025-07-02T11:00:00'))
-                    .withArchivedAt(DateTime.parse('2025-07-02T12:10:00'))
-                    .withCloudProjectId('projectId2')
-                    .withUserOwner(
-                      UserBuilder().withEmail('test@example.com').build(),
-                    )
-                    .withDeveloperUser(
-                      UserBuilder().withEmail('dev@example.com').build(),
-                    ))
+                .withProject(
+                  ProjectBuilder()
+                      .withCreatedAt(DateTime.parse('2025-07-02T11:00:00'))
+                      .withArchivedAt(DateTime.parse('2025-07-02T12:10:00'))
+                      .withCloudProjectId('projectId2')
+                      .withUserOwner(
+                        UserBuilder().withEmail('test@example.com').build(),
+                      )
+                      .withDeveloperUser(
+                        UserBuilder().withEmail('dev@example.com').build(),
+                      ),
+                )
                 .build(),
           ]),
         );
@@ -85,17 +95,21 @@ void main() {
           logger.lineCalls,
           containsAllInOrder([
             equalsLineCall(
-                line:
-                    'Project Id | Created At (local)  | Archived At (local) | Last Deploy Attempt | Owner            | Users                                              '),
+              line:
+                  'Project Id | Created At (local)  | Archived At (local) | Last Deploy Attempt | Owner            | Users                                              ',
+            ),
             equalsLineCall(
-                line:
-                    '-----------+---------------------+---------------------+---------------------+------------------+----------------------------------------------------'),
+              line:
+                  '-----------+---------------------+---------------------+---------------------+------------------+----------------------------------------------------',
+            ),
             equalsLineCall(
-                line:
-                    'projectId  | 2025-07-02 11:00:00 |                     |                     | test@example.com | Admin: test@example.com                            '),
+              line:
+                  'projectId  | 2025-07-02 11:00:00 |                     |                     | test@example.com | Admin: test@example.com                            ',
+            ),
             equalsLineCall(
-                line:
-                    'projectId2 | 2025-07-02 11:00:00 | 2025-07-02 12:10:00 |                     | test@example.com | Admin: test@example.com; Developer: dev@example.com'),
+              line:
+                  'projectId2 | 2025-07-02 11:00:00 | 2025-07-02 12:10:00 |                     | test@example.com | Admin: test@example.com; Developer: dev@example.com',
+            ),
           ]),
         );
       });

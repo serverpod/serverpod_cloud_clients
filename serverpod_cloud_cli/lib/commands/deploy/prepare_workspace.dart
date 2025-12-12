@@ -15,10 +15,10 @@ class WorkspaceException extends FailureException {
     final Exception? nestedException,
     final StackTrace? nestedStackTrace,
   ]) : super(
-          errors: errors,
-          nestedException: nestedException,
-          nestedStackTrace: nestedStackTrace,
-        );
+         errors: errors,
+         nestedException: nestedException,
+         nestedStackTrace: nestedStackTrace,
+       );
 }
 
 class WorkspacePackage {
@@ -49,8 +49,9 @@ abstract class WorkspaceProject {
     final String projectPackageName = _getPackageName(projectDirectory);
 
     // Find workspace root directory by traversing up until we find a pubspec.yaml with workspace field
-    final (workspaceRootDir, workspacePubspec) =
-        findWorkspaceRoot(projectDirectory);
+    final (workspaceRootDir, workspacePubspec) = findWorkspaceRoot(
+      projectDirectory,
+    );
 
     // create map with all workspace packages, map from package name to [WorkspacePackage]
     final allWorkspacePackages = <String, WorkspacePackage>{};
@@ -77,9 +78,7 @@ abstract class WorkspaceProject {
     final includedPackages = WorkspaceProjectLogic.getWorkspaceDependencies(
       allWorkspacePackages: allWorkspacePackages,
       package: projectPackage,
-      included: <String, WorkspacePackage>{
-        projectPackageName: projectPackage,
-      },
+      included: <String, WorkspacePackage>{projectPackageName: projectPackage},
     );
 
     WorkspaceProjectLogic.validateIncludedPackages(
@@ -90,16 +89,9 @@ abstract class WorkspaceProject {
         .map((final package) => package.dir.path)
         .toList();
 
-    _writeSCloudFiles(
-      workspaceRootDir,
-      includedPackagePaths,
-      projectPackage,
-    );
+    _writeSCloudFiles(workspaceRootDir, includedPackagePaths, projectPackage);
 
-    final includedPaths = [
-      ...includedPackagePaths,
-      ScloudIgnore.scloudDirName,
-    ];
+    final includedPaths = [...includedPackagePaths, ScloudIgnore.scloudDirName];
     return (workspaceRootDir, includedPaths);
   }
 
@@ -118,18 +110,15 @@ abstract class WorkspaceProject {
     _writeScloudRootPubspec(workspaceRootDir, includedPackagePaths);
     _writeProjectServerDirFile(workspaceRootDir, projectPackage.dir);
 
-    ScloudIgnore.writeTemplateIfNotExists(
-      rootFolder: workspaceRootDir.path,
-    );
+    ScloudIgnore.writeTemplateIfNotExists(rootFolder: workspaceRootDir.path);
   }
 
-  static String _getPackageName(
-    final Directory packageDirectory,
-  ) {
+  static String _getPackageName(final Directory packageDirectory) {
     final pubspecFile = File(p.join(packageDirectory.path, 'pubspec.yaml'));
     if (!pubspecFile.existsSync()) {
       _throwWorkspaceException(
-          message: "pubspec.yaml not found in $packageDirectory.");
+        message: "pubspec.yaml not found in $packageDirectory.",
+      );
     }
     final pubspec = Pubspec.parse(pubspecFile.readAsStringSync());
     return pubspec.name;
@@ -146,15 +135,17 @@ abstract class WorkspaceProject {
 
     final scloudRootPubspecContent =
         WorkspaceProjectLogic.makeScloudRootPubspecContent(
-      rootPubspecContent,
-      includedPackagePaths,
-    );
+          rootPubspecContent,
+          includedPackagePaths,
+        );
 
-    final scloudRootPubspecFile = File(p.join(
-      workspaceRootDir.path,
-      ScloudIgnore.scloudDirName,
-      _scloudRootPubspecFilename,
-    ));
+    final scloudRootPubspecFile = File(
+      p.join(
+        workspaceRootDir.path,
+        ScloudIgnore.scloudDirName,
+        _scloudRootPubspecFilename,
+      ),
+    );
     scloudRootPubspecFile.writeAsStringSync(scloudRootPubspecContent);
 
     return p.join(ScloudIgnore.scloudDirName, _scloudRootPubspecFilename);
@@ -166,11 +157,13 @@ abstract class WorkspaceProject {
     final Directory workspaceRootDir,
     final Directory projectDir,
   ) {
-    final scloudServerDirFile = File(p.join(
-      workspaceRootDir.path,
-      ScloudIgnore.scloudDirName,
-      _scloudServerDirFilename,
-    ));
+    final scloudServerDirFile = File(
+      p.join(
+        workspaceRootDir.path,
+        ScloudIgnore.scloudDirName,
+        _scloudServerDirFilename,
+      ),
+    );
     scloudServerDirFile.writeAsStringSync(projectDir.path);
 
     return p.join(ScloudIgnore.scloudDirName, _scloudServerDirFilename);
@@ -181,9 +174,7 @@ abstract class WorkspaceProject {
   /// for its pubspec.yaml file.
   ///
   /// Throws [WorkspaceException] if no workspace root is found.
-  static (Directory, Pubspec) findWorkspaceRoot(
-    final Directory projectDir,
-  ) {
+  static (Directory, Pubspec) findWorkspaceRoot(final Directory projectDir) {
     var currentDir = projectDir.absolute;
     do {
       currentDir = currentDir.parent;
@@ -204,10 +195,12 @@ abstract class WorkspaceProject {
       }
     } while (currentDir.path != currentDir.parent.path);
 
-    _throwWorkspaceException(messages: [
-      'Could not find the workspace root directory.',
-      'Ensure the project is part of a valid Dart workspace.',
-    ]);
+    _throwWorkspaceException(
+      messages: [
+        'Could not find the workspace root directory.',
+        'Ensure the project is part of a valid Dart workspace.',
+      ],
+    );
   }
 
   /// Throws a [WorkspaceException] with one or more error messages.
@@ -217,10 +210,7 @@ abstract class WorkspaceProject {
     final Exception? nestedException,
     final StackTrace? nestedStackTrace,
   }) {
-    final allMessages = [
-      if (message != null) message,
-      ...?messages,
-    ];
+    final allMessages = [if (message != null) message, ...?messages];
     throw WorkspaceException(allMessages, nestedException, nestedStackTrace);
   }
 }
@@ -277,7 +267,8 @@ abstract class WorkspaceProjectLogic {
     final rootPubspecYaml = yamlDecode(rootPubspecContent);
     if (rootPubspecYaml is! Map) {
       WorkspaceProject._throwWorkspaceException(
-        message: 'Invalid workspace root pubspec.yaml, '
+        message:
+            'Invalid workspace root pubspec.yaml, '
             'type: ${rootPubspecYaml.runtimeType}',
       );
     }
@@ -285,7 +276,8 @@ abstract class WorkspaceProjectLogic {
     final originalWorkspacePaths = rootPubspecYaml['workspace'];
     if (originalWorkspacePaths is! List) {
       WorkspaceProject._throwWorkspaceException(
-        message: 'Invalid `workspace` element in workspace root pubspec.yaml, '
+        message:
+            'Invalid `workspace` element in workspace root pubspec.yaml, '
             'type: ${originalWorkspacePaths.runtimeType}',
       );
     }

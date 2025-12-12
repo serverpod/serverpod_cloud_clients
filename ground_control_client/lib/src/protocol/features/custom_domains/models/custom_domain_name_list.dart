@@ -94,13 +94,7 @@ class _CustomDomainNameListImpl extends CustomDomainNameList {
       defaultDomainsByTarget:
           defaultDomainsByTarget ??
           this.defaultDomainsByTarget.map(
-            (
-              key0,
-              value0,
-            ) => MapEntry(
-              key0,
-              value0,
-            ),
+            (key0, value0) => MapEntry(key0, value0),
           ),
     );
   }

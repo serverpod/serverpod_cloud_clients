@@ -15,10 +15,7 @@ class PubApiClientMock extends Mock implements PubApiClient {}
 void main() {
   final logger = TestCommandLogger();
 
-  final testCacheFolderPath = p.join(
-    'test_integration',
-    const Uuid().v4(),
-  );
+  final testCacheFolderPath = p.join('test_integration', const Uuid().v4());
 
   tearDown(() {
     final directory = Directory(testCacheFolderPath);
@@ -36,12 +33,12 @@ void main() {
     setUp(() async {
       pubClient = PubApiClientMock();
       version = Version(1, 0, 0);
-      when(() => pubClient.tryFetchLatestStableVersion('serverpod_cloud_cli'))
-          .thenAnswer((final _) async => version);
+      when(
+        () => pubClient.tryFetchLatestStableVersion('serverpod_cloud_cli'),
+      ).thenAnswer((final _) async => version);
     });
 
-    test(
-        'when calling fetchLatestCLIVersion '
+    test('when calling fetchLatestCLIVersion '
         'then returns version', () async {
       final result = await CLIVersionChecker.fetchLatestCLIVersion(
         logger: logger,
@@ -58,16 +55,18 @@ void main() {
 
     setUp(() async {
       pubClient = PubApiClientMock();
-      when(() => pubClient.tryFetchLatestStableVersion('serverpod_cloud_cli'))
-          .thenThrow(VersionFetchException(
-        'Offline',
-        SocketException('Offline'),
-        StackTrace.current,
-      ));
+      when(
+        () => pubClient.tryFetchLatestStableVersion('serverpod_cloud_cli'),
+      ).thenThrow(
+        VersionFetchException(
+          'Offline',
+          SocketException('Offline'),
+          StackTrace.current,
+        ),
+      );
     });
 
-    test(
-        'when calling fetchLatestCLIVersion '
+    test('when calling fetchLatestCLIVersion '
         'then returns null', () async {
       final result = await CLIVersionChecker.fetchLatestCLIVersion(
         logger: logger,
@@ -84,12 +83,12 @@ void main() {
 
     setUp(() async {
       pubClient = PubApiClientMock();
-      when(() => pubClient.tryFetchLatestStableVersion('serverpod_cloud_cli'))
-          .thenThrow(Exception('Unexpected'));
+      when(
+        () => pubClient.tryFetchLatestStableVersion('serverpod_cloud_cli'),
+      ).thenThrow(Exception('Unexpected'));
     });
 
-    test(
-        'when calling fetchLatestCLIVersion '
+    test('when calling fetchLatestCLIVersion '
         'then throws exception', () async {
       final result = CLIVersionChecker.fetchLatestCLIVersion(
         logger: logger,
@@ -99,17 +98,18 @@ void main() {
 
       await expectLater(
         result,
-        throwsA(isA<Exception>().having(
-          (final e) => e.toString(),
-          'toString()',
-          'Exception: Unexpected',
-        )),
+        throwsA(
+          isA<Exception>().having(
+            (final e) => e.toString(),
+            'toString()',
+            'Exception: Unexpected',
+          ),
+        ),
       );
     });
   });
 
-  test(
-      'Given major version is outdated '
+  test('Given major version is outdated '
       'when calling isBreakingUpdate '
       'then returns true', () async {
     final currentVersion = Version(1, 0, 0);
@@ -123,8 +123,7 @@ void main() {
     expect(result, isTrue);
   });
 
-  test(
-      'Given latest major version is 0 and minor version outdated '
+  test('Given latest major version is 0 and minor version outdated '
       'when calling isBreakingUpdate '
       'then returns true', () async {
     final currentVersion = Version(0, 1, 0);
@@ -139,22 +138,23 @@ void main() {
   });
 
   test(
-      'Given latest major version is greater than 0 and minor version outdated '
-      'when calling isBreakingUpdate '
-      'then returns false', () async {
-    final currentVersion = Version(1, 1, 0);
-    final latestVersion = Version(1, 2, 0);
+    'Given latest major version is greater than 0 and minor version outdated '
+    'when calling isBreakingUpdate '
+    'then returns false',
+    () async {
+      final currentVersion = Version(1, 1, 0);
+      final latestVersion = Version(1, 2, 0);
 
-    final result = CLIVersionChecker.isBreakingUpdate(
-      currentVersion: currentVersion,
-      latestVersion: latestVersion,
-    );
+      final result = CLIVersionChecker.isBreakingUpdate(
+        currentVersion: currentVersion,
+        latestVersion: latestVersion,
+      );
 
-    expect(result, isFalse);
-  });
+      expect(result, isFalse);
+    },
+  );
 
-  test(
-      'Given versions are equal '
+  test('Given versions are equal '
       'when calling isBreakingUpdate '
       'then returns false', () async {
     final currentVersion = Version(0, 1, 0);

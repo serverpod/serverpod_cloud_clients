@@ -50,78 +50,131 @@ void main() {
   });
 
   group(
-      'Given rejected auth key and current directory is serverpod server directory',
-      () {
-    setUp(() async {
-      await ProjectFactory.serverpodServerDir().create();
-
-      when(() => client.deploy.createUploadDescription(any()))
-          .thenThrow(ServerpodClientUnauthorized());
-    });
-
-    tearDown(() async {});
-
-    group('when executing deploy', () {
-      late Future commandResult;
+    'Given rejected auth key and current directory is serverpod server directory',
+    () {
       setUp(() async {
-        commandResult = cli.run([
-          'deploy',
-          '--project',
-          '123',
-          '--project-dir',
-          p.join(d.sandbox, ProjectFactory.defaultDirectoryName),
-        ]);
+        await ProjectFactory.serverpodServerDir().create();
+
+        when(
+          () => client.deploy.createUploadDescription(any()),
+        ).thenThrow(ServerpodClientUnauthorized());
       });
 
-      test('then throws exception', () async {
-        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
-      });
+      tearDown(() async {});
 
-      test('then logs error', () async {
-        try {
-          await commandResult;
-        } catch (_) {}
+      group('when executing deploy', () {
+        late Future commandResult;
+        setUp(() async {
+          commandResult = cli.run([
+            'deploy',
+            '--project',
+            '123',
+            '--project-dir',
+            p.join(d.sandbox, ProjectFactory.defaultDirectoryName),
+          ]);
+        });
 
-        expect(logger.errorCalls, isNotEmpty);
-        expect(
+        test('then throws exception', () async {
+          await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+        });
+
+        test('then logs error', () async {
+          try {
+            await commandResult;
+          } catch (_) {}
+
+          expect(logger.errorCalls, isNotEmpty);
+          expect(
             logger.errorCalls.first,
             equalsErrorCall(
               message:
                   'The credentials for this session seem to no longer be valid.',
-            ));
+            ),
+          );
+        });
       });
-    });
-  });
+    },
+  );
 
   group('Given authenticated', () {
-    group('and invalid concurrency option value when running deploy command',
-        () {
-      late Future cliCommandFuture;
-      setUp(() async {
-        cliCommandFuture = cli.run([
-          'deploy',
-          '--concurrency',
-          'invalid',
-          '--project',
-          '123',
-        ]);
-      });
+    group(
+      'and invalid concurrency option value when running deploy command',
+      () {
+        late Future cliCommandFuture;
+        setUp(() async {
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--concurrency',
+            'invalid',
+            '--project',
+            '123',
+          ]);
+        });
 
-      test('then UsageException is thrown.', () async {
-        await expectLater(
-          cliCommandFuture,
-          throwsA(isA<UsageException>().having(
-            (final e) => e.message,
-            'message',
-            contains('Invalid value for option `concurrency` <integer>'),
-          )),
-        );
-      });
-    });
+        test('then UsageException is thrown.', () async {
+          await expectLater(
+            cliCommandFuture,
+            throwsA(
+              isA<UsageException>().having(
+                (final e) => e.message,
+                'message',
+                contains('Invalid value for option `concurrency` <integer>'),
+              ),
+            ),
+          );
+        });
+      },
+    );
 
     group(
-        'and current directory is not Serverpod server directory when running deploy command',
-        () {
+      'and current directory is not Serverpod server directory when running deploy command',
+      () {
+        late String testProjectDir;
+        late Future cliCommandFuture;
+
+        setUp(() async {
+          await d.dir('project', [
+            d.file('pubspec.yaml', '''
+name: my_project
+environment:
+  sdk: '>=3.1.0 <4.0.0'
+'''),
+          ]).create();
+          testProjectDir = p.join(d.sandbox, 'project');
+
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--project',
+            '123',
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        test('then ExitErrorException is thrown.', () async {
+          await expectLater(
+            cliCommandFuture,
+            throwsA(isA<ErrorExitException>()),
+          );
+        });
+
+        test('then error message is logged', () async {
+          await cliCommandFuture.catchError((final _) {});
+          expect(logger.errorCalls, isNotEmpty);
+          expect(
+            logger.errorCalls.first,
+            equalsErrorCall(
+              message: '`$testProjectDir` is not a Serverpod server directory.',
+              hint: "Provide the project's server directory and try again.",
+            ),
+          );
+        });
+      },
+    );
+
+    group('and current directory is a Serverpod server directory '
+        'with outdated sdk dependency '
+        'when running deploy command', () {
       late String testProjectDir;
       late Future cliCommandFuture;
 
@@ -130,7 +183,9 @@ void main() {
           d.file('pubspec.yaml', '''
 name: my_project
 environment:
-  sdk: '>=3.1.0 <4.0.0'
+  sdk: '>=3.1.0 <${VersionConstants.minSupportedSdkVersion}'
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
 '''),
         ]).create();
         testProjectDir = p.join(d.sandbox, 'project');
@@ -145,58 +200,7 @@ environment:
       });
 
       test('then ExitErrorException is thrown.', () async {
-        await expectLater(
-          cliCommandFuture,
-          throwsA(isA<ErrorExitException>()),
-        );
-      });
-
-      test('then error message is logged', () async {
-        await cliCommandFuture.catchError((final _) {});
-        expect(logger.errorCalls, isNotEmpty);
-        expect(
-          logger.errorCalls.first,
-          equalsErrorCall(
-            message: '`$testProjectDir` is not a Serverpod server directory.',
-            hint: "Provide the project's server directory and try again.",
-          ),
-        );
-      });
-    });
-
-    group(
-        'and current directory is a Serverpod server directory '
-        'with outdated sdk dependency '
-        'when running deploy command', () {
-      late String testProjectDir;
-      late Future cliCommandFuture;
-
-      setUp(() async {
-        await d.dir('project', [
-          d.file('pubspec.yaml', '''
-name: my_project
-environment:
-  sdk: '>=3.1.0 <${VersionConstants.minSupportedSdkVersion}'
-dependencies:
-  serverpod: ${ProjectFactory.validServerpodVersion}
-''')
-        ]).create();
-        testProjectDir = p.join(d.sandbox, 'project');
-
-        cliCommandFuture = cli.run([
-          'deploy',
-          '--project',
-          '123',
-          '--project-dir',
-          testProjectDir,
-        ]);
-      });
-
-      test('then ExitErrorException is thrown.', () async {
-        await expectLater(
-          cliCommandFuture,
-          throwsA(isA<ErrorExitException>()),
-        );
+        await expectLater(cliCommandFuture, throwsA(isA<ErrorExitException>()));
       });
 
       test('then error message is logged', () async {
@@ -219,8 +223,9 @@ dependencies:
 
       group('and 403 response for creating file upload request', () {
         setUp(() async {
-          when(() => client.deploy.createUploadDescription(any()))
-              .thenThrow(ServerpodClientForbidden());
+          when(
+            () => client.deploy.createUploadDescription(any()),
+          ).thenThrow(ServerpodClientForbidden());
         });
 
         group('when deploying through CLI', () {
@@ -245,131 +250,138 @@ dependencies:
           });
 
           test(
-              'then failed to fetch upload description error message is logged.',
-              () async {
-            await cliCommandFuture.catchError((final _) {});
-            expect(logger.errorCalls, isNotEmpty);
-            expect(
-              logger.errorCalls.first.message,
-              startsWith('Failed to fetch upload description'),
-            );
-          });
+            'then failed to fetch upload description error message is logged.',
+            () async {
+              await cliCommandFuture.catchError((final _) {});
+              expect(logger.errorCalls, isNotEmpty);
+              expect(
+                logger.errorCalls.first.message,
+                startsWith('Failed to fetch upload description'),
+              );
+            },
+          );
         });
       });
 
       group(
-          'and valid upload description response and the project directory contains directory symlink',
-          () {
-        setUp(() async {
-          when(() => client.deploy.createUploadDescription(any())).thenAnswer(
-              (final _) async => BucketUploadDescription.uploadDescription);
-
-          const symlinkedDirectoryName = 'symlinked_directory';
-          DirectoryFactory(
-            withSubDirectories: [
-              DirectoryFactory(
-                withDirectoryName: symlinkedDirectoryName,
-                withFiles: [
-                  FileFactory(withName: 'file1.txt', withContents: 'file1'),
-                ],
-              ),
-            ],
-            withSymLinks: [
-              SymLinkFactory(
-                withName: 'symlinked_directory_link',
-                withTarget: symlinkedDirectoryName,
-              ),
-            ],
-          ).construct(testProjectDir);
-        });
-
-        group('when deploying through CLI', () {
-          late Future cliCommandFuture;
+        'and valid upload description response and the project directory contains directory symlink',
+        () {
           setUp(() async {
-            cliCommandFuture = cli.run([
-              'deploy',
-              '--concurrency',
-              '1',
-              '--project',
-              BucketUploadDescription.projectId,
-              '--project-dir',
-              testProjectDir,
-            ]);
-          });
-
-          test('then ExitErrorException is thrown.', () async {
-            await expectLater(
-              cliCommandFuture,
-              throwsA(isA<ErrorExitException>()),
+            when(() => client.deploy.createUploadDescription(any())).thenAnswer(
+              (final _) async => BucketUploadDescription.uploadDescription,
             );
+
+            const symlinkedDirectoryName = 'symlinked_directory';
+            DirectoryFactory(
+              withSubDirectories: [
+                DirectoryFactory(
+                  withDirectoryName: symlinkedDirectoryName,
+                  withFiles: [
+                    FileFactory(withName: 'file1.txt', withContents: 'file1'),
+                  ],
+                ),
+              ],
+              withSymLinks: [
+                SymLinkFactory(
+                  withName: 'symlinked_directory_link',
+                  withTarget: symlinkedDirectoryName,
+                ),
+              ],
+            ).construct(testProjectDir);
           });
 
-          test('then directory symlinks are unsupported message is logged.',
+          group('when deploying through CLI', () {
+            late Future cliCommandFuture;
+            setUp(() async {
+              cliCommandFuture = cli.run([
+                'deploy',
+                '--concurrency',
+                '1',
+                '--project',
+                BucketUploadDescription.projectId,
+                '--project-dir',
+                testProjectDir,
+              ]);
+            });
+
+            test('then ExitErrorException is thrown.', () async {
+              await expectLater(
+                cliCommandFuture,
+                throwsA(isA<ErrorExitException>()),
+              );
+            });
+
+            test(
+              'then directory symlinks are unsupported message is logged.',
               () async {
-            await cliCommandFuture.catchError((final _) {});
-            expect(logger.errorCalls, isNotEmpty);
-            expect(
-              logger.errorCalls.first.message,
-              startsWith(
-                  'Serverpod Cloud does not support directory symlinks:'),
+                await cliCommandFuture.catchError((final _) {});
+                expect(logger.errorCalls, isNotEmpty);
+                expect(
+                  logger.errorCalls.first.message,
+                  startsWith(
+                    'Serverpod Cloud does not support directory symlinks:',
+                  ),
+                );
+              },
             );
           });
-        });
-      }, onPlatform: {
-        'windows': Skip('Symlinks are not supported on Windows')
-      });
+        },
+        onPlatform: {'windows': Skip('Symlinks are not supported on Windows')},
+      );
 
       group(
-          'Given valid upload description response but project contains unresolved symlink',
-          () {
-        setUp(() async {
-          when(() => client.deploy.createUploadDescription(any())).thenAnswer(
-              (final _) async => BucketUploadDescription.uploadDescription);
-
-          DirectoryFactory(
-            withSymLinks: [
-              SymLinkFactory(
-                withName: 'non-resolving-symlink',
-                withTarget: 'non-existing-file',
-              ),
-            ],
-          ).construct(testProjectDir);
-        });
-
-        group('when deploying through CLI', () {
-          late Future cliCommandFuture;
+        'Given valid upload description response but project contains unresolved symlink',
+        () {
           setUp(() async {
-            cliCommandFuture = cli.run([
-              'deploy',
-              '--concurrency',
-              '1',
-              '--project',
-              BucketUploadDescription.projectId,
-              '--project-dir',
-              testProjectDir,
-            ]);
+            when(() => client.deploy.createUploadDescription(any())).thenAnswer(
+              (final _) async => BucketUploadDescription.uploadDescription,
+            );
+
+            DirectoryFactory(
+              withSymLinks: [
+                SymLinkFactory(
+                  withName: 'non-resolving-symlink',
+                  withTarget: 'non-existing-file',
+                ),
+              ],
+            ).construct(testProjectDir);
           });
 
-          test('then ExitErrorException is thrown.', () async {
-            await expectLater(
-              cliCommandFuture,
-              throwsA(isA<ErrorExitException>()),
-            );
-          });
+          group('when deploying through CLI', () {
+            late Future cliCommandFuture;
+            setUp(() async {
+              cliCommandFuture = cli.run([
+                'deploy',
+                '--concurrency',
+                '1',
+                '--project',
+                BucketUploadDescription.projectId,
+                '--project-dir',
+                testProjectDir,
+              ]);
+            });
 
-          test('then non-resolving symlinks message is logged.', () async {
-            await cliCommandFuture.catchError((final _) {});
-            expect(logger.errorCalls, isNotEmpty);
-            expect(
-              logger.errorCalls.first.message,
-              startsWith(
-                  'Serverpod Cloud does not support non-resolving symlinks:'),
-            );
+            test('then ExitErrorException is thrown.', () async {
+              await expectLater(
+                cliCommandFuture,
+                throwsA(isA<ErrorExitException>()),
+              );
+            });
+
+            test('then non-resolving symlinks message is logged.', () async {
+              await cliCommandFuture.catchError((final _) {});
+              expect(logger.errorCalls, isNotEmpty);
+              expect(
+                logger.errorCalls.first.message,
+                startsWith(
+                  'Serverpod Cloud does not support non-resolving symlinks:',
+                ),
+              );
+            });
           });
-        });
-      }, onPlatform: {
-        'windows': Skip('Symlinks are not supported on Windows')
-      });
+        },
+        onPlatform: {'windows': Skip('Symlinks are not supported on Windows')},
+      );
 
       group('and upload description response but with invalid url', () {
         const projectId = 'my-project-id';
@@ -392,8 +404,9 @@ dependencies:
         };
 
         setUp(() async {
-          when(() => client.deploy.createUploadDescription(any()))
-              .thenAnswer((final _) async => jsonEncode(descriptionContent));
+          when(
+            () => client.deploy.createUploadDescription(any()),
+          ).thenAnswer((final _) async => jsonEncode(descriptionContent));
 
           mockFileUploader.init(uploadResponse: false);
         });
@@ -419,15 +432,17 @@ dependencies:
             );
           });
 
-          test('then failed to upload project error message is logged.',
-              () async {
-            await cliCommandFuture.catchError((final _) {});
-            expect(logger.errorCalls, isNotEmpty);
-            expect(
-              logger.errorCalls.first.message,
-              startsWith('Failed to upload project'),
-            );
-          });
+          test(
+            'then failed to upload project error message is logged.',
+            () async {
+              await cliCommandFuture.catchError((final _) {});
+              expect(logger.errorCalls, isNotEmpty);
+              expect(
+                logger.errorCalls.first.message,
+                startsWith('Failed to upload project'),
+              );
+            },
+          );
         });
       });
 
@@ -467,7 +482,8 @@ dependencies:
         testProjectDir = p.join(d.sandbox, ProjectFactory.defaultDirectoryName);
 
         when(() => client.deploy.createUploadDescription(any())).thenAnswer(
-            (final _) async => BucketUploadDescription.uploadDescription);
+          (final _) async => BucketUploadDescription.uploadDescription,
+        );
       });
 
       group('when deploying through CLI with --dry-run', () {
@@ -491,7 +507,9 @@ dependencies:
           await cliCommandFuture;
           expect(logger.progressCalls, isNotEmpty);
           expect(
-              logger.progressCalls.last.message, 'Dry run, skipping upload.');
+            logger.progressCalls.last.message,
+            'Dry run, skipping upload.',
+          );
         });
       });
 
@@ -517,20 +535,20 @@ dependencies:
           await cliCommandFuture;
 
           expect(logger.rawCalls, isNotEmpty);
-          final rawOutput =
-              logger.rawCalls.map((final call) => call.content).join('');
+          final rawOutput = logger.rawCalls
+              .map((final call) => call.content)
+              .join('');
           expect(rawOutput, contains('pubspec.yaml'));
-          expect(
-            rawOutput,
-            anyOf(contains('╰─'), contains('├─')),
-          );
+          expect(rawOutput, anyOf(contains('╰─'), contains('├─')));
         });
 
         test('then dry run message is logged.', () async {
           await cliCommandFuture;
           expect(logger.progressCalls, isNotEmpty);
           expect(
-              logger.progressCalls.last.message, 'Dry run, skipping upload.');
+            logger.progressCalls.last.message,
+            'Dry run, skipping upload.',
+          );
         });
       });
 
@@ -554,8 +572,9 @@ dependencies:
         test('then file tree is not printed to stdout.', () async {
           await cliCommandFuture;
 
-          final rawOutput =
-              logger.rawCalls.map((final call) => call.content).join('');
+          final rawOutput = logger.rawCalls
+              .map((final call) => call.content)
+              .join('');
           expect(rawOutput, isNot(contains('╰─')));
           expect(rawOutput, isNot(contains('├─')));
         });
@@ -564,59 +583,60 @@ dependencies:
   });
 
   group(
-      'and a non-workspace directory structure and a valid upload description response',
-      () {
-    setUp(() async {
-      await ProjectFactory.serverpodServerDir(
-        contents: [
-          d.file('scloud.yaml', '''
+    'and a non-workspace directory structure and a valid upload description response',
+    () {
+      setUp(() async {
+        await ProjectFactory.serverpodServerDir(
+          contents: [
+            d.file('scloud.yaml', '''
 project:
   projectId: "my-project-id"
 '''),
-          d.dir('subdir', [
-            d.file('subdir_file.txt', 'file_content'),
-            d.dir('subsubdir', [
-              d.file('subsubdir_file.txt', 'file_content'),
+            d.dir('subdir', [
+              d.file('subdir_file.txt', 'file_content'),
+              d.dir('subsubdir', [
+                d.file('subsubdir_file.txt', 'file_content'),
+              ]),
             ]),
-          ]),
-        ],
-      ).create();
+          ],
+        ).create();
 
-      when(() => client.deploy.createUploadDescription(any())).thenAnswer(
-          (final _) async => BucketUploadDescription.uploadDescription);
-    });
+        when(() => client.deploy.createUploadDescription(any())).thenAnswer(
+          (final _) async => BucketUploadDescription.uploadDescription,
+        );
+      });
 
-    group(
+      group(
         'when deploying through CLI without explicit project dir and with --dry-run',
         () {
-      late Future cliCommandFuture;
-      setUp(() async {
-        pushCurrentDirectory(d.sandbox);
+          late Future cliCommandFuture;
+          setUp(() async {
+            pushCurrentDirectory(d.sandbox);
 
-        cliCommandFuture = cli.run([
-          'deploy',
-          '--dry-run',
-        ]);
-      });
+            cliCommandFuture = cli.run(['deploy', '--dry-run']);
+          });
 
-      test('then command completes successfully.', () async {
-        await expectLater(cliCommandFuture, completes);
-      });
+          test('then command completes successfully.', () async {
+            await expectLater(cliCommandFuture, completes);
+          });
 
-      test('then dry run message is logged.', () async {
-        await cliCommandFuture;
-        expect(logger.progressCalls, isNotEmpty);
-        expect(logger.progressCalls.last.message, 'Dry run, skipping upload.');
-      });
-    });
-  });
+          test('then dry run message is logged.', () async {
+            await cliCommandFuture;
+            expect(logger.progressCalls, isNotEmpty);
+            expect(
+              logger.progressCalls.last.message,
+              'Dry run, skipping upload.',
+            );
+          });
+        },
+      );
+    },
+  );
 
   group('and a non-workspace serverpod project with a flutter dependency', () {
     setUp(() async {
-      await d.dir(
-        'project',
-        [
-          d.file('pubspec.yaml', '''
+      await d.dir('project', [
+        d.file('pubspec.yaml', '''
 name: "project"
 environment:
   sdk: ${ProjectFactory.validSdkVersion}
@@ -624,15 +644,15 @@ environment:
 dependencies:
   serverpod: ${ProjectFactory.validServerpodVersion}
 '''),
-          d.file('scloud.yaml', '''
+        d.file('scloud.yaml', '''
 project:
   projectId: "my-project-id"
 '''),
-        ],
-      ).create();
+      ]).create();
 
       when(() => client.deploy.createUploadDescription(any())).thenAnswer(
-          (final _) async => BucketUploadDescription.uploadDescription);
+        (final _) async => BucketUploadDescription.uploadDescription,
+      );
     });
 
     group('when deploying through CLI and with --dry-run', () {
@@ -640,30 +660,27 @@ project:
       setUp(() async {
         pushCurrentDirectory(d.sandbox);
 
-        cliCommandFuture = cli.run([
-          'deploy',
-          '--dry-run',
-        ]);
+        cliCommandFuture = cli.run(['deploy', '--dry-run']);
       });
 
       test('then command throws ErrorExitException.', () async {
-        await expectLater(
-          cliCommandFuture,
-          throwsA(isA<ErrorExitException>()),
-        );
+        await expectLater(cliCommandFuture, throwsA(isA<ErrorExitException>()));
       });
 
-      test('then an unsupported flutter dependency error message is logged.',
-          () async {
-        await cliCommandFuture.catchError((final _) {});
+      test(
+        'then an unsupported flutter dependency error message is logged.',
+        () async {
+          await cliCommandFuture.catchError((final _) {});
 
-        expect(logger.errorCalls, hasLength(1));
-        expect(
-          logger.errorCalls.single.message,
-          equals(
-              'A Flutter dependency is not allowed in a server package: project'),
-        );
-      });
+          expect(logger.errorCalls, hasLength(1));
+          expect(
+            logger.errorCalls.single.message,
+            equals(
+              'A Flutter dependency is not allowed in a server package: project',
+            ),
+          );
+        },
+      );
     });
   });
 
@@ -706,100 +723,97 @@ dependencies:
       ]).create();
 
       when(() => client.deploy.createUploadDescription(any())).thenAnswer(
-          (final _) async => BucketUploadDescription.uploadDescription);
+        (final _) async => BucketUploadDescription.uploadDescription,
+      );
     });
 
     group(
-        'when deploying through CLI without explicit project dir and with --dry-run',
-        () {
-      late Future cliCommandFuture;
-      setUp(() async {
-        pushCurrentDirectory(p.join(d.sandbox, 'monorepo', 'project'));
+      'when deploying through CLI without explicit project dir and with --dry-run',
+      () {
+        late Future cliCommandFuture;
+        setUp(() async {
+          pushCurrentDirectory(p.join(d.sandbox, 'monorepo', 'project'));
 
-        cliCommandFuture = cli.run([
-          'deploy',
-          '--project',
-          BucketUploadDescription.projectId,
-          '--dry-run',
-        ]);
-      });
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--project',
+            BucketUploadDescription.projectId,
+            '--dry-run',
+          ]);
+        });
 
-      test('then command completes successfully.', () async {
-        await expectLater(cliCommandFuture, completes);
-      });
+        test('then command completes successfully.', () async {
+          await expectLater(cliCommandFuture, completes);
+        });
 
-      test('then the included packages are logged.', () async {
-        await cliCommandFuture;
+        test('then the included packages are logged.', () async {
+          await cliCommandFuture;
 
-        expect(logger.listCalls, hasLength(1));
-        expect(
-          logger.listCalls.single,
-          equalsListCall(
-            title: 'Including workspace packages',
-            items: [
-              'project/project_server',
-              'packages/dart_utilities',
-            ],
-          ),
-        );
-      });
+          expect(logger.listCalls, hasLength(1));
+          expect(
+            logger.listCalls.single,
+            equalsListCall(
+              title: 'Including workspace packages',
+              items: ['project/project_server', 'packages/dart_utilities'],
+            ),
+          );
+        });
 
-      test('then .scloud/scloud_server_dir file is created.', () async {
-        await cliCommandFuture;
+        test('then .scloud/scloud_server_dir file is created.', () async {
+          await cliCommandFuture;
 
-        final descriptor = d.dir('.scloud', [
-          d.file('scloud_server_dir', 'project/project_server'),
-        ]);
+          final descriptor = d.dir('.scloud', [
+            d.file('scloud_server_dir', 'project/project_server'),
+          ]);
 
-        await expectLater(
-          descriptor.validate(p.join(d.sandbox, 'monorepo')),
-          completes,
-        );
-      });
+          await expectLater(
+            descriptor.validate(p.join(d.sandbox, 'monorepo')),
+            completes,
+          );
+        });
 
-      test('then .scloud/scloud_ws_pubspec.yaml file is created.', () async {
-        await cliCommandFuture;
+        test('then .scloud/scloud_ws_pubspec.yaml file is created.', () async {
+          await cliCommandFuture;
 
-        final fileDescriptor = d.file('scloud_ws_pubspec.yaml', isNotEmpty);
-        final descriptor = d.dir('.scloud', [
-          fileDescriptor,
-        ]);
+          final fileDescriptor = d.file('scloud_ws_pubspec.yaml', isNotEmpty);
+          final descriptor = d.dir('.scloud', [fileDescriptor]);
 
-        await expectLater(
-          descriptor.validate(p.join(d.sandbox, 'monorepo')),
-          completes,
-        );
+          await expectLater(
+            descriptor.validate(p.join(d.sandbox, 'monorepo')),
+            completes,
+          );
 
-        final content = File(
-          p.join(d.sandbox, 'monorepo', '.scloud', 'scloud_ws_pubspec.yaml'),
-        ).readAsStringSync();
-        final doc = yamlDecode(content);
-        expect(doc, containsPair('name', 'monorepo'));
-        expect(doc, containsPair('environment', isNot(contains('flutter'))));
-        expect(
-          doc,
-          containsPair('environment', containsPair('sdk', isNotEmpty)),
-        );
-        expect(
-          doc,
-          containsPair(
-            'workspace',
-            containsAll([
-              'project/project_server',
-              'packages/dart_utilities',
-            ]),
-          ),
-        );
-      });
-    });
+          final content = File(
+            p.join(d.sandbox, 'monorepo', '.scloud', 'scloud_ws_pubspec.yaml'),
+          ).readAsStringSync();
+          final doc = yamlDecode(content);
+          expect(doc, containsPair('name', 'monorepo'));
+          expect(doc, containsPair('environment', isNot(contains('flutter'))));
+          expect(
+            doc,
+            containsPair('environment', containsPair('sdk', isNotEmpty)),
+          );
+          expect(
+            doc,
+            containsPair(
+              'workspace',
+              containsAll([
+                'project/project_server',
+                'packages/dart_utilities',
+              ]),
+            ),
+          );
+        });
+      },
+    );
   });
 
   group(
-      'and an invalid workspace directory structure with an indirect flutter dependency',
-      () {
-    setUp(() async {
-      await d.dir('monorepo', [
-        d.file('pubspec.yaml', '''
+    'and an invalid workspace directory structure with an indirect flutter dependency',
+    () {
+      setUp(() async {
+        await d.dir('monorepo', [
+          d.file('pubspec.yaml', '''
 name: monorepo
 environment:
   sdk: ${ProjectFactory.validSdkVersion}
@@ -808,9 +822,9 @@ workspace:
   - packages/flutter_utilities
   - project/project_server
 '''),
-        d.dir('packages', [
-          d.dir('flutter_utilities', [
-            d.file('pubspec.yaml', '''
+          d.dir('packages', [
+            d.dir('flutter_utilities', [
+              d.file('pubspec.yaml', '''
 name: flutter_utilities
 version: 1.0.0
 environment:
@@ -818,11 +832,11 @@ environment:
   flutter: 3.29.0
 resolution: workspace
 '''),
+            ]),
           ]),
-        ]),
-        d.dir('project', [
-          d.dir('project_server', [
-            d.file('pubspec.yaml', '''
+          d.dir('project', [
+            d.dir('project_server', [
+              d.file('pubspec.yaml', '''
 name: project_server
 environment:
   sdk: ${ProjectFactory.validSdkVersion}
@@ -831,45 +845,50 @@ dependencies:
   serverpod: ${ProjectFactory.validServerpodVersion}
   flutter_utilities: ^1.0.0
 '''),
+            ]),
           ]),
-        ]),
-      ]).create();
+        ]).create();
 
-      when(() => client.deploy.createUploadDescription(any())).thenAnswer(
-          (final _) async => BucketUploadDescription.uploadDescription);
-    });
-
-    group('when deploying through CLI and with --dry-run', () {
-      late Future cliCommandFuture;
-      setUp(() async {
-        pushCurrentDirectory(p.join(d.sandbox, 'monorepo', 'project'));
-
-        cliCommandFuture = cli.run([
-          'deploy',
-          '--project',
-          BucketUploadDescription.projectId,
-          '--dry-run',
-        ]);
-      });
-
-      test('then command throws ErrorExitException.', () async {
-        await expectLater(
-          cliCommandFuture,
-          throwsA(isA<ErrorExitException>()),
+        when(() => client.deploy.createUploadDescription(any())).thenAnswer(
+          (final _) async => BucketUploadDescription.uploadDescription,
         );
       });
 
-      test('then an unsupported flutter dependency error message is logged.',
+      group('when deploying through CLI and with --dry-run', () {
+        late Future cliCommandFuture;
+        setUp(() async {
+          pushCurrentDirectory(p.join(d.sandbox, 'monorepo', 'project'));
+
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--project',
+            BucketUploadDescription.projectId,
+            '--dry-run',
+          ]);
+        });
+
+        test('then command throws ErrorExitException.', () async {
+          await expectLater(
+            cliCommandFuture,
+            throwsA(isA<ErrorExitException>()),
+          );
+        });
+
+        test(
+          'then an unsupported flutter dependency error message is logged.',
           () async {
-        await cliCommandFuture.catchError((final _) {});
+            await cliCommandFuture.catchError((final _) {});
 
-        expect(logger.errorCalls, hasLength(1));
-        expect(
-          logger.errorCalls.single.message,
-          equals(
-              'A Flutter dependency is not allowed in a server package: flutter_utilities'),
+            expect(logger.errorCalls, hasLength(1));
+            expect(
+              logger.errorCalls.single.message,
+              equals(
+                'A Flutter dependency is not allowed in a server package: flutter_utilities',
+              ),
+            );
+          },
         );
       });
-    });
-  });
+    },
+  );
 }

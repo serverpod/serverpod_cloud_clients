@@ -65,7 +65,7 @@ enum LoginCommandOption<V> implements OptionDefinition<V> {
 
 class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
   CloudLoginCommand({required super.logger})
-      : super(options: LoginCommandOption.values);
+    : super(options: LoginCommandOption.values);
 
   @override
   bool get requireLogin => false;
@@ -78,7 +78,8 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
 
   @override
   Future<void> runWithConfig(
-      final Configuration<LoginCommandOption> commandConfig) async {
+    final Configuration<LoginCommandOption> commandConfig,
+  ) async {
     final timeLimit = commandConfig.value(LoginCommandOption.timeoutOpt);
     final signInPath = commandConfig.value(LoginCommandOption.signinPathOpt);
     final persistent = commandConfig.value(LoginCommandOption.persistentOpt);
@@ -88,18 +89,16 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
 
     final storedCloudData =
         await ResourceManager.tryFetchServerpodCloudAuthData(
-      localStoragePath: localStoragePath.path,
-      logger: logger,
-    );
+          localStoragePath: localStoragePath.path,
+          logger: logger,
+        );
 
     if (storedCloudData != null) {
       logger.error(
         'Detected an existing login session for Serverpod cloud. '
         'Log out first to log in again.',
       );
-      logger.terminalCommand(
-        'scloud auth logout',
-      );
+      logger.terminalCommand('scloud auth logout');
       throw FailureException();
     }
 
@@ -159,7 +158,8 @@ class CloudLogoutCommand extends CloudCliCommand {
       logger.error(
         'Failed to remove stored credentials',
         exception: e,
-        hint: 'Please remove these manually. '
+        hint:
+            'Please remove these manually. '
             'They should be located in $localStoragePath.',
       );
       exitException = ErrorExitException();

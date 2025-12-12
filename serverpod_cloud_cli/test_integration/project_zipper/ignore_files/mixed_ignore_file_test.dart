@@ -14,10 +14,7 @@ import '../../../test_utils/project_factory.dart';
 void main() {
   final logger = VoidLogger();
   final commandLogger = CommandLogger(logger);
-  final testProjectPath = p.join(
-    'test_integration',
-    const Uuid().v4(),
-  );
+  final testProjectPath = p.join('test_integration', const Uuid().v4());
 
   tearDown(() {
     final directory = Directory(testProjectPath);
@@ -27,53 +24,55 @@ void main() {
   });
 
   test(
-      'Given a project directory containing a file ignored by .gitignore but included by .scloudignore when zipping project then file is included',
-      () async {
-    const ignoredFileName = 'ignored_file.txt';
-    final projectDirectory = DirectoryFactory(
-      withFiles: [
-        FileFactory(withName: ignoredFileName),
-        FileFactory(withName: '.gitignore', withContents: ignoredFileName),
-        FileFactory(
-          withName: '.scloudignore',
-          withContents: '!$ignoredFileName',
-        ),
-      ],
-    ).construct(testProjectPath);
+    'Given a project directory containing a file ignored by .gitignore but included by .scloudignore when zipping project then file is included',
+    () async {
+      const ignoredFileName = 'ignored_file.txt';
+      final projectDirectory = DirectoryFactory(
+        withFiles: [
+          FileFactory(withName: ignoredFileName),
+          FileFactory(withName: '.gitignore', withContents: ignoredFileName),
+          FileFactory(
+            withName: '.scloudignore',
+            withContents: '!$ignoredFileName',
+          ),
+        ],
+      ).construct(testProjectPath);
 
-    final zippedProject = ProjectZipper.zipProject(
-      rootDirectory: projectDirectory,
-      logger: commandLogger,
-    );
-
-    await expectLater(zippedProject, completion(isNotEmpty));
-    final archive = ZipDecoder().decodeBytes(await zippedProject);
-
-    expect(archive.files, hasLength(1));
-    expect(archive.files.first.name, contains(ignoredFileName));
-  });
-
-  test(
-      'Given a project directory containing a file ignored by .scloudignore but included by .gitignore when zipping project then empty project exception is thrown',
-      () {
-    const ignoredFileName = 'ignored_file.txt';
-    final projectDirectory = DirectoryFactory(
-      withFiles: [
-        FileFactory(withName: ignoredFileName),
-        FileFactory(withName: '.scloudignore', withContents: ignoredFileName),
-        FileFactory(
-          withName: '.gitignore',
-          withContents: '!$ignoredFileName',
-        ),
-      ],
-    ).construct(testProjectPath);
-
-    expect(
-      () => ProjectZipper.zipProject(
+      final zippedProject = ProjectZipper.zipProject(
         rootDirectory: projectDirectory,
         logger: commandLogger,
-      ),
-      throwsA(isA<EmptyProjectException>()),
-    );
-  });
+      );
+
+      await expectLater(zippedProject, completion(isNotEmpty));
+      final archive = ZipDecoder().decodeBytes(await zippedProject);
+
+      expect(archive.files, hasLength(1));
+      expect(archive.files.first.name, contains(ignoredFileName));
+    },
+  );
+
+  test(
+    'Given a project directory containing a file ignored by .scloudignore but included by .gitignore when zipping project then empty project exception is thrown',
+    () {
+      const ignoredFileName = 'ignored_file.txt';
+      final projectDirectory = DirectoryFactory(
+        withFiles: [
+          FileFactory(withName: ignoredFileName),
+          FileFactory(withName: '.scloudignore', withContents: ignoredFileName),
+          FileFactory(
+            withName: '.gitignore',
+            withContents: '!$ignoredFileName',
+          ),
+        ],
+      ).construct(testProjectPath);
+
+      expect(
+        () => ProjectZipper.zipProject(
+          rootDirectory: projectDirectory,
+          logger: commandLogger,
+        ),
+        throwsA(isA<EmptyProjectException>()),
+      );
+    },
+  );
 }

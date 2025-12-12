@@ -37,30 +37,40 @@ void main() {
     setUpAll(() async {
       final projects = [
         ProjectInfoBuilder()
-            .withProject(ProjectBuilder()
-                .withCloudProjectId('projectId')
-                .withCreatedAt(DateTime.parse("2024-12-31 10:20:30")))
+            .withProject(
+              ProjectBuilder()
+                  .withCloudProjectId('projectId')
+                  .withCreatedAt(DateTime.parse("2024-12-31 10:20:30")),
+            )
             .withLatestDeployAttemptTime(DateTime.parse("2024-12-31 10:20:30"))
             .build(),
         ProjectInfoBuilder()
-            .withProject(ProjectBuilder()
-                .withCloudProjectId('projectId2')
-                .withCreatedAt(DateTime.parse("2024-12-31 12:20:30"))
-                .withArchivedAt(DateTime.parse("2025-01-01 14:20:30")))
+            .withProject(
+              ProjectBuilder()
+                  .withCloudProjectId('projectId2')
+                  .withCreatedAt(DateTime.parse("2024-12-31 12:20:30"))
+                  .withArchivedAt(DateTime.parse("2025-01-01 14:20:30")),
+            )
             .withLatestDeployAttemptTime(DateTime.parse("2024-12-31 12:20:30"))
             .build(),
         ProjectInfoBuilder()
-            .withProject(ProjectBuilder()
-                .withCloudProjectId('projectId3')
-                .withCreatedAt(DateTime.parse("2024-12-30 10:20:30")))
+            .withProject(
+              ProjectBuilder()
+                  .withCloudProjectId('projectId3')
+                  .withCreatedAt(DateTime.parse("2024-12-30 10:20:30")),
+            )
             .withLatestDeployAttemptTime(null)
             .build(),
       ];
 
-      when(() => client.projects.listProjectsInfo(
-            includeLatestDeployAttemptTime:
-                any(named: 'includeLatestDeployAttemptTime', that: isTrue),
-          )).thenAnswer((final _) async => projects);
+      when(
+        () => client.projects.listProjectsInfo(
+          includeLatestDeployAttemptTime: any(
+            named: 'includeLatestDeployAttemptTime',
+            that: isTrue,
+          ),
+        ),
+      ).thenAnswer((final _) async => projects);
     });
 
     tearDownAll(() {
@@ -70,10 +80,7 @@ void main() {
     group('when executing project list without options', () {
       late Future commandResult;
       setUp(() async {
-        commandResult = cli.run([
-          'project',
-          'list',
-        ]);
+        commandResult = cli.run(['project', 'list']);
       });
 
       test('then completes successfully', () async {
@@ -88,13 +95,17 @@ void main() {
           logger.lineCalls,
           containsAllInOrder([
             equalsLineCall(
-                line: 'Project Id | Created At          | Last Deploy Attempt'),
+              line: 'Project Id | Created At          | Last Deploy Attempt',
+            ),
             equalsLineCall(
-                line: '-----------+---------------------+--------------------'),
+              line: '-----------+---------------------+--------------------',
+            ),
             equalsLineCall(
-                line: 'projectId3 | 2024-12-30 10:20:30 |                    '),
+              line: 'projectId3 | 2024-12-30 10:20:30 |                    ',
+            ),
             equalsLineCall(
-                line: 'projectId  | 2024-12-31 10:20:30 | 2024-12-31 10:20:30'),
+              line: 'projectId  | 2024-12-31 10:20:30 | 2024-12-31 10:20:30',
+            ),
           ]),
         );
       });
@@ -113,11 +124,7 @@ void main() {
     group('when executing project list with --all', () {
       late Future commandResult;
       setUp(() async {
-        commandResult = cli.run([
-          'project',
-          'list',
-          '--all',
-        ]);
+        commandResult = cli.run(['project', 'list', '--all']);
       });
 
       test('then completes successfully', () async {
@@ -132,20 +139,25 @@ void main() {
           logger.lineCalls,
           containsAllInOrder([
             equalsLineCall(
-                line:
-                    'Project Id | Created At          | Last Deploy Attempt | Deleted At         '),
+              line:
+                  'Project Id | Created At          | Last Deploy Attempt | Deleted At         ',
+            ),
             equalsLineCall(
-                line:
-                    '-----------+---------------------+---------------------+--------------------'),
+              line:
+                  '-----------+---------------------+---------------------+--------------------',
+            ),
             equalsLineCall(
-                line:
-                    'projectId3 | 2024-12-30 10:20:30 |                     |                    '),
+              line:
+                  'projectId3 | 2024-12-30 10:20:30 |                     |                    ',
+            ),
             equalsLineCall(
-                line:
-                    'projectId  | 2024-12-31 10:20:30 | 2024-12-31 10:20:30 |                    '),
+              line:
+                  'projectId  | 2024-12-31 10:20:30 | 2024-12-31 10:20:30 |                    ',
+            ),
             equalsLineCall(
-                line:
-                    'projectId2 | 2024-12-31 12:20:30 | 2024-12-31 12:20:30 | 2025-01-01 14:20:30'),
+              line:
+                  'projectId2 | 2024-12-31 12:20:30 | 2024-12-31 12:20:30 | 2025-01-01 14:20:30',
+            ),
           ]),
         );
       });

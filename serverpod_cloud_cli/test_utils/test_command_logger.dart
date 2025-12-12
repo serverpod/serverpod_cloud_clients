@@ -13,17 +13,11 @@ class BoxCall {
   final String message;
   final bool newParagraph;
 
-  BoxCall({
-    required this.message,
-    this.newParagraph = false,
-  });
+  BoxCall({required this.message, this.newParagraph = false});
 
   @override
   String toString() {
-    return {
-      'message': message,
-      'newParagraph': newParagraph,
-    }.toString();
+    return {'message': message, 'newParagraph': newParagraph}.toString();
   }
 }
 
@@ -62,10 +56,7 @@ class InfoCall {
 
   @override
   String toString() {
-    return {
-      'message': message,
-      'newParagraph': newParagraph,
-    }.toString();
+    return {'message': message, 'newParagraph': newParagraph}.toString();
   }
 }
 
@@ -76,9 +67,7 @@ class LineCall {
 
   @override
   String toString() {
-    return {
-      'line': line,
-    }.toString();
+    return {'line': line}.toString();
   }
 }
 
@@ -87,11 +76,7 @@ class ListCall {
   final String? title;
   final bool newParagraph;
 
-  ListCall({
-    required this.items,
-    this.title,
-    this.newParagraph = false,
-  });
+  ListCall({required this.items, this.title, this.newParagraph = false});
 
   @override
   String toString() {
@@ -107,17 +92,11 @@ class ProgressCall {
   final String message;
   final bool newParagraph;
 
-  ProgressCall({
-    required this.message,
-    this.newParagraph = false,
-  });
+  ProgressCall({required this.message, this.newParagraph = false});
 
   @override
   String toString() {
-    return {
-      'message': message,
-      'newParagraph': newParagraph,
-    }.toString();
+    return {'message': message, 'newParagraph': newParagraph}.toString();
   }
 }
 
@@ -149,17 +128,11 @@ class ConfirmCall {
   final String message;
   final bool? defaultValue;
 
-  ConfirmCall({
-    required this.message,
-    required this.defaultValue,
-  });
+  ConfirmCall({required this.message, required this.defaultValue});
 
   @override
   String toString() {
-    return {
-      'message': message,
-      'defaultValue': defaultValue,
-    }.toString();
+    return {'message': message, 'defaultValue': defaultValue}.toString();
   }
 }
 
@@ -167,17 +140,11 @@ class InputCall {
   final String message;
   final String? defaultValue;
 
-  InputCall({
-    required this.message,
-    required this.defaultValue,
-  });
+  InputCall({required this.message, required this.defaultValue});
 
   @override
   String toString() {
-    return {
-      'message': message,
-      'defaultValue': defaultValue,
-    }.toString();
+    return {'message': message, 'defaultValue': defaultValue}.toString();
   }
 }
 
@@ -210,10 +177,7 @@ class RawCall {
 
   @override
   String toString() {
-    return {
-      'content': content,
-      'style': style,
-    }.toString();
+    return {'content': content, 'style': style}.toString();
   }
 }
 
@@ -241,10 +205,9 @@ class TestCommandLogger extends CommandLogger {
   final Logger _logger;
 
   /// Enable [printToStdout] temporarily to aid debugging.
-  TestCommandLogger({
-    this.printToStdout = false,
-  })  : _logger = VoidLogger(),
-        super(VoidLogger());
+  TestCommandLogger({this.printToStdout = false})
+    : _logger = VoidLogger(),
+      super(VoidLogger());
 
   int get totalLogCalls =>
       boxCalls.length +
@@ -271,12 +234,7 @@ class TestCommandLogger extends CommandLogger {
       _somethingLogged.complete();
     }
 
-    boxCalls.add(
-      BoxCall(
-        message: message,
-        newParagraph: newParagraph,
-      ),
-    );
+    boxCalls.add(BoxCall(message: message, newParagraph: newParagraph));
   }
 
   void clear() {
@@ -336,13 +294,15 @@ class TestCommandLogger extends CommandLogger {
       _somethingLogged.complete();
     }
 
-    errorCalls.add(ErrorCall(
-      message: message,
-      exception: exception,
-      hint: hint,
-      newParagraph: newParagraph,
-      stackTrace: stackTrace,
-    ));
+    errorCalls.add(
+      ErrorCall(
+        message: message,
+        exception: exception,
+        hint: hint,
+        newParagraph: newParagraph,
+        stackTrace: stackTrace,
+      ),
+    );
   }
 
   Future<void> waitForLog() async {
@@ -356,10 +316,7 @@ class TestCommandLogger extends CommandLogger {
   }
 
   @override
-  void info(
-    final String message, {
-    final bool newParagraph = false,
-  }) {
+  void info(final String message, {final bool newParagraph = false}) {
     if (printToStdout) {
       print('log info: $message');
     }
@@ -372,10 +329,7 @@ class TestCommandLogger extends CommandLogger {
   }
 
   @override
-  void line(
-    final String line, {
-    final LogLevel level = LogLevel.info,
-  }) {
+  void line(final String line, {final LogLevel level = LogLevel.info}) {
     if (printToStdout) {
       print('log line: $line');
     }
@@ -422,8 +376,9 @@ class TestCommandLogger extends CommandLogger {
       _somethingLogged.complete();
     }
 
-    progressCalls
-        .add(ProgressCall(message: message, newParagraph: newParagraph));
+    progressCalls.add(
+      ProgressCall(message: message, newParagraph: newParagraph),
+    );
     return _logger.progress(message, runner);
   }
 
@@ -443,12 +398,14 @@ class TestCommandLogger extends CommandLogger {
       _somethingLogged.complete();
     }
 
-    successCalls.add(SuccessCall(
-      message: message,
-      trailingRocket: trailingRocket,
-      newParagraph: newParagraph,
-      followUp: followUp,
-    ));
+    successCalls.add(
+      SuccessCall(
+        message: message,
+        trailingRocket: trailingRocket,
+        newParagraph: newParagraph,
+        followUp: followUp,
+      ),
+    );
   }
 
   @override
@@ -466,11 +423,13 @@ class TestCommandLogger extends CommandLogger {
       _somethingLogged.complete();
     }
 
-    terminalCommandCalls.add(TerminalCommandCall(
-      command: command,
-      message: message,
-      newParagraph: newParagraph,
-    ));
+    terminalCommandCalls.add(
+      TerminalCommandCall(
+        command: command,
+        message: message,
+        newParagraph: newParagraph,
+      ),
+    );
   }
 
   @override
@@ -487,11 +446,9 @@ class TestCommandLogger extends CommandLogger {
       _somethingLogged.complete();
     }
 
-    warningCalls.add(WarningCall(
-      message: message,
-      newParagraph: newParagraph,
-      hint: hint,
-    ));
+    warningCalls.add(
+      WarningCall(message: message, newParagraph: newParagraph, hint: hint),
+    );
   }
 
   @override
@@ -512,10 +469,7 @@ class TestCommandLogger extends CommandLogger {
   }
 
   @override
-  Future<bool> confirm(
-    final String message, {
-    final bool? defaultValue,
-  }) async {
+  Future<bool> confirm(final String message, {final bool? defaultValue}) async {
     if (printToStdout) {
       print('log confirm: $message');
     }
@@ -528,10 +482,7 @@ class TestCommandLogger extends CommandLogger {
     }
     final nextConfirmAnswer = _nextConfirmAnswers.removeAt(0);
 
-    confirmCalls.add(ConfirmCall(
-      message: message,
-      defaultValue: defaultValue,
-    ));
+    confirmCalls.add(ConfirmCall(message: message, defaultValue: defaultValue));
 
     return nextConfirmAnswer;
   }
@@ -553,10 +504,7 @@ class TestCommandLogger extends CommandLogger {
     }
     final nextInputAnswer = _nextInputAnswers.removeAt(0);
 
-    inputCalls.add(InputCall(
-      message: message,
-      defaultValue: defaultValue,
-    ));
+    inputCalls.add(InputCall(message: message, defaultValue: defaultValue));
 
     return nextInputAnswer;
   }
@@ -579,11 +527,7 @@ class WarningCall {
   final String? hint;
   final bool newParagraph;
 
-  WarningCall({
-    required this.message,
-    this.hint,
-    this.newParagraph = false,
-  });
+  WarningCall({required this.message, this.hint, this.newParagraph = false});
 
   @override
   String toString() {
@@ -596,7 +540,7 @@ class WarningCall {
 }
 
 Future<({MockStdout stdout, MockStdout stderr, MockStdin stdin})>
-    collectOutput<T>(
+collectOutput<T>(
   final FutureOr<T> Function() runner, {
   final List<String> stdinLines = const [],
   final MockStdout? stdout,

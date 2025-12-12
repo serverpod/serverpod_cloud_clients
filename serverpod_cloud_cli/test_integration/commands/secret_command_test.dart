@@ -43,10 +43,12 @@ void main() {
       late Future commandResult;
 
       setUp(() async {
-        when(() => client.secrets.create(
-              secrets: any(named: 'secrets'),
-              cloudCapsuleId: any(named: 'cloudCapsuleId'),
-            )).thenThrow(ServerpodClientUnauthorized());
+        when(
+          () => client.secrets.create(
+            secrets: any(named: 'secrets'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenThrow(ServerpodClientUnauthorized());
 
         commandResult = cli.run([
           'secret',
@@ -69,11 +71,12 @@ void main() {
 
         expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message:
-                  'The credentials for this session seem to no longer be valid.',
-            ));
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message:
+                'The credentials for this session seem to no longer be valid.',
+          ),
+        );
       });
     });
 
@@ -81,10 +84,12 @@ void main() {
       late Future commandResult;
 
       setUp(() async {
-        when(() => client.secrets.delete(
-              key: any(named: 'key'),
-              cloudCapsuleId: any(named: 'cloudCapsuleId'),
-            )).thenThrow(ServerpodClientUnauthorized());
+        when(
+          () => client.secrets.delete(
+            key: any(named: 'key'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenThrow(ServerpodClientUnauthorized());
 
         logger.answerNextConfirmWith(true);
         commandResult = cli.run([
@@ -107,11 +112,12 @@ void main() {
 
         expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message:
-                  'The credentials for this session seem to no longer be valid.',
-            ));
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message:
+                'The credentials for this session seem to no longer be valid.',
+          ),
+        );
       });
     });
 
@@ -119,15 +125,11 @@ void main() {
       late Future commandResult;
 
       setUp(() async {
-        when(() => client.secrets.list(any()))
-            .thenThrow(ServerpodClientUnauthorized());
+        when(
+          () => client.secrets.list(any()),
+        ).thenThrow(ServerpodClientUnauthorized());
 
-        commandResult = cli.run([
-          'secret',
-          'list',
-          '--project',
-          projectId,
-        ]);
+        commandResult = cli.run(['secret', 'list', '--project', projectId]);
       });
 
       test('then throws exception', () async {
@@ -141,11 +143,12 @@ void main() {
 
         expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message:
-                  'The credentials for this session seem to no longer be valid.',
-            ));
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message:
+                'The credentials for this session seem to no longer be valid.',
+          ),
+        );
       });
     });
   });
@@ -153,13 +156,12 @@ void main() {
   group('Given authenticated', () {
     group('when executing secrets create', () {
       setUp(() async {
-        when(() => client.secrets.create(
-              secrets: any(
-                named: 'secrets',
-                that: equals({'key': 'value'}),
-              ),
-              cloudCapsuleId: any(named: 'cloudCapsuleId'),
-            )).thenAnswer((final _) async => Future.value());
+        when(
+          () => client.secrets.create(
+            secrets: any(named: 'secrets', that: equals({'key': 'value'})),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenAnswer((final _) async => Future.value());
       });
 
       group('with value arg', () {
@@ -244,11 +246,15 @@ void main() {
         test('then command throws UsageException', () async {
           await expectLater(
             commandResult,
-            throwsA(isA<UsageException>().having(
-              (final e) => e.message,
-              'message',
-              equals('These options are mutually exclusive: from-file, value.'),
-            )),
+            throwsA(
+              isA<UsageException>().having(
+                (final e) => e.message,
+                'message',
+                equals(
+                  'These options are mutually exclusive: from-file, value.',
+                ),
+              ),
+            ),
           );
         });
       });
@@ -269,31 +275,34 @@ void main() {
         test('then command throws UsageException', () async {
           await expectLater(
             commandResult,
-            throwsA(isA<UsageException>().having(
-              (final e) => e.message,
-              'message',
-              equals(
-                'Option group Value requires one of the options to be provided.',
+            throwsA(
+              isA<UsageException>().having(
+                (final e) => e.message,
+                'message',
+                equals(
+                  'Option group Value requires one of the options to be provided.',
+                ),
               ),
-            )),
+            ),
           );
         });
       });
     });
 
-    group(
-        'when executing secrets create '
+    group('when executing secrets create '
         'with multi-line value file arg', () {
       late Future commandResult;
 
       setUp(() async {
-        when(() => client.secrets.create(
-              secrets: any(
-                named: 'secrets',
-                that: equals({'key': 'value1\nline2'}),
-              ),
-              cloudCapsuleId: any(named: 'cloudCapsuleId'),
-            )).thenAnswer((final _) async => Future.value());
+        when(
+          () => client.secrets.create(
+            secrets: any(
+              named: 'secrets',
+              that: equals({'key': 'value1\nline2'}),
+            ),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenAnswer((final _) async => Future.value());
 
         await d.file('value.txt', 'value1\nline2').create();
 
@@ -327,10 +336,12 @@ void main() {
       late Future commandResult;
 
       setUp(() async {
-        when(() => client.secrets.delete(
-              key: any(named: 'key'),
-              cloudCapsuleId: any(named: 'cloudCapsuleId'),
-            )).thenAnswer((final _) async => Future.value());
+        when(
+          () => client.secrets.delete(
+            key: any(named: 'key'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenAnswer((final _) async => Future.value());
 
         logger.answerNextConfirmWith(true);
         commandResult = cli.run([
@@ -374,10 +385,12 @@ void main() {
       late Future commandResult;
 
       setUp(() async {
-        when(() => client.secrets.delete(
-              key: any(named: 'key'),
-              cloudCapsuleId: any(named: 'cloudCapsuleId'),
-            )).thenAnswer((final _) async => Future.value());
+        when(
+          () => client.secrets.delete(
+            key: any(named: 'key'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenAnswer((final _) async => Future.value());
 
         logger.answerNextConfirmWith(false);
         commandResult = cli.run([
@@ -421,19 +434,11 @@ void main() {
       late Future commandResult;
 
       setUp(() async {
-        when(() => client.secrets.list(any()))
-            .thenAnswer((final _) async => Future.value([
-                  'SECRET_1',
-                  'SECRET_2',
-                  'SECRET_3',
-                ]));
+        when(() => client.secrets.list(any())).thenAnswer(
+          (final _) async => Future.value(['SECRET_1', 'SECRET_2', 'SECRET_3']),
+        );
 
-        commandResult = cli.run([
-          'secret',
-          'list',
-          '--project',
-          projectId,
-        ]);
+        commandResult = cli.run(['secret', 'list', '--project', projectId]);
       });
 
       test('then completes successfully', () async {

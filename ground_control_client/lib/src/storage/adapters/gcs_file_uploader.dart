@@ -20,7 +20,8 @@ class GoogleCloudStorageUploader implements FileUploaderClient {
   /// server. Optionally, you can pass a [Dio] instance to use for the upload to control
   /// the timeout and other settings.
   GoogleCloudStorageUploader(String uploadDescription, {Dio? dio}) {
-    _dio = dio ??
+    _dio =
+        dio ??
         Dio(
           BaseOptions(
             connectTimeout: const Duration(seconds: 30),
@@ -44,12 +45,14 @@ class GoogleCloudStorageUploader implements FileUploaderClient {
   Future<bool> upload(Stream<List<int>> stream, int length) async {
     if (_attemptedUpload) {
       throw Exception(
-          'Data has already been uploaded using this FileUploader.');
+        'Data has already been uploaded using this FileUploader.',
+      );
     }
     _attemptedUpload = true;
 
-    final broadcastStream =
-        stream.isBroadcast ? stream : stream.asBroadcastStream();
+    final broadcastStream = stream.isBroadcast
+        ? stream
+        : stream.asBroadcastStream();
 
     switch (_uploadDescription.type) {
       case _UploadType.binary:
@@ -57,21 +60,21 @@ class GoogleCloudStorageUploader implements FileUploaderClient {
         try {
           result = switch (_uploadDescription.httpMethod) {
             'PUT' => await withRetry(
-                () => _dio.putUri(
-                  _uploadDescription.url,
-                  data: broadcastStream,
-                  options: Options(headers: _uploadDescription.headers),
-                ),
-                shouldRetryOnException: _shouldRetry,
+              () => _dio.putUri(
+                _uploadDescription.url,
+                data: broadcastStream,
+                options: Options(headers: _uploadDescription.headers),
               ),
+              shouldRetryOnException: _shouldRetry,
+            ),
             _ => await withRetry(
-                () => _dio.postUri(
-                  _uploadDescription.url,
-                  data: broadcastStream,
-                  options: Options(headers: _uploadDescription.headers),
-                ),
-                shouldRetryOnException: _shouldRetry,
+              () => _dio.postUri(
+                _uploadDescription.url,
+                data: broadcastStream,
+                options: Options(headers: _uploadDescription.headers),
               ),
+              shouldRetryOnException: _shouldRetry,
+            ),
           };
         } on DioException {
           rethrow;
@@ -82,9 +85,11 @@ class GoogleCloudStorageUploader implements FileUploaderClient {
         if (result.statusCode == 200) {
           return true;
         }
-        throw Exception('Failed to upload binary file, '
-            'response code ${result.statusCode}, body: ${result.data}, '
-            '$_uploadDescription');
+        throw Exception(
+          'Failed to upload binary file, '
+          'response code ${result.statusCode}, body: ${result.data}, '
+          '$_uploadDescription',
+        );
 
       case _UploadType.multipart:
         var multipartFile = MultipartFile.fromStream(
@@ -93,9 +98,7 @@ class GoogleCloudStorageUploader implements FileUploaderClient {
           filename: _uploadDescription.fileName,
         );
         final formData = FormData.fromMap({
-          'files': [
-            multipartFile,
-          ],
+          'files': [multipartFile],
         });
 
         for (var key in _uploadDescription.requestFields.keys) {
@@ -103,12 +106,7 @@ class GoogleCloudStorageUploader implements FileUploaderClient {
           if (value == null) {
             continue;
           }
-          formData.fields.add(
-            MapEntry(
-              key,
-              value,
-            ),
-          );
+          formData.fields.add(MapEntry(key, value));
         }
 
         final Response result;
@@ -129,9 +127,11 @@ class GoogleCloudStorageUploader implements FileUploaderClient {
         if (result.statusCode == 204) {
           return true;
         }
-        throw Exception('Failed to upload multipart file, '
-            'response code ${result.statusCode}, body: ${result.data}, '
-            '$_uploadDescription');
+        throw Exception(
+          'Failed to upload multipart file, '
+          'response code ${result.statusCode}, body: ${result.data}, '
+          '$_uploadDescription',
+        );
     }
   }
 
@@ -145,10 +145,7 @@ class GoogleCloudStorageUploader implements FileUploaderClient {
   }
 }
 
-enum _UploadType {
-  binary,
-  multipart,
-}
+enum _UploadType { binary, multipart }
 
 class _UploadDescription {
   late _UploadType type;

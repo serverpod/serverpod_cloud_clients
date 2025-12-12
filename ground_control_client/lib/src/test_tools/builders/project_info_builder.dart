@@ -8,10 +8,9 @@ class ProjectInfoBuilder {
 
   Timestamp? _latestDeployAttemptTime;
 
-  ProjectInfoBuilder({
-    final ProjectBuilder? projectBuilder,
-  })  : projectBuilder = projectBuilder ?? ProjectBuilder(),
-        _latestDeployAttemptTime = null;
+  ProjectInfoBuilder({final ProjectBuilder? projectBuilder})
+    : projectBuilder = projectBuilder ?? ProjectBuilder(),
+      _latestDeployAttemptTime = null;
 
   ProjectInfoBuilder withProject(ProjectBuilder projectBuilder) {
     this.projectBuilder = projectBuilder;
@@ -19,7 +18,8 @@ class ProjectInfoBuilder {
   }
 
   ProjectInfoBuilder withLatestDeployAttemptTime(
-      DateTime? latestDeployAttemptTime) {
+    DateTime? latestDeployAttemptTime,
+  ) {
     _latestDeployAttemptTime = Timestamp(timestamp: latestDeployAttemptTime);
     return this;
   }

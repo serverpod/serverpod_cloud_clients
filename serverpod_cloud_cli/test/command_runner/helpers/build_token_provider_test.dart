@@ -21,8 +21,7 @@ void main() {
     logger = TestCommandLogger();
   });
 
-  test(
-      'Given token builder built with an override from legacy token when '
+  test('Given token builder built with an override from legacy token when '
       'fetching the token '
       'then the token is formatted correctly', () async {
     final legacyKeyResult = _buildLegacySessionKeyResult();
@@ -45,8 +44,7 @@ void main() {
     expect(validated?.secret, legacyKeyResult.secret);
   });
 
-  test(
-      'Given token builder built with an override from a non-legacy token '
+  test('Given token builder built with an override from a non-legacy token '
       'when fetching the token '
       'then the token is returned as is unchanged', () async {
     const nonLegacyToken = 'not-a-legacy-token-format';
@@ -63,89 +61,91 @@ void main() {
   });
 
   group(
-      'Given token builder built with no override and a legacy token stored in the local storage when fetching the token',
-      () {
-    late String? tokenProviderResult;
-    late SessionKeyResult legacyKeyResult;
+    'Given token builder built with no override and a legacy token stored in the local storage when fetching the token',
+    () {
+      late String? tokenProviderResult;
+      late SessionKeyResult legacyKeyResult;
 
-    setUp(() async {
-      legacyKeyResult = _buildLegacySessionKeyResult();
+      setUp(() async {
+        legacyKeyResult = _buildLegacySessionKeyResult();
 
-      await ResourceManager.storeServerpodCloudAuthData(
-        authData: ServerpodCloudAuthData(legacyKeyResult.sessionKey),
-        localStoragePath: testFolderPath,
-      );
+        await ResourceManager.storeServerpodCloudAuthData(
+          authData: ServerpodCloudAuthData(legacyKeyResult.sessionKey),
+          localStoragePath: testFolderPath,
+        );
 
-      final tokenProvider = BuildTokenProvider.build(
-        authTokenOverride: null,
-        localStoragePath: testFolderPath,
-        logger: logger,
-      );
+        final tokenProvider = BuildTokenProvider.build(
+          authTokenOverride: null,
+          localStoragePath: testFolderPath,
+          logger: logger,
+        );
 
-      tokenProviderResult = await tokenProvider();
-    });
+        tokenProviderResult = await tokenProvider();
+      });
 
-    test('then the token is formatted correctly', () async {
-      expect(tokenProviderResult, isNotNull);
-      expect(tokenProviderResult, isNot(equals(legacyKeyResult.sessionKey)));
+      test('then the token is formatted correctly', () async {
+        expect(tokenProviderResult, isNotNull);
+        expect(tokenProviderResult, isNot(equals(legacyKeyResult.sessionKey)));
 
-      final validated = _tryParseServerSideSessionToken(tokenProviderResult!);
-      expect(validated, isNotNull);
-      expect(validated?.serverSideSessionId, legacyKeyResult.authSessionId);
-      expect(validated?.secret, legacyKeyResult.secret);
-    });
+        final validated = _tryParseServerSideSessionToken(tokenProviderResult!);
+        expect(validated, isNotNull);
+        expect(validated?.serverSideSessionId, legacyKeyResult.authSessionId);
+        expect(validated?.secret, legacyKeyResult.secret);
+      });
 
-    test('then the stored token is updated to the new format', () async {
-      final storedData = await ResourceManager.tryFetchServerpodCloudAuthData(
-        localStoragePath: testFolderPath,
-        logger: logger,
-      );
+      test('then the stored token is updated to the new format', () async {
+        final storedData = await ResourceManager.tryFetchServerpodCloudAuthData(
+          localStoragePath: testFolderPath,
+          logger: logger,
+        );
 
-      expect(storedData, isNotNull);
-      expect(storedData!.token, isNot(equals(legacyKeyResult.sessionKey)));
+        expect(storedData, isNotNull);
+        expect(storedData!.token, isNot(equals(legacyKeyResult.sessionKey)));
 
-      final validated = _tryParseServerSideSessionToken(storedData.token);
-      expect(validated, isNotNull);
-      expect(validated?.serverSideSessionId, legacyKeyResult.authSessionId);
-      expect(validated?.secret, legacyKeyResult.secret);
-    });
-  });
+        final validated = _tryParseServerSideSessionToken(storedData.token);
+        expect(validated, isNotNull);
+        expect(validated?.serverSideSessionId, legacyKeyResult.authSessionId);
+        expect(validated?.secret, legacyKeyResult.secret);
+      });
+    },
+  );
 
   group(
-      'Given a token does not conform to legacy format that is stored in the local storage when building a token provider',
-      () {
-    late String? tokenProviderResult;
-    const nonLegacyToken = 'not-a-legacy-token-format';
+    'Given a token does not conform to legacy format that is stored in the local storage when building a token provider',
+    () {
+      late String? tokenProviderResult;
+      const nonLegacyToken = 'not-a-legacy-token-format';
 
-    setUp(() async {
-      await ResourceManager.storeServerpodCloudAuthData(
-        authData: ServerpodCloudAuthData(nonLegacyToken),
-        localStoragePath: testFolderPath,
-      );
+      setUp(() async {
+        await ResourceManager.storeServerpodCloudAuthData(
+          authData: ServerpodCloudAuthData(nonLegacyToken),
+          localStoragePath: testFolderPath,
+        );
 
-      final tokenProvider = BuildTokenProvider.build(
-        authTokenOverride: null,
-        localStoragePath: testFolderPath,
-        logger: logger,
-      );
+        final tokenProvider = BuildTokenProvider.build(
+          authTokenOverride: null,
+          localStoragePath: testFolderPath,
+          logger: logger,
+        );
 
-      tokenProviderResult = await tokenProvider();
-    });
+        tokenProviderResult = await tokenProvider();
+      });
 
-    test('then the token is returned as is', () async {
-      expect(tokenProviderResult, equals(nonLegacyToken));
-    });
+      test('then the token is returned as is', () async {
+        expect(tokenProviderResult, equals(nonLegacyToken));
+      });
 
-    test('then the stored token is not updated', () async {
-      final storedData = await ResourceManager.tryFetchServerpodCloudAuthData(
-        localStoragePath: testFolderPath,
-        logger: logger,
-      );
+      test('then the stored token is not updated', () async {
+        final storedData = await ResourceManager.tryFetchServerpodCloudAuthData(
+          localStoragePath: testFolderPath,
+          logger: logger,
+        );
 
-      expect(storedData, isNotNull);
-      expect(storedData!.token, equals(nonLegacyToken));
-    });
-  });
+        expect(storedData, isNotNull);
+        expect(storedData!.token, equals(nonLegacyToken));
+      });
+    },
+  );
 }
 
 typedef SessionKeyResult = ({
@@ -155,8 +155,8 @@ typedef SessionKeyResult = ({
 });
 
 SessionKeyResult _buildLegacySessionKeyResult() {
-// This is how we built the session key in 3.0.0-alpha.2
-// Source: https://github.com/serverpod/serverpod/blob/8640fbc1c6400839e5274309cc039193d58fb700/modules/new_serverpod_auth/serverpod_auth_core/serverpod_auth_core_server/lib/src/session/business/session_key.dart#L12-L20
+  // This is how we built the session key in 3.0.0-alpha.2
+  // Source: https://github.com/serverpod/serverpod/blob/8640fbc1c6400839e5274309cc039193d58fb700/modules/new_serverpod_auth/serverpod_auth_core/serverpod_auth_core_server/lib/src/session/business/session_key.dart#L12-L20
   String buildLegacySessionKey({
     required final UuidValue authSessionId,
     required final Uint8List secret,
@@ -169,8 +169,10 @@ SessionKeyResult _buildLegacySessionKeyResult() {
   final secret = utf8.encode('my-secret');
 
   return (
-    sessionKey:
-        buildLegacySessionKey(authSessionId: authSessionId, secret: secret),
+    sessionKey: buildLegacySessionKey(
+      authSessionId: authSessionId,
+      secret: secret,
+    ),
     authSessionId: authSessionId,
     secret: secret,
   );
@@ -208,7 +210,7 @@ SessionKeyData? _tryParseServerSideSessionToken(
     );
 
     return (serverSideSessionId: serverSideSessionId, secret: secret);
-  } catch (_, __) {
+  } catch (_) {
     // session.log(
     //   'Failed to parse session key: "$key"',
     //   level: LogLevel.error,

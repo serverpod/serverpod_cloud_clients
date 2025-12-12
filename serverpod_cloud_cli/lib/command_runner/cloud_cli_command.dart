@@ -22,12 +22,8 @@ abstract class CloudCliCommand<O extends OptionDefinition>
   /// The default is true, subclasses can override to false.
   final bool requireLogin = true;
 
-  CloudCliCommand({
-    required this.logger,
-    super.options = const [],
-  }) : super(
-          wrapTextColumn: logger.wrapTextColumn,
-        );
+  CloudCliCommand({required this.logger, super.options = const []})
+    : super(wrapTextColumn: logger.wrapTextColumn);
 
   /// Gets the top parent command for this command.
   Command get _topCommand {
@@ -42,7 +38,8 @@ abstract class CloudCliCommand<O extends OptionDefinition>
   }
 
   @override
-  String? get usageFooter => '''${usageExamples ?? ''}
+  String? get usageFooter =>
+      '''${usageExamples ?? ''}
 See the full documentation at: https://docs.serverpod.cloud/references/cli/commands/${_topCommand.name}
 ''';
 
@@ -124,11 +121,7 @@ See the full documentation at: https://docs.serverpod.cloud/references/cli/comma
         stackTrace: e.nestedStackTrace,
       );
     } else if (e.hint case final String hint) {
-      logger.log(
-        hint,
-        level: LogLevel.info,
-        type: TextLogType.hint,
-      );
+      logger.log(hint, level: LogLevel.info, type: TextLogType.hint);
     }
 
     throw ErrorExitException(e.reason, e.nestedException, e.nestedStackTrace);
@@ -152,6 +145,7 @@ See the full documentation at: https://docs.serverpod.cloud/references/cli/comma
   @override
   Future<void> runWithConfig(final Configuration<O> commandConfig) async {
     throw UnimplementedError(
-        'CLI command $name has not implemented runWithConfig.');
+      'CLI command $name has not implemented runWithConfig.',
+    );
   }
 }

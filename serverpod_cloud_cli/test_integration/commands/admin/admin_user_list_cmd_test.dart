@@ -30,20 +30,24 @@ void main() {
     logger.clear();
   });
 
-  test('Given admin list-users command when instantiated then requires login',
-      () {
-    expect(AdminListUsersCommand(logger: logger).requireLogin, isTrue);
-  });
+  test(
+    'Given admin list-users command when instantiated then requires login',
+    () {
+      expect(AdminListUsersCommand(logger: logger).requireLogin, isTrue);
+    },
+  );
 
   group('Given authenticated', () {
     group('when executing admin list-users', () {
       late Future commandResult;
       setUp(() async {
-        when(() => client.adminUsers.listUsers(
-              cloudProjectId: any(named: 'cloudProjectId'),
-              ofAccountStatus: any(named: 'ofAccountStatus'),
-              includeArchived: any(named: 'includeArchived'),
-            )).thenAnswer(
+        when(
+          () => client.adminUsers.listUsers(
+            cloudProjectId: any(named: 'cloudProjectId'),
+            ofAccountStatus: any(named: 'ofAccountStatus'),
+            includeArchived: any(named: 'includeArchived'),
+          ),
+        ).thenAnswer(
           (final invocation) async => Future.value([
             UserBuilder()
                 .withEmail('test@example.com')
@@ -58,19 +62,16 @@ void main() {
                 .build(),
           ]),
         );
-        when(() => client.adminProcurement.listProcuredProducts(
-              userEmail: any(named: 'userEmail'),
-            )).thenAnswer(
-          (final invocation) async => Future.value([
-            ('test-plan', 'PlanProduct'),
-          ]),
+        when(
+          () => client.adminProcurement.listProcuredProducts(
+            userEmail: any(named: 'userEmail'),
+          ),
+        ).thenAnswer(
+          (final invocation) async =>
+              Future.value([('test-plan', 'PlanProduct')]),
         );
 
-        commandResult = cli.run([
-          'admin',
-          'list-users',
-          '--include-archived',
-        ]);
+        commandResult = cli.run(['admin', 'list-users', '--include-archived']);
       });
 
       test('then command completes successfully', () async {
@@ -84,17 +85,21 @@ void main() {
           logger.lineCalls,
           containsAllInOrder([
             equalsLineCall(
-                line:
-                    'User              | Account status | Created at (local)  | Archived at (local) | Subscribed Plans'),
+              line:
+                  'User              | Account status | Created at (local)  | Archived at (local) | Subscribed Plans',
+            ),
             equalsLineCall(
-                line:
-                    '------------------+----------------+---------------------+---------------------+-----------------'),
+              line:
+                  '------------------+----------------+---------------------+---------------------+-----------------',
+            ),
             equalsLineCall(
-                line:
-                    'test@example.com  | registered     | 2025-07-02 11:00:00 |                     | test-plan       '),
+              line:
+                  'test@example.com  | registered     | 2025-07-02 11:00:00 |                     | test-plan       ',
+            ),
             equalsLineCall(
-                line:
-                    'test2@example.com | invited        | 2025-07-02 12:00:00 | 2025-07-02 12:10:00 |                 '),
+              line:
+                  'test2@example.com | invited        | 2025-07-02 12:00:00 | 2025-07-02 12:10:00 |                 ',
+            ),
           ]),
         );
       });

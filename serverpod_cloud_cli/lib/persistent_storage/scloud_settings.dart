@@ -6,9 +6,8 @@ class ScloudSettings {
 
   ServerpodCloudSettingsData? _cachedSettings;
 
-  ScloudSettings({
-    required final String localStoragePath,
-  }) : _localCloudStorageDirectory = localStoragePath;
+  ScloudSettings({required final String localStoragePath})
+    : _localCloudStorageDirectory = localStoragePath;
 
   Future<ServerpodCloudSettingsData> _fetchSettings() async {
     final settings = _cachedSettings;

@@ -28,23 +28,24 @@ void main() {
   });
 
   test(
-      'Given admin product procure command when instantiated then requires login',
-      () {
-    expect(AdminProcurePlanCommand(logger: logger).requireLogin, isTrue);
-  });
+    'Given admin product procure command when instantiated then requires login',
+    () {
+      expect(AdminProcurePlanCommand(logger: logger).requireLogin, isTrue);
+    },
+  );
 
   group('Given authenticated', () {
     group('when executing admin product procure', () {
       late Future commandResult;
       setUp(() async {
-        when(() => client.adminProcurement.procurePlan(
-              userEmail: any(named: 'userEmail'),
-              planProductName: any(named: 'planProductName'),
-              planProductVersion: any(named: 'planProductVersion'),
-              overrideChecks: any(named: 'overrideChecks'),
-            )).thenAnswer(
-          (final invocation) async => Future.value(),
-        );
+        when(
+          () => client.adminProcurement.procurePlan(
+            userEmail: any(named: 'userEmail'),
+            planProductName: any(named: 'planProductName'),
+            planProductVersion: any(named: 'planProductVersion'),
+            overrideChecks: any(named: 'overrideChecks'),
+          ),
+        ).thenAnswer((final invocation) async => Future.value());
 
         commandResult = cli.run([
           'admin',

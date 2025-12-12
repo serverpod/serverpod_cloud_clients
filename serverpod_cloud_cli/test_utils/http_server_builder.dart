@@ -3,10 +3,8 @@ import 'dart:io';
 
 import 'package:ground_control_client/ground_control_client.dart';
 
-typedef _MethodHandler = void Function(
-  HttpResponse response,
-  Map<String, dynamic> parameters,
-);
+typedef _MethodHandler =
+    void Function(HttpResponse response, Map<String, dynamic> parameters);
 
 class HttpServerBuilder {
   String _host;
@@ -16,10 +14,7 @@ class HttpServerBuilder {
 
   SerializationManager serializer = Protocol();
 
-  HttpServerBuilder()
-      : _host = 'localhost',
-        _path = '/',
-        _methodHandlers = {};
+  HttpServerBuilder() : _host = 'localhost', _path = '/', _methodHandlers = {};
 
   HttpServerBuilder withHost(final String host) {
     _host = host;
@@ -40,9 +35,7 @@ class HttpServerBuilder {
   }
 
   /// Adds a handler that gives a successful response for all requests.
-  HttpServerBuilder withSuccessfulResponse([
-    final Object? responseBody,
-  ]) {
+  HttpServerBuilder withSuccessfulResponse([final Object? responseBody]) {
     return withOnRequest((final request) {
       request.response.statusCode = 200;
 
@@ -63,27 +56,25 @@ class HttpServerBuilder {
     final String endpointName,
     final String methodName,
     final (int, Object?) Function(Map<String, dynamic> parameters)
-        methodResponse,
+    methodResponse,
   ) {
     final methodKey = '$endpointName.$methodName';
     _methodHandlers[methodKey] =
         (final response, final Map<String, dynamic> parameters) async {
-      final (responseCode, responseBody) = methodResponse(parameters);
+          final (responseCode, responseBody) = methodResponse(parameters);
 
-      response.statusCode = responseCode;
+          response.statusCode = responseCode;
 
-      if (responseBody != null) {
-        response.write(
-          switch (responseBody) {
-            SerializableException() => serializer.encodeWithTypeForProtocol(
+          if (responseBody != null) {
+            response.write(switch (responseBody) {
+              SerializableException() => serializer.encodeWithTypeForProtocol(
                 responseBody,
               ),
-            SerializableModel() => responseBody.toString(),
-            _ => jsonEncode(responseBody),
-          },
-        );
-      }
-    };
+              SerializableModel() => responseBody.toString(),
+              _ => jsonEncode(responseBody),
+            });
+          }
+        };
     return this;
   }
 

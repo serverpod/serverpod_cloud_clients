@@ -35,13 +35,15 @@ abstract final class BuildTokenProvider {
       return base64Url.encode([
         ...utf8.encode(sessionKeyPrefix),
         ...base64Url.decode(serverSideSessionId),
-        ...base64Url.decode(secret)
+        ...base64Url.decode(secret),
       ]);
     };
   }
 
   static FutureOr<String?> Function() _getStoredToken(
-      final String localStoragePath, final CommandLogger logger) {
+    final String localStoragePath,
+    final CommandLogger logger,
+  ) {
     return () async {
       final rawToken = await ResourceManager.tryFetchServerpodCloudAuthData(
         localStoragePath: localStoragePath,

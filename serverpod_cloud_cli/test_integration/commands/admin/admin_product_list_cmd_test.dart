@@ -12,8 +12,9 @@ import '../../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();
-  final client =
-      ClientMock(authKeyProvider: InMemoryKeyManager.authenticated());
+  final client = ClientMock(
+    authKeyProvider: InMemoryKeyManager.authenticated(),
+  );
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
@@ -27,18 +28,21 @@ void main() {
   });
 
   test(
-      'Given admin product list-procured command when instantiated then requires login',
-      () {
-    expect(AdminListProcuredCommand(logger: logger).requireLogin, isTrue);
-  });
+    'Given admin product list-procured command when instantiated then requires login',
+    () {
+      expect(AdminListProcuredCommand(logger: logger).requireLogin, isTrue);
+    },
+  );
 
   group('Given authenticated', () {
     group('when executing admin product list-procured', () {
       late Future commandResult;
       setUp(() async {
-        when(() => client.adminProcurement.listProcuredProducts(
-              userEmail: any(named: 'userEmail'),
-            )).thenAnswer(
+        when(
+          () => client.adminProcurement.listProcuredProducts(
+            userEmail: any(named: 'userEmail'),
+          ),
+        ).thenAnswer(
           (final invocation) async => Future.value([
             ('test-plan', 'PlanProduct'),
             ('test-plan2', 'PlanProduct'),

@@ -13,8 +13,7 @@ import '../test_utils/test_command_logger.dart' show TestCommandLogger;
 void main() {
   final logger = TestCommandLogger();
 
-  group(
-      'Given a complex workspace directory structure '
+  group('Given a complex workspace directory structure '
       'when preparing the workspace for deployment', () {
     late final Directory wsRootDir;
     late final Iterable<String> includedPackagePaths;
@@ -92,8 +91,10 @@ dependencies:
 
       logger.clear();
 
-      (wsRootDir, includedPackagePaths) =
-          WorkspaceProject.prepareWorkspacePaths(
+      (
+        wsRootDir,
+        includedPackagePaths,
+      ) = WorkspaceProject.prepareWorkspacePaths(
         Directory(p.join(d.sandbox, 'monorepo', 'project', 'project_server')),
       );
     });
@@ -104,11 +105,9 @@ dependencies:
 
     test('then the correct included subpaths are returned', () async {
       expect(
-          includedPackagePaths,
-          containsAll([
-            'packages/dart_utilities',
-            'project/project_server',
-          ]));
+        includedPackagePaths,
+        containsAll(['packages/dart_utilities', 'project/project_server']),
+      );
     });
 
     test('then .scloud/scloud_server_dir file is created.', () async {
@@ -124,9 +123,7 @@ dependencies:
 
     test('then .scloud/scloud_ws_pubspec.yaml file is created.', () async {
       final fileDescriptor = d.file('scloud_ws_pubspec.yaml', isNotEmpty);
-      final descriptor = d.dir('.scloud', [
-        fileDescriptor,
-      ]);
+      final descriptor = d.dir('.scloud', [fileDescriptor]);
 
       await expectLater(
         descriptor.validate(p.join(d.sandbox, 'monorepo')),
@@ -139,29 +136,24 @@ dependencies:
       final doc = yamlDecode(content);
       expect(doc, containsPair('name', 'monorepo'));
       expect(doc, containsPair('environment', isNot(contains('flutter'))));
-      expect(
-        doc,
-        containsPair('environment', containsPair('sdk', isNotEmpty)),
-      );
+      expect(doc, containsPair('environment', containsPair('sdk', isNotEmpty)));
       expect(
         doc,
         containsPair(
           'workspace',
-          containsAll([
-            'project/project_server',
-            'packages/dart_utilities',
-          ]),
+          containsAll(['project/project_server', 'packages/dart_utilities']),
         ),
       );
     });
   });
 
   group(
-      'Given a workspace directory structure with an indirect flutter dependency '
-      'when preparing the workspace for deployment', () {
-    setUpAll(() async {
-      await d.dir('monorepo', [
-        d.file('pubspec.yaml', '''
+    'Given a workspace directory structure with an indirect flutter dependency '
+    'when preparing the workspace for deployment',
+    () {
+      setUpAll(() async {
+        await d.dir('monorepo', [
+          d.file('pubspec.yaml', '''
 name: monorepo
 environment:
   sdk: ${ProjectFactory.validSdkVersion}
@@ -170,9 +162,9 @@ workspace:
   - packages/flutter_utilities
   - project/project_server
 '''),
-        d.dir('packages', [
-          d.dir('flutter_utilities', [
-            d.file('pubspec.yaml', '''
+          d.dir('packages', [
+            d.dir('flutter_utilities', [
+              d.file('pubspec.yaml', '''
 name: flutter_utilities
 version: 1.0.0
 environment:
@@ -180,11 +172,11 @@ environment:
   flutter: 3.29.0
 resolution: workspace
 '''),
+            ]),
           ]),
-        ]),
-        d.dir('project', [
-          d.dir('project_server', [
-            d.file('pubspec.yaml', '''
+          d.dir('project', [
+            d.dir('project_server', [
+              d.file('pubspec.yaml', '''
 name: project_server
 environment:
   sdk: ${ProjectFactory.validSdkVersion}
@@ -193,32 +185,35 @@ dependencies:
   serverpod: ${ProjectFactory.validServerpodVersion}
   flutter_utilities: ^1.0.0
 '''),
+            ]),
           ]),
-        ]),
-      ]).create();
-    });
+        ]).create();
+      });
 
-    setUp(() {
-      logger.clear();
-    });
+      setUp(() {
+        logger.clear();
+      });
 
-    task(final String baseDir) => WorkspaceProject.prepareWorkspacePaths(
-          Directory(p.join(baseDir, 'monorepo', 'project', 'project_server')),
-        );
-
-    test('then command throws WorkspaceException.', () async {
-      expect(
-        () => task(d.sandbox),
-        throwsA(isA<WorkspaceException>().having(
-          (final e) => e.errors,
-          'errors',
-          equals([
-            'A Flutter dependency is not allowed in a server package: flutter_utilities',
-          ]),
-        )),
+      task(final String baseDir) => WorkspaceProject.prepareWorkspacePaths(
+        Directory(p.join(baseDir, 'monorepo', 'project', 'project_server')),
       );
-    });
-  });
+
+      test('then command throws WorkspaceException.', () async {
+        expect(
+          () => task(d.sandbox),
+          throwsA(
+            isA<WorkspaceException>().having(
+              (final e) => e.errors,
+              'errors',
+              equals([
+                'A Flutter dependency is not allowed in a server package: flutter_utilities',
+              ]),
+            ),
+          ),
+        );
+      });
+    },
+  );
 
   group('Given a workspace package with missing workspace root', () {
     setUpAll(() async {
@@ -257,20 +252,22 @@ dependencies:
     });
 
     task(final String baseDir) => WorkspaceProject.prepareWorkspacePaths(
-          Directory(p.join(baseDir, 'monorepo', 'project', 'project_server')),
-        );
+      Directory(p.join(baseDir, 'monorepo', 'project', 'project_server')),
+    );
 
     test('then command throws WorkspaceException.', () async {
       expect(
         () => task(d.sandbox),
-        throwsA(isA<WorkspaceException>().having(
-          (final e) => e.errors,
-          'errors',
-          equals([
-            'Could not find the workspace root directory.',
-            'Ensure the project is part of a valid Dart workspace.',
-          ]),
-        )),
+        throwsA(
+          isA<WorkspaceException>().having(
+            (final e) => e.errors,
+            'errors',
+            equals([
+              'Could not find the workspace root directory.',
+              'Ensure the project is part of a valid Dart workspace.',
+            ]),
+          ),
+        ),
       );
     });
   });

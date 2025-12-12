@@ -9,12 +9,12 @@ class PaymentMethodCardBuilder {
   String? _country;
 
   PaymentMethodCardBuilder()
-      : _brand = 'visa',
-        _last4 = '4242',
-        _expMonth = 12,
-        _expYear = 2025,
-        _funding = 'credit',
-        _country = 'US';
+    : _brand = 'visa',
+      _last4 = '4242',
+      _expMonth = 12,
+      _expYear = 2025,
+      _funding = 'credit',
+      _country = 'US';
 
   PaymentMethodCardBuilder withBrand(String brand) {
     _brand = brand;

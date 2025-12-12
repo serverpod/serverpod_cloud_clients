@@ -46,9 +46,11 @@ void main() {
 
   group('Given authenticated', () {
     setUp(() async {
-      when(() => client.projects.fetchProjectConfig(
-            cloudProjectId: any(named: 'cloudProjectId'),
-          )).thenAnswer(
+      when(
+        () => client.projects.fetchProjectConfig(
+          cloudProjectId: any(named: 'cloudProjectId'),
+        ),
+      ).thenAnswer(
         (final invocation) async => Future.value(
           ProjectConfig(projectId: invocation.namedArguments[#cloudProjectId]),
         ),
@@ -117,7 +119,8 @@ project:
             d.file(
               'scloud.yaml',
               startsWith(
-                  '# This file configures your Serverpod Cloud project.'),
+                '# This file configures your Serverpod Cloud project.',
+              ),
             ),
           ]);
           await expectLater(expected.validate(), completes);
@@ -184,7 +187,8 @@ project:
             d.file(
               'scloud.yaml',
               startsWith(
-                  '# This file configures your Serverpod Cloud project.'),
+                '# This file configures your Serverpod Cloud project.',
+              ),
             ),
           ]);
           await expectLater(expected.validate(), completes);
@@ -192,111 +196,115 @@ project:
       });
 
       group(
-          'and inside a serverpod directory without .scloudignore file when executing link',
-          () {
-        late Future commandResult;
-        setUp(() async {
-          commandResult = cli.run([
-            'project',
-            'link',
-            '--project',
-            projectId,
-            '--project-dir',
-            testProjectDir,
-          ]);
-        });
+        'and inside a serverpod directory without .scloudignore file when executing link',
+        () {
+          late Future commandResult;
+          setUp(() async {
+            commandResult = cli.run([
+              'project',
+              'link',
+              '--project',
+              projectId,
+              '--project-dir',
+              testProjectDir,
+            ]);
+          });
 
-        test('then writes .scloudignore file', () async {
-          await commandResult;
+          test('then writes .scloudignore file', () async {
+            await commandResult;
 
-          final expected = d.dir(testProjectDir, [
-            d.file(
-              '.scloudignore',
-              contains('# .scloudignore'),
-            ),
-          ]);
-          await expectLater(expected.validate(), completes);
-        });
-      });
+            final expected = d.dir(testProjectDir, [
+              d.file('.scloudignore', contains('# .scloudignore')),
+            ]);
+            await expectLater(expected.validate(), completes);
+          });
+        },
+      );
 
       group(
-          'and inside a serverpod directory with a custom .scloudignore file when executing link',
-          () {
-        late Future commandResult;
-        setUp(() async {
-          await d.dir(testProjectDir, [
-            d.file(
-              '.scloudignore',
-              '# Custom .scloudignore file',
-            ),
-          ]).create();
+        'and inside a serverpod directory with a custom .scloudignore file when executing link',
+        () {
+          late Future commandResult;
+          setUp(() async {
+            await d.dir(testProjectDir, [
+              d.file('.scloudignore', '# Custom .scloudignore file'),
+            ]).create();
 
-          commandResult = cli.run([
-            'project',
-            'link',
-            '--project',
-            projectId,
-            '--project-dir',
-            testProjectDir,
-          ]);
-        });
+            commandResult = cli.run([
+              'project',
+              'link',
+              '--project',
+              projectId,
+              '--project-dir',
+              testProjectDir,
+            ]);
+          });
 
-        test('then the content of the .scloudignore file is not changed',
+          test(
+            'then the content of the .scloudignore file is not changed',
             () async {
-          await commandResult;
+              await commandResult;
 
-          final expected = d.dir(testProjectDir, [
-            d.file(
-              '.scloudignore',
-              contains('# Custom .scloudignore file'),
-            ),
-          ]);
-          await expectLater(expected.validate(), completes);
-        });
-      });
+              final expected = d.dir(testProjectDir, [
+                d.file(
+                  '.scloudignore',
+                  contains('# Custom .scloudignore file'),
+                ),
+              ]);
+              await expectLater(expected.validate(), completes);
+            },
+          );
+        },
+      );
 
-      group('and incorrectly formatted scloud.yaml exists when executing link',
-          () {
-        late Future commandResult;
-        setUp(() async {
-          await d.dir(testProjectDir, [
-            d.file('scloud.yaml', '''
+      group(
+        'and incorrectly formatted scloud.yaml exists when executing link',
+        () {
+          late Future commandResult;
+          setUp(() async {
+            await d.dir(testProjectDir, [
+              d.file('scloud.yaml', '''
 project:
   - "projectId"
 '''),
-          ]).create();
+            ]).create();
 
-          commandResult = cli.run([
-            'project',
-            'link',
-            '--project',
-            projectId,
-            '--project-dir',
-            testProjectDir,
-          ]);
-        });
+            commandResult = cli.run([
+              'project',
+              'link',
+              '--project',
+              projectId,
+              '--project-dir',
+              testProjectDir,
+            ]);
+          });
 
-        test('then command throws exit exception', () async {
-          await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
-        });
+          test('then command throws exit exception', () async {
+            await expectLater(
+              commandResult,
+              throwsA(isA<ErrorExitException>()),
+            );
+          });
 
-        test('then logs error message', () async {
-          try {
-            await commandResult;
-          } catch (_) {}
+          test('then logs error message', () async {
+            try {
+              await commandResult;
+            } catch (_) {}
 
-          expect(logger.errorCalls, isNotEmpty);
-          expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message:
-                  'Failed to write to the ${p.join(testProjectDir, 'scloud.yaml')} file',
-              exception: SchemaValidationException(
-                  'At path "project": Expected YamlMap, got YamlList'),
-            ),
-          );
-        });
-      });
+            expect(logger.errorCalls, isNotEmpty);
+            expect(
+              logger.errorCalls.first,
+              equalsErrorCall(
+                message:
+                    'Failed to write to the ${p.join(testProjectDir, 'scloud.yaml')} file',
+                exception: SchemaValidationException(
+                  'At path "project": Expected YamlMap, got YamlList',
+                ),
+              ),
+            );
+          });
+        },
+      );
     });
 
     group('and not a serverpod directory when executing link', () {
@@ -341,9 +349,7 @@ project:
       setUp(() async {
         final descriptor = d.dir('topdir', [
           d.dir('parent_dir', [
-            d.dir('project_server', [
-              ProjectFactory.serverpodServerPubspec(),
-            ]),
+            d.dir('project_server', [ProjectFactory.serverpodServerPubspec()]),
             d.dir('project_client', [
               d.file('pubspec.yaml', '''
 name: my_project_client
@@ -364,204 +370,211 @@ environment:
       });
 
       group(
-          'and current dir is three levels above the project dir when executing link',
-          () {
-        late Future commandResult;
+        'and current dir is three levels above the project dir when executing link',
+        () {
+          late Future commandResult;
 
-        setUp(() async {
-          pushCurrentDirectory(p.join(d.sandbox));
+          setUp(() async {
+            pushCurrentDirectory(p.join(d.sandbox));
 
-          commandResult = cli.run(['project', 'link', '--project', projectId]);
-        });
+            commandResult = cli.run([
+              'project',
+              'link',
+              '--project',
+              projectId,
+            ]);
+          });
 
-        test('then project link command throws exit exception', () async {
-          await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
-        });
+          test('then project link command throws exit exception', () async {
+            await expectLater(
+              commandResult,
+              throwsA(isA<ErrorExitException>()),
+            );
+          });
 
-        test('then project link command logs error message', () async {
-          await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
-          expect(logger.errorCalls, isNotEmpty);
-          expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message: 'No valid Serverpod server directory selected.',
-              hint:
-                  "Provide the project's server directory with the `--project-dir` option and try again.",
-            ),
-          );
-        });
+          test('then project link command logs error message', () async {
+            await expectLater(
+              commandResult,
+              throwsA(isA<ErrorExitException>()),
+            );
+            expect(logger.errorCalls, isNotEmpty);
+            expect(
+              logger.errorCalls.first,
+              equalsErrorCall(
+                message: 'No valid Serverpod server directory selected.',
+                hint:
+                    "Provide the project's server directory with the `--project-dir` option and try again.",
+              ),
+            );
+          });
 
-        test('then scloud.yaml is not created', () async {
-          try {
+          test('then scloud.yaml is not created', () async {
+            try {
+              await commandResult;
+            } catch (_) {}
+
+            final expected = d.dir('topdir', [
+              d.dir('parent_dir', [
+                d.dir('project_server', [d.nothing('scloud.yaml')]),
+                d.dir('project_client', [d.nothing('scloud.yaml')]),
+                d.dir('project_flutter', [d.nothing('scloud.yaml')]),
+              ]),
+            ]);
+            await expectLater(expected.validate(), completes);
+          });
+        },
+      );
+
+      group(
+        'and current dir is two levels above the project dir when executing link',
+        () {
+          late Future commandResult;
+
+          setUp(() async {
+            pushCurrentDirectory(p.join(d.sandbox, 'topdir'));
+
+            commandResult = cli.run([
+              'project',
+              'link',
+              '--project',
+              projectId,
+            ]);
+          });
+
+          test('then project link command completes successfully', () async {
+            await expectLater(commandResult, completes);
+          });
+
+          test('then project link command logs success message', () async {
             await commandResult;
-          } catch (_) {}
 
-          final expected = d.dir('topdir', [
-            d.dir('parent_dir', [
-              d.dir('project_server', [
-                d.nothing('scloud.yaml'),
-              ]),
-              d.dir('project_client', [
-                d.nothing('scloud.yaml'),
-              ]),
-              d.dir('project_flutter', [
-                d.nothing('scloud.yaml'),
-              ]),
-            ]),
-          ]);
-          await expectLater(expected.validate(), completes);
-        });
-      });
+            expect(logger.successCalls, hasLength(1));
+            expect(
+              logger.successCalls.single,
+              equalsSuccessCall(
+                message: 'Linked Serverpod Cloud project.',
+                newParagraph: true,
+              ),
+            );
+          });
 
-      group(
-          'and current dir is two levels above the project dir when executing link',
-          () {
-        late Future commandResult;
-
-        setUp(() async {
-          pushCurrentDirectory(p.join(d.sandbox, 'topdir'));
-
-          commandResult = cli.run(['project', 'link', '--project', projectId]);
-        });
-
-        test('then project link command completes successfully', () async {
-          await expectLater(commandResult, completes);
-        });
-
-        test('then project link command logs success message', () async {
-          await commandResult;
-
-          expect(logger.successCalls, hasLength(1));
-          expect(
-            logger.successCalls.single,
-            equalsSuccessCall(
-              message: 'Linked Serverpod Cloud project.',
-              newParagraph: true,
-            ),
-          );
-        });
-
-        test('then scloud.yaml is created in the project dir', () async {
-          await commandResult;
-          final expected = d.dir('topdir', [
-            d.dir('parent_dir', [
-              d.dir('project_server', [
-                d.file('scloud.yaml', contains('''
+          test('then scloud.yaml is created in the project dir', () async {
+            await commandResult;
+            final expected = d.dir('topdir', [
+              d.dir('parent_dir', [
+                d.dir('project_server', [
+                  d.file(
+                    'scloud.yaml',
+                    contains('''
 project:
   projectId: "projectId"
-''')),
-              ]),
-              d.dir('project_client', [
-                d.nothing('scloud.yaml'),
-              ]),
-              d.dir('project_flutter', [
-                d.nothing('scloud.yaml'),
-              ]),
-            ]),
-          ]);
-          await expectLater(expected.validate(), completes);
-        });
-
-        test('then .scloudignore is created in the project dir', () async {
-          await commandResult;
-          final expected = d.dir('topdir', [
-            d.dir('parent_dir', [
-              d.nothing('.scloudignore'),
-              d.dir('project_server', [
-                d.file(
-                  '.scloudignore',
-                  contains(
-                    'This file specifies which files and directories should be ignored',
+'''),
                   ),
-                ),
+                ]),
+                d.dir('project_client', [d.nothing('scloud.yaml')]),
+                d.dir('project_flutter', [d.nothing('scloud.yaml')]),
               ]),
-              d.dir('project_client', [
-                d.nothing('.scloudignore'),
-              ]),
-              d.dir('project_flutter', [
-                d.nothing('.scloudignore'),
-              ]),
-            ]),
-          ]);
-          await expectLater(expected.validate(), completes);
-        });
+            ]);
+            await expectLater(expected.validate(), completes);
+          });
 
-        test('then .gitignore is not created', () async {
-          await commandResult;
-          final expected = d.dir('topdir', [
-            d.dir('parent_dir', [
-              d.nothing('.gitignore'),
-              d.dir('project_server', [
-                d.nothing('.gitignore'),
+          test('then .scloudignore is created in the project dir', () async {
+            await commandResult;
+            final expected = d.dir('topdir', [
+              d.dir('parent_dir', [
+                d.nothing('.scloudignore'),
+                d.dir('project_server', [
+                  d.file(
+                    '.scloudignore',
+                    contains(
+                      'This file specifies which files and directories should be ignored',
+                    ),
+                  ),
+                ]),
+                d.dir('project_client', [d.nothing('.scloudignore')]),
+                d.dir('project_flutter', [d.nothing('.scloudignore')]),
               ]),
-              d.dir('project_client', [
+            ]);
+            await expectLater(expected.validate(), completes);
+          });
+
+          test('then .gitignore is not created', () async {
+            await commandResult;
+            final expected = d.dir('topdir', [
+              d.dir('parent_dir', [
                 d.nothing('.gitignore'),
+                d.dir('project_server', [d.nothing('.gitignore')]),
+                d.dir('project_client', [d.nothing('.gitignore')]),
+                d.dir('project_flutter', [d.nothing('.gitignore')]),
               ]),
-              d.dir('project_flutter', [
-                d.nothing('.gitignore'),
-              ]),
-            ]),
-          ]);
-          await expectLater(expected.validate(), completes);
-        });
-      });
+            ]);
+            await expectLater(expected.validate(), completes);
+          });
+        },
+      );
 
       group(
-          'and current dir is one level above the project dir when executing link',
-          () {
-        late Future commandResult;
+        'and current dir is one level above the project dir when executing link',
+        () {
+          late Future commandResult;
 
-        setUp(() async {
-          pushCurrentDirectory(p.join(d.sandbox, 'topdir', 'parent_dir'));
+          setUp(() async {
+            pushCurrentDirectory(p.join(d.sandbox, 'topdir', 'parent_dir'));
 
-          commandResult = cli.run(['project', 'link', '--project', projectId]);
-        });
+            commandResult = cli.run([
+              'project',
+              'link',
+              '--project',
+              projectId,
+            ]);
+          });
 
-        test('then project link command completes successfully', () async {
-          await expectLater(commandResult, completes);
-        });
+          test('then project link command completes successfully', () async {
+            await expectLater(commandResult, completes);
+          });
 
-        test('then project link command logs success message', () async {
-          await commandResult;
+          test('then project link command logs success message', () async {
+            await commandResult;
 
-          expect(logger.successCalls, hasLength(1));
-          expect(
-            logger.successCalls.single,
-            equalsSuccessCall(
-              message: 'Linked Serverpod Cloud project.',
-              newParagraph: true,
-            ),
-          );
-        });
+            expect(logger.successCalls, hasLength(1));
+            expect(
+              logger.successCalls.single,
+              equalsSuccessCall(
+                message: 'Linked Serverpod Cloud project.',
+                newParagraph: true,
+              ),
+            );
+          });
 
-        test('then scloud.yaml is created in the project dir', () async {
-          await commandResult;
-          final expected = d.dir('topdir', [
-            d.dir('parent_dir', [
-              d.dir('project_server', [
-                d.file('scloud.yaml', contains('''
+          test('then scloud.yaml is created in the project dir', () async {
+            await commandResult;
+            final expected = d.dir('topdir', [
+              d.dir('parent_dir', [
+                d.dir('project_server', [
+                  d.file(
+                    'scloud.yaml',
+                    contains('''
 project:
   projectId: "projectId"
-''')),
+'''),
+                  ),
+                ]),
+                d.dir('project_client', [d.nothing('scloud.yaml')]),
+                d.dir('project_flutter', [d.nothing('scloud.yaml')]),
               ]),
-              d.dir('project_client', [
-                d.nothing('scloud.yaml'),
-              ]),
-              d.dir('project_flutter', [
-                d.nothing('scloud.yaml'),
-              ]),
-            ]),
-          ]);
-          await expectLater(expected.validate(), completes);
-        });
-      });
+            ]);
+            await expectLater(expected.validate(), completes);
+          });
+        },
+      );
 
       group('and current dir is in the flutter dir when executing link', () {
         late Future commandResult;
 
         setUp(() async {
           pushCurrentDirectory(
-              p.join(d.sandbox, 'topdir', 'parent_dir', 'project_flutter'));
+            p.join(d.sandbox, 'topdir', 'parent_dir', 'project_flutter'),
+          );
 
           commandResult = cli.run(['project', 'link', '--project', projectId]);
         });
@@ -588,45 +601,46 @@ project:
           final expected = d.dir('topdir', [
             d.dir('parent_dir', [
               d.dir('project_server', [
-                d.file('scloud.yaml', contains('''
+                d.file(
+                  'scloud.yaml',
+                  contains('''
 project:
   projectId: "projectId"
-''')),
+'''),
+                ),
               ]),
-              d.dir('project_client', [
-                d.nothing('scloud.yaml'),
-              ]),
-              d.dir('project_flutter', [
-                d.nothing('scloud.yaml'),
-              ]),
+              d.dir('project_client', [d.nothing('scloud.yaml')]),
+              d.dir('project_flutter', [d.nothing('scloud.yaml')]),
             ]),
           ]);
           await expectLater(expected.validate(), completes);
         });
       });
 
-      group(
-          'and current dir is in the flutter dir '
+      group('and current dir is in the flutter dir '
           'and there is preexisting scloud.yaml file in server dir '
           'when executing link', () {
         late Future commandResult;
 
         setUp(() async {
-          final preexistingScloudYamlFile = d.file(
-            'scloud.yaml',
-            '''
+          final preexistingScloudYamlFile = d.file('scloud.yaml', '''
 project:
   projectId: "otherProjectId"
-''',
-          );
+''');
           await preexistingScloudYamlFile.create(
-              p.join(d.sandbox, 'topdir', 'parent_dir', 'project_server'));
+            p.join(d.sandbox, 'topdir', 'parent_dir', 'project_server'),
+          );
 
           pushCurrentDirectory(
-              p.join(d.sandbox, 'topdir', 'parent_dir', 'project_flutter'));
+            p.join(d.sandbox, 'topdir', 'parent_dir', 'project_flutter'),
+          );
 
-          commandResult =
-              cli.run(['project', 'link', '--project', 'specialId']);
+          commandResult = cli.run([
+            'project',
+            'link',
+            '--project',
+            'specialId',
+          ]);
         });
 
         test('then project link command completes successfully', () async {
@@ -651,42 +665,39 @@ project:
           final expected = d.dir('topdir', [
             d.dir('parent_dir', [
               d.dir('project_server', [
-                d.file('scloud.yaml', contains('''
+                d.file(
+                  'scloud.yaml',
+                  contains('''
 project:
   projectId: "specialId"
-''')),
+'''),
+                ),
               ]),
-              d.dir('project_client', [
-                d.nothing('scloud.yaml'),
-              ]),
-              d.dir('project_flutter', [
-                d.nothing('scloud.yaml'),
-              ]),
+              d.dir('project_client', [d.nothing('scloud.yaml')]),
+              d.dir('project_flutter', [d.nothing('scloud.yaml')]),
             ]),
           ]);
           await expectLater(expected.validate(), completes);
         });
       });
 
-      group(
-          'and current dir is in the flutter dir '
+      group('and current dir is in the flutter dir '
           'and there is preexisting scloud.yaml file in parent dir '
           'when executing link', () {
         late Future commandResult;
 
         setUp(() async {
-          final preexistingScloudYamlFile = d.file(
-            'scloud.yaml',
-            '''
+          final preexistingScloudYamlFile = d.file('scloud.yaml', '''
 project:
   projectId: "otherProjectId"
-''',
+''');
+          await preexistingScloudYamlFile.create(
+            p.join(d.sandbox, 'topdir', 'parent_dir'),
           );
-          await preexistingScloudYamlFile
-              .create(p.join(d.sandbox, 'topdir', 'parent_dir'));
 
           pushCurrentDirectory(
-              p.join(d.sandbox, 'topdir', 'parent_dir', 'project_flutter'));
+            p.join(d.sandbox, 'topdir', 'parent_dir', 'project_flutter'),
+          );
 
           commandResult = cli.run([
             'project',
@@ -719,44 +730,39 @@ project:
           await commandResult;
           final expected = d.dir('topdir', [
             d.dir('parent_dir', [
-              d.dir('project_server', [
-                d.nothing('scloud.yaml'),
-              ]),
-              d.dir('project_client', [
-                d.nothing('scloud.yaml'),
-              ]),
-              d.dir('project_flutter', [
-                d.nothing('scloud.yaml'),
-              ]),
-              d.file('scloud.yaml', contains('''
+              d.dir('project_server', [d.nothing('scloud.yaml')]),
+              d.dir('project_client', [d.nothing('scloud.yaml')]),
+              d.dir('project_flutter', [d.nothing('scloud.yaml')]),
+              d.file(
+                'scloud.yaml',
+                contains('''
 project:
   projectId: "specialId"
-''')),
+'''),
+              ),
             ]),
           ]);
           await expectLater(expected.validate(), completes);
         });
       });
 
-      group(
-          'and current dir is in the flutter dir '
+      group('and current dir is in the flutter dir '
           'and there is preexisting scloud.yaml file in parent dir '
           'when executing link with custom-config-file-in-parent option', () {
         late Future commandResult;
 
         setUp(() async {
-          final preexistingScloudYamlFile = d.file(
-            'scloud.yaml',
-            '''
+          final preexistingScloudYamlFile = d.file('scloud.yaml', '''
 project:
   projectId: "otherProjectId"
-''',
+''');
+          await preexistingScloudYamlFile.create(
+            p.join(d.sandbox, 'topdir', 'parent_dir'),
           );
-          await preexistingScloudYamlFile
-              .create(p.join(d.sandbox, 'topdir', 'parent_dir'));
 
           pushCurrentDirectory(
-              p.join(d.sandbox, 'topdir', 'parent_dir', 'project_flutter'));
+            p.join(d.sandbox, 'topdir', 'parent_dir', 'project_flutter'),
+          );
 
           commandResult = cli.run([
             'project',
@@ -791,23 +797,23 @@ project:
           await commandResult;
           final expected = d.dir('topdir', [
             d.dir('parent_dir', [
-              d.dir('project_server', [
-                d.nothing('scloud.yaml'),
-              ]),
-              d.dir('project_client', [
-                d.nothing('scloud.yaml'),
-              ]),
-              d.dir('project_flutter', [
-                d.nothing('scloud.yaml'),
-              ]),
-              d.file('scloud.yaml', contains('''
+              d.dir('project_server', [d.nothing('scloud.yaml')]),
+              d.dir('project_client', [d.nothing('scloud.yaml')]),
+              d.dir('project_flutter', [d.nothing('scloud.yaml')]),
+              d.file(
+                'scloud.yaml',
+                contains('''
 project:
   projectId: "otherProjectId"
-''')),
-              d.file('custom_scloud.yaml', contains('''
+'''),
+              ),
+              d.file(
+                'custom_scloud.yaml',
+                contains('''
 project:
   projectId: "customProjectId"
-''')),
+'''),
+              ),
             ]),
           ]);
           await expectLater(expected.validate(), completes);
@@ -816,295 +822,321 @@ project:
     });
 
     group(
-        'and a Dart workspace directory structure containing a serverpod directory',
-        () {
-      setUp(() async {
-        final descriptor = d.dir('topdir', [
-          d.dir('workspace_dir', [
-            d.file('pubspec.yaml', '''
+      'and a Dart workspace directory structure containing a serverpod directory',
+      () {
+        setUp(() async {
+          final descriptor = d.dir('topdir', [
+            d.dir('workspace_dir', [
+              d.file('pubspec.yaml', '''
 name: workspace_package
 workspace:
   - project_server
   - project_client
 '''),
-            d.dir('project_server', [
-              ProjectFactory.serverpodServerPubspec(
-                withResolution: 'workspace',
-              ),
-            ]),
-            d.dir('project_client', [
-              d.file('pubspec.yaml', '''
+              d.dir('project_server', [
+                ProjectFactory.serverpodServerPubspec(
+                  withResolution: 'workspace',
+                ),
+              ]),
+              d.dir('project_client', [
+                d.file('pubspec.yaml', '''
 name: my_project_client
 environment:
   sdk: ${ProjectFactory.validSdkVersion}
 resolution: workspace
 '''),
+              ]),
             ]),
-          ]),
-        ]);
-        await descriptor.create();
-      });
+          ]);
+          await descriptor.create();
+        });
 
-      group(
+        group(
           'and current dir is three levels above the project dir when executing link',
           () {
-        late Future commandResult;
+            late Future commandResult;
 
-        setUp(() async {
-          pushCurrentDirectory(p.join(d.sandbox));
+            setUp(() async {
+              pushCurrentDirectory(p.join(d.sandbox));
 
-          commandResult = cli.run(['project', 'link', '--project', projectId]);
-        });
+              commandResult = cli.run([
+                'project',
+                'link',
+                '--project',
+                projectId,
+              ]);
+            });
 
-        test('then project link command throws exit exception', () async {
-          await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
-        });
+            test('then project link command throws exit exception', () async {
+              await expectLater(
+                commandResult,
+                throwsA(isA<ErrorExitException>()),
+              );
+            });
 
-        test('then project link command logs error message', () async {
-          await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
-          expect(logger.errorCalls, isNotEmpty);
-          expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message: 'No valid Serverpod server directory selected.',
-              hint:
-                  "Provide the project's server directory with the `--project-dir` option and try again.",
-            ),
-          );
-        });
+            test('then project link command logs error message', () async {
+              await expectLater(
+                commandResult,
+                throwsA(isA<ErrorExitException>()),
+              );
+              expect(logger.errorCalls, isNotEmpty);
+              expect(
+                logger.errorCalls.first,
+                equalsErrorCall(
+                  message: 'No valid Serverpod server directory selected.',
+                  hint:
+                      "Provide the project's server directory with the `--project-dir` option and try again.",
+                ),
+              );
+            });
 
-        test('then scloud files are not created', () async {
-          try {
-            await commandResult;
-          } catch (_) {}
+            test('then scloud files are not created', () async {
+              try {
+                await commandResult;
+              } catch (_) {}
 
-          final expected = d.dir('topdir', [
-            d.dir('workspace_dir', [
-              d.nothing('scloud.yaml'),
-              d.nothing('.scloudignore'),
-              d.nothing('.gitignore'),
-              d.dir('project_server', [
-                d.nothing('scloud.yaml'),
-                d.nothing('.scloudignore'),
-                d.nothing('.gitignore'),
-              ]),
-              d.dir('project_client', [
-                d.nothing('scloud.yaml'),
-                d.nothing('.scloudignore'),
-                d.nothing('.gitignore'),
-              ]),
-            ]),
-          ]);
-          await expectLater(expected.validate(), completes);
-        });
-      });
+              final expected = d.dir('topdir', [
+                d.dir('workspace_dir', [
+                  d.nothing('scloud.yaml'),
+                  d.nothing('.scloudignore'),
+                  d.nothing('.gitignore'),
+                  d.dir('project_server', [
+                    d.nothing('scloud.yaml'),
+                    d.nothing('.scloudignore'),
+                    d.nothing('.gitignore'),
+                  ]),
+                  d.dir('project_client', [
+                    d.nothing('scloud.yaml'),
+                    d.nothing('.scloudignore'),
+                    d.nothing('.gitignore'),
+                  ]),
+                ]),
+              ]);
+              await expectLater(expected.validate(), completes);
+            });
+          },
+        );
 
-      group(
+        group(
           'and current dir is two levels above the project dir when executing link',
           () {
-        late Future commandResult;
+            late Future commandResult;
 
-        setUp(() async {
-          pushCurrentDirectory(p.join(d.sandbox, 'topdir'));
+            setUp(() async {
+              pushCurrentDirectory(p.join(d.sandbox, 'topdir'));
 
-          commandResult = cli.run(['project', 'link', '--project', projectId]);
-        });
+              commandResult = cli.run([
+                'project',
+                'link',
+                '--project',
+                projectId,
+              ]);
+            });
 
-        test('then project link command completes successfully', () async {
-          await expectLater(commandResult, completes);
-        });
+            test('then project link command completes successfully', () async {
+              await expectLater(commandResult, completes);
+            });
 
-        test('then project link command logs success message', () async {
-          await commandResult;
+            test('then project link command logs success message', () async {
+              await commandResult;
 
-          expect(logger.successCalls, hasLength(1));
-          expect(
-            logger.successCalls.single,
-            equalsSuccessCall(
-              message: 'Linked Serverpod Cloud project.',
-              newParagraph: true,
-            ),
-          );
-        });
+              expect(logger.successCalls, hasLength(1));
+              expect(
+                logger.successCalls.single,
+                equalsSuccessCall(
+                  message: 'Linked Serverpod Cloud project.',
+                  newParagraph: true,
+                ),
+              );
+            });
 
-        test('then scloud.yaml is created in the project dir', () async {
-          await commandResult;
-          final expected = d.dir('topdir', [
-            d.dir('workspace_dir', [
-              d.nothing('scloud.yaml'),
-              d.dir('project_server', [
-                d.file('scloud.yaml', contains('''
+            test('then scloud.yaml is created in the project dir', () async {
+              await commandResult;
+              final expected = d.dir('topdir', [
+                d.dir('workspace_dir', [
+                  d.nothing('scloud.yaml'),
+                  d.dir('project_server', [
+                    d.file(
+                      'scloud.yaml',
+                      contains('''
 project:
   projectId: "projectId"
-''')),
-              ]),
-              d.dir('project_client', [
-                d.nothing('scloud.yaml'),
-              ]),
-            ]),
-          ]);
-          await expectLater(expected.validate(), completes);
-        });
+'''),
+                    ),
+                  ]),
+                  d.dir('project_client', [d.nothing('scloud.yaml')]),
+                ]),
+              ]);
+              await expectLater(expected.validate(), completes);
+            });
 
-        test('then .scloudignore is created in the workspace root dir',
-            () async {
-          await commandResult;
-          final expected = d.dir('topdir', [
-            d.dir('workspace_dir', [
-              d.file(
-                '.scloudignore',
-                contains(
-                  'This file specifies which files and directories should be ignored',
-                ),
-              ),
-              d.dir('project_server', [
-                d.nothing('.scloudignore'),
-              ]),
-              d.dir('project_client', [
-                d.nothing('.scloudignore'),
-              ]),
-            ]),
-          ]);
-          await expectLater(expected.validate(), completes);
-        });
+            test(
+              'then .scloudignore is created in the workspace root dir',
+              () async {
+                await commandResult;
+                final expected = d.dir('topdir', [
+                  d.dir('workspace_dir', [
+                    d.file(
+                      '.scloudignore',
+                      contains(
+                        'This file specifies which files and directories should be ignored',
+                      ),
+                    ),
+                    d.dir('project_server', [d.nothing('.scloudignore')]),
+                    d.dir('project_client', [d.nothing('.scloudignore')]),
+                  ]),
+                ]);
+                await expectLater(expected.validate(), completes);
+              },
+            );
 
-        test('then .gitignore is created in the workspace root dir', () async {
-          await commandResult;
-          final expected = d.dir('topdir', [
-            d.dir('workspace_dir', [
-              d.file('.gitignore', equals('''
+            test(
+              'then .gitignore is created in the workspace root dir',
+              () async {
+                await commandResult;
+                final expected = d.dir('topdir', [
+                  d.dir('workspace_dir', [
+                    d.file(
+                      '.gitignore',
+                      equals('''
 # scloud deployment generated files should not be committed to git
 **/${ScloudIgnore.scloudDirName}/
-''')),
-              d.dir('project_server', [
-                d.nothing('.gitignore'),
-              ]),
-              d.dir('project_client', [
-                d.nothing('.gitignore'),
-              ]),
-            ]),
-          ]);
-          await expectLater(expected.validate(), completes);
-        });
-      });
+'''),
+                    ),
+                    d.dir('project_server', [d.nothing('.gitignore')]),
+                    d.dir('project_client', [d.nothing('.gitignore')]),
+                  ]),
+                ]);
+                await expectLater(expected.validate(), completes);
+              },
+            );
+          },
+        );
 
-      group(
+        group(
           'and an existing .gitignore file without .scloud in the workspace root dir when executing link',
           () {
-        late Future commandResult;
+            late Future commandResult;
 
-        setUp(() async {
-          await d
-              .file(
-                '.gitignore',
-                'already_in_gitignore\n',
-              )
-              .create(
-                p.join(d.sandbox, 'topdir', 'workspace_dir'),
+            setUp(() async {
+              await d
+                  .file('.gitignore', 'already_in_gitignore\n')
+                  .create(p.join(d.sandbox, 'topdir', 'workspace_dir'));
+
+              pushCurrentDirectory(p.join(d.sandbox, 'topdir'));
+
+              commandResult = cli.run([
+                'project',
+                'link',
+                '--project',
+                projectId,
+              ]);
+            });
+
+            test('then project link command completes successfully', () async {
+              await expectLater(commandResult, completes);
+            });
+
+            test('then project link command logs success messages', () async {
+              await commandResult;
+
+              expect(logger.successCalls, hasLength(1));
+              expect(
+                logger.successCalls.single,
+                equalsSuccessCall(
+                  message: 'Linked Serverpod Cloud project.',
+                  newParagraph: true,
+                ),
               );
+            });
 
-          pushCurrentDirectory(p.join(d.sandbox, 'topdir'));
-
-          commandResult = cli.run(['project', 'link', '--project', projectId]);
-        });
-
-        test('then project link command completes successfully', () async {
-          await expectLater(commandResult, completes);
-        });
-
-        test('then project link command logs success messages', () async {
-          await commandResult;
-
-          expect(logger.successCalls, hasLength(1));
-          expect(
-            logger.successCalls.single,
-            equalsSuccessCall(
-              message: 'Linked Serverpod Cloud project.',
-              newParagraph: true,
-            ),
-          );
-        });
-
-        test('then .gitignore is updated in the workspace root dir', () async {
-          await commandResult;
-          final expected = d.dir('topdir', [
-            d.dir('workspace_dir', [
-              d.file('.gitignore', equals('''
+            test(
+              'then .gitignore is updated in the workspace root dir',
+              () async {
+                await commandResult;
+                final expected = d.dir('topdir', [
+                  d.dir('workspace_dir', [
+                    d.file(
+                      '.gitignore',
+                      equals('''
 already_in_gitignore
 
 # scloud deployment generated files should not be committed to git
 **/${ScloudIgnore.scloudDirName}/
-''')),
-              d.dir('project_server', [
-                d.nothing('.gitignore'),
-              ]),
-              d.dir('project_client', [
-                d.nothing('.gitignore'),
-              ]),
-            ]),
-          ]);
-          await expectLater(expected.validate(), completes);
-        });
-      });
+'''),
+                    ),
+                    d.dir('project_server', [d.nothing('.gitignore')]),
+                    d.dir('project_client', [d.nothing('.gitignore')]),
+                  ]),
+                ]);
+                await expectLater(expected.validate(), completes);
+              },
+            );
+          },
+        );
 
-      group(
+        group(
           'and an existing .gitignore file with .scloud in the workspace root dir when executing link',
           () {
-        late Future commandResult;
+            late Future commandResult;
 
-        setUp(() async {
-          await d
-              .file(
-                '.gitignore',
-                'already_in_gitignore\n${ScloudIgnore.scloudDirName}/\n',
-              )
-              .create(
-                p.join(d.sandbox, 'topdir', 'workspace_dir'),
-              );
-
-          pushCurrentDirectory(p.join(d.sandbox, 'topdir'));
-
-          commandResult = cli.run(['project', 'link', '--project', projectId]);
-        });
-
-        test('then project link command completes successfully', () async {
-          await expectLater(commandResult, completes);
-        });
-
-        test('then project link command logs success messages', () async {
-          await commandResult;
-
-          expect(logger.successCalls, hasLength(1));
-          expect(
-            logger.successCalls.single,
-            equalsSuccessCall(
-              message: 'Linked Serverpod Cloud project.',
-              newParagraph: true,
-            ),
-          );
-        });
-
-        test('then .gitignore is unchanged in the workspace root dir',
-            () async {
-          await commandResult;
-          final expected = d.dir('topdir', [
-            d.dir('workspace_dir', [
-              d.file(
-                  '.gitignore',
-                  equals(
+            setUp(() async {
+              await d
+                  .file(
+                    '.gitignore',
                     'already_in_gitignore\n${ScloudIgnore.scloudDirName}/\n',
-                  )),
-              d.dir('project_server', [
-                d.nothing('.gitignore'),
-              ]),
-              d.dir('project_client', [
-                d.nothing('.gitignore'),
-              ]),
-            ]),
-          ]);
-          await expectLater(expected.validate(), completes);
-        });
-      });
-    });
+                  )
+                  .create(p.join(d.sandbox, 'topdir', 'workspace_dir'));
+
+              pushCurrentDirectory(p.join(d.sandbox, 'topdir'));
+
+              commandResult = cli.run([
+                'project',
+                'link',
+                '--project',
+                projectId,
+              ]);
+            });
+
+            test('then project link command completes successfully', () async {
+              await expectLater(commandResult, completes);
+            });
+
+            test('then project link command logs success messages', () async {
+              await commandResult;
+
+              expect(logger.successCalls, hasLength(1));
+              expect(
+                logger.successCalls.single,
+                equalsSuccessCall(
+                  message: 'Linked Serverpod Cloud project.',
+                  newParagraph: true,
+                ),
+              );
+            });
+
+            test(
+              'then .gitignore is unchanged in the workspace root dir',
+              () async {
+                await commandResult;
+                final expected = d.dir('topdir', [
+                  d.dir('workspace_dir', [
+                    d.file(
+                      '.gitignore',
+                      equals(
+                        'already_in_gitignore\n${ScloudIgnore.scloudDirName}/\n',
+                      ),
+                    ),
+                    d.dir('project_server', [d.nothing('.gitignore')]),
+                    d.dir('project_client', [d.nothing('.gitignore')]),
+                  ]),
+                ]);
+                await expectLater(expected.validate(), completes);
+              },
+            );
+          },
+        );
+      },
+    );
   });
 }

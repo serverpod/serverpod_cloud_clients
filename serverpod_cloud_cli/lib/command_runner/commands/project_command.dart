@@ -33,11 +33,13 @@ class CloudProjectCommand extends CloudCliCommand {
 
 enum ProjectCreateOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption.argsOnly(asFirstArg: true)),
-  enableDb(FlagOption(
-    argName: 'enable-db',
-    helpText: 'Flag to enable the database for the project.',
-    mandatory: true,
-  ));
+  enableDb(
+    FlagOption(
+      argName: 'enable-db',
+      helpText: 'Flag to enable the database for the project.',
+      mandatory: true,
+    ),
+  );
 
   const ProjectCreateOption(this.option);
 
@@ -54,7 +56,7 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
 
   @override
   CloudProjectCreateCommand({required super.logger})
-      : super(options: ProjectCreateOption.values);
+    : super(options: ProjectCreateOption.values);
 
   @override
   Future<void> runWithConfig(final Configuration commandConfig) async {
@@ -62,7 +64,8 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
     final enableDb = commandConfig.value(ProjectCreateOption.enableDb);
     final projectDir =
         runner.selectProjectDirectory() ?? Directory.current.path;
-    final configFilePath = globalConfiguration.projectConfigFile?.path ??
+    final configFilePath =
+        globalConfiguration.projectConfigFile?.path ??
         p.join(projectDir, ProjectConfigFileConstants.defaultFileName);
 
     logger.debug('Using project directory `$projectDir`');
@@ -95,7 +98,7 @@ class CloudProjectDeleteCommand extends CloudCliCommand {
   final description = 'Delete a Serverpod Cloud project.';
 
   CloudProjectDeleteCommand({required super.logger})
-      : super(options: ProjectDeleteOption.values);
+    : super(options: ProjectDeleteOption.values);
 
   @override
   Future<void> runWithConfig(final Configuration commandConfig) async {
@@ -110,12 +113,14 @@ class CloudProjectDeleteCommand extends CloudCliCommand {
 }
 
 enum ProjectListCommandOption<V> implements OptionDefinition<V> {
-  all(FlagOption(
-    argName: 'all',
-    helpText: 'Include deleted projects.',
-    defaultsTo: false,
-    negatable: false,
-  ));
+  all(
+    FlagOption(
+      argName: 'all',
+      helpText: 'Include deleted projects.',
+      defaultsTo: false,
+      negatable: false,
+    ),
+  );
 
   const ProjectListCommandOption(this.option);
 
@@ -135,7 +140,7 @@ class CloudProjectListCommand
   final bool takesArguments = false;
 
   CloudProjectListCommand({required super.logger})
-      : super(options: ProjectListCommandOption.values);
+    : super(options: ProjectListCommandOption.values);
 
   @override
   Future<void> runWithConfig(
@@ -181,7 +186,7 @@ class CloudProjectLinkCommand
   String get name => 'link';
 
   CloudProjectLinkCommand({required super.logger})
-      : super(options: ProjectLinkCommandOption.values);
+    : super(options: ProjectLinkCommandOption.values);
 
   @override
   Future<void> runWithConfig(
@@ -189,7 +194,8 @@ class CloudProjectLinkCommand
   ) async {
     final projectId = commandConfig.value(ProjectLinkCommandOption.projectId);
     final projectDirectory = runner.verifiedProjectDirectory();
-    final configFilePath = globalConfiguration.projectConfigFile?.path ??
+    final configFilePath =
+        globalConfiguration.projectConfigFile?.path ??
         p.join(
           projectDirectory.path,
           ProjectConfigFileConstants.defaultFileName,

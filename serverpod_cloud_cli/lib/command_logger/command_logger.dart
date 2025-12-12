@@ -46,16 +46,13 @@ class CommandLogger {
 
   GlobalConfiguration? configuration;
 
-  CommandLogger(
-    final cli.Logger logger, {
-    this.configuration,
-  }) : _logger = logger;
+  CommandLogger(final cli.Logger logger, {this.configuration})
+    : _logger = logger;
 
-  factory CommandLogger.create(
-      [final cli.LogLevel logLevel = cli.LogLevel.info]) {
-    const Map<String, String> windowsReplacements = {
-      '🚀': '',
-    };
+  factory CommandLogger.create([
+    final cli.LogLevel logLevel = cli.LogLevel.info,
+  ]) {
+    const Map<String, String> windowsReplacements = {'🚀': ''};
 
     final stdOutLogger = Platform.isWindows
         ? cli.StdOutLogger(logLevel, replacements: windowsReplacements)
@@ -78,11 +75,7 @@ class CommandLogger {
     final cli.LogType type = cli.TextLogType.normal,
     final bool newParagraph = false,
   }) {
-    _logger.debug(
-      message,
-      type: type,
-      newParagraph: newParagraph,
-    );
+    _logger.debug(message, type: type, newParagraph: newParagraph);
   }
 
   /// **Information Messages Guidelines**
@@ -101,10 +94,7 @@ class CommandLogger {
   /// ```bash
   /// The current project is set to my-project.
   /// ```
-  void info(
-    final String message, {
-    final bool newParagraph = false,
-  }) {
+  void info(final String message, {final bool newParagraph = false}) {
     _logger.info(
       message,
       type: cli.TextLogType.normal,
@@ -128,16 +118,10 @@ class CommandLogger {
     final bool newParagraph = false,
     final String? hint,
   }) {
-    _logger.warning(
-      message,
-      newParagraph: newParagraph,
-    );
+    _logger.warning(message, newParagraph: newParagraph);
 
     if (hint != null) {
-      _logger.info(
-        hint,
-        type: cli.TextLogType.hint,
-      );
+      _logger.info(hint, type: cli.TextLogType.hint);
     }
   }
 
@@ -182,10 +166,7 @@ class CommandLogger {
     );
 
     if (hint != null) {
-      _logger.info(
-        hint,
-        type: cli.TextLogType.hint,
-      );
+      _logger.info(hint, type: cli.TextLogType.hint);
     }
   }
 
@@ -200,12 +181,7 @@ class CommandLogger {
     final bool newParagraph = false,
     final cli.LogType type = cli.TextLogType.normal,
   }) {
-    _logger.log(
-      message,
-      level,
-      newParagraph: newParagraph,
-      type: type,
-    );
+    _logger.log(message, level, newParagraph: newParagraph, type: type);
   }
 
   /// **Raw Messages Guidelines**
@@ -272,16 +248,8 @@ class CommandLogger {
   /// ----------------------------+---------+--------
   /// 2024-11-26 16:38:44.113541  | INFO    | Webserver listening on port 8082
   /// ```
-  void line(
-    final String line, {
-    final cli.LogLevel level = cli.LogLevel.info,
-  }) {
-    _logger.log(
-      '$line\n',
-      level,
-      type: cli.RawLogType(),
-      newParagraph: false,
-    );
+  void line(final String line, {final cli.LogLevel level = cli.LogLevel.info}) {
+    _logger.log('$line\n', level, type: cli.RawLogType(), newParagraph: false);
   }
 
   /// **List Guidelines**
@@ -380,11 +348,7 @@ class CommandLogger {
     );
 
     if (followUp != null) {
-      _logger.log(
-        followUp,
-        level,
-        type: cli.TextLogType.normal,
-      );
+      _logger.log(followUp, level, type: cli.TextLogType.normal);
     }
   }
 
@@ -454,10 +418,7 @@ class CommandLogger {
   /// ```bash
   /// <message prompt> [y/n]:
   /// ```
-  Future<bool> confirm(
-    final String message, {
-    final bool? defaultValue,
-  }) async {
+  Future<bool> confirm(final String message, {final bool? defaultValue}) async {
     if (configuration?.skipConfirmation == true) {
       info('$message: y');
       return true;
@@ -484,10 +445,6 @@ class CommandLogger {
     final String message, {
     final String? defaultValue,
   }) async {
-    return prompts.input(
-      message,
-      defaultValue: defaultValue,
-      logger: _logger,
-    );
+    return prompts.input(message, defaultValue: defaultValue, logger: _logger);
   }
 }

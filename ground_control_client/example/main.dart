@@ -5,9 +5,8 @@ import 'package:ground_control_client/ground_control_client.dart';
 var url = 'http://localhost:8080/';
 
 Future<void> main() async {
-  var client = Client(
-    url,
-  )..authKeyProvider = _SimpleAuthenticationKeyManager('mock-token');
+  var client = Client(url)
+    ..authKeyProvider = _SimpleAuthenticationKeyManager('mock-token');
 
   client.close();
 }

@@ -61,7 +61,7 @@ class CloudDbConnectionDetailsCommand
   final description = 'Show the connection details for a Serverpod Cloud DB.';
 
   CloudDbConnectionDetailsCommand({required super.logger})
-      : super(options: DbConnectionDetailsOption.values);
+    : super(options: DbConnectionDetailsOption.values);
 
   @override
   Future<void> runWithConfig(
@@ -92,7 +92,10 @@ This psql command can be used to connect to the database (it will prompt for the
       );
     } on Exception catch (e, stackTrace) {
       throw FailureException.nested(
-          e, stackTrace, 'Failed to get connection details');
+        e,
+        stackTrace,
+        'Failed to get connection details',
+      );
     }
   }
 }
@@ -115,7 +118,7 @@ class CloudDbUserCreateCommand extends CloudCliCommand<DbUserCreateOption> {
   final description = 'Create a new superuser in the Serverpod Cloud DB.';
 
   CloudDbUserCreateCommand({required super.logger})
-      : super(options: DbUserCreateOption.values);
+    : super(options: DbUserCreateOption.values);
 
   @override
   Future<void> runWithConfig(
@@ -132,14 +135,15 @@ class CloudDbUserCreateCommand extends CloudCliCommand<DbUserCreateOption> {
         username: username,
       );
 
-      logger.success(
-        '''
+      logger.success('''
 DB superuser created. The password is only shown this once:
-$password''',
-      );
+$password''');
     } on Exception catch (e, stackTrace) {
       throw FailureException.nested(
-          e, stackTrace, 'Failed to create superuser');
+        e,
+        stackTrace,
+        'Failed to create superuser',
+      );
     }
   }
 }
@@ -163,7 +167,7 @@ class CloudDbUserResetPasswordCommand
   final description = 'Reset a password in the Serverpod Cloud DB.';
 
   CloudDbUserResetPasswordCommand({required super.logger})
-      : super(options: DbUserResetPasswordOption.values);
+    : super(options: DbUserResetPasswordOption.values);
 
   @override
   Future<void> runWithConfig(
@@ -180,11 +184,9 @@ class CloudDbUserResetPasswordCommand
         username: username,
       );
 
-      logger.success(
-        '''
+      logger.success('''
 DB password is reset. The new password is only shown this once:
-$password''',
-      );
+$password''');
     } on Exception catch (e, stackTrace) {
       throw FailureException.nested(e, stackTrace, 'Failed to reset password');
     }

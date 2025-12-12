@@ -10,38 +10,50 @@ import 'categories.dart';
 
 enum LogOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption()),
-  limit(IntOption(
-    argName: 'limit',
-    helpText: 'The maximum number of log records to fetch.',
-    defaultsTo: 100,
-    min: 0,
-  )),
+  limit(
+    IntOption(
+      argName: 'limit',
+      helpText: 'The maximum number of log records to fetch.',
+      defaultsTo: 100,
+      min: 0,
+    ),
+  ),
   utc(UtcOption()),
-  until(DateTimeOrDurationOption(
-    argName: 'until',
-    helpText: 'Fetch records from before this timestamp. Accepts ISO date '
-        '(e.g. "2024-01-15T10:30:00Z") or relative from now (e.g. "5m", "3h", "1d").',
-  )),
-  since(DateTimeOrDurationOption(
-    argName: 'since',
-    argPos: 0,
-    helpText: 'Fetch records from after this timestamp. Accepts ISO date '
-        '(e.g. "2024-01-15T10:30:00Z") or relative from now (e.g. "5m", "3h", "1d").'
-        ' Can also be specified as the first argument.',
-  )),
-  all(FlagOption(
-    argName: 'all',
-    helpText: 'Fetch all records (up to specified limit or server limit).',
-    defaultsTo: false,
-    negatable: false,
-    hide: true,
-  )),
-  tail(FlagOption(
-    argName: 'tail',
-    helpText: 'Tail the log and get real time updates.',
-    defaultsTo: false,
-    negatable: false,
-  ));
+  until(
+    DateTimeOrDurationOption(
+      argName: 'until',
+      helpText:
+          'Fetch records from before this timestamp. Accepts ISO date '
+          '(e.g. "2024-01-15T10:30:00Z") or relative from now (e.g. "5m", "3h", "1d").',
+    ),
+  ),
+  since(
+    DateTimeOrDurationOption(
+      argName: 'since',
+      argPos: 0,
+      helpText:
+          'Fetch records from after this timestamp. Accepts ISO date '
+          '(e.g. "2024-01-15T10:30:00Z") or relative from now (e.g. "5m", "3h", "1d").'
+          ' Can also be specified as the first argument.',
+    ),
+  ),
+  all(
+    FlagOption(
+      argName: 'all',
+      helpText: 'Fetch all records (up to specified limit or server limit).',
+      defaultsTo: false,
+      negatable: false,
+      hide: true,
+    ),
+  ),
+  tail(
+    FlagOption(
+      argName: 'tail',
+      helpText: 'Tail the log and get real time updates.',
+      defaultsTo: false,
+      negatable: false,
+    ),
+  );
 
   const LogOption(this.option);
 
@@ -129,14 +141,16 @@ Examples
     if (internalAllOpt) {
       if (anyTimeSpanIsSet) {
         logger.warning(
-            'The --all option cannot be combined with --until or --since.');
+          'The --all option cannot be combined with --until or --since.',
+        );
         until = null;
         since = null;
       }
     } else if (tailOpt == true) {
       if (anyTimeSpanIsSet) {
         logger.warning(
-            'The --tail option cannot be combined with --until or --since.');
+          'The --tail option cannot be combined with --until or --since.',
+        );
       }
     } else if (until != null || since != null) {
       if (until != null && since != null && until.isBefore(since)) {

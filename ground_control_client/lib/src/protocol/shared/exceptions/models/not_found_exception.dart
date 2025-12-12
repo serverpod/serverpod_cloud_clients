@@ -30,10 +30,7 @@ abstract class NotFoundException
   NotFoundException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
-    return {
-      '__className__': 'NotFoundException',
-      'message': message,
-    };
+    return {'__className__': 'NotFoundException', 'message': message};
   }
 
   @override

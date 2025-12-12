@@ -7,9 +7,9 @@ class PaymentMethodBuilder {
   PaymentMethodCard? _card;
 
   PaymentMethodBuilder()
-      : _id = 'pm_test_1234567890',
-        _type = 'card',
-        _card = PaymentMethodCardBuilder().build();
+    : _id = 'pm_test_1234567890',
+      _type = 'card',
+      _card = PaymentMethodCardBuilder().build();
 
   PaymentMethodBuilder withId(String id) {
     _id = id;
@@ -32,10 +32,6 @@ class PaymentMethodBuilder {
   }
 
   PaymentMethod build() {
-    return PaymentMethod(
-      id: _id,
-      type: _type,
-      card: _card,
-    );
+    return PaymentMethod(id: _id, type: _type, card: _card);
   }
 }

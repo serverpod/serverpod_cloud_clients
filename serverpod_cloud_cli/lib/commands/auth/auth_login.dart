@@ -20,9 +20,7 @@ abstract class AuthLoginCommands {
     final localStoragePath = globalConfig.scloudDir;
     final serverAddress = globalConfig.consoleServer;
 
-    final cloudServer = Uri.parse(serverAddress).replace(
-      path: signInPath,
-    );
+    final cloudServer = Uri.parse(serverAddress).replace(path: signInPath);
 
     final callbackUrlFuture = Completer<Uri>();
     final tokenFuture = ListenerServer.listenForAuthenticationToken(
@@ -37,24 +35,24 @@ abstract class AuthLoginCommands {
       queryParameters: {'callback': callbackUrl.toString()},
     );
     logger.info(
-        'Please log in to Serverpod Cloud using the opened browser or through this link:\n$signInUrl');
+      'Please log in to Serverpod Cloud using the opened browser or through this link:\n$signInUrl',
+    );
 
     if (openBrowser) {
       try {
         await BrowserLauncher.openUrl(signInUrl);
       } on Exception catch (e) {
-        logger.error(
-          'Failed to open browser',
-          exception: e,
-        );
+        logger.error('Failed to open browser', exception: e);
       }
     }
 
-    await logger.progress('Waiting for authentication to complete...',
-        () async {
-      final token = await tokenFuture;
-      return token != null;
-    });
+    await logger.progress(
+      'Waiting for authentication to complete...',
+      () async {
+        final token = await tokenFuture;
+        return token != null;
+      },
+    );
 
     final token = await tokenFuture;
     if (token == null) {

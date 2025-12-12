@@ -40,7 +40,8 @@ abstract final class _DeploymentsShowOptions {
   static const overallStatus = FlagOption(
     argName: 'output-overall-status',
     defaultsTo: false,
-    helpText: "View a deployment's overall status as a single word, one of: "
+    helpText:
+        "View a deployment's overall status as a single word, one of: "
         "success, failure, awaiting, running, cancelled, unknown.",
     negatable: false,
   );
@@ -87,17 +88,20 @@ Examples
 ''';
 
   CloudDeploymentsShowCommand({required super.logger})
-      : super(options: DeploymentsShowOption.values);
+    : super(options: DeploymentsShowOption.values);
 
   @override
   Future<void> runWithConfig(
-      final Configuration<DeploymentsShowOption> commandConfig) async {
+    final Configuration<DeploymentsShowOption> commandConfig,
+  ) async {
     final projectId = commandConfig.value(DeploymentsShowOption.projectId);
     final inUtc = commandConfig.value(DeploymentsShowOption.utc);
-    final deploymentArg =
-        commandConfig.optionalValue(DeploymentsShowOption.deploy);
-    final overallStatus =
-        commandConfig.value(DeploymentsShowOption.overallStatus);
+    final deploymentArg = commandConfig.optionalValue(
+      DeploymentsShowOption.deploy,
+    );
+    final overallStatus = commandConfig.value(
+      DeploymentsShowOption.overallStatus,
+    );
 
     try {
       final attemptId = await _getDeployAttemptId(
@@ -166,11 +170,12 @@ Examples
 ''';
 
   CloudDeploymentsListCommand({required super.logger})
-      : super(options: DeploymentsListOption.values);
+    : super(options: DeploymentsListOption.values);
 
   @override
   Future<void> runWithConfig(
-      final Configuration<DeploymentsListOption> commandConfig) async {
+    final Configuration<DeploymentsListOption> commandConfig,
+  ) async {
     final projectId = commandConfig.value(DeploymentsListOption.projectId);
     final limit = commandConfig.value(DeploymentsListOption.limit);
     final inUtc = commandConfig.value(DeploymentsListOption.utc);
@@ -242,15 +247,17 @@ Examples
 ''';
 
   CloudDeploymentsBuildLogCommand({required super.logger})
-      : super(options: DeploymentsBuildLogOption.values);
+    : super(options: DeploymentsBuildLogOption.values);
 
   @override
   Future<void> runWithConfig(
-      final Configuration<DeploymentsBuildLogOption> commandConfig) async {
+    final Configuration<DeploymentsBuildLogOption> commandConfig,
+  ) async {
     final projectId = commandConfig.value(DeploymentsBuildLogOption.projectId);
     final inUtc = commandConfig.value(DeploymentsBuildLogOption.utc);
-    final deploymentArg =
-        commandConfig.optionalValue(DeploymentsBuildLogOption.deploy);
+    final deploymentArg = commandConfig.optionalValue(
+      DeploymentsBuildLogOption.deploy,
+    );
 
     try {
       final attemptId = await _getDeployAttemptId(
@@ -297,7 +304,8 @@ Future<String> _getDeployAttemptId(
     }
     throw FailureException(
       error: 'No such deployment status found.',
-      hint: 'Run this command to see recent deployments: '
+      hint:
+          'Run this command to see recent deployments: '
           'scloud deployment list',
     );
   }

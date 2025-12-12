@@ -11,14 +11,14 @@ class SubscriptionInfoBuilder {
   int? _projectsLimit;
 
   SubscriptionInfoBuilder()
-      : _createdAt = DateTime.now(),
-        _startDate = DateTime.now(),
-        _trialEndDate = DateTime.now().add(Duration(days: 7)),
-        _subscriptionId = 'test-subscription-id',
-        _planProductId = 'early-access:0',
-        _planDisplayName = 'Early Access',
-        _planDescription = 'A test plan description',
-        _projectsLimit = 1;
+    : _createdAt = DateTime.now(),
+      _startDate = DateTime.now(),
+      _trialEndDate = DateTime.now().add(Duration(days: 7)),
+      _subscriptionId = 'test-subscription-id',
+      _planProductId = 'early-access:0',
+      _planDisplayName = 'Early Access',
+      _planDescription = 'A test plan description',
+      _projectsLimit = 1;
 
   SubscriptionInfoBuilder withCreatedAt(final DateTime createdAt) {
     _createdAt = createdAt;

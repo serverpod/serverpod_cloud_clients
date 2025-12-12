@@ -4,7 +4,7 @@ class CloudCliUsageException extends UsageException {
   final String? hint;
 
   CloudCliUsageException(final String message, {this.hint})
-      : super(message, '');
+    : super(message, '');
 
   @override
   String toString() {

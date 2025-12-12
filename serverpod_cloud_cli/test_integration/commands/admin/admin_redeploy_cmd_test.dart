@@ -29,23 +29,22 @@ void main() {
     logger.clear();
   });
 
-  test('Given admin redeploy command when instantiated then requires login',
-      () {
-    expect(AdminRedeployCommand(logger: logger).requireLogin, isTrue);
-  });
+  test(
+    'Given admin redeploy command when instantiated then requires login',
+    () {
+      expect(AdminRedeployCommand(logger: logger).requireLogin, isTrue);
+    },
+  );
 
   group('Given authenticated', () {
     group('when executing admin redeploy', () {
       late Future commandResult;
       setUp(() async {
-        when(() => client.adminProjects.redeployCapsule('test-project'))
-            .thenAnswer((final invocation) async => Future.value());
+        when(
+          () => client.adminProjects.redeployCapsule('test-project'),
+        ).thenAnswer((final invocation) async => Future.value());
 
-        commandResult = cli.run([
-          'admin',
-          'redeploy',
-          'test-project',
-        ]);
+        commandResult = cli.run(['admin', 'redeploy', 'test-project']);
       });
 
       test('then command completes successfully', () async {
@@ -70,14 +69,11 @@ void main() {
     group('when executing admin redeploy with different project ID', () {
       late Future commandResult;
       setUp(() async {
-        when(() => client.adminProjects.redeployCapsule('another-project'))
-            .thenAnswer((final invocation) async => Future.value());
+        when(
+          () => client.adminProjects.redeployCapsule('another-project'),
+        ).thenAnswer((final invocation) async => Future.value());
 
-        commandResult = cli.run([
-          'admin',
-          'redeploy',
-          'another-project',
-        ]);
+        commandResult = cli.run(['admin', 'redeploy', 'another-project']);
       });
 
       test('then command completes successfully', () async {
@@ -102,14 +98,11 @@ void main() {
     group('when redeployCapsule throws exception', () {
       late Future commandResult;
       setUp(() async {
-        when(() => client.adminProjects.redeployCapsule('test-project'))
-            .thenThrow(Exception('API Error'));
+        when(
+          () => client.adminProjects.redeployCapsule('test-project'),
+        ).thenThrow(Exception('API Error'));
 
-        commandResult = cli.run([
-          'admin',
-          'redeploy',
-          'test-project',
-        ]);
+        commandResult = cli.run(['admin', 'redeploy', 'test-project']);
       });
 
       test('then throws ErrorExitException', () async {
@@ -120,8 +113,10 @@ void main() {
         await commandResult.catchError((final _) {});
 
         expect(logger.errorCalls, isNotEmpty);
-        expect(logger.errorCalls.first.message,
-            equals('Failed to redeploy project'));
+        expect(
+          logger.errorCalls.first.message,
+          equals('Failed to redeploy project'),
+        );
         expect(logger.errorCalls.first.exception, isNotNull);
       });
     });

@@ -28,20 +28,20 @@ void main() {
     logger.clear();
   });
 
-  test('Given admin invite-user command when instantiated then requires login',
-      () {
-    expect(AdminInviteUserCommand(logger: logger).requireLogin, isTrue);
-  });
+  test(
+    'Given admin invite-user command when instantiated then requires login',
+    () {
+      expect(AdminInviteUserCommand(logger: logger).requireLogin, isTrue);
+    },
+  );
 
   group('Given authenticated', () {
     group('when executing admin invite-user', () {
       late Future commandResult;
       setUp(() async {
-        when(() => client.adminUsers.inviteUser(
-              email: any(named: 'email'),
-            )).thenAnswer(
-          (final invocation) async => Future.value(),
-        );
+        when(
+          () => client.adminUsers.inviteUser(email: any(named: 'email')),
+        ).thenAnswer((final invocation) async => Future.value());
 
         commandResult = cli.run([
           'admin',

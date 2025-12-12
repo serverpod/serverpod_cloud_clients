@@ -8,9 +8,7 @@ import 'package:yaml/yaml.dart';
 import 'yaml_schema.dart';
 
 final _schema = YamlMap.wrap({
-  'project': YamlMap.wrap({
-    'projectId': String,
-  }),
+  'project': YamlMap.wrap({'projectId': String}),
 });
 
 final _yamlSchema = YamlSchema(_schema);
@@ -25,8 +23,9 @@ abstract final class ScloudConfigFile {
     _yamlSchema.validate(data);
 
     return Map<String, dynamic>.fromEntries(
-      data.entries
-          .map((final entry) => MapEntry(entry.key as String, entry.value)),
+      data.entries.map(
+        (final entry) => MapEntry(entry.key as String, entry.value),
+      ),
     );
   }
 
@@ -58,8 +57,9 @@ abstract final class ScloudConfigFile {
   ) {
     final yaml = _tryReadFile(filePath);
 
-    final Map<String, dynamic> cloudConfig =
-        yaml == null ? {} : _parseConfigYaml(yaml);
+    final Map<String, dynamic> cloudConfig = yaml == null
+        ? {}
+        : _parseConfigYaml(yaml);
 
     if (cloudConfig['project'] == null) {
       cloudConfig['project'] = {};

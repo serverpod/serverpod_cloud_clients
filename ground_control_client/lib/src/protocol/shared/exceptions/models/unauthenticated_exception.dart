@@ -35,10 +35,7 @@ abstract class UnauthenticatedException
   UnauthenticatedException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
-    return {
-      '__className__': 'UnauthenticatedException',
-      'message': message,
-    };
+    return {'__className__': 'UnauthenticatedException', 'message': message};
   }
 
   @override

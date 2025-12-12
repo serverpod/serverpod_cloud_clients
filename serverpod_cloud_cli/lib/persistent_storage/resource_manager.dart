@@ -23,8 +23,9 @@ abstract class ResourceManager {
   static String get uniqueUserId {
     const uuidFilePath = 'uuid';
     try {
-      final userIdFile =
-          File(p.join(_localStorageDirectory.path, uuidFilePath));
+      final userIdFile = File(
+        p.join(_localStorageDirectory.path, uuidFilePath),
+      );
       final userId = userIdFile.readAsStringSync();
       return userId;
     } catch (e) {
@@ -32,8 +33,9 @@ abstract class ResourceManager {
     }
     final userId = const Uuid().v4();
     try {
-      final userIdFile =
-          File(p.join(_localStorageDirectory.path, uuidFilePath));
+      final userIdFile = File(
+        p.join(_localStorageDirectory.path, uuidFilePath),
+      );
       userIdFile.createSync(recursive: true);
       userIdFile.writeAsStringSync(userId);
     } finally {}
@@ -96,10 +98,11 @@ abstract class ResourceManager {
       }
     } on ReadException catch (_) {
       logger.error(
-          'Could not read file ${ResourceManagerConstants.serverpodCloudAuthFilePath}.',
-          hint:
-              'Please check that the Serverpod Cloud CLI has the correct permissions to '
-              'read the file. If the problem persists, try deleting the file.');
+        'Could not read file ${ResourceManagerConstants.serverpodCloudAuthFilePath}.',
+        hint:
+            'Please check that the Serverpod Cloud CLI has the correct permissions to '
+            'read the file. If the problem persists, try deleting the file.',
+      );
       return null;
     } on DeserializationException catch (_) {
       return null;
@@ -162,9 +165,7 @@ abstract class ResourceManager {
       );
     } catch (e) {
       // Ignore since users can't do anything about it.
-      logger.debug(
-        'Failed to store latest cli version to file: $e',
-      );
+      logger.debug('Failed to store latest cli version to file: $e');
     }
   }
 
@@ -179,9 +180,7 @@ abstract class ResourceManager {
         file.deleteSync();
       } catch (e) {
         // Ignore since users can't do anything about it.
-        logger.debug(
-          'Failed to store latest cli version to file: $e',
-        );
+        logger.debug('Failed to store latest cli version to file: $e');
       }
     }
 

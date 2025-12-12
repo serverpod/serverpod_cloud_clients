@@ -15,14 +15,14 @@ class UserBuilder {
   Owner? _owner;
 
   UserBuilder()
-      : _id = 1,
-        _createdAt = DateTime.now(),
-        _updatedAt = DateTime.now(),
-        _archivedAt = null,
-        _accountStatus = UserAccountStatus.registered,
-        _userAuthId = 'auth-user-123',
-        _email = 'test@example.com',
-        _memberships = [] {
+    : _id = 1,
+      _createdAt = DateTime.now(),
+      _updatedAt = DateTime.now(),
+      _archivedAt = null,
+      _accountStatus = UserAccountStatus.registered,
+      _userAuthId = 'auth-user-123',
+      _email = 'test@example.com',
+      _memberships = [] {
     _ownerId = Uuid().v4obj();
   }
 
@@ -78,12 +78,7 @@ class UserBuilder {
 
   UserBuilder withLabels(final List<UserLabel> labels) {
     _labels = labels
-        .map(
-          (final label) => UserLabelMapping(
-            userId: _id ?? 1,
-            label: label,
-          ),
-        )
+        .map((final label) => UserLabelMapping(userId: _id ?? 1, label: label))
         .toList();
     return this;
   }

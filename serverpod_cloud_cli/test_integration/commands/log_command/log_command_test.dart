@@ -51,12 +51,14 @@ void main() {
 
     group('when calling with --utc flag and --since duration value', () {
       setUp(() async {
-        when(() => client.logs.fetchRecords(
-              cloudProjectId: projectId,
-              beforeTime: null,
-              afterTime: any(named: 'afterTime'),
-              limit: any(named: 'limit'),
-            )).thenAnswer((final _) => Stream.fromIterable(mockRecords));
+        when(
+          () => client.logs.fetchRecords(
+            cloudProjectId: projectId,
+            beforeTime: null,
+            afterTime: any(named: 'afterTime'),
+            limit: any(named: 'limit'),
+          ),
+        ).thenAnswer((final _) => Stream.fromIterable(mockRecords));
 
         await cli.run([
           'log',
@@ -94,12 +96,14 @@ void main() {
 
     group('when calling with --utc flag and --until duration value', () {
       setUp(() async {
-        when(() => client.logs.fetchRecords(
-              cloudProjectId: projectId,
-              beforeTime: any(named: 'beforeTime'),
-              afterTime: any(named: 'afterTime'),
-              limit: any(named: 'limit'),
-            )).thenAnswer((final _) => Stream.fromIterable(mockRecords));
+        when(
+          () => client.logs.fetchRecords(
+            cloudProjectId: projectId,
+            beforeTime: any(named: 'beforeTime'),
+            afterTime: any(named: 'afterTime'),
+            limit: any(named: 'limit'),
+          ),
+        ).thenAnswer((final _) => Stream.fromIterable(mockRecords));
 
         await cli.run([
           'log',
@@ -137,12 +141,14 @@ void main() {
 
     group('when calling with --utc flag and --until value', () {
       setUp(() async {
-        when(() => client.logs.fetchRecords(
-              cloudProjectId: projectId,
-              beforeTime: DateTime.parse('2030-12-01T00:00:00Z'),
-              afterTime: null,
-              limit: any(named: 'limit'),
-            )).thenAnswer((final _) => Stream.fromIterable(mockRecords));
+        when(
+          () => client.logs.fetchRecords(
+            cloudProjectId: projectId,
+            beforeTime: DateTime.parse('2030-12-01T00:00:00Z'),
+            afterTime: null,
+            limit: any(named: 'limit'),
+          ),
+        ).thenAnswer((final _) => Stream.fromIterable(mockRecords));
 
         await cli.run([
           'log',
@@ -184,12 +190,14 @@ void main() {
 
     group('when calling with --utc flag and --since value', () {
       setUp(() async {
-        when(() => client.logs.fetchRecords(
-              cloudProjectId: projectId,
-              beforeTime: null,
-              afterTime: DateTime.parse('2020-12-01T00:00:00Z'),
-              limit: any(named: 'limit'),
-            )).thenAnswer((final _) => Stream.fromIterable(mockRecords));
+        when(
+          () => client.logs.fetchRecords(
+            cloudProjectId: projectId,
+            beforeTime: null,
+            afterTime: DateTime.parse('2020-12-01T00:00:00Z'),
+            limit: any(named: 'limit'),
+          ),
+        ).thenAnswer((final _) => Stream.fromIterable(mockRecords));
 
         await cli.run([
           'log',
@@ -229,15 +237,16 @@ void main() {
       });
     });
 
-    group('when calling with --utc flag and both --since and --until value',
-        () {
+    group('when calling with --utc flag and both --since and --until value', () {
       setUp(() async {
-        when(() => client.logs.fetchRecords(
-              cloudProjectId: projectId,
-              beforeTime: DateTime.parse('2030-01-01T00:00:00Z'),
-              afterTime: DateTime.parse('2020-12-01T00:00:00Z'),
-              limit: any(named: 'limit'),
-            )).thenAnswer((final _) => Stream.fromIterable(mockRecords));
+        when(
+          () => client.logs.fetchRecords(
+            cloudProjectId: projectId,
+            beforeTime: DateTime.parse('2030-01-01T00:00:00Z'),
+            afterTime: DateTime.parse('2020-12-01T00:00:00Z'),
+            limit: any(named: 'limit'),
+          ),
+        ).thenAnswer((final _) => Stream.fromIterable(mockRecords));
 
         await cli.run([
           'log',
@@ -281,27 +290,21 @@ void main() {
 
     group('when calling with --utc flag and --tail flag', () {
       setUp(() async {
-        when(() => client.logs.tailRecords(
-              cloudProjectId: projectId,
-              limit: any(named: 'limit'),
-            )).thenAnswer((final _) => Stream.fromIterable(mockRecords));
+        when(
+          () => client.logs.tailRecords(
+            cloudProjectId: projectId,
+            limit: any(named: 'limit'),
+          ),
+        ).thenAnswer((final _) => Stream.fromIterable(mockRecords));
 
-        await cli.run([
-          'log',
-          '--utc',
-          '--tail',
-          '--project',
-          projectId,
-        ]);
+        await cli.run(['log', '--utc', '--tail', '--project', projectId]);
       });
 
       test('then logs output stream', () async {
         expect(
           logger.lineCalls,
           containsAllInOrder([
-            equalsLineCall(
-              line: 'Tailing logs. Display time zone: UTC.',
-            ),
+            equalsLineCall(line: 'Tailing logs. Display time zone: UTC.'),
             equalsLineCall(
               line: 'Timestamp                   | Level   | Content',
             ),

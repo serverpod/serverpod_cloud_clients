@@ -50,7 +50,7 @@ Examples
 ''';
 
   ProjectUserListCommand({required super.logger})
-      : super(options: ProjectUserListOption.values);
+    : super(options: ProjectUserListOption.values);
 
   @override
   Future<void> runWithConfig(
@@ -70,12 +70,8 @@ const _projectRoleNames = ['admin'];
 const _projectRoleHelp = {'admin': 'Admins have full access to the project.'};
 
 enum ProjectUserInviteOption<V> implements OptionDefinition<V> {
-  projectId(
-    ProjectIdOption(),
-  ),
-  user(
-    UserEmailOption(argPos: 0, mandatory: true),
-  ),
+  projectId(ProjectIdOption()),
+  user(UserEmailOption(argPos: 0, mandatory: true)),
   roles(
     MultiStringOption(
       argName: 'role',
@@ -113,7 +109,7 @@ Examples
 ''';
 
   ProjectUserInviteCommand({required super.logger})
-      : super(options: ProjectUserInviteOption.values);
+    : super(options: ProjectUserInviteOption.values);
 
   @override
   Future<void> runWithConfig(
@@ -134,12 +130,8 @@ Examples
 }
 
 enum ProjectUserRevokeOption<V> implements OptionDefinition<V> {
-  projectId(
-    ProjectIdOption(),
-  ),
-  user(
-    UserEmailOption(argPos: 0, mandatory: true),
-  );
+  projectId(ProjectIdOption()),
+  user(UserEmailOption(argPos: 0, mandatory: true));
 
   const ProjectUserRevokeOption(this.option);
 
@@ -166,7 +158,7 @@ Examples
 ''';
 
   ProjectUserRevokeCommand({required super.logger})
-      : super(options: ProjectUserRevokeOption.values);
+    : super(options: ProjectUserRevokeOption.values);
 
   @override
   Future<void> runWithConfig(

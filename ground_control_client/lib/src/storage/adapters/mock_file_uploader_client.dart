@@ -8,15 +8,9 @@ class MockFileUploader implements FileUploaderClient {
   bool uploadResponse;
   List<int> uploadedData;
 
-  MockFileUploader({
-    this.uploadResponse = true,
-    this.uploadedData = const [],
-  });
+  MockFileUploader({this.uploadResponse = true, this.uploadedData = const []});
 
-  void init({
-    bool uploadResponse = true,
-    List<int> uploadedData = const [],
-  }) {
+  void init({bool uploadResponse = true, List<int> uploadedData = const []}) {
     this.uploadResponse = uploadResponse;
     this.uploadedData = uploadedData;
   }

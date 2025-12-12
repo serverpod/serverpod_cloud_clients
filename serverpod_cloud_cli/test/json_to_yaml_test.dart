@@ -12,10 +12,7 @@ singleValue: "value1"
 
   test('Given a map value with keys then converts to yaml', () {
     final data = {
-      'mapKey': {
-        'key1': 'value1',
-        'key2': 'value2',
-      },
+      'mapKey': {'key1': 'value1', 'key2': 'value2'},
     };
 
     expect(jsonToYaml(data), '''
@@ -26,9 +23,7 @@ mapKey:
   });
 
   test('Given a map value without keys then converts to yaml', () {
-    final data = {
-      'mapKey': {},
-    };
+    final data = {'mapKey': {}};
 
     expect(jsonToYaml(data), '''
 mapKey: {}
@@ -38,11 +33,8 @@ mapKey: {}
   test('Given a nested map value then converts to yaml', () {
     final data = {
       'mapKey': {
-        'nestedMap': {
-          'key5': 'value5',
-          'key6': 'value6',
-        },
-      }
+        'nestedMap': {'key5': 'value5', 'key6': 'value6'},
+      },
     };
 
     expect(jsonToYaml(data), '''
@@ -66,9 +58,7 @@ listKey:
   });
 
   test('Given an empty list value then converts to yaml', () {
-    final data = {
-      'listKey': [],
-    };
+    final data = {'listKey': []};
 
     expect(jsonToYaml(data), '''
 listKey: []
@@ -94,10 +84,7 @@ listKey:
 
   test('Given nested empty list then converts to yaml', () {
     final data = {
-      'listKey': [
-        'value1',
-        [],
-      ],
+      'listKey': ['value1', []],
     };
 
     expect(jsonToYaml(data), '''
@@ -134,10 +121,7 @@ mapKey:
     final data = {
       'listKey': [
         'value1',
-        {
-          'key1': 'value1',
-          'key2': 'value2',
-        },
+        {'key1': 'value1', 'key2': 'value2'},
       ],
     };
 
@@ -152,10 +136,7 @@ listKey:
 
   test('Given a nested empty map in a list then converts to yaml', () {
     final data = {
-      'listKey': [
-        'value1',
-        {},
-      ],
+      'listKey': ['value1', {}],
     };
 
     expect(jsonToYaml(data), '''
@@ -167,14 +148,8 @@ listKey:
 
   test('Given both lists and maps then converts to yaml', () {
     final data = {
-      'mapKey': {
-        'key1': 'value1',
-        'key2': 'value2',
-      },
-      'listKey': [
-        'value3',
-        'value4',
-      ],
+      'mapKey': {'key1': 'value1', 'key2': 'value2'},
+      'listKey': ['value3', 'value4'],
     };
 
     expect(jsonToYaml(data), '''

@@ -6,7 +6,8 @@ abstract final class ScloudIgnore {
   static const String fileName = '.scloudignore';
   static const String scloudDirName = '.scloud';
 
-  static const String template = '''
+  static const String template =
+      '''
 # .scloudignore
 #
 # This file specifies which files and directories should be ignored when 
@@ -48,23 +49,17 @@ config/test.yaml
 !$scloudDirName/**
 ''';
 
-  static bool fileExists({
-    final String rootFolder = '.',
-  }) {
+  static bool fileExists({final String rootFolder = '.'}) {
     final file = File(join(rootFolder, fileName));
     return file.existsSync();
   }
 
-  static void writeTemplate({
-    final String rootFolder = '.',
-  }) {
+  static void writeTemplate({final String rootFolder = '.'}) {
     final file = File(join(rootFolder, fileName));
     file.writeAsStringSync(template);
   }
 
-  static void writeTemplateIfNotExists({
-    final String rootFolder = '.',
-  }) {
+  static void writeTemplateIfNotExists({final String rootFolder = '.'}) {
     if (!ScloudIgnore.fileExists(rootFolder: rootFolder)) {
       ScloudIgnore.writeTemplate(rootFolder: rootFolder);
     }

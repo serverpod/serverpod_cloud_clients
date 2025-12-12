@@ -33,28 +33,30 @@ void main() {
   });
 
   test(
-      'Given project invite user command when instantiated then requires login',
-      () {
-    expect(ProjectUserInviteCommand(logger: logger).requireLogin, isTrue);
-  });
+    'Given project invite user command when instantiated then requires login',
+    () {
+      expect(ProjectUserInviteCommand(logger: logger).requireLogin, isTrue);
+    },
+  );
 
   test(
-      'Given project revoke user command when instantiated then requires login',
-      () {
-    expect(ProjectUserRevokeCommand(logger: logger).requireLogin, isTrue);
-  });
+    'Given project revoke user command when instantiated then requires login',
+    () {
+      expect(ProjectUserRevokeCommand(logger: logger).requireLogin, isTrue);
+    },
+  );
 
   group('Given authenticated', () {
     group('when executing project invite user', () {
       late Future commandResult;
       setUp(() async {
-        when(() => client.projects.inviteUser(
-              cloudProjectId: any(named: 'cloudProjectId'),
-              email: any(named: 'email'),
-              assignRoleNames: any(named: 'assignRoleNames'),
-            )).thenAnswer(
-          (final invocation) async => Future.value(),
-        );
+        when(
+          () => client.projects.inviteUser(
+            cloudProjectId: any(named: 'cloudProjectId'),
+            email: any(named: 'email'),
+            assignRoleNames: any(named: 'assignRoleNames'),
+          ),
+        ).thenAnswer((final invocation) async => Future.value());
 
         commandResult = cli.run([
           'project',
@@ -66,31 +68,33 @@ void main() {
         ]);
       });
 
-      test('then command completes successfully and logs success message',
-          () async {
-        await expectLater(commandResult, completes);
+      test(
+        'then command completes successfully and logs success message',
+        () async {
+          await expectLater(commandResult, completes);
 
-        expect(logger.successCalls, hasLength(1));
-        expect(
-          logger.successCalls.single,
-          equalsSuccessCall(
-            message: 'User invited to the project with roles: admin.',
-            newParagraph: true,
-          ),
-        );
-      });
+          expect(logger.successCalls, hasLength(1));
+          expect(
+            logger.successCalls.single,
+            equalsSuccessCall(
+              message: 'User invited to the project with roles: admin.',
+              newParagraph: true,
+            ),
+          );
+        },
+      );
     });
 
     group('when executing project invite with non-existent user', () {
       late Future commandResult;
       setUp(() async {
-        when(() => client.projects.inviteUser(
-              cloudProjectId: any(named: 'cloudProjectId'),
-              email: any(named: 'email'),
-              assignRoleNames: any(named: 'assignRoleNames'),
-            )).thenThrow(
-          NotFoundException(message: 'User not found.'),
-        );
+        when(
+          () => client.projects.inviteUser(
+            cloudProjectId: any(named: 'cloudProjectId'),
+            email: any(named: 'email'),
+            assignRoleNames: any(named: 'assignRoleNames'),
+          ),
+        ).thenThrow(NotFoundException(message: 'User not found.'));
 
         commandResult = cli.run([
           'project',
@@ -111,24 +115,23 @@ void main() {
 
         expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message: 'User not found.',
-            ));
+          logger.errorCalls.first,
+          equalsErrorCall(message: 'User not found.'),
+        );
       });
     });
 
     group('when executing project revoke user and user has roles', () {
       late Future commandResult;
       setUp(() async {
-        when(() => client.projects.revokeUser(
-              cloudProjectId: any(named: 'cloudProjectId'),
-              email: any(named: 'email'),
-              unassignRoleNames: any(named: 'unassignRoleNames'),
-              unassignAllRoles: any(named: 'unassignAllRoles'),
-            )).thenAnswer(
-          (final invocation) async => Future.value(['admin']),
-        );
+        when(
+          () => client.projects.revokeUser(
+            cloudProjectId: any(named: 'cloudProjectId'),
+            email: any(named: 'email'),
+            unassignRoleNames: any(named: 'unassignRoleNames'),
+            unassignAllRoles: any(named: 'unassignAllRoles'),
+          ),
+        ).thenAnswer((final invocation) async => Future.value(['admin']));
 
         commandResult = cli.run([
           'project',
@@ -140,33 +143,35 @@ void main() {
         ]);
       });
 
-      test('then command completes successfully and logs success message',
-          () async {
-        await expectLater(commandResult, completes);
+      test(
+        'then command completes successfully and logs success message',
+        () async {
+          await expectLater(commandResult, completes);
 
-        expect(logger.successCalls, hasLength(1));
-        expect(
-          logger.successCalls.single,
-          equalsSuccessCall(
-            message:
-                "Revoked all access roles of the user from the project: admin",
-            newParagraph: true,
-          ),
-        );
-      });
+          expect(logger.successCalls, hasLength(1));
+          expect(
+            logger.successCalls.single,
+            equalsSuccessCall(
+              message:
+                  "Revoked all access roles of the user from the project: admin",
+              newParagraph: true,
+            ),
+          );
+        },
+      );
     });
 
     group('when executing project revoke user but user has no roles', () {
       late Future commandResult;
       setUp(() async {
-        when(() => client.projects.revokeUser(
-              cloudProjectId: any(named: 'cloudProjectId'),
-              email: any(named: 'email'),
-              unassignRoleNames: any(named: 'unassignRoleNames'),
-              unassignAllRoles: any(named: 'unassignAllRoles'),
-            )).thenAnswer(
-          (final invocation) async => Future.value([]),
-        );
+        when(
+          () => client.projects.revokeUser(
+            cloudProjectId: any(named: 'cloudProjectId'),
+            email: any(named: 'email'),
+            unassignRoleNames: any(named: 'unassignRoleNames'),
+            unassignAllRoles: any(named: 'unassignAllRoles'),
+          ),
+        ).thenAnswer((final invocation) async => Future.value([]));
 
         commandResult = cli.run([
           'project',
@@ -178,18 +183,20 @@ void main() {
         ]);
       });
 
-      test('then command completes successfully and logs info message',
-          () async {
-        await expectLater(commandResult, completes);
+      test(
+        'then command completes successfully and logs info message',
+        () async {
+          await expectLater(commandResult, completes);
 
-        expect(logger.infoCalls, hasLength(1));
-        expect(
-          logger.infoCalls.single,
-          equalsInfoCall(
-            message: "The user has no access roles to revoke on the project.",
-          ),
-        );
-      });
+          expect(logger.infoCalls, hasLength(1));
+          expect(
+            logger.infoCalls.single,
+            equalsInfoCall(
+              message: "The user has no access roles to revoke on the project.",
+            ),
+          );
+        },
+      );
     });
   });
 }

@@ -73,23 +73,27 @@ abstract class ProjectCommands {
       );
     } on Exception catch (e, s) {
       throw FailureException.nested(
-          e, s, 'Request to create a new project failed');
+        e,
+        s,
+        'Request to create a new project failed',
+      );
     }
 
     if (enableDb) {
-      await logger.progress(
-        'Requesting database creation.',
-        () async {
-          try {
-            await cloudApiClient.infraResources
-                .enableDatabase(cloudCapsuleId: projectId);
-            return true;
-          } on Exception catch (e, s) {
-            throw FailureException.nested(e, s,
-                'Request to create a database for the new project failed');
-          }
-        },
-      );
+      await logger.progress('Requesting database creation.', () async {
+        try {
+          await cloudApiClient.infraResources.enableDatabase(
+            cloudCapsuleId: projectId,
+          );
+          return true;
+        } on Exception catch (e, s) {
+          throw FailureException.nested(
+            e,
+            s,
+            'Request to create a database for the new project failed',
+          );
+        }
+      });
     }
 
     if (isServerpodServerDirectory(Directory(projectDir))) {
@@ -97,10 +101,7 @@ abstract class ProjectCommands {
 
       final scloudYamlFile = File(configFilePath);
       if (scloudYamlFile.existsSync()) {
-        logger.success(
-          'Serverpod Cloud project created.',
-          newParagraph: true,
-        );
+        logger.success('Serverpod Cloud project created.', newParagraph: true);
 
         return;
       }
@@ -114,18 +115,14 @@ abstract class ProjectCommands {
       await logger.progress(
         'Writing cloud project configuration files.',
         () async {
-          _writeProjectFiles(
-            logger,
-            projectConfig,
-            projectDir,
-            configFilePath,
-          );
+          _writeProjectFiles(logger, projectConfig, projectDir, configFilePath);
           return true;
         },
       );
     } else {
       logger.terminalCommand(
-        message: 'Since no Serverpod server directory was identified, '
+        message:
+            'Since no Serverpod server directory was identified, '
             'an scloud.yaml configuration file has not been created. '
             'Use the link command to create it in the server '
             'directory of this project:',
@@ -134,10 +131,7 @@ abstract class ProjectCommands {
       );
     }
 
-    logger.success(
-      'Serverpod Cloud project created.',
-      newParagraph: true,
-    );
+    logger.success('Serverpod Cloud project created.', newParagraph: true);
   }
 
   static Future<void> deleteProject(
@@ -158,13 +152,13 @@ abstract class ProjectCommands {
       await cloudApiClient.projects.deleteProject(cloudProjectId: projectId);
     } on Exception catch (e, s) {
       throw FailureException.nested(
-          e, s, 'Request to delete the project failed');
+        e,
+        s,
+        'Request to delete the project failed',
+      );
     }
 
-    logger.success(
-      'Deleted the project "$projectId".',
-      newParagraph: true,
-    );
+    logger.success('Deleted the project "$projectId".', newParagraph: true);
   }
 
   static Future<void> listProjects(
@@ -197,8 +191,9 @@ abstract class ProjectCommands {
       'Last Deploy Attempt',
       if (showArchived) 'Deleted At',
     ]);
-    for (final project
-        in activeProjects.sortedBy((final p) => p.project.createdAt)) {
+    for (final project in activeProjects.sortedBy(
+      (final p) => p.project.createdAt,
+    )) {
       tablePrinter.addRow([
         project.project.cloudProjectId,
         project.project.createdAt.toString().substring(0, 19),
@@ -236,10 +231,7 @@ abstract class ProjectCommands {
       },
     );
 
-    logger.success(
-      'Linked Serverpod Cloud project.',
-      newParagraph: true,
-    );
+    logger.success('Linked Serverpod Cloud project.', newParagraph: true);
   }
 
   static Future<void> inviteUser(
@@ -332,17 +324,17 @@ abstract class ProjectCommands {
     );
 
     try {
-      ScloudConfigFile.writeToFile(
-        projectConfig,
-        configFilePath,
-      );
+      ScloudConfigFile.writeToFile(projectConfig, configFilePath);
       final relativePath = p.relative(configFilePath);
       logger.debug(
         "Wrote the '$relativePath' configuration file for '${projectConfig.projectId}'.",
       );
     } on Exception catch (e, s) {
       throw FailureException.nested(
-          e, s, 'Failed to write to the $configFilePath file');
+        e,
+        s,
+        'Failed to write to the $configFilePath file',
+      );
     }
 
     try {
@@ -352,7 +344,10 @@ abstract class ProjectCommands {
       logger.debug("Wrote the '${ScloudIgnore.fileName}' file.");
     } on Exception catch (e, s) {
       throw FailureException.nested(
-          e, s, 'Failed to write to ${ScloudIgnore.fileName} file');
+        e,
+        s,
+        'Failed to write to ${ScloudIgnore.fileName} file',
+      );
     }
 
     if (workspaceRootDir != null) {
@@ -365,7 +360,10 @@ abstract class ProjectCommands {
         }
       } on Exception catch (e, s) {
         throw FailureException.nested(
-            e, s, 'Failed to write to the .gitignore file');
+          e,
+          s,
+          'Failed to write to the .gitignore file',
+        );
       }
     }
   }
@@ -374,9 +372,7 @@ abstract class ProjectCommands {
     final CommandLogger logger,
     final Directory projectDir,
   ) {
-    final projectPubspec = TenantProjectPubspec.fromProjectDir(
-      projectDir,
-    );
+    final projectPubspec = TenantProjectPubspec.fromProjectDir(projectDir);
 
     if (projectPubspec.isWorkspaceResolved()) {
       final (workspaceRootDir, workspacePubspec) =
@@ -388,7 +384,8 @@ abstract class ProjectCommands {
   }
 
   static bool _updateGitIgnore(final Directory workspaceRootDir) {
-    const scloudIgnoreTemplate = '''
+    const scloudIgnoreTemplate =
+        '''
 # scloud deployment generated files should not be committed to git
 **/${ScloudIgnore.scloudDirName}/
 ''';

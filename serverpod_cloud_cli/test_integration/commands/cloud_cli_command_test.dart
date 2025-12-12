@@ -60,19 +60,15 @@ class CommandThatDoesNotRequiredLogin extends CloudCliCommand {
 
 void main() {
   final logger = TestCommandLogger();
-  final runner = CloudCliCommandRunner.create(
+  final runner = CloudCliCommandRunner.create(logger: logger);
+  final commandThatRequiresLogin = CommandThatRequiresLogin(logger: logger);
+  final commandThatDoesNotRequiredLogin = CommandThatDoesNotRequiredLogin(
     logger: logger,
   );
-  final commandThatRequiresLogin = CommandThatRequiresLogin(logger: logger);
-  final commandThatDoesNotRequiredLogin =
-      CommandThatDoesNotRequiredLogin(logger: logger);
   runner.addCommand(commandThatRequiresLogin);
   runner.addCommand(commandThatDoesNotRequiredLogin);
 
-  final testCacheFolderPath = p.join(
-    'test_integration',
-    const Uuid().v4(),
-  );
+  final testCacheFolderPath = p.join('test_integration', const Uuid().v4());
   late Directory originalDirectory;
 
   setUp(() {
@@ -93,55 +89,61 @@ void main() {
   });
 
   test(
-      'Given command that requires login and user is not logged in '
-      'when calling run then auto-auth is triggered and completes successfully',
-      () async {
-    const testToken = 'myTestToken';
-    late Completer tokenSent;
-    tokenSent = Completer();
-    final loggerFuture = logger.waitForLog();
-    unawaited(loggerFuture.then((final _) async {
-      assert(logger.infoCalls.isNotEmpty, 'Expected log info messages.');
-      final loggedMessage = logger.infoCalls.first.message;
-      final splitMessage = loggedMessage.split('callback=');
-      assert(splitMessage.length == 2, 'Expected callback URL in log message.');
+    'Given command that requires login and user is not logged in '
+    'when calling run then auto-auth is triggered and completes successfully',
+    () async {
+      const testToken = 'myTestToken';
+      late Completer tokenSent;
+      tokenSent = Completer();
+      final loggerFuture = logger.waitForLog();
+      unawaited(
+        loggerFuture.then((final _) async {
+          assert(logger.infoCalls.isNotEmpty, 'Expected log info messages.');
+          final loggedMessage = logger.infoCalls.first.message;
+          final splitMessage = loggedMessage.split('callback=');
+          assert(
+            splitMessage.length == 2,
+            'Expected callback URL in log message.',
+          );
 
-      final callbackUrl = Uri.parse(Uri.decodeFull(splitMessage[1]));
-      final urlWithToken =
-          callbackUrl.replace(queryParameters: {'token': testToken});
-      final response = await http.get(urlWithToken);
-      assert(response.statusCode == 200,
-          'Expected token response to have status code 200.');
-      tokenSent.complete();
-    }));
+          final callbackUrl = Uri.parse(Uri.decodeFull(splitMessage[1]));
+          final urlWithToken = callbackUrl.replace(
+            queryParameters: {'token': testToken},
+          );
+          final response = await http.get(urlWithToken);
+          assert(
+            response.statusCode == 200,
+            'Expected token response to have status code 200.',
+          );
+          tokenSent.complete();
+        }),
+      );
 
-    final cliOnDone = runner.run(
-      [
+      final cliOnDone = runner.run([
         commandThatRequiresLogin.name,
         '--no-browser',
         '--config-dir',
         testCacheFolderPath,
-      ],
-    );
+      ]);
 
-    await tokenSent.future;
+      await tokenSent.future;
 
-    await expectLater(cliOnDone, completes);
+      await expectLater(cliOnDone, completes);
 
-    final storedCloudData =
-        await ResourceManager.tryFetchServerpodCloudAuthData(
-      logger: logger,
-      localStoragePath: testCacheFolderPath,
-    );
-    expect(storedCloudData?.token, testToken);
+      final storedCloudData =
+          await ResourceManager.tryFetchServerpodCloudAuthData(
+            logger: logger,
+            localStoragePath: testCacheFolderPath,
+          );
+      expect(storedCloudData?.token, testToken);
 
-    await ResourceManager.removeServerpodCloudAuthData(
-      localStoragePath: testCacheFolderPath,
-    );
-  });
+      await ResourceManager.removeServerpodCloudAuthData(
+        localStoragePath: testCacheFolderPath,
+      );
+    },
+  );
 
-  test(
-      'Given command that requires login and user is logged in '
+  test('Given command that requires login and user is logged in '
       'when calling run then completes', () async {
     await ResourceManager.storeServerpodCloudAuthData(
       authData: ServerpodCloudAuthData('my-token'),
@@ -149,46 +151,38 @@ void main() {
     );
 
     await expectLater(
-      runner.run(
-        [
-          commandThatRequiresLogin.name,
-          '--config-dir',
-          testCacheFolderPath,
-        ],
-      ),
+      runner.run([
+        commandThatRequiresLogin.name,
+        '--config-dir',
+        testCacheFolderPath,
+      ]),
       completes,
     );
     expect(logger.errorCalls, isEmpty);
   });
 
-  test(
-      'Given command that does not requires login and user is not logged in '
+  test('Given command that does not requires login and user is not logged in '
       'when calling run then completes', () {
     expect(
-      runner.run(
-        [
-          commandThatDoesNotRequiredLogin.name,
-          '--config-dir',
-          testCacheFolderPath,
-        ],
-      ),
+      runner.run([
+        commandThatDoesNotRequiredLogin.name,
+        '--config-dir',
+        testCacheFolderPath,
+      ]),
       completes,
     );
   });
 
-  test(
-      'Given command that requires login and user is not logged in '
+  test('Given command that requires login and user is not logged in '
       'when calling run with --help flag then no auth is triggered', () async {
     await expectLater(
-      runner.run(
-        [
-          commandThatRequiresLogin.name,
-          '--help',
-          '--no-browser',
-          '--config-dir',
-          testCacheFolderPath,
-        ],
-      ),
+      runner.run([
+        commandThatRequiresLogin.name,
+        '--help',
+        '--no-browser',
+        '--config-dir',
+        testCacheFolderPath,
+      ]),
       completes,
       reason: 'The command should complete successfully with --help flag.',
     );

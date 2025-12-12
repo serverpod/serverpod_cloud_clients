@@ -23,56 +23,63 @@ void main() async {
     });
 
     group(
-        'when a request is made with an authentication token parameter then token is returned.',
-        () {
-      const testToken = 'myTestToken';
+      'when a request is made with an authentication token parameter then token is returned.',
+      () {
+        const testToken = 'myTestToken';
 
-      late http.Response response;
-      setUp(() async {
-        final callbackUrl = await callbackUrlFuture.future;
-        final urlWithToken =
-            callbackUrl.replace(queryParameters: {'token': testToken});
-        response = await http.get(urlWithToken);
-      });
+        late http.Response response;
+        setUp(() async {
+          final callbackUrl = await callbackUrlFuture.future;
+          final urlWithToken = callbackUrl.replace(
+            queryParameters: {'token': testToken},
+          );
+          response = await http.get(urlWithToken);
+        });
 
-      test('then a token is returned.', () async {
-        final fetchedToken = await tokenFuture;
-        expect(fetchedToken, testToken);
-      });
+        test('then a token is returned.', () async {
+          final fetchedToken = await tokenFuture;
+          expect(fetchedToken, testToken);
+        });
 
-      test('then request response has status code 200.', () {
-        expect(response.statusCode, 200);
-      });
+        test('then request response has status code 200.', () {
+          expect(response.statusCode, 200);
+        });
 
-      test('then response body has successful login message.', () {
-        expect(response.body,
-            contains('Login successful, you may now close this window.'));
-      });
-    });
+        test('then response body has successful login message.', () {
+          expect(
+            response.body,
+            contains('Login successful, you may now close this window.'),
+          );
+        });
+      },
+    );
 
     group(
-        'when a request is made without an authentication token parameter then token null is returned.',
-        () {
-      late http.Response response;
-      setUp(() async {
-        final callbackUrl = await callbackUrlFuture.future;
-        response = await http.get(callbackUrl);
-      });
+      'when a request is made without an authentication token parameter then token null is returned.',
+      () {
+        late http.Response response;
+        setUp(() async {
+          final callbackUrl = await callbackUrlFuture.future;
+          response = await http.get(callbackUrl);
+        });
 
-      test('then null is returned.', () async {
-        final fetchedToken = await tokenFuture;
-        expect(fetchedToken, null);
-      });
+        test('then null is returned.', () async {
+          final fetchedToken = await tokenFuture;
+          expect(fetchedToken, null);
+        });
 
-      test('then request response has status code 200.', () {
-        expect(response.statusCode, 200);
-      });
+        test('then request response has status code 200.', () {
+          expect(response.statusCode, 200);
+        });
 
-      test('then response body has failed login message.', () {
-        expect(response.body,
-            contains('Login failed, please try again or contact support.'));
-      });
-    });
+        test('then response body has failed login message.', () {
+          expect(
+            response.body,
+            contains('Login failed, please try again or contact support.'),
+          );
+        });
+      },
+    );
 
     group('when a preflight check request is made', () {
       late http.Response response;
@@ -91,35 +98,42 @@ void main() async {
 
       test('then the response headers contain expected CORS headers.', () {
         expect(
-            response.headers[HttpHeaders.accessControlAllowOriginHeader], '*');
-        expect(response.headers[HttpHeaders.accessControlAllowMethodsHeader],
-            'GET, OPTIONS');
+          response.headers[HttpHeaders.accessControlAllowOriginHeader],
+          '*',
+        );
         expect(
-            response.headers[HttpHeaders.accessControlAllowHeadersHeader], '*');
+          response.headers[HttpHeaders.accessControlAllowMethodsHeader],
+          'GET, OPTIONS',
+        );
+        expect(
+          response.headers[HttpHeaders.accessControlAllowHeadersHeader],
+          '*',
+        );
       });
     });
   });
 
   group(
-      'Given a listener server listening for an authentication token when time limit is reached',
-      () {
-    late Completer<Uri> callbackUrlFuture;
-    late Future<String?> tokenFuture;
+    'Given a listener server listening for an authentication token when time limit is reached',
+    () {
+      late Completer<Uri> callbackUrlFuture;
+      late Future<String?> tokenFuture;
 
-    setUp(() async {
-      callbackUrlFuture = Completer<Uri>();
-      tokenFuture = ListenerServer.listenForAuthenticationToken(
-        logger: CommandLogger(VoidLogger()),
-        onConnected: (final Uri callbackUrl) {
-          callbackUrlFuture.complete(callbackUrl);
-        },
-        timeLimit: const Duration(milliseconds: 1),
-      );
-    });
+      setUp(() async {
+        callbackUrlFuture = Completer<Uri>();
+        tokenFuture = ListenerServer.listenForAuthenticationToken(
+          logger: CommandLogger(VoidLogger()),
+          onConnected: (final Uri callbackUrl) {
+            callbackUrlFuture.complete(callbackUrl);
+          },
+          timeLimit: const Duration(milliseconds: 1),
+        );
+      });
 
-    test('then token is null.', () async {
-      final fetchedToken = await tokenFuture;
-      expect(fetchedToken, isNull);
-    });
-  });
+      test('then token is null.', () async {
+        final fetchedToken = await tokenFuture;
+        expect(fetchedToken, isNull);
+      });
+    },
+  );
 }

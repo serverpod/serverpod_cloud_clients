@@ -15,14 +15,9 @@ import '../../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();
-  final cli = CloudCliCommandRunner.create(
-    logger: logger,
-  );
+  final cli = CloudCliCommandRunner.create(logger: logger);
 
-  final testCacheFolderPath = p.join(
-    'test_integration',
-    const Uuid().v4(),
-  );
+  final testCacheFolderPath = p.join('test_integration', const Uuid().v4());
 
   tearDown(() {
     final directory = Directory(testCacheFolderPath);
@@ -48,42 +43,51 @@ void main() {
     });
 
     test(
-        'when logging in through cli then ErrorExitException with exit code 1 is thrown.',
-        () async {
-      final result =
-          cli.run(['auth', 'login', '--config-dir', testCacheFolderPath]);
+      'when logging in through cli then ErrorExitException with exit code 1 is thrown.',
+      () async {
+        final result = cli.run([
+          'auth',
+          'login',
+          '--config-dir',
+          testCacheFolderPath,
+        ]);
 
-      await expectLater(
+        await expectLater(
           result,
           throwsA(
-            isA<ErrorExitException>()
-                .having((final e) => e.exitCode, 'exitCode', equals(1)),
-          ));
-    });
+            isA<ErrorExitException>().having(
+              (final e) => e.exitCode,
+              'exitCode',
+              equals(1),
+            ),
+          ),
+        );
+      },
+    );
 
     test(
-        'when logging in through cli then "logout first to log in again" message is logged.',
-        () async {
-      try {
-        await cli.run(['auth', 'login', '--config-dir', testCacheFolderPath]);
-      } catch (_) {}
+      'when logging in through cli then "logout first to log in again" message is logged.',
+      () async {
+        try {
+          await cli.run(['auth', 'login', '--config-dir', testCacheFolderPath]);
+        } catch (_) {}
 
-      expect(logger.errorCalls, isNotEmpty);
-      expect(
-        logger.errorCalls.first,
-        equalsErrorCall(
-          message: 'Detected an existing login session for Serverpod cloud. '
-              'Log out first to log in again.',
-        ),
-      );
-      expect(logger.terminalCommandCalls, isNotEmpty);
-      expect(
-        logger.terminalCommandCalls.first,
-        equalsTerminalCommandCall(
-          command: 'scloud auth logout',
-        ),
-      );
-    });
+        expect(logger.errorCalls, isNotEmpty);
+        expect(
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message:
+                'Detected an existing login session for Serverpod cloud. '
+                'Log out first to log in again.',
+          ),
+        );
+        expect(logger.terminalCommandCalls, isNotEmpty);
+        expect(
+          logger.terminalCommandCalls.first,
+          equalsTerminalCommandCall(command: 'scloud auth logout'),
+        );
+      },
+    );
   });
 
   group('Given response with token', () {
@@ -92,21 +96,28 @@ void main() {
     setUp(() async {
       tokenSent = Completer();
       final loggerFuture = logger.waitForLog();
-      unawaited(loggerFuture.then((final _) async {
-        assert(logger.infoCalls.isNotEmpty, 'Expected log info messages.');
-        final loggedMessage = logger.infoCalls.first.message;
-        final splitMessage = loggedMessage.split('callback=');
-        assert(
-            splitMessage.length == 2, 'Expected callback URL in log message.');
+      unawaited(
+        loggerFuture.then((final _) async {
+          assert(logger.infoCalls.isNotEmpty, 'Expected log info messages.');
+          final loggedMessage = logger.infoCalls.first.message;
+          final splitMessage = loggedMessage.split('callback=');
+          assert(
+            splitMessage.length == 2,
+            'Expected callback URL in log message.',
+          );
 
-        final callbackUrl = Uri.parse(Uri.decodeFull(splitMessage[1]));
-        final urlWithToken =
-            callbackUrl.replace(queryParameters: {'token': testToken});
-        final response = await http.get(urlWithToken);
-        assert(response.statusCode == 200,
-            'Expected token response to have status code 200.');
-        tokenSent.complete();
-      }));
+          final callbackUrl = Uri.parse(Uri.decodeFull(splitMessage[1]));
+          final urlWithToken = callbackUrl.replace(
+            queryParameters: {'token': testToken},
+          );
+          final response = await http.get(urlWithToken);
+          assert(
+            response.statusCode == 200,
+            'Expected token response to have status code 200.',
+          );
+          tokenSent.complete();
+        }),
+      );
     });
 
     group('when logging in through cli', () {
@@ -117,7 +128,7 @@ void main() {
           'login',
           '--no-browser',
           '--config-dir',
-          testCacheFolderPath
+          testCacheFolderPath,
         ]);
       });
 
@@ -140,9 +151,9 @@ void main() {
 
         final storedCloudData =
             await ResourceManager.tryFetchServerpodCloudAuthData(
-          logger: logger,
-          localStoragePath: testCacheFolderPath,
-        );
+              logger: logger,
+              localStoragePath: testCacheFolderPath,
+            );
         expect(storedCloudData?.token, testToken);
       });
     });
@@ -179,9 +190,9 @@ void main() {
 
         final storedCloudData =
             await ResourceManager.tryFetchServerpodCloudAuthData(
-          logger: logger,
-          localStoragePath: testCacheFolderPath,
-        );
+              logger: logger,
+              localStoragePath: testCacheFolderPath,
+            );
         expect(storedCloudData, isNull);
       });
     });
@@ -192,19 +203,25 @@ void main() {
     setUp(() async {
       tokenSent = Completer();
       final loggerFuture = logger.waitForLog();
-      unawaited(loggerFuture.then((final _) async {
-        final loggedMessage = logger.infoCalls.first.message;
-        final splitMessage = loggedMessage.split('callback=');
-        assert(
-            splitMessage.length == 2, 'Expected callback URL in log message.');
+      unawaited(
+        loggerFuture.then((final _) async {
+          final loggedMessage = logger.infoCalls.first.message;
+          final splitMessage = loggedMessage.split('callback=');
+          assert(
+            splitMessage.length == 2,
+            'Expected callback URL in log message.',
+          );
 
-        final callbackUrl = Uri.parse(Uri.decodeFull(splitMessage[1]));
-        final response = await http.get(callbackUrl);
-        assert(response.statusCode == 200,
-            'Expected token response to have status code 200.');
+          final callbackUrl = Uri.parse(Uri.decodeFull(splitMessage[1]));
+          final response = await http.get(callbackUrl);
+          assert(
+            response.statusCode == 200,
+            'Expected token response to have status code 200.',
+          );
 
-        tokenSent.complete();
-      }));
+          tokenSent.complete();
+        }),
+      );
     });
 
     group('when logging in through cli', () {
@@ -220,14 +237,11 @@ void main() {
           'login',
           '--no-browser',
           '--config-dir',
-          testCacheFolderPath
+          testCacheFolderPath,
         ]);
 
         await expectLater(
-          Future.wait([
-            cliOnDone,
-            tokenSent.future,
-          ]),
+          Future.wait([cliOnDone, tokenSent.future]),
           throwsA(isA<ErrorExitException>()),
         );
       });
@@ -238,7 +252,7 @@ void main() {
           'login',
           '--no-browser',
           '--config-dir',
-          testCacheFolderPath
+          testCacheFolderPath,
         ]);
 
         // Silence the error message.
@@ -250,9 +264,9 @@ void main() {
 
         final storedCloudData =
             await ResourceManager.tryFetchServerpodCloudAuthData(
-          logger: logger,
-          localStoragePath: testCacheFolderPath,
-        );
+              logger: logger,
+              localStoragePath: testCacheFolderPath,
+            );
         expect(storedCloudData, isNull);
       });
     });

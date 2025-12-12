@@ -89,16 +89,18 @@ The valid targets are:
   String get name => 'attach';
 
   CloudAttachCustomDomainCommand({required super.logger})
-      : super(options: AttachCustomDomainCommandConfig.values);
+    : super(options: AttachCustomDomainCommandConfig.values);
 
   @override
   Future<void> runWithConfig(
     final Configuration<AttachCustomDomainCommandConfig> commandConfig,
   ) async {
-    final projectId =
-        commandConfig.value(AttachCustomDomainCommandConfig.projectId);
-    final domainName =
-        commandConfig.value(AttachCustomDomainCommandConfig.domainName);
+    final projectId = commandConfig.value(
+      AttachCustomDomainCommandConfig.projectId,
+    );
+    final domainName = commandConfig.value(
+      AttachCustomDomainCommandConfig.domainName,
+    );
     final target = commandConfig.value(AttachCustomDomainCommandConfig.target);
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
@@ -106,15 +108,18 @@ The valid targets are:
     late CustomDomainNameWithDefaultDomains customDomainNameWithDefaultDomains;
 
     try {
-      customDomainNameWithDefaultDomains =
-          await apiCloudClient.customDomainName.add(
-        domainName: domainName,
-        target: target,
-        cloudCapsuleId: projectId,
-      );
+      customDomainNameWithDefaultDomains = await apiCloudClient.customDomainName
+          .add(
+            domainName: domainName,
+            target: target,
+            cloudCapsuleId: projectId,
+          );
     } on Exception catch (e, stackTrace) {
       throw FailureException.nested(
-          e, stackTrace, 'Could not add the custom domain');
+        e,
+        stackTrace,
+        'Could not add the custom domain',
+      );
     }
 
     logger.success('Custom domain attached successfully!', newParagraph: true);
@@ -130,33 +135,31 @@ The valid targets are:
 
     if (DomainUtils.isSubDomain(domainName)) {
       _logDomainInstructions(
-        action: 'Add a CNAME record with the value "$targetDefaultDomain" '
+        action:
+            'Add a CNAME record with the value "$targetDefaultDomain" '
             'to the DNS configuration for this domain.',
         logger: logger,
         domainName: domainName,
         projectId: projectId,
-        records: [
-          (type: 'CNAME', value: targetDefaultDomain),
-        ],
+        records: [(type: 'CNAME', value: targetDefaultDomain)],
       );
       return;
     }
 
     _logDomainInstructions(
-      action: 'Add a TXT record with the name "$targetDefaultDomain" and '
+      action:
+          'Add a TXT record with the name "$targetDefaultDomain" and '
           'value "${customDomainNameWithDefaultDomains.customDomainName.dnsRecordVerificationValue}".',
       logger: logger,
       domainName: domainName,
       projectId: projectId,
       records: [
-        (
-          type: 'ANAME',
-          value: targetDefaultDomain,
-        ),
+        (type: 'ANAME', value: targetDefaultDomain),
         (
           type: 'TXT',
           value: customDomainNameWithDefaultDomains
-              .customDomainName.dnsRecordVerificationValue
+              .customDomainName
+              .dnsRecordVerificationValue,
         ),
       ],
     );
@@ -193,15 +196,11 @@ The valid targets are:
       'scloud domain list --project $projectId',
     );
 
-    logger.list(
-      title: 'Additional context',
-      [
-        'DNS propagation can take up to 24 hours to complete.',
-        'Serverpod Cloud will periodically verify the record(s).',
-        'To manually force a verification, run the command:',
-      ],
-      newParagraph: true,
-    );
+    logger.list(title: 'Additional context', [
+      'DNS propagation can take up to 24 hours to complete.',
+      'Serverpod Cloud will periodically verify the record(s).',
+      'To manually force a verification, run the command:',
+    ], newParagraph: true);
 
     logger.terminalCommand(
       newParagraph: true,
@@ -230,14 +229,15 @@ class CloudListCustomDomainCommand
   String get name => 'list';
 
   CloudListCustomDomainCommand({required super.logger})
-      : super(options: ListCustomDomainCommandConfig.values);
+    : super(options: ListCustomDomainCommandConfig.values);
 
   @override
   Future<void> runWithConfig(
     final Configuration<ListCustomDomainCommandConfig> commandConfig,
   ) async {
-    final projectId =
-        commandConfig.value(ListCustomDomainCommandConfig.projectId);
+    final projectId = commandConfig.value(
+      ListCustomDomainCommandConfig.projectId,
+    );
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
@@ -248,7 +248,10 @@ class CloudListCustomDomainCommand
       );
     } on Exception catch (e, stackTrace) {
       throw FailureException.nested(
-          e, stackTrace, 'Failed to list custom domains');
+        e,
+        stackTrace,
+        'Failed to list custom domains',
+      );
     }
 
     final defaultDomainPrinter = TablePrinter();
@@ -307,16 +310,18 @@ class CloudDetachCustomDomainCommand
   String get name => 'detach';
 
   CloudDetachCustomDomainCommand({required super.logger})
-      : super(options: DetachCustomDomainCommandConfig.values);
+    : super(options: DetachCustomDomainCommandConfig.values);
 
   @override
   Future<void> runWithConfig(
     final Configuration<DetachCustomDomainCommandConfig> commandConfig,
   ) async {
-    final projectId =
-        commandConfig.value(DetachCustomDomainCommandConfig.projectId);
-    final domainName =
-        commandConfig.value(DetachCustomDomainCommandConfig.domainName);
+    final projectId = commandConfig.value(
+      DetachCustomDomainCommandConfig.projectId,
+    );
+    final domainName = commandConfig.value(
+      DetachCustomDomainCommandConfig.domainName,
+    );
 
     final shouldDelete = await logger.confirm(
       'Are you sure you want to delete the custom domain "$domainName"?',
@@ -336,7 +341,10 @@ class CloudDetachCustomDomainCommand
       );
     } on Exception catch (e, stackTrace) {
       throw FailureException.nested(
-          e, stackTrace, 'Failed to remove custom domain');
+        e,
+        stackTrace,
+        'Failed to remove custom domain',
+      );
     }
 
     logger.success('Successfully detached custom domain: $domainName.');
@@ -362,16 +370,18 @@ class CloudVerifyCustomDomainRecordCommand
   String get name => 'verify';
 
   CloudVerifyCustomDomainRecordCommand({required super.logger})
-      : super(options: RefreshCustomDomainRecordCommandConfig.values);
+    : super(options: RefreshCustomDomainRecordCommandConfig.values);
 
   @override
   Future<void> runWithConfig(
     final Configuration<RefreshCustomDomainRecordCommandConfig> commandConfig,
   ) async {
-    final projectId =
-        commandConfig.value(RefreshCustomDomainRecordCommandConfig.projectId);
-    final domainName =
-        commandConfig.value(RefreshCustomDomainRecordCommandConfig.domainName);
+    final projectId = commandConfig.value(
+      RefreshCustomDomainRecordCommandConfig.projectId,
+    );
+    final domainName = commandConfig.value(
+      RefreshCustomDomainRecordCommandConfig.domainName,
+    );
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
@@ -384,7 +394,8 @@ class CloudVerifyCustomDomainRecordCommand
       switch (result) {
         case DomainNameStatus.configured:
           logger.success(
-              'Successfully verified the DNS record for the custom domain. It is now active.');
+            'Successfully verified the DNS record for the custom domain. It is now active.',
+          );
         case DomainNameStatus.needsSetup:
           logger.info('Failed to verify the DNS record for the custom domain.');
         case DomainNameStatus.pending:

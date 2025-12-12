@@ -6,21 +6,27 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart'
 import 'package:serverpod_cloud_cli/commands/admin/user_admin.dart';
 
 enum AdminListUsersOption<V> implements OptionDefinition<V> {
-  projectId(StringOption(
-    argName: 'project-id',
-    helpText: 'Filter users by project ID.',
-  )),
-  accountStatus(EnumOption(
-    enumParser: EnumParser(UserAccountStatus.values),
-    argName: 'status',
-    helpText: 'Filter users by account status.',
-  )),
-  includeArchived(FlagOption(
-    argName: 'include-archived',
-    helpText: 'Include archived users.',
-    defaultsTo: false,
-    negatable: false,
-  )),
+  projectId(
+    StringOption(
+      argName: 'project-id',
+      helpText: 'Filter users by project ID.',
+    ),
+  ),
+  accountStatus(
+    EnumOption(
+      enumParser: EnumParser(UserAccountStatus.values),
+      argName: 'status',
+      helpText: 'Filter users by account status.',
+    ),
+  ),
+  includeArchived(
+    FlagOption(
+      argName: 'include-archived',
+      helpText: 'Include archived users.',
+      defaultsTo: false,
+      negatable: false,
+    ),
+  ),
   utc(UtcOption());
 
   const AdminListUsersOption(this.option);
@@ -37,18 +43,21 @@ class AdminListUsersCommand extends CloudCliCommand<AdminListUsersOption> {
   final description = 'List Serverpod Cloud users.';
 
   AdminListUsersCommand({required super.logger})
-      : super(options: AdminListUsersOption.values);
+    : super(options: AdminListUsersOption.values);
 
   @override
   Future<void> runWithConfig(
     final Configuration<AdminListUsersOption> commandConfig,
   ) async {
-    final projectId =
-        commandConfig.optionalValue(AdminListUsersOption.projectId);
-    final accountStatus =
-        commandConfig.optionalValue(AdminListUsersOption.accountStatus);
-    final includeArchived =
-        commandConfig.value(AdminListUsersOption.includeArchived);
+    final projectId = commandConfig.optionalValue(
+      AdminListUsersOption.projectId,
+    );
+    final accountStatus = commandConfig.optionalValue(
+      AdminListUsersOption.accountStatus,
+    );
+    final includeArchived = commandConfig.value(
+      AdminListUsersOption.includeArchived,
+    );
     final inUtc = commandConfig.value(AdminListUsersOption.utc);
 
     await UserAdminCommands.listUsers(
@@ -63,9 +72,7 @@ class AdminListUsersCommand extends CloudCliCommand<AdminListUsersOption> {
 }
 
 enum AdminInviteUserOption<V> implements OptionDefinition<V> {
-  user(
-    UserEmailOption(argPos: 0, mandatory: true),
-  );
+  user(UserEmailOption(argPos: 0, mandatory: true));
 
   const AdminInviteUserOption(this.option);
 
@@ -81,7 +88,7 @@ class AdminInviteUserCommand extends CloudCliCommand<AdminInviteUserOption> {
   final description = 'Invite a user to Serverpod Cloud.';
 
   AdminInviteUserCommand({required super.logger})
-      : super(options: AdminInviteUserOption.values);
+    : super(options: AdminInviteUserOption.values);
 
   @override
   Future<void> runWithConfig(
@@ -106,7 +113,7 @@ class AdminInviteHackathonUserCommand
   final description = 'Invite a user to the 2025 Serverpod Hackathon.';
 
   AdminInviteHackathonUserCommand({required super.logger})
-      : super(options: AdminInviteUserOption.values);
+    : super(options: AdminInviteUserOption.values);
 
   @override
   Future<void> runWithConfig(

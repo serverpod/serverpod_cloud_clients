@@ -40,82 +40,45 @@ void main() {
     });
 
     group('and no previous invocation', () {
-      test(
-          'when invoking command'
+      test('when invoking command'
           ' then does not ask user for consent', () async {
-        await cli.run([
-          '--config-dir',
-          settingsDir,
-          'version',
-        ]);
+        await cli.run(['--config-dir', settingsDir, 'version']);
         expect(logger.confirmCalls, isEmpty);
       });
 
-      test(
-          'when invoking command'
+      test('when invoking command'
           ' then does not send analytics event', () async {
-        await cli.run([
-          '--config-dir',
-          settingsDir,
-          'version',
-        ]);
+        await cli.run(['--config-dir', settingsDir, 'version']);
         expect(analyticsEvents, isEmpty);
       });
 
-      test(
-          'when invoking command with analytics option set to true'
+      test('when invoking command with analytics option set to true'
           ' then does not ask user for consent', () async {
-        await cli.run([
-          '--config-dir',
-          settingsDir,
-          'version',
-          '--analytics',
-        ]);
+        await cli.run(['--config-dir', settingsDir, 'version', '--analytics']);
         expect(logger.confirmCalls, isEmpty);
       });
 
-      test(
-          'when invoking command with analytics option set to true'
+      test('when invoking command with analytics option set to true'
           ' then sends analytics event', () async {
-        await cli.run([
-          '--config-dir',
-          settingsDir,
-          'version',
-          '--analytics',
-        ]);
+        await cli.run(['--config-dir', settingsDir, 'version', '--analytics']);
         expect(analyticsEvents, equals(['version']));
       });
     });
 
     group('and having set analytics enabled', () {
       setUp(() async {
-        await cli.run([
-          '--config-dir',
-          settingsDir,
-          'settings',
-          '--analytics',
-        ]);
+        await cli.run(['--config-dir', settingsDir, 'settings', '--analytics']);
       });
 
-      test(
-          'when invoking command'
+      test('when invoking command'
           ' then does not ask user for consent', () async {
-        await cli.run([
-          '--config-dir',
-          settingsDir,
-          'version',
-        ]);
+        await cli.run(['--config-dir', settingsDir, 'version']);
         expect(logger.confirmCalls, isEmpty);
       });
 
-      test(
-          'when invoking command'
+      test('when invoking command'
           ' then does not send analytics event', () async {
-        await cli.run([
-          '--config-dir',
-          settingsDir,
-          'version',
-        ]);
+        await cli.run(['--config-dir', settingsDir, 'version']);
         expect(analyticsEvents, isEmpty);
       });
     });
@@ -142,50 +105,36 @@ void main() {
     });
 
     group('and no previous invocation', () {
-      test(
-          'when invoking command'
+      test('when invoking command'
           ' then asks user for consent', () async {
         logger.answerNextConfirmsWith([false]);
-        await cli.run([
-          '--config-dir',
-          settingsDir,
-          'version',
-        ]);
+        await cli.run(['--config-dir', settingsDir, 'version']);
 
         expect(logger.confirmCalls, hasLength(1));
         expect(
-            logger.confirmCalls.single,
-            equalsConfirmCall(
-              message:
-                  'Do you agree to sending anonymous command usage analytics to Serverpod?',
-              defaultValue: true,
-            ));
+          logger.confirmCalls.single,
+          equalsConfirmCall(
+            message:
+                'Do you agree to sending anonymous command usage analytics to Serverpod?',
+            defaultValue: true,
+          ),
+        );
       });
 
-      test(
-          'when invoking command'
+      test('when invoking command'
           ' and user declines consent'
           ' then does not send analytics event', () async {
         logger.answerNextConfirmsWith([false]);
-        await cli.run([
-          '--config-dir',
-          settingsDir,
-          'version',
-        ]);
+        await cli.run(['--config-dir', settingsDir, 'version']);
 
         expect(analyticsEvents, isEmpty);
       });
 
-      test(
-          'when invoking command'
+      test('when invoking command'
           ' and user gives consent'
           ' then sends analytics event', () async {
         logger.answerNextConfirmsWith([true]);
-        await cli.run([
-          '--config-dir',
-          settingsDir,
-          'version',
-        ]);
+        await cli.run(['--config-dir', settingsDir, 'version']);
 
         expect(analyticsEvents, equals(['version']));
       });
@@ -193,38 +142,23 @@ void main() {
       group('and declining consent on first invocation', () {
         setUp(() async {
           logger.answerNextConfirmWith(false);
-          await cli.run([
-            '--config-dir',
-            settingsDir,
-            'version',
-          ]);
+          await cli.run(['--config-dir', settingsDir, 'version']);
           logger.clear();
         });
 
-        test(
-            'when invoking command again'
+        test('when invoking command again'
             ' then does not ask user for consent', () async {
-          await cli.run([
-            '--config-dir',
-            settingsDir,
-            'version',
-          ]);
+          await cli.run(['--config-dir', settingsDir, 'version']);
           expect(logger.confirmCalls, isEmpty);
         });
 
-        test(
-            'when invoking command again'
+        test('when invoking command again'
             ' then does not send analytics event', () async {
-          await cli.run([
-            '--config-dir',
-            settingsDir,
-            'version',
-          ]);
+          await cli.run(['--config-dir', settingsDir, 'version']);
           expect(analyticsEvents, isEmpty);
         });
 
-        test(
-            'when invoking command again with analytics option set to true'
+        test('when invoking command again with analytics option set to true'
             ' then sends analytics event', () async {
           await cli.run([
             '--config-dir',
@@ -247,30 +181,19 @@ void main() {
             analyticsEvents.clear();
           });
 
-          test(
-              'when invoking command'
+          test('when invoking command'
               ' then does not ask user for consent', () async {
-            await cli.run([
-              '--config-dir',
-              settingsDir,
-              'version',
-            ]);
+            await cli.run(['--config-dir', settingsDir, 'version']);
             expect(logger.confirmCalls, isEmpty);
           });
 
-          test(
-              'when invoking command'
+          test('when invoking command'
               ' then sends analytics event', () async {
-            await cli.run([
-              '--config-dir',
-              settingsDir,
-              'version',
-            ]);
+            await cli.run(['--config-dir', settingsDir, 'version']);
             expect(analyticsEvents, equals(['version']));
           });
 
-          test(
-              'when invoking command with analytics option set to false'
+          test('when invoking command with analytics option set to false'
               ' then does not send analytics event', () async {
             await cli.run([
               '--config-dir',
@@ -286,39 +209,24 @@ void main() {
       group('and giving consent on first invocation', () {
         setUp(() async {
           logger.answerNextConfirmWith(true);
-          await cli.run([
-            '--config-dir',
-            settingsDir,
-            'version',
-          ]);
+          await cli.run(['--config-dir', settingsDir, 'version']);
           logger.clear();
           analyticsEvents.clear();
         });
 
-        test(
-            'when invoking command again'
+        test('when invoking command again'
             ' then does not ask user for consent', () async {
-          await cli.run([
-            '--config-dir',
-            settingsDir,
-            'version',
-          ]);
+          await cli.run(['--config-dir', settingsDir, 'version']);
           expect(logger.confirmCalls, isEmpty);
         });
 
-        test(
-            'when invoking command again'
+        test('when invoking command again'
             ' then sends analytics event', () async {
-          await cli.run([
-            '--config-dir',
-            settingsDir,
-            'version',
-          ]);
+          await cli.run(['--config-dir', settingsDir, 'version']);
           expect(analyticsEvents, equals(['version']));
         });
 
-        test(
-            'when invoking command again with analytics option set to false'
+        test('when invoking command again with analytics option set to false'
             ' then does not send analytics event', () async {
           await cli.run([
             '--config-dir',
@@ -341,30 +249,19 @@ void main() {
             analyticsEvents.clear();
           });
 
-          test(
-              'when invoking command'
+          test('when invoking command'
               ' then does not ask user for consent', () async {
-            await cli.run([
-              '--config-dir',
-              settingsDir,
-              'version',
-            ]);
+            await cli.run(['--config-dir', settingsDir, 'version']);
             expect(logger.confirmCalls, isEmpty);
           });
 
-          test(
-              'when invoking command'
+          test('when invoking command'
               ' then does not send analytics event', () async {
-            await cli.run([
-              '--config-dir',
-              settingsDir,
-              'version',
-            ]);
+            await cli.run(['--config-dir', settingsDir, 'version']);
             expect(analyticsEvents, isEmpty);
           });
 
-          test(
-              'when invoking command with analytics option set to true'
+          test('when invoking command with analytics option set to true'
               ' then sends analytics event', () async {
             await cli.run([
               '--config-dir',

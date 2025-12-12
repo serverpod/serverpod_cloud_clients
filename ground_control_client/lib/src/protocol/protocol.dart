@@ -175,10 +175,7 @@ class Protocol extends _i1.SerializationManager {
   }
 
   @override
-  T deserialize<T>(
-    dynamic data, [
-    Type? t,
-  ]) {
+  T deserialize<T>(dynamic data, [Type? t]) {
     t ??= T;
 
     final dataClassName = getClassNameFromObjectJson(data);
@@ -1214,10 +1211,7 @@ Map<String, dynamic>? mapRecordToJson(Record? record) {
   }
   if (record is (String, String)) {
     return {
-      "p": [
-        record.$1,
-        record.$2,
-      ],
+      "p": [record.$1, record.$2],
     };
   }
   throw Exception('Unsupported record type ${record.runtimeType}');
@@ -1260,16 +1254,11 @@ Object? mapContainerToJson(Object obj) {
     case Map():
       return [
         for (var entry in obj.entries)
-          {
-            'k': mapIfNeeded(entry.key),
-            'v': mapIfNeeded(entry.value),
-          },
+          {'k': mapIfNeeded(entry.key), 'v': mapIfNeeded(entry.value)},
       ];
 
     case Iterable():
-      return [
-        for (var e in obj) mapIfNeeded(e),
-      ];
+      return [for (var e in obj) mapIfNeeded(e)];
   }
 
   return obj;

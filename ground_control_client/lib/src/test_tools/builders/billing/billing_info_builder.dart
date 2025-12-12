@@ -18,21 +18,21 @@ class BillingInfoBuilder {
   BillingCustomerType _customerType;
 
   BillingInfoBuilder({Owner? owner})
-      : _id = Uuid().v4obj(),
-        _createdAt = DateTime.now(),
-        _updatedAt = DateTime.now(),
-        _ownerId = owner?.id ?? Uuid().v4obj(),
-        _owner = owner,
-        _companyName = 'Serverpod',
-        _addressLine1 = '123 Main St',
-        _addressLine2 = null,
-        _postalCode = '12345',
-        _city = 'New York',
-        _state = 'New York',
-        _country = 'US',
-        _vatNumber = null,
-        _vatType = null,
-        _customerType = BillingCustomerType.private;
+    : _id = Uuid().v4obj(),
+      _createdAt = DateTime.now(),
+      _updatedAt = DateTime.now(),
+      _ownerId = owner?.id ?? Uuid().v4obj(),
+      _owner = owner,
+      _companyName = 'Serverpod',
+      _addressLine1 = '123 Main St',
+      _addressLine2 = null,
+      _postalCode = '12345',
+      _city = 'New York',
+      _state = 'New York',
+      _country = 'US',
+      _vatNumber = null,
+      _vatType = null,
+      _customerType = BillingCustomerType.private;
 
   BillingInfoBuilder withId(UuidValue? id) {
     _id = id;

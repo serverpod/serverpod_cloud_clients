@@ -35,10 +35,7 @@ abstract class UnauthorizedException
   UnauthorizedException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
-    return {
-      '__className__': 'UnauthorizedException',
-      'message': message,
-    };
+    return {'__className__': 'UnauthorizedException', 'message': message};
   }
 
   @override

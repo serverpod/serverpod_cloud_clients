@@ -18,9 +18,7 @@ class AdminProductCommand extends CloudCliCommand {
 }
 
 enum AdminListProcuredOption<V> implements OptionDefinition<V> {
-  user(
-    UserEmailOption(argPos: 0, mandatory: true),
-  );
+  user(UserEmailOption(argPos: 0, mandatory: true));
 
   const AdminListProcuredOption(this.option);
 
@@ -37,7 +35,7 @@ class AdminListProcuredCommand
   final description = "List an owner's procured products.";
 
   AdminListProcuredCommand({required super.logger})
-      : super(options: AdminListProcuredOption.values);
+    : super(options: AdminListProcuredOption.values);
 
   @override
   Future<void> runWithConfig(
@@ -54,15 +52,14 @@ class AdminListProcuredCommand
 }
 
 enum AdminProcurePlanOption<V> implements OptionDefinition<V> {
-  user(
-    UserEmailOption(argPos: 0, mandatory: true),
-  ),
+  user(UserEmailOption(argPos: 0, mandatory: true)),
   productName(
     StringOption(
       argName: 'name',
       argAbbrev: 'n',
       argPos: 1,
-      helpText: 'The name of the plan to procure.'
+      helpText:
+          'The name of the plan to procure.'
           ' Can be passed as the second argument.',
       mandatory: true,
     ),
@@ -72,7 +69,8 @@ enum AdminProcurePlanOption<V> implements OptionDefinition<V> {
       argName: 'version',
       argAbbrev: 'v',
       argPos: 2,
-      helpText: 'The plan version (latest if unspecified).'
+      helpText:
+          'The plan version (latest if unspecified).'
           ' Can be passed as the third argument.',
       min: 0,
     ),
@@ -105,12 +103,13 @@ class AdminProcurePlanCommand extends CloudCliCommand<AdminProcurePlanOption> {
   final name = 'procure-plan';
 
   @override
-  final description = 'Procure a plan for a user.\n'
+  final description =
+      'Procure a plan for a user.\n'
       'By specifying the override flag, the plan is procured '
       'even if locked or the owner lacks allowance.';
 
   AdminProcurePlanCommand({required super.logger})
-      : super(options: AdminProcurePlanOption.values);
+    : super(options: AdminProcurePlanOption.values);
 
   @override
   Future<void> runWithConfig(
@@ -118,10 +117,12 @@ class AdminProcurePlanCommand extends CloudCliCommand<AdminProcurePlanOption> {
   ) async {
     final userEmail = commandConfig.value(AdminProcurePlanOption.user);
     final productName = commandConfig.value(AdminProcurePlanOption.productName);
-    final ver =
-        commandConfig.optionalValue(AdminProcurePlanOption.productVersion);
-    final trialPeriod =
-        commandConfig.optionalValue(AdminProcurePlanOption.trialPeriod);
+    final ver = commandConfig.optionalValue(
+      AdminProcurePlanOption.productVersion,
+    );
+    final trialPeriod = commandConfig.optionalValue(
+      AdminProcurePlanOption.trialPeriod,
+    );
     final override = commandConfig.value(AdminProcurePlanOption.overrideChecks);
 
     await ProductAdminCommands.procurePlan(

@@ -68,11 +68,7 @@ class _PaymentSetupIntentImpl extends PaymentSetupIntent {
     required String id,
     required String clientSecret,
     required String status,
-  }) : super._(
-         id: id,
-         clientSecret: clientSecret,
-         status: status,
-       );
+  }) : super._(id: id, clientSecret: clientSecret, status: status);
 
   /// Returns a shallow copy of this [PaymentSetupIntent]
   /// with some or all fields replaced by the given arguments.

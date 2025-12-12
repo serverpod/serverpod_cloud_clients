@@ -13,14 +13,9 @@ import '../../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();
-  final cli = CloudCliCommandRunner.create(
-    logger: logger,
-  );
+  final cli = CloudCliCommandRunner.create(logger: logger);
 
-  final testCacheFolderPath = p.join(
-    'test_integration',
-    const Uuid().v4(),
-  );
+  final testCacheFolderPath = p.join('test_integration', const Uuid().v4());
 
   tearDown(() {
     final directory = Directory(testCacheFolderPath);
@@ -59,12 +54,15 @@ void main() {
       test('then command throws UsageException', () async {
         await expectLater(
           commandResult,
-          throwsA(isA<UsageException>().having(
-            (final e) => e.message,
-            'message',
-            contains(
-                'Invalid value for option `target`: "some-invalid-target" is not in api|insights|web'),
-          )),
+          throwsA(
+            isA<UsageException>().having(
+              (final e) => e.message,
+              'message',
+              contains(
+                'Invalid value for option `target`: "some-invalid-target" is not in api|insights|web',
+              ),
+            ),
+          ),
         );
       });
     });

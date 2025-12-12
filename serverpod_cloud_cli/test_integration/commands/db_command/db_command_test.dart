@@ -31,27 +31,36 @@ void main() {
 
   test('Given db connection command when instantiated then requires login', () {
     expect(
-        CloudDbConnectionDetailsCommand(logger: logger).requireLogin, isTrue);
-  });
-
-  test('Given db user create command when instantiated then requires login',
-      () {
-    expect(CloudDbUserCreateCommand(logger: logger).requireLogin, isTrue);
+      CloudDbConnectionDetailsCommand(logger: logger).requireLogin,
+      isTrue,
+    );
   });
 
   test(
-      'Given db user reset-password command when instantiated then requires login',
-      () {
-    expect(
-        CloudDbUserResetPasswordCommand(logger: logger).requireLogin, isTrue);
-  });
+    'Given db user create command when instantiated then requires login',
+    () {
+      expect(CloudDbUserCreateCommand(logger: logger).requireLogin, isTrue);
+    },
+  );
+
+  test(
+    'Given db user reset-password command when instantiated then requires login',
+    () {
+      expect(
+        CloudDbUserResetPasswordCommand(logger: logger).requireLogin,
+        isTrue,
+      );
+    },
+  );
 
   group('Given unauthenticated', () {
     group('when executing db connection', () {
       setUpAll(() {
-        when(() => client.database.getConnectionDetails(
-              cloudCapsuleId: any(named: 'cloudCapsuleId'),
-            )).thenThrow(ServerpodClientUnauthorized());
+        when(
+          () => client.database.getConnectionDetails(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenThrow(ServerpodClientUnauthorized());
       });
 
       tearDownAll(() {
@@ -60,12 +69,7 @@ void main() {
 
       late Future commandResult;
       setUp(() {
-        commandResult = cli.run([
-          'db',
-          'connection',
-          '--project',
-          projectId,
-        ]);
+        commandResult = cli.run(['db', 'connection', '--project', projectId]);
       });
 
       test('then throws exception', () async {
@@ -79,20 +83,23 @@ void main() {
 
         expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message:
-                  'The credentials for this session seem to no longer be valid.',
-            ));
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message:
+                'The credentials for this session seem to no longer be valid.',
+          ),
+        );
       });
     });
 
     group('when executing db user create', () {
       setUpAll(() {
-        when(() => client.database.createSuperUser(
-              cloudCapsuleId: any(named: 'cloudCapsuleId'),
-              username: 'wernher',
-            )).thenThrow(ServerpodClientUnauthorized());
+        when(
+          () => client.database.createSuperUser(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            username: 'wernher',
+          ),
+        ).thenThrow(ServerpodClientUnauthorized());
       });
 
       tearDownAll(() {
@@ -122,20 +129,23 @@ void main() {
 
         expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message:
-                  'The credentials for this session seem to no longer be valid.',
-            ));
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message:
+                'The credentials for this session seem to no longer be valid.',
+          ),
+        );
       });
     });
 
     group('when executing db user reset-password', () {
       setUpAll(() {
-        when(() => client.database.resetDatabasePassword(
-              cloudCapsuleId: any(named: 'cloudCapsuleId'),
-              username: 'wernher',
-            )).thenThrow(ServerpodClientUnauthorized());
+        when(
+          () => client.database.resetDatabasePassword(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            username: 'wernher',
+          ),
+        ).thenThrow(ServerpodClientUnauthorized());
       });
 
       tearDownAll(() {
@@ -165,11 +175,12 @@ void main() {
 
         expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message:
-                  'The credentials for this session seem to no longer be valid.',
-            ));
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message:
+                'The credentials for this session seem to no longer be valid.',
+          ),
+        );
       });
     });
   });
@@ -189,9 +200,11 @@ void main() {
       );
 
       setUpAll(() {
-        when(() => client.database.getConnectionDetails(
-              cloudCapsuleId: any(named: 'cloudCapsuleId'),
-            )).thenAnswer((final _) async => Future.value(connection));
+        when(
+          () => client.database.getConnectionDetails(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenAnswer((final _) async => Future.value(connection));
       });
 
       tearDownAll(() {
@@ -200,12 +213,7 @@ void main() {
 
       late Future commandResult;
       setUp(() {
-        commandResult = cli.run([
-          'db',
-          'connection',
-          '--project',
-          projectId,
-        ]);
+        commandResult = cli.run(['db', 'connection', '--project', projectId]);
       });
 
       test('then succeeds', () async {
@@ -217,21 +225,25 @@ void main() {
 
         expect(logger.successCalls, isNotEmpty);
         expect(
-            logger.successCalls.single.message.split('\n'),
-            containsAllInOrder([
-              contains('Connection details:'),
-              contains('Host: ${connection.host}'),
-              contains('Port: ${connection.port}'),
-              contains('Database: ${connection.name}'),
-            ]));
+          logger.successCalls.single.message.split('\n'),
+          containsAllInOrder([
+            contains('Connection details:'),
+            contains('Host: ${connection.host}'),
+            contains('Port: ${connection.port}'),
+            contains('Database: ${connection.name}'),
+          ]),
+        );
         expect(
-            logger.successCalls.single.followUp!.split('\n'),
-            containsAllInOrder([
-              contains(
-                  'This psql command can be used to connect to the database (it will prompt for the password):'),
-              contains(
-                  'psql "postgresql://${connection.host}/${connection.name}?sslmode=${connection.requiresSsl ? 'require' : 'disable'}" --user <username>')
-            ]));
+          logger.successCalls.single.followUp!.split('\n'),
+          containsAllInOrder([
+            contains(
+              'This psql command can be used to connect to the database (it will prompt for the password):',
+            ),
+            contains(
+              'psql "postgresql://${connection.host}/${connection.name}?sslmode=${connection.requiresSsl ? 'require' : 'disable'}" --user <username>',
+            ),
+          ]),
+        );
       });
     });
 
@@ -239,10 +251,12 @@ void main() {
       const password = 'von Braun';
 
       setUpAll(() {
-        when(() => client.database.createSuperUser(
-              cloudCapsuleId: any(named: 'cloudCapsuleId'),
-              username: 'wernher',
-            )).thenAnswer((final _) async => Future.value(password));
+        when(
+          () => client.database.createSuperUser(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            username: 'wernher',
+          ),
+        ).thenAnswer((final _) async => Future.value(password));
       });
 
       tearDownAll(() {
@@ -269,12 +283,9 @@ void main() {
         await commandResult;
 
         expect(logger.successCalls, isNotEmpty);
-        expect(
-          logger.successCalls.single.message,
-          '''
+        expect(logger.successCalls.single.message, '''
 DB superuser created. The password is only shown this once:
-$password''',
-        );
+$password''');
       });
     });
 
@@ -282,10 +293,12 @@ $password''',
       const password = 'von Braun';
 
       setUpAll(() {
-        when(() => client.database.resetDatabasePassword(
-              cloudCapsuleId: any(named: 'cloudCapsuleId'),
-              username: 'wernher',
-            )).thenAnswer((final _) async => Future.value(password));
+        when(
+          () => client.database.resetDatabasePassword(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            username: 'wernher',
+          ),
+        ).thenAnswer((final _) async => Future.value(password));
       });
 
       tearDownAll(() {
@@ -312,12 +325,9 @@ $password''',
         await commandResult;
 
         expect(logger.successCalls, isNotEmpty);
-        expect(
-          logger.successCalls.single.message,
-          '''
+        expect(logger.successCalls.single.message, '''
 DB password is reset. The new password is only shown this once:
-$password''',
-        );
+$password''');
       });
     });
   });

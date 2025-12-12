@@ -9,11 +9,11 @@ class UserRoleMembershipBuilder {
   Role? _role;
 
   UserRoleMembershipBuilder()
-      : _createdAt = DateTime.now(),
-        _updatedAt = DateTime.now(),
-        _archivedAt = null,
-        _user = UserBuilder().build(),
-        _role = RoleBuilder().build();
+    : _createdAt = DateTime.now(),
+      _updatedAt = DateTime.now(),
+      _archivedAt = null,
+      _user = UserBuilder().build(),
+      _role = RoleBuilder().build();
 
   UserRoleMembershipBuilder withCreatedAt(final DateTime createdAt) {
     _createdAt = createdAt;

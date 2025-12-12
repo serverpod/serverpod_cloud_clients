@@ -46,13 +46,15 @@ abstract class UserAdminCommands {
         'Archived at ($timezoneName)',
         'Subscribed Plans',
       ],
-      rows: users.map((final user) => [
-            user.email,
-            user.accountStatus.toString(),
-            user.createdAt.toTzString(inUtc, 19),
-            user.archivedAt?.toTzString(inUtc, 19),
-            userPlanMap[user.email] ?? '',
-          ]),
+      rows: users.map(
+        (final user) => [
+          user.email,
+          user.accountStatus.toString(),
+          user.createdAt.toTzString(inUtc, 19),
+          user.archivedAt?.toTzString(inUtc, 19),
+          userPlanMap[user.email] ?? '',
+        ],
+      ),
     );
     table.writeLines(logger.line);
   }
@@ -63,17 +65,12 @@ abstract class UserAdminCommands {
     required final String email,
   }) async {
     try {
-      await cloudApiClient.adminUsers.inviteUser(
-        email: email,
-      );
+      await cloudApiClient.adminUsers.inviteUser(email: email);
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Failed to invite user');
     }
 
-    logger.success(
-      'User invited to Serverpod Cloud.',
-      newParagraph: true,
-    );
+    logger.success('User invited to Serverpod Cloud.', newParagraph: true);
   }
 
   static Future<void> inviteHackathonUser(
@@ -82,9 +79,7 @@ abstract class UserAdminCommands {
     required final String email,
   }) async {
     try {
-      await cloudApiClient.hackathon.inviteUser(
-        email: email,
-      );
+      await cloudApiClient.hackathon.inviteUser(email: email);
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Failed to invite hackathon user');
     }

@@ -22,10 +22,7 @@ import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 /// in which case they are non-null.
 /// In other words, null ancillary fields correspond to `undefined`.
 abstract class ProjectInfo implements _i1.SerializableModel {
-  ProjectInfo._({
-    required this.project,
-    this.latestDeployAttemptTime,
-  });
+  ProjectInfo._({required this.project, this.latestDeployAttemptTime});
 
   factory ProjectInfo({
     required _i2.Project project,

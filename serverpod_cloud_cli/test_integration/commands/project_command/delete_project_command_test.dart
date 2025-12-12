@@ -19,14 +19,9 @@ import '../../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();
-  final cli = CloudCliCommandRunner.create(
-    logger: logger,
-  );
+  final cli = CloudCliCommandRunner.create(logger: logger);
 
-  final testCacheFolderPath = p.join(
-    'test_integration',
-    const Uuid().v4(),
-  );
+  final testCacheFolderPath = p.join('test_integration', const Uuid().v4());
   late Directory originalDirectory;
 
   setUp(() {
@@ -57,196 +52,201 @@ void main() {
     });
 
     group(
-        'and existing project when deleting the project and accepting the prompt',
-        () {
-      late Uri localServerAddress;
-      late HttpServer server;
-      late Future commandResult;
+      'and existing project when deleting the project and accepting the prompt',
+      () {
+        late Uri localServerAddress;
+        late HttpServer server;
+        late Future commandResult;
 
-      setUp(() async {
-        final serverBuilder = HttpServerBuilder();
+        setUp(() async {
+          final serverBuilder = HttpServerBuilder();
 
-        serverBuilder.withMethodResponse(
-          'projects',
-          'deleteProject',
-          (final _) =>
-              (200, ProjectBuilder().withCloudProjectId(projectId).build()),
-        );
+          serverBuilder.withMethodResponse(
+            'projects',
+            'deleteProject',
+            (final _) =>
+                (200, ProjectBuilder().withCloudProjectId(projectId).build()),
+          );
 
-        final (startedServer, serverAddress) = await serverBuilder.build();
-        localServerAddress = serverAddress;
-        server = startedServer;
+          final (startedServer, serverAddress) = await serverBuilder.build();
+          localServerAddress = serverAddress;
+          server = startedServer;
 
-        logger.answerNextConfirmWith(true);
+          logger.answerNextConfirmWith(true);
 
-        commandResult = cli.run([
-          'project',
-          'delete',
-          projectId,
-          '--api-url',
-          localServerAddress.toString(),
-          '--config-dir',
-          testCacheFolderPath,
-        ]);
-      });
+          commandResult = cli.run([
+            'project',
+            'delete',
+            projectId,
+            '--api-url',
+            localServerAddress.toString(),
+            '--config-dir',
+            testCacheFolderPath,
+          ]);
+        });
 
-      tearDown(() async {
-        await server.close(force: true);
-      });
+        tearDown(() async {
+          await server.close(force: true);
+        });
 
-      test('then command completes successfully', () async {
-        await expectLater(commandResult, completes);
-      });
+        test('then command completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
 
-      test('then logs confirm message', () async {
-        await commandResult;
+        test('then logs confirm message', () async {
+          await commandResult;
 
-        expect(logger.confirmCalls, isNotEmpty);
-        expect(
-          logger.confirmCalls.first,
-          equalsConfirmCall(
-            message: 'Are you sure you want to delete the project "my-proj"?',
-            defaultValue: false,
-          ),
-        );
-      });
+          expect(logger.confirmCalls, isNotEmpty);
+          expect(
+            logger.confirmCalls.first,
+            equalsConfirmCall(
+              message: 'Are you sure you want to delete the project "my-proj"?',
+              defaultValue: false,
+            ),
+          );
+        });
 
-      test('then logs success message', () async {
-        await commandResult;
+        test('then logs success message', () async {
+          await commandResult;
 
-        expect(logger.successCalls, isNotEmpty);
-        expect(
-          logger.successCalls.first,
-          equalsSuccessCall(
-            message: 'Deleted the project "my-proj".',
-            newParagraph: true,
-          ),
-        );
-      });
-    });
+          expect(logger.successCalls, isNotEmpty);
+          expect(
+            logger.successCalls.first,
+            equalsSuccessCall(
+              message: 'Deleted the project "my-proj".',
+              newParagraph: true,
+            ),
+          );
+        });
+      },
+    );
 
     group(
-        'and existing project when deleting the project and rejecting the prompt',
-        () {
-      late Uri localServerAddress;
-      late HttpServer server;
-      late Future commandResult;
+      'and existing project when deleting the project and rejecting the prompt',
+      () {
+        late Uri localServerAddress;
+        late HttpServer server;
+        late Future commandResult;
 
-      setUp(() async {
-        final serverBuilder = HttpServerBuilder();
+        setUp(() async {
+          final serverBuilder = HttpServerBuilder();
 
-        serverBuilder.withMethodResponse(
-          'projects',
-          'deleteProject',
-          (final _) =>
-              (200, ProjectBuilder().withCloudProjectId(projectId).build()),
-        );
+          serverBuilder.withMethodResponse(
+            'projects',
+            'deleteProject',
+            (final _) =>
+                (200, ProjectBuilder().withCloudProjectId(projectId).build()),
+          );
 
-        final (startedServer, serverAddress) = await serverBuilder.build();
-        localServerAddress = serverAddress;
-        server = startedServer;
+          final (startedServer, serverAddress) = await serverBuilder.build();
+          localServerAddress = serverAddress;
+          server = startedServer;
 
-        logger.answerNextConfirmWith(false);
+          logger.answerNextConfirmWith(false);
 
-        commandResult = cli.run([
-          'project',
-          'delete',
-          projectId,
-          '--api-url',
-          localServerAddress.toString(),
-          '--config-dir',
-          testCacheFolderPath,
-        ]);
-      });
+          commandResult = cli.run([
+            'project',
+            'delete',
+            projectId,
+            '--api-url',
+            localServerAddress.toString(),
+            '--config-dir',
+            testCacheFolderPath,
+          ]);
+        });
 
-      tearDown(() async {
-        await server.close(force: true);
-      });
+        tearDown(() async {
+          await server.close(force: true);
+        });
 
-      test('then command throws exit exception', () async {
-        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
-      });
+        test('then command throws exit exception', () async {
+          await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+        });
 
-      test('then logs confirm message', () async {
-        try {
-          await commandResult;
-        } catch (_) {}
+        test('then logs confirm message', () async {
+          try {
+            await commandResult;
+          } catch (_) {}
 
-        expect(logger.confirmCalls, isNotEmpty);
-        expect(
-          logger.confirmCalls.first,
-          equalsConfirmCall(
-            message: 'Are you sure you want to delete the project "my-proj"?',
-            defaultValue: false,
-          ),
-        );
-      });
+          expect(logger.confirmCalls, isNotEmpty);
+          expect(
+            logger.confirmCalls.first,
+            equalsConfirmCall(
+              message: 'Are you sure you want to delete the project "my-proj"?',
+              defaultValue: false,
+            ),
+          );
+        });
 
-      test('then logs no success message', () async {
-        try {
-          await commandResult;
-        } catch (_) {}
+        test('then logs no success message', () async {
+          try {
+            await commandResult;
+          } catch (_) {}
 
-        expect(logger.successCalls, isEmpty);
-      });
-    });
+          expect(logger.successCalls, isEmpty);
+        });
+      },
+    );
 
     group(
-        'and project does not exist when deleting the project and accepting the prompt',
-        () {
-      late Uri localServerAddress;
-      late HttpServer server;
-      late Future commandResult;
+      'and project does not exist when deleting the project and accepting the prompt',
+      () {
+        late Uri localServerAddress;
+        late HttpServer server;
+        late Future commandResult;
 
-      setUp(() async {
-        final serverBuilder = HttpServerBuilder();
+        setUp(() async {
+          final serverBuilder = HttpServerBuilder();
 
-        serverBuilder.withMethodResponse(
-          'projects',
-          'deleteProject',
-          (final _) =>
-              (400, NotFoundException(message: 'No such project: $projectId')),
-        );
+          serverBuilder.withMethodResponse(
+            'projects',
+            'deleteProject',
+            (final _) => (
+              400,
+              NotFoundException(message: 'No such project: $projectId'),
+            ),
+          );
 
-        final (startedServer, serverAddress) = await serverBuilder.build();
-        localServerAddress = serverAddress;
-        server = startedServer;
+          final (startedServer, serverAddress) = await serverBuilder.build();
+          localServerAddress = serverAddress;
+          server = startedServer;
 
-        logger.answerNextConfirmWith(true);
+          logger.answerNextConfirmWith(true);
 
-        commandResult = cli.run([
-          'project',
-          'delete',
-          projectId,
-          '--api-url',
-          localServerAddress.toString(),
-          '--config-dir',
-          testCacheFolderPath,
-        ]);
-      });
+          commandResult = cli.run([
+            'project',
+            'delete',
+            projectId,
+            '--api-url',
+            localServerAddress.toString(),
+            '--config-dir',
+            testCacheFolderPath,
+          ]);
+        });
 
-      tearDown(() async {
-        await server.close(force: true);
-      });
+        tearDown(() async {
+          await server.close(force: true);
+        });
 
-      test('then command throws exit exception', () async {
-        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
-      });
+        test('then command throws exit exception', () async {
+          await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+        });
 
-      test('then logs error message', () async {
-        try {
-          await commandResult;
-        } catch (_) {}
+        test('then logs error message', () async {
+          try {
+            await commandResult;
+          } catch (_) {}
 
-        expect(logger.errorCalls, isNotEmpty);
-        expect(
-          logger.errorCalls.first,
-          equalsErrorCall(
-            message: 'The requested resource did not exist.',
-            hint: 'No such project: my-proj',
-          ),
-        );
-      });
-    });
+          expect(logger.errorCalls, isNotEmpty);
+          expect(
+            logger.errorCalls.first,
+            equalsErrorCall(
+              message: 'The requested resource did not exist.',
+              hint: 'No such project: my-proj',
+            ),
+          );
+        });
+      },
+    );
   });
 }

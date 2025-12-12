@@ -44,16 +44,15 @@ FileFinder<T> scloudFileFinder<T>({
   final int searchLevelsDown = 2,
   final FileContentCondition? fileContentCondition,
 }) {
-  final filenames =
-      supportedExtensions.map((final ext) => '$fileBaseName.$ext').toList();
+  final filenames = supportedExtensions
+      .map((final ext) => '$fileBaseName.$ext')
+      .toList();
 
   return (final T arg) {
     // search in current directory and N levels down
     // If several are found, throw StateError
     final startDir = p.absolute(
-      p.normalize(
-        startingDirectory?.call(arg) ?? Directory.current.path,
-      ),
+      p.normalize(startingDirectory?.call(arg) ?? Directory.current.path),
     );
     final foundFile = _findUnambiguousFile(
       startDir,

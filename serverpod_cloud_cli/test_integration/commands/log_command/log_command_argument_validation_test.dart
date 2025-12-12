@@ -30,23 +30,19 @@ void main() {
     group('when running log command with invalid --limit value', () {
       late Future result;
       setUp(() async {
-        result = cli.run([
-          'log',
-          '--limit',
-          'abc',
-          '--project',
-          projectId,
-        ]);
+        result = cli.run(['log', '--limit', 'abc', '--project', projectId]);
       });
 
       test('then throws UsageException', () async {
         await expectLater(
           result,
-          throwsA(isA<UsageException>().having(
-            (final e) => e.message,
-            'message',
-            contains('Invalid value for option `limit` <integer>'),
-          )),
+          throwsA(
+            isA<UsageException>().having(
+              (final e) => e.message,
+              'message',
+              contains('Invalid value for option `limit` <integer>'),
+            ),
+          ),
         );
       });
     });
@@ -68,11 +64,13 @@ void main() {
       test('then throws UsageException', () async {
         await expectLater(
           result,
-          throwsA(isA<UsageException>().having(
-            (final e) => e.message,
-            'message',
-            contains('Invalid value: expected ISO date string'),
-          )),
+          throwsA(
+            isA<UsageException>().having(
+              (final e) => e.message,
+              'message',
+              contains('Invalid value: expected ISO date string'),
+            ),
+          ),
         );
       });
     });
@@ -94,11 +92,13 @@ void main() {
       test('then throws UsageException', () async {
         await expectLater(
           result,
-          throwsA(isA<UsageException>().having(
-            (final e) => e.message,
-            'message',
-            contains('Invalid value: expected ISO date string'),
-          )),
+          throwsA(
+            isA<UsageException>().having(
+              (final e) => e.message,
+              'message',
+              contains('Invalid value: expected ISO date string'),
+            ),
+          ),
         );
       });
     });
@@ -107,24 +107,20 @@ void main() {
       late Future result;
       setUp(() async {
         try {
-          result = cli.run([
-            'log',
-            '--until',
-            '1x',
-            '--project',
-            projectId,
-          ]);
+          result = cli.run(['log', '--until', '1x', '--project', projectId]);
         } catch (_) {}
       });
 
       test('then throws UsageException', () async {
         await expectLater(
           result,
-          throwsA(isA<UsageException>().having(
-            (final e) => e.message,
-            'message',
-            contains('Invalid value: expected ISO date string'),
-          )),
+          throwsA(
+            isA<UsageException>().having(
+              (final e) => e.message,
+              'message',
+              contains('Invalid value: expected ISO date string'),
+            ),
+          ),
         );
       });
     });
@@ -133,286 +129,290 @@ void main() {
       late Future result;
       setUp(() async {
         try {
-          result = cli.run([
-            'log',
-            '--since',
-            'hello',
-            '--project',
-            projectId,
-          ]);
+          result = cli.run(['log', '--since', 'hello', '--project', projectId]);
         } catch (_) {}
       });
 
       test('then throws UsageException', () async {
         await expectLater(
           result,
-          throwsA(isA<UsageException>().having(
-            (final e) => e.message,
-            'message',
-            contains('Invalid value: expected ISO date string'),
-          )),
-        );
-      });
-    });
-
-    group(
-        'when running log command with --since value that is after the --until value',
-        () {
-      late Future result;
-      setUp(() async {
-        try {
-          result = cli.run([
-            'log',
-            '--since',
-            '2024-01-01T00:00:00Z',
-            '--until',
-            '2023-01-01T00:00:00Z',
-            '--project',
-            projectId,
-          ]);
-        } catch (_) {}
-      });
-
-      test('then throws ExitErrorException', () async {
-        await expectLater(result, throwsA(isA<ErrorExitException>()));
-      });
-
-      test('then logs error', () async {
-        try {
-          await result;
-        } catch (_) {}
-
-        expect(
-          logger.errorCalls.last,
-          equalsErrorCall(
-            message: 'The --until value must be after --since value.',
+          throwsA(
+            isA<UsageException>().having(
+              (final e) => e.message,
+              'message',
+              contains('Invalid value: expected ISO date string'),
+            ),
           ),
         );
       });
     });
 
     group(
-        'when running log command with the hidden --all value together with --until flag',
-        () {
-      late Future result;
-      setUp(() async {
-        try {
-          result = cli.run([
-            'log',
-            '--all',
-            '--until',
-            '2024-01-01T00:00:00Z',
-            '--project',
-            projectId,
-          ]);
-        } catch (_) {}
-      });
+      'when running log command with --since value that is after the --until value',
+      () {
+        late Future result;
+        setUp(() async {
+          try {
+            result = cli.run([
+              'log',
+              '--since',
+              '2024-01-01T00:00:00Z',
+              '--until',
+              '2023-01-01T00:00:00Z',
+              '--project',
+              projectId,
+            ]);
+          } catch (_) {}
+        });
 
-      test('then logs warning', () async {
-        try {
-          await result;
-        } catch (_) {}
+        test('then throws ExitErrorException', () async {
+          await expectLater(result, throwsA(isA<ErrorExitException>()));
+        });
 
-        expect(
-          logger.warningCalls.last,
-          equalsWarningCall(
-            message:
-                'The --all option cannot be combined with --until or --since.',
-          ),
-        );
-      });
-    });
+        test('then logs error', () async {
+          try {
+            await result;
+          } catch (_) {}
 
-    group(
-        'when running log command with the hidden --all value together with --since flag',
-        () {
-      late Future result;
-      setUp(() async {
-        try {
-          result = cli.run([
-            'log',
-            '--all',
-            '--since',
-            '2024-01-01T00:00:00Z',
-            '--project',
-            projectId,
-          ]);
-        } catch (_) {}
-      });
-
-      test('then logs warning', () async {
-        try {
-          await result;
-        } catch (_) {}
-
-        expect(
-          logger.warningCalls.last,
-          equalsWarningCall(
-            message:
-                'The --all option cannot be combined with --until or --since.',
-          ),
-        );
-      });
-    });
+          expect(
+            logger.errorCalls.last,
+            equalsErrorCall(
+              message: 'The --until value must be after --since value.',
+            ),
+          );
+        });
+      },
+    );
 
     group(
-        'when running log command with the hidden --all value together with --until option',
-        () {
-      late Future result;
-      setUp(() async {
-        try {
-          result = cli.run([
-            'log',
-            '--all',
-            '--until',
-            '1m',
-            '--project',
-            projectId,
-          ]);
-        } catch (_) {}
-      });
+      'when running log command with the hidden --all value together with --until flag',
+      () {
+        late Future result;
+        setUp(() async {
+          try {
+            result = cli.run([
+              'log',
+              '--all',
+              '--until',
+              '2024-01-01T00:00:00Z',
+              '--project',
+              projectId,
+            ]);
+          } catch (_) {}
+        });
 
-      test('then logs warning', () async {
-        try {
-          await result;
-        } catch (_) {}
+        test('then logs warning', () async {
+          try {
+            await result;
+          } catch (_) {}
 
-        expect(
-          logger.warningCalls.last,
-          equalsWarningCall(
-            message:
-                'The --all option cannot be combined with --until or --since.',
-          ),
-        );
-      });
-    });
-
-    group(
-        'when running log command with --tail flag together with --until flag',
-        () {
-      late Future result;
-      setUp(() async {
-        try {
-          result = cli.run([
-            'log',
-            '--tail',
-            '--until',
-            '2024-01-01T00:00:00Z',
-            '--project',
-            projectId,
-          ]);
-        } catch (_) {}
-      });
-
-      test('then logs warning', () async {
-        try {
-          await result;
-        } catch (_) {}
-
-        expect(
-          logger.warningCalls.last,
-          equalsWarningCall(
-            message:
-                'The --tail option cannot be combined with --until or --since.',
-          ),
-        );
-      });
-    });
+          expect(
+            logger.warningCalls.last,
+            equalsWarningCall(
+              message:
+                  'The --all option cannot be combined with --until or --since.',
+            ),
+          );
+        });
+      },
+    );
 
     group(
-        'when running log command with the hidden --all value together with --since flag',
-        () {
-      late Future result;
-      setUp(() async {
-        try {
-          result = cli.run([
-            'log',
-            '--all',
-            '--since',
-            '2024-01-01T00:00:00Z',
-            '--project',
-            projectId,
-          ]);
-        } catch (_) {}
-      });
+      'when running log command with the hidden --all value together with --since flag',
+      () {
+        late Future result;
+        setUp(() async {
+          try {
+            result = cli.run([
+              'log',
+              '--all',
+              '--since',
+              '2024-01-01T00:00:00Z',
+              '--project',
+              projectId,
+            ]);
+          } catch (_) {}
+        });
 
-      test('then logs warning', () async {
-        try {
-          await result;
-        } catch (_) {}
+        test('then logs warning', () async {
+          try {
+            await result;
+          } catch (_) {}
 
-        expect(
-          logger.warningCalls.last,
-          equalsWarningCall(
-            message:
-                'The --all option cannot be combined with --until or --since.',
-          ),
-        );
-      });
-    });
-
-    group(
-        'when running log command with --tail flag together with --until flag',
-        () {
-      late Future result;
-      setUp(() async {
-        try {
-          result = cli.run([
-            'log',
-            '--tail',
-            '--until',
-            '2024-01-01T00:00:00Z',
-            '--project',
-            projectId,
-          ]);
-        } catch (_) {}
-      });
-
-      test('then logs warning', () async {
-        try {
-          await result;
-        } catch (_) {}
-
-        expect(
-          logger.warningCalls.last,
-          equalsWarningCall(
-            message:
-                'The --tail option cannot be combined with --until or --since.',
-          ),
-        );
-      });
-    });
+          expect(
+            logger.warningCalls.last,
+            equalsWarningCall(
+              message:
+                  'The --all option cannot be combined with --until or --since.',
+            ),
+          );
+        });
+      },
+    );
 
     group(
-        'when running log command with --tail flag together with --since flag',
-        () {
-      late Future result;
-      setUp(() async {
-        try {
-          result = cli.run([
-            'log',
-            '--tail',
-            '--since',
-            '2024-01-01T00:00:00Z',
-            '--project',
-            projectId,
-          ]);
-        } catch (_) {}
-      });
+      'when running log command with the hidden --all value together with --until option',
+      () {
+        late Future result;
+        setUp(() async {
+          try {
+            result = cli.run([
+              'log',
+              '--all',
+              '--until',
+              '1m',
+              '--project',
+              projectId,
+            ]);
+          } catch (_) {}
+        });
 
-      test('then logs warning', () async {
-        try {
-          await result;
-        } catch (_) {}
+        test('then logs warning', () async {
+          try {
+            await result;
+          } catch (_) {}
 
-        expect(
-          logger.warningCalls.last,
-          equalsWarningCall(
-            message:
-                'The --tail option cannot be combined with --until or --since.',
-          ),
-        );
-      });
-    });
+          expect(
+            logger.warningCalls.last,
+            equalsWarningCall(
+              message:
+                  'The --all option cannot be combined with --until or --since.',
+            ),
+          );
+        });
+      },
+    );
+
+    group(
+      'when running log command with --tail flag together with --until flag',
+      () {
+        late Future result;
+        setUp(() async {
+          try {
+            result = cli.run([
+              'log',
+              '--tail',
+              '--until',
+              '2024-01-01T00:00:00Z',
+              '--project',
+              projectId,
+            ]);
+          } catch (_) {}
+        });
+
+        test('then logs warning', () async {
+          try {
+            await result;
+          } catch (_) {}
+
+          expect(
+            logger.warningCalls.last,
+            equalsWarningCall(
+              message:
+                  'The --tail option cannot be combined with --until or --since.',
+            ),
+          );
+        });
+      },
+    );
+
+    group(
+      'when running log command with the hidden --all value together with --since flag',
+      () {
+        late Future result;
+        setUp(() async {
+          try {
+            result = cli.run([
+              'log',
+              '--all',
+              '--since',
+              '2024-01-01T00:00:00Z',
+              '--project',
+              projectId,
+            ]);
+          } catch (_) {}
+        });
+
+        test('then logs warning', () async {
+          try {
+            await result;
+          } catch (_) {}
+
+          expect(
+            logger.warningCalls.last,
+            equalsWarningCall(
+              message:
+                  'The --all option cannot be combined with --until or --since.',
+            ),
+          );
+        });
+      },
+    );
+
+    group(
+      'when running log command with --tail flag together with --until flag',
+      () {
+        late Future result;
+        setUp(() async {
+          try {
+            result = cli.run([
+              'log',
+              '--tail',
+              '--until',
+              '2024-01-01T00:00:00Z',
+              '--project',
+              projectId,
+            ]);
+          } catch (_) {}
+        });
+
+        test('then logs warning', () async {
+          try {
+            await result;
+          } catch (_) {}
+
+          expect(
+            logger.warningCalls.last,
+            equalsWarningCall(
+              message:
+                  'The --tail option cannot be combined with --until or --since.',
+            ),
+          );
+        });
+      },
+    );
+
+    group(
+      'when running log command with --tail flag together with --since flag',
+      () {
+        late Future result;
+        setUp(() async {
+          try {
+            result = cli.run([
+              'log',
+              '--tail',
+              '--since',
+              '2024-01-01T00:00:00Z',
+              '--project',
+              projectId,
+            ]);
+          } catch (_) {}
+        });
+
+        test('then logs warning', () async {
+          try {
+            await result;
+          } catch (_) {}
+
+          expect(
+            logger.warningCalls.last,
+            equalsWarningCall(
+              message:
+                  'The --tail option cannot be combined with --until or --since.',
+            ),
+          );
+        });
+      },
+    );
   });
 }

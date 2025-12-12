@@ -14,10 +14,7 @@ import 'package:uuid/uuid.dart';
 void main() {
   final commandLogger = CommandLogger(VoidLogger());
 
-  final testCacheFolderPath = p.join(
-    'test_integration',
-    const Uuid().v4(),
-  );
+  final testCacheFolderPath = p.join('test_integration', const Uuid().v4());
 
   tearDown(() {
     final directory = Directory(testCacheFolderPath);
@@ -28,53 +25,62 @@ void main() {
 
   group('ServerpodCloudData: ', () {
     test(
-        'Given cloud data when doing storage roundtrip then cloud data values are preserved.',
-        () async {
-      final storedArtefact = ServerpodCloudAuthData('my-token');
+      'Given cloud data when doing storage roundtrip then cloud data values are preserved.',
+      () async {
+        final storedArtefact = ServerpodCloudAuthData('my-token');
 
-      await ResourceManager.storeServerpodCloudAuthData(
-        authData: storedArtefact,
-        localStoragePath: testCacheFolderPath,
-      );
+        await ResourceManager.storeServerpodCloudAuthData(
+          authData: storedArtefact,
+          localStoragePath: testCacheFolderPath,
+        );
 
-      final fetchedArtefact =
-          await ResourceManager.tryFetchServerpodCloudAuthData(
-        logger: commandLogger,
-        localStoragePath: testCacheFolderPath,
-      );
+        final fetchedArtefact =
+            await ResourceManager.tryFetchServerpodCloudAuthData(
+              logger: commandLogger,
+              localStoragePath: testCacheFolderPath,
+            );
 
-      expect(fetchedArtefact?.token, storedArtefact.token);
-    });
+        expect(fetchedArtefact?.token, storedArtefact.token);
+      },
+    );
 
     test(
-        'Given cloud data on disk when removing cloud data then file is deleted.',
-        () async {
-      final storedArtefact = ServerpodCloudAuthData('my-token');
+      'Given cloud data on disk when removing cloud data then file is deleted.',
+      () async {
+        final storedArtefact = ServerpodCloudAuthData('my-token');
 
-      await ResourceManager.storeServerpodCloudAuthData(
-        authData: storedArtefact,
-        localStoragePath: testCacheFolderPath,
-      );
+        await ResourceManager.storeServerpodCloudAuthData(
+          authData: storedArtefact,
+          localStoragePath: testCacheFolderPath,
+        );
 
-      await ResourceManager.removeServerpodCloudAuthData(
-        localStoragePath: testCacheFolderPath,
-      );
+        await ResourceManager.removeServerpodCloudAuthData(
+          localStoragePath: testCacheFolderPath,
+        );
 
-      final serverpodCloudDataFile = File(p.join(
-        testCacheFolderPath,
-        ResourceManagerConstants.serverpodCloudAuthFilePath,
-      ));
-      expect(serverpodCloudDataFile.existsSync(), isFalse);
-    });
+        final serverpodCloudDataFile = File(
+          p.join(
+            testCacheFolderPath,
+            ResourceManagerConstants.serverpodCloudAuthFilePath,
+          ),
+        );
+        expect(serverpodCloudDataFile.existsSync(), isFalse);
+      },
+    );
 
     group('Given corrupt cloud data on disk ', () {
       late File file;
       setUp(() async {
-        file = File(p.join(testCacheFolderPath,
-            ResourceManagerConstants.serverpodCloudAuthFilePath));
+        file = File(
+          p.join(
+            testCacheFolderPath,
+            ResourceManagerConstants.serverpodCloudAuthFilePath,
+          ),
+        );
         file.createSync(recursive: true);
         file.writeAsStringSync(
-            'This is corrupted content and :will not be :parsed as json');
+          'This is corrupted content and :will not be :parsed as json',
+        );
       });
 
       test('when fetching file from disk then null is returned.', () async {
@@ -99,21 +105,18 @@ void main() {
       });
 
       test('then is stored with version and valid_until fields', () async {
-        final file =
-            File(p.join(testCacheFolderPath, 'latest_cli_version.json'));
+        final file = File(
+          p.join(testCacheFolderPath, 'latest_cli_version.json'),
+        );
         expect(file.existsSync(), isTrue);
-        expect(
-          file.readAsStringSync(),
-          '''{
+        expect(file.readAsStringSync(), '''{
   "version": "1.2.3",
   "valid_until": ${validUntil.millisecondsSinceEpoch}
-}''',
-        );
+}''');
       });
     });
 
-    test(
-        'Given invalid file path '
+    test('Given invalid file path '
         'when storing latest cli version '
         'then fails silently and completes', () async {
       await expectLater(
@@ -130,8 +133,9 @@ void main() {
       late final DateTime validUntil;
       setUp(() {
         validUntil = DateTime.now().add(Duration(days: 1));
-        final file =
-            File(p.join(testCacheFolderPath, 'latest_cli_version.json'));
+        final file = File(
+          p.join(testCacheFolderPath, 'latest_cli_version.json'),
+        );
         file.createSync(recursive: true);
 
         file.writeAsStringSync('''{
@@ -140,8 +144,7 @@ void main() {
 }''');
       });
 
-      test(
-          'when fetching latest cli version '
+      test('when fetching latest cli version '
           'then returns deserialized object', () async {
         final versionData = await ResourceManager.tryFetchLatestCliVersion(
           localStoragePath: testCacheFolderPath,
@@ -157,8 +160,7 @@ void main() {
       });
     });
 
-    group(
-        'Given corrupt file exists at path '
+    group('Given corrupt file exists at path '
         'when fetching latest cli version', () {
       late final Future cliVersionFuture;
       late final File file;
@@ -187,52 +189,54 @@ void main() {
 
   group('Given settings', () {
     test(
-        'with no set values '
-        'when doing storage roundtrip then null values are preserved.',
-        () async {
-      final storedSettings = ServerpodCloudSettingsData();
+      'with no set values '
+      'when doing storage roundtrip then null values are preserved.',
+      () async {
+        final storedSettings = ServerpodCloudSettingsData();
 
-      await ResourceManager.storeSettings(
-        settings: storedSettings,
-        localStoragePath: testCacheFolderPath,
-      );
+        await ResourceManager.storeSettings(
+          settings: storedSettings,
+          localStoragePath: testCacheFolderPath,
+        );
 
-      final fetchedSettings = await ResourceManager.tryLoadSettings(
-        localStoragePath: testCacheFolderPath,
-      );
+        final fetchedSettings = await ResourceManager.tryLoadSettings(
+          localStoragePath: testCacheFolderPath,
+        );
 
-      expect(fetchedSettings, isNotNull);
-      expect(fetchedSettings?.enableAnalytics, isNull);
-    });
-
-    test(
-        'with a set value '
-        'when doing storage roundtrip then settings values are preserved.',
-        () async {
-      final storedSettings = ServerpodCloudSettingsData()
-        ..enableAnalytics = true;
-
-      await ResourceManager.storeSettings(
-        settings: storedSettings,
-        localStoragePath: testCacheFolderPath,
-      );
-
-      final fetchedSettings = await ResourceManager.tryLoadSettings(
-        localStoragePath: testCacheFolderPath,
-      );
-
-      expect(fetchedSettings, isNotNull);
-      expect(fetchedSettings?.enableAnalytics, true);
-    });
+        expect(fetchedSettings, isNotNull);
+        expect(fetchedSettings?.enableAnalytics, isNull);
+      },
+    );
 
     test(
-        'when storing with invalid file path '
+      'with a set value '
+      'when doing storage roundtrip then settings values are preserved.',
+      () async {
+        final storedSettings = ServerpodCloudSettingsData()
+          ..enableAnalytics = true;
+
+        await ResourceManager.storeSettings(
+          settings: storedSettings,
+          localStoragePath: testCacheFolderPath,
+        );
+
+        final fetchedSettings = await ResourceManager.tryLoadSettings(
+          localStoragePath: testCacheFolderPath,
+        );
+
+        expect(fetchedSettings, isNotNull);
+        expect(fetchedSettings?.enableAnalytics, true);
+      },
+    );
+
+    test('when storing with invalid file path '
         'then FailureException is thrown', () async {
       final storedSettings = ServerpodCloudSettingsData()
         ..enableAnalytics = true;
 
-      final invalidPath =
-          Platform.isWindows ? 'C:\\invalid:path' : '/invalid_path';
+      final invalidPath = Platform.isWindows
+          ? 'C:\\invalid:path'
+          : '/invalid_path';
       expect(
         () => ResourceManager.storeSettings(
           settings: storedSettings,
@@ -251,34 +255,42 @@ void main() {
         localStoragePath: testCacheFolderPath,
       );
 
-      final file = File(p.join(
-          testCacheFolderPath, ResourceManagerConstants.settingsFilePath));
+      final file = File(
+        p.join(testCacheFolderPath, ResourceManagerConstants.settingsFilePath),
+      );
       expect(file.existsSync(), isTrue);
-      expect(file.readAsStringSync(), equals(r'''
+      expect(
+        file.readAsStringSync(),
+        equals(r'''
 {
   "enable_analytics": false
-}'''));
+}'''),
+      );
     });
   });
 
   group('Given corrupt settings file on disk ', () {
     late File file;
     setUp(() async {
-      file = File(p.join(
-          testCacheFolderPath, ResourceManagerConstants.settingsFilePath));
+      file = File(
+        p.join(testCacheFolderPath, ResourceManagerConstants.settingsFilePath),
+      );
       file.createSync(recursive: true);
       file.writeAsStringSync(
-          'This is corrupted content and will not be parsed as json');
-    });
-
-    test('when fetching file from disk then FailureException is thrown.',
-        () async {
-      expect(
-        () => ResourceManager.tryLoadSettings(
-          localStoragePath: testCacheFolderPath,
-        ),
-        throwsA(isA<FailureException>()),
+        'This is corrupted content and will not be parsed as json',
       );
     });
+
+    test(
+      'when fetching file from disk then FailureException is thrown.',
+      () async {
+        expect(
+          () => ResourceManager.tryLoadSettings(
+            localStoragePath: testCacheFolderPath,
+          ),
+          throwsA(isA<FailureException>()),
+        );
+      },
+    );
   });
 }

@@ -62,7 +62,7 @@ class CloudCreateSecretCommand
   String get name => 'create';
 
   CloudCreateSecretCommand({required super.logger})
-      : super(options: CreateSecretCommandConfig.values);
+    : super(options: CreateSecretCommandConfig.values);
 
   @override
   Future<void> runWithConfig(
@@ -71,8 +71,9 @@ class CloudCreateSecretCommand
     final projectId = commandConfig.value(CreateSecretCommandConfig.projectId);
     final name = commandConfig.value(CreateSecretCommandConfig.name);
     final value = commandConfig.optionalValue(CreateSecretCommandConfig.value);
-    final valueFile =
-        commandConfig.optionalValue(CreateSecretCommandConfig.valueFile);
+    final valueFile = commandConfig.optionalValue(
+      CreateSecretCommandConfig.valueFile,
+    );
 
     String valueToSet;
     if (value != null) {
@@ -116,7 +117,7 @@ class CloudListSecretsCommand
   String get name => 'list';
 
   CloudListSecretsCommand({required super.logger})
-      : super(options: ListSecretsCommandConfig.values);
+    : super(options: ListSecretsCommandConfig.values);
 
   @override
   Future<void> runWithConfig(
@@ -128,9 +129,7 @@ class CloudListSecretsCommand
 
     late List<String> secrets;
     try {
-      secrets = await apiCloudClient.secrets.list(
-        projectId,
-      );
+      secrets = await apiCloudClient.secrets.list(projectId);
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Failed to list secrets');
     }
@@ -139,9 +138,7 @@ class CloudListSecretsCommand
     secretsPrinter.addHeaders(['Secret name']);
 
     for (var secret in secrets) {
-      secretsPrinter.addRow([
-        secret,
-      ]);
+      secretsPrinter.addRow([secret]);
     }
 
     secretsPrinter.writeLines(logger.line);
@@ -167,7 +164,7 @@ class CloudDeleteSecretCommand
   String get name => 'delete';
 
   CloudDeleteSecretCommand({required super.logger})
-      : super(options: DeleteSecretCommandConfig.values);
+    : super(options: DeleteSecretCommandConfig.values);
 
   @override
   Future<void> runWithConfig(
@@ -188,10 +185,7 @@ class CloudDeleteSecretCommand
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
     try {
-      await apiCloudClient.secrets.delete(
-        cloudCapsuleId: projectId,
-        key: name,
-      );
+      await apiCloudClient.secrets.delete(cloudCapsuleId: projectId, key: name);
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Failed to delete the secret');
     }

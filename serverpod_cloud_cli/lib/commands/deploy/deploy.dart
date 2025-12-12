@@ -71,9 +71,7 @@ abstract class Deploy {
         } on ProjectZipperExceptions catch (e) {
           switch (e) {
             case ProjectDirectoryDoesNotExistException():
-              logger.error(
-                'Project directory does not exist: ${e.path}',
-              );
+              logger.error('Project directory does not exist: ${e.path}');
               break;
             case EmptyProjectException():
               logger.error(
@@ -121,7 +119,10 @@ abstract class Deploy {
         );
       } on Exception catch (e, stackTrace) {
         throw FailureException.nested(
-            e, stackTrace, 'Failed to fetch upload description');
+          e,
+          stackTrace,
+          'Failed to fetch upload description',
+        );
       }
 
       try {
@@ -140,7 +141,10 @@ abstract class Deploy {
         );
       } on Exception catch (e, stackTrace) {
         throw FailureException.nested(
-            e, stackTrace, 'Failed to upload project');
+          e,
+          stackTrace,
+          'Failed to upload project',
+        );
       }
     });
 

@@ -66,10 +66,8 @@ class InMemoryKeyManager implements ClientAuthKeyProvider {
 }
 
 class ClientMock extends Mock implements Client {
-  ClientMock({
-    ClientAuthKeyProvider? authKeyProvider,
-  }) : authKeyProvider =
-            authKeyProvider ?? InMemoryKeyManager.unauthenticated();
+  ClientMock({ClientAuthKeyProvider? authKeyProvider})
+    : authKeyProvider = authKeyProvider ?? InMemoryKeyManager.unauthenticated();
 
   @override
   final ClientAuthKeyProvider authKeyProvider;

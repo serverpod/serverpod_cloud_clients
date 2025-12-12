@@ -17,40 +17,60 @@ class MockOfflineHttpClient implements HttpClient {
   String? userAgent;
 
   @override
-  void addCredentials(final Uri url, final String realm,
-      final HttpClientCredentials credentials) {}
+  void addCredentials(
+    final Uri url,
+    final String realm,
+    final HttpClientCredentials credentials,
+  ) {}
 
   @override
-  void addProxyCredentials(final String host, final int port,
-      final String realm, final HttpClientCredentials credentials) {}
+  void addProxyCredentials(
+    final String host,
+    final int port,
+    final String realm,
+    final HttpClientCredentials credentials,
+  ) {}
 
   @override
   set authenticate(
-      final Future<bool> Function(Uri url, String scheme, String? realm)? f) {}
+    final Future<bool> Function(Uri url, String scheme, String? realm)? f,
+  ) {}
 
   @override
   set authenticateProxy(
-      final Future<bool> Function(
-              String host, int port, String scheme, String? realm)?
-          f) {}
+    final Future<bool> Function(
+      String host,
+      int port,
+      String scheme,
+      String? realm,
+    )?
+    f,
+  ) {}
 
   @override
   set badCertificateCallback(
-      final bool Function(X509Certificate cert, String host, int port)?
-          callback) {}
+    final bool Function(X509Certificate cert, String host, int port)? callback,
+  ) {}
 
   @override
   void close({final bool force = false}) {}
 
   @override
   set connectionFactory(
-      final Future<ConnectionTask<Socket>> Function(
-              Uri url, String? proxyHost, int? proxyPort)?
-          f) {}
+    final Future<ConnectionTask<Socket>> Function(
+      Uri url,
+      String? proxyHost,
+      int? proxyPort,
+    )?
+    f,
+  ) {}
 
   @override
   Future<HttpClientRequest> delete(
-      final String host, final int port, final String path) {
+    final String host,
+    final int port,
+    final String path,
+  ) {
     throw SocketException('No internet connection');
   }
 
@@ -64,7 +84,10 @@ class MockOfflineHttpClient implements HttpClient {
 
   @override
   Future<HttpClientRequest> get(
-      final String host, final int port, final String path) {
+    final String host,
+    final int port,
+    final String path,
+  ) {
     throw SocketException('No internet connection');
   }
 
@@ -75,7 +98,10 @@ class MockOfflineHttpClient implements HttpClient {
 
   @override
   Future<HttpClientRequest> head(
-      final String host, final int port, final String path) {
+    final String host,
+    final int port,
+    final String path,
+  ) {
     throw SocketException('No internet connection');
   }
 
@@ -88,8 +114,12 @@ class MockOfflineHttpClient implements HttpClient {
   set keyLog(final Function(String line)? callback) {}
 
   @override
-  Future<HttpClientRequest> open(final String method, final String host,
-      final int port, final String path) {
+  Future<HttpClientRequest> open(
+    final String method,
+    final String host,
+    final int port,
+    final String path,
+  ) {
     throw SocketException('No internet connection');
   }
 
@@ -100,7 +130,10 @@ class MockOfflineHttpClient implements HttpClient {
 
   @override
   Future<HttpClientRequest> patch(
-      final String host, final int port, final String path) {
+    final String host,
+    final int port,
+    final String path,
+  ) {
     throw SocketException('No internet connection');
   }
 
@@ -111,7 +144,10 @@ class MockOfflineHttpClient implements HttpClient {
 
   @override
   Future<HttpClientRequest> post(
-      final String host, final int port, final String path) {
+    final String host,
+    final int port,
+    final String path,
+  ) {
     throw SocketException('No internet connection');
   }
 
@@ -122,7 +158,10 @@ class MockOfflineHttpClient implements HttpClient {
 
   @override
   Future<HttpClientRequest> put(
-      final String host, final int port, final String path) {
+    final String host,
+    final int port,
+    final String path,
+  ) {
     throw SocketException('No internet connection');
   }
 

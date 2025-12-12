@@ -36,10 +36,7 @@ abstract class NoSubscriptionException
   NoSubscriptionException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
-    return {
-      '__className__': 'NoSubscriptionException',
-      'message': message,
-    };
+    return {'__className__': 'NoSubscriptionException', 'message': message};
   }
 
   @override

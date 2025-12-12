@@ -12,14 +12,14 @@ class OwnerBuilder {
   User? _user;
 
   OwnerBuilder()
-      : _id = Uuid().v4obj(),
-        _externalBillingId = 'default-external-billing-id',
-        _externalPaymentId = 'default-external-payment-id',
-        _billingPortalUrl = Uri.parse('https://billing.example.com'),
-        _billingEmails = [],
-        _projects = [],
-        _billingInfo = null,
-        _user = UserBuilder().build();
+    : _id = Uuid().v4obj(),
+      _externalBillingId = 'default-external-billing-id',
+      _externalPaymentId = 'default-external-payment-id',
+      _billingPortalUrl = Uri.parse('https://billing.example.com'),
+      _billingEmails = [],
+      _projects = [],
+      _billingInfo = null,
+      _user = UserBuilder().build();
 
   OwnerBuilder withId(UuidValue id) {
     _id = id;

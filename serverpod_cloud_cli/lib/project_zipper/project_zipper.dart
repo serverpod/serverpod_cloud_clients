@@ -124,9 +124,7 @@ abstract final class ProjectZipper {
     return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
   }
 
-  static const List<String> defaultIgnoreRules = [
-    '.**',
-  ];
+  static const List<String> defaultIgnoreRules = ['.**'];
 
   static const List<String> recognizedIgnoreRuleFiles = [
     '.gitignore',

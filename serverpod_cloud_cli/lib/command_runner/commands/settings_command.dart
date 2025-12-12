@@ -2,11 +2,13 @@ import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 
 enum CliUserSettingsOption<V> implements OptionDefinition<V> {
-  analytics(FlagOption(
-    argName: 'analytics',
-    negatable: true,
-    helpText: 'Toggles if analytics data is sent.',
-  ));
+  analytics(
+    FlagOption(
+      argName: 'analytics',
+      negatable: true,
+      helpText: 'Toggles if analytics data is sent.',
+    ),
+  );
 
   const CliUserSettingsOption(this.option);
 
@@ -25,7 +27,7 @@ class CliUserSettingsCommand extends CloudCliCommand<CliUserSettingsOption> {
   final description = 'Manage local CLI user settings.';
 
   CliUserSettingsCommand({required super.logger})
-      : super(options: CliUserSettingsOption.values);
+    : super(options: CliUserSettingsOption.values);
 
   @override
   Future<void> runWithConfig(
@@ -45,10 +47,9 @@ class CliUserSettingsCommand extends CloudCliCommand<CliUserSettingsOption> {
       // show current settings
       final settings = runner.serviceProvider.scloudSettings;
       final analytics = await settings.enableAnalytics;
-      logger.list(
-        title: 'Local settings',
-        ['Analytics = ${analytics ?? 'not set'}'],
-      );
+      logger.list(title: 'Local settings', [
+        'Analytics = ${analytics ?? 'not set'}',
+      ]);
     }
   }
 }

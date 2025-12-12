@@ -39,10 +39,7 @@ abstract class ProcurementDeniedException
   ProcurementDeniedException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
-    return {
-      '__className__': 'ProcurementDeniedException',
-      'message': message,
-    };
+    return {'__className__': 'ProcurementDeniedException', 'message': message};
   }
 
   @override

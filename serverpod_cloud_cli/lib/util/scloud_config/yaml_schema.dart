@@ -37,7 +37,8 @@ class YamlSchema {
         {
           if (value is! List) {
             throw SchemaValidationException(
-                'At path "$path": Expected List, got ${value.runtimeType}');
+              'At path "$path": Expected List, got ${value.runtimeType}',
+            );
           }
 
           if (schemaType.isEmpty) return;
@@ -62,11 +63,7 @@ class YamlSchema {
             final fieldType = schemaEntry.value;
 
             if (value.containsKey(fieldName)) {
-              _validate(
-                value[fieldName],
-                fieldType,
-                path: '$path.$fieldName',
-              );
+              _validate(value[fieldName], fieldType, path: '$path.$fieldName');
             } else {
               throw SchemaValidationException(
                 'At path "$path": Missing required key: "$fieldName"',
@@ -78,27 +75,25 @@ class YamlSchema {
       // Primitive types supported by YAML
       case Type():
         {
-          final supportedYamlTypes = {
-            String,
-            int,
-            double,
-            bool,
-          };
+          final supportedYamlTypes = {String, int, double, bool};
 
           if (!supportedYamlTypes.contains(schemaType)) {
             throw SchemaValidationException(
-                'At path "$path": Unsupported schema type: ${schemaType.toString()}');
+              'At path "$path": Unsupported schema type: ${schemaType.toString()}',
+            );
           }
 
           if (value.runtimeType != schemaType) {
             throw SchemaValidationException(
-                'At path "$path": Expected type ${schemaType.toString()}, got ${value.runtimeType}');
+              'At path "$path": Expected type ${schemaType.toString()}, got ${value.runtimeType}',
+            );
           }
           return;
         }
     }
 
     throw SchemaValidationException(
-        'At path "$path": Unsupported schema type: ${schemaType.runtimeType}');
+      'At path "$path": Unsupported schema type: ${schemaType.runtimeType}',
+    );
   }
 }

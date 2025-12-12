@@ -22,9 +22,7 @@ void processCommonClientExceptions(
         message: 'Run the following commands to re-authenticate:',
         'scloud auth logout',
       );
-      logger.terminalCommand(
-        'scloud auth login',
-      );
+      logger.terminalCommand('scloud auth login');
 
       throw ErrorExitException(
         'The credentials for this session seem to no longer be valid.',
@@ -33,9 +31,7 @@ void processCommonClientExceptions(
       );
 
     case UnauthorizedException():
-      logger.error(
-        'You are not authorized to perform this action.',
-      );
+      logger.error('You are not authorized to perform this action.');
 
       throw ErrorExitException(
         'You are not authorized to perform this action.',
@@ -63,10 +59,7 @@ void processCommonClientExceptions(
       throw ErrorExitException('The procurement was not allowed.');
 
     case NotFoundException():
-      logger.error(
-        'The requested resource did not exist.',
-        hint: e.message,
-      );
+      logger.error('The requested resource did not exist.', hint: e.message);
 
       throw ErrorExitException(
         'The requested resource did not exist.',

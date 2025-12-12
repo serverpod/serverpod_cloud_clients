@@ -14,10 +14,7 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../features/auth/models/terms.dart' as _i2;
 
 abstract class AcceptedTermsDTO implements _i1.SerializableModel {
-  AcceptedTermsDTO._({
-    required this.termsType,
-    required this.termsVersion,
-  });
+  AcceptedTermsDTO._({required this.termsType, required this.termsVersion});
 
   factory AcceptedTermsDTO({
     required _i2.Terms termsType,
@@ -38,10 +35,7 @@ abstract class AcceptedTermsDTO implements _i1.SerializableModel {
   /// Returns a shallow copy of this [AcceptedTermsDTO]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
-  AcceptedTermsDTO copyWith({
-    _i2.Terms? termsType,
-    String? termsVersion,
-  });
+  AcceptedTermsDTO copyWith({_i2.Terms? termsType, String? termsVersion});
   @override
   Map<String, dynamic> toJson() {
     return {
@@ -61,19 +55,13 @@ class _AcceptedTermsDTOImpl extends AcceptedTermsDTO {
   _AcceptedTermsDTOImpl({
     required _i2.Terms termsType,
     required String termsVersion,
-  }) : super._(
-         termsType: termsType,
-         termsVersion: termsVersion,
-       );
+  }) : super._(termsType: termsType, termsVersion: termsVersion);
 
   /// Returns a shallow copy of this [AcceptedTermsDTO]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
   @override
-  AcceptedTermsDTO copyWith({
-    _i2.Terms? termsType,
-    String? termsVersion,
-  }) {
+  AcceptedTermsDTO copyWith({_i2.Terms? termsType, String? termsVersion}) {
     return AcceptedTermsDTO(
       termsType: termsType ?? this.termsType,
       termsVersion: termsVersion ?? this.termsVersion,

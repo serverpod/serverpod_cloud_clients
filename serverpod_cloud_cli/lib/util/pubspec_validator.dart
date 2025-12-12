@@ -32,9 +32,7 @@ bool isServerpodServerPackage(final File pubspecFile) {
 class TenantProjectPubspec {
   final Pubspec pubspec;
 
-  TenantProjectPubspec(
-    this.pubspec,
-  );
+  TenantProjectPubspec(this.pubspec);
 
   /// Reads and parses the pubspec.yaml file in the given project directory.
   ///
@@ -91,9 +89,7 @@ class TenantProjectPubspec {
   /// If the dependencies are not valid,
   /// the returned list will contain the error messages.
   /// If the dependencies are valid, the list will be empty.
-  List<String> projectDependencyIssues({
-    final bool requireServerpod = true,
-  }) {
+  List<String> projectDependencyIssues({final bool requireServerpod = true}) {
     final supportedSdk = VersionConstraint.parse(
       VersionConstants.supportedSdkConstraint,
     );

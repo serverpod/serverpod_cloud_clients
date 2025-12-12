@@ -29,10 +29,7 @@ abstract class Launch {
     required final bool? enableDb,
     required final bool? performDeploy,
   }) async {
-    await ProjectCommands.checkPlanAvailability(
-      cloudApiClient,
-      logger: logger,
-    );
+    await ProjectCommands.checkPlanAvailability(cloudApiClient, logger: logger);
 
     if (newProjectId != null && existingProjectId != null) {
       throw ArgumentError(
@@ -50,34 +47,17 @@ abstract class Launch {
       performDeploy: performDeploy,
     );
 
-    await selectProjectDir(
-      logger,
-      projectSetup,
-      foundProjectDir,
-    );
+    await selectProjectDir(logger, projectSetup, foundProjectDir);
 
-    await selectProjectId(
-      cloudApiClient,
-      logger,
-      projectSetup,
-    );
+    await selectProjectId(cloudApiClient, logger, projectSetup);
 
     if (projectSetup.preexistingProject != true) {
-      await selectEnableDb(
-        logger,
-        projectSetup,
-      );
+      await selectEnableDb(logger, projectSetup);
     }
 
-    await selectPerformDeploy(
-      logger,
-      projectSetup,
-    );
+    await selectPerformDeploy(logger, projectSetup);
 
-    await confirmSetupAndContinue(
-      logger,
-      projectSetup,
-    );
+    await confirmSetupAndContinue(logger, projectSetup);
 
     await performLaunch(
       cloudApiClient,
@@ -108,9 +88,7 @@ abstract class Launch {
     }
 
     do {
-      final projectDir = await logger.input(
-        'Enter the project directory',
-      );
+      final projectDir = await logger.input('Enter the project directory');
 
       if (projectDir.isEmpty) {
         logger.error('Project directory is required.');
@@ -191,17 +169,15 @@ abstract class Launch {
 
     final defaultProjectId = _getDefaultProjectId(projectSetup.projectDir);
 
-    logger.raw(
-      r'''
+    logger.raw(r'''
 The project id is the unique identifier for the project.
 The default API domain will be: <project-id>.api.serverpod.space
-''',
-      style: cli.AnsiStyle.darkGray,
-    );
+''', style: cli.AnsiStyle.darkGray);
 
     do {
-      final defaultValue =
-          defaultProjectId != null ? '$defaultPrefix$defaultProjectId' : null;
+      final defaultValue = defaultProjectId != null
+          ? '$defaultPrefix$defaultProjectId'
+          : null;
       var projectId = await logger.input(
         'Enter a new project id',
         defaultValue: defaultValue,
@@ -444,7 +420,8 @@ The default API domain will be: <project-id>.api.serverpod.space
       'When the server has started, you can access it at:\n',
       trailingRocket: true,
       newParagraph: true,
-      followUp: '   Web:      https://$projectId.$tenantHost/\n'
+      followUp:
+          '   Web:      https://$projectId.$tenantHost/\n'
           '   API:      https://$projectId.api.$tenantHost/\n'
           '   Insights: https://$projectId.insights.$tenantHost/',
     );
@@ -461,30 +438,28 @@ The default API domain will be: <project-id>.api.serverpod.space
     final String projectId,
   ) async {
     String? attemptId;
-    await logger.progress(
-      'Waiting for deployment status.',
-      () async {
-        for (int i = 0; i < 3; i++) {
-          try {
-            attemptId = await StatusFeature.getDeployAttemptId(
-              cloudApiClient,
-              cloudCapsuleId: projectId,
-              attemptNumber: 0,
-            );
-            return true;
-          } on NotFoundException catch (_) {
-            logger.debug('Waiting for deployment status...');
-            await Future.delayed(const Duration(seconds: 5));
-          }
+    await logger.progress('Waiting for deployment status.', () async {
+      for (int i = 0; i < 3; i++) {
+        try {
+          attemptId = await StatusFeature.getDeployAttemptId(
+            cloudApiClient,
+            cloudCapsuleId: projectId,
+            attemptNumber: 0,
+          );
+          return true;
+        } on NotFoundException catch (_) {
+          logger.debug('Waiting for deployment status...');
+          await Future.delayed(const Duration(seconds: 5));
         }
-        return false;
-      },
-    );
+      }
+      return false;
+    });
     final id = attemptId;
     if (id == null) {
       throw FailureException(
         error: 'Failed to get deployment status.',
-        hint: 'Run this command to see recent deployments: '
+        hint:
+            'Run this command to see recent deployments: '
             'scloud deployment list',
       );
     }

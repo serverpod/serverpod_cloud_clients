@@ -30,22 +30,29 @@ void main() {
   });
   const projectId = 'projectId';
 
-  test('Given deployments show command when instantiated then requires login',
-      () {
-    expect(CloudDeploymentsShowCommand(logger: logger).requireLogin, isTrue);
-  });
-
-  test('Given deployments list command when instantiated then requires login',
-      () {
-    expect(CloudDeploymentsListCommand(logger: logger).requireLogin, isTrue);
-  });
+  test(
+    'Given deployments show command when instantiated then requires login',
+    () {
+      expect(CloudDeploymentsShowCommand(logger: logger).requireLogin, isTrue);
+    },
+  );
 
   test(
-      'Given deployments build-log command when instantiated then requires login',
-      () {
-    expect(
-        CloudDeploymentsBuildLogCommand(logger: logger).requireLogin, isTrue);
-  });
+    'Given deployments list command when instantiated then requires login',
+    () {
+      expect(CloudDeploymentsListCommand(logger: logger).requireLogin, isTrue);
+    },
+  );
+
+  test(
+    'Given deployments build-log command when instantiated then requires login',
+    () {
+      expect(
+        CloudDeploymentsBuildLogCommand(logger: logger).requireLogin,
+        isTrue,
+      );
+    },
+  );
 
   group('Given unauthenticated', () {
     setUp(() async {
@@ -53,15 +60,19 @@ void main() {
     });
 
     setUpAll(() async {
-      when(() => client.status.getDeployAttempts(
-            cloudCapsuleId: any(named: 'cloudCapsuleId'),
-            limit: any(named: 'limit'),
-          )).thenThrow(ServerpodClientUnauthorized());
+      when(
+        () => client.status.getDeployAttempts(
+          cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          limit: any(named: 'limit'),
+        ),
+      ).thenThrow(ServerpodClientUnauthorized());
 
-      when(() => client.status.getDeployAttemptId(
-            cloudCapsuleId: any(named: 'cloudCapsuleId'),
-            attemptNumber: any(named: 'attemptNumber'),
-          )).thenThrow(ServerpodClientUnauthorized());
+      when(
+        () => client.status.getDeployAttemptId(
+          cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          attemptNumber: any(named: 'attemptNumber'),
+        ),
+      ).thenThrow(ServerpodClientUnauthorized());
     });
 
     tearDownAll(() {
@@ -71,12 +82,7 @@ void main() {
     group('when executing deployments show', () {
       late Future commandResult;
       setUp(() async {
-        commandResult = cli.run([
-          'deployment',
-          'show',
-          '--project',
-          projectId,
-        ]);
+        commandResult = cli.run(['deployment', 'show', '--project', projectId]);
       });
 
       test('then throws exception', () async {
@@ -90,11 +96,12 @@ void main() {
 
         expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message:
-                  'The credentials for this session seem to no longer be valid.',
-            ));
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message:
+                'The credentials for this session seem to no longer be valid.',
+          ),
+        );
       });
     });
 
@@ -120,23 +127,19 @@ void main() {
 
         expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message:
-                  'The credentials for this session seem to no longer be valid.',
-            ));
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message:
+                'The credentials for this session seem to no longer be valid.',
+          ),
+        );
       });
     });
 
     group('when executing deployments list', () {
       late Future commandResult;
       setUp(() async {
-        commandResult = cli.run([
-          'deployment',
-          'list',
-          '--project',
-          projectId,
-        ]);
+        commandResult = cli.run(['deployment', 'list', '--project', projectId]);
       });
 
       test('then throws exception', () async {
@@ -150,11 +153,12 @@ void main() {
 
         expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message:
-                  'The credentials for this session seem to no longer be valid.',
-            ));
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message:
+                'The credentials for this session seem to no longer be valid.',
+          ),
+        );
       });
     });
   });
@@ -203,15 +207,19 @@ void main() {
             ),
           ];
 
-          when(() => client.status.getDeployAttemptStatus(
-                cloudCapsuleId: projectId,
-                attemptId: attemptStages.first.attemptId,
-              )).thenAnswer((final _) async => attemptStages);
+          when(
+            () => client.status.getDeployAttemptStatus(
+              cloudCapsuleId: projectId,
+              attemptId: attemptStages.first.attemptId,
+            ),
+          ).thenAnswer((final _) async => attemptStages);
 
-          when(() => client.status.getDeployAttemptId(
-                cloudCapsuleId: projectId,
-                attemptNumber: 0,
-              )).thenAnswer((final _) async => attemptStages.first.attemptId);
+          when(
+            () => client.status.getDeployAttemptId(
+              cloudCapsuleId: projectId,
+              attemptNumber: 0,
+            ),
+          ).thenAnswer((final _) async => attemptStages.first.attemptId);
         });
 
         tearDownAll(() {
@@ -226,11 +234,7 @@ void main() {
           group('$description with args="${args.join(' ')}"', () {
             late Future commandResult;
             setUp(() async {
-              commandResult = cli.run([
-                'deployment',
-                'show',
-                ...args,
-              ]);
+              commandResult = cli.run(['deployment', 'show', ...args]);
             });
 
             test('then completes successfully', () async {
@@ -241,9 +245,7 @@ void main() {
               await commandResult;
 
               expect(logger.lineCalls, isNotEmpty);
-              expect(
-                logger.lineCalls.map((final l) => l.line).join('\n'),
-                '''
+              expect(logger.lineCalls.map((final l) => l.line).join('\n'), '''
 Status of projectId deploy abc, started at 2021-12-31 10:20:30:
 
 ✅  Booster liftoff:     Upload successful!
@@ -253,18 +255,25 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
 ✅  Orbital insertion:   Deploy successful!
 
 ✅  Pod commissioning:   Service successful! 🚀
-''',
-              );
+''');
             });
           });
         }
 
         testCorrectGetRecentStatusCommand(
-            'by named proj opt and default build', ['--project', projectId]);
-        testCorrectGetRecentStatusCommand(
-            'by named proj opt and build index', ['--project', projectId, '0']);
-        testCorrectGetRecentStatusCommand(
-            'by named proj opt and build id', ['--project', projectId, 'abc']);
+          'by named proj opt and default build',
+          ['--project', projectId],
+        );
+        testCorrectGetRecentStatusCommand('by named proj opt and build index', [
+          '--project',
+          projectId,
+          '0',
+        ]);
+        testCorrectGetRecentStatusCommand('by named proj opt and build id', [
+          '--project',
+          projectId,
+          'abc',
+        ]);
 
         group('and with option --output-overall-status', () {
           late Future commandResult;
@@ -292,89 +301,96 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
         });
       });
 
-      group('with args to get most recent deploy status which does not exist',
-          () {
-        setUpAll(() async {
-          when(() => client.status.getDeployAttemptStatus(
+      group(
+        'with args to get most recent deploy status which does not exist',
+        () {
+          setUpAll(() async {
+            when(
+              () => client.status.getDeployAttemptStatus(
                 cloudCapsuleId: any(named: 'cloudCapsuleId'),
                 attemptId: any(named: 'attemptId'),
-              )).thenThrow(NotFoundException(message: 'not found'));
+              ),
+            ).thenThrow(NotFoundException(message: 'not found'));
 
-          when(() => client.status.getDeployAttemptId(
+            when(
+              () => client.status.getDeployAttemptId(
                 cloudCapsuleId: any(named: 'cloudCapsuleId'),
                 attemptNumber: any(named: 'attemptNumber'),
-              )).thenThrow(NotFoundException(message: 'not found'));
-        });
-
-        tearDownAll(() async {
-          reset(client.status);
-        });
-
-        @isTestGroup
-        void testGetStatusWithMissingDeployCommand(
-          final String description,
-          final List<String> args,
-        ) {
-          group('$description with args="${args.join(' ')}"', () {
-            late Future commandResult;
-            setUp(() async {
-              commandResult = cli.run([
-                'deployment',
-                'show',
-                ...args,
-              ]);
-            });
-
-            test('then throws ExitErrorException', () async {
-              await expectLater(
-                  commandResult, throwsA(isA<ErrorExitException>()));
-            });
-
-            test('then outputs error message', () async {
-              await commandResult.onError((final e, final s) {});
-
-              expect(logger.errorCalls, isNotEmpty);
-              expect(
-                logger.errorCalls.first,
-                equalsErrorCall(
-                  message: 'No deployment status found.',
-                  hint: 'Run this command to deploy: scloud deploy',
-                ),
-              );
-            });
+              ),
+            ).thenThrow(NotFoundException(message: 'not found'));
           });
-        }
 
-        testGetStatusWithMissingDeployCommand(
-          'for named proj opt without deploy index',
-          ['--project', projectId],
-        );
-        testGetStatusWithMissingDeployCommand(
-          'for named proj opt with deploy index 0',
-          ['--project', projectId, '0'],
-        );
-        testGetStatusWithMissingDeployCommand(
-          'for non-existing project without deploy index',
-          ['--project', 'non-existing'],
-        );
-        testGetStatusWithMissingDeployCommand(
-          'for non-existing project with deploy index 0',
-          ['--project', 'non-existing', '0'],
-        );
-      });
+          tearDownAll(() async {
+            reset(client.status);
+          });
 
-      group('with args to get a specific deploy status which does not exist',
-          () {
+          @isTestGroup
+          void testGetStatusWithMissingDeployCommand(
+            final String description,
+            final List<String> args,
+          ) {
+            group('$description with args="${args.join(' ')}"', () {
+              late Future commandResult;
+              setUp(() async {
+                commandResult = cli.run(['deployment', 'show', ...args]);
+              });
+
+              test('then throws ExitErrorException', () async {
+                await expectLater(
+                  commandResult,
+                  throwsA(isA<ErrorExitException>()),
+                );
+              });
+
+              test('then outputs error message', () async {
+                await commandResult.onError((final e, final s) {});
+
+                expect(logger.errorCalls, isNotEmpty);
+                expect(
+                  logger.errorCalls.first,
+                  equalsErrorCall(
+                    message: 'No deployment status found.',
+                    hint: 'Run this command to deploy: scloud deploy',
+                  ),
+                );
+              });
+            });
+          }
+
+          testGetStatusWithMissingDeployCommand(
+            'for named proj opt without deploy index',
+            ['--project', projectId],
+          );
+          testGetStatusWithMissingDeployCommand(
+            'for named proj opt with deploy index 0',
+            ['--project', projectId, '0'],
+          );
+          testGetStatusWithMissingDeployCommand(
+            'for non-existing project without deploy index',
+            ['--project', 'non-existing'],
+          );
+          testGetStatusWithMissingDeployCommand(
+            'for non-existing project with deploy index 0',
+            ['--project', 'non-existing', '0'],
+          );
+        },
+      );
+
+      group('with args to get a specific deploy status which does not exist', () {
         setUpAll(() async {
-          when(() => client.status.getDeployAttemptStatus(
-                cloudCapsuleId: any(named: 'cloudCapsuleId'),
-                attemptId: any(named: 'attemptId'),
-              )).thenThrow(NotFoundException(message: 'not found'));
+          when(
+            () => client.status.getDeployAttemptStatus(
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+              attemptId: any(named: 'attemptId'),
+            ),
+          ).thenThrow(NotFoundException(message: 'not found'));
 
-          when(() => client.status.getDeployAttemptId(
-                cloudCapsuleId: any(named: 'cloudCapsuleId'),
-                attemptNumber: any(named: 'attemptNumber'),
-              )).thenThrow(NotFoundException(message: 'not found'));
+          when(
+            () => client.status.getDeployAttemptId(
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+              attemptNumber: any(named: 'attemptNumber'),
+            ),
+          ).thenThrow(NotFoundException(message: 'not found'));
         });
 
         tearDownAll(() async {
@@ -389,16 +405,14 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
           group('$description with args="${args.join(' ')}"', () {
             late Future commandResult;
             setUp(() async {
-              commandResult = cli.run([
-                'deployment',
-                'show',
-                ...args,
-              ]);
+              commandResult = cli.run(['deployment', 'show', ...args]);
             });
 
             test('then throws ExitErrorException', () async {
               await expectLater(
-                  commandResult, throwsA(isA<ErrorExitException>()));
+                commandResult,
+                throwsA(isA<ErrorExitException>()),
+              );
             });
 
             test('then outputs error message', () async {
@@ -409,7 +423,8 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
                 logger.errorCalls.first,
                 equalsErrorCall(
                   message: 'No such deployment status found.',
-                  hint: 'Run this command to see recent deployments: '
+                  hint:
+                      'Run this command to see recent deployments: '
                       'scloud deployment list',
                 ),
               );
@@ -427,37 +442,40 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
         );
 
         group(
-            'for named proj opt with non-existing deploy id with args="--project $projectId non-existing"',
-            () {
-          late Future commandResult;
-          setUp(() async {
-            commandResult = cli.run([
-              'deployment',
-              'show',
-              '--project',
-              projectId,
-              'non-existing',
-            ]);
-          });
+          'for named proj opt with non-existing deploy id with args="--project $projectId non-existing"',
+          () {
+            late Future commandResult;
+            setUp(() async {
+              commandResult = cli.run([
+                'deployment',
+                'show',
+                '--project',
+                projectId,
+                'non-existing',
+              ]);
+            });
 
-          test('then throws ExitErrorException', () async {
-            await expectLater(
-                commandResult, throwsA(isA<ErrorExitException>()));
-          });
+            test('then throws ExitErrorException', () async {
+              await expectLater(
+                commandResult,
+                throwsA(isA<ErrorExitException>()),
+              );
+            });
 
-          test('then outputs error message', () async {
-            await commandResult.onError((final e, final s) {});
+            test('then outputs error message', () async {
+              await commandResult.onError((final e, final s) {});
 
-            expect(logger.errorCalls, isNotEmpty);
-            expect(
-              logger.errorCalls.first,
-              equalsErrorCall(
-                message: 'The requested resource did not exist.',
-                hint: 'not found',
-              ),
-            );
-          });
-        });
+              expect(logger.errorCalls, isNotEmpty);
+              expect(
+                logger.errorCalls.first,
+                equalsErrorCall(
+                  message: 'The requested resource did not exist.',
+                  hint: 'not found',
+                ),
+              );
+            });
+          },
+        );
       });
     });
 
@@ -499,45 +517,48 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
           ),
         ];
 
-        when(() => client.status.getDeployAttemptStatus(
-              cloudCapsuleId: projectId,
-              attemptId: attemptStages.first.attemptId,
-            )).thenAnswer((final _) async => attemptStages);
+        when(
+          () => client.status.getDeployAttemptStatus(
+            cloudCapsuleId: projectId,
+            attemptId: attemptStages.first.attemptId,
+          ),
+        ).thenAnswer((final _) async => attemptStages);
 
-        when(() => client.status.getDeployAttemptId(
-              cloudCapsuleId: projectId,
-              attemptNumber: 0,
-            )).thenAnswer((final _) async => attemptStages.first.attemptId);
+        when(
+          () => client.status.getDeployAttemptId(
+            cloudCapsuleId: projectId,
+            attemptNumber: 0,
+          ),
+        ).thenAnswer((final _) async => attemptStages.first.attemptId);
       });
 
       tearDownAll(() {
         reset(client.status);
       });
 
-      group('when running deployments show command to get the deploy status',
-          () {
-        late Future commandResult;
+      group(
+        'when running deployments show command to get the deploy status',
+        () {
+          late Future commandResult;
 
-        setUp(() async {
-          commandResult = cli.run([
-            'deployment',
-            'show',
-            '--project',
-            projectId,
-          ]);
-        });
+          setUp(() async {
+            commandResult = cli.run([
+              'deployment',
+              'show',
+              '--project',
+              projectId,
+            ]);
+          });
 
-        test('then completes successfully', () async {
-          await expectLater(commandResult, completes);
-        });
+          test('then completes successfully', () async {
+            await expectLater(commandResult, completes);
+          });
 
-        test('then outputs the status', () async {
-          await commandResult;
+          test('then outputs the status', () async {
+            await commandResult;
 
-          expect(logger.lineCalls, isNotEmpty);
-          expect(
-            logger.lineCalls.map((final l) => l.line).join('\n'),
-            '''
+            expect(logger.lineCalls, isNotEmpty);
+            expect(logger.lineCalls.map((final l) => l.line).join('\n'), '''
 Status of projectId deploy abc, started at 2021-12-31 10:20:30:
 
 ✅  Booster liftoff:     Upload successful!
@@ -547,37 +568,38 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
 ✅  Orbital insertion:   Deploy successful!
 
 ⬛  Pod commissioning:   Service awaiting...
-''',
-          );
-        });
-      });
+''');
+          });
+        },
+      );
 
       group(
-          'when running deployments show command with --output-overall-status option',
-          () {
-        late Future commandResult;
+        'when running deployments show command with --output-overall-status option',
+        () {
+          late Future commandResult;
 
-        setUp(() async {
-          commandResult = cli.run([
-            'deployment',
-            'show',
-            '--project',
-            projectId,
-            '--output-overall-status',
-          ]);
-        });
+          setUp(() async {
+            commandResult = cli.run([
+              'deployment',
+              'show',
+              '--project',
+              projectId,
+              '--output-overall-status',
+            ]);
+          });
 
-        test('then completes successfully', () async {
-          await expectLater(commandResult, completes);
-        });
+          test('then completes successfully', () async {
+            await expectLater(commandResult, completes);
+          });
 
-        test('then outputs the single word awaiting', () async {
-          await commandResult;
+          test('then outputs the single word awaiting', () async {
+            await commandResult;
 
-          expect(logger.lineCalls, isNotEmpty);
-          expect(logger.lineCalls.single.line, equals('awaiting'));
-        });
-      });
+            expect(logger.lineCalls, isNotEmpty);
+            expect(logger.lineCalls.single.line, equals('awaiting'));
+          });
+        },
+      );
     });
 
     group('when running deployments list command', () {
@@ -602,10 +624,12 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
             ),
           ];
 
-          when(() => client.status.getDeployAttempts(
-                cloudCapsuleId: projectId,
-                limit: any(named: 'limit'),
-              )).thenAnswer((final _) async => buildStatuses);
+          when(
+            () => client.status.getDeployAttempts(
+              cloudCapsuleId: projectId,
+              limit: any(named: 'limit'),
+            ),
+          ).thenAnswer((final _) async => buildStatuses);
         });
 
         tearDownAll(() async {
@@ -621,11 +645,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
             late Future commandResult;
 
             setUp(() async {
-              commandResult = cli.run([
-                'deployment',
-                'list',
-                ...args,
-              ]);
+              commandResult = cli.run(['deployment', 'list', ...args]);
             });
 
             test('then completes successfully', () async {
@@ -661,8 +681,10 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
           });
         }
 
-        testCorrectGetStatusesCommand(
-            'with named project opt', ['--project', projectId]);
+        testCorrectGetStatusesCommand('with named project opt', [
+          '--project',
+          projectId,
+        ]);
       });
     });
   });

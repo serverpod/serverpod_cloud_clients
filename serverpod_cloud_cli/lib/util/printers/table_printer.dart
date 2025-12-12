@@ -20,22 +20,19 @@ class TablePrinter {
     final Iterable<List<String?>>? rows,
     final String? columnSeparator,
     final String? headerDividerColumnSeparator,
-  })  : _columnHeaders = List.from(headers ?? <String?>[]),
-        _columnMinWidths = List.from(columnMinWidths ?? <int?>[]),
-        _rows = List.from(rows ?? <List<String?>>[]),
-        _columnSeparator = columnSeparator ?? defaultColumnSeparator,
-        _headerDividerColumnSeparator =
-            headerDividerColumnSeparator ?? defaultHeaderDividerColumnSeparator;
+  }) : _columnHeaders = List.from(headers ?? <String?>[]),
+       _columnMinWidths = List.from(columnMinWidths ?? <int?>[]),
+       _rows = List.from(rows ?? <List<String?>>[]),
+       _columnSeparator = columnSeparator ?? defaultColumnSeparator,
+       _headerDividerColumnSeparator =
+           headerDividerColumnSeparator ?? defaultHeaderDividerColumnSeparator;
 
   /// Convenience constructor for creating a table with aligned columns
   /// and no header. By default the columns are separated by a single space.
   TablePrinter.columns({
     required final Iterable<List<String?>> rows,
     final String? columnSeparator,
-  }) : this(
-          rows: rows,
-          columnSeparator: columnSeparator ?? ' ',
-        );
+  }) : this(rows: rows, columnSeparator: columnSeparator ?? ' ');
 
   /// Adds column headers to the table.
   /// Can be called multiple times.
@@ -116,13 +113,16 @@ class TablePrinter {
   List<String> _formatHeader(final List<int> columnWidths) {
     final headerNames = List.generate(
       columnWidths.length,
-      (final colIx) => (_columnHeaders.elementAtOrNull(colIx) ?? '')
-          .padRight(columnWidths[colIx]),
+      (final colIx) => (_columnHeaders.elementAtOrNull(colIx) ?? '').padRight(
+        columnWidths[colIx],
+      ),
     ).join(_columnSeparator);
 
-    final headerDivider = columnWidths.map((final width) {
-      return '-' * (width);
-    }).join(_headerDividerColumnSeparator);
+    final headerDivider = columnWidths
+        .map((final width) {
+          return '-' * (width);
+        })
+        .join(_headerDividerColumnSeparator);
 
     return [headerNames, headerDivider];
   }
@@ -137,20 +137,18 @@ class TablePrinter {
   }
 
   List<int> _getColumnWidths() {
-    final nofColumns = max([
-      _columnMinWidths,
-      _columnHeaders,
-      ..._rows,
-    ].map((final ls) => ls.length));
+    final nofColumns = max(
+      [_columnMinWidths, _columnHeaders, ..._rows].map((final ls) => ls.length),
+    );
 
     final columnWidths = List.generate(
-        nofColumns,
-        (final colIx) => max([
-              _columnMinWidths.elementAtOrNull(colIx) ?? 0,
-              _columnHeaders.elementAtOrNull(colIx)?.length ?? 0,
-              ..._rows
-                  .map((final row) => row.elementAtOrNull(colIx)?.length ?? 0),
-            ]));
+      nofColumns,
+      (final colIx) => max([
+        _columnMinWidths.elementAtOrNull(colIx) ?? 0,
+        _columnHeaders.elementAtOrNull(colIx)?.length ?? 0,
+        ..._rows.map((final row) => row.elementAtOrNull(colIx)?.length ?? 0),
+      ]),
+    );
     return columnWidths;
   }
 }

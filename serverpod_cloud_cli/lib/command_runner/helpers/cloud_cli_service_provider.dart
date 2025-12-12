@@ -24,8 +24,8 @@ class CloudCliServiceProvider {
   CloudCliServiceProvider({
     final Client Function(GlobalConfiguration globalCfg)? apiClientFactory,
     final FileUploaderFactory? fileUploaderFactory,
-  })  : _apiClientFactory = apiClientFactory,
-        _fileUploaderFactory = fileUploaderFactory ?? _createGcsFileUploader;
+  }) : _apiClientFactory = apiClientFactory,
+       _fileUploaderFactory = fileUploaderFactory ?? _createGcsFileUploader;
 
   bool get initialized => _initialized;
 
@@ -64,8 +64,9 @@ class CloudCliServiceProvider {
     } else {
       final localStoragePath = _globalConfiguration.scloudDir;
       final serverAddress = _globalConfiguration.apiServer;
-      final address =
-          serverAddress.endsWith('/') ? serverAddress : '$serverAddress/';
+      final address = serverAddress.endsWith('/')
+          ? serverAddress
+          : '$serverAddress/';
 
       final authTokenOverride = _globalConfiguration.authToken;
       final TokenProvider tokenProvider = BuildTokenProvider.build(
@@ -87,12 +88,10 @@ class CloudCliServiceProvider {
   FileUploaderFactory get fileUploaderFactory => _fileUploaderFactory;
 
   ScloudSettings get scloudSettings => _scloudSettings ??= ScloudSettings(
-        localStoragePath: _globalConfiguration.scloudDir.path,
-      );
+    localStoragePath: _globalConfiguration.scloudDir.path,
+  );
 }
 
-FileUploaderClient _createGcsFileUploader(
-  final String uploadDescription,
-) {
+FileUploaderClient _createGcsFileUploader(final String uploadDescription) {
   return GoogleCloudStorageUploader(uploadDescription);
 }

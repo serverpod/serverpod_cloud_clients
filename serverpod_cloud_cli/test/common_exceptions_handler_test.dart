@@ -13,13 +13,15 @@ void main() {
     logger.clear();
   });
 
-  test(
-      'Given a ServerpodClientUnauthorized '
+  test('Given a ServerpodClientUnauthorized '
       'when calling processCommonClientExceptions then '
       'should throw ExitErrorException and log error message', () {
     expect(
       () => processCommonClientExceptions(
-          logger, ServerpodClientUnauthorized(), StackTrace.current),
+        logger,
+        ServerpodClientUnauthorized(),
+        StackTrace.current,
+      ),
       throwsA(isA<ErrorExitException>()),
     );
 
@@ -36,20 +38,20 @@ void main() {
           message: 'Run the following commands to re-authenticate:',
           command: 'scloud auth logout',
         ),
-        equalsTerminalCommandCall(
-          command: 'scloud auth login',
-        ),
+        equalsTerminalCommandCall(command: 'scloud auth login'),
       ]),
     );
   });
 
-  test(
-      'Given a UnauthorizedException '
+  test('Given a UnauthorizedException '
       'when calling processCommonClientExceptions '
       'then should throw ExitErrorException and log error message', () {
     expect(
-      () => processCommonClientExceptions(logger,
-          UnauthorizedException(message: 'some error'), StackTrace.current),
+      () => processCommonClientExceptions(
+        logger,
+        UnauthorizedException(message: 'some error'),
+        StackTrace.current,
+      ),
       throwsA(isA<ErrorExitException>()),
     );
 
@@ -61,18 +63,18 @@ void main() {
     );
   });
 
-  test(
-      'Given a ProcurementDeniedException '
+  test('Given a ProcurementDeniedException '
       'when calling processCommonClientExceptions '
       'then should throw ExitErrorException and log error message', () {
     expect(
       () => processCommonClientExceptions(
-          logger,
-          ProcurementDeniedException(
-            message:
-                'The maximum number of projects that can be created has been reached (5).',
-          ),
-          StackTrace.current),
+        logger,
+        ProcurementDeniedException(
+          message:
+              'The maximum number of projects that can be created has been reached (5).',
+        ),
+        StackTrace.current,
+      ),
       throwsA(isA<ErrorExitException>()),
     );
 
@@ -88,13 +90,15 @@ void main() {
     );
   });
 
-  test(
-      'Given a NotFoundException '
+  test('Given a NotFoundException '
       'when calling processCommonClientExceptions '
       'then should throw ExitErrorException and log error message', () {
     expect(
-      () => processCommonClientExceptions(logger,
-          NotFoundException(message: 'No such project.'), StackTrace.current),
+      () => processCommonClientExceptions(
+        logger,
+        NotFoundException(message: 'No such project.'),
+        StackTrace.current,
+      ),
       throwsA(isA<ErrorExitException>()),
     );
 
@@ -107,13 +111,15 @@ void main() {
     );
   });
 
-  test(
-      'Given an exception that is not commonly handled '
+  test('Given an exception that is not commonly handled '
       'when calling processCommonClientExceptions '
       'then should not throw an exception', () {
     expect(
       () => processCommonClientExceptions(
-          logger, Exception(), StackTrace.current),
+        logger,
+        Exception(),
+        StackTrace.current,
+      ),
       returnsNormally,
     );
   });

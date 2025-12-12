@@ -11,8 +11,7 @@ class PubApiClientMock extends Mock implements PubApiClient {}
 
 void main() {
   group('Given the pubspec version parser', () {
-    test(
-        'and a missing pubspec.yaml file '
+    test('and a missing pubspec.yaml file '
         'when getting the version then null is returned', () {
       final pubSpecVersion = getPubSpecVersion(
         pubSpecPath: p.join('nonexistent_directory', 'pubspec.yaml'),

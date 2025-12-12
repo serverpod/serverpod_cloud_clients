@@ -59,18 +59,22 @@ void main() {
     logger.clear();
   });
 
-  test('Given project launch command when instantiated then requires login',
-      () {
-    expect(CloudLaunchCommand(logger: logger).requireLogin, isTrue);
-  });
+  test(
+    'Given project launch command when instantiated then requires login',
+    () {
+      expect(CloudLaunchCommand(logger: logger).requireLogin, isTrue);
+    },
+  );
 
   group('Given authenticated', () {
     setUpAll(() async {
       client.authKeyProvider = InMemoryKeyManager.authenticated();
 
-      when(() => client.projects.createProject(
-            cloudProjectId: any(named: 'cloudProjectId'),
-          )).thenAnswer(
+      when(
+        () => client.projects.createProject(
+          cloudProjectId: any(named: 'cloudProjectId'),
+        ),
+      ).thenAnswer(
         (final invocation) async => Future.value(
           ProjectBuilder()
               .withCloudProjectId(invocation.namedArguments[#cloudProjectId])
@@ -78,27 +82,33 @@ void main() {
         ),
       );
 
-      when(() => client.projects.listProjectsInfo(
-            includeLatestDeployAttemptTime:
-                any(named: 'includeLatestDeployAttemptTime'),
-          )).thenAnswer(
-        (final _) async => Future.value([]),
-      );
+      when(
+        () => client.projects.listProjectsInfo(
+          includeLatestDeployAttemptTime: any(
+            named: 'includeLatestDeployAttemptTime',
+          ),
+        ),
+      ).thenAnswer((final _) async => Future.value([]));
 
-      when(() => client.projects.fetchProjectConfig(
-            cloudProjectId: any(named: 'cloudProjectId'),
-          )).thenAnswer(
+      when(
+        () => client.projects.fetchProjectConfig(
+          cloudProjectId: any(named: 'cloudProjectId'),
+        ),
+      ).thenAnswer(
         (final invocation) async => Future.value(
           ProjectConfig(projectId: invocation.namedArguments[#cloudProjectId]),
         ),
       );
 
-      when(() => client.infraResources.enableDatabase(
-            cloudCapsuleId: any(named: 'cloudCapsuleId'),
-          )).thenAnswer((final _) async => {});
+      when(
+        () => client.infraResources.enableDatabase(
+          cloudCapsuleId: any(named: 'cloudCapsuleId'),
+        ),
+      ).thenAnswer((final _) async => {});
 
-      when(() => client.deploy.createUploadDescription(any()))
-          .thenAnswer((final _) async => jsonEncode(descriptionContent));
+      when(
+        () => client.deploy.createUploadDescription(any()),
+      ).thenAnswer((final _) async => jsonEncode(descriptionContent));
 
       final attemptStages = [
         DeployAttemptStage(
@@ -109,27 +119,35 @@ void main() {
         ),
       ];
 
-      when(() => client.status.getDeployAttemptId(
-            cloudCapsuleId: projectId,
-            attemptNumber: 0,
-          )).thenAnswer((final _) async => attemptStages.first.attemptId);
+      when(
+        () => client.status.getDeployAttemptId(
+          cloudCapsuleId: projectId,
+          attemptNumber: 0,
+        ),
+      ).thenAnswer((final _) async => attemptStages.first.attemptId);
 
-      when(() => client.status.getDeployAttemptStatus(
-            cloudCapsuleId: projectId,
-            attemptId: attemptStages.first.attemptId,
-          )).thenAnswer((final _) async => attemptStages);
+      when(
+        () => client.status.getDeployAttemptStatus(
+          cloudCapsuleId: projectId,
+          attemptId: attemptStages.first.attemptId,
+        ),
+      ).thenAnswer((final _) async => attemptStages);
 
-      when(() => client.plans.listProcuredPlanNames()).thenAnswer(
-        (final invocation) async => Future.value([]),
-      );
+      when(
+        () => client.plans.listProcuredPlanNames(),
+      ).thenAnswer((final invocation) async => Future.value([]));
 
-      when(() => client.plans
-              .procurePlan(planProductName: any(named: 'planProductName')))
-          .thenAnswer((final invocation) async => Future.value());
+      when(
+        () => client.plans.procurePlan(
+          planProductName: any(named: 'planProductName'),
+        ),
+      ).thenAnswer((final invocation) async => Future.value());
 
-      when(() => client.plans.checkPlanAvailability(
-              planProductName: any(named: 'planProductName')))
-          .thenAnswer((final invocation) async => Future.value());
+      when(
+        () => client.plans.checkPlanAvailability(
+          planProductName: any(named: 'planProductName'),
+        ),
+      ).thenAnswer((final invocation) async => Future.value());
     });
 
     group('and serverpod directory', () {
@@ -142,8 +160,7 @@ void main() {
         testProjectDir = p.join(d.sandbox, 'server_dir');
       });
 
-      group(
-          'when executing launch with all settings provided via args '
+      group('when executing launch with all settings provided via args '
           'and approving confirmation', () {
         late Future commandResult;
         setUp(() async {
@@ -206,7 +223,8 @@ void main() {
                 message: 'When the server has started, you can access it at:\n',
                 trailingRocket: true,
                 newParagraph: true,
-                followUp: '   Web:      https://$projectId.serverpod.space/\n'
+                followUp:
+                    '   Web:      https://$projectId.serverpod.space/\n'
                     '   API:      https://$projectId.api.serverpod.space/\n'
                     '   Insights: https://$projectId.insights.serverpod.space/',
               ),
@@ -256,8 +274,7 @@ project:
         });
       });
 
-      group(
-          'when executing launch with all settings provided via args '
+      group('when executing launch with all settings provided via args '
           'and declining confirmation', () {
         late Future commandResult;
         setUp(() async {
@@ -325,31 +342,24 @@ project:
           expect(logger.infoCalls, hasLength(1));
           expect(
             logger.infoCalls.single,
-            equalsInfoCall(
-              message: 'Setup cancelled.',
-            ),
+            equalsInfoCall(message: 'Setup cancelled.'),
           );
         });
 
         test('then does not write scloud.yaml file', () async {
           await commandResult.catchError((final _) {});
 
-          final expected = d.dir(testProjectDir, [
-            d.nothing('scloud.yaml'),
-          ]);
+          final expected = d.dir(testProjectDir, [d.nothing('scloud.yaml')]);
           await expectLater(expected.validate(), completes);
         });
       });
 
-      group(
-          'when executing launch with all settings provided via args '
+      group('when executing launch with all settings provided via args '
           'and project dir is not a serverpod server directory '
           'and declining confirmation', () {
         late Future commandResult;
         setUp(() async {
-          logger.answerNextInputsWith([
-            testProjectDir,
-          ]);
+          logger.answerNextInputsWith([testProjectDir]);
           logger.answerNextConfirmWith(false);
 
           commandResult = cli.run([
@@ -374,26 +384,27 @@ project:
           expect(
             logger.errorCalls.single,
             equalsErrorCall(
-                message:
-                    'Could not find `pubspec.yaml` in directory `${d.sandbox}`.',
-                hint: "Provide the project's server directory and try again."),
+              message:
+                  'Could not find `pubspec.yaml` in directory `${d.sandbox}`.',
+              hint: "Provide the project's server directory and try again.",
+            ),
           );
         });
 
-        test('then logs input message to enter valid project directory',
-            () async {
-          await commandResult.catchError((final _) {});
+        test(
+          'then logs input message to enter valid project directory',
+          () async {
+            await commandResult.catchError((final _) {});
 
-          expect(logger.inputCalls, isNotEmpty);
-          expect(
-            logger.inputCalls,
-            containsAllInOrder([
-              equalsInputCall(
-                message: 'Enter the project directory',
-              ),
-            ]),
-          );
-        });
+            expect(logger.inputCalls, isNotEmpty);
+            expect(
+              logger.inputCalls,
+              containsAllInOrder([
+                equalsInputCall(message: 'Enter the project directory'),
+              ]),
+            );
+          },
+        );
 
         test('then logs setup message box', () async {
           await commandResult.catchError((final _) {});
@@ -436,31 +447,24 @@ project:
           expect(logger.infoCalls, hasLength(1));
           expect(
             logger.infoCalls.single,
-            equalsInfoCall(
-              message: 'Setup cancelled.',
-            ),
+            equalsInfoCall(message: 'Setup cancelled.'),
           );
         });
 
         test('then does not write scloud.yaml file', () async {
           await commandResult.catchError((final _) {});
 
-          final expected = d.dir(testProjectDir, [
-            d.nothing('scloud.yaml'),
-          ]);
+          final expected = d.dir(testProjectDir, [d.nothing('scloud.yaml')]);
           await expectLater(expected.validate(), completes);
         });
       });
 
-      group(
-          'when executing launch with all settings provided via args '
+      group('when executing launch with all settings provided via args '
           'and project id is not valid '
           'and declining confirmation', () {
         late Future commandResult;
         setUp(() async {
-          logger.answerNextInputsWith([
-            projectId,
-          ]);
+          logger.answerNextInputsWith([projectId]);
           logger.answerNextConfirmsWith([true, false]);
 
           commandResult = cli.run([
@@ -485,7 +489,8 @@ project:
           expect(
             logger.errorCalls.single,
             equalsErrorCall(
-              message: 'Invalid project ID. '
+              message:
+                  'Invalid project ID. '
                   'Must be 6-32 characters long and contain only lowercase letters, numbers, and hyphens.',
             ),
           );
@@ -554,38 +559,28 @@ project:
           expect(logger.infoCalls, hasLength(1));
           expect(
             logger.infoCalls.single,
-            equalsInfoCall(
-              message: 'Setup cancelled.',
-            ),
+            equalsInfoCall(message: 'Setup cancelled.'),
           );
         });
 
         test('then does not write scloud.yaml file', () async {
           await commandResult.catchError((final _) {});
 
-          final expected = d.dir(testProjectDir, [
-            d.nothing('scloud.yaml'),
-          ]);
+          final expected = d.dir(testProjectDir, [d.nothing('scloud.yaml')]);
           await expectLater(expected.validate(), completes);
         });
       });
 
-      group(
-          'when executing launch with all settings provided interactively '
+      group('when executing launch with all settings provided interactively '
           'and declining project cost question', () {
         late Future commandResult;
         setUp(() async {
-          logger.answerNextInputsWith([
-            testProjectDir,
-            projectId,
-          ]);
+          logger.answerNextInputsWith([testProjectDir, projectId]);
           logger.answerNextConfirmsWith([
             false, // decline new project cost acceptance
           ]);
 
-          commandResult = cli.run([
-            'launch',
-          ]);
+          commandResult = cli.run(['launch']);
         });
 
         test('then throws ErrorExitException', () async {
@@ -607,15 +602,11 @@ project:
         });
       });
 
-      group(
-          'when executing launch with all settings provided interactively '
+      group('when executing launch with all settings provided interactively '
           'and declining confirmation', () {
         late Future commandResult;
         setUp(() async {
-          logger.answerNextInputsWith([
-            testProjectDir,
-            projectId,
-          ]);
+          logger.answerNextInputsWith([testProjectDir, projectId]);
           logger.answerNextConfirmsWith([
             true, // confirm new project cost acceptance
             true, // enable db
@@ -623,9 +614,7 @@ project:
             false, // do not apply setup
           ]);
 
-          commandResult = cli.run([
-            'launch',
-          ]);
+          commandResult = cli.run(['launch']);
         });
 
         test('then throws ErrorExitException', () async {
@@ -639,9 +628,7 @@ project:
           expect(
             logger.inputCalls,
             containsAllInOrder([
-              equalsInputCall(
-                message: 'Enter the project directory',
-              ),
+              equalsInputCall(message: 'Enter the project directory'),
               equalsInputCall(
                 message: 'Enter a new project id',
                 defaultValue: 'default: my-project',
@@ -701,34 +688,26 @@ project:
           expect(logger.infoCalls, hasLength(1));
           expect(
             logger.infoCalls.single,
-            equalsInfoCall(
-              message: 'Setup cancelled.',
-            ),
+            equalsInfoCall(message: 'Setup cancelled.'),
           );
         });
 
         test('then does not write scloud.yaml file', () async {
           await commandResult.catchError((final _) {});
 
-          final expected = d.dir(testProjectDir, [
-            d.nothing('scloud.yaml'),
-          ]);
+          final expected = d.dir(testProjectDir, [d.nothing('scloud.yaml')]);
           await expectLater(expected.validate(), completes);
         });
       });
 
-      group(
-          'when executing launch with all settings provided interactively '
+      group('when executing launch with all settings provided interactively '
           'and a project dir is found '
           'and declining confirmation', () {
         late Future commandResult;
         setUp(() async {
           pushCurrentDirectory(d.sandbox);
 
-          logger.answerNextInputsWith([
-            testProjectDir,
-            projectId,
-          ]);
+          logger.answerNextInputsWith([testProjectDir, projectId]);
           logger.answerNextConfirmsWith([
             true, // confirm new project cost acceptance
             true, // enable db
@@ -736,30 +715,30 @@ project:
             false, // do not apply setup
           ]);
 
-          commandResult = cli.run([
-            'launch',
-          ]);
+          commandResult = cli.run(['launch']);
         });
 
         test('then throws ErrorExitException', () async {
           expect(commandResult, throwsA(isA<ErrorExitException>()));
         });
 
-        test('then logs info message that found project dir is selected',
-            () async {
-          await commandResult.catchError((final _) {});
+        test(
+          'then logs info message that found project dir is selected',
+          () async {
+            await commandResult.catchError((final _) {});
 
-          expect(logger.infoCalls, isNotEmpty);
-          expect(
-            logger.infoCalls,
-            containsAllInOrder([
-              equalsInfoCall(
-                message:
-                    'Found project directory: ${p.relative(testProjectDir)}',
-              ),
-            ]),
-          );
-        });
+            expect(logger.infoCalls, isNotEmpty);
+            expect(
+              logger.infoCalls,
+              containsAllInOrder([
+                equalsInfoCall(
+                  message:
+                      'Found project directory: ${p.relative(testProjectDir)}',
+                ),
+              ]),
+            );
+          },
+        );
 
         test('then logs input message for project id', () async {
           await commandResult.catchError((final _) {});
@@ -825,24 +804,19 @@ project:
           expect(logger.infoCalls, isNotEmpty);
           expect(
             logger.infoCalls.last,
-            equalsInfoCall(
-              message: 'Setup cancelled.',
-            ),
+            equalsInfoCall(message: 'Setup cancelled.'),
           );
         });
 
         test('then does not write scloud.yaml file', () async {
           await commandResult.catchError((final _) {});
 
-          final expected = d.dir(testProjectDir, [
-            d.nothing('scloud.yaml'),
-          ]);
+          final expected = d.dir(testProjectDir, [d.nothing('scloud.yaml')]);
           await expectLater(expected.validate(), completes);
         });
       });
 
-      group(
-          'when executing launch with all settings provided interactively '
+      group('when executing launch with all settings provided interactively '
           'and invalid first project dir input '
           'and declining confirmation', () {
         late Future commandResult;
@@ -859,9 +833,7 @@ project:
             false, // do not apply setup
           ]);
 
-          commandResult = cli.run([
-            'launch',
-          ]);
+          commandResult = cli.run(['launch']);
         });
 
         test('then throws ErrorExitException', () async {
@@ -875,12 +847,8 @@ project:
           expect(
             logger.inputCalls,
             containsAllInOrder([
-              equalsInputCall(
-                message: 'Enter the project directory',
-              ),
-              equalsInputCall(
-                message: 'Enter the project directory',
-              ),
+              equalsInputCall(message: 'Enter the project directory'),
+              equalsInputCall(message: 'Enter the project directory'),
               equalsInputCall(
                 message: 'Enter a new project id',
                 defaultValue: 'default: my-project',
@@ -940,24 +908,19 @@ project:
           expect(logger.infoCalls, hasLength(1));
           expect(
             logger.infoCalls.single,
-            equalsInfoCall(
-              message: 'Setup cancelled.',
-            ),
+            equalsInfoCall(message: 'Setup cancelled.'),
           );
         });
 
         test('then does not write scloud.yaml file', () async {
           await commandResult.catchError((final _) {});
 
-          final expected = d.dir(testProjectDir, [
-            d.nothing('scloud.yaml'),
-          ]);
+          final expected = d.dir(testProjectDir, [d.nothing('scloud.yaml')]);
           await expectLater(expected.validate(), completes);
         });
       });
 
-      group(
-          'when executing launch with all settings provided interactively '
+      group('when executing launch with all settings provided interactively '
           'and invalid first project id input '
           'and declining confirmation', () {
         late Future commandResult;
@@ -974,9 +937,7 @@ project:
             false, // do not apply setup
           ]);
 
-          commandResult = cli.run([
-            'launch',
-          ]);
+          commandResult = cli.run(['launch']);
         });
 
         test('then throws ErrorExitException', () async {
@@ -990,9 +951,7 @@ project:
           expect(
             logger.inputCalls,
             containsAllInOrder([
-              equalsInputCall(
-                message: 'Enter the project directory',
-              ),
+              equalsInputCall(message: 'Enter the project directory'),
               equalsInputCall(
                 message: 'Enter a new project id',
                 defaultValue: 'default: my-project',
@@ -1056,39 +1015,43 @@ project:
           expect(logger.infoCalls, hasLength(1));
           expect(
             logger.infoCalls.single,
-            equalsInfoCall(
-              message: 'Setup cancelled.',
-            ),
+            equalsInfoCall(message: 'Setup cancelled.'),
           );
         });
 
         test('then does not write scloud.yaml file', () async {
           await commandResult.catchError((final _) {});
 
-          final expected = d.dir(testProjectDir, [
-            d.nothing('scloud.yaml'),
-          ]);
+          final expected = d.dir(testProjectDir, [d.nothing('scloud.yaml')]);
           await expectLater(expected.validate(), completes);
         });
       });
 
-      group(
-          'when executing launch with all settings provided interactively '
+      group('when executing launch with all settings provided interactively '
           'and 2 pre-existing projects are found but not selected '
           'and declining confirmation', () {
         setUpAll(() async {
-          when(() => client.projects.listProjectsInfo(
-                includeLatestDeployAttemptTime:
-                    any(named: 'includeLatestDeployAttemptTime'),
-              )).thenAnswer(
+          when(
+            () => client.projects.listProjectsInfo(
+              includeLatestDeployAttemptTime: any(
+                named: 'includeLatestDeployAttemptTime',
+              ),
+            ),
+          ).thenAnswer(
             (final _) async => Future.value([
               ProjectInfoBuilder()
-                  .withProject(ProjectBuilder()
-                      .withCloudProjectId('pre-existing-project-1'))
+                  .withProject(
+                    ProjectBuilder().withCloudProjectId(
+                      'pre-existing-project-1',
+                    ),
+                  )
                   .build(),
               ProjectInfoBuilder()
-                  .withProject(ProjectBuilder()
-                      .withCloudProjectId('pre-existing-project-2'))
+                  .withProject(
+                    ProjectBuilder().withCloudProjectId(
+                      'pre-existing-project-2',
+                    ),
+                  )
                   .build(),
             ]),
           );
@@ -1097,11 +1060,7 @@ project:
         late Future commandResult;
 
         setUp(() async {
-          logger.answerNextInputsWith([
-            testProjectDir,
-            '',
-            projectId,
-          ]);
+          logger.answerNextInputsWith([testProjectDir, '', projectId]);
           logger.answerNextConfirmsWith([
             true, // confirm new project cost acceptance
             true, // enable db
@@ -1109,9 +1068,7 @@ project:
             false, // do not apply setup
           ]);
 
-          commandResult = cli.run([
-            'launch',
-          ]);
+          commandResult = cli.run(['launch']);
         });
 
         test('then throws ErrorExitException', () async {
@@ -1125,9 +1082,7 @@ project:
           expect(
             logger.inputCalls,
             containsAllInOrder([
-              equalsInputCall(
-                message: 'Enter the project directory',
-              ),
+              equalsInputCall(message: 'Enter the project directory'),
               equalsInputCall(
                 message: 'Enter a new project id',
                 defaultValue: 'default: my-project',
@@ -1187,39 +1142,43 @@ project:
           expect(logger.infoCalls, hasLength(6));
           expect(
             logger.infoCalls.last,
-            equalsInfoCall(
-              message: 'Setup cancelled.',
-            ),
+            equalsInfoCall(message: 'Setup cancelled.'),
           );
         });
 
         test('then does not write scloud.yaml file', () async {
           await commandResult.catchError((final _) {});
 
-          final expected = d.dir(testProjectDir, [
-            d.nothing('scloud.yaml'),
-          ]);
+          final expected = d.dir(testProjectDir, [d.nothing('scloud.yaml')]);
           await expectLater(expected.validate(), completes);
         });
       });
 
-      group(
-          'when executing launch with all settings provided interactively '
+      group('when executing launch with all settings provided interactively '
           'and 2 pre-existing projects are found and selected '
           'and declining confirmation', () {
         setUpAll(() async {
-          when(() => client.projects.listProjectsInfo(
-                includeLatestDeployAttemptTime:
-                    any(named: 'includeLatestDeployAttemptTime'),
-              )).thenAnswer(
+          when(
+            () => client.projects.listProjectsInfo(
+              includeLatestDeployAttemptTime: any(
+                named: 'includeLatestDeployAttemptTime',
+              ),
+            ),
+          ).thenAnswer(
             (final _) async => Future.value([
               ProjectInfoBuilder()
-                  .withProject(ProjectBuilder()
-                      .withCloudProjectId('pre-existing-project-1'))
+                  .withProject(
+                    ProjectBuilder().withCloudProjectId(
+                      'pre-existing-project-1',
+                    ),
+                  )
                   .build(),
               ProjectInfoBuilder()
-                  .withProject(ProjectBuilder()
-                      .withCloudProjectId('pre-existing-project-2'))
+                  .withProject(
+                    ProjectBuilder().withCloudProjectId(
+                      'pre-existing-project-2',
+                    ),
+                  )
                   .build(),
             ]),
           );
@@ -1228,19 +1187,13 @@ project:
         late Future commandResult;
 
         setUp(() async {
-          logger.answerNextInputsWith([
-            testProjectDir,
-            '1',
-            projectId,
-          ]);
+          logger.answerNextInputsWith([testProjectDir, '1', projectId]);
           logger.answerNextConfirmsWith([
             true, // perform deploy
             false, // do not apply setup
           ]);
 
-          commandResult = cli.run([
-            'launch',
-          ]);
+          commandResult = cli.run(['launch']);
         });
 
         test('then throws ErrorExitException', () async {
@@ -1254,9 +1207,7 @@ project:
           expect(
             logger.inputCalls,
             containsAllInOrder([
-              equalsInputCall(
-                message: 'Enter the project directory',
-              ),
+              equalsInputCall(message: 'Enter the project directory'),
               equalsInputCall(
                 message: 'Enter a project number from the list, or blank',
               ),
@@ -1310,35 +1261,34 @@ project:
           expect(logger.infoCalls, hasLength(6));
           expect(
             logger.infoCalls.last,
-            equalsInfoCall(
-              message: 'Setup cancelled.',
-            ),
+            equalsInfoCall(message: 'Setup cancelled.'),
           );
         });
 
         test('then does not write scloud.yaml file', () async {
           await commandResult.catchError((final _) {});
 
-          final expected = d.dir(testProjectDir, [
-            d.nothing('scloud.yaml'),
-          ]);
+          final expected = d.dir(testProjectDir, [d.nothing('scloud.yaml')]);
           await expectLater(expected.validate(), completes);
         });
       });
 
-      group(
-          'when executing launch with all settings provided interactively '
+      group('when executing launch with all settings provided interactively '
           'and 1 pre-existing project is found but not selected '
           'and declining confirmation', () {
         setUpAll(() async {
-          when(() => client.projects.listProjectsInfo(
-                includeLatestDeployAttemptTime:
-                    any(named: 'includeLatestDeployAttemptTime'),
-              )).thenAnswer(
+          when(
+            () => client.projects.listProjectsInfo(
+              includeLatestDeployAttemptTime: any(
+                named: 'includeLatestDeployAttemptTime',
+              ),
+            ),
+          ).thenAnswer(
             (final _) async => Future.value([
               ProjectInfoBuilder()
-                  .withProject(ProjectBuilder()
-                      .withCloudProjectId('pre-existing-project'))
+                  .withProject(
+                    ProjectBuilder().withCloudProjectId('pre-existing-project'),
+                  )
                   .build(),
             ]),
           );
@@ -1347,10 +1297,7 @@ project:
         late Future commandResult;
 
         setUp(() async {
-          logger.answerNextInputsWith([
-            testProjectDir,
-            projectId,
-          ]);
+          logger.answerNextInputsWith([testProjectDir, projectId]);
           logger.answerNextConfirmsWith([
             false, // decline using existing project
             true, // confirm new project cost acceptance
@@ -1359,9 +1306,7 @@ project:
             false, // do not apply setup
           ]);
 
-          commandResult = cli.run([
-            'launch',
-          ]);
+          commandResult = cli.run(['launch']);
         });
 
         test('then throws ErrorExitException', () async {
@@ -1375,9 +1320,7 @@ project:
           expect(
             logger.inputCalls,
             containsAllInOrder([
-              equalsInputCall(
-                message: 'Enter the project directory',
-              ),
+              equalsInputCall(message: 'Enter the project directory'),
               equalsInputCall(
                 message: 'Enter a new project id',
                 defaultValue: 'default: my-project',
@@ -1437,35 +1380,34 @@ project:
           expect(logger.infoCalls, hasLength(3));
           expect(
             logger.infoCalls.last,
-            equalsInfoCall(
-              message: 'Setup cancelled.',
-            ),
+            equalsInfoCall(message: 'Setup cancelled.'),
           );
         });
 
         test('then does not write scloud.yaml file', () async {
           await commandResult.catchError((final _) {});
 
-          final expected = d.dir(testProjectDir, [
-            d.nothing('scloud.yaml'),
-          ]);
+          final expected = d.dir(testProjectDir, [d.nothing('scloud.yaml')]);
           await expectLater(expected.validate(), completes);
         });
       });
 
-      group(
-          'when executing launch with all settings provided interactively '
+      group('when executing launch with all settings provided interactively '
           'and 1 pre-existing project is found and selected '
           'and declining confirmation', () {
         setUpAll(() async {
-          when(() => client.projects.listProjectsInfo(
-                includeLatestDeployAttemptTime:
-                    any(named: 'includeLatestDeployAttemptTime'),
-              )).thenAnswer(
+          when(
+            () => client.projects.listProjectsInfo(
+              includeLatestDeployAttemptTime: any(
+                named: 'includeLatestDeployAttemptTime',
+              ),
+            ),
+          ).thenAnswer(
             (final _) async => Future.value([
               ProjectInfoBuilder()
-                  .withProject(ProjectBuilder()
-                      .withCloudProjectId('pre-existing-project'))
+                  .withProject(
+                    ProjectBuilder().withCloudProjectId('pre-existing-project'),
+                  )
                   .build(),
             ]),
           );
@@ -1474,19 +1416,14 @@ project:
         late Future commandResult;
 
         setUp(() async {
-          logger.answerNextInputsWith([
-            testProjectDir,
-            projectId,
-          ]);
+          logger.answerNextInputsWith([testProjectDir, projectId]);
           logger.answerNextConfirmsWith([
             true, // confirm using existing project
             true, // perform deploy
             false, // do not apply setup
           ]);
 
-          commandResult = cli.run([
-            'launch',
-          ]);
+          commandResult = cli.run(['launch']);
         });
 
         test('then throws ErrorExitException', () async {
@@ -1500,9 +1437,7 @@ project:
           expect(
             logger.inputCalls,
             containsAllInOrder([
-              equalsInputCall(
-                message: 'Enter the project directory',
-              ),
+              equalsInputCall(message: 'Enter the project directory'),
             ]),
           );
         });
@@ -1514,9 +1449,7 @@ project:
           expect(
             logger.confirmCalls,
             containsAllInOrder([
-              equalsConfirmCall(
-                message: 'Continue with pre-existing-project?',
-              ),
+              equalsConfirmCall(message: 'Continue with pre-existing-project?'),
               equalsConfirmCall(
                 message: 'Deploy the project right away?',
                 defaultValue: true,
@@ -1556,25 +1489,20 @@ project:
           expect(logger.infoCalls, hasLength(3));
           expect(
             logger.infoCalls.last,
-            equalsInfoCall(
-              message: 'Setup cancelled.',
-            ),
+            equalsInfoCall(message: 'Setup cancelled.'),
           );
         });
 
         test('then does not write scloud.yaml file', () async {
           await commandResult.catchError((final _) {});
 
-          final expected = d.dir(testProjectDir, [
-            d.nothing('scloud.yaml'),
-          ]);
+          final expected = d.dir(testProjectDir, [d.nothing('scloud.yaml')]);
           await expectLater(expected.validate(), completes);
         });
       });
     });
 
-    group(
-        'and a Serverpod server directory with invalid pubspec '
+    group('and a Serverpod server directory with invalid pubspec '
         'when executing launch with all settings provided interactively '
         'and declining confirmation', () {
       late String invalidProjectDir;
@@ -1609,9 +1537,7 @@ dependencies:
           false, // do not apply setup
         ]);
 
-        commandResult = cli.run([
-          'launch',
-        ]);
+        commandResult = cli.run(['launch']);
       });
 
       test('then throws ErrorExitException', () async {
@@ -1624,9 +1550,7 @@ dependencies:
         expect(logger.inputCalls, hasLength(1));
         expect(
           logger.inputCalls.single,
-          equalsInputCall(
-            message: 'Enter the project directory',
-          ),
+          equalsInputCall(message: 'Enter the project directory'),
         );
       });
 
@@ -1672,9 +1596,7 @@ dependencies:
       test('then does not write scloud.yaml file', () async {
         await commandResult.catchError((final _) {});
 
-        final expected = d.dir(validProjectDir, [
-          d.nothing('scloud.yaml'),
-        ]);
+        final expected = d.dir(validProjectDir, [d.nothing('scloud.yaml')]);
         await expectLater(expected.validate(), completes);
       });
     });

@@ -97,12 +97,12 @@ final class Ignore {
     final List<String> patterns, {
     final bool ignoreCase = false,
     final void Function(String pattern, FormatException exception)?
-        onInvalidPattern,
+    onInvalidPattern,
   }) : _rules = _parseIgnorePatterns(
-          patterns,
-          ignoreCase,
-          onInvalidPattern: onInvalidPattern,
-        ).toList(growable: false);
+         patterns,
+         ignoreCase,
+         onInvalidPattern: onInvalidPattern,
+       ).toList(growable: false);
 
   /// Returns `true` if [path] is ignored by the patterns used to create this
   /// [Ignore] instance, assuming those patterns are placed at `.`.
@@ -145,8 +145,9 @@ final class Ignore {
     if (_rules.isEmpty) {
       return false;
     }
-    final pathWithoutSlash =
-        path.endsWith('/') ? path.substring(0, path.length - 1) : path;
+    final pathWithoutSlash = path.endsWith('/')
+        ? path.substring(0, path.length - 1)
+        : path;
     return listFiles(
       beneath: pathWithoutSlash,
       includeDirs: true,
@@ -267,8 +268,9 @@ final class Ignore {
       final ignore = ignoreForDir(
         partial == '/' ? '.' : partial.substring(1, partial.length - 1),
       );
-      ignoreStack
-          .add(ignore == null ? null : _IgnorePrefixPair(ignore, partial));
+      ignoreStack.add(
+        ignore == null ? null : _IgnorePrefixPair(ignore, partial),
+      );
     }
     // Do a depth first tree-search starting at [beneath].
     // toVisit is a stack containing all items that are waiting to be processed.
@@ -305,8 +307,9 @@ final class Ignore {
                 ),
         );
         // Put all entities in current on the stack to be processed.
-        toVisit
-            .add(listDir(normalizedCurrent).map((final x) => '/$x').toList());
+        toVisit.add(
+          listDir(normalizedCurrent).map((final x) => '/$x').toList(),
+        );
         if (includeDirs) {
           result.add(normalizedCurrent);
         }
@@ -337,9 +340,7 @@ class _IgnoreParseResult {
 
   _IgnoreParseResult.invalid(this.pattern, this.exception) : rule = null;
 
-  _IgnoreParseResult.empty(this.pattern)
-      : rule = null,
-        exception = null;
+  _IgnoreParseResult.empty(this.pattern) : rule = null, exception = null;
 }
 
 class _IgnoreRule {
@@ -388,7 +389,9 @@ Iterable<_IgnoreRule> _parseIgnorePatterns(
 }
 
 _IgnoreParseResult _parseIgnorePattern(
-    final String pattern, final bool ignoreCase) {
+  final String pattern,
+  final bool ignoreCase,
+) {
   // Check if patterns is a comment
   if (pattern.startsWith('#')) {
     return _IgnoreParseResult.empty(pattern);
@@ -551,11 +554,7 @@ _IgnoreParseResult _parseIgnorePattern(
   try {
     return _IgnoreParseResult(
       pattern,
-      _IgnoreRule(
-        RegExp(expr, caseSensitive: !ignoreCase),
-        negative,
-        pattern,
-      ),
+      _IgnoreRule(RegExp(expr, caseSensitive: !ignoreCase), negative, pattern),
     );
   } on FormatException catch (e) {
     throw AssertionError(
@@ -590,8 +589,9 @@ bool _matchesStack(final List<_IgnorePrefixPair?> ignores, final String path) {
   for (final ignorePair in ignores.reversed) {
     if (ignorePair == null) continue;
     final prefixLength = ignorePair.prefix.length;
-    final s =
-        prefixLength == 0 ? path : path.substring(ignorePair.prefix.length);
+    final s = prefixLength == 0
+        ? path
+        : path.substring(ignorePair.prefix.length);
     for (final rule in ignorePair.ignore._rules.reversed) {
       if (rule.pattern.hasMatch(s)) {
         return !rule.negative;

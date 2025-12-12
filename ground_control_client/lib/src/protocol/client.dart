@@ -90,17 +90,13 @@ class EndpointAdminProcurement extends _i1.EndpointRef {
     int? planProductVersion,
     int? trialPeriodOverride,
     bool? overrideChecks,
-  }) => caller.callServerEndpoint<void>(
-    'adminProcurement',
-    'procurePlan',
-    {
-      'userEmail': userEmail,
-      'planProductName': planProductName,
-      'planProductVersion': planProductVersion,
-      'trialPeriodOverride': trialPeriodOverride,
-      'overrideChecks': overrideChecks,
-    },
-  );
+  }) => caller.callServerEndpoint<void>('adminProcurement', 'procurePlan', {
+    'userEmail': userEmail,
+    'planProductName': planProductName,
+    'planProductVersion': planProductVersion,
+    'trialPeriodOverride': trialPeriodOverride,
+    'overrideChecks': overrideChecks,
+  });
 
   /// Fetches a user's procured products.
   /// Returns a list of `(String, String)` with the product ID and its type.
@@ -157,20 +153,15 @@ class EndpointAdminProjects extends _i1.EndpointRef {
   }) => caller.callServerEndpoint<List<_i5.DeployAttempt>>(
     'adminProjects',
     'getDeployAttempts',
-    {
-      'cloudCapsuleId': cloudCapsuleId,
-      'limit': limit,
-    },
+    {'cloudCapsuleId': cloudCapsuleId, 'limit': limit},
   );
 
   /// Redeploys a capsule using its current image.
   /// Triggers a deploymentUpdated event to redeploy the infrastructure.
   _i2.Future<void> redeployCapsule(String cloudProjectId) =>
-      caller.callServerEndpoint<void>(
-        'adminProjects',
-        'redeployCapsule',
-        {'cloudProjectId': cloudProjectId},
-      );
+      caller.callServerEndpoint<void>('adminProjects', 'redeployCapsule', {
+        'cloudProjectId': cloudProjectId,
+      });
 }
 
 /// Endpoint for global administrator users access.
@@ -186,24 +177,16 @@ class EndpointAdminUsers extends _i1.EndpointRef {
     String? cloudProjectId,
     _i7.UserAccountStatus? ofAccountStatus,
     bool? includeArchived,
-  }) => caller.callServerEndpoint<List<_i6.User>>(
-    'adminUsers',
-    'listUsers',
-    {
-      'cloudProjectId': cloudProjectId,
-      'ofAccountStatus': ofAccountStatus,
-      'includeArchived': includeArchived,
-    },
-  );
+  }) => caller.callServerEndpoint<List<_i6.User>>('adminUsers', 'listUsers', {
+    'cloudProjectId': cloudProjectId,
+    'ofAccountStatus': ofAccountStatus,
+    'includeArchived': includeArchived,
+  });
 
   /// Invites a user to Serverpod Cloud.
   /// If the user does not exist, a user invitation email is sent.
-  _i2.Future<void> inviteUser({required String email}) =>
-      caller.callServerEndpoint<void>(
-        'adminUsers',
-        'inviteUser',
-        {'email': email},
-      );
+  _i2.Future<void> inviteUser({required String email}) => caller
+      .callServerEndpoint<void>('adminUsers', 'inviteUser', {'email': email});
 }
 
 /// Endpoint for authentication.
@@ -237,10 +220,7 @@ class EndpointAuth extends _i1.EndpointRef {
   }) => caller.callServerEndpoint<void>(
     'auth',
     'startEmailAccountRegistration',
-    {
-      'email': email,
-      'acceptedTerms': acceptedTerms,
-    },
+    {'email': email, 'acceptedTerms': acceptedTerms},
   );
 
   /// Verifies a registration code and returns the finish registration token.
@@ -250,14 +230,10 @@ class EndpointAuth extends _i1.EndpointRef {
   _i2.Future<String> verifyRegistrationCode({
     required _i1.UuidValue accountRequestId,
     required String verificationCode,
-  }) => caller.callServerEndpoint<String>(
-    'auth',
-    'verifyRegistrationCode',
-    {
-      'accountRequestId': accountRequestId,
-      'verificationCode': verificationCode,
-    },
-  );
+  }) => caller.callServerEndpoint<String>('auth', 'verifyRegistrationCode', {
+    'accountRequestId': accountRequestId,
+    'verificationCode': verificationCode,
+  });
 
   /// Completes a new account registration, creating a new auth user with a
   /// profile, and creating a new authenticated session for the user.
@@ -275,10 +251,7 @@ class EndpointAuth extends _i1.EndpointRef {
   }) => caller.callServerEndpoint<_i10.AuthSuccess>(
     'auth',
     'finishEmailAccountRegistration',
-    {
-      'finishRegistrationToken': finishRegistrationToken,
-      'password': password,
-    },
+    {'finishRegistrationToken': finishRegistrationToken, 'password': password},
   );
 
   /// Logs in the user and returns a new session.
@@ -288,33 +261,22 @@ class EndpointAuth extends _i1.EndpointRef {
   _i2.Future<_i10.AuthSuccess> login({
     required String email,
     required String password,
-  }) => caller.callServerEndpoint<_i10.AuthSuccess>(
-    'auth',
-    'login',
-    {
-      'email': email,
-      'password': password,
-    },
-  );
+  }) => caller.callServerEndpoint<_i10.AuthSuccess>('auth', 'login', {
+    'email': email,
+    'password': password,
+  });
 
   /// Log out the user from the current device.
   /// (The user may still be logged in on other devices.)
-  _i2.Future<void> logoutDevice() => caller.callServerEndpoint<void>(
-    'auth',
-    'logoutDevice',
-    {},
-  );
+  _i2.Future<void> logoutDevice() =>
+      caller.callServerEndpoint<void>('auth', 'logoutDevice', {});
 
   /// Requests a password reset for [email].
   ///
   /// Throws [EmailAccountPasswordResetRequestTooManyAttemptsException] if the
   /// user has made too many requests.
-  _i2.Future<void> startPasswordReset({required String email}) =>
-      caller.callServerEndpoint<void>(
-        'auth',
-        'startPasswordReset',
-        {'email': email},
-      );
+  _i2.Future<void> startPasswordReset({required String email}) => caller
+      .callServerEndpoint<void>('auth', 'startPasswordReset', {'email': email});
 
   /// Completes a password reset request by setting a new password.
   ///
@@ -333,15 +295,12 @@ class EndpointAuth extends _i1.EndpointRef {
     required _i1.UuidValue passwordResetRequestId,
     required String verificationCode,
     required String newPassword,
-  }) => caller.callServerEndpoint<_i10.AuthSuccess>(
-    'auth',
-    'finishPasswordReset',
-    {
-      'passwordResetRequestId': passwordResetRequestId,
-      'verificationCode': verificationCode,
-      'newPassword': newPassword,
-    },
-  );
+  }) => caller
+      .callServerEndpoint<_i10.AuthSuccess>('auth', 'finishPasswordReset', {
+        'passwordResetRequestId': passwordResetRequestId,
+        'verificationCode': verificationCode,
+        'newPassword': newPassword,
+      });
 }
 
 /// Endpoint for authentication.
@@ -375,24 +334,17 @@ class EndpointBilling extends _i1.EndpointRef {
   /// (including the billing address and email addresses).
   ///
   /// Throws a [NotFoundException] if the owner is not found.
-  _i2.Future<_i11.Owner> readOwner() => caller.callServerEndpoint<_i11.Owner>(
-    'billing',
-    'readOwner',
-    {},
-  );
+  _i2.Future<_i11.Owner> readOwner() =>
+      caller.callServerEndpoint<_i11.Owner>('billing', 'readOwner', {});
 
   @Deprecated('Use updateOwnerBilling instead')
   _i2.Future<_i11.Owner> updateOwner({
     required List<String> billingEmails,
     required _i12.BillingInfo billingInfo,
-  }) => caller.callServerEndpoint<_i11.Owner>(
-    'billing',
-    'updateOwner',
-    {
-      'billingEmails': billingEmails,
-      'billingInfo': billingInfo,
-    },
-  );
+  }) => caller.callServerEndpoint<_i11.Owner>('billing', 'updateOwner', {
+    'billingEmails': billingEmails,
+    'billingInfo': billingInfo,
+  });
 
   /// Updates the owner's billing information.
   ///
@@ -409,14 +361,10 @@ class EndpointBilling extends _i1.EndpointRef {
   _i2.Future<_i11.Owner> updateOwnerBilling({
     required List<String> billingEmails,
     required _i12.BillingInfo billingInfo,
-  }) => caller.callServerEndpoint<_i11.Owner>(
-    'billing',
-    'updateOwnerBilling',
-    {
-      'billingEmails': billingEmails,
-      'billingInfo': billingInfo,
-    },
-  );
+  }) => caller.callServerEndpoint<_i11.Owner>('billing', 'updateOwnerBilling', {
+    'billingEmails': billingEmails,
+    'billingInfo': billingInfo,
+  });
 
   /// Creates a setup intent for collecting payment methods.
   ///
@@ -485,14 +433,10 @@ class EndpointCustomDomainName extends _i1.EndpointRef {
   _i2.Future<void> remove({
     required String domainName,
     required String cloudCapsuleId,
-  }) => caller.callServerEndpoint<void>(
-    'customDomainName',
-    'remove',
-    {
-      'domainName': domainName,
-      'cloudCapsuleId': cloudCapsuleId,
-    },
-  );
+  }) => caller.callServerEndpoint<void>('customDomainName', 'remove', {
+    'domainName': domainName,
+    'cloudCapsuleId': cloudCapsuleId,
+  });
 
   _i2.Future<_i17.CustomDomainNameList> list({
     required String cloudCapsuleId,
@@ -508,10 +452,7 @@ class EndpointCustomDomainName extends _i1.EndpointRef {
   }) => caller.callServerEndpoint<_i18.DomainNameStatus>(
     'customDomainName',
     'refreshRecord',
-    {
-      'domainName': domainName,
-      'cloudCapsuleId': cloudCapsuleId,
-    },
+    {'domainName': domainName, 'cloudCapsuleId': cloudCapsuleId},
   );
 }
 
@@ -523,11 +464,9 @@ class EndpointDeploy extends _i1.EndpointRef {
   String get name => 'deploy';
 
   _i2.Future<String> createUploadDescription(String cloudProjectId) =>
-      caller.callServerEndpoint<String>(
-        'deploy',
-        'createUploadDescription',
-        {'cloudProjectId': cloudProjectId},
-      );
+      caller.callServerEndpoint<String>('deploy', 'createUploadDescription', {
+        'cloudProjectId': cloudProjectId,
+      });
 }
 
 /// Endpoint for managing environment variables.
@@ -547,11 +486,7 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
   ) => caller.callServerEndpoint<_i19.EnvironmentVariable>(
     'environmentVariables',
     'create',
-    {
-      'name': name,
-      'value': value,
-      'cloudCapsuleId': cloudCapsuleId,
-    },
+    {'name': name, 'value': value, 'cloudCapsuleId': cloudCapsuleId},
   );
 
   /// Fetches the specified environment variable.
@@ -562,10 +497,7 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
   }) => caller.callServerEndpoint<_i19.EnvironmentVariable>(
     'environmentVariables',
     'read',
-    {
-      'name': name,
-      'cloudCapsuleId': cloudCapsuleId,
-    },
+    {'name': name, 'cloudCapsuleId': cloudCapsuleId},
   );
 
   /// Gets the list of environment variables for the given [cloudCapsuleId].
@@ -585,11 +517,7 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
   }) => caller.callServerEndpoint<_i19.EnvironmentVariable>(
     'environmentVariables',
     'update',
-    {
-      'name': name,
-      'value': value,
-      'cloudCapsuleId': cloudCapsuleId,
-    },
+    {'name': name, 'value': value, 'cloudCapsuleId': cloudCapsuleId},
   );
 
   /// Permanently deletes an environment variable.
@@ -600,10 +528,7 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
   }) => caller.callServerEndpoint<_i19.EnvironmentVariable>(
     'environmentVariables',
     'delete',
-    {
-      'cloudCapsuleId': cloudCapsuleId,
-      'name': name,
-    },
+    {'cloudCapsuleId': cloudCapsuleId, 'name': name},
   );
 }
 
@@ -684,25 +609,15 @@ class EndpointPlans extends _i1.EndpointRef {
   String get name => 'plans';
 
   /// Procures a subscription plan.
-  _i2.Future<void> procurePlan({
-    String? planProductName,
-    String? planName,
-  }) => caller.callServerEndpoint<void>(
-    'plans',
-    'procurePlan',
-    {
-      'planProductName': planProductName,
-      'planName': planName,
-    },
-  );
+  _i2.Future<void> procurePlan({String? planProductName, String? planName}) =>
+      caller.callServerEndpoint<void>('plans', 'procurePlan', {
+        'planProductName': planProductName,
+        'planName': planName,
+      });
 
   /// Fetches the names of the procured subscription plans.
-  _i2.Future<List<String>> listProcuredPlanNames() =>
-      caller.callServerEndpoint<List<String>>(
-        'plans',
-        'listProcuredPlanNames',
-        {},
-      );
+  _i2.Future<List<String>> listProcuredPlanNames() => caller
+      .callServerEndpoint<List<String>>('plans', 'listProcuredPlanNames', {});
 
   _i2.Future<_i21.SubscriptionInfo> getSubscriptionInfo() =>
       caller.callServerEndpoint<_i21.SubscriptionInfo>(
@@ -718,29 +633,19 @@ class EndpointPlans extends _i1.EndpointRef {
   _i2.Future<void> checkPlanAvailability({
     String? planProductName,
     String? planName,
-  }) => caller.callServerEndpoint<void>(
-    'plans',
-    'checkPlanAvailability',
-    {
-      'planProductName': planProductName,
-      'planName': planName,
-    },
-  );
+  }) => caller.callServerEndpoint<void>('plans', 'checkPlanAvailability', {
+    'planProductName': planProductName,
+    'planName': planName,
+  });
 
   _i2.Future<_i22.PlanInfo> getPlanInfo({required String planProductName}) =>
-      caller.callServerEndpoint<_i22.PlanInfo>(
-        'plans',
-        'getPlanInfo',
-        {'planProductName': planProductName},
-      );
+      caller.callServerEndpoint<_i22.PlanInfo>('plans', 'getPlanInfo', {
+        'planProductName': planProductName,
+      });
 
   /// Fetches the names of all the subscription plans.
   _i2.Future<List<String>> listPlanNames() =>
-      caller.callServerEndpoint<List<String>>(
-        'plans',
-        'listPlanNames',
-        {},
-      );
+      caller.callServerEndpoint<List<String>>('plans', 'listPlanNames', {});
 }
 
 /// Endpoint for database management.
@@ -764,28 +669,20 @@ class EndpointDatabase extends _i1.EndpointRef {
   _i2.Future<String> createSuperUser({
     required String cloudCapsuleId,
     required String username,
-  }) => caller.callServerEndpoint<String>(
-    'database',
-    'createSuperUser',
-    {
-      'cloudCapsuleId': cloudCapsuleId,
-      'username': username,
-    },
-  );
+  }) => caller.callServerEndpoint<String>('database', 'createSuperUser', {
+    'cloudCapsuleId': cloudCapsuleId,
+    'username': username,
+  });
 
   /// Resets the password for a user in the database.
   /// Returns the new password for the user.
   _i2.Future<String> resetDatabasePassword({
     required String cloudCapsuleId,
     required String username,
-  }) => caller.callServerEndpoint<String>(
-    'database',
-    'resetDatabasePassword',
-    {
-      'cloudCapsuleId': cloudCapsuleId,
-      'username': username,
-    },
-  );
+  }) => caller.callServerEndpoint<String>('database', 'resetDatabasePassword', {
+    'cloudCapsuleId': cloudCapsuleId,
+    'username': username,
+  });
 }
 
 /// Endpoint for infrastructure resource provisioning.
@@ -798,11 +695,9 @@ class EndpointInfraResources extends _i1.EndpointRef {
 
   /// Enables the database for a project.
   _i2.Future<void> enableDatabase({required String cloudCapsuleId}) =>
-      caller.callServerEndpoint<void>(
-        'infraResources',
-        'enableDatabase',
-        {'cloudCapsuleId': cloudCapsuleId},
-      );
+      caller.callServerEndpoint<void>('infraResources', 'enableDatabase', {
+        'cloudCapsuleId': cloudCapsuleId,
+      });
 }
 
 /// Endpoint for managing projects.
@@ -818,11 +713,9 @@ class EndpointProjects extends _i1.EndpointRef {
   /// Throws [DuplicateEntryException] if the project ID already exists.
   /// Returns true if the project ID is valid and available.
   _i2.Future<bool> validateProjectId(String projectId) =>
-      caller.callServerEndpoint<bool>(
-        'projects',
-        'validateProjectId',
-        {'projectId': projectId},
-      );
+      caller.callServerEndpoint<bool>('projects', 'validateProjectId', {
+        'projectId': projectId,
+      });
 
   /// Creates a new project with basic setup.
   /// The [cloudProjectId] must be globally unique.
@@ -831,32 +724,22 @@ class EndpointProjects extends _i1.EndpointRef {
   _i2.Future<_i3.Project> createProject({
     required String cloudProjectId,
     String? underSubscriptionId,
-  }) => caller.callServerEndpoint<_i3.Project>(
-    'projects',
-    'createProject',
-    {
-      'cloudProjectId': cloudProjectId,
-      'underSubscriptionId': underSubscriptionId,
-    },
-  );
+  }) => caller.callServerEndpoint<_i3.Project>('projects', 'createProject', {
+    'cloudProjectId': cloudProjectId,
+    'underSubscriptionId': underSubscriptionId,
+  });
 
   /// Fetches the specified project.
   /// Its user roles are included in the response.
   _i2.Future<_i3.Project> fetchProject({required String cloudProjectId}) =>
-      caller.callServerEndpoint<_i3.Project>(
-        'projects',
-        'fetchProject',
-        {'cloudProjectId': cloudProjectId},
-      );
+      caller.callServerEndpoint<_i3.Project>('projects', 'fetchProject', {
+        'cloudProjectId': cloudProjectId,
+      });
 
   /// Fetches the list of projects the current user has access to.
   @Deprecated('Use listProjectsInfo instead')
-  _i2.Future<List<_i3.Project>> listProjects() =>
-      caller.callServerEndpoint<List<_i3.Project>>(
-        'projects',
-        'listProjects',
-        {},
-      );
+  _i2.Future<List<_i3.Project>> listProjects() => caller
+      .callServerEndpoint<List<_i3.Project>>('projects', 'listProjects', {});
 
   /// Fetches the list of projects the current user has access to.
   /// If requested, the result includes the latest deploy attempt time
@@ -872,11 +755,9 @@ class EndpointProjects extends _i1.EndpointRef {
   /// Deletes a project permanently.
   /// The id / name of the project is not immediately available for reuse.
   _i2.Future<_i3.Project> deleteProject({required String cloudProjectId}) =>
-      caller.callServerEndpoint<_i3.Project>(
-        'projects',
-        'deleteProject',
-        {'cloudProjectId': cloudProjectId},
-      );
+      caller.callServerEndpoint<_i3.Project>('projects', 'deleteProject', {
+        'cloudProjectId': cloudProjectId,
+      });
 
   _i2.Future<_i24.ProjectConfig> fetchProjectConfig({
     required String cloudProjectId,
@@ -894,15 +775,11 @@ class EndpointProjects extends _i1.EndpointRef {
     required String cloudProjectId,
     required String email,
     required List<String> assignRoleNames,
-  }) => caller.callServerEndpoint<void>(
-    'projects',
-    'attachUser',
-    {
-      'cloudProjectId': cloudProjectId,
-      'email': email,
-      'assignRoleNames': assignRoleNames,
-    },
-  );
+  }) => caller.callServerEndpoint<void>('projects', 'attachUser', {
+    'cloudProjectId': cloudProjectId,
+    'email': email,
+    'assignRoleNames': assignRoleNames,
+  });
 
   /// Revokes a user from a project by unassigning the specified project roles.
   ///
@@ -913,16 +790,12 @@ class EndpointProjects extends _i1.EndpointRef {
     required String email,
     List<String>? unassignRoleNames,
     bool? unassignAllRoles,
-  }) => caller.callServerEndpoint<List<String>>(
-    'projects',
-    'detachUser',
-    {
-      'cloudProjectId': cloudProjectId,
-      'email': email,
-      'unassignRoleNames': unassignRoleNames,
-      'unassignAllRoles': unassignAllRoles,
-    },
-  );
+  }) => caller.callServerEndpoint<List<String>>('projects', 'detachUser', {
+    'cloudProjectId': cloudProjectId,
+    'email': email,
+    'unassignRoleNames': unassignRoleNames,
+    'unassignAllRoles': unassignAllRoles,
+  });
 
   /// Invites a user to a project by assigning the specified project roles.
   /// If the user does not exist, a user invitation email is sent.
@@ -933,15 +806,11 @@ class EndpointProjects extends _i1.EndpointRef {
     required String cloudProjectId,
     required String email,
     required List<String> assignRoleNames,
-  }) => caller.callServerEndpoint<void>(
-    'projects',
-    'inviteUser',
-    {
-      'cloudProjectId': cloudProjectId,
-      'email': email,
-      'assignRoleNames': assignRoleNames,
-    },
-  );
+  }) => caller.callServerEndpoint<void>('projects', 'inviteUser', {
+    'cloudProjectId': cloudProjectId,
+    'email': email,
+    'assignRoleNames': assignRoleNames,
+  });
 
   /// Revokes a user from a project by unassigning the specified project roles.
   /// If any of the roles do not exist or are not previously assigned to the
@@ -956,16 +825,12 @@ class EndpointProjects extends _i1.EndpointRef {
     required String email,
     List<String>? unassignRoleNames,
     bool? unassignAllRoles,
-  }) => caller.callServerEndpoint<List<String>>(
-    'projects',
-    'revokeUser',
-    {
-      'cloudProjectId': cloudProjectId,
-      'email': email,
-      'unassignRoleNames': unassignRoleNames,
-      'unassignAllRoles': unassignAllRoles,
-    },
-  );
+  }) => caller.callServerEndpoint<List<String>>('projects', 'revokeUser', {
+    'cloudProjectId': cloudProjectId,
+    'email': email,
+    'unassignRoleNames': unassignRoleNames,
+    'unassignAllRoles': unassignAllRoles,
+  });
 }
 
 /// Endpoint for managing access roles.
@@ -996,33 +861,23 @@ class EndpointSecrets extends _i1.EndpointRef {
   _i2.Future<void> create({
     required Map<String, String> secrets,
     required String cloudCapsuleId,
-  }) => caller.callServerEndpoint<void>(
-    'secrets',
-    'create',
-    {
-      'secrets': secrets,
-      'cloudCapsuleId': cloudCapsuleId,
-    },
-  );
+  }) => caller.callServerEndpoint<void>('secrets', 'create', {
+    'secrets': secrets,
+    'cloudCapsuleId': cloudCapsuleId,
+  });
 
   _i2.Future<void> delete({
     required String key,
     required String cloudCapsuleId,
-  }) => caller.callServerEndpoint<void>(
-    'secrets',
-    'delete',
-    {
-      'key': key,
-      'cloudCapsuleId': cloudCapsuleId,
-    },
-  );
+  }) => caller.callServerEndpoint<void>('secrets', 'delete', {
+    'key': key,
+    'cloudCapsuleId': cloudCapsuleId,
+  });
 
   _i2.Future<List<String>> list(String cloudCapsuleId) =>
-      caller.callServerEndpoint<List<String>>(
-        'secrets',
-        'list',
-        {'cloudCapsuleId': cloudCapsuleId},
-      );
+      caller.callServerEndpoint<List<String>>('secrets', 'list', {
+        'cloudCapsuleId': cloudCapsuleId,
+      });
 }
 
 /// Endpoint for accessing capsule deployment status.
@@ -1041,10 +896,7 @@ class EndpointStatus extends _i1.EndpointRef {
   }) => caller.callServerEndpoint<List<_i5.DeployAttempt>>(
     'status',
     'getDeployAttempts',
-    {
-      'cloudCapsuleId': cloudCapsuleId,
-      'limit': limit,
-    },
+    {'cloudCapsuleId': cloudCapsuleId, 'limit': limit},
   );
 
   /// Gets the specified deploy attempt status of the a capsule.
@@ -1054,10 +906,7 @@ class EndpointStatus extends _i1.EndpointRef {
   }) => caller.callServerEndpoint<List<_i26.DeployAttemptStage>>(
     'status',
     'getDeployAttemptStatus',
-    {
-      'cloudCapsuleId': cloudCapsuleId,
-      'attemptId': attemptId,
-    },
+    {'cloudCapsuleId': cloudCapsuleId, 'attemptId': attemptId},
   );
 
   /// Gets the deploy attempt id for the specified attempt number of a capsule.
@@ -1065,14 +914,10 @@ class EndpointStatus extends _i1.EndpointRef {
   _i2.Future<String> getDeployAttemptId({
     required String cloudCapsuleId,
     required int attemptNumber,
-  }) => caller.callServerEndpoint<String>(
-    'status',
-    'getDeployAttemptId',
-    {
-      'cloudCapsuleId': cloudCapsuleId,
-      'attemptNumber': attemptNumber,
-    },
-  );
+  }) => caller.callServerEndpoint<String>('status', 'getDeployAttemptId', {
+    'cloudCapsuleId': cloudCapsuleId,
+    'attemptNumber': attemptNumber,
+  });
 }
 
 /// Bespoke endpoint for the 2025 Hackathon.
@@ -1086,12 +931,8 @@ class EndpointHackathon extends _i1.EndpointRef {
   /// Invites a user to the 2025 Serverpod Hackathon.
   ///
   /// If the user email already exists, a [DuplicateEntryException] is thrown.
-  _i2.Future<void> inviteUser({required String email}) =>
-      caller.callServerEndpoint<void>(
-        'hackathon',
-        'inviteUser',
-        {'email': email},
-      );
+  _i2.Future<void> inviteUser({required String email}) => caller
+      .callServerEndpoint<void>('hackathon', 'inviteUser', {'email': email});
 }
 
 /// Endpoint for managing users.
@@ -1103,11 +944,8 @@ class EndpointUsers extends _i1.EndpointRef {
   String get name => 'users';
 
   /// Reads the current user's information.
-  _i2.Future<_i6.User> readUser() => caller.callServerEndpoint<_i6.User>(
-    'users',
-    'readUser',
-    {},
-  );
+  _i2.Future<_i6.User> readUser() =>
+      caller.callServerEndpoint<_i6.User>('users', 'readUser', {});
 
   /// Reads all users that have a role in the specified project.
   _i2.Future<List<_i6.User>> listUsersInProject({
@@ -1149,12 +987,7 @@ class Client extends _i1.ServerpodClientShared {
     super.authenticationKeyManager,
     Duration? streamingConnectionTimeout,
     Duration? connectionTimeout,
-    Function(
-      _i1.MethodCallContext,
-      Object,
-      StackTrace,
-    )?
-    onFailedCall,
+    Function(_i1.MethodCallContext, Object, StackTrace)? onFailedCall,
     Function(_i1.MethodCallContext)? onSucceededCall,
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(

@@ -13,10 +13,7 @@ import '../../../test_utils/project_factory.dart';
 void main() {
   final logger = VoidLogger();
   final commandLogger = CommandLogger(logger);
-  final testProjectPath = p.join(
-    'test_integration',
-    const Uuid().v4(),
-  );
+  final testProjectPath = p.join('test_integration', const Uuid().v4());
 
   tearDown(() {
     final directory = Directory(testProjectPath);
@@ -26,42 +23,38 @@ void main() {
   });
 
   test(
-      'Given a project directory only containing file ignored by default ignore rules when zipping project then empty project exception is thrown',
-      () {
-    final projectDirectory = DirectoryFactory(
-      withFiles: [
-        FileFactory(withName: '.gitignore'),
-      ],
-    ).construct(testProjectPath);
+    'Given a project directory only containing file ignored by default ignore rules when zipping project then empty project exception is thrown',
+    () {
+      final projectDirectory = DirectoryFactory(
+        withFiles: [FileFactory(withName: '.gitignore')],
+      ).construct(testProjectPath);
 
-    expect(
-      () => ProjectZipper.zipProject(
-        rootDirectory: projectDirectory,
-        logger: commandLogger,
-      ),
-      throwsA(isA<EmptyProjectException>()),
-    );
-  });
+      expect(
+        () => ProjectZipper.zipProject(
+          rootDirectory: projectDirectory,
+          logger: commandLogger,
+        ),
+        throwsA(isA<EmptyProjectException>()),
+      );
+    },
+  );
 
   test(
-      'Given only default ignored file in subdirectory when zipping project then empty project exception is thrown',
-      () {
-    final projectDirectory = DirectoryFactory(
-      withSubDirectories: [
-        DirectoryFactory(
-          withFiles: [
-            FileFactory(withName: '.gitignore'),
-          ],
-        ),
-      ],
-    ).construct(testProjectPath);
+    'Given only default ignored file in subdirectory when zipping project then empty project exception is thrown',
+    () {
+      final projectDirectory = DirectoryFactory(
+        withSubDirectories: [
+          DirectoryFactory(withFiles: [FileFactory(withName: '.gitignore')]),
+        ],
+      ).construct(testProjectPath);
 
-    expect(
-      () => ProjectZipper.zipProject(
-        rootDirectory: projectDirectory,
-        logger: commandLogger,
-      ),
-      throwsA(isA<EmptyProjectException>()),
-    );
-  });
+      expect(
+        () => ProjectZipper.zipProject(
+          rootDirectory: projectDirectory,
+          logger: commandLogger,
+        ),
+        throwsA(isA<EmptyProjectException>()),
+      );
+    },
+  );
 }

@@ -12,13 +12,13 @@ class ProjectBuilder {
   List<Capsule>? _capsules;
 
   ProjectBuilder()
-      : _id = 1,
-        _createdAt = DateTime.now(),
-        _updatedAt = DateTime.now(),
-        _archivedAt = null,
-        _cloudProjectId = 'test-project',
-        _roles = [],
-        _capsules = [] {
+    : _id = 1,
+      _createdAt = DateTime.now(),
+      _updatedAt = DateTime.now(),
+      _archivedAt = null,
+      _cloudProjectId = 'test-project',
+      _roles = [],
+      _capsules = [] {
     withUserOwner(UserBuilder().build());
   }
 
@@ -26,17 +26,13 @@ class ProjectBuilder {
   /// Calling this method resets the roles in the builder.
   ProjectBuilder withUserOwner(final User user) {
     _owner = OwnerBuilder().withUser(user).build();
-    _roles = [
-      RoleBuilder.admin().withUser(user).build(),
-    ];
+    _roles = [RoleBuilder.admin().withUser(user).build()];
     return this;
   }
 
   ProjectBuilder withDeveloperUser(final User user) {
     _roles ??= [];
-    _roles?.add(
-      RoleBuilder().withName('Developer').withUser(user).build(),
-    );
+    _roles?.add(RoleBuilder().withName('Developer').withUser(user).build());
     return this;
   }
 

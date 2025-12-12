@@ -112,20 +112,24 @@ Examples
 ''';
 
   CloudVariableCreateCommand({required super.logger})
-      : super(options: CreateVariableCommandConfig.values);
+    : super(options: CreateVariableCommandConfig.values);
 
   @override
   Future<void> runWithConfig(
     final Configuration<CreateVariableCommandConfig> commandConfig,
   ) async {
-    final projectId =
-        commandConfig.value(CreateVariableCommandConfig.projectId);
-    final variableName =
-        commandConfig.value(CreateVariableCommandConfig.variableName);
-    final variableValue =
-        commandConfig.optionalValue(CreateVariableCommandConfig.variableValue);
-    final valueFile =
-        commandConfig.optionalValue(CreateVariableCommandConfig.valueFile);
+    final projectId = commandConfig.value(
+      CreateVariableCommandConfig.projectId,
+    );
+    final variableName = commandConfig.value(
+      CreateVariableCommandConfig.variableName,
+    );
+    final variableValue = commandConfig.optionalValue(
+      CreateVariableCommandConfig.variableValue,
+    );
+    final valueFile = commandConfig.optionalValue(
+      CreateVariableCommandConfig.valueFile,
+    );
 
     String valueToSet;
     if (variableValue != null) {
@@ -146,7 +150,10 @@ Examples
       );
     } on Exception catch (e, s) {
       throw FailureException.nested(
-          e, s, 'Failed to create a new environment variable');
+        e,
+        s,
+        'Failed to create a new environment variable',
+      );
     }
 
     logger.success('Successfully created environment variable.');
@@ -176,19 +183,24 @@ Examples
 ''';
 
   CloudVariableUpdateCommand({required super.logger})
-      : super(options: UpdateVariableCommandConfig.values);
+    : super(options: UpdateVariableCommandConfig.values);
 
   @override
   Future<void> runWithConfig(
-      final Configuration<UpdateVariableCommandConfig> commandConfig) async {
-    final projectId =
-        commandConfig.value(UpdateVariableCommandConfig.projectId);
-    final variableName =
-        commandConfig.value(UpdateVariableCommandConfig.variableName);
-    final variableValue =
-        commandConfig.optionalValue(UpdateVariableCommandConfig.variableValue);
-    final valueFile =
-        commandConfig.optionalValue(UpdateVariableCommandConfig.valueFile);
+    final Configuration<UpdateVariableCommandConfig> commandConfig,
+  ) async {
+    final projectId = commandConfig.value(
+      UpdateVariableCommandConfig.projectId,
+    );
+    final variableName = commandConfig.value(
+      UpdateVariableCommandConfig.variableName,
+    );
+    final variableValue = commandConfig.optionalValue(
+      UpdateVariableCommandConfig.variableValue,
+    );
+    final valueFile = commandConfig.optionalValue(
+      UpdateVariableCommandConfig.valueFile,
+    );
 
     String valueToSet;
     if (variableValue != null) {
@@ -209,7 +221,10 @@ Examples
       );
     } on Exception catch (e, s) {
       throw FailureException.nested(
-          e, s, 'Failed to update the environment variable');
+        e,
+        s,
+        'Failed to update the environment variable',
+      );
     }
 
     logger.success('Successfully updated environment variable: $variableName.');
@@ -234,15 +249,18 @@ Examples
 ''';
 
   CloudVariableDeleteCommand({required super.logger})
-      : super(options: DeleteVariableCommandConfig.values);
+    : super(options: DeleteVariableCommandConfig.values);
 
   @override
   Future<void> runWithConfig(
-      final Configuration<DeleteVariableCommandConfig> commandConfig) async {
-    final projectId =
-        commandConfig.value(DeleteVariableCommandConfig.projectId);
-    final variableName =
-        commandConfig.value(DeleteVariableCommandConfig.variableName);
+    final Configuration<DeleteVariableCommandConfig> commandConfig,
+  ) async {
+    final projectId = commandConfig.value(
+      DeleteVariableCommandConfig.projectId,
+    );
+    final variableName = commandConfig.value(
+      DeleteVariableCommandConfig.variableName,
+    );
 
     final shouldDelete = await logger.confirm(
       'Are you sure you want to delete the environment variable "$variableName"?',
@@ -262,7 +280,10 @@ Examples
       );
     } on Exception catch (e, s) {
       throw FailureException.nested(
-          e, s, 'Failed to delete the environment variable');
+        e,
+        s,
+        'Failed to delete the environment variable',
+      );
     }
 
     logger.success('Successfully deleted environment variable: $variableName.');
@@ -278,11 +299,12 @@ class CloudVariableListCommand
   String get name => 'list';
 
   CloudVariableListCommand({required super.logger})
-      : super(options: ListVariableCommandConfig.values);
+    : super(options: ListVariableCommandConfig.values);
 
   @override
   Future<void> runWithConfig(
-      final Configuration<ListVariableCommandConfig> commandConfig) async {
+    final Configuration<ListVariableCommandConfig> commandConfig,
+  ) async {
     final projectId = commandConfig.value(ListVariableCommandConfig.projectId);
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
@@ -294,7 +316,10 @@ class CloudVariableListCommand
       );
     } on Exception catch (e, s) {
       throw FailureException.nested(
-          e, s, 'Failed to list environment variables');
+        e,
+        s,
+        'Failed to list environment variables',
+      );
     }
 
     final tablePrinter = TablePrinter();

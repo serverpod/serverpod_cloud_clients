@@ -17,14 +17,9 @@ import '../../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();
-  final cli = CloudCliCommandRunner.create(
-    logger: logger,
-  );
+  final cli = CloudCliCommandRunner.create(logger: logger);
 
-  final testCacheFolderPath = p.join(
-    'test_integration',
-    const Uuid().v4(),
-  );
+  final testCacheFolderPath = p.join('test_integration', const Uuid().v4());
 
   tearDown(() {
     final directory = Directory(testCacheFolderPath);
@@ -37,10 +32,12 @@ void main() {
 
   const projectId = 'projectId';
 
-  test('Given custom domains command when instantiated then requires login',
-      () {
-    expect(CloudCustomDomainCommand(logger: logger).requireLogin, isTrue);
-  });
+  test(
+    'Given custom domains command when instantiated then requires login',
+    () {
+      expect(CloudCustomDomainCommand(logger: logger).requireLogin, isTrue);
+    },
+  );
 
   group('Given unauthenticated', () {
     late Uri localServerAddress;
@@ -100,11 +97,12 @@ void main() {
 
         expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message:
-                  'The credentials for this session seem to no longer be valid.',
-            ));
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message:
+                'The credentials for this session seem to no longer be valid.',
+          ),
+        );
       });
     });
 
@@ -135,11 +133,12 @@ void main() {
 
         expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message:
-                  'The credentials for this session seem to no longer be valid.',
-            ));
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message:
+                'The credentials for this session seem to no longer be valid.',
+          ),
+        );
       });
     });
 
@@ -172,11 +171,12 @@ void main() {
 
         expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message:
-                  'The credentials for this session seem to no longer be valid.',
-            ));
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message:
+                'The credentials for this session seem to no longer be valid.',
+          ),
+        );
       });
     });
 
@@ -208,11 +208,12 @@ void main() {
 
         expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message:
-                  'The credentials for this session seem to no longer be valid.',
-            ));
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message:
+                'The credentials for this session seem to no longer be valid.',
+          ),
+        );
       });
     });
   });
@@ -241,20 +242,21 @@ void main() {
           return (
             200,
             CustomDomainNameWithDefaultDomains(
-                customDomainName: CustomDomainName(
-                  name: 'www.domain.com',
-                  status: DomainNameStatus.needsSetup,
-                  target: DomainNameTarget.api,
-                  capsuleId: 1,
-                  dnsRecordVerificationValue: 'projectId.api.serverpod.space',
-                  dnsRecordType: DnsRecordType.cname,
-                ),
-                defaultDomainsByTarget: {
-                  DomainNameTarget.api: '$projectId.api.serverpod.space',
-                  DomainNameTarget.insights:
-                      '$projectId.insights.serverpod.space',
-                  DomainNameTarget.web: '$projectId.serverpod.space',
-                }),
+              customDomainName: CustomDomainName(
+                name: 'www.domain.com',
+                status: DomainNameStatus.needsSetup,
+                target: DomainNameTarget.api,
+                capsuleId: 1,
+                dnsRecordVerificationValue: 'projectId.api.serverpod.space',
+                dnsRecordType: DnsRecordType.cname,
+              ),
+              defaultDomainsByTarget: {
+                DomainNameTarget.api: '$projectId.api.serverpod.space',
+                DomainNameTarget.insights:
+                    '$projectId.insights.serverpod.space',
+                DomainNameTarget.web: '$projectId.serverpod.space',
+              },
+            ),
           );
         });
 
@@ -297,8 +299,9 @@ void main() {
       test('then logs follow up instructions', () async {
         await commandResult;
 
-        final followUpLogCalls =
-            logger.infoCalls.map((final call) => call.message);
+        final followUpLogCalls = logger.infoCalls.map(
+          (final call) => call.message,
+        );
 
         expect(followUpLogCalls, isNotEmpty);
         expect(
@@ -315,8 +318,9 @@ void main() {
       setUp(() async {
         final serverBuilder = HttpServerBuilder();
 
-        serverBuilder.withMethodResponse('customDomainName', 'remove',
-            (final _) {
+        serverBuilder.withMethodResponse('customDomainName', 'remove', (
+          final _,
+        ) {
           return (200, '');
         });
 
@@ -377,8 +381,9 @@ void main() {
       setUp(() async {
         final serverBuilder = HttpServerBuilder();
 
-        serverBuilder.withMethodResponse('customDomainName', 'remove',
-            (final _) {
+        serverBuilder.withMethodResponse('customDomainName', 'remove', (
+          final _,
+        ) {
           return (200, '');
         });
 
@@ -437,8 +442,9 @@ void main() {
 
       setUp(() async {
         final serverBuilder = HttpServerBuilder();
-        serverBuilder
-            .withSuccessfulResponse(jsonEncode(DomainNameStatus.configured));
+        serverBuilder.withSuccessfulResponse(
+          jsonEncode(DomainNameStatus.configured),
+        );
 
         final (startedServer, serverAddress) = await serverBuilder.build();
         localServerAddress = serverAddress;
@@ -482,8 +488,9 @@ void main() {
 
       setUp(() async {
         final serverBuilder = HttpServerBuilder();
-        serverBuilder
-            .withSuccessfulResponse(jsonEncode(DomainNameStatus.pending));
+        serverBuilder.withSuccessfulResponse(
+          jsonEncode(DomainNameStatus.pending),
+        );
 
         final (startedServer, serverAddress) = await serverBuilder.build();
         localServerAddress = serverAddress;
@@ -528,8 +535,9 @@ void main() {
 
       setUp(() async {
         final serverBuilder = HttpServerBuilder();
-        serverBuilder
-            .withSuccessfulResponse(jsonEncode(DomainNameStatus.needsSetup));
+        serverBuilder.withSuccessfulResponse(
+          jsonEncode(DomainNameStatus.needsSetup),
+        );
 
         final (startedServer, serverAddress) = await serverBuilder.build();
         localServerAddress = serverAddress;
@@ -572,13 +580,14 @@ void main() {
 
       setUp(() async {
         final serverBuilder = HttpServerBuilder();
-        serverBuilder.withMethodResponse('customDomainName', 'refreshRecord',
-            (final _) {
+        serverBuilder.withMethodResponse('customDomainName', 'refreshRecord', (
+          final _,
+        ) {
           return (
             400,
             DNSVerificationFailedException(
               message: 'Could not find a CNAME record for the domain.',
-            )
+            ),
           );
         });
 
@@ -610,7 +619,8 @@ void main() {
         expect(
           logger.errorCalls.first,
           equalsErrorCall(
-            message: 'Failed to verify the DNS record for the custom domain: '
+            message:
+                'Failed to verify the DNS record for the custom domain: '
                 'Could not find a CNAME record for the domain.',
           ),
         );
@@ -624,123 +634,45 @@ void main() {
 
       setUp(() async {
         final serverBuilder = HttpServerBuilder();
-        serverBuilder.withSuccessfulResponse(jsonEncode(CustomDomainNameList(
-          customDomainNames: [
-            CustomDomainName(
-              capsuleId: 1,
-              name: 'api.domain.com',
-              status: DomainNameStatus.configured,
-              target: DomainNameTarget.api,
-              dnsRecordVerificationValue: 'projectId.api.serverpod.space',
-              dnsRecordType: DnsRecordType.cname,
+        serverBuilder.withSuccessfulResponse(
+          jsonEncode(
+            CustomDomainNameList(
+              customDomainNames: [
+                CustomDomainName(
+                  capsuleId: 1,
+                  name: 'api.domain.com',
+                  status: DomainNameStatus.configured,
+                  target: DomainNameTarget.api,
+                  dnsRecordVerificationValue: 'projectId.api.serverpod.space',
+                  dnsRecordType: DnsRecordType.cname,
+                ),
+                CustomDomainName(
+                  capsuleId: 1,
+                  name: 'domain.com',
+                  status: DomainNameStatus.pending,
+                  target: DomainNameTarget.web,
+                  dnsRecordVerificationValue: 'projectId.serverpod.space',
+                  dnsRecordType: DnsRecordType.cname,
+                ),
+                CustomDomainName(
+                  capsuleId: 1,
+                  name: 'insights.domain.com',
+                  status: DomainNameStatus.needsSetup,
+                  target: DomainNameTarget.insights,
+                  dnsRecordVerificationValue:
+                      'projectId.insights.serverpod.space',
+                  dnsRecordType: DnsRecordType.cname,
+                ),
+              ],
+              defaultDomainsByTarget: {
+                DomainNameTarget.api: 'my-magical-project.api.serverpod.space',
+                DomainNameTarget.insights:
+                    'my-magical-project.insights.serverpod.space',
+                DomainNameTarget.web: 'my-magical-project.serverpod.space',
+              },
             ),
-            CustomDomainName(
-              capsuleId: 1,
-              name: 'domain.com',
-              status: DomainNameStatus.pending,
-              target: DomainNameTarget.web,
-              dnsRecordVerificationValue: 'projectId.serverpod.space',
-              dnsRecordType: DnsRecordType.cname,
-            ),
-            CustomDomainName(
-              capsuleId: 1,
-              name: 'insights.domain.com',
-              status: DomainNameStatus.needsSetup,
-              target: DomainNameTarget.insights,
-              dnsRecordVerificationValue: 'projectId.insights.serverpod.space',
-              dnsRecordType: DnsRecordType.cname,
-            ),
-          ],
-          defaultDomainsByTarget: {
-            DomainNameTarget.api: 'my-magical-project.api.serverpod.space',
-            DomainNameTarget.insights:
-                'my-magical-project.insights.serverpod.space',
-            DomainNameTarget.web: 'my-magical-project.serverpod.space',
-          },
-        )));
-
-        final (startedServer, serverAddress) = await serverBuilder.build();
-        localServerAddress = serverAddress;
-        server = startedServer;
-
-        commandResult = cli.run([
-          'domain',
-          'list',
-          '--project',
-          projectId,
-          '--api-url',
-          localServerAddress.toString(),
-          '--config-dir',
-          testCacheFolderPath,
-        ]);
-      });
-
-      test('then completes successfully', () async {
-        await expectLater(commandResult, completes);
-      });
-
-      test('then logs success message', () async {
-        await commandResult;
-
-        expect(logger.lineCalls, isNotEmpty);
-        expect(
-          logger.lineCalls,
-          containsAllInOrder([
-            equalsLineCall(
-                line: 'Default domain name                         | Target  '),
-            equalsLineCall(
-              line: '--------------------------------------------+---------',
-            ),
-            equalsLineCall(
-              line: 'my-magical-project.api.serverpod.space      | api     ',
-            ),
-            equalsLineCall(
-              line: 'my-magical-project.insights.serverpod.space | insights',
-            ),
-            equalsLineCall(
-              line: 'my-magical-project.serverpod.space          | web     ',
-            ),
-            equalsLineCall(
-              line:
-                  'Custom domain name  | Target                                      | Status                      ',
-            ),
-            equalsLineCall(
-              line:
-                  '--------------------+---------------------------------------------+-----------------------------',
-            ),
-            equalsLineCall(
-              line:
-                  'api.domain.com      | my-magical-project.api.serverpod.space      | Configured                  ',
-            ),
-            equalsLineCall(
-              line:
-                  'domain.com          | my-magical-project.serverpod.space          | Certificate creation pending',
-            ),
-            equalsLineCall(
-              line:
-                  'insights.domain.com | my-magical-project.insights.serverpod.space | Needs setup                 ',
-            ),
-          ]),
+          ),
         );
-      });
-    });
-
-    group('and custom domains does not exist when executing domain list', () {
-      late Uri localServerAddress;
-
-      late Future commandResult;
-
-      setUp(() async {
-        final serverBuilder = HttpServerBuilder();
-        serverBuilder.withSuccessfulResponse(jsonEncode(CustomDomainNameList(
-          customDomainNames: [],
-          defaultDomainsByTarget: {
-            DomainNameTarget.api: 'my-magical-project.api.serverpod.space',
-            DomainNameTarget.insights:
-                'my-magical-project.insights.serverpod.space',
-            DomainNameTarget.web: 'my-magical-project.serverpod.space',
-          },
-        )));
 
         final (startedServer, serverAddress) = await serverBuilder.build();
         localServerAddress = serverAddress;
@@ -785,14 +717,96 @@ void main() {
               line: 'my-magical-project.serverpod.space          | web     ',
             ),
             equalsLineCall(
-              line: 'Custom domain name | Target | Status',
+              line:
+                  'Custom domain name  | Target                                      | Status                      ',
             ),
             equalsLineCall(
-              line: '-------------------+--------+-------',
+              line:
+                  '--------------------+---------------------------------------------+-----------------------------',
             ),
             equalsLineCall(
-              line: '<no rows data>',
+              line:
+                  'api.domain.com      | my-magical-project.api.serverpod.space      | Configured                  ',
             ),
+            equalsLineCall(
+              line:
+                  'domain.com          | my-magical-project.serverpod.space          | Certificate creation pending',
+            ),
+            equalsLineCall(
+              line:
+                  'insights.domain.com | my-magical-project.insights.serverpod.space | Needs setup                 ',
+            ),
+          ]),
+        );
+      });
+    });
+
+    group('and custom domains does not exist when executing domain list', () {
+      late Uri localServerAddress;
+
+      late Future commandResult;
+
+      setUp(() async {
+        final serverBuilder = HttpServerBuilder();
+        serverBuilder.withSuccessfulResponse(
+          jsonEncode(
+            CustomDomainNameList(
+              customDomainNames: [],
+              defaultDomainsByTarget: {
+                DomainNameTarget.api: 'my-magical-project.api.serverpod.space',
+                DomainNameTarget.insights:
+                    'my-magical-project.insights.serverpod.space',
+                DomainNameTarget.web: 'my-magical-project.serverpod.space',
+              },
+            ),
+          ),
+        );
+
+        final (startedServer, serverAddress) = await serverBuilder.build();
+        localServerAddress = serverAddress;
+        server = startedServer;
+
+        commandResult = cli.run([
+          'domain',
+          'list',
+          '--project',
+          projectId,
+          '--api-url',
+          localServerAddress.toString(),
+          '--config-dir',
+          testCacheFolderPath,
+        ]);
+      });
+
+      test('then completes successfully', () async {
+        await expectLater(commandResult, completes);
+      });
+
+      test('then logs success message', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isNotEmpty);
+        expect(
+          logger.lineCalls,
+          containsAllInOrder([
+            equalsLineCall(
+              line: 'Default domain name                         | Target  ',
+            ),
+            equalsLineCall(
+              line: '--------------------------------------------+---------',
+            ),
+            equalsLineCall(
+              line: 'my-magical-project.api.serverpod.space      | api     ',
+            ),
+            equalsLineCall(
+              line: 'my-magical-project.insights.serverpod.space | insights',
+            ),
+            equalsLineCall(
+              line: 'my-magical-project.serverpod.space          | web     ',
+            ),
+            equalsLineCall(line: 'Custom domain name | Target | Status'),
+            equalsLineCall(line: '-------------------+--------+-------'),
+            equalsLineCall(line: '<no rows data>'),
           ]),
         );
       });

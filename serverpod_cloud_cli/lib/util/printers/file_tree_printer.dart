@@ -78,9 +78,7 @@ abstract final class FileTreePrinter {
     for (final _TreeNode file in files) {
       final List<_TreeNode> parts = p
           .split(file.part)
-          .map(
-            (final part) => _TreeNode(part, file.isIgnored),
-          )
+          .map((final part) => _TreeNode(part, file.isIgnored))
           .toList();
 
       Map<_TreeNode, dynamic> current = root;
@@ -166,7 +164,8 @@ abstract final class FileTreePrinter {
         (final fullPrefix, final prefixNode) => fullPrefix + prefixNode.$1,
       );
 
-      final paddingLength = _maxLength -
+      final paddingLength =
+          _maxLength -
           prefix.length -
           connector.length -
           node.part.length -

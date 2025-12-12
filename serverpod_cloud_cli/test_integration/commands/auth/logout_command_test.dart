@@ -14,14 +14,9 @@ import '../../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();
-  final cli = CloudCliCommandRunner.create(
-    logger: logger,
-  );
+  final cli = CloudCliCommandRunner.create(logger: logger);
 
-  final testCacheFolderPath = p.join(
-    'test_integration',
-    const Uuid().v4(),
-  );
+  final testCacheFolderPath = p.join('test_integration', const Uuid().v4());
 
   tearDown(() {
     final directory = Directory(testCacheFolderPath);
@@ -168,8 +163,10 @@ void main() {
         expect(logger.warningCalls, isNotEmpty);
         expect(
           logger.warningCalls.first.message,
-          equals('Ignoring error response from server: '
-              'ServerpodClientException: Not found, statusCode = 404'),
+          equals(
+            'Ignoring error response from server: '
+            'ServerpodClientException: Not found, statusCode = 404',
+          ),
         );
       });
 
@@ -188,23 +185,22 @@ void main() {
   });
 
   test(
-      'Given no stored credentials when logging out through cli then the command completes with no stored credentials log.',
-      () async {
-    final runLogoutCommand = cli.run([
-      'auth',
-      'logout',
-      '--config-dir',
-      testCacheFolderPath,
-    ]);
+    'Given no stored credentials when logging out through cli then the command completes with no stored credentials log.',
+    () async {
+      final runLogoutCommand = cli.run([
+        'auth',
+        'logout',
+        '--config-dir',
+        testCacheFolderPath,
+      ]);
 
-    await expectLater(runLogoutCommand, completes);
+      await expectLater(runLogoutCommand, completes);
 
-    expect(logger.infoCalls, isNotEmpty);
-    expect(
-      logger.infoCalls.first,
-      equalsInfoCall(
-        message: 'No stored Serverpod Cloud credentials found.',
-      ),
-    );
-  });
+      expect(logger.infoCalls, isNotEmpty);
+      expect(
+        logger.infoCalls.first,
+        equalsInfoCall(message: 'No stored Serverpod Cloud credentials found.'),
+      );
+    },
+  );
 }

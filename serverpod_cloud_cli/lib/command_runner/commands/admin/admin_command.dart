@@ -18,10 +18,7 @@ class CloudAdminCommand extends CloudCliCommand {
   @override
   final bool hidden;
 
-  CloudAdminCommand({
-    required super.logger,
-    this.hidden = true,
-  }) {
+  CloudAdminCommand({required super.logger, this.hidden = true}) {
     addSubcommand(AdminListUsersCommand(logger: logger));
     addSubcommand(AdminInviteUserCommand(logger: logger));
     addSubcommand(AdminInviteHackathonUserCommand(logger: logger));

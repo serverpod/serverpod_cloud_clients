@@ -11,7 +11,7 @@ class ProjectFactory {
   static const defaultPackageName = 'my_project_server';
   static const validSdkVersion =
       '"^${VersionConstants.minSupportedSdkVersion}"';
-  static const highValidSdkVersion = '"^3.8.3"';
+  static const highValidSdkVersion = '"^3.10.3"';
   static const validServerpodVersion =
       '"^${VersionConstants.minSupportedServerpodVersion}"';
 
@@ -35,19 +35,17 @@ class ProjectFactory {
     final String withPackageName = defaultPackageName,
     final String? withResolution,
   }) {
-    final String resolutionString =
-        withResolution != null ? 'resolution: $withResolution' : '';
-    return d.file(
-      'pubspec.yaml',
-      '''
+    final String resolutionString = withResolution != null
+        ? 'resolution: $withResolution'
+        : '';
+    return d.file('pubspec.yaml', '''
 name: $withPackageName
 environment:
   sdk: $validSdkVersion
 $resolutionString
 dependencies:
   serverpod: $validServerpodVersion
-''',
-    );
+''');
   }
 }
 
@@ -68,10 +66,10 @@ class DirectoryFactory {
     final List<DirectoryFactory>? withSubDirectories,
     final List<FileFactory>? withFiles,
     final List<SymLinkFactory>? withSymLinks,
-  })  : _directoryName = withDirectoryName ?? const Uuid().v4(),
-        _subDirectories = withSubDirectories ?? [],
-        _files = withFiles ?? [],
-        _symLinks = withSymLinks ?? [];
+  }) : _directoryName = withDirectoryName ?? const Uuid().v4(),
+       _subDirectories = withSubDirectories ?? [],
+       _files = withFiles ?? [],
+       _symLinks = withSymLinks ?? [];
 
   /// Constructs the directory and all subdirectories and files.
   /// Returns the created directory.
@@ -82,8 +80,9 @@ class DirectoryFactory {
     directory.createSync(recursive: true);
 
     for (final subDirectory in _subDirectories) {
-      subDirectory
-          .construct('${directory.path}/${subDirectory._directoryName}');
+      subDirectory.construct(
+        '${directory.path}/${subDirectory._directoryName}',
+      );
     }
 
     for (final file in _files) {
@@ -107,11 +106,9 @@ class FileFactory {
   ///
   /// The file name is a random UUID by default.
   /// The file contents are empty by default.
-  FileFactory({
-    final String? withName,
-    final String? withContents,
-  })  : _contents = withContents ?? '',
-        _name = withName ?? const Uuid().v4();
+  FileFactory({final String? withName, final String? withContents})
+    : _contents = withContents ?? '',
+      _name = withName ?? const Uuid().v4();
 
   /// Constructs the file and writes the contents.
   /// The [path] is the path to where the file should be created.
@@ -135,11 +132,9 @@ class SymLinkFactory {
   /// The link target is a random UUID by default.
   ///
   /// The [withTarget] is a relative path to the target.
-  SymLinkFactory({
-    final String? withName,
-    final String? withTarget,
-  })  : _target = withTarget ?? const Uuid().v4(),
-        _name = withName ?? const Uuid().v4();
+  SymLinkFactory({final String? withName, final String? withTarget})
+    : _target = withTarget ?? const Uuid().v4(),
+      _name = withName ?? const Uuid().v4();
 
   /// Constructs the symbolic link.
   /// The [path] is the path to where the link should be created.

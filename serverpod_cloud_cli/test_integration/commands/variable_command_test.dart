@@ -43,8 +43,9 @@ void main() {
       late Future commandResult;
 
       setUp(() async {
-        when(() => client.environmentVariables.create(any(), any(), any()))
-            .thenThrow(ServerpodClientUnauthorized());
+        when(
+          () => client.environmentVariables.create(any(), any(), any()),
+        ).thenThrow(ServerpodClientUnauthorized());
 
         commandResult = cli.run([
           'variable',
@@ -67,11 +68,12 @@ void main() {
 
         expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message:
-                  'The credentials for this session seem to no longer be valid.',
-            ));
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message:
+                'The credentials for this session seem to no longer be valid.',
+          ),
+        );
       });
     });
 
@@ -79,11 +81,13 @@ void main() {
       late Future commandResult;
 
       setUp(() async {
-        when(() => client.environmentVariables.update(
-              name: any(named: 'name'),
-              value: any(named: 'value'),
-              cloudCapsuleId: any(named: 'cloudCapsuleId'),
-            )).thenThrow(ServerpodClientUnauthorized());
+        when(
+          () => client.environmentVariables.update(
+            name: any(named: 'name'),
+            value: any(named: 'value'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenThrow(ServerpodClientUnauthorized());
 
         commandResult = cli.run([
           'variable',
@@ -106,11 +110,12 @@ void main() {
 
         expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message:
-                  'The credentials for this session seem to no longer be valid.',
-            ));
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message:
+                'The credentials for this session seem to no longer be valid.',
+          ),
+        );
       });
     });
 
@@ -118,10 +123,12 @@ void main() {
       late Future commandResult;
 
       setUp(() async {
-        when(() => client.environmentVariables.delete(
-              name: any(named: 'name'),
-              cloudCapsuleId: any(named: 'cloudCapsuleId'),
-            )).thenThrow(ServerpodClientUnauthorized());
+        when(
+          () => client.environmentVariables.delete(
+            name: any(named: 'name'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenThrow(ServerpodClientUnauthorized());
 
         logger.answerNextConfirmWith(true);
         commandResult = cli.run([
@@ -144,11 +151,12 @@ void main() {
 
         expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message:
-                  'The credentials for this session seem to no longer be valid.',
-            ));
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message:
+                'The credentials for this session seem to no longer be valid.',
+          ),
+        );
       });
     });
 
@@ -156,15 +164,11 @@ void main() {
       late Future commandResult;
 
       setUp(() async {
-        when(() => client.environmentVariables.list(any()))
-            .thenThrow(ServerpodClientUnauthorized());
+        when(
+          () => client.environmentVariables.list(any()),
+        ).thenThrow(ServerpodClientUnauthorized());
 
-        commandResult = cli.run([
-          'variable',
-          'list',
-          '--project',
-          projectId,
-        ]);
+        commandResult = cli.run(['variable', 'list', '--project', projectId]);
       });
 
       test('then throws exception', () async {
@@ -178,11 +182,12 @@ void main() {
 
         expect(logger.errorCalls, isNotEmpty);
         expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message:
-                  'The credentials for this session seem to no longer be valid.',
-            ));
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message:
+                'The credentials for this session seem to no longer be valid.',
+          ),
+        );
       });
     });
   });
@@ -194,17 +199,21 @@ void main() {
 
     group('when executing variable create', () {
       setUp(() async {
-        when(() => client.environmentVariables.create(
-              any(that: equals('key')),
-              any(that: equals('value')),
-              any(),
-            )).thenAnswer((final invocation) async => Future.value(
-              EnvironmentVariable(
-                name: invocation.positionalArguments[0],
-                value: invocation.positionalArguments[1],
-                capsuleId: 0,
-              ),
-            ));
+        when(
+          () => client.environmentVariables.create(
+            any(that: equals('key')),
+            any(that: equals('value')),
+            any(),
+          ),
+        ).thenAnswer(
+          (final invocation) async => Future.value(
+            EnvironmentVariable(
+              name: invocation.positionalArguments[0],
+              value: invocation.positionalArguments[1],
+              capsuleId: 0,
+            ),
+          ),
+        );
       });
 
       group('with value arg', () {
@@ -293,13 +302,15 @@ void main() {
         test('then command throws UsageException', () async {
           await expectLater(
             commandResult,
-            throwsA(isA<UsageException>().having(
-              (final e) => e.message,
-              'message',
-              equals(
-                'These options are mutually exclusive: from-file, value.',
+            throwsA(
+              isA<UsageException>().having(
+                (final e) => e.message,
+                'message',
+                equals(
+                  'These options are mutually exclusive: from-file, value.',
+                ),
               ),
-            )),
+            ),
           );
         });
       });
@@ -320,13 +331,15 @@ void main() {
         test('then command throws UsageException', () async {
           await expectLater(
             commandResult,
-            throwsA(isA<UsageException>().having(
-              (final e) => e.message,
-              'message',
-              equals(
-                'Option group Value requires one of the options to be provided.',
+            throwsA(
+              isA<UsageException>().having(
+                (final e) => e.message,
+                'message',
+                equals(
+                  'Option group Value requires one of the options to be provided.',
+                ),
               ),
-            )),
+            ),
           );
         });
       });
@@ -334,17 +347,21 @@ void main() {
 
     group('when executing variable create', () {
       setUp(() async {
-        when(() => client.environmentVariables.create(
-              any(that: equals('key')),
-              any(that: equals('value1\nline2')),
-              any(),
-            )).thenAnswer((final invocation) async => Future.value(
-              EnvironmentVariable(
-                name: invocation.positionalArguments[0],
-                value: invocation.positionalArguments[1],
-                capsuleId: 0,
-              ),
-            ));
+        when(
+          () => client.environmentVariables.create(
+            any(that: equals('key')),
+            any(that: equals('value1\nline2')),
+            any(),
+          ),
+        ).thenAnswer(
+          (final invocation) async => Future.value(
+            EnvironmentVariable(
+              name: invocation.positionalArguments[0],
+              value: invocation.positionalArguments[1],
+              capsuleId: 0,
+            ),
+          ),
+        );
       });
 
       group('with multi-line value arg', () {
@@ -415,17 +432,21 @@ void main() {
 
     group('when executing variable update', () {
       setUp(() async {
-        when(() => client.environmentVariables.update(
-              name: any(named: 'name', that: equals('key')),
-              value: any(named: 'value', that: equals('value')),
-              cloudCapsuleId: any(named: 'cloudCapsuleId'),
-            )).thenAnswer((final invocation) async => Future.value(
-              EnvironmentVariable(
-                name: invocation.namedArguments[#name],
-                value: invocation.namedArguments[#value],
-                capsuleId: 0,
-              ),
-            ));
+        when(
+          () => client.environmentVariables.update(
+            name: any(named: 'name', that: equals('key')),
+            value: any(named: 'value', that: equals('value')),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenAnswer(
+          (final invocation) async => Future.value(
+            EnvironmentVariable(
+              name: invocation.namedArguments[#name],
+              value: invocation.namedArguments[#value],
+              capsuleId: 0,
+            ),
+          ),
+        );
       });
 
       group('with value arg', () {
@@ -514,13 +535,15 @@ void main() {
         test('then command throws UsageException', () async {
           await expectLater(
             commandResult,
-            throwsA(isA<UsageException>().having(
-              (final e) => e.message,
-              'message',
-              equals(
-                'These options are mutually exclusive: from-file, value.',
+            throwsA(
+              isA<UsageException>().having(
+                (final e) => e.message,
+                'message',
+                equals(
+                  'These options are mutually exclusive: from-file, value.',
+                ),
               ),
-            )),
+            ),
           );
         });
       });
@@ -541,13 +564,15 @@ void main() {
         test('then command throws UsageException', () async {
           await expectLater(
             commandResult,
-            throwsA(isA<UsageException>().having(
-              (final e) => e.message,
-              'message',
-              equals(
-                'Option group Value requires one of the options to be provided.',
+            throwsA(
+              isA<UsageException>().having(
+                (final e) => e.message,
+                'message',
+                equals(
+                  'Option group Value requires one of the options to be provided.',
+                ),
               ),
-            )),
+            ),
           );
         });
       });
@@ -557,16 +582,20 @@ void main() {
       late Future commandResult;
 
       setUp(() async {
-        when(() => client.environmentVariables.delete(
-              name: any(named: 'name'),
-              cloudCapsuleId: any(named: 'cloudCapsuleId'),
-            )).thenAnswer((final invocation) async => Future.value(
-              EnvironmentVariable(
-                name: invocation.namedArguments[#name],
-                value: 'placeholder',
-                capsuleId: 0,
-              ),
-            ));
+        when(
+          () => client.environmentVariables.delete(
+            name: any(named: 'name'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenAnswer(
+          (final invocation) async => Future.value(
+            EnvironmentVariable(
+              name: invocation.namedArguments[#name],
+              value: 'placeholder',
+              capsuleId: 0,
+            ),
+          ),
+        );
 
         logger.answerNextConfirmWith(true);
         commandResult = cli.run([
@@ -658,21 +687,13 @@ void main() {
       late Future commandResult;
 
       setUp(() async {
-        when(() => client.environmentVariables.list(any()))
-            .thenAnswer((final invocation) async => Future.value([
-                  EnvironmentVariable(
-                    name: 'name',
-                    value: 'value',
-                    capsuleId: 0,
-                  ),
-                ]));
+        when(() => client.environmentVariables.list(any())).thenAnswer(
+          (final invocation) async => Future.value([
+            EnvironmentVariable(name: 'name', value: 'value', capsuleId: 0),
+          ]),
+        );
 
-        commandResult = cli.run([
-          'variable',
-          'list',
-          '--project',
-          projectId,
-        ]);
+        commandResult = cli.run(['variable', 'list', '--project', projectId]);
       });
 
       test('then completes successfully', () async {

@@ -43,8 +43,9 @@ abstract final class ProjectFiles {
     final (collectedFiles, ignoredFiles) = Ignore.listFiles(
       beneath: beneath,
       listDir: (final dir) {
-        final contents = Directory(_resolve(from: root, path: dir))
-            .listSync(recursive: true);
+        final contents = Directory(
+          _resolve(from: root, path: dir),
+        ).listSync(recursive: true);
         return contents.map((final entity) {
           final path = entity.path;
           if (_linkExists(path)) {

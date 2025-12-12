@@ -14,9 +14,9 @@ abstract final class CLIVersionChecker {
     return PackageVersion.fetchLatestPackageVersion(
       storePackageVersionData: (final PackageVersionData versionArtefact) =>
           ResourceManager.storeLatestCliVersion(
-        cliVersionData: versionArtefact,
-        logger: logger,
-      ),
+            cliVersionData: versionArtefact,
+            logger: logger,
+          ),
       loadPackageVersionData: () => ResourceManager.tryFetchLatestCliVersion(
         localStoragePath: localStoragePath,
         logger: logger,
@@ -27,9 +27,7 @@ abstract final class CLIVersionChecker {
         try {
           version = await pubClient
               .tryFetchLatestStableVersion('serverpod_cloud_cli')
-              .timeout(
-                const Duration(seconds: 2),
-              );
+              .timeout(const Duration(seconds: 2));
         } on VersionFetchException catch (e) {
           logger.error(e.message);
         } on VersionParseException catch (e) {

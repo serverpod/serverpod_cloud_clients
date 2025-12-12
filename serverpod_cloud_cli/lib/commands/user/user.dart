@@ -14,15 +14,17 @@ abstract class UserCommands {
 
     final table = TablePrinter(
       headers: ['User', 'Project', 'Project roles'],
-      rows: users.map((final user) => [
-            user.email,
-            projectId,
-            user.memberships
-                    ?.map((final m) => m.role?.name)
-                    .nonNulls
-                    .join(', ') ??
-                '',
-          ]),
+      rows: users.map(
+        (final user) => [
+          user.email,
+          projectId,
+          user.memberships
+                  ?.map((final m) => m.role?.name)
+                  .nonNulls
+                  .join(', ') ??
+              '',
+        ],
+      ),
     );
     table.writeLines(logger.line);
   }

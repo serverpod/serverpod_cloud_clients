@@ -87,23 +87,21 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     required final bool enableAnalyticsForAllEnvs,
     super.onAnalyticsEvent,
     super.setLogLevel,
-  })  : _serviceProvider = serviceProvider,
-        _versionCommand = VersionCommand(logger: logger),
-        _enableAnalyticsForAllEnvs = enableAnalyticsForAllEnvs,
-        super(
-          'scloud',
-          'Manage your Serverpod Cloud projects',
-          globalOptions: GlobalOption.values,
-          wrapTextColumn: logger.wrapTextColumn,
-          messageOutput: MessageOutput(
-            usageLogger: logger.info,
-          ),
-          enableCompletionCommand: true,
-          embeddedCompletions: [
-            completionScriptCompletely,
-            completionScriptCarapace,
-          ],
-        );
+  }) : _serviceProvider = serviceProvider,
+       _versionCommand = VersionCommand(logger: logger),
+       _enableAnalyticsForAllEnvs = enableAnalyticsForAllEnvs,
+       super(
+         'scloud',
+         'Manage your Serverpod Cloud projects',
+         globalOptions: GlobalOption.values,
+         wrapTextColumn: logger.wrapTextColumn,
+         messageOutput: MessageOutput(usageLogger: logger.info),
+         enableCompletionCommand: true,
+         embeddedCompletions: [
+           completionScriptCompletely,
+           completionScriptCarapace,
+         ],
+       );
 
   static CloudCliCommandRunner create({
     required final CommandLogger logger,
@@ -119,18 +117,19 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
       serviceProvider: serviceProvider ?? CloudCliServiceProvider(),
       enableAnalyticsForAllEnvs: enableAnalyticsForAllEnvs,
       onAnalyticsEvent: onAnalyticsEvent,
-      setLogLevel: ({
-        final String? commandName,
-        required final CommandRunnerLogLevel parsedLogLevel,
-      }) =>
-          _configureLogLevel(
-        logger: logger,
-        parsedLogLevel: parsedLogLevel,
-        commandName: commandName,
-      ),
+      setLogLevel:
+          ({
+            final String? commandName,
+            required final CommandRunnerLogLevel parsedLogLevel,
+          }) => _configureLogLevel(
+            logger: logger,
+            parsedLogLevel: parsedLogLevel,
+            commandName: commandName,
+          ),
     );
 
-    adminUserMode ??= bool.tryParse(
+    adminUserMode ??=
+        bool.tryParse(
           Platform.environment['SERVERPOD_CLOUD_ADMIN_USER_MODE'] ?? 'false',
           caseSensitive: false,
         ) ??
@@ -171,7 +170,10 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     } catch (e, stackTrace) {
       logger.debug('Failed to fetch latest CLI version: $e');
       throw ErrorExitException(
-          'Failed to fetch latest CLI version', e, stackTrace);
+        'Failed to fetch latest CLI version',
+        e,
+        stackTrace,
+      );
     }
 
     if (latestVersion != null && version < latestVersion) {
@@ -271,7 +273,8 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     if (!isServerpodServerDirectory(projectDirectory)) {
       logProjectDirIsNotAServerpodServerDirectory(logger, selectedProjectDir);
       throw ErrorExitException(
-          'The directory is not a Serverpod server directory.');
+        'The directory is not a Serverpod server directory.',
+      );
     }
 
     return projectDirectory;
@@ -351,9 +354,7 @@ To update to the latest version, run "dart pub global activate serverpod_cloud_c
       infoMessage = '$infoMessage You need to update the CLI to continue.';
     }
 
-    logger.box(
-      infoMessage,
-    );
+    logger.box(infoMessage);
   }
 }
 
@@ -366,13 +367,15 @@ enum GlobalOption<V> implements OptionDefinition<V> {
   quiet(BetterCommandRunnerFlags.quietOption),
   verbose(BetterCommandRunnerFlags.verboseOption),
 
-  analytics(FlagOption(
-    argName: BetterCommandRunnerFlags.analytics,
-    argAbbrev: BetterCommandRunnerFlags.analyticsAbbr,
-    envName: 'SERVERPOD_CLOUD_COMMAND_ANALYTICS',
-    negatable: true,
-    helpText: 'Toggles if analytics data is sent.',
-  )),
+  analytics(
+    FlagOption(
+      argName: BetterCommandRunnerFlags.analytics,
+      argAbbrev: BetterCommandRunnerFlags.analyticsAbbr,
+      envName: 'SERVERPOD_CLOUD_COMMAND_ANALYTICS',
+      negatable: true,
+      helpText: 'Toggles if analytics data is sent.',
+    ),
+  ),
 
   version(
     FlagOption(
@@ -432,7 +435,8 @@ enum GlobalOption<V> implements OptionDefinition<V> {
   skipConfirmation(
     FlagOption(
       argName: 'yes',
-      helpText: 'Automatically accept confirmation prompts.'
+      helpText:
+          'Automatically accept confirmation prompts.'
           ' For use in non-interactive environments.',
       negatable: false,
       defaultsTo: false,
@@ -497,15 +501,10 @@ File? _projectConfigFileFinder(final Configuration cfg) {
 
 /// The current global configuration values for the Serverpod Cloud CLI.
 class GlobalConfiguration extends Configuration<GlobalOption> {
-  GlobalConfiguration.from({
-    required super.configuration,
-  }) : super.from();
+  GlobalConfiguration.from({required super.configuration}) : super.from();
 
-  GlobalConfiguration.resolve({
-    super.argResults,
-    super.args,
-    super.env,
-  }) : super.resolve(options: GlobalOption.values);
+  GlobalConfiguration.resolve({super.argResults, super.args, super.env})
+    : super.resolve(options: GlobalOption.values);
 
   bool get quiet => value(GlobalOption.quiet);
 

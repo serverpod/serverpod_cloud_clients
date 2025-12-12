@@ -29,10 +29,7 @@ abstract class ProjectConfig implements _i1.SerializableModel {
   ProjectConfig copyWith({String? projectId});
   @override
   Map<String, dynamic> toJson() {
-    return {
-      '__className__': 'ProjectConfig',
-      'projectId': projectId,
-    };
+    return {'__className__': 'ProjectConfig', 'projectId': projectId};
   }
 
   @override

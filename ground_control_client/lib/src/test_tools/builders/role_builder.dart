@@ -13,26 +13,26 @@ class RoleBuilder {
   List<UserRoleMembership>? _memberships;
 
   RoleBuilder()
-      : _id = 1,
-        _createdAt = DateTime.now(),
-        _updatedAt = DateTime.now(),
-        _archivedAt = null,
-        _projectId = 1,
-        _project = null,
-        _name = 'Admin',
-        _projectScopes = ['P0-all'],
-        _memberships = [];
+    : _id = 1,
+      _createdAt = DateTime.now(),
+      _updatedAt = DateTime.now(),
+      _archivedAt = null,
+      _projectId = 1,
+      _project = null,
+      _name = 'Admin',
+      _projectScopes = ['P0-all'],
+      _memberships = [];
 
   RoleBuilder.admin()
-      : _id = 1,
-        _createdAt = DateTime.now(),
-        _updatedAt = DateTime.now(),
-        _archivedAt = null,
-        _projectId = 1,
-        _project = null,
-        _name = 'Admin',
-        _projectScopes = ['P0-all'],
-        _memberships = [];
+    : _id = 1,
+      _createdAt = DateTime.now(),
+      _updatedAt = DateTime.now(),
+      _archivedAt = null,
+      _projectId = 1,
+      _project = null,
+      _name = 'Admin',
+      _projectScopes = ['P0-all'],
+      _memberships = [];
 
   RoleBuilder withId(final int id) {
     _id = id;

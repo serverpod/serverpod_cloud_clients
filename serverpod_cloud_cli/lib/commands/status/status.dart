@@ -75,7 +75,8 @@ abstract class StatusCommands {
     final phrase = '${_getRocketStagePhrase(stage.stageType)}:';
     final status = _getStatusPhrase(stage);
 
-    final rocket = stage.stageType == DeployStageType.service &&
+    final rocket =
+        stage.stageType == DeployStageType.service &&
             stage.stageStatus == DeployProgressStatus.success
         ? ' 🚀'
         : '';
@@ -123,7 +124,8 @@ class DeployStatusTable extends TablePrinter {
   final bool inUtc;
 
   DeployStatusTable({this.inUtc = false})
-      : super(headers: [
+    : super(
+        headers: [
           '#',
           'Project',
           'Deploy Id',
@@ -131,14 +133,17 @@ class DeployStatusTable extends TablePrinter {
           'Started',
           'Finished',
           'Info',
-        ]);
+        ],
+      );
 
   void addRows(final Iterable<DeployAttempt> attempts) {
     attempts.mapIndexed(_tableRowFromDeployAttempt).forEach(addRow);
   }
 
   List<String?> _tableRowFromDeployAttempt(
-      final int index, final DeployAttempt attempt) {
+    final int index,
+    final DeployAttempt attempt,
+  ) {
     return [
       index.toString(),
       attempt.cloudCapsuleId,

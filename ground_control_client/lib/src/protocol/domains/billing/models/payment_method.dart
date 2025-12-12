@@ -15,11 +15,7 @@ import '../../../domains/billing/models/payment_method_card.dart' as _i2;
 import 'package:ground_control_client/src/protocol/protocol.dart' as _i3;
 
 abstract class PaymentMethod implements _i1.SerializableModel {
-  PaymentMethod._({
-    required this.id,
-    required this.type,
-    this.card,
-  });
+  PaymentMethod._({required this.id, required this.type, this.card});
 
   factory PaymentMethod({
     required String id,
@@ -76,11 +72,7 @@ class _PaymentMethodImpl extends PaymentMethod {
     required String id,
     required String type,
     _i2.PaymentMethodCard? card,
-  }) : super._(
-         id: id,
-         type: type,
-         card: card,
-       );
+  }) : super._(id: id, type: type, card: card);
 
   /// Returns a shallow copy of this [PaymentMethod]
   /// with some or all fields replaced by the given arguments.

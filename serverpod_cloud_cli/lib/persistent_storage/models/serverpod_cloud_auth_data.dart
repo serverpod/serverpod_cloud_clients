@@ -7,7 +7,5 @@ class ServerpodCloudAuthData {
     return ServerpodCloudAuthData(json['token'] as String);
   }
 
-  Map<String, dynamic> toJson() => {
-        'token': token,
-      };
+  Map<String, dynamic> toJson() => {'token': token};
 }

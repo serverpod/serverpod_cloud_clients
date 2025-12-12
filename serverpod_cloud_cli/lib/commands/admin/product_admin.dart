@@ -8,20 +8,12 @@ abstract class ProductAdminCommands {
     required final CommandLogger logger,
     required final String userEmail,
   }) async {
-    final productRecords =
-        await cloudApiClient.adminProcurement.listProcuredProducts(
-      userEmail: userEmail,
-    );
+    final productRecords = await cloudApiClient.adminProcurement
+        .listProcuredProducts(userEmail: userEmail);
 
     final table = TablePrinter(
-      headers: [
-        'Product',
-        'Type',
-      ],
-      rows: productRecords.map((final product) => [
-            product.$1,
-            product.$2,
-          ]),
+      headers: ['Product', 'Type'],
+      rows: productRecords.map((final product) => [product.$1, product.$2]),
     );
     table.writeLines(logger.line);
   }

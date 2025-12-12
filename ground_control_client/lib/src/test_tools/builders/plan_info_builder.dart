@@ -9,12 +9,12 @@ class PlanInfoBuilder {
   int? _projectsLimit;
 
   PlanInfoBuilder()
-      : _productId = 'early-access:0',
-        _displayName = 'Early Access',
-        _description = 'A test plan description',
-        _trialLength = 7,
-        _trialEndDate = null,
-        _projectsLimit = 3;
+    : _productId = 'early-access:0',
+      _displayName = 'Early Access',
+      _description = 'A test plan description',
+      _trialLength = 7,
+      _trialEndDate = null,
+      _projectsLimit = 3;
 
   PlanInfoBuilder withHackathon2025() {
     _productId = 'hackathon-25:0';

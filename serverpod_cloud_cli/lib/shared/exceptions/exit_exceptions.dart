@@ -19,11 +19,8 @@ class ErrorExitException extends ExitException {
   /// Creates an [ErrorExitException].
   /// Provide a reason and causing exception if available
   /// which aids in testing and debugging.
-  ErrorExitException([
-    this.reason,
-    this.nestedException,
-    this.nestedStackTrace,
-  ]) : super.error();
+  ErrorExitException([this.reason, this.nestedException, this.nestedStackTrace])
+    : super.error();
 
   @override
   String toString() {
@@ -82,8 +79,8 @@ class FailureException extends ExitException {
     this.reason,
     this.nestedException,
     this.nestedStackTrace,
-  })  : errors = [if (error != null) error, ...?errors],
-        super.error();
+  }) : errors = [if (error != null) error, ...?errors],
+       super.error();
 
   /// Simplified factory constructor for a [FailureException] with a nested
   /// exception.
@@ -107,10 +104,7 @@ class FailureException extends ExitException {
 
   @override
   String toString() {
-    final message = [
-      ...errors,
-      if (reason != null) reason,
-    ].join('\n');
+    final message = [...errors, if (reason != null) reason].join('\n');
     final str = '$runtimeType: $message';
 
     if (nestedException == null) {

@@ -34,7 +34,8 @@ abstract final class ListenerServer {
     return token;
   }
 
-  static String _cliHtmlTemplate(final String message) => '''
+  static String _cliHtmlTemplate(final String message) =>
+      '''
 <!DOCTYPE html>
 <html>
   <head>
@@ -65,7 +66,8 @@ abstract final class ListenerServer {
 ''';
 
   static Future<String?> _handleCallbackRequest(
-      final HttpRequest request) async {
+    final HttpRequest request,
+  ) async {
     final token = request.uri.queryParameters['token'];
     request.response.statusCode = HttpStatus.ok;
     request.response.headers.contentType = ContentType.html;
@@ -91,7 +93,9 @@ abstract final class ListenerServer {
   }
 
   static Future<String?> _processRequests(
-      final HttpServer server, final CommandLogger logger) async {
+    final HttpServer server,
+    final CommandLogger logger,
+  ) async {
     await for (var request in server) {
       logger.debug('Received request: ${request.method} ${request.uri}');
       try {

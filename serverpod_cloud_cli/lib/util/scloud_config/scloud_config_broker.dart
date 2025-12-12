@@ -15,14 +15,12 @@ ConfigurationBroker<T> scloudCliConfigBroker<T extends OptionDefinition>({
   required final GlobalConfiguration globalConfig,
   final CommandLogger? logger,
 }) {
-  return MultiDomainConfigBroker<T>.prefix(
-    {
-      scloudConfigDomainPrefix: _ScloudProjectConfigProvider<T>(
-        globalConfig: globalConfig,
-        logger: logger,
-      ),
-    },
-  );
+  return MultiDomainConfigBroker<T>.prefix({
+    scloudConfigDomainPrefix: _ScloudProjectConfigProvider<T>(
+      globalConfig: globalConfig,
+      logger: logger,
+    ),
+  });
 }
 
 /// A [ConfigSourceProvider] for the scloud project configuration.
@@ -35,10 +33,7 @@ class _ScloudProjectConfigProvider<T extends OptionDefinition>
 
   ConfigurationSource? _configSource;
 
-  _ScloudProjectConfigProvider({
-    required this.globalConfig,
-    this.logger,
-  });
+  _ScloudProjectConfigProvider({required this.globalConfig, this.logger});
 
   @override
   ConfigurationSource getConfigSource(final Configuration<T> cfg) {
@@ -48,8 +43,10 @@ class _ScloudProjectConfigProvider<T extends OptionDefinition>
   ConfigurationSource _makeConfigSource(final Configuration<T> cfg) {
     final configContent = globalConfig.projectConfigContent;
     if (configContent != null) {
-      logger?.debug('Using scloud project configuration from '
-          '`${GlobalOption.projectConfigContent.qualifiedString()}`');
+      logger?.debug(
+        'Using scloud project configuration from '
+        '`${GlobalOption.projectConfigContent.qualifiedString()}`',
+      );
       return ConfigurationParser.fromString(
         configContent,
         format: ConfigEncoding.yaml,
@@ -60,8 +57,10 @@ class _ScloudProjectConfigProvider<T extends OptionDefinition>
     if (configFile == null) {
       logger?.info('No scloud project configuration file found.');
     } else {
-      logger?.debug('Using scloud project configuration file '
-          '${configFile.path}');
+      logger?.debug(
+        'Using scloud project configuration file '
+        '${configFile.path}',
+      );
       return ConfigurationParser.fromFile(configFile.path);
     }
 

@@ -11,12 +11,14 @@ Matcher equalsErrorCall({
   final String? hint,
   final bool newParagraph = false,
 }) {
-  return _ErrorCallMatcher(ErrorCall(
-    message: message,
-    exception: exception,
-    hint: hint,
-    newParagraph: newParagraph,
-  ));
+  return _ErrorCallMatcher(
+    ErrorCall(
+      message: message,
+      exception: exception,
+      hint: hint,
+      newParagraph: newParagraph,
+    ),
+  );
 }
 
 class _ErrorCallMatcher extends Matcher {
@@ -57,19 +59,25 @@ class _ErrorCallMatcher extends Matcher {
       return mismatchDescription.add('message is not "${errorCall.message}"');
     }
     if (item.exception?.toString() != errorCall.exception?.toString()) {
-      return mismatchDescription
-          .add('exception is not "${errorCall.exception}"');
+      return mismatchDescription.add(
+        'exception is not "${errorCall.exception}"',
+      );
     }
     if (item.hint != errorCall.hint) {
       return mismatchDescription.add('hint is not "${errorCall.hint}"');
     }
     if (item.newParagraph != errorCall.newParagraph) {
-      return mismatchDescription
-          .add('newParagraph is not ${errorCall.newParagraph}');
+      return mismatchDescription.add(
+        'newParagraph is not ${errorCall.newParagraph}',
+      );
     }
 
-    return super
-        .describeMismatch(item, mismatchDescription, matchState, verbose);
+    return super.describeMismatch(
+      item,
+      mismatchDescription,
+      matchState,
+      verbose,
+    );
   }
 }
 
@@ -78,10 +86,9 @@ Matcher equalsInfoCall({
   required final String message,
   final bool newParagraph = false,
 }) {
-  return _InfoCallMatcher(InfoCall(
-    message: message,
-    newParagraph: newParagraph,
-  ));
+  return _InfoCallMatcher(
+    InfoCall(message: message, newParagraph: newParagraph),
+  );
 }
 
 class _InfoCallMatcher extends Matcher {
@@ -117,22 +124,23 @@ class _InfoCallMatcher extends Matcher {
       return mismatchDescription.add('message is not "${infoCall.message}"');
     }
     if (item.newParagraph != infoCall.newParagraph) {
-      return mismatchDescription
-          .add('newParagraph is not ${infoCall.newParagraph}');
+      return mismatchDescription.add(
+        'newParagraph is not ${infoCall.newParagraph}',
+      );
     }
 
-    return super
-        .describeMismatch(item, mismatchDescription, matchState, verbose);
+    return super.describeMismatch(
+      item,
+      mismatchDescription,
+      matchState,
+      verbose,
+    );
   }
 }
 
 /// Test matcher to assert TestCommandLogger.line calls
-Matcher equalsLineCall({
-  required final String line,
-}) {
-  return _LineCallMatcher(LineCall(
-    line: line,
-  ));
+Matcher equalsLineCall({required final String line}) {
+  return _LineCallMatcher(LineCall(line: line));
 }
 
 class _LineCallMatcher extends Matcher {
@@ -148,9 +156,7 @@ class _LineCallMatcher extends Matcher {
 
   @override
   Description describe(final Description description) {
-    return description.add(
-      'an info log with line "${lineCall.line}"',
-    );
+    return description.add('an info log with line "${lineCall.line}"');
   }
 
   @override
@@ -167,8 +173,12 @@ class _LineCallMatcher extends Matcher {
       return mismatchDescription.add('line is not "${lineCall.line}"');
     }
 
-    return super
-        .describeMismatch(item, mismatchDescription, matchState, verbose);
+    return super.describeMismatch(
+      item,
+      mismatchDescription,
+      matchState,
+      verbose,
+    );
   }
 }
 
@@ -178,11 +188,9 @@ Matcher equalsListCall({
   final String? title,
   final bool newParagraph = false,
 }) {
-  return _ListCallMatcher(ListCall(
-    items: items,
-    title: title,
-    newParagraph: newParagraph,
-  ));
+  return _ListCallMatcher(
+    ListCall(items: items, title: title, newParagraph: newParagraph),
+  );
 }
 
 class _ListCallMatcher extends Matcher {
@@ -223,12 +231,17 @@ class _ListCallMatcher extends Matcher {
       return mismatchDescription.add('title is not "${listCall.title}"');
     }
     if (item.newParagraph != listCall.newParagraph) {
-      return mismatchDescription
-          .add('newParagraph is not ${listCall.newParagraph}');
+      return mismatchDescription.add(
+        'newParagraph is not ${listCall.newParagraph}',
+      );
     }
 
-    return super
-        .describeMismatch(item, mismatchDescription, matchState, verbose);
+    return super.describeMismatch(
+      item,
+      mismatchDescription,
+      matchState,
+      verbose,
+    );
   }
 }
 
@@ -239,12 +252,14 @@ Matcher equalsSuccessCall({
   final bool newParagraph = false,
   final String? followUp,
 }) {
-  return _SuccessCallMatcher(SuccessCall(
-    message: message,
-    trailingRocket: trailingRocket,
-    newParagraph: newParagraph,
-    followUp: followUp,
-  ));
+  return _SuccessCallMatcher(
+    SuccessCall(
+      message: message,
+      trailingRocket: trailingRocket,
+      newParagraph: newParagraph,
+      followUp: followUp,
+    ),
+  );
 }
 
 class _SuccessCallMatcher extends Matcher {
@@ -284,20 +299,27 @@ class _SuccessCallMatcher extends Matcher {
       return mismatchDescription.add('message is not "${successCall.message}"');
     }
     if (item.trailingRocket != successCall.trailingRocket) {
-      return mismatchDescription
-          .add('trailingRocket is not ${successCall.trailingRocket}');
+      return mismatchDescription.add(
+        'trailingRocket is not ${successCall.trailingRocket}',
+      );
     }
     if (item.newParagraph != successCall.newParagraph) {
-      return mismatchDescription
-          .add('newParagraph is not ${successCall.newParagraph}');
+      return mismatchDescription.add(
+        'newParagraph is not ${successCall.newParagraph}',
+      );
     }
     if (item.followUp != successCall.followUp) {
-      return mismatchDescription
-          .add('followUp is not "${successCall.followUp}"');
+      return mismatchDescription.add(
+        'followUp is not "${successCall.followUp}"',
+      );
     }
 
-    return super
-        .describeMismatch(item, mismatchDescription, matchState, verbose);
+    return super.describeMismatch(
+      item,
+      mismatchDescription,
+      matchState,
+      verbose,
+    );
   }
 }
 
@@ -307,11 +329,13 @@ Matcher equalsTerminalCommandCall({
   final String? message,
   final bool newParagraph = false,
 }) {
-  return _TerminalCommandCallMatcher(TerminalCommandCall(
-    command: command,
-    message: message,
-    newParagraph: newParagraph,
-  ));
+  return _TerminalCommandCallMatcher(
+    TerminalCommandCall(
+      command: command,
+      message: message,
+      newParagraph: newParagraph,
+    ),
+  );
 }
 
 class _TerminalCommandCallMatcher extends Matcher {
@@ -346,20 +370,27 @@ class _TerminalCommandCallMatcher extends Matcher {
       return mismatchDescription.add('is not a TerminalCommandCall');
     }
     if (item.command != terminalCommandCall.command) {
-      return mismatchDescription
-          .add('command is not "${terminalCommandCall.command}"');
+      return mismatchDescription.add(
+        'command is not "${terminalCommandCall.command}"',
+      );
     }
     if (item.message != terminalCommandCall.message) {
-      return mismatchDescription
-          .add('message is not "${terminalCommandCall.message}"');
+      return mismatchDescription.add(
+        'message is not "${terminalCommandCall.message}"',
+      );
     }
     if (item.newParagraph != terminalCommandCall.newParagraph) {
-      return mismatchDescription
-          .add('newParagraph is not ${terminalCommandCall.newParagraph}');
+      return mismatchDescription.add(
+        'newParagraph is not ${terminalCommandCall.newParagraph}',
+      );
     }
 
-    return super
-        .describeMismatch(item, mismatchDescription, matchState, verbose);
+    return super.describeMismatch(
+      item,
+      mismatchDescription,
+      matchState,
+      verbose,
+    );
   }
 }
 
@@ -369,11 +400,9 @@ Matcher equalsWarningCall({
   final String? hint,
   final bool newParagraph = false,
 }) {
-  return _WarningCallMatcher(WarningCall(
-    message: message,
-    hint: hint,
-    newParagraph: newParagraph,
-  ));
+  return _WarningCallMatcher(
+    WarningCall(message: message, hint: hint, newParagraph: newParagraph),
+  );
 }
 
 class _WarningCallMatcher extends Matcher {
@@ -414,12 +443,17 @@ class _WarningCallMatcher extends Matcher {
       return mismatchDescription.add('hint is not "${warningCall.hint}"');
     }
     if (item.newParagraph != warningCall.newParagraph) {
-      return mismatchDescription
-          .add('newParagraph is not ${warningCall.newParagraph}');
+      return mismatchDescription.add(
+        'newParagraph is not ${warningCall.newParagraph}',
+      );
     }
 
-    return super
-        .describeMismatch(item, mismatchDescription, matchState, verbose);
+    return super.describeMismatch(
+      item,
+      mismatchDescription,
+      matchState,
+      verbose,
+    );
   }
 }
 
@@ -429,10 +463,7 @@ Matcher equalsProgressCall({
   final bool newParagraph = false,
 }) {
   return _ProgressCallMatcher(
-    ProgressCall(
-      message: message,
-      newParagraph: newParagraph,
-    ),
+    ProgressCall(message: message, newParagraph: newParagraph),
   );
 }
 
@@ -466,29 +497,29 @@ class _ProgressCallMatcher extends Matcher {
       return mismatchDescription.add('is not a ProgressCall');
     }
     if (item.message != progressCall.message) {
-      return mismatchDescription
-          .add('message is not "${progressCall.message}"');
+      return mismatchDescription.add(
+        'message is not "${progressCall.message}"',
+      );
     }
     if (item.newParagraph != progressCall.newParagraph) {
-      return mismatchDescription
-          .add('newParagraph is not ${progressCall.newParagraph}');
+      return mismatchDescription.add(
+        'newParagraph is not ${progressCall.newParagraph}',
+      );
     }
 
-    return super
-        .describeMismatch(item, mismatchDescription, matchState, verbose);
+    return super.describeMismatch(
+      item,
+      mismatchDescription,
+      matchState,
+      verbose,
+    );
   }
 }
 
 /// Test matcher to assert TestCommandLogger.confirm calls
-equalsConfirmCall({
-  required final String message,
-  final bool? defaultValue,
-}) {
+equalsConfirmCall({required final String message, final bool? defaultValue}) {
   return _ConfirmCallMatcher(
-    ConfirmCall(
-      message: message,
-      defaultValue: defaultValue,
-    ),
+    ConfirmCall(message: message, defaultValue: defaultValue),
   );
 }
 
@@ -525,25 +556,24 @@ class _ConfirmCallMatcher extends Matcher {
       return mismatchDescription.add('message is not "${confirmCall.message}"');
     }
     if (item.defaultValue != confirmCall.defaultValue) {
-      return mismatchDescription
-          .add('defaultValue is not ${confirmCall.defaultValue}');
+      return mismatchDescription.add(
+        'defaultValue is not ${confirmCall.defaultValue}',
+      );
     }
 
-    return super
-        .describeMismatch(item, mismatchDescription, matchState, verbose);
+    return super.describeMismatch(
+      item,
+      mismatchDescription,
+      matchState,
+      verbose,
+    );
   }
 }
 
 /// Test matcher to assert TestCommandLogger.input calls
-equalsInputCall({
-  required final String message,
-  final String? defaultValue,
-}) {
+equalsInputCall({required final String message, final String? defaultValue}) {
   return _InputCallMatcher(
-    InputCall(
-      message: message,
-      defaultValue: defaultValue,
-    ),
+    InputCall(message: message, defaultValue: defaultValue),
   );
 }
 
@@ -580,12 +610,17 @@ class _InputCallMatcher extends Matcher {
       return mismatchDescription.add('message is not "${inputCall.message}"');
     }
     if (item.defaultValue != inputCall.defaultValue) {
-      return mismatchDescription
-          .add('defaultValue is not ${inputCall.defaultValue}');
+      return mismatchDescription.add(
+        'defaultValue is not ${inputCall.defaultValue}',
+      );
     }
 
-    return super
-        .describeMismatch(item, mismatchDescription, matchState, verbose);
+    return super.describeMismatch(
+      item,
+      mismatchDescription,
+      matchState,
+      verbose,
+    );
   }
 }
 
@@ -593,12 +628,7 @@ Matcher equalsBoxCall({
   required final message,
   final bool newParagraph = false,
 }) {
-  return _BoxCallMatcher(
-    BoxCall(
-      message: message,
-      newParagraph: newParagraph,
-    ),
-  );
+  return _BoxCallMatcher(BoxCall(message: message, newParagraph: newParagraph));
 }
 
 class _BoxCallMatcher extends Matcher {
@@ -634,11 +664,16 @@ class _BoxCallMatcher extends Matcher {
       return mismatchDescription.add('message is not "${boxCall.message}"');
     }
     if (item.newParagraph != boxCall.newParagraph) {
-      return mismatchDescription
-          .add('newParagraph is not ${boxCall.newParagraph}');
+      return mismatchDescription.add(
+        'newParagraph is not ${boxCall.newParagraph}',
+      );
     }
 
-    return super
-        .describeMismatch(item, mismatchDescription, matchState, verbose);
+    return super.describeMismatch(
+      item,
+      mismatchDescription,
+      matchState,
+      verbose,
+    );
   }
 }

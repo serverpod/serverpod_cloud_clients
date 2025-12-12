@@ -6,11 +6,7 @@ import 'package:serverpod_cloud_cli/commands/deploy/deploy.dart';
 import 'categories.dart';
 
 enum DeployCommandOption<V> implements OptionDefinition<V> {
-  projectId(
-    ProjectIdOption(
-      asFirstArg: true,
-    ),
-  ),
+  projectId(ProjectIdOption(asFirstArg: true)),
   concurrency(
     IntOption(
       argName: 'concurrency',
@@ -75,11 +71,12 @@ Examples
 ''';
 
   CloudDeployCommand({required super.logger})
-      : super(options: DeployCommandOption.values);
+    : super(options: DeployCommandOption.values);
 
   @override
   Future<void> runWithConfig(
-      final Configuration<DeployCommandOption> commandConfig) async {
+    final Configuration<DeployCommandOption> commandConfig,
+  ) async {
     final projectId = commandConfig.value(DeployCommandOption.projectId);
     final concurrency = commandConfig.value(DeployCommandOption.concurrency);
     final dryRun = commandConfig.value(DeployCommandOption.dryRun);

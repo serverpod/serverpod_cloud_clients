@@ -35,10 +35,7 @@ abstract class DuplicateEntryException
   DuplicateEntryException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
-    return {
-      '__className__': 'DuplicateEntryException',
-      'message': message,
-    };
+    return {'__className__': 'DuplicateEntryException', 'message': message};
   }
 
   @override

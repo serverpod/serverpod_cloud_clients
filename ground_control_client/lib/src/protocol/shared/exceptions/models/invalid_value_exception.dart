@@ -35,10 +35,7 @@ abstract class InvalidValueException
   InvalidValueException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
-    return {
-      '__className__': 'InvalidValueException',
-      'message': message,
-    };
+    return {'__className__': 'InvalidValueException', 'message': message};
   }
 
   @override

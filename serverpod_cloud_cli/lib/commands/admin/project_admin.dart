@@ -27,14 +27,16 @@ abstract class ProjectAdminCommands {
         'Owner',
         'Users',
       ],
-      rows: projects.map((final p) => [
-            p.project.cloudProjectId,
-            p.project.createdAt.toTzString(inUtc, 19),
-            p.project.archivedAt?.toTzString(inUtc, 19),
-            p.latestDeployAttemptTime?.timestamp?.toTzString(inUtc, 19),
-            p.project.owner?.user?.email ?? '',
-            _formatProjectUsers(p.project),
-          ]),
+      rows: projects.map(
+        (final p) => [
+          p.project.cloudProjectId,
+          p.project.createdAt.toTzString(inUtc, 19),
+          p.project.archivedAt?.toTzString(inUtc, 19),
+          p.latestDeployAttemptTime?.timestamp?.toTzString(inUtc, 19),
+          p.project.owner?.user?.email ?? '',
+          _formatProjectUsers(p.project),
+        ],
+      ),
     );
     table.writeLines(logger.line);
   }
@@ -57,17 +59,19 @@ abstract class ProjectAdminCommands {
   }
 
   static String _formatProjectUsers(final Project project) {
-    return project.roles?.map(
-          (final r) {
-            final memberships = r.memberships;
-            if (memberships == null) return '';
+    return project.roles
+            ?.map((final r) {
+              final memberships = r.memberships;
+              if (memberships == null) return '';
 
-            final users = memberships.map((final m) => m.user?.email).nonNulls;
-            if (users.isEmpty) return '';
+              final users = memberships
+                  .map((final m) => m.user?.email)
+                  .nonNulls;
+              if (users.isEmpty) return '';
 
-            return '${r.name}: ${users.join(', ')}';
-          },
-        ).join('; ') ??
+              return '${r.name}: ${users.join(', ')}';
+            })
+            .join('; ') ??
         '';
   }
 }

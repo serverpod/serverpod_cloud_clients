@@ -39,9 +39,11 @@ void main() {
     group('when executing user list', () {
       late Future commandResult;
       setUp(() async {
-        when(() => client.users.listUsersInProject(
-              cloudProjectId: any(named: 'cloudProjectId'),
-            )).thenAnswer(
+        when(
+          () => client.users.listUsersInProject(
+            cloudProjectId: any(named: 'cloudProjectId'),
+          ),
+        ).thenAnswer(
           (final invocation) async => Future.value([
             User(
               userAuthId: 'userAuthId',
@@ -50,11 +52,7 @@ void main() {
                 UserRoleMembership(
                   userId: 1,
                   roleId: 1,
-                  role: Role(
-                    projectId: 1,
-                    name: 'Admin',
-                    projectScopes: [],
-                  ),
+                  role: Role(projectId: 1, name: 'Admin', projectScopes: []),
                 ),
               ],
             ),
@@ -81,11 +79,14 @@ void main() {
           logger.lineCalls,
           containsAllInOrder([
             equalsLineCall(
-                line: 'User             | Project   | Project roles'),
+              line: 'User             | Project   | Project roles',
+            ),
             equalsLineCall(
-                line: '-----------------+-----------+--------------'),
+              line: '-----------------+-----------+--------------',
+            ),
             equalsLineCall(
-                line: 'test@example.com | projectId | Admin        '),
+              line: 'test@example.com | projectId | Admin        ',
+            ),
           ]),
         );
       });
