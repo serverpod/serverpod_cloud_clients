@@ -22,6 +22,11 @@ abstract final class ScloudConfigFile {
     }
     _yamlSchema.validate(data);
 
+    final projectSection = data['project'];
+    if (projectSection is YamlMap) {
+      YamlSchema.validateOptionalScripts(projectSection);
+    }
+
     return Map<String, dynamic>.fromEntries(
       data.entries.map(
         (final entry) => MapEntry(entry.key as String, entry.value),
@@ -62,10 +67,40 @@ abstract final class ScloudConfigFile {
         : _parseConfigYaml(yaml);
 
     if (cloudConfig['project'] == null) {
-      cloudConfig['project'] = {};
+      cloudConfig['project'] = {
+        'scripts': {
+          'pre_deploy': <String>[],
+          'post_deploy': <String>[],
+        },
+      };
     }
 
-    cloudConfig['project'] = {'projectId': projectConfig.projectId};
+    final projectMap = Map<String, dynamic>.from(
+      cloudConfig['project'] as Map<String, dynamic>? ?? {},
+    );
+
+    projectMap['projectId'] = projectConfig.projectId;
+
+    if (!projectMap.containsKey('scripts')) {
+      projectMap['scripts'] = {
+        'pre_deploy': <String>[],
+        'post_deploy': <String>[],
+      };
+    } else {
+      final existingScripts = projectMap['scripts'] as Map<String, dynamic>?;
+      if (existingScripts != null) {
+        final scriptsMap = Map<String, dynamic>.from(existingScripts);
+        if (!scriptsMap.containsKey('pre_deploy')) {
+          scriptsMap['pre_deploy'] = <String>[];
+        }
+        if (!scriptsMap.containsKey('post_deploy')) {
+          scriptsMap['post_deploy'] = <String>[];
+        }
+        projectMap['scripts'] = scriptsMap;
+      }
+    }
+
+    cloudConfig['project'] = projectMap;
 
     return jsonToYaml(cloudConfig);
   }

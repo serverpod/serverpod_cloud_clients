@@ -18,7 +18,7 @@ dependencies:
   archive: ^3.6.1
   args: ^2.6.0
   basic_utils: ^5.7.0
-  cli_tools: ^0.9.1
+  cli_tools: ^0.10.0
   collection: ^1.19.0
   config: ^0.8.3
   meta: ^1.16.0

@@ -9,6 +9,8 @@ import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dar
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:serverpod_cloud_cli/util/scloudignore.dart' show ScloudIgnore;
+import 'package:serverpod_cloud_cli/util/scloud_config/deployment_scripts.dart';
+import 'package:serverpod_cloud_cli/commands/deploy/script_runner.dart';
 
 import 'prepare_workspace.dart';
 
@@ -34,6 +36,18 @@ abstract class Deploy {
     final issues = pubspecValidator.projectDependencyIssues();
     if (issues.isNotEmpty) {
       throw FailureException(errors: issues);
+    }
+
+    final configFilePath = DeploymentScripts.getConfigFilePath(projectDir);
+    final deploymentScripts = DeploymentScripts.fromConfigFile(configFilePath);
+
+    if (deploymentScripts.preDeploy.isNotEmpty) {
+      await ScriptRunner.runScripts(
+        deploymentScripts.preDeploy,
+        projectDir,
+        logger,
+        scriptType: 'pre-deploy',
+      );
     }
 
     final Directory rootDirectory;
@@ -108,48 +122,62 @@ abstract class Deploy {
       await logger.progress('Dry run, skipping upload.', () async {
         return true;
       });
-      return;
+    } else {
+      final success = await logger.progress('Uploading project...', () async {
+        late final String uploadDescription;
+        try {
+          uploadDescription = await cloudApiClient.deploy
+              .createUploadDescription(projectId);
+        } on Exception catch (e, stackTrace) {
+          throw FailureException.nested(
+            e,
+            stackTrace,
+            'Failed to fetch upload description',
+          );
+        }
+
+        try {
+          final fileUploader = fileUploaderFactory(uploadDescription);
+          final ret = await fileUploader.upload(
+            Stream.fromIterable([projectZip]),
+            projectZip.length,
+          );
+          if (!ret) {
+            logger.error('Failed to upload project, please try again.');
+          }
+          return ret;
+        } on DioException catch (e) {
+          throw FailureException(
+            error:
+                'Failed to upload project: ${_uploadDioExceptionFormatter(e)}',
+          );
+        } on Exception catch (e, stackTrace) {
+          throw FailureException.nested(
+            e,
+            stackTrace,
+            'Failed to upload project',
+          );
+        }
+      });
+
+      if (!success) {
+        throw ErrorExitException('Failed to upload project.');
+      }
+
+      logger.success(
+        'Project uploaded successfully!',
+        trailingRocket: true,
+        newParagraph: true,
+      );
     }
 
-    final success = await logger.progress('Uploading project...', () async {
-      late final String uploadDescription;
-      try {
-        uploadDescription = await cloudApiClient.deploy.createUploadDescription(
-          projectId,
-        );
-      } on Exception catch (e, stackTrace) {
-        throw FailureException.nested(
-          e,
-          stackTrace,
-          'Failed to fetch upload description',
-        );
-      }
-
-      try {
-        final fileUploader = fileUploaderFactory(uploadDescription);
-        final ret = await fileUploader.upload(
-          Stream.fromIterable([projectZip]),
-          projectZip.length,
-        );
-        if (!ret) {
-          logger.error('Failed to upload project, please try again.');
-        }
-        return ret;
-      } on DioException catch (e) {
-        throw FailureException(
-          error: 'Failed to upload project: ${_uploadDioExceptionFormatter(e)}',
-        );
-      } on Exception catch (e, stackTrace) {
-        throw FailureException.nested(
-          e,
-          stackTrace,
-          'Failed to upload project',
-        );
-      }
-    });
-
-    if (!success) {
-      throw ErrorExitException('Failed to upload project.');
+    if (deploymentScripts.postDeploy.isNotEmpty) {
+      await ScriptRunner.runScripts(
+        deploymentScripts.postDeploy,
+        projectDir,
+        logger,
+        scriptType: 'post-deploy',
+      );
     }
   }
 

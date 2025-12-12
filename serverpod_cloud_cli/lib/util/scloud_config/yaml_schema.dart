@@ -96,4 +96,48 @@ class YamlSchema {
       'At path "$path": Unsupported schema type: ${schemaType.runtimeType}',
     );
   }
+
+  static void validateOptionalScripts(final YamlMap? projectSection) {
+    if (projectSection == null) return;
+
+    final scripts = projectSection['scripts'];
+    if (scripts == null) return;
+
+    if (scripts is! YamlMap) {
+      throw SchemaValidationException(
+          'At path "project.scripts": Expected Map, got ${scripts.runtimeType}');
+    }
+
+    final preDeploy = scripts['pre_deploy'];
+    if (preDeploy != null) {
+      if (preDeploy is! String && preDeploy is! List) {
+        throw SchemaValidationException(
+            'At path "project.scripts.pre_deploy": Expected String or List, got ${preDeploy.runtimeType}');
+      }
+      if (preDeploy is List) {
+        for (var i = 0; i < preDeploy.length; i++) {
+          if (preDeploy[i] is! String) {
+            throw SchemaValidationException(
+                'At path "project.scripts.pre_deploy[$i]": Expected String, got ${preDeploy[i].runtimeType}');
+          }
+        }
+      }
+    }
+
+    final postDeploy = scripts['post_deploy'];
+    if (postDeploy != null) {
+      if (postDeploy is! String && postDeploy is! List) {
+        throw SchemaValidationException(
+            'At path "project.scripts.post_deploy": Expected String or List, got ${postDeploy.runtimeType}');
+      }
+      if (postDeploy is List) {
+        for (var i = 0; i < postDeploy.length; i++) {
+          if (postDeploy[i] is! String) {
+            throw SchemaValidationException(
+                'At path "project.scripts.post_deploy[$i]": Expected String, got ${postDeploy[i].runtimeType}');
+          }
+        }
+      }
+    }
+  }
 }
