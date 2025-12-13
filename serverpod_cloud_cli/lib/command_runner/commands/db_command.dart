@@ -18,6 +18,7 @@ class CloudDbCommand extends CloudCliCommand {
   CloudDbCommand({required super.logger}) {
     addSubcommand(CloudDbConnectionDetailsCommand(logger: logger));
     addSubcommand(CloudDbUserCommand(logger: logger));
+    addSubcommand(CloudDbWipeCommand(logger: logger));
   }
 }
 
@@ -189,6 +190,64 @@ DB password is reset. The new password is only shown this once:
 $password''');
     } on Exception catch (e, stackTrace) {
       throw FailureException.nested(e, stackTrace, 'Failed to reset password');
+    }
+  }
+}
+
+enum DbWipeOption<V> implements OptionDefinition<V> {
+  projectId(ProjectIdOption());
+
+  const DbWipeOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class CloudDbWipeCommand extends CloudCliCommand<DbWipeOption> {
+  @override
+  final name = 'wipe';
+
+  @override
+  final description =
+      'Wipe and recreate the database. This will delete all tables and data.';
+
+  @override
+  String get category => CommandCategories.dangerZone;
+
+  CloudDbWipeCommand({required super.logger})
+    : super(options: DbWipeOption.values);
+
+  @override
+  Future<void> runWithConfig(
+    final Configuration<DbWipeOption> commandConfig,
+  ) async {
+    final projectId = commandConfig.value(DbWipeOption.projectId);
+    final skipConfirmation = globalConfiguration.skipConfirmation;
+
+    if (!skipConfirmation) {
+      final confirmed = await logger.confirm('''
+WARNING: Deletes all tables and data in the database for project "$projectId".
+This is a NON-REVERSIBLE action.
+The deployment will error until a redeploy is performed.
+
+Do you want to proceed?''', defaultValue: false);
+
+      if (!confirmed) {
+        logger.info('Database wipe cancelled.');
+        return;
+      }
+    }
+
+    final apiCloudClient = runner.serviceProvider.cloudApiClient;
+
+    try {
+      logger.info('Wiping database for project "$projectId"...');
+      await apiCloudClient.database.wipeDatabase(cloudCapsuleId: projectId);
+
+      logger.success('Database wiped successfully.');
+      logger.info('To redeploy run: scloud deploy', newParagraph: true);
+    } on Exception catch (e, stackTrace) {
+      throw FailureException.nested(e, stackTrace, 'Failed to wipe database');
     }
   }
 }
