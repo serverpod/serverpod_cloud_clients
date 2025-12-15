@@ -1,6 +1,23 @@
 
 # Changelog
 
+## [0.18.0] - 2025-12-15
+
+### Added
+
+- **`scloud me` command** - You can now display your current user's email and plan information with the `scloud me` command.
+- **`scloud db wipe` command** - Added a command to the CLI which deletes the database instance.
+
+### Changed
+
+- **Stripped dev_dependencies** - Development dependencies are now automatically removed from pubspec configuration files during cloud deployment packaging.
+- **Improved log options** - Conflicting log options now display warnings instead of errors, the default log time window is extended to 30 minutes and the default log limit is increased to 100.
+- **Dry-run feedback** - Deploy command now shows a checkmark during dry run.
+
+### Fixed
+
+- **Domain printing** - The launch command now only prints the domains.
+
 ## [0.17.0] - 2025-12-08
 
 ### Changed
