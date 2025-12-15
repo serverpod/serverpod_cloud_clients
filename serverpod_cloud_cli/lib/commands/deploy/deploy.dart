@@ -66,6 +66,18 @@ abstract class Deploy {
             beneath: includedSubPaths,
             fileReadPoolSize: concurrency,
             showFiles: showFiles,
+            fileContentModifier: (final relativePath, final contentReader) async {
+              final isPubspec =
+                  relativePath.endsWith('pubspec.yaml') &&
+                  !relativePath.contains('.scloud/');
+              if (isPubspec) {
+                final content = await contentReader();
+                return WorkspaceProject.stripDevDependenciesFromPubspecContent(
+                  content,
+                );
+              }
+              return null;
+            },
           );
           return true;
         } on ProjectZipperExceptions catch (e) {

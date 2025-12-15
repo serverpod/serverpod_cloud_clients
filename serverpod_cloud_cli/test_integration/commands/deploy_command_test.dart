@@ -5,6 +5,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:archive/archive.dart';
+import 'package:archive/archive_io.dart';
 import 'package:args/command_runner.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
@@ -891,4 +893,67 @@ dependencies:
       });
     },
   );
+
+  group('Given a project with dev_dependencies in pubspec.yaml', () {
+    late String testProjectDir;
+
+    setUp(() async {
+      await d.dir('project', [
+        d.file('pubspec.yaml', '''
+name: test_server
+version: 1.0.0
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+dev_dependencies:
+  test: ^1.0.0
+  build_runner: ^2.0.0
+  mockito: ^5.0.0
+'''),
+        d.dir('bin', [d.file('main.dart', 'void main() {}')]),
+      ]).create();
+      testProjectDir = p.join(d.sandbox, 'project');
+
+      when(() => client.deploy.createUploadDescription(any())).thenAnswer(
+        (final _) async => BucketUploadDescription.uploadDescription,
+      );
+    });
+
+    group('when deploying through CLI', () {
+      late Future cliCommandFuture;
+      setUp(() async {
+        cliCommandFuture = cli.run([
+          'deploy',
+          '--project',
+          BucketUploadDescription.projectId,
+          '--project-dir',
+          testProjectDir,
+        ]);
+      });
+
+      test(
+        'then dev_dependencies are stripped from pubspec.yaml in zip',
+        () async {
+          await cliCommandFuture;
+
+          expect(mockFileUploader.uploadedData, isNotEmpty);
+
+          final archive = ZipDecoder().decodeBytes(
+            mockFileUploader.uploadedData,
+          );
+          final pubspecFile = archive.findFile('pubspec.yaml');
+          expect(pubspecFile, isNotNull);
+
+          final pubspecContent = utf8.decode(pubspecFile!.content);
+          expect(pubspecContent, isNot(contains('dev_dependencies:')));
+          expect(pubspecContent, isNot(contains('test: ^1.0.0')));
+          expect(pubspecContent, isNot(contains('build_runner: ^2.0.0')));
+          expect(pubspecContent, isNot(contains('mockito: ^5.0.0')));
+          expect(pubspecContent, contains('dependencies:'));
+          expect(pubspecContent, contains('serverpod:'));
+        },
+      );
+    });
+  });
 }

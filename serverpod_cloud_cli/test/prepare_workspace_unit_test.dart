@@ -458,4 +458,78 @@ environment: not-a-map
       expect(result, contains('environment: "not-a-map"'));
     });
   });
+
+  group('WorkspaceProject.stripDevDependenciesFromPubspecContent -', () {
+    test('Given pubspec content with dev_dependencies, '
+        'when called, then removes dev_dependencies', () {
+      const pubspecContent =
+          '''
+name: test_package
+version: 1.0.0
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+dev_dependencies:
+  test: ^1.0.0
+  build_runner: ^2.0.0
+''';
+
+      final result = WorkspaceProject.stripDevDependenciesFromPubspecContent(
+        pubspecContent,
+      );
+      expect(result, isNot(contains('dev_dependencies:')));
+      expect(result, contains('dependencies:'));
+      expect(result, contains('test_package'));
+      expect(result, isNot(contains('test: ^1.0.0')));
+      expect(result, isNot(contains('build_runner: ^2.0.0')));
+    });
+
+    test('Given pubspec content without dev_dependencies, '
+        'when called, then returns null', () {
+      const originalContent =
+          '''
+name: test_package
+version: 1.0.0
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+''';
+
+      final result = WorkspaceProject.stripDevDependenciesFromPubspecContent(
+        originalContent,
+      );
+      expect(result, isNull);
+    });
+
+    test('Given invalid YAML content, '
+        'when called, then returns null', () {
+      const invalidContent = 'not valid yaml: [';
+
+      final result = WorkspaceProject.stripDevDependenciesFromPubspecContent(
+        invalidContent,
+      );
+      expect(result, isNull);
+    });
+
+    test('Given pubspec content with only dev_dependencies, '
+        'when called, then removes dev_dependencies', () {
+      const pubspecContent =
+          '''
+name: test_package
+version: 1.0.0
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+dev_dependencies:
+  test: ^1.0.0
+''';
+
+      final result = WorkspaceProject.stripDevDependenciesFromPubspecContent(
+        pubspecContent,
+      );
+      expect(result, isNot(contains('dev_dependencies:')));
+      expect(result, contains('test_package'));
+    });
+  });
 }
