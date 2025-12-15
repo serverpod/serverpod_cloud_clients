@@ -53,6 +53,10 @@ void main() {
     },
   );
 
+  test('Given db wipe command when instantiated then requires login', () {
+    expect(CloudDbWipeCommand(logger: logger).requireLogin, isTrue);
+  });
+
   group('Given unauthenticated', () {
     group('when executing db connection', () {
       setUpAll(() {
@@ -161,6 +165,50 @@ void main() {
           'wernher',
           '--project',
           projectId,
+        ]);
+      });
+
+      test('then throws exception', () async {
+        await expectLater(commandResult, throwsA(isA<ExitException>()));
+      });
+
+      test('then logs error', () async {
+        try {
+          await commandResult;
+        } catch (_) {}
+
+        expect(logger.errorCalls, isNotEmpty);
+        expect(
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message:
+                'The credentials for this session seem to no longer be valid.',
+          ),
+        );
+      });
+    });
+
+    group('when executing db wipe', () {
+      setUpAll(() {
+        when(
+          () => client.database.wipeDatabase(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenThrow(ServerpodClientUnauthorized());
+      });
+
+      tearDownAll(() {
+        reset(client.database);
+      });
+
+      late Future commandResult;
+      setUp(() {
+        commandResult = cli.run([
+          'db',
+          'wipe',
+          '--project',
+          projectId,
+          '--yes',
         ]);
       });
 
@@ -328,6 +376,153 @@ $password''');
         expect(logger.successCalls.single.message, '''
 DB password is reset. The new password is only shown this once:
 $password''');
+      });
+    });
+
+    group('when executing db wipe with --yes', () {
+      setUpAll(() {
+        when(
+          () => client.database.wipeDatabase(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenAnswer((final _) async => Future.value());
+      });
+
+      tearDownAll(() {
+        reset(client.database);
+      });
+
+      late Future commandResult;
+      setUp(() {
+        commandResult = cli.run([
+          'db',
+          'wipe',
+          '--project',
+          projectId,
+          '--yes',
+        ]);
+      });
+
+      tearDown(() {
+        // Reset mock call count between tests in this group
+        clearInteractions(client.database);
+      });
+
+      test('then succeeds', () async {
+        await expectLater(commandResult, completes);
+      });
+
+      test('then outputs success message', () async {
+        await commandResult;
+
+        expect(logger.successCalls, isNotEmpty);
+        expect(
+          logger.successCalls.single.message,
+          contains('Database wiped successfully.'),
+        );
+        expect(
+          logger.infoCalls.single.message,
+          contains('Redeploy is needed, run: scloud deploy'),
+        );
+      });
+
+      test('then calls wipeDatabase on client', () async {
+        await commandResult;
+
+        verify(
+          () => client.database.wipeDatabase(cloudCapsuleId: projectId),
+        ).called(1);
+      });
+    });
+
+    group('when executing db wipe without --yes', () {
+      setUpAll(() {
+        when(
+          () => client.database.wipeDatabase(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenAnswer((final _) async => Future.value());
+      });
+
+      tearDownAll(() {
+        reset(client.database);
+      });
+
+      group('and user confirms', () {
+        late Future commandResult;
+        setUp(() {
+          logger.answerNextConfirmWith(true);
+          commandResult = cli.run(['db', 'wipe', '--project', projectId]);
+        });
+
+        tearDown(() {
+          // Reset mock call count between tests in this group
+          clearInteractions(client.database);
+        });
+
+        test('then succeeds', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then prompts for confirmation', () async {
+          await commandResult;
+
+          expect(logger.confirmCalls, isNotEmpty);
+          expect(
+            logger.confirmCalls.first.message,
+            contains('Do you want to proceed?'),
+          );
+        });
+
+        test('then calls wipeDatabase on client', () async {
+          await commandResult;
+
+          verify(
+            () => client.database.wipeDatabase(cloudCapsuleId: projectId),
+          ).called(1);
+        });
+      });
+
+      group('and user declines', () {
+        late Future commandResult;
+        setUp(() {
+          logger.answerNextConfirmWith(false);
+          commandResult = cli.run(['db', 'wipe', '--project', projectId]);
+        });
+
+        test('then succeeds without wiping', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then prompts for confirmation', () async {
+          await commandResult;
+
+          expect(logger.confirmCalls, isNotEmpty);
+          expect(
+            logger.confirmCalls.first.message,
+            contains('Do you want to proceed?'),
+          );
+        });
+
+        test('then does not call wipeDatabase on client', () async {
+          await commandResult;
+
+          verifyNever(
+            () => client.database.wipeDatabase(cloudCapsuleId: projectId),
+          );
+        });
+
+        test('then logs cancellation message', () async {
+          await commandResult;
+
+          expect(logger.infoCalls, isNotEmpty);
+          expect(
+            logger.infoCalls.any(
+              (final call) => call.message.contains('Database wipe cancelled.'),
+            ),
+            isTrue,
+          );
+        });
       });
     });
   });

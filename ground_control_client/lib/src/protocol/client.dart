@@ -683,6 +683,14 @@ class EndpointDatabase extends _i1.EndpointRef {
     'cloudCapsuleId': cloudCapsuleId,
     'username': username,
   });
+
+  /// Wipes the database by deleting and recreating it.
+  /// This will drop all tables and data in the database.
+  /// The deployment will error until a redeploy is performed.
+  _i2.Future<void> wipeDatabase({required String cloudCapsuleId}) =>
+      caller.callServerEndpoint<void>('database', 'wipeDatabase', {
+        'cloudCapsuleId': cloudCapsuleId,
+      });
 }
 
 /// Endpoint for infrastructure resource provisioning.

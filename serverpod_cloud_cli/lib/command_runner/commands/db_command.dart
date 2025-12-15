@@ -1,5 +1,6 @@
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/commands/db/db.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 
@@ -18,6 +19,7 @@ class CloudDbCommand extends CloudCliCommand {
   CloudDbCommand({required super.logger}) {
     addSubcommand(CloudDbConnectionDetailsCommand(logger: logger));
     addSubcommand(CloudDbUserCommand(logger: logger));
+    addSubcommand(CloudDbWipeCommand(logger: logger));
   }
 }
 
@@ -190,5 +192,44 @@ $password''');
     } on Exception catch (e, stackTrace) {
       throw FailureException.nested(e, stackTrace, 'Failed to reset password');
     }
+  }
+}
+
+enum DbWipeOption<V> implements OptionDefinition<V> {
+  projectId(ProjectIdOption());
+
+  const DbWipeOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class CloudDbWipeCommand extends CloudCliCommand<DbWipeOption> {
+  @override
+  final name = 'wipe';
+
+  @override
+  final description =
+      'Irreversibly wipe and recreate the database, deleting all data and schema changes.';
+
+  @override
+  String get category => CommandCategories.dangerZone;
+
+  CloudDbWipeCommand({required super.logger})
+    : super(options: DbWipeOption.values);
+
+  @override
+  Future<void> runWithConfig(
+    final Configuration<DbWipeOption> commandConfig,
+  ) async {
+    final projectId = commandConfig.value(DbWipeOption.projectId);
+    final skipConfirmation = globalConfiguration.skipConfirmation;
+
+    await DbCommands.wipeDatabase(
+      runner.serviceProvider.cloudApiClient,
+      logger: logger,
+      projectId: projectId,
+      skipConfirmation: skipConfirmation,
+    );
   }
 }
