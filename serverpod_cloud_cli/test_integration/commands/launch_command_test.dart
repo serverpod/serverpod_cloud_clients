@@ -649,7 +649,7 @@ project:
                 defaultValue: true,
               ),
               equalsConfirmCall(
-                message: 'Deploy the project right away?',
+                message: "Deploy '$projectId' project right away?",
                 defaultValue: true,
               ),
               equalsConfirmCall(
@@ -765,7 +765,7 @@ project:
                 defaultValue: true,
               ),
               equalsConfirmCall(
-                message: 'Deploy the project right away?',
+                message: "Deploy '$projectId' project right away?",
                 defaultValue: true,
               ),
               equalsConfirmCall(
@@ -869,7 +869,7 @@ project:
                 defaultValue: true,
               ),
               equalsConfirmCall(
-                message: 'Deploy the project right away?',
+                message: "Deploy '$projectId' project right away?",
                 defaultValue: true,
               ),
               equalsConfirmCall(
@@ -976,7 +976,7 @@ project:
                 defaultValue: true,
               ),
               equalsConfirmCall(
-                message: 'Deploy the project right away?',
+                message: "Deploy '$projectId' project right away?",
                 defaultValue: true,
               ),
               equalsConfirmCall(
@@ -1103,7 +1103,7 @@ project:
                 defaultValue: true,
               ),
               equalsConfirmCall(
-                message: 'Deploy the project right away?',
+                message: "Deploy '$projectId' project right away?",
                 defaultValue: true,
               ),
               equalsConfirmCall(
@@ -1223,7 +1223,7 @@ project:
             logger.confirmCalls,
             containsAllInOrder([
               equalsConfirmCall(
-                message: 'Deploy the project right away?',
+                message: "Deploy 'pre-existing-project-1' project right away?",
                 defaultValue: true,
               ),
               equalsConfirmCall(
@@ -1243,7 +1243,7 @@ project:
             stringContainsInOrder([
               'Project setup',
               'Project directory    $testProjectDir',
-              'Existing project id  pre-existing-project',
+              'Existing project id  pre-existing-project-1',
               'Perform deploy       yes',
             ]),
           );
@@ -1341,7 +1341,7 @@ project:
                 defaultValue: true,
               ),
               equalsConfirmCall(
-                message: 'Deploy the project right away?',
+                message: "Deploy '$projectId' project right away?",
                 defaultValue: true,
               ),
               equalsConfirmCall(
@@ -1451,7 +1451,7 @@ project:
             containsAllInOrder([
               equalsConfirmCall(message: 'Continue with pre-existing-project?'),
               equalsConfirmCall(
-                message: 'Deploy the project right away?',
+                message: "Deploy 'pre-existing-project' project right away?",
                 defaultValue: true,
               ),
               equalsConfirmCall(

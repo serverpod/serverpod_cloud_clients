@@ -328,8 +328,13 @@ The default API domain will be: <project-id>.api.serverpod.space
       return;
     }
 
+    final projectId = projectSetup.projectId;
+    final confirmationMessage = projectId != null
+        ? "Deploy '$projectId' project right away?"
+        : 'Deploy the project right away?';
+
     final performDeploy = await logger.confirm(
-      'Deploy the project right away?',
+      confirmationMessage,
       defaultValue: true,
     );
 
