@@ -1,7 +1,9 @@
 import 'package:config/config.dart';
+import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/commands/deploy/deploy.dart';
+import 'package:serverpod_cloud_cli/constants.dart';
 
 import 'categories.dart';
 
@@ -84,6 +86,12 @@ Examples
 
     final projectDirectory = runner.verifiedProjectDirectory();
     logger.debug('Using project directory `${projectDirectory.path}`');
+    final configFilePath =
+        globalConfiguration.projectConfigFile?.path ??
+        p.join(
+          projectDirectory.path,
+          ProjectConfigFileConstants.defaultFileName,
+        );
 
     await Deploy.deploy(
       runner.serviceProvider.cloudApiClient,
@@ -91,6 +99,7 @@ Examples
       logger: logger,
       projectId: projectId,
       projectDir: projectDirectory.path,
+      projectConfigFilePath: configFilePath,
       concurrency: concurrency,
       dryRun: dryRun,
       showFiles: showFiles,

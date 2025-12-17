@@ -365,9 +365,26 @@ The default API domain will be: <project-id>.api.serverpod.space
   ) async {
     logger.info('Launching project...');
 
-    final projectId = projectSetup.projectId!;
-    final projectDir = projectSetup.projectDir!;
-    final performDeploy = projectSetup.performDeploy!;
+    final projectId = projectSetup.projectId;
+    final projectDir = projectSetup.projectDir;
+    final configFilePath = projectSetup.configFilePath;
+    final performDeploy = projectSetup.performDeploy;
+
+    if (projectId == null) {
+      throw StateError('ProjectId must be set.');
+    }
+
+    if (projectDir == null) {
+      throw StateError('ProjectDir must be set.');
+    }
+
+    if (configFilePath == null) {
+      throw StateError('ConfigFilePath must be set.');
+    }
+
+    if (performDeploy == null) {
+      throw StateError('PerformDeploy must be set.');
+    }
 
     if (projectSetup.preexistingProject != true) {
       final enableDb = projectSetup.enableDb!;
@@ -377,10 +394,7 @@ The default API domain will be: <project-id>.api.serverpod.space
         projectId: projectId,
         enableDb: enableDb,
         projectDir: projectDir,
-        configFilePath: p.join(
-          projectDir,
-          ProjectConfigFileConstants.defaultFileName,
-        ),
+        configFilePath: configFilePath,
         skipConfirmation: true,
       );
     }
@@ -399,6 +413,7 @@ The default API domain will be: <project-id>.api.serverpod.space
       logger: logger,
       projectId: projectId,
       projectDir: projectDir,
+      projectConfigFilePath: configFilePath,
       concurrency: 5,
       dryRun: false,
       showFiles: false,
@@ -473,19 +488,35 @@ The default API domain will be: <project-id>.api.serverpod.space
 }
 
 class ProjectLaunch {
-  String? projectDir;
+  String? _projectDir;
+  String? configFilePath;
   String? projectId;
   bool? enableDb;
   bool? preexistingProject;
   bool? performDeploy;
 
   ProjectLaunch({
-    this.projectDir,
+    final String? projectDir,
     this.projectId,
     this.enableDb,
     this.preexistingProject,
     this.performDeploy,
-  });
+  }) : _projectDir = projectDir {
+    if (projectDir != null) {
+      configFilePath = _constructConfigFilePath(projectDir);
+    }
+  }
+
+  set projectDir(final String projectDir) {
+    _projectDir = projectDir;
+    configFilePath = _constructConfigFilePath(projectDir);
+  }
+
+  String? get projectDir => _projectDir;
+
+  String _constructConfigFilePath(final String projectDir) {
+    return p.join(projectDir, ProjectConfigFileConstants.defaultFileName);
+  }
 
   @override
   String toString() {

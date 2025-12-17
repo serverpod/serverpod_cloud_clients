@@ -4,7 +4,7 @@ import 'package:yaml/yaml.dart';
 
 void main() {
   test(
-    'Given simple primitive types when calling validate then should not throw',
+    'Given simple primitive types when calling validate then does not throw',
     () {
       final schema = YamlSchema(
         YamlMap.wrap({
@@ -62,34 +62,31 @@ void main() {
           isA<SchemaValidationException>().having(
             (final e) => e.message,
             'error message',
-            'At path "user": Missing required key: "age"',
+            'Missing required key: "user.age"',
           ),
         ),
       );
     },
   );
 
-  test(
-    'Given nested structure when calling validate then should not throw',
-    () {
-      final schema = YamlSchema(
-        YamlMap.wrap({
-          'users': [
-            YamlMap.wrap({'name': String, 'age': int}),
-          ],
-        }),
-      );
-
-      final validData = YamlMap.wrap({
+  test('Given nested structure when calling validate then does not throw', () {
+    final schema = YamlSchema(
+      YamlMap.wrap({
         'users': [
-          {'name': 'John', 'age': 30},
-          {'name': 'Jane', 'age': 25},
+          YamlMap.wrap({'name': String, 'age': int}),
         ],
-      });
+      }),
+    );
 
-      expect(() => schema.validate(validData), returnsNormally);
-    },
-  );
+    final validData = YamlMap.wrap({
+      'users': [
+        {'name': 'John', 'age': 30},
+        {'name': 'Jane', 'age': 25},
+      ],
+    });
+
+    expect(() => schema.validate(validData), returnsNormally);
+  });
 
   test(
     'Given nested structure with incorrect types when calling validate then throws',
@@ -122,7 +119,7 @@ void main() {
   );
 
   test(
-    'Given deeply nested nested structure when calling validate then should not throw',
+    'Given deeply nested structure when calling validate then does not throw',
     () {
       final schema = YamlSchema(
         YamlMap.wrap({
@@ -166,27 +163,8 @@ void main() {
     },
   );
 
-  test('Given schema with invalid type that is not compatible with YAML '
-      'when calling validate then throws exception.', () {
-    final schema = YamlSchema(
-      YamlMap.wrap({
-        'data': DateTime, // DateTime is not a supported YAML type
-      }),
-    );
-    expect(
-      () => schema.validate(YamlMap.wrap({'data': 1})),
-      throwsA(
-        isA<SchemaValidationException>().having(
-          (final e) => e.message,
-          'error message',
-          'At path "data": Unsupported schema type: DateTime',
-        ),
-      ),
-    );
-  });
-
   test(
-    'Given data with empty list when calling validate then should not throw',
+    'Given data with empty list when calling validate then does not throw',
     () {
       final schema = YamlSchema(
         YamlMap.wrap({
@@ -249,4 +227,205 @@ void main() {
       );
     },
   );
+
+  group('Given a schema with an optional type', () {
+    test(
+      'of String when calling validate without the key then does not throw',
+      () {
+        final schema = YamlSchema(YamlMap.wrap({'item': YamlOptional(String)}));
+
+        final validData = YamlMap.wrap({});
+
+        expect(() => schema.validate(validData), returnsNormally);
+      },
+    );
+
+    test(
+      'of Optional String when calling validate with valid data then does not throw',
+      () {
+        final schema = YamlSchema(YamlMap.wrap({'item': YamlOptional(String)}));
+
+        final validData = YamlMap.wrap({'item': 'valid'});
+
+        expect(() => schema.validate(validData), returnsNormally);
+      },
+    );
+
+    test(
+      'of nested Optional String when calling validate without the key then does not throw',
+      () {
+        final schema = YamlSchema(
+          YamlMap.wrap({
+            'item': YamlMap.wrap({'name': YamlOptional(String)}),
+          }),
+        );
+
+        final validData = YamlMap.wrap({'item': {}});
+
+        expect(() => schema.validate(validData), returnsNormally);
+      },
+    );
+  });
+
+  group('Given a schema with a union type', () {
+    test(
+      'of String when calling validate with valid data then does not throw',
+      () {
+        final schema = YamlSchema(
+          YamlMap.wrap({
+            'item': YamlUnion({String}),
+          }),
+        );
+
+        final validData = YamlMap.wrap({'item': 'valid'});
+
+        expect(() => schema.validate(validData), returnsNormally);
+      },
+    );
+
+    test('of String when calling validate with invalid data then throws', () {
+      final schema = YamlSchema(
+        YamlMap.wrap({
+          'item': YamlUnion({String}),
+        }),
+      );
+
+      final validData = YamlMap.wrap({'item': 1});
+
+      expect(() => schema.validate(validData), throwsException);
+    });
+
+    test(
+      'of int and String when calling validate with valid data then does not throw',
+      () {
+        final schema = YamlSchema(
+          YamlMap.wrap({
+            'item': YamlUnion({int, String}),
+          }),
+        );
+
+        final validData = YamlMap.wrap({'item': 1});
+
+        expect(() => schema.validate(validData), returnsNormally);
+      },
+    );
+
+    test(
+      'of List<String> and String when calling validate with string data then does not throw',
+      () {
+        final schema = YamlSchema(
+          YamlMap.wrap({
+            'item': YamlUnion({
+              [String],
+              String,
+            }),
+          }),
+        );
+
+        final validData = YamlMap.wrap({'item': 'data'});
+
+        expect(() => schema.validate(validData), returnsNormally);
+      },
+    );
+
+    test(
+      'of List<String> and String when calling validate with list data then does not throw',
+      () {
+        final schema = YamlSchema(
+          YamlMap.wrap({
+            'item': YamlUnion({
+              [String],
+              String,
+            }),
+          }),
+        );
+
+        final validData = YamlMap.wrap({
+          'item': ['one', 'two'],
+        });
+
+        expect(() => schema.validate(validData), returnsNormally);
+      },
+    );
+
+    test(
+      'of List<String> and String when calling validate with invalid data then throws',
+      () {
+        final schema = YamlSchema(
+          YamlMap.wrap({
+            'item': YamlUnion({
+              [String],
+              String,
+            }),
+          }),
+        );
+
+        final validData = YamlMap.wrap({'item': 2});
+
+        expect(() => schema.validate(validData), throwsException);
+      },
+    );
+
+    test(
+      'of Optional List<String> and String when calling validate without the key then does not throw',
+      () {
+        final schema = YamlSchema(
+          YamlMap.wrap({
+            'item': YamlOptional(
+              YamlUnion({
+                [String],
+                String,
+              }),
+            ),
+          }),
+        );
+
+        final validData = YamlMap.wrap({});
+
+        expect(() => schema.validate(validData), returnsNormally);
+      },
+    );
+
+    test(
+      'of YamlMap and String when calling validate with valid data then does not throw',
+      () {
+        final schema = YamlSchema(
+          YamlMap.wrap({
+            'item': YamlOptional(
+              YamlUnion({
+                YamlMap.wrap({'name': String}),
+                String,
+              }),
+            ),
+          }),
+        );
+
+        final validData = YamlMap.wrap({
+          'item': {'name': 'valid'},
+        });
+
+        expect(() => schema.validate(validData), returnsNormally);
+      },
+    );
+
+    test(
+      'of List<int> and YamlMap when calling validate with valid data then does not throw',
+      () {
+        final schema = YamlSchema(
+          YamlMap.wrap({
+            'value': YamlUnion({
+              [int],
+              YamlMap.wrap({'name': String}),
+            }),
+          }),
+        );
+
+        final data = YamlMap.wrap({
+          'value': {'name': 'valid'},
+        });
+
+        expect(() => schema.validate(data), returnsNormally);
+      },
+    );
+  });
 }

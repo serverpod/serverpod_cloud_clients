@@ -956,4 +956,239 @@ dev_dependencies:
       );
     });
   });
+
+  group('Given authenticated and valid upload description response', () {
+    late String testProjectDir;
+
+    setUp(() async {
+      await ProjectFactory.serverpodServerDir().create();
+      testProjectDir = p.join(d.sandbox, ProjectFactory.defaultDirectoryName);
+
+      when(() => client.deploy.createUploadDescription(any())).thenAnswer(
+        (final _) async => BucketUploadDescription.uploadDescription,
+      );
+    });
+
+    group('and scloud.yaml with pre-deploy and post-deploy scripts', () {
+      setUp(() async {
+        await d
+            .file('scloud.yaml', '''
+project:
+  projectId: ${BucketUploadDescription.projectId}
+  scripts:
+    pre_deploy:
+      - echo "pre-deploy-1" > pre_deploy_output.txt
+      - echo "pre-deploy-2" >> pre_deploy_output.txt
+    post_deploy:
+      - echo "post-deploy-1" > post_deploy_output.txt
+      - echo "post-deploy-2" >> post_deploy_output.txt
+''')
+            .create(testProjectDir);
+      });
+
+      group('when deploying through CLI', () {
+        late Future cliCommandFuture;
+        setUp(() async {
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--project',
+            BucketUploadDescription.projectId,
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        test('then command completes successfully.', () async {
+          await expectLater(cliCommandFuture, completes);
+        });
+
+        test(
+          'then pre-deploy scripts are executed and echoed string can be read.',
+          () async {
+            await cliCommandFuture;
+
+            final preDeployFile = File(
+              p.join(testProjectDir, 'pre_deploy_output.txt'),
+            );
+            expect(preDeployFile.existsSync(), isTrue);
+            final echoedContent = preDeployFile.readAsStringSync();
+            expect(echoedContent, contains('pre-deploy-1'));
+            expect(echoedContent, contains('pre-deploy-2'));
+          },
+        );
+
+        test(
+          'then post-deploy scripts are executed and echoed string can be read.',
+          () async {
+            await cliCommandFuture;
+
+            final postDeployFile = File(
+              p.join(testProjectDir, 'post_deploy_output.txt'),
+            );
+            expect(postDeployFile.existsSync(), isTrue);
+            final echoedContent = postDeployFile.readAsStringSync();
+            expect(echoedContent, contains('post-deploy-1'));
+            expect(echoedContent, contains('post-deploy-2'));
+          },
+        );
+
+        test('then script execution is logged.', () async {
+          await cliCommandFuture;
+
+          expect(
+            logger.infoCalls.any(
+              (final call) => call.message == 'Running pre-deploy scripts',
+            ),
+            isTrue,
+          );
+          expect(
+            logger.infoCalls.any(
+              (final call) => call.message == 'Running post-deploy scripts',
+            ),
+            isTrue,
+          );
+        });
+      });
+    });
+
+    group('and scloud.yaml with single string pre-deploy script', () {
+      setUp(() async {
+        await d
+            .file('scloud.yaml', '''
+project:
+  projectId: ${BucketUploadDescription.projectId}
+  scripts:
+    pre_deploy: echo "single-pre-deploy" > single_pre_deploy_output.txt
+    post_deploy: echo "single-post-deploy" > single_post_deploy_output.txt
+''')
+            .create(testProjectDir);
+      });
+
+      group('when deploying through CLI', () {
+        late Future cliCommandFuture;
+        setUp(() async {
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--project',
+            BucketUploadDescription.projectId,
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        test('then command completes successfully.', () async {
+          await expectLater(cliCommandFuture, completes);
+        });
+
+        test(
+          'then single pre-deploy script is executed and echoed string can be read.',
+          () async {
+            await cliCommandFuture;
+
+            final preDeployFile = File(
+              p.join(testProjectDir, 'single_pre_deploy_output.txt'),
+            );
+            expect(preDeployFile.existsSync(), isTrue);
+            final echoedContent = preDeployFile.readAsStringSync();
+            expect(echoedContent.trim(), contains('single-pre-deploy'));
+          },
+        );
+
+        test(
+          'then single post-deploy script is executed and echoed string can be read.',
+          () async {
+            await cliCommandFuture;
+
+            final postDeployFile = File(
+              p.join(testProjectDir, 'single_post_deploy_output.txt'),
+            );
+            expect(postDeployFile.existsSync(), isTrue);
+            final echoedContent = postDeployFile.readAsStringSync();
+            expect(echoedContent.trim(), contains('single-post-deploy'));
+          },
+        );
+      });
+    });
+
+    group('and scloud.yaml without scripts', () {
+      setUp(() async {
+        await d
+            .file('scloud.yaml', '''
+project:
+  projectId: ${BucketUploadDescription.projectId}
+''')
+            .create(testProjectDir);
+      });
+
+      group('when deploying through CLI', () {
+        late Future cliCommandFuture;
+        setUp(() async {
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--project',
+            BucketUploadDescription.projectId,
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        test('then command completes successfully.', () async {
+          await expectLater(cliCommandFuture, completes);
+        });
+
+        test('then no script execution messages are logged.', () async {
+          await cliCommandFuture;
+
+          expect(
+            logger.infoCalls.any(
+              (final call) => call.message == 'Running pre-deploy scripts',
+            ),
+            isFalse,
+          );
+          expect(
+            logger.infoCalls.any(
+              (final call) => call.message == 'Running post-deploy scripts',
+            ),
+            isFalse,
+          );
+        });
+      });
+    });
+
+    group('and no scloud.yaml file', () {
+      group('when deploying through CLI', () {
+        late Future cliCommandFuture;
+        setUp(() async {
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--project',
+            BucketUploadDescription.projectId,
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        test('then command completes successfully.', () async {
+          await expectLater(cliCommandFuture, completes);
+        });
+
+        test('then no script execution messages are logged.', () async {
+          await cliCommandFuture;
+
+          expect(
+            logger.infoCalls.any(
+              (final call) => call.message == 'Running pre-deploy scripts',
+            ),
+            isFalse,
+          );
+          expect(
+            logger.infoCalls.any(
+              (final call) => call.message == 'Running post-deploy scripts',
+            ),
+            isFalse,
+          );
+        });
+      });
+    });
+  });
 }

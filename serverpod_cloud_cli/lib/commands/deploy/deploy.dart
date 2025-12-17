@@ -8,7 +8,9 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/file_uploader_factory
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
+import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_io.dart';
 import 'package:serverpod_cloud_cli/util/scloudignore.dart' show ScloudIgnore;
+import 'package:serverpod_cloud_cli/commands/deploy/script_runner.dart';
 
 import 'prepare_workspace.dart';
 
@@ -19,6 +21,7 @@ abstract class Deploy {
     required final CommandLogger logger,
     required final String projectId,
     required final String projectDir,
+    required final String projectConfigFilePath,
     required final int concurrency,
     required final bool dryRun,
     required final bool showFiles,
@@ -34,6 +37,17 @@ abstract class Deploy {
     final issues = pubspecValidator.projectDependencyIssues();
     if (issues.isNotEmpty) {
       throw FailureException(errors: issues);
+    }
+
+    final config = ScloudConfigIO.readFromFile(projectConfigFilePath);
+
+    if (config != null && config.scripts.preDeploy.isNotEmpty) {
+      await ScriptRunner.runScripts(
+        config.scripts.preDeploy,
+        projectDir,
+        logger,
+        scriptType: 'pre-deploy',
+      );
     }
 
     final Directory rootDirectory;
@@ -120,48 +134,62 @@ abstract class Deploy {
       await logger.progress('Dry run, skipping upload.', () async {
         return true;
       });
-      return;
+    } else {
+      final success = await logger.progress('Uploading project...', () async {
+        late final String uploadDescription;
+        try {
+          uploadDescription = await cloudApiClient.deploy
+              .createUploadDescription(projectId);
+        } on Exception catch (e, stackTrace) {
+          throw FailureException.nested(
+            e,
+            stackTrace,
+            'Failed to fetch upload description',
+          );
+        }
+
+        try {
+          final fileUploader = fileUploaderFactory(uploadDescription);
+          final ret = await fileUploader.upload(
+            Stream.fromIterable([projectZip]),
+            projectZip.length,
+          );
+          if (!ret) {
+            logger.error('Failed to upload project, please try again.');
+          }
+          return ret;
+        } on DioException catch (e) {
+          throw FailureException(
+            error:
+                'Failed to upload project: ${_uploadDioExceptionFormatter(e)}',
+          );
+        } on Exception catch (e, stackTrace) {
+          throw FailureException.nested(
+            e,
+            stackTrace,
+            'Failed to upload project',
+          );
+        }
+      });
+
+      if (!success) {
+        throw ErrorExitException('Failed to upload project.');
+      }
+
+      logger.success(
+        'Project uploaded successfully!',
+        trailingRocket: true,
+        newParagraph: true,
+      );
     }
 
-    final success = await logger.progress('Uploading project...', () async {
-      late final String uploadDescription;
-      try {
-        uploadDescription = await cloudApiClient.deploy.createUploadDescription(
-          projectId,
-        );
-      } on Exception catch (e, stackTrace) {
-        throw FailureException.nested(
-          e,
-          stackTrace,
-          'Failed to fetch upload description',
-        );
-      }
-
-      try {
-        final fileUploader = fileUploaderFactory(uploadDescription);
-        final ret = await fileUploader.upload(
-          Stream.fromIterable([projectZip]),
-          projectZip.length,
-        );
-        if (!ret) {
-          logger.error('Failed to upload project, please try again.');
-        }
-        return ret;
-      } on DioException catch (e) {
-        throw FailureException(
-          error: 'Failed to upload project: ${_uploadDioExceptionFormatter(e)}',
-        );
-      } on Exception catch (e, stackTrace) {
-        throw FailureException.nested(
-          e,
-          stackTrace,
-          'Failed to upload project',
-        );
-      }
-    });
-
-    if (!success) {
-      throw ErrorExitException('Failed to upload project.');
+    if (config != null && config.scripts.postDeploy.isNotEmpty) {
+      await ScriptRunner.runScripts(
+        config.scripts.postDeploy,
+        projectDir,
+        logger,
+        scriptType: 'post-deploy',
+      );
     }
   }
 

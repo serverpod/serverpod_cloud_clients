@@ -10,7 +10,8 @@ import 'package:serverpod_cloud_cli/commands/deploy/prepare_workspace.dart'
 import 'package:serverpod_cloud_cli/shared/user_interaction/user_confirmations.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
-import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_file.dart';
+import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_model.dart';
+import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_io.dart';
 import 'package:serverpod_cloud_cli/util/scloudignore.dart';
 
 abstract class ProjectCommands {
@@ -106,16 +107,15 @@ abstract class ProjectCommands {
         return;
       }
 
-      final projectConfig = await _fetchProjectConfig(
-        logger,
-        cloudApiClient,
-        projectId,
+      final config = ScloudConfig(
+        projectId: projectId,
+        scripts: ScloudScripts.empty(),
       );
 
       await logger.progress(
         'Writing cloud project configuration files.',
         () async {
-          _writeProjectFiles(logger, projectConfig, projectDir, configFilePath);
+          _writeProjectFiles(logger, config, projectDir, configFilePath);
           return true;
         },
       );
@@ -212,21 +212,15 @@ abstract class ProjectCommands {
     required final String projectDirectory,
     required final String configFilePath,
   }) async {
-    final projectConfig = await _fetchProjectConfig(
-      logger,
-      cloudApiClient,
-      projectId,
+    final config = ScloudConfig(
+      projectId: projectId,
+      scripts: ScloudScripts.empty(),
     );
 
     await logger.progress(
       'Writing cloud project configuration files.',
       () async {
-        _writeProjectFiles(
-          logger,
-          projectConfig,
-          projectDirectory,
-          configFilePath,
-        );
+        _writeProjectFiles(logger, config, projectDirectory, configFilePath);
         return true;
       },
     );
@@ -297,24 +291,9 @@ abstract class ProjectCommands {
     }
   }
 
-  /// Fetches the project config from the server.
-  static Future<ProjectConfig> _fetchProjectConfig(
-    final CommandLogger logger,
-    final Client cloudApiClient,
-    final String projectId,
-  ) async {
-    try {
-      return await cloudApiClient.projects.fetchProjectConfig(
-        cloudProjectId: projectId,
-      );
-    } on Exception catch (e, s) {
-      throw FailureException.nested(e, s, 'Failed to fetch the project config');
-    }
-  }
-
   static void _writeProjectFiles(
     final CommandLogger logger,
-    final ProjectConfig projectConfig,
+    final ScloudConfig config,
     final String projectDirectory,
     final String configFilePath,
   ) {
@@ -324,10 +303,10 @@ abstract class ProjectCommands {
     );
 
     try {
-      ScloudConfigFile.writeToFile(projectConfig, configFilePath);
+      ScloudConfigIO.writeToFile(config, configFilePath);
       final relativePath = p.relative(configFilePath);
       logger.debug(
-        "Wrote the '$relativePath' configuration file for '${projectConfig.projectId}'.",
+        "Wrote the '$relativePath' configuration file for '${config.projectId}'.",
       );
     } on Exception catch (e, s) {
       throw FailureException.nested(

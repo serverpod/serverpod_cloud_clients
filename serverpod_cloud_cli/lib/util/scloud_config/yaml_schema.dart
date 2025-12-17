@@ -8,19 +8,33 @@ class SchemaValidationException implements Exception {
   String toString() => 'SchemaValidationException: $message';
 }
 
+/// Represents an optional type in the schema.
+/// The value should be a valid YAML type or a YamlUnion.
+class YamlOptional {
+  final dynamic type;
+
+  YamlOptional(this.type);
+}
+
+/// Represents a union type in the schema.
+/// The value should be a set of valid YAML types.
+class YamlUnion {
+  final Set<dynamic> types;
+
+  YamlUnion(this.types);
+}
+
 class YamlSchema {
   final YamlMap _schema;
 
   YamlSchema(this._schema);
 
+  /// Validates the given data against the schema.
+  /// Throws a SchemaValidationException if the data is invalid.
   void validate(final YamlMap data) {
     for (final entry in _schema.entries) {
       final key = entry.key;
       final type = entry.value;
-
-      if (!data.containsKey(key)) {
-        throw SchemaValidationException('Missing required key: "$key"');
-      }
 
       final value = data[key];
       _validate(value, type, path: key);
@@ -32,7 +46,15 @@ class YamlSchema {
     final dynamic schemaType, {
     required final String path,
   }) {
-    switch (schemaType) {
+    if (value == null) {
+      if (schemaType is YamlOptional) return;
+
+      throw SchemaValidationException('Missing required key: "$path"');
+    }
+
+    final type = schemaType is YamlOptional ? schemaType.type : schemaType;
+
+    switch (type) {
       case List():
         {
           if (value is! List) {
@@ -41,9 +63,9 @@ class YamlSchema {
             );
           }
 
-          if (schemaType.isEmpty) return;
+          if (type.isEmpty) return;
 
-          final itemType = schemaType.first;
+          final itemType = type.first;
 
           for (var i = 0; i < value.length; i++) {
             _validate(value[i], itemType, path: '$path[$i]');
@@ -58,34 +80,45 @@ class YamlSchema {
             );
           }
 
-          for (final schemaEntry in schemaType.entries) {
+          for (final schemaEntry in type.entries) {
             final fieldName = schemaEntry.key;
             final fieldType = schemaEntry.value;
 
-            if (value.containsKey(fieldName)) {
-              _validate(value[fieldName], fieldType, path: '$path.$fieldName');
-            } else {
-              throw SchemaValidationException(
-                'At path "$path": Missing required key: "$fieldName"',
-              );
-            }
+            _validate(value[fieldName], fieldType, path: '$path.$fieldName');
           }
           return;
+        }
+      case YamlUnion():
+        {
+          for (final unionType in type.types) {
+            if (_isValidBasicType(value, unionType, path)) {
+              return;
+            }
+
+            if (unionType is List && value is List) {
+              _validate(value, unionType, path: path);
+              return;
+            }
+
+            if (unionType is YamlMap && value is YamlMap) {
+              _validate(value, unionType, path: path);
+              return;
+            }
+          }
+
+          final typeNames = type.types
+              .map((final t) => t.toString())
+              .join(', ');
+          throw SchemaValidationException(
+            'At path "$path": Expected one of $typeNames, got ${value.runtimeType}',
+          );
         }
       // Primitive types supported by YAML
       case Type():
         {
-          final supportedYamlTypes = {String, int, double, bool};
-
-          if (!supportedYamlTypes.contains(schemaType)) {
+          if (!_isValidBasicType(value, type, path)) {
             throw SchemaValidationException(
-              'At path "$path": Unsupported schema type: ${schemaType.toString()}',
-            );
-          }
-
-          if (value.runtimeType != schemaType) {
-            throw SchemaValidationException(
-              'At path "$path": Expected type ${schemaType.toString()}, got ${value.runtimeType}',
+              'At path "$path": Expected type ${type.toString()}, got ${value.runtimeType}',
             );
           }
           return;
@@ -93,7 +126,22 @@ class YamlSchema {
     }
 
     throw SchemaValidationException(
-      'At path "$path": Unsupported schema type: ${schemaType.runtimeType}',
+      'At path "$path": Unsupported schema type: ${type.runtimeType}',
     );
+  }
+
+  bool _isValidBasicType(
+    final dynamic value,
+    final dynamic schemaType,
+    final String path,
+  ) {
+    if (schemaType is Type) {
+      if (schemaType == String && value is String) return true;
+      if (schemaType == int && value is int) return true;
+      if (schemaType == double && value is double) return true;
+      if (schemaType == bool && value is bool) return true;
+    }
+
+    return false;
   }
 }
