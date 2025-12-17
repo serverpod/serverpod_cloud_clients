@@ -63,9 +63,7 @@ abstract final class ProjectFilesWriter {
     final workspaceRootDir = _findWorkspaceRootDir(Directory(projectDirectory));
 
     try {
-      ScloudIgnore.writeTemplateIfNotExists(
-        rootFolder: workspaceRootDir?.path ?? projectDirectory,
-      );
+      ScloudIgnore.writeTemplateIfNotExists(rootFolder: projectDirectory);
     } on Exception catch (e, s) {
       throw FailureException.nested(
         e,

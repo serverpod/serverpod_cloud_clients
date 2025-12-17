@@ -806,6 +806,40 @@ dependencies:
             ),
           );
         });
+
+        test(
+          'then .scloudignore is created in the server directory, not in workspace root',
+          () async {
+            await cliCommandFuture;
+
+            final workspaceRootDir = p.join(d.sandbox, 'monorepo');
+            final serverDir = p.join(
+              workspaceRootDir,
+              'project',
+              'project_server',
+            );
+            final scloudIgnoreInWorkspaceRoot = p.join(
+              workspaceRootDir,
+              '.scloudignore',
+            );
+            final scloudIgnoreInServerDir = p.join(serverDir, '.scloudignore');
+
+            expect(
+              File(scloudIgnoreInServerDir).existsSync(),
+              isTrue,
+              reason:
+                  '.scloudignore should be created in the server directory: $serverDir',
+            );
+
+            expect(
+              File(scloudIgnoreInWorkspaceRoot).existsSync(),
+              isFalse,
+              reason:
+                  '.scloudignore should NOT be created in the workspace root. '
+                  'It should be in the server directory instead.',
+            );
+          },
+        );
       },
     );
   });
