@@ -1,6 +1,12 @@
 
 # Changelog
 
+## [0.19.1] - 2025-12-17
+
+### Fixed
+
+- **Workspace pubspec path** - We've fixed the paths used when uploading workspaces.
+
 ## [0.19.0] - 2025-12-17
 
 ### Added
