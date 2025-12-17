@@ -17,7 +17,7 @@ abstract final class ProjectFilesWriter {
     required final String projectDirectory,
   }) {
     _upsertConfigFile(projectId, preDeployScripts, configFilePath);
-    _upsertGitIgnoreFile(projectDirectory);
+    _upsertScloudIgnoreFile(projectDirectory);
   }
 
   static void _upsertConfigFile(
@@ -59,11 +59,13 @@ abstract final class ProjectFilesWriter {
     ScloudConfigIO.writeToFile(newConfig, configFilePath);
   }
 
-  static void _upsertGitIgnoreFile(final String projectDirectory) {
+  static void _upsertScloudIgnoreFile(final String projectDirectory) {
     final workspaceRootDir = _findWorkspaceRootDir(Directory(projectDirectory));
 
     try {
-      ScloudIgnore.writeTemplateIfNotExists(rootFolder: projectDirectory);
+      ScloudIgnore.writeTemplateIfNotExists(
+        rootFolder: workspaceRootDir?.path ?? projectDirectory,
+      );
     } on Exception catch (e, s) {
       throw FailureException.nested(
         e,
@@ -74,7 +76,7 @@ abstract final class ProjectFilesWriter {
 
     if (workspaceRootDir != null) {
       try {
-        _updateGitIgnore(workspaceRootDir);
+        _updateScloudIgnore(workspaceRootDir);
       } on Exception catch (e, s) {
         throw FailureException.nested(
           e,
@@ -97,7 +99,7 @@ abstract final class ProjectFilesWriter {
     return null;
   }
 
-  static bool _updateGitIgnore(final Directory workspaceRootDir) {
+  static bool _updateScloudIgnore(final Directory workspaceRootDir) {
     const scloudIgnoreTemplate =
         '''
 # scloud deployment generated files should not be committed to git

@@ -110,11 +110,7 @@ abstract class WorkspaceProject {
     _writeScloudRootPubspec(workspaceRootDir, includedPackagePaths);
     _writeProjectServerDirFile(workspaceRootDir, projectPackage.dir);
 
-    final serverDirPath = p.join(
-      workspaceRootDir.path,
-      projectPackage.dir.path,
-    );
-    ScloudIgnore.writeTemplateIfNotExists(rootFolder: serverDirPath);
+    ScloudIgnore.writeTemplateIfNotExists(rootFolder: workspaceRootDir.path);
   }
 
   static String _getPackageName(final Directory packageDirectory) {

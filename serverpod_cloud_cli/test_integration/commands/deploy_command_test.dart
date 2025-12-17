@@ -806,42 +806,47 @@ dependencies:
             ),
           );
         });
-
-        test(
-          'then .scloudignore is created in the server directory, not in workspace root',
-          () async {
-            await cliCommandFuture;
-
-            final workspaceRootDir = p.join(d.sandbox, 'monorepo');
-            final serverDir = p.join(
-              workspaceRootDir,
-              'project',
-              'project_server',
-            );
-            final scloudIgnoreInWorkspaceRoot = p.join(
-              workspaceRootDir,
-              '.scloudignore',
-            );
-            final scloudIgnoreInServerDir = p.join(serverDir, '.scloudignore');
-
-            expect(
-              File(scloudIgnoreInServerDir).existsSync(),
-              isTrue,
-              reason:
-                  '.scloudignore should be created in the server directory: $serverDir',
-            );
-
-            expect(
-              File(scloudIgnoreInWorkspaceRoot).existsSync(),
-              isFalse,
-              reason:
-                  '.scloudignore should NOT be created in the workspace root. '
-                  'It should be in the server directory instead.',
-            );
-          },
-        );
       },
     );
+
+    group('when deploying through CLI without explicit project dir', () {
+      late Future cliCommandFuture;
+      setUp(() async {
+        pushCurrentDirectory(p.join(d.sandbox, 'monorepo', 'project'));
+
+        cliCommandFuture = cli.run([
+          'deploy',
+          '--project',
+          BucketUploadDescription.projectId,
+        ]);
+      });
+
+      test('then command completes successfully.', () async {
+        await expectLater(cliCommandFuture, completes);
+      });
+
+      test(
+        'then .scloud/scloud_ws_pubspec.yaml is included in the zip archive',
+        () async {
+          await cliCommandFuture;
+
+          expect(mockFileUploader.uploadedData, isNotEmpty);
+
+          final archive = ZipDecoder().decodeBytes(
+            mockFileUploader.uploadedData,
+          );
+          final wsPubspecFile = archive.findFile(
+            '.scloud/scloud_ws_pubspec.yaml',
+          );
+          expect(
+            wsPubspecFile,
+            isNotNull,
+            reason:
+                '.scloud/scloud_ws_pubspec.yaml should be included in the deployment zip',
+          );
+        },
+      );
+    });
   });
 
   group(

@@ -278,6 +278,18 @@ project:
           await expectLater(expected.validate(), completes);
         });
 
+        test('then .scloudignore is created in the project dir', () async {
+          final expected = d.dir(testProjectDir, [
+            d.file(
+              '.scloudignore',
+              contains(
+                'This file specifies which files and directories should be ignored',
+              ),
+            ),
+          ]);
+          await expectLater(expected.validate(), completes);
+        });
+
         test('then zipped project is accessible in bucket.', () async {
           await expectLater(mockFileUploader.uploadedData, isNotEmpty);
         });
@@ -1790,5 +1802,94 @@ dependencies:
         await expectLater(expected.validate(), completes);
       });
     });
+
+    group(
+      'and a Dart workspace directory structure containing a serverpod directory',
+      () {
+        late String testProjectDir;
+
+        setUp(() async {
+          await d.dir('workspace_dir', [
+            d.file('pubspec.yaml', '''
+name: workspace_package
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+workspace:
+  - project_server
+  - project_client
+'''),
+            d.dir('project_server', [
+              ProjectFactory.serverpodServerPubspec(
+                withResolution: 'workspace',
+              ),
+            ]),
+            d.dir('project_client', [
+              d.file('pubspec.yaml', '''
+name: my_project_client
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+resolution: workspace
+'''),
+            ]),
+          ]).create();
+          testProjectDir = p.join(d.sandbox, 'workspace_dir', 'project_server');
+        });
+
+        group('when executing launch with all settings provided via args '
+            'and approving confirmation', () {
+          late Future commandResult;
+          setUp(() async {
+            logger.answerNextConfirmsWith([true, true]);
+
+            commandResult = cli.run([
+              'launch',
+              '--new-project',
+              projectId,
+              '--project-dir',
+              testProjectDir,
+              '--enable-db',
+              '--deploy',
+            ]);
+
+            await commandResult;
+          });
+
+          test('then writes scloud.yaml file', () async {
+            final expected = d.dir('workspace_dir', [
+              d.dir('project_server', [
+                d.file(
+                  'scloud.yaml',
+                  contains('''
+project:
+  projectId: "$projectId"
+'''),
+                ),
+              ]),
+            ]);
+            await expectLater(expected.validate(p.join(d.sandbox)), completes);
+          });
+
+          test(
+            'then .scloudignore is created in the workspace root to cover all packages',
+            () async {
+              final expected = d.dir('workspace_dir', [
+                d.file(
+                  '.scloudignore',
+                  contains(
+                    'This file specifies which files and directories should be ignored',
+                  ),
+                ),
+                d.dir('project_server', [d.nothing('.scloudignore')]),
+                d.dir('project_client', [d.nothing('.scloudignore')]),
+              ]);
+              await expectLater(
+                expected.validate(p.join(d.sandbox)),
+                completes,
+              );
+            },
+          );
+        });
+      },
+    );
   });
 }
