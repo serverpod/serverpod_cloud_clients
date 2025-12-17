@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.19.0] - 2025-12-17
+
+### Added
+
+- **Pre and post deploy scripts** - You can now define pre and post deploy scripts in your project configuration, enabling custom setup and cleanup tasks during deployment.
+- **Flutter build hook prompt** - During project launch, the CLI now prompts to add a pre-deploy hook that builds the Flutter web app, streamlining the deployment process.
+
+### Fixed
+
+- **Deployment confirmation** - Updated deployment confirmation message to explicitly show the project name, reducing the risk of accidental deployments to the wrong project.
+
 ## [0.18.0] - 2025-12-15
 
 ### Added
