@@ -162,30 +162,6 @@ void main() {
             ),
           );
         });
-
-        test('then writes scloud.yaml file', () async {
-          await commandResult;
-
-          final expected = d.dir(serverDir, [
-            d.file(
-              'scloud.yaml',
-              contains('''
-project:
-  projectId: "$projectId"
-'''),
-            ),
-          ]);
-          await expectLater(expected.validate(), completes);
-        });
-
-        test('then writes .scloudignore file', () async {
-          await commandResult;
-
-          final expected = d.dir(serverDir, [
-            d.file('.scloudignore', contains('# .scloudignore')),
-          ]);
-          await expectLater(expected.validate(), completes);
-        });
       });
 
       group('with existing scloud.yaml file when calling create', () {
@@ -226,81 +202,6 @@ project:
             ),
           );
         });
-
-        test('then does not update existing scloud.yaml file', () async {
-          await commandResult;
-
-          final expected = d.dir(serverDir, [
-            d.file(
-              'scloud.yaml',
-              contains('''
-project:
-  projectId: "otherProjectId"
-'''),
-            ),
-          ]);
-          await expectLater(expected.validate(), completes);
-        });
-      });
-
-      group('without .scloudignore file when calling create', () {
-        late Future commandResult;
-        setUp(() async {
-          await ProjectFactory.serverpodServerDir(
-            withDirectoryName: serverDir,
-          ).create();
-
-          logger.answerNextConfirmWith(
-            true, // accept new project cost acceptance
-          );
-          commandResult = cli.run([
-            'project',
-            'create',
-            projectId,
-            '--no-enable-db',
-          ]);
-        });
-
-        test('then writes .scloudignore file', () async {
-          await commandResult;
-
-          final expected = d.dir(serverDir, [
-            d.file('.scloudignore', contains('# .scloudignore')),
-          ]);
-          await expectLater(expected.validate(), completes);
-        });
-      });
-
-      group('with a custom .scloudignore file when calling create', () {
-        late Future commandResult;
-        setUp(() async {
-          await d.dir(serverDir, [
-            ProjectFactory.serverpodServerPubspec(),
-            d.file('.scloudignore', '# Custom .scloudignore file'),
-          ]).create();
-
-          logger.answerNextConfirmWith(
-            true, // accept new project cost acceptance
-          );
-          commandResult = cli.run([
-            'project',
-            'create',
-            projectId,
-            '--no-enable-db',
-          ]);
-        });
-
-        test(
-          'then the content of the .scloudignore file is not changed',
-          () async {
-            await commandResult;
-
-            final expected = d.dir(serverDir, [
-              d.file('.scloudignore', contains('# Custom .scloudignore file')),
-            ]);
-            await expectLater(expected.validate(), completes);
-          },
-        );
       });
     });
 
@@ -399,24 +300,6 @@ dependencies:
         final expected = d.dir('other_dir', [d.nothing('scloud.yaml')]);
         await expectLater(expected.validate(), completes);
       });
-
-      test('then informs the user that they have to run the link '
-          'command in the project server folder', () async {
-        await commandResult;
-
-        expect(logger.terminalCommandCalls, isNotEmpty);
-        expect(
-          logger.terminalCommandCalls.last,
-          equalsTerminalCommandCall(
-            message:
-                'Since no Serverpod server directory was identified, '
-                'an scloud.yaml configuration file has not been created. '
-                'Use the link command to create it in the server directory of this project:',
-            newParagraph: true,
-            command: 'scloud project link --project $projectId',
-          ),
-        );
-      });
     });
 
     group('and in a directory 3 levels up from a serverpod directory', () {
@@ -472,24 +355,6 @@ dependencies:
           ]);
           await expectLater(expected.validate(), completes);
         });
-
-        test('then informs the user that they have to run the link '
-            'command in the project server folder', () async {
-          await commandResult;
-
-          expect(logger.terminalCommandCalls, isNotEmpty);
-          expect(
-            logger.terminalCommandCalls.last,
-            equalsTerminalCommandCall(
-              message:
-                  'Since no Serverpod server directory was identified, '
-                  'an scloud.yaml configuration file has not been created. '
-                  'Use the link command to create it in the server directory of this project:',
-              newParagraph: true,
-              command: 'scloud project link --project $projectId',
-            ),
-          );
-        });
       });
 
       group('when calling create with --project-dir option', () {
@@ -522,38 +387,6 @@ dependencies:
               newParagraph: true,
             ),
           );
-        });
-
-        test('then writes scloud.yaml file', () async {
-          await commandResult;
-
-          final expected = d.dir('grandparent_dir', [
-            d.dir('parent_dir', [
-              d.dir('server_dir', [
-                d.file(
-                  'scloud.yaml',
-                  contains('''
-project:
-  projectId: "$projectId"
-'''),
-                ),
-              ]),
-            ]),
-          ]);
-          await expectLater(expected.validate(), completes);
-        });
-
-        test('then writes .scloudignore file', () async {
-          await commandResult;
-
-          final expected = d.dir('grandparent_dir', [
-            d.dir('parent_dir', [
-              d.dir('server_dir', [
-                d.file('.scloudignore', contains('# .scloudignore')),
-              ]),
-            ]),
-          ]);
-          await expectLater(expected.validate(), completes);
         });
       });
 

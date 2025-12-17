@@ -14,8 +14,12 @@ import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/shared/user_interaction/user_confirmations.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
+import 'package:serverpod_cloud_cli/util/project_files_writer.dart';
 import 'package:serverpod_cloud_cli/util/project_id_validator.dart';
-import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
+import 'package:serverpod_cloud_cli/util/pubspec_validator.dart'
+    show TenantProjectPubspec;
+import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_io.dart';
+import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_model.dart';
 
 abstract class Launch {
   static Future<void> launch(
@@ -56,6 +60,17 @@ abstract class Launch {
     }
 
     await selectPerformDeploy(logger, projectSetup);
+
+    final configFilePath = projectSetup.configFilePath;
+    if (configFilePath == null) {
+      throw StateError('ConfigFilePath must be set.');
+    }
+
+    await suggestFlutterBuildPreDeployHook(
+      logger,
+      projectSetup,
+      configFilePath,
+    );
 
     await confirmSetupAndContinue(logger, projectSetup);
 
@@ -341,6 +356,44 @@ The default API domain will be: <project-id>.api.serverpod.space
     projectSetup.performDeploy = performDeploy;
   }
 
+  static Future<void> suggestFlutterBuildPreDeployHook(
+    final CommandLogger logger,
+    final ProjectLaunch projectSetup,
+    final String configFilePath,
+  ) async {
+    final projectDir = projectSetup.projectDir;
+    if (projectDir == null) {
+      return;
+    }
+
+    final pubspecValidator = TenantProjectPubspec.fromProjectDir(
+      Directory(projectDir),
+    );
+
+    if (!pubspecValidator.hasFlutterBuildScript()) return;
+
+    ScloudConfig? existingConfig;
+    try {
+      existingConfig = ScloudConfigIO.readFromFile(configFilePath);
+    } catch (_) {
+      logger.debug('Failed to read config file at $configFilePath');
+      return;
+    }
+
+    final flutterBuildHook = 'serverpod run flutter_build';
+
+    final existingPreDeploy = existingConfig?.scripts.preDeploy ?? [];
+    if (existingPreDeploy.contains(flutterBuildHook)) return;
+
+    final shouldAdd = await logger.confirm(
+      "Detected 'flutter_build' script. Add it as a pre-deploy hook?",
+      defaultValue: true,
+    );
+
+    if (!shouldAdd) return;
+    projectSetup.suggestedPreDeployScripts.add(flutterBuildHook);
+  }
+
   static Future<void> confirmSetupAndContinue(
     final CommandLogger logger,
     final ProjectLaunch projectSetup,
@@ -399,9 +452,22 @@ The default API domain will be: <project-id>.api.serverpod.space
       );
     }
 
+    await logger.progress(
+      'Writing cloud project configuration files.',
+      () async {
+        ProjectFilesWriter.writeFiles(
+          projectId: projectId,
+          preDeployScripts: projectSetup.suggestedPreDeployScripts,
+          configFilePath: configFilePath,
+          projectDirectory: projectDir,
+        );
+        return true;
+      },
+    );
+
     if (!performDeploy) {
       logger.terminalCommand(
-        'scloud deploy -d $projectDir $projectId',
+        'scloud deploy',
         message: 'Run this command to deploy the project to the cloud:',
       );
       return;
@@ -436,19 +502,18 @@ The default API domain will be: <project-id>.api.serverpod.space
 
     const tenantHost = 'serverpod.space';
 
-    logger.success(
-      'When the server has started, you can access it at:\n',
-      trailingRocket: true,
+    logger.info(
+      'When the server has started, you can access it at:\n'
+      '   Web:      https://$projectId.$tenantHost/\n'
+      '   API:      https://$projectId.api.$tenantHost/\n'
+      '   Insights: https://$projectId.insights.$tenantHost/',
       newParagraph: true,
-      followUp:
-          '   Web:      https://$projectId.$tenantHost/\n'
-          '   API:      https://$projectId.api.$tenantHost/\n'
-          '   Insights: https://$projectId.insights.$tenantHost/',
     );
 
     logger.terminalCommand(
       'scloud deployment show',
       message: 'View the deployment status:',
+      newParagraph: true,
     );
   }
 
@@ -494,6 +559,7 @@ class ProjectLaunch {
   bool? enableDb;
   bool? preexistingProject;
   bool? performDeploy;
+  List<String> suggestedPreDeployScripts;
 
   ProjectLaunch({
     final String? projectDir,
@@ -501,7 +567,9 @@ class ProjectLaunch {
     this.enableDb,
     this.preexistingProject,
     this.performDeploy,
-  }) : _projectDir = projectDir {
+    final List<String>? suggestedPreDeployScripts,
+  }) : _projectDir = projectDir,
+       suggestedPreDeployScripts = suggestedPreDeployScripts ?? [] {
     if (projectDir != null) {
       configFilePath = _constructConfigFilePath(projectDir);
     }
@@ -529,6 +597,7 @@ class ProjectLaunch {
         ] else
           ['Existing project id', projectId],
         ['Perform deploy', performDeploy == true ? 'yes' : 'no'],
+        ['Add build hook', suggestedPreDeployScripts.isNotEmpty ? 'yes' : 'no'],
       ],
       columnSeparator: '  ',
     ).toString();

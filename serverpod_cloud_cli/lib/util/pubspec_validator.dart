@@ -4,6 +4,7 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:serverpod_cloud_cli/constants.dart' show VersionConstants;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:yaml/yaml.dart';
 
 /// Convenience function to check if a directory is a Serverpod server directory.
 ///
@@ -31,8 +32,10 @@ bool isServerpodServerPackage(final File pubspecFile) {
 /// Provides methods to validate its contents.
 class TenantProjectPubspec {
   final Pubspec pubspec;
+  final String _rawYamlContent;
 
-  TenantProjectPubspec(this.pubspec);
+  TenantProjectPubspec(this.pubspec, [final String? rawYamlContent])
+    : _rawYamlContent = rawYamlContent ?? '';
 
   /// Reads and parses the pubspec.yaml file in the given project directory.
   ///
@@ -60,16 +63,26 @@ class TenantProjectPubspec {
       );
     }
 
+    final String rawContent;
+    try {
+      rawContent = pubspecFile.readAsStringSync();
+    } catch (e) {
+      throw FailureException(
+        error: 'Failed to read pubspec.yaml: ${e.toString()}',
+        hint: 'Please fix the errors and try again.',
+      );
+    }
+
     final Pubspec pubspec;
     try {
-      pubspec = Pubspec.parse(pubspecFile.readAsStringSync());
+      pubspec = Pubspec.parse(rawContent);
     } catch (e) {
       throw FailureException(
         error: 'Failed to parse pubspec.yaml: ${e.toString()}',
         hint: 'Please fix the errors and try again.',
       );
     }
-    return TenantProjectPubspec(pubspec);
+    return TenantProjectPubspec(pubspec, rawContent);
   }
 
   /// Returns true if the pubspec.yaml has a workspace resolution directive.
@@ -158,5 +171,33 @@ class TenantProjectPubspec {
           ' (must adher to: $supported)';
     }
     return null;
+  }
+
+  /// Returns true if the pubspec.yaml defines a `serverpod.scripts.flutter_build` entry.
+  bool hasFlutterBuildScript() {
+    if (_rawYamlContent.isEmpty) {
+      return false;
+    }
+
+    try {
+      final yamlDoc = loadYaml(_rawYamlContent);
+      if (yamlDoc is! YamlMap) {
+        return false;
+      }
+
+      final serverpod = yamlDoc['serverpod'];
+      if (serverpod is! YamlMap) {
+        return false;
+      }
+
+      final scripts = serverpod['scripts'];
+      if (scripts is! YamlMap) {
+        return false;
+      }
+
+      return scripts.containsKey('flutter_build');
+    } catch (_) {
+      return false;
+    }
   }
 }

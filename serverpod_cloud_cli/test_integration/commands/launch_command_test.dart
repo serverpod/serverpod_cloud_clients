@@ -219,14 +219,22 @@ void main() {
                 message: "Serverpod Cloud project created.",
                 newParagraph: true,
               ),
-              equalsSuccessCall(
-                message: 'When the server has started, you can access it at:\n',
-                trailingRocket: true,
-                newParagraph: true,
-                followUp:
+            ]),
+          );
+        });
+
+        test('then logs access info message', () async {
+          expect(logger.infoCalls, isNotEmpty);
+          expect(
+            logger.infoCalls,
+            containsAllInOrder([
+              equalsInfoCall(
+                message:
+                    'When the server has started, you can access it at:\n'
                     '   Web:      https://$projectId.serverpod.space/\n'
                     '   API:      https://$projectId.api.serverpod.space/\n'
                     '   Insights: https://$projectId.insights.serverpod.space/',
+                newParagraph: true,
               ),
             ]),
           );
@@ -251,6 +259,7 @@ void main() {
               equalsTerminalCommandCall(
                 command: 'scloud deployment show',
                 message: 'View the deployment status:',
+                newParagraph: true,
               ),
             ]),
           );
@@ -272,6 +281,187 @@ project:
         test('then zipped project is accessible in bucket.', () async {
           await expectLater(mockFileUploader.uploadedData, isNotEmpty);
         });
+      });
+
+      group('when executing launch with flutter_build script in pubspec.yaml '
+          'and approving confirmation', () {
+        late String testProjectDir;
+        late Future commandResult;
+
+        setUp(() async {
+          await d.dir('server_dir', [
+            d.file('pubspec.yaml', '''
+name: my_project_server
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+serverpod:
+  scripts:
+    flutter_build: dart run tool/build_web.dart
+'''),
+          ]).create();
+          testProjectDir = p.join(d.sandbox, 'server_dir');
+
+          logger.answerNextConfirmsWith([true, true]);
+
+          commandResult = cli.run([
+            'launch',
+            '--new-project',
+            projectId,
+            '--project-dir',
+            testProjectDir,
+            '--enable-db',
+            '--deploy',
+          ]);
+
+          await expectLater(commandResult, completes);
+        });
+
+        test('then prompts to add flutter_build as pre-deploy hook', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(logger.confirmCalls, hasLength(2));
+          expect(
+            logger.confirmCalls,
+            containsAllInOrder([
+              equalsConfirmCall(
+                message:
+                    "Detected 'flutter_build' script. Add it as a pre-deploy hook?",
+                defaultValue: true,
+              ),
+              equalsConfirmCall(
+                message: 'Continue and apply this setup?',
+                defaultValue: true,
+              ),
+            ]),
+          );
+        });
+
+        test('then writes scloud.yaml with pre-deploy hook', () async {
+          final expected = d.dir(testProjectDir, [
+            d.file(
+              'scloud.yaml',
+              allOf([
+                contains('projectId: "$projectId"'),
+                contains('pre_deploy:'),
+                contains('serverpod run flutter_build'),
+              ]),
+            ),
+          ]);
+          await expectLater(expected.validate(), completes);
+        });
+      });
+
+      group('when executing launch with flutter_build script in pubspec.yaml '
+          'and declining pre-deploy hook suggestion', () {
+        late String testProjectDir;
+        late Future commandResult;
+
+        setUp(() async {
+          await d.dir('server_dir', [
+            d.file('pubspec.yaml', '''
+name: my_project_server
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+serverpod:
+  scripts:
+    flutter_build: dart run tool/build_web.dart
+'''),
+          ]).create();
+          testProjectDir = p.join(d.sandbox, 'server_dir');
+
+          logger.answerNextConfirmsWith([false, true]);
+
+          commandResult = cli.run([
+            'launch',
+            '--new-project',
+            projectId,
+            '--project-dir',
+            testProjectDir,
+            '--enable-db',
+            '--deploy',
+          ]);
+
+          await expectLater(commandResult, completes);
+        });
+
+        test('then prompts to add flutter_build as pre-deploy hook', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(logger.confirmCalls, hasLength(2));
+          expect(
+            logger.confirmCalls.first,
+            equalsConfirmCall(
+              message:
+                  "Detected 'flutter_build' script. Add it as a pre-deploy hook?",
+              defaultValue: true,
+            ),
+          );
+        });
+
+        test('then does not write pre-deploy hook in scloud.yaml', () async {
+          final expected = d.dir(testProjectDir, [
+            d.file(
+              'scloud.yaml',
+              allOf([
+                contains('projectId: "$projectId"'),
+                isNot(contains('serverpod run flutter_build')),
+              ]),
+            ),
+          ]);
+          await expectLater(expected.validate(), completes);
+        });
+      });
+
+      group('when executing launch without flutter_build script in pubspec.yaml '
+          'and approving confirmation', () {
+        late String testProjectDir;
+        late Future commandResult;
+
+        setUp(() async {
+          await ProjectFactory.serverpodServerDir(
+            withDirectoryName: 'server_dir',
+          ).create();
+          testProjectDir = p.join(d.sandbox, 'server_dir');
+
+          logger.answerNextConfirmsWith([true]);
+
+          commandResult = cli.run([
+            'launch',
+            '--new-project',
+            projectId,
+            '--project-dir',
+            testProjectDir,
+            '--enable-db',
+            '--deploy',
+          ]);
+
+          await expectLater(commandResult, completes);
+        });
+
+        test(
+          'then does not prompt to add flutter_build as pre-deploy hook',
+          () async {
+            await commandResult.catchError((final _) {});
+
+            expect(logger.confirmCalls, hasLength(1));
+            expect(
+              logger.confirmCalls,
+              isNot(
+                contains(
+                  equalsConfirmCall(
+                    message:
+                        "Detected 'flutter_build' script. Add it as a pre-deploy hook?",
+                    defaultValue: true,
+                  ),
+                ),
+              ),
+            );
+          },
+        );
       });
 
       group('when executing launch with all settings provided via args '

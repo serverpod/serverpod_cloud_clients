@@ -296,7 +296,7 @@ project:
               logger.errorCalls.first,
               equalsErrorCall(
                 message:
-                    'Failed to write to the ${p.join(testProjectDir, 'scloud.yaml')} file',
+                    'Failed to read the ${p.join(testProjectDir, 'scloud.yaml')} file',
                 exception: SchemaValidationException(
                   'At path "project": Expected YamlMap, got YamlList',
                 ),

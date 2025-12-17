@@ -272,4 +272,127 @@ dependencies:
       );
     },
   );
+
+  test(
+    'Given a pubspec with serverpod.scripts.flutter_build, when hasFlutterBuildScript is called, then the result is true',
+    () {
+      final pubspec = TenantProjectPubspec(
+        Pubspec.parse('''
+name: my_project
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+'''),
+        '''
+name: my_project
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+serverpod:
+  scripts:
+    flutter_build: dart run tool/build_web.dart
+''',
+      );
+
+      final result = pubspec.hasFlutterBuildScript();
+      expect(result, isTrue);
+    },
+  );
+
+  test(
+    'Given a pubspec without serverpod.scripts.flutter_build, when hasFlutterBuildScript is called, then the result is false',
+    () {
+      final pubspec = TenantProjectPubspec(
+        Pubspec.parse('''
+name: my_project
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+'''),
+        '''
+name: my_project
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+''',
+      );
+
+      final result = pubspec.hasFlutterBuildScript();
+      expect(result, isFalse);
+    },
+  );
+
+  test(
+    'Given a pubspec without serverpod.scripts, when hasFlutterBuildScript is called, then the result is false',
+    () {
+      final pubspec = TenantProjectPubspec(
+        Pubspec.parse('''
+name: my_project
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+'''),
+        '''
+name: my_project
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+serverpod:
+  other_field: value
+''',
+      );
+
+      final result = pubspec.hasFlutterBuildScript();
+      expect(result, isFalse);
+    },
+  );
+
+  test(
+    'Given a pubspec without serverpod section, when hasFlutterBuildScript is called, then the result is false',
+    () {
+      final pubspec = TenantProjectPubspec(
+        Pubspec.parse('''
+name: my_project
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+'''),
+        '''
+name: my_project
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+''',
+      );
+
+      final result = pubspec.hasFlutterBuildScript();
+      expect(result, isFalse);
+    },
+  );
+
+  test(
+    'Given a pubspec with empty raw content, when hasFlutterBuildScript is called, then the result is false',
+    () {
+      final pubspec = TenantProjectPubspec(
+        Pubspec.parse('''
+name: my_project
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+'''),
+      );
+
+      final result = pubspec.hasFlutterBuildScript();
+      expect(result, isFalse);
+    },
+  );
 }

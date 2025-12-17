@@ -49,6 +49,16 @@ class ScloudScripts {
     return const ScloudScripts(preDeploy: [], postDeploy: []);
   }
 
+  ScloudScripts copyWith({
+    final List<String>? preDeploy,
+    final List<String>? postDeploy,
+  }) {
+    return ScloudScripts(
+      preDeploy: preDeploy ?? this.preDeploy,
+      postDeploy: postDeploy ?? this.postDeploy,
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {'pre_deploy': preDeploy, 'post_deploy': postDeploy};
   }

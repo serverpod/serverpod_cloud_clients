@@ -72,7 +72,7 @@ abstract final class ScloudConfigIO {
     );
     final content = ProjectConfigFileConstants.defaultYamlFileHeader + output;
     File(configFilePath)
-      ..createSync(recursive: false)
+      ..createSync(recursive: true)
       ..writeAsStringSync(content);
   }
 

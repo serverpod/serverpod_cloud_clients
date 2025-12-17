@@ -26,7 +26,10 @@ abstract final class ScloudIgnore {
 # Ignoring all passwords, service passwords such as for the database are 
 # automatically managed by Serverpod Cloud.
 # If you need to configure custom api keys or other passwords, you can do so by
-# using the `scloud secret create --name <name> --value <value>` command.
+# using the `scloud secret create <name> <value>` command.
+#
+# Secrets prefixed with SERVERPOD_PASSWORD_myKey are available in the session.
+# session.serverpod.getPassword('myKey');
 #
 # Run `scloud secret --help` for more information.
 config/passwords.yaml
