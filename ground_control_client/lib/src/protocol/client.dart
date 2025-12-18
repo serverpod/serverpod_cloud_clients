@@ -105,6 +105,13 @@ class EndpointAdminProcurement extends _i1.EndpointRef {
     'listProcuredProducts',
     {'userEmail': userEmail},
   );
+
+  _i2.Future<void> moveToHackathonPlan({required String userEmail}) =>
+      caller.callServerEndpoint<void>(
+        'adminProcurement',
+        'moveToHackathonPlan',
+        {'userEmail': userEmail},
+      );
 }
 
 /// Endpoint for global administrator projects access.

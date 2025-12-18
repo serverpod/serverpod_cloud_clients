@@ -66,6 +66,8 @@ commands:
 
       - name: logout
 
+  - name: me
+
   - name: project
 
     commands:
@@ -255,6 +257,10 @@ commands:
             flags:
               -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
               --username=!: "The username of the DB user to create."
+
+      - name: wipe
+        flags:
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
 
   - name: launch
     flags:
