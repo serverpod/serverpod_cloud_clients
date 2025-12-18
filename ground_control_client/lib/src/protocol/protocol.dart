@@ -94,13 +94,8 @@ import 'package:ground_control_client/src/protocol/domains/status/models/deploy_
     as _i69;
 import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
     as _i70;
-import 'package:serverpod_auth_migration_client/serverpod_auth_migration_client.dart'
-    as _i71;
-import 'package:serverpod_auth_bridge_client/serverpod_auth_bridge_client.dart'
-    as _i72;
-import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i73;
 import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
-    as _i74;
+    as _i71;
 export 'domains/billing/models/billing_customer_type.dart';
 export 'domains/billing/models/billing_info.dart';
 export 'domains/billing/models/billing_mapping_type.dart';
@@ -763,15 +758,6 @@ class Protocol extends _i1.SerializationManager {
     try {
       return _i71.Protocol().deserialize<T>(data, t);
     } on _i1.DeserializationTypeNotFoundException catch (_) {}
-    try {
-      return _i72.Protocol().deserialize<T>(data, t);
-    } on _i1.DeserializationTypeNotFoundException catch (_) {}
-    try {
-      return _i73.Protocol().deserialize<T>(data, t);
-    } on _i1.DeserializationTypeNotFoundException catch (_) {}
-    try {
-      return _i74.Protocol().deserialize<T>(data, t);
-    } on _i1.DeserializationTypeNotFoundException catch (_) {}
     return super.deserialize<T>(data, t);
   }
 
@@ -977,18 +963,6 @@ class Protocol extends _i1.SerializationManager {
     }
     className = _i71.Protocol().getClassNameForObject(data);
     if (className != null) {
-      return 'serverpod_auth_migration.$className';
-    }
-    className = _i72.Protocol().getClassNameForObject(data);
-    if (className != null) {
-      return 'serverpod_auth_bridge.$className';
-    }
-    className = _i73.Protocol().getClassNameForObject(data);
-    if (className != null) {
-      return 'serverpod_auth.$className';
-    }
-    className = _i74.Protocol().getClassNameForObject(data);
-    if (className != null) {
       return 'serverpod_auth_core.$className';
     }
     return null;
@@ -1180,21 +1154,9 @@ class Protocol extends _i1.SerializationManager {
       data['className'] = dataClassName.substring(19);
       return _i70.Protocol().deserializeByClassName(data);
     }
-    if (dataClassName.startsWith('serverpod_auth_migration.')) {
-      data['className'] = dataClassName.substring(25);
-      return _i71.Protocol().deserializeByClassName(data);
-    }
-    if (dataClassName.startsWith('serverpod_auth_bridge.')) {
-      data['className'] = dataClassName.substring(22);
-      return _i72.Protocol().deserializeByClassName(data);
-    }
-    if (dataClassName.startsWith('serverpod_auth.')) {
-      data['className'] = dataClassName.substring(15);
-      return _i73.Protocol().deserializeByClassName(data);
-    }
     if (dataClassName.startsWith('serverpod_auth_core.')) {
       data['className'] = dataClassName.substring(20);
-      return _i74.Protocol().deserializeByClassName(data);
+      return _i71.Protocol().deserializeByClassName(data);
     }
     return super.deserializeByClassName(data);
   }

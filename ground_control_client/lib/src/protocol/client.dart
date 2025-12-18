@@ -62,12 +62,7 @@ import 'package:ground_control_client/src/protocol/domains/status/models/deploy_
     as _i26;
 import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
     as _i27;
-import 'package:serverpod_auth_migration_client/serverpod_auth_migration_client.dart'
-    as _i28;
-import 'package:serverpod_auth_bridge_client/serverpod_auth_bridge_client.dart'
-    as _i29;
-import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i30;
-import 'protocol.dart' as _i31;
+import 'protocol.dart' as _i28;
 
 /// Endpoint for global administrator to handle procurement for users.
 /// {@category Endpoint}
@@ -968,19 +963,10 @@ class EndpointUsers extends _i1.EndpointRef {
 class Modules {
   Modules(Client client) {
     serverpod_auth_idp = _i27.Caller(client);
-    serverpod_auth_migration = _i28.Caller(client);
-    serverpod_auth_bridge = _i29.Caller(client);
-    auth = _i30.Caller(client);
     serverpod_auth_core = _i10.Caller(client);
   }
 
   late final _i27.Caller serverpod_auth_idp;
-
-  late final _i28.Caller serverpod_auth_migration;
-
-  late final _i29.Caller serverpod_auth_bridge;
-
-  late final _i30.Caller auth;
 
   late final _i10.Caller serverpod_auth_core;
 }
@@ -1000,7 +986,7 @@ class Client extends _i1.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
          host,
-         _i31.Protocol(),
+         _i28.Protocol(),
          securityContext: securityContext,
          streamingConnectionTimeout: streamingConnectionTimeout,
          connectionTimeout: connectionTimeout,
@@ -1097,9 +1083,6 @@ class Client extends _i1.ServerpodClientShared {
   @override
   Map<String, _i1.ModuleEndpointCaller> get moduleLookup => {
     'serverpod_auth_idp': modules.serverpod_auth_idp,
-    'serverpod_auth_migration': modules.serverpod_auth_migration,
-    'serverpod_auth_bridge': modules.serverpod_auth_bridge,
-    'auth': modules.auth,
     'serverpod_auth_core': modules.serverpod_auth_core,
   };
 }
