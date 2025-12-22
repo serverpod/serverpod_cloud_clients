@@ -15,12 +15,18 @@ import '../../../domains/billing/models/payment_method_card.dart' as _i2;
 import 'package:ground_control_client/src/protocol/protocol.dart' as _i3;
 
 abstract class PaymentMethod implements _i1.SerializableModel {
-  PaymentMethod._({required this.id, required this.type, this.card});
+  PaymentMethod._({
+    required this.id,
+    required this.type,
+    this.card,
+    required this.isDefault,
+  });
 
   factory PaymentMethod({
     required String id,
     required String type,
     _i2.PaymentMethodCard? card,
+    required bool isDefault,
   }) = _PaymentMethodImpl;
 
   factory PaymentMethod.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -32,6 +38,7 @@ abstract class PaymentMethod implements _i1.SerializableModel {
           : _i3.Protocol().deserialize<_i2.PaymentMethodCard>(
               jsonSerialization['card'],
             ),
+      isDefault: jsonSerialization['isDefault'] as bool,
     );
   }
 
@@ -41,6 +48,8 @@ abstract class PaymentMethod implements _i1.SerializableModel {
 
   _i2.PaymentMethodCard? card;
 
+  bool isDefault;
+
   /// Returns a shallow copy of this [PaymentMethod]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
@@ -48,6 +57,7 @@ abstract class PaymentMethod implements _i1.SerializableModel {
     String? id,
     String? type,
     _i2.PaymentMethodCard? card,
+    bool? isDefault,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -56,6 +66,7 @@ abstract class PaymentMethod implements _i1.SerializableModel {
       'id': id,
       'type': type,
       if (card != null) 'card': card?.toJson(),
+      'isDefault': isDefault,
     };
   }
 
@@ -72,7 +83,8 @@ class _PaymentMethodImpl extends PaymentMethod {
     required String id,
     required String type,
     _i2.PaymentMethodCard? card,
-  }) : super._(id: id, type: type, card: card);
+    required bool isDefault,
+  }) : super._(id: id, type: type, card: card, isDefault: isDefault);
 
   /// Returns a shallow copy of this [PaymentMethod]
   /// with some or all fields replaced by the given arguments.
@@ -82,11 +94,13 @@ class _PaymentMethodImpl extends PaymentMethod {
     String? id,
     String? type,
     Object? card = _Undefined,
+    bool? isDefault,
   }) {
     return PaymentMethod(
       id: id ?? this.id,
       type: type ?? this.type,
       card: card is _i2.PaymentMethodCard? ? card : this.card?.copyWith(),
+      isDefault: isDefault ?? this.isDefault,
     );
   }
 }

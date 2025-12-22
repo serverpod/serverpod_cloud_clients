@@ -5,11 +5,13 @@ class PaymentMethodBuilder {
   String _id;
   String _type;
   PaymentMethodCard? _card;
+  bool _isDefault;
 
   PaymentMethodBuilder()
     : _id = 'pm_test_1234567890',
       _type = 'card',
-      _card = PaymentMethodCardBuilder().build();
+      _card = PaymentMethodCardBuilder().build(),
+      _isDefault = false;
 
   PaymentMethodBuilder withId(String id) {
     _id = id;
@@ -31,7 +33,17 @@ class PaymentMethodBuilder {
     return this;
   }
 
+  PaymentMethodBuilder withIsDefault(bool isDefault) {
+    _isDefault = isDefault;
+    return this;
+  }
+
   PaymentMethod build() {
-    return PaymentMethod(id: _id, type: _type, card: _card);
+    return PaymentMethod(
+      id: _id,
+      type: _type,
+      card: _card,
+      isDefault: _isDefault,
+    );
   }
 }
