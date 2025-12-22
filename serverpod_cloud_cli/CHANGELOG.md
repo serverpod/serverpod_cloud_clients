@@ -1,6 +1,18 @@
 
 # Changelog
 
+## [0.20.0] - 2025-12-22
+
+### Added
+
+- **Hackathon migration** - Added admin functionality to migrate users to the 2025 Serverpod Hackathon plan.
+- **New CLI command** - Added a "move-to-hackathon" command in CLI under admin product management for user migration.
+
+### Chores
+
+- **Updated CLI completion scripts** - Completion scripts and documentation updated to support new commands.
+- **New CLI commands** - Added "me" command under auth and "wipe" command under database management.
+
 ## [0.19.1] - 2025-12-17
 
 ### Fixed
