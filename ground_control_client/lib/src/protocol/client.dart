@@ -876,6 +876,23 @@ class EndpointSecrets extends _i1.EndpointRef {
     'cloudCapsuleId': cloudCapsuleId,
   });
 
+  /// Upserts secrets for a cloud capsule.
+  ///
+  /// Creates new secrets or updates existing ones. Unlike [create], this method
+  /// allows updating existing secret keys without throwing an exception.
+  ///
+  /// Requires capsule authorization.
+  ///
+  /// Throws [NotFoundException] if the capsule is not found.
+  /// Throws [InvalidValueException] if secret names are invalid.
+  _i2.Future<void> upsert({
+    required Map<String, String> secrets,
+    required String cloudCapsuleId,
+  }) => caller.callServerEndpoint<void>('secrets', 'upsert', {
+    'secrets': secrets,
+    'cloudCapsuleId': cloudCapsuleId,
+  });
+
   _i2.Future<void> delete({
     required String key,
     required String cloudCapsuleId,
