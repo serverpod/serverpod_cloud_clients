@@ -923,6 +923,20 @@ class EndpointSecrets extends _i1.EndpointRef {
       caller.callServerEndpoint<List<String>>('secrets', 'list', {
         'cloudCapsuleId': cloudCapsuleId,
       });
+
+  /// Lists platform-managed secret keys for a cloud capsule.
+  ///
+  /// Returns only the keys of managed secrets (no values). Unlike [list],
+  /// this method filters to platform-managed secrets only, excluding
+  /// user-created custom secrets.
+  ///
+  /// Requires capsule authorization.
+  ///
+  /// Throws [NotFoundException] if the capsule is not found.
+  _i2.Future<List<String>> listManaged(String cloudCapsuleId) =>
+      caller.callServerEndpoint<List<String>>('secrets', 'listManaged', {
+        'cloudCapsuleId': cloudCapsuleId,
+      });
 }
 
 /// Endpoint for accessing capsule deployment status.
