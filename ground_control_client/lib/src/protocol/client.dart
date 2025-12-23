@@ -409,6 +409,24 @@ class EndpointBilling extends _i1.EndpointRef {
         'listPaymentMethods',
         {},
       );
+
+  /// Removes a payment method for the authenticated user.
+  ///
+  /// This endpoint removes a payment method from the user's payment customer.
+  /// The endpoint validates that:
+  /// - The payment method belongs to the user
+  /// - If payment method is required (user has active projects), the user must
+  ///   have at least one other payment method
+  ///
+  /// [paymentMethodId] The ID of the payment method to remove.
+  ///
+  /// Throws [NotFoundException] if the user is not found or has no payment customer.
+  /// Throws [InvalidValueServerException] if the payment method doesn't belong to the user.
+  /// Throws [InvalidValueServerException] if payment method is required and this is the last payment method.
+  _i2.Future<void> removePaymentMethod({required String paymentMethodId}) =>
+      caller.callServerEndpoint<void>('billing', 'removePaymentMethod', {
+        'paymentMethodId': paymentMethodId,
+      });
 }
 
 /// {@category Endpoint}
