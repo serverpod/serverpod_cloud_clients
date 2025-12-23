@@ -46,13 +46,13 @@ abstract final class ProjectFilesWriter {
         ),
       );
     } else {
+      final existingPreDeploy = config.scripts.preDeploy
+          .where((final hook) => !suggestedPreDeployScripts.contains(hook))
+          .toList();
       newConfig = config.copyWith(
         projectId: projectId,
         scripts: config.scripts.copyWith(
-          preDeploy: [
-            ...config.scripts.preDeploy,
-            ...suggestedPreDeployScripts,
-          ],
+          preDeploy: [...existingPreDeploy, ...suggestedPreDeployScripts],
         ),
       );
     }

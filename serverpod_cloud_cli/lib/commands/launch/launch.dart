@@ -66,6 +66,12 @@ abstract class Launch {
       throw StateError('ConfigFilePath must be set.');
     }
 
+    await suggestCodeGenerationPreDeployHook(
+      logger,
+      projectSetup,
+      configFilePath,
+    );
+
     await suggestFlutterBuildPreDeployHook(
       logger,
       projectSetup,
@@ -394,6 +400,32 @@ The default API domain will be: <project-id>.api.serverpod.space
     projectSetup.suggestedPreDeployScripts.add(flutterBuildHook);
   }
 
+  static Future<void> suggestCodeGenerationPreDeployHook(
+    final CommandLogger logger,
+    final ProjectLaunch projectSetup,
+    final String configFilePath,
+  ) async {
+    ScloudConfig? existingConfig;
+    try {
+      existingConfig = ScloudConfigIO.readFromFile(configFilePath);
+    } catch (_) {
+      logger.debug('Failed to read config file at $configFilePath');
+    }
+
+    final codeGenerationHook = 'serverpod generate';
+
+    final existingPreDeploy = existingConfig?.scripts.preDeploy ?? [];
+    if (existingPreDeploy.contains(codeGenerationHook)) return;
+
+    final shouldAdd = await logger.confirm(
+      'Would you like to run code generation (`serverpod generate`) before deploy?',
+      defaultValue: true,
+    );
+
+    if (!shouldAdd) return;
+    projectSetup.suggestedPreDeployScripts.add(codeGenerationHook);
+  }
+
   static Future<void> confirmSetupAndContinue(
     final CommandLogger logger,
     final ProjectLaunch projectSetup,
@@ -597,7 +629,14 @@ class ProjectLaunch {
         ] else
           ['Existing project id', projectId],
         ['Perform deploy', performDeploy == true ? 'yes' : 'no'],
-        ['Add build hook', suggestedPreDeployScripts.isNotEmpty ? 'yes' : 'no'],
+        if (suggestedPreDeployScripts.isNotEmpty) ...[
+          [
+            'Pre-deploy hooks',
+            suggestedPreDeployScripts
+                .map((final hook) => '  - $hook')
+                .join('\n'),
+          ],
+        ],
       ],
       columnSeparator: '  ',
     ).toString();
