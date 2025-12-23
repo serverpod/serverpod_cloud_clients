@@ -427,6 +427,15 @@ class EndpointBilling extends _i1.EndpointRef {
       caller.callServerEndpoint<void>('billing', 'removePaymentMethod', {
         'paymentMethodId': paymentMethodId,
       });
+
+  /// Checks if a payment method is required for the authenticated user.
+  ///
+  /// This endpoint returns `true` if the user has active (non-archived) projects,
+  /// meaning they cannot delete their last payment method. Returns `false` otherwise.
+  ///
+  /// Returns `true` if a payment method is required, `false` otherwise.
+  _i2.Future<bool> isPaymentMethodRequired() =>
+      caller.callServerEndpoint<bool>('billing', 'isPaymentMethodRequired', {});
 }
 
 /// {@category Endpoint}
