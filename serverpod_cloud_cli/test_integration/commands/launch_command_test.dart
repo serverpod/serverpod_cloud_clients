@@ -200,12 +200,13 @@ void main() {
         });
 
         test('then logs confirmation-to-apply message', () async {
-          expect(logger.confirmCalls, hasLength(1));
           expect(
-            logger.confirmCalls.single,
-            equalsConfirmCall(
-              message: 'Continue and apply this setup?',
-              defaultValue: true,
+            logger.confirmCalls,
+            contains(
+              equalsConfirmCall(
+                message: 'Continue and apply this setup?',
+                defaultValue: true,
+              ),
             ),
           );
         });
@@ -315,7 +316,7 @@ serverpod:
           ]).create();
           testProjectDir = p.join(d.sandbox, 'server_dir');
 
-          logger.answerNextConfirmsWith([true, true]);
+          logger.answerNextConfirmsWith([true, true, true]);
 
           commandResult = cli.run([
             'launch',
@@ -333,10 +334,14 @@ serverpod:
         test('then prompts to add flutter_build as pre-deploy hook', () async {
           await commandResult.catchError((final _) {});
 
-          expect(logger.confirmCalls, hasLength(2));
           expect(
             logger.confirmCalls,
             containsAllInOrder([
+              equalsConfirmCall(
+                message:
+                    'Would you like to run code generation (`serverpod generate`) before deploy?',
+                defaultValue: true,
+              ),
               equalsConfirmCall(
                 message:
                     "Detected 'flutter_build' script. Add it as a pre-deploy hook?",
@@ -357,6 +362,7 @@ serverpod:
               allOf([
                 contains('projectId: "$projectId"'),
                 contains('pre_deploy:'),
+                contains('serverpod generate'),
                 contains('serverpod run flutter_build'),
               ]),
             ),
@@ -385,7 +391,7 @@ serverpod:
           ]).create();
           testProjectDir = p.join(d.sandbox, 'server_dir');
 
-          logger.answerNextConfirmsWith([false, true]);
+          logger.answerNextConfirmsWith([true, false, true]);
 
           commandResult = cli.run([
             'launch',
@@ -403,14 +409,20 @@ serverpod:
         test('then prompts to add flutter_build as pre-deploy hook', () async {
           await commandResult.catchError((final _) {});
 
-          expect(logger.confirmCalls, hasLength(2));
           expect(
-            logger.confirmCalls.first,
-            equalsConfirmCall(
-              message:
-                  "Detected 'flutter_build' script. Add it as a pre-deploy hook?",
-              defaultValue: true,
-            ),
+            logger.confirmCalls,
+            containsAllInOrder([
+              equalsConfirmCall(
+                message:
+                    'Would you like to run code generation (`serverpod generate`) before deploy?',
+                defaultValue: true,
+              ),
+              equalsConfirmCall(
+                message:
+                    "Detected 'flutter_build' script. Add it as a pre-deploy hook?",
+                defaultValue: true,
+              ),
+            ]),
           );
         });
 
@@ -420,6 +432,7 @@ serverpod:
               'scloud.yaml',
               allOf([
                 contains('projectId: "$projectId"'),
+                contains('serverpod generate'),
                 isNot(contains('serverpod run flutter_build')),
               ]),
             ),
@@ -439,7 +452,7 @@ serverpod:
           ).create();
           testProjectDir = p.join(d.sandbox, 'server_dir');
 
-          logger.answerNextConfirmsWith([true]);
+          logger.answerNextConfirmsWith([true, true]);
 
           commandResult = cli.run([
             'launch',
@@ -459,7 +472,6 @@ serverpod:
           () async {
             await commandResult.catchError((final _) {});
 
-            expect(logger.confirmCalls, hasLength(1));
             expect(
               logger.confirmCalls,
               isNot(
@@ -474,13 +486,190 @@ serverpod:
             );
           },
         );
+
+        test('then prompts to add code generation as pre-deploy hook', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(
+            logger.confirmCalls,
+            containsAllInOrder([
+              equalsConfirmCall(
+                message:
+                    'Would you like to run code generation (`serverpod generate`) before deploy?',
+                defaultValue: true,
+              ),
+              equalsConfirmCall(
+                message: 'Continue and apply this setup?',
+                defaultValue: true,
+              ),
+            ]),
+          );
+        });
+      });
+
+      group('when executing launch with code generation hook suggestion '
+          'and approving confirmation', () {
+        late String testProjectDir;
+        late Future commandResult;
+
+        setUp(() async {
+          await ProjectFactory.serverpodServerDir(
+            withDirectoryName: 'server_dir',
+          ).create();
+          testProjectDir = p.join(d.sandbox, 'server_dir');
+
+          logger.answerNextConfirmsWith([true, true]);
+
+          commandResult = cli.run([
+            'launch',
+            '--new-project',
+            projectId,
+            '--project-dir',
+            testProjectDir,
+            '--enable-db',
+            '--deploy',
+          ]);
+
+          await expectLater(commandResult, completes);
+        });
+
+        test('then prompts to add code generation as pre-deploy hook', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(
+            logger.confirmCalls,
+            containsAllInOrder([
+              equalsConfirmCall(
+                message:
+                    'Would you like to run code generation (`serverpod generate`) before deploy?',
+                defaultValue: true,
+              ),
+              equalsConfirmCall(
+                message: 'Continue and apply this setup?',
+                defaultValue: true,
+              ),
+            ]),
+          );
+        });
+
+        test('then writes scloud.yaml with pre-deploy hook', () async {
+          final expected = d.dir(testProjectDir, [
+            d.file(
+              'scloud.yaml',
+              allOf([contains('pre_deploy:'), contains('serverpod generate')]),
+            ),
+          ]);
+          await expectLater(expected.validate(), completes);
+        });
+      });
+
+      group('when executing launch with code generation hook suggestion '
+          'and declining pre-deploy hook suggestion', () {
+        late String testProjectDir;
+        late Future commandResult;
+
+        setUp(() async {
+          await ProjectFactory.serverpodServerDir(
+            withDirectoryName: 'server_dir',
+          ).create();
+          testProjectDir = p.join(d.sandbox, 'server_dir');
+
+          logger.answerNextConfirmsWith([false, true]);
+
+          commandResult = cli.run([
+            'launch',
+            '--new-project',
+            projectId,
+            '--project-dir',
+            testProjectDir,
+            '--enable-db',
+            '--deploy',
+          ]);
+
+          await expectLater(commandResult, completes);
+        });
+
+        test('then prompts to add code generation as pre-deploy hook', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(
+            logger.confirmCalls.first,
+            equalsConfirmCall(
+              message:
+                  'Would you like to run code generation (`serverpod generate`) before deploy?',
+              defaultValue: true,
+            ),
+          );
+        });
+
+        test('then does not write pre-deploy hook in scloud.yaml', () async {
+          final expected = d.dir(testProjectDir, [
+            d.file('scloud.yaml', isNot(contains('serverpod generate'))),
+          ]);
+          await expectLater(expected.validate(), completes);
+        });
+      });
+
+      group('when executing launch with code generation hook already in config '
+          'and approving confirmation', () {
+        late String testProjectDir;
+        late Future commandResult;
+
+        setUp(() async {
+          await ProjectFactory.serverpodServerDir(
+            withDirectoryName: 'server_dir',
+          ).create();
+          testProjectDir = p.join(d.sandbox, 'server_dir');
+
+          await d.file(p.join(testProjectDir, 'scloud.yaml'), '''
+project:
+  projectId: "$projectId"
+  scripts:
+    pre_deploy:
+      - serverpod generate
+''').create();
+
+          logger.answerNextConfirmsWith([true]);
+
+          commandResult = cli.run([
+            'launch',
+            '--new-project',
+            projectId,
+            '--project-dir',
+            testProjectDir,
+            '--enable-db',
+            '--deploy',
+          ]);
+
+          await expectLater(commandResult, completes);
+        });
+
+        test(
+          'then does not prompt to add code generation as pre-deploy hook',
+          () async {
+            await commandResult.catchError((final _) {});
+
+            expect(
+              logger.confirmCalls,
+              isNot(
+                contains(
+                  equalsConfirmCall(
+                    message:
+                        'Would you like to run code generation (`serverpod generate`) before deploy?',
+                    defaultValue: true,
+                  ),
+                ),
+              ),
+            );
+          },
+        );
       });
 
       group('when executing launch with all settings provided via args '
           'and declining confirmation', () {
         late Future commandResult;
         setUp(() async {
-          logger.answerNextConfirmWith(false);
+          logger.answerNextConfirmsWith([true, false]);
 
           commandResult = cli.run([
             'launch',
@@ -522,12 +711,13 @@ serverpod:
         test('then logs confirmation-to-apply message', () async {
           await commandResult.catchError((final _) {});
 
-          expect(logger.confirmCalls, hasLength(1));
           expect(
-            logger.confirmCalls.single,
-            equalsConfirmCall(
-              message: 'Continue and apply this setup?',
-              defaultValue: true,
+            logger.confirmCalls,
+            contains(
+              equalsConfirmCall(
+                message: 'Continue and apply this setup?',
+                defaultValue: true,
+              ),
             ),
           );
         });
@@ -562,7 +752,7 @@ serverpod:
         late Future commandResult;
         setUp(() async {
           logger.answerNextInputsWith([testProjectDir]);
-          logger.answerNextConfirmWith(false);
+          logger.answerNextConfirmsWith([true, false]);
 
           commandResult = cli.run([
             'launch',
@@ -627,12 +817,13 @@ serverpod:
         test('then logs confirmation-to-apply message', () async {
           await commandResult.catchError((final _) {});
 
-          expect(logger.confirmCalls, hasLength(1));
           expect(
-            logger.confirmCalls.single,
-            equalsConfirmCall(
-              message: 'Continue and apply this setup?',
-              defaultValue: true,
+            logger.confirmCalls,
+            contains(
+              equalsConfirmCall(
+                message: 'Continue and apply this setup?',
+                defaultValue: true,
+              ),
             ),
           );
         });
@@ -667,7 +858,11 @@ serverpod:
         late Future commandResult;
         setUp(() async {
           logger.answerNextInputsWith([projectId]);
-          logger.answerNextConfirmsWith([true, false]);
+          logger.answerNextConfirmsWith([
+            true, // confirm new project cost acceptance
+            true, // code generation prompt
+            false, // do not apply setup
+          ]);
 
           commandResult = cli.run([
             'launch',
@@ -732,7 +927,6 @@ serverpod:
         test('then logs confirmation-to-apply message', () async {
           await commandResult.catchError((final _) {});
 
-          expect(logger.confirmCalls, hasLength(2));
           expect(
             logger.confirmCalls,
             containsAllInOrder([
@@ -792,13 +986,14 @@ serverpod:
         test('then logs confirmation question', () async {
           await commandResult.catchError((final _) {});
 
-          expect(logger.confirmCalls, hasLength(1));
           expect(
-            logger.confirmCalls.single,
-            equalsConfirmCall(
-              message:
-                  'Depending on your subscription, a new project may incur additional costs. Continue?',
-              defaultValue: true,
+            logger.confirmCalls,
+            contains(
+              equalsConfirmCall(
+                message:
+                    'Depending on your subscription, a new project may incur additional costs. Continue?',
+                defaultValue: true,
+              ),
             ),
           );
         });
@@ -813,6 +1008,7 @@ serverpod:
             true, // confirm new project cost acceptance
             true, // enable db
             true, // perform deploy
+            true, // code generation prompt
             false, // do not apply setup
           ]);
 
@@ -852,6 +1048,11 @@ serverpod:
               ),
               equalsConfirmCall(
                 message: "Deploy '$projectId' project right away?",
+                defaultValue: true,
+              ),
+              equalsConfirmCall(
+                message:
+                    'Would you like to run code generation (`serverpod generate`) before deploy?',
                 defaultValue: true,
               ),
               equalsConfirmCall(
@@ -914,6 +1115,7 @@ serverpod:
             true, // confirm new project cost acceptance
             true, // enable db
             true, // perform deploy
+            true, // code generation prompt
             false, // do not apply setup
           ]);
 
@@ -968,6 +1170,11 @@ serverpod:
               ),
               equalsConfirmCall(
                 message: "Deploy '$projectId' project right away?",
+                defaultValue: true,
+              ),
+              equalsConfirmCall(
+                message:
+                    'Would you like to run code generation (`serverpod generate`) before deploy?',
                 defaultValue: true,
               ),
               equalsConfirmCall(
@@ -1032,6 +1239,7 @@ serverpod:
             true, // confirm new project cost acceptance
             true, // enable db
             true, // perform deploy
+            true, // code generation prompt
             false, // do not apply setup
           ]);
 
@@ -1072,6 +1280,11 @@ serverpod:
               ),
               equalsConfirmCall(
                 message: "Deploy '$projectId' project right away?",
+                defaultValue: true,
+              ),
+              equalsConfirmCall(
+                message:
+                    'Would you like to run code generation (`serverpod generate`) before deploy?',
                 defaultValue: true,
               ),
               equalsConfirmCall(
@@ -1136,6 +1349,7 @@ serverpod:
             true, // confirm new project cost acceptance
             true, // enable db
             true, // perform deploy
+            true, // code generation prompt
             false, // do not apply setup
           ]);
 
@@ -1179,6 +1393,11 @@ serverpod:
               ),
               equalsConfirmCall(
                 message: "Deploy '$projectId' project right away?",
+                defaultValue: true,
+              ),
+              equalsConfirmCall(
+                message:
+                    'Would you like to run code generation (`serverpod generate`) before deploy?',
                 defaultValue: true,
               ),
               equalsConfirmCall(
@@ -1267,6 +1486,7 @@ serverpod:
             true, // confirm new project cost acceptance
             true, // enable db
             true, // perform deploy
+            true, // code generation prompt
             false, // do not apply setup
           ]);
 
@@ -1392,6 +1612,7 @@ serverpod:
           logger.answerNextInputsWith([testProjectDir, '1', projectId]);
           logger.answerNextConfirmsWith([
             true, // perform deploy
+            true, // code generation prompt
             false, // do not apply setup
           ]);
 
@@ -1505,6 +1726,7 @@ serverpod:
             true, // confirm new project cost acceptance
             true, // enable db
             true, // perform deploy
+            true, // code generation prompt
             false, // do not apply setup
           ]);
 
@@ -1622,6 +1844,7 @@ serverpod:
           logger.answerNextConfirmsWith([
             true, // confirm using existing project
             true, // perform deploy
+            true, // code generation prompt
             false, // do not apply setup
           ]);
 
@@ -1736,6 +1959,7 @@ dependencies:
         logger.answerNextConfirmsWith([
           true, // enable db
           true, // perform deploy
+          true, // code generation prompt
           false, // do not apply setup
         ]);
 
