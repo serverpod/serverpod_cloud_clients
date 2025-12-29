@@ -436,6 +436,21 @@ class EndpointBilling extends _i1.EndpointRef {
   /// Returns `true` if a payment method is required, `false` otherwise.
   _i2.Future<bool> isPaymentMethodRequired() =>
       caller.callServerEndpoint<bool>('billing', 'isPaymentMethodRequired', {});
+
+  /// Sets the default payment method for the authenticated user.
+  ///
+  /// This endpoint sets the specified payment method as the default for the user's
+  /// payment customer. The endpoint validates that:
+  /// - The payment method belongs to the user
+  ///
+  /// [paymentMethodId] The ID of the payment method to set as default.
+  ///
+  /// Throws [NotFoundException] if the user is not found or has no payment customer.
+  /// Throws [InvalidValueServerException] if the payment method doesn't belong to the user.
+  _i2.Future<void> setDefaultPaymentMethod({required String paymentMethodId}) =>
+      caller.callServerEndpoint<void>('billing', 'setDefaultPaymentMethod', {
+        'paymentMethodId': paymentMethodId,
+      });
 }
 
 /// {@category Endpoint}
