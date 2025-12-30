@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.20.0] - 2025-12-30
+
+### Added
+
+- **Output flag for deploy command** - You can now use the `--output` flag with the `scloud deploy` command to save the deployment zip locally.
+- **Password subcommand** - Added a `password` subcommand to the Serverpod Cloud CLI for management of `SERVERPOD_PASSWORD_*` secrets.
+- **Pre-deploy code generation prompt** - During `scloud launch`, you'll now be prompted to include `serverpod generate` as a pre-deploy hook to ensure your backend code is up to date.
+
+
 ## [0.19.1] - 2025-12-17
 
 ### Fixed

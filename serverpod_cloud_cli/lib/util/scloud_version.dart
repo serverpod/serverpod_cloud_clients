@@ -2,7 +2,7 @@ import 'package:pub_semver/pub_semver.dart';
 
 // Constant with the current version of the Serverpod Cloud CLI.
 // This should be updated when a new version is released.
-const String _cliVersionString = '0.19.1';
+const String _cliVersionString = '0.20.0';
 
 Version? _cliVersion;
 
