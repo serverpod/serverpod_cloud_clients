@@ -238,6 +238,28 @@ commands:
           -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
           --name=!: "The name of the secret. Can be passed as the first argument."
 
+  - name: password
+
+    commands:
+      - name: list
+        flags:
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
+
+      - name: set
+        flags:
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
+          --name=!: "The name of the password (without SERVERPOD_PASSWORD_ prefix). Can be passed as the first argument."
+          --value=: "The value of the password. Can be passed as the second argument."
+          --from-file=: "The name of the file with the password value."
+        completion:
+          flag:
+            from-file: ["$files"]
+
+      - name: unset
+        flags:
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
+          --name=!: "The name of the password (without SERVERPOD_PASSWORD_ prefix). Can be passed as the first argument."
+
   - name: db
 
     commands:
