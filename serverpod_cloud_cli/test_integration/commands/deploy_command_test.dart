@@ -128,6 +128,40 @@ void main() {
       },
     );
 
+    group('and invalid output option value when running deploy command', () {
+      late Future cliCommandFuture;
+      setUp(() async {
+        await ProjectFactory.serverpodServerDir().create();
+        final testProjectDir = p.join(
+          d.sandbox,
+          ProjectFactory.defaultDirectoryName,
+        );
+
+        cliCommandFuture = cli.run([
+          'deploy',
+          '--output',
+          'deployment.txt',
+          '--project',
+          '123',
+          '--project-dir',
+          testProjectDir,
+        ]);
+      });
+
+      test('then ErrorExitException is thrown.', () async {
+        await expectLater(cliCommandFuture, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then error message is logged', () async {
+        await cliCommandFuture.catchError((final _) {});
+        expect(logger.errorCalls, isNotEmpty);
+        expect(
+          logger.errorCalls.first.message,
+          contains('The --output path must end with .zip'),
+        );
+      });
+    });
+
     group(
       'and current directory is not Serverpod server directory when running deploy command',
       () {
@@ -512,6 +546,36 @@ dependencies:
             logger.progressCalls.last.message,
             'Dry run, skipping upload.',
           );
+        });
+      });
+
+      group('when deploying through CLI with --output and --dry-run', () {
+        late Future cliCommandFuture;
+        late String outputZipPath;
+        setUp(() async {
+          outputZipPath = p.join(d.sandbox, 'deployment.zip');
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--dry-run',
+            '--output',
+            outputZipPath,
+            '--project',
+            BucketUploadDescription.projectId,
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        test('then command completes successfully.', () async {
+          await expectLater(cliCommandFuture, completes);
+        });
+
+        test('then zip file is created at output path.', () async {
+          await cliCommandFuture;
+
+          final outputFile = File(outputZipPath);
+          expect(outputFile.existsSync(), isTrue);
+          expect(outputFile.lengthSync(), greaterThan(0));
         });
       });
 

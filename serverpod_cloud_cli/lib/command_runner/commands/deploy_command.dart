@@ -4,6 +4,7 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/commands/deploy/deploy.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
 import 'categories.dart';
 
@@ -33,6 +34,14 @@ enum DeployCommandOption<V> implements OptionDefinition<V> {
       helpText: 'Display the file tree that will be uploaded.',
       defaultsTo: false,
       negatable: false,
+    ),
+  ),
+  output(
+    StringOption(
+      argName: 'output',
+      argAbbrev: 'o',
+      helpText:
+          'Save the deployment zip file to the specified path. Must end with .zip',
     ),
   );
 
@@ -70,6 +79,14 @@ Examples
   
     \$ scloud deploy --dry-run --show-files
 
+  Save the deployment zip file locally
+
+    \$ scloud deploy --output deployment.zip --dry-run
+
+  Save the deployment zip and still upload it (unless --dry-run is set)
+
+    \$ scloud deploy --output deployment.zip
+
 ''';
 
   CloudDeployCommand({required super.logger})
@@ -83,6 +100,11 @@ Examples
     final concurrency = commandConfig.value(DeployCommandOption.concurrency);
     final dryRun = commandConfig.value(DeployCommandOption.dryRun);
     final showFiles = commandConfig.value(DeployCommandOption.showFiles);
+    final outputPath = commandConfig.optionalValue(DeployCommandOption.output);
+
+    if (outputPath != null && !outputPath.endsWith('.zip')) {
+      throw FailureException(errors: ['The --output path must end with .zip']);
+    }
 
     final projectDirectory = runner.verifiedProjectDirectory();
     logger.debug('Using project directory `${projectDirectory.path}`');
@@ -103,6 +125,7 @@ Examples
       concurrency: concurrency,
       dryRun: dryRun,
       showFiles: showFiles,
+      outputPath: outputPath,
     );
   }
 }

@@ -25,6 +25,7 @@ abstract class Deploy {
     required final int concurrency,
     required final bool dryRun,
     required final bool showFiles,
+    final String? outputPath,
   }) async {
     logger.init('Deploying Serverpod Cloud project "$projectId".');
 
@@ -129,6 +130,22 @@ abstract class Deploy {
     );
 
     if (!isZipped) throw ErrorExitException('Failed to zip project.');
+
+    if (outputPath != null) {
+      await logger.progress('Writing zip file to $outputPath...', () async {
+        try {
+          final file = File(outputPath);
+          await file.writeAsBytes(projectZip);
+          return true;
+        } on Exception catch (e, stackTrace) {
+          throw FailureException.nested(
+            e,
+            stackTrace,
+            'Failed to write zip file to $outputPath',
+          );
+        }
+      });
+    }
 
     if (dryRun) {
       await logger.progress('Dry run, skipping upload.', () async {
