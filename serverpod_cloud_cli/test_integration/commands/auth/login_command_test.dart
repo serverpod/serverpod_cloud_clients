@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
@@ -12,6 +11,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/test_command_logger.dart';
+import '../../../test_utils/wait_for_callback_info.dart';
 
 void main() {
   final logger = TestCommandLogger();
@@ -95,28 +95,13 @@ void main() {
     late Completer tokenSent;
     setUp(() async {
       tokenSent = Completer();
-      final loggerFuture = logger.waitForLog();
-      unawaited(
-        loggerFuture.then((final _) async {
-          assert(logger.infoCalls.isNotEmpty, 'Expected log info messages.');
-          final loggedMessage = logger.infoCalls.first.message;
-          final splitMessage = loggedMessage.split('callback=');
-          assert(
-            splitMessage.length == 2,
-            'Expected callback URL in log message.',
-          );
 
-          final callbackUrl = Uri.parse(Uri.decodeFull(splitMessage[1]));
-          final urlWithToken = callbackUrl.replace(
-            queryParameters: {'token': testToken},
-          );
-          final response = await http.get(urlWithToken);
-          assert(
-            response.statusCode == 200,
-            'Expected token response to have status code 200.',
-          );
-          tokenSent.complete();
-        }),
+      unawaited(
+        AuthCallbackHelper.completeAuthCallback(
+          logger: logger,
+          completer: tokenSent,
+          token: testToken,
+        ),
       );
     });
 
@@ -202,25 +187,12 @@ void main() {
     late Completer tokenSent;
     setUp(() async {
       tokenSent = Completer();
-      final loggerFuture = logger.waitForLog();
+
       unawaited(
-        loggerFuture.then((final _) async {
-          final loggedMessage = logger.infoCalls.first.message;
-          final splitMessage = loggedMessage.split('callback=');
-          assert(
-            splitMessage.length == 2,
-            'Expected callback URL in log message.',
-          );
-
-          final callbackUrl = Uri.parse(Uri.decodeFull(splitMessage[1]));
-          final response = await http.get(callbackUrl);
-          assert(
-            response.statusCode == 200,
-            'Expected token response to have status code 200.',
-          );
-
-          tokenSent.complete();
-        }),
+        AuthCallbackHelper.completeAuthCallback(
+          logger: logger,
+          completer: tokenSent,
+        ),
       );
     });
 

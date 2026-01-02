@@ -5,7 +5,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:config/config.dart';
-import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:uuid/uuid.dart';
@@ -17,6 +16,7 @@ import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_au
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 
 import '../../test_utils/test_command_logger.dart';
+import '../../test_utils/wait_for_callback_info.dart';
 
 class CommandThatRequiresLogin extends CloudCliCommand {
   @override
@@ -95,28 +95,13 @@ void main() {
       const testToken = 'myTestToken';
       late Completer tokenSent;
       tokenSent = Completer();
-      final loggerFuture = logger.waitForLog();
-      unawaited(
-        loggerFuture.then((final _) async {
-          assert(logger.infoCalls.isNotEmpty, 'Expected log info messages.');
-          final loggedMessage = logger.infoCalls.first.message;
-          final splitMessage = loggedMessage.split('callback=');
-          assert(
-            splitMessage.length == 2,
-            'Expected callback URL in log message.',
-          );
 
-          final callbackUrl = Uri.parse(Uri.decodeFull(splitMessage[1]));
-          final urlWithToken = callbackUrl.replace(
-            queryParameters: {'token': testToken},
-          );
-          final response = await http.get(urlWithToken);
-          assert(
-            response.statusCode == 200,
-            'Expected token response to have status code 200.',
-          );
-          tokenSent.complete();
-        }),
+      unawaited(
+        AuthCallbackHelper.completeAuthCallback(
+          logger: logger,
+          completer: tokenSent,
+          token: testToken,
+        ),
       );
 
       final cliOnDone = runner.run([
