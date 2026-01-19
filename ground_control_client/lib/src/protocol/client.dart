@@ -106,6 +106,9 @@ class EndpointAdminProcurement extends _i1.EndpointRef {
     {'userEmail': userEmail},
   );
 
+  @Deprecated(
+    'This endpoint to migrate to hackathon plan is no longer supported.',
+  )
   _i2.Future<void> moveToHackathonPlan({required String userEmail}) =>
       caller.callServerEndpoint<void>(
         'adminProcurement',
@@ -658,6 +661,14 @@ class EndpointPlans extends _i1.EndpointRef {
         'planProductName': planProductName,
         'planName': planName,
       });
+
+  /// Cancels the primary plan subscription of the user.
+  ///
+  /// - Throws [ProcurementCancellationException] if the cancellation fails,
+  /// e.g. if the subscription still has active resources.
+  /// - Throws [NoSubscriptionException] if the user has no subscription.
+  _i2.Future<void> cancelPlan() =>
+      caller.callServerEndpoint<void>('plans', 'cancelPlan', {});
 
   /// Fetches the names of the procured subscription plans.
   _i2.Future<List<String>> listProcuredPlanNames() => caller

@@ -14,7 +14,6 @@ class AdminProductCommand extends CloudCliCommand {
   AdminProductCommand({required super.logger}) {
     addSubcommand(AdminListProcuredCommand(logger: logger));
     addSubcommand(AdminProcurePlanCommand(logger: logger));
-    addSubcommand(AdminMoveToHackathonCommand(logger: logger));
   }
 }
 
@@ -134,40 +133,6 @@ class AdminProcurePlanCommand extends CloudCliCommand<AdminProcurePlanOption> {
       planVersion: ver,
       trialPeriodOverride: trialPeriod,
       overrideChecks: override,
-    );
-  }
-}
-
-enum AdminMoveToHackathonOption<V> implements OptionDefinition<V> {
-  user(UserEmailOption(argPos: 0, mandatory: true));
-
-  const AdminMoveToHackathonOption(this.option);
-
-  @override
-  final ConfigOptionBase<V> option;
-}
-
-class AdminMoveToHackathonCommand
-    extends CloudCliCommand<AdminMoveToHackathonOption> {
-  @override
-  final name = 'move-to-hackathon';
-
-  @override
-  final description = 'Moves a user to the 2025 Serverpod Hackathon plan.';
-
-  AdminMoveToHackathonCommand({required super.logger})
-    : super(options: AdminMoveToHackathonOption.values);
-
-  @override
-  Future<void> runWithConfig(
-    final Configuration<AdminMoveToHackathonOption> commandConfig,
-  ) async {
-    final userEmail = commandConfig.value(AdminMoveToHackathonOption.user);
-
-    await ProductAdminCommands.moveToHackathonPlan(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      userEmail: userEmail,
     );
   }
 }

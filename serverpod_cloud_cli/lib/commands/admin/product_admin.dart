@@ -40,19 +40,4 @@ abstract class ProductAdminCommands {
       newParagraph: true,
     );
   }
-
-  static Future<void> moveToHackathonPlan(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String userEmail,
-  }) async {
-    await cloudApiClient.adminProcurement.moveToHackathonPlan(
-      userEmail: userEmail,
-    );
-
-    logger.success(
-      'The user has been moved to the 2025 Serverpod Hackathon plan.',
-      newParagraph: true,
-    );
-  }
 }
