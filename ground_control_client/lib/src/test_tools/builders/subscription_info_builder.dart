@@ -4,6 +4,8 @@ class SubscriptionInfoBuilder {
   DateTime _createdAt;
   DateTime _startDate;
   DateTime? _trialEndDate;
+  DateTime? _endDate;
+  bool _cancelled;
   String _subscriptionId;
   String _planProductId;
   String _planDisplayName;
@@ -14,6 +16,8 @@ class SubscriptionInfoBuilder {
     : _createdAt = DateTime.now(),
       _startDate = DateTime.now(),
       _trialEndDate = DateTime.now().add(Duration(days: 7)),
+      _endDate = null,
+      _cancelled = false,
       _subscriptionId = 'test-subscription-id',
       _planProductId = 'early-access:0',
       _planDisplayName = 'Early Access',
@@ -32,6 +36,16 @@ class SubscriptionInfoBuilder {
 
   SubscriptionInfoBuilder withTrialEndDate(final DateTime? trialEndDate) {
     _trialEndDate = trialEndDate;
+    return this;
+  }
+
+  SubscriptionInfoBuilder withEndDate(final DateTime? endDate) {
+    _endDate = endDate;
+    return this;
+  }
+
+  SubscriptionInfoBuilder withCancelled(final bool cancelled) {
+    _cancelled = cancelled;
     return this;
   }
 
@@ -66,6 +80,8 @@ class SubscriptionInfoBuilder {
       createdAt: _createdAt,
       startDate: _startDate,
       trialEndDate: _trialEndDate,
+      endDate: _endDate,
+      cancelled: _cancelled,
       subscriptionId: _subscriptionId,
       planProductId: _planProductId,
       planName: _planDisplayName,

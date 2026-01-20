@@ -19,6 +19,8 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
     required this.createdAt,
     required this.startDate,
     this.trialEndDate,
+    this.endDate,
+    required this.cancelled,
     required this.subscriptionId,
     required this.planProductId,
     required this.planName,
@@ -31,6 +33,8 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
     required DateTime createdAt,
     required DateTime startDate,
     DateTime? trialEndDate,
+    DateTime? endDate,
+    required bool cancelled,
     required String subscriptionId,
     required String planProductId,
     required String planName,
@@ -52,6 +56,10 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
           : _i1.DateTimeJsonExtension.fromJson(
               jsonSerialization['trialEndDate'],
             ),
+      endDate: jsonSerialization['endDate'] == null
+          ? null
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['endDate']),
+      cancelled: jsonSerialization['cancelled'] as bool,
       subscriptionId: jsonSerialization['subscriptionId'] as String,
       planProductId: jsonSerialization['planProductId'] as String,
       planName: jsonSerialization['planName'] as String,
@@ -69,6 +77,12 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
 
   /// Trial end date, if currently ongoing.
   DateTime? trialEndDate;
+
+  /// The date the subscription ended / will end, if cancelled or otherwise terminated.
+  DateTime? endDate;
+
+  /// Whether this subscription has been cancelled.
+  bool cancelled;
 
   /// The id of the subscription.
   String subscriptionId;
@@ -95,6 +109,8 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
     DateTime? createdAt,
     DateTime? startDate,
     DateTime? trialEndDate,
+    DateTime? endDate,
+    bool? cancelled,
     String? subscriptionId,
     String? planProductId,
     String? planName,
@@ -109,6 +125,8 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
       'createdAt': createdAt.toJson(),
       'startDate': startDate.toJson(),
       if (trialEndDate != null) 'trialEndDate': trialEndDate?.toJson(),
+      if (endDate != null) 'endDate': endDate?.toJson(),
+      'cancelled': cancelled,
       'subscriptionId': subscriptionId,
       'planProductId': planProductId,
       'planName': planName,
@@ -131,6 +149,8 @@ class _SubscriptionInfoImpl extends SubscriptionInfo {
     required DateTime createdAt,
     required DateTime startDate,
     DateTime? trialEndDate,
+    DateTime? endDate,
+    required bool cancelled,
     required String subscriptionId,
     required String planProductId,
     required String planName,
@@ -141,6 +161,8 @@ class _SubscriptionInfoImpl extends SubscriptionInfo {
          createdAt: createdAt,
          startDate: startDate,
          trialEndDate: trialEndDate,
+         endDate: endDate,
+         cancelled: cancelled,
          subscriptionId: subscriptionId,
          planProductId: planProductId,
          planName: planName,
@@ -157,6 +179,8 @@ class _SubscriptionInfoImpl extends SubscriptionInfo {
     DateTime? createdAt,
     DateTime? startDate,
     Object? trialEndDate = _Undefined,
+    Object? endDate = _Undefined,
+    bool? cancelled,
     String? subscriptionId,
     String? planProductId,
     String? planName,
@@ -170,6 +194,8 @@ class _SubscriptionInfoImpl extends SubscriptionInfo {
       trialEndDate: trialEndDate is DateTime?
           ? trialEndDate
           : this.trialEndDate,
+      endDate: endDate is DateTime? ? endDate : this.endDate,
+      cancelled: cancelled ?? this.cancelled,
       subscriptionId: subscriptionId ?? this.subscriptionId,
       planProductId: planProductId ?? this.planProductId,
       planName: planName ?? this.planName,
