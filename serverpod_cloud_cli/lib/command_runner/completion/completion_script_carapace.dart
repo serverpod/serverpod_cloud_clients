@@ -114,6 +114,7 @@ commands:
       -c, --concurrency=: "Number of concurrent files processed when zipping the project."
       --dry-run: "Do not actually deploy, just print the deployment steps."
       --show-files: "Display the file tree that will be uploaded."
+      -o, --output=: "Save the deployment zip file to the specified path. Must end with .zip"
 
   - name: variable
 

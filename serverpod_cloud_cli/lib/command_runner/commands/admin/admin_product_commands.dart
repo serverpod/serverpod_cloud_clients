@@ -14,6 +14,7 @@ class AdminProductCommand extends CloudCliCommand {
   AdminProductCommand({required super.logger}) {
     addSubcommand(AdminListProcuredCommand(logger: logger));
     addSubcommand(AdminProcurePlanCommand(logger: logger));
+    addSubcommand(AdminCancelPlanCommand(logger: logger));
   }
 }
 
@@ -133,6 +134,51 @@ class AdminProcurePlanCommand extends CloudCliCommand<AdminProcurePlanOption> {
       planVersion: ver,
       trialPeriodOverride: trialPeriod,
       overrideChecks: override,
+    );
+  }
+}
+
+enum AdminCancelPlanOption<V> implements OptionDefinition<V> {
+  user(UserEmailOption(argPos: 0, mandatory: true)),
+  terminateImmediately(
+    FlagOption(
+      argName: 'immediately',
+      helpText: 'Terminate the subscription immediately.',
+      negatable: false,
+      defaultsTo: false,
+    ),
+  );
+
+  const AdminCancelPlanOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class AdminCancelPlanCommand extends CloudCliCommand<AdminCancelPlanOption> {
+  @override
+  final name = 'cancel-plan';
+
+  @override
+  final description = "Cancels a user's subscription.\n";
+
+  AdminCancelPlanCommand({required super.logger})
+    : super(options: AdminCancelPlanOption.values);
+
+  @override
+  Future<void> runWithConfig(
+    final Configuration<AdminCancelPlanOption> commandConfig,
+  ) async {
+    final userEmail = commandConfig.value(AdminCancelPlanOption.user);
+    final terminateImmediately = commandConfig.value(
+      AdminCancelPlanOption.terminateImmediately,
+    );
+
+    await ProductAdminCommands.cancelPlan(
+      runner.serviceProvider.cloudApiClient,
+      logger: logger,
+      userEmail: userEmail,
+      terminateImmediately: terminateImmediately,
     );
   }
 }

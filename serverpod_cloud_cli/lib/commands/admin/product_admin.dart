@@ -40,4 +40,18 @@ abstract class ProductAdminCommands {
       newParagraph: true,
     );
   }
+
+  static Future<void> cancelPlan(
+    final Client cloudApiClient, {
+    required final CommandLogger logger,
+    required final String userEmail,
+    final bool? terminateImmediately,
+  }) async {
+    await cloudApiClient.adminProcurement.cancelPlan(
+      userEmail: userEmail,
+      terminateImmediately: terminateImmediately,
+    );
+
+    logger.success("The user's plan has been cancelled.", newParagraph: true);
+  }
 }

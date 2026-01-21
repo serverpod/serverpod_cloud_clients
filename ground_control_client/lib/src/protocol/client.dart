@@ -106,6 +106,24 @@ class EndpointAdminProcurement extends _i1.EndpointRef {
     {'userEmail': userEmail},
   );
 
+  /// Cancels the primary plan subscription of the user
+  /// at the end of its current term.
+  ///
+  /// If [terminateImmediately] is true, the subscription is terminated
+  /// immediately. If the user still has any active resource products,
+  /// a [ProcurementCancellationException] will be thrown.
+  ///
+  /// Throws a [NoSubscriptionException] if the user has no subscription.
+  /// Throws a [ProcurementCancellationException] if the subscription has
+  /// already been cancelled or ended.
+  _i2.Future<void> cancelPlan({
+    required String userEmail,
+    bool? terminateImmediately,
+  }) => caller.callServerEndpoint<void>('adminProcurement', 'cancelPlan', {
+    'userEmail': userEmail,
+    'terminateImmediately': terminateImmediately,
+  });
+
   @Deprecated(
     'This endpoint to migrate to hackathon plan is no longer supported.',
   )
@@ -665,7 +683,7 @@ class EndpointPlans extends _i1.EndpointRef {
   /// Cancels the primary plan subscription of the user.
   ///
   /// - Throws [ProcurementCancellationException] if the cancellation fails,
-  /// e.g. if the subscription still has active resources.
+  /// e.g. if the subscription still has active resources or is already cancelled.
   /// - Throws [NoSubscriptionException] if the user has no subscription.
   _i2.Future<void> cancelPlan() =>
       caller.callServerEndpoint<void>('plans', 'cancelPlan', {});
