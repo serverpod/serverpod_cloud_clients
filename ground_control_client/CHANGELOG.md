@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.21.0] - 2026-01-26
+
+### Added
+
+- **Subscription cancellation** - Ground Control now supports cancelling user subscriptions via a new `plans.cancelPlan` endpoint.
+- **Admin subscription cancellation** - Admins can now cancel user subscriptions via API and CLI.
+
+### Changed
+
+- **Subscription end date** - Subscriptions now include an end date.
+- **Billing error handling** - Improved billing error handling and a new `invalid-subscription` error is reported when cancelling already-ended or already-cancelled subscriptions.
+
+### Removed
+
+- **Hackathon plan migration flow** - Removed the Hackathon plan migration flow and deprecated the migration endpoint, which now returns denied.
+
 ## [0.20.0] - 2025-12-30
 
 ### Added
