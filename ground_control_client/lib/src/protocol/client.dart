@@ -360,15 +360,6 @@ class EndpointBilling extends _i1.EndpointRef {
   _i2.Future<_i11.Owner> readOwner() =>
       caller.callServerEndpoint<_i11.Owner>('billing', 'readOwner', {});
 
-  @Deprecated('Use updateOwnerBilling instead')
-  _i2.Future<_i11.Owner> updateOwner({
-    required List<String> billingEmails,
-    required _i12.BillingInfo billingInfo,
-  }) => caller.callServerEndpoint<_i11.Owner>('billing', 'updateOwner', {
-    'billingEmails': billingEmails,
-    'billingInfo': billingInfo,
-  });
-
   /// Updates the owner's billing information.
   ///
   /// This endpoint updates the owner's billing information, including the
