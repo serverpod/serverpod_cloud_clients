@@ -55,49 +55,50 @@ import 'features/custom_domains/models/view_models/custom_domain_name_with_defau
 import 'features/databases/models/database_connection.dart' as _i40;
 import 'features/databases/models/database_provider.dart' as _i41;
 import 'features/databases/models/database_resource.dart' as _i42;
-import 'features/projects/models/address.dart' as _i43;
-import 'features/projects/models/project.dart' as _i44;
-import 'features/projects/models/project_config.dart' as _i45;
-import 'features/projects/models/project_delete_call_event.dart' as _i46;
-import 'features/projects/models/project_info/project_info.dart' as _i47;
-import 'features/projects/models/project_info/timestamp.dart' as _i48;
-import 'features/projects/models/role.dart' as _i49;
-import 'features/projects/models/user_role_membership.dart' as _i50;
-import 'shared/exceptions/models/duplicate_entry_exception.dart' as _i51;
-import 'shared/exceptions/models/invalid_value_exception.dart' as _i52;
-import 'shared/exceptions/models/no_subscription_exception.dart' as _i53;
-import 'shared/exceptions/models/not_found_exception.dart' as _i54;
+import 'features/insights/models/insights_connection_detail.dart' as _i43;
+import 'features/projects/models/address.dart' as _i44;
+import 'features/projects/models/project.dart' as _i45;
+import 'features/projects/models/project_config.dart' as _i46;
+import 'features/projects/models/project_delete_call_event.dart' as _i47;
+import 'features/projects/models/project_info/project_info.dart' as _i48;
+import 'features/projects/models/project_info/timestamp.dart' as _i49;
+import 'features/projects/models/role.dart' as _i50;
+import 'features/projects/models/user_role_membership.dart' as _i51;
+import 'shared/exceptions/models/duplicate_entry_exception.dart' as _i52;
+import 'shared/exceptions/models/invalid_value_exception.dart' as _i53;
+import 'shared/exceptions/models/no_subscription_exception.dart' as _i54;
+import 'shared/exceptions/models/not_found_exception.dart' as _i55;
 import 'shared/exceptions/models/procurement_cancellation_exception.dart'
-    as _i55;
-import 'shared/exceptions/models/procurement_denied_exception.dart' as _i56;
-import 'shared/exceptions/models/unauthenticated_exception.dart' as _i57;
-import 'shared/exceptions/models/unauthorized_exception.dart' as _i58;
-import 'shared/models/serverpod_region.dart' as _i59;
-import 'shared/services/pubsub/registry/pubsub_entry.dart' as _i60;
+    as _i56;
+import 'shared/exceptions/models/procurement_denied_exception.dart' as _i57;
+import 'shared/exceptions/models/unauthenticated_exception.dart' as _i58;
+import 'shared/exceptions/models/unauthorized_exception.dart' as _i59;
+import 'shared/models/serverpod_region.dart' as _i60;
+import 'shared/services/pubsub/registry/pubsub_entry.dart' as _i61;
 import 'package:ground_control_client/src/protocol/features/projects/models/project.dart'
-    as _i61;
-import 'package:ground_control_client/src/protocol/features/projects/models/project_info/project_info.dart'
     as _i62;
-import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt.dart'
+import 'package:ground_control_client/src/protocol/features/projects/models/project_info/project_info.dart'
     as _i63;
-import 'package:ground_control_client/src/protocol/domains/users/models/user.dart'
+import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt.dart'
     as _i64;
-import 'package:ground_control_client/src/protocol/features/auth/models/required_terms.dart'
+import 'package:ground_control_client/src/protocol/domains/users/models/user.dart'
     as _i65;
-import 'package:ground_control_client/src/protocol/features/auth/models/accepted_terms_dto.dart'
+import 'package:ground_control_client/src/protocol/features/auth/models/required_terms.dart'
     as _i66;
-import 'package:ground_control_client/src/protocol/domains/billing/models/payment_method.dart'
+import 'package:ground_control_client/src/protocol/features/auth/models/accepted_terms_dto.dart'
     as _i67;
-import 'package:ground_control_client/src/protocol/domains/environment_variables/models/variable.dart'
+import 'package:ground_control_client/src/protocol/domains/billing/models/payment_method.dart'
     as _i68;
-import 'package:ground_control_client/src/protocol/features/projects/models/role.dart'
+import 'package:ground_control_client/src/protocol/domains/environment_variables/models/variable.dart'
     as _i69;
-import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
+import 'package:ground_control_client/src/protocol/features/projects/models/role.dart'
     as _i70;
-import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
+import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
     as _i71;
-import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
+import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
     as _i72;
+import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
+    as _i73;
 export 'domains/billing/models/billing_customer_type.dart';
 export 'domains/billing/models/billing_info.dart';
 export 'domains/billing/models/billing_mapping_type.dart';
@@ -139,6 +140,7 @@ export 'features/custom_domains/models/view_models/custom_domain_name_with_defau
 export 'features/databases/models/database_connection.dart';
 export 'features/databases/models/database_provider.dart';
 export 'features/databases/models/database_resource.dart';
+export 'features/insights/models/insights_connection_detail.dart';
 export 'features/projects/models/address.dart';
 export 'features/projects/models/project.dart';
 export 'features/projects/models/project_config.dart';
@@ -313,59 +315,62 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i42.DatabaseResource) {
       return _i42.DatabaseResource.fromJson(data) as T;
     }
-    if (t == _i43.Address) {
-      return _i43.Address.fromJson(data) as T;
+    if (t == _i43.InsightsConnectionDetail) {
+      return _i43.InsightsConnectionDetail.fromJson(data) as T;
     }
-    if (t == _i44.Project) {
-      return _i44.Project.fromJson(data) as T;
+    if (t == _i44.Address) {
+      return _i44.Address.fromJson(data) as T;
     }
-    if (t == _i45.ProjectConfig) {
-      return _i45.ProjectConfig.fromJson(data) as T;
+    if (t == _i45.Project) {
+      return _i45.Project.fromJson(data) as T;
     }
-    if (t == _i46.ProjectDeleteCallEvent) {
-      return _i46.ProjectDeleteCallEvent.fromJson(data) as T;
+    if (t == _i46.ProjectConfig) {
+      return _i46.ProjectConfig.fromJson(data) as T;
     }
-    if (t == _i47.ProjectInfo) {
-      return _i47.ProjectInfo.fromJson(data) as T;
+    if (t == _i47.ProjectDeleteCallEvent) {
+      return _i47.ProjectDeleteCallEvent.fromJson(data) as T;
     }
-    if (t == _i48.Timestamp) {
-      return _i48.Timestamp.fromJson(data) as T;
+    if (t == _i48.ProjectInfo) {
+      return _i48.ProjectInfo.fromJson(data) as T;
     }
-    if (t == _i49.Role) {
-      return _i49.Role.fromJson(data) as T;
+    if (t == _i49.Timestamp) {
+      return _i49.Timestamp.fromJson(data) as T;
     }
-    if (t == _i50.UserRoleMembership) {
-      return _i50.UserRoleMembership.fromJson(data) as T;
+    if (t == _i50.Role) {
+      return _i50.Role.fromJson(data) as T;
     }
-    if (t == _i51.DuplicateEntryException) {
-      return _i51.DuplicateEntryException.fromJson(data) as T;
+    if (t == _i51.UserRoleMembership) {
+      return _i51.UserRoleMembership.fromJson(data) as T;
     }
-    if (t == _i52.InvalidValueException) {
-      return _i52.InvalidValueException.fromJson(data) as T;
+    if (t == _i52.DuplicateEntryException) {
+      return _i52.DuplicateEntryException.fromJson(data) as T;
     }
-    if (t == _i53.NoSubscriptionException) {
-      return _i53.NoSubscriptionException.fromJson(data) as T;
+    if (t == _i53.InvalidValueException) {
+      return _i53.InvalidValueException.fromJson(data) as T;
     }
-    if (t == _i54.NotFoundException) {
-      return _i54.NotFoundException.fromJson(data) as T;
+    if (t == _i54.NoSubscriptionException) {
+      return _i54.NoSubscriptionException.fromJson(data) as T;
     }
-    if (t == _i55.ProcurementCancellationException) {
-      return _i55.ProcurementCancellationException.fromJson(data) as T;
+    if (t == _i55.NotFoundException) {
+      return _i55.NotFoundException.fromJson(data) as T;
     }
-    if (t == _i56.ProcurementDeniedException) {
-      return _i56.ProcurementDeniedException.fromJson(data) as T;
+    if (t == _i56.ProcurementCancellationException) {
+      return _i56.ProcurementCancellationException.fromJson(data) as T;
     }
-    if (t == _i57.UnauthenticatedException) {
-      return _i57.UnauthenticatedException.fromJson(data) as T;
+    if (t == _i57.ProcurementDeniedException) {
+      return _i57.ProcurementDeniedException.fromJson(data) as T;
     }
-    if (t == _i58.UnauthorizedException) {
-      return _i58.UnauthorizedException.fromJson(data) as T;
+    if (t == _i58.UnauthenticatedException) {
+      return _i58.UnauthenticatedException.fromJson(data) as T;
     }
-    if (t == _i59.ServerpodRegion) {
-      return _i59.ServerpodRegion.fromJson(data) as T;
+    if (t == _i59.UnauthorizedException) {
+      return _i59.UnauthorizedException.fromJson(data) as T;
     }
-    if (t == _i60.PubsubEntry) {
-      return _i60.PubsubEntry.fromJson(data) as T;
+    if (t == _i60.ServerpodRegion) {
+      return _i60.ServerpodRegion.fromJson(data) as T;
+    }
+    if (t == _i61.PubsubEntry) {
+      return _i61.PubsubEntry.fromJson(data) as T;
     }
     if (t == _i1.getType<_i2.BillingCustomerType?>()) {
       return (data != null ? _i2.BillingCustomerType.fromJson(data) : null)
@@ -509,85 +514,91 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i1.getType<_i42.DatabaseResource?>()) {
       return (data != null ? _i42.DatabaseResource.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i43.Address?>()) {
-      return (data != null ? _i43.Address.fromJson(data) : null) as T;
-    }
-    if (t == _i1.getType<_i44.Project?>()) {
-      return (data != null ? _i44.Project.fromJson(data) : null) as T;
-    }
-    if (t == _i1.getType<_i45.ProjectConfig?>()) {
-      return (data != null ? _i45.ProjectConfig.fromJson(data) : null) as T;
-    }
-    if (t == _i1.getType<_i46.ProjectDeleteCallEvent?>()) {
-      return (data != null ? _i46.ProjectDeleteCallEvent.fromJson(data) : null)
-          as T;
-    }
-    if (t == _i1.getType<_i47.ProjectInfo?>()) {
-      return (data != null ? _i47.ProjectInfo.fromJson(data) : null) as T;
-    }
-    if (t == _i1.getType<_i48.Timestamp?>()) {
-      return (data != null ? _i48.Timestamp.fromJson(data) : null) as T;
-    }
-    if (t == _i1.getType<_i49.Role?>()) {
-      return (data != null ? _i49.Role.fromJson(data) : null) as T;
-    }
-    if (t == _i1.getType<_i50.UserRoleMembership?>()) {
-      return (data != null ? _i50.UserRoleMembership.fromJson(data) : null)
-          as T;
-    }
-    if (t == _i1.getType<_i51.DuplicateEntryException?>()) {
-      return (data != null ? _i51.DuplicateEntryException.fromJson(data) : null)
-          as T;
-    }
-    if (t == _i1.getType<_i52.InvalidValueException?>()) {
-      return (data != null ? _i52.InvalidValueException.fromJson(data) : null)
-          as T;
-    }
-    if (t == _i1.getType<_i53.NoSubscriptionException?>()) {
-      return (data != null ? _i53.NoSubscriptionException.fromJson(data) : null)
-          as T;
-    }
-    if (t == _i1.getType<_i54.NotFoundException?>()) {
-      return (data != null ? _i54.NotFoundException.fromJson(data) : null) as T;
-    }
-    if (t == _i1.getType<_i55.ProcurementCancellationException?>()) {
+    if (t == _i1.getType<_i43.InsightsConnectionDetail?>()) {
       return (data != null
-              ? _i55.ProcurementCancellationException.fromJson(data)
+              ? _i43.InsightsConnectionDetail.fromJson(data)
               : null)
           as T;
     }
-    if (t == _i1.getType<_i56.ProcurementDeniedException?>()) {
+    if (t == _i1.getType<_i44.Address?>()) {
+      return (data != null ? _i44.Address.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i45.Project?>()) {
+      return (data != null ? _i45.Project.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i46.ProjectConfig?>()) {
+      return (data != null ? _i46.ProjectConfig.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i47.ProjectDeleteCallEvent?>()) {
+      return (data != null ? _i47.ProjectDeleteCallEvent.fromJson(data) : null)
+          as T;
+    }
+    if (t == _i1.getType<_i48.ProjectInfo?>()) {
+      return (data != null ? _i48.ProjectInfo.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i49.Timestamp?>()) {
+      return (data != null ? _i49.Timestamp.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i50.Role?>()) {
+      return (data != null ? _i50.Role.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i51.UserRoleMembership?>()) {
+      return (data != null ? _i51.UserRoleMembership.fromJson(data) : null)
+          as T;
+    }
+    if (t == _i1.getType<_i52.DuplicateEntryException?>()) {
+      return (data != null ? _i52.DuplicateEntryException.fromJson(data) : null)
+          as T;
+    }
+    if (t == _i1.getType<_i53.InvalidValueException?>()) {
+      return (data != null ? _i53.InvalidValueException.fromJson(data) : null)
+          as T;
+    }
+    if (t == _i1.getType<_i54.NoSubscriptionException?>()) {
+      return (data != null ? _i54.NoSubscriptionException.fromJson(data) : null)
+          as T;
+    }
+    if (t == _i1.getType<_i55.NotFoundException?>()) {
+      return (data != null ? _i55.NotFoundException.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i56.ProcurementCancellationException?>()) {
       return (data != null
-              ? _i56.ProcurementDeniedException.fromJson(data)
+              ? _i56.ProcurementCancellationException.fromJson(data)
               : null)
           as T;
     }
-    if (t == _i1.getType<_i57.UnauthenticatedException?>()) {
+    if (t == _i1.getType<_i57.ProcurementDeniedException?>()) {
       return (data != null
-              ? _i57.UnauthenticatedException.fromJson(data)
+              ? _i57.ProcurementDeniedException.fromJson(data)
               : null)
           as T;
     }
-    if (t == _i1.getType<_i58.UnauthorizedException?>()) {
-      return (data != null ? _i58.UnauthorizedException.fromJson(data) : null)
+    if (t == _i1.getType<_i58.UnauthenticatedException?>()) {
+      return (data != null
+              ? _i58.UnauthenticatedException.fromJson(data)
+              : null)
           as T;
     }
-    if (t == _i1.getType<_i59.ServerpodRegion?>()) {
-      return (data != null ? _i59.ServerpodRegion.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i59.UnauthorizedException?>()) {
+      return (data != null ? _i59.UnauthorizedException.fromJson(data) : null)
+          as T;
     }
-    if (t == _i1.getType<_i60.PubsubEntry?>()) {
-      return (data != null ? _i60.PubsubEntry.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i60.ServerpodRegion?>()) {
+      return (data != null ? _i60.ServerpodRegion.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i61.PubsubEntry?>()) {
+      return (data != null ? _i61.PubsubEntry.fromJson(data) : null) as T;
     }
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
-    if (t == List<_i44.Project>) {
-      return (data as List).map((e) => deserialize<_i44.Project>(e)).toList()
+    if (t == List<_i45.Project>) {
+      return (data as List).map((e) => deserialize<_i45.Project>(e)).toList()
           as T;
     }
-    if (t == _i1.getType<List<_i44.Project>?>()) {
+    if (t == _i1.getType<List<_i45.Project>?>()) {
       return (data != null
-              ? (data as List).map((e) => deserialize<_i44.Project>(e)).toList()
+              ? (data as List).map((e) => deserialize<_i45.Project>(e)).toList()
               : null)
           as T;
     }
@@ -619,16 +630,16 @@ class Protocol extends _i1.SerializationManager {
               : null)
           as T;
     }
-    if (t == List<_i50.UserRoleMembership>) {
+    if (t == List<_i51.UserRoleMembership>) {
       return (data as List)
-              .map((e) => deserialize<_i50.UserRoleMembership>(e))
+              .map((e) => deserialize<_i51.UserRoleMembership>(e))
               .toList()
           as T;
     }
-    if (t == _i1.getType<List<_i50.UserRoleMembership>?>()) {
+    if (t == _i1.getType<List<_i51.UserRoleMembership>?>()) {
       return (data != null
               ? (data as List)
-                    .map((e) => deserialize<_i50.UserRoleMembership>(e))
+                    .map((e) => deserialize<_i51.UserRoleMembership>(e))
                     .toList()
               : null)
           as T;
@@ -658,12 +669,12 @@ class Protocol extends _i1.SerializationManager {
           )
           as T;
     }
-    if (t == List<_i49.Role>) {
-      return (data as List).map((e) => deserialize<_i49.Role>(e)).toList() as T;
+    if (t == List<_i50.Role>) {
+      return (data as List).map((e) => deserialize<_i50.Role>(e)).toList() as T;
     }
-    if (t == _i1.getType<List<_i49.Role>?>()) {
+    if (t == _i1.getType<List<_i50.Role>?>()) {
       return (data != null
-              ? (data as List).map((e) => deserialize<_i49.Role>(e)).toList()
+              ? (data as List).map((e) => deserialize<_i50.Role>(e)).toList()
               : null)
           as T;
     }
@@ -697,49 +708,49 @@ class Protocol extends _i1.SerializationManager {
           )
           as T;
     }
-    if (t == List<_i61.Project>) {
-      return (data as List).map((e) => deserialize<_i61.Project>(e)).toList()
+    if (t == List<_i62.Project>) {
+      return (data as List).map((e) => deserialize<_i62.Project>(e)).toList()
           as T;
     }
-    if (t == List<_i62.ProjectInfo>) {
+    if (t == List<_i63.ProjectInfo>) {
       return (data as List)
-              .map((e) => deserialize<_i62.ProjectInfo>(e))
+              .map((e) => deserialize<_i63.ProjectInfo>(e))
               .toList()
           as T;
     }
-    if (t == List<_i63.DeployAttempt>) {
+    if (t == List<_i64.DeployAttempt>) {
       return (data as List)
-              .map((e) => deserialize<_i63.DeployAttempt>(e))
+              .map((e) => deserialize<_i64.DeployAttempt>(e))
               .toList()
           as T;
     }
-    if (t == List<_i64.User>) {
-      return (data as List).map((e) => deserialize<_i64.User>(e)).toList() as T;
+    if (t == List<_i65.User>) {
+      return (data as List).map((e) => deserialize<_i65.User>(e)).toList() as T;
     }
-    if (t == List<_i65.RequiredTerms>) {
+    if (t == List<_i66.RequiredTerms>) {
       return (data as List)
-              .map((e) => deserialize<_i65.RequiredTerms>(e))
+              .map((e) => deserialize<_i66.RequiredTerms>(e))
               .toList()
           as T;
     }
-    if (t == List<_i66.AcceptedTermsDTO>) {
+    if (t == List<_i67.AcceptedTermsDTO>) {
       return (data as List)
-              .map((e) => deserialize<_i66.AcceptedTermsDTO>(e))
+              .map((e) => deserialize<_i67.AcceptedTermsDTO>(e))
               .toList()
           as T;
     }
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
-    if (t == List<_i67.PaymentMethod>) {
+    if (t == List<_i68.PaymentMethod>) {
       return (data as List)
-              .map((e) => deserialize<_i67.PaymentMethod>(e))
+              .map((e) => deserialize<_i68.PaymentMethod>(e))
               .toList()
           as T;
     }
-    if (t == List<_i68.EnvironmentVariable>) {
+    if (t == List<_i69.EnvironmentVariable>) {
       return (data as List)
-              .map((e) => deserialize<_i68.EnvironmentVariable>(e))
+              .map((e) => deserialize<_i69.EnvironmentVariable>(e))
               .toList()
           as T;
     }
@@ -749,8 +760,8 @@ class Protocol extends _i1.SerializationManager {
               : null)
           as T;
     }
-    if (t == List<_i69.Role>) {
-      return (data as List).map((e) => deserialize<_i69.Role>(e)).toList() as T;
+    if (t == List<_i70.Role>) {
+      return (data as List).map((e) => deserialize<_i70.Role>(e)).toList() as T;
     }
     if (t == Map<String, String>) {
       return (data as Map).map(
@@ -758,17 +769,17 @@ class Protocol extends _i1.SerializationManager {
           )
           as T;
     }
-    if (t == List<_i70.DeployAttemptStage>) {
+    if (t == List<_i71.DeployAttemptStage>) {
       return (data as List)
-              .map((e) => deserialize<_i70.DeployAttemptStage>(e))
+              .map((e) => deserialize<_i71.DeployAttemptStage>(e))
               .toList()
           as T;
     }
     try {
-      return _i71.Protocol().deserialize<T>(data, t);
+      return _i72.Protocol().deserialize<T>(data, t);
     } on _i1.DeserializationTypeNotFoundException catch (_) {}
     try {
-      return _i72.Protocol().deserialize<T>(data, t);
+      return _i73.Protocol().deserialize<T>(data, t);
     } on _i1.DeserializationTypeNotFoundException catch (_) {}
     return super.deserialize<T>(data, t);
   }
@@ -818,25 +829,26 @@ class Protocol extends _i1.SerializationManager {
       _i40.DatabaseConnection => 'DatabaseConnection',
       _i41.DatabaseProvider => 'DatabaseProvider',
       _i42.DatabaseResource => 'DatabaseResource',
-      _i43.Address => 'Address',
-      _i44.Project => 'Project',
-      _i45.ProjectConfig => 'ProjectConfig',
-      _i46.ProjectDeleteCallEvent => 'ProjectDeleteCallEvent',
-      _i47.ProjectInfo => 'ProjectInfo',
-      _i48.Timestamp => 'Timestamp',
-      _i49.Role => 'Role',
-      _i50.UserRoleMembership => 'UserRoleMembership',
-      _i51.DuplicateEntryException => 'DuplicateEntryException',
-      _i52.InvalidValueException => 'InvalidValueException',
-      _i53.NoSubscriptionException => 'NoSubscriptionException',
-      _i54.NotFoundException => 'NotFoundException',
-      _i55.ProcurementCancellationException =>
+      _i43.InsightsConnectionDetail => 'InsightsConnectionDetail',
+      _i44.Address => 'Address',
+      _i45.Project => 'Project',
+      _i46.ProjectConfig => 'ProjectConfig',
+      _i47.ProjectDeleteCallEvent => 'ProjectDeleteCallEvent',
+      _i48.ProjectInfo => 'ProjectInfo',
+      _i49.Timestamp => 'Timestamp',
+      _i50.Role => 'Role',
+      _i51.UserRoleMembership => 'UserRoleMembership',
+      _i52.DuplicateEntryException => 'DuplicateEntryException',
+      _i53.InvalidValueException => 'InvalidValueException',
+      _i54.NoSubscriptionException => 'NoSubscriptionException',
+      _i55.NotFoundException => 'NotFoundException',
+      _i56.ProcurementCancellationException =>
         'ProcurementCancellationException',
-      _i56.ProcurementDeniedException => 'ProcurementDeniedException',
-      _i57.UnauthenticatedException => 'UnauthenticatedException',
-      _i58.UnauthorizedException => 'UnauthorizedException',
-      _i59.ServerpodRegion => 'ServerpodRegion',
-      _i60.PubsubEntry => 'PubsubEntry',
+      _i57.ProcurementDeniedException => 'ProcurementDeniedException',
+      _i58.UnauthenticatedException => 'UnauthenticatedException',
+      _i59.UnauthorizedException => 'UnauthorizedException',
+      _i60.ServerpodRegion => 'ServerpodRegion',
+      _i61.PubsubEntry => 'PubsubEntry',
       _ => null,
     };
   }
@@ -936,48 +948,50 @@ class Protocol extends _i1.SerializationManager {
         return 'DatabaseProvider';
       case _i42.DatabaseResource():
         return 'DatabaseResource';
-      case _i43.Address():
+      case _i43.InsightsConnectionDetail():
+        return 'InsightsConnectionDetail';
+      case _i44.Address():
         return 'Address';
-      case _i44.Project():
+      case _i45.Project():
         return 'Project';
-      case _i45.ProjectConfig():
+      case _i46.ProjectConfig():
         return 'ProjectConfig';
-      case _i46.ProjectDeleteCallEvent():
+      case _i47.ProjectDeleteCallEvent():
         return 'ProjectDeleteCallEvent';
-      case _i47.ProjectInfo():
+      case _i48.ProjectInfo():
         return 'ProjectInfo';
-      case _i48.Timestamp():
+      case _i49.Timestamp():
         return 'Timestamp';
-      case _i49.Role():
+      case _i50.Role():
         return 'Role';
-      case _i50.UserRoleMembership():
+      case _i51.UserRoleMembership():
         return 'UserRoleMembership';
-      case _i51.DuplicateEntryException():
+      case _i52.DuplicateEntryException():
         return 'DuplicateEntryException';
-      case _i52.InvalidValueException():
+      case _i53.InvalidValueException():
         return 'InvalidValueException';
-      case _i53.NoSubscriptionException():
+      case _i54.NoSubscriptionException():
         return 'NoSubscriptionException';
-      case _i54.NotFoundException():
+      case _i55.NotFoundException():
         return 'NotFoundException';
-      case _i55.ProcurementCancellationException():
+      case _i56.ProcurementCancellationException():
         return 'ProcurementCancellationException';
-      case _i56.ProcurementDeniedException():
+      case _i57.ProcurementDeniedException():
         return 'ProcurementDeniedException';
-      case _i57.UnauthenticatedException():
+      case _i58.UnauthenticatedException():
         return 'UnauthenticatedException';
-      case _i58.UnauthorizedException():
+      case _i59.UnauthorizedException():
         return 'UnauthorizedException';
-      case _i59.ServerpodRegion():
+      case _i60.ServerpodRegion():
         return 'ServerpodRegion';
-      case _i60.PubsubEntry():
+      case _i61.PubsubEntry():
         return 'PubsubEntry';
     }
-    className = _i71.Protocol().getClassNameForObject(data);
+    className = _i72.Protocol().getClassNameForObject(data);
     if (className != null) {
       return 'serverpod_auth_idp.$className';
     }
-    className = _i72.Protocol().getClassNameForObject(data);
+    className = _i73.Protocol().getClassNameForObject(data);
     if (className != null) {
       return 'serverpod_auth_core.$className';
     }
@@ -1115,67 +1129,70 @@ class Protocol extends _i1.SerializationManager {
     if (dataClassName == 'DatabaseResource') {
       return deserialize<_i42.DatabaseResource>(data['data']);
     }
+    if (dataClassName == 'InsightsConnectionDetail') {
+      return deserialize<_i43.InsightsConnectionDetail>(data['data']);
+    }
     if (dataClassName == 'Address') {
-      return deserialize<_i43.Address>(data['data']);
+      return deserialize<_i44.Address>(data['data']);
     }
     if (dataClassName == 'Project') {
-      return deserialize<_i44.Project>(data['data']);
+      return deserialize<_i45.Project>(data['data']);
     }
     if (dataClassName == 'ProjectConfig') {
-      return deserialize<_i45.ProjectConfig>(data['data']);
+      return deserialize<_i46.ProjectConfig>(data['data']);
     }
     if (dataClassName == 'ProjectDeleteCallEvent') {
-      return deserialize<_i46.ProjectDeleteCallEvent>(data['data']);
+      return deserialize<_i47.ProjectDeleteCallEvent>(data['data']);
     }
     if (dataClassName == 'ProjectInfo') {
-      return deserialize<_i47.ProjectInfo>(data['data']);
+      return deserialize<_i48.ProjectInfo>(data['data']);
     }
     if (dataClassName == 'Timestamp') {
-      return deserialize<_i48.Timestamp>(data['data']);
+      return deserialize<_i49.Timestamp>(data['data']);
     }
     if (dataClassName == 'Role') {
-      return deserialize<_i49.Role>(data['data']);
+      return deserialize<_i50.Role>(data['data']);
     }
     if (dataClassName == 'UserRoleMembership') {
-      return deserialize<_i50.UserRoleMembership>(data['data']);
+      return deserialize<_i51.UserRoleMembership>(data['data']);
     }
     if (dataClassName == 'DuplicateEntryException') {
-      return deserialize<_i51.DuplicateEntryException>(data['data']);
+      return deserialize<_i52.DuplicateEntryException>(data['data']);
     }
     if (dataClassName == 'InvalidValueException') {
-      return deserialize<_i52.InvalidValueException>(data['data']);
+      return deserialize<_i53.InvalidValueException>(data['data']);
     }
     if (dataClassName == 'NoSubscriptionException') {
-      return deserialize<_i53.NoSubscriptionException>(data['data']);
+      return deserialize<_i54.NoSubscriptionException>(data['data']);
     }
     if (dataClassName == 'NotFoundException') {
-      return deserialize<_i54.NotFoundException>(data['data']);
+      return deserialize<_i55.NotFoundException>(data['data']);
     }
     if (dataClassName == 'ProcurementCancellationException') {
-      return deserialize<_i55.ProcurementCancellationException>(data['data']);
+      return deserialize<_i56.ProcurementCancellationException>(data['data']);
     }
     if (dataClassName == 'ProcurementDeniedException') {
-      return deserialize<_i56.ProcurementDeniedException>(data['data']);
+      return deserialize<_i57.ProcurementDeniedException>(data['data']);
     }
     if (dataClassName == 'UnauthenticatedException') {
-      return deserialize<_i57.UnauthenticatedException>(data['data']);
+      return deserialize<_i58.UnauthenticatedException>(data['data']);
     }
     if (dataClassName == 'UnauthorizedException') {
-      return deserialize<_i58.UnauthorizedException>(data['data']);
+      return deserialize<_i59.UnauthorizedException>(data['data']);
     }
     if (dataClassName == 'ServerpodRegion') {
-      return deserialize<_i59.ServerpodRegion>(data['data']);
+      return deserialize<_i60.ServerpodRegion>(data['data']);
     }
     if (dataClassName == 'PubsubEntry') {
-      return deserialize<_i60.PubsubEntry>(data['data']);
+      return deserialize<_i61.PubsubEntry>(data['data']);
     }
     if (dataClassName.startsWith('serverpod_auth_idp.')) {
       data['className'] = dataClassName.substring(19);
-      return _i71.Protocol().deserializeByClassName(data);
+      return _i72.Protocol().deserializeByClassName(data);
     }
     if (dataClassName.startsWith('serverpod_auth_core.')) {
       data['className'] = dataClassName.substring(20);
-      return _i72.Protocol().deserializeByClassName(data);
+      return _i73.Protocol().deserializeByClassName(data);
     }
     return super.deserializeByClassName(data);
   }

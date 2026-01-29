@@ -46,23 +46,25 @@ import 'package:ground_control_client/src/protocol/features/custom_domains/model
     as _i18;
 import 'package:ground_control_client/src/protocol/domains/environment_variables/models/variable.dart'
     as _i19;
-import 'package:ground_control_client/src/protocol/domains/logs/models/log_record.dart'
+import 'package:ground_control_client/src/protocol/features/insights/models/insights_connection_detail.dart'
     as _i20;
-import 'package:ground_control_client/src/protocol/domains/products/models/subscription_info.dart'
+import 'package:ground_control_client/src/protocol/domains/logs/models/log_record.dart'
     as _i21;
-import 'package:ground_control_client/src/protocol/domains/products/models/plan_info.dart'
+import 'package:ground_control_client/src/protocol/domains/products/models/subscription_info.dart'
     as _i22;
-import 'package:ground_control_client/src/protocol/features/databases/models/database_connection.dart'
+import 'package:ground_control_client/src/protocol/domains/products/models/plan_info.dart'
     as _i23;
-import 'package:ground_control_client/src/protocol/features/projects/models/project_config.dart'
+import 'package:ground_control_client/src/protocol/features/databases/models/database_connection.dart'
     as _i24;
-import 'package:ground_control_client/src/protocol/features/projects/models/role.dart'
+import 'package:ground_control_client/src/protocol/features/projects/models/project_config.dart'
     as _i25;
-import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
+import 'package:ground_control_client/src/protocol/features/projects/models/role.dart'
     as _i26;
-import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
+import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
     as _i27;
-import 'protocol.dart' as _i28;
+import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
+    as _i28;
+import 'protocol.dart' as _i29;
 
 /// Endpoint for global administrator to handle procurement for users.
 /// {@category Endpoint}
@@ -588,6 +590,28 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
   );
 }
 
+/// {@category Endpoint}
+class EndpointInsights extends _i1.EndpointRef {
+  EndpointInsights(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'insights';
+
+  /// Gets the connection details for the insights service.
+  ///
+  /// Requires project authorization with all scopes.
+  ///
+  /// Throws [UnauthorizedException] if the user is not authorized.
+  /// Throws [NotFoundException] if insights service secret is not found.
+  _i2.Future<_i20.InsightsConnectionDetail> getConnectionDetails({
+    required String cloudProjectId,
+  }) => caller.callServerEndpoint<_i20.InsightsConnectionDetail>(
+    'insights',
+    'getConnectionDetails',
+    {'cloudProjectId': cloudProjectId},
+  );
+}
+
 /// Endpoint for accessing cloud logs.
 /// {@category Endpoint}
 class EndpointLogs extends _i1.EndpointRef {
@@ -597,14 +621,14 @@ class EndpointLogs extends _i1.EndpointRef {
   String get name => 'logs';
 
   /// Fetches log records from the specified project.
-  _i2.Stream<_i20.LogRecord> fetchRecords({
+  _i2.Stream<_i21.LogRecord> fetchRecords({
     String? cloudProjectId,
     String? cloudCapsuleId,
     DateTime? beforeTime,
     DateTime? afterTime,
     int? limit,
   }) => caller
-      .callStreamingServerEndpoint<_i2.Stream<_i20.LogRecord>, _i20.LogRecord>(
+      .callStreamingServerEndpoint<_i2.Stream<_i21.LogRecord>, _i21.LogRecord>(
         'logs',
         'fetchRecords',
         {
@@ -620,12 +644,12 @@ class EndpointLogs extends _i1.EndpointRef {
   /// Tails log records from the specified project.
   /// Continues until the client unsubscribes, [limit] is reached,
   /// or the internal max limit is reached.
-  _i2.Stream<_i20.LogRecord> tailRecords({
+  _i2.Stream<_i21.LogRecord> tailRecords({
     String? cloudProjectId,
     String? cloudCapsuleId,
     int? limit,
   }) => caller
-      .callStreamingServerEndpoint<_i2.Stream<_i20.LogRecord>, _i20.LogRecord>(
+      .callStreamingServerEndpoint<_i2.Stream<_i21.LogRecord>, _i21.LogRecord>(
         'logs',
         'tailRecords',
         {
@@ -637,13 +661,13 @@ class EndpointLogs extends _i1.EndpointRef {
       );
 
   /// Fetches the build log records for the specified deploy attempt.
-  _i2.Stream<_i20.LogRecord> fetchBuildLog({
+  _i2.Stream<_i21.LogRecord> fetchBuildLog({
     String? cloudProjectId,
     String? cloudCapsuleId,
     required String attemptId,
     int? limit,
   }) => caller
-      .callStreamingServerEndpoint<_i2.Stream<_i20.LogRecord>, _i20.LogRecord>(
+      .callStreamingServerEndpoint<_i2.Stream<_i21.LogRecord>, _i21.LogRecord>(
         'logs',
         'fetchBuildLog',
         {
@@ -683,8 +707,8 @@ class EndpointPlans extends _i1.EndpointRef {
   _i2.Future<List<String>> listProcuredPlanNames() => caller
       .callServerEndpoint<List<String>>('plans', 'listProcuredPlanNames', {});
 
-  _i2.Future<_i21.SubscriptionInfo> getSubscriptionInfo() =>
-      caller.callServerEndpoint<_i21.SubscriptionInfo>(
+  _i2.Future<_i22.SubscriptionInfo> getSubscriptionInfo() =>
+      caller.callServerEndpoint<_i22.SubscriptionInfo>(
         'plans',
         'getSubscriptionInfo',
         {},
@@ -702,8 +726,8 @@ class EndpointPlans extends _i1.EndpointRef {
     'planName': planName,
   });
 
-  _i2.Future<_i22.PlanInfo> getPlanInfo({required String planProductName}) =>
-      caller.callServerEndpoint<_i22.PlanInfo>('plans', 'getPlanInfo', {
+  _i2.Future<_i23.PlanInfo> getPlanInfo({required String planProductName}) =>
+      caller.callServerEndpoint<_i23.PlanInfo>('plans', 'getPlanInfo', {
         'planProductName': planProductName,
       });
 
@@ -720,9 +744,9 @@ class EndpointDatabase extends _i1.EndpointRef {
   @override
   String get name => 'database';
 
-  _i2.Future<_i23.DatabaseConnection> getConnectionDetails({
+  _i2.Future<_i24.DatabaseConnection> getConnectionDetails({
     required String cloudCapsuleId,
-  }) => caller.callServerEndpoint<_i23.DatabaseConnection>(
+  }) => caller.callServerEndpoint<_i24.DatabaseConnection>(
     'database',
     'getConnectionDetails',
     {'cloudCapsuleId': cloudCapsuleId},
@@ -831,9 +855,9 @@ class EndpointProjects extends _i1.EndpointRef {
         'cloudProjectId': cloudProjectId,
       });
 
-  _i2.Future<_i24.ProjectConfig> fetchProjectConfig({
+  _i2.Future<_i25.ProjectConfig> fetchProjectConfig({
     required String cloudProjectId,
-  }) => caller.callServerEndpoint<_i24.ProjectConfig>(
+  }) => caller.callServerEndpoint<_i25.ProjectConfig>(
     'projects',
     'fetchProjectConfig',
     {'cloudProjectId': cloudProjectId},
@@ -914,9 +938,9 @@ class EndpointRoles extends _i1.EndpointRef {
   String get name => 'roles';
 
   /// Fetches the user roles for a project.
-  _i2.Future<List<_i25.Role>> fetchRolesForProject({
+  _i2.Future<List<_i26.Role>> fetchRolesForProject({
     required String cloudProjectId,
-  }) => caller.callServerEndpoint<List<_i25.Role>>(
+  }) => caller.callServerEndpoint<List<_i26.Role>>(
     'roles',
     'fetchRolesForProject',
     {'cloudProjectId': cloudProjectId},
@@ -1003,10 +1027,10 @@ class EndpointStatus extends _i1.EndpointRef {
   );
 
   /// Gets the specified deploy attempt status of the a capsule.
-  _i2.Future<List<_i26.DeployAttemptStage>> getDeployAttemptStatus({
+  _i2.Future<List<_i27.DeployAttemptStage>> getDeployAttemptStatus({
     required String cloudCapsuleId,
     required String attemptId,
-  }) => caller.callServerEndpoint<List<_i26.DeployAttemptStage>>(
+  }) => caller.callServerEndpoint<List<_i27.DeployAttemptStage>>(
     'status',
     'getDeployAttemptStatus',
     {'cloudCapsuleId': cloudCapsuleId, 'attemptId': attemptId},
@@ -1062,11 +1086,11 @@ class EndpointUsers extends _i1.EndpointRef {
 
 class Modules {
   Modules(Client client) {
-    serverpod_auth_idp = _i27.Caller(client);
+    serverpod_auth_idp = _i28.Caller(client);
     serverpod_auth_core = _i10.Caller(client);
   }
 
-  late final _i27.Caller serverpod_auth_idp;
+  late final _i28.Caller serverpod_auth_idp;
 
   late final _i10.Caller serverpod_auth_core;
 }
@@ -1086,7 +1110,7 @@ class Client extends _i1.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
          host,
-         _i28.Protocol(),
+         _i29.Protocol(),
          securityContext: securityContext,
          streamingConnectionTimeout: streamingConnectionTimeout,
          connectionTimeout: connectionTimeout,
@@ -1104,6 +1128,7 @@ class Client extends _i1.ServerpodClientShared {
     customDomainName = EndpointCustomDomainName(this);
     deploy = EndpointDeploy(this);
     environmentVariables = EndpointEnvironmentVariables(this);
+    insights = EndpointInsights(this);
     logs = EndpointLogs(this);
     plans = EndpointPlans(this);
     database = EndpointDatabase(this);
@@ -1134,6 +1159,8 @@ class Client extends _i1.ServerpodClientShared {
   late final EndpointDeploy deploy;
 
   late final EndpointEnvironmentVariables environmentVariables;
+
+  late final EndpointInsights insights;
 
   late final EndpointLogs logs;
 
@@ -1168,6 +1195,7 @@ class Client extends _i1.ServerpodClientShared {
     'customDomainName': customDomainName,
     'deploy': deploy,
     'environmentVariables': environmentVariables,
+    'insights': insights,
     'logs': logs,
     'plans': plans,
     'database': database,
