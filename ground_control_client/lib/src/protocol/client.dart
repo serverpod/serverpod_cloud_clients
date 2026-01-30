@@ -189,6 +189,24 @@ class EndpointAdminProjects extends _i1.EndpointRef {
       });
 }
 
+/// Endpoint for global administrator secrets migration.
+/// {@category Endpoint}
+class EndpointAdminSecrets extends _i1.EndpointRef {
+  EndpointAdminSecrets(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'adminSecrets';
+
+  /// Migrates all managed secret manager content by adding serviceSecret and
+  /// auth secrets where they do not already exist.
+  /// Remove when migration is complete.
+  _i2.Future<void> migrateManagedSecrets() => caller.callServerEndpoint<void>(
+    'adminSecrets',
+    'migrateManagedSecrets',
+    {},
+  );
+}
+
 /// Endpoint for global administrator users access.
 /// {@category Endpoint}
 class EndpointAdminUsers extends _i1.EndpointRef {
@@ -1121,6 +1139,7 @@ class Client extends _i1.ServerpodClientShared {
        ) {
     adminProcurement = EndpointAdminProcurement(this);
     adminProjects = EndpointAdminProjects(this);
+    adminSecrets = EndpointAdminSecrets(this);
     adminUsers = EndpointAdminUsers(this);
     auth = EndpointAuth(this);
     authWithAuth = EndpointAuthWithAuth(this);
@@ -1145,6 +1164,8 @@ class Client extends _i1.ServerpodClientShared {
   late final EndpointAdminProcurement adminProcurement;
 
   late final EndpointAdminProjects adminProjects;
+
+  late final EndpointAdminSecrets adminSecrets;
 
   late final EndpointAdminUsers adminUsers;
 
@@ -1188,6 +1209,7 @@ class Client extends _i1.ServerpodClientShared {
   Map<String, _i1.EndpointRef> get endpointRefLookup => {
     'adminProcurement': adminProcurement,
     'adminProjects': adminProjects,
+    'adminSecrets': adminSecrets,
     'adminUsers': adminUsers,
     'auth': auth,
     'authWithAuth': authWithAuth,
