@@ -21,7 +21,7 @@ abstract class LogsFeature {
     );
 
     final recordStream = cloudApiClient.logs.fetchRecords(
-      cloudProjectId: projectId,
+      cloudCapsuleId: projectId,
       beforeTime: before,
       afterTime: after,
       limit: limit,
@@ -42,7 +42,7 @@ abstract class LogsFeature {
     writeln('Tailing logs. Display time zone: $timezoneName.');
 
     final recordStream = cloudApiClient.logs.tailRecords(
-      cloudProjectId: projectId,
+      cloudCapsuleId: projectId,
       limit: limit,
     );
     await LogsFeature._outputLogStream(
@@ -68,7 +68,7 @@ abstract class LogsFeature {
     );
 
     final recordStream = cloudApiClient.logs.fetchBuildLog(
-      cloudProjectId: projectId,
+      cloudCapsuleId: projectId,
       attemptId: attemptId,
     );
     await _outputLogStream(writeln, recordStream, inUtc: inUtc);

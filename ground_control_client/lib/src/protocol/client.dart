@@ -638,7 +638,7 @@ class EndpointLogs extends _i1.EndpointRef {
   @override
   String get name => 'logs';
 
-  /// Fetches log records from the specified project.
+  /// Fetches log records from the specified capsule.
   _i2.Stream<_i21.LogRecord> fetchRecords({
     String? cloudProjectId,
     String? cloudCapsuleId,
@@ -659,7 +659,23 @@ class EndpointLogs extends _i1.EndpointRef {
         {},
       );
 
-  /// Tails log records from the specified project.
+  /// Fetches the N most recent records from the specified capsule,
+  /// where N is the specified limit.
+  /// Records are returned in ascending time order.
+  ///
+  /// This call will hold until all the records are fetched in order to sort them.
+  _i2.Stream<_i21.LogRecord> fetchRecentRecords({
+    required String cloudCapsuleId,
+    int? limit,
+  }) => caller
+      .callStreamingServerEndpoint<_i2.Stream<_i21.LogRecord>, _i21.LogRecord>(
+        'logs',
+        'fetchRecentRecords',
+        {'cloudCapsuleId': cloudCapsuleId, 'limit': limit},
+        {},
+      );
+
+  /// Tails log records from the specified capsule.
   /// Continues until the client unsubscribes, [limit] is reached,
   /// or the internal max limit is reached.
   _i2.Stream<_i21.LogRecord> tailRecords({

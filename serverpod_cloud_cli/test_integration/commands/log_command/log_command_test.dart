@@ -26,14 +26,14 @@ void main() {
   final mockRecords = [
     LogRecord(
       cloudProjectId: projectId,
-      cloudCapsuleId: '1',
+      cloudCapsuleId: projectId,
       recordId: '1',
       timestamp: logTimestamp,
       content: 'Log message 1',
     ),
     LogRecord(
       cloudProjectId: projectId,
-      cloudCapsuleId: '2',
+      cloudCapsuleId: projectId,
       recordId: '2',
       timestamp: logTimestamp,
       content: 'Log message 2',
@@ -53,7 +53,7 @@ void main() {
       setUp(() async {
         when(
           () => client.logs.fetchRecords(
-            cloudProjectId: projectId,
+            cloudCapsuleId: projectId,
             beforeTime: null,
             afterTime: any(named: 'afterTime'),
             limit: any(named: 'limit'),
@@ -98,7 +98,7 @@ void main() {
       setUp(() async {
         when(
           () => client.logs.fetchRecords(
-            cloudProjectId: projectId,
+            cloudCapsuleId: projectId,
             beforeTime: any(named: 'beforeTime'),
             afterTime: any(named: 'afterTime'),
             limit: any(named: 'limit'),
@@ -143,7 +143,7 @@ void main() {
       setUp(() async {
         when(
           () => client.logs.fetchRecords(
-            cloudProjectId: projectId,
+            cloudCapsuleId: projectId,
             beforeTime: DateTime.parse('2030-12-01T00:00:00Z'),
             afterTime: null,
             limit: any(named: 'limit'),
@@ -192,7 +192,7 @@ void main() {
       setUp(() async {
         when(
           () => client.logs.fetchRecords(
-            cloudProjectId: projectId,
+            cloudCapsuleId: projectId,
             beforeTime: null,
             afterTime: DateTime.parse('2020-12-01T00:00:00Z'),
             limit: any(named: 'limit'),
@@ -241,7 +241,7 @@ void main() {
       setUp(() async {
         when(
           () => client.logs.fetchRecords(
-            cloudProjectId: projectId,
+            cloudCapsuleId: projectId,
             beforeTime: DateTime.parse('2030-01-01T00:00:00Z'),
             afterTime: DateTime.parse('2020-12-01T00:00:00Z'),
             limit: any(named: 'limit'),
@@ -292,7 +292,7 @@ void main() {
       setUp(() async {
         when(
           () => client.logs.tailRecords(
-            cloudProjectId: projectId,
+            cloudCapsuleId: projectId,
             limit: any(named: 'limit'),
           ),
         ).thenAnswer((final _) => Stream.fromIterable(mockRecords));
