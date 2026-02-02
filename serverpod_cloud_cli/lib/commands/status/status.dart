@@ -88,7 +88,7 @@ abstract class StatusCommands {
     return switch (status) {
       DeployProgressStatus.unknown => '⬛',
       DeployProgressStatus.awaiting => '⬛',
-      DeployProgressStatus.running => '🟩',
+      DeployProgressStatus.running => '⬜',
       DeployProgressStatus.success => '✅',
       DeployProgressStatus.failure => '❌',
       DeployProgressStatus.cancelled => '❌',

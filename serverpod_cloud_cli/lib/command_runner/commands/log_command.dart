@@ -8,13 +8,15 @@ import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.
 
 import 'categories.dart';
 
+const _defaultLogLimit = 50;
+
 enum LogOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption()),
   limit(
     IntOption(
       argName: 'limit',
       helpText: 'The maximum number of log records to fetch.',
-      defaultsTo: 100,
+      defaultsTo: _defaultLogLimit,
       min: 0,
     ),
   ),
@@ -72,12 +74,23 @@ class CloudLogCommand extends CloudCliCommand<LogOption> {
   String get category => CommandCategories.control;
 
   @override
-  String get usageExamples => '''\n
+  String get usageExamples =>
+      '''\n
 Examples
 
-  View the most recent logs (default: last 10 minutes).
+  View the most recent logs (default limit is $_defaultLogLimit records).
   
     \$ scloud log
+
+
+  View the most recent logs with UTC timestamps and a custom limit.
+  
+    \$ scloud log --utc --limit 100
+
+
+  Stream logs in real-time.
+  
+    \$ scloud log --tail
 
 
   View logs from the last hour using duration.
@@ -109,16 +122,6 @@ Examples
   Mix ISO dates and durations:
   
     \$ scloud log --since 2025-01-15T14:00:00Z --until 30m
-
-
-  Stream logs in real-time.
-  
-    \$ scloud log --tail
-
-
-  View logs with UTC timestamps and a custom limit.
-  
-    \$ scloud log --utc --limit 100
 
 ''';
 
@@ -158,8 +161,6 @@ Examples
           'The --until value must be after --since value.',
         );
       }
-    } else if (until == null && since == null) {
-      defaultSince = DateTime.now().subtract(Duration(minutes: 30));
     }
 
     if (tailOpt == true) {
