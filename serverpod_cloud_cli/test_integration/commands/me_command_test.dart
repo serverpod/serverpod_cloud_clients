@@ -9,7 +9,6 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_pro
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 
-import '../../test_utils/command_logger_matchers.dart';
 import '../../test_utils/test_command_logger.dart';
 
 void main() {
@@ -60,11 +59,11 @@ void main() {
 
         expect(logger.lineCalls, isNotEmpty);
         expect(
-          logger.lineCalls,
+          logger.lineCalls.map((final l) => l.line),
           containsAllInOrder([
-            equalsLineCall(line: 'Email            | Plan        '),
-            equalsLineCall(line: '-----------------+-------------'),
-            equalsLineCall(line: 'test@example.com | Early Access'),
+            'Email            | Plan         | Status                ',
+            '-----------------+--------------+-----------------------',
+            contains('test@example.com | Early Access | Trial until 20'),
           ]),
         );
       });
@@ -93,11 +92,11 @@ void main() {
 
         expect(logger.lineCalls, isNotEmpty);
         expect(
-          logger.lineCalls,
+          logger.lineCalls.map((final l) => l.line),
           containsAllInOrder([
-            equalsLineCall(line: 'Email            | Plan   '),
-            equalsLineCall(line: '-----------------+--------'),
-            equalsLineCall(line: 'test@example.com | No plan'),
+            'Email            | Plan    | Status',
+            '-----------------+---------+-------',
+            'test@example.com | No plan |       ',
           ]),
         );
       });
