@@ -89,4 +89,18 @@ abstract class UserAdminCommands {
       newParagraph: true,
     );
   }
+
+  static Future<void> deleteUser(
+    final Client cloudApiClient, {
+    required final CommandLogger logger,
+    required final String email,
+  }) async {
+    try {
+      await cloudApiClient.adminUsers.deleteUser(userEmail: email);
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Failed to delete user');
+    }
+
+    logger.success('User deleted successfully.', newParagraph: true);
+  }
 }

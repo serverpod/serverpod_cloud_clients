@@ -230,6 +230,19 @@ class EndpointAdminUsers extends _i1.EndpointRef {
   /// If the user does not exist, a user invitation email is sent.
   _i2.Future<void> inviteUser({required String email}) => caller
       .callServerEndpoint<void>('adminUsers', 'inviteUser', {'email': email});
+
+  /// Deletes a user and all associated data (sessions, logins, memberships, etc.).
+  ///
+  /// The user must have no active projects, subscriptions, or other procurements
+  /// before they can be deleted.
+  ///
+  /// Throws [NotFoundException] if the user is not found.
+  /// Throws [InvalidValueException] if the user has active projects, subscriptions,
+  /// or other procurements that must be deleted/cancelled first.
+  _i2.Future<void> deleteUser({required String userEmail}) =>
+      caller.callServerEndpoint<void>('adminUsers', 'deleteUser', {
+        'userEmail': userEmail,
+      });
 }
 
 /// Endpoint for authentication.

@@ -128,3 +128,29 @@ class AdminInviteHackathonUserCommand
     );
   }
 }
+
+class AdminDeleteUserCommand extends CloudCliCommand<AdminInviteUserOption> {
+  @override
+  final name = 'delete-user';
+
+  @override
+  final description =
+      'Delete a user and all associated data (sessions, logins, memberships, etc.). '
+      'The user must have no active projects, subscriptions, or other procurements.';
+
+  AdminDeleteUserCommand({required super.logger})
+    : super(options: AdminInviteUserOption.values);
+
+  @override
+  Future<void> runWithConfig(
+    final Configuration<AdminInviteUserOption> commandConfig,
+  ) async {
+    final email = commandConfig.value(AdminInviteUserOption.user);
+
+    await UserAdminCommands.deleteUser(
+      runner.serviceProvider.cloudApiClient,
+      logger: logger,
+      email: email,
+    );
+  }
+}
