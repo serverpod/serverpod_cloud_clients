@@ -861,9 +861,21 @@ class EndpointProjects extends _i1.EndpointRef {
 
   /// Fetches the specified project.
   /// Its user roles are included in the response.
+  @Deprecated('Use fetchProjectInfo instead')
   _i2.Future<_i3.Project> fetchProject({required String cloudProjectId}) =>
       caller.callServerEndpoint<_i3.Project>('projects', 'fetchProject', {
         'cloudProjectId': cloudProjectId,
+      });
+
+  /// Fetches the specified project.
+  /// Its user roles are included in the response.
+  _i2.Future<_i4.ProjectInfo> fetchProjectInfo({
+    required String cloudProjectId,
+    bool? includeLatestDeployAttemptTime,
+  }) => caller
+      .callServerEndpoint<_i4.ProjectInfo>('projects', 'fetchProjectInfo', {
+        'cloudProjectId': cloudProjectId,
+        'includeLatestDeployAttemptTime': includeLatestDeployAttemptTime,
       });
 
   /// Fetches the list of projects the current user has access to.
