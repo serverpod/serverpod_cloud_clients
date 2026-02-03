@@ -1,6 +1,18 @@
 
 # Changelog
 
+## [0.21.0] - 2026-02-02
+
+### Added
+
+- **Logs command improvements** - The `scloud log` command now fetches the N most recent log records and presents them in ascending order.
+- **Subscription status** - The `scloud me` command now shows the current status of the user's subscription, including trial and subscription end dates.
+
+### Changed
+
+- **Build log parameter renamed** - streamId is now attemptId.
+- **CLI default log limit changed** - The default log limit has been changed from 100 to 50.
+
 ## [0.20.0] - 2025-12-30
 
 ### Added
