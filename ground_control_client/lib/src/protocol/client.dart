@@ -197,9 +197,8 @@ class EndpointAdminSecrets extends _i1.EndpointRef {
   @override
   String get name => 'adminSecrets';
 
-  /// Migrates all managed secret manager content by adding serviceSecret and
-  /// auth secrets where they do not already exist.
-  /// Remove when migration is complete.
+  /// Injects SERVERPOD_SESSION_PERSISTENT_LOG_ENABLED=true for managed secrets
+  /// that already have SERVERPOD_DATABASE_HOST. Remove when migration is complete.
   _i2.Future<void> migrateManagedSecrets() => caller.callServerEndpoint<void>(
     'adminSecrets',
     'migrateManagedSecrets',
