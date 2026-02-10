@@ -12,7 +12,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../shared/models/serverpod_region.dart' as _i2;
-import '../../../features/projects/models/project.dart' as _i3;
+import '../../../domains/projects/models/project.dart' as _i3;
 import '../../../domains/environment_variables/models/variable.dart' as _i4;
 import '../../../features/custom_domains/models/custom_domain_name.dart' as _i5;
 import '../../../domains/capsules/models/capsule_resource_config.dart' as _i6;

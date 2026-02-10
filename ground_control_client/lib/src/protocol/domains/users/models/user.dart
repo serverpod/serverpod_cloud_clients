@@ -12,7 +12,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/users/models/user_account_status.dart' as _i2;
-import '../../../features/projects/models/user_role_membership.dart' as _i3;
+import '../../../domains/projects/models/user_role_membership.dart' as _i3;
 import '../../../domains/billing/models/owner.dart' as _i4;
 import '../../../domains/users/models/user_label_mapping.dart' as _i5;
 import 'package:ground_control_client/src/protocol/protocol.dart' as _i6;

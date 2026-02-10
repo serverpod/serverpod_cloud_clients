@@ -75,7 +75,7 @@ abstract class ProjectCommands {
     if (enableDb) {
       await logger.progress('Requesting database creation.', () async {
         try {
-          await cloudApiClient.infraResources.enableDatabase(
+          await cloudApiClient.database.enableDatabase(
             cloudCapsuleId: projectId,
           );
           return true;

@@ -101,7 +101,7 @@ void main() {
       );
 
       when(
-        () => client.infraResources.enableDatabase(
+        () => client.database.enableDatabase(
           cloudCapsuleId: any(named: 'cloudCapsuleId'),
         ),
       ).thenAnswer((final _) async => {});

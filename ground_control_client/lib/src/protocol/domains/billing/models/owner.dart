@@ -13,7 +13,7 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/users/models/user.dart' as _i2;
 import '../../../domains/billing/models/billing_info.dart' as _i3;
-import '../../../features/projects/models/project.dart' as _i4;
+import '../../../domains/projects/models/project.dart' as _i4;
 import 'package:ground_control_client/src/protocol/protocol.dart' as _i5;
 
 abstract class Owner implements _i1.SerializableModel {
