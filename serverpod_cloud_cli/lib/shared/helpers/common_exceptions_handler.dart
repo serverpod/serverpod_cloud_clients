@@ -42,14 +42,14 @@ void processCommonClientExceptions(
     case ProcurementDeniedException():
       final baseUrl = getConsoleBaseUrl();
       if (e.message.contains('no valid payment method')) {
-        final setupUrl = '$baseUrl/projects/create';
+        final setupUrl = '$baseUrl/project/create';
         logger.error(
           "You need a payment method!",
           hint: 'To set up your account, visit: $setupUrl\n',
           newParagraph: true,
         );
       } else {
-        final projectsUrl = '$baseUrl/projects';
+        final projectsUrl = '$baseUrl/project';
         logger.error(
           e.message,
           hint: 'To see your account, visit: $projectsUrl\n',
