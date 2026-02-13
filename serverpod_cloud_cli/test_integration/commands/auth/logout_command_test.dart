@@ -1,20 +1,33 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:ground_control_client/ground_control_client_test_tools.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/auth_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_auth_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:test/test.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../test_utils/command_logger_matchers.dart';
-import '../../../test_utils/http_server_builder.dart';
 import '../../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();
-  final cli = CloudCliCommandRunner.create(logger: logger);
+
+  final client = ClientMock(
+    authKeyProvider: InMemoryKeyManager.authenticated(),
+  );
+
+  final cli = CloudCliCommandRunner.create(
+    logger: logger,
+    serviceProvider: CloudCliServiceProvider(
+      apiClientFactory: (final globalCfg) => client,
+    ),
+  );
 
   final testCacheFolderPath = p.join('test_integration', const Uuid().v4());
 
@@ -25,167 +38,379 @@ void main() {
     }
 
     logger.clear();
-  });
-
-  group('Given stored credentials and successful sign out http response', () {
-    late Uri localServerAddress;
-    late Completer signOutRequestCompleter;
-    late HttpServer server;
-
-    setUp(() async {
-      signOutRequestCompleter = Completer();
-      await ResourceManager.storeServerpodCloudAuthData(
-        authData: ServerpodCloudAuthData('my-token'),
-        localStoragePath: testCacheFolderPath,
-      );
-
-      final serverBuilder = HttpServerBuilder();
-      serverBuilder.withOnRequest((final request) {
-        signOutRequestCompleter.complete();
-        request.response.statusCode = 200;
-        request.response.close();
-      });
-
-      final (startedServer, serverAddress) = await serverBuilder.build();
-      localServerAddress = serverAddress;
-      server = startedServer;
-    });
-
-    tearDown(() async {
-      await server.close(force: true);
-    });
-
-    group('when logging out through cli', () {
-      late Future runLogoutCommand;
-      setUp(() {
-        runLogoutCommand = cli.run([
-          'auth',
-          'logout',
-          '--api-url',
-          localServerAddress.toString(),
-          '--config-dir',
-          testCacheFolderPath,
-        ]);
-      });
-
-      test('then the stored credentials are removed', () async {
-        await runLogoutCommand;
-
-        final cloudData = await ResourceManager.tryFetchServerpodCloudAuthData(
-          localStoragePath: testCacheFolderPath,
-          logger: logger,
-        );
-
-        expect(cloudData, isNull);
-      });
-
-      test('then a sign out request is sent', () async {
-        await runLogoutCommand;
-
-        await expectLater(signOutRequestCompleter.future, completes);
-      });
-
-      test('then a "logged out" message is logged', () async {
-        await runLogoutCommand;
-
-        expect(logger.successCalls, isNotEmpty);
-        expect(
-          logger.successCalls.first,
-          equalsSuccessCall(
-            message: 'Successfully logged out from Serverpod cloud.',
-          ),
-        );
-      });
-    });
-  });
-
-  group('Given stored credentials and failed sign out http response', () {
-    late Uri localServerAddress;
-    late Completer signOutRequestCompleter;
-    late HttpServer server;
-    setUp(() async {
-      signOutRequestCompleter = Completer();
-      await ResourceManager.storeServerpodCloudAuthData(
-        authData: ServerpodCloudAuthData('my-token'),
-        localStoragePath: testCacheFolderPath,
-      );
-
-      final serverBuilder = HttpServerBuilder();
-      serverBuilder.withOnRequest((final request) {
-        signOutRequestCompleter.complete();
-        // Responds with 404 to simulate a failed sign out request.
-        request.response.statusCode = 404;
-        request.response.close();
-      });
-
-      final (startedServer, serverAddress) = await serverBuilder.build();
-      localServerAddress = serverAddress;
-      server = startedServer;
-    });
-
-    tearDown(() async {
-      await server.close(force: true);
-    });
-
-    group('when logging out through cli', () {
-      late Future runLogoutCommand;
-      setUp(() {
-        runLogoutCommand = cli.run([
-          'auth',
-          'logout',
-          '--api-url',
-          localServerAddress.toString(),
-          '--config-dir',
-          testCacheFolderPath,
-        ]);
-      });
-
-      test('then the stored credentials are removed.', () async {
-        await runLogoutCommand.onError((final e, final s) {});
-
-        final cloudData = await ResourceManager.tryFetchServerpodCloudAuthData(
-          localStoragePath: testCacheFolderPath,
-          logger: logger,
-        );
-
-        expect(cloudData, isNull);
-      });
-
-      test('then a sign out request is sent', () async {
-        await runLogoutCommand.onError((final e, final s) {});
-
-        await expectLater(signOutRequestCompleter.future, completes);
-      });
-
-      test('then a "server request to sign out" warning is logged.', () async {
-        await runLogoutCommand;
-
-        expect(logger.warningCalls, isNotEmpty);
-        expect(
-          logger.warningCalls.first.message,
-          equals(
-            'Ignoring error response from server: '
-            'ServerpodClientException: Not found, statusCode = 404',
-          ),
-        );
-      });
-
-      test('then a "logged out" message is logged', () async {
-        await runLogoutCommand;
-
-        expect(logger.successCalls, isNotEmpty);
-        expect(
-          logger.successCalls.first,
-          equalsSuccessCall(
-            message: 'Successfully logged out from Serverpod cloud.',
-          ),
-        );
-      });
-    });
+    reset(client.authWithAuth);
   });
 
   test(
-    'Given no stored credentials when logging out through cli then the command completes with no stored credentials log.',
+    'Given logout command when instantiated then does not require login',
+    () {
+      expect(CloudLogoutCommand(logger: logger).requireLogin, isFalse);
+    },
+  );
+
+  group(
+    'Given stored credentials and logoutDevice endpoint method returning true',
+    () {
+      setUp(() async {
+        await ResourceManager.storeServerpodCloudAuthData(
+          authData: ServerpodCloudAuthData('my-token'),
+          localStoragePath: testCacheFolderPath,
+        );
+
+        when(
+          () => client.authWithAuth.logoutDevice(
+            authTokenId: any(named: 'authTokenId'),
+          ),
+        ).thenAnswer((final _) async => true);
+      });
+
+      group('when logging out the current session', () {
+        late Future runLogoutCommand;
+        setUp(() {
+          runLogoutCommand = cli.run([
+            'auth',
+            'logout',
+            '--config-dir',
+            testCacheFolderPath,
+          ]);
+        });
+
+        test('then completes successfully', () async {
+          await expectLater(runLogoutCommand, completes);
+        });
+
+        test('then the stored credentials are removed', () async {
+          await runLogoutCommand;
+
+          final cloudData =
+              await ResourceManager.tryFetchServerpodCloudAuthData(
+                localStoragePath: testCacheFolderPath,
+                logger: logger,
+              );
+
+          expect(cloudData, isNull);
+        });
+
+        test('then logoutDevice is called', () async {
+          await runLogoutCommand;
+
+          verify(
+            () => client.authWithAuth.logoutDevice(authTokenId: null),
+          ).called(1);
+        });
+
+        test('then a "logged out" message is logged', () async {
+          await runLogoutCommand;
+
+          expect(logger.successCalls, isNotEmpty);
+          expect(
+            logger.successCalls.first,
+            equalsSuccessCall(
+              message: 'Successfully logged out from Serverpod cloud.',
+            ),
+          );
+        });
+      });
+
+      group('when logging out a specific token', () {
+        late Future runLogoutCommand;
+        setUp(() {
+          runLogoutCommand = cli.run([
+            'auth',
+            'logout',
+            '--token-id',
+            'my-token',
+            '--config-dir',
+            testCacheFolderPath,
+          ]);
+        });
+
+        test('then completes successfully', () async {
+          await expectLater(runLogoutCommand, completes);
+        });
+
+        test('then the stored credentials are removed', () async {
+          await runLogoutCommand;
+
+          final cloudData =
+              await ResourceManager.tryFetchServerpodCloudAuthData(
+                localStoragePath: testCacheFolderPath,
+                logger: logger,
+              );
+
+          expect(cloudData, isNull);
+        });
+
+        test('then logoutDevice is called with token ID', () async {
+          await runLogoutCommand;
+
+          verify(
+            () => client.authWithAuth.logoutDevice(authTokenId: 'my-token'),
+          ).called(1);
+        });
+
+        test('then a "logged out" message is logged', () async {
+          await runLogoutCommand;
+
+          expect(logger.successCalls, isNotEmpty);
+          expect(
+            logger.successCalls.first,
+            equalsSuccessCall(
+              message: 'Successfully logged out from Serverpod cloud.',
+            ),
+          );
+        });
+      });
+    },
+  );
+
+  group(
+    'Given stored credentials and logoutDevice endpoint method returning false',
+    () {
+      setUp(() async {
+        await ResourceManager.storeServerpodCloudAuthData(
+          authData: ServerpodCloudAuthData('my-token'),
+          localStoragePath: testCacheFolderPath,
+        );
+
+        when(
+          () => client.authWithAuth.logoutDevice(
+            authTokenId: any(named: 'authTokenId'),
+          ),
+        ).thenAnswer((final _) async => false);
+      });
+
+      group('when logging out the current session', () {
+        late Future runLogoutCommand;
+        setUp(() {
+          runLogoutCommand = cli.run([
+            'auth',
+            'logout',
+            '--config-dir',
+            testCacheFolderPath,
+          ]);
+        });
+
+        test('then completes successfully', () async {
+          await expectLater(runLogoutCommand, completes);
+        });
+
+        test('then the stored credentials are removed', () async {
+          await runLogoutCommand;
+
+          final cloudData =
+              await ResourceManager.tryFetchServerpodCloudAuthData(
+                localStoragePath: testCacheFolderPath,
+                logger: logger,
+              );
+
+          expect(cloudData, isNull);
+        });
+
+        test('then logoutDevice is called', () async {
+          await runLogoutCommand;
+
+          verify(
+            () => client.authWithAuth.logoutDevice(authTokenId: null),
+          ).called(1);
+        });
+
+        test('then a "logged out" message is logged', () async {
+          await runLogoutCommand;
+
+          expect(logger.successCalls, isNotEmpty);
+          expect(
+            logger.successCalls.first,
+            equalsSuccessCall(
+              message: 'Successfully logged out from Serverpod cloud.',
+            ),
+          );
+        });
+      });
+
+      group('when logging out a specific token', () {
+        late Future runLogoutCommand;
+        setUp(() {
+          runLogoutCommand = cli.run([
+            'auth',
+            'logout',
+            '--token-id',
+            'my-token',
+            '--config-dir',
+            testCacheFolderPath,
+          ]);
+        });
+
+        test('then completes successfully', () async {
+          await expectLater(runLogoutCommand, completes);
+        });
+
+        test('then the stored credentials are not removed', () async {
+          await runLogoutCommand;
+
+          final cloudData =
+              await ResourceManager.tryFetchServerpodCloudAuthData(
+                localStoragePath: testCacheFolderPath,
+                logger: logger,
+              );
+
+          expect(cloudData, isNotNull);
+        });
+
+        test('then logoutDevice is called with token ID', () async {
+          await runLogoutCommand;
+
+          verify(
+            () => client.authWithAuth.logoutDevice(authTokenId: 'my-token'),
+          ).called(1);
+        });
+
+        test('then a "logged out" message is logged', () async {
+          await runLogoutCommand;
+
+          expect(logger.successCalls, isNotEmpty);
+          expect(
+            logger.successCalls.first,
+            equalsSuccessCall(
+              message: 'Successfully logged out the selected sessions.',
+            ),
+          );
+        });
+      });
+    },
+  );
+
+  group(
+    'Given stored credentials and succeeding logoutAll endpoint method',
+    () {
+      setUp(() async {
+        await ResourceManager.storeServerpodCloudAuthData(
+          authData: ServerpodCloudAuthData('my-token'),
+          localStoragePath: testCacheFolderPath,
+        );
+
+        when(
+          () => client.authWithAuth.logoutAll(),
+        ).thenAnswer((final _) async {});
+      });
+
+      group('when logging out all sessions', () {
+        late Future runLogoutCommand;
+        setUp(() {
+          runLogoutCommand = cli.run([
+            'auth',
+            'logout',
+            '--all',
+            '--config-dir',
+            testCacheFolderPath,
+          ]);
+        });
+
+        test('then completes successfully', () async {
+          await expectLater(runLogoutCommand, completes);
+        });
+
+        test('then the stored credentials are removed', () async {
+          await runLogoutCommand;
+
+          final cloudData =
+              await ResourceManager.tryFetchServerpodCloudAuthData(
+                localStoragePath: testCacheFolderPath,
+                logger: logger,
+              );
+
+          expect(cloudData, isNull);
+        });
+
+        test('then logoutAll is called', () async {
+          await runLogoutCommand;
+
+          verify(() => client.authWithAuth.logoutAll()).called(1);
+        });
+
+        test('then a "logged out" message is logged', () async {
+          await runLogoutCommand;
+
+          expect(logger.successCalls, isNotEmpty);
+          expect(
+            logger.successCalls.first,
+            equalsSuccessCall(
+              message: 'Successfully logged out from Serverpod cloud.',
+            ),
+          );
+        });
+      });
+    },
+  );
+
+  group(
+    'Given stored credentials and failing logoutDevice endpoint method',
+    () {
+      setUp(() async {
+        await ResourceManager.storeServerpodCloudAuthData(
+          authData: ServerpodCloudAuthData('my-token'),
+          localStoragePath: testCacheFolderPath,
+        );
+
+        when(
+          () => client.authWithAuth.logoutDevice(
+            authTokenId: any(named: 'authTokenId'),
+          ),
+        ).thenThrow(Exception('Server error'));
+      });
+
+      group('when logging out', () {
+        late Future runLogoutCommand;
+        setUp(() {
+          runLogoutCommand = cli.run([
+            'auth',
+            'logout',
+            '--config-dir',
+            testCacheFolderPath,
+          ]);
+        });
+
+        test('then completes successfully', () async {
+          await expectLater(runLogoutCommand, completes);
+        });
+
+        test('then the stored credentials are removed', () async {
+          await runLogoutCommand;
+
+          final cloudData =
+              await ResourceManager.tryFetchServerpodCloudAuthData(
+                localStoragePath: testCacheFolderPath,
+                logger: logger,
+              );
+
+          expect(cloudData, isNull);
+        });
+
+        test('then logoutDevice is called', () async {
+          await runLogoutCommand;
+
+          verify(
+            () => client.authWithAuth.logoutDevice(authTokenId: null),
+          ).called(1);
+        });
+
+        test('then a "logged out" message is logged', () async {
+          await runLogoutCommand;
+
+          expect(logger.successCalls, isNotEmpty);
+          expect(
+            logger.successCalls.first,
+            equalsSuccessCall(
+              message: 'Successfully logged out from Serverpod cloud.',
+            ),
+          );
+        });
+      });
+    },
+  );
+
+  test(
+    'Given no stored credentials when logging out then the command completes with no stored credentials log.',
     () async {
       final runLogoutCommand = cli.run([
         'auth',

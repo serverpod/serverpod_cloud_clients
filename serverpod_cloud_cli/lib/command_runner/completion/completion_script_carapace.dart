@@ -65,6 +65,22 @@ commands:
           - [browser, no-browser]
 
       - name: logout
+        flags:
+          --token-id=*: "The token IDs to log out. Logs out the current session if not provided."
+          --all: "Log out from all sessions including API tokens."
+
+      - name: list
+        flags:
+          -u, --utc: "Display timestamps in UTC timezone instead of local."
+          --no-utc: "Display timestamps in UTC timezone instead of local."
+        exclusiveFlags:
+          - [utc, no-utc]
+
+      - name: create-token
+        flags:
+          --expire-at=: "The calendar time to expire the token at."
+          --idle-ttl=: "The duration of non-use after which the token will expire."
+          --no-idle-ttl: "Do not expire the token after a duration of non-use."
 
   - name: me
 
