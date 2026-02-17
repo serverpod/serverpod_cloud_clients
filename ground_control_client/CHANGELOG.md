@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.22.0] - 2026-02-17
+
+### Added
+
+- **New auth subcommands** - You can now manage authentication tokens with `scloud auth create-token` and `scloud auth list`.
+- **Logout options** - The `scloud auth logout` command now supports logging out specific sessions using the `--token-id` flag or all sessions with `--all`.
+
+### Changed
+
+- **Launch flow improvements** - The `scloud launch` command now offers pre-deploy code generation as an opt-in hook (default: off). The initial deploy during launch is no longer automatically enabled.
+
+### Fixed
+
+- **Improved script handling** - Deployments now fail if pre/post-deploy scripts exit with non-zero codes, preventing continuation on script failure.
+
 ## [0.21.0] - 2026-02-02
 
 ### Added
