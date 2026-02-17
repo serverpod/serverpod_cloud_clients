@@ -1154,6 +1154,107 @@ project:
       });
     });
 
+    group('and scloud.yaml with failing pre-deploy script', () {
+      setUp(() async {
+        await d
+            .file('scloud.yaml', '''
+project:
+  projectId: ${BucketUploadDescription.projectId}
+  scripts:
+    pre_deploy: 
+      - echo "pre-deploy-1" > pre_deploy_output.txt
+      - exit 1
+      - echo "pre-deploy-2" > pre_deploy_output.txt
+    post_deploy:
+      - echo "post-deploy-1" > post_deploy_output.txt
+''')
+            .create(testProjectDir);
+      });
+
+      group('when deploying through CLI', () {
+        late Future cliCommandFuture;
+        setUp(() async {
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--project',
+            BucketUploadDescription.projectId,
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        test('then command fails with ErrorExitException.', () async {
+          await expectLater(
+            cliCommandFuture,
+            throwsA(isA<ErrorExitException>()),
+          );
+        });
+
+        test('then subsequent pre-deploy scripts are not executed', () async {
+          await cliCommandFuture.catchError((final _) {});
+
+          final preDeployFile = d.dir(testProjectDir, [
+            d.file('pre_deploy_output.txt', contains('pre-deploy-1')),
+          ]);
+          await expectLater(preDeployFile.validate(), completes);
+        });
+
+        test('then post-deploy scripts are not executed', () async {
+          await cliCommandFuture.catchError((final _) {});
+
+          final postDeployFile = d.dir(testProjectDir, [
+            d.nothing('post_deploy_output.txt'),
+          ]);
+          await expectLater(postDeployFile.validate(), completes);
+        });
+      });
+    });
+
+    group('and scloud.yaml with failing post-deploy script', () {
+      setUp(() async {
+        await d
+            .file('scloud.yaml', '''
+project:
+  projectId: ${BucketUploadDescription.projectId}
+  scripts:
+    post_deploy:
+      - echo "post-deploy-1" > post_deploy_output.txt
+      - exit 1
+      - echo "post-deploy-2" > post_deploy_output.txt
+''')
+            .create(testProjectDir);
+      });
+
+      group('when deploying through CLI', () {
+        late Future cliCommandFuture;
+        setUp(() async {
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--project',
+            BucketUploadDescription.projectId,
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        test('then command fails with ErrorExitException.', () async {
+          await expectLater(
+            cliCommandFuture,
+            throwsA(isA<ErrorExitException>()),
+          );
+        });
+
+        test('then subsequent post-deploy scripts are not executed', () async {
+          await cliCommandFuture.catchError((final _) {});
+
+          final postDeployFile = d.dir(testProjectDir, [
+            d.file('post_deploy_output.txt', contains('post-deploy-1')),
+          ]);
+          await expectLater(postDeployFile.validate(), completes);
+        });
+      });
+    });
+
     group('and scloud.yaml with single string pre-deploy script', () {
       setUp(() async {
         await d

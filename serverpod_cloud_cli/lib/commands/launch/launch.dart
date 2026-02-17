@@ -418,8 +418,8 @@ The default API domain will be: <project-id>.api.serverpod.space
     if (existingPreDeploy.contains(codeGenerationHook)) return;
 
     final shouldAdd = await logger.confirm(
-      'Would you like to run code generation (`serverpod generate`) before deploy?',
-      defaultValue: true,
+      'Add code generation (`serverpod generate`) as a pre-deploy hook?',
+      defaultValue: false,
     );
 
     if (!shouldAdd) return;

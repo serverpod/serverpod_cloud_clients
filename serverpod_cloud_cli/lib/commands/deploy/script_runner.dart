@@ -24,15 +24,25 @@ abstract class ScriptRunner {
         newParagraph: i == 0,
       );
 
+      int exitCode;
       try {
-        await execute(
+        exitCode = await execute(
           command,
           stderr: stderr,
           stdout: stdout,
           workingDirectory: Directory(workingDirectory),
         );
       } on Exception catch (e, stackTrace) {
-        throw ErrorExitException('$scriptType script failed', e, stackTrace);
+        throw ErrorExitException(
+          '$scriptType script failed: "$command"',
+          e,
+          stackTrace,
+        );
+      }
+      if (exitCode != 0) {
+        throw ErrorExitException(
+          '$scriptType script failed with exit code $exitCode: "$command"',
+        );
       }
     }
   }

@@ -23,7 +23,7 @@ import '../../test_utils/push_current_dir.dart';
 import '../../test_utils/test_command_logger.dart';
 
 void main() {
-  final logger = TestCommandLogger();
+  final logger = TestCommandLogger(printToStdout: true);
   final client = ClientMock(
     authKeyProvider: InMemoryKeyManager.authenticated(),
   );
@@ -160,11 +160,13 @@ void main() {
         testProjectDir = p.join(d.sandbox, 'server_dir');
       });
 
-      group('when executing launch with all settings provided via args '
-          'and approving confirmation', () {
+      group('when executing launch with all settings provided via args'
+          ', declining serverpod generate pre-deploy hook'
+          ', enabling initial deploy'
+          ', and approving confirmation,', () {
         late Future commandResult;
         setUp(() async {
-          logger.answerNextConfirmsWith([true, true]);
+          logger.answerNextConfirmsWith([false, true]);
 
           commandResult = cli.run([
             'launch',
@@ -296,8 +298,9 @@ project:
         });
       });
 
-      group('when executing launch with flutter_build script in pubspec.yaml '
-          'and approving confirmation', () {
+      group('when executing launch with flutter_build script in pubspec.yaml'
+          ', disabling initial deploy'
+          ' and approving confirmation', () {
         late String testProjectDir;
         late Future commandResult;
 
@@ -325,7 +328,7 @@ serverpod:
             '--project-dir',
             testProjectDir,
             '--enable-db',
-            '--deploy',
+            '--no-deploy',
           ]);
 
           await expectLater(commandResult, completes);
@@ -339,8 +342,8 @@ serverpod:
             containsAllInOrder([
               equalsConfirmCall(
                 message:
-                    'Would you like to run code generation (`serverpod generate`) before deploy?',
-                defaultValue: true,
+                    'Add code generation (`serverpod generate`) as a pre-deploy hook?',
+                defaultValue: false,
               ),
               equalsConfirmCall(
                 message:
@@ -371,8 +374,9 @@ serverpod:
         });
       });
 
-      group('when executing launch with flutter_build script in pubspec.yaml '
-          'and declining pre-deploy hook suggestion', () {
+      group('when executing launch with flutter_build script in pubspec.yaml'
+          ', disabling initial deploy'
+          ' and declining pre-deploy hook suggestion', () {
         late String testProjectDir;
         late Future commandResult;
 
@@ -400,7 +404,7 @@ serverpod:
             '--project-dir',
             testProjectDir,
             '--enable-db',
-            '--deploy',
+            '--no-deploy',
           ]);
 
           await expectLater(commandResult, completes);
@@ -414,8 +418,8 @@ serverpod:
             containsAllInOrder([
               equalsConfirmCall(
                 message:
-                    'Would you like to run code generation (`serverpod generate`) before deploy?',
-                defaultValue: true,
+                    'Add code generation (`serverpod generate`) as a pre-deploy hook?',
+                defaultValue: false,
               ),
               equalsConfirmCall(
                 message:
@@ -441,8 +445,9 @@ serverpod:
         });
       });
 
-      group('when executing launch without flutter_build script in pubspec.yaml '
-          'and approving confirmation', () {
+      group('when executing launch without flutter_build script in pubspec.yaml'
+          ', disabling initial deploy'
+          ' and approving confirmation', () {
         late String testProjectDir;
         late Future commandResult;
 
@@ -461,7 +466,7 @@ serverpod:
             '--project-dir',
             testProjectDir,
             '--enable-db',
-            '--deploy',
+            '--no-deploy',
           ]);
 
           await expectLater(commandResult, completes);
@@ -473,14 +478,10 @@ serverpod:
             await commandResult.catchError((final _) {});
 
             expect(
-              logger.confirmCalls,
+              logger.confirmCalls.map((final call) => call.message),
               isNot(
                 contains(
-                  equalsConfirmCall(
-                    message:
-                        "Detected 'flutter_build' script. Add it as a pre-deploy hook?",
-                    defaultValue: true,
-                  ),
+                  "Detected 'flutter_build' script. Add it as a pre-deploy hook?",
                 ),
               ),
             );
@@ -495,8 +496,8 @@ serverpod:
             containsAllInOrder([
               equalsConfirmCall(
                 message:
-                    'Would you like to run code generation (`serverpod generate`) before deploy?',
-                defaultValue: true,
+                    'Add code generation (`serverpod generate`) as a pre-deploy hook?',
+                defaultValue: false,
               ),
               equalsConfirmCall(
                 message: 'Continue and apply this setup?',
@@ -507,8 +508,9 @@ serverpod:
         });
       });
 
-      group('when executing launch with code generation hook suggestion '
-          'and approving confirmation', () {
+      group('when executing launch with code generation hook suggestion'
+          ', disabling initial deploy'
+          ' and approving confirmation', () {
         late String testProjectDir;
         late Future commandResult;
 
@@ -527,7 +529,7 @@ serverpod:
             '--project-dir',
             testProjectDir,
             '--enable-db',
-            '--deploy',
+            '--no-deploy',
           ]);
 
           await expectLater(commandResult, completes);
@@ -541,8 +543,8 @@ serverpod:
             containsAllInOrder([
               equalsConfirmCall(
                 message:
-                    'Would you like to run code generation (`serverpod generate`) before deploy?',
-                defaultValue: true,
+                    'Add code generation (`serverpod generate`) as a pre-deploy hook?',
+                defaultValue: false,
               ),
               equalsConfirmCall(
                 message: 'Continue and apply this setup?',
@@ -596,8 +598,8 @@ serverpod:
             logger.confirmCalls.first,
             equalsConfirmCall(
               message:
-                  'Would you like to run code generation (`serverpod generate`) before deploy?',
-              defaultValue: true,
+                  'Add code generation (`serverpod generate`) as a pre-deploy hook?',
+              defaultValue: false,
             ),
           );
         });
@@ -610,8 +612,9 @@ serverpod:
         });
       });
 
-      group('when executing launch with code generation hook already in config '
-          'and approving confirmation', () {
+      group('when executing launch with code generation hook already in config'
+          ', disabling initial deploy'
+          ' and approving confirmation', () {
         late String testProjectDir;
         late Future commandResult;
 
@@ -638,7 +641,7 @@ project:
             '--project-dir',
             testProjectDir,
             '--enable-db',
-            '--deploy',
+            '--no-deploy',
           ]);
 
           await expectLater(commandResult, completes);
@@ -655,8 +658,8 @@ project:
                 contains(
                   equalsConfirmCall(
                     message:
-                        'Would you like to run code generation (`serverpod generate`) before deploy?',
-                    defaultValue: true,
+                        'Add code generation (`serverpod generate`) as a pre-deploy hook?',
+                    defaultValue: false,
                   ),
                 ),
               ),
@@ -1052,8 +1055,8 @@ project:
               ),
               equalsConfirmCall(
                 message:
-                    'Would you like to run code generation (`serverpod generate`) before deploy?',
-                defaultValue: true,
+                    'Add code generation (`serverpod generate`) as a pre-deploy hook?',
+                defaultValue: false,
               ),
               equalsConfirmCall(
                 message: 'Continue and apply this setup?',
@@ -1174,8 +1177,8 @@ project:
               ),
               equalsConfirmCall(
                 message:
-                    'Would you like to run code generation (`serverpod generate`) before deploy?',
-                defaultValue: true,
+                    'Add code generation (`serverpod generate`) as a pre-deploy hook?',
+                defaultValue: false,
               ),
               equalsConfirmCall(
                 message: 'Continue and apply this setup?',
@@ -1284,8 +1287,8 @@ project:
               ),
               equalsConfirmCall(
                 message:
-                    'Would you like to run code generation (`serverpod generate`) before deploy?',
-                defaultValue: true,
+                    'Add code generation (`serverpod generate`) as a pre-deploy hook?',
+                defaultValue: false,
               ),
               equalsConfirmCall(
                 message: 'Continue and apply this setup?',
@@ -1397,8 +1400,8 @@ project:
               ),
               equalsConfirmCall(
                 message:
-                    'Would you like to run code generation (`serverpod generate`) before deploy?',
-                defaultValue: true,
+                    'Add code generation (`serverpod generate`) as a pre-deploy hook?',
+                defaultValue: false,
               ),
               equalsConfirmCall(
                 message: 'Continue and apply this setup?',
@@ -2059,8 +2062,9 @@ resolution: workspace
           testProjectDir = p.join(d.sandbox, 'workspace_dir', 'project_server');
         });
 
-        group('when executing launch with all settings provided via args '
-            'and approving confirmation', () {
+        group('when executing launch with all settings provided via args'
+            ', disabling initial deploy'
+            ' and approving confirmation', () {
           late Future commandResult;
           setUp(() async {
             logger.answerNextConfirmsWith([true, true]);
@@ -2072,7 +2076,7 @@ resolution: workspace
               '--project-dir',
               testProjectDir,
               '--enable-db',
-              '--deploy',
+              '--no-deploy',
             ]);
 
             await commandResult;
