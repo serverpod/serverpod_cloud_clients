@@ -48,7 +48,7 @@ Future<void> _main(final List<String> args, final CommandLogger logger) async {
   final runner = CloudCliCommandRunner.create(
     logger: logger,
     version: cliVersion,
-    onAnalyticsEvent: _reportMixPanelEvent,
+    onAnalyticsEvent: _reportAnalyticsEvent,
   );
   try {
     await runner.run(args);
@@ -77,9 +77,21 @@ ${zonedError ? 'Zoned error' : ''}
 ${error.runtimeType} $error''';
 }
 
-void _reportMixPanelEvent(final String event) {
-  _analytics.track(event: event);
+void _reportAnalyticsEvent(
+  final String event,
+  final Map<String, dynamic> properties,
+) {
+  _postHogAnalytics.track(event: event, properties: properties);
+  _analytics.track(event: event, properties: properties);
 }
+
+const _postHogApiKey = 'phc_xGBPHgcrTrDuWGtyNX3UJODXgnR684rzRPZjWRlqVxf';
+final Analytics _postHogAnalytics = PostHogAnalytics(
+  uniqueUserId: ResourceManager.uniqueUserId,
+  projectApiKey: _postHogApiKey,
+  version: cliVersion.canonicalizedVersion,
+  libName: 'serverpod_cloud_cli',
+);
 
 const _mixPanelToken = 'd0aaf1b76185d37938f3767bdb685760';
 final Analytics _analytics = MixPanelAnalytics(

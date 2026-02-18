@@ -33,7 +33,7 @@ void main() {
         serviceProvider: CloudCliServiceProvider(
           apiClientFactory: (final globalCfg) => client,
         ),
-        onAnalyticsEvent: (final event) {
+        onAnalyticsEvent: (final event, final properties) {
           analyticsEvents.add(event);
         },
       );
@@ -97,7 +97,7 @@ void main() {
         serviceProvider: CloudCliServiceProvider(
           apiClientFactory: (final globalCfg) => client,
         ),
-        onAnalyticsEvent: (final event) {
+        onAnalyticsEvent: (final event, final properties) {
           analyticsEvents.add(event);
         },
         enableAnalyticsForAllEnvs: true,
