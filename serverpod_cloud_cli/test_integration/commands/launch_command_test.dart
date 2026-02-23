@@ -23,7 +23,7 @@ import '../../test_utils/push_current_dir.dart';
 import '../../test_utils/test_command_logger.dart';
 
 void main() {
-  final logger = TestCommandLogger(printToStdout: true);
+  final logger = TestCommandLogger();
   final client = ClientMock(
     authKeyProvider: InMemoryKeyManager.authenticated(),
   );
