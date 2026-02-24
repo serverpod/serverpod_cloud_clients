@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
-import 'package:ground_control_client/src/utils/retry.dart';
 
 import '../file_uploader_client.dart';
 
@@ -19,14 +18,18 @@ class GoogleCloudStorageUploader implements FileUploaderClient {
   /// Creates a new FileUploader from an [uploadDescription] created by the
   /// server. Optionally, you can pass a [Dio] instance to use for the upload to control
   /// the timeout and other settings.
-  GoogleCloudStorageUploader(String uploadDescription, {Dio? dio}) {
+  GoogleCloudStorageUploader(
+    final String uploadDescription, {
+    final Dio? dio,
+    final Duration? timeout,
+  }) {
     _dio =
         dio ??
         Dio(
           BaseOptions(
-            connectTimeout: const Duration(seconds: 30),
-            sendTimeout: const Duration(seconds: 30),
-            receiveTimeout: const Duration(seconds: 30),
+            connectTimeout: timeout ?? const Duration(seconds: 30),
+            sendTimeout: timeout ?? const Duration(seconds: 30),
+            receiveTimeout: timeout ?? const Duration(seconds: 30),
           ),
         );
     _uploadDescription = _UploadDescription(uploadDescription);
@@ -50,30 +53,20 @@ class GoogleCloudStorageUploader implements FileUploaderClient {
     }
     _attemptedUpload = true;
 
-    final broadcastStream = stream.isBroadcast
-        ? stream
-        : stream.asBroadcastStream();
-
     switch (_uploadDescription.type) {
       case _UploadType.binary:
         final Response result;
         try {
           result = switch (_uploadDescription.httpMethod) {
-            'PUT' => await withRetry(
-              () => _dio.putUri(
-                _uploadDescription.url,
-                data: broadcastStream,
-                options: Options(headers: _uploadDescription.headers),
-              ),
-              shouldRetryOnException: _shouldRetry,
+            'PUT' => await _dio.putUri(
+              _uploadDescription.url,
+              data: stream,
+              options: Options(headers: _uploadDescription.headers),
             ),
-            _ => await withRetry(
-              () => _dio.postUri(
-                _uploadDescription.url,
-                data: broadcastStream,
-                options: Options(headers: _uploadDescription.headers),
-              ),
-              shouldRetryOnException: _shouldRetry,
+            _ => await _dio.postUri(
+              _uploadDescription.url,
+              data: stream,
+              options: Options(headers: _uploadDescription.headers),
             ),
           };
         } on DioException {
@@ -93,7 +86,7 @@ class GoogleCloudStorageUploader implements FileUploaderClient {
 
       case _UploadType.multipart:
         var multipartFile = MultipartFile.fromStream(
-          () => broadcastStream,
+          () => stream,
           length,
           filename: _uploadDescription.fileName,
         );
@@ -111,13 +104,10 @@ class GoogleCloudStorageUploader implements FileUploaderClient {
 
         final Response result;
         try {
-          result = await withRetry(
-            () => _dio.postUri(
-              _uploadDescription.url,
-              data: formData,
-              options: Options(headers: _uploadDescription.headers),
-            ),
-            shouldRetryOnException: _shouldRetry,
+          result = await _dio.postUri(
+            _uploadDescription.url,
+            data: formData,
+            options: Options(headers: _uploadDescription.headers),
           );
         } on DioException {
           rethrow;
@@ -133,15 +123,6 @@ class GoogleCloudStorageUploader implements FileUploaderClient {
           '$_uploadDescription',
         );
     }
-  }
-
-  bool _shouldRetry(Object e) {
-    if (e is DioException) {
-      return e.type == DioExceptionType.connectionTimeout ||
-          e.type == DioExceptionType.sendTimeout ||
-          e.type == DioExceptionType.receiveTimeout;
-    }
-    return false;
   }
 }
 

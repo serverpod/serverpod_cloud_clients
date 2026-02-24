@@ -152,19 +152,37 @@ abstract class Deploy {
         return true;
       });
     } else {
-      final success = await logger.progress('Uploading project...', () async {
-        late final String uploadDescription;
+      late final String uploadDescription;
+
+      await logger.progress('Retrieving upload description...', () async {
         try {
           uploadDescription = await cloudApiClient.deploy
               .createUploadDescription(projectId);
+          return true;
+        } on ServerpodClientException catch (e) {
+          if (e.message.toLowerCase().contains('connection timed out')) {
+            throw FailureException(
+              error:
+                  'Connection timed out. Please check your internet connection and try again.',
+              hint: 'Try increasing the timeout with the --timeout option.',
+              reason: e.toString(),
+            );
+          }
+          throw FailureException.nested(
+            e,
+            null,
+            'Failed to fetch upload description.',
+          );
         } on Exception catch (e, stackTrace) {
           throw FailureException.nested(
             e,
             stackTrace,
-            'Failed to fetch upload description',
+            'Failed to fetch upload description.',
           );
         }
+      });
 
+      final success = await logger.progress('Uploading project...', () async {
         try {
           final fileUploader = fileUploaderFactory(uploadDescription);
           final ret = await fileUploader.upload(
@@ -176,15 +194,12 @@ abstract class Deploy {
           }
           return ret;
         } on DioException catch (e) {
-          throw FailureException(
-            error:
-                'Failed to upload project: ${_uploadDioExceptionFormatter(e)}',
-          );
+          _uploadDioException(e);
         } on Exception catch (e, stackTrace) {
           throw FailureException.nested(
             e,
             stackTrace,
-            'Failed to upload project',
+            'Failed to upload project.',
           );
         }
       });
@@ -210,18 +225,37 @@ abstract class Deploy {
     }
   }
 
-  static String _uploadDioExceptionFormatter(final DioException e) {
+  static Never _uploadDioException(final DioException e) {
     switch (e.type) {
       case DioExceptionType.connectionTimeout:
-        return 'Connection Timeout. Please check your internet connection and try again.';
+        throw FailureException(
+          error:
+              'Connection Timeout. Please check your internet connection and try again.',
+          hint: 'Try increasing the timeout with the --timeout option.',
+        );
       case DioExceptionType.sendTimeout:
-        return 'Send Timeout. Please check your internet connection and try again.';
+        throw FailureException(
+          error:
+              'Send Timeout. Please check your internet connection and try again.',
+          hint: 'Try increasing the timeout with the --timeout option.',
+        );
       case DioExceptionType.receiveTimeout:
-        return 'Receive Timeout. Please check your internet connection and try again.';
+        throw FailureException(
+          error:
+              'Receive Timeout. Please check your internet connection and try again.',
+          hint: 'Try increasing the timeout with the --timeout option.',
+        );
       case DioExceptionType.connectionError:
-        return 'Connection Error. Please check your internet connection and try again.';
+        throw FailureException(
+          error:
+              'Connection Error. Please check your internet connection and try again.',
+          hint: 'Try increasing the timeout with the --timeout option.',
+        );
       default:
-        return e.toString();
+        throw FailureException(
+          error: 'Failed to upload project.',
+          nestedException: e,
+        );
     }
   }
 }

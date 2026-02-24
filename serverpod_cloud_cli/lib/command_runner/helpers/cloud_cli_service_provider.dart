@@ -12,7 +12,7 @@ import 'file_uploader_factory.dart';
 /// [shutdown] should be called after last use.
 class CloudCliServiceProvider {
   final Client Function(GlobalConfiguration globalCfg)? _apiClientFactory;
-  final FileUploaderFactory _fileUploaderFactory;
+  late final FileUploaderFactory _fileUploaderFactory;
 
   bool _initialized = false;
   late GlobalConfiguration _globalConfiguration;
@@ -24,8 +24,9 @@ class CloudCliServiceProvider {
   CloudCliServiceProvider({
     final Client Function(GlobalConfiguration globalCfg)? apiClientFactory,
     final FileUploaderFactory? fileUploaderFactory,
-  }) : _apiClientFactory = apiClientFactory,
-       _fileUploaderFactory = fileUploaderFactory ?? _createGcsFileUploader;
+  }) : _apiClientFactory = apiClientFactory {
+    _fileUploaderFactory = fileUploaderFactory ?? _createGcsFileUploader;
+  }
 
   bool get initialized => _initialized;
 
@@ -90,8 +91,11 @@ class CloudCliServiceProvider {
   ScloudSettings get scloudSettings => _scloudSettings ??= ScloudSettings(
     localStoragePath: _globalConfiguration.scloudDir.path,
   );
-}
 
-FileUploaderClient _createGcsFileUploader(final String uploadDescription) {
-  return GoogleCloudStorageUploader(uploadDescription);
+  FileUploaderClient _createGcsFileUploader(final String uploadDescription) {
+    return GoogleCloudStorageUploader(
+      uploadDescription,
+      timeout: _globalConfiguration.connectionTimeout,
+    );
+  }
 }
