@@ -13,7 +13,9 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../features/databases/models/database_provider.dart' as _i2;
 import '../../../features/databases/models/database_connection.dart' as _i3;
-import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
+import '../../../features/databases/models/database_scaling.dart' as _i4;
+import '../../../features/databases/models/database_quota.dart' as _i5;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i6;
 
 abstract class DatabaseResource implements _i1.SerializableModel {
   DatabaseResource._({
@@ -22,6 +24,8 @@ abstract class DatabaseResource implements _i1.SerializableModel {
     required this.providerId,
     required this.provider,
     required this.connection,
+    this.scaling,
+    this.quota,
   });
 
   factory DatabaseResource({
@@ -30,6 +34,8 @@ abstract class DatabaseResource implements _i1.SerializableModel {
     required String providerId,
     required _i2.DatabaseProvider provider,
     required _i3.DatabaseConnection connection,
+    _i4.DatabaseScaling? scaling,
+    _i5.DatabaseQuota? quota,
   }) = _DatabaseResourceImpl;
 
   factory DatabaseResource.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -40,9 +46,19 @@ abstract class DatabaseResource implements _i1.SerializableModel {
       provider: _i2.DatabaseProvider.fromJson(
         (jsonSerialization['provider'] as String),
       ),
-      connection: _i4.Protocol().deserialize<_i3.DatabaseConnection>(
+      connection: _i6.Protocol().deserialize<_i3.DatabaseConnection>(
         jsonSerialization['connection'],
       ),
+      scaling: jsonSerialization['scaling'] == null
+          ? null
+          : _i6.Protocol().deserialize<_i4.DatabaseScaling>(
+              jsonSerialization['scaling'],
+            ),
+      quota: jsonSerialization['quota'] == null
+          ? null
+          : _i6.Protocol().deserialize<_i5.DatabaseQuota>(
+              jsonSerialization['quota'],
+            ),
     );
   }
 
@@ -59,6 +75,10 @@ abstract class DatabaseResource implements _i1.SerializableModel {
 
   _i3.DatabaseConnection connection;
 
+  _i4.DatabaseScaling? scaling;
+
+  _i5.DatabaseQuota? quota;
+
   /// Returns a shallow copy of this [DatabaseResource]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
@@ -68,6 +88,8 @@ abstract class DatabaseResource implements _i1.SerializableModel {
     String? providerId,
     _i2.DatabaseProvider? provider,
     _i3.DatabaseConnection? connection,
+    _i4.DatabaseScaling? scaling,
+    _i5.DatabaseQuota? quota,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -78,6 +100,8 @@ abstract class DatabaseResource implements _i1.SerializableModel {
       'providerId': providerId,
       'provider': provider.toJson(),
       'connection': connection.toJson(),
+      if (scaling != null) 'scaling': scaling?.toJson(),
+      if (quota != null) 'quota': quota?.toJson(),
     };
   }
 
@@ -96,12 +120,16 @@ class _DatabaseResourceImpl extends DatabaseResource {
     required String providerId,
     required _i2.DatabaseProvider provider,
     required _i3.DatabaseConnection connection,
+    _i4.DatabaseScaling? scaling,
+    _i5.DatabaseQuota? quota,
   }) : super._(
          id: id,
          cloudCapsuleId: cloudCapsuleId,
          providerId: providerId,
          provider: provider,
          connection: connection,
+         scaling: scaling,
+         quota: quota,
        );
 
   /// Returns a shallow copy of this [DatabaseResource]
@@ -114,6 +142,8 @@ class _DatabaseResourceImpl extends DatabaseResource {
     String? providerId,
     _i2.DatabaseProvider? provider,
     _i3.DatabaseConnection? connection,
+    Object? scaling = _Undefined,
+    Object? quota = _Undefined,
   }) {
     return DatabaseResource(
       id: id is int? ? id : this.id,
@@ -121,6 +151,10 @@ class _DatabaseResourceImpl extends DatabaseResource {
       providerId: providerId ?? this.providerId,
       provider: provider ?? this.provider,
       connection: connection ?? this.connection.copyWith(),
+      scaling: scaling is _i4.DatabaseScaling?
+          ? scaling
+          : this.scaling?.copyWith(),
+      quota: quota is _i5.DatabaseQuota? ? quota : this.quota?.copyWith(),
     );
   }
 }
