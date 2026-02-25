@@ -62,11 +62,13 @@ import 'package:ground_control_client/src/protocol/features/projects/models/proj
     as _i26;
 import 'package:ground_control_client/src/protocol/domains/projects/models/role.dart'
     as _i27;
-import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
+import 'package:ground_control_client/src/protocol/features/resources/models/resource_options.dart'
     as _i28;
-import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
+import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
     as _i29;
-import 'protocol.dart' as _i30;
+import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
+    as _i30;
+import 'protocol.dart' as _i31;
 
 /// Endpoint for global administrator to handle procurement for users.
 /// {@category Endpoint}
@@ -1000,6 +1002,41 @@ class EndpointRoles extends _i1.EndpointRef {
 }
 
 /// {@category Endpoint}
+class EndpointResourceConfiguration extends _i1.EndpointRef {
+  EndpointResourceConfiguration(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'resourceConfiguration';
+
+  _i2.Future<_i28.ResourceOptions> getResourceOptions({
+    required String cloudCapsuleId,
+  }) => caller.callServerEndpoint<_i28.ResourceOptions>(
+    'resourceConfiguration',
+    'getResourceOptions',
+    {'cloudCapsuleId': cloudCapsuleId},
+  );
+
+  _i2.Future<void> updateComputeSize({
+    required String cloudCapsuleId,
+    required String instanceType,
+  }) => caller.callServerEndpoint<void>(
+    'resourceConfiguration',
+    'updateComputeSize',
+    {'cloudCapsuleId': cloudCapsuleId, 'instanceType': instanceType},
+  );
+
+  _i2.Future<void> updateDatabaseCu({
+    required String cloudCapsuleId,
+    required double minCu,
+    required double maxCu,
+  }) => caller.callServerEndpoint<void>(
+    'resourceConfiguration',
+    'updateDatabaseCu',
+    {'cloudCapsuleId': cloudCapsuleId, 'minCu': minCu, 'maxCu': maxCu},
+  );
+}
+
+/// {@category Endpoint}
 class EndpointSecrets extends _i1.EndpointRef {
   EndpointSecrets(_i1.EndpointCaller caller) : super(caller);
 
@@ -1079,10 +1116,10 @@ class EndpointStatus extends _i1.EndpointRef {
   );
 
   /// Gets the specified deploy attempt status of the a capsule.
-  _i2.Future<List<_i28.DeployAttemptStage>> getDeployAttemptStatus({
+  _i2.Future<List<_i29.DeployAttemptStage>> getDeployAttemptStatus({
     required String cloudCapsuleId,
     required String attemptId,
-  }) => caller.callServerEndpoint<List<_i28.DeployAttemptStage>>(
+  }) => caller.callServerEndpoint<List<_i29.DeployAttemptStage>>(
     'status',
     'getDeployAttemptStatus',
     {'cloudCapsuleId': cloudCapsuleId, 'attemptId': attemptId},
@@ -1138,11 +1175,11 @@ class EndpointUsers extends _i1.EndpointRef {
 
 class Modules {
   Modules(Client client) {
-    serverpod_auth_idp = _i29.Caller(client);
+    serverpod_auth_idp = _i30.Caller(client);
     serverpod_auth_core = _i10.Caller(client);
   }
 
-  late final _i29.Caller serverpod_auth_idp;
+  late final _i30.Caller serverpod_auth_idp;
 
   late final _i10.Caller serverpod_auth_core;
 }
@@ -1162,7 +1199,7 @@ class Client extends _i1.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
          host,
-         _i30.Protocol(),
+         _i31.Protocol(),
          securityContext: securityContext,
          streamingConnectionTimeout: streamingConnectionTimeout,
          connectionTimeout: connectionTimeout,
@@ -1188,6 +1225,7 @@ class Client extends _i1.ServerpodClientShared {
     plans = EndpointPlans(this);
     projects = EndpointProjects(this);
     roles = EndpointRoles(this);
+    resourceConfiguration = EndpointResourceConfiguration(this);
     secrets = EndpointSecrets(this);
     status = EndpointStatus(this);
     hackathon = EndpointHackathon(this);
@@ -1229,6 +1267,8 @@ class Client extends _i1.ServerpodClientShared {
 
   late final EndpointRoles roles;
 
+  late final EndpointResourceConfiguration resourceConfiguration;
+
   late final EndpointSecrets secrets;
 
   late final EndpointStatus status;
@@ -1258,6 +1298,7 @@ class Client extends _i1.ServerpodClientShared {
     'plans': plans,
     'projects': projects,
     'roles': roles,
+    'resourceConfiguration': resourceConfiguration,
     'secrets': secrets,
     'status': status,
     'hackathon': hackathon,

@@ -19,6 +19,7 @@ abstract class CapsuleResource implements _i1.SerializableModel {
     this.id,
     required this.cloudCapsuleId,
     this.capsule,
+    String? instanceType,
     String? computeRequestCpu,
     String? computeRequestMemory,
     String? computeRequestEphemeralStorage,
@@ -28,7 +29,8 @@ abstract class CapsuleResource implements _i1.SerializableModel {
     bool? computeScalingEnabled,
     int? computeScalingMinReplicas,
     int? computeScalingMaxReplicas,
-  }) : computeRequestCpu = computeRequestCpu ?? '250m',
+  }) : instanceType = instanceType ?? 'small',
+       computeRequestCpu = computeRequestCpu ?? '250m',
        computeRequestMemory = computeRequestMemory ?? '256Mi',
        computeRequestEphemeralStorage = computeRequestEphemeralStorage ?? '1Gi',
        computeLimitCpu = computeLimitCpu ?? '1',
@@ -42,6 +44,7 @@ abstract class CapsuleResource implements _i1.SerializableModel {
     int? id,
     required int cloudCapsuleId,
     _i2.Capsule? capsule,
+    String? instanceType,
     String? computeRequestCpu,
     String? computeRequestMemory,
     String? computeRequestEphemeralStorage,
@@ -62,6 +65,7 @@ abstract class CapsuleResource implements _i1.SerializableModel {
           : _i3.Protocol().deserialize<_i2.Capsule>(
               jsonSerialization['capsule'],
             ),
+      instanceType: jsonSerialization['instanceType'] as String,
       computeRequestCpu: jsonSerialization['computeRequestCpu'] as String,
       computeRequestMemory: jsonSerialization['computeRequestMemory'] as String,
       computeRequestEphemeralStorage:
@@ -88,6 +92,9 @@ abstract class CapsuleResource implements _i1.SerializableModel {
 
   /// The capsule this resource config belongs to.
   _i2.Capsule? capsule;
+
+  /// The named instance type selected by the user (e.g. 'small', 'medium', 'large').
+  String instanceType;
 
   /// The compute request cpu.
   String computeRequestCpu;
@@ -123,6 +130,7 @@ abstract class CapsuleResource implements _i1.SerializableModel {
     int? id,
     int? cloudCapsuleId,
     _i2.Capsule? capsule,
+    String? instanceType,
     String? computeRequestCpu,
     String? computeRequestMemory,
     String? computeRequestEphemeralStorage,
@@ -140,6 +148,7 @@ abstract class CapsuleResource implements _i1.SerializableModel {
       if (id != null) 'id': id,
       'cloudCapsuleId': cloudCapsuleId,
       if (capsule != null) 'capsule': capsule?.toJson(),
+      'instanceType': instanceType,
       'computeRequestCpu': computeRequestCpu,
       'computeRequestMemory': computeRequestMemory,
       'computeRequestEphemeralStorage': computeRequestEphemeralStorage,
@@ -165,6 +174,7 @@ class _CapsuleResourceImpl extends CapsuleResource {
     int? id,
     required int cloudCapsuleId,
     _i2.Capsule? capsule,
+    String? instanceType,
     String? computeRequestCpu,
     String? computeRequestMemory,
     String? computeRequestEphemeralStorage,
@@ -178,6 +188,7 @@ class _CapsuleResourceImpl extends CapsuleResource {
          id: id,
          cloudCapsuleId: cloudCapsuleId,
          capsule: capsule,
+         instanceType: instanceType,
          computeRequestCpu: computeRequestCpu,
          computeRequestMemory: computeRequestMemory,
          computeRequestEphemeralStorage: computeRequestEphemeralStorage,
@@ -197,6 +208,7 @@ class _CapsuleResourceImpl extends CapsuleResource {
     Object? id = _Undefined,
     int? cloudCapsuleId,
     Object? capsule = _Undefined,
+    String? instanceType,
     String? computeRequestCpu,
     String? computeRequestMemory,
     String? computeRequestEphemeralStorage,
@@ -211,6 +223,7 @@ class _CapsuleResourceImpl extends CapsuleResource {
       id: id is int? ? id : this.id,
       cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
       capsule: capsule is _i2.Capsule? ? capsule : this.capsule?.copyWith(),
+      instanceType: instanceType ?? this.instanceType,
       computeRequestCpu: computeRequestCpu ?? this.computeRequestCpu,
       computeRequestMemory: computeRequestMemory ?? this.computeRequestMemory,
       computeRequestEphemeralStorage:
