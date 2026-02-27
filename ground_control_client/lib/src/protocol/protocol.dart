@@ -57,52 +57,53 @@ import 'features/custom_domains/models/new_domain_names_event.dart' as _i42;
 import 'features/custom_domains/models/view_models/custom_domain_name_with_default_domains.dart'
     as _i43;
 import 'features/databases/models/database_connection.dart' as _i44;
-import 'features/databases/models/database_provider.dart' as _i45;
-import 'features/databases/models/database_quota.dart' as _i46;
-import 'features/databases/models/database_resource.dart' as _i47;
-import 'features/databases/models/database_scaling.dart' as _i48;
-import 'features/insights/models/insights_connection_detail.dart' as _i49;
-import 'features/projects/models/project_config.dart' as _i50;
-import 'features/projects/models/project_delete_call_event.dart' as _i51;
-import 'features/projects/models/project_info/project_info.dart' as _i52;
-import 'features/projects/models/project_info/timestamp.dart' as _i53;
-import 'shared/exceptions/models/duplicate_entry_exception.dart' as _i54;
-import 'shared/exceptions/models/invalid_value_exception.dart' as _i55;
-import 'shared/exceptions/models/no_subscription_exception.dart' as _i56;
-import 'shared/exceptions/models/not_found_exception.dart' as _i57;
+import 'features/databases/models/database_options.dart' as _i45;
+import 'features/databases/models/database_provider.dart' as _i46;
+import 'features/databases/models/database_quota.dart' as _i47;
+import 'features/databases/models/database_resource.dart' as _i48;
+import 'features/databases/models/database_scaling.dart' as _i49;
+import 'features/insights/models/insights_connection_detail.dart' as _i50;
+import 'features/projects/models/project_config.dart' as _i51;
+import 'features/projects/models/project_delete_call_event.dart' as _i52;
+import 'features/projects/models/project_info/project_info.dart' as _i53;
+import 'features/projects/models/project_info/timestamp.dart' as _i54;
+import 'shared/exceptions/models/duplicate_entry_exception.dart' as _i55;
+import 'shared/exceptions/models/invalid_value_exception.dart' as _i56;
+import 'shared/exceptions/models/no_subscription_exception.dart' as _i57;
+import 'shared/exceptions/models/not_found_exception.dart' as _i58;
 import 'shared/exceptions/models/procurement_cancellation_exception.dart'
-    as _i58;
-import 'shared/exceptions/models/procurement_denied_exception.dart' as _i59;
-import 'shared/exceptions/models/unauthenticated_exception.dart' as _i60;
-import 'shared/exceptions/models/unauthorized_exception.dart' as _i61;
-import 'shared/models/serverpod_region.dart' as _i62;
-import 'shared/services/pubsub/registry/pubsub_entry.dart' as _i63;
+    as _i59;
+import 'shared/exceptions/models/procurement_denied_exception.dart' as _i60;
+import 'shared/exceptions/models/unauthenticated_exception.dart' as _i61;
+import 'shared/exceptions/models/unauthorized_exception.dart' as _i62;
+import 'shared/models/serverpod_region.dart' as _i63;
+import 'shared/services/pubsub/registry/pubsub_entry.dart' as _i64;
 import 'package:ground_control_client/src/protocol/domains/projects/models/project.dart'
-    as _i64;
-import 'package:ground_control_client/src/protocol/features/projects/models/project_info/project_info.dart'
     as _i65;
-import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt.dart'
+import 'package:ground_control_client/src/protocol/features/projects/models/project_info/project_info.dart'
     as _i66;
-import 'package:ground_control_client/src/protocol/domains/users/models/user.dart'
+import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt.dart'
     as _i67;
-import 'package:ground_control_client/src/protocol/features/auth/models/required_terms.dart'
+import 'package:ground_control_client/src/protocol/domains/users/models/user.dart'
     as _i68;
-import 'package:ground_control_client/src/protocol/features/auth/models/accepted_terms_dto.dart'
+import 'package:ground_control_client/src/protocol/features/auth/models/required_terms.dart'
     as _i69;
-import 'package:ground_control_client/src/protocol/features/auth/models/auth_token_info.dart'
+import 'package:ground_control_client/src/protocol/features/auth/models/accepted_terms_dto.dart'
     as _i70;
-import 'package:ground_control_client/src/protocol/domains/billing/models/payment_method.dart'
+import 'package:ground_control_client/src/protocol/features/auth/models/auth_token_info.dart'
     as _i71;
-import 'package:ground_control_client/src/protocol/domains/environment_variables/models/variable.dart'
+import 'package:ground_control_client/src/protocol/domains/billing/models/payment_method.dart'
     as _i72;
-import 'package:ground_control_client/src/protocol/domains/projects/models/role.dart'
+import 'package:ground_control_client/src/protocol/domains/environment_variables/models/variable.dart'
     as _i73;
-import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
+import 'package:ground_control_client/src/protocol/domains/projects/models/role.dart'
     as _i74;
-import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
+import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
     as _i75;
-import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
+import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
     as _i76;
+import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
+    as _i77;
 export 'domains/billing/models/billing_customer_type.dart';
 export 'domains/billing/models/billing_info.dart';
 export 'domains/billing/models/billing_mapping_type.dart';
@@ -146,6 +147,7 @@ export 'features/custom_domains/models/domain_name_target.dart';
 export 'features/custom_domains/models/new_domain_names_event.dart';
 export 'features/custom_domains/models/view_models/custom_domain_name_with_default_domains.dart';
 export 'features/databases/models/database_connection.dart';
+export 'features/databases/models/database_options.dart';
 export 'features/databases/models/database_provider.dart';
 export 'features/databases/models/database_quota.dart';
 export 'features/databases/models/database_resource.dart';
@@ -327,62 +329,65 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i44.DatabaseConnection) {
       return _i44.DatabaseConnection.fromJson(data) as T;
     }
-    if (t == _i45.DatabaseProvider) {
-      return _i45.DatabaseProvider.fromJson(data) as T;
+    if (t == _i45.DatabaseOptions) {
+      return _i45.DatabaseOptions.fromJson(data) as T;
     }
-    if (t == _i46.DatabaseQuota) {
-      return _i46.DatabaseQuota.fromJson(data) as T;
+    if (t == _i46.DatabaseProvider) {
+      return _i46.DatabaseProvider.fromJson(data) as T;
     }
-    if (t == _i47.DatabaseResource) {
-      return _i47.DatabaseResource.fromJson(data) as T;
+    if (t == _i47.DatabaseQuota) {
+      return _i47.DatabaseQuota.fromJson(data) as T;
     }
-    if (t == _i48.DatabaseScaling) {
-      return _i48.DatabaseScaling.fromJson(data) as T;
+    if (t == _i48.DatabaseResource) {
+      return _i48.DatabaseResource.fromJson(data) as T;
     }
-    if (t == _i49.InsightsConnectionDetail) {
-      return _i49.InsightsConnectionDetail.fromJson(data) as T;
+    if (t == _i49.DatabaseScaling) {
+      return _i49.DatabaseScaling.fromJson(data) as T;
     }
-    if (t == _i50.ProjectConfig) {
-      return _i50.ProjectConfig.fromJson(data) as T;
+    if (t == _i50.InsightsConnectionDetail) {
+      return _i50.InsightsConnectionDetail.fromJson(data) as T;
     }
-    if (t == _i51.ProjectDeleteCallEvent) {
-      return _i51.ProjectDeleteCallEvent.fromJson(data) as T;
+    if (t == _i51.ProjectConfig) {
+      return _i51.ProjectConfig.fromJson(data) as T;
     }
-    if (t == _i52.ProjectInfo) {
-      return _i52.ProjectInfo.fromJson(data) as T;
+    if (t == _i52.ProjectDeleteCallEvent) {
+      return _i52.ProjectDeleteCallEvent.fromJson(data) as T;
     }
-    if (t == _i53.Timestamp) {
-      return _i53.Timestamp.fromJson(data) as T;
+    if (t == _i53.ProjectInfo) {
+      return _i53.ProjectInfo.fromJson(data) as T;
     }
-    if (t == _i54.DuplicateEntryException) {
-      return _i54.DuplicateEntryException.fromJson(data) as T;
+    if (t == _i54.Timestamp) {
+      return _i54.Timestamp.fromJson(data) as T;
     }
-    if (t == _i55.InvalidValueException) {
-      return _i55.InvalidValueException.fromJson(data) as T;
+    if (t == _i55.DuplicateEntryException) {
+      return _i55.DuplicateEntryException.fromJson(data) as T;
     }
-    if (t == _i56.NoSubscriptionException) {
-      return _i56.NoSubscriptionException.fromJson(data) as T;
+    if (t == _i56.InvalidValueException) {
+      return _i56.InvalidValueException.fromJson(data) as T;
     }
-    if (t == _i57.NotFoundException) {
-      return _i57.NotFoundException.fromJson(data) as T;
+    if (t == _i57.NoSubscriptionException) {
+      return _i57.NoSubscriptionException.fromJson(data) as T;
     }
-    if (t == _i58.ProcurementCancellationException) {
-      return _i58.ProcurementCancellationException.fromJson(data) as T;
+    if (t == _i58.NotFoundException) {
+      return _i58.NotFoundException.fromJson(data) as T;
     }
-    if (t == _i59.ProcurementDeniedException) {
-      return _i59.ProcurementDeniedException.fromJson(data) as T;
+    if (t == _i59.ProcurementCancellationException) {
+      return _i59.ProcurementCancellationException.fromJson(data) as T;
     }
-    if (t == _i60.UnauthenticatedException) {
-      return _i60.UnauthenticatedException.fromJson(data) as T;
+    if (t == _i60.ProcurementDeniedException) {
+      return _i60.ProcurementDeniedException.fromJson(data) as T;
     }
-    if (t == _i61.UnauthorizedException) {
-      return _i61.UnauthorizedException.fromJson(data) as T;
+    if (t == _i61.UnauthenticatedException) {
+      return _i61.UnauthenticatedException.fromJson(data) as T;
     }
-    if (t == _i62.ServerpodRegion) {
-      return _i62.ServerpodRegion.fromJson(data) as T;
+    if (t == _i62.UnauthorizedException) {
+      return _i62.UnauthorizedException.fromJson(data) as T;
     }
-    if (t == _i63.PubsubEntry) {
-      return _i63.PubsubEntry.fromJson(data) as T;
+    if (t == _i63.ServerpodRegion) {
+      return _i63.ServerpodRegion.fromJson(data) as T;
+    }
+    if (t == _i64.PubsubEntry) {
+      return _i64.PubsubEntry.fromJson(data) as T;
     }
     if (t == _i1.getType<_i2.BillingCustomerType?>()) {
       return (data != null ? _i2.BillingCustomerType.fromJson(data) : null)
@@ -533,79 +538,82 @@ class Protocol extends _i1.SerializationManager {
       return (data != null ? _i44.DatabaseConnection.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i45.DatabaseProvider?>()) {
-      return (data != null ? _i45.DatabaseProvider.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i45.DatabaseOptions?>()) {
+      return (data != null ? _i45.DatabaseOptions.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i46.DatabaseQuota?>()) {
-      return (data != null ? _i46.DatabaseQuota.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i46.DatabaseProvider?>()) {
+      return (data != null ? _i46.DatabaseProvider.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i47.DatabaseResource?>()) {
-      return (data != null ? _i47.DatabaseResource.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i47.DatabaseQuota?>()) {
+      return (data != null ? _i47.DatabaseQuota.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i48.DatabaseScaling?>()) {
-      return (data != null ? _i48.DatabaseScaling.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i48.DatabaseResource?>()) {
+      return (data != null ? _i48.DatabaseResource.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i49.InsightsConnectionDetail?>()) {
+    if (t == _i1.getType<_i49.DatabaseScaling?>()) {
+      return (data != null ? _i49.DatabaseScaling.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i50.InsightsConnectionDetail?>()) {
       return (data != null
-              ? _i49.InsightsConnectionDetail.fromJson(data)
+              ? _i50.InsightsConnectionDetail.fromJson(data)
               : null)
           as T;
     }
-    if (t == _i1.getType<_i50.ProjectConfig?>()) {
-      return (data != null ? _i50.ProjectConfig.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i51.ProjectConfig?>()) {
+      return (data != null ? _i51.ProjectConfig.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i51.ProjectDeleteCallEvent?>()) {
-      return (data != null ? _i51.ProjectDeleteCallEvent.fromJson(data) : null)
+    if (t == _i1.getType<_i52.ProjectDeleteCallEvent?>()) {
+      return (data != null ? _i52.ProjectDeleteCallEvent.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i52.ProjectInfo?>()) {
-      return (data != null ? _i52.ProjectInfo.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i53.ProjectInfo?>()) {
+      return (data != null ? _i53.ProjectInfo.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i53.Timestamp?>()) {
-      return (data != null ? _i53.Timestamp.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i54.Timestamp?>()) {
+      return (data != null ? _i54.Timestamp.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i54.DuplicateEntryException?>()) {
-      return (data != null ? _i54.DuplicateEntryException.fromJson(data) : null)
+    if (t == _i1.getType<_i55.DuplicateEntryException?>()) {
+      return (data != null ? _i55.DuplicateEntryException.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i55.InvalidValueException?>()) {
-      return (data != null ? _i55.InvalidValueException.fromJson(data) : null)
+    if (t == _i1.getType<_i56.InvalidValueException?>()) {
+      return (data != null ? _i56.InvalidValueException.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i56.NoSubscriptionException?>()) {
-      return (data != null ? _i56.NoSubscriptionException.fromJson(data) : null)
+    if (t == _i1.getType<_i57.NoSubscriptionException?>()) {
+      return (data != null ? _i57.NoSubscriptionException.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i57.NotFoundException?>()) {
-      return (data != null ? _i57.NotFoundException.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i58.NotFoundException?>()) {
+      return (data != null ? _i58.NotFoundException.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i58.ProcurementCancellationException?>()) {
+    if (t == _i1.getType<_i59.ProcurementCancellationException?>()) {
       return (data != null
-              ? _i58.ProcurementCancellationException.fromJson(data)
+              ? _i59.ProcurementCancellationException.fromJson(data)
               : null)
           as T;
     }
-    if (t == _i1.getType<_i59.ProcurementDeniedException?>()) {
+    if (t == _i1.getType<_i60.ProcurementDeniedException?>()) {
       return (data != null
-              ? _i59.ProcurementDeniedException.fromJson(data)
+              ? _i60.ProcurementDeniedException.fromJson(data)
               : null)
           as T;
     }
-    if (t == _i1.getType<_i60.UnauthenticatedException?>()) {
+    if (t == _i1.getType<_i61.UnauthenticatedException?>()) {
       return (data != null
-              ? _i60.UnauthenticatedException.fromJson(data)
+              ? _i61.UnauthenticatedException.fromJson(data)
               : null)
           as T;
     }
-    if (t == _i1.getType<_i61.UnauthorizedException?>()) {
-      return (data != null ? _i61.UnauthorizedException.fromJson(data) : null)
+    if (t == _i1.getType<_i62.UnauthorizedException?>()) {
+      return (data != null ? _i62.UnauthorizedException.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i62.ServerpodRegion?>()) {
-      return (data != null ? _i62.ServerpodRegion.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i63.ServerpodRegion?>()) {
+      return (data != null ? _i63.ServerpodRegion.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i63.PubsubEntry?>()) {
-      return (data != null ? _i63.PubsubEntry.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i64.PubsubEntry?>()) {
+      return (data != null ? _i64.PubsubEntry.fromJson(data) : null) as T;
     }
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList() as T;
@@ -706,6 +714,9 @@ class Protocol extends _i1.SerializationManager {
           )
           as T;
     }
+    if (t == List<double>) {
+      return (data as List).map((e) => deserialize<double>(e)).toList() as T;
+    }
     if (t == List<(String, String)>) {
       return (data as List)
               .map((e) => deserialize<(String, String)>(e))
@@ -726,55 +737,55 @@ class Protocol extends _i1.SerializationManager {
           )
           as T;
     }
-    if (t == List<_i64.Project>) {
-      return (data as List).map((e) => deserialize<_i64.Project>(e)).toList()
+    if (t == List<_i65.Project>) {
+      return (data as List).map((e) => deserialize<_i65.Project>(e)).toList()
           as T;
     }
-    if (t == List<_i65.ProjectInfo>) {
+    if (t == List<_i66.ProjectInfo>) {
       return (data as List)
-              .map((e) => deserialize<_i65.ProjectInfo>(e))
+              .map((e) => deserialize<_i66.ProjectInfo>(e))
               .toList()
           as T;
     }
-    if (t == List<_i66.DeployAttempt>) {
+    if (t == List<_i67.DeployAttempt>) {
       return (data as List)
-              .map((e) => deserialize<_i66.DeployAttempt>(e))
+              .map((e) => deserialize<_i67.DeployAttempt>(e))
               .toList()
           as T;
     }
-    if (t == List<_i67.User>) {
-      return (data as List).map((e) => deserialize<_i67.User>(e)).toList() as T;
+    if (t == List<_i68.User>) {
+      return (data as List).map((e) => deserialize<_i68.User>(e)).toList() as T;
     }
-    if (t == List<_i68.RequiredTerms>) {
+    if (t == List<_i69.RequiredTerms>) {
       return (data as List)
-              .map((e) => deserialize<_i68.RequiredTerms>(e))
+              .map((e) => deserialize<_i69.RequiredTerms>(e))
               .toList()
           as T;
     }
-    if (t == List<_i69.AcceptedTermsDTO>) {
+    if (t == List<_i70.AcceptedTermsDTO>) {
       return (data as List)
-              .map((e) => deserialize<_i69.AcceptedTermsDTO>(e))
+              .map((e) => deserialize<_i70.AcceptedTermsDTO>(e))
               .toList()
           as T;
     }
-    if (t == List<_i70.AuthTokenInfo>) {
+    if (t == List<_i71.AuthTokenInfo>) {
       return (data as List)
-              .map((e) => deserialize<_i70.AuthTokenInfo>(e))
+              .map((e) => deserialize<_i71.AuthTokenInfo>(e))
               .toList()
           as T;
     }
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
-    if (t == List<_i71.PaymentMethod>) {
+    if (t == List<_i72.PaymentMethod>) {
       return (data as List)
-              .map((e) => deserialize<_i71.PaymentMethod>(e))
+              .map((e) => deserialize<_i72.PaymentMethod>(e))
               .toList()
           as T;
     }
-    if (t == List<_i72.EnvironmentVariable>) {
+    if (t == List<_i73.EnvironmentVariable>) {
       return (data as List)
-              .map((e) => deserialize<_i72.EnvironmentVariable>(e))
+              .map((e) => deserialize<_i73.EnvironmentVariable>(e))
               .toList()
           as T;
     }
@@ -784,8 +795,8 @@ class Protocol extends _i1.SerializationManager {
               : null)
           as T;
     }
-    if (t == List<_i73.Role>) {
-      return (data as List).map((e) => deserialize<_i73.Role>(e)).toList() as T;
+    if (t == List<_i74.Role>) {
+      return (data as List).map((e) => deserialize<_i74.Role>(e)).toList() as T;
     }
     if (t == Map<String, String>) {
       return (data as Map).map(
@@ -793,17 +804,17 @@ class Protocol extends _i1.SerializationManager {
           )
           as T;
     }
-    if (t == List<_i74.DeployAttemptStage>) {
+    if (t == List<_i75.DeployAttemptStage>) {
       return (data as List)
-              .map((e) => deserialize<_i74.DeployAttemptStage>(e))
+              .map((e) => deserialize<_i75.DeployAttemptStage>(e))
               .toList()
           as T;
     }
     try {
-      return _i75.Protocol().deserialize<T>(data, t);
+      return _i76.Protocol().deserialize<T>(data, t);
     } on _i1.DeserializationTypeNotFoundException catch (_) {}
     try {
-      return _i76.Protocol().deserialize<T>(data, t);
+      return _i77.Protocol().deserialize<T>(data, t);
     } on _i1.DeserializationTypeNotFoundException catch (_) {}
     return super.deserialize<T>(data, t);
   }
@@ -855,26 +866,27 @@ class Protocol extends _i1.SerializationManager {
       _i43.CustomDomainNameWithDefaultDomains =>
         'CustomDomainNameWithDefaultDomains',
       _i44.DatabaseConnection => 'DatabaseConnection',
-      _i45.DatabaseProvider => 'DatabaseProvider',
-      _i46.DatabaseQuota => 'DatabaseQuota',
-      _i47.DatabaseResource => 'DatabaseResource',
-      _i48.DatabaseScaling => 'DatabaseScaling',
-      _i49.InsightsConnectionDetail => 'InsightsConnectionDetail',
-      _i50.ProjectConfig => 'ProjectConfig',
-      _i51.ProjectDeleteCallEvent => 'ProjectDeleteCallEvent',
-      _i52.ProjectInfo => 'ProjectInfo',
-      _i53.Timestamp => 'Timestamp',
-      _i54.DuplicateEntryException => 'DuplicateEntryException',
-      _i55.InvalidValueException => 'InvalidValueException',
-      _i56.NoSubscriptionException => 'NoSubscriptionException',
-      _i57.NotFoundException => 'NotFoundException',
-      _i58.ProcurementCancellationException =>
+      _i45.DatabaseOptions => 'DatabaseOptions',
+      _i46.DatabaseProvider => 'DatabaseProvider',
+      _i47.DatabaseQuota => 'DatabaseQuota',
+      _i48.DatabaseResource => 'DatabaseResource',
+      _i49.DatabaseScaling => 'DatabaseScaling',
+      _i50.InsightsConnectionDetail => 'InsightsConnectionDetail',
+      _i51.ProjectConfig => 'ProjectConfig',
+      _i52.ProjectDeleteCallEvent => 'ProjectDeleteCallEvent',
+      _i53.ProjectInfo => 'ProjectInfo',
+      _i54.Timestamp => 'Timestamp',
+      _i55.DuplicateEntryException => 'DuplicateEntryException',
+      _i56.InvalidValueException => 'InvalidValueException',
+      _i57.NoSubscriptionException => 'NoSubscriptionException',
+      _i58.NotFoundException => 'NotFoundException',
+      _i59.ProcurementCancellationException =>
         'ProcurementCancellationException',
-      _i59.ProcurementDeniedException => 'ProcurementDeniedException',
-      _i60.UnauthenticatedException => 'UnauthenticatedException',
-      _i61.UnauthorizedException => 'UnauthorizedException',
-      _i62.ServerpodRegion => 'ServerpodRegion',
-      _i63.PubsubEntry => 'PubsubEntry',
+      _i60.ProcurementDeniedException => 'ProcurementDeniedException',
+      _i61.UnauthenticatedException => 'UnauthenticatedException',
+      _i62.UnauthorizedException => 'UnauthorizedException',
+      _i63.ServerpodRegion => 'ServerpodRegion',
+      _i64.PubsubEntry => 'PubsubEntry',
       _ => null,
     };
   }
@@ -978,50 +990,52 @@ class Protocol extends _i1.SerializationManager {
         return 'CustomDomainNameWithDefaultDomains';
       case _i44.DatabaseConnection():
         return 'DatabaseConnection';
-      case _i45.DatabaseProvider():
+      case _i45.DatabaseOptions():
+        return 'DatabaseOptions';
+      case _i46.DatabaseProvider():
         return 'DatabaseProvider';
-      case _i46.DatabaseQuota():
+      case _i47.DatabaseQuota():
         return 'DatabaseQuota';
-      case _i47.DatabaseResource():
+      case _i48.DatabaseResource():
         return 'DatabaseResource';
-      case _i48.DatabaseScaling():
+      case _i49.DatabaseScaling():
         return 'DatabaseScaling';
-      case _i49.InsightsConnectionDetail():
+      case _i50.InsightsConnectionDetail():
         return 'InsightsConnectionDetail';
-      case _i50.ProjectConfig():
+      case _i51.ProjectConfig():
         return 'ProjectConfig';
-      case _i51.ProjectDeleteCallEvent():
+      case _i52.ProjectDeleteCallEvent():
         return 'ProjectDeleteCallEvent';
-      case _i52.ProjectInfo():
+      case _i53.ProjectInfo():
         return 'ProjectInfo';
-      case _i53.Timestamp():
+      case _i54.Timestamp():
         return 'Timestamp';
-      case _i54.DuplicateEntryException():
+      case _i55.DuplicateEntryException():
         return 'DuplicateEntryException';
-      case _i55.InvalidValueException():
+      case _i56.InvalidValueException():
         return 'InvalidValueException';
-      case _i56.NoSubscriptionException():
+      case _i57.NoSubscriptionException():
         return 'NoSubscriptionException';
-      case _i57.NotFoundException():
+      case _i58.NotFoundException():
         return 'NotFoundException';
-      case _i58.ProcurementCancellationException():
+      case _i59.ProcurementCancellationException():
         return 'ProcurementCancellationException';
-      case _i59.ProcurementDeniedException():
+      case _i60.ProcurementDeniedException():
         return 'ProcurementDeniedException';
-      case _i60.UnauthenticatedException():
+      case _i61.UnauthenticatedException():
         return 'UnauthenticatedException';
-      case _i61.UnauthorizedException():
+      case _i62.UnauthorizedException():
         return 'UnauthorizedException';
-      case _i62.ServerpodRegion():
+      case _i63.ServerpodRegion():
         return 'ServerpodRegion';
-      case _i63.PubsubEntry():
+      case _i64.PubsubEntry():
         return 'PubsubEntry';
     }
-    className = _i75.Protocol().getClassNameForObject(data);
+    className = _i76.Protocol().getClassNameForObject(data);
     if (className != null) {
       return 'serverpod_auth_idp.$className';
     }
-    className = _i76.Protocol().getClassNameForObject(data);
+    className = _i77.Protocol().getClassNameForObject(data);
     if (className != null) {
       return 'serverpod_auth_core.$className';
     }
@@ -1165,70 +1179,73 @@ class Protocol extends _i1.SerializationManager {
     if (dataClassName == 'DatabaseConnection') {
       return deserialize<_i44.DatabaseConnection>(data['data']);
     }
+    if (dataClassName == 'DatabaseOptions') {
+      return deserialize<_i45.DatabaseOptions>(data['data']);
+    }
     if (dataClassName == 'DatabaseProvider') {
-      return deserialize<_i45.DatabaseProvider>(data['data']);
+      return deserialize<_i46.DatabaseProvider>(data['data']);
     }
     if (dataClassName == 'DatabaseQuota') {
-      return deserialize<_i46.DatabaseQuota>(data['data']);
+      return deserialize<_i47.DatabaseQuota>(data['data']);
     }
     if (dataClassName == 'DatabaseResource') {
-      return deserialize<_i47.DatabaseResource>(data['data']);
+      return deserialize<_i48.DatabaseResource>(data['data']);
     }
     if (dataClassName == 'DatabaseScaling') {
-      return deserialize<_i48.DatabaseScaling>(data['data']);
+      return deserialize<_i49.DatabaseScaling>(data['data']);
     }
     if (dataClassName == 'InsightsConnectionDetail') {
-      return deserialize<_i49.InsightsConnectionDetail>(data['data']);
+      return deserialize<_i50.InsightsConnectionDetail>(data['data']);
     }
     if (dataClassName == 'ProjectConfig') {
-      return deserialize<_i50.ProjectConfig>(data['data']);
+      return deserialize<_i51.ProjectConfig>(data['data']);
     }
     if (dataClassName == 'ProjectDeleteCallEvent') {
-      return deserialize<_i51.ProjectDeleteCallEvent>(data['data']);
+      return deserialize<_i52.ProjectDeleteCallEvent>(data['data']);
     }
     if (dataClassName == 'ProjectInfo') {
-      return deserialize<_i52.ProjectInfo>(data['data']);
+      return deserialize<_i53.ProjectInfo>(data['data']);
     }
     if (dataClassName == 'Timestamp') {
-      return deserialize<_i53.Timestamp>(data['data']);
+      return deserialize<_i54.Timestamp>(data['data']);
     }
     if (dataClassName == 'DuplicateEntryException') {
-      return deserialize<_i54.DuplicateEntryException>(data['data']);
+      return deserialize<_i55.DuplicateEntryException>(data['data']);
     }
     if (dataClassName == 'InvalidValueException') {
-      return deserialize<_i55.InvalidValueException>(data['data']);
+      return deserialize<_i56.InvalidValueException>(data['data']);
     }
     if (dataClassName == 'NoSubscriptionException') {
-      return deserialize<_i56.NoSubscriptionException>(data['data']);
+      return deserialize<_i57.NoSubscriptionException>(data['data']);
     }
     if (dataClassName == 'NotFoundException') {
-      return deserialize<_i57.NotFoundException>(data['data']);
+      return deserialize<_i58.NotFoundException>(data['data']);
     }
     if (dataClassName == 'ProcurementCancellationException') {
-      return deserialize<_i58.ProcurementCancellationException>(data['data']);
+      return deserialize<_i59.ProcurementCancellationException>(data['data']);
     }
     if (dataClassName == 'ProcurementDeniedException') {
-      return deserialize<_i59.ProcurementDeniedException>(data['data']);
+      return deserialize<_i60.ProcurementDeniedException>(data['data']);
     }
     if (dataClassName == 'UnauthenticatedException') {
-      return deserialize<_i60.UnauthenticatedException>(data['data']);
+      return deserialize<_i61.UnauthenticatedException>(data['data']);
     }
     if (dataClassName == 'UnauthorizedException') {
-      return deserialize<_i61.UnauthorizedException>(data['data']);
+      return deserialize<_i62.UnauthorizedException>(data['data']);
     }
     if (dataClassName == 'ServerpodRegion') {
-      return deserialize<_i62.ServerpodRegion>(data['data']);
+      return deserialize<_i63.ServerpodRegion>(data['data']);
     }
     if (dataClassName == 'PubsubEntry') {
-      return deserialize<_i63.PubsubEntry>(data['data']);
+      return deserialize<_i64.PubsubEntry>(data['data']);
     }
     if (dataClassName.startsWith('serverpod_auth_idp.')) {
       data['className'] = dataClassName.substring(19);
-      return _i75.Protocol().deserializeByClassName(data);
+      return _i76.Protocol().deserializeByClassName(data);
     }
     if (dataClassName.startsWith('serverpod_auth_core.')) {
       data['className'] = dataClassName.substring(20);
-      return _i76.Protocol().deserializeByClassName(data);
+      return _i77.Protocol().deserializeByClassName(data);
     }
     return super.deserializeByClassName(data);
   }
