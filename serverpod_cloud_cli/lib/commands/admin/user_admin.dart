@@ -89,4 +89,68 @@ abstract class UserAdminCommands {
       newParagraph: true,
     );
   }
+
+  static Future<void> listHackathonUsers(
+    final Client cloudApiClient, {
+    required final CommandLogger logger,
+    required final bool includeWithoutProjects,
+    final bool inUtc = false,
+  }) async {
+    final users = await cloudApiClient.adminUsers.listHackathonUsers(
+      includeWithoutProjects: includeWithoutProjects,
+    );
+
+    final timezoneName = inUtc ? 'UTC' : 'local';
+
+    final table = TablePrinter(
+      headers: [
+        'User',
+        'Account status',
+        'Created at ($timezoneName)',
+        'Archived at ($timezoneName)',
+        'Projects',
+      ],
+      rows: users.entries.map(
+        (final e) => [
+          e.key.email,
+          e.key.accountStatus.toString(),
+          e.key.createdAt.toTzString(inUtc, 19),
+          e.key.archivedAt?.toTzString(inUtc, 19),
+          e.value.map((final p) => p.project.cloudProjectId).join(', '),
+        ],
+      ),
+    );
+    table.writeLines(logger.line);
+  }
+
+  static Future<void> sendSingleHackathonThankyou(
+    final Client cloudApiClient, {
+    required final CommandLogger logger,
+    required final String email,
+  }) async {
+    await cloudApiClient.adminUsers.sendHackathonThankyouEmail(email: email);
+    logger.success(
+      'Hackathon thank-you email sent to $email.',
+      newParagraph: true,
+    );
+  }
+
+  static Future<void> sendHackathonThankyous(
+    final Client cloudApiClient, {
+    required final CommandLogger logger,
+    required final bool includeWithoutProjects,
+  }) async {
+    final users = await cloudApiClient.adminUsers.listHackathonUsers(
+      includeWithoutProjects: includeWithoutProjects,
+    );
+
+    logger.init('Sending Hackathon thank-you emails to ${users.length} users.');
+    for (final user in users.entries) {
+      await cloudApiClient.adminUsers.sendHackathonThankyouEmail(
+        email: user.key.email,
+      );
+      logger.line(user.key.email);
+    }
+    logger.success('Emails successfully sent!', newParagraph: true);
+  }
 }

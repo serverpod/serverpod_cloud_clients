@@ -235,6 +235,22 @@ class EndpointAdminUsers extends _i1.EndpointRef {
   /// If the user does not exist, a user invitation email is sent.
   _i2.Future<void> inviteUser({required String email}) => caller
       .callServerEndpoint<void>('adminUsers', 'inviteUser', {'email': email});
+
+  /// Lists all Hackathon users, potentially only with active projects.
+  _i2.Future<Map<_i6.User, List<_i4.ProjectInfo>>> listHackathonUsers({
+    bool? includeWithoutProjects,
+  }) => caller.callServerEndpoint<Map<_i6.User, List<_i4.ProjectInfo>>>(
+    'adminUsers',
+    'listHackathonUsers',
+    {'includeWithoutProjects': includeWithoutProjects},
+  );
+
+  _i2.Future<void> sendHackathonThankyouEmail({required String email}) =>
+      caller.callServerEndpoint<void>(
+        'adminUsers',
+        'sendHackathonThankyouEmail',
+        {'email': email},
+      );
 }
 
 /// Endpoint for authentication.

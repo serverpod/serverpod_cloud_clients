@@ -756,6 +756,17 @@ class Protocol extends _i1.SerializationManager {
     if (t == List<_i68.User>) {
       return (data as List).map((e) => deserialize<_i68.User>(e)).toList() as T;
     }
+    if (t == Map<_i68.User, List<_i66.ProjectInfo>>) {
+      return Map.fromEntries(
+            (data as List).map(
+              (e) => MapEntry(
+                deserialize<_i68.User>(e['k']),
+                deserialize<List<_i66.ProjectInfo>>(e['v']),
+              ),
+            ),
+          )
+          as T;
+    }
     if (t == List<_i69.RequiredTerms>) {
       return (data as List)
               .map((e) => deserialize<_i69.RequiredTerms>(e))
