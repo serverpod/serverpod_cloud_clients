@@ -23,6 +23,7 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
     required this.stageType,
     this.stageInfo,
     this.buildId,
+    this.imageName,
     required this.stageStatus,
     this.startedAt,
     this.endedAt,
@@ -36,6 +37,7 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
     required _i2.DeployStageType stageType,
     String? stageInfo,
     String? buildId,
+    String? imageName,
     required _i3.DeployProgressStatus stageStatus,
     DateTime? startedAt,
     DateTime? endedAt,
@@ -52,6 +54,7 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
       ),
       stageInfo: jsonSerialization['stageInfo'] as String?,
       buildId: jsonSerialization['buildId'] as String?,
+      imageName: jsonSerialization['imageName'] as String?,
       stageStatus: _i3.DeployProgressStatus.fromJson(
         (jsonSerialization['stageStatus'] as String),
       ),
@@ -88,6 +91,9 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
   /// The build ID of the deploy attempt that this stage belongs to, if known.
   String? buildId;
 
+  /// The name of the image produced by the build stage, if known.
+  String? imageName;
+
   /// The current / last known status of this stage.
   _i3.DeployProgressStatus stageStatus;
 
@@ -108,6 +114,7 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
     _i2.DeployStageType? stageType,
     String? stageInfo,
     String? buildId,
+    String? imageName,
     _i3.DeployProgressStatus? stageStatus,
     DateTime? startedAt,
     DateTime? endedAt,
@@ -123,6 +130,7 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
       'stageType': stageType.toJson(),
       if (stageInfo != null) 'stageInfo': stageInfo,
       if (buildId != null) 'buildId': buildId,
+      if (imageName != null) 'imageName': imageName,
       'stageStatus': stageStatus.toJson(),
       if (startedAt != null) 'startedAt': startedAt?.toJson(),
       if (endedAt != null) 'endedAt': endedAt?.toJson(),
@@ -146,6 +154,7 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
     required _i2.DeployStageType stageType,
     String? stageInfo,
     String? buildId,
+    String? imageName,
     required _i3.DeployProgressStatus stageStatus,
     DateTime? startedAt,
     DateTime? endedAt,
@@ -157,6 +166,7 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
          stageType: stageType,
          stageInfo: stageInfo,
          buildId: buildId,
+         imageName: imageName,
          stageStatus: stageStatus,
          startedAt: startedAt,
          endedAt: endedAt,
@@ -174,6 +184,7 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
     _i2.DeployStageType? stageType,
     Object? stageInfo = _Undefined,
     Object? buildId = _Undefined,
+    Object? imageName = _Undefined,
     _i3.DeployProgressStatus? stageStatus,
     Object? startedAt = _Undefined,
     Object? endedAt = _Undefined,
@@ -186,6 +197,7 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
       stageType: stageType ?? this.stageType,
       stageInfo: stageInfo is String? ? stageInfo : this.stageInfo,
       buildId: buildId is String? ? buildId : this.buildId,
+      imageName: imageName is String? ? imageName : this.imageName,
       stageStatus: stageStatus ?? this.stageStatus,
       startedAt: startedAt is DateTime? ? startedAt : this.startedAt,
       endedAt: endedAt is DateTime? ? endedAt : this.endedAt,

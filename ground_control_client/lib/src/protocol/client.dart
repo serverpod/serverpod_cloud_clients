@@ -189,9 +189,9 @@ class EndpointAdminProjects extends _i1.EndpointRef {
 
   /// Redeploys a capsule using its current image.
   /// Triggers a deploymentUpdated event to redeploy the infrastructure.
-  _i2.Future<void> redeployCapsule(String cloudProjectId) =>
+  _i2.Future<void> redeployCapsule(String cloudCapsuleId) =>
       caller.callServerEndpoint<void>('adminProjects', 'redeployCapsule', {
-        'cloudProjectId': cloudProjectId,
+        'cloudCapsuleId': cloudCapsuleId,
       });
 }
 
