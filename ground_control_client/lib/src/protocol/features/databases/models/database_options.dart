@@ -18,14 +18,12 @@ abstract class DatabaseOptions implements _i1.SerializableModel {
     required this.availableCuValues,
     this.currentMinCu,
     this.currentMaxCu,
-    required this.hasDatabaseEnabled,
   });
 
   factory DatabaseOptions({
     required List<double> availableCuValues,
     double? currentMinCu,
     double? currentMaxCu,
-    required bool hasDatabaseEnabled,
   }) = _DatabaseOptionsImpl;
 
   factory DatabaseOptions.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -35,7 +33,6 @@ abstract class DatabaseOptions implements _i1.SerializableModel {
       ),
       currentMinCu: (jsonSerialization['currentMinCu'] as num?)?.toDouble(),
       currentMaxCu: (jsonSerialization['currentMaxCu'] as num?)?.toDouble(),
-      hasDatabaseEnabled: jsonSerialization['hasDatabaseEnabled'] as bool,
     );
   }
 
@@ -45,8 +42,6 @@ abstract class DatabaseOptions implements _i1.SerializableModel {
 
   double? currentMaxCu;
 
-  bool hasDatabaseEnabled;
-
   /// Returns a shallow copy of this [DatabaseOptions]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
@@ -54,7 +49,6 @@ abstract class DatabaseOptions implements _i1.SerializableModel {
     List<double>? availableCuValues,
     double? currentMinCu,
     double? currentMaxCu,
-    bool? hasDatabaseEnabled,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -63,7 +57,6 @@ abstract class DatabaseOptions implements _i1.SerializableModel {
       'availableCuValues': availableCuValues.toJson(),
       if (currentMinCu != null) 'currentMinCu': currentMinCu,
       if (currentMaxCu != null) 'currentMaxCu': currentMaxCu,
-      'hasDatabaseEnabled': hasDatabaseEnabled,
     };
   }
 
@@ -80,12 +73,10 @@ class _DatabaseOptionsImpl extends DatabaseOptions {
     required List<double> availableCuValues,
     double? currentMinCu,
     double? currentMaxCu,
-    required bool hasDatabaseEnabled,
   }) : super._(
          availableCuValues: availableCuValues,
          currentMinCu: currentMinCu,
          currentMaxCu: currentMaxCu,
-         hasDatabaseEnabled: hasDatabaseEnabled,
        );
 
   /// Returns a shallow copy of this [DatabaseOptions]
@@ -96,14 +87,12 @@ class _DatabaseOptionsImpl extends DatabaseOptions {
     List<double>? availableCuValues,
     Object? currentMinCu = _Undefined,
     Object? currentMaxCu = _Undefined,
-    bool? hasDatabaseEnabled,
   }) {
     return DatabaseOptions(
       availableCuValues:
           availableCuValues ?? this.availableCuValues.map((e0) => e0).toList(),
       currentMinCu: currentMinCu is double? ? currentMinCu : this.currentMinCu,
       currentMaxCu: currentMaxCu is double? ? currentMaxCu : this.currentMaxCu,
-      hasDatabaseEnabled: hasDatabaseEnabled ?? this.hasDatabaseEnabled,
     );
   }
 }
