@@ -1,6 +1,20 @@
 
 # Changelog
 
+## [0.23.0] - 2026-03-04
+
+### Added
+
+- **Usage analytics to PostHog** - Command usage analytics are now sent to PostHog, in addition to MixPanel.
+
+### Fixed
+
+- **Improved deployment robustness** - Resolved issues related to deployment timeouts and error messages, enhancing the overall deployment experience.
+
+### Changed
+
+- **Configurable upload timeout** - The `scloud --timeout` option now controls the upload timeout, which has been increased from 30 to 60 seconds.
+
 ## [0.22.0] - 2026-02-17
 
 ### Added
