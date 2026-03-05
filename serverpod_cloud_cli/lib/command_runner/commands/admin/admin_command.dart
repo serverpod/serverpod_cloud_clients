@@ -1,5 +1,4 @@
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/admin/admin_hackathon_commands.dart';
 
 import 'admin_product_commands.dart';
 import 'admin_projects_commands.dart';
@@ -22,10 +21,8 @@ class CloudAdminCommand extends CloudCliCommand {
   CloudAdminCommand({required super.logger, this.hidden = true}) {
     addSubcommand(AdminListUsersCommand(logger: logger));
     addSubcommand(AdminInviteUserCommand(logger: logger));
-    addSubcommand(AdminInviteHackathonUserCommand(logger: logger));
     addSubcommand(AdminProjectCommand(logger: logger));
     addSubcommand(AdminRedeployCommand(logger: logger));
     addSubcommand(AdminProductCommand(logger: logger));
-    addSubcommand(AdminHackathonCommand(logger: logger));
   }
 }
