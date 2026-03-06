@@ -544,6 +544,13 @@ class EndpointBilling extends _i1.EndpointRef {
       caller.callServerEndpoint<void>('billing', 'setDefaultPaymentMethod', {
         'paymentMethodId': paymentMethodId,
       });
+
+  /// Checks if the owner is in good standing.
+  ///
+  /// Verifies that the owner's billing account is active and has no outstanding
+  /// issues that would prevent normal operation of the service.
+  _i2.Future<bool> ownerIsInGoodStanding() =>
+      caller.callServerEndpoint<bool>('billing', 'ownerIsInGoodStanding', {});
 }
 
 /// {@category Endpoint}
