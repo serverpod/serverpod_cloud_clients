@@ -6,6 +6,18 @@ import 'package:serverpod_cloud_cli/shared/user_interaction/user_confirmations.d
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:serverpod_cloud_cli/util/project_files_writer.dart';
 
+abstract final class ProjectProfileValue {
+  static const String starter = 'starter';
+  static const String growth = 'growth';
+
+  static const String? defaultProfile = null;
+}
+
+abstract final class ProjectProductName {
+  static const starter = 'starter-project';
+  static const growth = 'growth-project';
+}
+
 abstract class ProjectCommands {
   static const defaultPlanName = 'early-access';
 
@@ -27,11 +39,20 @@ abstract class ProjectCommands {
     }
   }
 
+  static String? _projectProfileToProductName(final String? profileValue) {
+    return switch (profileValue) {
+      ProjectProfileValue.starter => ProjectProductName.starter,
+      ProjectProfileValue.growth => ProjectProductName.growth,
+      _ => null,
+    };
+  }
+
   /// Subcommand to create a new tenant project.
   static Future<void> createProject(
     final Client cloudApiClient, {
     required final CommandLogger logger,
     required final String projectId,
+    required final String? projectProfile,
     required final bool enableDb,
     required final String projectDir,
     required final String configFilePath,
@@ -60,6 +81,7 @@ abstract class ProjectCommands {
         () async {
           await cloudApiClient.projects.createProject(
             cloudProjectId: projectId,
+            projectProductName: _projectProfileToProductName(projectProfile),
           );
           return true;
         },

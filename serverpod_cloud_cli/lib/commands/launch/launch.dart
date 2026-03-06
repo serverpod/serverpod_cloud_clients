@@ -477,6 +477,7 @@ The default API domain will be: <project-id>.api.serverpod.space
         cloudApiClient,
         logger: logger,
         projectId: projectId,
+        projectProfile: ProjectProfileValue.defaultProfile,
         enableDb: enableDb,
         projectDir: projectDir,
         configFilePath: configFilePath,

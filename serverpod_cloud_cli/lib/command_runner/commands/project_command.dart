@@ -11,6 +11,15 @@ import 'package:serverpod_cloud_cli/constants.dart';
 
 import 'categories.dart';
 
+enum ProjectProfile {
+  starter(ProjectProfileValue.starter),
+  growth(ProjectProfileValue.growth);
+
+  const ProjectProfile(this.value);
+
+  final String value;
+}
+
 class CloudProjectCommand extends CloudCliCommand {
   @override
   final name = 'project';
@@ -33,6 +42,15 @@ class CloudProjectCommand extends CloudCliCommand {
 
 enum ProjectCreateOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption.argsOnly(asFirstArg: true)),
+  profile(
+    EnumOption<ProjectProfile>(
+      argName: 'profile',
+      helpText: 'Project profile (starter or growth).',
+      enumParser: EnumParser(ProjectProfile.values),
+      mandatory: false,
+      hide: true,
+    ),
+  ),
   enableDb(
     FlagOption(
       argName: 'enable-db',
@@ -61,6 +79,9 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
   @override
   Future<void> runWithConfig(final Configuration commandConfig) async {
     final projectId = commandConfig.value(ProjectCreateOption.projectId);
+    final projectProfile = commandConfig.optionalValue(
+      ProjectCreateOption.profile,
+    );
     final enableDb = commandConfig.value(ProjectCreateOption.enableDb);
     final projectDir =
         runner.selectProjectDirectory() ?? Directory.current.path;
@@ -74,6 +95,7 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
       runner.serviceProvider.cloudApiClient,
       logger: logger,
       projectId: projectId,
+      projectProfile: projectProfile?.value,
       enableDb: enableDb,
       projectDir: projectDir,
       configFilePath: configFilePath,
