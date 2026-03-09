@@ -72,6 +72,21 @@ import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
     as _i31;
 import 'protocol.dart' as _i32;
 
+/// {@category Endpoint}
+class EndpointAdminMigration extends _i1.EndpointRef {
+  EndpointAdminMigration(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'adminMigration';
+
+  _i2.Future<Map<String, dynamic>> migrateProcuredDatabaseProducts() =>
+      caller.callServerEndpoint<Map<String, dynamic>>(
+        'adminMigration',
+        'migrateProcuredDatabaseProducts',
+        {},
+      );
+}
+
 /// Endpoint for global administrator to handle procurement for users.
 /// {@category Endpoint}
 class EndpointAdminProcurement extends _i1.EndpointRef {
@@ -1221,6 +1236,7 @@ class Client extends _i1.ServerpodClientShared {
          disconnectStreamsOnLostInternetConnection:
              disconnectStreamsOnLostInternetConnection,
        ) {
+    adminMigration = EndpointAdminMigration(this);
     adminProcurement = EndpointAdminProcurement(this);
     adminProjects = EndpointAdminProjects(this);
     adminSecrets = EndpointAdminSecrets(this);
@@ -1244,6 +1260,8 @@ class Client extends _i1.ServerpodClientShared {
     users = EndpointUsers(this);
     modules = Modules(this);
   }
+
+  late final EndpointAdminMigration adminMigration;
 
   late final EndpointAdminProcurement adminProcurement;
 
@@ -1291,6 +1309,7 @@ class Client extends _i1.ServerpodClientShared {
 
   @override
   Map<String, _i1.EndpointRef> get endpointRefLookup => {
+    'adminMigration': adminMigration,
     'adminProcurement': adminProcurement,
     'adminProjects': adminProjects,
     'adminSecrets': adminSecrets,
