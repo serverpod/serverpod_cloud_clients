@@ -3,8 +3,8 @@ import 'package:ground_control_client/ground_control_client.dart' show Client;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/commands/auth/auth_login.dart';
-import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
 import '../../commands/auth/auth.dart';
 import 'categories.dart';
@@ -74,6 +74,9 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
 
   @override
   bool get requireLogin => false;
+
+  @override
+  bool get warnIfBillingOverdue => false;
 
   @override
   final name = 'login';

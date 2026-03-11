@@ -2,13 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:ground_control_client/ground_control_client.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/custom_domain_command.dart';
-import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_auth_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
-import 'package:ground_control_client/ground_control_client.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:test/test.dart';
 
 import '../../../test_utils/command_logger_matchers.dart';
@@ -80,6 +80,7 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--no-warn-billing-overdue',
           '--config-dir',
           testCacheFolderPath,
         ]);
@@ -116,6 +117,7 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--no-warn-billing-overdue',
           '--config-dir',
           testCacheFolderPath,
         ]);
@@ -154,6 +156,7 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--no-warn-billing-overdue',
           '--config-dir',
           testCacheFolderPath,
         ]);
@@ -191,6 +194,7 @@ void main() {
           projectId,
           '--api-url',
           localServerAddress.toString(),
+          '--no-warn-billing-overdue',
           '--config-dir',
           testCacheFolderPath,
         ]);

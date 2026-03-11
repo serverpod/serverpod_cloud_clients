@@ -483,6 +483,15 @@ enum GlobalOption<V> implements OptionDefinition<V> {
       hide: true,
     ),
   ),
+  warnBillingOverdue(
+    FlagOption(
+      argName: 'warn-billing-overdue',
+      helpText: 'Enable / disable warning if the account has overdue payments.',
+      defaultsTo: true,
+      negatable: true,
+      hide: true,
+    ),
+  ),
   consoleServer(
     StringOption(
       argName: 'console-url',
@@ -545,6 +554,8 @@ class GlobalConfiguration extends Configuration<GlobalOption> {
   String get consoleServer => value(GlobalOption.consoleServer);
 
   bool get skipConfirmation => value(GlobalOption.skipConfirmation);
+
+  bool get warnBillingOverdue => value(GlobalOption.warnBillingOverdue);
 
   String? get authToken => optionalValue(GlobalOption.authToken);
 }

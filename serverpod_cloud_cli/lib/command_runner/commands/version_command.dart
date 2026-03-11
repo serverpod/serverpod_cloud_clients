@@ -8,6 +8,9 @@ class VersionCommand extends CloudCliCommand {
   bool get requireLogin => false;
 
   @override
+  bool get warnIfBillingOverdue => false;
+
+  @override
   final name = 'version';
 
   @override
