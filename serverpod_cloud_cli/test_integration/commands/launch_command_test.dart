@@ -73,6 +73,7 @@ void main() {
       when(
         () => client.projects.createProject(
           cloudProjectId: any(named: 'cloudProjectId'),
+          projectProductName: any(named: 'projectProductName'),
         ),
       ).thenAnswer(
         (final invocation) async => Future.value(

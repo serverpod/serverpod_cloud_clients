@@ -11,6 +11,7 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test/test.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
+import 'package:serverpod_cloud_cli/commands/project/project.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 
@@ -42,6 +43,7 @@ void main() {
       when(
         () => client.projects.createProject(
           cloudProjectId: any(named: 'cloudProjectId'),
+          projectProductName: any(named: 'projectProductName'),
         ),
       ).thenAnswer(
         (final invocation) async => Future.value(
@@ -200,6 +202,49 @@ project:
               message: "Serverpod Cloud project created.",
               newParagraph: true,
             ),
+          );
+        });
+      });
+
+      group('when calling create with --profile option', () {
+        setUp(() async {
+          logger.answerNextConfirmWith(
+            true, // accept new project cost acceptance
+          );
+        });
+
+        test(
+          'then with --profile growth createProject is called with growth-project',
+          () async {
+            await cli.run([
+              'project',
+              'create',
+              projectId,
+              '--profile',
+              ProjectProfile.growth.name!,
+              '--no-enable-db',
+            ]);
+
+            verify(
+              () => client.projects.createProject(
+                cloudProjectId: projectId,
+                projectProductName: ProjectProfile.growth.productName!,
+              ),
+            ).called(1);
+          },
+        );
+
+        test('then with invalid --profile command throws', () async {
+          await expectLater(
+            cli.run([
+              'project',
+              'create',
+              projectId,
+              '--profile',
+              'invalid',
+              '--no-enable-db',
+            ]),
+            throwsA(isA<UsageException>()),
           );
         });
       });

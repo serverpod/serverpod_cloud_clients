@@ -6,6 +6,17 @@ import 'package:serverpod_cloud_cli/shared/user_interaction/user_confirmations.d
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:serverpod_cloud_cli/util/project_files_writer.dart';
 
+enum ProjectProfile {
+  starter('starter', 'starter-project'),
+  growth('growth', 'growth-project'),
+  defaultProfile(null, null);
+
+  const ProjectProfile(this.name, this.productName);
+
+  final String? name;
+  final String? productName;
+}
+
 abstract class ProjectCommands {
   static const defaultPlanName = 'early-access';
 
@@ -32,6 +43,7 @@ abstract class ProjectCommands {
     final Client cloudApiClient, {
     required final CommandLogger logger,
     required final String projectId,
+    required final ProjectProfile projectProfile,
     required final bool enableDb,
     required final String projectDir,
     required final String configFilePath,
@@ -60,6 +72,7 @@ abstract class ProjectCommands {
         () async {
           await cloudApiClient.projects.createProject(
             cloudProjectId: projectId,
+            projectProductName: projectProfile.productName,
           );
           return true;
         },
