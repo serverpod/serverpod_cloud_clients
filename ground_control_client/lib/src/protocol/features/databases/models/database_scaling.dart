@@ -11,17 +11,26 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import '../../../features/databases/models/database_size.dart' as _i2;
 
 abstract class DatabaseScaling implements _i1.SerializableModel {
-  DatabaseScaling._({required this.minCu, required this.maxCu});
+  DatabaseScaling._({required this.minCu, required this.maxCu, this.size});
 
-  factory DatabaseScaling({required double minCu, required double maxCu}) =
-      _DatabaseScalingImpl;
+  factory DatabaseScaling({
+    required double minCu,
+    required double maxCu,
+    _i2.DatabaseSizeOption? size,
+  }) = _DatabaseScalingImpl;
 
   factory DatabaseScaling.fromJson(Map<String, dynamic> jsonSerialization) {
     return DatabaseScaling(
       minCu: (jsonSerialization['minCu'] as num).toDouble(),
       maxCu: (jsonSerialization['maxCu'] as num).toDouble(),
+      size: jsonSerialization['size'] == null
+          ? null
+          : _i2.DatabaseSizeOption.fromJson(
+              (jsonSerialization['size'] as String),
+            ),
     );
   }
 
@@ -29,13 +38,24 @@ abstract class DatabaseScaling implements _i1.SerializableModel {
 
   double maxCu;
 
+  _i2.DatabaseSizeOption? size;
+
   /// Returns a shallow copy of this [DatabaseScaling]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
-  DatabaseScaling copyWith({double? minCu, double? maxCu});
+  DatabaseScaling copyWith({
+    double? minCu,
+    double? maxCu,
+    _i2.DatabaseSizeOption? size,
+  });
   @override
   Map<String, dynamic> toJson() {
-    return {'__className__': 'DatabaseScaling', 'minCu': minCu, 'maxCu': maxCu};
+    return {
+      '__className__': 'DatabaseScaling',
+      'minCu': minCu,
+      'maxCu': maxCu,
+      if (size != null) 'size': size?.toJson(),
+    };
   }
 
   @override
@@ -44,18 +64,28 @@ abstract class DatabaseScaling implements _i1.SerializableModel {
   }
 }
 
+class _Undefined {}
+
 class _DatabaseScalingImpl extends DatabaseScaling {
-  _DatabaseScalingImpl({required double minCu, required double maxCu})
-    : super._(minCu: minCu, maxCu: maxCu);
+  _DatabaseScalingImpl({
+    required double minCu,
+    required double maxCu,
+    _i2.DatabaseSizeOption? size,
+  }) : super._(minCu: minCu, maxCu: maxCu, size: size);
 
   /// Returns a shallow copy of this [DatabaseScaling]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
   @override
-  DatabaseScaling copyWith({double? minCu, double? maxCu}) {
+  DatabaseScaling copyWith({
+    double? minCu,
+    double? maxCu,
+    Object? size = _Undefined,
+  }) {
     return DatabaseScaling(
       minCu: minCu ?? this.minCu,
       maxCu: maxCu ?? this.maxCu,
+      size: size is _i2.DatabaseSizeOption? ? size : this.size,
     );
   }
 }
