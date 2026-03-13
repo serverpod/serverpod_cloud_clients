@@ -50,7 +50,7 @@ import 'package:ground_control_client/src/protocol/features/databases/models/dat
     as _i20;
 import 'package:ground_control_client/src/protocol/features/databases/models/database_resource.dart'
     as _i21;
-import 'package:ground_control_client/src/protocol/features/databases/models/database_options.dart'
+import 'package:ground_control_client/src/protocol/features/databases/models/database_size.dart'
     as _i22;
 import 'package:ground_control_client/src/protocol/domains/environment_variables/models/variable.dart'
     as _i23;
@@ -673,22 +673,20 @@ class EndpointDatabase extends _i1.EndpointRef {
         'cloudCapsuleId': cloudCapsuleId,
       });
 
-  _i2.Future<_i22.DatabaseOptions> readDatabaseOptions({
+  _i2.Future<_i21.DatabaseResource> updateDatabaseSize({
     required String cloudCapsuleId,
-  }) => caller.callServerEndpoint<_i22.DatabaseOptions>(
-    'database',
-    'readDatabaseOptions',
-    {'cloudCapsuleId': cloudCapsuleId},
-  );
-
-  _i2.Future<_i21.DatabaseResource> updateDatabaseCu({
-    required String cloudCapsuleId,
-    required double minCu,
-    required double maxCu,
+    required _i22.DatabaseSizeOption size,
+    double? minCu,
+    double? maxCu,
   }) => caller.callServerEndpoint<_i21.DatabaseResource>(
     'database',
-    'updateDatabaseCu',
-    {'cloudCapsuleId': cloudCapsuleId, 'minCu': minCu, 'maxCu': maxCu},
+    'updateDatabaseSize',
+    {
+      'cloudCapsuleId': cloudCapsuleId,
+      'size': size,
+      'minCu': minCu,
+      'maxCu': maxCu,
+    },
   );
 }
 

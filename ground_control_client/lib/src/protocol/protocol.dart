@@ -57,11 +57,11 @@ import 'features/custom_domains/models/new_domain_names_event.dart' as _i42;
 import 'features/custom_domains/models/view_models/custom_domain_name_with_default_domains.dart'
     as _i43;
 import 'features/databases/models/database_connection.dart' as _i44;
-import 'features/databases/models/database_options.dart' as _i45;
-import 'features/databases/models/database_provider.dart' as _i46;
-import 'features/databases/models/database_quota.dart' as _i47;
-import 'features/databases/models/database_resource.dart' as _i48;
-import 'features/databases/models/database_scaling.dart' as _i49;
+import 'features/databases/models/database_provider.dart' as _i45;
+import 'features/databases/models/database_quota.dart' as _i46;
+import 'features/databases/models/database_resource.dart' as _i47;
+import 'features/databases/models/database_scaling.dart' as _i48;
+import 'features/databases/models/database_size.dart' as _i49;
 import 'features/insights/models/insights_connection_detail.dart' as _i50;
 import 'features/projects/models/project_config.dart' as _i51;
 import 'features/projects/models/project_delete_call_event.dart' as _i52;
@@ -147,11 +147,11 @@ export 'features/custom_domains/models/domain_name_target.dart';
 export 'features/custom_domains/models/new_domain_names_event.dart';
 export 'features/custom_domains/models/view_models/custom_domain_name_with_default_domains.dart';
 export 'features/databases/models/database_connection.dart';
-export 'features/databases/models/database_options.dart';
 export 'features/databases/models/database_provider.dart';
 export 'features/databases/models/database_quota.dart';
 export 'features/databases/models/database_resource.dart';
 export 'features/databases/models/database_scaling.dart';
+export 'features/databases/models/database_size.dart';
 export 'features/insights/models/insights_connection_detail.dart';
 export 'features/projects/models/project_config.dart';
 export 'features/projects/models/project_delete_call_event.dart';
@@ -329,20 +329,20 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i44.DatabaseConnection) {
       return _i44.DatabaseConnection.fromJson(data) as T;
     }
-    if (t == _i45.DatabaseOptions) {
-      return _i45.DatabaseOptions.fromJson(data) as T;
+    if (t == _i45.DatabaseProvider) {
+      return _i45.DatabaseProvider.fromJson(data) as T;
     }
-    if (t == _i46.DatabaseProvider) {
-      return _i46.DatabaseProvider.fromJson(data) as T;
+    if (t == _i46.DatabaseQuota) {
+      return _i46.DatabaseQuota.fromJson(data) as T;
     }
-    if (t == _i47.DatabaseQuota) {
-      return _i47.DatabaseQuota.fromJson(data) as T;
+    if (t == _i47.DatabaseResource) {
+      return _i47.DatabaseResource.fromJson(data) as T;
     }
-    if (t == _i48.DatabaseResource) {
-      return _i48.DatabaseResource.fromJson(data) as T;
+    if (t == _i48.DatabaseScaling) {
+      return _i48.DatabaseScaling.fromJson(data) as T;
     }
-    if (t == _i49.DatabaseScaling) {
-      return _i49.DatabaseScaling.fromJson(data) as T;
+    if (t == _i49.DatabaseSizeOption) {
+      return _i49.DatabaseSizeOption.fromJson(data) as T;
     }
     if (t == _i50.InsightsConnectionDetail) {
       return _i50.InsightsConnectionDetail.fromJson(data) as T;
@@ -538,20 +538,21 @@ class Protocol extends _i1.SerializationManager {
       return (data != null ? _i44.DatabaseConnection.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i45.DatabaseOptions?>()) {
-      return (data != null ? _i45.DatabaseOptions.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i45.DatabaseProvider?>()) {
+      return (data != null ? _i45.DatabaseProvider.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i46.DatabaseProvider?>()) {
-      return (data != null ? _i46.DatabaseProvider.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i46.DatabaseQuota?>()) {
+      return (data != null ? _i46.DatabaseQuota.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i47.DatabaseQuota?>()) {
-      return (data != null ? _i47.DatabaseQuota.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i47.DatabaseResource?>()) {
+      return (data != null ? _i47.DatabaseResource.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i48.DatabaseResource?>()) {
-      return (data != null ? _i48.DatabaseResource.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i48.DatabaseScaling?>()) {
+      return (data != null ? _i48.DatabaseScaling.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i49.DatabaseScaling?>()) {
-      return (data != null ? _i49.DatabaseScaling.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i49.DatabaseSizeOption?>()) {
+      return (data != null ? _i49.DatabaseSizeOption.fromJson(data) : null)
+          as T;
     }
     if (t == _i1.getType<_i50.InsightsConnectionDetail?>()) {
       return (data != null
@@ -714,9 +715,6 @@ class Protocol extends _i1.SerializationManager {
           )
           as T;
     }
-    if (t == List<double>) {
-      return (data as List).map((e) => deserialize<double>(e)).toList() as T;
-    }
     if (t == Map<String, dynamic>) {
       return (data as Map).map(
             (k, v) => MapEntry(deserialize<String>(k), deserialize<dynamic>(v)),
@@ -872,11 +870,11 @@ class Protocol extends _i1.SerializationManager {
       _i43.CustomDomainNameWithDefaultDomains =>
         'CustomDomainNameWithDefaultDomains',
       _i44.DatabaseConnection => 'DatabaseConnection',
-      _i45.DatabaseOptions => 'DatabaseOptions',
-      _i46.DatabaseProvider => 'DatabaseProvider',
-      _i47.DatabaseQuota => 'DatabaseQuota',
-      _i48.DatabaseResource => 'DatabaseResource',
-      _i49.DatabaseScaling => 'DatabaseScaling',
+      _i45.DatabaseProvider => 'DatabaseProvider',
+      _i46.DatabaseQuota => 'DatabaseQuota',
+      _i47.DatabaseResource => 'DatabaseResource',
+      _i48.DatabaseScaling => 'DatabaseScaling',
+      _i49.DatabaseSizeOption => 'DatabaseSizeOption',
       _i50.InsightsConnectionDetail => 'InsightsConnectionDetail',
       _i51.ProjectConfig => 'ProjectConfig',
       _i52.ProjectDeleteCallEvent => 'ProjectDeleteCallEvent',
@@ -996,16 +994,16 @@ class Protocol extends _i1.SerializationManager {
         return 'CustomDomainNameWithDefaultDomains';
       case _i44.DatabaseConnection():
         return 'DatabaseConnection';
-      case _i45.DatabaseOptions():
-        return 'DatabaseOptions';
-      case _i46.DatabaseProvider():
+      case _i45.DatabaseProvider():
         return 'DatabaseProvider';
-      case _i47.DatabaseQuota():
+      case _i46.DatabaseQuota():
         return 'DatabaseQuota';
-      case _i48.DatabaseResource():
+      case _i47.DatabaseResource():
         return 'DatabaseResource';
-      case _i49.DatabaseScaling():
+      case _i48.DatabaseScaling():
         return 'DatabaseScaling';
+      case _i49.DatabaseSizeOption():
+        return 'DatabaseSizeOption';
       case _i50.InsightsConnectionDetail():
         return 'InsightsConnectionDetail';
       case _i51.ProjectConfig():
@@ -1185,20 +1183,20 @@ class Protocol extends _i1.SerializationManager {
     if (dataClassName == 'DatabaseConnection') {
       return deserialize<_i44.DatabaseConnection>(data['data']);
     }
-    if (dataClassName == 'DatabaseOptions') {
-      return deserialize<_i45.DatabaseOptions>(data['data']);
-    }
     if (dataClassName == 'DatabaseProvider') {
-      return deserialize<_i46.DatabaseProvider>(data['data']);
+      return deserialize<_i45.DatabaseProvider>(data['data']);
     }
     if (dataClassName == 'DatabaseQuota') {
-      return deserialize<_i47.DatabaseQuota>(data['data']);
+      return deserialize<_i46.DatabaseQuota>(data['data']);
     }
     if (dataClassName == 'DatabaseResource') {
-      return deserialize<_i48.DatabaseResource>(data['data']);
+      return deserialize<_i47.DatabaseResource>(data['data']);
     }
     if (dataClassName == 'DatabaseScaling') {
-      return deserialize<_i49.DatabaseScaling>(data['data']);
+      return deserialize<_i48.DatabaseScaling>(data['data']);
+    }
+    if (dataClassName == 'DatabaseSizeOption') {
+      return deserialize<_i49.DatabaseSizeOption>(data['data']);
     }
     if (dataClassName == 'InsightsConnectionDetail') {
       return deserialize<_i50.InsightsConnectionDetail>(data['data']);
