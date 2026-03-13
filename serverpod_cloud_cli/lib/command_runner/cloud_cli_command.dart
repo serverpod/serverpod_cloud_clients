@@ -70,6 +70,7 @@ See the full documentation at: https://docs.serverpod.cloud/references/cli/comma
       await AuthLoginCommands.login(
         logger: logger,
         globalConfig: globalConfiguration,
+        cloudApiClient: client,
         persistent: true,
         openBrowser: globalConfiguration.browser,
       );

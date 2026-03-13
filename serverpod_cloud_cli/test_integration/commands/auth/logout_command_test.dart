@@ -8,6 +8,7 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart
 import 'package:serverpod_cloud_cli/command_runner/commands/auth_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_auth_data.dart';
+import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_user_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:test/test.dart';
 import 'package:uuid/uuid.dart';
@@ -56,6 +57,10 @@ void main() {
           authData: ServerpodCloudAuthData('my-token'),
           localStoragePath: testCacheFolderPath,
         );
+        await ResourceManager.storeServerpodCloudUserData(
+          cloudUserData: ServerpodCloudUserData('test-cloud-user-id'),
+          localStoragePath: testCacheFolderPath,
+        );
 
         when(
           () => client.authWithAuth.logoutDevice(
@@ -89,6 +94,17 @@ void main() {
               );
 
           expect(cloudData, isNull);
+        });
+
+        test('then the stored cloud user data is removed', () async {
+          await runLogoutCommand;
+
+          final cloudUserData =
+              ResourceManager.tryFetchServerpodCloudUserDataSync(
+                localStoragePath: testCacheFolderPath,
+              );
+
+          expect(cloudUserData, isNull);
         });
 
         test('then logoutDevice is called', () async {

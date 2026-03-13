@@ -1,6 +1,8 @@
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
+import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_user_data.dart';
+import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -12,12 +14,14 @@ void main() {
   final logger = TestCommandLogger(printToStdout: false);
 
   final List<String> analyticsEvents = [];
+  final List<Map<String, dynamic>> analyticsProperties = [];
 
   final client = ClientMock();
 
   setUp(() async {
     logger.clear();
     analyticsEvents.clear();
+    analyticsProperties.clear();
   });
 
   group('Given default non-prod-env suppression (enabled)', () {
@@ -35,6 +39,7 @@ void main() {
         ),
         onAnalyticsEvent: (final event, final properties) {
           analyticsEvents.add(event);
+          analyticsProperties.add(Map<String, dynamic>.from(properties));
         },
       );
     });
@@ -99,6 +104,7 @@ void main() {
         ),
         onAnalyticsEvent: (final event, final properties) {
           analyticsEvents.add(event);
+          analyticsProperties.add(Map<String, dynamic>.from(properties));
         },
         enableAnalyticsForAllEnvs: true,
       );
@@ -115,7 +121,7 @@ void main() {
           logger.confirmCalls.single,
           equalsConfirmCall(
             message:
-                'Do you agree to sending anonymous command usage analytics to Serverpod?',
+                'Do you agree to sending command usage analytics to Serverpod?',
             defaultValue: true,
           ),
         );
@@ -272,6 +278,30 @@ void main() {
             expect(analyticsEvents, equals(['version']));
           });
         });
+      });
+    });
+
+    group('and cloud user data stored', () {
+      const cloudUserId = 'test-cloud-user-uuid';
+
+      setUp(() async {
+        await ResourceManager.storeServerpodCloudUserData(
+          cloudUserData: ServerpodCloudUserData(cloudUserId),
+          localStoragePath: settingsDir,
+        );
+      });
+
+      test('when invoking command with analytics'
+          ' then analytics properties include cloud_user_id', () async {
+        logger.answerNextConfirmWith(true);
+        await cli.run(['--config-dir', settingsDir, 'version']);
+
+        expect(analyticsEvents, equals(['version']));
+        expect(analyticsProperties, hasLength(1));
+        expect(
+          analyticsProperties.single['cloud_user_id'],
+          equals(cloudUserId),
+        );
       });
     });
   });

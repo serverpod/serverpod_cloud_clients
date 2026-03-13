@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:cli_tools/cli_tools.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_auth_data.dart';
+import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_user_data.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:uuid/uuid.dart';
 
@@ -51,10 +53,60 @@ abstract class ResourceManager {
         fileName: ResourceManagerConstants.serverpodCloudAuthFilePath,
         localStoragePath: localStoragePath,
       );
+      await LocalStorageManager.removeFile(
+        fileName: ResourceManagerConstants.serverpodCloudUserFilePath,
+        localStoragePath: localStoragePath,
+      );
     } on DeleteException catch (e) {
       throw Exception(
         'Failed to remove serverpod cloud data. error: ${e.error}',
       );
+    }
+  }
+
+  static Future<void> storeServerpodCloudUserData({
+    required final ServerpodCloudUserData cloudUserData,
+    required final String localStoragePath,
+  }) async {
+    try {
+      await LocalStorageManager.storeJsonFile(
+        fileName: ResourceManagerConstants.serverpodCloudUserFilePath,
+        json: cloudUserData.toJson(),
+        localStoragePath: localStoragePath,
+      );
+    } on CreateException catch (e) {
+      throw Exception(
+        'Failed to store serverpod cloud user data. error: ${e.error}',
+      );
+    } on SerializationException catch (e) {
+      throw Exception(
+        'Failed to store serverpod cloud user data. error: ${e.error}',
+      );
+    } on WriteException catch (e) {
+      throw Exception(
+        'Failed to store serverpod cloud user data. error: ${e.error}',
+      );
+    }
+  }
+
+  static ServerpodCloudUserData? tryFetchServerpodCloudUserDataSync({
+    required final String localStoragePath,
+  }) {
+    try {
+      final file = File(
+        p.join(
+          localStoragePath,
+          ResourceManagerConstants.serverpodCloudUserFilePath,
+        ),
+      );
+      if (!file.existsSync()) {
+        return null;
+      }
+      final json = file.readAsStringSync();
+      final decoded = jsonDecode(json) as Map<String, dynamic>;
+      return ServerpodCloudUserData.fromJson(decoded);
+    } catch (_) {
+      return null;
     }
   }
 
@@ -231,6 +283,7 @@ abstract class ResourceManager {
 
 abstract class ResourceManagerConstants {
   static const serverpodCloudAuthFilePath = 'serverpod_cloud_auth.json';
+  static const serverpodCloudUserFilePath = 'serverpod_cloud_user.json';
   static const latestVersionFilePath = 'latest_cli_version.json';
   static const settingsFilePath = 'settings.json';
 }

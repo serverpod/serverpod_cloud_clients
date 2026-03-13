@@ -7,10 +7,12 @@ class ServerpodCloudSettingsData {
   ServerpodCloudSettingsData._(this.enableAnalytics);
 
   factory ServerpodCloudSettingsData.fromJson(final Map<String, dynamic> json) {
-    return ServerpodCloudSettingsData._(json['enable_analytics'] as bool?);
+    return ServerpodCloudSettingsData._(
+      json['command_usage_analytics'] as bool?,
+    );
   }
 
-  Map<String, dynamic> toJson() => {'enable_analytics': enableAnalytics};
+  Map<String, dynamic> toJson() => {'command_usage_analytics': enableAnalytics};
 
   @override
   String toString() => 'ScloudSettings(enableAnalytics: $enableAnalytics)';

@@ -48,7 +48,8 @@ Future<void> _main(final List<String> args, final CommandLogger logger) async {
   final runner = CloudCliCommandRunner.create(
     logger: logger,
     version: cliVersion,
-    onAnalyticsEvent: _reportAnalyticsEvent,
+    onAnalyticsEvent: (final event, final properties) =>
+        _reportAnalyticsEvent(event, properties, logger),
   );
   try {
     await runner.run(args);
@@ -80,9 +81,14 @@ ${error.runtimeType} $error''';
 void _reportAnalyticsEvent(
   final String event,
   final Map<String, dynamic> properties,
+  final CommandLogger logger,
 ) {
-  _postHogAnalytics.track(event: event, properties: properties);
-  _analytics.track(event: event, properties: properties);
+  try {
+    _postHogAnalytics.track(event: event, properties: properties);
+    _analytics.track(event: event, properties: properties);
+  } catch (e, stackTrace) {
+    logger.debug('Analytics event failed: $e\n$stackTrace');
+  }
 }
 
 const _postHogApiKey = 'phc_xGBPHgcrTrDuWGtyNX3UJODXgnR684rzRPZjWRlqVxf';

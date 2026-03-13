@@ -211,6 +211,21 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   }
 
   @override
+  void sendAnalyticsEvent(
+    final String event, [
+    final Map<String, dynamic> properties = const {},
+  ]) {
+    final enrichedProperties = Map<String, dynamic>.from(properties);
+    final cloudUser = ResourceManager.tryFetchServerpodCloudUserDataSync(
+      localStoragePath: globalConfiguration.scloudDir.path,
+    );
+    if (cloudUser != null) {
+      enrichedProperties['cloud_user_id'] = cloudUser.id;
+    }
+    super.sendAnalyticsEvent(event, enrichedProperties);
+  }
+
+  @override
   Future<bool> determineAnalyticsSettings() async {
     if (onAnalyticsEvent == null) {
       return false;
@@ -238,7 +253,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     }
 
     final confirm = await logger.confirm(
-      'Do you agree to sending anonymous command usage analytics to Serverpod?',
+      'Do you agree to sending command usage analytics to Serverpod?',
       defaultValue: true,
     );
     await settings.setEnableAnalytics(confirm);
