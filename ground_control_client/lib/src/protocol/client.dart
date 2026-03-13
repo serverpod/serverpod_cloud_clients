@@ -269,11 +269,12 @@ class EndpointAuth extends _i1.EndpointRef {
   ///
   _i2.Future<void> startEmailAccountRegistration({
     required String email,
+    String? name,
     required List<_i9.AcceptedTermsDTO> acceptedTerms,
   }) => caller.callServerEndpoint<void>(
     'auth',
     'startEmailAccountRegistration',
-    {'email': email, 'acceptedTerms': acceptedTerms},
+    {'email': email, 'name': name, 'acceptedTerms': acceptedTerms},
   );
 
   /// Verifies a registration code and returns the finish registration token.
