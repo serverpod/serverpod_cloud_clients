@@ -43,6 +43,14 @@ enum DeployCommandOption<V> implements OptionDefinition<V> {
       helpText:
           'Save the deployment zip file to the specified path. Must end with .zip',
     ),
+  ),
+  dartVersion(
+    StringOption(
+      argName: 'dart-version',
+      helpText:
+          'Dart SDK version to use for building the project. '
+          'Overrides dartVersion in scloud.yaml and .tool-versions.',
+    ),
   );
 
   const DeployCommandOption(this.option);
@@ -101,6 +109,9 @@ Examples
     final dryRun = commandConfig.value(DeployCommandOption.dryRun);
     final showFiles = commandConfig.value(DeployCommandOption.showFiles);
     final outputPath = commandConfig.optionalValue(DeployCommandOption.output);
+    final dartVersionOverride = commandConfig.optionalValue(
+      DeployCommandOption.dartVersion,
+    );
 
     if (outputPath != null && !outputPath.endsWith('.zip')) {
       throw FailureException(errors: ['The --output path must end with .zip']);
@@ -126,6 +137,7 @@ Examples
       dryRun: dryRun,
       showFiles: showFiles,
       outputPath: outputPath,
+      dartVersionOverride: dartVersionOverride,
     );
   }
 }

@@ -34,6 +34,7 @@ class WorkspacePackage {
 abstract class WorkspaceProject {
   static const _scloudRootPubspecFilename = 'scloud_ws_pubspec.yaml';
   static const _scloudServerDirFilename = 'scloud_server_dir';
+  static const scloudDartVersionFilename = 'dart_version';
 
   /// Analyzes the workspace, creates bespoke deployment files,
   /// and compiles the list of paths whose contents are to be included.
@@ -44,8 +45,9 @@ abstract class WorkspaceProject {
   /// If the preparation fails, error messages will be logged
   /// and [WorkspaceException] is thrown.
   static (Directory, Iterable<String>) prepareWorkspacePaths(
-    final Directory projectDirectory,
-  ) {
+    final Directory projectDirectory, {
+    final String? dartVersion,
+  }) {
     final String projectPackageName = _getPackageName(projectDirectory);
 
     // Find workspace root directory by traversing up until we find a pubspec.yaml with workspace field
@@ -89,7 +91,12 @@ abstract class WorkspaceProject {
         .map((final package) => package.dir.path)
         .toList();
 
-    _writeSCloudFiles(workspaceRootDir, includedPackagePaths, projectPackage);
+    _writeSCloudFiles(
+      workspaceRootDir,
+      includedPackagePaths,
+      projectPackage,
+      dartVersion: dartVersion,
+    );
 
     final includedPaths = [...includedPackagePaths, ScloudIgnore.scloudDirName];
     return (workspaceRootDir, includedPaths);
@@ -100,8 +107,9 @@ abstract class WorkspaceProject {
   static void _writeSCloudFiles(
     final Directory workspaceRootDir,
     final List<String> includedPackagePaths,
-    final WorkspacePackage projectPackage,
-  ) {
+    final WorkspacePackage projectPackage, {
+    final String? dartVersion,
+  }) {
     final scloudDir = Directory(
       p.join(workspaceRootDir.path, ScloudIgnore.scloudDirName),
     );
@@ -109,8 +117,51 @@ abstract class WorkspaceProject {
 
     _writeScloudRootPubspec(workspaceRootDir, includedPackagePaths);
     _writeProjectServerDirFile(workspaceRootDir, projectPackage.dir);
+    if (dartVersion != null) {
+      _writeDartVersionFile(workspaceRootDir, dartVersion);
+    }
 
     ScloudIgnore.writeTemplateIfNotExists(rootFolder: workspaceRootDir.path);
+  }
+
+  /// Writes the .scloud/dart_version file and returns its path relative to
+  /// the workspace root.
+  static String _writeDartVersionFile(
+    final Directory workspaceRootDir,
+    final String dartVersion,
+  ) {
+    final dartVersionFile = File(
+      p.join(
+        workspaceRootDir.path,
+        ScloudIgnore.scloudDirName,
+        scloudDartVersionFilename,
+      ),
+    );
+    dartVersionFile.writeAsStringSync(dartVersion);
+
+    return p.join(ScloudIgnore.scloudDirName, scloudDartVersionFilename);
+  }
+
+  /// Writes the .scloud/dart_version file in the given root directory.
+  ///
+  /// Used for non-workspace projects.
+  static void writeDartVersionFile(
+    final Directory rootDirectory,
+    final String dartVersion,
+  ) {
+    final scloudDir = Directory(
+      p.join(rootDirectory.path, ScloudIgnore.scloudDirName),
+    );
+    scloudDir.createSync(recursive: true);
+
+    final dartVersionFile = File(
+      p.join(
+        rootDirectory.path,
+        ScloudIgnore.scloudDirName,
+        scloudDartVersionFilename,
+      ),
+    );
+    dartVersionFile.writeAsStringSync(dartVersion);
   }
 
   static String _getPackageName(final Directory packageDirectory) {

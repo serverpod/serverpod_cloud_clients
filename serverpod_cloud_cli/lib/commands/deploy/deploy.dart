@@ -12,6 +12,7 @@ import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_io.dart';
 import 'package:serverpod_cloud_cli/util/scloudignore.dart' show ScloudIgnore;
 import 'package:serverpod_cloud_cli/commands/deploy/script_runner.dart';
 
+import 'dart_version_resolver.dart';
 import 'prepare_workspace.dart';
 
 abstract class Deploy {
@@ -26,6 +27,7 @@ abstract class Deploy {
     required final bool dryRun,
     required final bool showFiles,
     final String? outputPath,
+    final String? dartVersionOverride,
   }) async {
     logger.init('Deploying Serverpod Cloud project "$projectId".');
 
@@ -51,11 +53,22 @@ abstract class Deploy {
       );
     }
 
+    final dartVersion = DartVersionResolver.resolve(
+      rootDirectory: projectDirectory,
+      pubspecSdkConstraint: pubspecValidator.pubspec.environment['sdk'],
+      cliOverride: dartVersionOverride,
+      scloudDartVersion: config?.dartVersion,
+    );
+    logger.debug('Using Dart SDK version: $dartVersion');
+
     final Directory rootDirectory;
     final Iterable<String> includedSubPaths;
     if (pubspecValidator.isWorkspaceResolved()) {
       (rootDirectory, includedSubPaths) =
-          WorkspaceProject.prepareWorkspacePaths(projectDirectory);
+          WorkspaceProject.prepareWorkspacePaths(
+            projectDirectory,
+            dartVersion: dartVersion,
+          );
 
       logger.list(
         title: 'Including workspace packages',
@@ -67,6 +80,8 @@ abstract class Deploy {
     } else {
       rootDirectory = projectDirectory;
       includedSubPaths = const ['.'];
+      ScloudIgnore.writeTemplateIfNotExists(rootFolder: rootDirectory.path);
+      WorkspaceProject.writeDartVersionFile(rootDirectory, dartVersion);
     }
 
     late final List<int> projectZip;
