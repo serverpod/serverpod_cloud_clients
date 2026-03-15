@@ -12,7 +12,8 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/capsules/models/capsule.dart' as _i2;
-import 'package:ground_control_client/src/protocol/protocol.dart' as _i3;
+import '../../../domains/capsules/models/compute_size_option.dart' as _i3;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 abstract class CapsuleResource implements _i1.SerializableModel {
   CapsuleResource._({
@@ -28,6 +29,7 @@ abstract class CapsuleResource implements _i1.SerializableModel {
     bool? computeScalingEnabled,
     int? computeScalingMinReplicas,
     int? computeScalingMaxReplicas,
+    this.computeSize,
   }) : computeRequestCpu = computeRequestCpu ?? '250m',
        computeRequestMemory = computeRequestMemory ?? '256Mi',
        computeRequestEphemeralStorage = computeRequestEphemeralStorage ?? '1Gi',
@@ -51,6 +53,7 @@ abstract class CapsuleResource implements _i1.SerializableModel {
     bool? computeScalingEnabled,
     int? computeScalingMinReplicas,
     int? computeScalingMaxReplicas,
+    _i3.ComputeSizeOption? computeSize,
   }) = _CapsuleResourceImpl;
 
   factory CapsuleResource.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -59,7 +62,7 @@ abstract class CapsuleResource implements _i1.SerializableModel {
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as int,
       capsule: jsonSerialization['capsule'] == null
           ? null
-          : _i3.Protocol().deserialize<_i2.Capsule>(
+          : _i4.Protocol().deserialize<_i2.Capsule>(
               jsonSerialization['capsule'],
             ),
       computeRequestCpu: jsonSerialization['computeRequestCpu'] as String,
@@ -75,6 +78,11 @@ abstract class CapsuleResource implements _i1.SerializableModel {
           jsonSerialization['computeScalingMinReplicas'] as int,
       computeScalingMaxReplicas:
           jsonSerialization['computeScalingMaxReplicas'] as int,
+      computeSize: jsonSerialization['computeSize'] == null
+          ? null
+          : _i3.ComputeSizeOption.fromJson(
+              (jsonSerialization['computeSize'] as String),
+            ),
     );
   }
 
@@ -116,6 +124,9 @@ abstract class CapsuleResource implements _i1.SerializableModel {
   /// The maximum number of compute instances to scale to.
   int computeScalingMaxReplicas;
 
+  /// The compute size of the capsule.
+  _i3.ComputeSizeOption? computeSize;
+
   /// Returns a shallow copy of this [CapsuleResource]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
@@ -132,6 +143,7 @@ abstract class CapsuleResource implements _i1.SerializableModel {
     bool? computeScalingEnabled,
     int? computeScalingMinReplicas,
     int? computeScalingMaxReplicas,
+    _i3.ComputeSizeOption? computeSize,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -149,6 +161,7 @@ abstract class CapsuleResource implements _i1.SerializableModel {
       'computeScalingEnabled': computeScalingEnabled,
       'computeScalingMinReplicas': computeScalingMinReplicas,
       'computeScalingMaxReplicas': computeScalingMaxReplicas,
+      if (computeSize != null) 'computeSize': computeSize?.toJson(),
     };
   }
 
@@ -174,6 +187,7 @@ class _CapsuleResourceImpl extends CapsuleResource {
     bool? computeScalingEnabled,
     int? computeScalingMinReplicas,
     int? computeScalingMaxReplicas,
+    _i3.ComputeSizeOption? computeSize,
   }) : super._(
          id: id,
          cloudCapsuleId: cloudCapsuleId,
@@ -187,6 +201,7 @@ class _CapsuleResourceImpl extends CapsuleResource {
          computeScalingEnabled: computeScalingEnabled,
          computeScalingMinReplicas: computeScalingMinReplicas,
          computeScalingMaxReplicas: computeScalingMaxReplicas,
+         computeSize: computeSize,
        );
 
   /// Returns a shallow copy of this [CapsuleResource]
@@ -206,6 +221,7 @@ class _CapsuleResourceImpl extends CapsuleResource {
     bool? computeScalingEnabled,
     int? computeScalingMinReplicas,
     int? computeScalingMaxReplicas,
+    Object? computeSize = _Undefined,
   }) {
     return CapsuleResource(
       id: id is int? ? id : this.id,
@@ -225,6 +241,9 @@ class _CapsuleResourceImpl extends CapsuleResource {
           computeScalingMinReplicas ?? this.computeScalingMinReplicas,
       computeScalingMaxReplicas:
           computeScalingMaxReplicas ?? this.computeScalingMaxReplicas,
+      computeSize: computeSize is _i3.ComputeSizeOption?
+          ? computeSize
+          : this.computeSize,
     );
   }
 }
