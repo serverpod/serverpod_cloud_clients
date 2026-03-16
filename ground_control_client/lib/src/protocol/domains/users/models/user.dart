@@ -27,6 +27,7 @@ abstract class User implements _i1.SerializableModel {
     _i2.UserAccountStatus? accountStatus,
     this.userAuthId,
     required this.email,
+    this.name,
     this.memberships,
     this.ownerId,
     this.owner,
@@ -43,6 +44,7 @@ abstract class User implements _i1.SerializableModel {
     _i2.UserAccountStatus? accountStatus,
     String? userAuthId,
     required String email,
+    String? name,
     List<_i3.UserRoleMembership>? memberships,
     _i1.UuidValue? ownerId,
     _i4.Owner? owner,
@@ -66,6 +68,7 @@ abstract class User implements _i1.SerializableModel {
       ),
       userAuthId: jsonSerialization['userAuthId'] as String?,
       email: jsonSerialization['email'] as String,
+      name: jsonSerialization['name'] as String?,
       memberships: jsonSerialization['memberships'] == null
           ? null
           : _i6.Protocol().deserialize<List<_i3.UserRoleMembership>>(
@@ -106,6 +109,9 @@ abstract class User implements _i1.SerializableModel {
   /// The email address of the user.
   String email;
 
+  /// The user's name.
+  String? name;
+
   /// The role memberships of this user.
   List<_i3.UserRoleMembership>? memberships;
 
@@ -129,6 +135,7 @@ abstract class User implements _i1.SerializableModel {
     _i2.UserAccountStatus? accountStatus,
     String? userAuthId,
     String? email,
+    String? name,
     List<_i3.UserRoleMembership>? memberships,
     _i1.UuidValue? ownerId,
     _i4.Owner? owner,
@@ -145,6 +152,7 @@ abstract class User implements _i1.SerializableModel {
       'accountStatus': accountStatus.toJson(),
       if (userAuthId != null) 'userAuthId': userAuthId,
       'email': email,
+      if (name != null) 'name': name,
       if (memberships != null)
         'memberships': memberships?.toJson(valueToJson: (v) => v.toJson()),
       if (ownerId != null) 'ownerId': ownerId?.toJson(),
@@ -171,6 +179,7 @@ class _UserImpl extends User {
     _i2.UserAccountStatus? accountStatus,
     String? userAuthId,
     required String email,
+    String? name,
     List<_i3.UserRoleMembership>? memberships,
     _i1.UuidValue? ownerId,
     _i4.Owner? owner,
@@ -183,6 +192,7 @@ class _UserImpl extends User {
          accountStatus: accountStatus,
          userAuthId: userAuthId,
          email: email,
+         name: name,
          memberships: memberships,
          ownerId: ownerId,
          owner: owner,
@@ -201,6 +211,7 @@ class _UserImpl extends User {
     _i2.UserAccountStatus? accountStatus,
     Object? userAuthId = _Undefined,
     String? email,
+    Object? name = _Undefined,
     Object? memberships = _Undefined,
     Object? ownerId = _Undefined,
     Object? owner = _Undefined,
@@ -214,6 +225,7 @@ class _UserImpl extends User {
       accountStatus: accountStatus ?? this.accountStatus,
       userAuthId: userAuthId is String? ? userAuthId : this.userAuthId,
       email: email ?? this.email,
+      name: name is String? ? name : this.name,
       memberships: memberships is List<_i3.UserRoleMembership>?
           ? memberships
           : this.memberships?.map((e0) => e0.copyWith()).toList(),
