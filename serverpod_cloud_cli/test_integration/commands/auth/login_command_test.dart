@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:ground_control_client/ground_control_client_test_tools.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_auth_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:test/test.dart';
 import 'package:uuid/uuid.dart';
 
@@ -136,10 +139,58 @@ void main() {
 
         final storedCloudData =
             await ResourceManager.tryFetchServerpodCloudAuthData(
-              logger: logger,
               localStoragePath: testCacheFolderPath,
+              logger: logger,
             );
         expect(storedCloudData?.token, testToken);
+      });
+    });
+
+    group('when logging in through cli with mock client returning user', () {
+      const cloudUserId = 123;
+      late CloudCliCommandRunner mockCli;
+      late ClientMock mockClient;
+
+      setUp(() async {
+        mockClient = ClientMock();
+        when(() => mockClient.users.readUser()).thenAnswer(
+          (_) async => UserBuilder()
+              .withId(cloudUserId)
+              .withEmail('test@example.com')
+              .build(),
+        );
+        mockCli = CloudCliCommandRunner.create(
+          logger: logger,
+          serviceProvider: CloudCliServiceProvider(
+            apiClientFactory: (_) => mockClient,
+          ),
+        );
+      });
+
+      tearDown(() async {
+        await ResourceManager.removeServerpodCloudAuthData(
+          localStoragePath: testCacheFolderPath,
+        );
+      });
+
+      test('then cloud user data is stored.', () async {
+        final cliOnDone = mockCli.run([
+          'auth',
+          'login',
+          '--no-browser',
+          '--config-dir',
+          testCacheFolderPath,
+        ]);
+
+        await tokenSent.future;
+        await cliOnDone;
+
+        final storedCloudUserData =
+            ResourceManager.tryFetchServerpodCloudUserDataSync(
+              localStoragePath: testCacheFolderPath,
+            );
+        expect(storedCloudUserData, isNotNull);
+        expect(storedCloudUserData!.id, equals(cloudUserId.toString()));
       });
     });
 
@@ -175,10 +226,22 @@ void main() {
 
         final storedCloudData =
             await ResourceManager.tryFetchServerpodCloudAuthData(
-              logger: logger,
               localStoragePath: testCacheFolderPath,
+              logger: logger,
             );
         expect(storedCloudData, isNull);
+      });
+
+      test('then no cloud user data is stored.', () async {
+        await tokenSent.future;
+
+        await cliOnDone;
+
+        final storedCloudUserData =
+            ResourceManager.tryFetchServerpodCloudUserDataSync(
+              localStoragePath: testCacheFolderPath,
+            );
+        expect(storedCloudUserData, isNull);
       });
     });
   });

@@ -1,12 +1,15 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:cli_tools/cli_tools.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_auth_data.dart';
+import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_user_data.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:uuid/uuid.dart';
 
+import 'local_data_storage_exception.dart';
 import 'models/scloud_settings_data.dart';
 
 abstract class ResourceManager {
@@ -43,6 +46,9 @@ abstract class ResourceManager {
     return userId;
   }
 
+  /// Removes Serverpod Cloud authentication and user data from local storage.
+  ///
+  /// Throws [LocalDataStorageException] if the file cannot be deleted.
   static Future<void> removeServerpodCloudAuthData({
     required final String localStoragePath,
   }) async {
@@ -51,13 +57,73 @@ abstract class ResourceManager {
         fileName: ResourceManagerConstants.serverpodCloudAuthFilePath,
         localStoragePath: localStoragePath,
       );
+      await LocalStorageManager.removeFile(
+        fileName: ResourceManagerConstants.serverpodCloudUserFilePath,
+        localStoragePath: localStoragePath,
+      );
     } on DeleteException catch (e) {
-      throw Exception(
+      throw LocalDataStorageException(
         'Failed to remove serverpod cloud data. error: ${e.error}',
+        e,
       );
     }
   }
 
+  /// Stores Serverpod Cloud user data to local storage.
+  ///
+  /// Throws [LocalDataStorageException] if the file cannot be created, serialized, or written.
+  static Future<void> storeServerpodCloudUserData({
+    required final ServerpodCloudUserData cloudUserData,
+    required final String localStoragePath,
+  }) async {
+    try {
+      await LocalStorageManager.storeJsonFile(
+        fileName: ResourceManagerConstants.serverpodCloudUserFilePath,
+        json: cloudUserData.toJson(),
+        localStoragePath: localStoragePath,
+      );
+    } on CreateException catch (e) {
+      throw LocalDataStorageException(
+        'Failed to store serverpod cloud user data. error: ${e.error}',
+        e,
+      );
+    } on SerializationException catch (e) {
+      throw LocalDataStorageException(
+        'Failed to store serverpod cloud user data. error: ${e.error}',
+        e,
+      );
+    } on WriteException catch (e) {
+      throw LocalDataStorageException(
+        'Failed to store serverpod cloud user data. error: ${e.error}',
+        e,
+      );
+    }
+  }
+
+  static ServerpodCloudUserData? tryFetchServerpodCloudUserDataSync({
+    required final String localStoragePath,
+  }) {
+    try {
+      final file = File(
+        p.join(
+          localStoragePath,
+          ResourceManagerConstants.serverpodCloudUserFilePath,
+        ),
+      );
+      if (!file.existsSync()) {
+        return null;
+      }
+      final json = file.readAsStringSync();
+      final decoded = jsonDecode(json) as Map<String, dynamic>;
+      return ServerpodCloudUserData.fromJson(decoded);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Stores Serverpod Cloud authentication data to local storage.
+  ///
+  /// Throws [LocalDataStorageException] if the file cannot be created, serialized, or written.
   static Future<void> storeServerpodCloudAuthData({
     required final ServerpodCloudAuthData authData,
     required final String localStoragePath,
@@ -69,16 +135,19 @@ abstract class ResourceManager {
         localStoragePath: localStoragePath,
       );
     } on CreateException catch (e) {
-      throw Exception(
+      throw LocalDataStorageException(
         'Failed to store serverpod cloud data. error: ${e.error}',
+        e,
       );
     } on SerializationException catch (e) {
-      throw Exception(
+      throw LocalDataStorageException(
         'Failed to store serverpod cloud data. error: ${e.error}',
+        e,
       );
     } on WriteException catch (e) {
-      throw Exception(
+      throw LocalDataStorageException(
         'Failed to store serverpod cloud data. error: ${e.error}',
+        e,
       );
     }
   }
@@ -199,6 +268,9 @@ abstract class ResourceManager {
     return null;
   }
 
+  /// Stores Serverpod Cloud settings data to local storage.
+  ///
+  /// Throws [FailureException] if the file cannot be written.
   static Future<void> storeSettings({
     required final ServerpodCloudSettingsData settings,
     required final String localStoragePath,
@@ -214,6 +286,9 @@ abstract class ResourceManager {
     }
   }
 
+  /// Loads Serverpod Cloud settings data from local storage.
+  ///
+  /// Throws [FailureException] if the file cannot be read or deserialized.
   static Future<ServerpodCloudSettingsData?> tryLoadSettings({
     required final String localStoragePath,
   }) async {
@@ -231,6 +306,7 @@ abstract class ResourceManager {
 
 abstract class ResourceManagerConstants {
   static const serverpodCloudAuthFilePath = 'serverpod_cloud_auth.json';
+  static const serverpodCloudUserFilePath = 'serverpod_cloud_user.json';
   static const latestVersionFilePath = 'latest_cli_version.json';
   static const settingsFilePath = 'settings.json';
 }

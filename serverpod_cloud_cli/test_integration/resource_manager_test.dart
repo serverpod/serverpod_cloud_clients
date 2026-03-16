@@ -263,7 +263,7 @@ void main() {
         file.readAsStringSync(),
         equals(r'''
 {
-  "enable_analytics": false
+  "command_usage_analytics": false
 }'''),
       );
     });

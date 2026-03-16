@@ -113,6 +113,7 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
     await AuthLoginCommands.login(
       logger: logger,
       globalConfig: globalConfiguration,
+      cloudApiClient: runner.serviceProvider.cloudApiClient,
       timeLimit: timeLimit,
       persistent: persistent,
       openBrowser: openBrowser,
