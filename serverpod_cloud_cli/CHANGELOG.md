@@ -1,6 +1,16 @@
 
 # Changelog
 
+## [0.24.0] - 2026-03-16
+
+### Added
+
+- **Billing status warnings** - The CLI now automatically checks billing status before executing commands and warns users when their account is overdue, with a direct link to manage billing through the billing portal. Also added a `--no-warn-billing-overdue` flag to suppress billing status warnings during command execution. This flag is enabled by default.
+
+### Fixed
+
+- **Analytics emission failures** - Analytics emission failures are now caught and logged to avoid crashes.
+
 ## [0.23.0] - 2026-03-04
 
 ### Added
