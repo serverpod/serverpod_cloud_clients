@@ -11,6 +11,8 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import '../../../domains/products/models/project_product_info.dart' as _i2;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i3;
 
 /// Information about a plan product.
 /// Contains information to be sent to the client.
@@ -23,6 +25,7 @@ abstract class PlanInfo implements _i1.SerializableModel {
     this.trialLength,
     this.trialEndDate,
     this.projectsLimit,
+    required this.projectProductInfo,
   });
 
   factory PlanInfo({
@@ -33,6 +36,7 @@ abstract class PlanInfo implements _i1.SerializableModel {
     int? trialLength,
     DateTime? trialEndDate,
     int? projectsLimit,
+    required List<_i2.ProjectProductInfo> projectProductInfo,
   }) = _PlanInfoImpl;
 
   factory PlanInfo.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -48,6 +52,10 @@ abstract class PlanInfo implements _i1.SerializableModel {
               jsonSerialization['trialEndDate'],
             ),
       projectsLimit: jsonSerialization['projectsLimit'] as int?,
+      projectProductInfo: _i3.Protocol()
+          .deserialize<List<_i2.ProjectProductInfo>>(
+            jsonSerialization['projectProductInfo'],
+          ),
     );
   }
 
@@ -75,6 +83,9 @@ abstract class PlanInfo implements _i1.SerializableModel {
   /// The limit on the number of projects the subscriber may own, if any.
   int? projectsLimit;
 
+  /// The project product definitions bundled with this plan.
+  List<_i2.ProjectProductInfo> projectProductInfo;
+
   /// Returns a shallow copy of this [PlanInfo]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
@@ -86,6 +97,7 @@ abstract class PlanInfo implements _i1.SerializableModel {
     int? trialLength,
     DateTime? trialEndDate,
     int? projectsLimit,
+    List<_i2.ProjectProductInfo>? projectProductInfo,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -98,6 +110,9 @@ abstract class PlanInfo implements _i1.SerializableModel {
       if (trialLength != null) 'trialLength': trialLength,
       if (trialEndDate != null) 'trialEndDate': trialEndDate?.toJson(),
       if (projectsLimit != null) 'projectsLimit': projectsLimit,
+      'projectProductInfo': projectProductInfo.toJson(
+        valueToJson: (v) => v.toJson(),
+      ),
     };
   }
 
@@ -118,6 +133,7 @@ class _PlanInfoImpl extends PlanInfo {
     int? trialLength,
     DateTime? trialEndDate,
     int? projectsLimit,
+    required List<_i2.ProjectProductInfo> projectProductInfo,
   }) : super._(
          productId: productId,
          name: name,
@@ -126,6 +142,7 @@ class _PlanInfoImpl extends PlanInfo {
          trialLength: trialLength,
          trialEndDate: trialEndDate,
          projectsLimit: projectsLimit,
+         projectProductInfo: projectProductInfo,
        );
 
   /// Returns a shallow copy of this [PlanInfo]
@@ -140,6 +157,7 @@ class _PlanInfoImpl extends PlanInfo {
     Object? trialLength = _Undefined,
     Object? trialEndDate = _Undefined,
     Object? projectsLimit = _Undefined,
+    List<_i2.ProjectProductInfo>? projectProductInfo,
   }) {
     return PlanInfo(
       productId: productId ?? this.productId,
@@ -151,6 +169,9 @@ class _PlanInfoImpl extends PlanInfo {
           ? trialEndDate
           : this.trialEndDate,
       projectsLimit: projectsLimit is int? ? projectsLimit : this.projectsLimit,
+      projectProductInfo:
+          projectProductInfo ??
+          this.projectProductInfo.map((e0) => e0.copyWith()).toList(),
     );
   }
 }

@@ -7,6 +7,7 @@ class PlanInfoBuilder {
   int? _trialLength;
   DateTime? _trialEndDate;
   int? _projectsLimit;
+  List<ProjectProductInfo> _projectProductInfo;
 
   PlanInfoBuilder()
     : _productId = 'early-access:0',
@@ -14,7 +15,8 @@ class PlanInfoBuilder {
       _description = 'A test plan description',
       _trialLength = 7,
       _trialEndDate = null,
-      _projectsLimit = 3;
+      _projectsLimit = 3,
+      _projectProductInfo = const [];
 
   PlanInfoBuilder withHackathon2025() {
     _productId = 'hackathon-25:0';
@@ -68,6 +70,11 @@ class PlanInfoBuilder {
     return this;
   }
 
+  PlanInfoBuilder withProjectProductInfo(final List<ProjectProductInfo> info) {
+    _projectProductInfo = info;
+    return this;
+  }
+
   PlanInfo build() {
     return PlanInfo(
       productId: _productId,
@@ -77,6 +84,7 @@ class PlanInfoBuilder {
       trialLength: _trialLength,
       trialEndDate: _trialEndDate,
       projectsLimit: _projectsLimit,
+      projectProductInfo: _projectProductInfo,
     );
   }
 }
