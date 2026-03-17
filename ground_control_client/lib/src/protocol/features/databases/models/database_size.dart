@@ -16,7 +16,8 @@ enum DatabaseSizeOption implements _i1.SerializableModel {
   small,
   medium,
   large,
-  largePlus;
+  largePlus,
+  unknown;
 
   static DatabaseSizeOption fromJson(String name) {
     switch (name) {
@@ -28,10 +29,10 @@ enum DatabaseSizeOption implements _i1.SerializableModel {
         return DatabaseSizeOption.large;
       case 'largePlus':
         return DatabaseSizeOption.largePlus;
+      case 'unknown':
+        return DatabaseSizeOption.unknown;
       default:
-        throw ArgumentError(
-          'Value "$name" cannot be converted to "DatabaseSizeOption"',
-        );
+        return DatabaseSizeOption.unknown;
     }
   }
 
