@@ -13,15 +13,12 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 enum ComputeSizeOption implements _i1.SerializableModel {
-  closedBeta,
   small,
   medium,
   large;
 
   static ComputeSizeOption fromJson(String name) {
     switch (name) {
-      case 'closedBeta':
-        return ComputeSizeOption.closedBeta;
       case 'small':
         return ComputeSizeOption.small;
       case 'medium':
