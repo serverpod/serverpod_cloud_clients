@@ -91,13 +91,6 @@ class EndpointAdminMigration extends _i1.EndpointRef {
         'migrateProcuredDatabaseProducts',
         {},
       );
-
-  _i2.Future<Map<String, dynamic>> backfillDatabaseResources() =>
-      caller.callServerEndpoint<Map<String, dynamic>>(
-        'adminMigration',
-        'backfillDatabaseResources',
-        {},
-      );
 }
 
 /// Endpoint for global administrator to handle procurement for users.

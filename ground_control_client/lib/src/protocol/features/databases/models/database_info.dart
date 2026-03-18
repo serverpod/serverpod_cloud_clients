@@ -15,7 +15,7 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 abstract class DatabaseInfo implements _i1.SerializableModel {
   DatabaseInfo._({
     required this.cloudCapsuleId,
-    this.size,
+    required this.size,
     this.minCu,
     this.maxCu,
     required this.memoryMb,
@@ -25,7 +25,7 @@ abstract class DatabaseInfo implements _i1.SerializableModel {
 
   factory DatabaseInfo({
     required String cloudCapsuleId,
-    String? size,
+    required String size,
     double? minCu,
     double? maxCu,
     required int memoryMb,
@@ -36,7 +36,7 @@ abstract class DatabaseInfo implements _i1.SerializableModel {
   factory DatabaseInfo.fromJson(Map<String, dynamic> jsonSerialization) {
     return DatabaseInfo(
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
-      size: jsonSerialization['size'] as String?,
+      size: jsonSerialization['size'] as String,
       minCu: (jsonSerialization['minCu'] as num?)?.toDouble(),
       maxCu: (jsonSerialization['maxCu'] as num?)?.toDouble(),
       memoryMb: jsonSerialization['memoryMb'] as int,
@@ -48,22 +48,25 @@ abstract class DatabaseInfo implements _i1.SerializableModel {
   /// The cloud capsule ID.
   String cloudCapsuleId;
 
-  /// The size of the database, small, medium, large, large+.
-  String? size;
+  /// The size of the database: small, medium, large, largePlus, or unknown.
+  /// A value of unknown means the size could not be determined.
+  String size;
 
   /// The minimum number of CPUs that the database can be scaled to.
+  /// Null if the database size does not support scaling.
   double? minCu;
 
   /// The maximum number of CPUs that the database can be scaled to.
+  /// Null if the database size does not support scaling.
   double? maxCu;
 
   /// The memory of the database in MB.
   int memoryMb;
 
-  /// The storage limit of the database in GB.
+  /// The storage limit of the database in GB. Null means no limit.
   int? storageLimitGB;
 
-  /// The compute hours limit of the database in hours.
+  /// The compute hours limit of the database in hours. Null means no limit.
   int? computeHoursLimit;
 
   /// Returns a shallow copy of this [DatabaseInfo]
@@ -83,7 +86,7 @@ abstract class DatabaseInfo implements _i1.SerializableModel {
     return {
       '__className__': 'DatabaseInfo',
       'cloudCapsuleId': cloudCapsuleId,
-      if (size != null) 'size': size,
+      'size': size,
       if (minCu != null) 'minCu': minCu,
       if (maxCu != null) 'maxCu': maxCu,
       'memoryMb': memoryMb,
@@ -103,7 +106,7 @@ class _Undefined {}
 class _DatabaseInfoImpl extends DatabaseInfo {
   _DatabaseInfoImpl({
     required String cloudCapsuleId,
-    String? size,
+    required String size,
     double? minCu,
     double? maxCu,
     required int memoryMb,
@@ -125,7 +128,7 @@ class _DatabaseInfoImpl extends DatabaseInfo {
   @override
   DatabaseInfo copyWith({
     String? cloudCapsuleId,
-    Object? size = _Undefined,
+    String? size,
     Object? minCu = _Undefined,
     Object? maxCu = _Undefined,
     int? memoryMb,
@@ -134,7 +137,7 @@ class _DatabaseInfoImpl extends DatabaseInfo {
   }) {
     return DatabaseInfo(
       cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
-      size: size is String? ? size : this.size,
+      size: size ?? this.size,
       minCu: minCu is double? ? minCu : this.minCu,
       maxCu: maxCu is double? ? maxCu : this.maxCu,
       memoryMb: memoryMb ?? this.memoryMb,

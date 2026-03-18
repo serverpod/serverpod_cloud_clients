@@ -24,8 +24,8 @@ abstract class DatabaseResource implements _i1.SerializableModel {
     required this.providerId,
     required this.provider,
     required this.connection,
-    this.scaling,
-    this.quota,
+    required this.scaling,
+    required this.quota,
   });
 
   factory DatabaseResource({
@@ -34,8 +34,8 @@ abstract class DatabaseResource implements _i1.SerializableModel {
     required String providerId,
     required _i2.DatabaseProvider provider,
     required _i3.DatabaseConnection connection,
-    _i4.DatabaseScaling? scaling,
-    _i5.DatabaseQuota? quota,
+    required _i4.DatabaseScaling scaling,
+    required _i5.DatabaseQuota quota,
   }) = _DatabaseResourceImpl;
 
   factory DatabaseResource.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -49,16 +49,12 @@ abstract class DatabaseResource implements _i1.SerializableModel {
       connection: _i6.Protocol().deserialize<_i3.DatabaseConnection>(
         jsonSerialization['connection'],
       ),
-      scaling: jsonSerialization['scaling'] == null
-          ? null
-          : _i6.Protocol().deserialize<_i4.DatabaseScaling>(
-              jsonSerialization['scaling'],
-            ),
-      quota: jsonSerialization['quota'] == null
-          ? null
-          : _i6.Protocol().deserialize<_i5.DatabaseQuota>(
-              jsonSerialization['quota'],
-            ),
+      scaling: _i6.Protocol().deserialize<_i4.DatabaseScaling>(
+        jsonSerialization['scaling'],
+      ),
+      quota: _i6.Protocol().deserialize<_i5.DatabaseQuota>(
+        jsonSerialization['quota'],
+      ),
     );
   }
 
@@ -75,9 +71,9 @@ abstract class DatabaseResource implements _i1.SerializableModel {
 
   _i3.DatabaseConnection connection;
 
-  _i4.DatabaseScaling? scaling;
+  _i4.DatabaseScaling scaling;
 
-  _i5.DatabaseQuota? quota;
+  _i5.DatabaseQuota quota;
 
   /// Returns a shallow copy of this [DatabaseResource]
   /// with some or all fields replaced by the given arguments.
@@ -100,8 +96,8 @@ abstract class DatabaseResource implements _i1.SerializableModel {
       'providerId': providerId,
       'provider': provider.toJson(),
       'connection': connection.toJson(),
-      if (scaling != null) 'scaling': scaling?.toJson(),
-      if (quota != null) 'quota': quota?.toJson(),
+      'scaling': scaling.toJson(),
+      'quota': quota.toJson(),
     };
   }
 
@@ -120,8 +116,8 @@ class _DatabaseResourceImpl extends DatabaseResource {
     required String providerId,
     required _i2.DatabaseProvider provider,
     required _i3.DatabaseConnection connection,
-    _i4.DatabaseScaling? scaling,
-    _i5.DatabaseQuota? quota,
+    required _i4.DatabaseScaling scaling,
+    required _i5.DatabaseQuota quota,
   }) : super._(
          id: id,
          cloudCapsuleId: cloudCapsuleId,
@@ -142,8 +138,8 @@ class _DatabaseResourceImpl extends DatabaseResource {
     String? providerId,
     _i2.DatabaseProvider? provider,
     _i3.DatabaseConnection? connection,
-    Object? scaling = _Undefined,
-    Object? quota = _Undefined,
+    _i4.DatabaseScaling? scaling,
+    _i5.DatabaseQuota? quota,
   }) {
     return DatabaseResource(
       id: id is int? ? id : this.id,
@@ -151,10 +147,8 @@ class _DatabaseResourceImpl extends DatabaseResource {
       providerId: providerId ?? this.providerId,
       provider: provider ?? this.provider,
       connection: connection ?? this.connection.copyWith(),
-      scaling: scaling is _i4.DatabaseScaling?
-          ? scaling
-          : this.scaling?.copyWith(),
-      quota: quota is _i5.DatabaseQuota? ? quota : this.quota?.copyWith(),
+      scaling: scaling ?? this.scaling.copyWith(),
+      quota: quota ?? this.quota.copyWith(),
     );
   }
 }
