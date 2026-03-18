@@ -15,7 +15,7 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 abstract class ComputeInfo implements _i1.SerializableModel {
   ComputeInfo._({
     required this.cloudCapsuleId,
-    this.size,
+    required this.size,
     required this.minInstances,
     required this.maxInstances,
     required this.memoryMb,
@@ -23,7 +23,7 @@ abstract class ComputeInfo implements _i1.SerializableModel {
 
   factory ComputeInfo({
     required String cloudCapsuleId,
-    String? size,
+    required String size,
     required int minInstances,
     required int maxInstances,
     required int memoryMb,
@@ -32,7 +32,7 @@ abstract class ComputeInfo implements _i1.SerializableModel {
   factory ComputeInfo.fromJson(Map<String, dynamic> jsonSerialization) {
     return ComputeInfo(
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
-      size: jsonSerialization['size'] as String?,
+      size: jsonSerialization['size'] as String,
       minInstances: jsonSerialization['minInstances'] as int,
       maxInstances: jsonSerialization['maxInstances'] as int,
       memoryMb: jsonSerialization['memoryMb'] as int,
@@ -43,7 +43,7 @@ abstract class ComputeInfo implements _i1.SerializableModel {
   String cloudCapsuleId;
 
   /// The size of the capsule compute. small, medium, large.
-  String? size;
+  String size;
 
   /// The minimum number of instances the capsule can scale to.
   int minInstances;
@@ -69,7 +69,7 @@ abstract class ComputeInfo implements _i1.SerializableModel {
     return {
       '__className__': 'ComputeInfo',
       'cloudCapsuleId': cloudCapsuleId,
-      if (size != null) 'size': size,
+      'size': size,
       'minInstances': minInstances,
       'maxInstances': maxInstances,
       'memoryMb': memoryMb,
@@ -82,12 +82,10 @@ abstract class ComputeInfo implements _i1.SerializableModel {
   }
 }
 
-class _Undefined {}
-
 class _ComputeInfoImpl extends ComputeInfo {
   _ComputeInfoImpl({
     required String cloudCapsuleId,
-    String? size,
+    required String size,
     required int minInstances,
     required int maxInstances,
     required int memoryMb,
@@ -105,14 +103,14 @@ class _ComputeInfoImpl extends ComputeInfo {
   @override
   ComputeInfo copyWith({
     String? cloudCapsuleId,
-    Object? size = _Undefined,
+    String? size,
     int? minInstances,
     int? maxInstances,
     int? memoryMb,
   }) {
     return ComputeInfo(
       cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
-      size: size is String? ? size : this.size,
+      size: size ?? this.size,
       minInstances: minInstances ?? this.minInstances,
       maxInstances: maxInstances ?? this.maxInstances,
       memoryMb: memoryMb ?? this.memoryMb,

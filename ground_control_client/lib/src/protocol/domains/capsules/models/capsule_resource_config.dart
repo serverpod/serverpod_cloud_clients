@@ -29,7 +29,7 @@ abstract class CapsuleResource implements _i1.SerializableModel {
     bool? computeScalingEnabled,
     int? computeScalingMinReplicas,
     int? computeScalingMaxReplicas,
-    this.computeSize,
+    required this.computeSize,
   }) : computeRequestCpu = computeRequestCpu ?? '250m',
        computeRequestMemory = computeRequestMemory ?? '256Mi',
        computeRequestEphemeralStorage = computeRequestEphemeralStorage ?? '1Gi',
@@ -53,7 +53,7 @@ abstract class CapsuleResource implements _i1.SerializableModel {
     bool? computeScalingEnabled,
     int? computeScalingMinReplicas,
     int? computeScalingMaxReplicas,
-    _i3.ComputeSizeOption? computeSize,
+    required _i3.ComputeSizeOption computeSize,
   }) = _CapsuleResourceImpl;
 
   factory CapsuleResource.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -78,11 +78,9 @@ abstract class CapsuleResource implements _i1.SerializableModel {
           jsonSerialization['computeScalingMinReplicas'] as int,
       computeScalingMaxReplicas:
           jsonSerialization['computeScalingMaxReplicas'] as int,
-      computeSize: jsonSerialization['computeSize'] == null
-          ? null
-          : _i3.ComputeSizeOption.fromJson(
-              (jsonSerialization['computeSize'] as String),
-            ),
+      computeSize: _i3.ComputeSizeOption.fromJson(
+        (jsonSerialization['computeSize'] as String),
+      ),
     );
   }
 
@@ -125,7 +123,7 @@ abstract class CapsuleResource implements _i1.SerializableModel {
   int computeScalingMaxReplicas;
 
   /// The compute size of the capsule.
-  _i3.ComputeSizeOption? computeSize;
+  _i3.ComputeSizeOption computeSize;
 
   /// Returns a shallow copy of this [CapsuleResource]
   /// with some or all fields replaced by the given arguments.
@@ -161,7 +159,7 @@ abstract class CapsuleResource implements _i1.SerializableModel {
       'computeScalingEnabled': computeScalingEnabled,
       'computeScalingMinReplicas': computeScalingMinReplicas,
       'computeScalingMaxReplicas': computeScalingMaxReplicas,
-      if (computeSize != null) 'computeSize': computeSize?.toJson(),
+      'computeSize': computeSize.toJson(),
     };
   }
 
@@ -187,7 +185,7 @@ class _CapsuleResourceImpl extends CapsuleResource {
     bool? computeScalingEnabled,
     int? computeScalingMinReplicas,
     int? computeScalingMaxReplicas,
-    _i3.ComputeSizeOption? computeSize,
+    required _i3.ComputeSizeOption computeSize,
   }) : super._(
          id: id,
          cloudCapsuleId: cloudCapsuleId,
@@ -221,7 +219,7 @@ class _CapsuleResourceImpl extends CapsuleResource {
     bool? computeScalingEnabled,
     int? computeScalingMinReplicas,
     int? computeScalingMaxReplicas,
-    Object? computeSize = _Undefined,
+    _i3.ComputeSizeOption? computeSize,
   }) {
     return CapsuleResource(
       id: id is int? ? id : this.id,
@@ -241,9 +239,7 @@ class _CapsuleResourceImpl extends CapsuleResource {
           computeScalingMinReplicas ?? this.computeScalingMinReplicas,
       computeScalingMaxReplicas:
           computeScalingMaxReplicas ?? this.computeScalingMaxReplicas,
-      computeSize: computeSize is _i3.ComputeSizeOption?
-          ? computeSize
-          : this.computeSize,
+      computeSize: computeSize ?? this.computeSize,
     );
   }
 }
