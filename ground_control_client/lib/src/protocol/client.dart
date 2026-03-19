@@ -198,6 +198,14 @@ class EndpointAdminProjects extends _i1.EndpointRef {
     {'cloudCapsuleId': cloudCapsuleId, 'limit': limit},
   );
 
+  /// Deletes a project permanently on behalf of a user.
+  /// Executes the same deletion code path as the regular deleteProject endpoint,
+  /// but bypasses project-level authorization.
+  _i2.Future<_i3.Project> deleteProject({required String cloudProjectId}) =>
+      caller.callServerEndpoint<_i3.Project>('adminProjects', 'deleteProject', {
+        'cloudProjectId': cloudProjectId,
+      });
+
   /// Redeploys a capsule using its current image.
   /// Triggers a deploymentUpdated event to redeploy the infrastructure.
   _i2.Future<void> redeployCapsule(String cloudCapsuleId) =>
