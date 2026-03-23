@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.25.0] - 2026-03-23
+
+### Added
+
+- **Serverpod version check** - The Serverpod version is now automatically captured from your pubspec on deploy.
+
 ## [0.24.0] - 2026-03-16
 
 ### Added
