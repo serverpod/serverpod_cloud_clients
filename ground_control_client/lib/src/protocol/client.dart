@@ -761,10 +761,13 @@ class EndpointDeploy extends _i1.EndpointRef {
   @override
   String get name => 'deploy';
 
-  _i2.Future<String> createUploadDescription(String cloudProjectId) =>
-      caller.callServerEndpoint<String>('deploy', 'createUploadDescription', {
-        'cloudProjectId': cloudProjectId,
-      });
+  _i2.Future<String> createUploadDescription(
+    String cloudProjectId, {
+    String? serverpodVersion,
+  }) => caller.callServerEndpoint<String>('deploy', 'createUploadDescription', {
+    'cloudProjectId': cloudProjectId,
+    'serverpodVersion': serverpodVersion,
+  });
 }
 
 /// Endpoint for managing environment variables.

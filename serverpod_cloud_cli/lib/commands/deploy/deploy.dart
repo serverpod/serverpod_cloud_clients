@@ -3,14 +3,14 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
-import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/file_uploader_factory.dart';
-import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dart';
+import 'package:serverpod_cloud_cli/commands/deploy/script_runner.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper.dart';
+import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_io.dart';
 import 'package:serverpod_cloud_cli/util/scloudignore.dart' show ScloudIgnore;
-import 'package:serverpod_cloud_cli/commands/deploy/script_runner.dart';
 
 import 'prepare_workspace.dart';
 
@@ -154,10 +154,15 @@ abstract class Deploy {
     } else {
       late final String uploadDescription;
 
+      final serverpodVersion = pubspecValidator.serverpodVersion;
+
       await logger.progress('Retrieving upload description...', () async {
         try {
           uploadDescription = await cloudApiClient.deploy
-              .createUploadDescription(projectId);
+              .createUploadDescription(
+                projectId,
+                serverpodVersion: serverpodVersion,
+              );
           return true;
         } on ServerpodClientException catch (e) {
           if (e.message.toLowerCase().contains('connection timed out')) {

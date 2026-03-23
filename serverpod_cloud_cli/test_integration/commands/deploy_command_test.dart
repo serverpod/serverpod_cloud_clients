@@ -8,18 +8,17 @@ import 'dart:io';
 import 'package:archive/archive.dart';
 import 'package:archive/archive_io.dart';
 import 'package:args/command_runner.dart';
+import 'package:ground_control_client/ground_control_client.dart';
+import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
-import 'package:serverpod_cloud_cli/constants.dart' show VersionConstants;
-import 'package:test_descriptor/test_descriptor.dart' as d;
-import 'package:test/test.dart';
-
-import 'package:ground_control_client/ground_control_client_test_tools.dart';
-import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy_command.dart';
-import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
+import 'package:serverpod_cloud_cli/constants.dart' show VersionConstants;
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:yaml_codec/yaml_codec.dart';
 
 import '../../test_utils/bucket_upload_description.dart';
@@ -58,7 +57,10 @@ void main() {
         await ProjectFactory.serverpodServerDir().create();
 
         when(
-          () => client.deploy.createUploadDescription(any()),
+          () => client.deploy.createUploadDescription(
+            any(),
+            serverpodVersion: any(named: 'serverpodVersion'),
+          ),
         ).thenThrow(ServerpodClientUnauthorized());
       });
 
@@ -260,7 +262,10 @@ dependencies:
       group('and 403 response for creating file upload request', () {
         setUp(() async {
           when(
-            () => client.deploy.createUploadDescription(any()),
+            () => client.deploy.createUploadDescription(
+              any(),
+              serverpodVersion: any(named: 'serverpodVersion'),
+            ),
           ).thenThrow(ServerpodClientForbidden());
         });
 
@@ -303,7 +308,12 @@ dependencies:
         'and valid upload description response and the project directory contains directory symlink',
         () {
           setUp(() async {
-            when(() => client.deploy.createUploadDescription(any())).thenAnswer(
+            when(
+              () => client.deploy.createUploadDescription(
+                any(),
+                serverpodVersion: any(named: 'serverpodVersion'),
+              ),
+            ).thenAnswer(
               (final _) async => BucketUploadDescription.uploadDescription,
             );
 
@@ -369,7 +379,12 @@ dependencies:
         'Given valid upload description response but project contains unresolved symlink',
         () {
           setUp(() async {
-            when(() => client.deploy.createUploadDescription(any())).thenAnswer(
+            when(
+              () => client.deploy.createUploadDescription(
+                any(),
+                serverpodVersion: any(named: 'serverpodVersion'),
+              ),
+            ).thenAnswer(
               (final _) async => BucketUploadDescription.uploadDescription,
             );
 
@@ -441,7 +456,10 @@ dependencies:
 
         setUp(() async {
           when(
-            () => client.deploy.createUploadDescription(any()),
+            () => client.deploy.createUploadDescription(
+              any(),
+              serverpodVersion: any(named: 'serverpodVersion'),
+            ),
           ).thenAnswer((final _) async => jsonEncode(descriptionContent));
 
           mockFileUploader.init(uploadResponse: false);
@@ -484,7 +502,12 @@ dependencies:
 
       group('and valid upload description response', () {
         setUp(() async {
-          when(() => client.deploy.createUploadDescription(any())).thenAnswer(
+          when(
+            () => client.deploy.createUploadDescription(
+              any(),
+              serverpodVersion: any(named: 'serverpodVersion'),
+            ),
+          ).thenAnswer(
             (final _) async => BucketUploadDescription.uploadDescription,
           );
         });
@@ -517,7 +540,12 @@ dependencies:
         await ProjectFactory.serverpodServerDir().create();
         testProjectDir = p.join(d.sandbox, ProjectFactory.defaultDirectoryName);
 
-        when(() => client.deploy.createUploadDescription(any())).thenAnswer(
+        when(
+          () => client.deploy.createUploadDescription(
+            any(),
+            serverpodVersion: any(named: 'serverpodVersion'),
+          ),
+        ).thenAnswer(
           (final _) async => BucketUploadDescription.uploadDescription,
         );
       });
@@ -667,7 +695,12 @@ project:
           ],
         ).create();
 
-        when(() => client.deploy.createUploadDescription(any())).thenAnswer(
+        when(
+          () => client.deploy.createUploadDescription(
+            any(),
+            serverpodVersion: any(named: 'serverpodVersion'),
+          ),
+        ).thenAnswer(
           (final _) async => BucketUploadDescription.uploadDescription,
         );
       });
@@ -716,7 +749,12 @@ project:
 '''),
       ]).create();
 
-      when(() => client.deploy.createUploadDescription(any())).thenAnswer(
+      when(
+        () => client.deploy.createUploadDescription(
+          any(),
+          serverpodVersion: any(named: 'serverpodVersion'),
+        ),
+      ).thenAnswer(
         (final _) async => BucketUploadDescription.uploadDescription,
       );
     });
@@ -788,7 +826,12 @@ dependencies:
         ]),
       ]).create();
 
-      when(() => client.deploy.createUploadDescription(any())).thenAnswer(
+      when(
+        () => client.deploy.createUploadDescription(
+          any(),
+          serverpodVersion: any(named: 'serverpodVersion'),
+        ),
+      ).thenAnswer(
         (final _) async => BucketUploadDescription.uploadDescription,
       );
     });
@@ -954,7 +997,12 @@ dependencies:
           ]),
         ]).create();
 
-        when(() => client.deploy.createUploadDescription(any())).thenAnswer(
+        when(
+          () => client.deploy.createUploadDescription(
+            any(),
+            serverpodVersion: any(named: 'serverpodVersion'),
+          ),
+        ).thenAnswer(
           (final _) async => BucketUploadDescription.uploadDescription,
         );
       });
@@ -1018,7 +1066,12 @@ dev_dependencies:
       ]).create();
       testProjectDir = p.join(d.sandbox, 'project');
 
-      when(() => client.deploy.createUploadDescription(any())).thenAnswer(
+      when(
+        () => client.deploy.createUploadDescription(
+          any(),
+          serverpodVersion: any(named: 'serverpodVersion'),
+        ),
+      ).thenAnswer(
         (final _) async => BucketUploadDescription.uploadDescription,
       );
     });
@@ -1067,7 +1120,12 @@ dev_dependencies:
       await ProjectFactory.serverpodServerDir().create();
       testProjectDir = p.join(d.sandbox, ProjectFactory.defaultDirectoryName);
 
-      when(() => client.deploy.createUploadDescription(any())).thenAnswer(
+      when(
+        () => client.deploy.createUploadDescription(
+          any(),
+          serverpodVersion: any(named: 'serverpodVersion'),
+        ),
+      ).thenAnswer(
         (final _) async => BucketUploadDescription.uploadDescription,
       );
     });

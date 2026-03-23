@@ -96,6 +96,16 @@ class TenantProjectPubspec {
         pubspec.dependencies['serverpod'] != null;
   }
 
+  /// Returns the Serverpod framework version constraint string,
+  /// or null if no Serverpod hosted dependency is found.
+  String? get serverpodVersion {
+    final serverpodDep = pubspec.dependencies['serverpod'];
+    if (serverpodDep is HostedDependency) {
+      return serverpodDep.version.toString();
+    }
+    return null;
+  }
+
   /// Validates the pubspec.yaml dependencies of a customer project
   /// in order to be deployed to Serverpod Cloud.
   ///

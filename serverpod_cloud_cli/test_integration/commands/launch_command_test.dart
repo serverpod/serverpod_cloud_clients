@@ -4,18 +4,17 @@ library;
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:mocktail/mocktail.dart';
-import 'package:path/path.dart' as p;
-import 'package:serverpod_cloud_cli/constants.dart' show VersionConstants;
-import 'package:test_descriptor/test_descriptor.dart' as d;
-import 'package:test/test.dart';
-
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/launch_command.dart';
-import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
+import 'package:serverpod_cloud_cli/constants.dart' show VersionConstants;
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../../test_utils/command_logger_matchers.dart';
 import '../../test_utils/project_factory.dart';
@@ -108,7 +107,10 @@ void main() {
       ).thenAnswer((final _) async => {});
 
       when(
-        () => client.deploy.createUploadDescription(any()),
+        () => client.deploy.createUploadDescription(
+          any(),
+          serverpodVersion: any(named: 'serverpodVersion'),
+        ),
       ).thenAnswer((final _) async => jsonEncode(descriptionContent));
 
       final attemptStages = [
