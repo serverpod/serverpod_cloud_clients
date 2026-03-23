@@ -15,7 +15,8 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 enum ComputeSizeOption implements _i1.SerializableModel {
   small,
   medium,
-  large;
+  large,
+  unknown;
 
   static ComputeSizeOption fromJson(String name) {
     switch (name) {
@@ -25,10 +26,10 @@ enum ComputeSizeOption implements _i1.SerializableModel {
         return ComputeSizeOption.medium;
       case 'large':
         return ComputeSizeOption.large;
+      case 'unknown':
+        return ComputeSizeOption.unknown;
       default:
-        throw ArgumentError(
-          'Value "$name" cannot be converted to "ComputeSizeOption"',
-        );
+        return ComputeSizeOption.unknown;
     }
   }
 

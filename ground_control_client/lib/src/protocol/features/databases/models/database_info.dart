@@ -11,6 +11,7 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import '../../../features/databases/models/database_size.dart' as _i2;
 
 abstract class DatabaseInfo implements _i1.SerializableModel {
   DatabaseInfo._({
@@ -25,7 +26,7 @@ abstract class DatabaseInfo implements _i1.SerializableModel {
 
   factory DatabaseInfo({
     required String cloudCapsuleId,
-    required String size,
+    required _i2.DatabaseSizeOption size,
     double? minCu,
     double? maxCu,
     required int memoryMb,
@@ -36,7 +37,9 @@ abstract class DatabaseInfo implements _i1.SerializableModel {
   factory DatabaseInfo.fromJson(Map<String, dynamic> jsonSerialization) {
     return DatabaseInfo(
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
-      size: jsonSerialization['size'] as String,
+      size: _i2.DatabaseSizeOption.fromJson(
+        (jsonSerialization['size'] as String),
+      ),
       minCu: (jsonSerialization['minCu'] as num?)?.toDouble(),
       maxCu: (jsonSerialization['maxCu'] as num?)?.toDouble(),
       memoryMb: jsonSerialization['memoryMb'] as int,
@@ -50,7 +53,7 @@ abstract class DatabaseInfo implements _i1.SerializableModel {
 
   /// The size of the database: small, medium, large, largePlus, or unknown.
   /// A value of unknown means the size could not be determined.
-  String size;
+  _i2.DatabaseSizeOption size;
 
   /// The minimum number of CPUs that the database can be scaled to.
   /// Null if the database size does not support scaling.
@@ -74,7 +77,7 @@ abstract class DatabaseInfo implements _i1.SerializableModel {
   @_i1.useResult
   DatabaseInfo copyWith({
     String? cloudCapsuleId,
-    String? size,
+    _i2.DatabaseSizeOption? size,
     double? minCu,
     double? maxCu,
     int? memoryMb,
@@ -86,7 +89,7 @@ abstract class DatabaseInfo implements _i1.SerializableModel {
     return {
       '__className__': 'DatabaseInfo',
       'cloudCapsuleId': cloudCapsuleId,
-      'size': size,
+      'size': size.toJson(),
       if (minCu != null) 'minCu': minCu,
       if (maxCu != null) 'maxCu': maxCu,
       'memoryMb': memoryMb,
@@ -106,7 +109,7 @@ class _Undefined {}
 class _DatabaseInfoImpl extends DatabaseInfo {
   _DatabaseInfoImpl({
     required String cloudCapsuleId,
-    required String size,
+    required _i2.DatabaseSizeOption size,
     double? minCu,
     double? maxCu,
     required int memoryMb,
@@ -128,7 +131,7 @@ class _DatabaseInfoImpl extends DatabaseInfo {
   @override
   DatabaseInfo copyWith({
     String? cloudCapsuleId,
-    String? size,
+    _i2.DatabaseSizeOption? size,
     Object? minCu = _Undefined,
     Object? maxCu = _Undefined,
     int? memoryMb,
