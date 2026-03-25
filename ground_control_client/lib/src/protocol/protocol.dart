@@ -798,9 +798,9 @@ class Protocol extends _i1.SerializationManager {
           )
           as T;
     }
-    if (t == Map<String, dynamic>) {
+    if (t == Map<String, String>) {
       return (data as Map).map(
-            (k, v) => MapEntry(deserialize<String>(k), deserialize<dynamic>(v)),
+            (k, v) => MapEntry(deserialize<String>(k), deserialize<String>(v)),
           )
           as T;
     }
@@ -840,6 +840,9 @@ class Protocol extends _i1.SerializationManager {
               .toList()
           as T;
     }
+    if (t == List<String>) {
+      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
+    }
     if (t == List<_i76.User>) {
       return (data as List).map((e) => deserialize<_i76.User>(e)).toList() as T;
     }
@@ -861,9 +864,6 @@ class Protocol extends _i1.SerializationManager {
               .toList()
           as T;
     }
-    if (t == List<String>) {
-      return (data as List).map((e) => deserialize<String>(e)).toList() as T;
-    }
     if (t == List<_i80.PaymentMethod>) {
       return (data as List)
               .map((e) => deserialize<_i80.PaymentMethod>(e))
@@ -884,12 +884,6 @@ class Protocol extends _i1.SerializationManager {
     }
     if (t == List<_i82.Role>) {
       return (data as List).map((e) => deserialize<_i82.Role>(e)).toList() as T;
-    }
-    if (t == Map<String, String>) {
-      return (data as Map).map(
-            (k, v) => MapEntry(deserialize<String>(k), deserialize<String>(v)),
-          )
-          as T;
     }
     if (t == List<_i83.DeployAttemptStage>) {
       return (data as List)

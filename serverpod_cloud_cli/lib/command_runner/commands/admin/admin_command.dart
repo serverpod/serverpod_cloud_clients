@@ -1,5 +1,6 @@
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 
+import 'admin_plan_command.dart';
 import 'admin_product_commands.dart';
 import 'admin_projects_commands.dart';
 import 'admin_redeploy_command.dart';
@@ -24,5 +25,6 @@ class CloudAdminCommand extends CloudCliCommand {
     addSubcommand(AdminProjectCommand(logger: logger));
     addSubcommand(AdminRedeployCommand(logger: logger));
     addSubcommand(AdminProductCommand(logger: logger));
+    addSubcommand(AdminPlanCommand(logger: logger));
   }
 }

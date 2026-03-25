@@ -85,8 +85,8 @@ class EndpointAdminMigration extends _i1.EndpointRef {
   @override
   String get name => 'adminMigration';
 
-  _i2.Future<Map<String, dynamic>> migrateProcuredDatabaseProducts() =>
-      caller.callServerEndpoint<Map<String, dynamic>>(
+  _i2.Future<Map<String, String>> migrateProcuredDatabaseProducts() =>
+      caller.callServerEndpoint<Map<String, String>>(
         'adminMigration',
         'migrateProcuredDatabaseProducts',
         {},
@@ -228,6 +228,27 @@ class EndpointAdminSecrets extends _i1.EndpointRef {
     'adminSecrets',
     'migrateManagedSecrets',
     {},
+  );
+}
+
+/// {@category Endpoint}
+class EndpointAdminUpdatePlan extends _i1.EndpointRef {
+  EndpointAdminUpdatePlan(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'adminUpdatePlan';
+
+  /// Lists all handled Orb plans by external plan id.
+  _i2.Future<List<String>> listOrbPlans() => caller
+      .callServerEndpoint<List<String>>('adminUpdatePlan', 'listOrbPlans', {});
+
+  /// Pushes the current configuration for a plan to Orb.
+  _i2.Future<Map<String, String>> updateOrbPlan({
+    required String externalPlanId,
+  }) => caller.callServerEndpoint<Map<String, String>>(
+    'adminUpdatePlan',
+    'updateOrbPlan',
+    {'externalPlanId': externalPlanId},
   );
 }
 
@@ -1293,6 +1314,7 @@ class Client extends _i1.ServerpodClientShared {
     adminProcurement = EndpointAdminProcurement(this);
     adminProjects = EndpointAdminProjects(this);
     adminSecrets = EndpointAdminSecrets(this);
+    adminUpdatePlan = EndpointAdminUpdatePlan(this);
     adminUsers = EndpointAdminUsers(this);
     auth = EndpointAuth(this);
     authWithAuth = EndpointAuthWithAuth(this);
@@ -1322,6 +1344,8 @@ class Client extends _i1.ServerpodClientShared {
   late final EndpointAdminProjects adminProjects;
 
   late final EndpointAdminSecrets adminSecrets;
+
+  late final EndpointAdminUpdatePlan adminUpdatePlan;
 
   late final EndpointAdminUsers adminUsers;
 
@@ -1369,6 +1393,7 @@ class Client extends _i1.ServerpodClientShared {
     'adminProcurement': adminProcurement,
     'adminProjects': adminProjects,
     'adminSecrets': adminSecrets,
+    'adminUpdatePlan': adminUpdatePlan,
     'adminUsers': adminUsers,
     'auth': auth,
     'authWithAuth': authWithAuth,

@@ -41,6 +41,9 @@ class EndpointAdminProjectsMock extends Mock implements EndpointAdminProjects {}
 class EndpointAdminProcurementMock extends Mock
     implements EndpointAdminProcurement {}
 
+class EndpointAdminUpdatePlanMock extends Mock
+    implements EndpointAdminUpdatePlan {}
+
 class EndpointBillingMock extends Mock implements EndpointBilling {}
 
 class EndpointPlansMock extends Mock implements EndpointPlans {}
@@ -125,6 +128,9 @@ class ClientMock extends Mock implements Client {
   @override
   final EndpointAdminProcurement adminProcurement =
       EndpointAdminProcurementMock();
+
+  @override
+  final EndpointAdminUpdatePlan adminUpdatePlan = EndpointAdminUpdatePlanMock();
 
   @override
   final EndpointBilling billing = EndpointBillingMock();
