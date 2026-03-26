@@ -22,10 +22,15 @@ import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 /// in which case they are non-null.
 /// In other words, null ancillary fields correspond to `undefined`.
 abstract class ProjectInfo implements _i1.SerializableModel {
-  ProjectInfo._({required this.project, this.latestDeployAttemptTime});
+  ProjectInfo._({
+    required this.project,
+    required this.productId,
+    this.latestDeployAttemptTime,
+  });
 
   factory ProjectInfo({
     required _i2.Project project,
+    required String productId,
     _i3.Timestamp? latestDeployAttemptTime,
   }) = _ProjectInfoImpl;
 
@@ -34,6 +39,7 @@ abstract class ProjectInfo implements _i1.SerializableModel {
       project: _i4.Protocol().deserialize<_i2.Project>(
         jsonSerialization['project'],
       ),
+      productId: jsonSerialization['productId'] as String,
       latestDeployAttemptTime:
           jsonSerialization['latestDeployAttemptTime'] == null
           ? null
@@ -45,6 +51,9 @@ abstract class ProjectInfo implements _i1.SerializableModel {
 
   _i2.Project project;
 
+  /// The procured product id for the project product type.
+  String productId;
+
   /// The timestamp of the latest deploy attempt, or null if never deployed.
   /// (When deploy status is overhauled, this will likely be replaced by a
   /// `DeployAttempt` object.)
@@ -55,6 +64,7 @@ abstract class ProjectInfo implements _i1.SerializableModel {
   @_i1.useResult
   ProjectInfo copyWith({
     _i2.Project? project,
+    String? productId,
     _i3.Timestamp? latestDeployAttemptTime,
   });
   @override
@@ -62,6 +72,7 @@ abstract class ProjectInfo implements _i1.SerializableModel {
     return {
       '__className__': 'ProjectInfo',
       'project': project.toJson(),
+      'productId': productId,
       if (latestDeployAttemptTime != null)
         'latestDeployAttemptTime': latestDeployAttemptTime?.toJson(),
     };
@@ -78,9 +89,11 @@ class _Undefined {}
 class _ProjectInfoImpl extends ProjectInfo {
   _ProjectInfoImpl({
     required _i2.Project project,
+    required String productId,
     _i3.Timestamp? latestDeployAttemptTime,
   }) : super._(
          project: project,
+         productId: productId,
          latestDeployAttemptTime: latestDeployAttemptTime,
        );
 
@@ -90,10 +103,12 @@ class _ProjectInfoImpl extends ProjectInfo {
   @override
   ProjectInfo copyWith({
     _i2.Project? project,
+    String? productId,
     Object? latestDeployAttemptTime = _Undefined,
   }) {
     return ProjectInfo(
       project: project ?? this.project.copyWith(),
+      productId: productId ?? this.productId,
       latestDeployAttemptTime: latestDeployAttemptTime is _i3.Timestamp?
           ? latestDeployAttemptTime
           : this.latestDeployAttemptTime?.copyWith(),
