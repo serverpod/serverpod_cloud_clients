@@ -16,6 +16,8 @@ enum ComputeSizeOption implements _i1.SerializableModel {
   small,
   medium,
   large,
+  xlarge,
+  xxlarge,
   unknown;
 
   static ComputeSizeOption fromJson(String name) {
@@ -26,6 +28,10 @@ enum ComputeSizeOption implements _i1.SerializableModel {
         return ComputeSizeOption.medium;
       case 'large':
         return ComputeSizeOption.large;
+      case 'xlarge':
+        return ComputeSizeOption.xlarge;
+      case 'xxlarge':
+        return ComputeSizeOption.xxlarge;
       case 'unknown':
         return ComputeSizeOption.unknown;
       default:
