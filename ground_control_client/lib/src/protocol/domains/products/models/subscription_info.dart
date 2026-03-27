@@ -59,7 +59,7 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
       endDate: jsonSerialization['endDate'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['endDate']),
-      cancelled: jsonSerialization['cancelled'] as bool,
+      cancelled: _i1.BoolJsonExtension.fromJson(jsonSerialization['cancelled']),
       subscriptionId: jsonSerialization['subscriptionId'] as String,
       planProductId: jsonSerialization['planProductId'] as String,
       planName: jsonSerialization['planName'] as String,

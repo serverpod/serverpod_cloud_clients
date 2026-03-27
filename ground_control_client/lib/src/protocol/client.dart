@@ -886,7 +886,7 @@ class EndpointLogs extends _i1.EndpointRef {
 
   /// Fetches log records from the specified capsule.
   _i2.Stream<_i28.LogRecord> fetchRecords({
-    String? cloudProjectId,
+    @Deprecated('Use cloudCapsuleId instead') String? cloudProjectId,
     String? cloudCapsuleId,
     DateTime? beforeTime,
     DateTime? afterTime,
@@ -925,7 +925,7 @@ class EndpointLogs extends _i1.EndpointRef {
   /// Continues until the client unsubscribes, [limit] is reached,
   /// or the internal max limit is reached.
   _i2.Stream<_i28.LogRecord> tailRecords({
-    String? cloudProjectId,
+    @Deprecated('Use cloudCapsuleId instead') String? cloudProjectId,
     String? cloudCapsuleId,
     int? limit,
   }) => caller
@@ -942,7 +942,7 @@ class EndpointLogs extends _i1.EndpointRef {
 
   /// Fetches the build log records for the specified deploy attempt.
   _i2.Stream<_i28.LogRecord> fetchBuildLog({
-    String? cloudProjectId,
+    @Deprecated('Use cloudCapsuleId instead') String? cloudProjectId,
     String? cloudCapsuleId,
     required String attemptId,
     int? limit,
@@ -969,11 +969,13 @@ class EndpointPlans extends _i1.EndpointRef {
   String get name => 'plans';
 
   /// Procures a subscription plan.
-  _i2.Future<void> procurePlan({String? planProductName, String? planName}) =>
-      caller.callServerEndpoint<void>('plans', 'procurePlan', {
-        'planProductName': planProductName,
-        'planName': planName,
-      });
+  _i2.Future<void> procurePlan({
+    String? planProductName,
+    @Deprecated('Use planProductName instead') String? planName,
+  }) => caller.callServerEndpoint<void>('plans', 'procurePlan', {
+    'planProductName': planProductName,
+    'planName': planName,
+  });
 
   /// Cancels the primary plan subscription of the user.
   ///
@@ -1000,7 +1002,7 @@ class EndpointPlans extends _i1.EndpointRef {
   /// - Throws [ProcurementDeniedException] if the product is not available.
   _i2.Future<void> checkPlanAvailability({
     String? planProductName,
-    String? planName,
+    @Deprecated('Use planProductName instead') String? planName,
   }) => caller.callServerEndpoint<void>('plans', 'checkPlanAvailability', {
     'planProductName': planProductName,
     'planName': planName,

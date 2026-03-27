@@ -54,18 +54,20 @@ abstract class User implements _i1.SerializableModel {
   factory User.fromJson(Map<String, dynamic> jsonSerialization) {
     return User(
       id: jsonSerialization['id'] as int?,
-      createdAt: _i1.DateTimeJsonExtension.fromJson(
-        jsonSerialization['createdAt'],
-      ),
-      updatedAt: _i1.DateTimeJsonExtension.fromJson(
-        jsonSerialization['updatedAt'],
-      ),
+      createdAt: jsonSerialization['createdAt'] == null
+          ? null
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+      updatedAt: jsonSerialization['updatedAt'] == null
+          ? null
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
       archivedAt: jsonSerialization['archivedAt'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['archivedAt']),
-      accountStatus: _i2.UserAccountStatus.fromJson(
-        (jsonSerialization['accountStatus'] as String),
-      ),
+      accountStatus: jsonSerialization['accountStatus'] == null
+          ? null
+          : _i2.UserAccountStatus.fromJson(
+              (jsonSerialization['accountStatus'] as String),
+            ),
       userAuthId: jsonSerialization['userAuthId'] as String?,
       email: jsonSerialization['email'] as String,
       name: jsonSerialization['name'] as String?,

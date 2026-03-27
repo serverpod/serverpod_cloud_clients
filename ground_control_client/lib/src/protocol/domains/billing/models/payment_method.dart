@@ -38,7 +38,7 @@ abstract class PaymentMethod implements _i1.SerializableModel {
           : _i3.Protocol().deserialize<_i2.PaymentMethodCard>(
               jsonSerialization['card'],
             ),
-      isDefault: jsonSerialization['isDefault'] as bool,
+      isDefault: _i1.BoolJsonExtension.fromJson(jsonSerialization['isDefault']),
     );
   }
 

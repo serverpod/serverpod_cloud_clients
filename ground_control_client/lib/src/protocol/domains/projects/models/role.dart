@@ -46,12 +46,12 @@ abstract class Role implements _i1.SerializableModel {
   factory Role.fromJson(Map<String, dynamic> jsonSerialization) {
     return Role(
       id: jsonSerialization['id'] as int?,
-      createdAt: _i1.DateTimeJsonExtension.fromJson(
-        jsonSerialization['createdAt'],
-      ),
-      updatedAt: _i1.DateTimeJsonExtension.fromJson(
-        jsonSerialization['updatedAt'],
-      ),
+      createdAt: jsonSerialization['createdAt'] == null
+          ? null
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+      updatedAt: jsonSerialization['updatedAt'] == null
+          ? null
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
       archivedAt: jsonSerialization['archivedAt'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['archivedAt']),

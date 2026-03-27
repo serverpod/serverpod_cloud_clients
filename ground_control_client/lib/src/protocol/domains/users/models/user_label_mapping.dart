@@ -36,9 +36,9 @@ abstract class UserLabelMapping implements _i1.SerializableModel {
   factory UserLabelMapping.fromJson(Map<String, dynamic> jsonSerialization) {
     return UserLabelMapping(
       id: jsonSerialization['id'] as int?,
-      createdAt: _i1.DateTimeJsonExtension.fromJson(
-        jsonSerialization['createdAt'],
-      ),
+      createdAt: jsonSerialization['createdAt'] == null
+          ? null
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
       userId: jsonSerialization['userId'] as int,
       user: jsonSerialization['user'] == null
           ? null

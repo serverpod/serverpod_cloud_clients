@@ -35,9 +35,9 @@ abstract class PubsubEntry implements _i1.SerializableModel {
   factory PubsubEntry.fromJson(Map<String, dynamic> jsonSerialization) {
     return PubsubEntry(
       id: jsonSerialization['id'] as int?,
-      createdAt: _i1.DateTimeJsonExtension.fromJson(
-        jsonSerialization['createdAt'],
-      ),
+      createdAt: jsonSerialization['createdAt'] == null
+          ? null
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
       publishedAt: jsonSerialization['publishedAt'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(

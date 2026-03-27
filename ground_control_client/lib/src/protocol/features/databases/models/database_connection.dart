@@ -35,7 +35,9 @@ abstract class DatabaseConnection implements _i1.SerializableModel {
       port: jsonSerialization['port'] as int,
       name: jsonSerialization['name'] as String,
       user: jsonSerialization['user'] as String,
-      requiresSsl: jsonSerialization['requiresSsl'] as bool,
+      requiresSsl: jsonSerialization['requiresSsl'] == null
+          ? null
+          : _i1.BoolJsonExtension.fromJson(jsonSerialization['requiresSsl']),
     );
   }
 

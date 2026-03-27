@@ -32,7 +32,7 @@ abstract class BillingInfo implements _i1.SerializableModel {
     this.vatNumber,
     this.vatType,
     _i2.BillingCustomerType? customerType,
-  }) : id = id ?? _i1.Uuid().v4obj(),
+  }) : id = id ?? const _i1.Uuid().v4obj(),
        customerType = customerType ?? _i2.BillingCustomerType.private;
 
   factory BillingInfo({
@@ -55,7 +55,9 @@ abstract class BillingInfo implements _i1.SerializableModel {
 
   factory BillingInfo.fromJson(Map<String, dynamic> jsonSerialization) {
     return BillingInfo(
-      id: _i1.UuidValueJsonExtension.fromJson(jsonSerialization['id']),
+      id: jsonSerialization['id'] == null
+          ? null
+          : _i1.UuidValueJsonExtension.fromJson(jsonSerialization['id']),
       createdAt: jsonSerialization['createdAt'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
@@ -77,9 +79,11 @@ abstract class BillingInfo implements _i1.SerializableModel {
       country: jsonSerialization['country'] as String,
       vatNumber: jsonSerialization['vatNumber'] as String?,
       vatType: jsonSerialization['vatType'] as String?,
-      customerType: _i2.BillingCustomerType.fromJson(
-        (jsonSerialization['customerType'] as String),
-      ),
+      customerType: jsonSerialization['customerType'] == null
+          ? null
+          : _i2.BillingCustomerType.fromJson(
+              (jsonSerialization['customerType'] as String),
+            ),
     );
   }
 

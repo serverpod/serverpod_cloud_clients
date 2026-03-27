@@ -27,7 +27,7 @@ abstract class Owner implements _i1.SerializableModel {
     this.user,
     this.billingInfo,
     this.projects,
-  }) : id = id ?? _i1.Uuid().v4obj();
+  }) : id = id ?? const _i1.Uuid().v4obj();
 
   factory Owner({
     _i1.UuidValue? id,
@@ -43,7 +43,9 @@ abstract class Owner implements _i1.SerializableModel {
 
   factory Owner.fromJson(Map<String, dynamic> jsonSerialization) {
     return Owner(
-      id: _i1.UuidValueJsonExtension.fromJson(jsonSerialization['id']),
+      id: jsonSerialization['id'] == null
+          ? null
+          : _i1.UuidValueJsonExtension.fromJson(jsonSerialization['id']),
       externalBillingId: jsonSerialization['externalBillingId'] as String,
       externalPaymentId: jsonSerialization['externalPaymentId'] as String,
       billingPortalUrl: _i1.UriJsonExtension.fromJson(

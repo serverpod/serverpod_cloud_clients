@@ -65,19 +65,24 @@ abstract class CapsuleResource implements _i1.SerializableModel {
           : _i4.Protocol().deserialize<_i2.Capsule>(
               jsonSerialization['capsule'],
             ),
-      computeRequestCpu: jsonSerialization['computeRequestCpu'] as String,
-      computeRequestMemory: jsonSerialization['computeRequestMemory'] as String,
+      computeRequestCpu: jsonSerialization['computeRequestCpu'] as String?,
+      computeRequestMemory:
+          jsonSerialization['computeRequestMemory'] as String?,
       computeRequestEphemeralStorage:
-          jsonSerialization['computeRequestEphemeralStorage'] as String,
-      computeLimitCpu: jsonSerialization['computeLimitCpu'] as String,
-      computeLimitMemory: jsonSerialization['computeLimitMemory'] as String,
+          jsonSerialization['computeRequestEphemeralStorage'] as String?,
+      computeLimitCpu: jsonSerialization['computeLimitCpu'] as String?,
+      computeLimitMemory: jsonSerialization['computeLimitMemory'] as String?,
       computeLimitEphemeralStorage:
-          jsonSerialization['computeLimitEphemeralStorage'] as String,
-      computeScalingEnabled: jsonSerialization['computeScalingEnabled'] as bool,
+          jsonSerialization['computeLimitEphemeralStorage'] as String?,
+      computeScalingEnabled: jsonSerialization['computeScalingEnabled'] == null
+          ? null
+          : _i1.BoolJsonExtension.fromJson(
+              jsonSerialization['computeScalingEnabled'],
+            ),
       computeScalingMinReplicas:
-          jsonSerialization['computeScalingMinReplicas'] as int,
+          jsonSerialization['computeScalingMinReplicas'] as int?,
       computeScalingMaxReplicas:
-          jsonSerialization['computeScalingMaxReplicas'] as int,
+          jsonSerialization['computeScalingMaxReplicas'] as int?,
       computeSize: _i3.ComputeSizeOption.fromJson(
         (jsonSerialization['computeSize'] as String),
       ),

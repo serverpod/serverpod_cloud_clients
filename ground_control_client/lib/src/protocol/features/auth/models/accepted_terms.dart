@@ -35,9 +35,9 @@ abstract class AcceptedTerms implements _i1.SerializableModel {
       id: jsonSerialization['id'] as int?,
       termsType: _i2.Terms.fromJson((jsonSerialization['termsType'] as String)),
       termsVersion: jsonSerialization['termsVersion'] as String,
-      createdAt: _i1.DateTimeJsonExtension.fromJson(
-        jsonSerialization['createdAt'],
-      ),
+      createdAt: jsonSerialization['createdAt'] == null
+          ? null
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
       identifier: jsonSerialization['identifier'] as String,
     );
   }
