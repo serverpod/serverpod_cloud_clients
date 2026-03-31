@@ -11,46 +11,52 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../domains/products/models/database_size_info.dart' as _i2;
-import 'package:ground_control_client/src/protocol/protocol.dart' as _i3;
+import '../../../features/databases/models/database_size.dart' as _i2;
+import '../../../domains/products/models/database_scaling_info.dart' as _i3;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 /// Definition of a database product including defaults and constraints.
 abstract class DatabaseProductInfo implements _i1.SerializableModel {
   DatabaseProductInfo._({
+    required this.size,
     required this.productId,
     required this.name,
     required this.description,
-    required this.defaultSize,
-    required this.allowedSizes,
+    this.scaling,
     this.cuHoursPerMonthLimit,
     this.storageLimitGB,
   });
 
   factory DatabaseProductInfo({
+    required _i2.DatabaseSizeOption size,
     required String productId,
     required String name,
     required String description,
-    required _i2.DatabaseSizeInfo defaultSize,
-    required List<_i2.DatabaseSizeInfo> allowedSizes,
+    _i3.DatabaseScalingInfo? scaling,
     int? cuHoursPerMonthLimit,
     int? storageLimitGB,
   }) = _DatabaseProductInfoImpl;
 
   factory DatabaseProductInfo.fromJson(Map<String, dynamic> jsonSerialization) {
     return DatabaseProductInfo(
+      size: _i2.DatabaseSizeOption.fromJson(
+        (jsonSerialization['size'] as String),
+      ),
       productId: jsonSerialization['productId'] as String,
       name: jsonSerialization['name'] as String,
       description: jsonSerialization['description'] as String,
-      defaultSize: _i3.Protocol().deserialize<_i2.DatabaseSizeInfo>(
-        jsonSerialization['defaultSize'],
-      ),
-      allowedSizes: _i3.Protocol().deserialize<List<_i2.DatabaseSizeInfo>>(
-        jsonSerialization['allowedSizes'],
-      ),
+      scaling: jsonSerialization['scaling'] == null
+          ? null
+          : _i4.Protocol().deserialize<_i3.DatabaseScalingInfo>(
+              jsonSerialization['scaling'],
+            ),
       cuHoursPerMonthLimit: jsonSerialization['cuHoursPerMonthLimit'] as int?,
       storageLimitGB: jsonSerialization['storageLimitGB'] as int?,
     );
   }
+
+  /// The database size.
+  _i2.DatabaseSizeOption size;
 
   /// The id of the product.
   String productId;
@@ -61,11 +67,8 @@ abstract class DatabaseProductInfo implements _i1.SerializableModel {
   /// The user-friendly description of the product.
   String description;
 
-  /// The default database size configuration.
-  _i2.DatabaseSizeInfo defaultSize;
-
-  /// The allowed database sizes with their configurations.
-  List<_i2.DatabaseSizeInfo> allowedSizes;
+  /// Scaling configuration, if this size supports variable CU allocation.
+  _i3.DatabaseScalingInfo? scaling;
 
   /// The limit on compute unit hours per month, if any.
   int? cuHoursPerMonthLimit;
@@ -77,11 +80,11 @@ abstract class DatabaseProductInfo implements _i1.SerializableModel {
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
   DatabaseProductInfo copyWith({
+    _i2.DatabaseSizeOption? size,
     String? productId,
     String? name,
     String? description,
-    _i2.DatabaseSizeInfo? defaultSize,
-    List<_i2.DatabaseSizeInfo>? allowedSizes,
+    _i3.DatabaseScalingInfo? scaling,
     int? cuHoursPerMonthLimit,
     int? storageLimitGB,
   });
@@ -89,11 +92,11 @@ abstract class DatabaseProductInfo implements _i1.SerializableModel {
   Map<String, dynamic> toJson() {
     return {
       '__className__': 'DatabaseProductInfo',
+      'size': size.toJson(),
       'productId': productId,
       'name': name,
       'description': description,
-      'defaultSize': defaultSize.toJson(),
-      'allowedSizes': allowedSizes.toJson(valueToJson: (v) => v.toJson()),
+      if (scaling != null) 'scaling': scaling?.toJson(),
       if (cuHoursPerMonthLimit != null)
         'cuHoursPerMonthLimit': cuHoursPerMonthLimit,
       if (storageLimitGB != null) 'storageLimitGB': storageLimitGB,
@@ -110,19 +113,19 @@ class _Undefined {}
 
 class _DatabaseProductInfoImpl extends DatabaseProductInfo {
   _DatabaseProductInfoImpl({
+    required _i2.DatabaseSizeOption size,
     required String productId,
     required String name,
     required String description,
-    required _i2.DatabaseSizeInfo defaultSize,
-    required List<_i2.DatabaseSizeInfo> allowedSizes,
+    _i3.DatabaseScalingInfo? scaling,
     int? cuHoursPerMonthLimit,
     int? storageLimitGB,
   }) : super._(
+         size: size,
          productId: productId,
          name: name,
          description: description,
-         defaultSize: defaultSize,
-         allowedSizes: allowedSizes,
+         scaling: scaling,
          cuHoursPerMonthLimit: cuHoursPerMonthLimit,
          storageLimitGB: storageLimitGB,
        );
@@ -132,21 +135,22 @@ class _DatabaseProductInfoImpl extends DatabaseProductInfo {
   @_i1.useResult
   @override
   DatabaseProductInfo copyWith({
+    _i2.DatabaseSizeOption? size,
     String? productId,
     String? name,
     String? description,
-    _i2.DatabaseSizeInfo? defaultSize,
-    List<_i2.DatabaseSizeInfo>? allowedSizes,
+    Object? scaling = _Undefined,
     Object? cuHoursPerMonthLimit = _Undefined,
     Object? storageLimitGB = _Undefined,
   }) {
     return DatabaseProductInfo(
+      size: size ?? this.size,
       productId: productId ?? this.productId,
       name: name ?? this.name,
       description: description ?? this.description,
-      defaultSize: defaultSize ?? this.defaultSize.copyWith(),
-      allowedSizes:
-          allowedSizes ?? this.allowedSizes.map((e0) => e0.copyWith()).toList(),
+      scaling: scaling is _i3.DatabaseScalingInfo?
+          ? scaling
+          : this.scaling?.copyWith(),
       cuHoursPerMonthLimit: cuHoursPerMonthLimit is int?
           ? cuHoursPerMonthLimit
           : this.cuHoursPerMonthLimit,

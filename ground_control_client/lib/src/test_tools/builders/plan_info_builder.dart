@@ -1,41 +1,39 @@
 import 'package:ground_control_client/ground_control_client.dart';
 
 List<ProjectProductInfo> _standardPlanBundledProjectProducts() {
-  final smallDbSize = DatabaseSizeInfo(name: 'small');
-  final mediumDbSize = DatabaseSizeInfo(name: 'medium');
-  final largeDbSize = DatabaseSizeInfo(name: 'large');
-  final largePlusDbSize = DatabaseSizeInfo(
-    name: 'large+',
-    scaling: DatabaseScalingInfo(
-      defaultMinCu: 1,
-      defaultMaxCu: 1,
-      allowedCuValues: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16],
-      maxCuSpread: 8,
+  final compute = ComputeProductInfo(
+    size: ComputeSizeOption.small,
+    productId: 'compute-growth:0',
+    name: 'Compute',
+    description: 'Compute for growth',
+  );
+  final database = DatabaseProductInfo(
+    size: DatabaseSizeOption.small,
+    productId: 'database-growth:0',
+    name: 'Database',
+    description: 'Database for growth',
+  );
+  final computeCatalog = ComputeCatalogInfo(
+    computes: [compute],
+    defaultCompute: compute.size,
+    scaling: ComputeScalingInfo(
+      defaultMinReplicas: 1,
+      defaultMaxReplicas: 1,
+      allowedReplicasMin: 1,
+      allowedReplicasMax: 20,
     ),
+  );
+  final databaseCatalog = DatabaseCatalogInfo(
+    databases: [database],
+    defaultDatabase: database.size,
   );
   return [
     ProjectProductInfo(
       productId: 'growth:0',
       name: 'Growth',
       description: 'Bundled project product for standard plan fixtures',
-      compute: ComputeProductInfo(
-        productId: 'compute-growth:0',
-        name: 'Compute',
-        description: 'Compute for growth',
-        defaultInstanceType: 'small',
-        defaultMinReplicas: 1,
-        defaultMaxReplicas: 1,
-        allowedInstanceTypes: const ['small', 'medium', 'large'],
-        allowedReplicasMin: 1,
-        allowedReplicasMax: 20,
-      ),
-      database: DatabaseProductInfo(
-        productId: 'database-growth:0',
-        name: 'Database',
-        description: 'Database for growth',
-        defaultSize: smallDbSize,
-        allowedSizes: [smallDbSize, mediumDbSize, largeDbSize, largePlusDbSize],
-      ),
+      computeCatalog: computeCatalog,
+      databaseCatalog: databaseCatalog,
     ),
   ];
 }

@@ -11,8 +11,8 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../domains/products/models/compute_product_info.dart' as _i2;
-import '../../../domains/products/models/database_product_info.dart' as _i3;
+import '../../../domains/products/models/compute_catalog_info.dart' as _i2;
+import '../../../domains/products/models/database_catalog_info.dart' as _i3;
 import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 /// Definition of a project product including its compute and database sub-products.
@@ -21,16 +21,16 @@ abstract class ProjectProductInfo implements _i1.SerializableModel {
     required this.productId,
     required this.name,
     required this.description,
-    required this.compute,
-    required this.database,
+    required this.computeCatalog,
+    required this.databaseCatalog,
   });
 
   factory ProjectProductInfo({
     required String productId,
     required String name,
     required String description,
-    required _i2.ComputeProductInfo compute,
-    required _i3.DatabaseProductInfo database,
+    required _i2.ComputeCatalogInfo computeCatalog,
+    required _i3.DatabaseCatalogInfo databaseCatalog,
   }) = _ProjectProductInfoImpl;
 
   factory ProjectProductInfo.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -38,11 +38,11 @@ abstract class ProjectProductInfo implements _i1.SerializableModel {
       productId: jsonSerialization['productId'] as String,
       name: jsonSerialization['name'] as String,
       description: jsonSerialization['description'] as String,
-      compute: _i4.Protocol().deserialize<_i2.ComputeProductInfo>(
-        jsonSerialization['compute'],
+      computeCatalog: _i4.Protocol().deserialize<_i2.ComputeCatalogInfo>(
+        jsonSerialization['computeCatalog'],
       ),
-      database: _i4.Protocol().deserialize<_i3.DatabaseProductInfo>(
-        jsonSerialization['database'],
+      databaseCatalog: _i4.Protocol().deserialize<_i3.DatabaseCatalogInfo>(
+        jsonSerialization['databaseCatalog'],
       ),
     );
   }
@@ -56,11 +56,11 @@ abstract class ProjectProductInfo implements _i1.SerializableModel {
   /// The user-friendly description of the product.
   String description;
 
-  /// The compute product definition for this project product.
-  _i2.ComputeProductInfo compute;
+  /// The compute products available under this project product.
+  _i2.ComputeCatalogInfo computeCatalog;
 
-  /// The database product definition for this project product.
-  _i3.DatabaseProductInfo database;
+  /// The database products available under this project product.
+  _i3.DatabaseCatalogInfo databaseCatalog;
 
   /// Returns a shallow copy of this [ProjectProductInfo]
   /// with some or all fields replaced by the given arguments.
@@ -69,8 +69,8 @@ abstract class ProjectProductInfo implements _i1.SerializableModel {
     String? productId,
     String? name,
     String? description,
-    _i2.ComputeProductInfo? compute,
-    _i3.DatabaseProductInfo? database,
+    _i2.ComputeCatalogInfo? computeCatalog,
+    _i3.DatabaseCatalogInfo? databaseCatalog,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -79,8 +79,8 @@ abstract class ProjectProductInfo implements _i1.SerializableModel {
       'productId': productId,
       'name': name,
       'description': description,
-      'compute': compute.toJson(),
-      'database': database.toJson(),
+      'computeCatalog': computeCatalog.toJson(),
+      'databaseCatalog': databaseCatalog.toJson(),
     };
   }
 
@@ -95,14 +95,14 @@ class _ProjectProductInfoImpl extends ProjectProductInfo {
     required String productId,
     required String name,
     required String description,
-    required _i2.ComputeProductInfo compute,
-    required _i3.DatabaseProductInfo database,
+    required _i2.ComputeCatalogInfo computeCatalog,
+    required _i3.DatabaseCatalogInfo databaseCatalog,
   }) : super._(
          productId: productId,
          name: name,
          description: description,
-         compute: compute,
-         database: database,
+         computeCatalog: computeCatalog,
+         databaseCatalog: databaseCatalog,
        );
 
   /// Returns a shallow copy of this [ProjectProductInfo]
@@ -113,15 +113,15 @@ class _ProjectProductInfoImpl extends ProjectProductInfo {
     String? productId,
     String? name,
     String? description,
-    _i2.ComputeProductInfo? compute,
-    _i3.DatabaseProductInfo? database,
+    _i2.ComputeCatalogInfo? computeCatalog,
+    _i3.DatabaseCatalogInfo? databaseCatalog,
   }) {
     return ProjectProductInfo(
       productId: productId ?? this.productId,
       name: name ?? this.name,
       description: description ?? this.description,
-      compute: compute ?? this.compute.copyWith(),
-      database: database ?? this.database.copyWith(),
+      computeCatalog: computeCatalog ?? this.computeCatalog.copyWith(),
+      databaseCatalog: databaseCatalog ?? this.databaseCatalog.copyWith(),
     );
   }
 }
