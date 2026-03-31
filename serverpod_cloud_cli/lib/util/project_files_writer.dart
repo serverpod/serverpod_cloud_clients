@@ -15,8 +15,9 @@ abstract final class ProjectFilesWriter {
     required final List<String> preDeployScripts,
     required final String configFilePath,
     required final String projectDirectory,
+    final String? dartSdk,
   }) {
-    _upsertConfigFile(projectId, preDeployScripts, configFilePath);
+    _upsertConfigFile(projectId, preDeployScripts, configFilePath, dartSdk);
     _upsertScloudIgnoreFile(projectDirectory);
   }
 
@@ -24,6 +25,7 @@ abstract final class ProjectFilesWriter {
     final String projectId,
     final List<String> suggestedPreDeployScripts,
     final String configFilePath,
+    final String? dartSdk,
   ) {
     final ScloudConfig? config;
     try {
@@ -40,6 +42,7 @@ abstract final class ProjectFilesWriter {
     if (config == null) {
       newConfig = ScloudConfig(
         projectId: projectId,
+        dartSdk: dartSdk,
         scripts: ScloudScripts(
           preDeploy: suggestedPreDeployScripts,
           postDeploy: [],
@@ -51,6 +54,7 @@ abstract final class ProjectFilesWriter {
           .toList();
       newConfig = config.copyWith(
         projectId: projectId,
+        dartSdk: dartSdk ?? config.dartSdk,
         scripts: config.scripts.copyWith(
           preDeploy: [...existingPreDeploy, ...suggestedPreDeployScripts],
         ),

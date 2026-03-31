@@ -8,8 +8,10 @@ import 'package:serverpod_cloud_cli/commands/deploy/script_runner.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/util/dart_version_util.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_io.dart';
+import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_model.dart';
 import 'package:serverpod_cloud_cli/util/scloudignore.dart' show ScloudIgnore;
 
 import 'prepare_workspace.dart';
@@ -26,6 +28,7 @@ abstract class Deploy {
     required final bool dryRun,
     required final bool showFiles,
     final String? outputPath,
+    final String? dartVersionOverride,
   }) async {
     logger.init('Deploying Serverpod Cloud project "$projectId".');
 
@@ -40,7 +43,7 @@ abstract class Deploy {
       throw FailureException(errors: issues);
     }
 
-    final config = ScloudConfigIO.readFromFile(projectConfigFilePath);
+    var config = ScloudConfigIO.readFromFile(projectConfigFilePath);
 
     if (config != null && config.scripts.preDeploy.isNotEmpty) {
       await ScriptRunner.runScripts(
@@ -50,6 +53,23 @@ abstract class Deploy {
         scriptType: 'pre-deploy',
       );
     }
+
+    final resolvedDartSdk =
+        dartVersionOverride ??
+        config?.dartSdk ??
+        resolveProjectDartSdkVersion(projectDirectory);
+    validateDartVersion(resolvedDartSdk);
+
+    if (resolvedDartSdk != config?.dartSdk) {
+      config ??= ScloudConfig(
+        projectId: projectId,
+        scripts: ScloudScripts.empty(),
+      );
+      config = config.copyWith(dartSdk: resolvedDartSdk);
+      ScloudConfigIO.writeToFile(config, projectConfigFilePath);
+    }
+
+    logger.debug('Using Dart SDK version: $resolvedDartSdk');
 
     final Directory rootDirectory;
     final Iterable<String> includedSubPaths;

@@ -4,20 +4,21 @@ import 'package:cli_tools/cli_tools.dart' as cli;
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
-import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/file_uploader_factory.dart';
 import 'package:serverpod_cloud_cli/commands/deploy/deploy.dart';
 import 'package:serverpod_cloud_cli/commands/project/project.dart';
 import 'package:serverpod_cloud_cli/commands/status/status.dart';
 import 'package:serverpod_cloud_cli/commands/status/status_feature.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/shared/user_interaction/user_confirmations.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
+import 'package:serverpod_cloud_cli/util/dart_version_util.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:serverpod_cloud_cli/util/project_files_writer.dart';
 import 'package:serverpod_cloud_cli/util/project_id_validator.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart'
-    show TenantProjectPubspec;
+    show TenantProjectPubspec, resolveProjectDartSdkVersion;
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_io.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_model.dart';
 
@@ -32,6 +33,7 @@ abstract class Launch {
     required final String? existingProjectId,
     required final bool? enableDb,
     required final bool? performDeploy,
+    final String? dartVersionOverride,
   }) async {
     await ProjectCommands.checkPlanAvailability(cloudApiClient, logger: logger);
 
@@ -85,6 +87,7 @@ abstract class Launch {
       fileUploaderFactory,
       logger,
       projectSetup,
+      dartVersionOverride: dartVersionOverride,
     );
   }
 
@@ -446,8 +449,9 @@ The default API domain will be: <project-id>.api.serverpod.space
     final Client cloudApiClient,
     final FileUploaderFactory fileUploaderFactory,
     final CommandLogger logger,
-    final ProjectLaunch projectSetup,
-  ) async {
+    final ProjectLaunch projectSetup, {
+    final String? dartVersionOverride,
+  }) async {
     logger.info('Launching project...');
 
     final projectId = projectSetup.projectId;
@@ -485,6 +489,11 @@ The default API domain will be: <project-id>.api.serverpod.space
       );
     }
 
+    final resolvedDartSdk =
+        dartVersionOverride ??
+        resolveProjectDartSdkVersion(Directory(projectDir));
+    validateDartVersion(resolvedDartSdk);
+
     await logger.progress(
       'Writing cloud project configuration files.',
       () async {
@@ -493,6 +502,7 @@ The default API domain will be: <project-id>.api.serverpod.space
           preDeployScripts: projectSetup.suggestedPreDeployScripts,
           configFilePath: configFilePath,
           projectDirectory: projectDir,
+          dartSdk: resolvedDartSdk,
         );
         return true;
       },
@@ -516,6 +526,7 @@ The default API domain will be: <project-id>.api.serverpod.space
       concurrency: 5,
       dryRun: false,
       showFiles: false,
+      dartVersionOverride: dartVersionOverride,
     );
 
     logger.info(' '); // blank line

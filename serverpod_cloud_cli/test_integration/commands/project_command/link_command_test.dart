@@ -3,19 +3,20 @@ library;
 
 import 'dart:async';
 
-import 'package:mocktail/mocktail.dart';
-import 'package:path/path.dart' as p;
-import 'package:serverpod_cloud_cli/util/scloudignore.dart' show ScloudIgnore;
-import 'package:test_descriptor/test_descriptor.dart' as d;
-import 'package:test/test.dart';
-
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:path/path.dart' as p;
+import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/project_command.dart';
-import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
+import 'package:serverpod_cloud_cli/constants.dart' show VersionConstants;
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/yaml_schema.dart';
+import 'package:serverpod_cloud_cli/util/scloudignore.dart' show ScloudIgnore;
+import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/project_factory.dart';
@@ -29,6 +30,7 @@ void main() {
   );
   final cli = CloudCliCommandRunner.create(
     logger: logger,
+    version: Version.parse('999.0.0'),
     serviceProvider: CloudCliServiceProvider(
       apiClientFactory: (final globalCfg) => client,
     ),
@@ -125,6 +127,23 @@ project:
           ]);
           await expectLater(expected.validate(), completes);
         });
+
+        test(
+          'then scloud.yaml includes dartSdk resolved from pubspec.yaml',
+          () async {
+            await commandResult;
+
+            final expected = d.dir(testProjectDir, [
+              d.file(
+                'scloud.yaml',
+                contains(
+                  'dartSdk: "${VersionConstants.minSupportedSdkVersion}"',
+                ),
+              ),
+            ]);
+            await expectLater(expected.validate(), completes);
+          },
+        );
       });
 
       group('and scloud.yaml exists when executing link', () {
@@ -305,6 +324,73 @@ project:
           });
         },
       );
+
+      group('and .tool-versions file with dart entry when executing link', () {
+        late Future commandResult;
+
+        setUp(() async {
+          await d
+              .file('.tool-versions', 'dart 3.10.0\n')
+              .create(testProjectDir);
+
+          commandResult = cli.run([
+            'project',
+            'link',
+            '--project',
+            projectId,
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        test('then command completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then scloud.yaml contains dartSdk from .tool-versions', () async {
+          await commandResult;
+
+          final expected = d.dir(testProjectDir, [
+            d.file('scloud.yaml', contains('dartSdk: "3.10.0"')),
+          ]);
+          await expectLater(expected.validate(), completes);
+        });
+      });
+
+      group('and .tool-versions file with dart entry when executing link '
+          'with --dart-version override', () {
+        late Future commandResult;
+
+        setUp(() async {
+          await d
+              .file('.tool-versions', 'dart 3.10.0\n')
+              .create(testProjectDir);
+
+          commandResult = cli.run([
+            'project',
+            'link',
+            '--project',
+            projectId,
+            '--project-dir',
+            testProjectDir,
+            '--dart-version',
+            '3.9.5',
+          ]);
+        });
+
+        test('then command completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then scloud.yaml contains dartSdk from flag', () async {
+          await commandResult;
+
+          final expected = d.dir(testProjectDir, [
+            d.file('scloud.yaml', contains('dartSdk: "3.9.5"')),
+          ]);
+          await expectLater(expected.validate(), completes);
+        });
+      });
     });
 
     group('and not a serverpod directory when executing link', () {

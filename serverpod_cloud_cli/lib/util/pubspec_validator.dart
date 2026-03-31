@@ -4,6 +4,8 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:serverpod_cloud_cli/constants.dart' show VersionConstants;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/util/dart_version_util.dart';
+import 'package:serverpod_cloud_cli/util/tool_versions_io.dart';
 import 'package:yaml/yaml.dart';
 
 /// Convenience function to check if a directory is a Serverpod server directory.
@@ -183,6 +185,23 @@ class TenantProjectPubspec {
     return null;
   }
 
+  /// Resolves the lowest Dart SDK version within the supported range
+  /// from the pubspec.yaml `environment.sdk` constraint.
+  ///
+  /// Returns null if no sdk constraint is present.
+  String? resolveMinDartSdkVersion() {
+    final sdkConstraint = pubspec.environment['sdk'];
+    if (sdkConstraint == null) return null;
+
+    final supported = VersionConstraint.parse(
+      VersionConstants.supportedSdkConstraint,
+    );
+    final intersection = supported.intersect(sdkConstraint);
+    if (intersection.isEmpty) return null;
+
+    return _extractMin(intersection)?.toString();
+  }
+
   /// Returns true if the pubspec.yaml defines a `serverpod.scripts.flutter_build` entry.
   bool hasFlutterBuildScript() {
     if (_rawYamlContent.isEmpty) {
@@ -210,4 +229,46 @@ class TenantProjectPubspec {
       return false;
     }
   }
+}
+
+/// Resolves the Dart SDK version to use for the project in [rootDir].
+///
+/// Resolution order:
+/// `.tool-versions` in [rootDir] → lowest version from
+/// [rootDir]/pubspec.yaml `environment.sdk` within the supported range →
+/// [VersionConstants.minSupportedSdkVersion].
+///
+/// Throws [FailureException] if a version found in `.tool-versions` is invalid.
+String resolveProjectDartSdkVersion(final Directory rootDir) {
+  final fromToolVersions = ToolVersionsIO.readDartVersion(rootDir);
+  if (fromToolVersions != null) {
+    validateDartVersion(fromToolVersions);
+    return fromToolVersions;
+  }
+
+  final pubspecFile = File('${rootDir.path}/pubspec.yaml');
+  if (pubspecFile.existsSync()) {
+    final fromPubspec = TenantProjectPubspec.fromFile(
+      pubspecFile,
+    ).resolveMinDartSdkVersion();
+    if (fromPubspec != null) return fromPubspec;
+  }
+
+  return VersionConstants.minSupportedSdkVersion;
+}
+
+Version? _extractMin(final VersionConstraint constraint) {
+  if (constraint is Version) {
+    return constraint;
+  }
+  if (constraint is VersionRange) {
+    final min = constraint.min;
+    if (min == null) return null;
+    if (constraint.includeMin) return min;
+    return Version(min.major, min.minor, min.patch + 1);
+  }
+  if (constraint is VersionUnion) {
+    return _extractMin(constraint.ranges.first);
+  }
+  return null;
 }

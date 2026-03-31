@@ -94,6 +94,15 @@ class UtcOption extends FlagOption {
       );
 }
 
+class DartSdkVersionOption extends StringOption {
+  const DartSdkVersionOption()
+    : super(
+        argName: 'dart-version',
+        helpText:
+            'Overrides the Dart SDK version to use for building the project.',
+      );
+}
+
 class UserEmailOption extends StringOption {
   const UserEmailOption({super.argPos, super.mandatory})
     : super(

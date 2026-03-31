@@ -1,6 +1,7 @@
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/commands/launch/launch.dart';
 
 enum LaunchOption<V> implements OptionDefinition<V> {
@@ -29,7 +30,8 @@ enum LaunchOption<V> implements OptionDefinition<V> {
       argName: 'deploy',
       helpText: 'Flag to immediately deploy the project.',
     ),
-  );
+  ),
+  dartVersion(DartSdkVersionOption());
 
   const LaunchOption(this.option);
 
@@ -69,6 +71,9 @@ class CloudLaunchCommand extends CloudCliCommand<LaunchOption> {
     final newProjectId = commandConfig.optionalValue(LaunchOption.newProjectId);
     final enableDb = commandConfig.optionalValue(LaunchOption.enableDb);
     final deploy = commandConfig.optionalValue(LaunchOption.deploy);
+    final dartVersionOverride = commandConfig.optionalValue(
+      LaunchOption.dartVersion,
+    );
 
     await Launch.launch(
       runner.serviceProvider.cloudApiClient,
@@ -80,6 +85,7 @@ class CloudLaunchCommand extends CloudCliCommand<LaunchOption> {
       existingProjectId: existingProjectId,
       enableDb: enableDb,
       performDeploy: deploy,
+      dartVersionOverride: dartVersionOverride,
     );
   }
 }

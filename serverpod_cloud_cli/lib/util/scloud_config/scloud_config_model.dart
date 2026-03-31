@@ -1,30 +1,42 @@
 class ScloudConfig {
   final String projectId;
+  final String? dartSdk;
   final ScloudScripts scripts;
 
-  const ScloudConfig({required this.projectId, required this.scripts});
+  const ScloudConfig({
+    required this.projectId,
+    this.dartSdk,
+    required this.scripts,
+  });
 
   factory ScloudConfig.fromMap(final Map<String, dynamic> map) {
     final project = map['project'] as Map<String, dynamic>? ?? {};
 
     return ScloudConfig(
       projectId: project['projectId'] as String? ?? '',
+      dartSdk: project['dartSdk'] as String?,
       scripts: ScloudScripts.fromMap(project['scripts'] ?? {}),
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'project': {'projectId': projectId, 'scripts': scripts.toMap()},
+      'project': {
+        'projectId': projectId,
+        if (dartSdk != null) 'dartSdk': dartSdk,
+        'scripts': scripts.toMap(),
+      },
     };
   }
 
   ScloudConfig copyWith({
     final String? projectId,
+    final String? dartSdk,
     final ScloudScripts? scripts,
   }) {
     return ScloudConfig(
       projectId: projectId ?? this.projectId,
+      dartSdk: dartSdk ?? this.dartSdk,
       scripts: scripts ?? this.scripts,
     );
   }

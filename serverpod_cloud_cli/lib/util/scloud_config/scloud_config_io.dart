@@ -10,6 +10,7 @@ import 'yaml_schema.dart';
 final _schema = YamlMap.wrap({
   'project': YamlMap.wrap({
     'projectId': String,
+    'dartSdk': YamlOptional(String),
     'scripts': YamlOptional(
       YamlMap.wrap({
         'pre_deploy': YamlOptional(
@@ -108,7 +109,11 @@ abstract final class ScloudConfigIO {
 
     return jsonToYaml(
       scloudConfig
-          .copyWith(projectId: config.projectId, scripts: config.scripts)
+          .copyWith(
+            projectId: config.projectId,
+            dartSdk: config.dartSdk ?? scloudConfig.dartSdk,
+            scripts: config.scripts,
+          )
           .toMap(),
     );
   }

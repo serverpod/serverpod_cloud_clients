@@ -8,6 +8,7 @@ import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
+import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/launch_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
@@ -29,6 +30,7 @@ void main() {
   final mockFileUploader = MockFileUploader();
   final cli = CloudCliCommandRunner.create(
     logger: logger,
+    version: Version.parse('999.0.0'),
     serviceProvider: CloudCliServiceProvider(
       apiClientFactory: (final globalCfg) => client,
       fileUploaderFactory: (final _) => mockFileUploader,
@@ -298,6 +300,41 @@ project:
 
         test('then zipped project is accessible in bucket.', () async {
           await expectLater(mockFileUploader.uploadedData, isNotEmpty);
+        });
+      });
+
+      group('when executing launch with --dart-version, --no-deploy, '
+          'and approving confirmation', () {
+        late Future commandResult;
+        setUp(() async {
+          logger.answerNextConfirmsWith([false, true]);
+
+          commandResult = cli.run([
+            'launch',
+            '--new-project',
+            projectId,
+            '--project-dir',
+            testProjectDir,
+            '--enable-db',
+            '--no-deploy',
+            '--dart-version',
+            '3.10.0',
+          ]);
+
+          await expectLater(commandResult, completes);
+        });
+
+        test('then writes scloud.yaml with dartSdk from flag', () async {
+          final expected = d.dir(testProjectDir, [
+            d.file(
+              'scloud.yaml',
+              allOf([
+                contains('projectId: "$projectId"'),
+                contains('dartSdk: "3.10.0"'),
+              ]),
+            ),
+          ]);
+          await expectLater(expected.validate(), completes);
         });
       });
 

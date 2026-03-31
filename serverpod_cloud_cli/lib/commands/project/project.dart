@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:collection/collection.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
@@ -5,6 +7,9 @@ import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/shared/user_interaction/user_confirmations.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:serverpod_cloud_cli/util/project_files_writer.dart';
+import 'package:serverpod_cloud_cli/util/dart_version_util.dart';
+import 'package:serverpod_cloud_cli/util/pubspec_validator.dart'
+    show resolveProjectDartSdkVersion;
 
 enum ProjectProfile {
   starter('starter', 'starter-project'),
@@ -182,7 +187,13 @@ abstract class ProjectCommands {
     required final String projectId,
     required final String projectDirectory,
     required final String configFilePath,
+    final String? dartVersionOverride,
   }) async {
+    final resolvedDartSdk =
+        dartVersionOverride ??
+        resolveProjectDartSdkVersion(Directory(projectDirectory));
+    validateDartVersion(resolvedDartSdk);
+
     await logger.progress(
       'Writing cloud project configuration files.',
       () async {
@@ -191,6 +202,7 @@ abstract class ProjectCommands {
           preDeployScripts: [],
           configFilePath: configFilePath,
           projectDirectory: projectDirectory,
+          dartSdk: resolvedDartSdk,
         );
         return true;
       },

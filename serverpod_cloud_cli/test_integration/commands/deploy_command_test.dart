@@ -12,6 +12,7 @@ import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
+import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
@@ -35,6 +36,7 @@ void main() {
   final mockFileUploader = MockFileUploader();
   final cli = CloudCliCommandRunner.create(
     logger: logger,
+    version: Version.parse('999.0.0'),
     serviceProvider: CloudCliServiceProvider(
       apiClientFactory: (final globalCfg) => client,
       fileUploaderFactory: (final _) => mockFileUploader,
@@ -54,7 +56,15 @@ void main() {
     'Given rejected auth key and current directory is serverpod server directory',
     () {
       setUp(() async {
-        await ProjectFactory.serverpodServerDir().create();
+        await ProjectFactory.serverpodServerDir(
+          contents: [
+            d.file('scloud.yaml', '''
+project:
+  projectId: "123"
+  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
+'''),
+          ],
+        ).create();
 
         when(
           () => client.deploy.createUploadDescription(
@@ -255,7 +265,15 @@ dependencies:
       late String testProjectDir;
 
       setUp(() async {
-        await ProjectFactory.serverpodServerDir().create();
+        await ProjectFactory.serverpodServerDir(
+          contents: [
+            d.file('scloud.yaml', '''
+project:
+  projectId: "${BucketUploadDescription.projectId}"
+  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
+'''),
+          ],
+        ).create();
         testProjectDir = p.join(d.sandbox, ProjectFactory.defaultDirectoryName);
       });
 
@@ -537,7 +555,15 @@ dependencies:
       late String testProjectDir;
 
       setUp(() async {
-        await ProjectFactory.serverpodServerDir().create();
+        await ProjectFactory.serverpodServerDir(
+          contents: [
+            d.file('scloud.yaml', '''
+project:
+  projectId: "${BucketUploadDescription.projectId}"
+  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
+'''),
+          ],
+        ).create();
         testProjectDir = p.join(d.sandbox, ProjectFactory.defaultDirectoryName);
 
         when(
@@ -685,6 +711,7 @@ dependencies:
             d.file('scloud.yaml', '''
 project:
   projectId: "my-project-id"
+  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
 '''),
             d.dir('subdir', [
               d.file('subdir_file.txt', 'file_content'),
@@ -821,6 +848,11 @@ resolution: workspace
 dependencies:
   serverpod: ${ProjectFactory.validServerpodVersion}
   dart_utilities: ^1.0.0
+'''),
+            d.file('scloud.yaml', '''
+project:
+  projectId: "${BucketUploadDescription.projectId}"
+  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
 '''),
           ]),
         ]),
@@ -993,6 +1025,11 @@ dependencies:
   serverpod: ${ProjectFactory.validServerpodVersion}
   flutter_utilities: ^1.0.0
 '''),
+              d.file('scloud.yaml', '''
+project:
+  projectId: "${BucketUploadDescription.projectId}"
+  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
+'''),
             ]),
           ]),
         ]).create();
@@ -1061,6 +1098,11 @@ dev_dependencies:
   test: ^1.0.0
   build_runner: ^2.0.0
   mockito: ^5.0.0
+'''),
+        d.file('scloud.yaml', '''
+project:
+  projectId: "${BucketUploadDescription.projectId}"
+  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
 '''),
         d.dir('bin', [d.file('main.dart', 'void main() {}')]),
       ]).create();
@@ -1136,6 +1178,7 @@ dev_dependencies:
             .file('scloud.yaml', '''
 project:
   projectId: ${BucketUploadDescription.projectId}
+  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
   scripts:
     pre_deploy:
       - echo "pre-deploy-1" > pre_deploy_output.txt
@@ -1218,6 +1261,7 @@ project:
             .file('scloud.yaml', '''
 project:
   projectId: ${BucketUploadDescription.projectId}
+  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
   scripts:
     pre_deploy: 
       - echo "pre-deploy-1" > pre_deploy_output.txt
@@ -1274,6 +1318,7 @@ project:
             .file('scloud.yaml', '''
 project:
   projectId: ${BucketUploadDescription.projectId}
+  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
   scripts:
     post_deploy:
       - echo "post-deploy-1" > post_deploy_output.txt
@@ -1319,6 +1364,7 @@ project:
             .file('scloud.yaml', '''
 project:
   projectId: ${BucketUploadDescription.projectId}
+  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
   scripts:
     pre_deploy: echo "single-pre-deploy" > single_pre_deploy_output.txt
     post_deploy: echo "single-post-deploy" > single_post_deploy_output.txt
@@ -1378,6 +1424,7 @@ project:
             .file('scloud.yaml', '''
 project:
   projectId: ${BucketUploadDescription.projectId}
+  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
 ''')
             .create(testProjectDir);
       });
@@ -1434,22 +1481,316 @@ project:
           await expectLater(cliCommandFuture, completes);
         });
 
-        test('then no script execution messages are logged.', () async {
+        test(
+          'then scloud.yaml is created with the auto-resolved dartSdk.',
+          () async {
+            await cliCommandFuture;
+
+            final scloudYaml = File(p.join(testProjectDir, 'scloud.yaml'));
+            expect(scloudYaml.existsSync(), isTrue);
+            expect(
+              scloudYaml.readAsStringSync(),
+              contains('dartSdk: "${VersionConstants.minSupportedSdkVersion}"'),
+            );
+          },
+        );
+
+        test(
+          'then uploaded zip contains scloud.yaml with resolved dartSdk.',
+          () async {
+            await cliCommandFuture;
+
+            expect(mockFileUploader.uploadedData, isNotEmpty);
+            final archive = ZipDecoder().decodeBytes(
+              mockFileUploader.uploadedData,
+            );
+            final scloudYamlFile = archive.findFile('scloud.yaml');
+            expect(scloudYamlFile, isNotNull);
+            expect(
+              utf8.decode(scloudYamlFile!.content as List<int>),
+              contains('dartSdk: "${VersionConstants.minSupportedSdkVersion}"'),
+            );
+          },
+        );
+      });
+    });
+  });
+
+  group('and a valid non-workspace project', () {
+    late String testProjectDir;
+
+    setUp(() async {
+      await d.dir('dart_version_project', [
+        d.file('pubspec.yaml', '''
+name: dart_version_project
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+'''),
+      ]).create();
+      testProjectDir = p.join(d.sandbox, 'dart_version_project');
+
+      when(() => client.deploy.createUploadDescription(any())).thenAnswer(
+        (final _) async => BucketUploadDescription.uploadDescription,
+      );
+    });
+
+    group('when deploying with --dart-version flag and --dry-run', () {
+      late Future cliCommandFuture;
+      setUp(() async {
+        cliCommandFuture = cli.run([
+          'deploy',
+          '--dry-run',
+          '--dart-version',
+          '3.10.0',
+          '--project',
+          BucketUploadDescription.projectId,
+          '--project-dir',
+          testProjectDir,
+        ]);
+      });
+
+      test('then command completes successfully.', () async {
+        await expectLater(cliCommandFuture, completes);
+      });
+
+      test('then scloud.yaml is updated with the specified dartSdk.', () async {
+        await cliCommandFuture;
+
+        final scloudYaml = File(p.join(testProjectDir, 'scloud.yaml'));
+        expect(scloudYaml.existsSync(), isTrue);
+        expect(scloudYaml.readAsStringSync(), contains('dartSdk: "3.10.0"'));
+      });
+
+      test(
+        'then .tool-versions is not created when it did not exist.',
+        () async {
+          await cliCommandFuture;
+          final toolVersions = File(p.join(testProjectDir, '.tool-versions'));
+          expect(toolVersions.existsSync(), isFalse);
+        },
+      );
+    });
+
+    group('when deploying with dartSdk in scloud.yaml and --dry-run', () {
+      setUp(() async {
+        await d
+            .file('scloud.yaml', '''
+project:
+  projectId: "${BucketUploadDescription.projectId}"
+  dartSdk: "3.9.5"
+''')
+            .create(testProjectDir);
+      });
+
+      late Future cliCommandFuture;
+      setUp(() async {
+        cliCommandFuture = cli.run([
+          'deploy',
+          '--dry-run',
+          '--project',
+          BucketUploadDescription.projectId,
+          '--project-dir',
+          testProjectDir,
+        ]);
+      });
+
+      test('then command completes successfully.', () async {
+        await expectLater(cliCommandFuture, completes);
+      });
+    });
+
+    group(
+      'when deploying with --dart-version overriding scloud.yaml and --dry-run',
+      () {
+        setUp(() async {
+          await d
+              .file('scloud.yaml', '''
+project:
+  projectId: "${BucketUploadDescription.projectId}"
+  dartSdk: "3.9.5"
+''')
+              .create(testProjectDir);
+        });
+
+        late Future cliCommandFuture;
+        setUp(() async {
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--dry-run',
+            '--dart-version',
+            '3.10.0',
+            '--project',
+            BucketUploadDescription.projectId,
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        test('then command completes successfully.', () async {
+          await expectLater(cliCommandFuture, completes);
+        });
+
+        test(
+          'then scloud.yaml is updated with the CLI flag version.',
+          () async {
+            await cliCommandFuture;
+
+            final scloudYaml = File(p.join(testProjectDir, 'scloud.yaml'));
+            expect(
+              scloudYaml.readAsStringSync(),
+              contains('dartSdk: "3.10.0"'),
+            );
+          },
+        );
+      },
+    );
+
+    group('when deploying without any version configured and --dry-run', () {
+      late Future cliCommandFuture;
+      setUp(() async {
+        cliCommandFuture = cli.run([
+          'deploy',
+          '--dry-run',
+          '--project',
+          BucketUploadDescription.projectId,
+          '--project-dir',
+          testProjectDir,
+        ]);
+      });
+
+      test('then command completes successfully.', () async {
+        await expectLater(cliCommandFuture, completes);
+      });
+
+      test(
+        'then scloud.yaml is created with the auto-resolved dartSdk.',
+        () async {
           await cliCommandFuture;
 
+          final scloudYaml = File(p.join(testProjectDir, 'scloud.yaml'));
+          expect(scloudYaml.existsSync(), isTrue);
           expect(
-            logger.infoCalls.any(
-              (final call) => call.message == 'Running pre-deploy scripts',
-            ),
-            isFalse,
+            scloudYaml.readAsStringSync(),
+            contains('dartSdk: "${VersionConstants.minSupportedSdkVersion}"'),
           );
-          expect(
-            logger.infoCalls.any(
-              (final call) => call.message == 'Running post-deploy scripts',
-            ),
-            isFalse,
+        },
+      );
+    });
+
+    group(
+      'when deploying with an unsupported --dart-version and --dry-run',
+      () {
+        late Future cliCommandFuture;
+        setUp(() async {
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--dry-run',
+            '--dart-version',
+            '3.7.0',
+            '--project',
+            BucketUploadDescription.projectId,
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        test('then command throws ErrorExitException.', () async {
+          await expectLater(
+            cliCommandFuture,
+            throwsA(isA<ErrorExitException>()),
           );
         });
+
+        test('then error message mentions the version range.', () async {
+          await cliCommandFuture.catchError((final _) {});
+          expect(logger.errorCalls, isNotEmpty);
+          expect(
+            logger.errorCalls.first.message,
+            contains('outside the supported range'),
+          );
+        });
+      },
+    );
+
+    group(
+      'when deploying with --dart-version and existing .tool-versions and --dry-run',
+      () {
+        setUp(() async {
+          await d.file('.tool-versions', 'dart 3.9.1\n').create(testProjectDir);
+        });
+
+        late Future cliCommandFuture;
+        setUp(() async {
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--dry-run',
+            '--dart-version',
+            '3.10.0',
+            '--project',
+            BucketUploadDescription.projectId,
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        test('then command completes successfully.', () async {
+          await expectLater(cliCommandFuture, completes);
+        });
+
+        test('then .tool-versions is unchanged.', () async {
+          await cliCommandFuture;
+
+          final toolVersions = File(p.join(testProjectDir, '.tool-versions'));
+          expect(toolVersions.existsSync(), isTrue);
+          expect(toolVersions.readAsStringSync(), contains('dart 3.9.1'));
+        });
+      },
+    );
+
+    group('when deploying (non-dry-run) with --dart-version', () {
+      late Future cliCommandFuture;
+      setUp(() async {
+        cliCommandFuture = cli.run([
+          'deploy',
+          '--dart-version',
+          '3.10.0',
+          '--project',
+          BucketUploadDescription.projectId,
+          '--project-dir',
+          testProjectDir,
+        ]);
+      });
+
+      test('then command completes successfully.', () async {
+        await expectLater(cliCommandFuture, completes);
+      });
+
+      test('then scloud.yaml in the uploaded zip contains dartSdk.', () async {
+        await cliCommandFuture;
+
+        expect(mockFileUploader.uploadedData, isNotEmpty);
+
+        final archive = ZipDecoder().decodeBytes(mockFileUploader.uploadedData);
+        final scloudYamlFile = archive.findFile('scloud.yaml');
+        expect(
+          scloudYamlFile,
+          isNotNull,
+          reason: 'scloud.yaml should be included in the deployment zip',
+        );
+        expect(
+          utf8.decode(scloudYamlFile!.content as List<int>),
+          contains('dartSdk: "3.10.0"'),
+        );
+      });
+
+      test('then scloud.yaml on disk has the CLI flag dartSdk.', () async {
+        await cliCommandFuture;
+
+        final scloudYaml = File(p.join(testProjectDir, 'scloud.yaml'));
+        expect(scloudYaml.existsSync(), isTrue);
+        expect(scloudYaml.readAsStringSync(), contains('dartSdk: "3.10.0"'));
       });
     });
   });

@@ -169,7 +169,8 @@ class CloudProjectListCommand
 }
 
 enum ProjectLinkCommandOption<V> implements OptionDefinition<V> {
-  projectId(ProjectIdOption.argsOnly(asFirstArg: true));
+  projectId(ProjectIdOption.argsOnly(asFirstArg: true)),
+  dartVersion(DartSdkVersionOption());
 
   const ProjectLinkCommandOption(this.option);
 
@@ -205,6 +206,9 @@ class CloudProjectLinkCommand
     final Configuration<ProjectLinkCommandOption> commandConfig,
   ) async {
     final projectId = commandConfig.value(ProjectLinkCommandOption.projectId);
+    final dartVersionOverride = commandConfig.optionalValue(
+      ProjectLinkCommandOption.dartVersion,
+    );
     final projectDirectory = runner.verifiedProjectDirectory();
     final configFilePath =
         globalConfiguration.projectConfigFile?.path ??
@@ -221,6 +225,7 @@ class CloudProjectLinkCommand
       projectId: projectId,
       projectDirectory: projectDirectory.path,
       configFilePath: configFilePath,
+      dartVersionOverride: dartVersionOverride,
     );
   }
 }
