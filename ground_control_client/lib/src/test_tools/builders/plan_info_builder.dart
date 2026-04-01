@@ -1,21 +1,61 @@
 import 'package:ground_control_client/ground_control_client.dart';
 
 List<ProjectProductInfo> _standardPlanBundledProjectProducts() {
-  final compute = ComputeProductInfo(
+  final computeSmall = ComputeProductInfo(
     size: ComputeSizeOption.small,
     productId: 'compute-growth:0',
     name: 'Compute',
     description: 'Compute for growth',
   );
-  final database = DatabaseProductInfo(
+
+  final computeMedium = ComputeProductInfo(
+    size: ComputeSizeOption.medium,
+    productId: 'compute-growth:0',
+    name: 'Compute',
+    description: 'Compute for growth',
+  );
+  final computeLarge = ComputeProductInfo(
+    size: ComputeSizeOption.large,
+    productId: 'compute-growth:0',
+    name: 'Compute',
+    description: 'Compute for growth',
+  );
+
+  final databaseSmall = DatabaseProductInfo(
     size: DatabaseSizeOption.small,
     productId: 'database-growth:0',
     name: 'Database',
     description: 'Database for growth',
+    cuHoursPerMonthLimit: 750,
+    storageLimitGB: 2,
+  );
+  final databaseMedium = DatabaseProductInfo(
+    size: DatabaseSizeOption.medium,
+    productId: 'database-growth:0',
+    name: 'Database',
+    description: 'Database for growth',
+  );
+  final databaseLarge = DatabaseProductInfo(
+    size: DatabaseSizeOption.large,
+    productId: 'database-growth:0',
+    name: 'Database',
+    description: 'Database for growth',
+  );
+  final databaseLargePlus = DatabaseProductInfo(
+    size: DatabaseSizeOption.largePlus,
+    productId: 'database-growth:0',
+    name: 'Database',
+    description: 'Database for growth',
+    scaling: DatabaseScalingInfo(
+      defaultMinCu: 1,
+      defaultMaxCu: 1,
+      allowedCuValues: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16],
+      maxCuSpread: 8,
+    ),
   );
   final computeCatalog = ComputeCatalogInfo(
-    computes: [compute],
-    defaultCompute: compute.size,
+    computes: [computeSmall, computeMedium, computeLarge],
+    defaultCompute: computeSmall.size,
     scaling: ComputeScalingInfo(
       defaultMinReplicas: 1,
       defaultMaxReplicas: 1,
@@ -24,8 +64,13 @@ List<ProjectProductInfo> _standardPlanBundledProjectProducts() {
     ),
   );
   final databaseCatalog = DatabaseCatalogInfo(
-    databases: [database],
-    defaultDatabase: database.size,
+    databases: [
+      databaseSmall,
+      databaseMedium,
+      databaseLarge,
+      databaseLargePlus,
+    ],
+    defaultDatabase: databaseSmall.size,
   );
   return [
     ProjectProductInfo(
