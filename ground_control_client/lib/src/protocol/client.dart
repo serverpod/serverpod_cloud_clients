@@ -1093,6 +1093,30 @@ class EndpointProjects extends _i1.EndpointRef {
         'cloudProjectId': cloudProjectId,
       });
 
+  /// Updates the project type for a project by selecting a new project product.
+  ///
+  /// - **Authorization**: requires project authorization for `cloudProjectId`
+  ///   with at least `Scopes.p0All`.
+  /// - **Atomicity / no partial state**: all validations are performed before
+  ///   any state is persisted or any infra reconciliation is triggered.
+  /// - **Product change**: the project's `projectProductId` is set to
+  ///   `projectProductId`.
+  /// - **Default resources**: the project compute and database settings resolve
+  ///   to the defaults for the selected product (no per-project overrides are
+  ///   applied by this operation).
+  /// - **Infra reconciliation**: if the project has active infrastructure,
+  ///   reconciliation flows are triggered so running resources converge to the
+  ///   selected product's defaults.
+  ///
+  /// This endpoint currently only defines the API surface.
+  _i2.Future<void> updateProjectProfile({
+    required String cloudProjectId,
+    required String projectProductId,
+  }) => caller.callServerEndpoint<void>('projects', 'updateProjectProfile', {
+    'cloudProjectId': cloudProjectId,
+    'projectProductId': projectProductId,
+  });
+
   _i2.Future<_i31.ProjectConfig> fetchProjectConfig({
     required String cloudProjectId,
   }) => caller.callServerEndpoint<_i31.ProjectConfig>(
