@@ -19,7 +19,7 @@ import 'package:ground_control_client/src/protocol/protocol.dart' as _i3;
 abstract class PlanInfo implements _i1.SerializableModel {
   PlanInfo._({
     required this.productId,
-    required this.name,
+    this.name,
     required this.displayName,
     this.description,
     this.trialLength,
@@ -30,7 +30,7 @@ abstract class PlanInfo implements _i1.SerializableModel {
 
   factory PlanInfo({
     required String productId,
-    required String name,
+    String? name,
     required String displayName,
     String? description,
     int? trialLength,
@@ -42,7 +42,7 @@ abstract class PlanInfo implements _i1.SerializableModel {
   factory PlanInfo.fromJson(Map<String, dynamic> jsonSerialization) {
     return PlanInfo(
       productId: jsonSerialization['productId'] as String,
-      name: jsonSerialization['name'] as String,
+      name: jsonSerialization['name'] as String?,
       displayName: jsonSerialization['displayName'] as String,
       description: jsonSerialization['description'] as String?,
       trialLength: jsonSerialization['trialLength'] as int?,
@@ -63,7 +63,7 @@ abstract class PlanInfo implements _i1.SerializableModel {
   String productId;
 
   /// Deprecated: Use displayName instead.
-  String name;
+  String? name;
 
   /// The user-friendly name of the product.
   /// (This is not the same as the technical product ID name.)
@@ -104,7 +104,7 @@ abstract class PlanInfo implements _i1.SerializableModel {
     return {
       '__className__': 'PlanInfo',
       'productId': productId,
-      'name': name,
+      if (name != null) 'name': name,
       'displayName': displayName,
       if (description != null) 'description': description,
       if (trialLength != null) 'trialLength': trialLength,
@@ -127,7 +127,7 @@ class _Undefined {}
 class _PlanInfoImpl extends PlanInfo {
   _PlanInfoImpl({
     required String productId,
-    required String name,
+    String? name,
     required String displayName,
     String? description,
     int? trialLength,
@@ -151,7 +151,7 @@ class _PlanInfoImpl extends PlanInfo {
   @override
   PlanInfo copyWith({
     String? productId,
-    String? name,
+    Object? name = _Undefined,
     String? displayName,
     Object? description = _Undefined,
     Object? trialLength = _Undefined,
@@ -161,7 +161,7 @@ class _PlanInfoImpl extends PlanInfo {
   }) {
     return PlanInfo(
       productId: productId ?? this.productId,
-      name: name ?? this.name,
+      name: name is String? ? name : this.name,
       displayName: displayName ?? this.displayName,
       description: description is String? ? description : this.description,
       trialLength: trialLength is int? ? trialLength : this.trialLength,

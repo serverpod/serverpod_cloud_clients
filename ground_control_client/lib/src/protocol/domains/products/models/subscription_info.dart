@@ -23,7 +23,7 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
     required this.cancelled,
     required this.subscriptionId,
     required this.planProductId,
-    required this.planName,
+    this.planName,
     required this.planDisplayName,
     this.planDescription,
     this.projectsLimit,
@@ -37,7 +37,7 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
     required bool cancelled,
     required String subscriptionId,
     required String planProductId,
-    required String planName,
+    String? planName,
     required String planDisplayName,
     String? planDescription,
     int? projectsLimit,
@@ -62,7 +62,7 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
       cancelled: _i1.BoolJsonExtension.fromJson(jsonSerialization['cancelled']),
       subscriptionId: jsonSerialization['subscriptionId'] as String,
       planProductId: jsonSerialization['planProductId'] as String,
-      planName: jsonSerialization['planName'] as String,
+      planName: jsonSerialization['planName'] as String?,
       planDisplayName: jsonSerialization['planDisplayName'] as String,
       planDescription: jsonSerialization['planDescription'] as String?,
       projectsLimit: jsonSerialization['projectsLimit'] as int?,
@@ -91,7 +91,7 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
   String planProductId;
 
   /// Deprecated: Use planDisplayName instead.
-  String planName;
+  String? planName;
 
   /// The display name of the plan.
   String planDisplayName;
@@ -129,7 +129,7 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
       'cancelled': cancelled,
       'subscriptionId': subscriptionId,
       'planProductId': planProductId,
-      'planName': planName,
+      if (planName != null) 'planName': planName,
       'planDisplayName': planDisplayName,
       if (planDescription != null) 'planDescription': planDescription,
       if (projectsLimit != null) 'projectsLimit': projectsLimit,
@@ -153,7 +153,7 @@ class _SubscriptionInfoImpl extends SubscriptionInfo {
     required bool cancelled,
     required String subscriptionId,
     required String planProductId,
-    required String planName,
+    String? planName,
     required String planDisplayName,
     String? planDescription,
     int? projectsLimit,
@@ -183,7 +183,7 @@ class _SubscriptionInfoImpl extends SubscriptionInfo {
     bool? cancelled,
     String? subscriptionId,
     String? planProductId,
-    String? planName,
+    Object? planName = _Undefined,
     String? planDisplayName,
     Object? planDescription = _Undefined,
     Object? projectsLimit = _Undefined,
@@ -198,7 +198,7 @@ class _SubscriptionInfoImpl extends SubscriptionInfo {
       cancelled: cancelled ?? this.cancelled,
       subscriptionId: subscriptionId ?? this.subscriptionId,
       planProductId: planProductId ?? this.planProductId,
-      planName: planName ?? this.planName,
+      planName: planName is String? ? planName : this.planName,
       planDisplayName: planDisplayName ?? this.planDisplayName,
       planDescription: planDescription is String?
           ? planDescription

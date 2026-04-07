@@ -172,7 +172,6 @@ class PlanInfoBuilder {
   PlanInfo build() {
     return PlanInfo(
       productId: _productId,
-      name: _displayName,
       displayName: _displayName,
       description: _description,
       trialLength: _trialLength,
