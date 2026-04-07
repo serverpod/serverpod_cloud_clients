@@ -58,6 +58,35 @@ abstract class ProjectAdminCommands {
     );
   }
 
+  static Future<void> deleteProject(
+    final Client cloudApiClient, {
+    required final CommandLogger logger,
+    required final String projectId,
+  }) async {
+    final shouldDelete = await logger.confirm(
+      'Are you sure you want to delete the project "$projectId"?',
+      defaultValue: false,
+    );
+
+    if (!shouldDelete) {
+      throw UserAbortException();
+    }
+
+    try {
+      await cloudApiClient.adminProjects.deleteProject(
+        cloudProjectId: projectId,
+      );
+    } on Exception catch (e, s) {
+      throw FailureException.nested(
+        e,
+        s,
+        'Request to delete the project failed',
+      );
+    }
+
+    logger.success('Deleted the project "$projectId".', newParagraph: true);
+  }
+
   static String _formatProjectUsers(final Project project) {
     return project.roles
             ?.map((final r) {

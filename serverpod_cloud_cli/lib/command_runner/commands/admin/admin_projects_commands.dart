@@ -10,11 +10,12 @@ class AdminProjectCommand extends CloudCliCommand {
   final name = 'project';
 
   @override
-  final description = 'Inspect Serverpod Cloud projects.';
+  final description = 'Manage Serverpod Cloud projects.';
 
   AdminProjectCommand({required super.logger}) {
     addSubcommand(AdminListProjectsCommand(logger: logger));
     addSubcommand(AdminProjectStatusCommand(logger: logger));
+    addSubcommand(AdminProjectDeleteCommand(logger: logger));
   }
 }
 
@@ -116,5 +117,49 @@ class AdminProjectStatusCommand
 
     final table = DeployStatusTable(inUtc: inUtc)..addRows(statuses);
     table.writeLines(logger.line);
+  }
+}
+
+enum AdminProjectDeleteOption<V> implements OptionDefinition<V> {
+  projectId(
+    StringOption(
+      argName: 'project',
+      argAbbrev: 'p',
+      argPos: 0,
+      mandatory: true,
+      helpText:
+          'The ID of the project. '
+          'Can be passed as the first argument.',
+    ),
+  );
+
+  const AdminProjectDeleteOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class AdminProjectDeleteCommand
+    extends CloudCliCommand<AdminProjectDeleteOption> {
+  @override
+  final name = 'delete';
+
+  @override
+  final description = 'Delete a Serverpod Cloud project.';
+
+  AdminProjectDeleteCommand({required super.logger})
+    : super(options: AdminProjectDeleteOption.values);
+
+  @override
+  Future<void> runWithConfig(
+    final Configuration<AdminProjectDeleteOption> commandConfig,
+  ) async {
+    final projectId = commandConfig.value(AdminProjectDeleteOption.projectId);
+
+    await ProjectAdminCommands.deleteProject(
+      runner.serviceProvider.cloudApiClient,
+      logger: logger,
+      projectId: projectId,
+    );
   }
 }

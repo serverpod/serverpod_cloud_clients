@@ -106,6 +106,7 @@ commands:
       - name: link
         flags:
           -p, --project=!: "The ID of the project. Can be passed as the first argument."
+          --dart-version=: "Overrides the Dart SDK version to use for building the project."
 
       - name: user
 
@@ -131,6 +132,7 @@ commands:
       --dry-run: "Do not actually deploy, just print the deployment steps."
       --show-files: "Display the file tree that will be uploaded."
       -o, --output=: "Save the deployment zip file to the specified path. Must end with .zip"
+      --dart-version=: "Overrides the Dart SDK version to use for building the project."
 
   - name: variable
 
@@ -309,6 +311,7 @@ commands:
       --no-enable-db: "Flag to enable the database for the project."
       --deploy: "Flag to immediately deploy the project."
       --no-deploy: "Flag to immediately deploy the project."
+      --dart-version=: "Overrides the Dart SDK version to use for building the project."
     exclusiveFlags:
       - [enable-db, no-enable-db]
       - [deploy, no-deploy]
