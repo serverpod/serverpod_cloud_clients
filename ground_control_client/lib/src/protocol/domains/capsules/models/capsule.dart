@@ -22,6 +22,9 @@ import 'package:ground_control_client/src/protocol/protocol.dart' as _i7;
 abstract class Capsule implements _i1.SerializableModel {
   Capsule._({
     this.id,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    this.archivedAt,
     required this.name,
     required this.cloudCapsuleId,
     required this.region,
@@ -30,10 +33,14 @@ abstract class Capsule implements _i1.SerializableModel {
     this.environmentVariables,
     this.domainNames,
     this.resourceConfig,
-  });
+  }) : createdAt = createdAt ?? DateTime.now(),
+       updatedAt = updatedAt ?? DateTime.now();
 
   factory Capsule({
     int? id,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    DateTime? archivedAt,
     required String name,
     required String cloudCapsuleId,
     required _i2.ServerpodRegion region,
@@ -47,6 +54,15 @@ abstract class Capsule implements _i1.SerializableModel {
   factory Capsule.fromJson(Map<String, dynamic> jsonSerialization) {
     return Capsule(
       id: jsonSerialization['id'] as int?,
+      createdAt: jsonSerialization['createdAt'] == null
+          ? null
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+      updatedAt: jsonSerialization['updatedAt'] == null
+          ? null
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
+      archivedAt: jsonSerialization['archivedAt'] == null
+          ? null
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['archivedAt']),
       name: jsonSerialization['name'] as String,
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
       region: _i2.ServerpodRegion.fromJson(
@@ -81,7 +97,16 @@ abstract class Capsule implements _i1.SerializableModel {
   /// the id will be null.
   int? id;
 
+  DateTime createdAt;
+
+  DateTime updatedAt;
+
+  DateTime? archivedAt;
+
   /// The name of the capsule. User-defined.
+  /// Must be globally unique, but can be changed by the user.
+  /// Automatically changed when the record is archived
+  /// in order to free up the name for reuse.
   String name;
 
   /// Globally unique identifier of the capsule. Cannot be changed.
@@ -109,6 +134,9 @@ abstract class Capsule implements _i1.SerializableModel {
   @_i1.useResult
   Capsule copyWith({
     int? id,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    DateTime? archivedAt,
     String? name,
     String? cloudCapsuleId,
     _i2.ServerpodRegion? region,
@@ -123,6 +151,9 @@ abstract class Capsule implements _i1.SerializableModel {
     return {
       '__className__': 'Capsule',
       if (id != null) 'id': id,
+      'createdAt': createdAt.toJson(),
+      'updatedAt': updatedAt.toJson(),
+      if (archivedAt != null) 'archivedAt': archivedAt?.toJson(),
       'name': name,
       'cloudCapsuleId': cloudCapsuleId,
       'region': region.toJson(),
@@ -149,6 +180,9 @@ class _Undefined {}
 class _CapsuleImpl extends Capsule {
   _CapsuleImpl({
     int? id,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    DateTime? archivedAt,
     required String name,
     required String cloudCapsuleId,
     required _i2.ServerpodRegion region,
@@ -159,6 +193,9 @@ class _CapsuleImpl extends Capsule {
     _i6.CapsuleResource? resourceConfig,
   }) : super._(
          id: id,
+         createdAt: createdAt,
+         updatedAt: updatedAt,
+         archivedAt: archivedAt,
          name: name,
          cloudCapsuleId: cloudCapsuleId,
          region: region,
@@ -175,6 +212,9 @@ class _CapsuleImpl extends Capsule {
   @override
   Capsule copyWith({
     Object? id = _Undefined,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Object? archivedAt = _Undefined,
     String? name,
     String? cloudCapsuleId,
     _i2.ServerpodRegion? region,
@@ -186,6 +226,9 @@ class _CapsuleImpl extends Capsule {
   }) {
     return Capsule(
       id: id is int? ? id : this.id,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      archivedAt: archivedAt is DateTime? ? archivedAt : this.archivedAt,
       name: name ?? this.name,
       cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
       region: region ?? this.region,

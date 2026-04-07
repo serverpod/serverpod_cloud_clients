@@ -198,7 +198,8 @@ class EndpointAdminProjects extends _i1.EndpointRef {
     {'cloudCapsuleId': cloudCapsuleId, 'limit': limit},
   );
 
-  /// Deletes a project permanently on behalf of a user.
+  /// Archives a project and its capsule and permanently deletes its
+  /// infrastructure on behalf of a user.
   /// Executes the same deletion code path as the regular deleteProject endpoint,
   /// but bypasses project-level authorization.
   _i2.Future<_i3.Project> deleteProject({required String cloudProjectId}) =>
@@ -1086,8 +1087,9 @@ class EndpointProjects extends _i1.EndpointRef {
     {'includeLatestDeployAttemptTime': includeLatestDeployAttemptTime},
   );
 
-  /// Deletes a project permanently.
-  /// The id / name of the project is not immediately available for reuse.
+  /// Archives a project and its capsule and permanently deletes its infrastructure.
+  /// The id of the project is not available for reuse but the same string can
+  /// be assigned as the "name" of another capsule.
   _i2.Future<_i3.Project> deleteProject({required String cloudProjectId}) =>
       caller.callServerEndpoint<_i3.Project>('projects', 'deleteProject', {
         'cloudProjectId': cloudProjectId,
