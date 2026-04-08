@@ -84,6 +84,7 @@ class SubscriptionInfoBuilder {
       cancelled: _cancelled,
       subscriptionId: _subscriptionId,
       planProductId: _planProductId,
+      planName: _planDisplayName,
       planDisplayName: _planDisplayName,
       planDescription: _planDescription,
       projectsLimit: _projectsLimit,
