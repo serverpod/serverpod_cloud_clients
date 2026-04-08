@@ -106,7 +106,7 @@ abstract class CapsuleResource implements _i1.SerializableModel {
   /// The compute request memory.
   String computeRequestMemory;
 
-  /// The compute request ephemeral storage.
+  /// DEPRECATED (see issue https://linear.app/serverpod/issue/CLD-483/remove-deprecated-fields-from-capsuleresource)
   String computeRequestEphemeralStorage;
 
   /// The compute limit cpu.
@@ -115,10 +115,10 @@ abstract class CapsuleResource implements _i1.SerializableModel {
   /// The compute limit memory.
   String computeLimitMemory;
 
-  /// The compute limit ephemeral storage.
+  /// DEPRECATED (see issue https://linear.app/serverpod/issue/CLD-483/remove-deprecated-fields-from-capsuleresource)
   String computeLimitEphemeralStorage;
 
-  /// Flag to enable horizontal scaling for the capsule compute.
+  /// DEPRECATED (see issue https://linear.app/serverpod/issue/CLD-483/remove-deprecated-fields-from-capsuleresource)
   bool computeScalingEnabled;
 
   /// The minimum number of compute instances to scale to.
