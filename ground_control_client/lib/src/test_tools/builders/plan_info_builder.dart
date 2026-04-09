@@ -1,5 +1,44 @@
 import 'package:ground_control_client/ground_control_client.dart';
 
+List<ProjectProductInfo> standardPlanTwoBundledProjectProfiles() {
+  final starterCompute = ComputeProductInfo(
+    size: ComputeSizeOption.small,
+    productId: 'compute-starter:0',
+    name: 'Compute',
+    description: 'Compute for starter',
+  );
+  final starterDatabase = DatabaseProductInfo(
+    size: DatabaseSizeOption.small,
+    productId: 'database-starter:0',
+    name: 'Database',
+    description: 'Database for starter',
+    cuHoursPerMonthLimit: 500,
+    storageLimitGB: 2,
+  );
+  final starterCatalog = ComputeCatalogInfo(
+    computes: [starterCompute],
+    defaultCompute: starterCompute.size,
+    scaling: ComputeScalingInfo(
+      defaultMinReplicas: 1,
+      defaultMaxReplicas: 1,
+      allowedReplicasMin: 1,
+      allowedReplicasMax: 1,
+    ),
+  );
+  final starterDbCatalog = DatabaseCatalogInfo(
+    databases: [starterDatabase],
+    defaultDatabase: starterDatabase.size,
+  );
+  final starterProject = ProjectProductInfo(
+    productId: 'starter-project:0',
+    name: 'Starter',
+    description: 'Cost-optimized',
+    computeCatalog: starterCatalog,
+    databaseCatalog: starterDbCatalog,
+  );
+  return [starterProject, ..._standardPlanBundledProjectProducts()];
+}
+
 List<ProjectProductInfo> _standardPlanBundledProjectProducts() {
   final computeSmall = ComputeProductInfo(
     size: ComputeSizeOption.small,
@@ -76,7 +115,7 @@ List<ProjectProductInfo> _standardPlanBundledProjectProducts() {
     ProjectProductInfo(
       productId: 'growth:0',
       name: 'Growth',
-      description: 'Bundled project product for standard plan fixtures',
+      description: 'Performance & autoscaling',
       computeCatalog: computeCatalog,
       databaseCatalog: databaseCatalog,
     ),
@@ -119,6 +158,12 @@ class PlanInfoBuilder {
     _trialEndDate = null;
     _projectsLimit = 3;
     _projectProductInfo = _standardPlanBundledProjectProducts();
+    return this;
+  }
+
+  PlanInfoBuilder withStandardPlanTwoProfiles() {
+    withStandardPlan();
+    _projectProductInfo = standardPlanTwoBundledProjectProfiles();
     return this;
   }
 
