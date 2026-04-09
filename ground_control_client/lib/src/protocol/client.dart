@@ -436,6 +436,9 @@ class EndpointAuthWithAuth extends _i1.EndpointRef {
         'listAuthSessions',
         {},
       );
+
+  _i2.Future<String> getFeaturebaseSsoJwt() => caller
+      .callServerEndpoint<String>('authWithAuth', 'getFeaturebaseSsoJwt', {});
 }
 
 /// By extending [RefreshJwtTokensEndpoint], the JWT token refresh endpoint
