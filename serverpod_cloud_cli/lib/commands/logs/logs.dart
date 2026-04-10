@@ -1,11 +1,13 @@
+import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
+import 'package:serverpod_cloud_cli/util/output_format.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 
 abstract class LogsFeature {
   static Future<void> fetchContainerLog(
     final Client cloudApiClient, {
-    required final void Function(String) writeln,
+    required final CommandLogger logger,
     required final String projectId,
     required final DateTime? before,
     required final DateTime? after,
@@ -15,7 +17,7 @@ abstract class LogsFeature {
     final timezoneName = inUtc
         ? 'UTC'
         : 'local (${DateTime.now().timeZoneName})';
-    writeln(
+    logger.line(
       'Fetching logs from ${after?.toTzString(inUtc) ?? 'oldest'} '
       'to ${before?.toTzString(inUtc) ?? 'newest'}. Display time zone: $timezoneName.',
     );
@@ -35,12 +37,17 @@ abstract class LogsFeature {
       );
     }
 
-    await _outputLogStream(writeln, recordStream, limit: limit, inUtc: inUtc);
+    await _outputLogStream(
+      logger,
+      recordStream,
+      limit: limit,
+      inUtc: inUtc,
+    );
   }
 
   static Future<void> tailContainerLog(
     final Client cloudApiClient, {
-    required final void Function(String) writeln,
+    required final CommandLogger logger,
     required final String projectId,
     required final int limit,
     required final bool inUtc,
@@ -48,14 +55,14 @@ abstract class LogsFeature {
     final timezoneName = inUtc
         ? 'UTC'
         : 'local (${DateTime.now().timeZoneName})';
-    writeln('Tailing logs. Display time zone: $timezoneName.');
+    logger.line('Tailing logs. Display time zone: $timezoneName.');
 
     final recordStream = cloudApiClient.logs.tailRecords(
       cloudCapsuleId: projectId,
       limit: limit,
     );
-    await LogsFeature._outputLogStream(
-      writeln,
+    await _outputLogStream(
+      logger,
       recordStream,
       limit: limit,
       inUtc: inUtc,
@@ -64,7 +71,7 @@ abstract class LogsFeature {
 
   static Future<void> fetchBuildLog(
     final Client cloudApiClient, {
-    required final void Function(String) writeln,
+    required final CommandLogger logger,
     required final String projectId,
     required final String attemptId,
     required final bool inUtc,
@@ -72,7 +79,7 @@ abstract class LogsFeature {
     final timezoneName = inUtc
         ? 'UTC'
         : 'local (${DateTime.now().timeZoneName})';
-    writeln(
+    logger.line(
       'Fetching build logs for deploy id $attemptId. Display time zone: $timezoneName.',
     );
 
@@ -80,16 +87,38 @@ abstract class LogsFeature {
       cloudCapsuleId: projectId,
       attemptId: attemptId,
     );
-    await _outputLogStream(writeln, recordStream, inUtc: inUtc);
+    await _outputLogStream(logger, recordStream, inUtc: inUtc);
   }
 
   static Future<void> _outputLogStream(
-    final void Function(String) writeln,
+    final CommandLogger logger,
     final Stream<LogRecord> recordStream, {
     final int? limit,
     required final bool inUtc,
   }) async {
     var count = 0;
+
+    if (logger.outputFormat == OutputFormat.json) {
+      try {
+        await for (final rec in recordStream) {
+          count++;
+          logger.outputJsonLine({
+            'Timestamp': rec.timestamp.toTzString(inUtc),
+            'Level': rec.severity ?? '',
+            'Content': rec.content,
+          });
+          if (limit != null && count >= limit) break;
+        }
+      } finally {
+        logger.outputJsonLine({
+          '_meta': 'end',
+          'count': count,
+          if (limit != null) 'limit': limit,
+        });
+      }
+      return;
+    }
+
     final tablePrinter = _createLogTablePrinter();
     final tableStream = tablePrinter.toStream(
       recordStream.map((final rec) {
@@ -99,15 +128,15 @@ abstract class LogsFeature {
     );
     try {
       await for (final line in tableStream) {
-        writeln(line.trimRight());
+        logger.line(line.trimRight());
       }
     } finally {
-      writeln(
+      logger.line(
         '-- End of log stream --'
         ' $count records ${limit != null ? '(limit $limit)' : ''} --',
       );
       if (count == limit) {
-        writeln('   (Use the --limit option to increase the limit.)');
+        logger.line('   (Use the --limit option to increase the limit.)');
       }
     }
   }

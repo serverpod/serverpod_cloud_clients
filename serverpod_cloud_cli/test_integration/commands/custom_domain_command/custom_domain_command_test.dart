@@ -701,46 +701,46 @@ void main() {
       test('then logs success message', () async {
         await commandResult;
 
-        expect(logger.lineCalls, isNotEmpty);
+        expect(logger.outputTableCalls, hasLength(2));
         expect(
-          logger.lineCalls,
-          containsAllInOrder([
-            equalsLineCall(
-              line: 'Default domain name                         | Target  ',
-            ),
-            equalsLineCall(
-              line: '--------------------------------------------+---------',
-            ),
-            equalsLineCall(
-              line: 'my-magical-project.api.serverpod.space      | api     ',
-            ),
-            equalsLineCall(
-              line: 'my-magical-project.insights.serverpod.space | insights',
-            ),
-            equalsLineCall(
-              line: 'my-magical-project.serverpod.space          | web     ',
-            ),
-            equalsLineCall(
-              line:
-                  'Custom domain name  | Target                                      | Status                      ',
-            ),
-            equalsLineCall(
-              line:
-                  '--------------------+---------------------------------------------+-----------------------------',
-            ),
-            equalsLineCall(
-              line:
-                  'api.domain.com      | my-magical-project.api.serverpod.space      | Configured                  ',
-            ),
-            equalsLineCall(
-              line:
-                  'domain.com          | my-magical-project.serverpod.space          | Certificate creation pending',
-            ),
-            equalsLineCall(
-              line:
-                  'insights.domain.com | my-magical-project.insights.serverpod.space | Needs setup                 ',
-            ),
-          ]),
+          logger.outputTableCalls[0],
+          equalsOutputTableCall(
+            headers: ['Default domain name', 'Target'],
+            rows: [
+              [
+                'my-magical-project.api.serverpod.space',
+                'api',
+              ],
+              [
+                'my-magical-project.insights.serverpod.space',
+                'insights',
+              ],
+              ['my-magical-project.serverpod.space', 'web'],
+            ],
+          ),
+        );
+        expect(
+          logger.outputTableCalls[1],
+          equalsOutputTableCall(
+            headers: ['Custom domain name', 'Target', 'Status'],
+            rows: [
+              [
+                'api.domain.com',
+                'my-magical-project.api.serverpod.space',
+                'Configured',
+              ],
+              [
+                'domain.com',
+                'my-magical-project.serverpod.space',
+                'Certificate creation pending',
+              ],
+              [
+                'insights.domain.com',
+                'my-magical-project.insights.serverpod.space',
+                'Needs setup',
+              ],
+            ],
+          ),
         );
       });
     });
@@ -789,29 +789,30 @@ void main() {
       test('then logs success message', () async {
         await commandResult;
 
-        expect(logger.lineCalls, isNotEmpty);
+        expect(logger.outputTableCalls, hasLength(2));
         expect(
-          logger.lineCalls,
-          containsAllInOrder([
-            equalsLineCall(
-              line: 'Default domain name                         | Target  ',
-            ),
-            equalsLineCall(
-              line: '--------------------------------------------+---------',
-            ),
-            equalsLineCall(
-              line: 'my-magical-project.api.serverpod.space      | api     ',
-            ),
-            equalsLineCall(
-              line: 'my-magical-project.insights.serverpod.space | insights',
-            ),
-            equalsLineCall(
-              line: 'my-magical-project.serverpod.space          | web     ',
-            ),
-            equalsLineCall(line: 'Custom domain name | Target | Status'),
-            equalsLineCall(line: '-------------------+--------+-------'),
-            equalsLineCall(line: '<no rows data>'),
-          ]),
+          logger.outputTableCalls[0],
+          equalsOutputTableCall(
+            headers: ['Default domain name', 'Target'],
+            rows: [
+              [
+                'my-magical-project.api.serverpod.space',
+                'api',
+              ],
+              [
+                'my-magical-project.insights.serverpod.space',
+                'insights',
+              ],
+              ['my-magical-project.serverpod.space', 'web'],
+            ],
+          ),
+        );
+        expect(
+          logger.outputTableCalls[1],
+          equalsOutputTableCall(
+            headers: ['Custom domain name', 'Target', 'Status'],
+            rows: [],
+          ),
         );
       });
     });

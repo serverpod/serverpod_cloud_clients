@@ -268,7 +268,7 @@ Examples
 
       await LogsFeature.fetchBuildLog(
         runner.serviceProvider.cloudApiClient,
-        writeln: logger.line,
+        logger: logger,
         projectId: projectId,
         attemptId: attemptId,
         inUtc: inUtc,

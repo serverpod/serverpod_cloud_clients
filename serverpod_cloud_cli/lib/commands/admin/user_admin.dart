@@ -2,8 +2,6 @@ import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
-import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
-
 abstract class UserAdminCommands {
   static Future<void> listUsers(
     final Client cloudApiClient, {
@@ -38,7 +36,7 @@ abstract class UserAdminCommands {
 
     final timezoneName = inUtc ? 'UTC' : 'local';
 
-    final table = TablePrinter(
+    logger.outputTable(
       headers: [
         'User',
         'Account status',
@@ -46,17 +44,17 @@ abstract class UserAdminCommands {
         'Archived at ($timezoneName)',
         'Subscribed Plans',
       ],
-      rows: users.map(
-        (final user) => [
-          user.email,
-          user.accountStatus.toString(),
-          user.createdAt.toTzString(inUtc, 19),
-          user.archivedAt?.toTzString(inUtc, 19),
-          userPlanMap[user.email] ?? '',
-        ],
-      ),
+      rows: [
+        for (final user in users)
+          [
+            user.email,
+            user.accountStatus.toString(),
+            user.createdAt.toTzString(inUtc, 19),
+            user.archivedAt?.toTzString(inUtc, 19),
+            userPlanMap[user.email] ?? '',
+          ],
+      ],
     );
-    table.writeLines(logger.line);
   }
 
   static Future<void> inviteUser(

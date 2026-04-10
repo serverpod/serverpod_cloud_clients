@@ -1,6 +1,5 @@
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
-import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 
 abstract class MeCommands {
   static Future<void> showCurrentUser(
@@ -20,13 +19,12 @@ abstract class MeCommands {
     final planDisplayName = subscriptionInfo?.planDisplayName ?? 'No plan';
     final status = _determineStatus(subscriptionInfo) ?? '';
 
-    final table = TablePrinter(
+    logger.outputTable(
       headers: ['Email', 'Plan', 'Status'],
       rows: [
         [user.email, planDisplayName, status],
       ],
     );
-    table.writeLines(logger.line);
   }
 
   static String? _determineStatus(final SubscriptionInfo? subscriptionInfo) {

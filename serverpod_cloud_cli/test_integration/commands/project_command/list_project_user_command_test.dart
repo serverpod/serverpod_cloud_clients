@@ -75,19 +75,15 @@ void main() {
       test('then command outputs user list', () async {
         await commandResult.catchError((final _) {});
 
+        expect(logger.outputTableCalls, isNotEmpty);
         expect(
-          logger.lineCalls,
-          containsAllInOrder([
-            equalsLineCall(
-              line: 'User             | Project   | Project roles',
-            ),
-            equalsLineCall(
-              line: '-----------------+-----------+--------------',
-            ),
-            equalsLineCall(
-              line: 'test@example.com | projectId | Admin        ',
-            ),
-          ]),
+          logger.outputTableCalls.first,
+          equalsOutputTableCall(
+            headers: ['User', 'Project', 'Project roles'],
+            rows: [
+              ['test@example.com', 'projectId', 'Admin'],
+            ],
+          ),
         );
       });
     });

@@ -91,26 +91,37 @@ void main() {
       test('then command outputs user list', () async {
         await commandResult.catchError((final _) {});
 
+        expect(logger.outputTableCalls, isNotEmpty);
         expect(
-          logger.lineCalls,
-          containsAllInOrder([
-            equalsLineCall(
-              line:
-                  'Project Id | Created At (local)  | Archived At (local) | Last Deploy Attempt | Owner            | Users                                              ',
-            ),
-            equalsLineCall(
-              line:
-                  '-----------+---------------------+---------------------+---------------------+------------------+----------------------------------------------------',
-            ),
-            equalsLineCall(
-              line:
-                  'projectId  | 2025-07-02 11:00:00 |                     |                     | test@example.com | Admin: test@example.com                            ',
-            ),
-            equalsLineCall(
-              line:
-                  'projectId2 | 2025-07-02 11:00:00 | 2025-07-02 12:10:00 |                     | test@example.com | Admin: test@example.com; Developer: dev@example.com',
-            ),
-          ]),
+          logger.outputTableCalls.first,
+          equalsOutputTableCall(
+            headers: [
+              'Project Id',
+              'Created At (local)',
+              'Archived At (local)',
+              'Last Deploy Attempt',
+              'Owner',
+              'Users',
+            ],
+            rows: [
+              [
+                'projectId',
+                '2025-07-02 11:00:00',
+                null,
+                null,
+                'test@example.com',
+                'Admin: test@example.com',
+              ],
+              [
+                'projectId2',
+                '2025-07-02 11:00:00',
+                '2025-07-02 12:10:00',
+                null,
+                'test@example.com',
+                'Admin: test@example.com; Developer: dev@example.com',
+              ],
+            ],
+          ),
         );
       });
     });

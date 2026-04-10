@@ -115,8 +115,10 @@ class AdminProjectStatusCommand
     final statuses = await runner.serviceProvider.cloudApiClient.adminProjects
         .getDeployAttempts(cloudCapsuleId: projectId, limit: limit);
 
-    final table = DeployStatusTable(inUtc: inUtc)..addRows(statuses);
-    table.writeLines(logger.line);
+    logger.outputTable(
+      headers: DeployStatusTable.tableHeaders,
+      rows: DeployStatusTable.tableRows(statuses, inUtc: inUtc),
+    );
   }
 }
 

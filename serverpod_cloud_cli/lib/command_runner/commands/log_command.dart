@@ -167,7 +167,7 @@ Examples
       try {
         await LogsFeature.tailContainerLog(
           runner.serviceProvider.cloudApiClient,
-          writeln: logger.line,
+          logger: logger,
           projectId: projectId,
           limit: limit,
           inUtc: inUtc,
@@ -182,7 +182,7 @@ Examples
     try {
       await LogsFeature.fetchContainerLog(
         runner.serviceProvider.cloudApiClient,
-        writeln: logger.line,
+        logger: logger,
         projectId: projectId,
         before: until,
         after: since ?? defaultSince,

@@ -64,14 +64,16 @@ void main() {
       test('then command outputs user list', () async {
         await commandResult.catchError((final _) {});
 
+        expect(logger.outputTableCalls, isNotEmpty);
         expect(
-          logger.lineCalls,
-          containsAllInOrder([
-            equalsLineCall(line: 'Product    | Type       '),
-            equalsLineCall(line: '-----------+------------'),
-            equalsLineCall(line: 'test-plan  | PlanProduct'),
-            equalsLineCall(line: 'test-plan2 | PlanProduct'),
-          ]),
+          logger.outputTableCalls.first,
+          equalsOutputTableCall(
+            headers: ['Product', 'Type'],
+            rows: [
+              ['test-plan', 'PlanProduct'],
+              ['test-plan2', 'PlanProduct'],
+            ],
+          ),
         );
       });
     });

@@ -90,32 +90,26 @@ void main() {
       test('then outputs the ordered list of projects', () async {
         await commandResult;
 
-        expect(logger.lineCalls, isNotEmpty);
+        expect(logger.outputTableCalls, isNotEmpty);
         expect(
-          logger.lineCalls,
-          containsAllInOrder([
-            equalsLineCall(
-              line: 'Project Id | Created At          | Last Deploy Attempt',
-            ),
-            equalsLineCall(
-              line: '-----------+---------------------+--------------------',
-            ),
-            equalsLineCall(
-              line: 'projectId3 | 2024-12-30 10:20:30 |                    ',
-            ),
-            equalsLineCall(
-              line: 'projectId  | 2024-12-31 10:20:30 | 2024-12-31 10:20:30',
-            ),
-          ]),
+          logger.outputTableCalls.first,
+          equalsOutputTableCall(
+            headers: ['Project Id', 'Created At', 'Last Deploy Attempt'],
+            rows: [
+              ['projectId3', '2024-12-30 10:20:30', null],
+              ['projectId', '2024-12-31 10:20:30', '2024-12-31 10:20:30'],
+            ],
+          ),
         );
       });
 
       test('then outputs list of projects exluding those archived', () async {
         await commandResult;
 
-        expect(logger.lineCalls, isNotEmpty);
+        expect(logger.outputTableCalls, isNotEmpty);
+        final rows = logger.outputTableCalls.first.rows;
         expect(
-          logger.lineCalls.map((final call) => call.line),
+          rows.expand((final row) => row).whereType<String>(),
           isNot(contains('projectId2')),
         );
       });
@@ -134,31 +128,27 @@ void main() {
       test('then outputs the ordered list of projects', () async {
         await commandResult;
 
-        expect(logger.lineCalls, isNotEmpty);
+        expect(logger.outputTableCalls, isNotEmpty);
         expect(
-          logger.lineCalls,
-          containsAllInOrder([
-            equalsLineCall(
-              line:
-                  'Project Id | Created At          | Last Deploy Attempt | Deleted At         ',
-            ),
-            equalsLineCall(
-              line:
-                  '-----------+---------------------+---------------------+--------------------',
-            ),
-            equalsLineCall(
-              line:
-                  'projectId3 | 2024-12-30 10:20:30 |                     |                    ',
-            ),
-            equalsLineCall(
-              line:
-                  'projectId  | 2024-12-31 10:20:30 | 2024-12-31 10:20:30 |                    ',
-            ),
-            equalsLineCall(
-              line:
-                  'projectId2 | 2024-12-31 12:20:30 | 2024-12-31 12:20:30 | 2025-01-01 14:20:30',
-            ),
-          ]),
+          logger.outputTableCalls.first,
+          equalsOutputTableCall(
+            headers: [
+              'Project Id',
+              'Created At',
+              'Last Deploy Attempt',
+              'Deleted At',
+            ],
+            rows: [
+              ['projectId3', '2024-12-30 10:20:30', null, null],
+              ['projectId', '2024-12-31 10:20:30', '2024-12-31 10:20:30', null],
+              [
+                'projectId2',
+                '2024-12-31 12:20:30',
+                '2024-12-31 12:20:30',
+                '2025-01-01 14:20:30',
+              ],
+            ],
+          ),
         );
       });
     });

@@ -2,7 +2,6 @@ import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
-import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 
 import 'categories.dart';
@@ -322,12 +321,12 @@ class CloudVariableListCommand
       );
     }
 
-    final tablePrinter = TablePrinter();
-    tablePrinter.addHeaders(['Name', 'Value']);
-    for (var variable in environmentVariables) {
-      tablePrinter.addRow([variable.name, variable.value]);
-    }
-
-    tablePrinter.writeLines(logger.line);
+    logger.outputTable(
+      headers: ['Name', 'Value'],
+      rows: [
+        for (final variable in environmentVariables)
+          [variable.name, variable.value],
+      ],
+    );
   }
 }

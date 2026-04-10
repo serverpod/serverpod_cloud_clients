@@ -27,6 +27,7 @@ import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_cloud_cli/util/activation_checker.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
+import 'package:serverpod_cloud_cli/util/output_format.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
 import 'package:serverpod_cloud_cli/util/scloud_version.dart';
@@ -470,6 +471,15 @@ enum GlobalOption<V> implements OptionDefinition<V> {
       defaultsTo: false,
     ),
   ),
+  output(
+    EnumOption<OutputFormat>(
+      argName: 'output',
+      argAbbrev: 'o',
+      envName: 'SERVERPOD_CLOUD_OUTPUT_FORMAT',
+      helpText: 'The output format (text, json).',
+      enumParser: EnumParser(OutputFormat.values),
+    ),
+  ),
 
   // Developer options and flags
   projectConfigContent(
@@ -569,6 +579,8 @@ class GlobalConfiguration extends Configuration<GlobalOption> {
   String get consoleServer => value(GlobalOption.consoleServer);
 
   bool get skipConfirmation => value(GlobalOption.skipConfirmation);
+
+  OutputFormat? get outputFormat => optionalValue(GlobalOption.output);
 
   bool get warnBillingOverdue => value(GlobalOption.warnBillingOverdue);
 

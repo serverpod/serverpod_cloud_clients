@@ -1,18 +1,17 @@
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
-import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
-
 abstract class PlanAdminCommands {
   static Future<void> listOrbPlans(
     final Client cloudApiClient, {
     required final CommandLogger logger,
   }) async {
     final plans = await cloudApiClient.adminUpdatePlan.listOrbPlans();
-    final table = TablePrinter(
+    logger.outputTable(
       headers: ['External Plan ID'],
-      rows: plans.map((final plan) => [plan]),
+      rows: [
+        for (final plan in plans) [plan],
+      ],
     );
-    table.writeLines(logger.line);
   }
 
   static Future<void> updateOrbPlan(

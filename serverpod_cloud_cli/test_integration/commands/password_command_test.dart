@@ -442,10 +442,15 @@ void main() {
           expect(lines, contains('Services'));
           expect(lines, contains('Auth'));
 
-          expect(lines, contains(contains('database')));
-          expect(lines, contains(contains('serviceSecret')));
-          expect(lines, contains(contains('customPassword')));
-          expect(lines, contains(contains('emailSecretHashPepper')));
+          final allTableRows = logger.outputTableCalls
+              .expand((final c) => c.rows)
+              .expand((final r) => r)
+              .whereType<String>()
+              .toList();
+          expect(allTableRows, contains(contains('database')));
+          expect(allTableRows, contains(contains('serviceSecret')));
+          expect(allTableRows, contains(contains('customPassword')));
+          expect(allTableRows, contains(contains('emailSecretHashPepper')));
         });
       });
 
@@ -474,11 +479,15 @@ void main() {
         test('then displays passwords', () async {
           await commandResult;
 
-          expect(logger.lineCalls, isNotEmpty);
-          final lines = logger.lineCalls.map((final c) => c.line).toList();
+          expect(logger.outputTableCalls, isNotEmpty);
+          final allTableRows = logger.outputTableCalls
+              .expand((final c) => c.rows)
+              .expand((final r) => r)
+              .whereType<String>()
+              .toList();
 
-          expect(lines, contains(contains('database')));
-          expect(lines, contains(contains('customPassword')));
+          expect(allTableRows, contains(contains('database')));
+          expect(allTableRows, contains(contains('customPassword')));
         });
       });
 
@@ -507,11 +516,15 @@ void main() {
         test('then displays platform-managed passwords', () async {
           await commandResult;
 
-          expect(logger.lineCalls, isNotEmpty);
-          final lines = logger.lineCalls.map((final c) => c.line).toList();
+          expect(logger.outputTableCalls, isNotEmpty);
+          final allTableRows = logger.outputTableCalls
+              .expand((final c) => c.rows)
+              .expand((final r) => r)
+              .whereType<String>()
+              .toList();
 
-          expect(lines, contains(contains('database')));
-          expect(lines, contains(contains('emailSecretHashPepper')));
+          expect(allTableRows, contains(contains('database')));
+          expect(allTableRows, contains(contains('emailSecretHashPepper')));
         });
       });
 
@@ -534,14 +547,16 @@ void main() {
           await expectLater(commandResult, completes);
         });
 
-        test('then displays Custom section with empty message', () async {
+        test('then displays Custom section with empty table', () async {
           await commandResult;
 
           expect(logger.lineCalls, isNotEmpty);
           final lines = logger.lineCalls.map((final c) => c.line).toList();
-
           expect(lines, contains('Custom'));
-          expect(lines, contains('<no rows data>'));
+
+          expect(logger.outputTableCalls, isNotEmpty);
+          final customTable = logger.outputTableCalls.first;
+          expect(customTable.rows, isEmpty);
         });
       });
     });

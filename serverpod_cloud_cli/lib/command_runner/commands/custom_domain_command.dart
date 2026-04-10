@@ -4,7 +4,6 @@ import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
-import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 
 import 'categories.dart';
@@ -172,19 +171,17 @@ The valid targets are:
     required final String action,
     required final List<({String type, String value})> records,
   }) {
+    logger.outputTable(
+      headers: ['Record type', 'Domain name', 'Value'],
+      rows: [
+        for (final record in records) [record.type, domainName, record.value],
+      ],
+    );
+
     logger.info(
       'Complete the setup by adding the records to your DNS configuration',
       newParagraph: true,
     );
-
-    final tablePrinter = TablePrinter();
-
-    tablePrinter.addHeaders(['Record type', 'Domain name', 'Value']);
-    for (final record in records) {
-      tablePrinter.addRow([record.type, domainName, record.value]);
-    }
-
-    logger.box(tablePrinter.toString(), newParagraph: true);
 
     logger.info(
       'Check the status of the setup by running the command:',
@@ -254,29 +251,26 @@ class CloudListCustomDomainCommand
       );
     }
 
-    final defaultDomainPrinter = TablePrinter();
-    defaultDomainPrinter.addHeaders(['Default domain name', 'Target']);
-
-    for (var domainName in domainNamesList.defaultDomainsByTarget.entries) {
-      defaultDomainPrinter.addRow([
-        domainName.value,
-        domainName.key.toString(),
-      ]);
-    }
-
-    final customDomainPrinter = TablePrinter();
-    customDomainPrinter.addHeaders(['Custom domain name', 'Target', 'Status']);
-    for (var domainName in domainNamesList.customDomainNames) {
-      customDomainPrinter.addRow([
-        domainName.name,
-        domainNamesList.defaultDomainsByTarget[domainName.target],
-        _getStatusLabel(domainName.status),
-      ]);
-    }
-
-    defaultDomainPrinter.writeLines(logger.line);
+    logger.outputTable(
+      headers: ['Default domain name', 'Target'],
+      rows: [
+        for (final domainName
+            in domainNamesList.defaultDomainsByTarget.entries)
+          [domainName.value, domainName.key.toString()],
+      ],
+    );
     logger.line('');
-    customDomainPrinter.writeLines(logger.line);
+    logger.outputTable(
+      headers: ['Custom domain name', 'Target', 'Status'],
+      rows: [
+        for (final domainName in domainNamesList.customDomainNames)
+          [
+            domainName.name,
+            domainNamesList.defaultDomainsByTarget[domainName.target],
+            _getStatusLabel(domainName.status),
+          ],
+      ],
+    );
   }
 
   _getStatusLabel(final DomainNameStatus status) {

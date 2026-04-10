@@ -9,6 +9,7 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_pro
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 
+import '../../test_utils/command_logger_matchers.dart';
 import '../../test_utils/test_command_logger.dart';
 
 void main() {
@@ -57,15 +58,13 @@ void main() {
       test('then outputs user information in table format', () async {
         await commandResult;
 
-        expect(logger.lineCalls, isNotEmpty);
-        expect(
-          logger.lineCalls.map((final l) => l.line),
-          containsAllInOrder([
-            'Email            | Plan         | Status                ',
-            '-----------------+--------------+-----------------------',
-            contains('test@example.com | Early Access | Trial until 20'),
-          ]),
-        );
+        expect(logger.outputTableCalls, isNotEmpty);
+        final call = logger.outputTableCalls.first;
+        expect(call.headers, ['Email', 'Plan', 'Status']);
+        expect(call.rows, hasLength(1));
+        expect(call.rows.first[0], 'test@example.com');
+        expect(call.rows.first[1], 'Early Access');
+        expect(call.rows.first[2], startsWith('Trial until 20'));
       });
     });
 
@@ -90,14 +89,15 @@ void main() {
       test('then outputs user information with no plan', () async {
         await commandResult;
 
-        expect(logger.lineCalls, isNotEmpty);
+        expect(logger.outputTableCalls, isNotEmpty);
         expect(
-          logger.lineCalls.map((final l) => l.line),
-          containsAllInOrder([
-            'Email            | Plan    | Status',
-            '-----------------+---------+-------',
-            'test@example.com | No plan |       ',
-          ]),
+          logger.outputTableCalls.first,
+          equalsOutputTableCall(
+            headers: ['Email', 'Plan', 'Status'],
+            rows: [
+              ['test@example.com', 'No plan', ''],
+            ],
+          ),
         );
       });
     });

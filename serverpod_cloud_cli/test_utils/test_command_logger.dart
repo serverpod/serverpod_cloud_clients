@@ -181,13 +181,27 @@ class RawCall {
   }
 }
 
+class OutputTableCall {
+  final List<String> headers;
+  final List<List<String?>> rows;
+
+  OutputTableCall({required this.headers, required this.rows});
+
+  @override
+  String toString() {
+    return {'headers': headers, 'rows': rows}.toString();
+  }
+}
+
 class TestCommandLogger extends CommandLogger {
   final List<BoxCall> boxCalls = [];
   final List<ErrorCall> errorCalls = [];
   var flushCallsCount = 0;
+  var flushOutputCallsCount = 0;
   final List<InfoCall> infoCalls = [];
   final List<LineCall> lineCalls = [];
   final List<ListCall> listCalls = [];
+  final List<OutputTableCall> outputTableCalls = [];
   final List<ProgressCall> progressCalls = [];
   final List<SuccessCall> successCalls = [];
   final List<TerminalCommandCall> terminalCommandCalls = [];
@@ -215,6 +229,7 @@ class TestCommandLogger extends CommandLogger {
       infoCalls.length +
       lineCalls.length +
       listCalls.length +
+      outputTableCalls.length +
       progressCalls.length +
       successCalls.length +
       terminalCommandCalls.length +
@@ -239,10 +254,12 @@ class TestCommandLogger extends CommandLogger {
 
   void clear() {
     flushCallsCount = 0;
+    flushOutputCallsCount = 0;
     errorCalls.clear();
     infoCalls.clear();
     lineCalls.clear();
     listCalls.clear();
+    outputTableCalls.clear();
     progressCalls.clear();
     successCalls.clear();
     terminalCommandCalls.clear();
@@ -507,6 +524,27 @@ class TestCommandLogger extends CommandLogger {
     inputCalls.add(InputCall(message: message, defaultValue: defaultValue));
 
     return nextInputAnswer;
+  }
+
+  @override
+  void outputTable({
+    required final List<String> headers,
+    required final List<List<String?>> rows,
+  }) {
+    if (printToStdout) {
+      print('log outputTable: headers=$headers, rows=$rows');
+    }
+
+    if (!_somethingLogged.isCompleted) {
+      _somethingLogged.complete();
+    }
+
+    outputTableCalls.add(OutputTableCall(headers: headers, rows: rows));
+  }
+
+  @override
+  void flushOutput() {
+    flushOutputCallsCount++;
   }
 
   void answerNextConfirmWith(final bool answer) {

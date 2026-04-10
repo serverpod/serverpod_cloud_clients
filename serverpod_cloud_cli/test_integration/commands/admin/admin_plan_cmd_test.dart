@@ -60,14 +60,16 @@ void main() {
       test('then command outputs plan table', () async {
         await commandResult.catchError((final _) {});
 
+        expect(logger.outputTableCalls, isNotEmpty);
         expect(
-          logger.lineCalls,
-          containsAllInOrder([
-            equalsLineCall(line: 'External Plan ID'),
-            equalsLineCall(line: '----------------'),
-            equalsLineCall(line: 'plan-alpha      '),
-            equalsLineCall(line: 'plan-beta       '),
-          ]),
+          logger.outputTableCalls.first,
+          equalsOutputTableCall(
+            headers: ['External Plan ID'],
+            rows: [
+              ['plan-alpha'],
+              ['plan-beta'],
+            ],
+          ),
         );
       });
     });

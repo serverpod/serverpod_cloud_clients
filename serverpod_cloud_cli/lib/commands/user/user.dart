@@ -1,6 +1,5 @@
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
-import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 
 abstract class UserCommands {
   static Future<void> listUsers(
@@ -12,20 +11,20 @@ abstract class UserCommands {
       cloudProjectId: projectId,
     );
 
-    final table = TablePrinter(
+    logger.outputTable(
       headers: ['User', 'Project', 'Project roles'],
-      rows: users.map(
-        (final user) => [
-          user.email,
-          projectId,
-          user.memberships
-                  ?.map((final m) => m.role?.name)
-                  .nonNulls
-                  .join(', ') ??
-              '',
-        ],
-      ),
+      rows: [
+        for (final user in users)
+          [
+            user.email,
+            projectId,
+            user.memberships
+                    ?.map((final m) => m.role?.name)
+                    .nonNulls
+                    .join(', ') ??
+                '',
+          ],
+      ],
     );
-    table.writeLines(logger.line);
   }
 }

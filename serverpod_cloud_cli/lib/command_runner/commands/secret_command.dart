@@ -2,7 +2,6 @@ import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
-import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 
 import 'categories.dart';
 
@@ -134,14 +133,12 @@ class CloudListSecretsCommand
       throw FailureException.nested(e, s, 'Failed to list secrets');
     }
 
-    final secretsPrinter = TablePrinter();
-    secretsPrinter.addHeaders(['Secret name']);
-
-    for (var secret in secrets) {
-      secretsPrinter.addRow([secret]);
-    }
-
-    secretsPrinter.writeLines(logger.line);
+    logger.outputTable(
+      headers: ['Secret name'],
+      rows: [
+        for (final secret in secrets) [secret],
+      ],
+    );
   }
 }
 

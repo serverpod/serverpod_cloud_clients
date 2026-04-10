@@ -655,27 +655,40 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
             test('then outputs the status list', () async {
               await commandResult;
 
-              expect(logger.lineCalls, isNotEmpty);
+              expect(logger.outputTableCalls, isNotEmpty);
               expect(
-                logger.lineCalls,
-                containsAllInOrder([
-                  equalsLineCall(
-                    line:
-                        '# | Project   | Deploy Id | Status  | Started             | Finished            | Info      ',
-                  ),
-                  equalsLineCall(
-                    line:
-                        '--+-----------+-----------+---------+---------------------+---------------------+-----------',
-                  ),
-                  equalsLineCall(
-                    line:
-                        '0 | projectId | foo       | SUCCESS | 2021-12-31 10:20:30 | 2021-12-31 10:20:40 |           ',
-                  ),
-                  equalsLineCall(
-                    line:
-                        '1 | projectId | bar       | FAILURE | 2021-12-31 10:10:30 | 2021-12-31 10:10:40 | Some error',
-                  ),
-                ]),
+                logger.outputTableCalls.first,
+                equalsOutputTableCall(
+                  headers: [
+                    '#',
+                    'Project',
+                    'Deploy Id',
+                    'Status',
+                    'Started',
+                    'Finished',
+                    'Info',
+                  ],
+                  rows: [
+                    [
+                      '0',
+                      'projectId',
+                      'foo',
+                      'SUCCESS',
+                      '2021-12-31 10:20:30',
+                      '2021-12-31 10:20:40',
+                      null,
+                    ],
+                    [
+                      '1',
+                      'projectId',
+                      'bar',
+                      'FAILURE',
+                      '2021-12-31 10:10:30',
+                      '2021-12-31 10:10:40',
+                      'Some error',
+                    ],
+                  ],
+                ),
               );
             });
           });

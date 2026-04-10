@@ -5,6 +5,7 @@ import 'package:serverpod_cloud_cli/command_runner/commands/auth_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:test/test.dart';
 
+import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/test_command_logger.dart';
 
 void main() {
@@ -69,15 +70,37 @@ void main() {
       test('then outputs table', () async {
         await commandResult;
 
-        expect(logger.lineCalls, isNotEmpty);
+        expect(logger.outputTableCalls, isNotEmpty);
         expect(
-          logger.lineCalls.map((final call) => call.line),
-          containsAllInOrder([
-            'Token Id | Method    | Created              | Last Used            | Expires              | TTL on non-use',
-            '---------+-----------+----------------------+----------------------+----------------------+---------------',
-            'tid-1    | email     | 2026-02-11 16:50:06z | 2026-02-12 16:50:06z |                      | 30d           ',
-            'tid-2    | CLI token | 2026-02-11 16:50:06z |                      | 2026-03-11 16:50:06z |               ',
-          ]),
+          logger.outputTableCalls.first,
+          equalsOutputTableCall(
+            headers: [
+              'Token Id',
+              'Method',
+              'Created',
+              'Last Used',
+              'Expires',
+              'TTL on non-use',
+            ],
+            rows: [
+              [
+                'tid-1',
+                'email',
+                '2026-02-11 16:50:06z',
+                '2026-02-12 16:50:06z',
+                null,
+                '30d',
+              ],
+              [
+                'tid-2',
+                'CLI token',
+                '2026-02-11 16:50:06z',
+                null,
+                '2026-03-11 16:50:06z',
+                null,
+              ],
+            ],
+          ),
         );
       });
     });

@@ -12,6 +12,7 @@ import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart'
     show processCommonClientExceptions;
 import 'package:serverpod_cloud_cli/util/cli_authentication_key_manager.dart';
+import 'package:serverpod_cloud_cli/util/output_format.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_broker.dart'
     show scloudCliConfigBroker;
 
@@ -59,6 +60,30 @@ See the full documentation at: https://docs.serverpod.cloud/reference/cli/comman
   /// Valid after the command runner has started running.
   GlobalConfiguration get globalConfiguration => runner.globalConfiguration;
 
+  /// Resolves the effective output format using the priority chain:
+  /// CLI flag > env var > persistent setting > default (text).
+  Future<void> _resolveOutputFormat() async {
+    final explicitFormat = globalConfiguration.outputFormat;
+    if (explicitFormat != null) {
+      logger.resolvedOutputFormat = explicitFormat;
+      return;
+    }
+
+    final settings = runner.serviceProvider.scloudSettings;
+    final savedFormat = await settings.outputFormat;
+    if (savedFormat != null) {
+      final parsed = OutputFormat.values.where(
+        (final f) => f.name == savedFormat,
+      );
+      if (parsed.isNotEmpty) {
+        logger.resolvedOutputFormat = parsed.first;
+        return;
+      }
+    }
+
+    logger.resolvedOutputFormat = OutputFormat.text;
+  }
+
   /// Runs this command. Subclasses should instead override [runWithConfig].
   @override
   Future<void> run() async {
@@ -85,6 +110,7 @@ See the full documentation at: https://docs.serverpod.cloud/reference/cli/comman
       );
     }
 
+    await _resolveOutputFormat();
     await _runCommand();
   }
 
@@ -110,6 +136,8 @@ See the full documentation at: https://docs.serverpod.cloud/reference/cli/comman
         stackTrace: stackTrace,
       );
       throw ErrorExitException(e.toString(), e, stackTrace);
+    } finally {
+      logger.flushOutput();
     }
   }
 

@@ -448,16 +448,17 @@ void main() {
       test('then logs table', () async {
         await commandResult;
 
-        expect(logger.lineCalls, isNotEmpty);
+        expect(logger.outputTableCalls, isNotEmpty);
         expect(
-          logger.lineCalls,
-          containsAllInOrder([
-            equalsLineCall(line: 'Secret name'),
-            equalsLineCall(line: '-----------'),
-            equalsLineCall(line: 'SECRET_1   '),
-            equalsLineCall(line: 'SECRET_2   '),
-            equalsLineCall(line: 'SECRET_3   '),
-          ]),
+          logger.outputTableCalls.first,
+          equalsOutputTableCall(
+            headers: ['Secret name'],
+            rows: [
+              ['SECRET_1'],
+              ['SECRET_2'],
+              ['SECRET_3'],
+            ],
+          ),
         );
       });
     });

@@ -703,14 +703,15 @@ void main() {
       test('then logs success message', () async {
         await commandResult;
 
-        expect(logger.lineCalls, isNotEmpty);
+        expect(logger.outputTableCalls, isNotEmpty);
         expect(
-          logger.lineCalls,
-          containsAllInOrder([
-            equalsLineCall(line: 'Name | Value'),
-            equalsLineCall(line: '-----+------'),
-            equalsLineCall(line: 'name | value'),
-          ]),
+          logger.outputTableCalls.first,
+          equalsOutputTableCall(
+            headers: ['Name', 'Value'],
+            rows: [
+              ['name', 'value'],
+            ],
+          ),
         );
       });
     });

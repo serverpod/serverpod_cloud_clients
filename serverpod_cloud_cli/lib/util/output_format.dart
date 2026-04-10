@@ -1,0 +1,4 @@
+enum OutputFormat {
+  text,
+  json,
+}

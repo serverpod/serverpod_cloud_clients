@@ -5,7 +5,6 @@ import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/shared/user_interaction/user_confirmations.dart';
-import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:serverpod_cloud_cli/util/project_files_writer.dart';
 import 'package:serverpod_cloud_cli/util/dart_version_util.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart'
@@ -160,25 +159,27 @@ abstract class ProjectCommands {
       return;
     }
 
-    final tablePrinter = TablePrinter();
-    tablePrinter.addHeaders([
+    final headers = [
       'Project Id',
       'Created At',
       'Last Deploy Attempt',
       if (showArchived) 'Deleted At',
-    ]);
-    for (final project in activeProjects.sortedBy(
-      (final p) => p.project.createdAt,
-    )) {
-      tablePrinter.addRow([
-        project.project.cloudProjectId,
-        project.project.createdAt.toString().substring(0, 19),
-        project.latestDeployAttemptTime?.timestamp?.toString().substring(0, 19),
-        if (showArchived)
-          project.project.archivedAt?.toString().substring(0, 19),
-      ]);
-    }
-    tablePrinter.writeLines(logger.line);
+    ];
+    final rows = <List<String?>>[
+      for (final project in activeProjects.sortedBy(
+        (final p) => p.project.createdAt,
+      ))
+        [
+          project.project.cloudProjectId,
+          project.project.createdAt.toString().substring(0, 19),
+          project.latestDeployAttemptTime?.timestamp
+              ?.toString()
+              .substring(0, 19),
+          if (showArchived)
+            project.project.archivedAt?.toString().substring(0, 19),
+        ],
+    ];
+    logger.outputTable(headers: headers, rows: rows);
   }
 
   static Future<void> linkProject(

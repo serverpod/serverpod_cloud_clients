@@ -1,8 +1,7 @@
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
-import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
-
+import 'package:serverpod_cloud_cli/util/output_format.dart';
 enum PasswordCategory {
   custom('Custom'),
   services('Services'),
@@ -228,6 +227,34 @@ abstract class PasswordCommands {
       PasswordCategory.legacyAuth,
     ];
 
+    if (logger.outputFormat == OutputFormat.json) {
+      for (final category in categoryOrder) {
+        final categoryPasswords = passwordsByCategory[category] ?? [];
+
+        if (category != PasswordCategory.custom && categoryPasswords.isEmpty) {
+          continue;
+        }
+
+        categoryPasswords.sort(
+          (final a, final b) => a.name.compareTo(b.name),
+        );
+
+        logger.outputTable(
+          headers: ['Category', 'Name', 'Status', 'Notes'],
+          rows: [
+            for (final password in categoryPasswords)
+              [
+                category.displayName,
+                password.name,
+                password.status,
+                PasswordDefinitions.getDisplayNotes(password.name),
+              ],
+          ],
+        );
+      }
+      return;
+    }
+
     for (final category in categoryOrder) {
       final categoryPasswords = passwordsByCategory[category] ?? [];
 
@@ -241,15 +268,17 @@ abstract class PasswordCommands {
 
       categoryPasswords.sort((final a, final b) => a.name.compareTo(b.name));
 
-      final printer = TablePrinter();
-      printer.addHeaders(['Name', 'Status', 'Notes']);
-
-      for (final password in categoryPasswords) {
-        final displayNotes = PasswordDefinitions.getDisplayNotes(password.name);
-        printer.addRow([password.name, password.status, displayNotes]);
-      }
-
-      printer.writeLines(logger.line);
+      logger.outputTable(
+        headers: ['Name', 'Status', 'Notes'],
+        rows: [
+          for (final password in categoryPasswords)
+            [
+              password.name,
+              password.status,
+              PasswordDefinitions.getDisplayNotes(password.name),
+            ],
+        ],
+      );
       logger.line('');
     }
   }

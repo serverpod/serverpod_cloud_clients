@@ -2,8 +2,6 @@ import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
-import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
-
 abstract class ProjectAdminCommands {
   static Future<void> listProjects(
     final Client cloudApiClient, {
@@ -18,7 +16,7 @@ abstract class ProjectAdminCommands {
 
     final timezoneName = inUtc ? 'UTC' : 'local';
 
-    final table = TablePrinter(
+    logger.outputTable(
       headers: [
         'Project Id',
         'Created At ($timezoneName)',
@@ -27,18 +25,18 @@ abstract class ProjectAdminCommands {
         'Owner',
         'Users',
       ],
-      rows: projects.map(
-        (final p) => [
-          p.project.cloudProjectId,
-          p.project.createdAt.toTzString(inUtc, 19),
-          p.project.archivedAt?.toTzString(inUtc, 19),
-          p.latestDeployAttemptTime?.timestamp?.toTzString(inUtc, 19),
-          p.project.owner?.user?.email ?? '',
-          _formatProjectUsers(p.project),
-        ],
-      ),
+      rows: [
+        for (final p in projects)
+          [
+            p.project.cloudProjectId,
+            p.project.createdAt.toTzString(inUtc, 19),
+            p.project.archivedAt?.toTzString(inUtc, 19),
+            p.latestDeployAttemptTime?.timestamp?.toTzString(inUtc, 19),
+            p.project.owner?.user?.email ?? '',
+            _formatProjectUsers(p.project),
+          ],
+      ],
     );
-    table.writeLines(logger.line);
   }
 
   static Future<void> redeployProject(

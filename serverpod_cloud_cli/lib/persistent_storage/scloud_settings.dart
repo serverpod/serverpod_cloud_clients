@@ -48,4 +48,21 @@ class ScloudSettings {
     settings.enableAnalytics = enableAnalytics;
     await _storeSettings(settings);
   }
+
+  /// Returns the current setting for _output format_.
+  /// Returns `null` if not set.
+  Future<String?> get outputFormat async {
+    final settings = await _fetchSettings();
+    return settings.outputFormat;
+  }
+
+  /// Sets _output format_.
+  Future<void> setOutputFormat(final String outputFormat) async {
+    final settings = await _fetchSettings();
+    if (settings.outputFormat == outputFormat) {
+      return;
+    }
+    settings.outputFormat = outputFormat;
+    await _storeSettings(settings);
+  }
 }

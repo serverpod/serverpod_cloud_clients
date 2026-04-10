@@ -2,7 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/util/capitalize.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
-import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
+import 'package:serverpod_cloud_cli/util/output_format.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 
 import 'status_feature.dart';
@@ -31,8 +31,10 @@ abstract class StatusCommands {
       return;
     }
 
-    final table = DeployStatusTable(inUtc: inUtc)..addRows(statuses);
-    table.writeLines(logger.line);
+    logger.outputTable(
+      headers: DeployStatusTable.tableHeaders,
+      rows: DeployStatusTable.tableRows(statuses, inUtc: inUtc),
+    );
   }
 
   /// Subcommand to show the status of a deployment attempt.
@@ -54,7 +56,32 @@ abstract class StatusCommands {
 
     if (outputOverallStatus) {
       final overallStatus = stages.last.stageStatus;
-      logger.line(overallStatus.name);
+      if (logger.outputFormat == OutputFormat.json) {
+        logger.outputTable(
+          headers: ['Status'],
+          rows: [
+            [overallStatus.name],
+          ],
+        );
+      } else {
+        logger.line(overallStatus.name);
+      }
+      return;
+    }
+
+    if (logger.outputFormat == OutputFormat.json) {
+      logger.outputTable(
+        headers: ['Stage', 'Status', 'Started', 'Info'],
+        rows: [
+          for (final stage in stages)
+            [
+              stage.stageType.name,
+              stage.stageStatus.name,
+              stage.startedAt?.toTzString(inUtc, _numTimeStampChars),
+              stage.statusInfo,
+            ],
+        ],
+      );
       return;
     }
 
@@ -120,38 +147,31 @@ abstract class StatusCommands {
 
 const _numTimeStampChars = 19;
 
-class DeployStatusTable extends TablePrinter {
-  final bool inUtc;
+abstract class DeployStatusTable {
+  static const tableHeaders = [
+    '#',
+    'Project',
+    'Deploy Id',
+    'Status',
+    'Started',
+    'Finished',
+    'Info',
+  ];
 
-  DeployStatusTable({this.inUtc = false})
-    : super(
-        headers: [
-          '#',
-          'Project',
-          'Deploy Id',
-          'Status',
-          'Started',
-          'Finished',
-          'Info',
-        ],
-      );
-
-  void addRows(final Iterable<DeployAttempt> attempts) {
-    attempts.mapIndexed(_tableRowFromDeployAttempt).forEach(addRow);
-  }
-
-  List<String?> _tableRowFromDeployAttempt(
-    final int index,
-    final DeployAttempt attempt,
-  ) {
-    return [
-      index.toString(),
-      attempt.cloudCapsuleId,
-      attempt.attemptId,
-      attempt.status.name.toUpperCase(),
-      attempt.startedAt?.toTzString(inUtc, _numTimeStampChars),
-      attempt.endedAt?.toTzString(inUtc, _numTimeStampChars),
-      attempt.statusInfo,
-    ];
+  static List<List<String?>> tableRows(
+    final Iterable<DeployAttempt> attempts, {
+    final bool inUtc = false,
+  }) {
+    return attempts.mapIndexed((final index, final attempt) {
+      return [
+        index.toString(),
+        attempt.cloudCapsuleId,
+        attempt.attemptId,
+        attempt.status.name.toUpperCase(),
+        attempt.startedAt?.toTzString(inUtc, _numTimeStampChars),
+        attempt.endedAt?.toTzString(inUtc, _numTimeStampChars),
+        attempt.statusInfo,
+      ];
+    }).toList();
   }
 }

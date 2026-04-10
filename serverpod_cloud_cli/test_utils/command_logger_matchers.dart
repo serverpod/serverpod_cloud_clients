@@ -677,3 +677,74 @@ class _BoxCallMatcher extends Matcher {
     );
   }
 }
+
+Matcher equalsOutputTableCall({
+  required final List<String> headers,
+  required final List<List<String?>> rows,
+}) {
+  return _OutputTableCallMatcher(
+    OutputTableCall(headers: headers, rows: rows),
+  );
+}
+
+class _OutputTableCallMatcher extends Matcher {
+  final OutputTableCall outputTableCall;
+
+  _OutputTableCallMatcher(this.outputTableCall);
+
+  @override
+  bool matches(final Object? item, final Map matchState) {
+    if (item is! OutputTableCall) return false;
+    return const ListEquality<String>().equals(
+          item.headers,
+          outputTableCall.headers,
+        ) &&
+        const DeepCollectionEquality().equals(
+          item.rows,
+          outputTableCall.rows,
+        );
+  }
+
+  @override
+  Description describe(final Description description) {
+    return description.add(
+      'an outputTable call with headers ${outputTableCall.headers} '
+      'and ${outputTableCall.rows.length} rows',
+    );
+  }
+
+  @override
+  Description describeMismatch(
+    final item,
+    final Description mismatchDescription,
+    final Map matchState,
+    final bool verbose,
+  ) {
+    if (item is! OutputTableCall) {
+      return mismatchDescription.add('is not an OutputTableCall');
+    }
+    if (!const ListEquality<String>().equals(
+      item.headers,
+      outputTableCall.headers,
+    )) {
+      return mismatchDescription.add(
+        'headers are ${item.headers}, expected ${outputTableCall.headers}',
+      );
+    }
+    if (!const DeepCollectionEquality().equals(
+      item.rows,
+      outputTableCall.rows,
+    )) {
+      return mismatchDescription.add(
+        'rows are ${item.rows}, expected ${outputTableCall.rows}',
+      );
+    }
+
+    return super.describeMismatch(
+      item,
+      mismatchDescription,
+      matchState,
+      verbose,
+    );
+  }
+}

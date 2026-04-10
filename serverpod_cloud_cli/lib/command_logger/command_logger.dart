@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:cli_tools/logger.dart' as cli;
@@ -6,6 +7,8 @@ import 'package:collection/collection.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/shared/helpers/exception_user_message.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
+import 'package:serverpod_cloud_cli/util/output_format.dart';
+import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 
 export 'package:cli_tools/logger.dart' show LogLevel;
 
@@ -46,6 +49,13 @@ class CommandLogger {
 
   GlobalConfiguration? configuration;
 
+  OutputFormat resolvedOutputFormat = OutputFormat.text;
+
+  final List<List<Map<String, String?>>> _jsonDataSets = [];
+  String? _jsonMessage;
+  String? _jsonError;
+  String? _jsonErrorHint;
+
   CommandLogger(final cli.Logger logger, {this.configuration})
     : _logger = logger;
 
@@ -60,6 +70,10 @@ class CommandLogger {
 
     return CommandLogger(stdOutLogger);
   }
+
+  OutputFormat get outputFormat => resolvedOutputFormat;
+
+  bool get _isJsonMode => outputFormat == OutputFormat.json;
 
   cli.LogLevel get logLevel => _logger.logLevel;
   set logLevel(final cli.LogLevel level) => _logger.logLevel = level;
@@ -95,6 +109,7 @@ class CommandLogger {
   /// The current project is set to my-project.
   /// ```
   void info(final String message, {final bool newParagraph = false}) {
+    if (_isJsonMode) return;
     _logger.info(
       message,
       type: cli.TextLogType.normal,
@@ -118,6 +133,7 @@ class CommandLogger {
     final bool newParagraph = false,
     final String? hint,
   }) {
+    if (_isJsonMode) return;
     _logger.warning(message, newParagraph: newParagraph);
 
     if (hint != null) {
@@ -155,6 +171,12 @@ class CommandLogger {
       msg = '$message$separator$eMessage$suffix';
     } else {
       msg = message;
+    }
+
+    if (_isJsonMode) {
+      _jsonError = msg;
+      _jsonErrorHint = hint;
+      return;
     }
 
     _logger.error(
@@ -223,6 +245,7 @@ class CommandLogger {
     final bool newParagraph = false,
     final cli.LogLevel level = cli.LogLevel.info,
   }) {
+    if (_isJsonMode) return;
     _logger.log(
       message,
       level,
@@ -249,6 +272,7 @@ class CommandLogger {
   /// 2024-11-26 16:38:44.113541  | INFO    | Webserver listening on port 8082
   /// ```
   void line(final String line, {final cli.LogLevel level = cli.LogLevel.info}) {
+    if (_isJsonMode) return;
     _logger.log('$line\n', level, type: cli.RawLogType(), newParagraph: false);
   }
 
@@ -274,6 +298,7 @@ class CommandLogger {
     final cli.LogLevel level = cli.LogLevel.info,
     final bool newParagraph = false,
   }) {
+    if (_isJsonMode) return;
     if (title != null) {
       _logger.log(
         title,
@@ -313,6 +338,7 @@ class CommandLogger {
     final cli.LogLevel level = cli.LogLevel.info,
     final bool newParagraph = false,
   }) {
+    if (_isJsonMode) return;
     _logger.log(
       message,
       level,
@@ -340,6 +366,10 @@ class CommandLogger {
     final bool newParagraph = false,
     final String? followUp,
   }) {
+    if (_isJsonMode) {
+      _jsonMessage = message;
+      return;
+    }
     _logger.log(
       '$message${trailingRocket ? ' 🚀' : ''}',
       level,
@@ -370,6 +400,7 @@ class CommandLogger {
     final cli.LogLevel level = cli.LogLevel.info,
     final bool newParagraph = false,
   }) {
+    if (_isJsonMode) return;
     if (message != null) {
       _logger.log(
         message,
@@ -402,6 +433,9 @@ class CommandLogger {
     final Future<bool> Function() runner, {
     final bool newParagraph = false,
   }) async {
+    if (_isJsonMode) {
+      return runner();
+    }
     return _logger.progress(message, runner, newParagraph: newParagraph);
   }
 
@@ -446,5 +480,69 @@ class CommandLogger {
     final String? defaultValue,
   }) async {
     return prompts.input(message, defaultValue: defaultValue, logger: _logger);
+  }
+
+  ///////////////////////
+  // Structured output
+
+  void outputTable({
+    required final List<String> headers,
+    required final List<List<String?>> rows,
+  }) {
+    if (_isJsonMode) {
+      _jsonDataSets.add([
+        for (final row in rows)
+          {
+            for (var i = 0; i < headers.length; i++)
+              headers[i]: i < row.length ? row[i] : null,
+          },
+      ]);
+      return;
+    }
+
+    final tablePrinter = TablePrinter(headers: headers, rows: rows);
+    tablePrinter.writeLines(line);
+  }
+
+  void outputJsonLine(final Map<String, Object?> data) {
+    if (_isJsonMode) {
+      _logger.write(
+        '${jsonEncode(data)}\n',
+        cli.LogLevel.info,
+        newLine: false,
+        newParagraph: false,
+      );
+    }
+  }
+
+  void flushOutput() {
+    if (!_isJsonMode) return;
+
+    if (_jsonError != null) {
+      final errorOutput = <String, Object?>{
+        'success': false,
+        'error': _jsonError,
+        if (_jsonErrorHint != null) 'hint': _jsonErrorHint,
+      };
+      stderr.writeln(jsonEncode(errorOutput));
+    } else {
+      final output = <String, Object?>{
+        'success': true,
+        if (_jsonDataSets.length == 1) 'data': _jsonDataSets.first,
+        if (_jsonDataSets.length > 1) 'data': _jsonDataSets,
+        if (_jsonMessage != null) 'message': _jsonMessage,
+      };
+      _logger.write(
+        '${jsonEncode(output)}\n',
+        cli.LogLevel.info,
+        newLine: false,
+        newParagraph: false,
+      );
+    }
+
+    _jsonDataSets.clear();
+    _jsonMessage = null;
+    _jsonError = null;
+    _jsonErrorHint = null;
   }
 }

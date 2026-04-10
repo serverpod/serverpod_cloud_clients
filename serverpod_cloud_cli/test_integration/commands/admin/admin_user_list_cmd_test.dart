@@ -81,26 +81,34 @@ void main() {
       test('then command outputs user list', () async {
         await commandResult.catchError((final _) {});
 
+        expect(logger.outputTableCalls, isNotEmpty);
         expect(
-          logger.lineCalls,
-          containsAllInOrder([
-            equalsLineCall(
-              line:
-                  'User              | Account status | Created at (local)  | Archived at (local) | Subscribed Plans',
-            ),
-            equalsLineCall(
-              line:
-                  '------------------+----------------+---------------------+---------------------+-----------------',
-            ),
-            equalsLineCall(
-              line:
-                  'test@example.com  | registered     | 2025-07-02 11:00:00 |                     | test-plan       ',
-            ),
-            equalsLineCall(
-              line:
-                  'test2@example.com | invited        | 2025-07-02 12:00:00 | 2025-07-02 12:10:00 |                 ',
-            ),
-          ]),
+          logger.outputTableCalls.first,
+          equalsOutputTableCall(
+            headers: [
+              'User',
+              'Account status',
+              'Created at (local)',
+              'Archived at (local)',
+              'Subscribed Plans',
+            ],
+            rows: [
+              [
+                'test@example.com',
+                'registered',
+                '2025-07-02 11:00:00',
+                null,
+                'test-plan',
+              ],
+              [
+                'test2@example.com',
+                'invited',
+                '2025-07-02 12:00:00',
+                '2025-07-02 12:10:00',
+                '',
+              ],
+            ],
+          ),
         );
       });
     });
