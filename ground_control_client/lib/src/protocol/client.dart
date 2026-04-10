@@ -68,15 +68,17 @@ import 'package:ground_control_client/src/protocol/domains/products/models/subsc
     as _i29;
 import 'package:ground_control_client/src/protocol/domains/products/models/plan_info.dart'
     as _i30;
-import 'package:ground_control_client/src/protocol/features/projects/models/project_config.dart'
+import 'package:ground_control_client/src/protocol/features/projects/models/project_profile_update.dart'
     as _i31;
-import 'package:ground_control_client/src/protocol/domains/projects/models/role.dart'
+import 'package:ground_control_client/src/protocol/features/projects/models/project_config.dart'
     as _i32;
-import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
+import 'package:ground_control_client/src/protocol/domains/projects/models/role.dart'
     as _i33;
-import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
+import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
     as _i34;
-import 'protocol.dart' as _i35;
+import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
+    as _i35;
+import 'protocol.dart' as _i36;
 
 /// {@category Endpoint}
 class EndpointAdminMigration extends _i1.EndpointRef {
@@ -1098,33 +1100,30 @@ class EndpointProjects extends _i1.EndpointRef {
         'cloudProjectId': cloudProjectId,
       });
 
-  /// Updates the project type for a project by selecting a new project product.
+  /// Applies a project profile change together with compute scaling and optional
+  /// database sizing in one call.
   ///
-  /// - **Authorization**: requires project authorization for `cloudProjectId`
-  ///   with at least `Scopes.p0All`.
-  /// - **Atomicity / no partial state**: all validations are performed before
-  ///   any state is persisted or any infra reconciliation is triggered.
-  /// - **Product change**: the project's `projectProductId` is set to
-  ///   `projectProductId`.
-  /// - **Default resources**: the project compute and database settings resolve
-  ///   to the defaults for the selected product (no per-project overrides are
-  ///   applied by this operation).
-  /// - **Infra reconciliation**: if the project has active infrastructure,
-  ///   reconciliation flows are triggered so running resources converge to the
-  ///   selected product's defaults.
+  /// Intended to replace separate calls to [updateProjectProfile], compute
+  /// `updateCompute`, and database `updateDatabaseSize` when all are updated
+  /// together.
+  ///
+  /// [cloudProjectId] identifies the project for authorization and matches the
+  /// capsule identifier used for compute and database operations.
+  ///
+  /// When [resources.databaseSize] is null, database sizing is not changed.
   ///
   /// This endpoint currently only defines the API surface.
   _i2.Future<void> updateProjectProfile({
     required String cloudProjectId,
-    required String projectProductId,
+    required _i31.ProjectProfileUpdate resources,
   }) => caller.callServerEndpoint<void>('projects', 'updateProjectProfile', {
     'cloudProjectId': cloudProjectId,
-    'projectProductId': projectProductId,
+    'resources': resources,
   });
 
-  _i2.Future<_i31.ProjectConfig> fetchProjectConfig({
+  _i2.Future<_i32.ProjectConfig> fetchProjectConfig({
     required String cloudProjectId,
-  }) => caller.callServerEndpoint<_i31.ProjectConfig>(
+  }) => caller.callServerEndpoint<_i32.ProjectConfig>(
     'projects',
     'fetchProjectConfig',
     {'cloudProjectId': cloudProjectId},
@@ -1175,9 +1174,9 @@ class EndpointRoles extends _i1.EndpointRef {
   String get name => 'roles';
 
   /// Fetches the user roles for a project.
-  _i2.Future<List<_i32.Role>> fetchRolesForProject({
+  _i2.Future<List<_i33.Role>> fetchRolesForProject({
     required String cloudProjectId,
-  }) => caller.callServerEndpoint<List<_i32.Role>>(
+  }) => caller.callServerEndpoint<List<_i33.Role>>(
     'roles',
     'fetchRolesForProject',
     {'cloudProjectId': cloudProjectId},
@@ -1264,10 +1263,10 @@ class EndpointStatus extends _i1.EndpointRef {
   );
 
   /// Gets the specified deploy attempt status of the a capsule.
-  _i2.Future<List<_i33.DeployAttemptStage>> getDeployAttemptStatus({
+  _i2.Future<List<_i34.DeployAttemptStage>> getDeployAttemptStatus({
     required String cloudCapsuleId,
     required String attemptId,
-  }) => caller.callServerEndpoint<List<_i33.DeployAttemptStage>>(
+  }) => caller.callServerEndpoint<List<_i34.DeployAttemptStage>>(
     'status',
     'getDeployAttemptStatus',
     {'cloudCapsuleId': cloudCapsuleId, 'attemptId': attemptId},
@@ -1308,11 +1307,11 @@ class EndpointUsers extends _i1.EndpointRef {
 
 class Modules {
   Modules(Client client) {
-    serverpod_auth_idp = _i34.Caller(client);
+    serverpod_auth_idp = _i35.Caller(client);
     serverpod_auth_core = _i10.Caller(client);
   }
 
-  late final _i34.Caller serverpod_auth_idp;
+  late final _i35.Caller serverpod_auth_idp;
 
   late final _i10.Caller serverpod_auth_core;
 }
@@ -1332,7 +1331,7 @@ class Client extends _i1.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
          host,
-         _i35.Protocol(),
+         _i36.Protocol(),
          securityContext: securityContext,
          streamingConnectionTimeout: streamingConnectionTimeout,
          connectionTimeout: connectionTimeout,
