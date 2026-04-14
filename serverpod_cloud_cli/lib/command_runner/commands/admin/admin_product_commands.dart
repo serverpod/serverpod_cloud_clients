@@ -140,6 +140,22 @@ class AdminProcurePlanCommand extends CloudCliCommand<AdminProcurePlanOption> {
 
 enum AdminCancelPlanOption<V> implements OptionDefinition<V> {
   user(UserEmailOption(argPos: 0, mandatory: true)),
+  cloudProjectId(
+    StringOption(
+      argName: 'project',
+      argAbbrev: 'p',
+      argPos: 1,
+      helpText: 'The id of the cloud project whose subscription to cancel.',
+      group: _subscriptionGroup,
+    ),
+  ),
+  subscriptionId(
+    StringOption(
+      argName: 'subscription-id',
+      helpText: 'The id of the subscription to cancel.',
+      group: _subscriptionGroup,
+    ),
+  ),
   terminateImmediately(
     FlagOption(
       argName: 'immediately',
@@ -147,6 +163,11 @@ enum AdminCancelPlanOption<V> implements OptionDefinition<V> {
       negatable: false,
       defaultsTo: false,
     ),
+  );
+
+  static const _subscriptionGroup = MutuallyExclusive(
+    'Subscription',
+    mode: MutuallyExclusiveMode.mandatory,
   );
 
   const AdminCancelPlanOption(this.option);
@@ -170,6 +191,12 @@ class AdminCancelPlanCommand extends CloudCliCommand<AdminCancelPlanOption> {
     final Configuration<AdminCancelPlanOption> commandConfig,
   ) async {
     final userEmail = commandConfig.value(AdminCancelPlanOption.user);
+    final subscriptionId = commandConfig.optionalValue(
+      AdminCancelPlanOption.subscriptionId,
+    );
+    final cloudProjectId = commandConfig.optionalValue(
+      AdminCancelPlanOption.cloudProjectId,
+    );
     final terminateImmediately = commandConfig.value(
       AdminCancelPlanOption.terminateImmediately,
     );
@@ -178,6 +205,8 @@ class AdminCancelPlanCommand extends CloudCliCommand<AdminCancelPlanOption> {
       runner.serviceProvider.cloudApiClient,
       logger: logger,
       userEmail: userEmail,
+      subscriptionId: subscriptionId,
+      cloudProjectId: cloudProjectId,
       terminateImmediately: terminateImmediately,
     );
   }

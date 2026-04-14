@@ -108,15 +108,17 @@ class EndpointAdminProcurement extends _i1.EndpointRef {
   /// If [trialPeriodOverride] is provided, it will override the trial period (number of days).
   /// If [overrideChecks] is true, the product availability checks are overridden.
   ///
+  /// Returns the subscription ID of the created subscription.
+  ///
   /// Throws a [NotFoundException] if the user or product is not found.
   /// Throws a [InvalidValueException] if the user has no owner (not fully registered).
-  _i2.Future<void> procurePlan({
+  _i2.Future<String> procurePlan({
     required String userEmail,
     required String planProductName,
     int? planProductVersion,
     int? trialPeriodOverride,
     bool? overrideChecks,
-  }) => caller.callServerEndpoint<void>('adminProcurement', 'procurePlan', {
+  }) => caller.callServerEndpoint<String>('adminProcurement', 'procurePlan', {
     'userEmail': userEmail,
     'planProductName': planProductName,
     'planProductVersion': planProductVersion,
@@ -137,8 +139,8 @@ class EndpointAdminProcurement extends _i1.EndpointRef {
     {'userEmail': userEmail},
   );
 
-  /// Cancels the primary plan subscription of the user
-  /// at the end of its current term.
+  /// Cancels a subscription of the user at the end of its current term.
+  /// Either [subscriptionId] or [cloudProjectId] must be provided.
   ///
   /// If [terminateImmediately] is true, the subscription is terminated
   /// immediately. If the user still has any active resource products,
@@ -149,9 +151,13 @@ class EndpointAdminProcurement extends _i1.EndpointRef {
   /// already been cancelled or ended.
   _i2.Future<void> cancelPlan({
     required String userEmail,
+    String? subscriptionId,
+    String? cloudProjectId,
     bool? terminateImmediately,
   }) => caller.callServerEndpoint<void>('adminProcurement', 'cancelPlan', {
     'userEmail': userEmail,
+    'subscriptionId': subscriptionId,
+    'cloudProjectId': cloudProjectId,
     'terminateImmediately': terminateImmediately,
   });
 }
@@ -967,6 +973,9 @@ class EndpointLogs extends _i1.EndpointRef {
 }
 
 /// Endpoint for managing subscription plans.
+///
+/// - Throws [ProcurementDeniedException] if the procurement fails.
+/// - Throws [NotFoundException] if the plan is not found.
 /// {@category Endpoint}
 class EndpointPlans extends _i1.EndpointRef {
   EndpointPlans(_i1.EndpointCaller caller) : super(caller);
@@ -975,32 +984,60 @@ class EndpointPlans extends _i1.EndpointRef {
   String get name => 'plans';
 
   /// Procures a subscription plan.
-  _i2.Future<void> procurePlan({
+  _i2.Future<String> procurePlan({
     String? planProductName,
     @Deprecated('Use planProductName instead') String? planName,
-  }) => caller.callServerEndpoint<void>('plans', 'procurePlan', {
+  }) => caller.callServerEndpoint<String>('plans', 'procurePlan', {
     'planProductName': planProductName,
     'planName': planName,
   });
 
-  /// Cancels the primary plan subscription of the user.
+  /// Cancels a subscription of the user.
   ///
   /// - Throws [ProcurementCancellationException] if the cancellation fails,
   /// e.g. if the subscription still has active resources or is already cancelled.
   /// - Throws [NoSubscriptionException] if the user has no subscription.
-  _i2.Future<void> cancelPlan() =>
-      caller.callServerEndpoint<void>('plans', 'cancelPlan', {});
+  _i2.Future<void> cancelPlan({required String subscriptionId}) =>
+      caller.callServerEndpoint<void>('plans', 'cancelPlan', {
+        'subscriptionId': subscriptionId,
+      });
 
   /// Fetches the names of the procured subscription plans.
   _i2.Future<List<String>> listProcuredPlanNames() => caller
       .callServerEndpoint<List<String>>('plans', 'listProcuredPlanNames', {});
 
-  _i2.Future<_i29.SubscriptionInfo> getSubscriptionInfo() =>
-      caller.callServerEndpoint<_i29.SubscriptionInfo>(
+  /// Lists the subscriptions of the user.
+  _i2.Future<List<_i29.SubscriptionInfo>> listSubscriptions() =>
+      caller.callServerEndpoint<List<_i29.SubscriptionInfo>>(
         'plans',
-        'getSubscriptionInfo',
+        'listSubscriptions',
         {},
       );
+
+  /// Gets the subscription info for the subscription of the given project id.
+  ///
+  /// Throws [NotFoundException] if the project's subscription is not found.
+  _i2.Future<_i29.SubscriptionInfo> getSubscriptionInfoOfProject({
+    required String cloudProjectId,
+  }) => caller.callServerEndpoint<_i29.SubscriptionInfo>(
+    'plans',
+    'getSubscriptionInfoOfProject',
+    {'cloudProjectId': cloudProjectId},
+  );
+
+  /// Gets a subscription info.
+  ///
+  /// [subscriptionId] is currently nullable for backwards compatibility,
+  /// in which case the first found subscription of the owner is used.
+  ///
+  /// Throws [NotFoundException] if the subscription is not found.
+  _i2.Future<_i29.SubscriptionInfo> getSubscriptionInfo({
+    String? subscriptionId,
+  }) => caller.callServerEndpoint<_i29.SubscriptionInfo>(
+    'plans',
+    'getSubscriptionInfo',
+    {'subscriptionId': subscriptionId},
+  );
 
   /// Checks if a plan is available for procurement.
   ///
@@ -1042,11 +1079,19 @@ class EndpointProjects extends _i1.EndpointRef {
       });
 
   /// Creates a new project with basic setup.
+  ///
   /// The [cloudProjectId] must be globally unique.
-  /// [underSubscriptionId] optionally specify a subscription to procure the
-  /// project under, or the user's primary subscription will be used.
+  ///
+  /// [underSubscriptionId] optionally specifies a subscription to procure the
+  /// project under, or the user's first found subscription will be used.
+  /// In future this parameter will be mandatory.
+  ///
   /// [projectProductName] optionally specify the project product name to use,
   /// defaults to the first available bundled product for the subscription plan.
+  ///
+  /// Throws [InvalidValueException] if the project name is invalid.
+  /// Throws [NotFoundException] if the subscription or the product is not found.
+  /// Throws [ProcurementDeniedException] if the procurement fails.
   _i2.Future<_i3.Project> createProject({
     required String cloudProjectId,
     String? underSubscriptionId,

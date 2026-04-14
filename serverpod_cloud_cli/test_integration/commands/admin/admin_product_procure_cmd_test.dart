@@ -45,7 +45,9 @@ void main() {
             planProductVersion: any(named: 'planProductVersion'),
             overrideChecks: any(named: 'overrideChecks'),
           ),
-        ).thenAnswer((final invocation) async => Future.value());
+        ).thenAnswer(
+          (final invocation) async => Future.value('some-subscription-id'),
+        );
 
         commandResult = cli.run([
           'admin',

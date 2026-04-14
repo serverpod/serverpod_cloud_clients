@@ -41,7 +41,11 @@ void main() {
           (_) async => UserBuilder().withEmail('test@example.com').build(),
         );
 
-        when(() => client.plans.getSubscriptionInfo()).thenAnswer(
+        when(
+          () => client.plans.getSubscriptionInfo(
+            subscriptionId: any(named: 'subscriptionId'),
+          ),
+        ).thenAnswer(
           (_) async => SubscriptionInfoBuilder()
               .withPlanDisplayName('Early Access')
               .build(),
@@ -61,9 +65,9 @@ void main() {
         expect(
           logger.lineCalls.map((final l) => l.line),
           containsAllInOrder([
-            'Email            | Plan         | Status                ',
-            '-----------------+--------------+-----------------------',
-            contains('test@example.com | Early Access | Trial until 20'),
+            'Email           ',
+            '----------------',
+            contains('test@example.com'),
           ]),
         );
       });
@@ -77,7 +81,9 @@ void main() {
         );
 
         when(
-          () => client.plans.getSubscriptionInfo(),
+          () => client.plans.getSubscriptionInfo(
+            subscriptionId: any(named: 'subscriptionId'),
+          ),
         ).thenThrow(NoSubscriptionException(message: 'No subscription'));
 
         commandResult = cli.run(['me']);
@@ -94,9 +100,9 @@ void main() {
         expect(
           logger.lineCalls.map((final l) => l.line),
           containsAllInOrder([
-            'Email            | Plan    | Status',
-            '-----------------+---------+-------',
-            'test@example.com | No plan |       ',
+            'Email           ',
+            '----------------',
+            'test@example.com',
           ]),
         );
       });

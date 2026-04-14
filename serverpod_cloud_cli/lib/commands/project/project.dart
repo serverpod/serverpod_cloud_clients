@@ -12,14 +12,19 @@ import 'package:serverpod_cloud_cli/util/pubspec_validator.dart'
     show resolveProjectDartSdkVersion;
 
 enum ProjectProfile {
-  starter('starter', 'starter-project'),
-  growth('growth', 'growth-project'),
-  defaultProfile(null, null);
+  starter('starter', 'starter', 'starter-project'),
+  growth('growth', 'growth', 'growth-project'),
+  defaultProfile(null, null, null);
 
-  const ProjectProfile(this.name, this.productName);
+  const ProjectProfile(
+    this.name,
+    this.planProductName,
+    this.projectProductName,
+  );
 
   final String? name;
-  final String? productName;
+  final String? planProductName;
+  final String? projectProductName;
 }
 
 abstract class ProjectCommands {
@@ -58,16 +63,33 @@ abstract class ProjectCommands {
       await UserConfirmations.confirmNewProjectCostAcceptance(logger);
     }
 
-    // Check that the user is on a plan and automatically procure one if not.
-    // This behavior will be changed in the future.
-    final planNames = await cloudApiClient.plans.listProcuredPlanNames();
-    if (planNames.isEmpty) {
-      await cloudApiClient.plans.procurePlan(planProductName: defaultPlanName);
-      logger.init('Creating Serverpod Cloud project "$projectId".');
-      logger.info('On plan: $defaultPlanName');
+    final String subscriptionId;
+    if (projectProfile.planProductName == null) {
+      // Check that the user is on a plan and automatically procure one if not.
+      // This behavior will be changed in the future.
+      final subscriptions = await cloudApiClient.plans.listSubscriptions();
+      if (subscriptions.isEmpty) {
+        subscriptionId = await cloudApiClient.plans.procurePlan(
+          planProductName: defaultPlanName,
+        );
+        logger.init('Creating Serverpod Cloud project "$projectId".');
+        logger.info('On plan: $defaultPlanName');
+      } else {
+        final subscription = subscriptions
+            .where((final s) => s.planName == defaultPlanName)
+            .firstOrNull;
+        if (subscription == null) {
+          throw FailureException(error: 'User does not have the default plan.');
+        }
+        logger.init('Creating Serverpod Cloud project "$projectId".');
+        logger.debug('On plan: ${subscription.planName}');
+        subscriptionId = subscription.subscriptionId;
+      }
     } else {
+      subscriptionId = await cloudApiClient.plans.procurePlan(
+        planProductName: projectProfile.planProductName,
+      );
       logger.init('Creating Serverpod Cloud project "$projectId".');
-      logger.debug('On plan: ${planNames.first}');
     }
 
     try {
@@ -77,7 +99,8 @@ abstract class ProjectCommands {
         () async {
           await cloudApiClient.projects.createProject(
             cloudProjectId: projectId,
-            projectProductName: projectProfile.productName,
+            projectProductName: projectProfile.projectProductName,
+            underSubscriptionId: subscriptionId,
           );
           return true;
         },

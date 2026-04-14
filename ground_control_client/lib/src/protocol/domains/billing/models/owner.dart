@@ -19,23 +19,29 @@ import 'package:ground_control_client/src/protocol/protocol.dart' as _i5;
 abstract class Owner implements _i1.SerializableModel {
   Owner._({
     _i1.UuidValue? id,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    this.archivedAt,
     required this.externalBillingId,
     required this.externalPaymentId,
     required this.billingPortalUrl,
     required this.billingEmails,
-    this.primarySubscriptionId,
     this.user,
     this.billingInfo,
     this.projects,
-  }) : id = id ?? const _i1.Uuid().v4obj();
+  }) : id = id ?? const _i1.Uuid().v4obj(),
+       createdAt = createdAt ?? DateTime.now(),
+       updatedAt = updatedAt ?? DateTime.now();
 
   factory Owner({
     _i1.UuidValue? id,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    DateTime? archivedAt,
     required String externalBillingId,
     required String externalPaymentId,
     required Uri billingPortalUrl,
     required List<String> billingEmails,
-    String? primarySubscriptionId,
     _i2.User? user,
     _i3.BillingInfo? billingInfo,
     List<_i4.Project>? projects,
@@ -46,6 +52,15 @@ abstract class Owner implements _i1.SerializableModel {
       id: jsonSerialization['id'] == null
           ? null
           : _i1.UuidValueJsonExtension.fromJson(jsonSerialization['id']),
+      createdAt: jsonSerialization['createdAt'] == null
+          ? null
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+      updatedAt: jsonSerialization['updatedAt'] == null
+          ? null
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
+      archivedAt: jsonSerialization['archivedAt'] == null
+          ? null
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['archivedAt']),
       externalBillingId: jsonSerialization['externalBillingId'] as String,
       externalPaymentId: jsonSerialization['externalPaymentId'] as String,
       billingPortalUrl: _i1.UriJsonExtension.fromJson(
@@ -54,8 +69,6 @@ abstract class Owner implements _i1.SerializableModel {
       billingEmails: _i5.Protocol().deserialize<List<String>>(
         jsonSerialization['billingEmails'],
       ),
-      primarySubscriptionId:
-          jsonSerialization['primarySubscriptionId'] as String?,
       user: jsonSerialization['user'] == null
           ? null
           : _i5.Protocol().deserialize<_i2.User>(jsonSerialization['user']),
@@ -75,6 +88,13 @@ abstract class Owner implements _i1.SerializableModel {
   /// The id of the object.
   _i1.UuidValue id;
 
+  DateTime createdAt;
+
+  DateTime updatedAt;
+
+  /// If non-null this Owner is archived.
+  DateTime? archivedAt;
+
   String externalBillingId;
 
   String externalPaymentId;
@@ -82,10 +102,6 @@ abstract class Owner implements _i1.SerializableModel {
   Uri billingPortalUrl;
 
   List<String> billingEmails;
-
-  /// The id of the primary (default) subscription of this owner.
-  /// Null if the owner has no subscription.
-  String? primarySubscriptionId;
 
   _i2.User? user;
 
@@ -98,11 +114,13 @@ abstract class Owner implements _i1.SerializableModel {
   @_i1.useResult
   Owner copyWith({
     _i1.UuidValue? id,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    DateTime? archivedAt,
     String? externalBillingId,
     String? externalPaymentId,
     Uri? billingPortalUrl,
     List<String>? billingEmails,
-    String? primarySubscriptionId,
     _i2.User? user,
     _i3.BillingInfo? billingInfo,
     List<_i4.Project>? projects,
@@ -112,12 +130,13 @@ abstract class Owner implements _i1.SerializableModel {
     return {
       '__className__': 'Owner',
       'id': id.toJson(),
+      'createdAt': createdAt.toJson(),
+      'updatedAt': updatedAt.toJson(),
+      if (archivedAt != null) 'archivedAt': archivedAt?.toJson(),
       'externalBillingId': externalBillingId,
       'externalPaymentId': externalPaymentId,
       'billingPortalUrl': billingPortalUrl.toJson(),
       'billingEmails': billingEmails.toJson(),
-      if (primarySubscriptionId != null)
-        'primarySubscriptionId': primarySubscriptionId,
       if (user != null) 'user': user?.toJson(),
       if (billingInfo != null) 'billingInfo': billingInfo?.toJson(),
       if (projects != null)
@@ -136,21 +155,25 @@ class _Undefined {}
 class _OwnerImpl extends Owner {
   _OwnerImpl({
     _i1.UuidValue? id,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    DateTime? archivedAt,
     required String externalBillingId,
     required String externalPaymentId,
     required Uri billingPortalUrl,
     required List<String> billingEmails,
-    String? primarySubscriptionId,
     _i2.User? user,
     _i3.BillingInfo? billingInfo,
     List<_i4.Project>? projects,
   }) : super._(
          id: id,
+         createdAt: createdAt,
+         updatedAt: updatedAt,
+         archivedAt: archivedAt,
          externalBillingId: externalBillingId,
          externalPaymentId: externalPaymentId,
          billingPortalUrl: billingPortalUrl,
          billingEmails: billingEmails,
-         primarySubscriptionId: primarySubscriptionId,
          user: user,
          billingInfo: billingInfo,
          projects: projects,
@@ -162,25 +185,27 @@ class _OwnerImpl extends Owner {
   @override
   Owner copyWith({
     _i1.UuidValue? id,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Object? archivedAt = _Undefined,
     String? externalBillingId,
     String? externalPaymentId,
     Uri? billingPortalUrl,
     List<String>? billingEmails,
-    Object? primarySubscriptionId = _Undefined,
     Object? user = _Undefined,
     Object? billingInfo = _Undefined,
     Object? projects = _Undefined,
   }) {
     return Owner(
       id: id ?? this.id,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      archivedAt: archivedAt is DateTime? ? archivedAt : this.archivedAt,
       externalBillingId: externalBillingId ?? this.externalBillingId,
       externalPaymentId: externalPaymentId ?? this.externalPaymentId,
       billingPortalUrl: billingPortalUrl ?? this.billingPortalUrl,
       billingEmails:
           billingEmails ?? this.billingEmails.map((e0) => e0).toList(),
-      primarySubscriptionId: primarySubscriptionId is String?
-          ? primarySubscriptionId
-          : this.primarySubscriptionId,
       user: user is _i2.User? ? user : this.user?.copyWith(),
       billingInfo: billingInfo is _i3.BillingInfo?
           ? billingInfo

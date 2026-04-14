@@ -45,10 +45,14 @@ abstract class ProductAdminCommands {
     final Client cloudApiClient, {
     required final CommandLogger logger,
     required final String userEmail,
+    final String? subscriptionId,
+    final String? cloudProjectId,
     final bool? terminateImmediately,
   }) async {
     await cloudApiClient.adminProcurement.cancelPlan(
       userEmail: userEmail,
+      subscriptionId: subscriptionId,
+      cloudProjectId: cloudProjectId,
       terminateImmediately: terminateImmediately,
     );
 

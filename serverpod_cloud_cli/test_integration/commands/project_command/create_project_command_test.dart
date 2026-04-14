@@ -44,6 +44,7 @@ void main() {
         () => client.projects.createProject(
           cloudProjectId: any(named: 'cloudProjectId'),
           projectProductName: any(named: 'projectProductName'),
+          underSubscriptionId: any(named: 'underSubscriptionId'),
         ),
       ).thenAnswer(
         (final invocation) async => Future.value(
@@ -64,14 +65,16 @@ void main() {
       );
 
       when(
-        () => client.plans.listProcuredPlanNames(),
+        () => client.plans.listSubscriptions(),
       ).thenAnswer((final invocation) async => Future.value([]));
 
       when(
         () => client.plans.procurePlan(
           planProductName: any(named: 'planProductName'),
         ),
-      ).thenAnswer((final invocation) async => Future.value());
+      ).thenAnswer(
+        (final invocation) async => Future.value('some-subscription-id'),
+      );
     });
 
     group('and inside a serverpod directory', () {
@@ -228,7 +231,8 @@ project:
             verify(
               () => client.projects.createProject(
                 cloudProjectId: projectId,
-                projectProductName: ProjectProfile.growth.productName!,
+                projectProductName: ProjectProfile.growth.projectProductName!,
+                underSubscriptionId: any(named: 'underSubscriptionId'),
               ),
             ).called(1);
           },

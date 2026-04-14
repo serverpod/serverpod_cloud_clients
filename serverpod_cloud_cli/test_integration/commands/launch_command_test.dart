@@ -75,6 +75,7 @@ void main() {
         () => client.projects.createProject(
           cloudProjectId: any(named: 'cloudProjectId'),
           projectProductName: any(named: 'projectProductName'),
+          underSubscriptionId: any(named: 'underSubscriptionId'),
         ),
       ).thenAnswer(
         (final invocation) async => Future.value(
@@ -141,12 +142,17 @@ void main() {
       when(
         () => client.plans.listProcuredPlanNames(),
       ).thenAnswer((final invocation) async => Future.value([]));
+      when(
+        () => client.plans.listSubscriptions(),
+      ).thenAnswer((final invocation) async => Future.value([]));
 
       when(
         () => client.plans.procurePlan(
           planProductName: any(named: 'planProductName'),
         ),
-      ).thenAnswer((final invocation) async => Future.value());
+      ).thenAnswer(
+        (final invocation) async => Future.value('some-subscription-id'),
+      );
 
       when(
         () => client.plans.checkPlanAvailability(
