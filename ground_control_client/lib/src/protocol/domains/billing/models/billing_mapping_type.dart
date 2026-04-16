@@ -16,7 +16,8 @@ enum BillingMappingType implements _i1.SerializableModel {
   planId,
   subscriptionId,
   itemId,
-  priceId;
+  priceId,
+  adjustmentIntervalId;
 
   static BillingMappingType fromJson(String name) {
     switch (name) {
@@ -28,6 +29,8 @@ enum BillingMappingType implements _i1.SerializableModel {
         return BillingMappingType.itemId;
       case 'priceId':
         return BillingMappingType.priceId;
+      case 'adjustmentIntervalId':
+        return BillingMappingType.adjustmentIntervalId;
       default:
         throw ArgumentError(
           'Value "$name" cannot be converted to "BillingMappingType"',

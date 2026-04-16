@@ -17,7 +17,8 @@ enum ProductType implements _i1.SerializableModel {
   project,
   capsule,
   compute,
-  database;
+  database,
+  discount;
 
   static ProductType fromJson(String name) {
     switch (name) {
@@ -31,6 +32,8 @@ enum ProductType implements _i1.SerializableModel {
         return ProductType.compute;
       case 'database':
         return ProductType.database;
+      case 'discount':
+        return ProductType.discount;
       default:
         throw ArgumentError(
           'Value "$name" cannot be converted to "ProductType"',
