@@ -40,13 +40,6 @@ List<ProjectProductInfo> standardPlanTwoBundledProjectProfiles() {
 }
 
 List<ProjectProductInfo> _standardPlanBundledProjectProducts() {
-  final computeSmall = ComputeProductInfo(
-    size: ComputeSizeOption.small,
-    productId: 'compute-growth:0',
-    name: 'Compute',
-    description: 'Compute for growth',
-  );
-
   final computeMedium = ComputeProductInfo(
     size: ComputeSizeOption.medium,
     productId: 'compute-growth:0',
@@ -59,15 +52,19 @@ List<ProjectProductInfo> _standardPlanBundledProjectProducts() {
     name: 'Compute',
     description: 'Compute for growth',
   );
-
-  final databaseSmall = DatabaseProductInfo(
-    size: DatabaseSizeOption.small,
-    productId: 'database-growth:0',
-    name: 'Database',
-    description: 'Database for growth',
-    cuHoursPerMonthLimit: 750,
-    storageLimitGB: 2,
+  final computeXLarge = ComputeProductInfo(
+    size: ComputeSizeOption.xlarge,
+    productId: 'compute-growth:0',
+    name: 'Compute',
+    description: 'Compute for growth',
   );
+  final computeXxLarge = ComputeProductInfo(
+    size: ComputeSizeOption.xxlarge,
+    productId: 'compute-growth:0',
+    name: 'Compute',
+    description: 'Compute for growth',
+  );
+
   final databaseMedium = DatabaseProductInfo(
     size: DatabaseSizeOption.medium,
     productId: 'database-growth:0',
@@ -93,23 +90,18 @@ List<ProjectProductInfo> _standardPlanBundledProjectProducts() {
     ),
   );
   final computeCatalog = ComputeCatalogInfo(
-    computes: [computeSmall, computeMedium, computeLarge],
-    defaultCompute: computeSmall.size,
+    computes: [computeMedium, computeLarge, computeXLarge, computeXxLarge],
+    defaultCompute: computeMedium.size,
     scaling: ComputeScalingInfo(
-      defaultMinReplicas: 1,
-      defaultMaxReplicas: 1,
+      defaultMinReplicas: 2,
+      defaultMaxReplicas: 2,
       allowedReplicasMin: 1,
       allowedReplicasMax: 20,
     ),
   );
   final databaseCatalog = DatabaseCatalogInfo(
-    databases: [
-      databaseSmall,
-      databaseMedium,
-      databaseLarge,
-      databaseLargePlus,
-    ],
-    defaultDatabase: databaseSmall.size,
+    databases: [databaseMedium, databaseLarge, databaseLargePlus],
+    defaultDatabase: databaseMedium.size,
   );
   return [
     ProjectProductInfo(
