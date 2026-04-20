@@ -60,6 +60,12 @@ void main() {
     logger.clear();
   });
 
+  tearDown(() {
+    clearInteractions(client.plans);
+    clearInteractions(client.projects);
+    clearInteractions(client.billing);
+  });
+
   test(
     'Given project launch command when instantiated then requires login',
     () {
@@ -159,6 +165,12 @@ void main() {
           planProductName: any(named: 'planProductName'),
         ),
       ).thenAnswer((final invocation) async => Future.value());
+
+      when(() => client.billing.readOwner()).thenAnswer(
+        (final _) async => OwnerBuilder()
+            .withBillingInfo(BillingInfoBuilder().withPrivateUser().build())
+            .build(),
+      );
     });
 
     group('and serverpod directory', () {
@@ -185,6 +197,8 @@ void main() {
             projectId,
             '--project-dir',
             testProjectDir,
+            '--plan',
+            'starter',
             '--enable-db',
             '--deploy',
           ]);
@@ -206,6 +220,7 @@ void main() {
               'Project setup',
               'Project directory  $testProjectDir',
               'New project id     $projectId',
+              'Project plan       starter',
               'Enable DB          yes',
               'Perform deploy     yes',
             ]),
@@ -309,6 +324,78 @@ project:
         });
       });
 
+      group(
+        'when executing launch with --plan starter, other settings via args, '
+        'and approving confirmation',
+        () {
+          late Future commandResult;
+          setUp(() async {
+            logger.answerNextConfirmsWith([false, true]);
+
+            commandResult = cli.run([
+              'launch',
+              '--new-project',
+              projectId,
+              '--plan',
+              'starter',
+              '--project-dir',
+              testProjectDir,
+              '--enable-db',
+              '--deploy',
+            ]);
+
+            await expectLater(commandResult, completes);
+          });
+
+          test(
+            'then plan checks and project creation use starter plan',
+            () async {
+              await commandResult;
+              expect(
+                logger.boxCalls.single.message,
+                stringContainsInOrder(['Project plan       starter']),
+              );
+            },
+          );
+        },
+      );
+
+      group(
+        'when executing launch with --plan growth, other settings via args, '
+        'and approving confirmation',
+        () {
+          late Future commandResult;
+          setUp(() async {
+            logger.answerNextConfirmsWith([false, true]);
+
+            commandResult = cli.run([
+              'launch',
+              '--new-project',
+              projectId,
+              '--plan',
+              'growth',
+              '--project-dir',
+              testProjectDir,
+              '--enable-db',
+              '--deploy',
+            ]);
+
+            await expectLater(commandResult, completes);
+          });
+
+          test(
+            'then plan checks and project creation use growth plan',
+            () async {
+              await commandResult;
+              expect(
+                logger.boxCalls.single.message,
+                stringContainsInOrder(['Project plan       growth']),
+              );
+            },
+          );
+        },
+      );
+
       group('when executing launch with --dart-version, --no-deploy, '
           'and approving confirmation', () {
         late Future commandResult;
@@ -321,6 +408,8 @@ project:
             projectId,
             '--project-dir',
             testProjectDir,
+            '--plan',
+            'starter',
             '--enable-db',
             '--no-deploy',
             '--dart-version',
@@ -373,6 +462,8 @@ serverpod:
             projectId,
             '--project-dir',
             testProjectDir,
+            '--plan',
+            'starter',
             '--enable-db',
             '--no-deploy',
           ]);
@@ -449,6 +540,8 @@ serverpod:
             projectId,
             '--project-dir',
             testProjectDir,
+            '--plan',
+            'starter',
             '--enable-db',
             '--no-deploy',
           ]);
@@ -511,6 +604,8 @@ serverpod:
             projectId,
             '--project-dir',
             testProjectDir,
+            '--plan',
+            'starter',
             '--enable-db',
             '--no-deploy',
           ]);
@@ -574,6 +669,8 @@ serverpod:
             projectId,
             '--project-dir',
             testProjectDir,
+            '--plan',
+            'starter',
             '--enable-db',
             '--no-deploy',
           ]);
@@ -630,6 +727,8 @@ serverpod:
             projectId,
             '--project-dir',
             testProjectDir,
+            '--plan',
+            'starter',
             '--enable-db',
             '--deploy',
           ]);
@@ -686,6 +785,8 @@ project:
             projectId,
             '--project-dir',
             testProjectDir,
+            '--plan',
+            'starter',
             '--enable-db',
             '--no-deploy',
           ]);
@@ -726,6 +827,8 @@ project:
             projectId,
             '--project-dir',
             testProjectDir,
+            '--plan',
+            'starter',
             '--enable-db',
             '--deploy',
           ]);
@@ -751,6 +854,7 @@ project:
               'Project setup',
               'Project directory  $testProjectDir',
               'New project id     $projectId',
+              'Project plan       starter',
               'Enable DB          yes',
               'Perform deploy     yes',
             ]),
@@ -809,6 +913,8 @@ project:
             projectId,
             '--project-dir',
             d.sandbox,
+            '--plan',
+            'starter',
             '--enable-db',
             '--deploy',
           ]);
@@ -857,6 +963,7 @@ project:
               'Project setup',
               'Project directory  $testProjectDir',
               'New project id     $projectId',
+              'Project plan       starter',
               'Enable DB          yes',
               'Perform deploy     yes',
             ]),
@@ -919,6 +1026,8 @@ project:
             'invalid-project-id_%^&',
             '--project-dir',
             testProjectDir,
+            '--plan',
+            'starter',
             '--enable-db',
             '--deploy',
           ]);
@@ -967,6 +1076,7 @@ project:
               'Project setup',
               'Project directory  $testProjectDir',
               'New project id     $projectId',
+              'Project plan       starter',
               'Enable DB          yes',
               'Perform deploy     yes',
             ]),
@@ -1052,7 +1162,7 @@ project:
           'and declining confirmation', () {
         late Future commandResult;
         setUp(() async {
-          logger.answerNextInputsWith([testProjectDir, projectId]);
+          logger.answerNextInputsWith([testProjectDir, projectId, 'starter']);
           logger.answerNextConfirmsWith([
             true, // confirm new project cost acceptance
             true, // enable db
@@ -1080,6 +1190,7 @@ project:
                 message: 'Enter a new project id',
                 defaultValue: 'default: my-project',
               ),
+              equalsInputCall(message: 'Enter the plan'),
             ]),
           );
         });
@@ -1122,6 +1233,7 @@ project:
               'Project setup',
               'Project directory  $testProjectDir',
               'New project id     $projectId',
+              'Project plan       starter',
               'Enable DB          yes',
               'Perform deploy     yes',
             ]),
@@ -1159,7 +1271,7 @@ project:
         setUp(() async {
           pushCurrentDirectory(d.sandbox);
 
-          logger.answerNextInputsWith([testProjectDir, projectId]);
+          logger.answerNextInputsWith([testProjectDir, projectId, 'starter']);
           logger.answerNextConfirmsWith([
             true, // confirm new project cost acceptance
             true, // enable db
@@ -1244,6 +1356,7 @@ project:
               'Project setup',
               'Project directory  ${p.relative(testProjectDir)}',
               'New project id     $projectId',
+              'Project plan       starter',
               'Enable DB          yes',
               'Perform deploy     yes',
             ]),
@@ -1283,6 +1396,7 @@ project:
             'invalid_project_dir',
             testProjectDir,
             projectId,
+            'growth',
           ]);
           logger.answerNextConfirmsWith([
             true, // confirm new project cost acceptance
@@ -1312,6 +1426,7 @@ project:
                 message: 'Enter a new project id',
                 defaultValue: 'default: my-project',
               ),
+              equalsInputCall(message: 'Enter the plan'),
             ]),
           );
         });
@@ -1354,6 +1469,7 @@ project:
               'Project setup',
               'Project directory  $testProjectDir',
               'New project id     $projectId',
+              'Project plan       growth',
               'Enable DB          yes',
               'Perform deploy     yes',
             ]),
@@ -1393,6 +1509,7 @@ project:
             testProjectDir,
             'invalid_project_id_#%@',
             projectId,
+            'starter',
           ]);
           logger.answerNextConfirmsWith([
             true, // confirm new project cost acceptance
@@ -1425,6 +1542,7 @@ project:
                 message: 'Enter a new project id',
                 defaultValue: 'default: my-project',
               ),
+              equalsInputCall(message: 'Enter the plan'),
             ]),
           );
         });
@@ -1467,6 +1585,7 @@ project:
               'Project setup',
               'Project directory  $testProjectDir',
               'New project id     $projectId',
+              'Project plan       starter',
               'Enable DB          yes',
               'Perform deploy     yes',
             ]),
@@ -1530,7 +1649,12 @@ project:
         late Future commandResult;
 
         setUp(() async {
-          logger.answerNextInputsWith([testProjectDir, '', projectId]);
+          logger.answerNextInputsWith([
+            testProjectDir,
+            '',
+            projectId,
+            'starter',
+          ]);
           logger.answerNextConfirmsWith([
             true, // confirm new project cost acceptance
             true, // enable db
@@ -1558,6 +1682,7 @@ project:
                 message: 'Enter a new project id',
                 defaultValue: 'default: my-project',
               ),
+              equalsInputCall(message: 'Enter the plan'),
             ]),
           );
         });
@@ -1595,6 +1720,7 @@ project:
               'Project setup',
               'Project directory  $testProjectDir',
               'New project id     $projectId',
+              'Project plan       starter',
               'Enable DB          yes',
               'Perform deploy     yes',
             ]),
@@ -1769,7 +1895,7 @@ project:
         late Future commandResult;
 
         setUp(() async {
-          logger.answerNextInputsWith([testProjectDir, projectId]);
+          logger.answerNextInputsWith([testProjectDir, projectId, 'starter']);
           logger.answerNextConfirmsWith([
             false, // decline using existing project
             true, // confirm new project cost acceptance
@@ -1798,6 +1924,7 @@ project:
                 message: 'Enter a new project id',
                 defaultValue: 'default: my-project',
               ),
+              equalsInputCall(message: 'Enter the plan'),
             ]),
           );
         });
@@ -1835,6 +1962,7 @@ project:
               'Project setup',
               'Project directory  $testProjectDir',
               'New project id     $projectId',
+              'Project plan       starter',
               'Enable DB          yes',
               'Perform deploy     yes',
             ]),
@@ -2121,6 +2249,8 @@ resolution: workspace
               projectId,
               '--project-dir',
               testProjectDir,
+              '--plan',
+              'starter',
               '--enable-db',
               '--no-deploy',
             ]);

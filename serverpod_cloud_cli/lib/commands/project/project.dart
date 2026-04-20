@@ -11,41 +11,49 @@ import 'package:serverpod_cloud_cli/util/dart_version_util.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart'
     show resolveProjectDartSdkVersion;
 
-enum ProjectProfile {
+enum PlanProfile {
   starter('starter', 'starter', 'starter-project'),
-  growth('growth', 'growth', 'growth-project'),
-  defaultProfile(null, null, null);
+  growth('growth', 'growth', 'growth-project');
 
-  const ProjectProfile(
-    this.name,
-    this.planProductName,
-    this.projectProductName,
-  );
+  const PlanProfile(this.name, this.planProductName, this.projectProductName);
 
-  final String? name;
-  final String? planProductName;
-  final String? projectProductName;
+  final String name;
+  final String planProductName;
+  final String projectProductName;
 }
 
 abstract class ProjectCommands {
-  static const defaultPlanName = 'early-access';
+  static const defaultPlan = 'starter';
 
-  /// Subcommand to check if the user is subscribed to a plan,
-  /// and if not whether a plan can be procured.
-  /// If [planProductName] is not provided, the default plan will be assumed.
-  /// Throws an exception if there is no subscription and the plan cannot be
-  /// procured.
+  static const _legacyPlanNames = [
+    'early-access',
+    'closed-beta',
+    'internal-test-runs',
+    'internal-payment-testing',
+  ];
+
+  /// Subcommand to check if the user is subscribed to a given plan,
+  /// and if not whether the plan can be procured.
+  ///
+  /// Throws [ProcurementDeniedException] if there is no subscription and the
+  /// plan cannot be procured.
   static Future<void> checkPlanAvailability(
     final Client cloudApiClient, {
     required final CommandLogger logger,
-    final String? planProductName,
+    required final PlanProfile? plan,
   }) async {
     final planNames = await cloudApiClient.plans.listProcuredPlanNames();
-    if (planNames.isEmpty) {
-      await cloudApiClient.plans.checkPlanAvailability(
-        planProductName: planProductName ?? defaultPlanName,
-      );
+
+    if (plan == null &&
+        planNames.any((final name) => _legacyPlanNames.contains(name))) {
+      return;
     }
+
+    final planProductName = plan?.name ?? defaultPlan;
+
+    await cloudApiClient.plans.checkPlanAvailability(
+      planProductName: planProductName,
+    );
   }
 
   /// Subcommand to create a new tenant project.
@@ -53,7 +61,7 @@ abstract class ProjectCommands {
     final Client cloudApiClient, {
     required final CommandLogger logger,
     required final String projectId,
-    required final ProjectProfile projectProfile,
+    required final PlanProfile? plan,
     required final bool enableDb,
     required final String projectDir,
     required final String configFilePath,
@@ -63,33 +71,32 @@ abstract class ProjectCommands {
       await UserConfirmations.confirmNewProjectCostAcceptance(logger);
     }
 
-    final String subscriptionId;
-    if (projectProfile.planProductName == null) {
-      // Check that the user is on a plan and automatically procure one if not.
-      // This behavior will be changed in the future.
+    String? subscriptionId;
+    if (plan == null) {
+      // If no plan is specified and user has a legacy plan, use that.
       final subscriptions = await cloudApiClient.plans.listSubscriptions();
-      if (subscriptions.isEmpty) {
-        subscriptionId = await cloudApiClient.plans.procurePlan(
-          planProductName: defaultPlanName,
-        );
-        logger.init('Creating Serverpod Cloud project "$projectId".');
-        logger.info('On plan: $defaultPlanName');
-      } else {
-        final subscription = subscriptions
-            .where((final s) => s.planName == defaultPlanName)
+      if (subscriptions.isNotEmpty) {
+        final legacySubscription = subscriptions
+            .where(
+              (final s) =>
+                  _legacyPlanNames.contains(s.planProductId.split(':').first),
+            )
             .firstOrNull;
-        if (subscription == null) {
-          throw FailureException(error: 'User does not have the default plan.');
+        if (legacySubscription != null) {
+          logger.init('Creating Serverpod Cloud project "$projectId".');
+          logger.info('On plan: ${legacySubscription.planDisplayName}');
+          subscriptionId = legacySubscription.subscriptionId;
         }
-        logger.init('Creating Serverpod Cloud project "$projectId".');
-        logger.debug('On plan: ${subscription.planName}');
-        subscriptionId = subscription.subscriptionId;
       }
-    } else {
+    }
+
+    if (subscriptionId == null) {
+      final planProductName = plan?.name ?? defaultPlan;
       subscriptionId = await cloudApiClient.plans.procurePlan(
-        planProductName: projectProfile.planProductName,
+        planProductName: planProductName,
       );
       logger.init('Creating Serverpod Cloud project "$projectId".');
+      logger.info('On plan: $planProductName');
     }
 
     try {
@@ -99,7 +106,7 @@ abstract class ProjectCommands {
         () async {
           await cloudApiClient.projects.createProject(
             cloudProjectId: projectId,
-            projectProductName: projectProfile.projectProductName,
+            projectProductName: plan?.projectProductName,
             underSubscriptionId: subscriptionId,
           );
           return true;

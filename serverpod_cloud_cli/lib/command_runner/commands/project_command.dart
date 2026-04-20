@@ -33,16 +33,7 @@ class CloudProjectCommand extends CloudCliCommand {
 
 enum ProjectCreateOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption.argsOnly(asFirstArg: true)),
-  profile(
-    EnumOption<ProjectProfile>(
-      argName: 'profile',
-      helpText: 'Project profile (starter or growth).',
-      enumParser: EnumParser(ProjectProfile.values),
-      defaultsTo: ProjectProfile.defaultProfile,
-      mandatory: false,
-      hide: true,
-    ),
-  ),
+  plan(PlanOption()),
   enableDb(
     FlagOption(
       argName: 'enable-db',
@@ -71,7 +62,7 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
   @override
   Future<void> runWithConfig(final Configuration commandConfig) async {
     final projectId = commandConfig.value(ProjectCreateOption.projectId);
-    final projectProfile = commandConfig.value(ProjectCreateOption.profile);
+    final plan = commandConfig.optionalValue(ProjectCreateOption.plan);
     final enableDb = commandConfig.value(ProjectCreateOption.enableDb);
     final projectDir =
         runner.selectProjectDirectory() ?? Directory.current.path;
@@ -85,7 +76,7 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
       runner.serviceProvider.cloudApiClient,
       logger: logger,
       projectId: projectId,
-      projectProfile: projectProfile,
+      plan: plan,
       enableDb: enableDb,
       projectDir: projectDir,
       configFilePath: configFilePath,

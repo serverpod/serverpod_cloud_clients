@@ -19,6 +19,7 @@ enum LaunchOption<V> implements OptionDefinition<V> {
       group: _projectGroup,
     ),
   ),
+  plan(PlanOption()),
   enableDb(
     FlagOption(
       argName: 'enable-db',
@@ -69,6 +70,7 @@ class CloudLaunchCommand extends CloudCliCommand<LaunchOption> {
       LaunchOption.projectId,
     );
     final newProjectId = commandConfig.optionalValue(LaunchOption.newProjectId);
+    final plan = commandConfig.optionalValue(LaunchOption.plan);
     final enableDb = commandConfig.optionalValue(LaunchOption.enableDb);
     final deploy = commandConfig.optionalValue(LaunchOption.deploy);
     final dartVersionOverride = commandConfig.optionalValue(
@@ -83,6 +85,7 @@ class CloudLaunchCommand extends CloudCliCommand<LaunchOption> {
       foundProjectDir: foundProjectDir,
       newProjectId: newProjectId,
       existingProjectId: existingProjectId,
+      plan: plan,
       enableDb: enableDb,
       performDeploy: deploy,
       dartVersionOverride: dartVersionOverride,

@@ -1,4 +1,6 @@
 import 'package:config/config.dart';
+import 'package:serverpod_cloud_cli/commands/project/project.dart'
+    show PlanProfile;
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
 
 import 'email_validator.dart';
@@ -55,6 +57,17 @@ class ProjectIdOption extends StringOption {
         argAbbrev: _projectIdArgAbbrev,
         argPos: asFirstArg ? 0 : null,
         helpText: asFirstArg ? _helpTextFirstArg : _helpText,
+      );
+}
+
+class PlanOption extends EnumOption<PlanProfile> {
+  const PlanOption({final PlanProfile? defaultValue})
+    : super(
+        argName: 'plan',
+        helpText: 'Selects the plan to use.',
+        enumParser: const EnumParser(PlanProfile.values),
+        defaultsTo: defaultValue,
+        hide: true,
       );
 }
 

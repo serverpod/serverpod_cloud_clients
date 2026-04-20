@@ -11,7 +11,6 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test/test.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/commands/project/project.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 
@@ -36,6 +35,10 @@ void main() {
 
   tearDown(() {
     logger.clear();
+    clearInteractions(client.plans);
+    clearInteractions(client.projects);
+    clearInteractions(client.billing);
+    clearInteractions(client.database);
   });
 
   group('Given authenticated', () {
@@ -75,6 +78,22 @@ void main() {
       ).thenAnswer(
         (final invocation) async => Future.value('some-subscription-id'),
       );
+
+      when(() => client.billing.readOwner()).thenAnswer(
+        (final _) async => OwnerBuilder()
+            .withBillingInfo(BillingInfoBuilder().withPrivateUser().build())
+            .build(),
+      );
+
+      when(
+        () => client.billing.ownerIsInGoodStanding(),
+      ).thenAnswer((final _) async => true);
+
+      when(
+        () => client.database.enableDatabase(
+          cloudCapsuleId: any(named: 'cloudCapsuleId'),
+        ),
+      ).thenAnswer((final _) async {});
     });
 
     group('and inside a serverpod directory', () {
@@ -209,47 +228,144 @@ project:
         });
       });
 
-      group('when calling create with --profile option', () {
+      group('and an existing subscription that is a legacy plan', () {
         setUp(() async {
-          logger.answerNextConfirmWith(
-            true, // accept new project cost acceptance
+          logger.answerNextConfirmWith(true);
+
+          when(() => client.plans.listSubscriptions()).thenAnswer(
+            (final _) async => [
+              SubscriptionInfoBuilder()
+                  .withPlanProductId('early-access:0')
+                  .withSubscriptionId('early-access-sub')
+                  .build(),
+            ],
           );
         });
 
-        test(
-          'then with --profile growth createProject is called with growth-project',
-          () async {
-            await cli.run([
-              'project',
-              'create',
-              projectId,
-              '--profile',
-              ProjectProfile.growth.name!,
-              '--no-enable-db',
-            ]);
+        test('when calling create without specifying the plan'
+            ' then no plan is procured', () async {
+          await cli.run(['project', 'create', projectId, '--no-enable-db']);
 
-            verify(
-              () => client.projects.createProject(
-                cloudProjectId: projectId,
-                projectProductName: ProjectProfile.growth.projectProductName!,
-                underSubscriptionId: any(named: 'underSubscriptionId'),
-              ),
-            ).called(1);
-          },
-        );
-
-        test('then with invalid --profile command throws', () async {
-          await expectLater(
-            cli.run([
-              'project',
-              'create',
-              projectId,
-              '--profile',
-              'invalid',
-              '--no-enable-db',
-            ]),
-            throwsA(isA<UsageException>()),
+          expect(logger.infoCalls, hasLength(1));
+          expect(
+            logger.infoCalls.single,
+            equalsInfoCall(message: 'On plan: Early Access'),
           );
+        });
+
+        test('when calling create with --plan "growth"'
+            ' then the growth plan is procured', () async {
+          await cli.run([
+            'project',
+            'create',
+            projectId,
+            '--plan',
+            'growth',
+            '--no-enable-db',
+          ]);
+
+          expect(logger.infoCalls, hasLength(1));
+          expect(
+            logger.infoCalls.single,
+            equalsInfoCall(message: 'On plan: growth'),
+          );
+        });
+      });
+
+      group('and an existing subscription that is not a legacy plan', () {
+        setUp(() async {
+          logger.answerNextConfirmWith(true);
+
+          when(() => client.plans.listSubscriptions()).thenAnswer(
+            (final _) async => [
+              SubscriptionInfoBuilder()
+                  .withPlanProductId('growth:0')
+                  .withSubscriptionId('growth-sub')
+                  .build(),
+            ],
+          );
+        });
+
+        test('when calling create without specifying the plan'
+            ' then the starter plan is procured', () async {
+          await cli.run(['project', 'create', projectId, '--no-enable-db']);
+
+          expect(logger.infoCalls, hasLength(1));
+          expect(
+            logger.infoCalls.single,
+            equalsInfoCall(message: 'On plan: starter'),
+          );
+        });
+
+        test('when calling create with --plan "growth"'
+            ' then the growth plan is procured', () async {
+          await cli.run([
+            'project',
+            'create',
+            projectId,
+            '--plan',
+            'growth',
+            '--no-enable-db',
+          ]);
+
+          expect(logger.infoCalls, hasLength(1));
+          expect(
+            logger.infoCalls.single,
+            equalsInfoCall(message: 'On plan: growth'),
+          );
+        });
+      });
+
+      group('and no existing subscription', () {
+        setUp(() async {
+          logger.answerNextConfirmWith(true);
+
+          when(
+            () => client.plans.listSubscriptions(),
+          ).thenAnswer((final _) async => []);
+        });
+
+        test('when calling create without specifying the plan'
+            ' then the starter plan is procured', () async {
+          await cli.run(['project', 'create', projectId, '--no-enable-db']);
+
+          expect(logger.infoCalls, hasLength(1));
+          expect(
+            logger.infoCalls.single,
+            equalsInfoCall(message: 'On plan: starter'),
+          );
+        });
+
+        test('when calling create with --plan "growth"'
+            ' then the growth plan is procured', () async {
+          await cli.run([
+            'project',
+            'create',
+            projectId,
+            '--plan',
+            'growth',
+            '--no-enable-db',
+          ]);
+
+          expect(logger.infoCalls, hasLength(1));
+          expect(
+            logger.infoCalls.single,
+            equalsInfoCall(message: 'On plan: growth'),
+          );
+        });
+      });
+
+      group('when calling create with --enable-db', () {
+        setUp(() async {
+          logger.answerNextConfirmWith(true);
+        });
+
+        test('then enableDatabase is invoked for the project', () async {
+          await cli.run(['project', 'create', projectId, '--enable-db']);
+
+          verify(
+            () => client.database.enableDatabase(cloudCapsuleId: projectId),
+          ).called(1);
         });
       });
     });

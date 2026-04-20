@@ -31,12 +31,11 @@ abstract class Launch {
     required final String? foundProjectDir,
     required final String? newProjectId,
     required final String? existingProjectId,
+    required final PlanProfile? plan,
     required final bool? enableDb,
     required final bool? performDeploy,
     final String? dartVersionOverride,
   }) async {
-    await ProjectCommands.checkPlanAvailability(cloudApiClient, logger: logger);
-
     if (newProjectId != null && existingProjectId != null) {
       throw ArgumentError(
         'Cannot specify both newProjectId and existingProjectId.',
@@ -48,6 +47,7 @@ abstract class Launch {
     final projectSetup = ProjectLaunch(
       projectDir: specifiedProjectDir,
       projectId: newProjectId ?? existingProjectId,
+      plan: plan,
       enableDb: enableDb,
       preexistingProject: existingProjectId != null,
       performDeploy: performDeploy,
@@ -58,6 +58,8 @@ abstract class Launch {
     await selectProjectId(cloudApiClient, logger, projectSetup);
 
     if (projectSetup.preexistingProject != true) {
+      await selectPlan(cloudApiClient, logger, projectSetup);
+
       await selectEnableDb(logger, projectSetup);
     }
 
@@ -328,6 +330,63 @@ The default API domain will be: <project-id>.api.serverpod.space
     return null;
   }
 
+  static Future<void> selectPlan(
+    final Client cloudApiClient,
+    final CommandLogger logger,
+    final ProjectLaunch projectSetup,
+  ) async {
+    final validPlanNames = PlanProfile.values
+        .map((final p) => p.name)
+        .join(', ');
+
+    var planProfile = projectSetup.plan;
+
+    do {
+      if (planProfile != null) {
+        if (await _isAvailablePlan(cloudApiClient, logger, planProfile)) {
+          projectSetup.plan = planProfile;
+          return;
+        }
+      }
+
+      final projectPlanName = await logger.input('Enter the plan');
+
+      if (projectPlanName.isEmpty) {
+        logger.error('Plan is required. Must be one of: $validPlanNames');
+        continue;
+      }
+
+      planProfile = PlanProfile.values
+          .where((final p) => p.name == projectPlanName)
+          .firstOrNull;
+      if (planProfile == null) {
+        logger.error('Invalid plan. Must be one of: $validPlanNames');
+        continue;
+      }
+    } while (true);
+  }
+
+  static Future<bool> _isAvailablePlan(
+    final Client cloudApiClient,
+    final CommandLogger logger,
+    final PlanProfile planProfile,
+  ) async {
+    try {
+      await ProjectCommands.checkPlanAvailability(
+        cloudApiClient,
+        logger: logger,
+        plan: planProfile,
+      );
+      return true;
+    } on NotFoundException catch (e) {
+      logger.error('No plan found for ${planProfile.name}: ${e.message}');
+      return false;
+    } on ProcurementDeniedException catch (e) {
+      logger.error(e.message);
+      return false;
+    }
+  }
+
   static Future<void> selectEnableDb(
     final CommandLogger logger,
     final ProjectLaunch projectSetup,
@@ -458,6 +517,7 @@ The default API domain will be: <project-id>.api.serverpod.space
     final projectDir = projectSetup.projectDir;
     final configFilePath = projectSetup.configFilePath;
     final performDeploy = projectSetup.performDeploy;
+    final planProfile = projectSetup.plan;
 
     if (projectId == null) {
       throw StateError('ProjectId must be set.');
@@ -476,12 +536,16 @@ The default API domain will be: <project-id>.api.serverpod.space
     }
 
     if (projectSetup.preexistingProject != true) {
+      if (planProfile == null) {
+        throw StateError('PlanProfile must be set.');
+      }
+
       final enableDb = projectSetup.enableDb!;
       await ProjectCommands.createProject(
         cloudApiClient,
         logger: logger,
         projectId: projectId,
-        projectProfile: ProjectProfile.defaultProfile,
+        plan: planProfile,
         enableDb: enableDb,
         projectDir: projectDir,
         configFilePath: configFilePath,
@@ -600,6 +664,7 @@ class ProjectLaunch {
   String? _projectDir;
   String? configFilePath;
   String? projectId;
+  PlanProfile? plan;
   bool? enableDb;
   bool? preexistingProject;
   bool? performDeploy;
@@ -608,6 +673,7 @@ class ProjectLaunch {
   ProjectLaunch({
     final String? projectDir,
     this.projectId,
+    this.plan,
     this.enableDb,
     this.preexistingProject,
     this.performDeploy,
@@ -637,6 +703,7 @@ class ProjectLaunch {
         ['Project directory', projectDir],
         if (preexistingProject != true) ...[
           ['New project id', projectId],
+          ['Project plan', plan?.name ?? ''],
           ['Enable DB', enableDb == true ? 'yes' : 'no'],
         ] else
           ['Existing project id', projectId],
