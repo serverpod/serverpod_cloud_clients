@@ -992,6 +992,12 @@ class EndpointPlans extends _i1.EndpointRef {
   String get name => 'plans';
 
   /// Procures a subscription plan.
+  ///
+  /// For plans that depend on the customer billing type (private / business),
+  /// the user must have a customer billing type configured. If not,
+  /// a [NoCustomerBillingTypeException] is thrown.
+  ///
+  /// If the plan is not available to procure, a [ProcurementDeniedException] is thrown.
   _i2.Future<String> procurePlan({
     String? planProductName,
     @Deprecated('Use planProductName instead') String? planName,
