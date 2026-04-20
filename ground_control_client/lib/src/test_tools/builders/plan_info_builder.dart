@@ -142,6 +142,26 @@ class PlanInfoBuilder {
     return this;
   }
 
+  PlanInfoBuilder withGrowthPlan() {
+    _productId = 'growth:0';
+    _displayName = 'Growth';
+    _description = 'A test plan description';
+    _trialLength = 30;
+    _trialEndDate = null;
+    _projectsLimit = 3;
+    return this;
+  }
+
+  PlanInfoBuilder withStarterPlan() {
+    _productId = 'starter:0';
+    _displayName = 'Starter';
+    _description = 'A test plan description';
+    _trialLength = 30;
+    _trialEndDate = null;
+    _projectsLimit = 3;
+    return this;
+  }
+
   PlanInfoBuilder withStandardPlan() {
     _productId = 'standard:0';
     _displayName = 'Standard';
