@@ -210,9 +210,16 @@ class EndpointAdminProjects extends _i1.EndpointRef {
   /// infrastructure on behalf of a user.
   /// Executes the same deletion code path as the regular deleteProject endpoint,
   /// but bypasses project-level authorization.
-  _i2.Future<_i3.Project> deleteProject({required String cloudProjectId}) =>
+  ///
+  /// If [keepEmptySubscription] is true, the project's subscription is not
+  /// terminated even if it has no more resource products.
+  _i2.Future<_i3.Project> deleteProject({
+    required String cloudProjectId,
+    bool? keepEmptySubscription,
+  }) =>
       caller.callServerEndpoint<_i3.Project>('adminProjects', 'deleteProject', {
         'cloudProjectId': cloudProjectId,
+        'keepEmptySubscription': keepEmptySubscription,
       });
 
   /// Redeploys a capsule using its current image.
@@ -1080,7 +1087,9 @@ class EndpointProjects extends _i1.EndpointRef {
 
   /// Creates a new project with basic setup.
   ///
-  /// The [cloudProjectId] must be globally unique.
+  /// Currently also creates its capsule.
+  ///
+  /// [cloudProjectId] is the id of the new project, it must be valid and globally unique.
   ///
   /// [underSubscriptionId] optionally specifies a subscription to procure the
   /// project under, or the user's first found subscription will be used.
@@ -1089,9 +1098,10 @@ class EndpointProjects extends _i1.EndpointRef {
   /// [projectProductName] optionally specify the project product name to use,
   /// defaults to the first available bundled product for the subscription plan.
   ///
+  /// Throws [ProcurementDeniedException] if the project procurement fails or the subscription is invalid.
   /// Throws [InvalidValueException] if the project name is invalid.
-  /// Throws [NotFoundException] if the subscription or the product is not found.
-  /// Throws [ProcurementDeniedException] if the procurement fails.
+  /// Throws [DuplicateEntryException] if the project id already exists.
+  /// Throws [NoSubscriptionException] if no subscription was provided and the user has no subscription.
   _i2.Future<_i3.Project> createProject({
     required String cloudProjectId,
     String? underSubscriptionId,
@@ -1140,6 +1150,10 @@ class EndpointProjects extends _i1.EndpointRef {
   /// Archives a project and its capsule and permanently deletes its infrastructure.
   /// The id of the project is not available for reuse but the same string can
   /// be assigned as the "name" of another capsule.
+  ///
+  /// The project's subscription is terminated immediately if it has no more resource products.
+  ///
+  /// If the project does not exist or is archived, [NotFoundException] is thrown.
   _i2.Future<_i3.Project> deleteProject({required String cloudProjectId}) =>
       caller.callServerEndpoint<_i3.Project>('projects', 'deleteProject', {
         'cloudProjectId': cloudProjectId,
