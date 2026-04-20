@@ -29,6 +29,8 @@ abstract class Owner implements _i1.SerializableModel {
     this.user,
     this.billingInfo,
     this.projects,
+    this.trialEndingAt,
+    this.trialSubscriptionId,
   }) : id = id ?? const _i1.Uuid().v4obj(),
        createdAt = createdAt ?? DateTime.now(),
        updatedAt = updatedAt ?? DateTime.now();
@@ -45,6 +47,8 @@ abstract class Owner implements _i1.SerializableModel {
     _i2.User? user,
     _i3.BillingInfo? billingInfo,
     List<_i4.Project>? projects,
+    DateTime? trialEndingAt,
+    String? trialSubscriptionId,
   }) = _OwnerImpl;
 
   factory Owner.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -82,6 +86,12 @@ abstract class Owner implements _i1.SerializableModel {
           : _i5.Protocol().deserialize<List<_i4.Project>>(
               jsonSerialization['projects'],
             ),
+      trialEndingAt: jsonSerialization['trialEndingAt'] == null
+          ? null
+          : _i1.DateTimeJsonExtension.fromJson(
+              jsonSerialization['trialEndingAt'],
+            ),
+      trialSubscriptionId: jsonSerialization['trialSubscriptionId'] as String?,
     );
   }
 
@@ -109,6 +119,12 @@ abstract class Owner implements _i1.SerializableModel {
 
   List<_i4.Project>? projects;
 
+  /// When non-null, the owner's subscription trial ends at this instant (UTC).
+  DateTime? trialEndingAt;
+
+  /// Subscription designated for this owner's trial
+  String? trialSubscriptionId;
+
   /// Returns a shallow copy of this [Owner]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
@@ -124,6 +140,8 @@ abstract class Owner implements _i1.SerializableModel {
     _i2.User? user,
     _i3.BillingInfo? billingInfo,
     List<_i4.Project>? projects,
+    DateTime? trialEndingAt,
+    String? trialSubscriptionId,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -141,6 +159,9 @@ abstract class Owner implements _i1.SerializableModel {
       if (billingInfo != null) 'billingInfo': billingInfo?.toJson(),
       if (projects != null)
         'projects': projects?.toJson(valueToJson: (v) => v.toJson()),
+      if (trialEndingAt != null) 'trialEndingAt': trialEndingAt?.toJson(),
+      if (trialSubscriptionId != null)
+        'trialSubscriptionId': trialSubscriptionId,
     };
   }
 
@@ -165,6 +186,8 @@ class _OwnerImpl extends Owner {
     _i2.User? user,
     _i3.BillingInfo? billingInfo,
     List<_i4.Project>? projects,
+    DateTime? trialEndingAt,
+    String? trialSubscriptionId,
   }) : super._(
          id: id,
          createdAt: createdAt,
@@ -177,6 +200,8 @@ class _OwnerImpl extends Owner {
          user: user,
          billingInfo: billingInfo,
          projects: projects,
+         trialEndingAt: trialEndingAt,
+         trialSubscriptionId: trialSubscriptionId,
        );
 
   /// Returns a shallow copy of this [Owner]
@@ -195,6 +220,8 @@ class _OwnerImpl extends Owner {
     Object? user = _Undefined,
     Object? billingInfo = _Undefined,
     Object? projects = _Undefined,
+    Object? trialEndingAt = _Undefined,
+    Object? trialSubscriptionId = _Undefined,
   }) {
     return Owner(
       id: id ?? this.id,
@@ -213,6 +240,12 @@ class _OwnerImpl extends Owner {
       projects: projects is List<_i4.Project>?
           ? projects
           : this.projects?.map((e0) => e0.copyWith()).toList(),
+      trialEndingAt: trialEndingAt is DateTime?
+          ? trialEndingAt
+          : this.trialEndingAt,
+      trialSubscriptionId: trialSubscriptionId is String?
+          ? trialSubscriptionId
+          : this.trialSubscriptionId,
     );
   }
 }
