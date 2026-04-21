@@ -347,17 +347,20 @@ project:
           await expectLater(commandResult, completes);
         });
 
-        test('then scloud.yaml contains dartSdk from .tool-versions', () async {
-          await commandResult;
+        test(
+          'then scloud.yaml omits dartSdk when only .tool-versions is present',
+          () async {
+            await commandResult;
 
-          final resolved = resolveProjectDartSdkVersion(
-            Directory(testProjectDir),
-          );
-          final expected = d.dir(testProjectDir, [
-            d.file('scloud.yaml', contains('dartSdk: "$resolved"')),
-          ]);
-          await expectLater(expected.validate(), completes);
-        });
+            final resolved = resolveProjectDartSdkVersion(
+              Directory(testProjectDir),
+            );
+            final expected = d.dir(testProjectDir, [
+              d.file('scloud.yaml', contains('dartSdk: "$resolved"')),
+            ]);
+            await expectLater(expected.validate(), completes);
+          },
+        );
       });
 
       group('and .tool-versions file with dart entry when executing link '

@@ -17,6 +17,10 @@ abstract final class VersionConstants {
   /// The constraint for which Serverpod versions are supported for tenant
   /// projects in Serverpod Cloud.
   static const supportedServerpodConstraint = '>=$minSupportedServerpodVersion';
+
+  /// Minimum Serverpod version recommended when deploying with more than one
+  /// server instance (scaling / rolling deploy behavior).
+  static const serverpodMultiInstanceSafeMinVersion = '3.3.0';
 }
 
 abstract final class ProjectConfigFileConstants {

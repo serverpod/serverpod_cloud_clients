@@ -42,10 +42,21 @@ void main() {
       fileUploaderFactory: (final _) => mockFileUploader,
     ),
   );
+  var readComputeMaxInstancesForTest = 1;
+  ComputeInfo buildReadComputeAnswer() => ComputeInfoBuilder()
+      .withMaxInstances(readComputeMaxInstancesForTest)
+      .build();
 
   setUp(() {
     mockFileUploader.init();
     logger.clear();
+    readComputeMaxInstancesForTest = 1;
+    reset(client.compute);
+    when(
+      () => client.compute.readCompute(
+        cloudCapsuleId: any(named: 'cloudCapsuleId'),
+      ),
+    ).thenAnswer((final _) async => buildReadComputeAnswer());
   });
 
   test('Given deploy command when instantiated then requires login', () {
@@ -137,6 +148,111 @@ project:
               ),
             ),
           );
+        });
+      },
+    );
+
+    group(
+      'and legacy Serverpod constraint with multi-instance compute when deploying',
+      () {
+        late String testProjectDir;
+
+        setUp(() async {
+          await d.dir(ProjectFactory.defaultDirectoryName, [
+            d.file('pubspec.yaml', '''
+name: ${ProjectFactory.defaultPackageName}
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+dependencies:
+  serverpod: ">=3.2.0 <3.3.0"
+'''),
+            d.file('scloud.yaml', '''
+project:
+  projectId: "${BucketUploadDescription.projectId}"
+  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
+'''),
+          ]).create();
+          testProjectDir = p.join(
+            d.sandbox,
+            ProjectFactory.defaultDirectoryName,
+          );
+
+          when(
+            () => client.deploy.createUploadDescription(
+              any(),
+              serverpodVersion: any(named: 'serverpodVersion'),
+              dartVersion: any(named: 'dartVersion'),
+            ),
+          ).thenAnswer(
+            (final _) async => BucketUploadDescription.uploadDescription,
+          );
+          readComputeMaxInstancesForTest = 2;
+        });
+
+        test('then logs multi-instance scaling warning', () async {
+          await cli.run([
+            'deploy',
+            '--project',
+            BucketUploadDescription.projectId,
+            '--project-dir',
+            testProjectDir,
+          ]);
+
+          expect(logger.warningCalls, isNotEmpty);
+          expect(
+            logger.warningCalls.first.message,
+            contains(VersionConstants.serverpodMultiInstanceSafeMinVersion),
+          );
+        });
+      },
+    );
+
+    group(
+      'and Serverpod ^3.3.0 with multi-instance compute when deploying',
+      () {
+        late String testProjectDir;
+
+        setUp(() async {
+          await d.dir(ProjectFactory.defaultDirectoryName, [
+            d.file('pubspec.yaml', '''
+name: ${ProjectFactory.defaultPackageName}
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+dependencies:
+  serverpod: "^3.3.0"
+'''),
+            d.file('scloud.yaml', '''
+project:
+  projectId: "${BucketUploadDescription.projectId}"
+  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
+'''),
+          ]).create();
+          testProjectDir = p.join(
+            d.sandbox,
+            ProjectFactory.defaultDirectoryName,
+          );
+
+          when(
+            () => client.deploy.createUploadDescription(
+              any(),
+              serverpodVersion: any(named: 'serverpodVersion'),
+              dartVersion: any(named: 'dartVersion'),
+            ),
+          ).thenAnswer(
+            (final _) async => BucketUploadDescription.uploadDescription,
+          );
+          readComputeMaxInstancesForTest = 2;
+        });
+
+        test('then logs no warning', () async {
+          await cli.run([
+            'deploy',
+            '--project',
+            BucketUploadDescription.projectId,
+            '--project-dir',
+            testProjectDir,
+          ]);
+          expect(logger.warningCalls, isEmpty);
         });
       },
     );

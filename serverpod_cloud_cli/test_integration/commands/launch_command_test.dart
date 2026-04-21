@@ -61,6 +61,14 @@ void main() {
   setUp(() {
     mockFileUploader.init();
     logger.clear();
+    reset(client.compute);
+    when(
+      () => client.compute.readCompute(
+        cloudCapsuleId: any(named: 'cloudCapsuleId'),
+      ),
+    ).thenAnswer(
+      (final _) async => ComputeInfoBuilder().withMaxInstances(1).build(),
+    );
   });
 
   tearDown(() {

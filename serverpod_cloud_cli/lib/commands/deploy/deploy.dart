@@ -15,6 +15,7 @@ import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dar
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/dart_version_util.dart'
     show ProjectDartVersionHint;
+import 'package:serverpod_cloud_cli/util/deploy_multi_instance_serverpod_warning.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart'
     show TenantProjectPubspec;
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_io.dart';
@@ -83,6 +84,13 @@ abstract class Deploy {
     late final String uploadDescription;
 
     if (!dryRun) {
+      await warnIfLegacyServerpodWithMultipleInstances(
+        cloudApiClient: cloudApiClient,
+        projectId: projectId,
+        logger: logger,
+        serverpodVersionConstraint: pubspecValidator.serverpodVersion,
+      );
+
       final serverpodVersion = pubspecValidator.serverpodVersion;
 
       await logger.progress('Retrieving upload description...', () async {
