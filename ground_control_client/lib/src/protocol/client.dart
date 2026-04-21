@@ -1179,8 +1179,6 @@ class EndpointProjects extends _i1.EndpointRef {
   /// capsule identifier used for compute and database operations.
   ///
   /// When [resources.databaseSize] is null, database sizing is not changed.
-  ///
-  /// This endpoint currently only defines the API surface.
   _i2.Future<void> updateProjectProfile({
     required String cloudProjectId,
     required _i31.ProjectProfileUpdate resources,
