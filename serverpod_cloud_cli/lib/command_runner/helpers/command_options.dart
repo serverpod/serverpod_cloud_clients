@@ -67,7 +67,6 @@ class PlanOption extends EnumOption<PlanProfile> {
         helpText: 'Selects the plan to use.',
         enumParser: const EnumParser(PlanProfile.values),
         defaultsTo: defaultValue,
-        hide: true,
       );
 }
 

@@ -343,10 +343,8 @@ The default API domain will be: <project-id>.api.serverpod.space
 
     do {
       if (planProfile != null) {
-        if (await _isAvailablePlan(cloudApiClient, logger, planProfile)) {
-          projectSetup.plan = planProfile;
-          return;
-        }
+        projectSetup.plan = planProfile;
+        return;
       }
 
       final projectPlanName = await logger.input('Enter the plan');
@@ -364,27 +362,6 @@ The default API domain will be: <project-id>.api.serverpod.space
         continue;
       }
     } while (true);
-  }
-
-  static Future<bool> _isAvailablePlan(
-    final Client cloudApiClient,
-    final CommandLogger logger,
-    final PlanProfile planProfile,
-  ) async {
-    try {
-      await ProjectCommands.checkPlanAvailability(
-        cloudApiClient,
-        logger: logger,
-        plan: planProfile,
-      );
-      return true;
-    } on NotFoundException catch (e) {
-      logger.error('No plan found for ${planProfile.name}: ${e.message}');
-      return false;
-    } on ProcurementDeniedException catch (e) {
-      logger.error(e.message);
-      return false;
-    }
   }
 
   static Future<void> selectEnableDb(

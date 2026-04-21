@@ -90,10 +90,14 @@ commands:
       - name: create
         flags:
           -p, --project=!: "The ID of the project. Can be passed as the first argument."
+          --plan=: "Selects the plan to use."
           --enable-db: "Flag to enable the database for the project."
           --no-enable-db: "Flag to enable the database for the project."
         exclusiveFlags:
           - [enable-db, no-enable-db]
+        completion:
+          flag:
+            plan: ["starter", "growth"]
 
       - name: delete
         flags:
@@ -307,6 +311,7 @@ commands:
     flags:
       --project=: "The ID of an existing project to use."
       --new-project=: "The ID of a new project to create."
+      --plan=: "Selects the plan to use."
       --enable-db: "Flag to enable the database for the project."
       --no-enable-db: "Flag to enable the database for the project."
       --deploy: "Flag to immediately deploy the project."
@@ -315,6 +320,9 @@ commands:
     exclusiveFlags:
       - [enable-db, no-enable-db]
       - [deploy, no-deploy]
+    completion:
+      flag:
+        plan: ["starter", "growth"]
 
   - name: settings
     flags:
