@@ -6,13 +6,13 @@ import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 void main() {
-  group('ToolVersionsIO.readDartVersion -', () {
+  group('ToolVersionsIO.readDartVersionFromToolVersions -', () {
     test('Given no .tool-versions file when reading dart version '
         'then returns null', () async {
       await d.dir('project', []).create();
       final dir = Directory(d.sandbox);
 
-      expect(ToolVersionsIO.readDartVersion(dir), isNull);
+      expect(ToolVersionsIO.readDartVersionFromToolVersions([dir]), isNull);
     });
 
     test('Given .tool-versions with dart entry when reading dart version '
@@ -22,7 +22,10 @@ void main() {
       ]).create();
       final dir = Directory(d.path('project'));
 
-      expect(ToolVersionsIO.readDartVersion(dir), equals('3.9.5'));
+      expect(
+        ToolVersionsIO.readDartVersionFromToolVersions([dir]),
+        equals('3.9.5'),
+      );
     });
 
     test('Given .tool-versions with multiple tools when reading dart version '
@@ -35,7 +38,10 @@ void main() {
       ]).create();
       final dir = Directory(d.path('project2'));
 
-      expect(ToolVersionsIO.readDartVersion(dir), equals('3.10.0'));
+      expect(
+        ToolVersionsIO.readDartVersionFromToolVersions([dir]),
+        equals('3.10.0'),
+      );
     });
 
     test('Given .tool-versions without dart entry when reading dart version '
@@ -45,7 +51,7 @@ void main() {
       ]).create();
       final dir = Directory(d.path('project3'));
 
-      expect(ToolVersionsIO.readDartVersion(dir), isNull);
+      expect(ToolVersionsIO.readDartVersionFromToolVersions([dir]), isNull);
     });
 
     test('Given .tool-versions with comment lines when reading dart version '
@@ -55,7 +61,10 @@ void main() {
       ]).create();
       final dir = Directory(d.path('project4'));
 
-      expect(ToolVersionsIO.readDartVersion(dir), equals('3.9.1'));
+      expect(
+        ToolVersionsIO.readDartVersionFromToolVersions([dir]),
+        equals('3.9.1'),
+      );
     });
 
     test('Given .tool-versions with dart entry and trailing comment '
@@ -68,7 +77,10 @@ void main() {
       ]).create();
       final dir = Directory(d.path('project5'));
 
-      expect(ToolVersionsIO.readDartVersion(dir), equals('3.9.5'));
+      expect(
+        ToolVersionsIO.readDartVersionFromToolVersions([dir]),
+        equals('3.9.5'),
+      );
     });
 
     test('Given empty .tool-versions file when reading dart version '
@@ -76,8 +88,53 @@ void main() {
       await d.dir('project6', [d.file('.tool-versions', '')]).create();
       final dir = Directory(d.path('project6'));
 
-      expect(ToolVersionsIO.readDartVersion(dir), isNull);
+      expect(ToolVersionsIO.readDartVersionFromToolVersions([dir]), isNull);
     });
+
+    test('Given first search root has dart when multiple roots '
+        'then returns that version', () async {
+      await d.dir('order_first', [
+        d.file('.tool-versions', 'dart 3.9.0\n'),
+        d.dir('other', [d.file('.tool-versions', 'dart 3.10.0\n')]),
+      ]).create();
+      final first = Directory(d.path('order_first'));
+      final second = Directory(d.path('order_first/other'));
+
+      expect(
+        ToolVersionsIO.readDartVersionFromToolVersions([first, second]),
+        equals('3.9.0'),
+      );
+    });
+
+    test('Given first search root has no dart when multiple roots '
+        'then returns dart from a later root', () async {
+      await d.dir('order_second', [
+        d.dir('server', []),
+        d.file('.tool-versions', 'dart 3.10.2\n'),
+      ]).create();
+      final first = Directory(d.path('order_second/server'));
+      final second = Directory(d.path('order_second'));
+
+      expect(
+        ToolVersionsIO.readDartVersionFromToolVersions([first, second]),
+        equals('3.10.2'),
+      );
+    });
+
+    test(
+      'Given duplicate search roots when reading then skips duplicates',
+      () async {
+        await d.dir('order_dup', [
+          d.file('.tool-versions', 'dart 3.8.1\n'),
+        ]).create();
+        final dir = Directory(d.path('order_dup'));
+
+        expect(
+          ToolVersionsIO.readDartVersionFromToolVersions([dir, dir]),
+          equals('3.8.1'),
+        );
+      },
+    );
   });
 
   group('ToolVersionsIO.writeDartVersion -', () {

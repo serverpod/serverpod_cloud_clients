@@ -70,6 +70,7 @@ project:
           () => client.deploy.createUploadDescription(
             any(),
             serverpodVersion: any(named: 'serverpodVersion'),
+            dartVersion: any(named: 'dartVersion'),
           ),
         ).thenThrow(ServerpodClientUnauthorized());
       });
@@ -283,6 +284,7 @@ project:
             () => client.deploy.createUploadDescription(
               any(),
               serverpodVersion: any(named: 'serverpodVersion'),
+              dartVersion: any(named: 'dartVersion'),
             ),
           ).thenThrow(ServerpodClientForbidden());
         });
@@ -330,6 +332,7 @@ project:
               () => client.deploy.createUploadDescription(
                 any(),
                 serverpodVersion: any(named: 'serverpodVersion'),
+                dartVersion: any(named: 'dartVersion'),
               ),
             ).thenAnswer(
               (final _) async => BucketUploadDescription.uploadDescription,
@@ -401,6 +404,7 @@ project:
               () => client.deploy.createUploadDescription(
                 any(),
                 serverpodVersion: any(named: 'serverpodVersion'),
+                dartVersion: any(named: 'dartVersion'),
               ),
             ).thenAnswer(
               (final _) async => BucketUploadDescription.uploadDescription,
@@ -477,6 +481,7 @@ project:
             () => client.deploy.createUploadDescription(
               any(),
               serverpodVersion: any(named: 'serverpodVersion'),
+              dartVersion: any(named: 'dartVersion'),
             ),
           ).thenAnswer((final _) async => jsonEncode(descriptionContent));
 
@@ -524,6 +529,7 @@ project:
             () => client.deploy.createUploadDescription(
               any(),
               serverpodVersion: any(named: 'serverpodVersion'),
+              dartVersion: any(named: 'dartVersion'),
             ),
           ).thenAnswer(
             (final _) async => BucketUploadDescription.uploadDescription,
@@ -570,6 +576,7 @@ project:
           () => client.deploy.createUploadDescription(
             any(),
             serverpodVersion: any(named: 'serverpodVersion'),
+            dartVersion: any(named: 'dartVersion'),
           ),
         ).thenAnswer(
           (final _) async => BucketUploadDescription.uploadDescription,
@@ -726,6 +733,7 @@ project:
           () => client.deploy.createUploadDescription(
             any(),
             serverpodVersion: any(named: 'serverpodVersion'),
+            dartVersion: any(named: 'dartVersion'),
           ),
         ).thenAnswer(
           (final _) async => BucketUploadDescription.uploadDescription,
@@ -780,6 +788,7 @@ project:
         () => client.deploy.createUploadDescription(
           any(),
           serverpodVersion: any(named: 'serverpodVersion'),
+          dartVersion: any(named: 'dartVersion'),
         ),
       ).thenAnswer(
         (final _) async => BucketUploadDescription.uploadDescription,
@@ -862,6 +871,7 @@ project:
         () => client.deploy.createUploadDescription(
           any(),
           serverpodVersion: any(named: 'serverpodVersion'),
+          dartVersion: any(named: 'dartVersion'),
         ),
       ).thenAnswer(
         (final _) async => BucketUploadDescription.uploadDescription,
@@ -1038,6 +1048,7 @@ project:
           () => client.deploy.createUploadDescription(
             any(),
             serverpodVersion: any(named: 'serverpodVersion'),
+            dartVersion: any(named: 'dartVersion'),
           ),
         ).thenAnswer(
           (final _) async => BucketUploadDescription.uploadDescription,
@@ -1112,6 +1123,7 @@ project:
         () => client.deploy.createUploadDescription(
           any(),
           serverpodVersion: any(named: 'serverpodVersion'),
+          dartVersion: any(named: 'dartVersion'),
         ),
       ).thenAnswer(
         (final _) async => BucketUploadDescription.uploadDescription,
@@ -1166,6 +1178,7 @@ project:
         () => client.deploy.createUploadDescription(
           any(),
           serverpodVersion: any(named: 'serverpodVersion'),
+          dartVersion: any(named: 'dartVersion'),
         ),
       ).thenAnswer(
         (final _) async => BucketUploadDescription.uploadDescription,
@@ -1445,22 +1458,23 @@ project:
           await expectLater(cliCommandFuture, completes);
         });
 
-        test('then no script execution messages are logged.', () async {
-          await cliCommandFuture;
+        test(
+          'then upload description is retrieved before zipping the project.',
+          () async {
+            await cliCommandFuture;
 
-          expect(
-            logger.infoCalls.any(
-              (final call) => call.message == 'Running pre-deploy scripts',
-            ),
-            isFalse,
-          );
-          expect(
-            logger.infoCalls.any(
-              (final call) => call.message == 'Running post-deploy scripts',
-            ),
-            isFalse,
-          );
-        });
+            final progressMessages = logger.progressCalls
+                .map((final c) => c.message)
+                .toList();
+            final retrieveIndex = progressMessages.indexOf(
+              'Retrieving upload description...',
+            );
+            final zipIndex = progressMessages.indexOf('Zipping project...');
+            expect(retrieveIndex, isNot(-1));
+            expect(zipIndex, isNot(-1));
+            expect(retrieveIndex, lessThan(zipIndex));
+          },
+        );
       });
     });
 
@@ -1481,35 +1495,40 @@ project:
           await expectLater(cliCommandFuture, completes);
         });
 
+        test('then scloud.yaml is not created on disk.', () async {
+          await cliCommandFuture;
+
+          final scloudYaml = File(p.join(testProjectDir, 'scloud.yaml'));
+          expect(scloudYaml.existsSync(), isFalse);
+        });
+
         test(
-          'then scloud.yaml is created with the auto-resolved dartSdk.',
+          'then upload runs after retrieving description; zip has pubspec, no scloud.yaml.',
           () async {
             await cliCommandFuture;
 
-            final scloudYaml = File(p.join(testProjectDir, 'scloud.yaml'));
-            expect(scloudYaml.existsSync(), isTrue);
-            expect(
-              scloudYaml.readAsStringSync(),
-              contains('dartSdk: "${VersionConstants.minSupportedSdkVersion}"'),
+            final progressMessages = logger.progressCalls
+                .map((final c) => c.message)
+                .toList();
+            final retrieveIndex = progressMessages.indexOf(
+              'Retrieving upload description...',
             );
-          },
-        );
-
-        test(
-          'then uploaded zip contains scloud.yaml with resolved dartSdk.',
-          () async {
-            await cliCommandFuture;
+            final zipIndex = progressMessages.indexOf('Zipping project...');
+            final uploadIndex = progressMessages.indexOf(
+              'Uploading project...',
+            );
+            expect(retrieveIndex, isNot(-1));
+            expect(zipIndex, isNot(-1));
+            expect(uploadIndex, isNot(-1));
+            expect(retrieveIndex, lessThan(zipIndex));
+            expect(zipIndex, lessThan(uploadIndex));
 
             expect(mockFileUploader.uploadedData, isNotEmpty);
             final archive = ZipDecoder().decodeBytes(
               mockFileUploader.uploadedData,
             );
-            final scloudYamlFile = archive.findFile('scloud.yaml');
-            expect(scloudYamlFile, isNotNull);
-            expect(
-              utf8.decode(scloudYamlFile!.content as List<int>),
-              contains('dartSdk: "${VersionConstants.minSupportedSdkVersion}"'),
-            );
+            expect(archive.findFile('pubspec.yaml'), isNotNull);
+            expect(archive.findFile('scloud.yaml'), isNull);
           },
         );
       });
@@ -1531,7 +1550,13 @@ dependencies:
       ]).create();
       testProjectDir = p.join(d.sandbox, 'dart_version_project');
 
-      when(() => client.deploy.createUploadDescription(any())).thenAnswer(
+      when(
+        () => client.deploy.createUploadDescription(
+          any(),
+          serverpodVersion: any(named: 'serverpodVersion'),
+          dartVersion: any(named: 'dartVersion'),
+        ),
+      ).thenAnswer(
         (final _) async => BucketUploadDescription.uploadDescription,
       );
     });
@@ -1553,14 +1578,6 @@ dependencies:
 
       test('then command completes successfully.', () async {
         await expectLater(cliCommandFuture, completes);
-      });
-
-      test('then scloud.yaml is updated with the specified dartSdk.', () async {
-        await cliCommandFuture;
-
-        final scloudYaml = File(p.join(testProjectDir, 'scloud.yaml'));
-        expect(scloudYaml.existsSync(), isTrue);
-        expect(scloudYaml.readAsStringSync(), contains('dartSdk: "3.10.0"'));
       });
 
       test(
@@ -1633,15 +1650,12 @@ project:
         });
 
         test(
-          'then scloud.yaml is updated with the CLI flag version.',
+          'then scloud.yaml dartSdk from file is unchanged by CLI flag.',
           () async {
             await cliCommandFuture;
 
             final scloudYaml = File(p.join(testProjectDir, 'scloud.yaml'));
-            expect(
-              scloudYaml.readAsStringSync(),
-              contains('dartSdk: "3.10.0"'),
-            );
+            expect(scloudYaml.readAsStringSync(), contains('dartSdk: "3.9.5"'));
           },
         );
       },
@@ -1663,24 +1677,10 @@ project:
       test('then command completes successfully.', () async {
         await expectLater(cliCommandFuture, completes);
       });
-
-      test(
-        'then scloud.yaml is created with the auto-resolved dartSdk.',
-        () async {
-          await cliCommandFuture;
-
-          final scloudYaml = File(p.join(testProjectDir, 'scloud.yaml'));
-          expect(scloudYaml.existsSync(), isTrue);
-          expect(
-            scloudYaml.readAsStringSync(),
-            contains('dartSdk: "${VersionConstants.minSupportedSdkVersion}"'),
-          );
-        },
-      );
     });
 
     group(
-      'when deploying with an unsupported --dart-version and --dry-run',
+      'when deploying with parseable --dart-version outside server range and --dry-run',
       () {
         late Future cliCommandFuture;
         setUp(() async {
@@ -1696,23 +1696,40 @@ project:
           ]);
         });
 
-        test('then command throws ErrorExitException.', () async {
-          await expectLater(
-            cliCommandFuture,
-            throwsA(isA<ErrorExitException>()),
-          );
-        });
-
-        test('then error message mentions the version range.', () async {
-          await cliCommandFuture.catchError((final _) {});
-          expect(logger.errorCalls, isNotEmpty);
-          expect(
-            logger.errorCalls.first.message,
-            contains('outside the supported range'),
-          );
+        test('then command completes (server validates on upload).', () async {
+          await expectLater(cliCommandFuture, completes);
         });
       },
     );
+
+    group('when deploying with unparseable --dart-version and --dry-run', () {
+      late Future cliCommandFuture;
+      setUp(() async {
+        cliCommandFuture = cli.run([
+          'deploy',
+          '--dry-run',
+          '--dart-version',
+          'not-a-constraint',
+          '--project',
+          BucketUploadDescription.projectId,
+          '--project-dir',
+          testProjectDir,
+        ]);
+      });
+
+      test('then command throws ErrorExitException.', () async {
+        await expectLater(cliCommandFuture, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then error message mentions invalid constraint.', () async {
+        await cliCommandFuture.catchError((final _) {});
+        expect(logger.errorCalls, isNotEmpty);
+        expect(
+          logger.errorCalls.first.message,
+          contains('Invalid Dart SDK version constraint'),
+        );
+      });
+    });
 
     group(
       'when deploying with --dart-version and existing .tool-versions and --dry-run',
@@ -1752,6 +1769,7 @@ project:
     group('when deploying (non-dry-run) with --dart-version', () {
       late Future cliCommandFuture;
       setUp(() async {
+        clearInteractions(client.deploy);
         cliCommandFuture = cli.run([
           'deploy',
           '--dart-version',
@@ -1767,31 +1785,68 @@ project:
         await expectLater(cliCommandFuture, completes);
       });
 
-      test('then scloud.yaml in the uploaded zip contains dartSdk.', () async {
-        await cliCommandFuture;
+      test(
+        'then createUploadDescription gets CLI dartVersion; zip has pubspec, no scloud.yaml.',
+        () async {
+          await cliCommandFuture;
 
-        expect(mockFileUploader.uploadedData, isNotEmpty);
+          verify(
+            () => client.deploy.createUploadDescription(
+              BucketUploadDescription.projectId,
+              serverpodVersion: any(named: 'serverpodVersion'),
+              dartVersion: '3.10.0',
+            ),
+          ).called(1);
 
-        final archive = ZipDecoder().decodeBytes(mockFileUploader.uploadedData);
-        final scloudYamlFile = archive.findFile('scloud.yaml');
-        expect(
-          scloudYamlFile,
-          isNotNull,
-          reason: 'scloud.yaml should be included in the deployment zip',
-        );
-        expect(
-          utf8.decode(scloudYamlFile!.content as List<int>),
-          contains('dartSdk: "3.10.0"'),
-        );
-      });
+          expect(mockFileUploader.uploadedData, isNotEmpty);
+          final archive = ZipDecoder().decodeBytes(
+            mockFileUploader.uploadedData,
+          );
+          expect(archive.findFile('scloud.yaml'), isNull);
+        },
+      );
 
-      test('then scloud.yaml on disk has the CLI flag dartSdk.', () async {
+      test('then scloud.yaml is not created on disk.', () async {
         await cliCommandFuture;
 
         final scloudYaml = File(p.join(testProjectDir, 'scloud.yaml'));
-        expect(scloudYaml.existsSync(), isTrue);
-        expect(scloudYaml.readAsStringSync(), contains('dartSdk: "3.10.0"'));
+        expect(scloudYaml.existsSync(), isFalse);
       });
+    });
+
+    group('when deploying (non-dry-run) with two-segment --dart-version', () {
+      late Future cliCommandFuture;
+      setUp(() async {
+        clearInteractions(client.deploy);
+        cliCommandFuture = cli.run([
+          'deploy',
+          '--dart-version',
+          '3.10',
+          '--project',
+          BucketUploadDescription.projectId,
+          '--project-dir',
+          testProjectDir,
+        ]);
+      });
+
+      test('then command completes successfully.', () async {
+        await expectLater(cliCommandFuture, completes);
+      });
+
+      test(
+        'then createUploadDescription gets normalized patch dartVersion.',
+        () async {
+          await cliCommandFuture;
+
+          verify(
+            () => client.deploy.createUploadDescription(
+              BucketUploadDescription.projectId,
+              serverpodVersion: any(named: 'serverpodVersion'),
+              dartVersion: '3.10.0',
+            ),
+          ).called(1);
+        },
+      );
     });
   });
 }

@@ -3,6 +3,7 @@ library;
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
@@ -14,6 +15,8 @@ import 'package:serverpod_cloud_cli/command_runner/commands/launch_command.dart'
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/constants.dart' show VersionConstants;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/util/pubspec_validator.dart'
+    show resolveProjectDartSdkVersion;
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
@@ -119,6 +122,7 @@ void main() {
         () => client.deploy.createUploadDescription(
           any(),
           serverpodVersion: any(named: 'serverpodVersion'),
+          dartVersion: any(named: 'dartVersion'),
         ),
       ).thenAnswer((final _) async => jsonEncode(descriptionContent));
 
@@ -306,6 +310,25 @@ project:
           ]);
           await expectLater(expected.validate(), completes);
         });
+
+        test(
+          'then writes scloud.yaml with dartSdk resolved from project',
+          () async {
+            final resolved = resolveProjectDartSdkVersion(
+              Directory(testProjectDir),
+            );
+            final expected = d.dir(testProjectDir, [
+              d.file(
+                'scloud.yaml',
+                allOf([
+                  contains('projectId: "$projectId"'),
+                  contains('dartSdk: "$resolved"'),
+                ]),
+              ),
+            ]);
+            await expectLater(expected.validate(), completes);
+          },
+        );
 
         test('then .scloudignore is created in the project dir', () async {
           final expected = d.dir(testProjectDir, [

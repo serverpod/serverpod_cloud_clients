@@ -530,10 +530,17 @@ The default API domain will be: <project-id>.api.serverpod.space
       );
     }
 
-    final resolvedDartSdk =
-        dartVersionOverride ??
-        resolveProjectDartSdkVersion(Directory(projectDir));
-    validateDartVersion(resolvedDartSdk);
+    var safeDartSdk = ProjectDartVersionHint.normalizeBareMajorMinorOverride(
+      dartVersionOverride,
+    );
+    if (safeDartSdk != null) {
+      ensureValidVersionConstraint(
+        safeDartSdk,
+        sourceDescription: '(from --dart-version flag)',
+      );
+    } else {
+      safeDartSdk = resolveProjectDartSdkVersion(Directory(projectDir));
+    }
 
     await logger.progress(
       'Writing cloud project configuration files.',
@@ -543,7 +550,7 @@ The default API domain will be: <project-id>.api.serverpod.space
           preDeployScripts: projectSetup.suggestedPreDeployScripts,
           configFilePath: configFilePath,
           projectDirectory: projectDir,
-          dartSdk: resolvedDartSdk,
+          dartSdk: safeDartSdk,
         );
         return true;
       },
@@ -567,7 +574,7 @@ The default API domain will be: <project-id>.api.serverpod.space
       concurrency: 5,
       dryRun: false,
       showFiles: false,
-      dartVersionOverride: dartVersionOverride,
+      dartVersionOverride: safeDartSdk,
     );
 
     logger.info(' '); // blank line

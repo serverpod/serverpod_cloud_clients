@@ -2,6 +2,7 @@
 library;
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
@@ -11,8 +12,9 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/project_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
-import 'package:serverpod_cloud_cli/constants.dart' show VersionConstants;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/util/pubspec_validator.dart'
+    show resolveProjectDartSdkVersion;
 import 'package:serverpod_cloud_cli/util/scloud_config/yaml_schema.dart';
 import 'package:serverpod_cloud_cli/util/scloudignore.dart' show ScloudIgnore;
 import 'package:test/test.dart';
@@ -129,17 +131,15 @@ project:
         });
 
         test(
-          'then scloud.yaml includes dartSdk resolved from pubspec.yaml',
+          'then scloud.yaml contains dartSdk resolved from the project',
           () async {
             await commandResult;
 
+            final resolved = resolveProjectDartSdkVersion(
+              Directory(testProjectDir),
+            );
             final expected = d.dir(testProjectDir, [
-              d.file(
-                'scloud.yaml',
-                contains(
-                  'dartSdk: "${VersionConstants.minSupportedSdkVersion}"',
-                ),
-              ),
+              d.file('scloud.yaml', contains('dartSdk: "$resolved"')),
             ]);
             await expectLater(expected.validate(), completes);
           },
@@ -350,8 +350,11 @@ project:
         test('then scloud.yaml contains dartSdk from .tool-versions', () async {
           await commandResult;
 
+          final resolved = resolveProjectDartSdkVersion(
+            Directory(testProjectDir),
+          );
           final expected = d.dir(testProjectDir, [
-            d.file('scloud.yaml', contains('dartSdk: "3.10.0"')),
+            d.file('scloud.yaml', contains('dartSdk: "$resolved"')),
           ]);
           await expectLater(expected.validate(), completes);
         });

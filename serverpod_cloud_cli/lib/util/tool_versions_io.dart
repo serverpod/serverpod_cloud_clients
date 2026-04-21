@@ -5,11 +5,24 @@ import 'package:path/path.dart' as p;
 abstract final class ToolVersionsIO {
   static const _fileName = '.tool-versions';
 
-  /// Reads the Dart SDK version from the `.tool-versions` file in [directory].
+  /// Looks under each directory in [searchRoots] (in order) for
+  /// `.tool-versions` and returns the `dart` tool version from the first file
+  /// that defines one.
   ///
-  /// Returns the version string for `dart`, or `null` if the file does not
-  /// exist, has no `dart` entry, or cannot be parsed.
-  static String? readDartVersion(final Directory directory) {
+  /// Returns `null` if no matching file or `dart` line is found.
+  static String? readDartVersionFromToolVersions(
+    final Iterable<Directory> searchRoots,
+  ) {
+    for (final root in searchRoots) {
+      final version = _dartVersionFromToolVersionsFileIn(root);
+      if (version != null) {
+        return version;
+      }
+    }
+    return null;
+  }
+
+  static String? _dartVersionFromToolVersionsFileIn(final Directory directory) {
     final file = File(p.join(directory.path, _fileName));
     if (!file.existsSync()) {
       return null;

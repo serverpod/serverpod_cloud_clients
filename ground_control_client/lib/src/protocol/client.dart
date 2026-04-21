@@ -805,9 +805,11 @@ class EndpointDeploy extends _i1.EndpointRef {
   _i2.Future<String> createUploadDescription(
     String cloudProjectId, {
     String? serverpodVersion,
+    String? dartVersion,
   }) => caller.callServerEndpoint<String>('deploy', 'createUploadDescription', {
     'cloudProjectId': cloudProjectId,
     'serverpodVersion': serverpodVersion,
+    'dartVersion': dartVersion,
   });
 }
 

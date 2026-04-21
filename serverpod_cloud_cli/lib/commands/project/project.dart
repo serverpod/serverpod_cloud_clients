@@ -1,13 +1,13 @@
-import 'dart:io';
+import 'dart:io' show Directory;
 
 import 'package:collection/collection.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/shared/user_interaction/user_confirmations.dart';
+import 'package:serverpod_cloud_cli/util/dart_version_util.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:serverpod_cloud_cli/util/project_files_writer.dart';
-import 'package:serverpod_cloud_cli/util/dart_version_util.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart'
     show resolveProjectDartSdkVersion;
 
@@ -219,10 +219,17 @@ abstract class ProjectCommands {
     required final String configFilePath,
     final String? dartVersionOverride,
   }) async {
-    final resolvedDartSdk =
-        dartVersionOverride ??
-        resolveProjectDartSdkVersion(Directory(projectDirectory));
-    validateDartVersion(resolvedDartSdk);
+    var safeDartSdk = ProjectDartVersionHint.normalizeBareMajorMinorOverride(
+      dartVersionOverride,
+    );
+    if (safeDartSdk != null) {
+      ensureValidVersionConstraint(
+        safeDartSdk,
+        sourceDescription: '(from --dart-version flag)',
+      );
+    } else {
+      safeDartSdk = resolveProjectDartSdkVersion(Directory(projectDirectory));
+    }
 
     await logger.progress(
       'Writing cloud project configuration files.',
@@ -232,7 +239,7 @@ abstract class ProjectCommands {
           preDeployScripts: [],
           configFilePath: configFilePath,
           projectDirectory: projectDirectory,
-          dartSdk: resolvedDartSdk,
+          dartSdk: safeDartSdk,
         );
         return true;
       },
