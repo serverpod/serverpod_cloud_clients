@@ -1,6 +1,22 @@
 
 # Changelog
 
+## [0.26.0] - 2026-04-21
+
+### Added
+
+- **Dart SDK customization** - You can now specify a preferred Dart SDK version in `scloud.yaml` or via the `--dart-version` flag during deployment.
+- **New deployment warnings** - The CLI now warns you if you are deploying multiple instances while using a Serverpod version older than 3.3.0.
+- **Explicit plan selection** - Added a `--plan` option to `project create` and `launch` commands, allowing you to choose between starter and growth profiles.
+- **Expanded documentation** - Added several new guides covering installation, logs, database access, Redis, and secret management.
+- **Subscription model** - Adding new project plans that allow larger podlets and database sizes.
+
+
+### Changed
+
+- **SDK auto-detection** - The CLI now automatically detects and saves your Dart version from `pubspec.yaml` or `.tool-versions` when linking or launching a project.
+
+
 ## [0.25.0] - 2026-03-23
 
 ### Added
