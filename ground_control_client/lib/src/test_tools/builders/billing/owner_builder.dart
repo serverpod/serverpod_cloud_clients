@@ -10,6 +10,8 @@ class OwnerBuilder {
   BillingInfo? _billingInfo;
   List<Project>? _projects;
   User? _user;
+  DateTime? _trialEndingAt;
+  String? _trialSubscriptionId;
 
   OwnerBuilder()
     : _id = Uuid().v4obj(),
@@ -19,7 +21,9 @@ class OwnerBuilder {
       _billingEmails = [],
       _projects = [],
       _billingInfo = null,
-      _user = UserBuilder().build();
+      _user = UserBuilder().build(),
+      _trialEndingAt = null,
+      _trialSubscriptionId = null;
 
   OwnerBuilder withId(UuidValue id) {
     _id = id;
@@ -77,6 +81,16 @@ class OwnerBuilder {
     return this;
   }
 
+  OwnerBuilder withTrialEndingAt(DateTime? trialEndingAt) {
+    _trialEndingAt = trialEndingAt;
+    return this;
+  }
+
+  OwnerBuilder withTrialSubscriptionId(String? trialSubscriptionId) {
+    _trialSubscriptionId = trialSubscriptionId;
+    return this;
+  }
+
   Owner build() {
     return Owner(
       id: _id,
@@ -87,6 +101,8 @@ class OwnerBuilder {
       billingInfo: _billingInfo,
       user: _user,
       projects: _projects,
+      trialEndingAt: _trialEndingAt,
+      trialSubscriptionId: _trialSubscriptionId,
     );
   }
 }
