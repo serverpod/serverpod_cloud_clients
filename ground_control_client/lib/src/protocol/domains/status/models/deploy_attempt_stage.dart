@@ -22,6 +22,7 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
     required this.attemptId,
     required this.stageType,
     this.stageInfo,
+    this.serverpodVersionConstraint,
     this.buildId,
     this.imageName,
     required this.stageStatus,
@@ -36,6 +37,7 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
     required String attemptId,
     required _i2.DeployStageType stageType,
     String? stageInfo,
+    String? serverpodVersionConstraint,
     String? buildId,
     String? imageName,
     required _i3.DeployProgressStatus stageStatus,
@@ -53,6 +55,8 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
         (jsonSerialization['stageType'] as String),
       ),
       stageInfo: jsonSerialization['stageInfo'] as String?,
+      serverpodVersionConstraint:
+          jsonSerialization['serverpodVersionConstraint'] as String?,
       buildId: jsonSerialization['buildId'] as String?,
       imageName: jsonSerialization['imageName'] as String?,
       stageStatus: _i3.DeployProgressStatus.fromJson(
@@ -88,6 +92,10 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
   /// This should be a human-readable string.
   String? stageInfo;
 
+  /// The Serverpod version constraint used by tenant's project.
+  /// It is pub semantic versioning constraint, passed from CLI on deploy.
+  String? serverpodVersionConstraint;
+
   /// The build ID of the deploy attempt that this stage belongs to, if known.
   String? buildId;
 
@@ -113,6 +121,7 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
     String? attemptId,
     _i2.DeployStageType? stageType,
     String? stageInfo,
+    String? serverpodVersionConstraint,
     String? buildId,
     String? imageName,
     _i3.DeployProgressStatus? stageStatus,
@@ -129,6 +138,8 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
       'attemptId': attemptId,
       'stageType': stageType.toJson(),
       if (stageInfo != null) 'stageInfo': stageInfo,
+      if (serverpodVersionConstraint != null)
+        'serverpodVersionConstraint': serverpodVersionConstraint,
       if (buildId != null) 'buildId': buildId,
       if (imageName != null) 'imageName': imageName,
       'stageStatus': stageStatus.toJson(),
@@ -153,6 +164,7 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
     required String attemptId,
     required _i2.DeployStageType stageType,
     String? stageInfo,
+    String? serverpodVersionConstraint,
     String? buildId,
     String? imageName,
     required _i3.DeployProgressStatus stageStatus,
@@ -165,6 +177,7 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
          attemptId: attemptId,
          stageType: stageType,
          stageInfo: stageInfo,
+         serverpodVersionConstraint: serverpodVersionConstraint,
          buildId: buildId,
          imageName: imageName,
          stageStatus: stageStatus,
@@ -183,6 +196,7 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
     String? attemptId,
     _i2.DeployStageType? stageType,
     Object? stageInfo = _Undefined,
+    Object? serverpodVersionConstraint = _Undefined,
     Object? buildId = _Undefined,
     Object? imageName = _Undefined,
     _i3.DeployProgressStatus? stageStatus,
@@ -196,6 +210,9 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
       attemptId: attemptId ?? this.attemptId,
       stageType: stageType ?? this.stageType,
       stageInfo: stageInfo is String? ? stageInfo : this.stageInfo,
+      serverpodVersionConstraint: serverpodVersionConstraint is String?
+          ? serverpodVersionConstraint
+          : this.serverpodVersionConstraint,
       buildId: buildId is String? ? buildId : this.buildId,
       imageName: imageName is String? ? imageName : this.imageName,
       stageStatus: stageStatus ?? this.stageStatus,
