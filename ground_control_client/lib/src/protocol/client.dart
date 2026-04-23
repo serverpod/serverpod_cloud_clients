@@ -1361,6 +1361,10 @@ class EndpointUsers extends _i1.EndpointRef {
   _i2.Future<_i6.User> readUser() =>
       caller.callServerEndpoint<_i6.User>('users', 'readUser', {});
 
+  /// Updates current user's [name].
+  _i2.Future<_i6.User> updateUserName(String name) => caller
+      .callServerEndpoint<_i6.User>('users', 'updateUserName', {'name': name});
+
   /// Reads all users that have a role in the specified project.
   _i2.Future<List<_i6.User>> listUsersInProject({
     required String cloudProjectId,
