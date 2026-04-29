@@ -1,9 +1,9 @@
 import 'package:config/config.dart';
+import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
-import 'package:ground_control_client/ground_control_client.dart';
 
 import 'categories.dart';
 
@@ -20,9 +20,8 @@ class CloudVariableCommand extends CloudCliCommand {
 
   CloudVariableCommand({required super.logger}) {
     addSubcommand(CloudVariableListCommand(logger: logger));
-    addSubcommand(CloudVariableCreateCommand(logger: logger));
-    addSubcommand(CloudVariableUpdateCommand(logger: logger));
-    addSubcommand(CloudVariableDeleteCommand(logger: logger));
+    addSubcommand(CloudVariableSetCommand(logger: logger));
+    addSubcommand(CloudVariableUnsetCommand(logger: logger));
   }
 }
 
@@ -46,35 +45,23 @@ abstract final class VariableCommandConfig {
   );
 }
 
-enum CreateVariableCommandConfig<V> implements OptionDefinition<V> {
+enum SetVariableCommandConfig<V> implements OptionDefinition<V> {
   projectId(VariableCommandConfig.projectId),
   variableName(VariableCommandConfig.variableName),
   variableValue(VariableCommandConfig.variableValue),
   valueFile(VariableCommandConfig.valueFile);
 
-  const CreateVariableCommandConfig(this.option);
+  const SetVariableCommandConfig(this.option);
 
   @override
   final ConfigOptionBase<V> option;
 }
 
-enum UpdateVariableCommandConfig<V> implements OptionDefinition<V> {
-  projectId(VariableCommandConfig.projectId),
-  variableName(VariableCommandConfig.variableName),
-  variableValue(VariableCommandConfig.variableValue),
-  valueFile(VariableCommandConfig.valueFile);
-
-  const UpdateVariableCommandConfig(this.option);
-
-  @override
-  final ConfigOptionBase<V> option;
-}
-
-enum DeleteVariableCommandConfig<V> implements OptionDefinition<V> {
+enum UnsetVariableCommandConfig<V> implements OptionDefinition<V> {
   projectId(VariableCommandConfig.projectId),
   variableName(VariableCommandConfig.variableName);
 
-  const DeleteVariableCommandConfig(this.option);
+  const UnsetVariableCommandConfig(this.option);
 
   @override
   final ConfigOptionBase<V> option;
@@ -89,46 +76,44 @@ enum ListVariableCommandConfig<V> implements OptionDefinition<V> {
   final ConfigOptionBase<V> option;
 }
 
-class CloudVariableCreateCommand
-    extends CloudCliCommand<CreateVariableCommandConfig> {
+class CloudVariableSetCommand
+    extends CloudCliCommand<SetVariableCommandConfig> {
   @override
-  String get description => 'Create an environment variable.';
+  String get description => 'Set an environment variable (create or update).';
 
   @override
-  String get name => 'create';
+  String get name => 'set';
 
   @override
-  String get usageFooter => '''\n
+  String? get usageExamples => '''\n
 Examples
 
-  Create an environment variable called SERVICE_EMAIL with the value support@example.com.
+  Set an environment variable called SERVICE_EMAIL to support@example.com.
   
-    \$ scloud variable create SERVICE_EMAIL support@example.com
+    \$ scloud variable set SERVICE_EMAIL support@example.com
 
-  To create the variable from a file, use the --from-file option.
+  To set the variable from a file, use the --from-file option.
   The full content of the file will be used as the value.
 
-    \$ scloud variable create SERVICE_EMAIL --from-file email.txt
+    \$ scloud variable set SERVICE_EMAIL --from-file email.txt
 ''';
 
-  CloudVariableCreateCommand({required super.logger})
-    : super(options: CreateVariableCommandConfig.values);
+  CloudVariableSetCommand({required super.logger})
+    : super(options: SetVariableCommandConfig.values);
 
   @override
   Future<void> runWithConfig(
-    final Configuration<CreateVariableCommandConfig> commandConfig,
+    final Configuration<SetVariableCommandConfig> commandConfig,
   ) async {
-    final projectId = commandConfig.value(
-      CreateVariableCommandConfig.projectId,
-    );
+    final projectId = commandConfig.value(SetVariableCommandConfig.projectId);
     final variableName = commandConfig.value(
-      CreateVariableCommandConfig.variableName,
+      SetVariableCommandConfig.variableName,
     );
     final variableValue = commandConfig.optionalValue(
-      CreateVariableCommandConfig.variableValue,
+      SetVariableCommandConfig.variableValue,
     );
     final valueFile = commandConfig.optionalValue(
-      CreateVariableCommandConfig.valueFile,
+      SetVariableCommandConfig.valueFile,
     );
 
     String valueToSet;
@@ -148,126 +133,67 @@ Examples
         valueToSet,
         projectId,
       );
+    } on DuplicateEntryException {
+      try {
+        await apiCloudClient.environmentVariables.update(
+          name: variableName,
+          value: valueToSet,
+          cloudCapsuleId: projectId,
+        );
+      } on Exception catch (e, s) {
+        throw FailureException.nested(
+          e,
+          s,
+          'Failed to set the environment variable',
+        );
+      }
     } on Exception catch (e, s) {
       throw FailureException.nested(
         e,
         s,
-        'Failed to create a new environment variable',
+        'Failed to set the environment variable',
       );
     }
 
-    logger.success('Successfully created environment variable.');
+    logger.success('Successfully set environment variable: $variableName.');
   }
 }
 
-class CloudVariableUpdateCommand
-    extends CloudCliCommand<UpdateVariableCommandConfig> {
+class CloudVariableUnsetCommand
+    extends CloudCliCommand<UnsetVariableCommandConfig> {
   @override
-  String get description => 'Update an environment variable.';
+  String get description => 'Remove an environment variable.';
 
   @override
-  String get name => 'update';
+  String get name => 'unset';
 
   @override
-  String get usageFooter => '''\n
+  String? get usageExamples => '''\n
 Examples
 
-  Update an environment variable called SERVICE_EMAIL with a new value.
+  Remove an environment variable called SERVICE_EMAIL.
   
-    \$ scloud variable update SERVICE_EMAIL "noreply@example.com"
-
-  To update the variable from a file, use the --from-file option.
-  The full content of the file will be used as the value.
-
-    \$ scloud variable update SERVICE_EMAIL --from-file email.txt
+    \$ scloud variable unset SERVICE_EMAIL
 ''';
 
-  CloudVariableUpdateCommand({required super.logger})
-    : super(options: UpdateVariableCommandConfig.values);
+  CloudVariableUnsetCommand({required super.logger})
+    : super(options: UnsetVariableCommandConfig.values);
 
   @override
   Future<void> runWithConfig(
-    final Configuration<UpdateVariableCommandConfig> commandConfig,
+    final Configuration<UnsetVariableCommandConfig> commandConfig,
   ) async {
-    final projectId = commandConfig.value(
-      UpdateVariableCommandConfig.projectId,
-    );
+    final projectId = commandConfig.value(UnsetVariableCommandConfig.projectId);
     final variableName = commandConfig.value(
-      UpdateVariableCommandConfig.variableName,
-    );
-    final variableValue = commandConfig.optionalValue(
-      UpdateVariableCommandConfig.variableValue,
-    );
-    final valueFile = commandConfig.optionalValue(
-      UpdateVariableCommandConfig.valueFile,
+      UnsetVariableCommandConfig.variableName,
     );
 
-    String valueToSet;
-    if (variableValue != null) {
-      valueToSet = variableValue;
-    } else if (valueFile != null) {
-      valueToSet = valueFile.readAsStringSync();
-    } else {
-      throw StateError('Expected one of the value options to be set.');
-    }
-
-    final apiCloudClient = runner.serviceProvider.cloudApiClient;
-
-    try {
-      await apiCloudClient.environmentVariables.update(
-        name: variableName,
-        value: valueToSet,
-        cloudCapsuleId: projectId,
-      );
-    } on Exception catch (e, s) {
-      throw FailureException.nested(
-        e,
-        s,
-        'Failed to update the environment variable',
-      );
-    }
-
-    logger.success('Successfully updated environment variable: $variableName.');
-  }
-}
-
-class CloudVariableDeleteCommand
-    extends CloudCliCommand<DeleteVariableCommandConfig> {
-  @override
-  String get description => 'Delete an environment variable.';
-
-  @override
-  String get name => 'delete';
-
-  @override
-  String get usageFooter => '''\n
-Examples
-
-  Delete an environment variable called SERVICE_EMAIL.
-  
-    \$ scloud variable delete SERVICE_EMAIL
-''';
-
-  CloudVariableDeleteCommand({required super.logger})
-    : super(options: DeleteVariableCommandConfig.values);
-
-  @override
-  Future<void> runWithConfig(
-    final Configuration<DeleteVariableCommandConfig> commandConfig,
-  ) async {
-    final projectId = commandConfig.value(
-      DeleteVariableCommandConfig.projectId,
-    );
-    final variableName = commandConfig.value(
-      DeleteVariableCommandConfig.variableName,
-    );
-
-    final shouldDelete = await logger.confirm(
-      'Are you sure you want to delete the environment variable "$variableName"?',
+    final shouldUnset = await logger.confirm(
+      'Are you sure you want to remove the environment variable "$variableName"?',
       defaultValue: false,
     );
 
-    if (!shouldDelete) {
+    if (!shouldUnset) {
       throw UserAbortException();
     }
 
@@ -282,11 +208,11 @@ Examples
       throw FailureException.nested(
         e,
         s,
-        'Failed to delete the environment variable',
+        'Failed to remove the environment variable',
       );
     }
 
-    logger.success('Successfully deleted environment variable: $variableName.');
+    logger.success('Successfully removed environment variable: $variableName.');
   }
 }
 

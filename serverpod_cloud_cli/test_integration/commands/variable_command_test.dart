@@ -39,7 +39,7 @@ void main() {
   });
 
   group('Given unauthenticated', () {
-    group('when executing variable create', () {
+    group('when executing variable set', () {
       late Future commandResult;
 
       setUp(() async {
@@ -49,7 +49,7 @@ void main() {
 
         commandResult = cli.run([
           'variable',
-          'create',
+          'set',
           'key',
           'value',
           '--project',
@@ -77,10 +77,13 @@ void main() {
       });
     });
 
-    group('when executing variable update', () {
+    group('when executing variable set and create throws duplicate', () {
       late Future commandResult;
 
       setUp(() async {
+        when(
+          () => client.environmentVariables.create(any(), any(), any()),
+        ).thenThrow(DuplicateEntryException(message: 'exists'));
         when(
           () => client.environmentVariables.update(
             name: any(named: 'name'),
@@ -91,7 +94,7 @@ void main() {
 
         commandResult = cli.run([
           'variable',
-          'update',
+          'set',
           'key',
           'value',
           '--project',
@@ -119,7 +122,7 @@ void main() {
       });
     });
 
-    group('when executing variable delete and confirming prompt', () {
+    group('when executing variable unset and confirming prompt', () {
       late Future commandResult;
 
       setUp(() async {
@@ -133,7 +136,7 @@ void main() {
         logger.answerNextConfirmWith(true);
         commandResult = cli.run([
           'variable',
-          'delete',
+          'unset',
           'key',
           '--project',
           projectId,
@@ -197,7 +200,7 @@ void main() {
       client.authKeyProvider = InMemoryKeyManager.authenticated();
     });
 
-    group('when executing variable create', () {
+    group('when executing variable set', () {
       setUp(() async {
         when(
           () => client.environmentVariables.create(
@@ -222,7 +225,7 @@ void main() {
         setUp(() async {
           commandResult = cli.run([
             'variable',
-            'create',
+            'set',
             'key',
             'value',
             '--project',
@@ -241,7 +244,7 @@ void main() {
           expect(
             logger.successCalls.first,
             equalsSuccessCall(
-              message: 'Successfully created environment variable.',
+              message: 'Successfully set environment variable: key.',
             ),
           );
         });
@@ -255,7 +258,7 @@ void main() {
 
           commandResult = cli.run([
             'variable',
-            'create',
+            'set',
             'key',
             '--from-file',
             p.join(d.sandbox, 'value.txt'),
@@ -275,7 +278,7 @@ void main() {
           expect(
             logger.successCalls.first,
             equalsSuccessCall(
-              message: 'Successfully created environment variable.',
+              message: 'Successfully set environment variable: key.',
             ),
           );
         });
@@ -289,7 +292,7 @@ void main() {
 
           commandResult = cli.run([
             'variable',
-            'create',
+            'set',
             'key',
             'value',
             '--from-file',
@@ -321,7 +324,7 @@ void main() {
         setUp(() async {
           commandResult = cli.run([
             'variable',
-            'create',
+            'set',
             'key',
             '--project',
             projectId,
@@ -345,7 +348,7 @@ void main() {
       });
     });
 
-    group('when executing variable create', () {
+    group('when executing variable set with multi-line values', () {
       setUp(() async {
         when(
           () => client.environmentVariables.create(
@@ -370,7 +373,7 @@ void main() {
         setUp(() async {
           commandResult = cli.run([
             'variable',
-            'create',
+            'set',
             'key',
             'value1\nline2',
             '--project',
@@ -389,7 +392,7 @@ void main() {
           expect(
             logger.successCalls.first,
             equalsSuccessCall(
-              message: 'Successfully created environment variable.',
+              message: 'Successfully set environment variable: key.',
             ),
           );
         });
@@ -403,7 +406,7 @@ void main() {
 
           commandResult = cli.run([
             'variable',
-            'create',
+            'set',
             'key',
             '--from-file',
             p.join(d.sandbox, 'value.txt'),
@@ -423,15 +426,22 @@ void main() {
           expect(
             logger.successCalls.first,
             equalsSuccessCall(
-              message: 'Successfully created environment variable.',
+              message: 'Successfully set environment variable: key.',
             ),
           );
         });
       });
     });
 
-    group('when executing variable update', () {
+    group('when executing variable set and name already exists', () {
       setUp(() async {
+        when(
+          () => client.environmentVariables.create(
+            any(that: equals('key')),
+            any(),
+            any(),
+          ),
+        ).thenThrow(DuplicateEntryException(message: 'exists'));
         when(
           () => client.environmentVariables.update(
             name: any(named: 'name', that: equals('key')),
@@ -455,7 +465,7 @@ void main() {
         setUp(() async {
           commandResult = cli.run([
             'variable',
-            'update',
+            'set',
             'key',
             'value',
             '--project',
@@ -474,7 +484,7 @@ void main() {
           expect(
             logger.successCalls.first,
             equalsSuccessCall(
-              message: 'Successfully updated environment variable: key.',
+              message: 'Successfully set environment variable: key.',
             ),
           );
         });
@@ -484,11 +494,34 @@ void main() {
         late Future commandResult;
 
         setUp(() async {
+          when(
+            () => client.environmentVariables.create(
+              any(that: equals('key')),
+              any(that: equals('value')),
+              any(),
+            ),
+          ).thenThrow(DuplicateEntryException(message: 'exists'));
+          when(
+            () => client.environmentVariables.update(
+              name: any(named: 'name', that: equals('key')),
+              value: any(named: 'value', that: equals('value')),
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            ),
+          ).thenAnswer(
+            (final invocation) async => Future.value(
+              EnvironmentVariable(
+                name: invocation.namedArguments[#name],
+                value: invocation.namedArguments[#value],
+                capsuleId: 0,
+              ),
+            ),
+          );
+
           await d.file('value.txt', 'value').create();
 
           commandResult = cli.run([
             'variable',
-            'update',
+            'set',
             'key',
             '--from-file',
             p.join(d.sandbox, 'value.txt'),
@@ -508,77 +541,14 @@ void main() {
           expect(
             logger.successCalls.first,
             equalsSuccessCall(
-              message: 'Successfully updated environment variable: key.',
-            ),
-          );
-        });
-      });
-
-      group('with both value arg and value file arg', () {
-        late Future commandResult;
-
-        setUp(() async {
-          await d.file('value.txt', 'value').create();
-
-          commandResult = cli.run([
-            'variable',
-            'update',
-            'key',
-            'value',
-            '--from-file',
-            p.join(d.sandbox, 'value.txt'),
-            '--project',
-            projectId,
-          ]);
-        });
-
-        test('then command throws UsageException', () async {
-          await expectLater(
-            commandResult,
-            throwsA(
-              isA<UsageException>().having(
-                (final e) => e.message,
-                'message',
-                equals(
-                  'These options are mutually exclusive: from-file, value.',
-                ),
-              ),
-            ),
-          );
-        });
-      });
-
-      group('with neither value arg nor file arg', () {
-        late Future commandResult;
-
-        setUp(() async {
-          commandResult = cli.run([
-            'variable',
-            'update',
-            'key',
-            '--project',
-            projectId,
-          ]);
-        });
-
-        test('then command throws UsageException', () async {
-          await expectLater(
-            commandResult,
-            throwsA(
-              isA<UsageException>().having(
-                (final e) => e.message,
-                'message',
-                equals(
-                  'Option group Value requires one of the options to be provided.',
-                ),
-              ),
+              message: 'Successfully set environment variable: key.',
             ),
           );
         });
       });
     });
 
-    group('when executing variable delete and confirming prompt', () {
+    group('when executing variable unset and confirming prompt', () {
       late Future commandResult;
 
       setUp(() async {
@@ -600,7 +570,7 @@ void main() {
         logger.answerNextConfirmWith(true);
         commandResult = cli.run([
           'variable',
-          'delete',
+          'unset',
           'key',
           '--project',
           projectId,
@@ -617,7 +587,7 @@ void main() {
           logger.confirmCalls.first,
           equalsConfirmCall(
             message:
-                'Are you sure you want to delete the environment variable "key"?',
+                'Are you sure you want to remove the environment variable "key"?',
             defaultValue: false,
           ),
         );
@@ -634,20 +604,20 @@ void main() {
         expect(
           logger.successCalls.first,
           equalsSuccessCall(
-            message: 'Successfully deleted environment variable: key.',
+            message: 'Successfully removed environment variable: key.',
           ),
         );
       });
     });
 
-    group('when executing variable delete and rejecting prompt', () {
+    group('when executing variable unset and rejecting prompt', () {
       late Future commandResult;
 
       setUp(() async {
         logger.answerNextConfirmWith(false);
         commandResult = cli.run([
           'variable',
-          'delete',
+          'unset',
           'key',
           '--project',
           projectId,
@@ -664,7 +634,7 @@ void main() {
           logger.confirmCalls.first,
           equalsConfirmCall(
             message:
-                'Are you sure you want to delete the environment variable "key"?',
+                'Are you sure you want to remove the environment variable "key"?',
             defaultValue: false,
           ),
         );

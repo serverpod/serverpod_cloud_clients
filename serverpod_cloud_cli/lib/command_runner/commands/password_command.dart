@@ -16,7 +16,7 @@ class CloudPasswordCommand extends CloudCliCommand {
 The passwords are automatically prefixed with SERVERPOD_PASSWORD_ and will be injected as environment variables.
 Passwords defined by this command can be accessed with the getPassword function.
 
-If you need to set a secret without the SERVERPOD_PASSWORD_ prefix, you can do so by using the secret create command.
+If you need to set a secret without the SERVERPOD_PASSWORD_ prefix, you can do so by using the secret set command.
 ''';
 
   @override

@@ -17,9 +17,9 @@ class CloudSecretCommand extends CloudCliCommand {
   String get category => CommandCategories.control;
 
   CloudSecretCommand({required super.logger}) {
-    addSubcommand(CloudCreateSecretCommand(logger: logger));
+    addSubcommand(CloudSecretSetCommand(logger: logger));
     addSubcommand(CloudListSecretsCommand(logger: logger));
-    addSubcommand(CloudDeleteSecretCommand(logger: logger));
+    addSubcommand(CloudSecretUnsetCommand(logger: logger));
   }
 }
 
@@ -41,38 +41,37 @@ abstract final class SecretCommandConfig {
   );
 }
 
-enum CreateSecretCommandConfig<V> implements OptionDefinition<V> {
+enum SetSecretCommandConfig<V> implements OptionDefinition<V> {
   projectId(SecretCommandConfig.projectId),
   name(SecretCommandConfig.name),
   value(SecretCommandConfig.value),
   valueFile(SecretCommandConfig.valueFile);
 
-  const CreateSecretCommandConfig(this.option);
+  const SetSecretCommandConfig(this.option);
 
   @override
   final ConfigOptionBase<V> option;
 }
 
-class CloudCreateSecretCommand
-    extends CloudCliCommand<CreateSecretCommandConfig> {
+class CloudSecretSetCommand extends CloudCliCommand<SetSecretCommandConfig> {
   @override
-  String get description => 'Create a secret.';
+  String get description => 'Set a secret (create or update).';
 
   @override
-  String get name => 'create';
+  String get name => 'set';
 
-  CloudCreateSecretCommand({required super.logger})
-    : super(options: CreateSecretCommandConfig.values);
+  CloudSecretSetCommand({required super.logger})
+    : super(options: SetSecretCommandConfig.values);
 
   @override
   Future<void> runWithConfig(
-    final Configuration<CreateSecretCommandConfig> commandConfig,
+    final Configuration<SetSecretCommandConfig> commandConfig,
   ) async {
-    final projectId = commandConfig.value(CreateSecretCommandConfig.projectId);
-    final name = commandConfig.value(CreateSecretCommandConfig.name);
-    final value = commandConfig.optionalValue(CreateSecretCommandConfig.value);
+    final projectId = commandConfig.value(SetSecretCommandConfig.projectId);
+    final name = commandConfig.value(SetSecretCommandConfig.name);
+    final value = commandConfig.optionalValue(SetSecretCommandConfig.value);
     final valueFile = commandConfig.optionalValue(
-      CreateSecretCommandConfig.valueFile,
+      SetSecretCommandConfig.valueFile,
     );
 
     String valueToSet;
@@ -87,15 +86,15 @@ class CloudCreateSecretCommand
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
     try {
-      await apiCloudClient.secrets.create(
+      await apiCloudClient.secrets.upsert(
         secrets: {name: valueToSet},
         cloudCapsuleId: projectId,
       );
     } on Exception catch (e, s) {
-      throw FailureException.nested(e, s, 'Failed to create a new secret');
+      throw FailureException.nested(e, s, 'Failed to set secret');
     }
 
-    logger.success('Successfully created secret.');
+    logger.success('Successfully set secret: $name.');
   }
 }
 
@@ -145,40 +144,40 @@ class CloudListSecretsCommand
   }
 }
 
-enum DeleteSecretCommandConfig<V> implements OptionDefinition<V> {
+enum UnsetSecretCommandConfig<V> implements OptionDefinition<V> {
   projectId(SecretCommandConfig.projectId),
   name(SecretCommandConfig.name);
 
-  const DeleteSecretCommandConfig(this.option);
+  const UnsetSecretCommandConfig(this.option);
 
   @override
   final ConfigOptionBase<V> option;
 }
 
-class CloudDeleteSecretCommand
-    extends CloudCliCommand<DeleteSecretCommandConfig> {
+class CloudSecretUnsetCommand
+    extends CloudCliCommand<UnsetSecretCommandConfig> {
   @override
-  String get description => 'Delete a secret.';
+  String get description => 'Remove a secret.';
 
   @override
-  String get name => 'delete';
+  String get name => 'unset';
 
-  CloudDeleteSecretCommand({required super.logger})
-    : super(options: DeleteSecretCommandConfig.values);
+  CloudSecretUnsetCommand({required super.logger})
+    : super(options: UnsetSecretCommandConfig.values);
 
   @override
   Future<void> runWithConfig(
-    final Configuration<DeleteSecretCommandConfig> commandConfig,
+    final Configuration<UnsetSecretCommandConfig> commandConfig,
   ) async {
-    final projectId = commandConfig.value(DeleteSecretCommandConfig.projectId);
-    final name = commandConfig.value(DeleteSecretCommandConfig.name);
+    final projectId = commandConfig.value(UnsetSecretCommandConfig.projectId);
+    final name = commandConfig.value(UnsetSecretCommandConfig.name);
 
-    final shouldDelete = await logger.confirm(
-      'Are you sure you want to delete the secret "$name"?',
+    final shouldUnset = await logger.confirm(
+      'Are you sure you want to remove the secret "$name"?',
       defaultValue: false,
     );
 
-    if (!shouldDelete) {
+    if (!shouldUnset) {
       throw UserAbortException();
     }
 
@@ -187,9 +186,9 @@ class CloudDeleteSecretCommand
     try {
       await apiCloudClient.secrets.delete(cloudCapsuleId: projectId, key: name);
     } on Exception catch (e, s) {
-      throw FailureException.nested(e, s, 'Failed to delete the secret');
+      throw FailureException.nested(e, s, 'Failed to remove the secret');
     }
 
-    logger.success('Successfully deleted secret: $name.');
+    logger.success('Successfully removed secret: $name.');
   }
 }

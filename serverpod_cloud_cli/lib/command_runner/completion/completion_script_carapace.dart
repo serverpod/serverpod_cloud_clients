@@ -145,7 +145,7 @@ commands:
         flags:
           -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
 
-      - name: create
+      - name: set
         flags:
           -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
           --name=!: "The name of the environment variable. Can be passed as the first argument."
@@ -155,17 +155,7 @@ commands:
           flag:
             from-file: ["$files"]
 
-      - name: update
-        flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
-          --name=!: "The name of the environment variable. Can be passed as the first argument."
-          --value=: "The value of the environment variable. Can be passed as the second argument."
-          --from-file=: "The name of the file with the environment variable value."
-        completion:
-          flag:
-            from-file: ["$files"]
-
-      - name: delete
+      - name: unset
         flags:
           -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
           --name=!: "The name of the environment variable. Can be passed as the first argument."
@@ -242,7 +232,7 @@ commands:
   - name: secret
 
     commands:
-      - name: create
+      - name: set
         flags:
           -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
           --name=!: "The name of the secret. Can be passed as the first argument."
@@ -256,7 +246,7 @@ commands:
         flags:
           -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
 
-      - name: delete
+      - name: unset
         flags:
           -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
           --name=!: "The name of the secret. Can be passed as the first argument."

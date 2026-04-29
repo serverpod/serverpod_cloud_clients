@@ -39,12 +39,12 @@ void main() {
   });
 
   group('Given unauthenticated', () {
-    group('when executing secrets create', () {
+    group('when executing secret set', () {
       late Future commandResult;
 
       setUp(() async {
         when(
-          () => client.secrets.create(
+          () => client.secrets.upsert(
             secrets: any(named: 'secrets'),
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
           ),
@@ -52,7 +52,7 @@ void main() {
 
         commandResult = cli.run([
           'secret',
-          'create',
+          'set',
           'key',
           'value',
           '--project',
@@ -80,7 +80,7 @@ void main() {
       });
     });
 
-    group('when executing secrets delete and confirming prompt', () {
+    group('when executing secret unset and confirming prompt', () {
       late Future commandResult;
 
       setUp(() async {
@@ -94,7 +94,7 @@ void main() {
         logger.answerNextConfirmWith(true);
         commandResult = cli.run([
           'secret',
-          'delete',
+          'unset',
           'key',
           '--project',
           projectId,
@@ -154,10 +154,10 @@ void main() {
   });
 
   group('Given authenticated', () {
-    group('when executing secrets create', () {
+    group('when executing secret set', () {
       setUp(() async {
         when(
-          () => client.secrets.create(
+          () => client.secrets.upsert(
             secrets: any(named: 'secrets', that: equals({'key': 'value'})),
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
           ),
@@ -170,7 +170,7 @@ void main() {
         setUp(() async {
           commandResult = cli.run([
             'secret',
-            'create',
+            'set',
             'key',
             'value',
             '--project',
@@ -188,7 +188,7 @@ void main() {
           expect(logger.successCalls, isNotEmpty);
           expect(
             logger.successCalls.first,
-            equalsSuccessCall(message: 'Successfully created secret.'),
+            equalsSuccessCall(message: 'Successfully set secret: key.'),
           );
         });
       });
@@ -201,7 +201,7 @@ void main() {
 
           commandResult = cli.run([
             'secret',
-            'create',
+            'set',
             'key',
             '--from-file',
             p.join(d.sandbox, 'value.txt'),
@@ -220,7 +220,7 @@ void main() {
           expect(logger.successCalls, isNotEmpty);
           expect(
             logger.successCalls.first,
-            equalsSuccessCall(message: 'Successfully created secret.'),
+            equalsSuccessCall(message: 'Successfully set secret: key.'),
           );
         });
       });
@@ -233,7 +233,7 @@ void main() {
 
           commandResult = cli.run([
             'secret',
-            'create',
+            'set',
             'key',
             'value',
             '--from-file',
@@ -265,7 +265,7 @@ void main() {
         setUp(() async {
           commandResult = cli.run([
             'secret',
-            'create',
+            'set',
             'key',
             '--project',
             projectId,
@@ -289,13 +289,12 @@ void main() {
       });
     });
 
-    group('when executing secrets create '
-        'with multi-line value file arg', () {
+    group('when executing secret set with multi-line value file arg', () {
       late Future commandResult;
 
       setUp(() async {
         when(
-          () => client.secrets.create(
+          () => client.secrets.upsert(
             secrets: any(
               named: 'secrets',
               that: equals({'key': 'value1\nline2'}),
@@ -308,7 +307,7 @@ void main() {
 
         commandResult = cli.run([
           'secret',
-          'create',
+          'set',
           'key',
           '--from-file',
           p.join(d.sandbox, 'value.txt'),
@@ -327,12 +326,12 @@ void main() {
         expect(logger.successCalls, isNotEmpty);
         expect(
           logger.successCalls.first,
-          equalsSuccessCall(message: 'Successfully created secret.'),
+          equalsSuccessCall(message: 'Successfully set secret: key.'),
         );
       });
     });
 
-    group('when executing secrets delete and confirming prompt', () {
+    group('when executing secret unset and confirming prompt', () {
       late Future commandResult;
 
       setUp(() async {
@@ -346,7 +345,7 @@ void main() {
         logger.answerNextConfirmWith(true);
         commandResult = cli.run([
           'secret',
-          'delete',
+          'unset',
           'key',
           '--project',
           projectId,
@@ -360,7 +359,7 @@ void main() {
         expect(
           logger.confirmCalls.first,
           equalsConfirmCall(
-            message: 'Are you sure you want to delete the secret "key"?',
+            message: 'Are you sure you want to remove the secret "key"?',
             defaultValue: false,
           ),
         );
@@ -376,12 +375,12 @@ void main() {
         expect(logger.successCalls, isNotEmpty);
         expect(
           logger.successCalls.first,
-          equalsSuccessCall(message: 'Successfully deleted secret: key.'),
+          equalsSuccessCall(message: 'Successfully removed secret: key.'),
         );
       });
     });
 
-    group('when executing secrets delete and rejecting prompt', () {
+    group('when executing secret unset and rejecting prompt', () {
       late Future commandResult;
 
       setUp(() async {
@@ -395,7 +394,7 @@ void main() {
         logger.answerNextConfirmWith(false);
         commandResult = cli.run([
           'secret',
-          'delete',
+          'unset',
           'key',
           '--project',
           projectId,
@@ -411,7 +410,7 @@ void main() {
         expect(
           logger.confirmCalls.first,
           equalsConfirmCall(
-            message: 'Are you sure you want to delete the secret "key"?',
+            message: 'Are you sure you want to remove the secret "key"?',
             defaultValue: false,
           ),
         );
