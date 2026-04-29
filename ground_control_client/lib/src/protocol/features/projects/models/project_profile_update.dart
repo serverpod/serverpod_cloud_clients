@@ -11,14 +11,19 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../domains/capsules/models/compute_size_option.dart' as _i2;
-import '../../../features/databases/models/database_size.dart' as _i3;
+import '../../../domains/products/models/plan_type.dart' as _i2;
+import '../../../domains/capsules/models/compute_size_option.dart' as _i3;
+import '../../../features/databases/models/database_size.dart' as _i4;
 
 /// Payload for updating a project profile together with compute scaling and
+/// database sizing.
+///
 /// If null is provided for a field, the field is not updated.
 abstract class ProjectProfileUpdate implements _i1.SerializableModel {
   ProjectProfileUpdate._({
     this.projectProductId,
+    this.planType,
+    this.planProductId,
     this.size,
     this.minInstances,
     this.maxInstances,
@@ -29,10 +34,12 @@ abstract class ProjectProfileUpdate implements _i1.SerializableModel {
 
   factory ProjectProfileUpdate({
     String? projectProductId,
-    _i2.ComputeSizeOption? size,
+    _i2.PlanType? planType,
+    String? planProductId,
+    _i3.ComputeSizeOption? size,
     int? minInstances,
     int? maxInstances,
-    _i3.DatabaseSizeOption? databaseSize,
+    _i4.DatabaseSizeOption? databaseSize,
     double? minCu,
     double? maxCu,
   }) = _ProjectProfileUpdateImpl;
@@ -42,16 +49,20 @@ abstract class ProjectProfileUpdate implements _i1.SerializableModel {
   ) {
     return ProjectProfileUpdate(
       projectProductId: jsonSerialization['projectProductId'] as String?,
+      planType: jsonSerialization['planType'] == null
+          ? null
+          : _i2.PlanType.fromJson((jsonSerialization['planType'] as String)),
+      planProductId: jsonSerialization['planProductId'] as String?,
       size: jsonSerialization['size'] == null
           ? null
-          : _i2.ComputeSizeOption.fromJson(
+          : _i3.ComputeSizeOption.fromJson(
               (jsonSerialization['size'] as String),
             ),
       minInstances: jsonSerialization['minInstances'] as int?,
       maxInstances: jsonSerialization['maxInstances'] as int?,
       databaseSize: jsonSerialization['databaseSize'] == null
           ? null
-          : _i3.DatabaseSizeOption.fromJson(
+          : _i4.DatabaseSizeOption.fromJson(
               (jsonSerialization['databaseSize'] as String),
             ),
       minCu: (jsonSerialization['minCu'] as num?)?.toDouble(),
@@ -59,11 +70,24 @@ abstract class ProjectProfileUpdate implements _i1.SerializableModel {
     );
   }
 
-  /// The procured project product id to assign to the project.
+  /// DEPRECATED: This field is ignored. Use planType or planProductId instead.
   String? projectProductId;
 
+  /// The type of plan to procure for the project.
+  /// If null, the existing plan is not changed.
+  ///
+  /// Cannot be used together with planProductId.
+  _i2.PlanType? planType;
+
+  /// The id of the plan product to procure for the project.
+  /// If null, the existing plan is not changed.
+  ///
+  /// Cannot be used together with planType.
+  String? planProductId;
+
   /// Podlet (compute) size for the capsule.
-  _i2.ComputeSizeOption? size;
+  /// If null, compute sizing is not changed from the default or current value.
+  _i3.ComputeSizeOption? size;
 
   /// Minimum number of podlet instances.
   int? minInstances;
@@ -71,8 +95,9 @@ abstract class ProjectProfileUpdate implements _i1.SerializableModel {
   /// Maximum number of podlet instances.
   int? maxInstances;
 
-  /// When null, database sizing is not changed.
-  _i3.DatabaseSizeOption? databaseSize;
+  /// Database size for the capsule.
+  /// If null, database sizing is not changed from the default or current value.
+  _i4.DatabaseSizeOption? databaseSize;
 
   /// Database compute minimum, when updating database sizing.
   double? minCu;
@@ -85,10 +110,12 @@ abstract class ProjectProfileUpdate implements _i1.SerializableModel {
   @_i1.useResult
   ProjectProfileUpdate copyWith({
     String? projectProductId,
-    _i2.ComputeSizeOption? size,
+    _i2.PlanType? planType,
+    String? planProductId,
+    _i3.ComputeSizeOption? size,
     int? minInstances,
     int? maxInstances,
-    _i3.DatabaseSizeOption? databaseSize,
+    _i4.DatabaseSizeOption? databaseSize,
     double? minCu,
     double? maxCu,
   });
@@ -97,6 +124,8 @@ abstract class ProjectProfileUpdate implements _i1.SerializableModel {
     return {
       '__className__': 'ProjectProfileUpdate',
       if (projectProductId != null) 'projectProductId': projectProductId,
+      if (planType != null) 'planType': planType?.toJson(),
+      if (planProductId != null) 'planProductId': planProductId,
       if (size != null) 'size': size?.toJson(),
       if (minInstances != null) 'minInstances': minInstances,
       if (maxInstances != null) 'maxInstances': maxInstances,
@@ -117,14 +146,18 @@ class _Undefined {}
 class _ProjectProfileUpdateImpl extends ProjectProfileUpdate {
   _ProjectProfileUpdateImpl({
     String? projectProductId,
-    _i2.ComputeSizeOption? size,
+    _i2.PlanType? planType,
+    String? planProductId,
+    _i3.ComputeSizeOption? size,
     int? minInstances,
     int? maxInstances,
-    _i3.DatabaseSizeOption? databaseSize,
+    _i4.DatabaseSizeOption? databaseSize,
     double? minCu,
     double? maxCu,
   }) : super._(
          projectProductId: projectProductId,
+         planType: planType,
+         planProductId: planProductId,
          size: size,
          minInstances: minInstances,
          maxInstances: maxInstances,
@@ -139,6 +172,8 @@ class _ProjectProfileUpdateImpl extends ProjectProfileUpdate {
   @override
   ProjectProfileUpdate copyWith({
     Object? projectProductId = _Undefined,
+    Object? planType = _Undefined,
+    Object? planProductId = _Undefined,
     Object? size = _Undefined,
     Object? minInstances = _Undefined,
     Object? maxInstances = _Undefined,
@@ -150,10 +185,14 @@ class _ProjectProfileUpdateImpl extends ProjectProfileUpdate {
       projectProductId: projectProductId is String?
           ? projectProductId
           : this.projectProductId,
-      size: size is _i2.ComputeSizeOption? ? size : this.size,
+      planType: planType is _i2.PlanType? ? planType : this.planType,
+      planProductId: planProductId is String?
+          ? planProductId
+          : this.planProductId,
+      size: size is _i3.ComputeSizeOption? ? size : this.size,
       minInstances: minInstances is int? ? minInstances : this.minInstances,
       maxInstances: maxInstances is int? ? maxInstances : this.maxInstances,
-      databaseSize: databaseSize is _i3.DatabaseSizeOption?
+      databaseSize: databaseSize is _i4.DatabaseSizeOption?
           ? databaseSize
           : this.databaseSize,
       minCu: minCu is double? ? minCu : this.minCu,
