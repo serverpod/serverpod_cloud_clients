@@ -113,14 +113,18 @@ class EndpointAdminProcurement extends _i1.EndpointRef {
   ///
   /// Throws a [NotFoundException] if the user or product is not found.
   /// Throws a [InvalidValueException] if the user has no owner (not fully registered).
+  ///
+  /// Provide [userEmail] or [userAuthId] to resolve the target user.
   _i2.Future<String> procurePlan({
-    required String userEmail,
+    String? userEmail,
+    String? userAuthId,
     required String planProductName,
     int? planProductVersion,
     int? trialPeriodOverride,
     bool? overrideChecks,
   }) => caller.callServerEndpoint<String>('adminProcurement', 'procurePlan', {
     'userEmail': userEmail,
+    'userAuthId': userAuthId,
     'planProductName': planProductName,
     'planProductVersion': planProductVersion,
     'trialPeriodOverride': trialPeriodOverride,
@@ -132,12 +136,15 @@ class EndpointAdminProcurement extends _i1.EndpointRef {
   ///
   /// Throws a [NotFoundException] if the user is not found.
   /// Throws a [InvalidValueException] if the user has no owner (not fully registered).
+  ///
+  /// Provide [userEmail] or [userAuthId] to resolve the target user.
   _i2.Future<List<(String, String)>> listProcuredProducts({
-    required String userEmail,
+    String? userEmail,
+    String? userAuthId,
   }) => caller.callServerEndpoint<List<(String, String)>>(
     'adminProcurement',
     'listProcuredProducts',
-    {'userEmail': userEmail},
+    {'userEmail': userEmail, 'userAuthId': userAuthId},
   );
 
   /// Cancels a subscription of the user at the end of its current term.
@@ -150,13 +157,17 @@ class EndpointAdminProcurement extends _i1.EndpointRef {
   /// Throws a [NoSubscriptionException] if the user has no subscription.
   /// Throws a [ProcurementCancellationException] if the subscription has
   /// already been cancelled or ended.
+  ///
+  /// Provide [userEmail] or [userAuthId] to resolve the target user.
   _i2.Future<void> cancelPlan({
-    required String userEmail,
+    String? userEmail,
+    String? userAuthId,
     String? subscriptionId,
     String? cloudProjectId,
     bool? terminateImmediately,
   }) => caller.callServerEndpoint<void>('adminProcurement', 'cancelPlan', {
     'userEmail': userEmail,
+    'userAuthId': userAuthId,
     'subscriptionId': subscriptionId,
     'cloudProjectId': cloudProjectId,
     'terminateImmediately': terminateImmediately,

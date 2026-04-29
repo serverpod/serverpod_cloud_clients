@@ -26,7 +26,7 @@ abstract class User implements _i1.SerializableModel {
     this.archivedAt,
     _i2.UserAccountStatus? accountStatus,
     this.userAuthId,
-    required this.email,
+    this.email,
     this.name,
     this.memberships,
     this.ownerId,
@@ -43,7 +43,7 @@ abstract class User implements _i1.SerializableModel {
     DateTime? archivedAt,
     _i2.UserAccountStatus? accountStatus,
     String? userAuthId,
-    required String email,
+    String? email,
     String? name,
     List<_i3.UserRoleMembership>? memberships,
     _i1.UuidValue? ownerId,
@@ -69,7 +69,7 @@ abstract class User implements _i1.SerializableModel {
               (jsonSerialization['accountStatus'] as String),
             ),
       userAuthId: jsonSerialization['userAuthId'] as String?,
-      email: jsonSerialization['email'] as String,
+      email: jsonSerialization['email'] as String?,
       name: jsonSerialization['name'] as String?,
       memberships: jsonSerialization['memberships'] == null
           ? null
@@ -109,7 +109,7 @@ abstract class User implements _i1.SerializableModel {
   String? userAuthId;
 
   /// The email address of the user.
-  String email;
+  String? email;
 
   /// The user's name.
   String? name;
@@ -153,7 +153,7 @@ abstract class User implements _i1.SerializableModel {
       if (archivedAt != null) 'archivedAt': archivedAt?.toJson(),
       'accountStatus': accountStatus.toJson(),
       if (userAuthId != null) 'userAuthId': userAuthId,
-      'email': email,
+      if (email != null) 'email': email,
       if (name != null) 'name': name,
       if (memberships != null)
         'memberships': memberships?.toJson(valueToJson: (v) => v.toJson()),
@@ -180,7 +180,7 @@ class _UserImpl extends User {
     DateTime? archivedAt,
     _i2.UserAccountStatus? accountStatus,
     String? userAuthId,
-    required String email,
+    String? email,
     String? name,
     List<_i3.UserRoleMembership>? memberships,
     _i1.UuidValue? ownerId,
@@ -212,7 +212,7 @@ class _UserImpl extends User {
     Object? archivedAt = _Undefined,
     _i2.UserAccountStatus? accountStatus,
     Object? userAuthId = _Undefined,
-    String? email,
+    Object? email = _Undefined,
     Object? name = _Undefined,
     Object? memberships = _Undefined,
     Object? ownerId = _Undefined,
@@ -226,7 +226,7 @@ class _UserImpl extends User {
       archivedAt: archivedAt is DateTime? ? archivedAt : this.archivedAt,
       accountStatus: accountStatus ?? this.accountStatus,
       userAuthId: userAuthId is String? ? userAuthId : this.userAuthId,
-      email: email ?? this.email,
+      email: email is String? ? email : this.email,
       name: name is String? ? name : this.name,
       memberships: memberships is List<_i3.UserRoleMembership>?
           ? memberships

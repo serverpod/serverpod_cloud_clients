@@ -9,10 +9,12 @@ abstract class MeCommands {
   }) async {
     final user = await cloudApiClient.users.readUser();
 
+    final display = user.email ?? user.userAuthId ?? '';
+
     final table = TablePrinter(
-      headers: ['Email'],
+      headers: ['User'],
       rows: [
-        [user.email],
+        [display],
       ],
     );
     table.writeLines(logger.line);

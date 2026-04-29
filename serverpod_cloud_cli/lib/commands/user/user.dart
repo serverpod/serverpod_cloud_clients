@@ -16,7 +16,7 @@ abstract class UserCommands {
       headers: ['User', 'Project', 'Project roles'],
       rows: users.map(
         (final user) => [
-          user.email,
+          user.email ?? user.userAuthId ?? '',
           projectId,
           user.memberships
                   ?.map((final m) => m.role?.name)

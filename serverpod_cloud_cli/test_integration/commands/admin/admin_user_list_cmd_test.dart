@@ -65,6 +65,7 @@ void main() {
         when(
           () => client.adminProcurement.listProcuredProducts(
             userEmail: any(named: 'userEmail'),
+            userAuthId: any(named: 'userAuthId'),
           ),
         ).thenAnswer(
           (final invocation) async =>

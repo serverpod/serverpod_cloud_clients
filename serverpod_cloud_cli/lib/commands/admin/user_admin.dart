@@ -21,17 +21,31 @@ abstract class UserAdminCommands {
 
     final userPlanMap = <String, String>{};
     for (final user in users) {
+      final rowKey = user.email ?? user.userAuthId ?? '';
       switch (user.accountStatus) {
         case UserAccountStatus.registered:
-          final procuredProducts = await cloudApiClient.adminProcurement
-              .listProcuredProducts(userEmail: user.email);
-          final procuredPlans = procuredProducts
-              .where((final p) => p.$2 == 'PlanProduct')
-              .map((final p) => p.$1);
-          userPlanMap[user.email] = procuredPlans.join(', ');
+          final userEmail = user.email;
+          final userAuthId = user.userAuthId;
+          if (userEmail != null && userEmail.isNotEmpty) {
+            final procuredProducts = await cloudApiClient.adminProcurement
+                .listProcuredProducts(userEmail: userEmail);
+            final procuredPlans = procuredProducts
+                .where((final p) => p.$2 == 'PlanProduct')
+                .map((final p) => p.$1);
+            userPlanMap[rowKey] = procuredPlans.join(', ');
+          } else if (userAuthId != null && userAuthId.isNotEmpty) {
+            final procuredProducts = await cloudApiClient.adminProcurement
+                .listProcuredProducts(userAuthId: userAuthId);
+            final procuredPlans = procuredProducts
+                .where((final p) => p.$2 == 'PlanProduct')
+                .map((final p) => p.$1);
+            userPlanMap[rowKey] = procuredPlans.join(', ');
+          } else {
+            userPlanMap[rowKey] = '';
+          }
           break;
         case UserAccountStatus.invited:
-          userPlanMap[user.email] = '';
+          userPlanMap[rowKey] = '';
           break;
       }
     }
@@ -48,11 +62,11 @@ abstract class UserAdminCommands {
       ],
       rows: users.map(
         (final user) => [
-          user.email,
+          user.email ?? user.userAuthId ?? '',
           user.accountStatus.toString(),
           user.createdAt.toTzString(inUtc, 19),
           user.archivedAt?.toTzString(inUtc, 19),
-          userPlanMap[user.email] ?? '',
+          userPlanMap[user.email ?? user.userAuthId ?? ''] ?? '',
         ],
       ),
     );
