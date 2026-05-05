@@ -14,7 +14,8 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/users/models/user.dart' as _i2;
 import '../../../domains/billing/models/billing_info.dart' as _i3;
 import '../../../domains/projects/models/project.dart' as _i4;
-import 'package:ground_control_client/src/protocol/protocol.dart' as _i5;
+import '../../../domains/billing/models/billing_customer_type.dart' as _i5;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i6;
 
 abstract class Owner implements _i1.SerializableModel {
   Owner._({
@@ -31,6 +32,7 @@ abstract class Owner implements _i1.SerializableModel {
     this.projects,
     this.trialEndingAt,
     this.trialSubscriptionId,
+    this.customerType,
   }) : id = id ?? const _i1.Uuid().v4obj(),
        createdAt = createdAt ?? DateTime.now(),
        updatedAt = updatedAt ?? DateTime.now();
@@ -49,6 +51,7 @@ abstract class Owner implements _i1.SerializableModel {
     List<_i4.Project>? projects,
     DateTime? trialEndingAt,
     String? trialSubscriptionId,
+    _i5.BillingCustomerType? customerType,
   }) = _OwnerImpl;
 
   factory Owner.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -70,20 +73,20 @@ abstract class Owner implements _i1.SerializableModel {
       billingPortalUrl: _i1.UriJsonExtension.fromJson(
         jsonSerialization['billingPortalUrl'],
       ),
-      billingEmails: _i5.Protocol().deserialize<List<String>>(
+      billingEmails: _i6.Protocol().deserialize<List<String>>(
         jsonSerialization['billingEmails'],
       ),
       user: jsonSerialization['user'] == null
           ? null
-          : _i5.Protocol().deserialize<_i2.User>(jsonSerialization['user']),
+          : _i6.Protocol().deserialize<_i2.User>(jsonSerialization['user']),
       billingInfo: jsonSerialization['billingInfo'] == null
           ? null
-          : _i5.Protocol().deserialize<_i3.BillingInfo>(
+          : _i6.Protocol().deserialize<_i3.BillingInfo>(
               jsonSerialization['billingInfo'],
             ),
       projects: jsonSerialization['projects'] == null
           ? null
-          : _i5.Protocol().deserialize<List<_i4.Project>>(
+          : _i6.Protocol().deserialize<List<_i4.Project>>(
               jsonSerialization['projects'],
             ),
       trialEndingAt: jsonSerialization['trialEndingAt'] == null
@@ -92,6 +95,11 @@ abstract class Owner implements _i1.SerializableModel {
               jsonSerialization['trialEndingAt'],
             ),
       trialSubscriptionId: jsonSerialization['trialSubscriptionId'] as String?,
+      customerType: jsonSerialization['customerType'] == null
+          ? null
+          : _i5.BillingCustomerType.fromJson(
+              (jsonSerialization['customerType'] as String),
+            ),
     );
   }
 
@@ -125,6 +133,11 @@ abstract class Owner implements _i1.SerializableModel {
   /// Subscription designated for this owner's trial
   String? trialSubscriptionId;
 
+  /// Stop-gap until B2C/B2B migration is supported.
+  /// Once non-null this value is mirrored into [BillingInfo.customerType] when
+  /// billing info is set/updated, and may not be changed thereafter.
+  _i5.BillingCustomerType? customerType;
+
   /// Returns a shallow copy of this [Owner]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
@@ -142,6 +155,7 @@ abstract class Owner implements _i1.SerializableModel {
     List<_i4.Project>? projects,
     DateTime? trialEndingAt,
     String? trialSubscriptionId,
+    _i5.BillingCustomerType? customerType,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -162,6 +176,7 @@ abstract class Owner implements _i1.SerializableModel {
       if (trialEndingAt != null) 'trialEndingAt': trialEndingAt?.toJson(),
       if (trialSubscriptionId != null)
         'trialSubscriptionId': trialSubscriptionId,
+      if (customerType != null) 'customerType': customerType?.toJson(),
     };
   }
 
@@ -188,6 +203,7 @@ class _OwnerImpl extends Owner {
     List<_i4.Project>? projects,
     DateTime? trialEndingAt,
     String? trialSubscriptionId,
+    _i5.BillingCustomerType? customerType,
   }) : super._(
          id: id,
          createdAt: createdAt,
@@ -202,6 +218,7 @@ class _OwnerImpl extends Owner {
          projects: projects,
          trialEndingAt: trialEndingAt,
          trialSubscriptionId: trialSubscriptionId,
+         customerType: customerType,
        );
 
   /// Returns a shallow copy of this [Owner]
@@ -222,6 +239,7 @@ class _OwnerImpl extends Owner {
     Object? projects = _Undefined,
     Object? trialEndingAt = _Undefined,
     Object? trialSubscriptionId = _Undefined,
+    Object? customerType = _Undefined,
   }) {
     return Owner(
       id: id ?? this.id,
@@ -246,6 +264,9 @@ class _OwnerImpl extends Owner {
       trialSubscriptionId: trialSubscriptionId is String?
           ? trialSubscriptionId
           : this.trialSubscriptionId,
+      customerType: customerType is _i5.BillingCustomerType?
+          ? customerType
+          : this.customerType,
     );
   }
 }
