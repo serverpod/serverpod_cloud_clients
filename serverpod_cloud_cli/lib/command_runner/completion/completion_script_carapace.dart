@@ -208,6 +208,7 @@ commands:
           --no-utc: "Display timestamps in UTC timezone instead of local."
           --deploy=: "View a specific deployment, with uuid or sequence number, 0 for latest. Can be passed as the first argument."
           --output-overall-status: "View a deployment's overall status as a single word, one of: success, failure, awaiting, running, cancelled, unknown."
+          -r, --probe: "Probe the current status, display it and exit immediately."
         exclusiveFlags:
           - [utc, no-utc]
 

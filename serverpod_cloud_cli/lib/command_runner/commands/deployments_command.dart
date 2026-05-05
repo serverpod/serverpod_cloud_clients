@@ -5,7 +5,6 @@ import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/commands/status/status.dart';
 import 'package:serverpod_cloud_cli/commands/logs/logs.dart';
-import 'package:serverpod_cloud_cli/commands/status/status_feature.dart';
 
 import 'categories.dart';
 
@@ -45,13 +44,21 @@ abstract final class _DeploymentsShowOptions {
         "success, failure, awaiting, running, cancelled, unknown.",
     negatable: false,
   );
+  static const probe = FlagOption(
+    argName: 'probe',
+    argAbbrev: 'r',
+    defaultsTo: false,
+    helpText: 'Probe the current status, display it and exit immediately.',
+    negatable: false,
+  );
 }
 
 enum DeploymentsShowOption<V> implements OptionDefinition<V> {
   projectId(_DeploymentsShowOptions.projectId),
   utc(_DeploymentsShowOptions.utc),
   deploy(_DeploymentsShowOptions.deploy),
-  overallStatus(_DeploymentsShowOptions.overallStatus);
+  overallStatus(_DeploymentsShowOptions.overallStatus),
+  probe(_DeploymentsShowOptions.probe);
 
   const DeploymentsShowOption(this.option);
 
@@ -71,9 +78,14 @@ class CloudDeploymentsShowCommand
   String get usageExamples => '''\n
 Examples
 
-  Show the status of the latest deployment.
+  Show the status of the latest deployment and wait for it to finish.
   
     \$ scloud deployment show
+
+
+  Show the status of the latest deployment without waiting for it to finish.
+  
+    \$ scloud deployment show --probe
 
 
   Show the status of a specific deployment by sequence number.
@@ -96,6 +108,7 @@ Examples
   ) async {
     final projectId = commandConfig.value(DeploymentsShowOption.projectId);
     final inUtc = commandConfig.value(DeploymentsShowOption.utc);
+    final probe = commandConfig.value(DeploymentsShowOption.probe);
     final deploymentArg = commandConfig.optionalValue(
       DeploymentsShowOption.deploy,
     );
@@ -109,6 +122,18 @@ Examples
         projectId,
         deploymentArg,
       );
+
+      if (!probe) {
+        await StatusCommands.tailDeploymentStatus(
+          runner.serviceProvider.cloudApiClient,
+          logger: logger,
+          cloudCapsuleId: projectId,
+          attemptId: attemptId,
+          inUtc: inUtc,
+        );
+
+        return;
+      }
 
       await StatusCommands.showDeploymentStatus(
         runner.serviceProvider.cloudApiClient,
@@ -290,8 +315,7 @@ Future<String> _getDeployAttemptId(
     return deploymentArg;
   }
   try {
-    return await StatusFeature.getDeployAttemptId(
-      cloudApiClient,
+    return await cloudApiClient.status.getDeployAttemptId(
       cloudCapsuleId: projectId,
       attemptNumber: attemptNumber,
     );

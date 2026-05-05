@@ -8,7 +8,6 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/file_uploader_factory
 import 'package:serverpod_cloud_cli/commands/deploy/deploy.dart';
 import 'package:serverpod_cloud_cli/commands/project/project.dart';
 import 'package:serverpod_cloud_cli/commands/status/status.dart';
-import 'package:serverpod_cloud_cli/commands/status/status_feature.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/shared/user_interaction/user_confirmations.dart';
@@ -618,8 +617,7 @@ The default API domain will be: <project-id>.api.serverpod.space
     await logger.progress('Waiting for deployment status.', () async {
       for (int i = 0; i < 3; i++) {
         try {
-          attemptId = await StatusFeature.getDeployAttemptId(
-            cloudApiClient,
+          attemptId = await cloudApiClient.status.getDeployAttemptId(
             cloudCapsuleId: projectId,
             attemptNumber: 0,
           );
