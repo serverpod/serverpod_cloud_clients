@@ -130,6 +130,8 @@ abstract class Owner implements _i1.SerializableModel {
   /// When non-null, the owner's subscription trial ends at this instant (UTC).
   DateTime? trialEndingAt;
 
+  /// DEPRECATED: Do not use this field, this information is now tracked on the
+  /// ProductAllocation.trialEndingAt field.
   /// Subscription designated for this owner's trial
   String? trialSubscriptionId;
 
