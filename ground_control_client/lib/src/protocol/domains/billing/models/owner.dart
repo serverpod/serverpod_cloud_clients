@@ -31,7 +31,6 @@ abstract class Owner implements _i1.SerializableModel {
     this.billingInfo,
     this.projects,
     this.trialEndingAt,
-    this.trialSubscriptionId,
     this.customerType,
   }) : id = id ?? const _i1.Uuid().v4obj(),
        createdAt = createdAt ?? DateTime.now(),
@@ -50,7 +49,6 @@ abstract class Owner implements _i1.SerializableModel {
     _i3.BillingInfo? billingInfo,
     List<_i4.Project>? projects,
     DateTime? trialEndingAt,
-    String? trialSubscriptionId,
     _i5.BillingCustomerType? customerType,
   }) = _OwnerImpl;
 
@@ -94,7 +92,6 @@ abstract class Owner implements _i1.SerializableModel {
           : _i1.DateTimeJsonExtension.fromJson(
               jsonSerialization['trialEndingAt'],
             ),
-      trialSubscriptionId: jsonSerialization['trialSubscriptionId'] as String?,
       customerType: jsonSerialization['customerType'] == null
           ? null
           : _i5.BillingCustomerType.fromJson(
@@ -130,11 +127,6 @@ abstract class Owner implements _i1.SerializableModel {
   /// When non-null, the owner's subscription trial ends at this instant (UTC).
   DateTime? trialEndingAt;
 
-  /// DEPRECATED: Do not use this field, this information is now tracked on the
-  /// ProductAllocation.trialEndingAt field.
-  /// Subscription designated for this owner's trial
-  String? trialSubscriptionId;
-
   /// Stop-gap until B2C/B2B migration is supported.
   /// Once non-null this value is mirrored into [BillingInfo.customerType] when
   /// billing info is set/updated, and may not be changed thereafter.
@@ -156,7 +148,6 @@ abstract class Owner implements _i1.SerializableModel {
     _i3.BillingInfo? billingInfo,
     List<_i4.Project>? projects,
     DateTime? trialEndingAt,
-    String? trialSubscriptionId,
     _i5.BillingCustomerType? customerType,
   });
   @override
@@ -176,8 +167,6 @@ abstract class Owner implements _i1.SerializableModel {
       if (projects != null)
         'projects': projects?.toJson(valueToJson: (v) => v.toJson()),
       if (trialEndingAt != null) 'trialEndingAt': trialEndingAt?.toJson(),
-      if (trialSubscriptionId != null)
-        'trialSubscriptionId': trialSubscriptionId,
       if (customerType != null) 'customerType': customerType?.toJson(),
     };
   }
@@ -204,7 +193,6 @@ class _OwnerImpl extends Owner {
     _i3.BillingInfo? billingInfo,
     List<_i4.Project>? projects,
     DateTime? trialEndingAt,
-    String? trialSubscriptionId,
     _i5.BillingCustomerType? customerType,
   }) : super._(
          id: id,
@@ -219,7 +207,6 @@ class _OwnerImpl extends Owner {
          billingInfo: billingInfo,
          projects: projects,
          trialEndingAt: trialEndingAt,
-         trialSubscriptionId: trialSubscriptionId,
          customerType: customerType,
        );
 
@@ -240,7 +227,6 @@ class _OwnerImpl extends Owner {
     Object? billingInfo = _Undefined,
     Object? projects = _Undefined,
     Object? trialEndingAt = _Undefined,
-    Object? trialSubscriptionId = _Undefined,
     Object? customerType = _Undefined,
   }) {
     return Owner(
@@ -263,9 +249,6 @@ class _OwnerImpl extends Owner {
       trialEndingAt: trialEndingAt is DateTime?
           ? trialEndingAt
           : this.trialEndingAt,
-      trialSubscriptionId: trialSubscriptionId is String?
-          ? trialSubscriptionId
-          : this.trialSubscriptionId,
       customerType: customerType is _i5.BillingCustomerType?
           ? customerType
           : this.customerType,

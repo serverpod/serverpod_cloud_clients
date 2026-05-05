@@ -11,7 +11,6 @@ class OwnerBuilder {
   List<Project>? _projects;
   User? _user;
   DateTime? _trialEndingAt;
-  String? _trialSubscriptionId;
   BillingCustomerType? _customerType;
 
   OwnerBuilder()
@@ -24,7 +23,6 @@ class OwnerBuilder {
       _billingInfo = null,
       _user = UserBuilder().build(),
       _trialEndingAt = null,
-      _trialSubscriptionId = null,
       _customerType = null;
 
   OwnerBuilder withId(UuidValue id) {
@@ -88,11 +86,6 @@ class OwnerBuilder {
     return this;
   }
 
-  OwnerBuilder withTrialSubscriptionId(String? trialSubscriptionId) {
-    _trialSubscriptionId = trialSubscriptionId;
-    return this;
-  }
-
   OwnerBuilder withCustomerType(BillingCustomerType? customerType) {
     _customerType = customerType;
     return this;
@@ -109,7 +102,6 @@ class OwnerBuilder {
       user: _user,
       projects: _projects,
       trialEndingAt: _trialEndingAt,
-      trialSubscriptionId: _trialSubscriptionId,
       customerType: _customerType,
     );
   }
