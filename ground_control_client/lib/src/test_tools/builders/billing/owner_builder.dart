@@ -12,6 +12,7 @@ class OwnerBuilder {
   User? _user;
   DateTime? _trialEndingAt;
   String? _trialSubscriptionId;
+  BillingCustomerType? _customerType;
 
   OwnerBuilder()
     : _id = Uuid().v4obj(),
@@ -23,7 +24,8 @@ class OwnerBuilder {
       _billingInfo = null,
       _user = UserBuilder().build(),
       _trialEndingAt = null,
-      _trialSubscriptionId = null;
+      _trialSubscriptionId = null,
+      _customerType = null;
 
   OwnerBuilder withId(UuidValue id) {
     _id = id;
@@ -91,6 +93,11 @@ class OwnerBuilder {
     return this;
   }
 
+  OwnerBuilder withCustomerType(BillingCustomerType? customerType) {
+    _customerType = customerType;
+    return this;
+  }
+
   Owner build() {
     return Owner(
       id: _id,
@@ -103,6 +110,7 @@ class OwnerBuilder {
       projects: _projects,
       trialEndingAt: _trialEndingAt,
       trialSubscriptionId: _trialSubscriptionId,
+      customerType: _customerType,
     );
   }
 }
