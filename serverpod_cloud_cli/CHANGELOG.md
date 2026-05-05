@@ -1,6 +1,19 @@
 
 # Changelog
 
+---
+## [0.27.0] - 2026-05-05
+
+### Changed
+
+- **Unified CLI commands** - Aligned `scloud variable` and `scloud secret` subcommands to use `set`, `unset`, and `list` for consistency across the toolset.
+- **Enhanced CLI help** - Updated command-line documentation, completion scripts, and help footers to reflect the new command structure.
+
+### Removed
+
+- **Legacy CLI subcommands** - Removed the old `create`, `update`, and `delete` subcommands for variables and secrets in favor of the new unified commands.
+---
+
 ## [0.26.0] - 2026-04-21
 
 ### Added
