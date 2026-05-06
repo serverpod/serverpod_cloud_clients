@@ -1385,6 +1385,20 @@ class EndpointStatus extends _i1.EndpointRef {
     'cloudCapsuleId': cloudCapsuleId,
     'attemptNumber': attemptNumber,
   });
+
+  /// Tails the status updates for a deploy attempt.
+  /// Continues until the client unsubscribes or the status if final.
+  _i2.Stream<_i36.DeployAttemptStage> tailDeployAttemptStatus({
+    required String cloudCapsuleId,
+    required String attemptId,
+  }) =>
+      caller.callStreamingServerEndpoint<
+        _i2.Stream<_i36.DeployAttemptStage>,
+        _i36.DeployAttemptStage
+      >('status', 'tailDeployAttemptStatus', {
+        'cloudCapsuleId': cloudCapsuleId,
+        'attemptId': attemptId,
+      }, {});
 }
 
 /// Endpoint for managing users.

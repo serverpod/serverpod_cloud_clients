@@ -5,8 +5,6 @@ import 'package:serverpod_cloud_cli/util/common.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 
-import 'status_feature.dart';
-
 /// Status subcommand implementations
 abstract class StatusCommands {
   /// Subcommand to list the most recent deploy attempts.
@@ -17,8 +15,7 @@ abstract class StatusCommands {
     required final int limit,
     final bool inUtc = false,
   }) async {
-    final statuses = await StatusFeature.getDeployAttemptList(
-      cloudApiClient,
+    final statuses = await cloudApiClient.status.getDeployAttempts(
       cloudCapsuleId: cloudCapsuleId,
       limit: limit,
     );
@@ -46,8 +43,7 @@ abstract class StatusCommands {
     final bool inUtc = false,
     final bool outputOverallStatus = false,
   }) async {
-    final stages = await StatusFeature.getDeployAttemptStatus(
-      cloudApiClient,
+    final stages = await cloudApiClient.status.getDeployAttemptStatus(
       cloudCapsuleId: cloudCapsuleId,
       attemptId: attemptId,
     );
@@ -67,6 +63,40 @@ abstract class StatusCommands {
     for (final line in rows) {
       logger.line(line);
       logger.line('');
+    }
+  }
+
+  static Future<void> tailDeploymentStatus(
+    final Client cloudApiClient, {
+    required final CommandLogger logger,
+    required final String cloudCapsuleId,
+    required final String attemptId,
+    final bool inUtc = false,
+  }) async {
+    final stageStream = cloudApiClient.status.tailDeployAttemptStatus(
+      cloudCapsuleId: cloudCapsuleId,
+      attemptId: attemptId,
+    );
+
+    DeployStageType? lastStageType;
+    await for (final stage in stageStream) {
+      if (lastStageType == null) {
+        logger.line(
+          'Tracking status of $cloudCapsuleId deploy $attemptId'
+          ', started at ${stage.startedAt?.toTzString(inUtc, _numTimeStampChars)}:',
+        );
+        logger.line('(Press Ctrl+C to exit)');
+        logger.line('');
+      }
+
+      logger.line(_generateStatusLine(stage));
+      if (stage.stageStatus
+          case DeployProgressStatus.success ||
+              DeployProgressStatus.failure ||
+              DeployProgressStatus.cancelled) {
+        logger.line('');
+      }
+      lastStageType = stage.stageType;
     }
   }
 

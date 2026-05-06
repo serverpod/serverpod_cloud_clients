@@ -216,9 +216,12 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     final Map<String, dynamic> properties = const {},
   ]) {
     final enrichedProperties = Map<String, dynamic>.from(properties);
-    final cloudUser = ResourceManager.tryFetchServerpodCloudUserDataSync(
-      localStoragePath: globalConfiguration.scloudDir.path,
-    );
+    final globalConfig = _globalConfiguration;
+    final cloudUser = globalConfig != null
+        ? ResourceManager.tryFetchServerpodCloudUserDataSync(
+            localStoragePath: globalConfig.scloudDir.path,
+          )
+        : null;
     if (cloudUser != null) {
       enrichedProperties['cloud_user_id'] = cloudUser.id;
     }

@@ -185,6 +185,14 @@ void main() {
               attemptId: 'abc',
               stageType: DeployStageType.build,
               buildId: 'build-id-foo',
+              stageStatus: DeployProgressStatus.running,
+              startedAt: DateTime.parse("2021-12-31 10:20:30"),
+            ),
+            DeployAttemptStage(
+              cloudCapsuleId: projectId,
+              attemptId: 'abc',
+              stageType: DeployStageType.build,
+              buildId: 'build-id-foo',
               stageStatus: DeployProgressStatus.success,
               startedAt: DateTime.parse("2021-12-31 10:20:30"),
               endedAt: DateTime.parse("2021-12-31 10:20:40"),
@@ -220,6 +228,13 @@ void main() {
               attemptNumber: 0,
             ),
           ).thenAnswer((final _) async => attemptStages.first.attemptId);
+
+          when(
+            () => client.status.tailDeployAttemptStatus(
+              cloudCapsuleId: projectId,
+              attemptId: attemptStages.first.attemptId,
+            ),
+          ).thenAnswer((final _) => Stream.fromIterable(attemptStages));
         });
 
         tearDownAll(() {
@@ -246,10 +261,12 @@ void main() {
 
               expect(logger.lineCalls, isNotEmpty);
               expect(logger.lineCalls.map((final l) => l.line).join('\n'), '''
-Status of projectId deploy abc, started at 2021-12-31 10:20:30:
+Tracking status of projectId deploy abc, started at 2021-12-31 10:20:30:
+(Press Ctrl+C to exit)
 
 ✅  Booster liftoff:     Upload successful!
 
+⬜  Orbit acceleration:  Build running...
 ✅  Orbit acceleration:  Build successful!
 
 ✅  Orbital insertion:   Deploy successful!
@@ -391,6 +408,13 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
               attemptNumber: any(named: 'attemptNumber'),
             ),
           ).thenThrow(NotFoundException(message: 'not found'));
+
+          when(
+            () => client.status.tailDeployAttemptStatus(
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+              attemptId: any(named: 'attemptId'),
+            ),
+          ).thenThrow(NotFoundException(message: 'not found'));
         });
 
         tearDownAll(() async {
@@ -530,6 +554,13 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
             attemptNumber: 0,
           ),
         ).thenAnswer((final _) async => attemptStages.first.attemptId);
+
+        when(
+          () => client.status.tailDeployAttemptStatus(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            attemptId: any(named: 'attemptId'),
+          ),
+        ).thenAnswer((final _) => Stream.fromIterable(attemptStages));
       });
 
       tearDownAll(() {
@@ -547,6 +578,44 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
               'show',
               '--project',
               projectId,
+            ]);
+          });
+
+          test('then completes successfully', () async {
+            await expectLater(commandResult, completes);
+          });
+
+          test('then outputs the status', () async {
+            await commandResult;
+
+            expect(logger.lineCalls, isNotEmpty);
+            expect(logger.lineCalls.map((final l) => l.line).join('\n'), '''
+Tracking status of projectId deploy abc, started at 2021-12-31 10:20:30:
+(Press Ctrl+C to exit)
+
+✅  Booster liftoff:     Upload successful!
+
+✅  Orbit acceleration:  Build successful!
+
+✅  Orbital insertion:   Deploy successful!
+
+⬛  Pod commissioning:   Service awaiting...''');
+          });
+        },
+      );
+
+      group(
+        'when running deployments show --no-await command to get the deploy status',
+        () {
+          late Future commandResult;
+
+          setUp(() async {
+            commandResult = cli.run([
+              'deployment',
+              'show',
+              '--project',
+              projectId,
+              '--no-await',
             ]);
           });
 
