@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.28.0 - 2026-05-06
+
+### Added
+
+- **Live deployment tracking** - Track deployment and build progress in real-time with continuous status updates directly in your terminal.
+- **Improved build visibility** - Added a new "build started" stage to provide better granularity before a build completes.
+
+### Changed
+
+- **Default deployment view** - The `scloud deployment show` command now waits for the deployment to finish by default. Use the new `--no-await` flag to revert to the previous non-blocking behavior.
+
 ---
 ## [0.27.0] - 2026-05-05
 
