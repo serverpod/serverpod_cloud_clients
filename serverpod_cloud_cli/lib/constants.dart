@@ -36,7 +36,7 @@ abstract final class ProjectConfigFileConstants {
 # - Deploy: `scloud deploy`
 # - Get Help: `scloud help`
 #
-# For full documentation, visit: https://docs.serverpod.cloud
+# For full documentation, visit: https://docs.serverpod.dev/cloud
 
 ''';
 }

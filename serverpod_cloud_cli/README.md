@@ -24,20 +24,20 @@ scloud auth login
 ```
 
 Go to your Serverpod server directory (e.g. `./myproject/myproject_server`)
-and run the [`launch` command](https://docs.serverpod.cloud/reference/cli/commands/launch)
+and run the [launch guide](https://docs.serverpod.dev/cloud/getting-started/launch)
 to get an interactive, guided set up of a new Serverpod Cloud project:
 
 ```sh
 scloud launch
 ```
 
-If the project requires any environment variables or secrets, they can be added with the [`variable`](https://docs.serverpod.cloud/reference/cli/commands/variable) and [`secret`](https://docs.serverpod.cloud/reference/cli/commands/secret) commands. Once the project is ready to be deployed, run the following command:
+If the project requires any environment variables or secrets, they can be added with the [`variable`](https://docs.serverpod.dev/cloud/reference/cli/commands/variable) and [`secret`](https://docs.serverpod.dev/cloud/reference/cli/commands/secret) commands. Once the project is ready to be deployed, run the following command:
 
 ```sh
 scloud deploy
 ```
 
-To follow the progress of the deployment, use the [`deployment show` command](https://docs.serverpod.cloud/reference/cli/commands/deployment):
+To follow the progress of the deployment, use the [`deployment show` command](https://docs.serverpod.dev/cloud/reference/cli/commands/deployment):
 
 ```sh
 scloud deployment show
@@ -45,16 +45,16 @@ scloud deployment show
 
 That's it, you have now deployed your Serverpod app! 🚀
 
-For more information on the different commands, see the commands section in the side menu. For instance, to view the service's domains or to add your own custom domains, see the [`domain` command](https://docs.serverpod.cloud/reference/cli/commands/domain).
+For more information on the different commands, see the commands section in the side menu. For instance, to view the service's domains or to add your own custom domains, see the [`domain` command](https://docs.serverpod.dev/cloud/reference/cli/commands/domain).
 
 
 ## Online documentation
 
 The Serverpod Cloud CLI documentation:
 
-https://docs.serverpod.cloud/reference/cli/introduction
+https://docs.serverpod.dev/cloud/reference/cli/introduction
 
 
 Guide to getting started with Serverpod Cloud:
 
-https://docs.serverpod.cloud/getting-started
+https://docs.serverpod.dev/cloud

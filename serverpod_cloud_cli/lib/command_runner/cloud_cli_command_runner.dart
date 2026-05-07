@@ -279,7 +279,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
 
   @override
   String? get usageFooter =>
-      '\nSee the full documentation at: https://docs.serverpod.cloud/';
+      '\nSee the full documentation at: https://docs.serverpod.dev/cloud';
 
   /// Selects and verifies the project directory that is either specified by the global
   /// configuration, or files found near the current directory.
