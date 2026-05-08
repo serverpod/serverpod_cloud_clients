@@ -17,7 +17,7 @@ dart pub global activate serverpod_cloud_cli
 ```
 
 Log in to your Serverpod Cloud account using the CLI:
-<br/>(If you don't have a Serverpod Cloud account yet, visit [Serverpod Cloud](https://serverpod.cloud/).)
+<br/>(If you don't have a Serverpod Cloud account yet, visit [create an account](https://accounts.serverpod.dev/).)
 
 ```sh
 scloud auth login

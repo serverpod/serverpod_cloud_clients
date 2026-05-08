@@ -84,7 +84,7 @@ void main() {
         message:
             'The maximum number of projects that can be created has been reached (5).',
         hint:
-            'To see your account, visit: https://console.serverpod.cloud/project\n',
+            'To see your account, visit: https://console.serverpod.dev/project\n',
         newParagraph: true,
       ),
     );
