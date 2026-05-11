@@ -11,10 +11,10 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../features/databases/models/database_provider.dart' as _i2;
-import '../../../features/databases/models/database_connection.dart' as _i3;
-import '../../../features/databases/models/database_scaling.dart' as _i4;
-import '../../../features/databases/models/database_quota.dart' as _i5;
+import '../../../domains/databases/models/database_provider.dart' as _i2;
+import '../../../domains/databases/models/database_connection.dart' as _i3;
+import '../../../domains/databases/models/database_scaling.dart' as _i4;
+import '../../../domains/databases/models/database_quota.dart' as _i5;
 import 'package:ground_control_client/src/protocol/protocol.dart' as _i6;
 
 abstract class DatabaseResource implements _i1.SerializableModel {

@@ -11,7 +11,7 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../features/databases/models/database_size.dart' as _i2;
+import '../../../domains/databases/models/database_size.dart' as _i2;
 
 abstract class DatabaseScaling implements _i1.SerializableModel {
   DatabaseScaling._({

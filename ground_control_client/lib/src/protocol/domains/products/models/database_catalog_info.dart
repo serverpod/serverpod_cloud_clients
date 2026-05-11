@@ -12,7 +12,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/products/models/database_product_info.dart' as _i2;
-import '../../../features/databases/models/database_size.dart' as _i3;
+import '../../../domains/databases/models/database_size.dart' as _i3;
 import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 /// A catalog of available database products.

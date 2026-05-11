@@ -13,7 +13,7 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/products/models/plan_type.dart' as _i2;
 import '../../../domains/capsules/models/compute_size_option.dart' as _i3;
-import '../../../features/databases/models/database_size.dart' as _i4;
+import '../../../domains/databases/models/database_size.dart' as _i4;
 
 /// Payload for updating a project profile together with compute scaling and
 /// database sizing.

@@ -54,13 +54,13 @@ import 'package:ground_control_client/src/protocol/features/custom_domains/model
     as _i22;
 import 'package:ground_control_client/src/protocol/features/custom_domains/models/domain_name_status.dart'
     as _i23;
-import 'package:ground_control_client/src/protocol/features/databases/models/database_connection.dart'
+import 'package:ground_control_client/src/protocol/domains/databases/models/database_connection.dart'
     as _i24;
-import 'package:ground_control_client/src/protocol/features/databases/models/database_info.dart'
+import 'package:ground_control_client/src/protocol/domains/databases/models/database_info.dart'
     as _i25;
-import 'package:ground_control_client/src/protocol/features/databases/models/database_resource.dart'
+import 'package:ground_control_client/src/protocol/domains/databases/models/database_resource.dart'
     as _i26;
-import 'package:ground_control_client/src/protocol/features/databases/models/database_size.dart'
+import 'package:ground_control_client/src/protocol/domains/databases/models/database_size.dart'
     as _i27;
 import 'package:ground_control_client/src/protocol/domains/environment_variables/models/variable.dart'
     as _i28;
@@ -751,11 +751,17 @@ class EndpointDatabase extends _i1.EndpointRef {
   String get name => 'database';
 
   /// Enables the database for a project.
+  ///
+  /// Throws [NotFoundException] if the capsule is not found.
+  /// Throws [ProcurementDeniedException] if the database product is not available for the capsule.
+  /// Throws [DatabaseResourceCreationFailed] if the database resource creation fails.
   _i2.Future<void> enableDatabase({required String cloudCapsuleId}) =>
       caller.callServerEndpoint<void>('database', 'enableDatabase', {
         'cloudCapsuleId': cloudCapsuleId,
       });
 
+  /// Returns the connection details for a database resource.
+  /// Throws [NotFoundException] if the database is not found.
   _i2.Future<_i24.DatabaseConnection> getConnectionDetails({
     required String cloudCapsuleId,
   }) => caller.callServerEndpoint<_i24.DatabaseConnection>(
@@ -764,6 +770,9 @@ class EndpointDatabase extends _i1.EndpointRef {
     {'cloudCapsuleId': cloudCapsuleId},
   );
 
+  /// Returns persisted database capacity and quota for [cloudCapsuleId].
+  ///
+  /// Throws [NotFoundException] if the database is not found.
   _i2.Future<_i25.DatabaseInfo> readDatabase({
     required String cloudCapsuleId,
   }) => caller.callServerEndpoint<_i25.DatabaseInfo>(
@@ -774,6 +783,9 @@ class EndpointDatabase extends _i1.EndpointRef {
 
   /// Creates a new super user in the database.
   /// Returns the password for the new user.
+  ///
+  /// Throws [NotFoundException] if the database is not found.
+  /// Throws [DuplicateEntryException] if the [username] already exists.
   _i2.Future<String> createSuperUser({
     required String cloudCapsuleId,
     required String username,
@@ -784,6 +796,9 @@ class EndpointDatabase extends _i1.EndpointRef {
 
   /// Resets the password for a user in the database.
   /// Returns the new password for the user.
+  ///
+  /// Throws [NotFoundException] if the database is not found.
+  /// Throws [InvalidValueException] if the [username] is the owner user.
   _i2.Future<String> resetDatabasePassword({
     required String cloudCapsuleId,
     required String username,
@@ -795,11 +810,23 @@ class EndpointDatabase extends _i1.EndpointRef {
   /// Wipes the database by deleting and recreating it.
   /// This will drop all tables and data in the database.
   /// The deployment will error until a redeploy is performed.
+  ///
+  /// Throws [NotFoundException] if the database is not found.
   _i2.Future<void> wipeDatabase({required String cloudCapsuleId}) =>
       caller.callServerEndpoint<void>('database', 'wipeDatabase', {
         'cloudCapsuleId': cloudCapsuleId,
       });
 
+  /// Updates the size and the autoscaling CU limits for a capsule's database,
+  /// changing the procured database product if necessary.
+  /// The size and limits are validated against the constraints of the capsule's
+  /// product.
+  ///
+  /// [minCu] and [maxCu] must be provided together or both omitted.
+  ///
+  /// Throws [ProcurementDeniedException] if the size is not available for the capsule.
+  /// Throws [InvalidValueException] if the size, minCu, and maxCu combination is invalid.
+  /// Throws [NotFoundException] if no database is found for the capsule.
   _i2.Future<_i26.DatabaseResource> updateDatabaseSize({
     required String cloudCapsuleId,
     required _i27.DatabaseSizeOption size,
