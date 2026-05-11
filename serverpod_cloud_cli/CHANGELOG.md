@@ -1,6 +1,17 @@
 
 # Changelog
 
+## [0.28.1] - 2026-05-11
+
+### Changed
+
+- **Domain Migration** - Updated all references and service endpoints from `serverpod.cloud` to `serverpod.dev` across the CLI, console, and scripts.
+- **Documentation Links** - Migrated all documentation and help URLs to the new `docs.serverpod.dev` domain for consistent access to guides and references.
+
+### Fixed
+
+- **Broken Links** - Fixed various broken relative links within the documentation and corrected several help URLs in the CLI and console.
+
 ## 0.28.0 - 2026-05-06
 
 ### Added
