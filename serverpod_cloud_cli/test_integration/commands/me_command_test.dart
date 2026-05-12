@@ -6,7 +6,6 @@ import 'package:test/test.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/me_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
-import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 
 import '../../test_utils/test_command_logger.dart';
@@ -41,16 +40,6 @@ void main() {
           (_) async => UserBuilder().withEmail('test@example.com').build(),
         );
 
-        when(
-          () => client.plans.getSubscriptionInfo(
-            subscriptionId: any(named: 'subscriptionId'),
-          ),
-        ).thenAnswer(
-          (_) async => SubscriptionInfoBuilder()
-              .withPlanDisplayName('Early Access')
-              .build(),
-        );
-
         commandResult = cli.run(['me']);
       });
 
@@ -79,12 +68,6 @@ void main() {
         when(() => client.users.readUser()).thenAnswer(
           (_) async => UserBuilder().withEmail('test@example.com').build(),
         );
-
-        when(
-          () => client.plans.getSubscriptionInfo(
-            subscriptionId: any(named: 'subscriptionId'),
-          ),
-        ).thenThrow(NoSubscriptionException(message: 'No subscription'));
 
         commandResult = cli.run(['me']);
       });

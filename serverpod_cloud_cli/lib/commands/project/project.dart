@@ -71,7 +71,7 @@ abstract class ProjectCommands {
       await UserConfirmations.confirmNewProjectCostAcceptance(logger);
     }
 
-    String? subscriptionId;
+    UuidValue? subscriptionId;
     if (plan == null) {
       // If no plan is specified and user has a legacy plan, use that.
       final subscriptions = await cloudApiClient.plans.listSubscriptions();

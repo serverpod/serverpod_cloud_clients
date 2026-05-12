@@ -6,6 +6,7 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/admin_product_commands.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:test/test.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/test_command_logger.dart';
@@ -45,9 +46,7 @@ void main() {
             planProductVersion: any(named: 'planProductVersion'),
             overrideChecks: any(named: 'overrideChecks'),
           ),
-        ).thenAnswer(
-          (final invocation) async => Future.value('some-subscription-id'),
-        );
+        ).thenAnswer((final invocation) async => Future.value(Uuid().v4obj()));
 
         commandResult = cli.run([
           'admin',

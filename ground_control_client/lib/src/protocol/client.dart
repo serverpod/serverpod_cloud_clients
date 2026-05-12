@@ -115,19 +115,20 @@ class EndpointAdminProcurement extends _i1.EndpointRef {
   ///
   /// Throws a [NotFoundException] if the user or product is not found.
   /// Throws a [InvalidValueException] if the user has no owner (not fully registered).
-  _i2.Future<String> procurePlan({
+  _i2.Future<_i1.UuidValue> procurePlan({
     required String userEmail,
     required String planProductName,
     int? planProductVersion,
     int? trialPeriodOverride,
     bool? overrideChecks,
-  }) => caller.callServerEndpoint<String>('adminProcurement', 'procurePlan', {
-    'userEmail': userEmail,
-    'planProductName': planProductName,
-    'planProductVersion': planProductVersion,
-    'trialPeriodOverride': trialPeriodOverride,
-    'overrideChecks': overrideChecks,
-  });
+  }) => caller
+      .callServerEndpoint<_i1.UuidValue>('adminProcurement', 'procurePlan', {
+        'userEmail': userEmail,
+        'planProductName': planProductName,
+        'planProductVersion': planProductVersion,
+        'trialPeriodOverride': trialPeriodOverride,
+        'overrideChecks': overrideChecks,
+      });
 
   /// Fetches a user's procured products.
   /// Returns a list of `(String, String)` with the product ID and its type.
@@ -154,7 +155,7 @@ class EndpointAdminProcurement extends _i1.EndpointRef {
   /// already been cancelled or ended.
   _i2.Future<void> cancelPlan({
     required String userEmail,
-    String? subscriptionId,
+    _i1.UuidValue? subscriptionId,
     String? cloudProjectId,
     bool? terminateImmediately,
   }) => caller.callServerEndpoint<void>('adminProcurement', 'cancelPlan', {
@@ -1060,15 +1061,17 @@ class EndpointPlans extends _i1.EndpointRef {
 
   /// Procures a subscription plan.
   ///
+  /// Returns the ID of the created subscription.
+  ///
   /// For plans that depend on the customer billing type (private / business),
   /// the user must have a customer billing type configured. If not,
   /// a [NoCustomerBillingTypeException] is thrown.
   ///
   /// If the plan is not available to procure, a [ProcurementDeniedException] is thrown.
-  _i2.Future<String> procurePlan({
+  _i2.Future<_i1.UuidValue> procurePlan({
     String? planProductName,
     @Deprecated('Use planProductName instead') String? planName,
-  }) => caller.callServerEndpoint<String>('plans', 'procurePlan', {
+  }) => caller.callServerEndpoint<_i1.UuidValue>('plans', 'procurePlan', {
     'planProductName': planProductName,
     'planName': planName,
   });
@@ -1078,7 +1081,7 @@ class EndpointPlans extends _i1.EndpointRef {
   /// - Throws [ProcurementCancellationException] if the cancellation fails,
   /// e.g. if the subscription still has active resources or is already cancelled.
   /// - Throws [NoSubscriptionException] if the user has no subscription.
-  _i2.Future<void> cancelPlan({required String subscriptionId}) =>
+  _i2.Future<void> cancelPlan({required _i1.UuidValue subscriptionId}) =>
       caller.callServerEndpoint<void>('plans', 'cancelPlan', {
         'subscriptionId': subscriptionId,
       });
@@ -1107,13 +1110,11 @@ class EndpointPlans extends _i1.EndpointRef {
   );
 
   /// Gets a subscription info.
-  ///
-  /// [subscriptionId] is currently nullable for backwards compatibility,
-  /// in which case the first found subscription of the owner is used.
+  /// If the id is not specified, the first found subscription of the owner is used.
   ///
   /// Throws [NotFoundException] if the subscription is not found.
   _i2.Future<_i31.SubscriptionInfo> getSubscriptionInfo({
-    String? subscriptionId,
+    _i1.UuidValue? subscriptionId,
   }) => caller.callServerEndpoint<_i31.SubscriptionInfo>(
     'plans',
     'getSubscriptionInfo',
@@ -1178,7 +1179,7 @@ class EndpointProjects extends _i1.EndpointRef {
   /// Throws [NoSubscriptionException] if no subscription was provided and the user has no subscription.
   _i2.Future<_i3.Project> createProject({
     required String cloudProjectId,
-    String? underSubscriptionId,
+    _i1.UuidValue? underSubscriptionId,
     String? projectProductName,
   }) => caller.callServerEndpoint<_i3.Project>('projects', 'createProject', {
     'cloudProjectId': cloudProjectId,

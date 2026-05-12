@@ -6,7 +6,7 @@ class SubscriptionInfoBuilder {
   DateTime? _trialEndDate;
   DateTime? _endDate;
   bool _cancelled;
-  String _subscriptionId;
+  UuidValue _subscriptionId;
   String _planProductId;
   String _planDisplayName;
   String? _planDescription;
@@ -18,7 +18,7 @@ class SubscriptionInfoBuilder {
       _trialEndDate = DateTime.now().add(Duration(days: 7)),
       _endDate = null,
       _cancelled = false,
-      _subscriptionId = 'test-subscription-id',
+      _subscriptionId = Uuid().v4obj(),
       _planProductId = 'early-access:0',
       _planDisplayName = 'Early Access',
       _planDescription = 'A test plan description',
@@ -49,7 +49,7 @@ class SubscriptionInfoBuilder {
     return this;
   }
 
-  SubscriptionInfoBuilder withSubscriptionId(final String subscriptionId) {
+  SubscriptionInfoBuilder withSubscriptionId(final UuidValue subscriptionId) {
     _subscriptionId = subscriptionId;
     return this;
   }

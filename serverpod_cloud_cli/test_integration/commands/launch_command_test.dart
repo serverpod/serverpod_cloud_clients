@@ -168,9 +168,7 @@ void main() {
         () => client.plans.procurePlan(
           planProductName: any(named: 'planProductName'),
         ),
-      ).thenAnswer(
-        (final invocation) async => Future.value('some-subscription-id'),
-      );
+      ).thenAnswer((final invocation) async => Future.value(Uuid().v4obj()));
 
       when(
         () => client.plans.checkPlanAvailability(

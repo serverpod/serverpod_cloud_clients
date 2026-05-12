@@ -75,9 +75,7 @@ void main() {
         () => client.plans.procurePlan(
           planProductName: any(named: 'planProductName'),
         ),
-      ).thenAnswer(
-        (final invocation) async => Future.value('some-subscription-id'),
-      );
+      ).thenAnswer((final invocation) async => Future.value(Uuid().v4obj()));
 
       when(() => client.billing.readOwner()).thenAnswer(
         (final _) async => OwnerBuilder()
@@ -236,7 +234,7 @@ project:
             (final _) async => [
               SubscriptionInfoBuilder()
                   .withPlanProductId('early-access:0')
-                  .withSubscriptionId('early-access-sub')
+                  .withSubscriptionId(Uuid().v4obj())
                   .build(),
             ],
           );
@@ -280,7 +278,7 @@ project:
             (final _) async => [
               SubscriptionInfoBuilder()
                   .withPlanProductId('growth:0')
-                  .withSubscriptionId('growth-sub')
+                  .withSubscriptionId(Uuid().v4obj())
                   .build(),
             ],
           );

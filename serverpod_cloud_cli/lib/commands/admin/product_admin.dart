@@ -45,7 +45,7 @@ abstract class ProductAdminCommands {
     final Client cloudApiClient, {
     required final CommandLogger logger,
     required final String userEmail,
-    final String? subscriptionId,
+    final UuidValue? subscriptionId,
     final String? cloudProjectId,
     final bool? terminateImmediately,
   }) async {

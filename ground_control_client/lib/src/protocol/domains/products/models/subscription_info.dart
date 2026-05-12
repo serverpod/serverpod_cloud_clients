@@ -35,7 +35,7 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
     DateTime? trialEndDate,
     DateTime? endDate,
     required bool cancelled,
-    required String subscriptionId,
+    required _i1.UuidValue subscriptionId,
     required String planProductId,
     String? planName,
     required String planDisplayName,
@@ -60,7 +60,9 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['endDate']),
       cancelled: _i1.BoolJsonExtension.fromJson(jsonSerialization['cancelled']),
-      subscriptionId: jsonSerialization['subscriptionId'] as String,
+      subscriptionId: _i1.UuidValueJsonExtension.fromJson(
+        jsonSerialization['subscriptionId'],
+      ),
       planProductId: jsonSerialization['planProductId'] as String,
       planName: jsonSerialization['planName'] as String?,
       planDisplayName: jsonSerialization['planDisplayName'] as String,
@@ -85,7 +87,7 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
   bool cancelled;
 
   /// The id of the subscription.
-  String subscriptionId;
+  _i1.UuidValue subscriptionId;
 
   /// The id of the plan's product.
   String planProductId;
@@ -111,7 +113,7 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
     DateTime? trialEndDate,
     DateTime? endDate,
     bool? cancelled,
-    String? subscriptionId,
+    _i1.UuidValue? subscriptionId,
     String? planProductId,
     String? planName,
     String? planDisplayName,
@@ -127,7 +129,7 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
       if (trialEndDate != null) 'trialEndDate': trialEndDate?.toJson(),
       if (endDate != null) 'endDate': endDate?.toJson(),
       'cancelled': cancelled,
-      'subscriptionId': subscriptionId,
+      'subscriptionId': subscriptionId.toJson(),
       'planProductId': planProductId,
       if (planName != null) 'planName': planName,
       'planDisplayName': planDisplayName,
@@ -151,7 +153,7 @@ class _SubscriptionInfoImpl extends SubscriptionInfo {
     DateTime? trialEndDate,
     DateTime? endDate,
     required bool cancelled,
-    required String subscriptionId,
+    required _i1.UuidValue subscriptionId,
     required String planProductId,
     String? planName,
     required String planDisplayName,
@@ -181,7 +183,7 @@ class _SubscriptionInfoImpl extends SubscriptionInfo {
     Object? trialEndDate = _Undefined,
     Object? endDate = _Undefined,
     bool? cancelled,
-    String? subscriptionId,
+    _i1.UuidValue? subscriptionId,
     String? planProductId,
     Object? planName = _Undefined,
     String? planDisplayName,

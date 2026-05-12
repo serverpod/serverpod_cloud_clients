@@ -1,6 +1,7 @@
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/commands/admin/product_admin.dart';
+import 'package:uuid/uuid_value.dart';
 
 import '../../helpers/command_options.dart';
 
@@ -154,6 +155,7 @@ enum AdminCancelPlanOption<V> implements OptionDefinition<V> {
       argName: 'subscription-id',
       helpText: 'The id of the subscription to cancel.',
       group: _subscriptionGroup,
+      customValidator: UuidValue.withValidation,
     ),
   ),
   terminateImmediately(
@@ -201,11 +203,15 @@ class AdminCancelPlanCommand extends CloudCliCommand<AdminCancelPlanOption> {
       AdminCancelPlanOption.terminateImmediately,
     );
 
+    final subscriptionUuid = subscriptionId != null
+        ? UuidValue.withValidation(subscriptionId)
+        : null;
+
     await ProductAdminCommands.cancelPlan(
       runner.serviceProvider.cloudApiClient,
       logger: logger,
       userEmail: userEmail,
-      subscriptionId: subscriptionId,
+      subscriptionId: subscriptionUuid,
       cloudProjectId: cloudProjectId,
       terminateImmediately: terminateImmediately,
     );
