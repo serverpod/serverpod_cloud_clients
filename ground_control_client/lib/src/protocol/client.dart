@@ -872,10 +872,18 @@ class EndpointDeploy extends _i1.EndpointRef {
     String cloudProjectId, {
     String? serverpodVersion,
     String? dartVersion,
+    String? commitHash,
+    String? commitMessage,
+    String? branch,
+    String? deployedBy,
   }) => caller.callServerEndpoint<String>('deploy', 'createUploadDescription', {
     'cloudProjectId': cloudProjectId,
     'serverpodVersion': serverpodVersion,
     'dartVersion': dartVersion,
+    'commitHash': commitHash,
+    'commitMessage': commitMessage,
+    'branch': branch,
+    'deployedBy': deployedBy,
   });
 }
 

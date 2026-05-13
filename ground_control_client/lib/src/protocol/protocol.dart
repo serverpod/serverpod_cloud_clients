@@ -812,6 +812,20 @@ class Protocol extends _i1.SerializationManager {
               : null)
           as T;
     }
+    if (t == List<_i38.DeployAttemptStage>) {
+      return (data as List)
+              .map((e) => deserialize<_i38.DeployAttemptStage>(e))
+              .toList()
+          as T;
+    }
+    if (t == _i1.getType<List<_i38.DeployAttemptStage>?>()) {
+      return (data != null
+              ? (data as List)
+                    .map((e) => deserialize<_i38.DeployAttemptStage>(e))
+                    .toList()
+              : null)
+          as T;
+    }
     if (t == List<_i44.UserLabelMapping>) {
       return (data as List)
               .map((e) => deserialize<_i44.UserLabelMapping>(e))

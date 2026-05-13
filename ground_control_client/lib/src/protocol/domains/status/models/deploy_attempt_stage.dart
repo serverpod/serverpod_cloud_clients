@@ -18,6 +18,7 @@ import '../../../domains/status/models/deploy_progress_status.dart' as _i3;
 abstract class DeployAttemptStage implements _i1.SerializableModel {
   DeployAttemptStage._({
     this.id,
+    this.deployAttemptId,
     required this.cloudCapsuleId,
     required this.attemptId,
     required this.stageType,
@@ -33,6 +34,7 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
 
   factory DeployAttemptStage({
     int? id,
+    int? deployAttemptId,
     required String cloudCapsuleId,
     required String attemptId,
     required _i2.DeployStageType stageType,
@@ -49,6 +51,7 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
   factory DeployAttemptStage.fromJson(Map<String, dynamic> jsonSerialization) {
     return DeployAttemptStage(
       id: jsonSerialization['id'] as int?,
+      deployAttemptId: jsonSerialization['deployAttemptId'] as int?,
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
       attemptId: jsonSerialization['attemptId'] as String,
       stageType: _i2.DeployStageType.fromJson(
@@ -77,10 +80,20 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
   /// the id will be null.
   int? id;
 
+  /// Foreign key to the parent [DeployAttempt] this stage belongs to.
+  /// Nullable on the model so transient/in-memory stages constructed by
+  /// external adapters can be passed through the upsert pipeline; the
+  /// persistence layer always resolves and sets it before inserting a row.
+  int? deployAttemptId;
+
   /// The ID of the capsule of this deployment.
+  /// Denormalized from the parent [DeployAttempt] to keep existing queries
+  /// that filter on the capsule efficient without an extra join.
   String cloudCapsuleId;
 
   /// The ID of the deploy attempt.
+  /// Denormalized from the parent [DeployAttempt]; together with
+  /// [cloudCapsuleId] uniquely identifies an attempt across capsules.
   String attemptId;
 
   /// The type of this stage.
@@ -117,6 +130,7 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
   @_i1.useResult
   DeployAttemptStage copyWith({
     int? id,
+    int? deployAttemptId,
     String? cloudCapsuleId,
     String? attemptId,
     _i2.DeployStageType? stageType,
@@ -134,6 +148,7 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
     return {
       '__className__': 'DeployAttemptStage',
       if (id != null) 'id': id,
+      if (deployAttemptId != null) 'deployAttemptId': deployAttemptId,
       'cloudCapsuleId': cloudCapsuleId,
       'attemptId': attemptId,
       'stageType': stageType.toJson(),
@@ -160,6 +175,7 @@ class _Undefined {}
 class _DeployAttemptStageImpl extends DeployAttemptStage {
   _DeployAttemptStageImpl({
     int? id,
+    int? deployAttemptId,
     required String cloudCapsuleId,
     required String attemptId,
     required _i2.DeployStageType stageType,
@@ -173,6 +189,7 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
     String? statusInfo,
   }) : super._(
          id: id,
+         deployAttemptId: deployAttemptId,
          cloudCapsuleId: cloudCapsuleId,
          attemptId: attemptId,
          stageType: stageType,
@@ -192,6 +209,7 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
   @override
   DeployAttemptStage copyWith({
     Object? id = _Undefined,
+    Object? deployAttemptId = _Undefined,
     String? cloudCapsuleId,
     String? attemptId,
     _i2.DeployStageType? stageType,
@@ -206,6 +224,9 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
   }) {
     return DeployAttemptStage(
       id: id is int? ? id : this.id,
+      deployAttemptId: deployAttemptId is int?
+          ? deployAttemptId
+          : this.deployAttemptId,
       cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
       attemptId: attemptId ?? this.attemptId,
       stageType: stageType ?? this.stageType,
