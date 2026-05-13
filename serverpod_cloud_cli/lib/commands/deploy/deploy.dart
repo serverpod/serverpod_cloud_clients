@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:path/path.dart' as p;
 import 'package:ground_control_client/ground_control_client.dart'
     show
         Client,
@@ -141,7 +142,8 @@ abstract class Deploy {
 
     final Directory rootDirectory;
     final Iterable<String> includedSubPaths;
-    if (pubspecValidator.isWorkspaceResolved()) {
+    final bool isWorkspace = pubspecValidator.isWorkspaceResolved();
+    if (isWorkspace) {
       (rootDirectory, includedSubPaths) =
           WorkspaceProject.prepareWorkspacePaths(projectDirectory);
 
@@ -157,6 +159,16 @@ abstract class Deploy {
       includedSubPaths = const ['.'];
     }
 
+    // TODO: Workaround — for workspace projects we skip uploading any
+    // pubspec.lock because the workspace root's lockfile is not guaranteed
+    // to match the bespoke `scloud_ws_pubspec.yaml` we generate (which only
+    // references a subset of the original workspace members). Remove this
+    // exclusion once we resolve a lockfile against our custom workspace root.
+    final bool Function(String)? excludeFile = isWorkspace
+        ? (final String relativePath) =>
+              p.basename(relativePath) == 'pubspec.lock'
+        : null;
+
     late final List<int> projectZip;
     final isZipped = await logger.progress('Zipping project...', () async {
       try {
@@ -166,6 +178,7 @@ abstract class Deploy {
           beneath: includedSubPaths,
           fileReadPoolSize: concurrency,
           showFiles: showFiles,
+          excludeFile: excludeFile,
           fileContentModifier: (final relativePath, final contentReader) async {
             final isPubspec =
                 relativePath.endsWith('pubspec.yaml') &&

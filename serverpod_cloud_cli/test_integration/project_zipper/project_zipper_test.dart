@@ -186,4 +186,42 @@ void main() {
       expect(archiveNames, ['my_file.txt']);
     },
   );
+
+  test(
+    'Given an excludeFile predicate that matches a file when zipping then that file is not included in the final output.',
+    () async {
+      final projectDirectory = DirectoryFactory(
+        withFiles: [
+          FileFactory(withName: 'pubspec.yaml', withContents: 'name: example'),
+          FileFactory(withName: 'pubspec.lock', withContents: 'sdks: {}'),
+        ],
+        withSubDirectories: [
+          DirectoryFactory(
+            withDirectoryName: 'pkg',
+            withFiles: [
+              FileFactory(
+                withName: 'pubspec.yaml',
+                withContents: 'name: nested',
+              ),
+              FileFactory(withName: 'pubspec.lock', withContents: 'sdks: {}'),
+            ],
+          ),
+        ],
+      ).construct(testProjectPath);
+
+      final zippedProject = await ProjectZipper.zipProject(
+        rootDirectory: projectDirectory,
+        logger: commandLogger,
+        excludeFile: (final relativePath) =>
+            p.basename(relativePath) == 'pubspec.lock',
+      );
+
+      final archive = ZipDecoder().decodeBytes(zippedProject);
+      final archiveNames = archive.map((final file) => file.name).toSet();
+
+      // Archive paths are always normalized to forward slashes by the
+      // archive package, regardless of platform — see ArchiveFile constructor.
+      expect(archiveNames, {'pubspec.yaml', 'pkg/pubspec.yaml'});
+    },
+  );
 }

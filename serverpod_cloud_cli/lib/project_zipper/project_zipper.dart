@@ -37,6 +37,8 @@ abstract final class ProjectZipper {
   /// The callback should return the modified content as a string, or null if no modification
   /// is needed (in which case the file will be added as binary). The content reader is only
   /// called when the modifier decides it needs to read the file content.
+  /// The [excludeFile] is an optional predicate that, when returning true for a file's
+  /// relative path, causes that file to be skipped from the archive entirely.
   ///
   /// All exceptions thrown by this method are subclasses of [ProjectZipperExceptions].
   /// Throws [ProjectDirectoryDoesNotExistException] if the project directory
@@ -57,6 +59,7 @@ abstract final class ProjectZipper {
       Future<String> Function() contentReader,
     )?
     fileContentModifier,
+    final bool Function(String relativePath)? excludeFile,
   }) async {
     final projectPath = rootDirectory.path;
 
@@ -74,6 +77,12 @@ abstract final class ProjectZipper {
       );
       filesToUpload.addAll(included);
       filesIgnored.addAll(ignored);
+    }
+
+    if (excludeFile != null) {
+      filesToUpload.removeWhere(
+        (final path) => excludeFile(stripRoot(projectPath, path)),
+      );
     }
 
     logger.debug('Found ${filesToUpload.length} files to upload.');
