@@ -1209,8 +1209,7 @@ class EndpointPlans extends _i1.EndpointRef {
   /// Returns the ID of the created subscription.
   ///
   /// For plans that depend on the customer billing type (private / business),
-  /// the user must have a customer billing type configured. If not,
-  /// a [NoCustomerBillingTypeException] is thrown.
+  /// [BillingCustomerType.private] is used when no customer billing type is set.
   ///
   /// If the plan is not available to procure, a [ProcurementDeniedException] is thrown.
   _i2.Future<_i1.UuidValue> procurePlan({
