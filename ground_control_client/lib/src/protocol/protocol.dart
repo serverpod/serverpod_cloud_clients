@@ -837,12 +837,6 @@ class Protocol extends _i1.SerializationManager {
           )
           as T;
     }
-    if (t == Map<String, String>) {
-      return (data as Map).map(
-            (k, v) => MapEntry(deserialize<String>(k), deserialize<String>(v)),
-          )
-          as T;
-    }
     if (t == List<(String, String)>) {
       return (data as List)
               .map((e) => deserialize<(String, String)>(e))
@@ -881,6 +875,12 @@ class Protocol extends _i1.SerializationManager {
     }
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList() as T;
+    }
+    if (t == Map<String, String>) {
+      return (data as Map).map(
+            (k, v) => MapEntry(deserialize<String>(k), deserialize<String>(v)),
+          )
+          as T;
     }
     if (t == List<_i79.User>) {
       return (data as List).map((e) => deserialize<_i79.User>(e)).toList() as T;

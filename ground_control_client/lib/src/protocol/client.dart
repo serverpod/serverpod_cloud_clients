@@ -82,21 +82,6 @@ import 'package:ground_control_client/src/protocol/domains/status/models/deploy_
     as _i36;
 import 'protocol.dart' as _i37;
 
-/// {@category Endpoint}
-class EndpointAdminMigration extends _i1.EndpointRef {
-  EndpointAdminMigration(_i1.EndpointCaller caller) : super(caller);
-
-  @override
-  String get name => 'adminMigration';
-
-  _i2.Future<Map<String, String>> migrateProcuredDatabaseProducts() =>
-      caller.callServerEndpoint<Map<String, String>>(
-        'adminMigration',
-        'migrateProcuredDatabaseProducts',
-        {},
-      );
-}
-
 /// Endpoint for global administrator to handle procurement for users.
 /// {@category Endpoint}
 class EndpointAdminProcurement extends _i1.EndpointRef {
@@ -1236,7 +1221,7 @@ class EndpointPlans extends _i1.EndpointRef {
     'planName': planName,
   });
 
-  /// Cancels a subscription of the user.
+  /// Cancels a subscription owned by the user.
   ///
   /// - Throws [ProcurementCancellationException] if the cancellation fails,
   /// e.g. if the subscription still has active resources or is already cancelled.
@@ -1246,11 +1231,11 @@ class EndpointPlans extends _i1.EndpointRef {
         'subscriptionId': subscriptionId,
       });
 
-  /// Fetches the names of the procured subscription plans.
+  /// Fetches the names of the subscription plans owned by the user.
   _i2.Future<List<String>> listProcuredPlanNames() => caller
       .callServerEndpoint<List<String>>('plans', 'listProcuredPlanNames', {});
 
-  /// Lists the subscriptions of the user.
+  /// Lists the subscriptions owned by the user.
   _i2.Future<List<_i31.SubscriptionInfo>> listSubscriptions() =>
       caller.callServerEndpoint<List<_i31.SubscriptionInfo>>(
         'plans',
@@ -1269,12 +1254,11 @@ class EndpointPlans extends _i1.EndpointRef {
     {'cloudProjectId': cloudProjectId},
   );
 
-  /// Gets a subscription info.
-  /// If the id is not specified, the first found subscription of the owner is used.
+  /// Gets a subscription info of a subscription owned by the user.
   ///
   /// Throws [NotFoundException] if the subscription is not found.
   _i2.Future<_i31.SubscriptionInfo> getSubscriptionInfo({
-    _i1.UuidValue? subscriptionId,
+    required _i1.UuidValue subscriptionId,
   }) => caller.callServerEndpoint<_i31.SubscriptionInfo>(
     'plans',
     'getSubscriptionInfo',
@@ -1405,6 +1389,10 @@ class EndpointProjects extends _i1.EndpointRef {
   /// capsule identifier used for compute and database operations.
   ///
   /// When [resources.databaseSize] is null, database sizing is not changed.
+  ///
+  /// Throws [NotFoundException] if the project is not found.
+  /// Throws [InvalidValueException] if the requested configuration violates the product constraints.
+  /// Throws [ProcurementDeniedException] if the requested new products are not available.
   _i2.Future<void> updateProjectProfile({
     required String cloudProjectId,
     required _i33.ProjectProfileUpdate resources,
@@ -1650,7 +1638,6 @@ class Client extends _i1.ServerpodClientShared {
          disconnectStreamsOnLostInternetConnection:
              disconnectStreamsOnLostInternetConnection,
        ) {
-    adminMigration = EndpointAdminMigration(this);
     adminProcurement = EndpointAdminProcurement(this);
     adminProjects = EndpointAdminProjects(this);
     adminSecrets = EndpointAdminSecrets(this);
@@ -1678,8 +1665,6 @@ class Client extends _i1.ServerpodClientShared {
     users = EndpointUsers(this);
     modules = Modules(this);
   }
-
-  late final EndpointAdminMigration adminMigration;
 
   late final EndpointAdminProcurement adminProcurement;
 
@@ -1735,7 +1720,6 @@ class Client extends _i1.ServerpodClientShared {
 
   @override
   Map<String, _i1.EndpointRef> get endpointRefLookup => {
-    'adminMigration': adminMigration,
     'adminProcurement': adminProcurement,
     'adminProjects': adminProjects,
     'adminSecrets': adminSecrets,
