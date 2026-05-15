@@ -1,6 +1,14 @@
 
 # Changelog
 
+---
+## [0.29.0] - 2026-05-15
+
+### Fixed
+- **Workspace deployments** - Automatically exclude `pubspec.lock` files when uploading workspace projects to prevent build errors and improve deployment reliability.
+
+---
+
 ## [0.28.1] - 2026-05-11
 
 ### Changed
