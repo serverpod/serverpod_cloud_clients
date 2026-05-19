@@ -144,7 +144,7 @@ abstract class StatusCommands {
       DeployProgressStatus.failure => 'failed! 💥',
       DeployProgressStatus.cancelled => 'cancelled.',
     };
-    return '$stageName $verb${stage.statusInfo != null ? ' ${stage.statusInfo}' : ''}';
+    return '$stageName $verb';
   }
 }
 
