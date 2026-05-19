@@ -178,7 +178,7 @@ class DeployStatusTable extends TablePrinter {
       index.toString(),
       attempt.cloudCapsuleId,
       attempt.attemptId,
-      attempt.status.name.toUpperCase(),
+      attempt.status?.name.toUpperCase(),
       attempt.startedAt?.toTzString(inUtc, _numTimeStampChars),
       attempt.endedAt?.toTzString(inUtc, _numTimeStampChars),
       attempt.statusInfo,

@@ -20,6 +20,8 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
     this.id,
     required this.cloudCapsuleId,
     required this.attemptId,
+    this.deployAttemptId,
+    this.externalId,
     required this.stageType,
     this.stageInfo,
     this.serverpodVersionConstraint,
@@ -35,6 +37,8 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
     int? id,
     required String cloudCapsuleId,
     required String attemptId,
+    _i1.UuidValue? deployAttemptId,
+    String? externalId,
     required _i2.DeployStageType stageType,
     String? stageInfo,
     String? serverpodVersionConstraint,
@@ -51,6 +55,12 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
       id: jsonSerialization['id'] as int?,
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
       attemptId: jsonSerialization['attemptId'] as String,
+      deployAttemptId: jsonSerialization['deployAttemptId'] == null
+          ? null
+          : _i1.UuidValueJsonExtension.fromJson(
+              jsonSerialization['deployAttemptId'],
+            ),
+      externalId: jsonSerialization['externalId'] as String?,
       stageType: _i2.DeployStageType.fromJson(
         (jsonSerialization['stageType'] as String),
       ),
@@ -81,7 +91,17 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
   String cloudCapsuleId;
 
   /// The ID of the deploy attempt.
+  /// Deprecated: use deployAttemptId instead.
   String attemptId;
+
+  /// The ID of the deploy attempt this stage belongs to.
+  /// Nullable for now; will be populated for new writes and backfilled later.
+  /// No relation declared yet to avoid emitting a FK constraint while
+  /// in-flight legacy attempts may still produce events without a parent row.
+  _i1.UuidValue? deployAttemptId;
+
+  /// The external ID of the stage, if any.
+  String? externalId;
 
   /// The type of this stage.
   /// Unique within the deployment attempt.
@@ -94,22 +114,29 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
 
   /// The Serverpod version constraint used by tenant's project.
   /// It is pub semantic versioning constraint, passed from CLI on deploy.
+  /// Deprecated: use deployAttempt.serverpodVersion instead.
   String? serverpodVersionConstraint;
 
   /// The build ID of the deploy attempt that this stage belongs to, if known.
+  /// Deprecated: use externalId instead.
   String? buildId;
 
   /// The name of the image produced by the build stage, if known.
+  /// Deprecated: use deployAttempt.imageName instead.
   String? imageName;
 
   /// The current / last known status of this stage.
   _i3.DeployProgressStatus stageStatus;
 
+  /// The timestamp of the start of the stage.
   DateTime? startedAt;
 
+  /// The timestamp of the end of the stage.
   DateTime? endedAt;
 
   /// Optionally contains user-readable information about the current status of this stage.
+  /// Deprecated: still persisted during the transition; will be removed in a
+  /// future migration once callers have moved off it.
   String? statusInfo;
 
   /// Returns a shallow copy of this [DeployAttemptStage]
@@ -119,6 +146,8 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
     int? id,
     String? cloudCapsuleId,
     String? attemptId,
+    _i1.UuidValue? deployAttemptId,
+    String? externalId,
     _i2.DeployStageType? stageType,
     String? stageInfo,
     String? serverpodVersionConstraint,
@@ -136,6 +165,8 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
       if (id != null) 'id': id,
       'cloudCapsuleId': cloudCapsuleId,
       'attemptId': attemptId,
+      if (deployAttemptId != null) 'deployAttemptId': deployAttemptId?.toJson(),
+      if (externalId != null) 'externalId': externalId,
       'stageType': stageType.toJson(),
       if (stageInfo != null) 'stageInfo': stageInfo,
       if (serverpodVersionConstraint != null)
@@ -162,6 +193,8 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
     int? id,
     required String cloudCapsuleId,
     required String attemptId,
+    _i1.UuidValue? deployAttemptId,
+    String? externalId,
     required _i2.DeployStageType stageType,
     String? stageInfo,
     String? serverpodVersionConstraint,
@@ -175,6 +208,8 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
          id: id,
          cloudCapsuleId: cloudCapsuleId,
          attemptId: attemptId,
+         deployAttemptId: deployAttemptId,
+         externalId: externalId,
          stageType: stageType,
          stageInfo: stageInfo,
          serverpodVersionConstraint: serverpodVersionConstraint,
@@ -194,6 +229,8 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
     Object? id = _Undefined,
     String? cloudCapsuleId,
     String? attemptId,
+    Object? deployAttemptId = _Undefined,
+    Object? externalId = _Undefined,
     _i2.DeployStageType? stageType,
     Object? stageInfo = _Undefined,
     Object? serverpodVersionConstraint = _Undefined,
@@ -208,6 +245,10 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
       id: id is int? ? id : this.id,
       cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
       attemptId: attemptId ?? this.attemptId,
+      deployAttemptId: deployAttemptId is _i1.UuidValue?
+          ? deployAttemptId
+          : this.deployAttemptId,
+      externalId: externalId is String? ? externalId : this.externalId,
       stageType: stageType ?? this.stageType,
       stageInfo: stageInfo is String? ? stageInfo : this.stageInfo,
       serverpodVersionConstraint: serverpodVersionConstraint is String?
