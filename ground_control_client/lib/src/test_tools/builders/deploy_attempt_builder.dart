@@ -153,7 +153,14 @@ class DeployAttemptBuilder {
       branch: _branch,
       deployedById: _deployedBy?.id,
       deployedBy: _deployedBy,
-      stages: _stages,
+      stages: _stages
+          ?.map(
+            (final e) => e.copyWith(
+              attemptId: _attemptId,
+              cloudCapsuleId: _cloudCapsuleId,
+            ),
+          )
+          .toList(),
     );
   }
 }
