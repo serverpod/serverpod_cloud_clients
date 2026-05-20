@@ -608,12 +608,12 @@ The default API domain will be: <project-id>.api.serverpod.space
     );
   }
 
-  static Future<String> _getDeployAttemptId(
+  static Future<UuidValue> _getDeployAttemptId(
     final Client cloudApiClient,
     final CommandLogger logger,
     final String projectId,
   ) async {
-    String? attemptId;
+    UuidValue? attemptId;
     await logger.progress('Waiting for deployment status.', () async {
       for (int i = 0; i < 3; i++) {
         try {

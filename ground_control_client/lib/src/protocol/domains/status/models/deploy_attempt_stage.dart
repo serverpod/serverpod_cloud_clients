@@ -11,8 +11,10 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../domains/status/models/deploy_stage_type.dart' as _i2;
-import '../../../domains/status/models/deploy_progress_status.dart' as _i3;
+import '../../../domains/status/models/deploy_attempt.dart' as _i2;
+import '../../../domains/status/models/deploy_stage_type.dart' as _i3;
+import '../../../domains/status/models/deploy_progress_status.dart' as _i4;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i5;
 
 /// Represents the status information of a stage in a deployment attempt.
 abstract class DeployAttemptStage implements _i1.SerializableModel {
@@ -20,6 +22,7 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
     this.id,
     required this.cloudCapsuleId,
     required this.attemptId,
+    this.attempt,
     this.externalId,
     required this.stageType,
     required this.stageStatus,
@@ -35,10 +38,11 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
   factory DeployAttemptStage({
     int? id,
     required String cloudCapsuleId,
-    required String attemptId,
+    required _i1.UuidValue attemptId,
+    _i2.DeployAttempt? attempt,
     String? externalId,
-    required _i2.DeployStageType stageType,
-    required _i3.DeployProgressStatus stageStatus,
+    required _i3.DeployStageType stageType,
+    required _i4.DeployProgressStatus stageStatus,
     DateTime? startedAt,
     DateTime? endedAt,
     String? buildId,
@@ -52,12 +56,19 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
     return DeployAttemptStage(
       id: jsonSerialization['id'] as int?,
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
-      attemptId: jsonSerialization['attemptId'] as String,
+      attemptId: _i1.UuidValueJsonExtension.fromJson(
+        jsonSerialization['attemptId'],
+      ),
+      attempt: jsonSerialization['attempt'] == null
+          ? null
+          : _i5.Protocol().deserialize<_i2.DeployAttempt>(
+              jsonSerialization['attempt'],
+            ),
       externalId: jsonSerialization['externalId'] as String?,
-      stageType: _i2.DeployStageType.fromJson(
+      stageType: _i3.DeployStageType.fromJson(
         (jsonSerialization['stageType'] as String),
       ),
-      stageStatus: _i3.DeployProgressStatus.fromJson(
+      stageStatus: _i4.DeployProgressStatus.fromJson(
         (jsonSerialization['stageStatus'] as String),
       ),
       startedAt: jsonSerialization['startedAt'] == null
@@ -84,17 +95,20 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
   String cloudCapsuleId;
 
   /// The ID of the deploy attempt.
-  String attemptId;
+  _i1.UuidValue attemptId;
+
+  /// The deployment attempt this stage belongs to.
+  _i2.DeployAttempt? attempt;
 
   /// The external ID of the stage, if any.
   String? externalId;
 
   /// The type of this stage.
   /// Unique within the deployment attempt.
-  _i2.DeployStageType stageType;
+  _i3.DeployStageType stageType;
 
   /// The current / last known status of this stage.
-  _i3.DeployProgressStatus stageStatus;
+  _i4.DeployProgressStatus stageStatus;
 
   /// The timestamp of the start of the stage.
   DateTime? startedAt;
@@ -133,10 +147,11 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
   DeployAttemptStage copyWith({
     int? id,
     String? cloudCapsuleId,
-    String? attemptId,
+    _i1.UuidValue? attemptId,
+    _i2.DeployAttempt? attempt,
     String? externalId,
-    _i2.DeployStageType? stageType,
-    _i3.DeployProgressStatus? stageStatus,
+    _i3.DeployStageType? stageType,
+    _i4.DeployProgressStatus? stageStatus,
     DateTime? startedAt,
     DateTime? endedAt,
     String? buildId,
@@ -151,7 +166,8 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
       '__className__': 'DeployAttemptStage',
       if (id != null) 'id': id,
       'cloudCapsuleId': cloudCapsuleId,
-      'attemptId': attemptId,
+      'attemptId': attemptId.toJson(),
+      if (attempt != null) 'attempt': attempt?.toJson(),
       if (externalId != null) 'externalId': externalId,
       'stageType': stageType.toJson(),
       'stageStatus': stageStatus.toJson(),
@@ -178,10 +194,11 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
   _DeployAttemptStageImpl({
     int? id,
     required String cloudCapsuleId,
-    required String attemptId,
+    required _i1.UuidValue attemptId,
+    _i2.DeployAttempt? attempt,
     String? externalId,
-    required _i2.DeployStageType stageType,
-    required _i3.DeployProgressStatus stageStatus,
+    required _i3.DeployStageType stageType,
+    required _i4.DeployProgressStatus stageStatus,
     DateTime? startedAt,
     DateTime? endedAt,
     String? buildId,
@@ -193,6 +210,7 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
          id: id,
          cloudCapsuleId: cloudCapsuleId,
          attemptId: attemptId,
+         attempt: attempt,
          externalId: externalId,
          stageType: stageType,
          stageStatus: stageStatus,
@@ -212,10 +230,11 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
   DeployAttemptStage copyWith({
     Object? id = _Undefined,
     String? cloudCapsuleId,
-    String? attemptId,
+    _i1.UuidValue? attemptId,
+    Object? attempt = _Undefined,
     Object? externalId = _Undefined,
-    _i2.DeployStageType? stageType,
-    _i3.DeployProgressStatus? stageStatus,
+    _i3.DeployStageType? stageType,
+    _i4.DeployProgressStatus? stageStatus,
     Object? startedAt = _Undefined,
     Object? endedAt = _Undefined,
     Object? buildId = _Undefined,
@@ -228,6 +247,9 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
       id: id is int? ? id : this.id,
       cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
       attemptId: attemptId ?? this.attemptId,
+      attempt: attempt is _i2.DeployAttempt?
+          ? attempt
+          : this.attempt?.copyWith(),
       externalId: externalId is String? ? externalId : this.externalId,
       stageType: stageType ?? this.stageType,
       stageStatus: stageStatus ?? this.stageStatus,

@@ -3,7 +3,7 @@ import 'package:ground_control_client/ground_control_client_test_tools.dart';
 
 class DeployAttemptBuilder {
   String _cloudCapsuleId;
-  String _attemptId;
+  UuidValue _attemptId;
   DeployProgressStatus? _status;
   String? _statusInfo;
   String? _serverpodVersion;
@@ -18,7 +18,7 @@ class DeployAttemptBuilder {
 
   DeployAttemptBuilder()
     : _cloudCapsuleId = 'test-capsule-id',
-      _attemptId = 'test-attempt-id',
+      _attemptId = Uuid().v4obj(),
       _statusInfo = null,
       _serverpodVersion = '3.5.0',
       _dartVersion = '3.11',
@@ -29,7 +29,7 @@ class DeployAttemptBuilder {
     _stages = [
       DeployAttemptStageBuilder()
           .withBuildStageSuccess()
-          .withAttemptId(_attemptId.toString())
+          .withAttemptId(_attemptId)
           .build(),
     ];
   }
@@ -38,15 +38,15 @@ class DeployAttemptBuilder {
     _stages = [
       DeployAttemptStageBuilder()
           .withUploadStageSuccess()
-          .withAttemptId(_attemptId.toString())
+          .withAttemptId(_attemptId)
           .build(),
       DeployAttemptStageBuilder()
           .withBuildStageSuccess()
-          .withAttemptId(_attemptId.toString())
+          .withAttemptId(_attemptId)
           .build(),
       DeployAttemptStageBuilder()
           .withDeployStageSuccess()
-          .withAttemptId(_attemptId.toString())
+          .withAttemptId(_attemptId)
           .build(),
     ];
     return this;
@@ -56,15 +56,15 @@ class DeployAttemptBuilder {
     _stages = [
       DeployAttemptStageBuilder()
           .withUploadStageSuccess()
-          .withAttemptId(_attemptId.toString())
+          .withAttemptId(_attemptId)
           .build(),
       DeployAttemptStageBuilder()
           .withBuildStageSuccess()
-          .withAttemptId(_attemptId.toString())
+          .withAttemptId(_attemptId)
           .build(),
       DeployAttemptStageBuilder()
           .withDeployStageFailure()
-          .withAttemptId(_attemptId.toString())
+          .withAttemptId(_attemptId)
           .build(),
     ];
     return this;
@@ -75,7 +75,7 @@ class DeployAttemptBuilder {
     return this;
   }
 
-  DeployAttemptBuilder withAttemptId(final String attemptId) {
+  DeployAttemptBuilder withAttemptId(final UuidValue attemptId) {
     _attemptId = attemptId;
     return this;
   }
@@ -141,7 +141,7 @@ class DeployAttemptBuilder {
     return DeployAttempt(
       id: Uuid().v4obj(),
       cloudCapsuleId: _cloudCapsuleId,
-      attemptId: _attemptId,
+      attemptId: _attemptId.toString(),
       status: _status ?? status,
       startedAt: _startedAt ?? _stages?.first.startedAt,
       endedAt: _endedAt ?? _stages?.last.endedAt,

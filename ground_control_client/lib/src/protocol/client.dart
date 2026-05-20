@@ -1191,7 +1191,7 @@ class EndpointLogs extends _i1.EndpointRef {
   _i2.Stream<_i30.LogRecord> fetchBuildLog({
     @Deprecated('Use cloudCapsuleId instead') String? cloudProjectId,
     String? cloudCapsuleId,
-    required String attemptId,
+    required _i1.UuidValue attemptId,
     int? limit,
   }) => caller
       .callStreamingServerEndpoint<_i2.Stream<_i30.LogRecord>, _i30.LogRecord>(
@@ -1558,7 +1558,7 @@ class EndpointStatus extends _i1.EndpointRef {
   /// Gets the specified deploy attempt status of the a capsule.
   _i2.Future<List<_i36.DeployAttemptStage>> getDeployAttemptStatus({
     required String cloudCapsuleId,
-    required String attemptId,
+    required _i1.UuidValue attemptId,
   }) => caller.callServerEndpoint<List<_i36.DeployAttemptStage>>(
     'status',
     'getDeployAttemptStatus',
@@ -1567,19 +1567,20 @@ class EndpointStatus extends _i1.EndpointRef {
 
   /// Gets the deploy attempt id for the specified attempt number of a capsule.
   /// This number enumerate the capsule's deploy attempts as latest first, starting from 0.
-  _i2.Future<String> getDeployAttemptId({
+  _i2.Future<_i1.UuidValue> getDeployAttemptId({
     required String cloudCapsuleId,
     required int attemptNumber,
-  }) => caller.callServerEndpoint<String>('status', 'getDeployAttemptId', {
-    'cloudCapsuleId': cloudCapsuleId,
-    'attemptNumber': attemptNumber,
-  });
+  }) => caller.callServerEndpoint<_i1.UuidValue>(
+    'status',
+    'getDeployAttemptId',
+    {'cloudCapsuleId': cloudCapsuleId, 'attemptNumber': attemptNumber},
+  );
 
   /// Tails the status updates for a deploy attempt.
   /// Continues until the client unsubscribes or the status if final.
   _i2.Stream<_i36.DeployAttemptStage> tailDeployAttemptStatus({
     required String cloudCapsuleId,
-    required String attemptId,
+    required _i1.UuidValue attemptId,
   }) =>
       caller.callStreamingServerEndpoint<
         _i2.Stream<_i36.DeployAttemptStage>,

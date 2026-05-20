@@ -39,7 +39,7 @@ abstract class StatusCommands {
     final Client cloudApiClient, {
     required final CommandLogger logger,
     required final String cloudCapsuleId,
-    required final String attemptId,
+    required final UuidValue attemptId,
     final bool inUtc = false,
     final bool outputOverallStatus = false,
   }) async {
@@ -70,7 +70,7 @@ abstract class StatusCommands {
     final Client cloudApiClient, {
     required final CommandLogger logger,
     required final String cloudCapsuleId,
-    required final String attemptId,
+    required final UuidValue attemptId,
     final bool inUtc = false,
   }) async {
     final stageStream = cloudApiClient.status.tailDeployAttemptStatus(
