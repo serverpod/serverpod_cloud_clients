@@ -88,13 +88,6 @@ class EndpointAdminMigration extends _i1.EndpointRef {
 
   @override
   String get name => 'adminMigration';
-
-  _i2.Future<Map<String, String>> backfillDeployAttempts() =>
-      caller.callServerEndpoint<Map<String, String>>(
-        'adminMigration',
-        'backfillDeployAttempts',
-        {},
-      );
 }
 
 /// Endpoint for global administrator to handle procurement for users.
@@ -1032,10 +1025,16 @@ class EndpointDeploy extends _i1.EndpointRef {
     String cloudProjectId, {
     String? serverpodVersion,
     String? dartVersion,
+    String? commitHash,
+    String? commitMessage,
+    String? branch,
   }) => caller.callServerEndpoint<String>('deploy', 'createUploadDescription', {
     'cloudProjectId': cloudProjectId,
     'serverpodVersion': serverpodVersion,
     'dartVersion': dartVersion,
+    'commitHash': commitHash,
+    'commitMessage': commitMessage,
+    'branch': branch,
   });
 }
 

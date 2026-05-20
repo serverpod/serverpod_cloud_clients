@@ -812,6 +812,20 @@ class Protocol extends _i1.SerializationManager {
               : null)
           as T;
     }
+    if (t == List<_i38.DeployAttemptStage>) {
+      return (data as List)
+              .map((e) => deserialize<_i38.DeployAttemptStage>(e))
+              .toList()
+          as T;
+    }
+    if (t == _i1.getType<List<_i38.DeployAttemptStage>?>()) {
+      return (data != null
+              ? (data as List)
+                    .map((e) => deserialize<_i38.DeployAttemptStage>(e))
+                    .toList()
+              : null)
+          as T;
+    }
     if (t == List<_i44.UserLabelMapping>) {
       return (data as List)
               .map((e) => deserialize<_i44.UserLabelMapping>(e))
@@ -834,12 +848,6 @@ class Protocol extends _i1.SerializationManager {
                 deserialize<String>(e['v']),
               ),
             ),
-          )
-          as T;
-    }
-    if (t == Map<String, String>) {
-      return (data as Map).map(
-            (k, v) => MapEntry(deserialize<String>(k), deserialize<String>(v)),
           )
           as T;
     }
@@ -881,6 +889,12 @@ class Protocol extends _i1.SerializationManager {
     }
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList() as T;
+    }
+    if (t == Map<String, String>) {
+      return (data as Map).map(
+            (k, v) => MapEntry(deserialize<String>(k), deserialize<String>(v)),
+          )
+          as T;
     }
     if (t == List<_i79.User>) {
       return (data as List).map((e) => deserialize<_i79.User>(e)).toList() as T;

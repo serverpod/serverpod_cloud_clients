@@ -1,20 +1,74 @@
 import 'package:ground_control_client/ground_control_client.dart';
+import 'package:ground_control_client/ground_control_client_test_tools.dart';
 
 class DeployAttemptBuilder {
   String _cloudCapsuleId;
   String _attemptId;
-  DeployProgressStatus _status;
+  DeployProgressStatus? _status;
+  String? _statusInfo;
+  String? _serverpodVersion;
+  String? _dartVersion;
+  String? _commitHash;
+  String? _commitMessage;
+  String? _branch;
+  User? _deployedBy;
+  List<DeployAttemptStage>? _stages;
   DateTime? _startedAt;
   DateTime? _endedAt;
-  String? _statusInfo;
 
   DeployAttemptBuilder()
     : _cloudCapsuleId = 'test-capsule-id',
       _attemptId = 'test-attempt-id',
-      _status = DeployProgressStatus.awaiting,
-      _startedAt = DateTime.now(),
-      _endedAt = null,
-      _statusInfo = null;
+      _statusInfo = null,
+      _serverpodVersion = '3.5.0',
+      _dartVersion = '3.11',
+      _commitHash = '279d40t5',
+      _commitMessage = 'feat: My awesome new feature',
+      _branch = 'main',
+      _deployedBy = UserBuilder().build() {
+    _stages = [
+      DeployAttemptStageBuilder()
+          .withBuildStageSuccess()
+          .withAttemptId(_attemptId.toString())
+          .build(),
+    ];
+  }
+
+  DeployAttemptBuilder withSuccessfulDeployment() {
+    _stages = [
+      DeployAttemptStageBuilder()
+          .withUploadStageSuccess()
+          .withAttemptId(_attemptId.toString())
+          .build(),
+      DeployAttemptStageBuilder()
+          .withBuildStageSuccess()
+          .withAttemptId(_attemptId.toString())
+          .build(),
+      DeployAttemptStageBuilder()
+          .withDeployStageSuccess()
+          .withAttemptId(_attemptId.toString())
+          .build(),
+    ];
+    return this;
+  }
+
+  DeployAttemptBuilder withFailedDeployment() {
+    _stages = [
+      DeployAttemptStageBuilder()
+          .withUploadStageSuccess()
+          .withAttemptId(_attemptId.toString())
+          .build(),
+      DeployAttemptStageBuilder()
+          .withBuildStageSuccess()
+          .withAttemptId(_attemptId.toString())
+          .build(),
+      DeployAttemptStageBuilder()
+          .withDeployStageFailure()
+          .withAttemptId(_attemptId.toString())
+          .build(),
+    ];
+    return this;
+  }
 
   DeployAttemptBuilder withCloudCapsuleId(final String cloudCapsuleId) {
     _cloudCapsuleId = cloudCapsuleId;
@@ -31,6 +85,46 @@ class DeployAttemptBuilder {
     return this;
   }
 
+  DeployAttemptBuilder withStatusInfo(final String? statusInfo) {
+    _statusInfo = statusInfo;
+    return this;
+  }
+
+  DeployAttemptBuilder withServerpodVersion(final String? serverpodVersion) {
+    _serverpodVersion = serverpodVersion;
+    return this;
+  }
+
+  DeployAttemptBuilder withDartVersion(final String? dartVersion) {
+    _dartVersion = dartVersion;
+    return this;
+  }
+
+  DeployAttemptBuilder withCommitHash(final String? commitHash) {
+    _commitHash = commitHash;
+    return this;
+  }
+
+  DeployAttemptBuilder withCommitMessage(final String? commitMessage) {
+    _commitMessage = commitMessage;
+    return this;
+  }
+
+  DeployAttemptBuilder withBranch(final String? branch) {
+    _branch = branch;
+    return this;
+  }
+
+  DeployAttemptBuilder withDeployedBy(final User? deployedBy) {
+    _deployedBy = deployedBy;
+    return this;
+  }
+
+  DeployAttemptBuilder withStages(final List<DeployAttemptStage> stages) {
+    _stages = stages;
+    return this;
+  }
+
   DeployAttemptBuilder withStartedAt(final DateTime? startedAt) {
     _startedAt = startedAt;
     return this;
@@ -41,19 +135,25 @@ class DeployAttemptBuilder {
     return this;
   }
 
-  DeployAttemptBuilder withStatusInfo(final String? statusInfo) {
-    _statusInfo = statusInfo;
-    return this;
-  }
-
   DeployAttempt build() {
+    final status = _stages?.last.stageStatus;
+
     return DeployAttempt(
+      id: Uuid().v4obj(),
       cloudCapsuleId: _cloudCapsuleId,
       attemptId: _attemptId,
-      status: _status,
-      startedAt: _startedAt,
-      endedAt: _endedAt,
+      status: _status ?? status,
+      startedAt: _startedAt ?? _stages?.first.startedAt,
+      endedAt: _endedAt ?? _stages?.last.endedAt,
       statusInfo: _statusInfo,
+      serverpodVersion: _serverpodVersion,
+      dartVersion: _dartVersion,
+      commitHash: _commitHash,
+      commitMessage: _commitMessage,
+      branch: _branch,
+      deployedById: _deployedBy?.id,
+      deployedBy: _deployedBy,
+      stages: _stages,
     );
   }
 }

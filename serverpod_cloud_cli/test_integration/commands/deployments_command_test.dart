@@ -172,47 +172,47 @@ void main() {
       group('with correct args to get the most recent deploy status', () {
         setUpAll(() async {
           final attemptStages = [
-            DeployAttemptStage(
-              cloudCapsuleId: projectId,
-              attemptId: 'abc',
-              stageType: DeployStageType.upload,
-              stageStatus: DeployProgressStatus.success,
-              startedAt: DateTime.parse("2021-12-31 10:20:30"),
-              endedAt: DateTime.parse("2021-12-31 10:20:40"),
-            ),
-            DeployAttemptStage(
-              cloudCapsuleId: projectId,
-              attemptId: 'abc',
-              stageType: DeployStageType.build,
-              buildId: 'build-id-foo',
-              stageStatus: DeployProgressStatus.running,
-              startedAt: DateTime.parse("2021-12-31 10:20:30"),
-            ),
-            DeployAttemptStage(
-              cloudCapsuleId: projectId,
-              attemptId: 'abc',
-              stageType: DeployStageType.build,
-              buildId: 'build-id-foo',
-              stageStatus: DeployProgressStatus.success,
-              startedAt: DateTime.parse("2021-12-31 10:20:30"),
-              endedAt: DateTime.parse("2021-12-31 10:20:40"),
-            ),
-            DeployAttemptStage(
-              cloudCapsuleId: projectId,
-              attemptId: 'abc',
-              stageType: DeployStageType.deploy,
-              stageStatus: DeployProgressStatus.success,
-              startedAt: DateTime.parse("2021-12-31 10:20:30"),
-              endedAt: DateTime.parse("2021-12-31 10:20:40"),
-            ),
-            DeployAttemptStage(
-              cloudCapsuleId: projectId,
-              attemptId: 'abc',
-              stageType: DeployStageType.service,
-              stageStatus: DeployProgressStatus.success,
-              startedAt: DateTime.parse("2021-12-31 10:20:30"),
-              endedAt: DateTime.parse("2021-12-31 10:20:40"),
-            ),
+            DeployAttemptStageBuilder()
+                .withCloudCapsuleId(projectId)
+                .withAttemptId('abc')
+                .withStageType(DeployStageType.upload)
+                .withStageStatus(DeployProgressStatus.success)
+                .withStartedAt(DateTime.parse("2021-12-31 10:20:30"))
+                .withEndedAt(DateTime.parse("2021-12-31 10:20:40"))
+                .build(),
+            DeployAttemptStageBuilder()
+                .withCloudCapsuleId(projectId)
+                .withAttemptId('abc')
+                .withStageType(DeployStageType.build)
+                .withBuildId('build-id-foo')
+                .withStageStatus(DeployProgressStatus.running)
+                .withStartedAt(DateTime.parse("2021-12-31 10:20:30"))
+                .build(),
+            DeployAttemptStageBuilder()
+                .withCloudCapsuleId(projectId)
+                .withAttemptId('abc')
+                .withStageType(DeployStageType.build)
+                .withBuildId('build-id-foo')
+                .withStageStatus(DeployProgressStatus.success)
+                .withStartedAt(DateTime.parse("2021-12-31 10:20:30"))
+                .withEndedAt(DateTime.parse("2021-12-31 10:20:40"))
+                .build(),
+            DeployAttemptStageBuilder()
+                .withCloudCapsuleId(projectId)
+                .withAttemptId('abc')
+                .withStageType(DeployStageType.deploy)
+                .withStageStatus(DeployProgressStatus.success)
+                .withStartedAt(DateTime.parse("2021-12-31 10:20:30"))
+                .withEndedAt(DateTime.parse("2021-12-31 10:20:40"))
+                .build(),
+            DeployAttemptStageBuilder()
+                .withCloudCapsuleId(projectId)
+                .withAttemptId('abc')
+                .withStageType(DeployStageType.service)
+                .withStageStatus(DeployProgressStatus.success)
+                .withStartedAt(DateTime.parse("2021-12-31 10:20:30"))
+                .withEndedAt(DateTime.parse("2021-12-31 10:20:40"))
+                .build(),
           ];
 
           when(
@@ -506,39 +506,39 @@ Tracking status of projectId deploy abc, started at 2021-12-31 10:20:30:
     group('and an unsuccessful status,', () {
       setUpAll(() async {
         final attemptStages = [
-          DeployAttemptStage(
-            cloudCapsuleId: projectId,
-            attemptId: 'abc',
-            stageType: DeployStageType.upload,
-            stageStatus: DeployProgressStatus.success,
-            startedAt: DateTime.parse("2021-12-31 10:20:30"),
-            endedAt: DateTime.parse("2021-12-31 10:20:40"),
-          ),
-          DeployAttemptStage(
-            cloudCapsuleId: projectId,
-            attemptId: 'abc',
-            stageType: DeployStageType.build,
-            buildId: 'build-id-foo',
-            stageStatus: DeployProgressStatus.success,
-            startedAt: DateTime.parse("2021-12-31 10:20:30"),
-            endedAt: DateTime.parse("2021-12-31 10:20:40"),
-          ),
-          DeployAttemptStage(
-            cloudCapsuleId: projectId,
-            attemptId: 'abc',
-            stageType: DeployStageType.deploy,
-            stageStatus: DeployProgressStatus.success,
-            startedAt: DateTime.parse("2021-12-31 10:20:30"),
-            endedAt: DateTime.parse("2021-12-31 10:20:40"),
-          ),
-          DeployAttemptStage(
-            cloudCapsuleId: projectId,
-            attemptId: 'abc',
-            stageType: DeployStageType.service,
-            stageStatus: DeployProgressStatus.awaiting,
-            startedAt: DateTime.parse("2021-12-31 10:20:30"),
-            endedAt: DateTime.parse("2021-12-31 10:20:40"),
-          ),
+          DeployAttemptStageBuilder()
+              .withCloudCapsuleId(projectId)
+              .withAttemptId('abc')
+              .withStageType(DeployStageType.upload)
+              .withStageStatus(DeployProgressStatus.success)
+              .withStartedAt(DateTime.parse("2021-12-31 10:20:30"))
+              .withEndedAt(DateTime.parse("2021-12-31 10:20:40"))
+              .build(),
+          DeployAttemptStageBuilder()
+              .withCloudCapsuleId(projectId)
+              .withAttemptId('abc')
+              .withStageType(DeployStageType.build)
+              .withBuildId('build-id-foo')
+              .withStageStatus(DeployProgressStatus.success)
+              .withStartedAt(DateTime.parse("2021-12-31 10:20:30"))
+              .withEndedAt(DateTime.parse("2021-12-31 10:20:40"))
+              .build(),
+          DeployAttemptStageBuilder()
+              .withCloudCapsuleId(projectId)
+              .withAttemptId('abc')
+              .withStageType(DeployStageType.deploy)
+              .withStageStatus(DeployProgressStatus.success)
+              .withStartedAt(DateTime.parse("2021-12-31 10:20:30"))
+              .withEndedAt(DateTime.parse("2021-12-31 10:20:40"))
+              .build(),
+          DeployAttemptStageBuilder()
+              .withCloudCapsuleId(projectId)
+              .withAttemptId('abc')
+              .withStageType(DeployStageType.service)
+              .withStageStatus(DeployProgressStatus.awaiting)
+              .withStartedAt(DateTime.parse("2021-12-31 10:20:30"))
+              .withEndedAt(DateTime.parse("2021-12-31 10:20:40"))
+              .build(),
         ];
 
         when(
@@ -675,22 +675,21 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
       group('with correct args to get the deployments list', () {
         setUpAll(() async {
           final buildStatuses = [
-            DeployAttempt(
-              cloudCapsuleId: projectId,
-              attemptId: 'foo',
-              status: DeployProgressStatus.success,
-              startedAt: DateTime.parse("2021-12-31 10:20:30"),
-              endedAt: DateTime.parse("2021-12-31 10:20:40"),
-              statusInfo: null,
-            ),
-            DeployAttempt(
-              cloudCapsuleId: projectId,
-              attemptId: 'bar',
-              status: DeployProgressStatus.failure,
-              startedAt: DateTime.parse("2021-12-31 10:10:30"),
-              endedAt: DateTime.parse("2021-12-31 10:10:40"),
-              statusInfo: 'Some error',
-            ),
+            DeployAttemptBuilder()
+                .withSuccessfulDeployment()
+                .withCloudCapsuleId('projectId')
+                .withStartedAt(DateTime.parse("2021-12-31 10:20:30"))
+                .withEndedAt(DateTime.parse("2021-12-31 10:20:40"))
+                .withAttemptId('foo')
+                .build(),
+            DeployAttemptBuilder()
+                .withFailedDeployment()
+                .withCloudCapsuleId('projectId')
+                .withStartedAt(DateTime.parse("2021-12-31 10:10:30"))
+                .withEndedAt(DateTime.parse("2021-12-31 10:10:40"))
+                .withStatusInfo('Some error')
+                .withAttemptId('bar')
+                .build(),
           ];
 
           when(
