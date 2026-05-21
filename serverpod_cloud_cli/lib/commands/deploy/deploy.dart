@@ -17,6 +17,7 @@ import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/dart_version_util.dart'
     show ProjectDartVersionHint;
 import 'package:serverpod_cloud_cli/util/deploy_multi_instance_serverpod_warning.dart';
+import 'package:serverpod_cloud_cli/util/git_metadata.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart'
     show TenantProjectPubspec;
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_io.dart';
@@ -92,6 +93,18 @@ abstract class Deploy {
         serverpodVersionConstraint: pubspecValidator.serverpodVersion,
       );
 
+      final gitMetadata = await readGitMetadata(projectDir, logger: logger);
+      if (gitMetadata != null && gitMetadata.hasUncommittedChanges) {
+        logger.warning(
+          'You have uncommitted changes in your git repository.',
+          hint:
+              'These changes are included in the deployment, but the deploy '
+              'is recorded against the last commit. Commit your changes for '
+              'an accurate deployment history.',
+          newParagraph: true,
+        );
+      }
+
       final serverpodVersion = pubspecValidator.serverpodVersion;
 
       await logger.progress('Retrieving upload description...', () async {
@@ -101,6 +114,9 @@ abstract class Deploy {
                 projectId,
                 serverpodVersion: serverpodVersion,
                 dartVersion: dartVersionHint,
+                commitHash: gitMetadata?.commitHash,
+                commitMessage: gitMetadata?.commitMessage,
+                branch: gitMetadata?.branch,
               );
           final resolvedTag = resolvedDartImageTagFromUploadDescription(
             uploadDescription,

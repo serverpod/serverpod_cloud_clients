@@ -131,6 +131,9 @@ void main() {
           any(),
           serverpodVersion: any(named: 'serverpodVersion'),
           dartVersion: any(named: 'dartVersion'),
+          commitHash: any(named: 'commitHash'),
+          commitMessage: any(named: 'commitMessage'),
+          branch: any(named: 'branch'),
         ),
       ).thenAnswer((final _) async => jsonEncode(descriptionContent));
 
