@@ -66,7 +66,7 @@ abstract class LogsFeature {
     final Client cloudApiClient, {
     required final void Function(String) writeln,
     required final String projectId,
-    required final String attemptId,
+    required final UuidValue attemptId,
     required final bool inUtc,
   }) async {
     final timezoneName = inUtc

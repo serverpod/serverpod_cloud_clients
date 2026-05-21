@@ -303,7 +303,7 @@ Examples
   }
 }
 
-Future<String> _getDeployAttemptId(
+Future<UuidValue> _getDeployAttemptId(
   final Client cloudApiClient,
   final String projectId,
   String? deploymentArg,
@@ -311,7 +311,14 @@ Future<String> _getDeployAttemptId(
   deploymentArg ??= '0';
   final attemptNumber = int.tryParse(deploymentArg);
   if (attemptNumber == null) {
-    return deploymentArg;
+    try {
+      return UuidValue.withValidation(deploymentArg);
+    } on FormatException catch (_) {
+      throw FailureException(
+        error: 'The requested resource did not exist.',
+        hint: 'Validate the attempt id is correct.',
+      );
+    }
   }
   try {
     return await cloudApiClient.status.getDeployAttemptId(

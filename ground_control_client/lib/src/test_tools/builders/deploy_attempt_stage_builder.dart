@@ -2,7 +2,7 @@ import 'package:ground_control_client/ground_control_client.dart';
 
 class DeployAttemptStageBuilder {
   String _cloudCapsuleId;
-  String _attemptId;
+  UuidValue _attemptId;
   DeployStageType _stageType;
   DeployProgressStatus _stageStatus;
   String? _stageInfo;
@@ -16,7 +16,7 @@ class DeployAttemptStageBuilder {
 
   DeployAttemptStageBuilder()
     : _cloudCapsuleId = 'test-capsule-id',
-      _attemptId = 'test-attempt-id',
+      _attemptId = Uuid().v4obj(),
       _stageType = DeployStageType.upload,
       _stageStatus = DeployProgressStatus.awaiting,
       _stageInfo = null,
@@ -68,7 +68,7 @@ class DeployAttemptStageBuilder {
     return this;
   }
 
-  DeployAttemptStageBuilder withAttemptId(final String attemptId) {
+  DeployAttemptStageBuilder withAttemptId(final UuidValue attemptId) {
     _attemptId = attemptId;
     return this;
   }

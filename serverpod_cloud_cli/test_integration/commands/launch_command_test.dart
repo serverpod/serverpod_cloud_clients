@@ -85,6 +85,7 @@ void main() {
   );
 
   group('Given authenticated', () {
+    final attemptId = Uuid().v4obj();
     setUpAll(() async {
       client.authKeyProvider = InMemoryKeyManager.authenticated();
 
@@ -140,7 +141,7 @@ void main() {
       final attemptStages = [
         DeployAttemptStage(
           cloudCapsuleId: projectId,
-          attemptId: 'abc',
+          attemptId: attemptId,
           stageType: DeployStageType.upload,
           stageStatus: DeployProgressStatus.success,
         ),
@@ -287,7 +288,7 @@ void main() {
           expect(
             logger.lineCalls.map((final call) => call.line),
             containsAllInOrder([
-              startsWith('Status of $projectId deploy abc'),
+              startsWith('Status of $projectId deploy $attemptId'),
               contains('✅  Booster liftoff:     Upload successful!'),
             ]),
           );

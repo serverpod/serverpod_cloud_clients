@@ -30,6 +30,10 @@ void main() {
   });
   const projectId = 'projectId';
 
+  setUpAll(() {
+    registerFallbackValue(Uuid().v4obj());
+  });
+
   test(
     'Given deployments show command when instantiated then requires login',
     () {
@@ -164,6 +168,7 @@ void main() {
   });
 
   group('Given authenticated', () {
+    final attemptId = Uuid().v4obj();
     setUp(() async {
       client.authKeyProvider = InMemoryKeyManager.authenticated();
     });
@@ -174,7 +179,7 @@ void main() {
           final attemptStages = [
             DeployAttemptStageBuilder()
                 .withCloudCapsuleId(projectId)
-                .withAttemptId('abc')
+                .withAttemptId(attemptId)
                 .withStageType(DeployStageType.upload)
                 .withStageStatus(DeployProgressStatus.success)
                 .withStartedAt(DateTime.parse("2021-12-31 10:20:30"))
@@ -182,7 +187,7 @@ void main() {
                 .build(),
             DeployAttemptStageBuilder()
                 .withCloudCapsuleId(projectId)
-                .withAttemptId('abc')
+                .withAttemptId(attemptId)
                 .withStageType(DeployStageType.build)
                 .withBuildId('build-id-foo')
                 .withStageStatus(DeployProgressStatus.running)
@@ -190,7 +195,7 @@ void main() {
                 .build(),
             DeployAttemptStageBuilder()
                 .withCloudCapsuleId(projectId)
-                .withAttemptId('abc')
+                .withAttemptId(attemptId)
                 .withStageType(DeployStageType.build)
                 .withBuildId('build-id-foo')
                 .withStageStatus(DeployProgressStatus.success)
@@ -199,7 +204,7 @@ void main() {
                 .build(),
             DeployAttemptStageBuilder()
                 .withCloudCapsuleId(projectId)
-                .withAttemptId('abc')
+                .withAttemptId(attemptId)
                 .withStageType(DeployStageType.deploy)
                 .withStageStatus(DeployProgressStatus.success)
                 .withStartedAt(DateTime.parse("2021-12-31 10:20:30"))
@@ -207,7 +212,7 @@ void main() {
                 .build(),
             DeployAttemptStageBuilder()
                 .withCloudCapsuleId(projectId)
-                .withAttemptId('abc')
+                .withAttemptId(attemptId)
                 .withStageType(DeployStageType.service)
                 .withStageStatus(DeployProgressStatus.success)
                 .withStartedAt(DateTime.parse("2021-12-31 10:20:30"))
@@ -261,7 +266,7 @@ void main() {
 
               expect(logger.lineCalls, isNotEmpty);
               expect(logger.lineCalls.map((final l) => l.line).join('\n'), '''
-Tracking status of projectId deploy abc, started at 2021-12-31 10:20:30:
+Tracking status of projectId deploy $attemptId, started at 2021-12-31 10:20:30:
 (Press Ctrl+C to exit)
 
 ✅  Booster liftoff:     Upload successful!
@@ -289,7 +294,7 @@ Tracking status of projectId deploy abc, started at 2021-12-31 10:20:30:
         testCorrectGetRecentStatusCommand('by named proj opt and build id', [
           '--project',
           projectId,
-          'abc',
+          attemptId.toString(),
         ]);
 
         group('and with option --output-overall-status', () {
@@ -466,7 +471,7 @@ Tracking status of projectId deploy abc, started at 2021-12-31 10:20:30:
         );
 
         group(
-          'for named proj opt with non-existing deploy id with args="--project $projectId non-existing"',
+          'for named proj opt with non-existing deploy id with args="--project $projectId ${Uuid().v4obj().toString()}"',
           () {
             late Future commandResult;
             setUp(() async {
@@ -475,7 +480,7 @@ Tracking status of projectId deploy abc, started at 2021-12-31 10:20:30:
                 'show',
                 '--project',
                 projectId,
-                'non-existing',
+                Uuid().v4obj().toString(),
               ]);
             });
 
@@ -500,6 +505,30 @@ Tracking status of projectId deploy abc, started at 2021-12-31 10:20:30:
             });
           },
         );
+
+        test(
+          'for an invalid deploy id then a descriptive error is logged',
+          () async {
+            final commandResult = cli.run([
+              'deployment',
+              'show',
+              '--project',
+              projectId,
+              'invalid-attempt-id',
+            ]);
+
+            await commandResult.onError((final e, final s) {});
+
+            expect(logger.errorCalls, isNotEmpty);
+            expect(
+              logger.errorCalls.first,
+              equalsErrorCall(
+                message: 'The requested resource did not exist.',
+                hint: 'Validate the attempt id is correct.',
+              ),
+            );
+          },
+        );
       });
     });
 
@@ -508,7 +537,7 @@ Tracking status of projectId deploy abc, started at 2021-12-31 10:20:30:
         final attemptStages = [
           DeployAttemptStageBuilder()
               .withCloudCapsuleId(projectId)
-              .withAttemptId('abc')
+              .withAttemptId(attemptId)
               .withStageType(DeployStageType.upload)
               .withStageStatus(DeployProgressStatus.success)
               .withStartedAt(DateTime.parse("2021-12-31 10:20:30"))
@@ -516,7 +545,7 @@ Tracking status of projectId deploy abc, started at 2021-12-31 10:20:30:
               .build(),
           DeployAttemptStageBuilder()
               .withCloudCapsuleId(projectId)
-              .withAttemptId('abc')
+              .withAttemptId(attemptId)
               .withStageType(DeployStageType.build)
               .withBuildId('build-id-foo')
               .withStageStatus(DeployProgressStatus.success)
@@ -525,7 +554,7 @@ Tracking status of projectId deploy abc, started at 2021-12-31 10:20:30:
               .build(),
           DeployAttemptStageBuilder()
               .withCloudCapsuleId(projectId)
-              .withAttemptId('abc')
+              .withAttemptId(attemptId)
               .withStageType(DeployStageType.deploy)
               .withStageStatus(DeployProgressStatus.success)
               .withStartedAt(DateTime.parse("2021-12-31 10:20:30"))
@@ -533,7 +562,7 @@ Tracking status of projectId deploy abc, started at 2021-12-31 10:20:30:
               .build(),
           DeployAttemptStageBuilder()
               .withCloudCapsuleId(projectId)
-              .withAttemptId('abc')
+              .withAttemptId(attemptId)
               .withStageType(DeployStageType.service)
               .withStageStatus(DeployProgressStatus.awaiting)
               .withStartedAt(DateTime.parse("2021-12-31 10:20:30"))
@@ -590,7 +619,7 @@ Tracking status of projectId deploy abc, started at 2021-12-31 10:20:30:
 
             expect(logger.lineCalls, isNotEmpty);
             expect(logger.lineCalls.map((final l) => l.line).join('\n'), '''
-Tracking status of projectId deploy abc, started at 2021-12-31 10:20:30:
+Tracking status of projectId deploy $attemptId, started at 2021-12-31 10:20:30:
 (Press Ctrl+C to exit)
 
 ✅  Booster liftoff:     Upload successful!
@@ -628,7 +657,7 @@ Tracking status of projectId deploy abc, started at 2021-12-31 10:20:30:
 
             expect(logger.lineCalls, isNotEmpty);
             expect(logger.lineCalls.map((final l) => l.line).join('\n'), '''
-Status of projectId deploy abc, started at 2021-12-31 10:20:30:
+Status of projectId deploy $attemptId, started at 2021-12-31 10:20:30:
 
 ✅  Booster liftoff:     Upload successful!
 
@@ -673,6 +702,8 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
 
     group('when running deployments list command', () {
       group('with correct args to get the deployments list', () {
+        final attemptId1 = Uuid().v4obj();
+        final attemptId2 = Uuid().v4obj();
         setUpAll(() async {
           final buildStatuses = [
             DeployAttemptBuilder()
@@ -680,7 +711,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
                 .withCloudCapsuleId('projectId')
                 .withStartedAt(DateTime.parse("2021-12-31 10:20:30"))
                 .withEndedAt(DateTime.parse("2021-12-31 10:20:40"))
-                .withAttemptId('foo')
+                .withAttemptId(attemptId1)
                 .build(),
             DeployAttemptBuilder()
                 .withFailedDeployment()
@@ -688,7 +719,7 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
                 .withStartedAt(DateTime.parse("2021-12-31 10:10:30"))
                 .withEndedAt(DateTime.parse("2021-12-31 10:10:40"))
                 .withStatusInfo('Some error')
-                .withAttemptId('bar')
+                .withAttemptId(attemptId2)
                 .build(),
           ];
 
@@ -729,19 +760,19 @@ Status of projectId deploy abc, started at 2021-12-31 10:20:30:
                 containsAllInOrder([
                   equalsLineCall(
                     line:
-                        '# | Project   | Deploy Id | Status  | Started             | Finished            | Info      ',
+                        '# | Project   | Deploy Id                            | Status  | Started             | Finished            | Info      ',
                   ),
                   equalsLineCall(
                     line:
-                        '--+-----------+-----------+---------+---------------------+---------------------+-----------',
+                        '--+-----------+--------------------------------------+---------+---------------------+---------------------+-----------',
                   ),
                   equalsLineCall(
                     line:
-                        '0 | projectId | foo       | SUCCESS | 2021-12-31 10:20:30 | 2021-12-31 10:20:40 |           ',
+                        '0 | projectId | $attemptId1 | SUCCESS | 2021-12-31 10:20:30 | 2021-12-31 10:20:40 |           ',
                   ),
                   equalsLineCall(
                     line:
-                        '1 | projectId | bar       | FAILURE | 2021-12-31 10:10:30 | 2021-12-31 10:10:40 | Some error',
+                        '1 | projectId | $attemptId2 | FAILURE | 2021-12-31 10:10:30 | 2021-12-31 10:10:40 | Some error',
                   ),
                 ]),
               );
