@@ -80,7 +80,8 @@ import 'package:ground_control_client/src/protocol/domains/projects/models/role.
     as _i35;
 import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
     as _i36;
-import 'protocol.dart' as _i37;
+import 'package:http/http.dart' as _i37;
+import 'protocol.dart' as _i38;
 
 /// {@category Endpoint}
 class EndpointAdminMigration extends _i1.EndpointRef {
@@ -628,6 +629,24 @@ class EndpointGoogleIdp extends _i12.EndpointGoogleIdpBase {
     'idToken': idToken,
     'accessToken': accessToken,
   });
+
+  /// Validates a Google authorization code from the web OAuth2 PKCE flow and
+  /// either logs in the associated user or creates a new account.
+  ///
+  /// This is the web counterpart of [login], which accepts an ID token directly
+  /// (used on native platforms via the `google_sign_in` package).
+  ///
+  /// If a new user is created an associated [UserProfile] is also created.
+  @override
+  _i2.Future<_i10.AuthSuccess> loginWithCode({
+    required String code,
+    required String codeVerifier,
+    required String redirectUri,
+  }) => caller.callServerEndpoint<_i10.AuthSuccess>(
+    'googleIdp',
+    'loginWithCode',
+    {'code': code, 'codeVerifier': codeVerifier, 'redirectUri': redirectUri},
+  );
 
   @override
   _i2.Future<bool> hasAccount() =>
@@ -1640,9 +1659,10 @@ class Client extends _i1.ServerpodClientShared {
     Function(_i1.MethodCallContext, Object, StackTrace)? onFailedCall,
     Function(_i1.MethodCallContext)? onSucceededCall,
     bool? disconnectStreamsOnLostInternetConnection,
+    _i37.Client? httpClientOverride,
   }) : super(
          host,
-         _i37.Protocol(),
+         _i38.Protocol(),
          securityContext: securityContext,
          streamingConnectionTimeout: streamingConnectionTimeout,
          connectionTimeout: connectionTimeout,
@@ -1650,6 +1670,7 @@ class Client extends _i1.ServerpodClientShared {
          onSucceededCall: onSucceededCall,
          disconnectStreamsOnLostInternetConnection:
              disconnectStreamsOnLostInternetConnection,
+         httpClientOverride: httpClientOverride,
        ) {
     adminMigration = EndpointAdminMigration(this);
     adminProcurement = EndpointAdminProcurement(this);
