@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.30.0 - 2026-05-25
+
+### Added
+
+- **Git metadata tracking** - The CLI now automatically collects and records Git metadata (commit hash, message, and branch) during deployments to provide a clearer deployment history.
+- **Uncommitted changes warning** - The CLI now warns you if you attempt to deploy with uncommitted local changes to alert you that the deployment will be recorded against the most recent commit.
+
+### Changed
+
+- **Richer deployment metadata** - Deployment tracking now captures additional context, including the deploying user, branch, commit info, and version details.
+- **Simplified CLI output** - Streamlined the CLI deployment status lines to be cleaner and less verbose.
+
+### Fixed
+
+- **Deploy ID validation** - Added stronger, earlier validation for malformed deployment and upload IDs to catch errors before processing.
+
 ---
 ## [0.29.0] - 2026-05-15
 
