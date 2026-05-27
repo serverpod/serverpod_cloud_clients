@@ -12,6 +12,8 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/secrets/models/secret_type.dart' as _i2;
+import '../../../domains/secrets/models/stored_secret_version.dart' as _i3;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 abstract class SecretResource implements _i1.SerializableModel {
   SecretResource._({
@@ -22,6 +24,7 @@ abstract class SecretResource implements _i1.SerializableModel {
     this.latestVersionId,
     this.activeVersionId,
     this.createdAt,
+    this.storedSecretVersions,
   });
 
   factory SecretResource({
@@ -32,6 +35,7 @@ abstract class SecretResource implements _i1.SerializableModel {
     String? latestVersionId,
     String? activeVersionId,
     DateTime? createdAt,
+    List<_i3.StoredSecretVersion>? storedSecretVersions,
   }) = _SecretResourceImpl;
 
   factory SecretResource.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -47,6 +51,11 @@ abstract class SecretResource implements _i1.SerializableModel {
       createdAt: jsonSerialization['createdAt'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+      storedSecretVersions: jsonSerialization['storedSecretVersions'] == null
+          ? null
+          : _i4.Protocol().deserialize<List<_i3.StoredSecretVersion>>(
+              jsonSerialization['storedSecretVersions'],
+            ),
     );
   }
 
@@ -67,6 +76,9 @@ abstract class SecretResource implements _i1.SerializableModel {
 
   DateTime? createdAt;
 
+  /// For secret types stored in the database this is the list of the stored versions
+  List<_i3.StoredSecretVersion>? storedSecretVersions;
+
   /// Returns a shallow copy of this [SecretResource]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
@@ -78,6 +90,7 @@ abstract class SecretResource implements _i1.SerializableModel {
     String? latestVersionId,
     String? activeVersionId,
     DateTime? createdAt,
+    List<_i3.StoredSecretVersion>? storedSecretVersions,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -90,6 +103,10 @@ abstract class SecretResource implements _i1.SerializableModel {
       if (latestVersionId != null) 'latestVersionId': latestVersionId,
       if (activeVersionId != null) 'activeVersionId': activeVersionId,
       if (createdAt != null) 'createdAt': createdAt?.toJson(),
+      if (storedSecretVersions != null)
+        'storedSecretVersions': storedSecretVersions?.toJson(
+          valueToJson: (v) => v.toJson(),
+        ),
     };
   }
 
@@ -110,6 +127,7 @@ class _SecretResourceImpl extends SecretResource {
     String? latestVersionId,
     String? activeVersionId,
     DateTime? createdAt,
+    List<_i3.StoredSecretVersion>? storedSecretVersions,
   }) : super._(
          id: id,
          cloudCapsuleId: cloudCapsuleId,
@@ -118,6 +136,7 @@ class _SecretResourceImpl extends SecretResource {
          latestVersionId: latestVersionId,
          activeVersionId: activeVersionId,
          createdAt: createdAt,
+         storedSecretVersions: storedSecretVersions,
        );
 
   /// Returns a shallow copy of this [SecretResource]
@@ -132,6 +151,7 @@ class _SecretResourceImpl extends SecretResource {
     Object? latestVersionId = _Undefined,
     Object? activeVersionId = _Undefined,
     Object? createdAt = _Undefined,
+    Object? storedSecretVersions = _Undefined,
   }) {
     return SecretResource(
       id: id is int? ? id : this.id,
@@ -145,6 +165,10 @@ class _SecretResourceImpl extends SecretResource {
           ? activeVersionId
           : this.activeVersionId,
       createdAt: createdAt is DateTime? ? createdAt : this.createdAt,
+      storedSecretVersions:
+          storedSecretVersions is List<_i3.StoredSecretVersion>?
+          ? storedSecretVersions
+          : this.storedSecretVersions?.map((e0) => e0.copyWith()).toList(),
     );
   }
 }

@@ -78,10 +78,12 @@ import 'package:ground_control_client/src/protocol/features/projects/models/proj
     as _i34;
 import 'package:ground_control_client/src/protocol/domains/projects/models/role.dart'
     as _i35;
-import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
+import 'package:ground_control_client/src/protocol/domains/secrets/models/build_secret_type.dart'
     as _i36;
-import 'package:http/http.dart' as _i37;
-import 'protocol.dart' as _i38;
+import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
+    as _i37;
+import 'package:http/http.dart' as _i38;
+import 'protocol.dart' as _i39;
 
 /// {@category Endpoint}
 class EndpointAdminMigration extends _i1.EndpointRef {
@@ -1502,6 +1504,12 @@ class EndpointSecrets extends _i1.EndpointRef {
   @override
   String get name => 'secrets';
 
+  /// Creates custom (user-defined) secrets for a cloud capsule.
+  ///
+  /// Secret value changes are applied at the next successful deployment.
+  ///
+  /// Throws [NotFoundException] if the capsule is not found.
+  /// Throws [InvalidValueException] if secret names are invalid.
   _i2.Future<void> create({
     required Map<String, String> secrets,
     required String cloudCapsuleId,
@@ -1510,12 +1518,12 @@ class EndpointSecrets extends _i1.EndpointRef {
     'cloudCapsuleId': cloudCapsuleId,
   });
 
-  /// Upserts secrets for a cloud capsule.
+  /// Upserts custom (user-defined) secrets for a cloud capsule.
   ///
   /// Creates new secrets or updates existing ones. Unlike [create], this method
   /// allows updating existing secret keys without throwing an exception.
   ///
-  /// Requires capsule authorization.
+  /// Secret value changes are applied at the next successful deployment.
   ///
   /// Throws [NotFoundException] if the capsule is not found.
   /// Throws [InvalidValueException] if secret names are invalid.
@@ -1527,6 +1535,31 @@ class EndpointSecrets extends _i1.EndpointRef {
     'cloudCapsuleId': cloudCapsuleId,
   });
 
+  /// Upserts a build secret for a cloud capsule.
+  /// Build secrets are used during the build process.
+  /// They are not accessible at runtime.
+  ///
+  /// Secret value changes are applied at the next deployment.
+  ///
+  /// Throws [NotFoundException] if the capsule is not found.
+  /// Throws [InvalidValueException] if secret names are invalid.
+  _i2.Future<void> upsertBuildSecret({
+    required String secretKey,
+    required String secretValue,
+    required _i36.BuildSecretType buildSecretType,
+    required String cloudCapsuleId,
+  }) => caller.callServerEndpoint<void>('secrets', 'upsertBuildSecret', {
+    'secretKey': secretKey,
+    'secretValue': secretValue,
+    'buildSecretType': buildSecretType,
+    'cloudCapsuleId': cloudCapsuleId,
+  });
+
+  /// Deletes a custom (user-defined) secret from a cloud capsule.
+  ///
+  /// Secret value changes are applied at the next successful deployment.
+  ///
+  /// Throws [NotFoundException] if the capsule or the secret is not found.
   _i2.Future<void> delete({
     required String key,
     required String cloudCapsuleId,
@@ -1535,6 +1568,14 @@ class EndpointSecrets extends _i1.EndpointRef {
     'cloudCapsuleId': cloudCapsuleId,
   });
 
+  /// Lists custom (user-defined) secret keys for a cloud capsule.
+  ///
+  /// Returns only the keys of custom secrets (no values).
+  ///
+  /// The returned value reflects the secrets pending for the next deployment,
+  /// which may differ from the currently active secrets.
+  ///
+  /// Throws [NotFoundException] if the capsule is not found.
   _i2.Future<List<String>> list(String cloudCapsuleId) =>
       caller.callServerEndpoint<List<String>>('secrets', 'list', {
         'cloudCapsuleId': cloudCapsuleId,
@@ -1546,11 +1587,25 @@ class EndpointSecrets extends _i1.EndpointRef {
   /// this method filters to platform-managed secrets only, excluding
   /// user-created custom secrets.
   ///
-  /// Requires capsule authorization.
+  /// The returned value reflects the secrets pending for the next deployment,
+  /// which may differ from the currently active secrets.
   ///
   /// Throws [NotFoundException] if the capsule is not found.
   _i2.Future<List<String>> listManaged(String cloudCapsuleId) =>
       caller.callServerEndpoint<List<String>>('secrets', 'listManaged', {
+        'cloudCapsuleId': cloudCapsuleId,
+      });
+
+  /// Lists build secrets keys for a cloud capsule.
+  ///
+  /// Returns only the keys of build secrets (no values).
+  ///
+  /// The returned value reflects the secrets pending for the next deployment,
+  /// which may differ from the currently active secrets.
+  ///
+  /// Throws [NotFoundException] if the capsule is not found.
+  _i2.Future<List<String>> listBuild(String cloudCapsuleId) =>
+      caller.callServerEndpoint<List<String>>('secrets', 'listBuild', {
         'cloudCapsuleId': cloudCapsuleId,
       });
 }
@@ -1575,10 +1630,10 @@ class EndpointStatus extends _i1.EndpointRef {
   );
 
   /// Gets the specified deploy attempt status of the a capsule.
-  _i2.Future<List<_i36.DeployAttemptStage>> getDeployAttemptStatus({
+  _i2.Future<List<_i37.DeployAttemptStage>> getDeployAttemptStatus({
     required String cloudCapsuleId,
     required _i1.UuidValue attemptId,
-  }) => caller.callServerEndpoint<List<_i36.DeployAttemptStage>>(
+  }) => caller.callServerEndpoint<List<_i37.DeployAttemptStage>>(
     'status',
     'getDeployAttemptStatus',
     {'cloudCapsuleId': cloudCapsuleId, 'attemptId': attemptId},
@@ -1597,13 +1652,13 @@ class EndpointStatus extends _i1.EndpointRef {
 
   /// Tails the status updates for a deploy attempt.
   /// Continues until the client unsubscribes or the status if final.
-  _i2.Stream<_i36.DeployAttemptStage> tailDeployAttemptStatus({
+  _i2.Stream<_i37.DeployAttemptStage> tailDeployAttemptStatus({
     required String cloudCapsuleId,
     required _i1.UuidValue attemptId,
   }) =>
       caller.callStreamingServerEndpoint<
-        _i2.Stream<_i36.DeployAttemptStage>,
-        _i36.DeployAttemptStage
+        _i2.Stream<_i37.DeployAttemptStage>,
+        _i37.DeployAttemptStage
       >('status', 'tailDeployAttemptStatus', {
         'cloudCapsuleId': cloudCapsuleId,
         'attemptId': attemptId,
@@ -1660,10 +1715,10 @@ class Client extends _i1.ServerpodClientShared {
     Function(_i1.MethodCallContext, Object, StackTrace)? onFailedCall,
     Function(_i1.MethodCallContext)? onSucceededCall,
     bool? disconnectStreamsOnLostInternetConnection,
-    _i37.Client? httpClientOverride,
+    _i38.Client? httpClientOverride,
   }) : super(
          host,
-         _i38.Protocol(),
+         _i39.Protocol(),
          securityContext: securityContext,
          streamingConnectionTimeout: streamingConnectionTimeout,
          connectionTimeout: connectionTimeout,

@@ -12,25 +12,16 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
-enum SecretType implements _i1.SerializableModel {
-  managed,
-  custom,
-  build,
-  unknown;
+enum BuildSecretType implements _i1.SerializableModel {
+  ssh;
 
-  static SecretType fromJson(String name) {
+  static BuildSecretType fromJson(String name) {
     switch (name) {
-      case 'managed':
-        return SecretType.managed;
-      case 'custom':
-        return SecretType.custom;
-      case 'build':
-        return SecretType.build;
-      case 'unknown':
-        return SecretType.unknown;
+      case 'ssh':
+        return BuildSecretType.ssh;
       default:
         throw ArgumentError(
-          'Value "$name" cannot be converted to "SecretType"',
+          'Value "$name" cannot be converted to "BuildSecretType"',
         );
     }
   }
