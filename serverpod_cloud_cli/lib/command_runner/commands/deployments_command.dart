@@ -5,6 +5,7 @@ import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/commands/status/status.dart';
 import 'package:serverpod_cloud_cli/commands/logs/logs.dart';
+import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 
 import 'categories.dart';
 
@@ -22,6 +23,7 @@ class CloudDeploymentsCommand extends CloudCliCommand {
     addSubcommand(CloudDeploymentsShowCommand(logger: logger));
     addSubcommand(CloudDeploymentsListCommand(logger: logger));
     addSubcommand(CloudDeploymentsBuildLogCommand(logger: logger));
+    addSubcommand(CloudDeploymentsBuildSecretCommand(logger: logger));
   }
 }
 
@@ -338,5 +340,245 @@ Future<UuidValue> _getDeployAttemptId(
           'Run this command to see recent deployments: '
           'scloud deployment list',
     );
+  }
+}
+
+const _buildSecretsExplanation = """
+Build secrets are used to securely store sensitive information that needs to be
+available when building your server, for example SSH keys.
+
+Build secrets are not available at runtime.
+(See `scloud secret` for managing runtime secrets: ${CloudCliCommand.commandDocBaseUrl}secret)""";
+
+class CloudDeploymentsBuildSecretCommand extends CloudCliCommand {
+  @override
+  String get name => 'build-secret';
+
+  @override
+  String get description => """Manage build secrets.
+
+$_buildSecretsExplanation""";
+
+  @override
+  String get usageExamples => """
+
+Examples
+
+  List the current build secrets.
+
+    \$ scloud deployment build-secret list
+
+  Add or modify a build secret.
+
+    \$ scloud deployment build-secret set MY_SECRET_NAME "my-secret-value"
+""";
+
+  CloudDeploymentsBuildSecretCommand({required super.logger}) {
+    addSubcommand(BuildSecretSetCommand(logger: logger));
+    addSubcommand(BuildSecretsListCommand(logger: logger));
+    addSubcommand(BuildSecretUnsetCommand(logger: logger));
+  }
+}
+
+abstract final class _BuildSecretCommandConfig {
+  static const projectId = ProjectIdOption();
+
+  static const name = NameOption(
+    argPos: 0,
+    helpText:
+        'The name of the build secret. Can be passed as the first argument.',
+  );
+
+  static const value = ValueOption(
+    argPos: 1,
+    helpText:
+        'The value of the build secret. Can be passed as the second argument.',
+  );
+
+  static const valueFile = ValueFileOption(
+    helpText: 'The name of the file with the build secret value.',
+  );
+}
+
+enum BuildSecretSetCommandConfig<V> implements OptionDefinition<V> {
+  projectId(_BuildSecretCommandConfig.projectId),
+  name(_BuildSecretCommandConfig.name),
+  value(_BuildSecretCommandConfig.value),
+  valueFile(_BuildSecretCommandConfig.valueFile),
+  buildSecretType(
+    EnumOption<BuildSecretType>(
+      argName: 'type',
+      helpText: 'The type of the build secret.',
+      enumParser: EnumParser(BuildSecretType.values),
+      defaultsTo: BuildSecretType.ssh,
+    ),
+  );
+
+  const BuildSecretSetCommandConfig(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class BuildSecretSetCommand
+    extends CloudCliCommand<BuildSecretSetCommandConfig> {
+  @override
+  String get description => """Set a build secret (create or update).
+  
+$_buildSecretsExplanation""";
+
+  @override
+  String get name => 'set';
+
+  BuildSecretSetCommand({required super.logger})
+    : super(options: BuildSecretSetCommandConfig.values);
+
+  @override
+  Future<void> runWithConfig(
+    final Configuration<BuildSecretSetCommandConfig> commandConfig,
+  ) async {
+    final projectId = commandConfig.value(
+      BuildSecretSetCommandConfig.projectId,
+    );
+    final name = commandConfig.value(BuildSecretSetCommandConfig.name);
+    final value = commandConfig.optionalValue(
+      BuildSecretSetCommandConfig.value,
+    );
+    final valueFile = commandConfig.optionalValue(
+      BuildSecretSetCommandConfig.valueFile,
+    );
+    final buildSecretType = commandConfig.value(
+      BuildSecretSetCommandConfig.buildSecretType,
+    );
+
+    String valueToSet;
+    if (value != null) {
+      valueToSet = value;
+    } else if (valueFile != null) {
+      valueToSet = valueFile.readAsStringSync();
+    } else {
+      throw StateError('Expected one of the value options to be set.');
+    }
+
+    final apiCloudClient = runner.serviceProvider.cloudApiClient;
+
+    try {
+      await apiCloudClient.secrets.upsertBuildSecret(
+        cloudCapsuleId: projectId,
+        secretKey: name,
+        secretValue: valueToSet,
+        buildSecretType: buildSecretType,
+      );
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Failed to set build secret');
+    }
+
+    logger.success('Successfully set build secret: $name.');
+  }
+}
+
+enum BuildSecretsListCommandConfig<V> implements OptionDefinition<V> {
+  projectId(_BuildSecretCommandConfig.projectId);
+
+  const BuildSecretsListCommandConfig(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class BuildSecretsListCommand
+    extends CloudCliCommand<BuildSecretsListCommandConfig> {
+  @override
+  String get description => """List all build secrets.
+  
+$_buildSecretsExplanation""";
+
+  @override
+  String get name => 'list';
+
+  BuildSecretsListCommand({required super.logger})
+    : super(options: BuildSecretsListCommandConfig.values);
+
+  @override
+  Future<void> runWithConfig(
+    final Configuration<BuildSecretsListCommandConfig> commandConfig,
+  ) async {
+    final projectId = commandConfig.value(
+      BuildSecretsListCommandConfig.projectId,
+    );
+
+    final apiCloudClient = runner.serviceProvider.cloudApiClient;
+
+    late List<String> secrets;
+    try {
+      secrets = await apiCloudClient.secrets.listBuild(projectId);
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Failed to list build secrets');
+    }
+
+    final secretsPrinter = TablePrinter();
+    secretsPrinter.addHeaders(['Secret name']);
+
+    for (var secret in secrets) {
+      secretsPrinter.addRow([secret]);
+    }
+
+    secretsPrinter.writeLines(logger.line);
+  }
+}
+
+enum BuildSecretUnsetCommandConfig<V> implements OptionDefinition<V> {
+  projectId(_BuildSecretCommandConfig.projectId),
+  name(_BuildSecretCommandConfig.name);
+
+  const BuildSecretUnsetCommandConfig(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class BuildSecretUnsetCommand
+    extends CloudCliCommand<BuildSecretUnsetCommandConfig> {
+  @override
+  String get description => """Remove a build secret.
+
+$_buildSecretsExplanation""";
+
+  @override
+  String get name => 'unset';
+
+  BuildSecretUnsetCommand({required super.logger})
+    : super(options: BuildSecretUnsetCommandConfig.values);
+
+  @override
+  Future<void> runWithConfig(
+    final Configuration<BuildSecretUnsetCommandConfig> commandConfig,
+  ) async {
+    final projectId = commandConfig.value(
+      BuildSecretUnsetCommandConfig.projectId,
+    );
+    final name = commandConfig.value(BuildSecretUnsetCommandConfig.name);
+
+    final shouldUnset = await logger.confirm(
+      'Are you sure you want to remove the build secret "$name"?',
+      defaultValue: false,
+    );
+
+    if (!shouldUnset) {
+      throw UserAbortException();
+    }
+
+    final apiCloudClient = runner.serviceProvider.cloudApiClient;
+
+    try {
+      await apiCloudClient.secrets.deleteBuild(
+        cloudCapsuleId: projectId,
+        key: name,
+      );
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Failed to remove the build secret');
+    }
+
+    logger.success('Successfully removed build secret: $name.');
   }
 }

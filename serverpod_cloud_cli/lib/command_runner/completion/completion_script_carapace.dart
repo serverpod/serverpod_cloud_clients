@@ -232,6 +232,30 @@ commands:
         exclusiveFlags:
           - [utc, no-utc]
 
+      - name: build-secret
+
+        commands:
+          - name: set
+            flags:
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
+              --name=!: "The name of the build secret. Can be passed as the first argument."
+              --value=: "The value of the build secret. Can be passed as the second argument."
+              --from-file=: "The name of the file with the build secret value."
+              --type=: "The type of the build secret."
+            completion:
+              flag:
+                from-file: ["$files"]
+                type: ["ssh"]
+
+          - name: list
+            flags:
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
+
+          - name: unset
+            flags:
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked. See `scloud project link --help`."
+              --name=!: "The name of the build secret. Can be passed as the first argument."
+
   - name: secret
 
     commands:
