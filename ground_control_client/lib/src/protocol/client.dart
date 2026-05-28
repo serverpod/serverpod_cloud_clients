@@ -1568,6 +1568,19 @@ class EndpointSecrets extends _i1.EndpointRef {
     'cloudCapsuleId': cloudCapsuleId,
   });
 
+  /// Deletes a build secret from a cloud capsule.
+  ///
+  /// Secret value changes are applied at the next deployment.
+  ///
+  /// Throws [NotFoundException] if the capsule or the secret is not found.
+  _i2.Future<void> deleteBuild({
+    required String cloudCapsuleId,
+    required String key,
+  }) => caller.callServerEndpoint<void>('secrets', 'deleteBuild', {
+    'cloudCapsuleId': cloudCapsuleId,
+    'key': key,
+  });
+
   /// Lists custom (user-defined) secret keys for a cloud capsule.
   ///
   /// Returns only the keys of custom secrets (no values).
