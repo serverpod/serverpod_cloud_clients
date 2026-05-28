@@ -624,22 +624,6 @@ class EndpointGoogleIdp extends _i12.EndpointGoogleIdpBase {
   String get name => 'googleIdp';
 
   @override
-  _i2.Future<_i10.AuthSuccess> login({
-    required String idToken,
-    required String? accessToken,
-  }) => caller.callServerEndpoint<_i10.AuthSuccess>('googleIdp', 'login', {
-    'idToken': idToken,
-    'accessToken': accessToken,
-  });
-
-  /// Validates a Google authorization code from the web OAuth2 PKCE flow and
-  /// either logs in the associated user or creates a new account.
-  ///
-  /// This is the web counterpart of [login], which accepts an ID token directly
-  /// (used on native platforms via the `google_sign_in` package).
-  ///
-  /// If a new user is created an associated [UserProfile] is also created.
-  @override
   _i2.Future<_i10.AuthSuccess> loginWithCode({
     required String code,
     required String codeVerifier,
@@ -649,6 +633,19 @@ class EndpointGoogleIdp extends _i12.EndpointGoogleIdpBase {
     'loginWithCode',
     {'code': code, 'codeVerifier': codeVerifier, 'redirectUri': redirectUri},
   );
+
+  /// Validates a Google ID token and either logs in the associated user or
+  /// creates a new user account if the Google account ID is not yet known.
+  ///
+  /// If a new user is created an associated [UserProfile] is also created.
+  @override
+  _i2.Future<_i10.AuthSuccess> login({
+    required String idToken,
+    required String? accessToken,
+  }) => caller.callServerEndpoint<_i10.AuthSuccess>('googleIdp', 'login', {
+    'idToken': idToken,
+    'accessToken': accessToken,
+  });
 
   @override
   _i2.Future<bool> hasAccount() =>
