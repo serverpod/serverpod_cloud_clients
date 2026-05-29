@@ -11,37 +11,48 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../domains/products/models/project_product_info.dart' as _i2;
-import 'package:ground_control_client/src/protocol/protocol.dart' as _i3;
+import '../../../domains/products/models/plan_type.dart' as _i2;
+import '../../../domains/products/models/project_product_info.dart' as _i3;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 /// Information about a plan product.
 /// Contains information to be sent to the client.
 abstract class PlanInfo implements _i1.SerializableModel {
   PlanInfo._({
-    required this.productId,
+    required this.planType,
+    required this.projectProduct,
+    this.productId,
     this.name,
     required this.displayName,
     this.description,
     this.trialLength,
     this.trialEndDate,
     this.projectsLimit,
-    required this.projectProductInfo,
+    this.projectProductInfo,
   });
 
   factory PlanInfo({
-    required String productId,
+    required _i2.PlanType planType,
+    required _i3.ProjectProductInfo projectProduct,
+    String? productId,
     String? name,
     required String displayName,
     String? description,
     int? trialLength,
     DateTime? trialEndDate,
     int? projectsLimit,
-    required List<_i2.ProjectProductInfo> projectProductInfo,
+    List<_i3.ProjectProductInfo>? projectProductInfo,
   }) = _PlanInfoImpl;
 
   factory PlanInfo.fromJson(Map<String, dynamic> jsonSerialization) {
     return PlanInfo(
-      productId: jsonSerialization['productId'] as String,
+      planType: _i2.PlanType.fromJson(
+        (jsonSerialization['planType'] as String),
+      ),
+      projectProduct: _i4.Protocol().deserialize<_i3.ProjectProductInfo>(
+        jsonSerialization['projectProduct'],
+      ),
+      productId: jsonSerialization['productId'] as String?,
       name: jsonSerialization['name'] as String?,
       displayName: jsonSerialization['displayName'] as String,
       description: jsonSerialization['description'] as String?,
@@ -52,15 +63,26 @@ abstract class PlanInfo implements _i1.SerializableModel {
               jsonSerialization['trialEndDate'],
             ),
       projectsLimit: jsonSerialization['projectsLimit'] as int?,
-      projectProductInfo: _i3.Protocol()
-          .deserialize<List<_i2.ProjectProductInfo>>(
-            jsonSerialization['projectProductInfo'],
-          ),
+      projectProductInfo: jsonSerialization['projectProductInfo'] == null
+          ? null
+          : _i4.Protocol().deserialize<List<_i3.ProjectProductInfo>>(
+              jsonSerialization['projectProductInfo'],
+            ),
     );
   }
 
-  /// The id of the product.
-  String productId;
+  /// The public plan type ([PlanType.starter] / [PlanType.growth]) when this
+  /// plan is user-selectable. [PlanType.unknown] for internal plans
+  /// (e.g. early-access, hackathon, closed-beta).
+  _i2.PlanType planType;
+
+  /// The bundled project product, resolved for the owner's customer billing
+  /// type when available. Always set for plans returned to clients.
+  _i3.ProjectProductInfo projectProduct;
+
+  /// Deprecated: Plans are identified by [planType]. The catalog product id
+  /// is no longer exposed to clients.
+  String? productId;
 
   /// Deprecated: Use displayName instead.
   String? name;
@@ -83,13 +105,16 @@ abstract class PlanInfo implements _i1.SerializableModel {
   /// The limit on the number of projects the subscriber may own, if any.
   int? projectsLimit;
 
-  /// The project product definitions bundled with this plan.
-  List<_i2.ProjectProductInfo> projectProductInfo;
+  /// Deprecated: Use [projectProduct] instead. The list-style field is kept
+  /// for backwards-compatibility with clients still reading bundled products.
+  List<_i3.ProjectProductInfo>? projectProductInfo;
 
   /// Returns a shallow copy of this [PlanInfo]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
   PlanInfo copyWith({
+    _i2.PlanType? planType,
+    _i3.ProjectProductInfo? projectProduct,
     String? productId,
     String? name,
     String? displayName,
@@ -97,22 +122,25 @@ abstract class PlanInfo implements _i1.SerializableModel {
     int? trialLength,
     DateTime? trialEndDate,
     int? projectsLimit,
-    List<_i2.ProjectProductInfo>? projectProductInfo,
+    List<_i3.ProjectProductInfo>? projectProductInfo,
   });
   @override
   Map<String, dynamic> toJson() {
     return {
       '__className__': 'PlanInfo',
-      'productId': productId,
+      'planType': planType.toJson(),
+      'projectProduct': projectProduct.toJson(),
+      if (productId != null) 'productId': productId,
       if (name != null) 'name': name,
       'displayName': displayName,
       if (description != null) 'description': description,
       if (trialLength != null) 'trialLength': trialLength,
       if (trialEndDate != null) 'trialEndDate': trialEndDate?.toJson(),
       if (projectsLimit != null) 'projectsLimit': projectsLimit,
-      'projectProductInfo': projectProductInfo.toJson(
-        valueToJson: (v) => v.toJson(),
-      ),
+      if (projectProductInfo != null)
+        'projectProductInfo': projectProductInfo?.toJson(
+          valueToJson: (v) => v.toJson(),
+        ),
     };
   }
 
@@ -126,15 +154,19 @@ class _Undefined {}
 
 class _PlanInfoImpl extends PlanInfo {
   _PlanInfoImpl({
-    required String productId,
+    required _i2.PlanType planType,
+    required _i3.ProjectProductInfo projectProduct,
+    String? productId,
     String? name,
     required String displayName,
     String? description,
     int? trialLength,
     DateTime? trialEndDate,
     int? projectsLimit,
-    required List<_i2.ProjectProductInfo> projectProductInfo,
+    List<_i3.ProjectProductInfo>? projectProductInfo,
   }) : super._(
+         planType: planType,
+         projectProduct: projectProduct,
          productId: productId,
          name: name,
          displayName: displayName,
@@ -150,17 +182,21 @@ class _PlanInfoImpl extends PlanInfo {
   @_i1.useResult
   @override
   PlanInfo copyWith({
-    String? productId,
+    _i2.PlanType? planType,
+    _i3.ProjectProductInfo? projectProduct,
+    Object? productId = _Undefined,
     Object? name = _Undefined,
     String? displayName,
     Object? description = _Undefined,
     Object? trialLength = _Undefined,
     Object? trialEndDate = _Undefined,
     Object? projectsLimit = _Undefined,
-    List<_i2.ProjectProductInfo>? projectProductInfo,
+    Object? projectProductInfo = _Undefined,
   }) {
     return PlanInfo(
-      productId: productId ?? this.productId,
+      planType: planType ?? this.planType,
+      projectProduct: projectProduct ?? this.projectProduct.copyWith(),
+      productId: productId is String? ? productId : this.productId,
       name: name is String? ? name : this.name,
       displayName: displayName ?? this.displayName,
       description: description is String? ? description : this.description,
@@ -169,9 +205,9 @@ class _PlanInfoImpl extends PlanInfo {
           ? trialEndDate
           : this.trialEndDate,
       projectsLimit: projectsLimit is int? ? projectsLimit : this.projectsLimit,
-      projectProductInfo:
-          projectProductInfo ??
-          this.projectProductInfo.map((e0) => e0.copyWith()).toList(),
+      projectProductInfo: projectProductInfo is List<_i3.ProjectProductInfo>?
+          ? projectProductInfo
+          : this.projectProductInfo?.map((e0) => e0.copyWith()).toList(),
     );
   }
 }

@@ -1308,6 +1308,12 @@ class EndpointPlans extends _i1.EndpointRef {
     'planName': planName,
   });
 
+  /// Lists the public plans (`starter`, `growth`) for the private customer
+  /// billing type. Each [PlanInfo] carries its bundled
+  /// [PlanInfo.projectProduct].
+  _i2.Future<List<_i32.PlanInfo>> listPlans() =>
+      caller.callServerEndpoint<List<_i32.PlanInfo>>('plans', 'listPlans', {});
+
   _i2.Future<_i32.PlanInfo> getPlanInfo({required String planProductName}) =>
       caller.callServerEndpoint<_i32.PlanInfo>('plans', 'getPlanInfo', {
         'planProductName': planProductName,

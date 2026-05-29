@@ -8,6 +8,7 @@ class SubscriptionInfoBuilder {
   bool _cancelled;
   UuidValue _subscriptionId;
   String _planProductId;
+  PlanType _planType;
   String _planDisplayName;
   String? _planDescription;
   int? _projectsLimit;
@@ -20,6 +21,7 @@ class SubscriptionInfoBuilder {
       _cancelled = false,
       _subscriptionId = Uuid().v4obj(),
       _planProductId = 'early-access:0',
+      _planType = PlanType.unknown,
       _planDisplayName = 'Early Access',
       _planDescription = 'A test plan description',
       _projectsLimit = 1;
@@ -60,6 +62,11 @@ class SubscriptionInfoBuilder {
     return this;
   }
 
+  SubscriptionInfoBuilder withPlanType(final PlanType planType) {
+    _planType = planType;
+    return this;
+  }
+
   SubscriptionInfoBuilder withPlanDisplayName(final String planDisplayName) {
     _planDisplayName = planDisplayName;
     return this;
@@ -84,6 +91,7 @@ class SubscriptionInfoBuilder {
       cancelled: _cancelled,
       subscriptionId: _subscriptionId,
       planProductId: _planProductId,
+      planType: _planType,
       planName: _planDisplayName,
       planDisplayName: _planDisplayName,
       planDescription: _planDescription,

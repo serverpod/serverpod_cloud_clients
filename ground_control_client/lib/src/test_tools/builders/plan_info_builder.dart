@@ -1,23 +1,21 @@
 import 'package:ground_control_client/ground_control_client.dart';
 
-List<ProjectProductInfo> standardPlanTwoBundledProjectProfiles() {
-  final starterCompute = ComputeProductInfo(
+ProjectProductInfo _starterPlanBundledProjectProduct() {
+  final computeSmall = ComputeProductInfo(
     size: ComputeSizeOption.small,
     productId: 'compute-starter:0',
     name: 'Compute',
     description: 'Compute for starter',
   );
-  final starterDatabase = DatabaseProductInfo(
+  final databaseSmall = DatabaseProductInfo(
     size: DatabaseSizeOption.small,
     productId: 'database-starter:0',
     name: 'Database',
     description: 'Database for starter',
-    cuHoursPerMonthLimit: 500,
-    storageLimitGB: 2,
   );
-  final starterCatalog = ComputeCatalogInfo(
-    computes: [starterCompute],
-    defaultCompute: starterCompute.size,
+  final computeCatalog = ComputeCatalogInfo(
+    computes: [computeSmall],
+    defaultCompute: computeSmall.size,
     scaling: ComputeScalingInfo(
       defaultMinReplicas: 1,
       defaultMaxReplicas: 1,
@@ -25,21 +23,20 @@ List<ProjectProductInfo> standardPlanTwoBundledProjectProfiles() {
       allowedReplicasMax: 1,
     ),
   );
-  final starterDbCatalog = DatabaseCatalogInfo(
-    databases: [starterDatabase],
-    defaultDatabase: starterDatabase.size,
+  final databaseCatalog = DatabaseCatalogInfo(
+    databases: [databaseSmall],
+    defaultDatabase: databaseSmall.size,
   );
-  final starterProject = ProjectProductInfo(
-    productId: 'starter-project:0',
+  return ProjectProductInfo(
+    productId: 'starter:0',
     name: 'Starter',
-    description: 'Cost-optimized',
-    computeCatalog: starterCatalog,
-    databaseCatalog: starterDbCatalog,
+    description: 'Starter project',
+    computeCatalog: computeCatalog,
+    databaseCatalog: databaseCatalog,
   );
-  return [starterProject, ..._standardPlanBundledProjectProducts()];
 }
 
-List<ProjectProductInfo> _standardPlanBundledProjectProducts() {
+ProjectProductInfo _growthPlanBundledProjectProducts() {
   final computeMedium = ComputeProductInfo(
     size: ComputeSizeOption.medium,
     productId: 'compute-growth:0',
@@ -103,79 +100,78 @@ List<ProjectProductInfo> _standardPlanBundledProjectProducts() {
     databases: [databaseMedium, databaseLarge, databaseLargePlus],
     defaultDatabase: databaseMedium.size,
   );
-  return [
-    ProjectProductInfo(
-      productId: 'growth:0',
-      name: 'Growth',
-      description: 'Performance & autoscaling',
-      computeCatalog: computeCatalog,
-      databaseCatalog: databaseCatalog,
-    ),
-  ];
+  return ProjectProductInfo(
+    productId: 'growth:0',
+    name: 'Growth',
+    description: 'Performance & autoscaling',
+    computeCatalog: computeCatalog,
+    databaseCatalog: databaseCatalog,
+  );
 }
 
 class PlanInfoBuilder {
-  String _productId;
-  String _displayName;
+  late String _productId;
+  late PlanType _planType;
+  late ProjectProductInfo _projectProduct;
+  late String _displayName;
   String? _description;
   int? _trialLength;
   DateTime? _trialEndDate;
   int? _projectsLimit;
   List<ProjectProductInfo> _projectProductInfo;
 
-  PlanInfoBuilder()
-    : _productId = 'early-access:0',
-      _displayName = 'Early Access',
-      _description = 'A test plan description',
-      _trialLength = 7,
-      _trialEndDate = null,
-      _projectsLimit = 3,
-      _projectProductInfo = const [];
+  PlanInfoBuilder() : _projectProductInfo = const [] {
+    final starterProduct = _starterPlanBundledProjectProduct();
+    _productId = 'early-access:0';
+    _planType = PlanType.unknown;
+    _projectProduct = starterProduct;
+    _displayName = 'Early Access';
+    _description = 'A test plan description';
+    _trialLength = 7;
+    _trialEndDate = null;
+    _projectsLimit = 3;
+    _projectProductInfo = [starterProduct];
+  }
 
   PlanInfoBuilder withHackathon2025() {
+    final starterProduct = _starterPlanBundledProjectProduct();
     _productId = 'hackathon-25:0';
+    _planType = PlanType.unknown;
+    _projectProduct = starterProduct;
     _displayName = 'Hackathon 2025';
     _description = 'A test plan description';
     _trialLength = 91;
     _trialEndDate = DateTime.now().add(Duration(days: 91));
     _projectsLimit = 1;
+    _projectProductInfo = [starterProduct];
     return this;
   }
 
   PlanInfoBuilder withGrowthPlan() {
+    final growthProduct = _growthPlanBundledProjectProducts();
     _productId = 'growth:0';
+    _planType = PlanType.growth;
     _displayName = 'Growth';
     _description = 'A test plan description';
+    _projectProduct = growthProduct;
     _trialLength = 30;
     _trialEndDate = null;
     _projectsLimit = 3;
+    _projectProductInfo = [growthProduct];
     return this;
   }
 
   PlanInfoBuilder withStarterPlan() {
+    final starterProduct = _starterPlanBundledProjectProduct();
     _productId = 'starter:0';
+    _planType = PlanType.starter;
+    _projectProduct = starterProduct;
     _displayName = 'Starter';
     _description = 'A test plan description';
     _trialLength = 30;
     _trialEndDate = null;
     _projectsLimit = 3;
-    return this;
-  }
-
-  PlanInfoBuilder withStandardPlan() {
-    _productId = 'standard:0';
-    _displayName = 'Standard';
-    _description = 'A test plan description';
-    _trialLength = 30;
-    _trialEndDate = null;
-    _projectsLimit = 3;
-    _projectProductInfo = _standardPlanBundledProjectProducts();
-    return this;
-  }
-
-  PlanInfoBuilder withStandardPlanTwoProfiles() {
-    withStandardPlan();
-    _projectProductInfo = standardPlanTwoBundledProjectProfiles();
+    _projectProductInfo = [starterProduct];
     return this;
   }
 
@@ -221,13 +217,21 @@ class PlanInfoBuilder {
     return this;
   }
 
-  PlanInfoBuilder withProjectProductInfo(final List<ProjectProductInfo> info) {
-    _projectProductInfo = info;
+  PlanInfoBuilder withPlanType(final PlanType planType) {
+    _planType = planType;
+    return this;
+  }
+
+  PlanInfoBuilder withProjectProduct(final ProjectProductInfo projectProduct) {
+    _projectProduct = projectProduct;
+    _projectProductInfo = [projectProduct];
     return this;
   }
 
   PlanInfo build() {
     return PlanInfo(
+      planType: _planType,
+      projectProduct: _projectProduct,
       productId: _productId,
       name: _displayName,
       displayName: _displayName,

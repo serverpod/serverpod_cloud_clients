@@ -11,6 +11,7 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import '../../../domains/products/models/plan_type.dart' as _i2;
 
 /// Information about a subscription.
 /// Contains information to be sent to the client.
@@ -23,6 +24,7 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
     required this.cancelled,
     required this.subscriptionId,
     required this.planProductId,
+    required this.planType,
     this.planName,
     required this.planDisplayName,
     this.planDescription,
@@ -37,6 +39,7 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
     required bool cancelled,
     required _i1.UuidValue subscriptionId,
     required String planProductId,
+    required _i2.PlanType planType,
     String? planName,
     required String planDisplayName,
     String? planDescription,
@@ -64,6 +67,9 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
         jsonSerialization['subscriptionId'],
       ),
       planProductId: jsonSerialization['planProductId'] as String,
+      planType: _i2.PlanType.fromJson(
+        (jsonSerialization['planType'] as String),
+      ),
       planName: jsonSerialization['planName'] as String?,
       planDisplayName: jsonSerialization['planDisplayName'] as String,
       planDescription: jsonSerialization['planDescription'] as String?,
@@ -92,6 +98,12 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
   /// The id of the plan's product.
   String planProductId;
 
+  /// The public plan type ([PlanType.starter] / [PlanType.growth]) when this
+  /// subscription's plan product maps to one. [PlanType.unknown] for internal
+  /// plans (e.g. early-access, hackathon, closed-beta) that aren't
+  /// user-selectable.
+  _i2.PlanType planType;
+
   /// Deprecated: Use planDisplayName instead.
   String? planName;
 
@@ -115,6 +127,7 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
     bool? cancelled,
     _i1.UuidValue? subscriptionId,
     String? planProductId,
+    _i2.PlanType? planType,
     String? planName,
     String? planDisplayName,
     String? planDescription,
@@ -131,6 +144,7 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
       'cancelled': cancelled,
       'subscriptionId': subscriptionId.toJson(),
       'planProductId': planProductId,
+      'planType': planType.toJson(),
       if (planName != null) 'planName': planName,
       'planDisplayName': planDisplayName,
       if (planDescription != null) 'planDescription': planDescription,
@@ -155,6 +169,7 @@ class _SubscriptionInfoImpl extends SubscriptionInfo {
     required bool cancelled,
     required _i1.UuidValue subscriptionId,
     required String planProductId,
+    required _i2.PlanType planType,
     String? planName,
     required String planDisplayName,
     String? planDescription,
@@ -167,6 +182,7 @@ class _SubscriptionInfoImpl extends SubscriptionInfo {
          cancelled: cancelled,
          subscriptionId: subscriptionId,
          planProductId: planProductId,
+         planType: planType,
          planName: planName,
          planDisplayName: planDisplayName,
          planDescription: planDescription,
@@ -185,6 +201,7 @@ class _SubscriptionInfoImpl extends SubscriptionInfo {
     bool? cancelled,
     _i1.UuidValue? subscriptionId,
     String? planProductId,
+    _i2.PlanType? planType,
     Object? planName = _Undefined,
     String? planDisplayName,
     Object? planDescription = _Undefined,
@@ -200,6 +217,7 @@ class _SubscriptionInfoImpl extends SubscriptionInfo {
       cancelled: cancelled ?? this.cancelled,
       subscriptionId: subscriptionId ?? this.subscriptionId,
       planProductId: planProductId ?? this.planProductId,
+      planType: planType ?? this.planType,
       planName: planName is String? ? planName : this.planName,
       planDisplayName: planDisplayName ?? this.planDisplayName,
       planDescription: planDescription is String?
