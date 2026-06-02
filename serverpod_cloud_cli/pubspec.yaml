@@ -15,12 +15,13 @@ environment:
   sdk: ">=3.9.0 <4.0.0"
 
 dependencies:
+  async: ^2.13.0
   archive: ^3.6.1
   args: ^2.6.0
   basic_utils: ^5.7.0
-  cli_tools: ^0.11.0
+  cli_tools: ^0.13.0
   collection: ^1.19.0
-  config: ^0.8.4
+  config: ^0.9.0
   meta: ^1.16.0
   path: ^1.8.2
   pool: ^1.5.1

@@ -266,18 +266,18 @@ void main() {
 
               expect(logger.lineCalls, isNotEmpty);
               expect(logger.lineCalls.map((final l) => l.line).join('\n'), '''
-Tracking status of projectId deploy $attemptId, started at 2021-12-31 10:20:30:
+Tracking status of projectId deploy $attemptId
 (Press Ctrl+C to exit)
-
-✅  Booster liftoff:     Upload successful!
-
-⬜  Orbit acceleration:  Build running...
-✅  Orbit acceleration:  Build successful!
-
-✅  Orbital insertion:   Deploy successful!
-
-✅  Pod commissioning:   Service successful! 🚀
 ''');
+              expect(
+                logger.progressCalls.map((final c) => c.message),
+                containsAllInOrder([
+                  contains('Upload awaiting...'),
+                  contains('Build awaiting...'),
+                  contains('Deploy awaiting...'),
+                  contains('Service awaiting...'),
+                ]),
+              );
             });
           });
         }
@@ -532,7 +532,7 @@ Tracking status of projectId deploy $attemptId, started at 2021-12-31 10:20:30:
       });
     });
 
-    group('and an unsuccessful status,', () {
+    group('and an awaiting service stage status,', () {
       setUpAll(() async {
         final attemptStages = [
           DeployAttemptStageBuilder()
@@ -619,16 +619,18 @@ Tracking status of projectId deploy $attemptId, started at 2021-12-31 10:20:30:
 
             expect(logger.lineCalls, isNotEmpty);
             expect(logger.lineCalls.map((final l) => l.line).join('\n'), '''
-Tracking status of projectId deploy $attemptId, started at 2021-12-31 10:20:30:
+Tracking status of projectId deploy $attemptId
 (Press Ctrl+C to exit)
-
-✅  Booster liftoff:     Upload successful!
-
-✅  Orbit acceleration:  Build successful!
-
-✅  Orbital insertion:   Deploy successful!
-
-⬛  Pod commissioning:   Service awaiting...''');
+''');
+            expect(
+              logger.progressCalls.map((final c) => c.message),
+              containsAllInOrder([
+                contains('Upload awaiting...'),
+                contains('Build awaiting...'),
+                contains('Deploy awaiting...'),
+                contains('Service awaiting...'),
+              ]),
+            );
           });
         },
       );
@@ -659,14 +661,10 @@ Tracking status of projectId deploy $attemptId, started at 2021-12-31 10:20:30:
             expect(logger.lineCalls.map((final l) => l.line).join('\n'), '''
 Status of projectId deploy $attemptId, started at 2021-12-31 10:20:30:
 
-✅  Booster liftoff:     Upload successful!
-
-✅  Orbit acceleration:  Build successful!
-
-✅  Orbital insertion:   Deploy successful!
-
-⬛  Pod commissioning:   Service awaiting...
-''');
+Upload successful!
+Build successful!
+Deploy successful!
+Service awaiting...''');
           });
         },
       );
@@ -695,6 +693,158 @@ Status of projectId deploy $attemptId, started at 2021-12-31 10:20:30:
 
             expect(logger.lineCalls, isNotEmpty);
             expect(logger.lineCalls.single.line, equals('awaiting'));
+          });
+        },
+      );
+    });
+
+    group('and a failed build stage status,', () {
+      setUpAll(() async {
+        final attemptStages = [
+          DeployAttemptStageBuilder()
+              .withCloudCapsuleId(projectId)
+              .withAttemptId(attemptId)
+              .withStageType(DeployStageType.upload)
+              .withStageStatus(DeployProgressStatus.success)
+              .withStartedAt(DateTime.parse("2021-12-31 10:20:30"))
+              .withEndedAt(DateTime.parse("2021-12-31 10:20:40"))
+              .build(),
+          DeployAttemptStageBuilder()
+              .withCloudCapsuleId(projectId)
+              .withAttemptId(attemptId)
+              .withStageType(DeployStageType.build)
+              .withBuildId('build-id-foo')
+              .withStageStatus(DeployProgressStatus.failure)
+              .withStartedAt(DateTime.parse("2021-12-31 10:20:30"))
+              .withEndedAt(DateTime.parse("2021-12-31 10:20:40"))
+              .build(),
+        ];
+
+        when(
+          () => client.status.getDeployAttemptStatus(
+            cloudCapsuleId: projectId,
+            attemptId: attemptStages.first.attemptId,
+          ),
+        ).thenAnswer((final _) async => attemptStages);
+
+        when(
+          () => client.status.getDeployAttemptId(
+            cloudCapsuleId: projectId,
+            attemptNumber: 0,
+          ),
+        ).thenAnswer((final _) async => attemptStages.first.attemptId);
+
+        when(
+          () => client.status.tailDeployAttemptStatus(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            attemptId: any(named: 'attemptId'),
+          ),
+        ).thenAnswer((final _) => Stream.fromIterable(attemptStages));
+      });
+
+      tearDownAll(() {
+        reset(client.status);
+      });
+
+      group(
+        'when running deployments show command to get the deploy status',
+        () {
+          late Future commandResult;
+
+          setUp(() async {
+            commandResult = cli.run([
+              'deployment',
+              'show',
+              '--project',
+              projectId,
+            ]);
+          });
+
+          test('then completes successfully', () async {
+            await expectLater(commandResult, completes);
+          });
+
+          test('then outputs the status', () async {
+            await commandResult;
+
+            expect(logger.lineCalls, isNotEmpty);
+            expect(logger.lineCalls.map((final l) => l.line).join('\n'), '''
+Tracking status of projectId deploy $attemptId
+(Press Ctrl+C to exit)
+''');
+            final progressMessages = logger.progressCalls.map(
+              (final c) => c.message,
+            );
+            expect(progressMessages.length, 4);
+            expect(
+              progressMessages,
+              containsAllInOrder([
+                contains('Upload awaiting...'),
+                contains('Upload successful!'),
+                contains('Build awaiting...'),
+                contains('Build failed! 💥'),
+              ]),
+            );
+          });
+        },
+      );
+
+      group(
+        'when running deployments show --no-await command to get the deploy status',
+        () {
+          late Future commandResult;
+
+          setUp(() async {
+            commandResult = cli.run([
+              'deployment',
+              'show',
+              '--project',
+              projectId,
+              '--no-await',
+            ]);
+          });
+
+          test('then completes successfully', () async {
+            await expectLater(commandResult, completes);
+          });
+
+          test('then outputs the status', () async {
+            await commandResult;
+
+            expect(logger.lineCalls, isNotEmpty);
+            expect(logger.lineCalls.map((final l) => l.line).join('\n'), '''
+Status of projectId deploy $attemptId, started at 2021-12-31 10:20:30:
+
+Upload successful!
+Build failed! 💥''');
+          });
+        },
+      );
+
+      group(
+        'when running deployments show command with --output-overall-status option',
+        () {
+          late Future commandResult;
+
+          setUp(() async {
+            commandResult = cli.run([
+              'deployment',
+              'show',
+              '--project',
+              projectId,
+              '--output-overall-status',
+            ]);
+          });
+
+          test('then completes successfully', () async {
+            await expectLater(commandResult, completes);
+          });
+
+          test('then outputs the single word awaiting', () async {
+            await commandResult;
+
+            expect(logger.lineCalls, isNotEmpty);
+            expect(logger.lineCalls.single.line, equals('failure'));
           });
         },
       );

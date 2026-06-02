@@ -289,7 +289,7 @@ void main() {
             logger.lineCalls.map((final call) => call.line),
             containsAllInOrder([
               startsWith('Status of $projectId deploy $attemptId'),
-              contains('✅  Booster liftoff:     Upload successful!'),
+              contains('Upload successful!'),
             ]),
           );
         });

@@ -4,6 +4,7 @@ import 'package:serverpod_cloud_cli/util/capitalize.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:ground_control_client/ground_control_client.dart';
+import 'package:serverpod_cloud_cli/util/stream_util.dart';
 
 /// Status subcommand implementations
 abstract class StatusCommands {
@@ -57,12 +58,12 @@ abstract class StatusCommands {
     final List<String> rows = [
       'Status of $cloudCapsuleId deploy $attemptId'
           ', started at ${stages.first.startedAt?.toTzString(inUtc, _numTimeStampChars)}:',
+      '',
       ...stages.map(_generateStatusLine),
     ];
 
     for (final line in rows) {
       logger.line(line);
-      logger.line('');
     }
   }
 
@@ -78,31 +79,33 @@ abstract class StatusCommands {
       attemptId: attemptId,
     );
 
-    DeployStageType? lastStageType;
-    await for (final stage in stageStream) {
-      if (lastStageType == null) {
-        logger.line(
-          'Tracking status of $cloudCapsuleId deploy $attemptId'
-          ', started at ${stage.startedAt?.toTzString(inUtc, _numTimeStampChars)}:',
-        );
-        logger.line('(Press Ctrl+C to exit)');
-        logger.line('');
-      }
+    final stageStreams = SplitStreams<DeployStageType, DeployAttemptStage>(
+      stageStream,
+      DeployStageType.values,
+      (final stage) => stage.stageType,
+      (final stage) => stage.stageStatus.isFinal,
+    );
 
-      logger.line(_generateStatusLine(stage));
-      if (stage.stageStatus
-          case DeployProgressStatus.success ||
-              DeployProgressStatus.failure ||
-              DeployProgressStatus.cancelled) {
-        logger.line('');
+    logger.line('Tracking status of $cloudCapsuleId deploy $attemptId');
+    logger.line('(Press Ctrl+C to exit)');
+    logger.line('');
+
+    final stageStatusTailer = _StageStatusTailer(
+      logger: logger,
+      cloudCapsuleId: cloudCapsuleId,
+      attemptId: attemptId,
+      stageStreams: stageStreams,
+    );
+    for (final stageType in DeployStageType.values) {
+      final stage = await stageStatusTailer.showStageProgress(stageType);
+      if (stage.stageStatus == DeployProgressStatus.cancelled ||
+          stage.stageStatus == DeployProgressStatus.failure) {
+        break;
       }
-      lastStageType = stage.stageType;
     }
   }
 
   static String _generateStatusLine(final DeployAttemptStage stage) {
-    final mark = _getStatusMark(stage.stageStatus);
-    final phrase = '${_getRocketStagePhrase(stage.stageType)}:';
     final status = _getStatusPhrase(stage);
 
     final rocket =
@@ -111,27 +114,7 @@ abstract class StatusCommands {
         ? ' 🚀'
         : '';
 
-    return '$mark  ${phrase.padRight(20)} $status$rocket';
-  }
-
-  static String _getStatusMark(final DeployProgressStatus status) {
-    return switch (status) {
-      DeployProgressStatus.unknown => '⬛',
-      DeployProgressStatus.awaiting => '⬛',
-      DeployProgressStatus.running => '⬜',
-      DeployProgressStatus.success => '✅',
-      DeployProgressStatus.failure => '❌',
-      DeployProgressStatus.cancelled => '❌',
-    };
-  }
-
-  static String _getRocketStagePhrase(final DeployStageType type) {
-    return switch (type) {
-      DeployStageType.upload => 'Booster liftoff',
-      DeployStageType.build => 'Orbit acceleration',
-      DeployStageType.deploy => 'Orbital insertion',
-      DeployStageType.service => 'Pod commissioning',
-    };
+    return '$status$rocket';
   }
 
   static String _getStatusPhrase(final DeployAttemptStage stage) {
@@ -183,5 +166,64 @@ class DeployStatusTable extends TablePrinter {
       attempt.endedAt?.toTzString(inUtc, _numTimeStampChars),
       attempt.statusInfo,
     ];
+  }
+}
+
+extension FinalDeployProgressStatus on DeployProgressStatus {
+  /// Returns true if this stage status is final, i.e. will not change anymore.
+  bool get isFinal => switch (this) {
+    DeployProgressStatus.cancelled ||
+    DeployProgressStatus.failure ||
+    DeployProgressStatus.success => true,
+    DeployProgressStatus.unknown ||
+    DeployProgressStatus.awaiting ||
+    DeployProgressStatus.running => false,
+  };
+}
+
+class _StageStatusTailer {
+  final CommandLogger logger;
+  final String cloudCapsuleId;
+  final UuidValue attemptId;
+  final SplitStreams<DeployStageType, DeployAttemptStage> stageStreams;
+
+  _StageStatusTailer({
+    required this.logger,
+    required this.cloudCapsuleId,
+    required this.attemptId,
+    required this.stageStreams,
+  });
+
+  /// Shows the progress of a stage and returns the final stage status.
+  /// If the input stream closes but was empty, the spinner is completed with a
+  /// filler stage with unknown status, which is then returned.
+  Future<DeployAttemptStage> showStageProgress(
+    final DeployStageType stageType,
+  ) async {
+    final fallbackStream = withFallback(
+      stageStreams.getStream(stageType),
+      _fillerStage(stageType, DeployProgressStatus.unknown),
+    );
+    return await logger.progressStream(
+      StatusCommands._generateStatusLine(
+        _fillerStage(stageType, DeployProgressStatus.awaiting),
+      ),
+      fallbackStream,
+      toMessage: StatusCommands._generateStatusLine,
+      isSuccess: (final stage) =>
+          stage.stageStatus == DeployProgressStatus.success,
+    );
+  }
+
+  DeployAttemptStage _fillerStage(
+    final DeployStageType stageType,
+    final DeployProgressStatus status,
+  ) {
+    return DeployAttemptStage(
+      cloudCapsuleId: cloudCapsuleId,
+      attemptId: attemptId,
+      stageType: stageType,
+      stageStatus: status,
+    );
   }
 }

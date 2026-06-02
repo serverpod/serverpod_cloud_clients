@@ -405,6 +405,39 @@ class CommandLogger {
     return _logger.progress(message, runner, newParagraph: newParagraph);
   }
 
+  /// Display a progress spinner and a stream of messages on [LogLevel.info].
+  /// When the stream is ended, the progress spinner is completed, with a
+  /// failure status if the stream ends with an error.
+  ///
+  /// First [initialMessage] is displayed, then the message is updated with each
+  /// event. A custom [toMessage] can be provided to convert each event to an
+  /// appropriate message. If not provided, [toString] is called on the event.
+  ///
+  /// If [isSuccess] is provided, it is used to determine if the progress should
+  /// be marked as successful or failed. If not provided, the progress is marked
+  /// as successful if the stream ends without an error.
+  ///
+  /// For streams with a single event this method behaves like [progress].
+  ///
+  /// Returns the last event from the stream.
+  /// If the stream ends with an error, that error is rethrown.
+  /// If the stream is empty, [StateError] is thrown.
+  Future<T> progressStream<T>(
+    final String initialMessage,
+    final Stream<T> stream, {
+    final String Function(T)? toMessage,
+    final bool Function(T)? isSuccess,
+    final bool newParagraph = false,
+  }) async {
+    return _logger.progressStream(
+      initialMessage,
+      stream,
+      toMessage: toMessage,
+      isSuccess: isSuccess,
+      newParagraph: newParagraph,
+    );
+  }
+
   ///////////////////////
   // User input
 

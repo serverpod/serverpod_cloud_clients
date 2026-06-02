@@ -383,6 +383,39 @@ class TestCommandLogger extends CommandLogger {
   }
 
   @override
+  Future<T> progressStream<T>(
+    final String initialMessage,
+    final Stream<T> stream, {
+    final String Function(T)? toMessage,
+    final bool Function(T)? isSuccess,
+    final bool newParagraph = false,
+  }) async {
+    if (printToStdout) {
+      print('log progressStream: $initialMessage');
+    }
+
+    if (!_somethingLogged.isCompleted) {
+      _somethingLogged.complete();
+    }
+
+    progressCalls.add(
+      ProgressCall(message: initialMessage, newParagraph: newParagraph),
+    );
+    final lastEvent = await _logger.progressStream(
+      initialMessage,
+      stream,
+      toMessage: toMessage,
+      isSuccess: isSuccess,
+      newParagraph: newParagraph,
+    );
+    final lastMessage = toMessage?.call(lastEvent) ?? lastEvent.toString();
+    progressCalls.add(
+      ProgressCall(message: lastMessage, newParagraph: newParagraph),
+    );
+    return lastEvent;
+  }
+
+  @override
   void success(
     final String message, {
     final LogLevel level = LogLevel.info,
