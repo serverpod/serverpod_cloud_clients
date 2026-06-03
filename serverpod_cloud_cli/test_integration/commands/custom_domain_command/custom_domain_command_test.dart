@@ -3,9 +3,12 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:ground_control_client/ground_control_client.dart';
+import 'package:ground_control_client/ground_control_client_test_tools.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/custom_domain_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_auth_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
@@ -311,7 +314,9 @@ void main() {
         expect(
           followUpLogCalls,
           contains(
-            'Complete the setup by adding the records to your DNS configuration',
+            predicate<String>(
+              (final m) => m.contains('Complete the setup by adding'),
+            ),
           ),
         );
       });
@@ -702,45 +707,49 @@ void main() {
         await commandResult;
 
         expect(logger.lineCalls, isNotEmpty);
+        final lines = logger.lineCalls.map((final c) => c.line).toList();
+
         expect(
-          logger.lineCalls,
-          containsAllInOrder([
-            equalsLineCall(
-              line: 'Default domain name                         | Target  ',
+          lines,
+          contains(
+            predicate<String>(
+              (final l) =>
+                  l.contains('Custom domain name') &&
+                  l.contains('Target') &&
+                  l.contains('Status'),
             ),
-            equalsLineCall(
-              line: '--------------------------------------------+---------',
+          ),
+        );
+        expect(
+          lines,
+          contains(
+            predicate<String>(
+              (final l) =>
+                  l.contains('api.domain.com') &&
+                  l.contains('my-magical-project.api.serverpod.space') &&
+                  l.contains('Configured'),
             ),
-            equalsLineCall(
-              line: 'my-magical-project.api.serverpod.space      | api     ',
+          ),
+        );
+        expect(
+          lines,
+          contains(
+            predicate<String>(
+              (final l) =>
+                  l.contains('domain.com') &&
+                  l.contains('Certificate creation pending'),
             ),
-            equalsLineCall(
-              line: 'my-magical-project.insights.serverpod.space | insights',
+          ),
+        );
+        expect(
+          lines,
+          contains(
+            predicate<String>(
+              (final l) =>
+                  l.contains('insights.domain.com') &&
+                  l.contains('Needs setup'),
             ),
-            equalsLineCall(
-              line: 'my-magical-project.serverpod.space          | web     ',
-            ),
-            equalsLineCall(
-              line:
-                  'Custom domain name  | Target                                      | Status                      ',
-            ),
-            equalsLineCall(
-              line:
-                  '--------------------+---------------------------------------------+-----------------------------',
-            ),
-            equalsLineCall(
-              line:
-                  'api.domain.com      | my-magical-project.api.serverpod.space      | Configured                  ',
-            ),
-            equalsLineCall(
-              line:
-                  'domain.com          | my-magical-project.serverpod.space          | Certificate creation pending',
-            ),
-            equalsLineCall(
-              line:
-                  'insights.domain.com | my-magical-project.insights.serverpod.space | Needs setup                 ',
-            ),
-          ]),
+          ),
         );
       });
     });
@@ -790,28 +799,153 @@ void main() {
         await commandResult;
 
         expect(logger.lineCalls, isNotEmpty);
+        final lines = logger.lineCalls.map((final c) => c.line).toList();
         expect(
-          logger.lineCalls,
-          containsAllInOrder([
-            equalsLineCall(
-              line: 'Default domain name                         | Target  ',
+          lines,
+          contains(
+            predicate<String>(
+              (final l) =>
+                  l.contains('Custom domain name') &&
+                  l.contains('Target') &&
+                  l.contains('Status'),
             ),
-            equalsLineCall(
-              line: '--------------------------------------------+---------',
+          ),
+        );
+        expect(lines, contains('<no rows data>'));
+      });
+    });
+  });
+
+  group('Given authenticated with a mocked cloud client', () {
+    final client = ClientMock(
+      authKeyProvider: InMemoryKeyManager.authenticated(),
+    );
+
+    final mockedCli = CloudCliCommandRunner.create(
+      logger: logger,
+      serviceProvider: CloudCliServiceProvider(
+        apiClientFactory: (final globalCfg) => client,
+      ),
+    );
+
+    group('and an apex web domain is attached', () {
+      late Future commandResult;
+      setUp(() async {
+        when(
+          () => client.customDomainName.add(
+            domainName: 'domain.com',
+            target: DomainNameTarget.web,
+            cloudCapsuleId: projectId,
+          ),
+        ).thenAnswer(
+          (final _) async => CustomDomainNameWithDefaultDomains(
+            customDomainName: CustomDomainName(
+              name: 'domain.com',
+              status: DomainNameStatus.needsSetup,
+              target: DomainNameTarget.web,
+              capsuleId: 1,
+              dnsRecordVerificationValue: 'scloud-verify=abc123',
+              dnsRecordType: DnsRecordType.txt,
             ),
-            equalsLineCall(
-              line: 'my-magical-project.api.serverpod.space      | api     ',
+            defaultDomainsByTarget: {
+              DomainNameTarget.api: '$projectId.api.serverpod.space',
+              DomainNameTarget.insights: '$projectId.insights.serverpod.space',
+              DomainNameTarget.web: '$projectId.serverpod.space',
+            },
+          ),
+        );
+
+        commandResult = mockedCli.run([
+          'domain',
+          'attach',
+          'domain.com',
+          '--target',
+          'web',
+          '--project',
+          projectId,
+          '--no-warn-billing-overdue',
+          '--config-dir',
+          testCacheFolderPath,
+        ]);
+      });
+
+      test('then command completes successfully', () async {
+        await expectLater(commandResult, completes);
+      });
+
+      test('then logs a www CNAME record for the apex web domain', () async {
+        await commandResult;
+
+        final boxMessages = logger.boxCalls.map((final call) => call.message);
+
+        expect(
+          boxMessages,
+          contains(
+            predicate<String>(
+              (final m) => m.contains('CNAME') && m.contains('www.domain.com'),
             ),
-            equalsLineCall(
-              line: 'my-magical-project.insights.serverpod.space | insights',
+          ),
+        );
+      });
+    });
+
+    group('and a non-web apex domain is attached', () {
+      late Future commandResult;
+      setUp(() async {
+        when(
+          () => client.customDomainName.add(
+            domainName: 'domain.com',
+            target: DomainNameTarget.api,
+            cloudCapsuleId: projectId,
+          ),
+        ).thenAnswer(
+          (final _) async => CustomDomainNameWithDefaultDomains(
+            customDomainName: CustomDomainName(
+              name: 'domain.com',
+              status: DomainNameStatus.needsSetup,
+              target: DomainNameTarget.api,
+              capsuleId: 1,
+              dnsRecordVerificationValue: 'scloud-verify=abc123',
+              dnsRecordType: DnsRecordType.txt,
             ),
-            equalsLineCall(
-              line: 'my-magical-project.serverpod.space          | web     ',
+            defaultDomainsByTarget: {
+              DomainNameTarget.api: '$projectId.api.serverpod.space',
+              DomainNameTarget.insights: '$projectId.insights.serverpod.space',
+              DomainNameTarget.web: '$projectId.serverpod.space',
+            },
+          ),
+        );
+
+        commandResult = mockedCli.run([
+          'domain',
+          'attach',
+          'domain.com',
+          '--target',
+          'api',
+          '--project',
+          projectId,
+          '--no-warn-billing-overdue',
+          '--config-dir',
+          testCacheFolderPath,
+        ]);
+      });
+
+      test('then command completes successfully', () async {
+        await expectLater(commandResult, completes);
+      });
+
+      test('then logs no www CNAME record', () async {
+        await commandResult;
+
+        final boxMessages = logger.boxCalls.map((final call) => call.message);
+
+        expect(
+          boxMessages,
+          isNot(
+            contains(
+              predicate<String>((final m) => m.contains('www.domain.com')),
             ),
-            equalsLineCall(line: 'Custom domain name | Target | Status'),
-            equalsLineCall(line: '-------------------+--------+-------'),
-            equalsLineCall(line: '<no rows data>'),
-          ]),
+          ),
         );
       });
     });

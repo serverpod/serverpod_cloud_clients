@@ -135,33 +135,36 @@ The valid targets are:
 
     if (DomainUtils.isSubDomain(domainName)) {
       _logDomainInstructions(
-        action:
-            'Add a CNAME record with the value "$targetDefaultDomain" '
-            'to the DNS configuration for this domain.',
         logger: logger,
         domainName: domainName,
         projectId: projectId,
-        records: [(type: 'CNAME', value: targetDefaultDomain)],
+        records: [
+          (type: 'CNAME', domain: domainName, value: targetDefaultDomain),
+        ],
       );
       return;
     }
 
+    final wwwRedirectEnabled = target == DomainNameTarget.web;
+
+    final records = <({String type, String domain, String value})>[
+      (type: 'ANAME', domain: domainName, value: targetDefaultDomain),
+      (
+        type: 'TXT',
+        domain: domainName,
+        value: customDomainNameWithDefaultDomains
+            .customDomainName
+            .dnsRecordVerificationValue,
+      ),
+      if (wwwRedirectEnabled)
+        (type: 'CNAME', domain: 'www.$domainName', value: targetDefaultDomain),
+    ];
+
     _logDomainInstructions(
-      action:
-          'Add a TXT record with the name "$targetDefaultDomain" and '
-          'value "${customDomainNameWithDefaultDomains.customDomainName.dnsRecordVerificationValue}".',
       logger: logger,
       domainName: domainName,
       projectId: projectId,
-      records: [
-        (type: 'ANAME', value: targetDefaultDomain),
-        (
-          type: 'TXT',
-          value: customDomainNameWithDefaultDomains
-              .customDomainName
-              .dnsRecordVerificationValue,
-        ),
-      ],
+      records: records,
     );
   }
 
@@ -169,11 +172,11 @@ The valid targets are:
     required final CommandLogger logger,
     required final String domainName,
     required final String projectId,
-    required final String action,
-    required final List<({String type, String value})> records,
+    required final List<({String type, String domain, String value})> records,
   }) {
     logger.info(
-      'Complete the setup by adding the records to your DNS configuration',
+      'Complete the setup by adding the following records to your DNS '
+      'configuration:',
       newParagraph: true,
     );
 
@@ -181,7 +184,7 @@ The valid targets are:
 
     tablePrinter.addHeaders(['Record type', 'Domain name', 'Value']);
     for (final record in records) {
-      tablePrinter.addRow([record.type, domainName, record.value]);
+      tablePrinter.addRow([record.type, record.domain, record.value]);
     }
 
     logger.box(tablePrinter.toString(), newParagraph: true);
