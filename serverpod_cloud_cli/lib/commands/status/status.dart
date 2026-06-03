@@ -1,6 +1,5 @@
 import 'package:collection/collection.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
-import 'package:serverpod_cloud_cli/util/capitalize.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:ground_control_client/ground_control_client.dart';
@@ -56,7 +55,7 @@ abstract class StatusCommands {
     }
 
     final List<String> rows = [
-      'Status of $cloudCapsuleId deploy $attemptId'
+      'Status of $cloudCapsuleId deployment $attemptId'
           ', started at ${stages.first.startedAt?.toTzString(inUtc, _numTimeStampChars)}:',
       '',
       ...stages.map(_generateStatusLine),
@@ -73,6 +72,7 @@ abstract class StatusCommands {
     required final String cloudCapsuleId,
     required final UuidValue attemptId,
     final bool inUtc = false,
+    final bool skipUploadStage = false,
   }) async {
     final stageStream = cloudApiClient.status.tailDeployAttemptStatus(
       cloudCapsuleId: cloudCapsuleId,
@@ -86,9 +86,11 @@ abstract class StatusCommands {
       (final stage) => stage.stageStatus.isFinal,
     );
 
-    logger.line('Tracking status of $cloudCapsuleId deploy $attemptId');
-    logger.line('(Press Ctrl+C to exit)');
-    logger.line('');
+    if (!skipUploadStage) {
+      logger.line('Tracking $cloudCapsuleId deployment $attemptId');
+      logger.line('(Press Ctrl+C to exit)');
+      logger.line('');
+    }
 
     final stageStatusTailer = _StageStatusTailer(
       logger: logger,
@@ -97,6 +99,10 @@ abstract class StatusCommands {
       stageStreams: stageStreams,
     );
     for (final stageType in DeployStageType.values) {
+      if (skipUploadStage && stageType == DeployStageType.upload) {
+        continue;
+      }
+
       final stage = await stageStatusTailer.showStageProgress(stageType);
       if (stage.stageStatus == DeployProgressStatus.cancelled ||
           stage.stageStatus == DeployProgressStatus.failure) {
@@ -117,8 +123,28 @@ abstract class StatusCommands {
     return '$status$rocket';
   }
 
+  static String _generateTailStatusLine(final DeployAttemptStage stage) {
+    var status = _getStatusPhrase(stage);
+
+    if (status.endsWith('...')) status = status.substring(0, status.length - 3);
+
+    final rocket =
+        stage.stageType == DeployStageType.service &&
+            stage.stageStatus == DeployProgressStatus.success
+        ? ' 🚀'
+        : '';
+
+    return '$status$rocket';
+  }
+
   static String _getStatusPhrase(final DeployAttemptStage stage) {
-    final stageName = stage.stageType.name.capitalize();
+    final stageName = switch (stage.stageType) {
+      DeployStageType.upload => 'Upload',
+      DeployStageType.build => 'Cloud build',
+      DeployStageType.deploy => 'Infra deploy',
+      DeployStageType.service => 'Service rollout',
+    };
+
     final verb = switch (stage.stageStatus) {
       DeployProgressStatus.unknown => '<unknown>',
       DeployProgressStatus.awaiting => 'awaiting...',
@@ -205,11 +231,11 @@ class _StageStatusTailer {
       _fillerStage(stageType, DeployProgressStatus.unknown),
     );
     return await logger.progressStream(
-      StatusCommands._generateStatusLine(
+      StatusCommands._generateTailStatusLine(
         _fillerStage(stageType, DeployProgressStatus.awaiting),
       ),
       fallbackStream,
-      toMessage: StatusCommands._generateStatusLine,
+      toMessage: StatusCommands._generateTailStatusLine,
       isSuccess: (final stage) =>
           stage.stageStatus == DeployProgressStatus.success,
     );

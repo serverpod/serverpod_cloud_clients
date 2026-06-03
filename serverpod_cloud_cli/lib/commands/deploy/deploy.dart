@@ -11,6 +11,7 @@ import 'package:ground_control_client/ground_control_client.dart'
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/file_uploader_factory.dart';
 import 'package:serverpod_cloud_cli/commands/deploy/script_runner.dart';
+import 'package:serverpod_cloud_cli/commands/status/status.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
@@ -38,6 +39,7 @@ abstract class Deploy {
     required final int concurrency,
     required final bool dryRun,
     required final bool showFiles,
+    final bool skipTailingStatus = false,
     final String? outputPath,
     final String? dartVersionOverride,
   }) async {
@@ -83,77 +85,24 @@ abstract class Deploy {
       ],
     );
 
-    late final String uploadDescription;
+    await warnIfLegacyServerpodWithMultipleInstances(
+      cloudApiClient: cloudApiClient,
+      projectId: projectId,
+      logger: logger,
+      serverpodVersionConstraint: pubspecValidator.serverpodVersion,
+    );
 
-    if (!dryRun) {
-      await warnIfLegacyServerpodWithMultipleInstances(
-        cloudApiClient: cloudApiClient,
-        projectId: projectId,
-        logger: logger,
-        serverpodVersionConstraint: pubspecValidator.serverpodVersion,
+    final gitMetadata = await readGitMetadata(projectDir, logger: logger);
+    if (gitMetadata != null && gitMetadata.hasUncommittedChanges) {
+      logger.warning(
+        'You have uncommitted changes in your git repository.',
+        hint:
+            'These changes are included in the deployment, but the deploy '
+            'is recorded against the last commit. Commit your changes for '
+            'an accurate deployment history.',
+        newParagraph: true,
       );
-
-      final gitMetadata = await readGitMetadata(projectDir, logger: logger);
-      if (gitMetadata != null && gitMetadata.hasUncommittedChanges) {
-        logger.warning(
-          'You have uncommitted changes in your git repository.',
-          hint:
-              'These changes are included in the deployment, but the deploy '
-              'is recorded against the last commit. Commit your changes for '
-              'an accurate deployment history.',
-          newParagraph: true,
-        );
-      }
-
-      final serverpodVersion = pubspecValidator.serverpodVersion;
-
-      await logger.progress('Retrieving upload description...', () async {
-        try {
-          uploadDescription = await cloudApiClient.deploy
-              .createUploadDescription(
-                projectId,
-                serverpodVersion: serverpodVersion,
-                dartVersion: dartVersionHint,
-                commitHash: gitMetadata?.commitHash,
-                commitMessage: gitMetadata?.commitMessage,
-                branch: gitMetadata?.branch,
-              );
-          final resolvedTag = resolvedDartImageTagFromUploadDescription(
-            uploadDescription,
-          );
-          if (resolvedTag != null) {
-            logger.debug('Using Dart SDK $resolvedTag.');
-          }
-          return true;
-        } on DartSdkUnsupportedConstraintException catch (e) {
-          throw FailureException(
-            error: e.message,
-            hint: 'Please update the constraint and try again.',
-          );
-        } on InvalidValueException catch (e) {
-          throw FailureException(error: e.message);
-        } on ServerpodClientException catch (e) {
-          if (e.message.toLowerCase().contains('connection timed out')) {
-            throw FailureException(
-              error:
-                  'Connection timed out. Please check your internet connection and try again.',
-              hint: 'Try increasing the timeout with the --timeout option.',
-              reason: e.toString(),
-            );
-          }
-          throw FailureException.nested(
-            e,
-            null,
-            'Failed to fetch upload description.',
-          );
-        } on Exception catch (e, stackTrace) {
-          throw FailureException.nested(
-            e,
-            stackTrace,
-            'Failed to fetch upload description.',
-          );
-        }
-      }, newParagraph: true);
+      logger.line(' ');
     }
 
     final Directory rootDirectory;
@@ -186,61 +135,65 @@ abstract class Deploy {
         : null;
 
     late final List<int> projectZip;
-    final isZipped = await logger.progress('Zipping project...', () async {
-      try {
-        projectZip = await ProjectZipper.zipProject(
-          logger: logger,
-          rootDirectory: rootDirectory,
-          beneath: includedSubPaths,
-          fileReadPoolSize: concurrency,
-          showFiles: showFiles,
-          excludeFile: excludeFile,
-          fileContentModifier: (final relativePath, final contentReader) async {
-            final isPubspec =
-                relativePath.endsWith('pubspec.yaml') &&
-                !relativePath.contains('.scloud/');
-            if (isPubspec) {
-              final content = await contentReader();
-              return WorkspaceProject.stripDevDependenciesFromPubspecContent(
-                content,
+    final isZipped = await logger.progress(
+      'Zipping project...',
+      successMessage: 'Zipping successful!',
+      () async {
+        try {
+          projectZip = await ProjectZipper.zipProject(
+            logger: logger,
+            rootDirectory: rootDirectory,
+            beneath: includedSubPaths,
+            fileReadPoolSize: concurrency,
+            showFiles: showFiles,
+            excludeFile: excludeFile,
+            fileContentModifier: (final relativePath, final contentReader) async {
+              final isPubspec =
+                  relativePath.endsWith('pubspec.yaml') &&
+                  !relativePath.contains('.scloud/');
+              if (isPubspec) {
+                final content = await contentReader();
+                return WorkspaceProject.stripDevDependenciesFromPubspecContent(
+                  content,
+                );
+              }
+              return null;
+            },
+          );
+          return true;
+        } on ProjectZipperExceptions catch (e) {
+          switch (e) {
+            case ProjectDirectoryDoesNotExistException():
+              logger.error('Project directory does not exist: ${e.path}');
+              break;
+            case EmptyProjectException():
+              logger.error(
+                'No files to upload.',
+                hint:
+                    'Ensure that the correct project directory is selected (either through the --project-dir flag or the current directory) and check '
+                    'that `.gitignore` and `.scloudignore` does not filter out all project files.',
               );
-            }
-            return null;
-          },
-        );
-        return true;
-      } on ProjectZipperExceptions catch (e) {
-        switch (e) {
-          case ProjectDirectoryDoesNotExistException():
-            logger.error('Project directory does not exist: ${e.path}');
-            break;
-          case EmptyProjectException():
-            logger.error(
-              'No files to upload.',
-              hint:
-                  'Ensure that the correct project directory is selected (either through the --project-dir flag or the current directory) and check '
-                  'that `.gitignore` and `.scloudignore` does not filter out all project files.',
-            );
-            break;
-          case DirectorySymLinkException():
-            logger.error(
-              'Serverpod Cloud does not support directory symlinks: `${e.path}`',
-            );
-            break;
-          case NonResolvingSymlinkException():
-            logger.error(
-              'Serverpod Cloud does not support non-resolving symlinks: `${e.path}` => `${e.target}`',
-            );
-            break;
-          case NullZipException():
-            logger.error(
-              'Unknown error occurred while zipping project, please try again.',
-            );
-            break;
+              break;
+            case DirectorySymLinkException():
+              logger.error(
+                'Serverpod Cloud does not support directory symlinks: `${e.path}`',
+              );
+              break;
+            case NonResolvingSymlinkException():
+              logger.error(
+                'Serverpod Cloud does not support non-resolving symlinks: `${e.path}` => `${e.target}`',
+              );
+              break;
+            case NullZipException():
+              logger.error(
+                'Unknown error occurred while zipping project, please try again.',
+              );
+              break;
+          }
+          return false;
         }
-        return false;
-      }
-    });
+      },
+    );
 
     if (!isZipped) throw ErrorExitException('Failed to zip project.');
 
@@ -264,8 +217,131 @@ abstract class Deploy {
       await logger.progress('Dry run, skipping upload.', () async {
         return true;
       });
-    } else {
-      final success = await logger.progress('Uploading project...', () async {
+
+      if (config != null && config.scripts.postDeploy.isNotEmpty) {
+        await ScriptRunner.runScripts(
+          config.scripts.postDeploy,
+          projectDir,
+          logger,
+          scriptType: 'post-deploy',
+        );
+      }
+      return;
+    }
+
+    final uploadDescription = await _createUploadDescription(
+      logger,
+      cloudApiClient,
+      projectId,
+      pubspecValidator.serverpodVersion,
+      dartVersionHint,
+      gitMetadata,
+    );
+
+    await _uploadProject(
+      logger,
+      fileUploaderFactory,
+      uploadDescription,
+      projectZip,
+    );
+
+    if (config != null && config.scripts.postDeploy.isNotEmpty) {
+      await ScriptRunner.runScripts(
+        config.scripts.postDeploy,
+        projectDir,
+        logger,
+        scriptType: 'post-deploy',
+      );
+    }
+
+    if (skipTailingStatus) {
+      return;
+    }
+
+    final attemptId = resolveUploadIdFromUploadDescription(uploadDescription);
+    if (attemptId == null) {
+      throw FailureException(
+        error: 'Failed to get deployment status.',
+        hint:
+            'Run this command to see recent deployments: '
+            'scloud deployment list',
+      );
+    }
+
+    await StatusCommands.tailDeploymentStatus(
+      cloudApiClient,
+      logger: logger,
+      cloudCapsuleId: projectId,
+      attemptId: attemptId,
+      skipUploadStage: true,
+    );
+  }
+
+  static Future<String> _createUploadDescription(
+    final CommandLogger logger,
+    final Client cloudApiClient,
+    final String projectId,
+    final String? serverpodVersion,
+    final String? dartVersionHint,
+    final GitMetadata? gitMetadata,
+  ) async {
+    try {
+      final uploadDescription = await cloudApiClient.deploy
+          .createUploadDescription(
+            projectId,
+            serverpodVersion: serverpodVersion,
+            dartVersion: dartVersionHint,
+            commitHash: gitMetadata?.commitHash,
+            commitMessage: gitMetadata?.commitMessage,
+            branch: gitMetadata?.branch,
+          );
+      final resolvedTag = resolveDartImageTagFromUploadDescription(
+        uploadDescription,
+      );
+      if (resolvedTag != null) {
+        logger.debug('Using Dart SDK $resolvedTag.');
+      }
+      return uploadDescription;
+    } on DartSdkUnsupportedConstraintException catch (e) {
+      throw FailureException(
+        error: e.message,
+        hint: 'Please update the constraint and try again.',
+      );
+    } on InvalidValueException catch (e) {
+      throw FailureException(error: e.message);
+    } on ServerpodClientException catch (e) {
+      if (e.message.toLowerCase().contains('connection timed out')) {
+        throw FailureException(
+          error:
+              'Connection timed out. Please check your internet connection and try again.',
+          hint: 'Try increasing the timeout with the --timeout option.',
+          reason: e.toString(),
+        );
+      }
+      throw FailureException.nested(
+        e,
+        null,
+        'Failed to fetch upload description.',
+      );
+    } on Exception catch (e, stackTrace) {
+      throw FailureException.nested(
+        e,
+        stackTrace,
+        'Failed to fetch upload description.',
+      );
+    }
+  }
+
+  static Future<void> _uploadProject(
+    final CommandLogger logger,
+    final FileUploaderFactory fileUploaderFactory,
+    final String uploadDescription,
+    final List<int> projectZip,
+  ) async {
+    final success = await logger.progress(
+      'Uploading project...',
+      successMessage: 'Upload successful!',
+      () async {
         try {
           final fileUploader = fileUploaderFactory(uploadDescription);
           final ret = await fileUploader.upload(
@@ -285,26 +361,11 @@ abstract class Deploy {
             'Failed to upload project.',
           );
         }
-      });
+      },
+    );
 
-      if (!success) {
-        throw ErrorExitException('Failed to upload project.');
-      }
-
-      logger.success(
-        'Project uploaded successfully!',
-        trailingRocket: true,
-        newParagraph: true,
-      );
-    }
-
-    if (config != null && config.scripts.postDeploy.isNotEmpty) {
-      await ScriptRunner.runScripts(
-        config.scripts.postDeploy,
-        projectDir,
-        logger,
-        scriptType: 'post-deploy',
-      );
+    if (!success) {
+      throw ErrorExitException('Failed to upload project.');
     }
   }
 

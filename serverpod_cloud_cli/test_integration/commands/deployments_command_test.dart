@@ -266,16 +266,16 @@ void main() {
 
               expect(logger.lineCalls, isNotEmpty);
               expect(logger.lineCalls.map((final l) => l.line).join('\n'), '''
-Tracking status of projectId deploy $attemptId
+Tracking projectId deployment $attemptId
 (Press Ctrl+C to exit)
 ''');
               expect(
                 logger.progressCalls.map((final c) => c.message),
                 containsAllInOrder([
-                  contains('Upload awaiting...'),
-                  contains('Build awaiting...'),
-                  contains('Deploy awaiting...'),
-                  contains('Service awaiting...'),
+                  contains('Upload awaiting'),
+                  contains('Cloud build awaiting'),
+                  contains('Infra deploy awaiting'),
+                  contains('Service rollout awaiting'),
                 ]),
               );
             });
@@ -619,16 +619,16 @@ Tracking status of projectId deploy $attemptId
 
             expect(logger.lineCalls, isNotEmpty);
             expect(logger.lineCalls.map((final l) => l.line).join('\n'), '''
-Tracking status of projectId deploy $attemptId
+Tracking projectId deployment $attemptId
 (Press Ctrl+C to exit)
 ''');
             expect(
               logger.progressCalls.map((final c) => c.message),
               containsAllInOrder([
-                contains('Upload awaiting...'),
-                contains('Build awaiting...'),
-                contains('Deploy awaiting...'),
-                contains('Service awaiting...'),
+                contains('Upload awaiting'),
+                contains('Cloud build awaiting'),
+                contains('Infra deploy awaiting'),
+                contains('Service rollout awaiting'),
               ]),
             );
           });
@@ -659,12 +659,12 @@ Tracking status of projectId deploy $attemptId
 
             expect(logger.lineCalls, isNotEmpty);
             expect(logger.lineCalls.map((final l) => l.line).join('\n'), '''
-Status of projectId deploy $attemptId, started at 2021-12-31 10:20:30:
+Status of projectId deployment $attemptId, started at 2021-12-31 10:20:30:
 
 Upload successful!
-Build successful!
-Deploy successful!
-Service awaiting...''');
+Cloud build successful!
+Infra deploy successful!
+Service rollout awaiting...''');
           });
         },
       );
@@ -769,7 +769,7 @@ Service awaiting...''');
 
             expect(logger.lineCalls, isNotEmpty);
             expect(logger.lineCalls.map((final l) => l.line).join('\n'), '''
-Tracking status of projectId deploy $attemptId
+Tracking projectId deployment $attemptId
 (Press Ctrl+C to exit)
 ''');
             final progressMessages = logger.progressCalls.map(
@@ -779,10 +779,10 @@ Tracking status of projectId deploy $attemptId
             expect(
               progressMessages,
               containsAllInOrder([
-                contains('Upload awaiting...'),
+                contains('Upload awaiting'),
                 contains('Upload successful!'),
-                contains('Build awaiting...'),
-                contains('Build failed! 💥'),
+                contains('Cloud build awaiting'),
+                contains('Cloud build failed! 💥'),
               ]),
             );
           });
@@ -813,10 +813,10 @@ Tracking status of projectId deploy $attemptId
 
             expect(logger.lineCalls, isNotEmpty);
             expect(logger.lineCalls.map((final l) => l.line).join('\n'), '''
-Status of projectId deploy $attemptId, started at 2021-12-31 10:20:30:
+Status of projectId deployment $attemptId, started at 2021-12-31 10:20:30:
 
 Upload successful!
-Build failed! 💥''');
+Cloud build failed! 💥''');
           });
         },
       );

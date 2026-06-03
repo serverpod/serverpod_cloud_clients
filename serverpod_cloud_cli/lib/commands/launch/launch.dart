@@ -573,6 +573,7 @@ The default API domain will be: <project-id>.api.serverpod.space
       concurrency: 5,
       dryRun: false,
       showFiles: false,
+      skipTailingStatus: true,
       dartVersionOverride: safeDartSdk,
     );
 

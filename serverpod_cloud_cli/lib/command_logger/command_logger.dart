@@ -387,22 +387,26 @@ class CommandLogger {
     );
   }
 
-  /// **Progress Messages Guidelines**
+  /// Display a progress spinner and message on [LogLevel.info] while running
+  /// [runner] function.
   ///
-  /// Format:
-  /// ```bash
-  /// <Resource or action that is awaited>
-  /// ```
-  /// Example:
-  /// ```bash
-  /// Waiting for authentication to complete...
-  /// ```
+  /// Upon success, change the message to the [successMessage] if provided.
+  ///
+  /// Uses the return value from [runner] to print success or failure status.
+  /// Returns the return value from [runner].
   Future<bool> progress(
     final String message,
     final Future<bool> Function() runner, {
+    final String? successMessage,
     final bool newParagraph = false,
   }) async {
-    return _logger.progress(message, runner, newParagraph: newParagraph);
+    return _logger.progressStream(
+      message,
+      Stream.fromFuture(runner()),
+      toMessage: (final r) => r ? successMessage ?? message : message,
+      isSuccess: (final result) => result,
+      newParagraph: newParagraph,
+    );
   }
 
   /// Display a progress spinner and a stream of messages on [LogLevel.info].

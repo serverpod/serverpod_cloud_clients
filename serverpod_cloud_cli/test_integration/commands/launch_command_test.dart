@@ -288,7 +288,7 @@ void main() {
           expect(
             logger.lineCalls.map((final call) => call.line),
             containsAllInOrder([
-              startsWith('Status of $projectId deploy $attemptId'),
+              startsWith('Status of $projectId deployment $attemptId'),
               contains('Upload successful!'),
             ]),
           );

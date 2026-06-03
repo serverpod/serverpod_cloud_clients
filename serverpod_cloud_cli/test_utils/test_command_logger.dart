@@ -366,6 +366,7 @@ class TestCommandLogger extends CommandLogger {
   Future<bool> progress(
     final String message,
     final Future<bool> Function() runner, {
+    final String? successMessage,
     final bool newParagraph = false,
   }) async {
     if (printToStdout) {

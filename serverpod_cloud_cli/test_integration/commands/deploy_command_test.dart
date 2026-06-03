@@ -47,6 +47,10 @@ void main() {
       .withMaxInstances(readComputeMaxInstancesForTest)
       .build();
 
+  setUpAll(() {
+    registerFallbackValue(Uuid().v4obj());
+  });
+
   setUp(() {
     mockFileUploader.init();
     logger.clear();
@@ -192,6 +196,25 @@ project:
           ).thenAnswer(
             (final _) async => BucketUploadDescription.uploadDescription,
           );
+
+          when(
+            () => client.status.getDeployAttemptId(
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+              attemptNumber: any(named: 'attemptNumber'),
+            ),
+          ).thenAnswer(
+            (final _) async =>
+                UuidValue.raw('00000000-0000-4000-8000-000000000000'),
+          );
+          when(
+            () => client.status.tailDeployAttemptStatus(
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+              attemptId: any(named: 'attemptId'),
+            ),
+          ).thenAnswer(
+            (final _) => Stream.value(DeployAttemptStageBuilder().build()),
+          );
+
           readComputeMaxInstancesForTest = 2;
         });
 
@@ -1619,23 +1642,17 @@ project:
           await expectLater(cliCommandFuture, completes);
         });
 
-        test(
-          'then upload description is retrieved before zipping the project.',
-          () async {
-            await cliCommandFuture;
+        test('then upload is performed after zipping the project.', () async {
+          await cliCommandFuture;
 
-            final progressMessages = logger.progressCalls
-                .map((final c) => c.message)
-                .toList();
-            final retrieveIndex = progressMessages.indexOf(
-              'Retrieving upload description...',
-            );
-            final zipIndex = progressMessages.indexOf('Zipping project...');
-            expect(retrieveIndex, isNot(-1));
-            expect(zipIndex, isNot(-1));
-            expect(retrieveIndex, lessThan(zipIndex));
-          },
-        );
+          final progressMessages = logger.progressCalls
+              .map((final c) => c.message)
+              .toList();
+          expect(
+            progressMessages,
+            containsAllInOrder(['Zipping project...', 'Uploading project...']),
+          );
+        });
       });
     });
 
@@ -1664,25 +1681,20 @@ project:
         });
 
         test(
-          'then upload runs after retrieving description; zip has pubspec, no scloud.yaml.',
+          'then upload runs after zipping; zip has pubspec, no scloud.yaml.',
           () async {
             await cliCommandFuture;
 
             final progressMessages = logger.progressCalls
                 .map((final c) => c.message)
                 .toList();
-            final retrieveIndex = progressMessages.indexOf(
-              'Retrieving upload description...',
+            expect(
+              progressMessages,
+              containsAllInOrder([
+                'Zipping project...',
+                'Uploading project...',
+              ]),
             );
-            final zipIndex = progressMessages.indexOf('Zipping project...');
-            final uploadIndex = progressMessages.indexOf(
-              'Uploading project...',
-            );
-            expect(retrieveIndex, isNot(-1));
-            expect(zipIndex, isNot(-1));
-            expect(uploadIndex, isNot(-1));
-            expect(retrieveIndex, lessThan(zipIndex));
-            expect(zipIndex, lessThan(uploadIndex));
 
             expect(mockFileUploader.uploadedData, isNotEmpty);
             final archive = ZipDecoder().decodeBytes(
