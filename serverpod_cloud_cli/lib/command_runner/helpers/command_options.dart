@@ -115,6 +115,16 @@ class DartSdkVersionOption extends StringOption {
       );
 }
 
+class AwaitOption extends FlagOption {
+  const AwaitOption()
+    : super(
+        argName: 'await',
+        defaultsTo: true,
+        helpText:
+            'Await the deployment to finish while showing status progression.',
+      );
+}
+
 class UserEmailOption extends StringOption {
   const UserEmailOption({super.argPos, super.mandatory})
     : super(

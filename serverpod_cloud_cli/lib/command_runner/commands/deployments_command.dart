@@ -46,12 +46,7 @@ abstract final class _DeploymentsShowOptions {
         "success, failure, awaiting, running, cancelled, unknown.",
     negatable: false,
   );
-  static const wait = FlagOption(
-    argName: 'await',
-    defaultsTo: true,
-    helpText:
-        'Await the deployment to finish while showing status progression.',
-  );
+  static const wait = AwaitOption();
 }
 
 enum DeploymentsShowOption<V> implements OptionDefinition<V> {

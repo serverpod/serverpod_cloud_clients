@@ -367,6 +367,7 @@ class TestCommandLogger extends CommandLogger {
     final String message,
     final Future<bool> Function() runner, {
     final String? successMessage,
+    final int padRight = 0,
     final bool newParagraph = false,
   }) async {
     if (printToStdout) {
@@ -380,7 +381,11 @@ class TestCommandLogger extends CommandLogger {
     progressCalls.add(
       ProgressCall(message: message, newParagraph: newParagraph),
     );
-    return _logger.progress(message, runner);
+    final result = await _logger.progress(message, runner);
+    if (result && successMessage != null) {
+      progressCalls.add(ProgressCall(message: successMessage));
+    }
+    return result;
   }
 
   @override
@@ -388,6 +393,7 @@ class TestCommandLogger extends CommandLogger {
     final String initialMessage,
     final Stream<T> stream, {
     final String Function(T)? toMessage,
+    final int padRight = 0,
     final bool Function(T)? isSuccess,
     final bool newParagraph = false,
   }) async {

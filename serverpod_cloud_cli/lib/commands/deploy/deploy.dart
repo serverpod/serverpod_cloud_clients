@@ -136,8 +136,9 @@ abstract class Deploy {
 
     late final List<int> projectZip;
     final isZipped = await logger.progress(
-      'Zipping project...',
-      successMessage: 'Zipping successful!',
+      'Zipping project',
+      successMessage: 'Zipping successful.',
+      padRight: StatusCommands.progressMessagePadLength,
       () async {
         try {
           projectZip = await ProjectZipper.zipProject(
@@ -198,25 +199,34 @@ abstract class Deploy {
     if (!isZipped) throw ErrorExitException('Failed to zip project.');
 
     if (outputPath != null) {
-      await logger.progress('Writing zip file to $outputPath...', () async {
-        try {
-          final file = File(outputPath);
-          await file.writeAsBytes(projectZip);
-          return true;
-        } on Exception catch (e, stackTrace) {
-          throw FailureException.nested(
-            e,
-            stackTrace,
-            'Failed to write zip file to $outputPath',
-          );
-        }
-      });
+      await logger.progress(
+        'Writing zip file to $outputPath',
+        padRight: StatusCommands.progressMessagePadLength,
+        () async {
+          try {
+            final file = File(outputPath);
+            await file.writeAsBytes(projectZip);
+            return true;
+          } on Exception catch (e, stackTrace) {
+            throw FailureException.nested(
+              e,
+              stackTrace,
+              'Failed to write zip file to $outputPath',
+            );
+          }
+        },
+      );
     }
 
     if (dryRun) {
-      await logger.progress('Dry run, skipping upload.', () async {
-        return true;
-      });
+      await logger.progress(
+        'Dry run, skipping upload',
+        successMessage: 'Dry run, skipping upload.',
+        padRight: StatusCommands.progressMessagePadLength,
+        () async {
+          return true;
+        },
+      );
 
       if (config != null && config.scripts.postDeploy.isNotEmpty) {
         await ScriptRunner.runScripts(
@@ -255,6 +265,11 @@ abstract class Deploy {
     }
 
     if (skipTailingStatus) {
+      logger.terminalCommand(
+        'scloud deployment show',
+        message: 'To view the deployment status, run this command:',
+        newParagraph: true,
+      );
       return;
     }
 
@@ -339,8 +354,9 @@ abstract class Deploy {
     final List<int> projectZip,
   ) async {
     final success = await logger.progress(
-      'Uploading project...',
-      successMessage: 'Upload successful!',
+      'Uploading project',
+      padRight: StatusCommands.progressMessagePadLength,
+      successMessage: 'Upload successful.',
       () async {
         try {
           final fileUploader = fileUploaderFactory(uploadDescription);

@@ -661,9 +661,9 @@ Tracking projectId deployment $attemptId
             expect(logger.lineCalls.map((final l) => l.line).join('\n'), '''
 Status of projectId deployment $attemptId, started at 2021-12-31 10:20:30:
 
-Upload successful!
-Cloud build successful!
-Infra deploy successful!
+Upload successful.
+Cloud build successful.
+Infra deploy successful.
 Service rollout awaiting...''');
           });
         },
@@ -780,9 +780,9 @@ Tracking projectId deployment $attemptId
               progressMessages,
               containsAllInOrder([
                 contains('Upload awaiting'),
-                contains('Upload successful!'),
+                contains('Upload successful.'),
                 contains('Cloud build awaiting'),
-                contains('Cloud build failed! 💥'),
+                contains('Cloud build failed. 💥'),
               ]),
             );
           });
@@ -815,8 +815,8 @@ Tracking projectId deployment $attemptId
             expect(logger.lineCalls.map((final l) => l.line).join('\n'), '''
 Status of projectId deployment $attemptId, started at 2021-12-31 10:20:30:
 
-Upload successful!
-Cloud build failed! 💥''');
+Upload successful.
+Cloud build failed. 💥''');
           });
         },
       );

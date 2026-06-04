@@ -601,12 +601,6 @@ The default API domain will be: <project-id>.api.serverpod.space
       '   Insights: https://$projectId.insights.$tenantHost/',
       newParagraph: true,
     );
-
-    logger.terminalCommand(
-      'scloud deployment show',
-      message: 'View the deployment status:',
-      newParagraph: true,
-    );
   }
 
   static Future<UuidValue> _getDeployAttemptId(

@@ -289,7 +289,7 @@ void main() {
             logger.lineCalls.map((final call) => call.line),
             containsAllInOrder([
               startsWith('Status of $projectId deployment $attemptId'),
-              contains('Upload successful!'),
+              contains('Upload successful.'),
             ]),
           );
         });
@@ -301,7 +301,7 @@ void main() {
             containsAllInOrder([
               equalsTerminalCommandCall(
                 command: 'scloud deployment show',
-                message: 'View the deployment status:',
+                message: 'To view the deployment status, run this command:',
                 newParagraph: true,
               ),
             ]),

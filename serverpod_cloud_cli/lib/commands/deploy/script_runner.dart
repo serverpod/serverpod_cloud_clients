@@ -15,7 +15,7 @@ abstract class ScriptRunner {
       return;
     }
 
-    logger.info('Running $scriptType scripts', newParagraph: true);
+    logger.info('Running $scriptType scripts:', newParagraph: true);
     for (var i = 0; i < commands.length; i++) {
       final command = commands[i];
 
@@ -45,5 +45,7 @@ abstract class ScriptRunner {
         );
       }
     }
+
+    logger.info(' ');
   }
 }

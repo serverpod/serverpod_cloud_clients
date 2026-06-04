@@ -44,6 +44,7 @@ enum DeployCommandOption<V> implements OptionDefinition<V> {
           'Save the deployment zip file to the specified path. Must end with .zip',
     ),
   ),
+  wait(AwaitOption()),
   dartVersion(DartSdkVersionOption());
 
   const DeployCommandOption(this.option);
@@ -102,6 +103,7 @@ Examples
     final dryRun = commandConfig.value(DeployCommandOption.dryRun);
     final showFiles = commandConfig.value(DeployCommandOption.showFiles);
     final outputPath = commandConfig.optionalValue(DeployCommandOption.output);
+    final wait = commandConfig.value(DeployCommandOption.wait);
     final dartVersionOverride = commandConfig.optionalValue(
       DeployCommandOption.dartVersion,
     );
@@ -129,6 +131,7 @@ Examples
       concurrency: concurrency,
       dryRun: dryRun,
       showFiles: showFiles,
+      skipTailingStatus: !wait,
       outputPath: outputPath,
       dartVersionOverride: dartVersionOverride,
     );

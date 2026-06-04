@@ -7,6 +7,8 @@ import 'package:serverpod_cloud_cli/util/stream_util.dart';
 
 /// Status subcommand implementations
 abstract class StatusCommands {
+  static const progressMessagePadLength = 32;
+
   /// Subcommand to list the most recent deploy attempts.
   static Future<void> listDeployAttempts(
     final Client cloudApiClient, {
@@ -123,20 +125,6 @@ abstract class StatusCommands {
     return '$status$rocket';
   }
 
-  static String _generateTailStatusLine(final DeployAttemptStage stage) {
-    var status = _getStatusPhrase(stage);
-
-    if (status.endsWith('...')) status = status.substring(0, status.length - 3);
-
-    final rocket =
-        stage.stageType == DeployStageType.service &&
-            stage.stageStatus == DeployProgressStatus.success
-        ? ' 🚀'
-        : '';
-
-    return '$status$rocket';
-  }
-
   static String _getStatusPhrase(final DeployAttemptStage stage) {
     final stageName = switch (stage.stageType) {
       DeployStageType.upload => 'Upload',
@@ -149,8 +137,8 @@ abstract class StatusCommands {
       DeployProgressStatus.unknown => '<unknown>',
       DeployProgressStatus.awaiting => 'awaiting...',
       DeployProgressStatus.running => 'running...',
-      DeployProgressStatus.success => 'successful!',
-      DeployProgressStatus.failure => 'failed! 💥',
+      DeployProgressStatus.success => 'successful.',
+      DeployProgressStatus.failure => 'failed. 💥',
       DeployProgressStatus.cancelled => 'cancelled.',
     };
     return '$stageName $verb';
@@ -231,11 +219,12 @@ class _StageStatusTailer {
       _fillerStage(stageType, DeployProgressStatus.unknown),
     );
     return await logger.progressStream(
-      StatusCommands._generateTailStatusLine(
+      StatusCommands._generateStatusLine(
         _fillerStage(stageType, DeployProgressStatus.awaiting),
       ),
       fallbackStream,
-      toMessage: StatusCommands._generateTailStatusLine,
+      toMessage: StatusCommands._generateStatusLine,
+      padRight: StatusCommands.progressMessagePadLength,
       isSuccess: (final stage) =>
           stage.stageStatus == DeployProgressStatus.success,
     );

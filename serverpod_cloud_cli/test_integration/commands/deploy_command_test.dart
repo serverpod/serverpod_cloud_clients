@@ -749,6 +749,51 @@ project:
         );
       });
 
+      group('when deploying through CLI with --no-await', () {
+        late Future cliCommandFuture;
+        setUp(() async {
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--no-await',
+            '--project',
+            BucketUploadDescription.projectId,
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        test('then command completes successfully.', () async {
+          await expectLater(cliCommandFuture, completes);
+        });
+
+        test('then zipping and upload progress messages are logged.', () async {
+          await cliCommandFuture;
+          expect(logger.progressCalls, isNotEmpty);
+          expect(
+            logger.progressCalls.map((final call) => call.message),
+            containsAllInOrder(['Zipping project', 'Uploading project']),
+          );
+        });
+
+        test('then cloud build awaiting message is not logged.', () async {
+          await cliCommandFuture;
+          expect(logger.progressCalls, isNotEmpty);
+          expect(
+            logger.progressCalls.map((final call) => call.message),
+            isNot(contains(contains('build awaiting'))),
+          );
+        });
+
+        test('then a "deployment show" command hint is logged.', () async {
+          await cliCommandFuture;
+          expect(logger.terminalCommandCalls, hasLength(1));
+          expect(
+            logger.terminalCommandCalls.single.command,
+            equals('scloud deployment show'),
+          );
+        });
+      });
+
       group('when deploying through CLI with --dry-run', () {
         late Future cliCommandFuture;
         setUp(() async {
@@ -1437,16 +1482,11 @@ project:
           await cliCommandFuture;
 
           expect(
-            logger.infoCalls.any(
-              (final call) => call.message == 'Running pre-deploy scripts',
-            ),
-            isTrue,
-          );
-          expect(
-            logger.infoCalls.any(
-              (final call) => call.message == 'Running post-deploy scripts',
-            ),
-            isTrue,
+            logger.infoCalls.map((final call) => call.message),
+            containsAllInOrder([
+              'Running pre-deploy scripts:',
+              'Running post-deploy scripts:',
+            ]),
           );
         });
       });
@@ -1650,7 +1690,7 @@ project:
               .toList();
           expect(
             progressMessages,
-            containsAllInOrder(['Zipping project...', 'Uploading project...']),
+            containsAllInOrder(['Zipping project', 'Uploading project']),
           );
         });
       });
@@ -1690,10 +1730,7 @@ project:
                 .toList();
             expect(
               progressMessages,
-              containsAllInOrder([
-                'Zipping project...',
-                'Uploading project...',
-              ]),
+              containsAllInOrder(['Zipping project', 'Uploading project']),
             );
 
             expect(mockFileUploader.uploadedData, isNotEmpty);

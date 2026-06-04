@@ -26,9 +26,7 @@ export 'package:cli_tools/logger.dart' show LogLevel;
 /// In general use space-themed metaphors sparingly to keep the interface professional, but they can be used where it's suitable.
 
 /// Align messaging with the Serverpod space theme in a way that conveys progress and exploration.
-/// Avoid overly playful language but embrace an aspirational, empowering tone (e.g., "✅ Booster liftoff: Upload successful!" for build status instead of “We’re blasting off!”).
-
-/// Integrate subtle rocket/space motifs in ASCII art or feedback visuals, where appropriate, without distracting from usability.
+/// Avoid overly playful language but embrace an aspirational, empowering tone.
 
 /// ## Actionable Feedback
 
@@ -390,20 +388,29 @@ class CommandLogger {
   /// Display a progress spinner and message on [LogLevel.info] while running
   /// [runner] function.
   ///
+  /// And ellipsis ('...') is appended to [initialMessage] if it is not already
+  /// present.
+  ///
   /// Upon success, change the message to the [successMessage] if provided.
   ///
   /// Uses the return value from [runner] to print success or failure status.
   /// Returns the return value from [runner].
   Future<bool> progress(
-    final String message,
+    final String initialMessage,
     final Future<bool> Function() runner, {
     final String? successMessage,
+    final int padRight = 0,
     final bool newParagraph = false,
   }) async {
-    return _logger.progressStream(
+    final message = initialMessage.endsWith('...')
+        ? initialMessage
+        : '$initialMessage...';
+
+    return await progressStream(
       message,
       Stream.fromFuture(runner()),
       toMessage: (final r) => r ? successMessage ?? message : message,
+      padRight: padRight,
       isSuccess: (final result) => result,
       newParagraph: newParagraph,
     );
@@ -416,6 +423,9 @@ class CommandLogger {
   /// First [initialMessage] is displayed, then the message is updated with each
   /// event. A custom [toMessage] can be provided to convert each event to an
   /// appropriate message. If not provided, [toString] is called on the event.
+  ///
+  /// This method does not append an ellipsis or manipulate the messages in any
+  /// other way.
   ///
   /// If [isSuccess] is provided, it is used to determine if the progress should
   /// be marked as successful or failed. If not provided, the progress is marked
@@ -430,13 +440,17 @@ class CommandLogger {
     final String initialMessage,
     final Stream<T> stream, {
     final String Function(T)? toMessage,
+    final int padRight = 0,
     final bool Function(T)? isSuccess,
     final bool newParagraph = false,
   }) async {
+    String paddedMessage(final T event) =>
+        (toMessage ?? (final r) => r.toString()).call(event).padRight(padRight);
+
     return _logger.progressStream(
-      initialMessage,
+      initialMessage.padRight(padRight),
       stream,
-      toMessage: toMessage,
+      toMessage: paddedMessage,
       isSuccess: isSuccess,
       newParagraph: newParagraph,
     );
