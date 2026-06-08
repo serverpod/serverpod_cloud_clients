@@ -975,6 +975,14 @@ class Protocol extends _i1.SerializationManager {
               .toList()
           as T;
     }
+    if (t == _i1.getType<List<_i84.AcceptedTermsDTO>?>()) {
+      return (data != null
+              ? (data as List)
+                    .map((e) => deserialize<_i84.AcceptedTermsDTO>(e))
+                    .toList()
+              : null)
+          as T;
+    }
     if (t == List<_i86.PaymentMethod>) {
       return (data as List)
               .map((e) => deserialize<_i86.PaymentMethod>(e))

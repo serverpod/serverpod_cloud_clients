@@ -407,7 +407,7 @@ class EndpointAuth extends _i1.EndpointRef {
       });
 }
 
-/// Endpoint for authentication.
+/// Endpoint for authenticated-user session management.
 /// {@category Endpoint}
 class EndpointAuthWithAuth extends _i1.EndpointRef {
   EndpointAuthWithAuth(_i1.EndpointCaller caller) : super(caller);
@@ -463,15 +463,42 @@ class EndpointEmailIdp extends _i12.EndpointEmailIdpBase {
   @override
   String get name => 'emailIdp';
 
+  /// Returns the list of terms that the user must accept when registering.
+  _i2.Future<List<_i8.RequiredTerms>> readRequiredTerms() =>
+      caller.callServerEndpoint<List<_i8.RequiredTerms>>(
+        'emailIdp',
+        'readRequiredTerms',
+        {},
+      );
+
+  /// Starts the registration for a new user account.
+  ///
+  /// Accepts an optional [name] and required [acceptedTerms] in addition to
+  /// [email]. Validates terms acceptance and stores the user's name before
+  /// delegating to the email IDP.
+  ///
+  /// Throws [UserAccountRegistrationDeniedException] if the user has not
+  /// accepted the required terms of service.
+  ///
+  /// Always returns a account request ID, which can be used to complete the
+  /// registration. If the email is already registered, the returned ID will not
+  /// be valid.
+  @override
+  _i2.Future<_i1.UuidValue> startRegistration({
+    required String email,
+    String? name,
+    List<_i9.AcceptedTermsDTO>? acceptedTerms,
+  }) => caller.callServerEndpoint<_i1.UuidValue>(
+    'emailIdp',
+    'startRegistration',
+    {'email': email, 'name': name, 'acceptedTerms': acceptedTerms},
+  );
+
   /// Logs in the user and returns a new session.
   ///
-  /// Throws an [EmailAccountLoginException] in case of errors, with reason:
-  /// - [EmailAccountLoginExceptionReason.invalidCredentials] if the email or
-  ///   password is incorrect.
-  /// - [EmailAccountLoginExceptionReason.tooManyAttempts] if there have been
-  ///   too many failed login attempts.
-  ///
-  /// Throws an [AuthUserBlockedException] if the auth user is blocked.
+  /// In case an expected error occurs, this throws an
+  /// [EmailAccountLoginException]. If the user registered via a different
+  /// identity provider, throws [EmailMethodBlockedException].
   @override
   _i2.Future<_i10.AuthSuccess> login({
     required String email,
@@ -481,23 +508,29 @@ class EndpointEmailIdp extends _i12.EndpointEmailIdpBase {
     'password': password,
   });
 
-  /// Starts the registration for a new user account with an email-based login
-  /// associated to it.
+  /// Completes a password reset request by setting a new password.
   ///
-  /// Upon successful completion of this method, an email will have been
-  /// sent to [email] with a verification link, which the user must open to
-  /// complete the registration.
+  /// If the reset was successful, a new session key is returned.
   ///
-  /// Always returns a account request ID, which can be used to complete the
-  /// registration. If the email is already registered, the returned ID will not
-  /// be valid.
-  @override
-  _i2.Future<_i1.UuidValue> startRegistration({required String email}) =>
-      caller.callServerEndpoint<_i1.UuidValue>(
-        'emailIdp',
-        'startRegistration',
-        {'email': email},
-      );
+  /// If the reset failed, one of the following exceptions is thrown:
+  /// - [EmailAccountPasswordPolicyViolationException]
+  /// - [EmailAccountPasswordResetRequestExpiredException]
+  /// - [EmailAccountPasswordResetRequestNotFoundException]
+  /// - [EmailAccountPasswordResetRequestUnauthorizedException]
+  /// - [EmailAccountPasswordResetTooManyAttemptsException]
+  ///
+  /// Destroys all the user's current sessions, and creates a new authenticated
+  /// session for the user.
+  _i2.Future<_i10.AuthSuccess> resetPassword({
+    required _i1.UuidValue passwordResetRequestId,
+    required String verificationCode,
+    required String newPassword,
+  }) =>
+      caller.callServerEndpoint<_i10.AuthSuccess>('emailIdp', 'resetPassword', {
+        'passwordResetRequestId': passwordResetRequestId,
+        'verificationCode': verificationCode,
+        'newPassword': newPassword,
+      });
 
   /// Verifies an account request code and returns a token
   /// that can be used to complete the account creation.

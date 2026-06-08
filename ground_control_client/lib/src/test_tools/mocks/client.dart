@@ -30,7 +30,7 @@ class EndpointUsersMock extends Mock implements EndpointUsers {}
 
 class EndpointStatusMock extends Mock implements EndpointStatus {}
 
-class EndpointAuthMock extends Mock implements EndpointAuth {}
+class EndpointEmailIdpMock extends Mock implements EndpointEmailIdp {}
 
 class EndpointAuthWithAuthMock extends Mock implements EndpointAuthWithAuth {}
 
@@ -116,7 +116,7 @@ class ClientMock extends Mock implements Client {
   final EndpointStatus status = EndpointStatusMock();
 
   @override
-  final EndpointAuth auth = EndpointAuthMock();
+  final EndpointEmailIdp emailIdp = EndpointEmailIdpMock();
 
   @override
   final EndpointAuthWithAuth authWithAuth = EndpointAuthWithAuthMock();
