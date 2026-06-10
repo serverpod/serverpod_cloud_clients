@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.31.0] - [2026-06-08]
+
+### Added
+
+- **Build secrets management** - Added the `scloud deployment build-secret` command with `list`, `set`, and `unset` subcommands to safely manage build-time environment variables.
+- **Automatic www-to-apex redirects** - Attaching a custom apex domain now automatically configures a redirect from the `www` subdomain, with updated DNS instructions shown during `scloud domain attach`.
+
+### Changed
+
+- **Real-time deploy tracking** - Running `scloud deploy` now automatically tails and streams the live deployment status in real-time, matching the output of `scloud deployment show`.
+- **Polished progress interface** - Redesigned the CLI deployment output with real-time progress spinners, right-aligned step durations, and cleaner status messages.
+- **Awaiting options for deploys** - Introduced `--await` and `--no-await` flags to let you control whether to wait for deployment completion or exit immediately after uploading.
+
 ## 0.30.0 - 2026-05-25
 
 ### Added
