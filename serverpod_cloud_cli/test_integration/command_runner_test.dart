@@ -129,7 +129,7 @@ void main() {
             message:
                 'A new version 1.1.0 of Serverpod Cloud CLI is available!\n'
                 '\n'
-                'To update to the latest version, run "dart pub global activate serverpod_cloud_cli".',
+                'To update to the latest version, run "dart install serverpod_cloud_cli".',
           ),
         );
       });
@@ -173,7 +173,7 @@ void main() {
           message:
               'A new version 0.1.0 of Serverpod Cloud CLI is available!\n'
               '\n'
-              'To update to the latest version, run "dart pub global activate serverpod_cloud_cli". '
+              'To update to the latest version, run "dart install serverpod_cloud_cli". '
               'You need to update the CLI to continue.',
         ),
       );
@@ -215,7 +215,7 @@ void main() {
           message:
               'A new version 2.0.0 of Serverpod Cloud CLI is available!\n'
               '\n'
-              'To update to the latest version, run "dart pub global activate serverpod_cloud_cli". '
+              'To update to the latest version, run "dart install serverpod_cloud_cli". '
               'You need to update the CLI to continue.',
         ),
       );

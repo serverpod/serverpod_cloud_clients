@@ -379,7 +379,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     var infoMessage =
         '''A new version $latestVersion of Serverpod Cloud CLI is available!
 
-To update to the latest version, run "dart pub global activate serverpod_cloud_cli".''';
+To update to the latest version, run "dart install serverpod_cloud_cli".''';
 
     if (isRequiredUpdate) {
       infoMessage = '$infoMessage You need to update the CLI to continue.';
