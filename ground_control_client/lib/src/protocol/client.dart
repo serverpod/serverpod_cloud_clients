@@ -650,29 +650,6 @@ class EndpointEmailIdp extends _i12.EndpointEmailIdpBase {
 }
 
 /// {@category Endpoint}
-class EndpointGitHubIdp extends _i12.EndpointGitHubIdpBase {
-  EndpointGitHubIdp(_i1.EndpointCaller caller) : super(caller);
-
-  @override
-  String get name => 'gitHubIdp';
-
-  @override
-  _i2.Future<_i10.AuthSuccess> login({
-    required String code,
-    required String codeVerifier,
-    required String redirectUri,
-  }) => caller.callServerEndpoint<_i10.AuthSuccess>('gitHubIdp', 'login', {
-    'code': code,
-    'codeVerifier': codeVerifier,
-    'redirectUri': redirectUri,
-  });
-
-  @override
-  _i2.Future<bool> hasAccount() =>
-      caller.callServerEndpoint<bool>('gitHubIdp', 'hasAccount', {});
-}
-
-/// {@category Endpoint}
 class EndpointGoogleIdp extends _i12.EndpointGoogleIdpBase {
   EndpointGoogleIdp(_i1.EndpointCaller caller) : super(caller);
 
@@ -1831,7 +1808,6 @@ class Client extends _i1.ServerpodClientShared {
     auth = EndpointAuth(this);
     authWithAuth = EndpointAuthWithAuth(this);
     emailIdp = EndpointEmailIdp(this);
-    gitHubIdp = EndpointGitHubIdp(this);
     googleIdp = EndpointGoogleIdp(this);
     jwtRefresh = EndpointJwtRefresh(this);
     billing = EndpointBilling(this);
@@ -1869,8 +1845,6 @@ class Client extends _i1.ServerpodClientShared {
   late final EndpointAuthWithAuth authWithAuth;
 
   late final EndpointEmailIdp emailIdp;
-
-  late final EndpointGitHubIdp gitHubIdp;
 
   late final EndpointGoogleIdp googleIdp;
 
@@ -1919,7 +1893,6 @@ class Client extends _i1.ServerpodClientShared {
     'auth': auth,
     'authWithAuth': authWithAuth,
     'emailIdp': emailIdp,
-    'gitHubIdp': gitHubIdp,
     'googleIdp': googleIdp,
     'jwtRefresh': jwtRefresh,
     'billing': billing,
