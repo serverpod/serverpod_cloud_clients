@@ -1401,6 +1401,28 @@ class EndpointProjects extends _i1.EndpointRef {
     'projectProductName': projectProductName,
   });
 
+  /// Creates a new complete project set up according to a project profile.
+  /// This includes a plan subscription, project, capsule, and database (if specified).
+  ///
+  /// [cloudProjectId] is the id of the new project, it must be valid and globally unique.
+  /// [profile] specifies the project profile to use. It must specify a plan type.
+  /// The other fields are optional, and defaults will be used for any unspecified fields.
+  ///
+  /// Returns the id of the created subscription.
+  ///
+  /// Throws [InvalidValueException] if the profile does not specify a plan type.
+  /// Throws [InvalidValueException] if the project id is invalid.
+  /// Throws [DuplicateEntryException] if the project id already exists.
+  /// Throws [ProcurementDeniedException] if a procurement fails.
+  _i2.Future<_i1.UuidValue> createPlanProject({
+    required String cloudProjectId,
+    required _i33.ProjectProfileUpdate profile,
+  }) => caller.callServerEndpoint<_i1.UuidValue>(
+    'projects',
+    'createPlanProject',
+    {'cloudProjectId': cloudProjectId, 'profile': profile},
+  );
+
   /// Fetches the specified project.
   /// Its user roles are included in the response.
   @Deprecated('Use fetchProjectInfo instead')
