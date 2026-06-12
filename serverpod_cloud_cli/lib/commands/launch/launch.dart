@@ -40,7 +40,7 @@ abstract class Launch {
     required final PlanProfile? plan,
     required final bool? enableDb,
     required final bool? performDeploy,
-    required final bool interactive,
+    required final bool tui,
     final String? dartVersionOverride,
   }) async {
     if (newProjectId != null && existingProjectId != null) {
@@ -60,7 +60,7 @@ abstract class Launch {
       performDeploy: performDeploy,
     );
 
-    if (interactive) {
+    if (tui) {
       await launchWithTui(
         cloudApiClient,
         fileUploaderFactory,
