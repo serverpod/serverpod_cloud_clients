@@ -215,6 +215,7 @@ void main() {
             'starter',
             '--enable-db',
             '--deploy',
+            '--no-interactive',
           ]);
 
           await expectLater(commandResult, completes);
@@ -375,6 +376,7 @@ project:
               testProjectDir,
               '--enable-db',
               '--deploy',
+              '--no-interactive',
             ]);
 
             await expectLater(commandResult, completes);
@@ -411,6 +413,7 @@ project:
               testProjectDir,
               '--enable-db',
               '--deploy',
+              '--no-interactive',
             ]);
 
             await expectLater(commandResult, completes);
@@ -447,6 +450,7 @@ project:
             '--no-deploy',
             '--dart-version',
             '3.10.0',
+            '--no-interactive',
           ]);
 
           await expectLater(commandResult, completes);
@@ -499,6 +503,7 @@ serverpod:
             'starter',
             '--enable-db',
             '--no-deploy',
+            '--no-interactive',
           ]);
 
           await expectLater(commandResult, completes);
@@ -577,6 +582,7 @@ serverpod:
             'starter',
             '--enable-db',
             '--no-deploy',
+            '--no-interactive',
           ]);
 
           await expectLater(commandResult, completes);
@@ -641,6 +647,7 @@ serverpod:
             'starter',
             '--enable-db',
             '--no-deploy',
+            '--no-interactive',
           ]);
 
           await expectLater(commandResult, completes);
@@ -706,6 +713,7 @@ serverpod:
             'starter',
             '--enable-db',
             '--no-deploy',
+            '--no-interactive',
           ]);
 
           await expectLater(commandResult, completes);
@@ -764,6 +772,7 @@ serverpod:
             'starter',
             '--enable-db',
             '--deploy',
+            '--no-interactive',
           ]);
 
           await expectLater(commandResult, completes);
@@ -822,6 +831,7 @@ project:
             'starter',
             '--enable-db',
             '--no-deploy',
+            '--no-interactive',
           ]);
 
           await expectLater(commandResult, completes);
@@ -864,6 +874,7 @@ project:
             'starter',
             '--enable-db',
             '--deploy',
+            '--no-interactive',
           ]);
         });
 
@@ -950,6 +961,7 @@ project:
             'starter',
             '--enable-db',
             '--deploy',
+            '--no-interactive',
           ]);
         });
 
@@ -1063,6 +1075,7 @@ project:
             'starter',
             '--enable-db',
             '--deploy',
+            '--no-interactive',
           ]);
         });
 
@@ -1168,7 +1181,7 @@ project:
             false, // decline new project cost acceptance
           ]);
 
-          commandResult = cli.run(['launch']);
+          commandResult = cli.run(['launch', '--no-interactive']);
         });
 
         test('then throws ErrorExitException', () async {
@@ -1204,7 +1217,7 @@ project:
             false, // do not apply setup
           ]);
 
-          commandResult = cli.run(['launch']);
+          commandResult = cli.run(['launch', '--no-interactive']);
         });
 
         test('then throws ErrorExitException', () async {
@@ -1313,7 +1326,7 @@ project:
             false, // do not apply setup
           ]);
 
-          commandResult = cli.run(['launch']);
+          commandResult = cli.run(['launch', '--no-interactive']);
         });
 
         test('then throws ErrorExitException', () async {
@@ -1439,7 +1452,7 @@ project:
             false, // do not apply setup
           ]);
 
-          commandResult = cli.run(['launch']);
+          commandResult = cli.run(['launch', '--no-interactive']);
         });
 
         test('then throws ErrorExitException', () async {
@@ -1552,7 +1565,7 @@ project:
             false, // do not apply setup
           ]);
 
-          commandResult = cli.run(['launch']);
+          commandResult = cli.run(['launch', '--no-interactive']);
         });
 
         test('then throws ErrorExitException', () async {
@@ -1696,7 +1709,7 @@ project:
             false, // do not apply setup
           ]);
 
-          commandResult = cli.run(['launch']);
+          commandResult = cli.run(['launch', '--no-interactive']);
         });
 
         test('then throws ErrorExitException', () async {
@@ -1824,7 +1837,7 @@ project:
             false, // do not apply setup
           ]);
 
-          commandResult = cli.run(['launch']);
+          commandResult = cli.run(['launch', '--no-interactive']);
         });
 
         test('then throws ErrorExitException', () async {
@@ -1938,7 +1951,7 @@ project:
             false, // do not apply setup
           ]);
 
-          commandResult = cli.run(['launch']);
+          commandResult = cli.run(['launch', '--no-interactive']);
         });
 
         test('then throws ErrorExitException', () async {
@@ -2058,7 +2071,7 @@ project:
             false, // do not apply setup
           ]);
 
-          commandResult = cli.run(['launch']);
+          commandResult = cli.run(['launch', '--no-interactive']);
         });
 
         test('then throws ErrorExitException', () async {
@@ -2173,7 +2186,7 @@ dependencies:
           false, // do not apply setup
         ]);
 
-        commandResult = cli.run(['launch']);
+        commandResult = cli.run(['launch', '--no-interactive']);
       });
 
       test('then throws ErrorExitException', () async {
@@ -2286,6 +2299,7 @@ resolution: workspace
               'starter',
               '--enable-db',
               '--no-deploy',
+              '--no-interactive',
             ]);
 
             await commandResult;

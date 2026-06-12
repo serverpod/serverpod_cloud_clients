@@ -42,6 +42,8 @@ abstract class Deploy {
     final bool skipTailingStatus = false,
     final String? outputPath,
     final String? dartVersionOverride,
+    final IOSink? stdout,
+    final IOSink? stderr,
   }) async {
     logger.init('Deploying Serverpod Cloud project "$projectId".');
 
@@ -64,6 +66,8 @@ abstract class Deploy {
         projectDir,
         logger,
         scriptType: 'pre-deploy',
+        stdout: stdout,
+        stderr: stderr,
       );
     }
 

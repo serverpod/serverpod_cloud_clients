@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:cli_tools/cli_tools.dart' as cli;
@@ -6,6 +8,9 @@ import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/file_uploader_factory.dart';
 import 'package:serverpod_cloud_cli/commands/deploy/deploy.dart';
+import 'package:serverpod_cloud_cli/commands/launch/tui/app.dart';
+import 'package:serverpod_cloud_cli/commands/launch/tui/state.dart';
+import 'package:serverpod_cloud_cli/commands/launch/tui/state_holder.dart';
 import 'package:serverpod_cloud_cli/commands/project/project.dart';
 import 'package:serverpod_cloud_cli/commands/status/status.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
@@ -20,6 +25,8 @@ import 'package:serverpod_cloud_cli/util/pubspec_validator.dart'
     show TenantProjectPubspec, resolveProjectDartSdkVersion;
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_io.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_model.dart';
+import 'package:serverpod_logging_cli/serverpod_logging_cli.dart';
+import 'package:serverpod_tui/serverpod_tui.dart';
 
 abstract class Launch {
   static Future<void> launch(
@@ -33,6 +40,7 @@ abstract class Launch {
     required final PlanProfile? plan,
     required final bool? enableDb,
     required final bool? performDeploy,
+    required final bool interactive,
     final String? dartVersionOverride,
   }) async {
     if (newProjectId != null && existingProjectId != null) {
@@ -52,6 +60,47 @@ abstract class Launch {
       performDeploy: performDeploy,
     );
 
+    if (interactive) {
+      await launchWithTui(
+        cloudApiClient,
+        fileUploaderFactory,
+        projectSetup,
+        logger: logger,
+        specifiedProjectDir: specifiedProjectDir,
+        foundProjectDir: foundProjectDir,
+      );
+    } else {
+      await launchWithoutTui(
+        cloudApiClient,
+        fileUploaderFactory,
+        logger: logger,
+        specifiedProjectDir: specifiedProjectDir,
+        foundProjectDir: foundProjectDir,
+        newProjectId: newProjectId,
+        existingProjectId: existingProjectId,
+        plan: plan,
+        enableDb: enableDb,
+        performDeploy: performDeploy,
+        projectSetup: projectSetup,
+        dartVersionOverride: dartVersionOverride,
+      );
+    }
+  }
+
+  static Future<void> launchWithoutTui(
+    final Client cloudApiClient,
+    final FileUploaderFactory fileUploaderFactory, {
+    required final CommandLogger logger,
+    required final String? specifiedProjectDir,
+    required final String? foundProjectDir,
+    required final String? newProjectId,
+    required final String? existingProjectId,
+    required final PlanProfile? plan,
+    required final bool? enableDb,
+    required final bool? performDeploy,
+    required final ProjectLaunch projectSetup,
+    final String? dartVersionOverride,
+  }) async {
     await selectProjectDir(logger, projectSetup, foundProjectDir);
 
     await selectProjectId(cloudApiClient, logger, projectSetup);
@@ -89,6 +138,90 @@ abstract class Launch {
       logger,
       projectSetup,
       dartVersionOverride: dartVersionOverride,
+    );
+  }
+
+  static Future<void> launchWithTui(
+    final Client cloudApiClient,
+    final FileUploaderFactory fileUploaderFactory,
+    final ProjectLaunch projectSetup, {
+    required final CommandLogger logger,
+    required final String? specifiedProjectDir,
+    required final String? foundProjectDir,
+    final String? dartVersionOverride,
+  }) async {
+    final resolvedProjectDir = specifiedProjectDir ?? foundProjectDir;
+    if (resolvedProjectDir == null) {
+      throw FailureException(
+        error: 'No Serverpod project directory found.',
+        hint:
+            "Run 'scloud launch' from a Serverpod server directory, "
+            'or specify a project directory with --project-dir.',
+      );
+    }
+
+    if (!_validateProjectDir(logger, resolvedProjectDir)) return;
+
+    final defaultProjectId = _getDefaultProjectId(resolvedProjectDir);
+
+    final existingProjects = await _fetchExistingUndeployedProjects(
+      cloudApiClient,
+    );
+    final existingProjectIds = existingProjects
+        .map((final p) => p.cloudProjectId)
+        .toList();
+
+    final state = LaunchConfigState(
+      projectSetup: projectSetup,
+      projectDir: resolvedProjectDir,
+      defaultProjectId: defaultProjectId,
+      existingProjectIds: existingProjectIds,
+    );
+    final holder = LaunchAppStateHolder(state);
+
+    final tuiWriter = TuiLogWriter()..attach(holder);
+    final tuiLogger = ServerpodCliLogger(tuiWriter);
+
+    // Hook up the TUI logger for structured logs in the TUI.
+    logger.initializeWith(tuiLogger);
+
+    await runTuiApp(
+      ScloudLaunchApp(
+        holder: holder,
+        onLaunch: () async {
+          // Update UI to show logs from the launch
+          state.markLaunchingProject();
+          holder.markDirty();
+
+          final stdoutController = StreamController<List<int>>();
+          stdoutController.stream
+              .transform(const Utf8Decoder(allowMalformed: true))
+              .transform(const LineSplitter())
+              .listen(logger.debug);
+          final toDebugLog = IOSink(stdoutController);
+          final stderrController = StreamController<List<int>>();
+          stderrController.stream
+              .transform(const Utf8Decoder(allowMalformed: true))
+              .transform(const LineSplitter())
+              .listen(logger.error);
+          final toErrorLog = IOSink(stderrController);
+
+          await performLaunch(
+            cloudApiClient,
+            fileUploaderFactory,
+            logger,
+            state.projectSetup,
+            dartVersionOverride: dartVersionOverride,
+            stdout: toDebugLog,
+            stderr: toErrorLog,
+          );
+        },
+        onQuit: () {
+          /// Reset to the default logger for post-tui logs.
+          logger.reset();
+          shutdownTuiApp();
+        },
+      ),
     );
   }
 
@@ -486,6 +619,8 @@ The default API domain will be: <project-id>.api.serverpod.space
     final CommandLogger logger,
     final ProjectLaunch projectSetup, {
     final String? dartVersionOverride,
+    final IOSink? stdout,
+    final IOSink? stderr,
   }) async {
     logger.info('Launching project...');
 
@@ -575,6 +710,8 @@ The default API domain will be: <project-id>.api.serverpod.space
       showFiles: false,
       skipTailingStatus: true,
       dartVersionOverride: safeDartSdk,
+      stdout: stdout,
+      stderr: stderr,
     );
 
     logger.info(' '); // blank line

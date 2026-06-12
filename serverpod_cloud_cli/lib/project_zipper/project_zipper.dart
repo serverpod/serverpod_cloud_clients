@@ -135,14 +135,8 @@ abstract final class ProjectZipper {
 
     final encoded = ZipEncoder().encode(archive);
     logger.debug(
-      'Encoded ${archive.length} files to ${_formatFileSize(encoded?.length ?? 0)}.',
+      'Encoded ${archive.length} files to ${_formatFileSize(encoded.length)}.',
     );
-
-    if (encoded == null) {
-      // This should never happen.
-      // If we end up here, it's a bug in the archive package.
-      throw const NullZipException();
-    }
 
     return encoded;
   }

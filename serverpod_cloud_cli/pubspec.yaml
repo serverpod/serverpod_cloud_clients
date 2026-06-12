@@ -16,19 +16,22 @@ environment:
 
 dependencies:
   async: ^2.13.0
-  archive: ^3.6.1
+  archive: ^4.0.9
   args: ^2.6.0
   basic_utils: ^5.7.0
   cli_tools: ^0.13.1
   collection: ^1.19.0
   config: ^0.9.0
   meta: ^1.16.0
+  nocterm: ^0.6.0
   path: ^1.8.2
   pool: ^1.5.1
   pub_semver: ^2.1.0
   pubspec_parse: ^1.5.0
   ground_control_client: ^0.31.0
   rfc_6901: ^0.2.0
+  serverpod_logging_cli: ^0.1.0
+  serverpod_tui: ^0.2.0
   yaml_codec: ^1.0.0
   yaml: ^3.1.0
   email_validator: ^3.0.0

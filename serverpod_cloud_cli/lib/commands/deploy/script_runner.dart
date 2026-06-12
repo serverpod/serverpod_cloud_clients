@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:io' as io;
 
 import 'package:cli_tools/execute.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
@@ -10,10 +11,14 @@ abstract class ScriptRunner {
     final String workingDirectory,
     final CommandLogger logger, {
     required final String scriptType,
+    IOSink? stdout,
+    IOSink? stderr,
   }) async {
     if (commands.isEmpty) {
       return;
     }
+    stdout ??= io.stdout;
+    stderr ??= io.stderr;
 
     logger.info('Running $scriptType scripts:', newParagraph: true);
     for (var i = 0; i < commands.length; i++) {

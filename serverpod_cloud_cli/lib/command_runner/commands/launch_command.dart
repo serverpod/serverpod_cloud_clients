@@ -32,7 +32,14 @@ enum LaunchOption<V> implements OptionDefinition<V> {
       helpText: 'Flag to immediately deploy the project.',
     ),
   ),
-  dartVersion(DartSdkVersionOption());
+  dartVersion(DartSdkVersionOption()),
+  interactive(
+    FlagOption(
+      argName: 'interactive',
+      defaultsTo: true,
+      helpText: 'Flag to enable interactive terminal UI.',
+    ),
+  );
 
   const LaunchOption(this.option);
 
@@ -76,6 +83,7 @@ class CloudLaunchCommand extends CloudCliCommand<LaunchOption> {
     final dartVersionOverride = commandConfig.optionalValue(
       LaunchOption.dartVersion,
     );
+    final interactive = commandConfig.value(LaunchOption.interactive);
 
     await Launch.launch(
       runner.serviceProvider.cloudApiClient,
@@ -89,6 +97,7 @@ class CloudLaunchCommand extends CloudCliCommand<LaunchOption> {
       enableDb: enableDb,
       performDeploy: deploy,
       dartVersionOverride: dartVersionOverride,
+      interactive: interactive,
     );
   }
 }

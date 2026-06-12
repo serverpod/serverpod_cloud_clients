@@ -1205,7 +1205,7 @@ project:
             mockFileUploader.uploadedData,
           );
           final wsPubspecFile = archive.findFile(
-            '.scloud/scloud_ws_pubspec.yaml',
+            p.join('.scloud', 'scloud_ws_pubspec.yaml'),
           );
           expect(
             wsPubspecFile,

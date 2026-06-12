@@ -40,9 +40,11 @@ export 'package:cli_tools/logger.dart' show LogLevel;
 ///
 /// The language used should always be written in an objective tone and avoid addressing the user with "you" or refer to the system as "we" (e.g. "The project was deployed" instead of "Your project was deployed").
 class CommandLogger {
-  final cli.Logger _logger;
+  cli.Logger _logger;
 
   GlobalConfiguration? configuration;
+
+  static const Map<String, String> windowsReplacements = {'🚀': ''};
 
   CommandLogger(final cli.Logger logger, {this.configuration})
     : _logger = logger;
@@ -50,8 +52,6 @@ class CommandLogger {
   factory CommandLogger.create([
     final cli.LogLevel logLevel = cli.LogLevel.info,
   ]) {
-    const Map<String, String> windowsReplacements = {'🚀': ''};
-
     final stdOutLogger = Platform.isWindows
         ? cli.StdOutLogger(logLevel, replacements: windowsReplacements)
         : cli.StdOutLogger(logLevel);
@@ -63,6 +63,21 @@ class CommandLogger {
   set logLevel(final cli.LogLevel level) => _logger.logLevel = level;
 
   int? get wrapTextColumn => _logger.wrapTextColumn;
+
+  /// Resets current logger to expected default.
+  /// This is typically used to reset logger previously set using [initializeWith].
+  void reset() {
+    _logger = Platform.isWindows
+        ? cli.StdOutLogger(logLevel, replacements: windowsReplacements)
+        : cli.StdOutLogger(logLevel);
+  }
+
+  /// Replaces the current logger with the given [logger].
+  /// This is typically used to set a TUI compatible logger.
+  void initializeWith(final cli.Logger logger) {
+    logger.logLevel = _logger.logLevel;
+    _logger = logger;
+  }
 
   /// **Debug Messages Guidelines**
   ///
