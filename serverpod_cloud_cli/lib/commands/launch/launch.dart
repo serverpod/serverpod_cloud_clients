@@ -35,28 +35,21 @@ abstract class Launch {
     required final CommandLogger logger,
     required final String? specifiedProjectDir,
     required final String? foundProjectDir,
-    required final String? newProjectId,
-    required final String? existingProjectId,
+    required final String? projectId,
     required final PlanProfile? plan,
     required final bool? enableDb,
     required final bool? performDeploy,
     required final bool tui,
     final String? dartVersionOverride,
   }) async {
-    if (newProjectId != null && existingProjectId != null) {
-      throw ArgumentError(
-        'Cannot specify both newProjectId and existingProjectId.',
-      );
-    }
-
     logger.init('Launching new Serverpod Cloud project.\n');
 
     final projectSetup = ProjectLaunch(
       projectDir: specifiedProjectDir,
-      projectId: newProjectId ?? existingProjectId,
+      projectId: projectId,
       plan: plan,
+      dartVersionOverride: dartVersionOverride,
       enableDb: enableDb,
-      preexistingProject: existingProjectId != null,
       performDeploy: performDeploy,
     );
 
@@ -64,9 +57,8 @@ abstract class Launch {
       await launchWithTui(
         cloudApiClient,
         fileUploaderFactory,
-        projectSetup,
         logger: logger,
-        specifiedProjectDir: specifiedProjectDir,
+        projectSetup: projectSetup,
         foundProjectDir: foundProjectDir,
       );
     } else {
@@ -74,15 +66,8 @@ abstract class Launch {
         cloudApiClient,
         fileUploaderFactory,
         logger: logger,
-        specifiedProjectDir: specifiedProjectDir,
         foundProjectDir: foundProjectDir,
-        newProjectId: newProjectId,
-        existingProjectId: existingProjectId,
-        plan: plan,
-        enableDb: enableDb,
-        performDeploy: performDeploy,
         projectSetup: projectSetup,
-        dartVersionOverride: dartVersionOverride,
       );
     }
   }
@@ -91,15 +76,8 @@ abstract class Launch {
     final Client cloudApiClient,
     final FileUploaderFactory fileUploaderFactory, {
     required final CommandLogger logger,
-    required final String? specifiedProjectDir,
     required final String? foundProjectDir,
-    required final String? newProjectId,
-    required final String? existingProjectId,
-    required final PlanProfile? plan,
-    required final bool? enableDb,
-    required final bool? performDeploy,
     required final ProjectLaunch projectSetup,
-    final String? dartVersionOverride,
   }) async {
     await selectProjectDir(logger, projectSetup, foundProjectDir);
 
@@ -137,20 +115,17 @@ abstract class Launch {
       fileUploaderFactory,
       logger,
       projectSetup,
-      dartVersionOverride: dartVersionOverride,
     );
   }
 
   static Future<void> launchWithTui(
     final Client cloudApiClient,
-    final FileUploaderFactory fileUploaderFactory,
-    final ProjectLaunch projectSetup, {
+    final FileUploaderFactory fileUploaderFactory, {
     required final CommandLogger logger,
-    required final String? specifiedProjectDir,
+    required final ProjectLaunch projectSetup,
     required final String? foundProjectDir,
-    final String? dartVersionOverride,
   }) async {
-    final resolvedProjectDir = specifiedProjectDir ?? foundProjectDir;
+    final resolvedProjectDir = projectSetup.projectDir ?? foundProjectDir;
     if (resolvedProjectDir == null) {
       throw FailureException(
         error: 'No Serverpod project directory found.',
@@ -211,7 +186,6 @@ abstract class Launch {
             fileUploaderFactory,
             logger,
             state.projectSetup,
-            dartVersionOverride: dartVersionOverride,
             stdout: toDebugLog,
             stderr: toErrorLog,
           );
@@ -308,8 +282,7 @@ abstract class Launch {
 
     final specifiedProjectId = projectSetup.projectId;
     if (specifiedProjectId != null) {
-      if (projectSetup.preexistingProject == true ||
-          isValidProjectIdFormat(specifiedProjectId)) {
+      if (isValidProjectIdFormat(specifiedProjectId)) {
         return;
       }
 
@@ -618,12 +591,9 @@ The default API domain will be: <project-id>.api.serverpod.space
     final FileUploaderFactory fileUploaderFactory,
     final CommandLogger logger,
     final ProjectLaunch projectSetup, {
-    final String? dartVersionOverride,
     final IOSink? stdout,
     final IOSink? stderr,
   }) async {
-    logger.info('Launching project...');
-
     final projectId = projectSetup.projectId;
     final projectDir = projectSetup.projectDir;
     final configFilePath = projectSetup.configFilePath;
@@ -646,6 +616,15 @@ The default API domain will be: <project-id>.api.serverpod.space
       throw StateError('PerformDeploy must be set.');
     }
 
+    const tenantHost = 'serverpod.space';
+    logger.info(
+      'When the server has started, you can access it at:\n'
+      '   Web:      https://$projectId.$tenantHost/\n'
+      '   API:      https://$projectId.api.$tenantHost/\n'
+      '   Insights: https://$projectId.insights.$tenantHost/',
+      newParagraph: true,
+    );
+
     if (projectSetup.preexistingProject != true) {
       if (planProfile == null) {
         throw StateError('PlanProfile must be set.');
@@ -658,14 +637,13 @@ The default API domain will be: <project-id>.api.serverpod.space
         projectId: projectId,
         plan: planProfile,
         enableDb: enableDb,
-        projectDir: projectDir,
-        configFilePath: configFilePath,
         skipConfirmation: true,
+        suppressCommandMessages: true,
       );
     }
 
     var safeDartSdk = ProjectDartVersionHint.normalizeBareMajorMinorOverride(
-      dartVersionOverride,
+      projectSetup.dartVersionOverride,
     );
     if (safeDartSdk != null) {
       ensureValidVersionConstraint(
@@ -677,7 +655,9 @@ The default API domain will be: <project-id>.api.serverpod.space
     }
 
     await logger.progress(
-      'Writing cloud project configuration files.',
+      'Writing cloud project configuration',
+      successMessage: 'Configuration files written.',
+      padRight: StatusCommands.progressMessagePadLength,
       () async {
         ProjectFilesWriter.writeFiles(
           projectId: projectId,
@@ -692,8 +672,10 @@ The default API domain will be: <project-id>.api.serverpod.space
 
     if (!performDeploy) {
       logger.terminalCommand(
-        'scloud deploy',
-        message: 'Run this command to deploy the project to the cloud:',
+        'scloud launch',
+        message:
+            'Deployment skipped. Run this command again to deploy to the cloud:',
+        newParagraph: true,
       );
       return;
     }
@@ -708,69 +690,17 @@ The default API domain will be: <project-id>.api.serverpod.space
       concurrency: 5,
       dryRun: false,
       showFiles: false,
-      skipTailingStatus: true,
+      suppressCommandMessages: true,
       dartVersionOverride: safeDartSdk,
       stdout: stdout,
       stderr: stderr,
     );
 
-    logger.info(' '); // blank line
-
-    final attemptId = await _getDeployAttemptId(
-      cloudApiClient,
-      logger,
-      projectId,
-    );
-
-    await StatusCommands.showDeploymentStatus(
-      cloudApiClient,
-      logger: logger,
-      cloudCapsuleId: projectId,
-      attemptId: attemptId,
-    );
-
-    const tenantHost = 'serverpod.space';
-
-    logger.info(
-      'When the server has started, you can access it at:\n'
-      '   Web:      https://$projectId.$tenantHost/\n'
-      '   API:      https://$projectId.api.$tenantHost/\n'
-      '   Insights: https://$projectId.insights.$tenantHost/',
+    logger.terminalCommand(
+      'scloud help deployment',
+      message: 'To see how to view deployment statuses, run this command:',
       newParagraph: true,
     );
-  }
-
-  static Future<UuidValue> _getDeployAttemptId(
-    final Client cloudApiClient,
-    final CommandLogger logger,
-    final String projectId,
-  ) async {
-    UuidValue? attemptId;
-    await logger.progress('Waiting for deployment status.', () async {
-      for (int i = 0; i < 3; i++) {
-        try {
-          attemptId = await cloudApiClient.status.getDeployAttemptId(
-            cloudCapsuleId: projectId,
-            attemptNumber: 0,
-          );
-          return true;
-        } on NotFoundException catch (_) {
-          logger.debug('Waiting for deployment status...');
-          await Future.delayed(const Duration(seconds: 5));
-        }
-      }
-      return false;
-    });
-    final id = attemptId;
-    if (id == null) {
-      throw FailureException(
-        error: 'Failed to get deployment status.',
-        hint:
-            'Run this command to see recent deployments: '
-            'scloud deployment list',
-      );
-    }
-    return id;
   }
 }
 
@@ -779,6 +709,7 @@ class ProjectLaunch {
   String? configFilePath;
   String? projectId;
   PlanProfile? plan;
+  String? dartVersionOverride;
   bool? enableDb;
   bool? preexistingProject;
   bool? performDeploy;
@@ -788,6 +719,7 @@ class ProjectLaunch {
     final String? projectDir,
     this.projectId,
     this.plan,
+    this.dartVersionOverride,
     this.enableDb,
     this.preexistingProject,
     this.performDeploy,

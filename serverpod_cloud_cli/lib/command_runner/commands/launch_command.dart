@@ -1,24 +1,13 @@
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/deploy_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
+import 'package:serverpod_cloud_cli/commands/deploy/deploy.dart';
 import 'package:serverpod_cloud_cli/commands/launch/launch.dart';
 
 enum LaunchOption<V> implements OptionDefinition<V> {
-  projectId(
-    StringOption(
-      argName: 'project',
-      helpText: 'The ID of an existing project to use.',
-      group: _projectGroup,
-    ),
-  ),
-  newProjectId(
-    StringOption(
-      argName: 'new-project',
-      helpText: 'The ID of a new project to create.',
-      group: _projectGroup,
-    ),
-  ),
+  projectId(ProjectIdOption.nonMandatory()),
   plan(PlanOption()),
   enableDb(
     FlagOption(
@@ -38,18 +27,23 @@ enum LaunchOption<V> implements OptionDefinition<V> {
       argName: 'tui',
       defaultsTo: false,
       helpText: 'Flag to enable interactive terminal UI.',
+      hide: true,
     ),
-  );
+  ),
+
+  // Deploy-specific options
+  concurrency(DeployConcurrencyOption(group: _deployGroup)),
+  dryRun(DeployDryRunOption(group: _deployGroup)),
+  showFiles(DeployShowFilesOption(group: _deployGroup)),
+  output(DeployOutputOption(group: _deployGroup)),
+  wait(AwaitOption(group: _deployGroup));
 
   const LaunchOption(this.option);
 
   @override
   final ConfigOptionBase<V> option;
 
-  static const _projectGroup = MutuallyExclusive(
-    'Project',
-    mode: MutuallyExclusiveMode.noDefaults,
-  );
+  static const _deployGroup = OptionGroup('Deployment options');
 }
 
 class CloudLaunchCommand extends CloudCliCommand<LaunchOption> {
@@ -57,7 +51,14 @@ class CloudLaunchCommand extends CloudCliCommand<LaunchOption> {
   final name = 'launch';
 
   @override
-  final description = 'Guided launch of a new Serverpod Cloud project.';
+  final description = '''
+Common command to launch and deploy Serverpod Cloud projects.
+
+If there already is a Serverpod Cloud project near the current directory
+it will redeploy the project (upload, build, and rollout in the cloud).
+
+Otherwise it will guide you through setting up a new Serverpod Cloud project.
+''';
 
   @override
   String get category => CommandCategories.gettingStarted;
@@ -68,15 +69,13 @@ class CloudLaunchCommand extends CloudCliCommand<LaunchOption> {
 
   @override
   Future<void> runWithConfig(final Configuration commandConfig) async {
+    final projectConfigFile = globalConfiguration.projectConfigFile;
     final specifiedProjectDir = globalConfiguration.projectDir;
     final foundProjectDir = specifiedProjectDir == null
         ? runner.selectProjectDirectory()
         : null;
 
-    final existingProjectId = commandConfig.optionalValue(
-      LaunchOption.projectId,
-    );
-    final newProjectId = commandConfig.optionalValue(LaunchOption.newProjectId);
+    final projectId = commandConfig.optionalValue(LaunchOption.projectId);
     final plan = commandConfig.optionalValue(LaunchOption.plan);
     final enableDb = commandConfig.optionalValue(LaunchOption.enableDb);
     final deploy = commandConfig.optionalValue(LaunchOption.deploy);
@@ -85,14 +84,47 @@ class CloudLaunchCommand extends CloudCliCommand<LaunchOption> {
     );
     final tui = commandConfig.value(LaunchOption.tui);
 
+    // Deploy-specific options
+    final concurrency = commandConfig.value(LaunchOption.concurrency);
+    final dryRun = commandConfig.value(LaunchOption.dryRun);
+    final showFiles = commandConfig.value(LaunchOption.showFiles);
+    final outputPath = commandConfig.optionalValue(LaunchOption.output);
+    final wait = commandConfig.value(LaunchOption.wait);
+
+    if (projectConfigFile != null &&
+        projectId != null &&
+        commandConfig.valueSourceType(LaunchOption.projectId) ==
+            ValueSourceType.config) {
+      // scloud.<ext> file found and project id read from it, perform a deploy
+
+      final projectDirectory = runner.verifiedProjectDirectory();
+      logger.debug('Using project directory `${projectDirectory.path}`');
+
+      await Deploy.deploy(
+        runner.serviceProvider.cloudApiClient,
+        runner.serviceProvider.fileUploaderFactory,
+        logger: logger,
+        projectId: projectId,
+        projectDir: projectDirectory.path,
+        projectConfigFilePath: projectConfigFile.path,
+        concurrency: concurrency,
+        dryRun: dryRun,
+        showFiles: showFiles,
+        skipTailingStatus: !wait,
+        outputPath: outputPath,
+        dartVersionOverride: dartVersionOverride,
+      );
+
+      return;
+    }
+
     await Launch.launch(
       runner.serviceProvider.cloudApiClient,
       runner.serviceProvider.fileUploaderFactory,
       logger: logger,
       specifiedProjectDir: specifiedProjectDir?.path,
       foundProjectDir: foundProjectDir,
-      newProjectId: newProjectId,
-      existingProjectId: existingProjectId,
+      projectId: projectId,
       plan: plan,
       enableDb: enableDb,
       performDeploy: deploy,

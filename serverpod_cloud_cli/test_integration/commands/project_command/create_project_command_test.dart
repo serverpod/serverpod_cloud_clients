@@ -3,7 +3,6 @@ library;
 
 import 'dart:async';
 
-import 'package:args/command_runner.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
@@ -411,13 +410,6 @@ dependencies:
             ),
           );
         });
-
-        test('then does not write scloud.yaml file', () async {
-          await commandResult;
-
-          final expected = d.dir('dart_dir', [d.nothing('scloud.yaml')]);
-          await expectLater(expected.validate(), completes);
-        });
       },
     );
 
@@ -456,13 +448,6 @@ dependencies:
           ),
         );
       });
-
-      test('then does not write scloud.yaml file', () async {
-        await commandResult;
-
-        final expected = d.dir('other_dir', [d.nothing('scloud.yaml')]);
-        await expectLater(expected.validate(), completes);
-      });
     });
 
     group('and in a directory 3 levels up from a serverpod directory', () {
@@ -477,7 +462,7 @@ dependencies:
         pushCurrentDirectory(d.sandbox);
       });
 
-      group('when calling create without --project-dir option', () {
+      group('when calling create', () {
         setUp(() async {
           logger.answerNextConfirmWith(
             true, // accept new project cost acceptance
@@ -506,80 +491,7 @@ dependencies:
             ),
           );
         });
-
-        test('then does not write scloud.yaml file', () async {
-          await commandResult;
-
-          final expected = d.dir('grandparent_dir', [
-            d.dir('parent_dir', [
-              d.nothing('scloud.yaml'),
-              d.dir('server_dir', [d.nothing('scloud.yaml')]),
-            ]),
-          ]);
-          await expectLater(expected.validate(), completes);
-        });
       });
-
-      group('when calling create with --project-dir option', () {
-        setUp(() async {
-          logger.answerNextConfirmWith(
-            true, // accept new project cost acceptance
-          );
-          commandResult = cli.run([
-            'project',
-            'create',
-            projectId,
-            '--project-dir',
-            'grandparent_dir/parent_dir/server_dir',
-            '--no-enable-db',
-          ]);
-        });
-
-        test('then command completes successfully', () async {
-          await expectLater(commandResult, completes);
-        });
-
-        test('then logs success message', () async {
-          await commandResult;
-
-          expect(logger.successCalls, hasLength(1));
-          expect(
-            logger.successCalls.single,
-            equalsSuccessCall(
-              message: "Serverpod Cloud project created.",
-              newParagraph: true,
-            ),
-          );
-        });
-      });
-
-      group(
-        'when calling create with --project-dir option with non-existing directory',
-        () {
-          test('then command throws UsageException', () async {
-            await expectLater(
-              cli.run([
-                'project',
-                'create',
-                projectId,
-                '--project-dir',
-                'grandparent_dir/parent_dir/non_existing_dir',
-                '--no-enable-db',
-              ]),
-              throwsA(
-                isA<UsageException>().having(
-                  (final e) => e.message,
-                  'message',
-                  equals(
-                    'Invalid value for option `project-dir`: Directory '
-                    '"grandparent_dir/parent_dir/non_existing_dir" does not exist.',
-                  ),
-                ),
-              ),
-            );
-          });
-        },
-      );
     });
   });
 }

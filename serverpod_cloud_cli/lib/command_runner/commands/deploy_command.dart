@@ -8,42 +8,64 @@ import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
 import 'categories.dart';
 
+class DeployConcurrencyOption extends IntOption {
+  const DeployConcurrencyOption({super.group})
+    : super(
+        argName: 'concurrency',
+        argAbbrev: 'c',
+        helpText:
+            'Number of concurrent files processed when zipping the project.',
+        defaultsTo: 5,
+        min: 1,
+      );
+}
+
+class DeployDryRunOption extends FlagOption {
+  const DeployDryRunOption({super.group})
+    : super(
+        argName: 'dry-run',
+        helpText: 'Do not actually deploy, just print the deployment steps.',
+        defaultsTo: false,
+        negatable: false,
+      );
+}
+
+class DeployShowFilesOption extends FlagOption {
+  const DeployShowFilesOption({super.group})
+    : super(
+        argName: 'show-files',
+        helpText: 'Display the file tree that will be uploaded.',
+        defaultsTo: false,
+        negatable: false,
+      );
+}
+
+class DeployOutputOption extends StringOption {
+  const DeployOutputOption({super.group})
+    : super(
+        argName: 'output',
+        argAbbrev: 'o',
+        helpText:
+            'Save the deployment zip file to the specified path. Must end with .zip',
+      );
+}
+
+class AwaitOption extends FlagOption {
+  const AwaitOption({super.group})
+    : super(
+        argName: 'await',
+        defaultsTo: true,
+        helpText:
+            'Await the deployment to finish while showing status progression.',
+      );
+}
+
 enum DeployCommandOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption(asFirstArg: true)),
-  concurrency(
-    IntOption(
-      argName: 'concurrency',
-      argAbbrev: 'c',
-      helpText:
-          'Number of concurrent files processed when zipping the project.',
-      defaultsTo: 5,
-      min: 1,
-    ),
-  ),
-  dryRun(
-    FlagOption(
-      argName: 'dry-run',
-      helpText: 'Do not actually deploy, just print the deployment steps.',
-      defaultsTo: false,
-      negatable: false,
-    ),
-  ),
-  showFiles(
-    FlagOption(
-      argName: 'show-files',
-      helpText: 'Display the file tree that will be uploaded.',
-      defaultsTo: false,
-      negatable: false,
-    ),
-  ),
-  output(
-    StringOption(
-      argName: 'output',
-      argAbbrev: 'o',
-      helpText:
-          'Save the deployment zip file to the specified path. Must end with .zip',
-    ),
-  ),
+  concurrency(DeployConcurrencyOption()),
+  dryRun(DeployDryRunOption()),
+  showFiles(DeployShowFilesOption()),
+  output(DeployOutputOption()),
   wait(AwaitOption()),
   dartVersion(DartSdkVersionOption());
 

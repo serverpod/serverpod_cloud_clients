@@ -58,6 +58,10 @@ void main() {
     },
   };
 
+  setUpAll(() {
+    registerFallbackValue(Uuid().v4obj());
+  });
+
   setUp(() {
     mockFileUploader.init();
     logger.clear();
@@ -162,6 +166,13 @@ void main() {
       ).thenAnswer((final _) async => attemptStages);
 
       when(
+        () => client.status.tailDeployAttemptStatus(
+          cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          attemptId: any(named: 'attemptId'),
+        ),
+      ).thenAnswer((final _) => Stream.fromIterable(attemptStages));
+
+      when(
         () => client.plans.listProcuredPlanNames(),
       ).thenAnswer((final invocation) async => Future.value([]));
       when(
@@ -207,7 +218,7 @@ void main() {
 
           commandResult = cli.run([
             'launch',
-            '--new-project',
+            '--project',
             projectId,
             '--project-dir',
             testProjectDir,
@@ -254,14 +265,12 @@ void main() {
         });
 
         test('then logs success messages', () async {
-          expect(logger.successCalls, isNotEmpty);
           expect(
-            logger.successCalls,
+            logger.progressCalls,
             containsAllInOrder([
-              equalsSuccessCall(
-                message: "Serverpod Cloud project created.",
-                newParagraph: true,
-              ),
+              equalsProgressCall(message: "Project registration successful."),
+              equalsProgressCall(message: "Database creation request sent."),
+              equalsProgressCall(message: "Configuration files written."),
             ]),
           );
         });
@@ -283,25 +292,25 @@ void main() {
           );
         });
 
-        test('then logs deploy status message', () async {
-          expect(logger.lineCalls, isNotEmpty);
+        test('then logs deploy status messages', () async {
           expect(
-            logger.lineCalls.map((final call) => call.line),
+            logger.progressCalls,
             containsAllInOrder([
-              startsWith('Status of $projectId deployment $attemptId'),
-              contains('Upload successful.'),
+              equalsProgressCall(message: "Zipping successful."),
+              equalsProgressCall(message: "Upload successful."),
             ]),
           );
         });
 
-        test('then logs deployments show hint message', () async {
+        test('then logs deployments hint message', () async {
           expect(logger.terminalCommandCalls, hasLength(1));
           expect(
             logger.terminalCommandCalls,
             containsAllInOrder([
               equalsTerminalCommandCall(
-                command: 'scloud deployment show',
-                message: 'To view the deployment status, run this command:',
+                command: 'scloud help deployment',
+                message:
+                    'To see how to view deployment statuses, run this command:',
                 newParagraph: true,
               ),
             ]),
@@ -367,7 +376,7 @@ project:
 
             commandResult = cli.run([
               'launch',
-              '--new-project',
+              '--project',
               projectId,
               '--plan',
               'starter',
@@ -403,7 +412,7 @@ project:
 
             commandResult = cli.run([
               'launch',
-              '--new-project',
+              '--project',
               projectId,
               '--plan',
               'growth',
@@ -437,7 +446,7 @@ project:
 
           commandResult = cli.run([
             'launch',
-            '--new-project',
+            '--project',
             projectId,
             '--project-dir',
             testProjectDir,
@@ -491,7 +500,7 @@ serverpod:
 
           commandResult = cli.run([
             'launch',
-            '--new-project',
+            '--project',
             projectId,
             '--project-dir',
             testProjectDir,
@@ -569,7 +578,7 @@ serverpod:
 
           commandResult = cli.run([
             'launch',
-            '--new-project',
+            '--project',
             projectId,
             '--project-dir',
             testProjectDir,
@@ -633,7 +642,7 @@ serverpod:
 
           commandResult = cli.run([
             'launch',
-            '--new-project',
+            '--project',
             projectId,
             '--project-dir',
             testProjectDir,
@@ -698,7 +707,7 @@ serverpod:
 
           commandResult = cli.run([
             'launch',
-            '--new-project',
+            '--project',
             projectId,
             '--project-dir',
             testProjectDir,
@@ -756,7 +765,7 @@ serverpod:
 
           commandResult = cli.run([
             'launch',
-            '--new-project',
+            '--project',
             projectId,
             '--project-dir',
             testProjectDir,
@@ -814,7 +823,7 @@ project:
 
           commandResult = cli.run([
             'launch',
-            '--new-project',
+            '--project',
             projectId,
             '--project-dir',
             testProjectDir,
@@ -856,7 +865,7 @@ project:
 
           commandResult = cli.run([
             'launch',
-            '--new-project',
+            '--project',
             projectId,
             '--project-dir',
             testProjectDir,
@@ -942,7 +951,7 @@ project:
 
           commandResult = cli.run([
             'launch',
-            '--new-project',
+            '--project',
             projectId,
             '--project-dir',
             d.sandbox,
@@ -1055,7 +1064,7 @@ project:
 
           commandResult = cli.run([
             'launch',
-            '--new-project',
+            '--project',
             'invalid-project-id_%^&',
             '--project-dir',
             testProjectDir,
@@ -2278,7 +2287,7 @@ resolution: workspace
 
             commandResult = cli.run([
               'launch',
-              '--new-project',
+              '--project',
               projectId,
               '--project-dir',
               testProjectDir,

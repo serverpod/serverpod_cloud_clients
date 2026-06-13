@@ -40,12 +40,15 @@ abstract class Deploy {
     required final bool dryRun,
     required final bool showFiles,
     final bool skipTailingStatus = false,
+    final bool suppressCommandMessages = false,
     final String? outputPath,
     final String? dartVersionOverride,
     final IOSink? stdout,
     final IOSink? stderr,
   }) async {
-    logger.init('Deploying Serverpod Cloud project "$projectId".');
+    if (!suppressCommandMessages) {
+      logger.init('Deploying Serverpod Cloud project "$projectId".');
+    }
 
     final projectDirectory = Directory(projectDir);
 

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:config/config.dart';
 import 'package:path/path.dart' as p;
 
@@ -64,13 +62,6 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
     final projectId = commandConfig.value(ProjectCreateOption.projectId);
     final plan = commandConfig.optionalValue(ProjectCreateOption.plan);
     final enableDb = commandConfig.value(ProjectCreateOption.enableDb);
-    final projectDir =
-        runner.selectProjectDirectory() ?? Directory.current.path;
-    final configFilePath =
-        globalConfiguration.projectConfigFile?.path ??
-        p.join(projectDir, ProjectConfigFileConstants.defaultFileName);
-
-    logger.debug('Using project directory `$projectDir`');
 
     await ProjectCommands.createProject(
       runner.serviceProvider.cloudApiClient,
@@ -78,8 +69,6 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
       projectId: projectId,
       plan: plan,
       enableDb: enableDb,
-      projectDir: projectDir,
-      configFilePath: configFilePath,
     );
   }
 }
