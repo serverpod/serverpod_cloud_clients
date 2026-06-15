@@ -58,6 +58,10 @@ void main() {
     },
   };
 
+  setUpAll(() {
+    registerFallbackValue(Uuid().v4obj());
+  });
+
   setUp(() {
     mockFileUploader.init();
     logger.clear();
@@ -162,6 +166,13 @@ void main() {
       ).thenAnswer((final _) async => attemptStages);
 
       when(
+        () => client.status.tailDeployAttemptStatus(
+          cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          attemptId: any(named: 'attemptId'),
+        ),
+      ).thenAnswer((final _) => Stream.fromIterable(attemptStages));
+
+      when(
         () => client.plans.listProcuredPlanNames(),
       ).thenAnswer((final invocation) async => Future.value([]));
       when(
@@ -207,7 +218,7 @@ void main() {
 
           commandResult = cli.run([
             'launch',
-            '--new-project',
+            '--project',
             projectId,
             '--project-dir',
             testProjectDir,
@@ -254,14 +265,12 @@ void main() {
         });
 
         test('then logs success messages', () async {
-          expect(logger.successCalls, isNotEmpty);
           expect(
-            logger.successCalls,
+            logger.progressCalls,
             containsAllInOrder([
-              equalsSuccessCall(
-                message: "Serverpod Cloud project created.",
-                newParagraph: true,
-              ),
+              equalsProgressCall(message: "Project registration successful."),
+              equalsProgressCall(message: "Database creation request sent."),
+              equalsProgressCall(message: "Configuration files written."),
             ]),
           );
         });
@@ -283,25 +292,25 @@ void main() {
           );
         });
 
-        test('then logs deploy status message', () async {
-          expect(logger.lineCalls, isNotEmpty);
+        test('then logs deploy status messages', () async {
           expect(
-            logger.lineCalls.map((final call) => call.line),
+            logger.progressCalls,
             containsAllInOrder([
-              startsWith('Status of $projectId deployment $attemptId'),
-              contains('Upload successful.'),
+              equalsProgressCall(message: "Zipping successful."),
+              equalsProgressCall(message: "Upload successful."),
             ]),
           );
         });
 
-        test('then logs deployments show hint message', () async {
+        test('then logs deployments hint message', () async {
           expect(logger.terminalCommandCalls, hasLength(1));
           expect(
             logger.terminalCommandCalls,
             containsAllInOrder([
               equalsTerminalCommandCall(
-                command: 'scloud deployment show',
-                message: 'To view the deployment status, run this command:',
+                command: 'scloud help deployment',
+                message:
+                    'To see how to view deployment statuses, run this command:',
                 newParagraph: true,
               ),
             ]),
@@ -367,7 +376,7 @@ project:
 
             commandResult = cli.run([
               'launch',
-              '--new-project',
+              '--project',
               projectId,
               '--plan',
               'starter',
@@ -403,7 +412,7 @@ project:
 
             commandResult = cli.run([
               'launch',
-              '--new-project',
+              '--project',
               projectId,
               '--plan',
               'growth',
@@ -437,7 +446,7 @@ project:
 
           commandResult = cli.run([
             'launch',
-            '--new-project',
+            '--project',
             projectId,
             '--project-dir',
             testProjectDir,
@@ -491,7 +500,7 @@ serverpod:
 
           commandResult = cli.run([
             'launch',
-            '--new-project',
+            '--project',
             projectId,
             '--project-dir',
             testProjectDir,
@@ -569,7 +578,7 @@ serverpod:
 
           commandResult = cli.run([
             'launch',
-            '--new-project',
+            '--project',
             projectId,
             '--project-dir',
             testProjectDir,
@@ -633,7 +642,7 @@ serverpod:
 
           commandResult = cli.run([
             'launch',
-            '--new-project',
+            '--project',
             projectId,
             '--project-dir',
             testProjectDir,
@@ -698,7 +707,7 @@ serverpod:
 
           commandResult = cli.run([
             'launch',
-            '--new-project',
+            '--project',
             projectId,
             '--project-dir',
             testProjectDir,
@@ -756,7 +765,7 @@ serverpod:
 
           commandResult = cli.run([
             'launch',
-            '--new-project',
+            '--project',
             projectId,
             '--project-dir',
             testProjectDir,
@@ -790,62 +799,90 @@ serverpod:
         });
       });
 
-      group('when executing launch with code generation hook already in config'
-          ', disabling initial deploy'
-          ' and approving confirmation', () {
-        late String testProjectDir;
+      group('when an scloud.yaml exists with a matching project id', () {
         late Future commandResult;
 
         setUp(() async {
-          await ProjectFactory.serverpodServerDir(
-            withDirectoryName: 'server_dir',
-          ).create();
-          testProjectDir = p.join(d.sandbox, 'server_dir');
-
           await d.file(p.join(testProjectDir, 'scloud.yaml'), '''
 project:
   projectId: "$projectId"
-  scripts:
-    pre_deploy:
-      - serverpod generate
+  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
 ''').create();
-
-          logger.answerNextConfirmsWith([true]);
 
           commandResult = cli.run([
             'launch',
-            '--new-project',
+            '--project',
             projectId,
             '--project-dir',
             testProjectDir,
-            '--plan',
-            'starter',
-            '--enable-db',
-            '--no-deploy',
           ]);
+        });
 
+        test('then command completes successfully', () async {
           await expectLater(commandResult, completes);
         });
 
-        test(
-          'then does not prompt to add code generation as pre-deploy hook',
-          () async {
-            await commandResult.catchError((final _) {});
+        test('then no input or confirmation prompts are logged', () async {
+          await commandResult.catchError((final _) {});
 
-            expect(
-              logger.confirmCalls,
-              isNot(
-                contains(
-                  equalsConfirmCall(
-                    message:
-                        'Add code generation (`serverpod generate`) as a pre-deploy hook?',
-                    defaultValue: false,
-                  ),
-                ),
-              ),
-            );
-          },
-        );
+          expect(logger.inputCalls, isEmpty);
+          expect(logger.confirmCalls, isEmpty);
+        });
+
+        test('then the project is zipped and uploaded', () async {
+          await commandResult;
+
+          expect(
+            logger.progressCalls.map((final call) => call.message),
+            containsAllInOrder(['Zipping project', 'Uploading project']),
+          );
+          expect(mockFileUploader.uploadedData, isNotEmpty);
+        });
+      });
+
+      group('when an scloud.yaml exists with a mismatching project id', () {
+        const mismatchingProjectId = 'other-project-id';
+        late Future commandResult;
+
+        setUp(() async {
+          await d.file(p.join(testProjectDir, 'scloud.yaml'), '''
+project:
+  projectId: "$projectId"
+  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
+''').create();
+
+          commandResult = cli.run([
+            'launch',
+            '--project',
+            mismatchingProjectId,
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        test('then throws ErrorExitException', () async {
+          await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+        });
+
+        test('then logs project id mismatch error message', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(logger.errorCalls, hasLength(1));
+          expect(
+            logger.errorCalls.single,
+            equalsErrorCall(
+              message:
+                  'The specified project ID "$mismatchingProjectId" does not '
+                  'match the scloud config file "$projectId".',
+            ),
+          );
+        });
+
+        test('then does not zip or upload the project', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(mockFileUploader.uploadedData, isEmpty);
+        });
       });
 
       group('when executing launch with all settings provided via args '
@@ -856,7 +893,7 @@ project:
 
           commandResult = cli.run([
             'launch',
-            '--new-project',
+            '--project',
             projectId,
             '--project-dir',
             testProjectDir,
@@ -942,7 +979,7 @@ project:
 
           commandResult = cli.run([
             'launch',
-            '--new-project',
+            '--project',
             projectId,
             '--project-dir',
             d.sandbox,
@@ -1055,7 +1092,7 @@ project:
 
           commandResult = cli.run([
             'launch',
-            '--new-project',
+            '--project',
             'invalid-project-id_%^&',
             '--project-dir',
             testProjectDir,
@@ -2278,7 +2315,7 @@ resolution: workspace
 
             commandResult = cli.run([
               'launch',
-              '--new-project',
+              '--project',
               projectId,
               '--project-dir',
               testProjectDir,

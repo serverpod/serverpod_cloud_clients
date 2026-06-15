@@ -309,16 +309,16 @@ project:
         ]);
       });
 
-      test('then ErrorExitException is thrown.', () async {
-        await expectLater(cliCommandFuture, throwsA(isA<ErrorExitException>()));
-      });
-
-      test('then error message is logged', () async {
-        await cliCommandFuture.catchError((final _) {});
-        expect(logger.errorCalls, isNotEmpty);
-        expect(
-          logger.errorCalls.first.message,
-          contains('The --output path must end with .zip'),
+      test('then UsageException is thrown.', () async {
+        await expectLater(
+          cliCommandFuture,
+          throwsA(
+            isA<UsageException>().having(
+              (final e) => e.message,
+              'message',
+              contains('The path must end with .zip'),
+            ),
+          ),
         );
       });
     });

@@ -1,3 +1,4 @@
+import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_tui/serverpod_tui.dart';
 
 /// Form selection configuration for [ScloudLaunchApp].
@@ -139,7 +140,7 @@ class ProjectIdInputConfig implements FormInputConfig {
   final double width = 20;
 
   @override
-  final String? suffixText = '.serverpod.space';
+  final String? suffixText = '.${HostConstants.tenantDomain}';
 
   @override
   final List<FormRequirement> requirements;

@@ -1,6 +1,8 @@
 abstract class HostConstants {
   static const serverpodCloudConsole = 'https://console.serverpod.dev';
   static const serverpodCloudApi = 'https://api.serverpod.dev';
+
+  static const tenantDomain = 'serverpod.space';
 }
 
 abstract final class VersionConstants {

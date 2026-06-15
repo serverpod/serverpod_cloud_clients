@@ -7,7 +7,7 @@ import 'package:serverpod_cloud_cli/util/stream_util.dart';
 
 /// Status subcommand implementations
 abstract class StatusCommands {
-  static const progressMessagePadLength = 32;
+  static const progressMessagePadLength = 40;
 
   /// Subcommand to list the most recent deploy attempts.
   static Future<void> listDeployAttempts(

@@ -1,49 +1,79 @@
+import 'dart:io' show File;
+
 import 'package:config/config.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/commands/deploy/deploy.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
-import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
 import 'categories.dart';
 
+class DeployConcurrencyOption extends IntOption {
+  const DeployConcurrencyOption({super.group})
+    : super(
+        argName: 'concurrency',
+        argAbbrev: 'c',
+        helpText:
+            'Number of concurrent files processed when zipping the project.',
+        defaultsTo: 5,
+        min: 1,
+      );
+}
+
+class DeployDryRunOption extends FlagOption {
+  const DeployDryRunOption({super.group})
+    : super(
+        argName: 'dry-run',
+        helpText: 'Do not actually deploy, just print the deployment steps.',
+        defaultsTo: false,
+        negatable: false,
+      );
+}
+
+class DeployShowFilesOption extends FlagOption {
+  const DeployShowFilesOption({super.group})
+    : super(
+        argName: 'show-files',
+        helpText: 'Display the file tree that will be uploaded.',
+        defaultsTo: false,
+        negatable: false,
+      );
+}
+
+class DeployOutputOption extends FileOption {
+  const DeployOutputOption({super.group})
+    : super(
+        argName: 'output',
+        argAbbrev: 'o',
+        helpText:
+            'Save the deployment zip file to the specified path. Must end with .zip',
+        customValidator: _zipExtValidator,
+      );
+
+  static void _zipExtValidator(final File value) {
+    if (!value.path.endsWith('.zip')) {
+      throw UsageException('The path must end with .zip', '');
+    }
+  }
+}
+
+class AwaitOption extends FlagOption {
+  const AwaitOption({super.group})
+    : super(
+        argName: 'await',
+        defaultsTo: true,
+        helpText:
+            'Await the deployment to finish while showing status progression.',
+      );
+}
+
 enum DeployCommandOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption(asFirstArg: true)),
-  concurrency(
-    IntOption(
-      argName: 'concurrency',
-      argAbbrev: 'c',
-      helpText:
-          'Number of concurrent files processed when zipping the project.',
-      defaultsTo: 5,
-      min: 1,
-    ),
-  ),
-  dryRun(
-    FlagOption(
-      argName: 'dry-run',
-      helpText: 'Do not actually deploy, just print the deployment steps.',
-      defaultsTo: false,
-      negatable: false,
-    ),
-  ),
-  showFiles(
-    FlagOption(
-      argName: 'show-files',
-      helpText: 'Display the file tree that will be uploaded.',
-      defaultsTo: false,
-      negatable: false,
-    ),
-  ),
-  output(
-    StringOption(
-      argName: 'output',
-      argAbbrev: 'o',
-      helpText:
-          'Save the deployment zip file to the specified path. Must end with .zip',
-    ),
-  ),
+  concurrency(DeployConcurrencyOption()),
+  dryRun(DeployDryRunOption()),
+  showFiles(DeployShowFilesOption()),
+  output(DeployOutputOption()),
   wait(AwaitOption()),
   dartVersion(DartSdkVersionOption());
 
@@ -108,10 +138,6 @@ Examples
       DeployCommandOption.dartVersion,
     );
 
-    if (outputPath != null && !outputPath.endsWith('.zip')) {
-      throw FailureException(errors: ['The --output path must end with .zip']);
-    }
-
     final projectDirectory = runner.verifiedProjectDirectory();
     logger.debug('Using project directory `${projectDirectory.path}`');
     final configFilePath =
@@ -132,7 +158,7 @@ Examples
       dryRun: dryRun,
       showFiles: showFiles,
       skipTailingStatus: !wait,
-      outputPath: outputPath,
+      outputPath: outputPath?.path,
       dartVersionOverride: dartVersionOverride,
     );
   }

@@ -55,7 +55,7 @@ class _ScloudProjectConfigProvider<T extends OptionDefinition>
 
     final configFile = globalConfig.projectConfigFile;
     if (configFile == null) {
-      logger?.info('No scloud project configuration file found.');
+      logger?.debug('No scloud project configuration file found.');
     } else {
       logger?.debug(
         'Using scloud project configuration file '

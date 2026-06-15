@@ -3,6 +3,7 @@ import 'dart:io' show Directory;
 import 'package:collection/collection.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
+import 'package:serverpod_cloud_cli/commands/status/status.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/shared/user_interaction/user_confirmations.dart';
 import 'package:serverpod_cloud_cli/util/dart_version_util.dart';
@@ -63,9 +64,8 @@ abstract class ProjectCommands {
     required final String projectId,
     required final PlanProfile? plan,
     required final bool enableDb,
-    required final String projectDir,
-    required final String configFilePath,
     final bool skipConfirmation = false,
+    final bool suppressCommandMessages = false,
   }) async {
     if (!skipConfirmation) {
       await UserConfirmations.confirmNewProjectCostAcceptance(logger);
@@ -83,8 +83,10 @@ abstract class ProjectCommands {
             )
             .firstOrNull;
         if (legacySubscription != null) {
-          logger.init('Creating Serverpod Cloud project "$projectId".');
-          logger.info('On plan: ${legacySubscription.planDisplayName}');
+          if (!suppressCommandMessages) {
+            logger.init('Creating Serverpod Cloud project "$projectId".');
+            logger.info('On plan: ${legacySubscription.planDisplayName}');
+          }
           subscriptionId = legacySubscription.subscriptionId;
         }
       }
@@ -95,13 +97,17 @@ abstract class ProjectCommands {
       subscriptionId = await cloudApiClient.plans.procurePlan(
         planProductName: planProductName,
       );
-      logger.init('Creating Serverpod Cloud project "$projectId".');
-      logger.info('On plan: $planProductName');
+      if (!suppressCommandMessages) {
+        logger.init('Creating Serverpod Cloud project "$projectId".');
+        logger.info('On plan: $planProductName');
+      }
     }
 
     try {
       await logger.progress(
-        'Registering Serverpod Cloud project.',
+        'Registering Serverpod Cloud project',
+        successMessage: 'Project registration successful.',
+        padRight: StatusCommands.progressMessagePadLength,
         newParagraph: true,
         () async {
           await cloudApiClient.projects.createProject(
@@ -121,23 +127,30 @@ abstract class ProjectCommands {
     }
 
     if (enableDb) {
-      await logger.progress('Requesting database creation.', () async {
-        try {
-          await cloudApiClient.database.enableDatabase(
-            cloudCapsuleId: projectId,
-          );
-          return true;
-        } on Exception catch (e, s) {
-          throw FailureException.nested(
-            e,
-            s,
-            'Request to create a database for the new project failed',
-          );
-        }
-      });
+      await logger.progress(
+        'Requesting database creation',
+        successMessage: 'Database creation request sent.',
+        padRight: StatusCommands.progressMessagePadLength,
+        () async {
+          try {
+            await cloudApiClient.database.enableDatabase(
+              cloudCapsuleId: projectId,
+            );
+            return true;
+          } on Exception catch (e, s) {
+            throw FailureException.nested(
+              e,
+              s,
+              'Request to create a database for the new project failed',
+            );
+          }
+        },
+      );
     }
 
-    logger.success('Serverpod Cloud project created.', newParagraph: true);
+    if (!suppressCommandMessages) {
+      logger.success('Serverpod Cloud project created.', newParagraph: true);
+    }
   }
 
   static Future<void> deleteProject(
@@ -211,13 +224,15 @@ abstract class ProjectCommands {
     tablePrinter.writeLines(logger.line);
   }
 
-  static Future<void> linkProject(
+  static Future<String?> linkProject(
     final Client cloudApiClient, {
     required final CommandLogger logger,
     required final String projectId,
     required final String projectDirectory,
     required final String configFilePath,
     final String? dartVersionOverride,
+    final List<String> preDeployScripts = const [],
+    final bool suppressCommandMessages = false,
   }) async {
     var safeDartSdk = ProjectDartVersionHint.normalizeBareMajorMinorOverride(
       dartVersionOverride,
@@ -232,11 +247,13 @@ abstract class ProjectCommands {
     }
 
     await logger.progress(
-      'Writing cloud project configuration files.',
+      'Writing cloud project configuration files',
+      successMessage: 'Configuration files written.',
+      padRight: StatusCommands.progressMessagePadLength,
       () async {
         ProjectFilesWriter.writeFiles(
           projectId: projectId,
-          preDeployScripts: [],
+          preDeployScripts: preDeployScripts,
           configFilePath: configFilePath,
           projectDirectory: projectDirectory,
           dartSdk: safeDartSdk,
@@ -245,7 +262,11 @@ abstract class ProjectCommands {
       },
     );
 
-    logger.success('Linked Serverpod Cloud project.', newParagraph: true);
+    if (!suppressCommandMessages) {
+      logger.success('Linked Serverpod Cloud project.', newParagraph: true);
+    }
+
+    return safeDartSdk;
   }
 
   static Future<void> inviteUser(

@@ -22,18 +22,27 @@ class ProjectIdOption extends StringOption {
   /// (and if asFirstArg is true, also as the first positional argument),
   /// env variable, and scloud config file.
   const ProjectIdOption({final bool asFirstArg = false})
-    : super(
-        argName: _projectIdArgName,
-        argAbbrev: _projectIdArgAbbrev,
-        argPos: asFirstArg ? 0 : null,
-        envName: 'SERVERPOD_CLOUD_PROJECT_ID',
-        configKey: '$scloudConfigDomainPrefix:/project/projectId',
+    : this._(
+        asFirstArg: asFirstArg,
         mandatory: true,
         helpText:
             '${asFirstArg ? _helpTextFirstArg : _helpText}'
             '\nCan be omitted for existing projects that are linked. '
             'See `scloud project link --help`.',
       );
+
+  const ProjectIdOption._({
+    final bool asFirstArg = false,
+    super.mandatory,
+    super.helpText,
+    super.group,
+  }) : super(
+         argName: _projectIdArgName,
+         argAbbrev: _projectIdArgAbbrev,
+         argPos: asFirstArg ? 0 : null,
+         envName: 'SERVERPOD_CLOUD_PROJECT_ID',
+         configKey: '$scloudConfigDomainPrefix:/project/projectId',
+       );
 
   /// Used for commands that require explicit command line argument for the
   /// project ID, i.e. not from env variable or scloud config file.
@@ -47,17 +56,17 @@ class ProjectIdOption extends StringOption {
         helpText: asFirstArg ? _helpTextFirstArg : _helpText,
       );
 
-  /// Used for commands that interactively ask for the project ID but
-  /// allow it to be specified as a command line argument
-  /// (and if asFirstArg is true, also as the first positional argument).
-  /// Does not accept value from env variable or scloud config file.
-  const ProjectIdOption.nonMandatory({final bool asFirstArg = false})
-    : super(
-        argName: _projectIdArgName,
-        argAbbrev: _projectIdArgAbbrev,
-        argPos: asFirstArg ? 0 : null,
-        helpText: asFirstArg ? _helpTextFirstArg : _helpText,
-      );
+  /// Used for commands that interactively ask for the project ID if not already
+  /// specified.
+  const ProjectIdOption.nonMandatory({
+    final bool asFirstArg = false,
+    final OptionGroup? group,
+  }) : this._(
+         asFirstArg: asFirstArg,
+         mandatory: false,
+         helpText: asFirstArg ? _helpTextFirstArg : _helpText,
+         group: group,
+       );
 }
 
 class PlanOption extends EnumOption<PlanProfile> {
@@ -112,16 +121,6 @@ class DartSdkVersionOption extends StringOption {
         argName: 'dart-version',
         helpText:
             'Overrides the Dart SDK version to use for building the project.',
-      );
-}
-
-class AwaitOption extends FlagOption {
-  const AwaitOption()
-    : super(
-        argName: 'await',
-        defaultsTo: true,
-        helpText:
-            'Await the deployment to finish while showing status progression.',
       );
 }
 
