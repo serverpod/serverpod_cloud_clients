@@ -1,3 +1,5 @@
+import 'dart:io' show Directory;
+
 import 'package:serverpod_cloud_cli/commands/launch/launch.dart';
 import 'package:serverpod_cloud_cli/commands/launch/tui/config.dart';
 import 'package:serverpod_cloud_cli/commands/launch/tui/state.dart';
@@ -12,10 +14,11 @@ void main() {
     late ProjectIdInputConfig projectIdInput;
 
     setUp(() {
+      final projectDir = Directory(d.sandbox);
       state = LaunchConfigState(
-        projectDir: d.sandbox,
+        projectDir: projectDir.path,
         defaultProjectId: 'my-default-id',
-        projectSetup: ProjectLaunch(),
+        projectSetup: ProjectLaunch(projectDir: projectDir),
         existingProjectIds: [],
       );
       projectIdInput = state.projectSelectionFormState.configurations
@@ -112,10 +115,11 @@ serverpod:
 '''),
         ]).create();
 
+        final projectDir = Directory(d.path('project'));
         final localState = LaunchConfigState(
-          projectDir: d.path('project'),
+          projectDir: projectDir.path,
           defaultProjectId: null,
-          projectSetup: ProjectLaunch(),
+          projectSetup: ProjectLaunch(projectDir: projectDir),
           existingProjectIds: [],
         );
         final input = localState.projectSelectionFormState.configurations
@@ -241,10 +245,11 @@ serverpod:
 '''),
         ]).create();
 
+        final projectDir = Directory(d.path('project'));
         final localState = LaunchConfigState(
-          projectDir: d.path('project'),
+          projectDir: projectDir.path,
           defaultProjectId: null,
-          projectSetup: ProjectLaunch(projectDir: d.path('project')),
+          projectSetup: ProjectLaunch(projectDir: projectDir),
           existingProjectIds: [],
         );
         final input = localState.projectSelectionFormState.configurations
@@ -283,10 +288,11 @@ serverpod:
     late LaunchConfigState state;
 
     setUp(() {
+      final projectDir = Directory(d.sandbox);
       state = LaunchConfigState(
-        projectDir: d.sandbox,
+        projectDir: projectDir.path,
         defaultProjectId: null,
-        projectSetup: ProjectLaunch(),
+        projectSetup: ProjectLaunch(projectDir: projectDir),
         existingProjectIds: ['project', 'another-project'],
       );
     });
@@ -326,10 +332,6 @@ serverpod:
           expect(
             form.configurations.contains(ScloudLaunchSelectionConfig.database),
             isFalse,
-          );
-          expect(
-            form.configurations.contains(ScloudLaunchSelectionConfig.deploy),
-            isTrue,
           );
           expect(
             form.configurations.contains(ScloudLaunchSelectionConfig.codegen),

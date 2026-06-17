@@ -197,7 +197,7 @@ class CloudProjectLinkCommand
           ProjectConfigFileConstants.defaultFileName,
         );
 
-    logger.debug('Using project directory `${projectDirectory.path}`');
+    logger.debug('Project directory is: ${projectDirectory.path}');
 
     await ProjectCommands.linkProject(
       runner.serviceProvider.cloudApiClient,

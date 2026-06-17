@@ -40,6 +40,11 @@ void main() {
 
   const projectId = 'projectId';
 
+  setUp(() async {
+    // sentinel .git file to prevent search above the sandbox root
+    await d.file('.git').create();
+  });
+
   tearDown(() async {
     logger.clear();
   });
@@ -467,7 +472,7 @@ environment:
           late Future commandResult;
 
           setUp(() async {
-            pushCurrentDirectory(p.join(d.sandbox));
+            pushCurrentDirectory(p.join(d.sandbox, '..'));
 
             commandResult = cli.run([
               'project',
@@ -493,9 +498,9 @@ environment:
             expect(
               logger.errorCalls.first,
               equalsErrorCall(
-                message: 'No valid Serverpod server directory selected.',
+                message: 'No valid Serverpod server directory located.',
                 hint:
-                    "Provide the project's server directory with the `--project-dir` option and try again.",
+                    "Move to the project's server directory or use the `--project-dir` option and try again.",
               ),
             );
           });
@@ -949,7 +954,7 @@ resolution: workspace
             late Future commandResult;
 
             setUp(() async {
-              pushCurrentDirectory(p.join(d.sandbox));
+              pushCurrentDirectory(p.join(d.sandbox, '..'));
 
               commandResult = cli.run([
                 'project',
@@ -975,9 +980,9 @@ resolution: workspace
               expect(
                 logger.errorCalls.first,
                 equalsErrorCall(
-                  message: 'No valid Serverpod server directory selected.',
+                  message: 'No valid Serverpod server directory located.',
                   hint:
-                      "Provide the project's server directory with the `--project-dir` option and try again.",
+                      "Move to the project's server directory or use the `--project-dir` option and try again.",
                 ),
               );
             });

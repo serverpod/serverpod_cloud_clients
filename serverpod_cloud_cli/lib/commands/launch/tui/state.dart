@@ -137,7 +137,6 @@ class LaunchConfigState extends TuiState {
     final formState = FormState([
       if (_isNewProject) ScloudLaunchSelectionConfig.plan,
       if (_isNewProject) ScloudLaunchSelectionConfig.database,
-      ScloudLaunchSelectionConfig.deploy,
       ScloudLaunchSelectionConfig.codegen,
       if (_hasFlutterBuildScript) ScloudLaunchSelectionConfig.flutterBuild,
     ]);
@@ -229,11 +228,6 @@ class LaunchConfigState extends TuiState {
       _projectSetup.projectId = _selectedProjectId;
       _projectSetup.preexistingProject = true;
     }
-
-    final deploy = form.getSelectedOptionFor<BoolFormConfigOption>(
-      ScloudLaunchSelectionConfig.deploy,
-    );
-    _projectSetup.performDeploy = deploy == BoolFormConfigOption.enabled;
 
     final codegenOption = form.getSelectedOptionFor<BoolFormConfigOption>(
       ScloudLaunchSelectionConfig.codegen,

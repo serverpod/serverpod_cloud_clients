@@ -6,7 +6,7 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart'
 import 'package:serverpod_cloud_cli/commands/deploy/deploy.dart';
 import 'package:serverpod_cloud_cli/commands/launch/launch.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart'
-    show FailureException;
+    show FailureException, UserAbortException;
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_io.dart';
 
 enum LaunchOption<V> implements OptionDefinition<V> {
@@ -21,7 +21,9 @@ enum LaunchOption<V> implements OptionDefinition<V> {
   deploy(
     FlagOption(
       argName: 'deploy',
-      helpText: 'Flag to immediately deploy the project.',
+      helpText: 'Automatically deploy the project after setup.',
+      defaultsTo: true,
+      hide: true, // intended for development and testing only
     ),
   ),
   dartVersion(DartSdkVersionOption()),
@@ -73,15 +75,11 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
   @override
   Future<void> runWithConfig(final Configuration commandConfig) async {
     final projectConfigFile = globalConfiguration.projectConfigFile;
-    final specifiedProjectDir = globalConfiguration.projectDir;
-    final foundProjectDir = specifiedProjectDir == null
-        ? runner.selectProjectDirectory()
-        : null;
 
     final projectId = commandConfig.optionalValue(LaunchOption.projectId);
     final plan = commandConfig.optionalValue(LaunchOption.plan);
     final enableDb = commandConfig.optionalValue(LaunchOption.enableDb);
-    final deploy = commandConfig.optionalValue(LaunchOption.deploy);
+    final deploy = commandConfig.value(LaunchOption.deploy);
     final dartVersionOverride = commandConfig.optionalValue(
       LaunchOption.dartVersion,
     );
@@ -94,28 +92,33 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
     final outputPath = commandConfig.optionalValue(LaunchOption.output);
     final wait = commandConfig.value(LaunchOption.wait);
 
+    final projectDirectory = runner.verifiedProjectDirectory();
+
     if (projectConfigFile != null) {
       if (projectId == null) {
         throw FailureException(
-          error: 'The scloud configuration file lacks a project ID.',
+          error:
+              'The configuration file $projectConfigFile lacks a project ID.',
         );
       }
       if (commandConfig.valueSourceType(LaunchOption.projectId) !=
           ValueSourceType.config) {
         final config = ScloudConfigIO.readFromFile(projectConfigFile.path);
         if (config?.projectId != projectId) {
-          throw FailureException(
-            error:
-                'The specified project ID "$projectId" does not match the scloud config file "${config?.projectId}".',
+          final confirm = await logger.confirm(
+            'The specified project ID "$projectId" does not match the scloud config file "${config?.projectId}".'
+            '\nContinue with deployment to "$projectId"?',
+            defaultValue: false,
           );
+          if (!confirm) {
+            logger.info('Deployment cancelled.');
+            throw UserAbortException();
+          }
         }
       }
 
-      // scloud.<ext> file found and project id read from it, perform a deploy
-
-      final projectDirectory = runner.verifiedProjectDirectory();
-      logger.debug('Using project directory `${projectDirectory.path}`');
-
+      // Unambiguous scloud.<ext> file found, perform a deploy
+      logger.debug('Project directory is: ${projectDirectory.path}');
       await Deploy.deploy(
         runner.serviceProvider.cloudApiClient,
         runner.serviceProvider.fileUploaderFactory,
@@ -138,8 +141,7 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
       runner.serviceProvider.cloudApiClient,
       runner.serviceProvider.fileUploaderFactory,
       logger: logger,
-      specifiedProjectDir: specifiedProjectDir?.path,
-      foundProjectDir: foundProjectDir,
+      projectDirectory: projectDirectory,
       projectId: projectId,
       plan: plan,
       enableDb: enableDb,

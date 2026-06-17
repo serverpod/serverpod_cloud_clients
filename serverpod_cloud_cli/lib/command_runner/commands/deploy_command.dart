@@ -139,7 +139,7 @@ Examples
     );
 
     final projectDirectory = runner.verifiedProjectDirectory();
-    logger.debug('Using project directory `${projectDirectory.path}`');
+    logger.debug('Project directory is: ${projectDirectory.path}');
     final configFilePath =
         globalConfiguration.projectConfigFile?.path ??
         p.join(

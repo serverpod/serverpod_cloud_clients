@@ -30,12 +30,11 @@ abstract class Launch {
     final Client cloudApiClient,
     final FileUploaderFactory fileUploaderFactory, {
     required final CommandLogger logger,
-    required final String? specifiedProjectDir,
-    required final String? foundProjectDir,
+    required final Directory projectDirectory,
     required final String? projectId,
     required final PlanProfile? plan,
     required final bool? enableDb,
-    required final bool? performDeploy,
+    required final bool performDeploy,
     required final bool tui,
     required final int deployConcurrency,
     required final bool deployDryRun,
@@ -46,8 +45,12 @@ abstract class Launch {
   }) async {
     logger.init('Launching new Serverpod Cloud project.\n');
 
+    logger.info('Project directory is: ${projectDirectory.path}');
+
+    if (!_validateProjectDir(logger, projectDirectory)) return;
+
     final projectSetup = ProjectLaunch(
-      projectDir: specifiedProjectDir,
+      projectDir: projectDirectory,
       projectId: projectId,
       plan: plan,
       dartVersionOverride: dartVersionOverride,
@@ -61,7 +64,7 @@ abstract class Launch {
         fileUploaderFactory,
         logger: logger,
         projectSetup: projectSetup,
-        foundProjectDir: foundProjectDir,
+        projectDir: projectDirectory,
         deployConcurrency: deployConcurrency,
         deployDryRun: deployDryRun,
         deployShowFiles: deployShowFiles,
@@ -73,7 +76,7 @@ abstract class Launch {
         cloudApiClient,
         fileUploaderFactory,
         logger: logger,
-        foundProjectDir: foundProjectDir,
+        projectDir: projectDirectory,
         projectSetup: projectSetup,
         deployConcurrency: deployConcurrency,
         deployDryRun: deployDryRun,
@@ -88,7 +91,7 @@ abstract class Launch {
     final Client cloudApiClient,
     final FileUploaderFactory fileUploaderFactory, {
     required final CommandLogger logger,
-    required final String? foundProjectDir,
+    required final Directory projectDir,
     required final ProjectLaunch projectSetup,
     required final int deployConcurrency,
     required final bool deployDryRun,
@@ -96,8 +99,6 @@ abstract class Launch {
     final String? deployOutputPath,
     final bool deploySkipTailingStatus = false,
   }) async {
-    await selectProjectDir(logger, projectSetup, foundProjectDir);
-
     await selectProjectId(cloudApiClient, logger, projectSetup);
 
     if (projectSetup.preexistingProject != true) {
@@ -106,12 +107,7 @@ abstract class Launch {
       await selectEnableDb(logger, projectSetup);
     }
 
-    await selectPerformDeploy(logger, projectSetup);
-
     final configFilePath = projectSetup.configFilePath;
-    if (configFilePath == null) {
-      throw StateError('ConfigFilePath must be set.');
-    }
 
     await suggestCodeGenerationPreDeployHook(
       logger,
@@ -145,26 +141,14 @@ abstract class Launch {
     final FileUploaderFactory fileUploaderFactory, {
     required final CommandLogger logger,
     required final ProjectLaunch projectSetup,
-    required final String? foundProjectDir,
+    required final Directory projectDir,
     required final int deployConcurrency,
     required final bool deployDryRun,
     required final bool deployShowFiles,
     final String? deployOutputPath,
     final bool deploySkipTailingStatus = false,
   }) async {
-    final resolvedProjectDir = projectSetup.projectDir ?? foundProjectDir;
-    if (resolvedProjectDir == null) {
-      throw FailureException(
-        error: 'No Serverpod project directory found.',
-        hint:
-            "Run 'scloud launch' from a Serverpod server directory, "
-            'or specify a project directory with --project-dir.',
-      );
-    }
-
-    if (!_validateProjectDir(logger, resolvedProjectDir)) return;
-
-    final defaultProjectId = _getDefaultProjectId(resolvedProjectDir);
+    final defaultProjectId = _getDefaultProjectId(projectDir);
 
     final existingProjects = await _fetchExistingUndeployedProjects(
       cloudApiClient,
@@ -175,7 +159,7 @@ abstract class Launch {
 
     final state = LaunchConfigState(
       projectSetup: projectSetup,
-      projectDir: resolvedProjectDir,
+      projectDir: projectDir.path,
       defaultProjectId: defaultProjectId,
       existingProjectIds: existingProjectIds,
     );
@@ -231,52 +215,13 @@ abstract class Launch {
     );
   }
 
-  static Future<void> selectProjectDir(
-    final CommandLogger logger,
-    final ProjectLaunch projectSetup,
-    final String? foundProjectDir,
-  ) async {
-    final specifiedProjectDir = projectSetup.projectDir;
-    if (specifiedProjectDir != null) {
-      if (_validateProjectDir(logger, specifiedProjectDir)) {
-        return;
-      }
-    }
-
-    if (foundProjectDir != null) {
-      if (_validateProjectDir(logger, foundProjectDir)) {
-        projectSetup.projectDir = p.relative(foundProjectDir);
-        logger.info('Found project directory: ${projectSetup.projectDir}');
-        return;
-      }
-    }
-
-    do {
-      final projectDir = await logger.input('Enter the project directory');
-
-      if (projectDir.isEmpty) {
-        logger.error('Project directory is required.');
-        continue;
-      }
-
-      if (_validateProjectDir(logger, projectDir)) {
-        projectSetup.projectDir = projectDir;
-        return;
-      }
-
-      logProjectDirIsNotAServerpodServerDirectory(logger, projectDir);
-    } while (true);
-  }
-
   static bool _validateProjectDir(
     final CommandLogger logger,
-    final String projectDir,
+    final Directory projectDir,
   ) {
     final TenantProjectPubspec pubspecValidator;
     try {
-      pubspecValidator = TenantProjectPubspec.fromProjectDir(
-        Directory(projectDir),
-      );
+      pubspecValidator = TenantProjectPubspec.fromProjectDir(projectDir);
     } on FailureException catch (e) {
       logger.error(e.errors.join('\n'), hint: e.hint);
       return false;
@@ -292,12 +237,12 @@ abstract class Launch {
 
       throw FailureException(
         error:
-            '`$projectDir` is a Serverpod server directory, but it is not valid:',
+            '`${projectDir.path}` is a Serverpod server directory, but it is not valid:',
         errors: issues,
         hint: 'Resolve the issues and try again.',
       );
     } else {
-      logProjectDirIsNotAServerpodServerDirectory(logger, projectDir);
+      logProjectDirIsNotAServerpodServerDirectory(logger, projectDir.path);
     }
     return false;
   }
@@ -446,22 +391,18 @@ The default API domain will be: <project-id>.api.serverpod.space
     } while (true);
   }
 
-  static String? _getDefaultProjectId(final String? projectDir) {
-    if (projectDir != null) {
-      final pubspec = TenantProjectPubspec.fromProjectDir(
-        Directory(projectDir),
-      );
-      if (pubspec.isServerpodServer()) {
-        var name = pubspec.pubspec.name.toLowerCase().replaceAll('_', '-');
+  static String? _getDefaultProjectId(final Directory projectDir) {
+    final pubspec = TenantProjectPubspec.fromProjectDir(projectDir);
+    if (pubspec.isServerpodServer()) {
+      var name = pubspec.pubspec.name.toLowerCase().replaceAll('_', '-');
 
-        const serverSuffix = '-server';
-        if (name.length > serverSuffix.length && name.endsWith(serverSuffix)) {
-          name = name.substring(0, name.length - serverSuffix.length);
-        }
+      const serverSuffix = '-server';
+      if (name.length > serverSuffix.length && name.endsWith(serverSuffix)) {
+        name = name.substring(0, name.length - serverSuffix.length);
+      }
 
-        if (isValidProjectIdFormat(name)) {
-          return name;
-        }
+      if (isValidProjectIdFormat(name)) {
+        return name;
       }
     }
     return null;
@@ -517,40 +458,13 @@ The default API domain will be: <project-id>.api.serverpod.space
     projectSetup.enableDb = enableDb;
   }
 
-  static Future<void> selectPerformDeploy(
-    final CommandLogger logger,
-    final ProjectLaunch projectSetup,
-  ) async {
-    if (projectSetup.performDeploy != null) {
-      return;
-    }
-
-    final projectId = projectSetup.projectId;
-    final confirmationMessage = projectId != null
-        ? "Deploy '$projectId' project right away?"
-        : 'Deploy the project right away?';
-
-    final performDeploy = await logger.confirm(
-      confirmationMessage,
-      defaultValue: true,
-    );
-
-    projectSetup.performDeploy = performDeploy;
-  }
-
   static Future<void> suggestFlutterBuildPreDeployHook(
     final CommandLogger logger,
     final ProjectLaunch projectSetup,
     final String configFilePath,
   ) async {
     final projectDir = projectSetup.projectDir;
-    if (projectDir == null) {
-      return;
-    }
-
-    final pubspecValidator = TenantProjectPubspec.fromProjectDir(
-      Directory(projectDir),
-    );
+    final pubspecValidator = TenantProjectPubspec.fromProjectDir(projectDir);
 
     if (!pubspecValidator.hasFlutterBuildScript()) return;
 
@@ -641,18 +555,6 @@ The default API domain will be: <project-id>.api.serverpod.space
       throw StateError('ProjectId must be set.');
     }
 
-    if (projectDir == null) {
-      throw StateError('ProjectDir must be set.');
-    }
-
-    if (configFilePath == null) {
-      throw StateError('ConfigFilePath must be set.');
-    }
-
-    if (performDeploy == null) {
-      throw StateError('PerformDeploy must be set.');
-    }
-
     logger.info(
       'When the server has started, you can access it at:\n'
       '   Web:      https://$projectId.${HostConstants.tenantDomain}/\n'
@@ -682,7 +584,7 @@ The default API domain will be: <project-id>.api.serverpod.space
       cloudApiClient,
       logger: logger,
       projectId: projectId,
-      projectDirectory: projectDir,
+      projectDirectory: projectDir.path,
       configFilePath: configFilePath,
       dartVersionOverride: projectSetup.dartVersionOverride,
       preDeployScripts: projectSetup.suggestedPreDeployScripts,
@@ -704,7 +606,7 @@ The default API domain will be: <project-id>.api.serverpod.space
       fileUploaderFactory,
       logger: logger,
       projectId: projectId,
-      projectDir: projectDir,
+      projectDir: projectDir.path,
       projectConfigFilePath: configFilePath,
       concurrency: deployConcurrency,
       dryRun: deployDryRun,
@@ -726,38 +628,28 @@ The default API domain will be: <project-id>.api.serverpod.space
 }
 
 class ProjectLaunch {
-  String? _projectDir;
-  String? configFilePath;
+  final Directory projectDir;
+  late final String configFilePath;
   String? projectId;
   PlanProfile? plan;
   String? dartVersionOverride;
   bool? enableDb;
   bool? preexistingProject;
-  bool? performDeploy;
+  final bool performDeploy;
   List<String> suggestedPreDeployScripts;
 
   ProjectLaunch({
-    final String? projectDir,
+    required this.projectDir,
     this.projectId,
     this.plan,
     this.dartVersionOverride,
     this.enableDb,
     this.preexistingProject,
-    this.performDeploy,
+    this.performDeploy = true,
     final List<String>? suggestedPreDeployScripts,
-  }) : _projectDir = projectDir,
-       suggestedPreDeployScripts = suggestedPreDeployScripts ?? [] {
-    if (projectDir != null) {
-      configFilePath = _constructConfigFilePath(projectDir);
-    }
+  }) : suggestedPreDeployScripts = suggestedPreDeployScripts ?? [] {
+    configFilePath = _constructConfigFilePath(projectDir.path);
   }
-
-  set projectDir(final String projectDir) {
-    _projectDir = projectDir;
-    configFilePath = _constructConfigFilePath(projectDir);
-  }
-
-  String? get projectDir => _projectDir;
 
   String _constructConfigFilePath(final String projectDir) {
     return p.join(projectDir, ProjectConfigFileConstants.defaultFileName);
@@ -767,14 +659,13 @@ class ProjectLaunch {
   String toString() {
     final text = TablePrinter.columns(
       rows: [
-        ['Project directory', projectDir],
+        ['Project directory', projectDir.path],
         if (preexistingProject != true) ...[
           ['New project id', projectId],
           ['Project plan', plan?.name ?? ''],
           ['Enable DB', enableDb == true ? 'yes' : 'no'],
         ] else
           ['Existing project id', projectId],
-        ['Perform deploy', performDeploy == true ? 'yes' : 'no'],
         if (suggestedPreDeployScripts.isNotEmpty) ...[
           [
             'Pre-deploy hooks',

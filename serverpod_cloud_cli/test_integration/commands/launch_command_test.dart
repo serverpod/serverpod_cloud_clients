@@ -62,7 +62,7 @@ void main() {
     registerFallbackValue(Uuid().v4obj());
   });
 
-  setUp(() {
+  setUp(() async {
     mockFileUploader.init();
     logger.clear();
     reset(client.compute);
@@ -73,6 +73,9 @@ void main() {
     ).thenAnswer(
       (final _) async => ComputeInfoBuilder().withMaxInstances(1).build(),
     );
+
+    // sentinel .git file to prevent search above the sandbox root
+    await d.file('.git').create();
   });
 
   tearDown(() {
@@ -225,7 +228,6 @@ void main() {
             '--plan',
             'starter',
             '--enable-db',
-            '--deploy',
           ]);
 
           await expectLater(commandResult, completes);
@@ -247,7 +249,6 @@ void main() {
               'New project id     $projectId',
               'Project plan       starter',
               'Enable DB          yes',
-              'Perform deploy     yes',
             ]),
           );
         });
@@ -383,7 +384,6 @@ project:
               '--project-dir',
               testProjectDir,
               '--enable-db',
-              '--deploy',
             ]);
 
             await expectLater(commandResult, completes);
@@ -419,7 +419,6 @@ project:
               '--project-dir',
               testProjectDir,
               '--enable-db',
-              '--deploy',
             ]);
 
             await expectLater(commandResult, completes);
@@ -772,7 +771,6 @@ serverpod:
             '--plan',
             'starter',
             '--enable-db',
-            '--deploy',
           ]);
 
           await expectLater(commandResult, completes);
@@ -840,11 +838,14 @@ project:
         });
       });
 
-      group('when an scloud.yaml exists with a mismatching project id', () {
+      group('when an scloud.yaml exists with a mismatching project id'
+          ' and declining confirmation', () {
         const mismatchingProjectId = 'other-project-id';
         late Future commandResult;
 
         setUp(() async {
+          logger.answerNextConfirmsWith([false]);
+
           await d.file(p.join(testProjectDir, 'scloud.yaml'), '''
 project:
   projectId: "$projectId"
@@ -864,17 +865,12 @@ project:
           await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
         });
 
-        test('then logs project id mismatch error message', () async {
+        test('then logs confirmation-to-deploy message', () async {
           await commandResult.catchError((final _) {});
 
-          expect(logger.errorCalls, hasLength(1));
           expect(
-            logger.errorCalls.single,
-            equalsErrorCall(
-              message:
-                  'The specified project ID "$mismatchingProjectId" does not '
-                  'match the scloud config file "$projectId".',
-            ),
+            logger.confirmCalls.map((final call) => call.message),
+            contains(contains('Continue with deployment')),
           );
         });
 
@@ -882,6 +878,52 @@ project:
           await commandResult.catchError((final _) {});
 
           expect(mockFileUploader.uploadedData, isEmpty);
+        });
+      });
+
+      group('when an scloud.yaml exists with a mismatching project id'
+          ' and approving confirmation', () {
+        const mismatchingProjectId = 'other-project-id';
+        late Future commandResult;
+
+        setUp(() async {
+          logger.answerNextConfirmsWith([true]);
+
+          await d.file(p.join(testProjectDir, 'scloud.yaml'), '''
+project:
+  projectId: "$projectId"
+  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
+''').create();
+
+          commandResult = cli.run([
+            'launch',
+            '--project',
+            mismatchingProjectId,
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        test('then logs confirmation-to-deploy message', () async {
+          await commandResult.catchError((final _) {});
+
+          expect(
+            logger.confirmCalls.map((final call) => call.message),
+            contains(contains('Continue with deployment')),
+          );
+        });
+
+        test('then the project is zipped and uploaded', () async {
+          await commandResult;
+
+          expect(
+            logger.progressCalls,
+            containsAllInOrder([
+              equalsProgressCall(message: "Zipping successful."),
+              equalsProgressCall(message: "Upload successful."),
+            ]),
+          );
+          expect(mockFileUploader.uploadedData, isNotEmpty);
         });
       });
 
@@ -900,7 +942,6 @@ project:
             '--plan',
             'starter',
             '--enable-db',
-            '--deploy',
           ]);
         });
 
@@ -926,7 +967,6 @@ project:
               'New project id     $projectId',
               'Project plan       starter',
               'Enable DB          yes',
-              'Perform deploy     yes',
             ]),
           );
         });
@@ -954,9 +994,9 @@ project:
         test('then logs cancellation info message', () async {
           await commandResult.catchError((final _) {});
 
-          expect(logger.infoCalls, hasLength(1));
+          expect(logger.infoCalls, hasLength(2));
           expect(
-            logger.infoCalls.single,
+            logger.infoCalls.last,
             equalsInfoCall(message: 'Setup cancelled.'),
           );
         });
@@ -970,13 +1010,9 @@ project:
       });
 
       group('when executing launch with all settings provided via args '
-          'and project dir is not a serverpod server directory '
-          'and declining confirmation', () {
+          'and project dir is not a serverpod server directory', () {
         late Future commandResult;
         setUp(() async {
-          logger.answerNextInputsWith([testProjectDir]);
-          logger.answerNextConfirmsWith([true, false]);
-
           commandResult = cli.run([
             'launch',
             '--project',
@@ -986,7 +1022,6 @@ project:
             '--plan',
             'starter',
             '--enable-db',
-            '--deploy',
           ]);
         });
 
@@ -1001,73 +1036,15 @@ project:
           expect(
             logger.errorCalls.single,
             equalsErrorCall(
-              message:
-                  'Could not find `pubspec.yaml` in directory `${d.sandbox}`.',
+              message: '`${d.sandbox}` is not a Serverpod server directory.',
               hint: "Provide the project's server directory and try again.",
             ),
           );
         });
-
-        test(
-          'then logs input message to enter valid project directory',
-          () async {
-            await commandResult.catchError((final _) {});
-
-            expect(logger.inputCalls, isNotEmpty);
-            expect(
-              logger.inputCalls,
-              containsAllInOrder([
-                equalsInputCall(message: 'Enter the project directory'),
-              ]),
-            );
-          },
-        );
-
-        test('then logs setup message box', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.boxCalls, hasLength(1));
-          expect(
-            logger.boxCalls.single.message,
-            stringContainsInOrder([
-              'Project setup',
-              'Project directory  $testProjectDir',
-              'New project id     $projectId',
-              'Project plan       starter',
-              'Enable DB          yes',
-              'Perform deploy     yes',
-            ]),
-          );
-        });
-
-        test('then logs confirmation-to-apply message', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(
-            logger.confirmCalls,
-            contains(
-              equalsConfirmCall(
-                message: 'Continue and apply this setup?',
-                defaultValue: true,
-              ),
-            ),
-          );
-        });
-
         test('then logs no success messages', () async {
           await commandResult.catchError((final _) {});
 
           expect(logger.successCalls, isEmpty);
-        });
-
-        test('then logs cancellation info message', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.infoCalls, hasLength(1));
-          expect(
-            logger.infoCalls.single,
-            equalsInfoCall(message: 'Setup cancelled.'),
-          );
         });
 
         test('then does not write scloud.yaml file', () async {
@@ -1099,7 +1076,6 @@ project:
             '--plan',
             'starter',
             '--enable-db',
-            '--deploy',
           ]);
         });
 
@@ -1148,7 +1124,6 @@ project:
               'New project id     $projectId',
               'Project plan       starter',
               'Enable DB          yes',
-              'Perform deploy     yes',
             ]),
           );
         });
@@ -1181,9 +1156,9 @@ project:
         test('then logs cancellation info message', () async {
           await commandResult.catchError((final _) {});
 
-          expect(logger.infoCalls, hasLength(1));
+          expect(logger.infoCalls, hasLength(2));
           expect(
-            logger.infoCalls.single,
+            logger.infoCalls.last,
             equalsInfoCall(message: 'Setup cancelled.'),
           );
         });
@@ -1200,7 +1175,7 @@ project:
           'and declining project cost question', () {
         late Future commandResult;
         setUp(() async {
-          logger.answerNextInputsWith([testProjectDir, projectId]);
+          logger.answerNextInputsWith([projectId]);
           logger.answerNextConfirmsWith([
             false, // decline new project cost acceptance
           ]);
@@ -1232,16 +1207,15 @@ project:
           'and declining confirmation', () {
         late Future commandResult;
         setUp(() async {
-          logger.answerNextInputsWith([testProjectDir, projectId, 'starter']);
+          logger.answerNextInputsWith([projectId, 'starter']);
           logger.answerNextConfirmsWith([
             true, // confirm new project cost acceptance
             true, // enable db
-            true, // perform deploy
             true, // code generation prompt
             false, // do not apply setup
           ]);
 
-          commandResult = cli.run(['launch']);
+          commandResult = cli.run(['launch', '--project-dir', testProjectDir]);
         });
 
         test('then throws ErrorExitException', () async {
@@ -1255,7 +1229,6 @@ project:
           expect(
             logger.inputCalls,
             containsAllInOrder([
-              equalsInputCall(message: 'Enter the project directory'),
               equalsInputCall(
                 message: 'Enter a new project id',
                 defaultValue: 'default: my-project',
@@ -1274,10 +1247,6 @@ project:
             containsAllInOrder([
               equalsConfirmCall(
                 message: 'Enable the database for the project?',
-                defaultValue: true,
-              ),
-              equalsConfirmCall(
-                message: "Deploy '$projectId' project right away?",
                 defaultValue: true,
               ),
               equalsConfirmCall(
@@ -1305,7 +1274,6 @@ project:
               'New project id     $projectId',
               'Project plan       starter',
               'Enable DB          yes',
-              'Perform deploy     yes',
             ]),
           );
         });
@@ -1319,9 +1287,9 @@ project:
         test('then logs cancellation info message', () async {
           await commandResult.catchError((final _) {});
 
-          expect(logger.infoCalls, hasLength(1));
+          expect(logger.infoCalls, hasLength(2));
           expect(
-            logger.infoCalls.single,
+            logger.infoCalls.last,
             equalsInfoCall(message: 'Setup cancelled.'),
           );
         });
@@ -1341,11 +1309,10 @@ project:
         setUp(() async {
           pushCurrentDirectory(d.sandbox);
 
-          logger.answerNextInputsWith([testProjectDir, projectId, 'starter']);
+          logger.answerNextInputsWith([projectId, 'starter']);
           logger.answerNextConfirmsWith([
             true, // confirm new project cost acceptance
             true, // enable db
-            true, // perform deploy
             true, // code generation prompt
             false, // do not apply setup
           ]);
@@ -1367,8 +1334,7 @@ project:
               logger.infoCalls,
               containsAllInOrder([
                 equalsInfoCall(
-                  message:
-                      'Found project directory: ${p.relative(testProjectDir)}',
+                  message: 'Project directory is: $testProjectDir',
                 ),
               ]),
             );
@@ -1400,10 +1366,6 @@ project:
                 defaultValue: true,
               ),
               equalsConfirmCall(
-                message: "Deploy '$projectId' project right away?",
-                defaultValue: true,
-              ),
-              equalsConfirmCall(
                 message:
                     'Add code generation (`serverpod generate`) as a pre-deploy hook?',
                 defaultValue: false,
@@ -1424,11 +1386,10 @@ project:
             logger.boxCalls.single.message,
             stringContainsInOrder([
               'Project setup',
-              'Project directory  ${p.relative(testProjectDir)}',
+              'Project directory  $testProjectDir',
               'New project id     $projectId',
               'Project plan       starter',
               'Enable DB          yes',
-              'Perform deploy     yes',
             ]),
           );
         });
@@ -1458,125 +1419,11 @@ project:
       });
 
       group('when executing launch with all settings provided interactively '
-          'and invalid first project dir input '
-          'and declining confirmation', () {
-        late Future commandResult;
-        setUp(() async {
-          logger.answerNextInputsWith([
-            'invalid_project_dir',
-            testProjectDir,
-            projectId,
-            'growth',
-          ]);
-          logger.answerNextConfirmsWith([
-            true, // confirm new project cost acceptance
-            true, // enable db
-            true, // perform deploy
-            true, // code generation prompt
-            false, // do not apply setup
-          ]);
-
-          commandResult = cli.run(['launch']);
-        });
-
-        test('then throws ErrorExitException', () async {
-          expect(commandResult, throwsA(isA<ErrorExitException>()));
-        });
-
-        test('then logs input messages', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.inputCalls, isNotEmpty);
-          expect(
-            logger.inputCalls,
-            containsAllInOrder([
-              equalsInputCall(message: 'Enter the project directory'),
-              equalsInputCall(message: 'Enter the project directory'),
-              equalsInputCall(
-                message: 'Enter a new project id',
-                defaultValue: 'default: my-project',
-              ),
-              equalsInputCall(message: 'Enter the plan'),
-            ]),
-          );
-        });
-
-        test('then logs confirmation messages', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.confirmCalls, isNotEmpty);
-          expect(
-            logger.confirmCalls,
-            containsAllInOrder([
-              equalsConfirmCall(
-                message: 'Enable the database for the project?',
-                defaultValue: true,
-              ),
-              equalsConfirmCall(
-                message: "Deploy '$projectId' project right away?",
-                defaultValue: true,
-              ),
-              equalsConfirmCall(
-                message:
-                    'Add code generation (`serverpod generate`) as a pre-deploy hook?',
-                defaultValue: false,
-              ),
-              equalsConfirmCall(
-                message: 'Continue and apply this setup?',
-                defaultValue: true,
-              ),
-            ]),
-          );
-        });
-
-        test('then logs setup message box', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.boxCalls, hasLength(1));
-          expect(
-            logger.boxCalls.single.message,
-            stringContainsInOrder([
-              'Project setup',
-              'Project directory  $testProjectDir',
-              'New project id     $projectId',
-              'Project plan       growth',
-              'Enable DB          yes',
-              'Perform deploy     yes',
-            ]),
-          );
-        });
-
-        test('then logs no success messages', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.successCalls, isEmpty);
-        });
-
-        test('then logs cancellation info message', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.infoCalls, hasLength(1));
-          expect(
-            logger.infoCalls.single,
-            equalsInfoCall(message: 'Setup cancelled.'),
-          );
-        });
-
-        test('then does not write scloud.yaml file', () async {
-          await commandResult.catchError((final _) {});
-
-          final expected = d.dir(testProjectDir, [d.nothing('scloud.yaml')]);
-          await expectLater(expected.validate(), completes);
-        });
-      });
-
-      group('when executing launch with all settings provided interactively '
           'and invalid first project id input '
           'and declining confirmation', () {
         late Future commandResult;
         setUp(() async {
           logger.answerNextInputsWith([
-            testProjectDir,
             'invalid_project_id_#%@',
             projectId,
             'starter',
@@ -1584,12 +1431,11 @@ project:
           logger.answerNextConfirmsWith([
             true, // confirm new project cost acceptance
             true, // enable db
-            true, // perform deploy
             true, // code generation prompt
             false, // do not apply setup
           ]);
 
-          commandResult = cli.run(['launch']);
+          commandResult = cli.run(['launch', '--project-dir', testProjectDir]);
         });
 
         test('then throws ErrorExitException', () async {
@@ -1603,7 +1449,6 @@ project:
           expect(
             logger.inputCalls,
             containsAllInOrder([
-              equalsInputCall(message: 'Enter the project directory'),
               equalsInputCall(
                 message: 'Enter a new project id',
                 defaultValue: 'default: my-project',
@@ -1626,10 +1471,6 @@ project:
             containsAllInOrder([
               equalsConfirmCall(
                 message: 'Enable the database for the project?',
-                defaultValue: true,
-              ),
-              equalsConfirmCall(
-                message: "Deploy '$projectId' project right away?",
                 defaultValue: true,
               ),
               equalsConfirmCall(
@@ -1657,7 +1498,6 @@ project:
               'New project id     $projectId',
               'Project plan       starter',
               'Enable DB          yes',
-              'Perform deploy     yes',
             ]),
           );
         });
@@ -1671,9 +1511,9 @@ project:
         test('then logs cancellation info message', () async {
           await commandResult.catchError((final _) {});
 
-          expect(logger.infoCalls, hasLength(1));
+          expect(logger.infoCalls, hasLength(2));
           expect(
-            logger.infoCalls.single,
+            logger.infoCalls.last,
             equalsInfoCall(message: 'Setup cancelled.'),
           );
         });
@@ -1719,21 +1559,15 @@ project:
         late Future commandResult;
 
         setUp(() async {
-          logger.answerNextInputsWith([
-            testProjectDir,
-            '',
-            projectId,
-            'starter',
-          ]);
+          logger.answerNextInputsWith(['', projectId, 'starter']);
           logger.answerNextConfirmsWith([
             true, // confirm new project cost acceptance
             true, // enable db
-            true, // perform deploy
             true, // code generation prompt
             false, // do not apply setup
           ]);
 
-          commandResult = cli.run(['launch']);
+          commandResult = cli.run(['launch', '--project-dir', testProjectDir]);
         });
 
         test('then throws ErrorExitException', () async {
@@ -1747,7 +1581,6 @@ project:
           expect(
             logger.inputCalls,
             containsAllInOrder([
-              equalsInputCall(message: 'Enter the project directory'),
               equalsInputCall(
                 message: 'Enter a new project id',
                 defaultValue: 'default: my-project',
@@ -1766,10 +1599,6 @@ project:
             containsAllInOrder([
               equalsConfirmCall(
                 message: 'Enable the database for the project?',
-                defaultValue: true,
-              ),
-              equalsConfirmCall(
-                message: "Deploy '$projectId' project right away?",
                 defaultValue: true,
               ),
               equalsConfirmCall(
@@ -1792,7 +1621,6 @@ project:
               'New project id     $projectId',
               'Project plan       starter',
               'Enable DB          yes',
-              'Perform deploy     yes',
             ]),
           );
         });
@@ -1806,7 +1634,6 @@ project:
         test('then logs cancellation info message', () async {
           await commandResult.catchError((final _) {});
 
-          expect(logger.infoCalls, hasLength(6));
           expect(
             logger.infoCalls.last,
             equalsInfoCall(message: 'Setup cancelled.'),
@@ -1854,14 +1681,13 @@ project:
         late Future commandResult;
 
         setUp(() async {
-          logger.answerNextInputsWith([testProjectDir, '1', projectId]);
+          logger.answerNextInputsWith(['1', projectId]);
           logger.answerNextConfirmsWith([
-            true, // perform deploy
             true, // code generation prompt
             false, // do not apply setup
           ]);
 
-          commandResult = cli.run(['launch']);
+          commandResult = cli.run(['launch', '--project-dir', testProjectDir]);
         });
 
         test('then throws ErrorExitException', () async {
@@ -1875,7 +1701,6 @@ project:
           expect(
             logger.inputCalls,
             containsAllInOrder([
-              equalsInputCall(message: 'Enter the project directory'),
               equalsInputCall(
                 message: 'Enter a project number from the list, or blank',
               ),
@@ -1890,10 +1715,6 @@ project:
           expect(
             logger.confirmCalls,
             containsAllInOrder([
-              equalsConfirmCall(
-                message: "Deploy 'pre-existing-project-1' project right away?",
-                defaultValue: true,
-              ),
               equalsConfirmCall(
                 message: 'Continue and apply this setup?',
                 defaultValue: true,
@@ -1912,7 +1733,6 @@ project:
               'Project setup',
               'Project directory    $testProjectDir',
               'Existing project id  pre-existing-project-1',
-              'Perform deploy       yes',
             ]),
           );
         });
@@ -1926,7 +1746,6 @@ project:
         test('then logs cancellation info message', () async {
           await commandResult.catchError((final _) {});
 
-          expect(logger.infoCalls, hasLength(6));
           expect(
             logger.infoCalls.last,
             equalsInfoCall(message: 'Setup cancelled.'),
@@ -1965,17 +1784,16 @@ project:
         late Future commandResult;
 
         setUp(() async {
-          logger.answerNextInputsWith([testProjectDir, projectId, 'starter']);
+          logger.answerNextInputsWith([projectId, 'starter']);
           logger.answerNextConfirmsWith([
             false, // decline using existing project
             true, // confirm new project cost acceptance
             true, // enable db
-            true, // perform deploy
             true, // code generation prompt
             false, // do not apply setup
           ]);
 
-          commandResult = cli.run(['launch']);
+          commandResult = cli.run(['launch', '--project-dir', testProjectDir]);
         });
 
         test('then throws ErrorExitException', () async {
@@ -1989,7 +1807,6 @@ project:
           expect(
             logger.inputCalls,
             containsAllInOrder([
-              equalsInputCall(message: 'Enter the project directory'),
               equalsInputCall(
                 message: 'Enter a new project id',
                 defaultValue: 'default: my-project',
@@ -2008,10 +1825,6 @@ project:
             containsAllInOrder([
               equalsConfirmCall(
                 message: 'Enable the database for the project?',
-                defaultValue: true,
-              ),
-              equalsConfirmCall(
-                message: "Deploy '$projectId' project right away?",
                 defaultValue: true,
               ),
               equalsConfirmCall(
@@ -2034,7 +1847,6 @@ project:
               'New project id     $projectId',
               'Project plan       starter',
               'Enable DB          yes',
-              'Perform deploy     yes',
             ]),
           );
         });
@@ -2048,7 +1860,6 @@ project:
         test('then logs cancellation info message', () async {
           await commandResult.catchError((final _) {});
 
-          expect(logger.infoCalls, hasLength(3));
           expect(
             logger.infoCalls.last,
             equalsInfoCall(message: 'Setup cancelled.'),
@@ -2087,31 +1898,24 @@ project:
         late Future commandResult;
 
         setUp(() async {
-          logger.answerNextInputsWith([testProjectDir, projectId]);
+          logger.answerNextInputsWith([projectId]);
           logger.answerNextConfirmsWith([
             true, // confirm using existing project
-            true, // perform deploy
             true, // code generation prompt
             false, // do not apply setup
           ]);
 
-          commandResult = cli.run(['launch']);
+          commandResult = cli.run(['launch', '--project-dir', testProjectDir]);
         });
 
         test('then throws ErrorExitException', () async {
           expect(commandResult, throwsA(isA<ErrorExitException>()));
         });
 
-        test('then logs input messages', () async {
+        test('then logs no input messages', () async {
           await commandResult.catchError((final _) {});
 
-          expect(logger.inputCalls, isNotEmpty);
-          expect(
-            logger.inputCalls,
-            containsAllInOrder([
-              equalsInputCall(message: 'Enter the project directory'),
-            ]),
-          );
+          expect(logger.inputCalls, isEmpty);
         });
 
         test('then logs confirmation messages', () async {
@@ -2122,10 +1926,6 @@ project:
             logger.confirmCalls,
             containsAllInOrder([
               equalsConfirmCall(message: 'Continue with pre-existing-project?'),
-              equalsConfirmCall(
-                message: "Deploy 'pre-existing-project' project right away?",
-                defaultValue: true,
-              ),
               equalsConfirmCall(
                 message: 'Continue and apply this setup?',
                 defaultValue: true,
@@ -2144,7 +1944,6 @@ project:
               'Project setup',
               'Project directory    $testProjectDir',
               'Existing project id  pre-existing-project',
-              'Perform deploy       yes',
             ]),
           );
         });
@@ -2158,7 +1957,6 @@ project:
         test('then logs cancellation info message', () async {
           await commandResult.catchError((final _) {});
 
-          expect(logger.infoCalls, hasLength(3));
           expect(
             logger.infoCalls.last,
             equalsInfoCall(message: 'Setup cancelled.'),
@@ -2198,33 +1996,24 @@ dependencies:
         ).create();
         validProjectDir = p.join(d.sandbox, 'server_dir');
 
-        logger.answerNextInputsWith([
-          invalidProjectDir,
-          validProjectDir,
-          projectId,
-        ]);
+        logger.answerNextInputsWith([projectId]);
         logger.answerNextConfirmsWith([
           true, // enable db
-          true, // perform deploy
           true, // code generation prompt
           false, // do not apply setup
         ]);
 
-        commandResult = cli.run(['launch']);
+        commandResult = cli.run(['launch', '--project-dir', invalidProjectDir]);
       });
 
       test('then throws ErrorExitException', () async {
         expect(commandResult, throwsA(isA<ErrorExitException>()));
       });
 
-      test('then logs input messages', () async {
+      test('then logs no input messages', () async {
         await commandResult.catchError((final _) {});
 
-        expect(logger.inputCalls, hasLength(1));
-        expect(
-          logger.inputCalls.single,
-          equalsInputCall(message: 'Enter the project directory'),
-        );
+        expect(logger.inputCalls, isEmpty);
       });
 
       test('then logs error message for invalid project directory', () async {
@@ -2260,10 +2049,14 @@ dependencies:
         expect(logger.successCalls, isEmpty);
       });
 
-      test('then logs no cancellation info message', () async {
+      test('then logs directory info message', () async {
         await commandResult.catchError((final _) {});
 
-        expect(logger.infoCalls, isEmpty);
+        expect(logger.infoCalls, hasLength(1));
+        expect(
+          logger.infoCalls.single,
+          equalsInfoCall(message: 'Project directory is: $invalidProjectDir'),
+        );
       });
 
       test('then does not write scloud.yaml file', () async {

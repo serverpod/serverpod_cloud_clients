@@ -14,11 +14,6 @@ enum ScloudLaunchSelectionConfig<T extends FormConfigOption>
     options: BoolFormConfigOption.values,
     defaultOptions: {BoolFormConfigOption.enabled},
   ),
-  deploy<BoolFormConfigOption>(
-    label: 'Immediate deployment',
-    options: BoolFormConfigOption.values,
-    defaultOptions: {BoolFormConfigOption.enabled},
-  ),
   codegen<BoolFormConfigOption>(
     label: 'Code generation (`serverpod generate`) as a pre-deploy hook',
     options: BoolFormConfigOption.values,
