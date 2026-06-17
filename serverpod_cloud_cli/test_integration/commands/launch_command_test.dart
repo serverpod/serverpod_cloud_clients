@@ -25,6 +25,16 @@ import '../../test_utils/project_factory.dart';
 import '../../test_utils/push_current_dir.dart';
 import '../../test_utils/test_command_logger.dart';
 
+/// A Serverpod config file content that declares a database,
+/// causing the database to be detected as used by the project.
+const _databaseConfigYaml = '''
+database:
+  host: localhost
+  port: 8090
+  name: my_project
+  user: postgres
+''';
+
 void main() {
   final logger = TestCommandLogger();
   final client = ClientMock(
@@ -207,6 +217,9 @@ void main() {
       setUp(() async {
         await ProjectFactory.serverpodServerDir(
           withDirectoryName: 'server_dir',
+          contents: [
+            d.dir('config', [d.file('development.yaml', _databaseConfigYaml)]),
+          ],
         ).create();
         testProjectDir = p.join(d.sandbox, 'server_dir');
       });
@@ -227,7 +240,6 @@ void main() {
             testProjectDir,
             '--plan',
             'starter',
-            '--enable-db',
           ]);
 
           await expectLater(commandResult, completes);
@@ -248,7 +260,7 @@ void main() {
               'Project directory  $testProjectDir',
               'New project id     $projectId',
               'Project plan       starter',
-              'Enable DB          yes',
+              'Uses DB            yes',
             ]),
           );
         });
@@ -367,6 +379,68 @@ project:
         });
       });
 
+      group('when executing launch for a project without a database config'
+          ', declining serverpod generate pre-deploy hook'
+          ', and approving confirmation,', () {
+        late String noDbProjectDir;
+        late Future commandResult;
+        setUp(() async {
+          await ProjectFactory.serverpodServerDir(
+            withDirectoryName: 'no_db_server_dir',
+            contents: [
+              d.dir('config', [
+                d.file('development.yaml', '''
+apiServer:
+  port: 8080
+'''),
+              ]),
+            ],
+          ).create();
+          noDbProjectDir = p.join(d.sandbox, 'no_db_server_dir');
+
+          clearInteractions(client.database);
+          logger.answerNextConfirmsWith([false, true]);
+
+          commandResult = cli.run([
+            'launch',
+            '--project',
+            projectId,
+            '--project-dir',
+            noDbProjectDir,
+            '--plan',
+            'starter',
+          ]);
+
+          await expectLater(commandResult, completes);
+        });
+
+        test('then logs setup message box with database disabled', () async {
+          expect(logger.boxCalls, hasLength(1));
+          expect(
+            logger.boxCalls.single.message,
+            stringContainsInOrder([
+              'Project setup',
+              'Project directory  $noDbProjectDir',
+              'New project id     $projectId',
+              'Project plan       starter',
+              'Uses DB            no',
+            ]),
+          );
+        });
+
+        test('then does not request database creation', () async {
+          expect(
+            logger.progressCalls.map((final call) => call.message),
+            isNot(contains('Database creation request sent.')),
+          );
+          verifyNever(
+            () => client.database.enableDatabase(
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            ),
+          );
+        });
+      });
+
       group(
         'when executing launch with --plan starter, other settings via args, '
         'and approving confirmation',
@@ -383,7 +457,6 @@ project:
               'starter',
               '--project-dir',
               testProjectDir,
-              '--enable-db',
             ]);
 
             await expectLater(commandResult, completes);
@@ -418,7 +491,6 @@ project:
               'growth',
               '--project-dir',
               testProjectDir,
-              '--enable-db',
             ]);
 
             await expectLater(commandResult, completes);
@@ -451,7 +523,6 @@ project:
             testProjectDir,
             '--plan',
             'starter',
-            '--enable-db',
             '--no-deploy',
             '--dart-version',
             '3.10.0',
@@ -505,7 +576,6 @@ serverpod:
             testProjectDir,
             '--plan',
             'starter',
-            '--enable-db',
             '--no-deploy',
           ]);
 
@@ -583,7 +653,6 @@ serverpod:
             testProjectDir,
             '--plan',
             'starter',
-            '--enable-db',
             '--no-deploy',
           ]);
 
@@ -647,7 +716,6 @@ serverpod:
             testProjectDir,
             '--plan',
             'starter',
-            '--enable-db',
             '--no-deploy',
           ]);
 
@@ -712,7 +780,6 @@ serverpod:
             testProjectDir,
             '--plan',
             'starter',
-            '--enable-db',
             '--no-deploy',
           ]);
 
@@ -770,7 +837,6 @@ serverpod:
             testProjectDir,
             '--plan',
             'starter',
-            '--enable-db',
           ]);
 
           await expectLater(commandResult, completes);
@@ -941,7 +1007,6 @@ project:
             testProjectDir,
             '--plan',
             'starter',
-            '--enable-db',
           ]);
         });
 
@@ -966,7 +1031,7 @@ project:
               'Project directory  $testProjectDir',
               'New project id     $projectId',
               'Project plan       starter',
-              'Enable DB          yes',
+              'Uses DB            yes',
             ]),
           );
         });
@@ -1021,7 +1086,6 @@ project:
             d.sandbox,
             '--plan',
             'starter',
-            '--enable-db',
           ]);
         });
 
@@ -1075,7 +1139,6 @@ project:
             testProjectDir,
             '--plan',
             'starter',
-            '--enable-db',
           ]);
         });
 
@@ -1123,7 +1186,7 @@ project:
               'Project directory  $testProjectDir',
               'New project id     $projectId',
               'Project plan       starter',
-              'Enable DB          yes',
+              'Uses DB            yes',
             ]),
           );
         });
@@ -1210,7 +1273,6 @@ project:
           logger.answerNextInputsWith([projectId, 'starter']);
           logger.answerNextConfirmsWith([
             true, // confirm new project cost acceptance
-            true, // enable db
             true, // code generation prompt
             false, // do not apply setup
           ]);
@@ -1246,10 +1308,6 @@ project:
             logger.confirmCalls,
             containsAllInOrder([
               equalsConfirmCall(
-                message: 'Enable the database for the project?',
-                defaultValue: true,
-              ),
-              equalsConfirmCall(
                 message:
                     'Add code generation (`serverpod generate`) as a pre-deploy hook?',
                 defaultValue: false,
@@ -1273,7 +1331,7 @@ project:
               'Project directory  $testProjectDir',
               'New project id     $projectId',
               'Project plan       starter',
-              'Enable DB          yes',
+              'Uses DB            yes',
             ]),
           );
         });
@@ -1312,7 +1370,6 @@ project:
           logger.answerNextInputsWith([projectId, 'starter']);
           logger.answerNextConfirmsWith([
             true, // confirm new project cost acceptance
-            true, // enable db
             true, // code generation prompt
             false, // do not apply setup
           ]);
@@ -1362,10 +1419,6 @@ project:
             logger.confirmCalls,
             containsAllInOrder([
               equalsConfirmCall(
-                message: 'Enable the database for the project?',
-                defaultValue: true,
-              ),
-              equalsConfirmCall(
                 message:
                     'Add code generation (`serverpod generate`) as a pre-deploy hook?',
                 defaultValue: false,
@@ -1389,7 +1442,7 @@ project:
               'Project directory  $testProjectDir',
               'New project id     $projectId',
               'Project plan       starter',
-              'Enable DB          yes',
+              'Uses DB            yes',
             ]),
           );
         });
@@ -1430,7 +1483,6 @@ project:
           ]);
           logger.answerNextConfirmsWith([
             true, // confirm new project cost acceptance
-            true, // enable db
             true, // code generation prompt
             false, // do not apply setup
           ]);
@@ -1470,10 +1522,6 @@ project:
             logger.confirmCalls,
             containsAllInOrder([
               equalsConfirmCall(
-                message: 'Enable the database for the project?',
-                defaultValue: true,
-              ),
-              equalsConfirmCall(
                 message:
                     'Add code generation (`serverpod generate`) as a pre-deploy hook?',
                 defaultValue: false,
@@ -1497,7 +1545,7 @@ project:
               'Project directory  $testProjectDir',
               'New project id     $projectId',
               'Project plan       starter',
-              'Enable DB          yes',
+              'Uses DB            yes',
             ]),
           );
         });
@@ -1562,7 +1610,6 @@ project:
           logger.answerNextInputsWith(['', projectId, 'starter']);
           logger.answerNextConfirmsWith([
             true, // confirm new project cost acceptance
-            true, // enable db
             true, // code generation prompt
             false, // do not apply setup
           ]);
@@ -1598,10 +1645,6 @@ project:
             logger.confirmCalls,
             containsAllInOrder([
               equalsConfirmCall(
-                message: 'Enable the database for the project?',
-                defaultValue: true,
-              ),
-              equalsConfirmCall(
                 message: 'Continue and apply this setup?',
                 defaultValue: true,
               ),
@@ -1620,7 +1663,7 @@ project:
               'Project directory  $testProjectDir',
               'New project id     $projectId',
               'Project plan       starter',
-              'Enable DB          yes',
+              'Uses DB            yes',
             ]),
           );
         });
@@ -1788,7 +1831,6 @@ project:
           logger.answerNextConfirmsWith([
             false, // decline using existing project
             true, // confirm new project cost acceptance
-            true, // enable db
             true, // code generation prompt
             false, // do not apply setup
           ]);
@@ -1824,10 +1866,6 @@ project:
             logger.confirmCalls,
             containsAllInOrder([
               equalsConfirmCall(
-                message: 'Enable the database for the project?',
-                defaultValue: true,
-              ),
-              equalsConfirmCall(
                 message: 'Continue and apply this setup?',
                 defaultValue: true,
               ),
@@ -1846,7 +1884,7 @@ project:
               'Project directory  $testProjectDir',
               'New project id     $projectId',
               'Project plan       starter',
-              'Enable DB          yes',
+              'Uses DB            yes',
             ]),
           );
         });
@@ -1998,7 +2036,6 @@ dependencies:
 
         logger.answerNextInputsWith([projectId]);
         logger.answerNextConfirmsWith([
-          true, // enable db
           true, // code generation prompt
           false, // do not apply setup
         ]);
@@ -2114,7 +2151,6 @@ resolution: workspace
               testProjectDir,
               '--plan',
               'starter',
-              '--enable-db',
               '--no-deploy',
             ]);
 

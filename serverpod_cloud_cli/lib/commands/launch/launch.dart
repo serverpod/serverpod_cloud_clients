@@ -15,7 +15,6 @@ import 'package:serverpod_cloud_cli/commands/project/project.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/shared/user_interaction/user_confirmations.dart';
-import 'package:serverpod_cloud_cli/util/common.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:serverpod_cloud_cli/util/project_id_validator.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart'
@@ -24,6 +23,7 @@ import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_io.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_model.dart';
 import 'package:serverpod_logging_cli/serverpod_logging_cli.dart';
 import 'package:serverpod_tui/serverpod_tui.dart';
+import 'package:yaml_codec/yaml_codec.dart' show yamlDecode;
 
 abstract class Launch {
   static Future<void> launch(
@@ -33,7 +33,6 @@ abstract class Launch {
     required final Directory projectDirectory,
     required final String? projectId,
     required final PlanProfile? plan,
-    required final bool? enableDb,
     required final bool performDeploy,
     required final bool tui,
     required final int deployConcurrency,
@@ -47,14 +46,17 @@ abstract class Launch {
 
     logger.info('Project directory is: ${projectDirectory.path}');
 
-    if (!_validateProjectDir(logger, projectDirectory)) return;
+    final pubspec = _validateProjectDir(logger, projectDirectory);
+
+    final usesDatabase = _usesDatabase(projectDirectory);
 
     final projectSetup = ProjectLaunch(
       projectDir: projectDirectory,
+      projectPubspec: pubspec,
       projectId: projectId,
       plan: plan,
       dartVersionOverride: dartVersionOverride,
-      enableDb: enableDb,
+      usesDb: usesDatabase,
       performDeploy: performDeploy,
     );
 
@@ -64,7 +66,6 @@ abstract class Launch {
         fileUploaderFactory,
         logger: logger,
         projectSetup: projectSetup,
-        projectDir: projectDirectory,
         deployConcurrency: deployConcurrency,
         deployDryRun: deployDryRun,
         deployShowFiles: deployShowFiles,
@@ -76,7 +77,6 @@ abstract class Launch {
         cloudApiClient,
         fileUploaderFactory,
         logger: logger,
-        projectDir: projectDirectory,
         projectSetup: projectSetup,
         deployConcurrency: deployConcurrency,
         deployDryRun: deployDryRun,
@@ -91,7 +91,6 @@ abstract class Launch {
     final Client cloudApiClient,
     final FileUploaderFactory fileUploaderFactory, {
     required final CommandLogger logger,
-    required final Directory projectDir,
     required final ProjectLaunch projectSetup,
     required final int deployConcurrency,
     required final bool deployDryRun,
@@ -103,23 +102,11 @@ abstract class Launch {
 
     if (projectSetup.preexistingProject != true) {
       await selectPlan(cloudApiClient, logger, projectSetup);
-
-      await selectEnableDb(logger, projectSetup);
     }
 
-    final configFilePath = projectSetup.configFilePath;
+    await suggestCodeGenerationPreDeployHook(logger, projectSetup);
 
-    await suggestCodeGenerationPreDeployHook(
-      logger,
-      projectSetup,
-      configFilePath,
-    );
-
-    await suggestFlutterBuildPreDeployHook(
-      logger,
-      projectSetup,
-      configFilePath,
-    );
+    await suggestFlutterBuildPreDeployHook(logger, projectSetup);
 
     await confirmSetupAndContinue(logger, projectSetup);
 
@@ -141,14 +128,13 @@ abstract class Launch {
     final FileUploaderFactory fileUploaderFactory, {
     required final CommandLogger logger,
     required final ProjectLaunch projectSetup,
-    required final Directory projectDir,
     required final int deployConcurrency,
     required final bool deployDryRun,
     required final bool deployShowFiles,
     final String? deployOutputPath,
     final bool deploySkipTailingStatus = false,
   }) async {
-    final defaultProjectId = _getDefaultProjectId(projectDir);
+    final defaultProjectId = _getDefaultProjectId(projectSetup);
 
     final existingProjects = await _fetchExistingUndeployedProjects(
       cloudApiClient,
@@ -159,7 +145,6 @@ abstract class Launch {
 
     final state = LaunchConfigState(
       projectSetup: projectSetup,
-      projectDir: projectDir.path,
       defaultProjectId: defaultProjectId,
       existingProjectIds: existingProjectIds,
     );
@@ -215,34 +200,54 @@ abstract class Launch {
     );
   }
 
-  static bool _validateProjectDir(
+  /// Validates that the project directory is a valid Serverpod server directory
+  /// and that it has supported dependencies.
+  ///
+  /// Returns the [TenantProjectPubspec] if the project is valid,
+  /// otherwise throws a [FailureException].
+  static TenantProjectPubspec _validateProjectDir(
     final CommandLogger logger,
     final Directory projectDir,
   ) {
-    final TenantProjectPubspec pubspecValidator;
-    try {
-      pubspecValidator = TenantProjectPubspec.fromProjectDir(projectDir);
-    } on FailureException catch (e) {
-      logger.error(e.errors.join('\n'), hint: e.hint);
-      return false;
-    } on Exception catch (_) {
-      return false;
+    final pubspecValidator = TenantProjectPubspec.fromProjectDir(projectDir);
+
+    if (!pubspecValidator.isServerpodServer()) {
+      throw FailureException(
+        error: '`${projectDir.path}` is not a Serverpod server directory.',
+        hint: "Provide the project's server directory and try again.",
+      );
     }
 
-    if (pubspecValidator.isServerpodServer()) {
-      final issues = pubspecValidator.projectDependencyIssues();
-      if (issues.isEmpty) {
-        return true;
-      }
+    final issues = pubspecValidator.projectDependencyIssues();
+    if (issues.isEmpty) {
+      return pubspecValidator;
+    }
 
-      throw FailureException(
-        error:
-            '`${projectDir.path}` is a Serverpod server directory, but it is not valid:',
-        errors: issues,
-        hint: 'Resolve the issues and try again.',
-      );
-    } else {
-      logProjectDirIsNotAServerpodServerDirectory(logger, projectDir.path);
+    throw FailureException(
+      error:
+          '`${projectDir.path}` is a Serverpod server directory, but it is not valid:',
+      errors: issues,
+      hint: 'Resolve the issues and try again.',
+    );
+  }
+
+  static bool _usesDatabase(final Directory projectDir) {
+    const configFiles = [
+      'development.yaml',
+      'production.yaml',
+      'staging.yaml',
+      'test.yaml',
+    ];
+    for (final filename in configFiles) {
+      final configFile = File(p.join(projectDir.path, 'config', filename));
+      if (configFile.existsSync()) {
+        final config = yamlDecode(configFile.readAsStringSync());
+        if (config case final Map<dynamic, dynamic> cfgMap) {
+          if (cfgMap.containsKey('database')) {
+            return true;
+          }
+        }
+      }
     }
     return false;
   }
@@ -275,7 +280,7 @@ abstract class Launch {
 
     await UserConfirmations.confirmNewProjectCostAcceptance(logger);
 
-    final defaultProjectId = _getDefaultProjectId(projectSetup.projectDir);
+    final defaultProjectId = _getDefaultProjectId(projectSetup);
 
     logger.raw(r'''
 The project id is the unique identifier for the project.
@@ -391,10 +396,10 @@ The default API domain will be: <project-id>.api.serverpod.space
     } while (true);
   }
 
-  static String? _getDefaultProjectId(final Directory projectDir) {
-    final pubspec = TenantProjectPubspec.fromProjectDir(projectDir);
-    if (pubspec.isServerpodServer()) {
-      var name = pubspec.pubspec.name.toLowerCase().replaceAll('_', '-');
+  static String? _getDefaultProjectId(final ProjectLaunch projectSetup) {
+    final projectPubspec = projectSetup.projectPubspec;
+    if (projectPubspec.isServerpodServer()) {
+      var name = projectPubspec.pubspec.name.toLowerCase().replaceAll('_', '-');
 
       const serverSuffix = '-server';
       if (name.length > serverSuffix.length && name.endsWith(serverSuffix)) {
@@ -442,31 +447,14 @@ The default API domain will be: <project-id>.api.serverpod.space
     } while (true);
   }
 
-  static Future<void> selectEnableDb(
-    final CommandLogger logger,
-    final ProjectLaunch projectSetup,
-  ) async {
-    if (projectSetup.enableDb != null) {
-      return;
-    }
-
-    final enableDb = await logger.confirm(
-      'Enable the database for the project?',
-      defaultValue: true,
-    );
-
-    projectSetup.enableDb = enableDb;
-  }
-
   static Future<void> suggestFlutterBuildPreDeployHook(
     final CommandLogger logger,
     final ProjectLaunch projectSetup,
-    final String configFilePath,
   ) async {
-    final projectDir = projectSetup.projectDir;
-    final pubspecValidator = TenantProjectPubspec.fromProjectDir(projectDir);
+    final projectPubspec = projectSetup.projectPubspec;
+    final configFilePath = projectSetup.configFilePath;
 
-    if (!pubspecValidator.hasFlutterBuildScript()) return;
+    if (!projectPubspec.hasFlutterBuildScript()) return;
 
     ScloudConfig? existingConfig;
     try {
@@ -493,8 +481,8 @@ The default API domain will be: <project-id>.api.serverpod.space
   static Future<void> suggestCodeGenerationPreDeployHook(
     final CommandLogger logger,
     final ProjectLaunch projectSetup,
-    final String configFilePath,
   ) async {
+    final configFilePath = projectSetup.configFilePath;
     ScloudConfig? existingConfig;
     try {
       existingConfig = ScloudConfigIO.readFromFile(configFilePath);
@@ -547,6 +535,7 @@ The default API domain will be: <project-id>.api.serverpod.space
   }) async {
     final projectId = projectSetup.projectId;
     final projectDir = projectSetup.projectDir;
+    final usesDb = projectSetup.usesDb;
     final configFilePath = projectSetup.configFilePath;
     final performDeploy = projectSetup.performDeploy;
     final planProfile = projectSetup.plan;
@@ -568,13 +557,12 @@ The default API domain will be: <project-id>.api.serverpod.space
         throw StateError('PlanProfile must be set.');
       }
 
-      final enableDb = projectSetup.enableDb!;
       await ProjectCommands.createProject(
         cloudApiClient,
         logger: logger,
         projectId: projectId,
         plan: planProfile,
-        enableDb: enableDb,
+        enableDb: usesDb,
         skipConfirmation: true,
         suppressCommandMessages: true,
       );
@@ -629,21 +617,23 @@ The default API domain will be: <project-id>.api.serverpod.space
 
 class ProjectLaunch {
   final Directory projectDir;
+  final TenantProjectPubspec projectPubspec;
+  final bool usesDb;
   late final String configFilePath;
   String? projectId;
   PlanProfile? plan;
   String? dartVersionOverride;
-  bool? enableDb;
   bool? preexistingProject;
   final bool performDeploy;
   List<String> suggestedPreDeployScripts;
 
   ProjectLaunch({
     required this.projectDir,
+    required this.projectPubspec,
+    required this.usesDb,
     this.projectId,
     this.plan,
     this.dartVersionOverride,
-    this.enableDb,
     this.preexistingProject,
     this.performDeploy = true,
     final List<String>? suggestedPreDeployScripts,
@@ -663,7 +653,7 @@ class ProjectLaunch {
         if (preexistingProject != true) ...[
           ['New project id', projectId],
           ['Project plan', plan?.name ?? ''],
-          ['Enable DB', enableDb == true ? 'yes' : 'no'],
+          ['Uses DB', usesDb ? 'yes' : 'no'],
         ] else
           ['Existing project id', projectId],
         if (suggestedPreDeployScripts.isNotEmpty) ...[

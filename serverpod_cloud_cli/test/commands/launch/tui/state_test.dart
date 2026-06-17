@@ -4,6 +4,7 @@ import 'package:serverpod_cloud_cli/commands/launch/launch.dart';
 import 'package:serverpod_cloud_cli/commands/launch/tui/config.dart';
 import 'package:serverpod_cloud_cli/commands/launch/tui/state.dart';
 import 'package:serverpod_cloud_cli/commands/project/project.dart';
+import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:serverpod_tui/serverpod_tui.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -13,12 +14,25 @@ void main() {
     late LaunchConfigState state;
     late ProjectIdInputConfig projectIdInput;
 
-    setUp(() {
-      final projectDir = Directory(d.sandbox);
+    setUp(() async {
+      await d.dir('project', [
+        d.file('pubspec.yaml', '''
+name: test_project
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+dependencies:
+  serverpod: ^3.4.0
+'''),
+      ]).create();
+      final projectDir = Directory(d.path('project'));
+
       state = LaunchConfigState(
-        projectDir: projectDir.path,
         defaultProjectId: 'my-default-id',
-        projectSetup: ProjectLaunch(projectDir: projectDir),
+        projectSetup: ProjectLaunch(
+          projectDir: projectDir,
+          projectPubspec: TenantProjectPubspec.fromProjectDir(projectDir),
+          usesDb: true,
+        ),
         existingProjectIds: [],
       );
       projectIdInput = state.projectSelectionFormState.configurations
@@ -117,9 +131,12 @@ serverpod:
 
         final projectDir = Directory(d.path('project'));
         final localState = LaunchConfigState(
-          projectDir: projectDir.path,
           defaultProjectId: null,
-          projectSetup: ProjectLaunch(projectDir: projectDir),
+          projectSetup: ProjectLaunch(
+            projectDir: projectDir,
+            projectPubspec: TenantProjectPubspec.fromProjectDir(projectDir),
+            usesDb: true,
+          ),
           existingProjectIds: [],
         );
         final input = localState.projectSelectionFormState.configurations
@@ -192,7 +209,7 @@ serverpod:
         expect(state.projectSetup.projectId, 'my-new-project');
         expect(state.projectSetup.preexistingProject, isFalse);
         expect(state.projectSetup.plan, PlanProfile.starter);
-        expect(state.projectSetup.enableDb, isTrue);
+        expect(state.projectSetup.usesDb, isTrue);
       });
 
       test(
@@ -247,9 +264,12 @@ serverpod:
 
         final projectDir = Directory(d.path('project'));
         final localState = LaunchConfigState(
-          projectDir: projectDir.path,
           defaultProjectId: null,
-          projectSetup: ProjectLaunch(projectDir: projectDir),
+          projectSetup: ProjectLaunch(
+            projectDir: projectDir,
+            projectPubspec: TenantProjectPubspec.fromProjectDir(projectDir),
+            usesDb: true,
+          ),
           existingProjectIds: [],
         );
         final input = localState.projectSelectionFormState.configurations
@@ -287,12 +307,25 @@ serverpod:
   group('Given a LaunchConfigState with existing project IDs', () {
     late LaunchConfigState state;
 
-    setUp(() {
-      final projectDir = Directory(d.sandbox);
+    setUp(() async {
+      await d.dir('project', [
+        d.file('pubspec.yaml', '''
+name: test_project
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+dependencies:
+  serverpod: ^3.4.0
+'''),
+      ]).create();
+      final projectDir = Directory(d.path('project'));
+
       state = LaunchConfigState(
-        projectDir: projectDir.path,
         defaultProjectId: null,
-        projectSetup: ProjectLaunch(projectDir: projectDir),
+        projectSetup: ProjectLaunch(
+          projectDir: projectDir,
+          projectPubspec: TenantProjectPubspec.fromProjectDir(projectDir),
+          usesDb: true,
+        ),
         existingProjectIds: ['project', 'another-project'],
       );
     });
@@ -349,7 +382,7 @@ serverpod:
         expect(state.projectSetup.projectId, 'project');
         expect(state.projectSetup.preexistingProject, isTrue);
         expect(state.projectSetup.plan, isNull);
-        expect(state.projectSetup.enableDb, isNull);
+        expect(state.projectSetup.usesDb, isTrue);
       });
     });
   });

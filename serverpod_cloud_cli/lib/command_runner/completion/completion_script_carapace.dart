@@ -141,6 +141,9 @@ commands:
       --dart-version=: "Overrides the Dart SDK version to use for building the project."
     exclusiveFlags:
       - [await, no-await]
+    completion:
+      flag:
+        output: ["$files"]
 
   - name: variable
 
@@ -330,20 +333,21 @@ commands:
 
   - name: launch
     flags:
-      --project=: "The ID of an existing project to use."
-      --new-project=: "The ID of a new project to create."
+      -p, --project=: "The ID of the project."
       --plan=: "Selects the plan to use."
-      --enable-db: "Flag to enable the database for the project."
-      --no-enable-db: "Flag to enable the database for the project."
-      --deploy: "Flag to immediately deploy the project."
-      --no-deploy: "Flag to immediately deploy the project."
       --dart-version=: "Overrides the Dart SDK version to use for building the project."
+      -c, --concurrency=: "Number of concurrent files processed when zipping the project."
+      --dry-run: "Do not actually deploy, just print the deployment steps."
+      --show-files: "Display the file tree that will be uploaded."
+      -o, --output=: "Save the deployment zip file to the specified path. Must end with .zip"
+      --await: "Await the deployment to finish while showing status progression."
+      --no-await: "Await the deployment to finish while showing status progression."
     exclusiveFlags:
-      - [enable-db, no-enable-db]
-      - [deploy, no-deploy]
+      - [await, no-await]
     completion:
       flag:
         plan: ["starter", "growth"]
+        output: ["$files"]
 
   - name: settings
     flags:

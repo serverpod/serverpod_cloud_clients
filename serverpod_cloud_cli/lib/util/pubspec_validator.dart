@@ -43,7 +43,7 @@ class TenantProjectPubspec {
   ///
   /// If the pubspec.yaml file is not found or if it cannot be parsed,
   /// error messages are printed to logger if provided,
-  /// and [ErrorExitException] is thrown.
+  /// and [FailureException] is thrown.
   factory TenantProjectPubspec.fromProjectDir(
     final Directory projectDirectory,
   ) {
@@ -55,7 +55,7 @@ class TenantProjectPubspec {
   ///
   /// If the pubspec.yaml file is not found or if it cannot be parsed,
   /// error messages are printed to logger if provided,
-  /// and [ErrorExitException] is thrown.
+  /// and [FailureException] is thrown.
   factory TenantProjectPubspec.fromFile(final File pubspecFile) {
     if (!pubspecFile.existsSync()) {
       throw FailureException(

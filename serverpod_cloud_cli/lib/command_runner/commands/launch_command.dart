@@ -12,12 +12,6 @@ import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_io.dart';
 enum LaunchOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption.nonMandatory()),
   plan(PlanOption()),
-  enableDb(
-    FlagOption(
-      argName: 'enable-db',
-      helpText: 'Flag to enable the database for the project.',
-    ),
-  ),
   deploy(
     FlagOption(
       argName: 'deploy',
@@ -78,7 +72,6 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
 
     final projectId = commandConfig.optionalValue(LaunchOption.projectId);
     final plan = commandConfig.optionalValue(LaunchOption.plan);
-    final enableDb = commandConfig.optionalValue(LaunchOption.enableDb);
     final deploy = commandConfig.value(LaunchOption.deploy);
     final dartVersionOverride = commandConfig.optionalValue(
       LaunchOption.dartVersion,
@@ -144,7 +137,6 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
       projectDirectory: projectDirectory,
       projectId: projectId,
       plan: plan,
-      enableDb: enableDb,
       performDeploy: deploy,
       dartVersionOverride: dartVersionOverride,
       tui: tui,

@@ -1,10 +1,7 @@
-import 'dart:io';
-
 import 'package:serverpod_cloud_cli/commands/launch/launch.dart';
 import 'package:serverpod_cloud_cli/commands/launch/tui/config.dart';
 import 'package:serverpod_cloud_cli/commands/project/project.dart';
 import 'package:serverpod_cloud_cli/util/project_id_validator.dart';
-import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:serverpod_tui/serverpod_tui.dart';
 
 /// Phases of the launch TUI.
@@ -13,7 +10,6 @@ enum LaunchPhase { projectSelection, configuration, launching }
 /// Central state for [ScloudLaunchApp] rendered by nocterm.
 class LaunchConfigState extends TuiState {
   LaunchConfigState({
-    required this.projectDir,
     required this.defaultProjectId,
     required final ProjectLaunch projectSetup,
     final List<String> existingProjectIds = const [],
@@ -21,10 +17,6 @@ class LaunchConfigState extends TuiState {
        _existingProjectIds = existingProjectIds {
     _initializeProjectSelectionFormState();
   }
-
-  /// Resolved path to the serverpod project directory (always non-null when
-  /// the TUI is shown).
-  final String projectDir;
 
   /// Default project ID derived from pubspec, or null.
   final String? defaultProjectId;
@@ -153,9 +145,7 @@ class LaunchConfigState extends TuiState {
 
   bool _checkHasFlutterBuildScript() {
     try {
-      final pubspec = TenantProjectPubspec.fromProjectDir(
-        Directory(projectDir),
-      );
+      final pubspec = projectSetup.projectPubspec;
       return pubspec.hasFlutterBuildScript();
     } catch (_) {
       return false;
@@ -219,11 +209,6 @@ class LaunchConfigState extends TuiState {
           (final p) => p.name == planOption.name,
         );
       }
-
-      final database = form.getSelectedOptionFor<BoolFormConfigOption>(
-        ScloudLaunchSelectionConfig.database,
-      );
-      _projectSetup.enableDb = database == BoolFormConfigOption.enabled;
     } else {
       _projectSetup.projectId = _selectedProjectId;
       _projectSetup.preexistingProject = true;
