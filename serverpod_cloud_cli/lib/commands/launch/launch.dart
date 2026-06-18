@@ -12,9 +12,11 @@ import 'package:serverpod_cloud_cli/commands/launch/tui/app.dart';
 import 'package:serverpod_cloud_cli/commands/launch/tui/state.dart';
 import 'package:serverpod_cloud_cli/commands/launch/tui/state_holder.dart';
 import 'package:serverpod_cloud_cli/commands/project/project.dart';
+import 'package:serverpod_cloud_cli/commands/status/status.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
-import 'package:serverpod_cloud_cli/shared/user_interaction/user_confirmations.dart';
+import 'package:serverpod_cloud_cli/util/browser_launcher.dart';
+import 'package:serverpod_cloud_cli/util/listener_server.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:serverpod_cloud_cli/util/project_id_validator.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart'
@@ -32,9 +34,11 @@ abstract class Launch {
     required final CommandLogger logger,
     required final Directory projectDirectory,
     required final String? projectId,
-    required final PlanProfile? plan,
+    required final bool includePreDeployScripts,
     required final bool performDeploy,
     required final bool tui,
+    required final String consoleServer,
+    required final bool openBrowser,
     required final int deployConcurrency,
     required final bool deployDryRun,
     required final bool deployShowFiles,
@@ -44,8 +48,6 @@ abstract class Launch {
   }) async {
     logger.init('Launching new Serverpod Cloud project.\n');
 
-    logger.info('Project directory is: ${projectDirectory.path}');
-
     final pubspec = _validateProjectDir(logger, projectDirectory);
 
     final usesDatabase = _usesDatabase(projectDirectory);
@@ -53,10 +55,10 @@ abstract class Launch {
     final projectSetup = ProjectLaunch(
       projectDir: projectDirectory,
       projectPubspec: pubspec,
-      projectId: projectId,
-      plan: plan,
-      dartVersionOverride: dartVersionOverride,
       usesDb: usesDatabase,
+      includePreDeployScripts: includePreDeployScripts,
+      projectId: projectId,
+      dartVersionOverride: dartVersionOverride,
       performDeploy: performDeploy,
     );
 
@@ -66,6 +68,8 @@ abstract class Launch {
         fileUploaderFactory,
         logger: logger,
         projectSetup: projectSetup,
+        consoleServer: consoleServer,
+        openBrowser: openBrowser,
         deployConcurrency: deployConcurrency,
         deployDryRun: deployDryRun,
         deployShowFiles: deployShowFiles,
@@ -78,6 +82,8 @@ abstract class Launch {
         fileUploaderFactory,
         logger: logger,
         projectSetup: projectSetup,
+        consoleServer: consoleServer,
+        openBrowser: openBrowser,
         deployConcurrency: deployConcurrency,
         deployDryRun: deployDryRun,
         deployShowFiles: deployShowFiles,
@@ -92,6 +98,8 @@ abstract class Launch {
     final FileUploaderFactory fileUploaderFactory, {
     required final CommandLogger logger,
     required final ProjectLaunch projectSetup,
+    required final String consoleServer,
+    required final bool openBrowser,
     required final int deployConcurrency,
     required final bool deployDryRun,
     required final bool deployShowFiles,
@@ -99,10 +107,6 @@ abstract class Launch {
     final bool deploySkipTailingStatus = false,
   }) async {
     await selectProjectId(cloudApiClient, logger, projectSetup);
-
-    if (projectSetup.preexistingProject != true) {
-      await selectPlan(cloudApiClient, logger, projectSetup);
-    }
 
     await suggestCodeGenerationPreDeployHook(logger, projectSetup);
 
@@ -115,6 +119,8 @@ abstract class Launch {
       fileUploaderFactory,
       logger,
       projectSetup,
+      consoleServer: consoleServer,
+      openBrowser: openBrowser,
       deployConcurrency: deployConcurrency,
       deployDryRun: deployDryRun,
       deployShowFiles: deployShowFiles,
@@ -128,6 +134,8 @@ abstract class Launch {
     final FileUploaderFactory fileUploaderFactory, {
     required final CommandLogger logger,
     required final ProjectLaunch projectSetup,
+    required final String consoleServer,
+    required final bool openBrowser,
     required final int deployConcurrency,
     required final bool deployDryRun,
     required final bool deployShowFiles,
@@ -182,6 +190,8 @@ abstract class Launch {
             fileUploaderFactory,
             logger,
             state.projectSetup,
+            consoleServer: consoleServer,
+            openBrowser: openBrowser,
             stdout: toDebugLog,
             stderr: toErrorLog,
             deployConcurrency: deployConcurrency,
@@ -277,8 +287,6 @@ abstract class Launch {
       projectSetup.preexistingProject = true;
       return;
     }
-
-    await UserConfirmations.confirmNewProjectCostAcceptance(logger);
 
     final defaultProjectId = _getDefaultProjectId(projectSetup);
 
@@ -413,44 +421,12 @@ The default API domain will be: <project-id>.api.serverpod.space
     return null;
   }
 
-  static Future<void> selectPlan(
-    final Client cloudApiClient,
-    final CommandLogger logger,
-    final ProjectLaunch projectSetup,
-  ) async {
-    final validPlanNames = PlanProfile.values
-        .map((final p) => p.name)
-        .join(', ');
-
-    var planProfile = projectSetup.plan;
-
-    do {
-      if (planProfile != null) {
-        projectSetup.plan = planProfile;
-        return;
-      }
-
-      final projectPlanName = await logger.input('Enter the plan');
-
-      if (projectPlanName.isEmpty) {
-        logger.error('Plan is required. Must be one of: $validPlanNames');
-        continue;
-      }
-
-      planProfile = PlanProfile.values
-          .where((final p) => p.name == projectPlanName)
-          .firstOrNull;
-      if (planProfile == null) {
-        logger.error('Invalid plan. Must be one of: $validPlanNames');
-        continue;
-      }
-    } while (true);
-  }
-
   static Future<void> suggestFlutterBuildPreDeployHook(
     final CommandLogger logger,
     final ProjectLaunch projectSetup,
   ) async {
+    if (!projectSetup.includePreDeployScripts) return;
+
     final projectPubspec = projectSetup.projectPubspec;
     final configFilePath = projectSetup.configFilePath;
 
@@ -469,12 +445,9 @@ The default API domain will be: <project-id>.api.serverpod.space
     final existingPreDeploy = existingConfig?.scripts.preDeploy ?? [];
     if (existingPreDeploy.contains(flutterBuildHook)) return;
 
-    final shouldAdd = await logger.confirm(
-      "Detected 'flutter_build' script. Add it as a pre-deploy hook?",
-      defaultValue: true,
+    logger.debug(
+      "Detected 'flutter_build' script. Adding it as a pre-deploy hook.",
     );
-
-    if (!shouldAdd) return;
     projectSetup.suggestedPreDeployScripts.add(flutterBuildHook);
   }
 
@@ -482,6 +455,8 @@ The default API domain will be: <project-id>.api.serverpod.space
     final CommandLogger logger,
     final ProjectLaunch projectSetup,
   ) async {
+    if (!projectSetup.includePreDeployScripts) return;
+
     final configFilePath = projectSetup.configFilePath;
     ScloudConfig? existingConfig;
     try {
@@ -495,12 +470,9 @@ The default API domain will be: <project-id>.api.serverpod.space
     final existingPreDeploy = existingConfig?.scripts.preDeploy ?? [];
     if (existingPreDeploy.contains(codeGenerationHook)) return;
 
-    final shouldAdd = await logger.confirm(
-      'Add code generation (`serverpod generate`) as a pre-deploy hook?',
-      defaultValue: false,
+    logger.debug(
+      "Adding code generation ('serverpod generate') as a pre-deploy hook.",
     );
-
-    if (!shouldAdd) return;
     projectSetup.suggestedPreDeployScripts.add(codeGenerationHook);
   }
 
@@ -509,10 +481,11 @@ The default API domain will be: <project-id>.api.serverpod.space
     final ProjectLaunch projectSetup,
   ) async {
     logger.box('Project setup\n\n$projectSetup');
-    final confirm = await logger.confirm(
-      'Continue and apply this setup?',
-      defaultValue: true,
-    );
+
+    final prompt = projectSetup.preexistingProject == true
+        ? 'Continue and apply this setup?'
+        : 'Continue and open the browser to create this new project?';
+    final confirm = await logger.confirm(prompt, defaultValue: true);
 
     if (!confirm) {
       logger.info('Setup cancelled.');
@@ -525,6 +498,8 @@ The default API domain will be: <project-id>.api.serverpod.space
     final FileUploaderFactory fileUploaderFactory,
     final CommandLogger logger,
     final ProjectLaunch projectSetup, {
+    required final String consoleServer,
+    required final bool openBrowser,
     required final int deployConcurrency,
     required final bool deployDryRun,
     required final bool deployShowFiles,
@@ -538,45 +513,43 @@ The default API domain will be: <project-id>.api.serverpod.space
     final usesDb = projectSetup.usesDb;
     final configFilePath = projectSetup.configFilePath;
     final performDeploy = projectSetup.performDeploy;
-    final planProfile = projectSetup.plan;
 
     if (projectId == null) {
       throw StateError('ProjectId must be set.');
     }
 
-    logger.info(
-      'When the server has started, you can access it at:\n'
-      '   Web:      https://$projectId.${HostConstants.tenantDomain}/\n'
-      '   API:      https://$projectId.api.${HostConstants.tenantDomain}/\n'
-      '   Insights: https://$projectId.insights.${HostConstants.tenantDomain}/',
-      newParagraph: true,
-    );
+    logger.info(' ');
 
+    String actualProjectId;
     if (projectSetup.preexistingProject != true) {
-      if (planProfile == null) {
-        throw StateError('PlanProfile must be set.');
-      }
-
-      await ProjectCommands.createProject(
-        cloudApiClient,
-        logger: logger,
-        projectId: projectId,
-        plan: planProfile,
-        enableDb: usesDb,
-        skipConfirmation: true,
-        suppressCommandMessages: true,
+      actualProjectId = await createProject(
+        logger,
+        consoleServer: consoleServer,
+        openBrowser: openBrowser,
+        projectName: projectId,
+        usesDb: usesDb,
       );
+    } else {
+      actualProjectId = projectId;
     }
 
     final safeDartSdk = await ProjectCommands.linkProject(
       cloudApiClient,
       logger: logger,
-      projectId: projectId,
+      projectId: actualProjectId,
       projectDirectory: projectDir.path,
       configFilePath: configFilePath,
       dartVersionOverride: projectSetup.dartVersionOverride,
       preDeployScripts: projectSetup.suggestedPreDeployScripts,
       suppressCommandMessages: true,
+    );
+
+    logger.info(
+      'When the server has started, you can access it at:\n'
+      '   Web:      https://$actualProjectId.${HostConstants.tenantDomain}/\n'
+      '   API:      https://$actualProjectId.api.${HostConstants.tenantDomain}/\n'
+      '   Insights: https://$actualProjectId.insights.${HostConstants.tenantDomain}/',
+      newParagraph: true,
     );
 
     if (!performDeploy) {
@@ -593,7 +566,7 @@ The default API domain will be: <project-id>.api.serverpod.space
       cloudApiClient,
       fileUploaderFactory,
       logger: logger,
-      projectId: projectId,
+      projectId: actualProjectId,
       projectDir: projectDir.path,
       projectConfigFilePath: configFilePath,
       concurrency: deployConcurrency,
@@ -613,6 +586,77 @@ The default API domain will be: <project-id>.api.serverpod.space
       newParagraph: true,
     );
   }
+
+  /// Hands off project creation to the Serverpod Cloud console.
+  ///
+  /// Opens the console's create-project page, forwarding the analyzed project
+  /// information ([projectName] and whether the project [usesDb]), and waits
+  /// for the console to redirect back to a local callback server with the id of
+  /// the created project. Returns the created project id.
+  static Future<String> createProject(
+    final CommandLogger logger, {
+    required final String consoleServer,
+    required final bool openBrowser,
+    required final String projectName,
+    required final bool usesDb,
+    final Duration timeLimit = const Duration(minutes: 5),
+  }) async {
+    final callbackUrlFuture = Completer<Uri>();
+    final projectIdFuture = ListenerServer.listenForCallback(
+      queryParameter: 'projectId',
+      logger: logger,
+      onConnected: callbackUrlFuture.complete,
+      timeLimit: timeLimit,
+      successMessage:
+          'Project created, you may now close this window and return to the CLI.',
+      failureMessage:
+          'Project creation failed, please try again or contact support.',
+    );
+
+    final callbackUrl = await callbackUrlFuture.future;
+    final createProjectUrl = Uri.parse(consoleServer).replace(
+      path: ConsoleRoutes.createProject,
+      queryParameters: {
+        'project-name': projectName,
+        'database-enabled': usesDb.toString(),
+        'return-url': callbackUrl.toString(),
+      },
+    );
+
+    logger.info(
+      'Please create your project in the opened browser or through this link:\n'
+      '$createProjectUrl',
+    );
+
+    if (openBrowser) {
+      try {
+        await BrowserLauncher.openUrl(createProjectUrl);
+      } on Exception catch (e) {
+        logger.error('Failed to open browser', exception: e);
+      }
+    }
+
+    String? createdProjectId;
+    await logger.progress(
+      'Waiting for project creation',
+      successMessage: 'Project created.',
+      padRight: StatusCommands.progressMessagePadLength,
+      () async {
+        createdProjectId = await projectIdFuture;
+        return createdProjectId != null;
+      },
+    );
+
+    final projectId = createdProjectId;
+    if (projectId == null) {
+      throw FailureException(
+        error: 'Failed to create project.',
+        hint: 'Please try again.',
+      );
+    }
+
+    return projectId;
+  }
 }
 
 class ProjectLaunch {
@@ -621,18 +665,18 @@ class ProjectLaunch {
   final bool usesDb;
   late final String configFilePath;
   String? projectId;
-  PlanProfile? plan;
   String? dartVersionOverride;
   bool? preexistingProject;
   final bool performDeploy;
-  List<String> suggestedPreDeployScripts;
+  final bool includePreDeployScripts;
+  final List<String> suggestedPreDeployScripts;
 
   ProjectLaunch({
     required this.projectDir,
     required this.projectPubspec,
     required this.usesDb,
+    required this.includePreDeployScripts,
     this.projectId,
-    this.plan,
     this.dartVersionOverride,
     this.preexistingProject,
     this.performDeploy = true,
@@ -651,17 +695,16 @@ class ProjectLaunch {
       rows: [
         ['Project directory', projectDir.path],
         if (preexistingProject != true) ...[
-          ['New project id', projectId],
-          ['Project plan', plan?.name ?? ''],
+          ['Create new project', 'yes'],
           ['Uses DB', usesDb ? 'yes' : 'no'],
         ] else
-          ['Existing project id', projectId],
+          ['Existing project', projectId],
         if (suggestedPreDeployScripts.isNotEmpty) ...[
           [
             'Pre-deploy hooks',
             suggestedPreDeployScripts
-                .map((final hook) => '  - $hook')
-                .join('\n'),
+                .map((final hook) => "- '$hook'")
+                .join('\n                    '),
           ],
         ],
       ],

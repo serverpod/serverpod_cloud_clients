@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'dart:io' show Directory;
 
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
-import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_auth_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_user_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
@@ -13,17 +13,17 @@ import 'package:serverpod_cloud_cli/util/listener_server.dart';
 abstract class AuthLoginCommands {
   static Future<void> login({
     required final CommandLogger logger,
-    required final GlobalConfiguration globalConfig,
+    required final Directory scloudDir,
+    required final String consoleServer,
+    required final bool openBrowser,
     required final Client cloudApiClient,
     final Duration timeLimit = const Duration(seconds: 300),
     required final bool persistent,
-    required final bool openBrowser,
-    final String signInPath = '/cli/signin',
+    required final String signInPath,
   }) async {
-    final localStoragePath = globalConfig.scloudDir;
-    final serverAddress = globalConfig.consoleServer;
+    final localStoragePath = scloudDir.path;
 
-    final cloudServer = Uri.parse(serverAddress).replace(path: signInPath);
+    final cloudServer = Uri.parse(consoleServer).replace(path: signInPath);
 
     final callbackUrlFuture = Completer<Uri>();
     final tokenFuture = ListenerServer.listenForAuthenticationToken(
@@ -68,11 +68,11 @@ abstract class AuthLoginCommands {
     if (persistent) {
       await ResourceManager.storeServerpodCloudAuthData(
         authData: ServerpodCloudAuthData(token),
-        localStoragePath: localStoragePath.path,
+        localStoragePath: localStoragePath,
       );
       await fetchAndStoreServerpodCloudUserData(
         cloudApiClient: cloudApiClient,
-        localStoragePath: localStoragePath.path,
+        localStoragePath: localStoragePath,
         logger: logger,
       );
     }

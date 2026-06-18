@@ -72,10 +72,12 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
     if (requireLogin && !isAuthenticated) {
       await AuthLoginCommands.login(
         logger: logger,
-        globalConfig: globalConfiguration,
+        scloudDir: globalConfiguration.scloudDir,
+        consoleServer: globalConfiguration.consoleServer,
+        openBrowser: globalConfiguration.browser,
         cloudApiClient: client,
         persistent: true,
-        openBrowser: globalConfiguration.browser,
+        signInPath: globalConfiguration.signInPath,
       );
     }
 

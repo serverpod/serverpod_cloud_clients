@@ -3,7 +3,6 @@ import 'dart:io' show Directory;
 import 'package:serverpod_cloud_cli/commands/launch/launch.dart';
 import 'package:serverpod_cloud_cli/commands/launch/tui/config.dart';
 import 'package:serverpod_cloud_cli/commands/launch/tui/state.dart';
-import 'package:serverpod_cloud_cli/commands/project/project.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:serverpod_tui/serverpod_tui.dart';
 import 'package:test/test.dart';
@@ -32,6 +31,7 @@ dependencies:
           projectDir: projectDir,
           projectPubspec: TenantProjectPubspec.fromProjectDir(projectDir),
           usesDb: true,
+          includePreDeployScripts: true,
         ),
         existingProjectIds: [],
       );
@@ -136,6 +136,7 @@ serverpod:
             projectDir: projectDir,
             projectPubspec: TenantProjectPubspec.fromProjectDir(projectDir),
             usesDb: true,
+            includePreDeployScripts: true,
           ),
           existingProjectIds: [],
         );
@@ -208,7 +209,6 @@ serverpod:
 
         expect(state.projectSetup.projectId, 'my-new-project');
         expect(state.projectSetup.preexistingProject, isFalse);
-        expect(state.projectSetup.plan, PlanProfile.starter);
         expect(state.projectSetup.usesDb, isTrue);
       });
 
@@ -269,6 +269,7 @@ serverpod:
             projectDir: projectDir,
             projectPubspec: TenantProjectPubspec.fromProjectDir(projectDir),
             usesDb: true,
+            includePreDeployScripts: true,
           ),
           existingProjectIds: [],
         );
@@ -325,6 +326,7 @@ dependencies:
           projectDir: projectDir,
           projectPubspec: TenantProjectPubspec.fromProjectDir(projectDir),
           usesDb: true,
+          includePreDeployScripts: true,
         ),
         existingProjectIds: ['project', 'another-project'],
       );
@@ -381,7 +383,6 @@ dependencies:
 
         expect(state.projectSetup.projectId, 'project');
         expect(state.projectSetup.preexistingProject, isTrue);
-        expect(state.projectSetup.plan, isNull);
         expect(state.projectSetup.usesDb, isTrue);
       });
     });

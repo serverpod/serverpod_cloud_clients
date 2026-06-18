@@ -11,7 +11,13 @@ import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_io.dart';
 
 enum LaunchOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption.nonMandatory()),
-  plan(PlanOption()),
+  preDeployScripts(
+    FlagOption(
+      argName: 'pre-deploy-scripts',
+      helpText: 'Set up pre-deploy scripts.',
+      defaultsTo: true,
+    ),
+  ),
   deploy(
     FlagOption(
       argName: 'deploy',
@@ -69,9 +75,11 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
   @override
   Future<void> runWithConfig(final Configuration commandConfig) async {
     final projectConfigFile = globalConfiguration.projectConfigFile;
+    final consoleServer = globalConfiguration.consoleServer;
+    final openBrowser = globalConfiguration.browser;
 
     final projectId = commandConfig.optionalValue(LaunchOption.projectId);
-    final plan = commandConfig.optionalValue(LaunchOption.plan);
+    final preDeployScripts = commandConfig.value(LaunchOption.preDeployScripts);
     final deploy = commandConfig.value(LaunchOption.deploy);
     final dartVersionOverride = commandConfig.optionalValue(
       LaunchOption.dartVersion,
@@ -136,10 +144,12 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
       logger: logger,
       projectDirectory: projectDirectory,
       projectId: projectId,
-      plan: plan,
+      includePreDeployScripts: preDeployScripts,
       performDeploy: deploy,
       dartVersionOverride: dartVersionOverride,
       tui: tui,
+      consoleServer: consoleServer,
+      openBrowser: openBrowser,
       deployConcurrency: concurrency,
       deployDryRun: dryRun,
       deployShowFiles: showFiles,

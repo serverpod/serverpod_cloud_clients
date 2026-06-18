@@ -58,11 +58,8 @@ commands:
           --time-limit=: "The time to wait for the authentication to complete."
           --persistent: "Store the authentication credentials."
           --no-persistent: "Store the authentication credentials."
-          --browser: "Allow CLI to open browser for logging in."
-          --no-browser: "Allow CLI to open browser for logging in."
         exclusiveFlags:
           - [persistent, no-persistent]
-          - [browser, no-browser]
 
       - name: logout
         flags:
@@ -334,7 +331,8 @@ commands:
   - name: launch
     flags:
       -p, --project=: "The ID of the project."
-      --plan=: "Selects the plan to use."
+      --pre-deploy-scripts: "Set up pre-deploy scripts."
+      --no-pre-deploy-scripts: "Set up pre-deploy scripts."
       --dart-version=: "Overrides the Dart SDK version to use for building the project."
       -c, --concurrency=: "Number of concurrent files processed when zipping the project."
       --dry-run: "Do not actually deploy, just print the deployment steps."
@@ -343,10 +341,10 @@ commands:
       --await: "Await the deployment to finish while showing status progression."
       --no-await: "Await the deployment to finish while showing status progression."
     exclusiveFlags:
+      - [pre-deploy-scripts, no-pre-deploy-scripts]
       - [await, no-await]
     completion:
       flag:
-        plan: ["starter", "growth"]
         output: ["$files"]
 
   - name: settings

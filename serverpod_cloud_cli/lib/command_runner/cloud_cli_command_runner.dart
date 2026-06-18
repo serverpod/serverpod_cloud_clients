@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:cli_tools/better_command_runner.dart';
 import 'package:config/config.dart';
+import 'package:ground_control_client/ground_control_client.dart'
+    show ConsoleRoutes;
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 
@@ -518,6 +520,14 @@ enum GlobalOption<V> implements OptionDefinition<V> {
       hide: true,
       defaultsTo: HostConstants.serverpodCloudConsole,
     ),
+  ),
+  signInPath(
+    StringOption(
+      argName: 'sign-in-path',
+      helpText: 'The path to the sign-in endpoint on the server.',
+      hide: true,
+      defaultsTo: ConsoleRoutes.login,
+    ),
   );
 
   const GlobalOption(this.option);
@@ -570,6 +580,8 @@ class GlobalConfiguration extends Configuration<GlobalOption> {
   String get apiServer => value(GlobalOption.apiServer);
 
   String get consoleServer => value(GlobalOption.consoleServer);
+
+  String get signInPath => value(GlobalOption.signInPath);
 
   bool get skipConfirmation => value(GlobalOption.skipConfirmation);
 

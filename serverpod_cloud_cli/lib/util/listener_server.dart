@@ -4,34 +4,69 @@ import 'dart:io';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 
 abstract final class ListenerServer {
-  static Future<String?> listenForAuthenticationToken({
+  /// Starts a local HTTP server that waits for a single callback request and
+  /// returns the value of the [queryParameter] query parameter from it.
+  ///
+  /// The server listens on an available `localhost` port and the resulting
+  /// callback URL is reported through [onConnected] so the caller can hand it
+  /// off to the browser flow. The returned value is `null` if the parameter is
+  /// missing, the [timeLimit] is reached, or an error occurs.
+  ///
+  /// [successMessage] and [failureMessage] are shown in the browser when the
+  /// callback is received with or without the [queryParameter] respectively.
+  static Future<String?> listenForCallback({
+    required final String queryParameter,
+    required final CommandLogger logger,
     final void Function(Uri callbackUrl)? onConnected,
     final Duration timeLimit = const Duration(minutes: 2),
-    required final CommandLogger logger,
+    final String successMessage = 'Success, you may now close this window.',
+    final String failureMessage =
+        'Something went wrong, please try again or contact support.',
   }) async {
     const host = 'localhost';
     final server = await HttpServer.bind(host, 0 /* Pick available port */);
     final localServerAddress = Uri.http('$host:${server.port}', '/callback');
-    logger.debug(
-      'Listening for authentication token on $localServerAddress...',
-    );
+    logger.debug('Listening for callback on $localServerAddress...');
 
-    String? token;
+    String? value;
     try {
       onConnected?.call(localServerAddress);
-      token = await _processRequests(server, logger).timeout(timeLimit);
+      value = await _processRequests(
+        server,
+        logger,
+        queryParameter: queryParameter,
+        successMessage: successMessage,
+        failureMessage: failureMessage,
+      ).timeout(timeLimit);
     } on TimeoutException {
-      logger.debug('Token listener server timed out.');
+      logger.debug('Callback listener server timed out.');
     } catch (error, stackTrace) {
       logger.error(
-        'Token listener server error: $error',
+        'Callback listener server error: $error',
         stackTrace: stackTrace,
       );
     } finally {
       await server.close();
     }
 
-    return token;
+    return value;
+  }
+
+  /// Starts a local HTTP server that waits for the authentication callback and
+  /// returns the authentication token from it.
+  static Future<String?> listenForAuthenticationToken({
+    final void Function(Uri callbackUrl)? onConnected,
+    final Duration timeLimit = const Duration(minutes: 2),
+    required final CommandLogger logger,
+  }) {
+    return listenForCallback(
+      queryParameter: 'token',
+      logger: logger,
+      onConnected: onConnected,
+      timeLimit: timeLimit,
+      successMessage: 'Login successful, you may now close this window.',
+      failureMessage: 'Login failed, please try again or contact support.',
+    );
   }
 
   static String _cliHtmlTemplate(final String message) =>
@@ -66,22 +101,23 @@ abstract final class ListenerServer {
 ''';
 
   static Future<String?> _handleCallbackRequest(
-    final HttpRequest request,
-  ) async {
-    final token = request.uri.queryParameters['token'];
+    final HttpRequest request, {
+    required final String queryParameter,
+    required final String successMessage,
+    required final String failureMessage,
+  }) async {
+    final value = request.uri.queryParameters[queryParameter];
     request.response.statusCode = HttpStatus.ok;
     request.response.headers.contentType = ContentType.html;
     request.response.headers
       ..add(HttpHeaders.accessControlAllowOriginHeader, '*')
       ..add(HttpHeaders.accessControlAllowHeadersHeader, '*');
 
-    final message = token == null
-        ? 'Login failed, please try again or contact support.'
-        : 'Login successful, you may now close this window.';
+    final message = value == null ? failureMessage : successMessage;
 
     request.response.write(_cliHtmlTemplate(message));
 
-    return token;
+    return value;
   }
 
   static Future<void> _handlePreflightRequest(final HttpRequest request) async {
@@ -94,14 +130,22 @@ abstract final class ListenerServer {
 
   static Future<String?> _processRequests(
     final HttpServer server,
-    final CommandLogger logger,
-  ) async {
+    final CommandLogger logger, {
+    required final String queryParameter,
+    required final String successMessage,
+    required final String failureMessage,
+  }) async {
     await for (var request in server) {
       logger.debug('Received request: ${request.method} ${request.uri}');
       try {
         switch ((method: request.method, path: request.uri.pathSegments)) {
           case (method: 'GET', path: ['callback']):
-            return await _handleCallbackRequest(request);
+            return await _handleCallbackRequest(
+              request,
+              queryParameter: queryParameter,
+              successMessage: successMessage,
+              failureMessage: failureMessage,
+            );
           case (method: 'OPTIONS', path: _):
             await _handlePreflightRequest(request);
             break;
@@ -111,7 +155,7 @@ abstract final class ListenerServer {
         }
       } catch (error, stackTrace) {
         logger.error(
-          'Token listener server failed to handle request: $error',
+          'Callback listener server failed to handle request: $error',
           stackTrace: stackTrace,
         );
       } finally {

@@ -1,6 +1,5 @@
 import 'package:serverpod_cloud_cli/commands/launch/launch.dart';
 import 'package:serverpod_cloud_cli/commands/launch/tui/config.dart';
-import 'package:serverpod_cloud_cli/commands/project/project.dart';
 import 'package:serverpod_cloud_cli/util/project_id_validator.dart';
 import 'package:serverpod_tui/serverpod_tui.dart';
 
@@ -200,15 +199,6 @@ class LaunchConfigState extends TuiState {
         _projectSetup.projectId = projectId;
       }
       _projectSetup.preexistingProject = false;
-
-      final planOption = form.getSelectedOptionFor<PlanFormConfigOption>(
-        ScloudLaunchSelectionConfig.plan,
-      );
-      if (planOption != null) {
-        _projectSetup.plan = PlanProfile.values.firstWhere(
-          (final p) => p.name == planOption.name,
-        );
-      }
     } else {
       _projectSetup.projectId = _selectedProjectId;
       _projectSetup.preexistingProject = true;

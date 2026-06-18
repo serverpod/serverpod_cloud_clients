@@ -43,23 +43,6 @@ enum LoginCommandOption<V> implements OptionDefinition<V> {
       defaultsTo: true,
       negatable: true,
     ),
-  ),
-  browserOpt(
-    FlagOption(
-      argName: 'browser',
-      helpText: 'Allow CLI to open browser for logging in.',
-      defaultsTo: true,
-      negatable: true,
-    ),
-  ),
-  // Developer options and flags
-  signinPathOpt(
-    StringOption(
-      argName: 'sign-in-path',
-      helpText: 'The path to the sign-in endpoint on the server.',
-      hide: true,
-      defaultsTo: '/cli/signin',
-    ),
   );
 
   const LoginCommandOption(this.option);
@@ -88,10 +71,9 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
   Future<void> runWithConfig(
     final Configuration<LoginCommandOption> commandConfig,
   ) async {
+    final signInPath = globalConfiguration.signInPath;
     final timeLimit = commandConfig.value(LoginCommandOption.timeoutOpt);
-    final signInPath = commandConfig.value(LoginCommandOption.signinPathOpt);
     final persistent = commandConfig.value(LoginCommandOption.persistentOpt);
-    final openBrowser = commandConfig.value(LoginCommandOption.browserOpt);
 
     final localStoragePath = globalConfiguration.scloudDir;
 
@@ -112,11 +94,12 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
 
     await AuthLoginCommands.login(
       logger: logger,
-      globalConfig: globalConfiguration,
+      scloudDir: globalConfiguration.scloudDir,
+      consoleServer: globalConfiguration.consoleServer,
+      openBrowser: globalConfiguration.browser,
       cloudApiClient: runner.serviceProvider.cloudApiClient,
       timeLimit: timeLimit,
       persistent: persistent,
-      openBrowser: openBrowser,
       signInPath: signInPath,
     );
   }

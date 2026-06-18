@@ -97,7 +97,7 @@ void main() {
       tokenSent = Completer();
 
       unawaited(
-        AuthCallbackHelper.completeAuthCallback(
+        CallbackHelper.completeAuthCallback(
           logger: logger,
           completer: tokenSent,
           token: testToken,

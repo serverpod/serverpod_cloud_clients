@@ -24,6 +24,7 @@ import '../../test_utils/command_logger_matchers.dart';
 import '../../test_utils/project_factory.dart';
 import '../../test_utils/push_current_dir.dart';
 import '../../test_utils/test_command_logger.dart';
+import '../../test_utils/wait_for_callback_info.dart';
 
 /// A Serverpod config file content that declares a database,
 /// causing the database to be detected as used by the project.
@@ -34,6 +35,24 @@ database:
   name: my_project
   user: postgres
 ''';
+
+/// Simulates the console redirecting back to the CLI's local callback server
+/// with [projectId] once the launch command logs the project-creation handoff
+/// URL. Returns a completer that completes when the callback has been made.
+Completer<void> simulateConsoleProjectCreation(
+  final TestCommandLogger logger, {
+  required final String projectId,
+}) {
+  final completer = Completer<void>();
+  unawaited(
+    CallbackHelper.completeProjectCreateCallback(
+      logger: logger,
+      completer: completer,
+      projectId: projectId,
+    ),
+  );
+  return completer;
+}
 
 void main() {
   final logger = TestCommandLogger();
@@ -105,20 +124,6 @@ void main() {
     final attemptId = Uuid().v4obj();
     setUpAll(() async {
       client.authKeyProvider = InMemoryKeyManager.authenticated();
-
-      when(
-        () => client.projects.createProject(
-          cloudProjectId: any(named: 'cloudProjectId'),
-          projectProductName: any(named: 'projectProductName'),
-          underSubscriptionId: any(named: 'underSubscriptionId'),
-        ),
-      ).thenAnswer(
-        (final invocation) async => Future.value(
-          ProjectBuilder()
-              .withCloudProjectId(invocation.namedArguments[#cloudProjectId])
-              .build(),
-        ),
-      );
 
       when(
         () => client.projects.listProjectsInfo(
@@ -225,12 +230,15 @@ void main() {
       });
 
       group('when executing launch with all settings provided via args'
-          ', declining serverpod generate pre-deploy hook'
-          ', enabling initial deploy'
+          ', with --no-pre-deploy-scripts'
           ', and approving confirmation,', () {
         late Future commandResult;
         setUp(() async {
-          logger.answerNextConfirmsWith([false, true]);
+          logger.answerNextConfirmsWith([
+            true, // apply setup prompt
+          ]);
+
+          simulateConsoleProjectCreation(logger, projectId: projectId);
 
           commandResult = cli.run([
             'launch',
@@ -238,8 +246,8 @@ void main() {
             projectId,
             '--project-dir',
             testProjectDir,
-            '--plan',
-            'starter',
+            '--no-pre-deploy-scripts',
+            '--no-browser',
           ]);
 
           await expectLater(commandResult, completes);
@@ -257,11 +265,14 @@ void main() {
             logger.boxCalls.single.message,
             stringContainsInOrder([
               'Project setup',
-              'Project directory  $testProjectDir',
-              'New project id     $projectId',
-              'Project plan       starter',
-              'Uses DB            yes',
+              'Project directory   $testProjectDir',
+              'Create new project  yes',
+              'Uses DB             yes',
             ]),
+          );
+          expect(
+            logger.boxCalls.single.message,
+            isNot(contains('Pre-deploy hooks')),
           );
         });
 
@@ -270,7 +281,8 @@ void main() {
             logger.confirmCalls,
             contains(
               equalsConfirmCall(
-                message: 'Continue and apply this setup?',
+                message:
+                    'Continue and open the browser to create this new project?',
                 defaultValue: true,
               ),
             ),
@@ -281,10 +293,22 @@ void main() {
           expect(
             logger.progressCalls,
             containsAllInOrder([
-              equalsProgressCall(message: "Project registration successful."),
-              equalsProgressCall(message: "Database creation request sent."),
               equalsProgressCall(message: "Configuration files written."),
             ]),
+          );
+        });
+
+        test('then opens the console project-creation handoff link', () async {
+          expect(
+            logger.infoCalls.map((final call) => call.message),
+            contains(
+              allOf(
+                contains(ConsoleRoutes.createProject),
+                contains('project-name=$projectId'),
+                contains('database-enabled=true'),
+                contains('return-url='),
+              ),
+            ),
           );
         });
 
@@ -380,7 +404,7 @@ project:
       });
 
       group('when executing launch for a project without a database config'
-          ', declining serverpod generate pre-deploy hook'
+          ', with --no-pre-deploy-scripts'
           ', and approving confirmation,', () {
         late String noDbProjectDir;
         late Future commandResult;
@@ -399,7 +423,11 @@ apiServer:
           noDbProjectDir = p.join(d.sandbox, 'no_db_server_dir');
 
           clearInteractions(client.database);
-          logger.answerNextConfirmsWith([false, true]);
+          logger.answerNextConfirmsWith([
+            true, // apply setup prompt
+          ]);
+
+          simulateConsoleProjectCreation(logger, projectId: projectId);
 
           commandResult = cli.run([
             'launch',
@@ -407,8 +435,8 @@ apiServer:
             projectId,
             '--project-dir',
             noDbProjectDir,
-            '--plan',
-            'starter',
+            '--no-pre-deploy-scripts',
+            '--no-browser',
           ]);
 
           await expectLater(commandResult, completes);
@@ -420,11 +448,17 @@ apiServer:
             logger.boxCalls.single.message,
             stringContainsInOrder([
               'Project setup',
-              'Project directory  $noDbProjectDir',
-              'New project id     $projectId',
-              'Project plan       starter',
-              'Uses DB            no',
+              'Project directory   $noDbProjectDir',
+              'Create new project  yes',
+              'Uses DB             no',
             ]),
+          );
+        });
+
+        test('then forwards database-disabled to the console', () async {
+          expect(
+            logger.infoCalls.map((final call) => call.message),
+            contains(contains('database-enabled=false')),
           );
         });
 
@@ -441,79 +475,13 @@ apiServer:
         });
       });
 
-      group(
-        'when executing launch with --plan starter, other settings via args, '
-        'and approving confirmation',
-        () {
-          late Future commandResult;
-          setUp(() async {
-            logger.answerNextConfirmsWith([false, true]);
-
-            commandResult = cli.run([
-              'launch',
-              '--project',
-              projectId,
-              '--plan',
-              'starter',
-              '--project-dir',
-              testProjectDir,
-            ]);
-
-            await expectLater(commandResult, completes);
-          });
-
-          test(
-            'then plan checks and project creation use starter plan',
-            () async {
-              await commandResult;
-              expect(
-                logger.boxCalls.single.message,
-                stringContainsInOrder(['Project plan       starter']),
-              );
-            },
-          );
-        },
-      );
-
-      group(
-        'when executing launch with --plan growth, other settings via args, '
-        'and approving confirmation',
-        () {
-          late Future commandResult;
-          setUp(() async {
-            logger.answerNextConfirmsWith([false, true]);
-
-            commandResult = cli.run([
-              'launch',
-              '--project',
-              projectId,
-              '--plan',
-              'growth',
-              '--project-dir',
-              testProjectDir,
-            ]);
-
-            await expectLater(commandResult, completes);
-          });
-
-          test(
-            'then plan checks and project creation use growth plan',
-            () async {
-              await commandResult;
-              expect(
-                logger.boxCalls.single.message,
-                stringContainsInOrder(['Project plan       growth']),
-              );
-            },
-          );
-        },
-      );
-
       group('when executing launch with --dart-version, --no-deploy, '
           'and approving confirmation', () {
         late Future commandResult;
         setUp(() async {
-          logger.answerNextConfirmsWith([false, true]);
+          logger.answerNextConfirmsWith([true]);
+
+          simulateConsoleProjectCreation(logger, projectId: projectId);
 
           commandResult = cli.run([
             'launch',
@@ -521,11 +489,10 @@ apiServer:
             projectId,
             '--project-dir',
             testProjectDir,
-            '--plan',
-            'starter',
             '--no-deploy',
             '--dart-version',
             '3.10.0',
+            '--no-browser',
           ]);
 
           await expectLater(commandResult, completes);
@@ -566,7 +533,9 @@ serverpod:
           ]).create();
           testProjectDir = p.join(d.sandbox, 'server_dir');
 
-          logger.answerNextConfirmsWith([true, true, true]);
+          logger.answerNextConfirmsWith([true]);
+
+          simulateConsoleProjectCreation(logger, projectId: projectId);
 
           commandResult = cli.run([
             'launch',
@@ -574,37 +543,32 @@ serverpod:
             projectId,
             '--project-dir',
             testProjectDir,
-            '--plan',
-            'starter',
             '--no-deploy',
+            '--no-browser',
           ]);
 
           await expectLater(commandResult, completes);
         });
 
-        test('then prompts to add flutter_build as pre-deploy hook', () async {
-          await commandResult.catchError((final _) {});
+        test(
+          'then logs setup message box with flutter_build pre-deploy hook',
+          () async {
+            await commandResult.catchError((final _) {});
 
-          expect(
-            logger.confirmCalls,
-            containsAllInOrder([
-              equalsConfirmCall(
-                message:
-                    'Add code generation (`serverpod generate`) as a pre-deploy hook?',
-                defaultValue: false,
-              ),
-              equalsConfirmCall(
-                message:
-                    "Detected 'flutter_build' script. Add it as a pre-deploy hook?",
-                defaultValue: true,
-              ),
-              equalsConfirmCall(
-                message: 'Continue and apply this setup?',
-                defaultValue: true,
-              ),
-            ]),
-          );
-        });
+            expect(logger.boxCalls, hasLength(1));
+            expect(
+              logger.boxCalls.single.message,
+              stringContainsInOrder([
+                'Project setup',
+                'Project directory   $testProjectDir',
+                'Create new project  yes',
+                'Uses DB             yes',
+                "Pre-deploy hooks    - 'serverpod generate'",
+                "                    - 'serverpod run flutter_build'",
+              ]),
+            );
+          },
+        );
 
         test('then writes scloud.yaml with pre-deploy hook', () async {
           final expected = d.dir(testProjectDir, [
@@ -624,7 +588,7 @@ serverpod:
 
       group('when executing launch with flutter_build script in pubspec.yaml'
           ', disabling initial deploy'
-          ' and declining pre-deploy hook suggestion', () {
+          ' and --no-pre-deploy-scripts', () {
         late String testProjectDir;
         late Future commandResult;
 
@@ -643,7 +607,9 @@ serverpod:
           ]).create();
           testProjectDir = p.join(d.sandbox, 'server_dir');
 
-          logger.answerNextConfirmsWith([true, false, true]);
+          logger.answerNextConfirmsWith([true]);
+
+          simulateConsoleProjectCreation(logger, projectId: projectId);
 
           commandResult = cli.run([
             'launch',
@@ -651,47 +617,39 @@ serverpod:
             projectId,
             '--project-dir',
             testProjectDir,
-            '--plan',
-            'starter',
             '--no-deploy',
+            '--no-pre-deploy-scripts',
+            '--no-browser',
           ]);
 
           await expectLater(commandResult, completes);
         });
 
-        test('then prompts to add flutter_build as pre-deploy hook', () async {
+        test('then does not log pre-deploy hook messages', () async {
           await commandResult.catchError((final _) {});
 
           expect(
-            logger.confirmCalls,
-            containsAllInOrder([
-              equalsConfirmCall(
-                message:
-                    'Add code generation (`serverpod generate`) as a pre-deploy hook?',
-                defaultValue: false,
-              ),
-              equalsConfirmCall(
-                message:
-                    "Detected 'flutter_build' script. Add it as a pre-deploy hook?",
-                defaultValue: true,
-              ),
-            ]),
+            logger.infoCalls.map((final call) => call.message),
+            isNot(contains(contains('as a pre-deploy hook'))),
           );
         });
 
-        test('then does not write pre-deploy hook in scloud.yaml', () async {
-          final expected = d.dir(testProjectDir, [
-            d.file(
-              'scloud.yaml',
-              allOf([
-                contains('projectId: "$projectId"'),
-                contains('serverpod generate'),
-                isNot(contains('serverpod run flutter_build')),
-              ]),
-            ),
-          ]);
-          await expectLater(expected.validate(), completes);
-        });
+        test(
+          'then does not write any pre-deploy hook in scloud.yaml',
+          () async {
+            final expected = d.dir(testProjectDir, [
+              d.file(
+                'scloud.yaml',
+                allOf([
+                  contains('projectId: "$projectId"'),
+                  isNot(contains('serverpod generate')),
+                  isNot(contains('serverpod run flutter_build')),
+                ]),
+              ),
+            ]);
+            await expectLater(expected.validate(), completes);
+          },
+        );
       });
 
       group('when executing launch without flutter_build script in pubspec.yaml'
@@ -706,7 +664,9 @@ serverpod:
           ).create();
           testProjectDir = p.join(d.sandbox, 'server_dir');
 
-          logger.answerNextConfirmsWith([true, true]);
+          logger.answerNextConfirmsWith([true]);
+
+          simulateConsoleProjectCreation(logger, projectId: projectId);
 
           commandResult = cli.run([
             'launch',
@@ -714,48 +674,35 @@ serverpod:
             projectId,
             '--project-dir',
             testProjectDir,
-            '--plan',
-            'starter',
             '--no-deploy',
+            '--no-browser',
           ]);
 
           await expectLater(commandResult, completes);
         });
 
         test(
-          'then does not prompt to add flutter_build as pre-deploy hook',
+          'then logs setup message box with no flutter_build pre-deploy hook',
           () async {
             await commandResult.catchError((final _) {});
 
+            expect(logger.boxCalls, hasLength(1));
             expect(
-              logger.confirmCalls.map((final call) => call.message),
-              isNot(
-                contains(
-                  "Detected 'flutter_build' script. Add it as a pre-deploy hook?",
-                ),
-              ),
+              logger.boxCalls.single.message,
+              stringContainsInOrder([
+                'Project setup',
+                'Project directory   $testProjectDir',
+                'Create new project  yes',
+                'Uses DB             yes',
+                "Pre-deploy hooks    - 'serverpod generate'",
+              ]),
+            );
+            expect(
+              logger.boxCalls.single.message,
+              isNot(contains('flutter_build')),
             );
           },
         );
-
-        test('then prompts to add code generation as pre-deploy hook', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(
-            logger.confirmCalls,
-            containsAllInOrder([
-              equalsConfirmCall(
-                message:
-                    'Add code generation (`serverpod generate`) as a pre-deploy hook?',
-                defaultValue: false,
-              ),
-              equalsConfirmCall(
-                message: 'Continue and apply this setup?',
-                defaultValue: true,
-              ),
-            ]),
-          );
-        });
       });
 
       group('when executing launch with code generation hook suggestion'
@@ -770,7 +717,9 @@ serverpod:
           ).create();
           testProjectDir = p.join(d.sandbox, 'server_dir');
 
-          logger.answerNextConfirmsWith([true, true]);
+          logger.answerNextConfirmsWith([true]);
+
+          simulateConsoleProjectCreation(logger, projectId: projectId);
 
           commandResult = cli.run([
             'launch',
@@ -778,31 +727,11 @@ serverpod:
             projectId,
             '--project-dir',
             testProjectDir,
-            '--plan',
-            'starter',
             '--no-deploy',
+            '--no-browser',
           ]);
 
           await expectLater(commandResult, completes);
-        });
-
-        test('then prompts to add code generation as pre-deploy hook', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(
-            logger.confirmCalls,
-            containsAllInOrder([
-              equalsConfirmCall(
-                message:
-                    'Add code generation (`serverpod generate`) as a pre-deploy hook?',
-                defaultValue: false,
-              ),
-              equalsConfirmCall(
-                message: 'Continue and apply this setup?',
-                defaultValue: true,
-              ),
-            ]),
-          );
         });
 
         test('then writes scloud.yaml with pre-deploy hook', () async {
@@ -817,7 +746,7 @@ serverpod:
       });
 
       group('when executing launch with code generation hook suggestion '
-          'and declining pre-deploy hook suggestion', () {
+          'and --no-pre-deploy-scripts', () {
         late String testProjectDir;
         late Future commandResult;
 
@@ -827,7 +756,9 @@ serverpod:
           ).create();
           testProjectDir = p.join(d.sandbox, 'server_dir');
 
-          logger.answerNextConfirmsWith([false, true]);
+          logger.answerNextConfirmsWith([true]);
+
+          simulateConsoleProjectCreation(logger, projectId: projectId);
 
           commandResult = cli.run([
             'launch',
@@ -835,25 +766,24 @@ serverpod:
             projectId,
             '--project-dir',
             testProjectDir,
-            '--plan',
-            'starter',
+            '--no-pre-deploy-scripts',
+            '--no-browser',
           ]);
 
           await expectLater(commandResult, completes);
         });
 
-        test('then prompts to add code generation as pre-deploy hook', () async {
-          await commandResult.catchError((final _) {});
+        test(
+          'then does not log code generation pre-deploy hook message',
+          () async {
+            await commandResult.catchError((final _) {});
 
-          expect(
-            logger.confirmCalls.first,
-            equalsConfirmCall(
-              message:
-                  'Add code generation (`serverpod generate`) as a pre-deploy hook?',
-              defaultValue: false,
-            ),
-          );
-        });
+            expect(
+              logger.infoCalls.map((final call) => call.message),
+              isNot(contains(contains('as a pre-deploy hook'))),
+            );
+          },
+        );
 
         test('then does not write pre-deploy hook in scloud.yaml', () async {
           final expected = d.dir(testProjectDir, [
@@ -997,7 +927,7 @@ project:
           'and declining confirmation', () {
         late Future commandResult;
         setUp(() async {
-          logger.answerNextConfirmsWith([true, false]);
+          logger.answerNextConfirmsWith([false]);
 
           commandResult = cli.run([
             'launch',
@@ -1005,8 +935,6 @@ project:
             projectId,
             '--project-dir',
             testProjectDir,
-            '--plan',
-            'starter',
           ]);
         });
 
@@ -1028,10 +956,9 @@ project:
             logger.boxCalls.single.message,
             stringContainsInOrder([
               'Project setup',
-              'Project directory  $testProjectDir',
-              'New project id     $projectId',
-              'Project plan       starter',
-              'Uses DB            yes',
+              'Project directory   $testProjectDir',
+              'Create new project  yes',
+              'Uses DB             yes',
             ]),
           );
         });
@@ -1043,7 +970,8 @@ project:
             logger.confirmCalls,
             contains(
               equalsConfirmCall(
-                message: 'Continue and apply this setup?',
+                message:
+                    'Continue and open the browser to create this new project?',
                 defaultValue: true,
               ),
             ),
@@ -1059,7 +987,6 @@ project:
         test('then logs cancellation info message', () async {
           await commandResult.catchError((final _) {});
 
-          expect(logger.infoCalls, hasLength(2));
           expect(
             logger.infoCalls.last,
             equalsInfoCall(message: 'Setup cancelled.'),
@@ -1084,8 +1011,6 @@ project:
             projectId,
             '--project-dir',
             d.sandbox,
-            '--plan',
-            'starter',
           ]);
         });
 
@@ -1126,8 +1051,6 @@ project:
         setUp(() async {
           logger.answerNextInputsWith([projectId]);
           logger.answerNextConfirmsWith([
-            true, // confirm new project cost acceptance
-            true, // code generation prompt
             false, // do not apply setup
           ]);
 
@@ -1137,8 +1060,7 @@ project:
             'invalid-project-id_%^&',
             '--project-dir',
             testProjectDir,
-            '--plan',
-            'starter',
+            '--no-browser',
           ]);
         });
 
@@ -1183,10 +1105,9 @@ project:
             logger.boxCalls.single.message,
             stringContainsInOrder([
               'Project setup',
-              'Project directory  $testProjectDir',
-              'New project id     $projectId',
-              'Project plan       starter',
-              'Uses DB            yes',
+              'Project directory   $testProjectDir',
+              'Create new project  yes',
+              'Uses DB             yes',
             ]),
           );
         });
@@ -1199,11 +1120,7 @@ project:
             containsAllInOrder([
               equalsConfirmCall(
                 message:
-                    'Depending on your subscription, a new project may incur additional costs. Continue?',
-                defaultValue: true,
-              ),
-              equalsConfirmCall(
-                message: 'Continue and apply this setup?',
+                    'Continue and open the browser to create this new project?',
                 defaultValue: true,
               ),
             ]),
@@ -1219,7 +1136,6 @@ project:
         test('then logs cancellation info message', () async {
           await commandResult.catchError((final _) {});
 
-          expect(logger.infoCalls, hasLength(2));
           expect(
             logger.infoCalls.last,
             equalsInfoCall(message: 'Setup cancelled.'),
@@ -1235,45 +1151,11 @@ project:
       });
 
       group('when executing launch with all settings provided interactively '
-          'and declining project cost question', () {
+          'and declining confirmation', () {
         late Future commandResult;
         setUp(() async {
           logger.answerNextInputsWith([projectId]);
           logger.answerNextConfirmsWith([
-            false, // decline new project cost acceptance
-          ]);
-
-          commandResult = cli.run(['launch']);
-        });
-
-        test('then throws ErrorExitException', () async {
-          expect(commandResult, throwsA(isA<ErrorExitException>()));
-        });
-
-        test('then logs confirmation question', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(
-            logger.confirmCalls,
-            contains(
-              equalsConfirmCall(
-                message:
-                    'Depending on your subscription, a new project may incur additional costs. Continue?',
-                defaultValue: true,
-              ),
-            ),
-          );
-        });
-      });
-
-      group('when executing launch with all settings provided interactively '
-          'and declining confirmation', () {
-        late Future commandResult;
-        setUp(() async {
-          logger.answerNextInputsWith([projectId, 'starter']);
-          logger.answerNextConfirmsWith([
-            true, // confirm new project cost acceptance
-            true, // code generation prompt
             false, // do not apply setup
           ]);
 
@@ -1295,7 +1177,6 @@ project:
                 message: 'Enter a new project id',
                 defaultValue: 'default: my-project',
               ),
-              equalsInputCall(message: 'Enter the plan'),
             ]),
           );
         });
@@ -1309,11 +1190,7 @@ project:
             containsAllInOrder([
               equalsConfirmCall(
                 message:
-                    'Add code generation (`serverpod generate`) as a pre-deploy hook?',
-                defaultValue: false,
-              ),
-              equalsConfirmCall(
-                message: 'Continue and apply this setup?',
+                    'Continue and open the browser to create this new project?',
                 defaultValue: true,
               ),
             ]),
@@ -1328,10 +1205,9 @@ project:
             logger.boxCalls.single.message,
             stringContainsInOrder([
               'Project setup',
-              'Project directory  $testProjectDir',
-              'New project id     $projectId',
-              'Project plan       starter',
-              'Uses DB            yes',
+              'Project directory   $testProjectDir',
+              'Create new project  yes',
+              'Uses DB             yes',
             ]),
           );
         });
@@ -1345,7 +1221,6 @@ project:
         test('then logs cancellation info message', () async {
           await commandResult.catchError((final _) {});
 
-          expect(logger.infoCalls, hasLength(2));
           expect(
             logger.infoCalls.last,
             equalsInfoCall(message: 'Setup cancelled.'),
@@ -1367,10 +1242,8 @@ project:
         setUp(() async {
           pushCurrentDirectory(d.sandbox);
 
-          logger.answerNextInputsWith([projectId, 'starter']);
+          logger.answerNextInputsWith([projectId]);
           logger.answerNextConfirmsWith([
-            true, // confirm new project cost acceptance
-            true, // code generation prompt
             false, // do not apply setup
           ]);
 
@@ -1380,23 +1253,6 @@ project:
         test('then throws ErrorExitException', () async {
           expect(commandResult, throwsA(isA<ErrorExitException>()));
         });
-
-        test(
-          'then logs info message that found project dir is selected',
-          () async {
-            await commandResult.catchError((final _) {});
-
-            expect(logger.infoCalls, isNotEmpty);
-            expect(
-              logger.infoCalls,
-              containsAllInOrder([
-                equalsInfoCall(
-                  message: 'Project directory is: $testProjectDir',
-                ),
-              ]),
-            );
-          },
-        );
 
         test('then logs input message for project id', () async {
           await commandResult.catchError((final _) {});
@@ -1420,11 +1276,7 @@ project:
             containsAllInOrder([
               equalsConfirmCall(
                 message:
-                    'Add code generation (`serverpod generate`) as a pre-deploy hook?',
-                defaultValue: false,
-              ),
-              equalsConfirmCall(
-                message: 'Continue and apply this setup?',
+                    'Continue and open the browser to create this new project?',
                 defaultValue: true,
               ),
             ]),
@@ -1439,10 +1291,9 @@ project:
             logger.boxCalls.single.message,
             stringContainsInOrder([
               'Project setup',
-              'Project directory  $testProjectDir',
-              'New project id     $projectId',
-              'Project plan       starter',
-              'Uses DB            yes',
+              'Project directory   $testProjectDir',
+              'Create new project  yes',
+              'Uses DB             yes',
             ]),
           );
         });
@@ -1476,14 +1327,8 @@ project:
           'and declining confirmation', () {
         late Future commandResult;
         setUp(() async {
-          logger.answerNextInputsWith([
-            'invalid_project_id_#%@',
-            projectId,
-            'starter',
-          ]);
+          logger.answerNextInputsWith(['invalid_project_id_#%@', projectId]);
           logger.answerNextConfirmsWith([
-            true, // confirm new project cost acceptance
-            true, // code generation prompt
             false, // do not apply setup
           ]);
 
@@ -1509,7 +1354,6 @@ project:
                 message: 'Enter a new project id',
                 defaultValue: 'default: my-project',
               ),
-              equalsInputCall(message: 'Enter the plan'),
             ]),
           );
         });
@@ -1523,11 +1367,7 @@ project:
             containsAllInOrder([
               equalsConfirmCall(
                 message:
-                    'Add code generation (`serverpod generate`) as a pre-deploy hook?',
-                defaultValue: false,
-              ),
-              equalsConfirmCall(
-                message: 'Continue and apply this setup?',
+                    'Continue and open the browser to create this new project?',
                 defaultValue: true,
               ),
             ]),
@@ -1542,10 +1382,9 @@ project:
             logger.boxCalls.single.message,
             stringContainsInOrder([
               'Project setup',
-              'Project directory  $testProjectDir',
-              'New project id     $projectId',
-              'Project plan       starter',
-              'Uses DB            yes',
+              'Project directory   $testProjectDir',
+              'Create new project  yes',
+              'Uses DB             yes',
             ]),
           );
         });
@@ -1559,7 +1398,6 @@ project:
         test('then logs cancellation info message', () async {
           await commandResult.catchError((final _) {});
 
-          expect(logger.infoCalls, hasLength(2));
           expect(
             logger.infoCalls.last,
             equalsInfoCall(message: 'Setup cancelled.'),
@@ -1607,10 +1445,8 @@ project:
         late Future commandResult;
 
         setUp(() async {
-          logger.answerNextInputsWith(['', projectId, 'starter']);
+          logger.answerNextInputsWith(['', projectId]);
           logger.answerNextConfirmsWith([
-            true, // confirm new project cost acceptance
-            true, // code generation prompt
             false, // do not apply setup
           ]);
 
@@ -1632,7 +1468,6 @@ project:
                 message: 'Enter a new project id',
                 defaultValue: 'default: my-project',
               ),
-              equalsInputCall(message: 'Enter the plan'),
             ]),
           );
         });
@@ -1645,7 +1480,8 @@ project:
             logger.confirmCalls,
             containsAllInOrder([
               equalsConfirmCall(
-                message: 'Continue and apply this setup?',
+                message:
+                    'Continue and open the browser to create this new project?',
                 defaultValue: true,
               ),
             ]),
@@ -1660,10 +1496,9 @@ project:
             logger.boxCalls.single.message,
             stringContainsInOrder([
               'Project setup',
-              'Project directory  $testProjectDir',
-              'New project id     $projectId',
-              'Project plan       starter',
-              'Uses DB            yes',
+              'Project directory   $testProjectDir',
+              'Create new project  yes',
+              'Uses DB             yes',
             ]),
           );
         });
@@ -1726,7 +1561,6 @@ project:
         setUp(() async {
           logger.answerNextInputsWith(['1', projectId]);
           logger.answerNextConfirmsWith([
-            true, // code generation prompt
             false, // do not apply setup
           ]);
 
@@ -1774,8 +1608,8 @@ project:
             logger.boxCalls.single.message,
             stringContainsInOrder([
               'Project setup',
-              'Project directory    $testProjectDir',
-              'Existing project id  pre-existing-project-1',
+              'Project directory  $testProjectDir',
+              'Existing project   pre-existing-project-1',
             ]),
           );
         });
@@ -1827,11 +1661,9 @@ project:
         late Future commandResult;
 
         setUp(() async {
-          logger.answerNextInputsWith([projectId, 'starter']);
+          logger.answerNextInputsWith([projectId]);
           logger.answerNextConfirmsWith([
             false, // decline using existing project
-            true, // confirm new project cost acceptance
-            true, // code generation prompt
             false, // do not apply setup
           ]);
 
@@ -1853,7 +1685,6 @@ project:
                 message: 'Enter a new project id',
                 defaultValue: 'default: my-project',
               ),
-              equalsInputCall(message: 'Enter the plan'),
             ]),
           );
         });
@@ -1866,7 +1697,8 @@ project:
             logger.confirmCalls,
             containsAllInOrder([
               equalsConfirmCall(
-                message: 'Continue and apply this setup?',
+                message:
+                    'Continue and open the browser to create this new project?',
                 defaultValue: true,
               ),
             ]),
@@ -1881,10 +1713,9 @@ project:
             logger.boxCalls.single.message,
             stringContainsInOrder([
               'Project setup',
-              'Project directory  $testProjectDir',
-              'New project id     $projectId',
-              'Project plan       starter',
-              'Uses DB            yes',
+              'Project directory   $testProjectDir',
+              'Create new project  yes',
+              'Uses DB             yes',
             ]),
           );
         });
@@ -1939,7 +1770,6 @@ project:
           logger.answerNextInputsWith([projectId]);
           logger.answerNextConfirmsWith([
             true, // confirm using existing project
-            true, // code generation prompt
             false, // do not apply setup
           ]);
 
@@ -1980,8 +1810,8 @@ project:
             logger.boxCalls.single.message,
             stringContainsInOrder([
               'Project setup',
-              'Project directory    $testProjectDir',
-              'Existing project id  pre-existing-project',
+              'Project directory  $testProjectDir',
+              'Existing project   pre-existing-project',
             ]),
           );
         });
@@ -2036,7 +1866,6 @@ dependencies:
 
         logger.answerNextInputsWith([projectId]);
         logger.answerNextConfirmsWith([
-          true, // code generation prompt
           false, // do not apply setup
         ]);
 
@@ -2086,16 +1915,6 @@ dependencies:
         expect(logger.successCalls, isEmpty);
       });
 
-      test('then logs directory info message', () async {
-        await commandResult.catchError((final _) {});
-
-        expect(logger.infoCalls, hasLength(1));
-        expect(
-          logger.infoCalls.single,
-          equalsInfoCall(message: 'Project directory is: $invalidProjectDir'),
-        );
-      });
-
       test('then does not write scloud.yaml file', () async {
         await commandResult.catchError((final _) {});
 
@@ -2141,7 +1960,9 @@ resolution: workspace
             ' and approving confirmation', () {
           late Future commandResult;
           setUp(() async {
-            logger.answerNextConfirmsWith([true, true]);
+            logger.answerNextConfirmsWith([true]);
+
+            simulateConsoleProjectCreation(logger, projectId: projectId);
 
             commandResult = cli.run([
               'launch',
@@ -2149,9 +1970,8 @@ resolution: workspace
               projectId,
               '--project-dir',
               testProjectDir,
-              '--plan',
-              'starter',
               '--no-deploy',
+              '--no-browser',
             ]);
 
             await commandResult;
