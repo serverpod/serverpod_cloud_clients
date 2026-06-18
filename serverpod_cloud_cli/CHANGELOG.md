@@ -1,6 +1,20 @@
 
 # Changelog
 
+## [0.32.0] - 2026-06-18
+
+### New
+
+- **Streamlined launch flow** - The `launch` command now auto-detects if your project uses a database and automatically runs deployment without prompting for directories or setup confirmation.
+- **Console-based project creation** - Launching a new project now hands off the creation process to the web console, eliminating most command-line prompts.
+- **Smart redeploy behavior** - The `launch` command now automatically triggers a redeployment if local configuration is found for an existing project.
+- **Non-default TUI mode** - Renamed the launch interactive option to `--tui` and set it to be disabled by default.
+- **CLI update command** - Updated the CLI update prompt to suggest running `dart install` instead of `dart pub global activate` for a cleaner setup.
+
+### Removed
+
+- **Unnecessary launch flags** - Removed the obsolete `--plan`, `--enable-db`, and interactive deploy-skipping options to simplify the command interface.
+
 ## [0.31.0] - [2026-06-08]
 
 ### Added
