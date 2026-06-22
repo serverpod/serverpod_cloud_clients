@@ -72,6 +72,7 @@ void main() {
         ProcurementDeniedException(
           message:
               'The maximum number of projects that can be created has been reached (5).',
+          reason: ProcurementDeniedReason.tooManyProjects,
         ),
         StackTrace.current,
       ),

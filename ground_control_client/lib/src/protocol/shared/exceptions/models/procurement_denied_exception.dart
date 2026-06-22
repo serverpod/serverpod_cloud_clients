@@ -11,6 +11,8 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import '../../../shared/exceptions/models/procurement_denied_reason.dart'
+    as _i2;
 
 /// Exception thrown when a procurement is denied to the user / organization
 /// due to insufficient allowance or other subscription limits.
@@ -18,45 +20,67 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 /// This is distinct from access authorization, and from quota limits.
 abstract class ProcurementDeniedException
     implements _i1.SerializableException, _i1.SerializableModel {
-  ProcurementDeniedException._({required this.message});
+  ProcurementDeniedException._({required this.message, required this.reason});
 
-  factory ProcurementDeniedException({required String message}) =
-      _ProcurementDeniedExceptionImpl;
+  factory ProcurementDeniedException({
+    required String message,
+    required _i2.ProcurementDeniedReason reason,
+  }) = _ProcurementDeniedExceptionImpl;
 
   factory ProcurementDeniedException.fromJson(
     Map<String, dynamic> jsonSerialization,
   ) {
     return ProcurementDeniedException(
       message: jsonSerialization['message'] as String,
+      reason: _i2.ProcurementDeniedReason.fromJson(
+        (jsonSerialization['reason'] as String),
+      ),
     );
   }
 
   String message;
 
+  _i2.ProcurementDeniedReason reason;
+
   /// Returns a shallow copy of this [ProcurementDeniedException]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
-  ProcurementDeniedException copyWith({String? message});
+  ProcurementDeniedException copyWith({
+    String? message,
+    _i2.ProcurementDeniedReason? reason,
+  });
   @override
   Map<String, dynamic> toJson() {
-    return {'__className__': 'ProcurementDeniedException', 'message': message};
+    return {
+      '__className__': 'ProcurementDeniedException',
+      'message': message,
+      'reason': reason.toJson(),
+    };
   }
 
   @override
   String toString() {
-    return 'ProcurementDeniedException(message: $message)';
+    return 'ProcurementDeniedException(message: $message, reason: $reason)';
   }
 }
 
 class _ProcurementDeniedExceptionImpl extends ProcurementDeniedException {
-  _ProcurementDeniedExceptionImpl({required String message})
-    : super._(message: message);
+  _ProcurementDeniedExceptionImpl({
+    required String message,
+    required _i2.ProcurementDeniedReason reason,
+  }) : super._(message: message, reason: reason);
 
   /// Returns a shallow copy of this [ProcurementDeniedException]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
   @override
-  ProcurementDeniedException copyWith({String? message}) {
-    return ProcurementDeniedException(message: message ?? this.message);
+  ProcurementDeniedException copyWith({
+    String? message,
+    _i2.ProcurementDeniedReason? reason,
+  }) {
+    return ProcurementDeniedException(
+      message: message ?? this.message,
+      reason: reason ?? this.reason,
+    );
   }
 }
