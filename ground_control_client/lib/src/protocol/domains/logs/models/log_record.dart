@@ -17,6 +17,8 @@ abstract class LogRecord implements _i1.SerializableModel {
   LogRecord._({
     required this.cloudProjectId,
     required this.cloudCapsuleId,
+    this.deployAttemptId,
+    this.serverInstanceId,
     required this.recordId,
     required this.timestamp,
     this.severity,
@@ -26,6 +28,8 @@ abstract class LogRecord implements _i1.SerializableModel {
   factory LogRecord({
     required String cloudProjectId,
     required String cloudCapsuleId,
+    _i1.UuidValue? deployAttemptId,
+    String? serverInstanceId,
     required String recordId,
     required DateTime timestamp,
     String? severity,
@@ -36,6 +40,12 @@ abstract class LogRecord implements _i1.SerializableModel {
     return LogRecord(
       cloudProjectId: jsonSerialization['cloudProjectId'] as String,
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
+      deployAttemptId: jsonSerialization['deployAttemptId'] == null
+          ? null
+          : _i1.UuidValueJsonExtension.fromJson(
+              jsonSerialization['deployAttemptId'],
+            ),
+      serverInstanceId: jsonSerialization['serverInstanceId'] as String?,
       recordId: jsonSerialization['recordId'] as String,
       timestamp: _i1.DateTimeJsonExtension.fromJson(
         jsonSerialization['timestamp'],
@@ -50,6 +60,13 @@ abstract class LogRecord implements _i1.SerializableModel {
 
   /// The ID of the capsule this log record is from.
   String cloudCapsuleId;
+
+  /// The ID of the deploy attempt (i.e. version) this log record is from.
+  _i1.UuidValue? deployAttemptId;
+
+  /// The ID of the server instance this log record is from.
+  /// Null if this is a build log record.
+  String? serverInstanceId;
 
   /// The ID of this log record.
   String recordId;
@@ -69,6 +86,8 @@ abstract class LogRecord implements _i1.SerializableModel {
   LogRecord copyWith({
     String? cloudProjectId,
     String? cloudCapsuleId,
+    _i1.UuidValue? deployAttemptId,
+    String? serverInstanceId,
     String? recordId,
     DateTime? timestamp,
     String? severity,
@@ -80,6 +99,8 @@ abstract class LogRecord implements _i1.SerializableModel {
       '__className__': 'LogRecord',
       'cloudProjectId': cloudProjectId,
       'cloudCapsuleId': cloudCapsuleId,
+      if (deployAttemptId != null) 'deployAttemptId': deployAttemptId?.toJson(),
+      if (serverInstanceId != null) 'serverInstanceId': serverInstanceId,
       'recordId': recordId,
       'timestamp': timestamp.toJson(),
       if (severity != null) 'severity': severity,
@@ -99,6 +120,8 @@ class _LogRecordImpl extends LogRecord {
   _LogRecordImpl({
     required String cloudProjectId,
     required String cloudCapsuleId,
+    _i1.UuidValue? deployAttemptId,
+    String? serverInstanceId,
     required String recordId,
     required DateTime timestamp,
     String? severity,
@@ -106,6 +129,8 @@ class _LogRecordImpl extends LogRecord {
   }) : super._(
          cloudProjectId: cloudProjectId,
          cloudCapsuleId: cloudCapsuleId,
+         deployAttemptId: deployAttemptId,
+         serverInstanceId: serverInstanceId,
          recordId: recordId,
          timestamp: timestamp,
          severity: severity,
@@ -119,6 +144,8 @@ class _LogRecordImpl extends LogRecord {
   LogRecord copyWith({
     String? cloudProjectId,
     String? cloudCapsuleId,
+    Object? deployAttemptId = _Undefined,
+    Object? serverInstanceId = _Undefined,
     String? recordId,
     DateTime? timestamp,
     Object? severity = _Undefined,
@@ -127,6 +154,12 @@ class _LogRecordImpl extends LogRecord {
     return LogRecord(
       cloudProjectId: cloudProjectId ?? this.cloudProjectId,
       cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
+      deployAttemptId: deployAttemptId is _i1.UuidValue?
+          ? deployAttemptId
+          : this.deployAttemptId,
+      serverInstanceId: serverInstanceId is String?
+          ? serverInstanceId
+          : this.serverInstanceId,
       recordId: recordId ?? this.recordId,
       timestamp: timestamp ?? this.timestamp,
       severity: severity is String? ? severity : this.severity,

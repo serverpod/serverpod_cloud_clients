@@ -1,7 +1,6 @@
 import 'package:mocktail/mocktail.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
-import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:test/test.dart';
 
@@ -24,20 +23,20 @@ void main() {
   final projectId = 'my-project-id';
 
   final mockRecords = [
-    LogRecord(
-      cloudProjectId: projectId,
-      cloudCapsuleId: projectId,
-      recordId: '1',
-      timestamp: logTimestamp,
-      content: 'Log message 1',
-    ),
-    LogRecord(
-      cloudProjectId: projectId,
-      cloudCapsuleId: projectId,
-      recordId: '2',
-      timestamp: logTimestamp,
-      content: 'Log message 2',
-    ),
+    LogRecordBuilder()
+        .withCloudIds(projectId)
+        .withRecordId('1')
+        .withTimestamp(logTimestamp)
+        .withContent('Log message 1')
+        .withSeverity(null)
+        .build(),
+    LogRecordBuilder()
+        .withCloudIds(projectId)
+        .withRecordId('2')
+        .withTimestamp(logTimestamp)
+        .withContent('Log message 2')
+        .withSeverity(null)
+        .build(),
   ];
 
   group('Given stored credentials', () {

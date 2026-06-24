@@ -9,6 +9,7 @@ export 'compute_info_builder.dart';
 export 'database_info_builder.dart';
 export 'deploy_attempt_builder.dart';
 export 'deploy_attempt_stage_builder.dart';
+export 'log_record_builder.dart';
 export 'role_builder.dart';
 export 'project_builder.dart';
 export 'plan_info_builder.dart';
