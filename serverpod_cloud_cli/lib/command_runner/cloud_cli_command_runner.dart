@@ -201,7 +201,10 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
       );
 
       if (isRequiredUpdate) {
-        throw ErrorExitException('You need to update the CLI to continue.');
+        throw ErrorExitException.code(
+          ExitCodeConstants.scloudUpdateRequired,
+          'You need to update the CLI to continue.',
+        );
       }
     }
 

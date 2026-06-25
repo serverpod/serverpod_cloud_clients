@@ -22,6 +22,11 @@ class ErrorExitException extends ExitException {
   ErrorExitException([this.reason, this.nestedException, this.nestedStackTrace])
     : super.error();
 
+  /// Creates an [ErrorExitException] with a specific exit code.
+  ErrorExitException.code(super.code, [this.reason])
+    : nestedException = null,
+      nestedStackTrace = null;
+
   @override
   String toString() {
     final reasonStr = reason == null ? '' : ': $reason';

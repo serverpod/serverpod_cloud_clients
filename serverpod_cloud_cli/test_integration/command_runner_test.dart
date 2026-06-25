@@ -157,8 +157,17 @@ void main() {
       commandResult = cli.run(['version', '--config-dir', testCacheFolderPath]);
     });
 
-    test('then should throw exit exception', () async {
-      await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+    test('then should throw ErrorExitException with exit code 69', () async {
+      await expectLater(
+        commandResult,
+        throwsA(
+          isA<ErrorExitException>().having(
+            (final e) => e.exitCode,
+            'exitCode',
+            69,
+          ),
+        ),
+      );
     });
 
     test('then should require update', () async {
@@ -199,8 +208,17 @@ void main() {
       commandResult = cli.run(['version', '--config-dir', testCacheFolderPath]);
     });
 
-    test('then should throw exception', () async {
-      await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+    test('then should throw ErrorExitException with exit code 69', () async {
+      await expectLater(
+        commandResult,
+        throwsA(
+          isA<ErrorExitException>().having(
+            (final e) => e.exitCode,
+            'exitCode',
+            69,
+          ),
+        ),
+      );
     });
 
     test('then should require update', () async {

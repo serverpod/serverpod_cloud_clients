@@ -5,6 +5,11 @@ abstract class HostConstants {
   static const tenantDomain = 'serverpod.space';
 }
 
+abstract final class ExitCodeConstants {
+  /// The exit code for when `scloud` must be updated.
+  static const scloudUpdateRequired = 69;
+}
+
 abstract final class VersionConstants {
   /// The minimum SDK version supported for tenant projects in Serverpod Cloud.
   static const minSupportedSdkVersion = '3.8.0';
