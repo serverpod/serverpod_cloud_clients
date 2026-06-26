@@ -247,7 +247,7 @@ abstract class ProjectCommands {
     }
 
     await logger.progress(
-      'Writing cloud project configuration files',
+      'Writing cloud configuration files',
       successMessage: 'Configuration files written.',
       padRight: StatusCommands.progressMessagePadLength,
       () async {

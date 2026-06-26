@@ -5,7 +5,10 @@ import 'dart:io';
 
 import 'package:cli_tools/cli_tools.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
+import 'package:serverpod_cloud_cli/util/inline_tui/inline_tui.dart'
+    show InlineTerminal;
 
+import '../test/util/inline_tui/helpers/fake_terminal.dart';
 import 'mock_stdin.dart';
 import 'mock_stdout.dart';
 
@@ -203,11 +206,18 @@ class TestCommandLogger extends CommandLogger {
 
   final bool printToStdout;
   final Logger _logger;
+  InlineTerminal? _inlineTerminal;
 
   /// Enable [printToStdout] temporarily to aid debugging.
   TestCommandLogger({this.printToStdout = false})
     : _logger = VoidLogger(),
       super(VoidLogger());
+
+  @override
+  InlineTerminal get inlineTerminal => _inlineTerminal ??= FakeTerminal();
+
+  set inlineTerminal(final InlineTerminal terminal) =>
+      _inlineTerminal = terminal;
 
   int get totalLogCalls =>
       boxCalls.length +
@@ -238,6 +248,7 @@ class TestCommandLogger extends CommandLogger {
   }
 
   void clear() {
+    _inlineTerminal = null;
     flushCallsCount = 0;
     errorCalls.clear();
     infoCalls.clear();

@@ -69,6 +69,7 @@ abstract class Deploy {
         projectDir,
         logger,
         scriptType: 'pre-deploy',
+        padHeadingRight: StatusCommands.progressMessagePadLength,
         stdout: stdout,
         stderr: stderr,
       );
@@ -109,7 +110,6 @@ abstract class Deploy {
             'an accurate deployment history.',
         newParagraph: true,
       );
-      logger.line(' ');
     }
 
     final Directory rootDirectory;
@@ -125,6 +125,7 @@ abstract class Deploy {
           (final path) => path != ScloudIgnore.scloudDirName,
         ),
         level: LogLevel.debug,
+        newParagraph: true,
       );
     } else {
       rootDirectory = projectDirectory;
@@ -146,6 +147,7 @@ abstract class Deploy {
       'Zipping project',
       successMessage: 'Zipping successful.',
       padRight: StatusCommands.progressMessagePadLength,
+      newParagraph: true,
       () async {
         try {
           projectZip = await ProjectZipper.zipProject(
@@ -241,6 +243,9 @@ abstract class Deploy {
           projectDir,
           logger,
           scriptType: 'post-deploy',
+          padHeadingRight: StatusCommands.progressMessagePadLength,
+          stdout: stdout,
+          stderr: stderr,
         );
       }
       return;
@@ -268,6 +273,9 @@ abstract class Deploy {
         projectDir,
         logger,
         scriptType: 'post-deploy',
+        padHeadingRight: StatusCommands.progressMessagePadLength,
+        stdout: stdout,
+        stderr: stderr,
       );
     }
 

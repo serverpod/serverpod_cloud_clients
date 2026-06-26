@@ -20,6 +20,7 @@ import 'package:serverpod_cloud_cli/util/pubspec_validator.dart'
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
+import '../../test/util/inline_tui/helpers/fake_terminal.dart';
 import '../../test_utils/command_logger_matchers.dart';
 import '../../test_utils/project_factory.dart';
 import '../../test_utils/push_current_dir.dart';
@@ -259,36 +260,6 @@ void main() {
           expect(logger.inputCalls, isEmpty);
         });
 
-        test('then logs setup message box', () async {
-          expect(logger.boxCalls, hasLength(1));
-          expect(
-            logger.boxCalls.single.message,
-            stringContainsInOrder([
-              'Project setup',
-              'Project directory   $testProjectDir',
-              'Create new project  yes',
-              'Uses DB             yes',
-            ]),
-          );
-          expect(
-            logger.boxCalls.single.message,
-            isNot(contains('Pre-deploy hooks')),
-          );
-        });
-
-        test('then logs confirmation-to-apply message', () async {
-          expect(
-            logger.confirmCalls,
-            contains(
-              equalsConfirmCall(
-                message:
-                    'Continue and open the browser to create this new project?',
-                defaultValue: true,
-              ),
-            ),
-          );
-        });
-
         test('then logs success messages', () async {
           expect(
             logger.progressCalls,
@@ -442,19 +413,6 @@ apiServer:
           await expectLater(commandResult, completes);
         });
 
-        test('then logs setup message box with database disabled', () async {
-          expect(logger.boxCalls, hasLength(1));
-          expect(
-            logger.boxCalls.single.message,
-            stringContainsInOrder([
-              'Project setup',
-              'Project directory   $noDbProjectDir',
-              'Create new project  yes',
-              'Uses DB             no',
-            ]),
-          );
-        });
-
         test('then forwards database-disabled to the console', () async {
           expect(
             logger.infoCalls.map((final call) => call.message),
@@ -549,26 +507,6 @@ serverpod:
 
           await expectLater(commandResult, completes);
         });
-
-        test(
-          'then logs setup message box with flutter_build pre-deploy hook',
-          () async {
-            await commandResult.catchError((final _) {});
-
-            expect(logger.boxCalls, hasLength(1));
-            expect(
-              logger.boxCalls.single.message,
-              stringContainsInOrder([
-                'Project setup',
-                'Project directory   $testProjectDir',
-                'Create new project  yes',
-                'Uses DB             yes',
-                "Pre-deploy hooks    - 'serverpod generate'",
-                "                    - 'serverpod run flutter_build'",
-              ]),
-            );
-          },
-        );
 
         test('then writes scloud.yaml with pre-deploy hook', () async {
           final expected = d.dir(testProjectDir, [
@@ -680,29 +618,6 @@ serverpod:
 
           await expectLater(commandResult, completes);
         });
-
-        test(
-          'then logs setup message box with no flutter_build pre-deploy hook',
-          () async {
-            await commandResult.catchError((final _) {});
-
-            expect(logger.boxCalls, hasLength(1));
-            expect(
-              logger.boxCalls.single.message,
-              stringContainsInOrder([
-                'Project setup',
-                'Project directory   $testProjectDir',
-                'Create new project  yes',
-                'Uses DB             yes',
-                "Pre-deploy hooks    - 'serverpod generate'",
-              ]),
-            );
-            expect(
-              logger.boxCalls.single.message,
-              isNot(contains('flutter_build')),
-            );
-          },
-        );
       });
 
       group('when executing launch with code generation hook suggestion'
@@ -935,6 +850,7 @@ project:
             projectId,
             '--project-dir',
             testProjectDir,
+            '--no-browser',
           ]);
         });
 
@@ -948,21 +864,6 @@ project:
           expect(logger.inputCalls, isEmpty);
         });
 
-        test('then logs setup message box', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.boxCalls, hasLength(1));
-          expect(
-            logger.boxCalls.single.message,
-            stringContainsInOrder([
-              'Project setup',
-              'Project directory   $testProjectDir',
-              'Create new project  yes',
-              'Uses DB             yes',
-            ]),
-          );
-        });
-
         test('then logs confirmation-to-apply message', () async {
           await commandResult.catchError((final _) {});
 
@@ -971,7 +872,7 @@ project:
             contains(
               equalsConfirmCall(
                 message:
-                    'Continue and open the browser to create this new project?',
+                    'Open the browser and create a new Serverpod Cloud project?',
                 defaultValue: true,
               ),
             ),
@@ -1049,11 +950,6 @@ project:
           'and declining confirmation', () {
         late Future commandResult;
         setUp(() async {
-          logger.answerNextInputsWith([projectId]);
-          logger.answerNextConfirmsWith([
-            false, // do not apply setup
-          ]);
-
           commandResult = cli.run([
             'launch',
             '--project',
@@ -1082,64 +978,10 @@ project:
           );
         });
 
-        test('then logs input message to enter valid project id', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.inputCalls, isNotEmpty);
-          expect(
-            logger.inputCalls,
-            containsAllInOrder([
-              equalsInputCall(
-                message: 'Enter a new project id',
-                defaultValue: 'default: my-project',
-              ),
-            ]),
-          );
-        });
-
-        test('then logs setup message box', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.boxCalls, hasLength(1));
-          expect(
-            logger.boxCalls.single.message,
-            stringContainsInOrder([
-              'Project setup',
-              'Project directory   $testProjectDir',
-              'Create new project  yes',
-              'Uses DB             yes',
-            ]),
-          );
-        });
-
-        test('then logs confirmation-to-apply message', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(
-            logger.confirmCalls,
-            containsAllInOrder([
-              equalsConfirmCall(
-                message:
-                    'Continue and open the browser to create this new project?',
-                defaultValue: true,
-              ),
-            ]),
-          );
-        });
-
         test('then logs no success messages', () async {
           await commandResult.catchError((final _) {});
 
           expect(logger.successCalls, isEmpty);
-        });
-
-        test('then logs cancellation info message', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(
-            logger.infoCalls.last,
-            equalsInfoCall(message: 'Setup cancelled.'),
-          );
         });
 
         test('then does not write scloud.yaml file', () async {
@@ -1154,7 +996,6 @@ project:
           'and declining confirmation', () {
         late Future commandResult;
         setUp(() async {
-          logger.answerNextInputsWith([projectId]);
           logger.answerNextConfirmsWith([
             false, // do not apply setup
           ]);
@@ -1166,21 +1007,6 @@ project:
           expect(commandResult, throwsA(isA<ErrorExitException>()));
         });
 
-        test('then logs input messages', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.inputCalls, isNotEmpty);
-          expect(
-            logger.inputCalls,
-            containsAllInOrder([
-              equalsInputCall(
-                message: 'Enter a new project id',
-                defaultValue: 'default: my-project',
-              ),
-            ]),
-          );
-        });
-
         test('then logs confirmation messages', () async {
           await commandResult.catchError((final _) {});
 
@@ -1190,24 +1016,9 @@ project:
             containsAllInOrder([
               equalsConfirmCall(
                 message:
-                    'Continue and open the browser to create this new project?',
+                    'Open the browser and create a new Serverpod Cloud project?',
                 defaultValue: true,
               ),
-            ]),
-          );
-        });
-
-        test('then logs setup message box', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.boxCalls, hasLength(1));
-          expect(
-            logger.boxCalls.single.message,
-            stringContainsInOrder([
-              'Project setup',
-              'Project directory   $testProjectDir',
-              'Create new project  yes',
-              'Uses DB             yes',
             ]),
           );
         });
@@ -1242,7 +1053,6 @@ project:
         setUp(() async {
           pushCurrentDirectory(d.sandbox);
 
-          logger.answerNextInputsWith([projectId]);
           logger.answerNextConfirmsWith([
             false, // do not apply setup
           ]);
@@ -1254,19 +1064,6 @@ project:
           expect(commandResult, throwsA(isA<ErrorExitException>()));
         });
 
-        test('then logs input message for project id', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.inputCalls, isNotEmpty);
-          expect(
-            logger.inputCalls.first,
-            equalsInputCall(
-              message: 'Enter a new project id',
-              defaultValue: 'default: my-project',
-            ),
-          );
-        });
-
         test('then logs confirmation messages', () async {
           await commandResult.catchError((final _) {});
 
@@ -1276,24 +1073,9 @@ project:
             containsAllInOrder([
               equalsConfirmCall(
                 message:
-                    'Continue and open the browser to create this new project?',
+                    'Open the browser and create a new Serverpod Cloud project?',
                 defaultValue: true,
               ),
-            ]),
-          );
-        });
-
-        test('then logs setup message box', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.boxCalls, hasLength(1));
-          expect(
-            logger.boxCalls.single.message,
-            stringContainsInOrder([
-              'Project setup',
-              'Project directory   $testProjectDir',
-              'Create new project  yes',
-              'Uses DB             yes',
             ]),
           );
         });
@@ -1323,98 +1105,8 @@ project:
       });
 
       group('when executing launch with all settings provided interactively '
-          'and invalid first project id input '
-          'and declining confirmation', () {
-        late Future commandResult;
-        setUp(() async {
-          logger.answerNextInputsWith(['invalid_project_id_#%@', projectId]);
-          logger.answerNextConfirmsWith([
-            false, // do not apply setup
-          ]);
-
-          commandResult = cli.run(['launch', '--project-dir', testProjectDir]);
-        });
-
-        test('then throws ErrorExitException', () async {
-          expect(commandResult, throwsA(isA<ErrorExitException>()));
-        });
-
-        test('then logs input messages', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.inputCalls, isNotEmpty);
-          expect(
-            logger.inputCalls,
-            containsAllInOrder([
-              equalsInputCall(
-                message: 'Enter a new project id',
-                defaultValue: 'default: my-project',
-              ),
-              equalsInputCall(
-                message: 'Enter a new project id',
-                defaultValue: 'default: my-project',
-              ),
-            ]),
-          );
-        });
-
-        test('then logs confirmation messages', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.confirmCalls, isNotEmpty);
-          expect(
-            logger.confirmCalls,
-            containsAllInOrder([
-              equalsConfirmCall(
-                message:
-                    'Continue and open the browser to create this new project?',
-                defaultValue: true,
-              ),
-            ]),
-          );
-        });
-
-        test('then logs setup message box', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.boxCalls, hasLength(1));
-          expect(
-            logger.boxCalls.single.message,
-            stringContainsInOrder([
-              'Project setup',
-              'Project directory   $testProjectDir',
-              'Create new project  yes',
-              'Uses DB             yes',
-            ]),
-          );
-        });
-
-        test('then logs no success messages', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.successCalls, isEmpty);
-        });
-
-        test('then logs cancellation info message', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(
-            logger.infoCalls.last,
-            equalsInfoCall(message: 'Setup cancelled.'),
-          );
-        });
-
-        test('then does not write scloud.yaml file', () async {
-          await commandResult.catchError((final _) {});
-
-          final expected = d.dir(testProjectDir, [d.nothing('scloud.yaml')]);
-          await expectLater(expected.validate(), completes);
-        });
-      });
-
-      group('when executing launch with all settings provided interactively '
           'and 2 pre-existing projects are found but not selected '
-          'and declining confirmation', () {
+          'and cancelling selection', () {
         setUpAll(() async {
           when(
             () => client.projects.listProjectsInfo(
@@ -1445,173 +1137,36 @@ project:
         late Future commandResult;
 
         setUp(() async {
-          logger.answerNextInputsWith(['', projectId]);
-          logger.answerNextConfirmsWith([
-            false, // do not apply setup
-          ]);
+          logger.inlineTerminal = FakeTerminal()
+            ..queueInput(FakeTerminal.escape);
 
-          commandResult = cli.run(['launch', '--project-dir', testProjectDir]);
+          commandResult = cli.run([
+            'launch',
+            '--project-dir',
+            testProjectDir,
+            '--no-browser',
+          ]);
         });
 
         test('then throws ErrorExitException', () async {
           expect(commandResult, throwsA(isA<ErrorExitException>()));
         });
 
-        test('then logs input messages', () async {
+        test('then outputs the selection menu with both projects'
+            ' and the create-new option', () async {
           await commandResult.catchError((final _) {});
 
-          expect(logger.inputCalls, isNotEmpty);
+          final output = (logger.inlineTerminal as FakeTerminal).output;
           expect(
-            logger.inputCalls,
-            containsAllInOrder([
-              equalsInputCall(
-                message: 'Enter a new project id',
-                defaultValue: 'default: my-project',
-              ),
-            ]),
-          );
-        });
-
-        test('then logs confirmation messages', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.confirmCalls, isNotEmpty);
-          expect(
-            logger.confirmCalls,
-            containsAllInOrder([
-              equalsConfirmCall(
-                message:
-                    'Continue and open the browser to create this new project?',
-                defaultValue: true,
-              ),
-            ]),
-          );
-        });
-
-        test('then logs setup message box', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.boxCalls, hasLength(1));
-          expect(
-            logger.boxCalls.single.message,
-            stringContainsInOrder([
-              'Project setup',
-              'Project directory   $testProjectDir',
-              'Create new project  yes',
-              'Uses DB             yes',
-            ]),
-          );
-        });
-
-        test('then logs no success messages', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.successCalls, isEmpty);
-        });
-
-        test('then logs cancellation info message', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(
-            logger.infoCalls.last,
-            equalsInfoCall(message: 'Setup cancelled.'),
-          );
-        });
-
-        test('then does not write scloud.yaml file', () async {
-          await commandResult.catchError((final _) {});
-
-          final expected = d.dir(testProjectDir, [d.nothing('scloud.yaml')]);
-          await expectLater(expected.validate(), completes);
-        });
-      });
-
-      group('when executing launch with all settings provided interactively '
-          'and 2 pre-existing projects are found and selected '
-          'and declining confirmation', () {
-        setUpAll(() async {
-          when(
-            () => client.projects.listProjectsInfo(
-              includeLatestDeployAttemptTime: any(
-                named: 'includeLatestDeployAttemptTime',
-              ),
+            output,
+            contains(
+              'Select a Severpod Cloud project to deploy to, '
+              'or create a new project:',
             ),
-          ).thenAnswer(
-            (final _) async => Future.value([
-              ProjectInfoBuilder()
-                  .withProject(
-                    ProjectBuilder().withCloudProjectId(
-                      'pre-existing-project-1',
-                    ),
-                  )
-                  .build(),
-              ProjectInfoBuilder()
-                  .withProject(
-                    ProjectBuilder().withCloudProjectId(
-                      'pre-existing-project-2',
-                    ),
-                  )
-                  .build(),
-            ]),
           );
-        });
-
-        late Future commandResult;
-
-        setUp(() async {
-          logger.answerNextInputsWith(['1', projectId]);
-          logger.answerNextConfirmsWith([
-            false, // do not apply setup
-          ]);
-
-          commandResult = cli.run(['launch', '--project-dir', testProjectDir]);
-        });
-
-        test('then throws ErrorExitException', () async {
-          expect(commandResult, throwsA(isA<ErrorExitException>()));
-        });
-
-        test('then logs input messages', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.inputCalls, isNotEmpty);
-          expect(
-            logger.inputCalls,
-            containsAllInOrder([
-              equalsInputCall(
-                message: 'Enter a project number from the list, or blank',
-              ),
-            ]),
-          );
-        });
-
-        test('then logs confirmation messages', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.confirmCalls, isNotEmpty);
-          expect(
-            logger.confirmCalls,
-            containsAllInOrder([
-              equalsConfirmCall(
-                message: 'Continue and apply this setup?',
-                defaultValue: true,
-              ),
-            ]),
-          );
-        });
-
-        test('then logs setup message box', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.boxCalls, hasLength(1));
-          expect(
-            logger.boxCalls.single.message,
-            stringContainsInOrder([
-              'Project setup',
-              'Project directory  $testProjectDir',
-              'Existing project   pre-existing-project-1',
-            ]),
-          );
+          expect(output, contains('pre-existing-project-1'));
+          expect(output, contains('pre-existing-project-2'));
+          expect(output, contains('Open the browser and create a new project'));
         });
 
         test('then logs no success messages', () async {
@@ -1639,7 +1194,7 @@ project:
 
       group('when executing launch with all settings provided interactively '
           'and 1 pre-existing project is found but not selected '
-          'and declining confirmation', () {
+          'and cancelling selection', () {
         setUpAll(() async {
           when(
             () => client.projects.listProjectsInfo(
@@ -1661,11 +1216,8 @@ project:
         late Future commandResult;
 
         setUp(() async {
-          logger.answerNextInputsWith([projectId]);
-          logger.answerNextConfirmsWith([
-            false, // decline using existing project
-            false, // do not apply setup
-          ]);
+          logger.inlineTerminal = FakeTerminal()
+            ..queueInput(FakeTerminal.escape);
 
           commandResult = cli.run(['launch', '--project-dir', testProjectDir]);
         });
@@ -1674,146 +1226,20 @@ project:
           expect(commandResult, throwsA(isA<ErrorExitException>()));
         });
 
-        test('then logs input messages', () async {
+        test('then outputs the selection menu with the project'
+            ' and the create-new option', () async {
           await commandResult.catchError((final _) {});
 
-          expect(logger.inputCalls, isNotEmpty);
+          final output = (logger.inlineTerminal as FakeTerminal).output;
           expect(
-            logger.inputCalls,
-            containsAllInOrder([
-              equalsInputCall(
-                message: 'Enter a new project id',
-                defaultValue: 'default: my-project',
-              ),
-            ]),
-          );
-        });
-
-        test('then logs confirmation messages', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.confirmCalls, isNotEmpty);
-          expect(
-            logger.confirmCalls,
-            containsAllInOrder([
-              equalsConfirmCall(
-                message:
-                    'Continue and open the browser to create this new project?',
-                defaultValue: true,
-              ),
-            ]),
-          );
-        });
-
-        test('then logs setup message box', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.boxCalls, hasLength(1));
-          expect(
-            logger.boxCalls.single.message,
-            stringContainsInOrder([
-              'Project setup',
-              'Project directory   $testProjectDir',
-              'Create new project  yes',
-              'Uses DB             yes',
-            ]),
-          );
-        });
-
-        test('then logs no success messages', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.successCalls, isEmpty);
-        });
-
-        test('then logs cancellation info message', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(
-            logger.infoCalls.last,
-            equalsInfoCall(message: 'Setup cancelled.'),
-          );
-        });
-
-        test('then does not write scloud.yaml file', () async {
-          await commandResult.catchError((final _) {});
-
-          final expected = d.dir(testProjectDir, [d.nothing('scloud.yaml')]);
-          await expectLater(expected.validate(), completes);
-        });
-      });
-
-      group('when executing launch with all settings provided interactively '
-          'and 1 pre-existing project is found and selected '
-          'and declining confirmation', () {
-        setUpAll(() async {
-          when(
-            () => client.projects.listProjectsInfo(
-              includeLatestDeployAttemptTime: any(
-                named: 'includeLatestDeployAttemptTime',
-              ),
+            output,
+            contains(
+              'Select a Severpod Cloud project to deploy to, '
+              'or create a new project:',
             ),
-          ).thenAnswer(
-            (final _) async => Future.value([
-              ProjectInfoBuilder()
-                  .withProject(
-                    ProjectBuilder().withCloudProjectId('pre-existing-project'),
-                  )
-                  .build(),
-            ]),
           );
-        });
-
-        late Future commandResult;
-
-        setUp(() async {
-          logger.answerNextInputsWith([projectId]);
-          logger.answerNextConfirmsWith([
-            true, // confirm using existing project
-            false, // do not apply setup
-          ]);
-
-          commandResult = cli.run(['launch', '--project-dir', testProjectDir]);
-        });
-
-        test('then throws ErrorExitException', () async {
-          expect(commandResult, throwsA(isA<ErrorExitException>()));
-        });
-
-        test('then logs no input messages', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.inputCalls, isEmpty);
-        });
-
-        test('then logs confirmation messages', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.confirmCalls, isNotEmpty);
-          expect(
-            logger.confirmCalls,
-            containsAllInOrder([
-              equalsConfirmCall(message: 'Continue with pre-existing-project?'),
-              equalsConfirmCall(
-                message: 'Continue and apply this setup?',
-                defaultValue: true,
-              ),
-            ]),
-          );
-        });
-
-        test('then logs setup message box', () async {
-          await commandResult.catchError((final _) {});
-
-          expect(logger.boxCalls, hasLength(1));
-          expect(
-            logger.boxCalls.single.message,
-            stringContainsInOrder([
-              'Project setup',
-              'Project directory  $testProjectDir',
-              'Existing project   pre-existing-project',
-            ]),
-          );
+          expect(output, contains('pre-existing-project'));
+          expect(output, contains('Open the browser and create a new project'));
         });
 
         test('then logs no success messages', () async {
@@ -1864,7 +1290,6 @@ dependencies:
         ).create();
         validProjectDir = p.join(d.sandbox, 'server_dir');
 
-        logger.answerNextInputsWith([projectId]);
         logger.answerNextConfirmsWith([
           false, // do not apply setup
         ]);
@@ -1887,13 +1312,15 @@ dependencies:
 
         expect(logger.errorCalls, hasLength(1));
         expect(
-          logger.errorCalls.single,
-          equalsErrorCall(
-            message:
-                '`$invalidProjectDir` is a Serverpod server directory, but it is not valid:\n'
-                'Unsupported serverpod version constraint: 2.1.0 (must adher to: ${VersionConstants.supportedServerpodConstraint})',
-            hint: "Resolve the issues and try again.",
+          logger.errorCalls.single.message,
+          contains(
+            'is a Serverpod server directory, but it is not valid:\n'
+            'Unsupported serverpod version constraint: 2.1.0 (must adher to: ${VersionConstants.supportedServerpodConstraint})',
           ),
+        );
+        expect(
+          logger.errorCalls.single.hint,
+          equals("Resolve the issues and try again."),
         );
       });
 
@@ -1901,12 +1328,6 @@ dependencies:
         await commandResult.catchError((final _) {});
 
         expect(logger.confirmCalls, isEmpty);
-      });
-
-      test('then logs setup message box', () async {
-        await commandResult.catchError((final _) {});
-
-        expect(logger.boxCalls, hasLength(0));
       });
 
       test('then logs no success messages', () async {

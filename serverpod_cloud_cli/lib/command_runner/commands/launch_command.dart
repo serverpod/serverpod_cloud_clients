@@ -1,4 +1,7 @@
+import 'dart:io' show Directory;
+
 import 'package:config/config.dart';
+import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy_command.dart';
@@ -94,6 +97,7 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
     final wait = commandConfig.value(LaunchOption.wait);
 
     final projectDirectory = runner.verifiedProjectDirectory();
+    final relativeProjectDir = p.relative(projectDirectory.path, from: '.');
 
     if (projectConfigFile != null) {
       if (projectId == null) {
@@ -119,13 +123,13 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
       }
 
       // Unambiguous scloud.<ext> file found, perform a deploy
-      logger.debug('Project directory is: ${projectDirectory.path}');
+      logger.debug('Project directory is: $relativeProjectDir');
       await Deploy.deploy(
         runner.serviceProvider.cloudApiClient,
         runner.serviceProvider.fileUploaderFactory,
         logger: logger,
         projectId: projectId,
-        projectDir: projectDirectory.path,
+        projectDir: relativeProjectDir,
         projectConfigFilePath: projectConfigFile.path,
         concurrency: concurrency,
         dryRun: dryRun,
@@ -142,7 +146,7 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
       runner.serviceProvider.cloudApiClient,
       runner.serviceProvider.fileUploaderFactory,
       logger: logger,
-      projectDirectory: projectDirectory,
+      projectDirectory: Directory(relativeProjectDir),
       projectId: projectId,
       includePreDeployScripts: preDeployScripts,
       performDeploy: deploy,

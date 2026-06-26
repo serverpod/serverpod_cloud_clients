@@ -1126,6 +1126,7 @@ project:
             equalsListCall(
               title: 'Including workspace packages',
               items: ['project/project_server', 'packages/dart_utilities'],
+              newParagraph: true,
             ),
           );
         });

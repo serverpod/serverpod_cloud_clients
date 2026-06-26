@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:cli_tools/cli_tools.dart' as cli;
+import 'package:cli_tools/logger.dart' as cli show AnsiStyle;
+import 'package:collection/collection.dart' show IterableExtension;
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
@@ -16,6 +17,8 @@ import 'package:serverpod_cloud_cli/commands/status/status.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/browser_launcher.dart';
+import 'package:serverpod_cloud_cli/util/inline_tui/inline_tui.dart'
+    show SelectList, SelectListStyle;
 import 'package:serverpod_cloud_cli/util/listener_server.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:serverpod_cloud_cli/util/project_id_validator.dart';
@@ -28,6 +31,8 @@ import 'package:serverpod_tui/serverpod_tui.dart';
 import 'package:yaml_codec/yaml_codec.dart' show yamlDecode;
 
 abstract class Launch {
+  static const _projectFactStyle = cli.AnsiStyle.cyan;
+
   static Future<void> launch(
     final Client cloudApiClient,
     final FileUploaderFactory fileUploaderFactory, {
@@ -46,9 +51,12 @@ abstract class Launch {
     final bool deploySkipTailingStatus = false,
     final String? dartVersionOverride,
   }) async {
-    logger.init('Launching new Serverpod Cloud project.\n');
+    logger.init('Launching a Serverpod Cloud project.\n');
 
     final pubspec = _validateProjectDir(logger, projectDirectory);
+
+    final dirPath = logger.wrapStyle(projectDirectory.path, _projectFactStyle);
+    logger.info('Project directory: $dirPath\n');
 
     final usesDatabase = _usesDatabase(projectDirectory);
 
@@ -111,8 +119,6 @@ abstract class Launch {
     await suggestCodeGenerationPreDeployHook(logger, projectSetup);
 
     await suggestFlutterBuildPreDeployHook(logger, projectSetup);
-
-    await confirmSetupAndContinue(logger, projectSetup);
 
     await performLaunch(
       cloudApiClient,
@@ -267,73 +273,111 @@ abstract class Launch {
     final CommandLogger logger,
     final ProjectLaunch projectSetup,
   ) async {
-    const defaultPrefix = 'default: ';
     const invalidProjectIdMessage =
         'Invalid project ID. Must be 6-32 characters long '
         'and contain only lowercase letters, numbers, and hyphens.';
 
+    final existingProjects = await cloudApiClient.projects.listProjectsInfo(
+      includeLatestDeployAttemptTime: true,
+    );
+
     final specifiedProjectId = projectSetup.projectId;
     if (specifiedProjectId != null) {
-      if (isValidProjectIdFormat(specifiedProjectId)) {
+      if (existingProjects.any(
+        (final p) => p.project.cloudProjectId == specifiedProjectId,
+      )) {
+        projectSetup.preexistingProject = true;
         return;
       }
 
-      logger.error(invalidProjectIdMessage);
+      if (isValidProjectIdFormat(specifiedProjectId)) {
+        final confirm = await logger.confirm(
+          'Open the browser and create a new Serverpod Cloud project?',
+          defaultValue: true,
+        );
+        if (!confirm) {
+          logger.info('Setup cancelled.');
+          throw UserAbortException();
+        }
+        return;
+      }
+
+      throw FailureException(error: invalidProjectIdMessage);
     }
 
-    final selectedId = await _selectExistingProject(cloudApiClient, logger);
+    final selectedId = await _selectExistingProject(
+      cloudApiClient,
+      existingProjects,
+      logger,
+    );
     if (selectedId != null) {
       projectSetup.projectId = selectedId;
       projectSetup.preexistingProject = true;
       return;
     }
 
-    final defaultProjectId = _getDefaultProjectId(projectSetup);
-
-    logger.raw(r'''
-The project id is the unique identifier for the project.
-The default API domain will be: <project-id>.api.serverpod.space
-''', style: cli.AnsiStyle.darkGray);
-
-    do {
-      final defaultValue = defaultProjectId != null
-          ? '$defaultPrefix$defaultProjectId'
-          : null;
-      var projectId = await logger.input(
-        'Enter a new project id',
-        defaultValue: defaultValue,
-      );
-
-      if (projectId.isEmpty) {
-        logger.error('Project ID is required.');
-        continue;
-      }
-
-      if (defaultProjectId != null && projectId.startsWith(defaultPrefix)) {
-        projectId = defaultProjectId;
-      }
-
-      if (isValidProjectIdFormat(projectId)) {
-        projectSetup.projectId = projectId;
-        return;
-      }
-
-      logger.error(invalidProjectIdMessage);
-    } while (true);
+    projectSetup.projectId = _getDefaultProjectId(projectSetup);
+    return;
   }
 
   static Future<String?> _selectExistingProject(
     final Client cloudApiClient,
+    final List<ProjectInfo> existingProjects,
     final CommandLogger logger,
   ) async {
-    final projects = await _fetchExistingUndeployedProjects(cloudApiClient);
-    if (projects.isEmpty) {
-      return null;
+    if (existingProjects.isEmpty) {
+      final confirm = await logger.confirm(
+        'Open the browser and create a new Serverpod Cloud project?',
+        defaultValue: true,
+      );
+      if (!confirm) {
+        logger.info('Setup cancelled.');
+        throw UserAbortException();
+      }
+      return null; // create a new project
     }
-    if (projects.length == 1) {
-      return _confirmSingleExistingProject(logger, projects.single);
+
+    existingProjects.sort((final a, final b) {
+      // if both or neither are null, keep the order
+      if ((a.latestDeployAttemptTime?.timestamp == null) ==
+          (b.latestDeployAttemptTime?.timestamp == null)) {
+        return 0;
+      }
+      // if one is null and the other is not, put the null one first
+      return (a.latestDeployAttemptTime?.timestamp == null) ? -1 : 1;
+    });
+
+    final projectLabels = existingProjects.map((final p) {
+      final lastDeployedTime = p.latestDeployAttemptTime?.timestamp;
+      final lastDeployed = lastDeployedTime == null
+          ? 'available for first deployment'
+          : 'available for redeploy (last deployed ${lastDeployedTime.toString().substring(0, 16)})';
+      return '${p.project.cloudProjectId.padRight(30)}$lastDeployed';
+    });
+    final optionLabels = [
+      ...projectLabels,
+      'Open the browser and create a new project',
+    ];
+    final options = optionLabels
+        .mapIndexed((final i, final r) => (i, r))
+        .toList();
+
+    final selected = await SelectList.choose(
+      prompt:
+          'Select a Severpod Cloud project to deploy to, or create a new project:\n',
+      options: options,
+      label: (final o) => o.$2,
+      terminal: logger.inlineTerminal,
+      style: SelectListStyle(highlightStyle: _projectFactStyle.ansiCode),
+    );
+    if (selected == null) {
+      logger.info('Setup cancelled.');
+      return throw UserAbortException();
     }
-    return _selectFromSeveralExistingProjects(logger, projects);
+    if (selected.$1 == existingProjects.length) {
+      return null; // create a new project
+    }
+    return existingProjects[selected.$1].project.cloudProjectId;
   }
 
   static Future<List<Project>> _fetchExistingUndeployedProjects(
@@ -351,57 +395,6 @@ The default API domain will be: <project-id>.api.serverpod.space
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Request to list projects failed');
     }
-  }
-
-  static Future<String?> _confirmSingleExistingProject(
-    final CommandLogger logger,
-    final Project project,
-  ) async {
-    logger.info(
-      'Found an existing undeployed Cloud project: ${project.cloudProjectId}',
-    );
-
-    final confirm = await logger.confirm(
-      'Continue with ${project.cloudProjectId}?',
-    );
-    logger.info(' ');
-    return confirm ? project.cloudProjectId : null;
-  }
-
-  static Future<String?> _selectFromSeveralExistingProjects(
-    final CommandLogger logger,
-    final List<Project> projects,
-  ) async {
-    final existingIds = projects.map((final p) => p.cloudProjectId).toList();
-    logger.info(
-      'Found existing undeployed Cloud projects.\n'
-      'Do you want to deploy to one of them instead of creating a new one?',
-    );
-    for (int i = 0; i < existingIds.length; i++) {
-      logger.info('${i + 1}. ${existingIds[i]}');
-    }
-    logger.info('(blank - create a new project)');
-
-    do {
-      final projectNum = await logger.input(
-        'Enter a project number from the list, or blank',
-      );
-
-      if (projectNum.isEmpty || projectNum == 'q') {
-        logger.info(' ');
-        return null;
-      }
-
-      final projectIx = int.tryParse(projectNum);
-      if (projectIx != null &&
-          projectIx >= 1 &&
-          projectIx <= existingIds.length) {
-        logger.info(' ');
-        return existingIds[projectIx - 1];
-      }
-
-      logger.error('Value must be a number from the list, or empty to skip.');
-    } while (true);
   }
 
   static String? _getDefaultProjectId(final ProjectLaunch projectSetup) {
@@ -476,23 +469,6 @@ The default API domain will be: <project-id>.api.serverpod.space
     projectSetup.suggestedPreDeployScripts.add(codeGenerationHook);
   }
 
-  static Future<void> confirmSetupAndContinue(
-    final CommandLogger logger,
-    final ProjectLaunch projectSetup,
-  ) async {
-    logger.box('Project setup\n\n$projectSetup');
-
-    final prompt = projectSetup.preexistingProject == true
-        ? 'Continue and apply this setup?'
-        : 'Continue and open the browser to create this new project?';
-    final confirm = await logger.confirm(prompt, defaultValue: true);
-
-    if (!confirm) {
-      logger.info('Setup cancelled.');
-      throw UserAbortException();
-    }
-  }
-
   static Future<void> performLaunch(
     final Client cloudApiClient,
     final FileUploaderFactory fileUploaderFactory,
@@ -514,22 +490,19 @@ The default API domain will be: <project-id>.api.serverpod.space
     final configFilePath = projectSetup.configFilePath;
     final performDeploy = projectSetup.performDeploy;
 
-    if (projectId == null) {
-      throw StateError('ProjectId must be set.');
-    }
-
-    logger.info(' ');
-
     String actualProjectId;
     if (projectSetup.preexistingProject != true) {
       actualProjectId = await createProject(
         logger,
         consoleServer: consoleServer,
         openBrowser: openBrowser,
-        projectName: projectId,
+        projectName: projectId ?? '',
         usesDb: usesDb,
       );
     } else {
+      if (projectId == null) {
+        throw StateError('For preexisting projects, projectId must be set.');
+      }
       actualProjectId = projectId;
     }
 
@@ -544,11 +517,29 @@ The default API domain will be: <project-id>.api.serverpod.space
       suppressCommandMessages: true,
     );
 
+    final projectIdStr = logger.wrapStyle(actualProjectId, _projectFactStyle);
+    logger.info(
+      'Your Serverpod Cloud project ID is: $projectIdStr',
+      newParagraph: true,
+    );
+
+    final webUrl = logger.wrapStyle(
+      'https://$actualProjectId.${HostConstants.tenantDomain}/',
+      _projectFactStyle,
+    );
+    final apiUrl = logger.wrapStyle(
+      'https://$actualProjectId.api.${HostConstants.tenantDomain}/',
+      _projectFactStyle,
+    );
+    final insightsUrl = logger.wrapStyle(
+      'https://$actualProjectId.insights.${HostConstants.tenantDomain}/',
+      _projectFactStyle,
+    );
     logger.info(
       'When the server has started, you can access it at:\n'
-      '   Web:      https://$actualProjectId.${HostConstants.tenantDomain}/\n'
-      '   API:      https://$actualProjectId.api.${HostConstants.tenantDomain}/\n'
-      '   Insights: https://$actualProjectId.insights.${HostConstants.tenantDomain}/',
+      '   Web:      $webUrl\n'
+      '   API:      $apiUrl\n'
+      '   Insights: $insightsUrl',
       newParagraph: true,
     );
 
@@ -608,9 +599,9 @@ The default API domain will be: <project-id>.api.serverpod.space
       onConnected: callbackUrlFuture.complete,
       timeLimit: timeLimit,
       successMessage:
-          'Project created, you may now close this window and return to the CLI.',
+          'The Serverpod Cloud project has been created, you may now close this window and return to the CLI.',
       failureMessage:
-          'Project creation failed, please try again or contact support.',
+          'The Serverpod Cloud project creation failed, please try again or contact support.',
     );
 
     final callbackUrl = await callbackUrlFuture.future;
@@ -624,7 +615,7 @@ The default API domain will be: <project-id>.api.serverpod.space
     );
 
     logger.info(
-      'Please create your project in the opened browser or through this link:\n'
+      'Create your Serverpod Cloud project in the opened browser or through this link:\n'
       '$createProjectUrl',
     );
 
@@ -639,7 +630,7 @@ The default API domain will be: <project-id>.api.serverpod.space
     String? createdProjectId;
     await logger.progress(
       'Waiting for project creation',
-      successMessage: 'Project created.',
+      successMessage: 'Serverpod Cloud project created.',
       padRight: StatusCommands.progressMessagePadLength,
       () async {
         createdProjectId = await projectIdFuture;

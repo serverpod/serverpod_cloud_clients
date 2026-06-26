@@ -60,6 +60,7 @@ Future<void> _main(final List<String> args, final CommandLogger logger) async {
 }
 
 Future<void> _preExit(final CommandLogger logger) async {
+  await logger.disposeInlineTerminal();
   await logger.flush();
 }
 

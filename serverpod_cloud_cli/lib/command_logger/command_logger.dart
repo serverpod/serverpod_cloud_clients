@@ -6,6 +6,7 @@ import 'package:collection/collection.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/shared/helpers/exception_user_message.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
+import 'package:serverpod_cloud_cli/util/inline_tui/inline_tui.dart';
 
 export 'package:cli_tools/logger.dart' show LogLevel;
 
@@ -46,8 +47,20 @@ class CommandLogger {
 
   static const Map<String, String> windowsReplacements = {'🚀': ''};
 
-  CommandLogger(final cli.Logger logger, {this.configuration})
-    : _logger = logger;
+  /// The shared terminal used by inline TUI components (e.g. selection lists and
+  /// scrolling output sections).
+  ///
+  /// A single instance is reused for the lifetime of the process so that the
+  /// process [stdin], which can only be subscribed to once, has a single owner.
+  /// Created lazily on first use and released by [disposeInlineTerminal].
+  InlineTerminal? _inlineTerminal;
+
+  CommandLogger(
+    final cli.Logger logger, {
+    this.configuration,
+    final InlineTerminal? inlineTerminal,
+  }) : _logger = logger,
+       _inlineTerminal = inlineTerminal;
 
   factory CommandLogger.create([
     final cli.LogLevel logLevel = cli.LogLevel.info,
@@ -223,6 +236,30 @@ class CommandLogger {
 
   Future<void> flush() async {
     await _logger.flush();
+  }
+
+  /// Wraps the given string with the ANSI style, if the current terminal
+  /// supports ANSI escape codes.
+  /// Note that it will reset to the default color after the string, which may
+  /// or may not be the same as the previous color.
+  String wrapStyle(final String string, final cli.AnsiStyle style) {
+    return style.wrap(string);
+  }
+
+  /// The shared [InlineTerminal] for inline TUI components.
+  ///
+  /// Components receive this terminal but must not dispose it; the owner of the
+  /// logger is responsible for its lifecycle via [disposeInlineTerminal].
+  InlineTerminal get inlineTerminal => _inlineTerminal ??= StdioTerminal();
+
+  /// Releases the shared [inlineTerminal] if it was created.
+  ///
+  /// Call once towards the end of the process; the live input subscription would
+  /// otherwise keep the process from exiting.
+  Future<void> disposeInlineTerminal() async {
+    final terminal = _inlineTerminal;
+    _inlineTerminal = null;
+    await terminal?.dispose();
   }
 
   ///////////////////////
