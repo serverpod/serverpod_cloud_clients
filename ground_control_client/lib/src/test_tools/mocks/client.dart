@@ -1,5 +1,5 @@
-import 'package:mocktail/mocktail.dart';
 import 'package:ground_control_client/src/protocol/client.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
     show wrapAsBearerAuthHeaderValue;
 import 'package:serverpod_client/serverpod_client.dart'
@@ -21,6 +21,8 @@ class EndpointInfraResourcesMock extends Mock
 class EndpointDatabaseMock extends Mock implements EndpointDatabase {}
 
 class EndpointProjectsMock extends Mock implements EndpointProjects {}
+
+class EndpointInsightsMock extends Mock implements EndpointInsights {}
 
 class EndpointRolesMock extends Mock implements EndpointRoles {}
 
@@ -102,6 +104,9 @@ class ClientMock extends Mock implements Client {
 
   @override
   final EndpointProjects projects = EndpointProjectsMock();
+
+  @override
+  final EndpointInsights insights = EndpointInsightsMock();
 
   @override
   final EndpointRoles roles = EndpointRolesMock();
