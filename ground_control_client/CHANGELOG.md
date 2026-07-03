@@ -1,5 +1,20 @@
 # Changelog
 
+---
+## 0.33.0 - 2026-06-29
+
+### Added
+
+- **Interactive selection in `scloud` launch** - Added a multi-line interactive project selection menu and a scrollable terminal window for deployment logs.
+- **Outdated CLI exit code** - The CLI now exits with a specific code (69) when an update is required, making it easier to script and automate.
+- **Log metadata in Ground Control** - Added deployment attempt and server instance identifiers to log records for better debugging context.
+
+### Changed
+
+- **Clearer project creation errors** - Replaced generic error screens in the Console with specific, actionable messages explaining the exact reason for failure (e.g., payment requirements, project limits, or unavailable plans).
+
+---
+
 ## [0.32.0] - 2026-06-18
 
 ### New
