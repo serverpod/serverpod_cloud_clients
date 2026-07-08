@@ -62,30 +62,36 @@ import 'package:ground_control_client/src/protocol/domains/databases/models/data
     as _i26;
 import 'package:ground_control_client/src/protocol/domains/databases/models/database_size.dart'
     as _i27;
-import 'package:ground_control_client/src/protocol/domains/environment_variables/models/variable.dart'
+import 'package:ground_control_client/src/protocol/domains/databases/models/database_snapshot.dart'
     as _i28;
-import 'package:ground_control_client/src/protocol/features/insights/models/insights_connection_detail.dart'
+import 'package:ground_control_client/src/protocol/domains/databases/models/backup_schedule.dart'
     as _i29;
-import 'package:ground_control_client/src/protocol/domains/logs/models/log_record.dart'
+import 'package:ground_control_client/src/protocol/domains/databases/models/backup_frequency.dart'
     as _i30;
-import 'package:ground_control_client/src/protocol/domains/products/models/subscription_info.dart'
+import 'package:ground_control_client/src/protocol/domains/environment_variables/models/variable.dart'
     as _i31;
-import 'package:ground_control_client/src/protocol/domains/products/models/plan_info.dart'
+import 'package:ground_control_client/src/protocol/features/insights/models/insights_connection_detail.dart'
     as _i32;
-import 'package:ground_control_client/src/protocol/features/projects/models/project_profile_update.dart'
+import 'package:ground_control_client/src/protocol/domains/logs/models/log_record.dart'
     as _i33;
-import 'package:ground_control_client/src/protocol/features/projects/models/project_config.dart'
+import 'package:ground_control_client/src/protocol/domains/products/models/subscription_info.dart'
     as _i34;
-import 'package:ground_control_client/src/protocol/domains/projects/models/role.dart'
+import 'package:ground_control_client/src/protocol/domains/products/models/plan_info.dart'
     as _i35;
-import 'package:ground_control_client/src/protocol/domains/secrets/models/build_secret_type.dart'
+import 'package:ground_control_client/src/protocol/features/projects/models/project_profile_update.dart'
     as _i36;
-import 'package:ground_control_client/src/protocol/domains/status/models/capsule_status.dart'
+import 'package:ground_control_client/src/protocol/features/projects/models/project_config.dart'
     as _i37;
-import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
+import 'package:ground_control_client/src/protocol/domains/projects/models/role.dart'
     as _i38;
-import 'package:http/http.dart' as _i39;
-import 'protocol.dart' as _i40;
+import 'package:ground_control_client/src/protocol/domains/secrets/models/build_secret_type.dart'
+    as _i39;
+import 'package:ground_control_client/src/protocol/domains/status/models/capsule_status.dart'
+    as _i40;
+import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
+    as _i41;
+import 'package:http/http.dart' as _i42;
+import 'protocol.dart' as _i43;
 
 /// {@category Endpoint}
 class EndpointAdminMigration extends _i1.EndpointRef {
@@ -1072,6 +1078,90 @@ class EndpointDatabase extends _i1.EndpointRef {
       'maxCu': maxCu,
     },
   );
+
+  /// Creates a manual snapshot of the capsule's database.
+  ///
+  /// Throws [NotFoundException] if the database is not found.
+  /// Throws [DatabaseSnapshotLimitException] if the per-project snapshot limit
+  /// has been reached.
+  _i2.Future<_i28.DatabaseSnapshot> createSnapshot({
+    required String cloudCapsuleId,
+    String? name,
+    DateTime? expiresAt,
+  }) => caller.callServerEndpoint<_i28.DatabaseSnapshot>(
+    'database',
+    'createSnapshot',
+    {'cloudCapsuleId': cloudCapsuleId, 'name': name, 'expiresAt': expiresAt},
+  );
+
+  /// Lists the snapshots of the capsule's database.
+  ///
+  /// Throws [NotFoundException] if the database is not found.
+  _i2.Future<List<_i28.DatabaseSnapshot>> listSnapshots({
+    required String cloudCapsuleId,
+  }) => caller.callServerEndpoint<List<_i28.DatabaseSnapshot>>(
+    'database',
+    'listSnapshots',
+    {'cloudCapsuleId': cloudCapsuleId},
+  );
+
+  /// Deletes a snapshot of the capsule's database.
+  ///
+  /// Throws [NotFoundException] if the database is not found.
+  _i2.Future<void> deleteSnapshot({
+    required String cloudCapsuleId,
+    required String snapshotId,
+  }) => caller.callServerEndpoint<void>('database', 'deleteSnapshot', {
+    'cloudCapsuleId': cloudCapsuleId,
+    'snapshotId': snapshotId,
+  });
+
+  /// Returns the automated backup schedule for the capsule's database, or null
+  /// if none is configured.
+  ///
+  /// Throws [NotFoundException] if the database is not found.
+  _i2.Future<_i29.BackupSchedule?> getBackupSchedule({
+    required String cloudCapsuleId,
+  }) => caller.callServerEndpoint<_i29.BackupSchedule?>(
+    'database',
+    'getBackupSchedule',
+    {'cloudCapsuleId': cloudCapsuleId},
+  );
+
+  /// Sets the automated backup schedule for the capsule's database.
+  ///
+  /// Passing a null [frequency] disables automated backups.
+  ///
+  /// Throws [NotFoundException] if the database is not found.
+  /// Throws [InvalidValueException] if the schedule parameters are invalid for
+  /// the given [frequency] (e.g. a weekly/monthly schedule without a day, or a
+  /// schedule without an hour).
+  _i2.Future<void> setBackupSchedule({
+    required String cloudCapsuleId,
+    _i30.BackupFrequency? frequency,
+    int? day,
+    int? hour,
+    Duration? retention,
+  }) => caller.callServerEndpoint<void>('database', 'setBackupSchedule', {
+    'cloudCapsuleId': cloudCapsuleId,
+    'frequency': frequency,
+    'day': day,
+    'hour': hour,
+    'retention': retention,
+  });
+
+  /// Restores the capsule's live database to the given snapshot.
+  ///
+  /// The connection string is preserved; only the underlying branch changes.
+  ///
+  /// Throws [NotFoundException] if the database is not found.
+  _i2.Future<void> restoreFromSnapshot({
+    required String cloudCapsuleId,
+    required String snapshotId,
+  }) => caller.callServerEndpoint<void>('database', 'restoreFromSnapshot', {
+    'cloudCapsuleId': cloudCapsuleId,
+    'snapshotId': snapshotId,
+  });
 }
 
 /// Endpoint for infrastructure resource provisioning.
@@ -1124,11 +1214,11 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
 
   /// Creates a new [EnvironmentVariable] with the specified [name] and [value].
   /// Throws a [DuplicateEntryException] if an environment variable with the same name already exists.
-  _i2.Future<_i28.EnvironmentVariable> create(
+  _i2.Future<_i31.EnvironmentVariable> create(
     String name,
     String value,
     String cloudCapsuleId,
-  ) => caller.callServerEndpoint<_i28.EnvironmentVariable>(
+  ) => caller.callServerEndpoint<_i31.EnvironmentVariable>(
     'environmentVariables',
     'create',
     {'name': name, 'value': value, 'cloudCapsuleId': cloudCapsuleId},
@@ -1136,18 +1226,18 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
 
   /// Fetches the specified environment variable.
   /// Throws a [NotFoundException] if the environment variable is not found.
-  _i2.Future<_i28.EnvironmentVariable> read({
+  _i2.Future<_i31.EnvironmentVariable> read({
     required String name,
     required String cloudCapsuleId,
-  }) => caller.callServerEndpoint<_i28.EnvironmentVariable>(
+  }) => caller.callServerEndpoint<_i31.EnvironmentVariable>(
     'environmentVariables',
     'read',
     {'name': name, 'cloudCapsuleId': cloudCapsuleId},
   );
 
   /// Gets the list of environment variables for the given [cloudCapsuleId].
-  _i2.Future<List<_i28.EnvironmentVariable>> list(String cloudCapsuleId) =>
-      caller.callServerEndpoint<List<_i28.EnvironmentVariable>>(
+  _i2.Future<List<_i31.EnvironmentVariable>> list(String cloudCapsuleId) =>
+      caller.callServerEndpoint<List<_i31.EnvironmentVariable>>(
         'environmentVariables',
         'list',
         {'cloudCapsuleId': cloudCapsuleId},
@@ -1155,11 +1245,11 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
 
   /// Creates a new [EnvironmentVariable] with the specified [name] and [value].
   /// Throws a [NotFoundException] if the environment variable is not found.
-  _i2.Future<_i28.EnvironmentVariable> update({
+  _i2.Future<_i31.EnvironmentVariable> update({
     required String name,
     required String value,
     required String cloudCapsuleId,
-  }) => caller.callServerEndpoint<_i28.EnvironmentVariable>(
+  }) => caller.callServerEndpoint<_i31.EnvironmentVariable>(
     'environmentVariables',
     'update',
     {'name': name, 'value': value, 'cloudCapsuleId': cloudCapsuleId},
@@ -1167,10 +1257,10 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
 
   /// Permanently deletes an environment variable.
   /// Throws a [NotFoundException] if the environment variable is not found.
-  _i2.Future<_i28.EnvironmentVariable> delete({
+  _i2.Future<_i31.EnvironmentVariable> delete({
     required String cloudCapsuleId,
     required String name,
-  }) => caller.callServerEndpoint<_i28.EnvironmentVariable>(
+  }) => caller.callServerEndpoint<_i31.EnvironmentVariable>(
     'environmentVariables',
     'delete',
     {'cloudCapsuleId': cloudCapsuleId, 'name': name},
@@ -1190,9 +1280,9 @@ class EndpointInsights extends _i1.EndpointRef {
   ///
   /// Throws [UnauthorizedException] if the user is not authorized.
   /// Throws [NotFoundException] if insights service secret is not found.
-  _i2.Future<_i29.InsightsConnectionDetail> getConnectionDetails({
+  _i2.Future<_i32.InsightsConnectionDetail> getConnectionDetails({
     required String cloudProjectId,
-  }) => caller.callServerEndpoint<_i29.InsightsConnectionDetail>(
+  }) => caller.callServerEndpoint<_i32.InsightsConnectionDetail>(
     'insights',
     'getConnectionDetails',
     {'cloudProjectId': cloudProjectId},
@@ -1208,14 +1298,14 @@ class EndpointLogs extends _i1.EndpointRef {
   String get name => 'logs';
 
   /// Fetches log records from the specified capsule.
-  _i2.Stream<_i30.LogRecord> fetchRecords({
+  _i2.Stream<_i33.LogRecord> fetchRecords({
     @Deprecated('Use cloudCapsuleId instead') String? cloudProjectId,
     String? cloudCapsuleId,
     DateTime? beforeTime,
     DateTime? afterTime,
     int? limit,
   }) => caller
-      .callStreamingServerEndpoint<_i2.Stream<_i30.LogRecord>, _i30.LogRecord>(
+      .callStreamingServerEndpoint<_i2.Stream<_i33.LogRecord>, _i33.LogRecord>(
         'logs',
         'fetchRecords',
         {
@@ -1233,11 +1323,11 @@ class EndpointLogs extends _i1.EndpointRef {
   /// Records are returned in ascending time order.
   ///
   /// This call will hold until all the records are fetched in order to sort them.
-  _i2.Stream<_i30.LogRecord> fetchRecentRecords({
+  _i2.Stream<_i33.LogRecord> fetchRecentRecords({
     required String cloudCapsuleId,
     int? limit,
   }) => caller
-      .callStreamingServerEndpoint<_i2.Stream<_i30.LogRecord>, _i30.LogRecord>(
+      .callStreamingServerEndpoint<_i2.Stream<_i33.LogRecord>, _i33.LogRecord>(
         'logs',
         'fetchRecentRecords',
         {'cloudCapsuleId': cloudCapsuleId, 'limit': limit},
@@ -1247,12 +1337,12 @@ class EndpointLogs extends _i1.EndpointRef {
   /// Tails log records from the specified capsule.
   /// Continues until the client unsubscribes, [limit] is reached,
   /// or the internal max limit is reached.
-  _i2.Stream<_i30.LogRecord> tailRecords({
+  _i2.Stream<_i33.LogRecord> tailRecords({
     @Deprecated('Use cloudCapsuleId instead') String? cloudProjectId,
     String? cloudCapsuleId,
     int? limit,
   }) => caller
-      .callStreamingServerEndpoint<_i2.Stream<_i30.LogRecord>, _i30.LogRecord>(
+      .callStreamingServerEndpoint<_i2.Stream<_i33.LogRecord>, _i33.LogRecord>(
         'logs',
         'tailRecords',
         {
@@ -1264,13 +1354,13 @@ class EndpointLogs extends _i1.EndpointRef {
       );
 
   /// Fetches the build log records for the specified deploy attempt.
-  _i2.Stream<_i30.LogRecord> fetchBuildLog({
+  _i2.Stream<_i33.LogRecord> fetchBuildLog({
     @Deprecated('Use cloudCapsuleId instead') String? cloudProjectId,
     String? cloudCapsuleId,
     required _i1.UuidValue attemptId,
     int? limit,
   }) => caller
-      .callStreamingServerEndpoint<_i2.Stream<_i30.LogRecord>, _i30.LogRecord>(
+      .callStreamingServerEndpoint<_i2.Stream<_i33.LogRecord>, _i33.LogRecord>(
         'logs',
         'fetchBuildLog',
         {
@@ -1325,8 +1415,8 @@ class EndpointPlans extends _i1.EndpointRef {
       .callServerEndpoint<List<String>>('plans', 'listProcuredPlanNames', {});
 
   /// Lists the subscriptions owned by the user.
-  _i2.Future<List<_i31.SubscriptionInfo>> listSubscriptions() =>
-      caller.callServerEndpoint<List<_i31.SubscriptionInfo>>(
+  _i2.Future<List<_i34.SubscriptionInfo>> listSubscriptions() =>
+      caller.callServerEndpoint<List<_i34.SubscriptionInfo>>(
         'plans',
         'listSubscriptions',
         {},
@@ -1335,9 +1425,9 @@ class EndpointPlans extends _i1.EndpointRef {
   /// Gets the subscription info for the subscription of the given project id.
   ///
   /// Throws [NotFoundException] if the project's subscription is not found.
-  _i2.Future<_i31.SubscriptionInfo> getSubscriptionInfoOfProject({
+  _i2.Future<_i34.SubscriptionInfo> getSubscriptionInfoOfProject({
     required String cloudProjectId,
-  }) => caller.callServerEndpoint<_i31.SubscriptionInfo>(
+  }) => caller.callServerEndpoint<_i34.SubscriptionInfo>(
     'plans',
     'getSubscriptionInfoOfProject',
     {'cloudProjectId': cloudProjectId},
@@ -1346,9 +1436,9 @@ class EndpointPlans extends _i1.EndpointRef {
   /// Gets a subscription info of a subscription owned by the user.
   ///
   /// Throws [NotFoundException] if the subscription is not found.
-  _i2.Future<_i31.SubscriptionInfo> getSubscriptionInfo({
+  _i2.Future<_i34.SubscriptionInfo> getSubscriptionInfo({
     required _i1.UuidValue subscriptionId,
-  }) => caller.callServerEndpoint<_i31.SubscriptionInfo>(
+  }) => caller.callServerEndpoint<_i34.SubscriptionInfo>(
     'plans',
     'getSubscriptionInfo',
     {'subscriptionId': subscriptionId},
@@ -1369,11 +1459,11 @@ class EndpointPlans extends _i1.EndpointRef {
   /// Lists the public plans (`starter`, `growth`) for the private customer
   /// billing type. Each [PlanInfo] carries its bundled
   /// [PlanInfo.projectProduct].
-  _i2.Future<List<_i32.PlanInfo>> listPlans() =>
-      caller.callServerEndpoint<List<_i32.PlanInfo>>('plans', 'listPlans', {});
+  _i2.Future<List<_i35.PlanInfo>> listPlans() =>
+      caller.callServerEndpoint<List<_i35.PlanInfo>>('plans', 'listPlans', {});
 
-  _i2.Future<_i32.PlanInfo> getPlanInfo({required String planProductName}) =>
-      caller.callServerEndpoint<_i32.PlanInfo>('plans', 'getPlanInfo', {
+  _i2.Future<_i35.PlanInfo> getPlanInfo({required String planProductName}) =>
+      caller.callServerEndpoint<_i35.PlanInfo>('plans', 'getPlanInfo', {
         'planProductName': planProductName,
       });
 
@@ -1441,7 +1531,7 @@ class EndpointProjects extends _i1.EndpointRef {
   /// Throws [ProcurementDeniedException] if a procurement fails.
   _i2.Future<_i1.UuidValue> createPlanProject({
     required String cloudProjectId,
-    required _i33.ProjectProfileUpdate profile,
+    required _i36.ProjectProfileUpdate profile,
   }) => caller.callServerEndpoint<_i1.UuidValue>(
     'projects',
     'createPlanProject',
@@ -1512,15 +1602,15 @@ class EndpointProjects extends _i1.EndpointRef {
   /// Throws [ProcurementDeniedException] if the requested new products are not available.
   _i2.Future<void> updateProjectProfile({
     required String cloudProjectId,
-    required _i33.ProjectProfileUpdate resources,
+    required _i36.ProjectProfileUpdate resources,
   }) => caller.callServerEndpoint<void>('projects', 'updateProjectProfile', {
     'cloudProjectId': cloudProjectId,
     'resources': resources,
   });
 
-  _i2.Future<_i34.ProjectConfig> fetchProjectConfig({
+  _i2.Future<_i37.ProjectConfig> fetchProjectConfig({
     required String cloudProjectId,
-  }) => caller.callServerEndpoint<_i34.ProjectConfig>(
+  }) => caller.callServerEndpoint<_i37.ProjectConfig>(
     'projects',
     'fetchProjectConfig',
     {'cloudProjectId': cloudProjectId},
@@ -1571,9 +1661,9 @@ class EndpointRoles extends _i1.EndpointRef {
   String get name => 'roles';
 
   /// Fetches the user roles for a project.
-  _i2.Future<List<_i35.Role>> fetchRolesForProject({
+  _i2.Future<List<_i38.Role>> fetchRolesForProject({
     required String cloudProjectId,
-  }) => caller.callServerEndpoint<List<_i35.Role>>(
+  }) => caller.callServerEndpoint<List<_i38.Role>>(
     'roles',
     'fetchRolesForProject',
     {'cloudProjectId': cloudProjectId},
@@ -1629,7 +1719,7 @@ class EndpointSecrets extends _i1.EndpointRef {
   _i2.Future<void> upsertBuildSecret({
     required String secretKey,
     required String secretValue,
-    required _i36.BuildSecretType buildSecretType,
+    required _i39.BuildSecretType buildSecretType,
     required String cloudCapsuleId,
   }) => caller.callServerEndpoint<void>('secrets', 'upsertBuildSecret', {
     'secretKey': secretKey,
@@ -1716,9 +1806,9 @@ class EndpointStatus extends _i1.EndpointRef {
 
   /// Gets the live runtime status of the specified capsule.
   /// An unhealthy capsule is still a successful result — the status is data.
-  _i2.Future<_i37.CapsuleStatus> getCapsuleStatus({
+  _i2.Future<_i40.CapsuleStatus> getCapsuleStatus({
     required String cloudCapsuleId,
-  }) => caller.callServerEndpoint<_i37.CapsuleStatus>(
+  }) => caller.callServerEndpoint<_i40.CapsuleStatus>(
     'status',
     'getCapsuleStatus',
     {'cloudCapsuleId': cloudCapsuleId},
@@ -1736,10 +1826,10 @@ class EndpointStatus extends _i1.EndpointRef {
   );
 
   /// Gets the specified deploy attempt status of the a capsule.
-  _i2.Future<List<_i38.DeployAttemptStage>> getDeployAttemptStatus({
+  _i2.Future<List<_i41.DeployAttemptStage>> getDeployAttemptStatus({
     required String cloudCapsuleId,
     required _i1.UuidValue attemptId,
-  }) => caller.callServerEndpoint<List<_i38.DeployAttemptStage>>(
+  }) => caller.callServerEndpoint<List<_i41.DeployAttemptStage>>(
     'status',
     'getDeployAttemptStatus',
     {'cloudCapsuleId': cloudCapsuleId, 'attemptId': attemptId},
@@ -1758,13 +1848,13 @@ class EndpointStatus extends _i1.EndpointRef {
 
   /// Tails the status updates for a deploy attempt.
   /// Continues until the client unsubscribes or the status if final.
-  _i2.Stream<_i38.DeployAttemptStage> tailDeployAttemptStatus({
+  _i2.Stream<_i41.DeployAttemptStage> tailDeployAttemptStatus({
     required String cloudCapsuleId,
     required _i1.UuidValue attemptId,
   }) =>
       caller.callStreamingServerEndpoint<
-        _i2.Stream<_i38.DeployAttemptStage>,
-        _i38.DeployAttemptStage
+        _i2.Stream<_i41.DeployAttemptStage>,
+        _i41.DeployAttemptStage
       >('status', 'tailDeployAttemptStatus', {
         'cloudCapsuleId': cloudCapsuleId,
         'attemptId': attemptId,
@@ -1821,10 +1911,10 @@ class Client extends _i1.ServerpodClientShared {
     Function(_i1.MethodCallContext, Object, StackTrace)? onFailedCall,
     Function(_i1.MethodCallContext)? onSucceededCall,
     bool? disconnectStreamsOnLostInternetConnection,
-    _i39.Client? httpClientOverride,
+    _i42.Client? httpClientOverride,
   }) : super(
          host,
-         _i40.Protocol(),
+         _i43.Protocol(),
          securityContext: securityContext,
          streamingConnectionTimeout: streamingConnectionTimeout,
          connectionTimeout: connectionTimeout,
