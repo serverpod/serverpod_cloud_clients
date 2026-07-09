@@ -1814,6 +1814,17 @@ class EndpointStatus extends _i1.EndpointRef {
     {'cloudCapsuleId': cloudCapsuleId},
   );
 
+  /// Tails the live runtime status of the specified capsule.
+  /// Emits the current status immediately, then an update whenever it
+  /// changes. Continues until the client unsubscribes.
+  _i2.Stream<_i40.CapsuleStatus> tailCapsuleStatus({
+    required String cloudCapsuleId,
+  }) =>
+      caller.callStreamingServerEndpoint<
+        _i2.Stream<_i40.CapsuleStatus>,
+        _i40.CapsuleStatus
+      >('status', 'tailCapsuleStatus', {'cloudCapsuleId': cloudCapsuleId}, {});
+
   /// Gets deploy attempts of the specified capsule.
   /// Gets the recent-most attempts, up till [limit] if specified.
   _i2.Future<List<_i5.DeployAttempt>> getDeployAttempts({
