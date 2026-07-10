@@ -1,6 +1,16 @@
 
 # Changelog
 
+## 0.33.1 - 2026-07-10
+
+### Changed
+
+- **Simplified launch command output** - Consolidated the deployment progress display from four stages to three, combining infrastructure and service progress into a single "Rollout" stage.
+
+### Fixed
+
+- **Deployment status polling** - Improved status reporting and polling behavior for active rollouts and redeployments.
+
 ---
 ## 0.33.0 - 2026-06-29
 
