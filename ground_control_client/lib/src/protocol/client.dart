@@ -1081,6 +1081,8 @@ class EndpointDatabase extends _i1.EndpointRef {
 
   /// Creates a manual snapshot of the capsule's database.
   ///
+  /// Throws [ProcurementDeniedException] if the capsule's plan does not include
+  /// the backup feature.
   /// Throws [NotFoundException] if the database is not found.
   /// Throws [DatabaseSnapshotLimitException] if the per-project snapshot limit
   /// has been reached.
@@ -1132,6 +1134,8 @@ class EndpointDatabase extends _i1.EndpointRef {
   ///
   /// Passing a null [frequency] disables automated backups.
   ///
+  /// Throws [ProcurementDeniedException] if [frequency] is not null and the
+  /// capsule's plan does not include the backup feature.
   /// Throws [NotFoundException] if the database is not found.
   /// Throws [InvalidValueException] if the schedule parameters are invalid for
   /// the given [frequency] (e.g. a weekly/monthly schedule without a day, or a
@@ -1154,6 +1158,8 @@ class EndpointDatabase extends _i1.EndpointRef {
   ///
   /// The connection string is preserved; only the underlying branch changes.
   ///
+  /// Throws [ProcurementDeniedException] if the capsule's plan does not include
+  /// the backup feature.
   /// Throws [NotFoundException] if the database is not found.
   _i2.Future<void> restoreFromSnapshot({
     required String cloudCapsuleId,
