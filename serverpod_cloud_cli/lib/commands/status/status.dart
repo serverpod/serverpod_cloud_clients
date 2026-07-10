@@ -1,3 +1,4 @@
+import 'package:async/async.dart' show StreamGroup;
 import 'package:collection/collection.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
@@ -50,8 +51,10 @@ abstract class StatusCommands {
       attemptId: attemptId,
     );
 
+    final displayStages = _combineRolloutStages(stages);
+
     if (outputOverallStatus) {
-      final overallStatus = stages.last.stageStatus;
+      final overallStatus = displayStages.last.stageStatus;
       logger.line(overallStatus.name);
       return;
     }
@@ -60,7 +63,7 @@ abstract class StatusCommands {
       'Status of $cloudCapsuleId deployment $attemptId'
           ', started at ${stages.first.startedAt?.toTzString(inUtc, _numTimeStampChars)}:',
       '',
-      ...stages.map(_generateStatusLine),
+      ...displayStages.map(_generateStatusLine),
     ];
 
     for (final line in rows) {
@@ -100,7 +103,7 @@ abstract class StatusCommands {
       attemptId: attemptId,
       stageStreams: stageStreams,
     );
-    for (final stageType in DeployStageType.values) {
+    for (final stageType in [DeployStageType.upload, DeployStageType.build]) {
       if (skipUploadStage && stageType == DeployStageType.upload) {
         continue;
       }
@@ -108,9 +111,83 @@ abstract class StatusCommands {
       final stage = await stageStatusTailer.showStageProgress(stageType);
       if (stage.stageStatus == DeployProgressStatus.cancelled ||
           stage.stageStatus == DeployProgressStatus.failure) {
-        break;
+        return;
       }
     }
+
+    await stageStatusTailer._showRolloutProgress();
+  }
+
+  /// Combines the deploy and service stages into a single rollout stage,
+  /// keeping other stages as-is.
+  ///
+  /// The rollout is successful only when both stages have succeeded;
+  /// if either fails or is cancelled, so has the rollout.
+  static List<DeployAttemptStage> _combineRolloutStages(
+    final List<DeployAttemptStage> stages,
+  ) {
+    final rolloutStages = stages
+        .where(
+          (final stage) =>
+              stage.stageType == DeployStageType.deploy ||
+              stage.stageType == DeployStageType.service,
+        )
+        .toList();
+    final otherStages = stages
+        .where((final stage) => !rolloutStages.contains(stage))
+        .toList();
+
+    if (rolloutStages.isEmpty) {
+      return otherStages;
+    }
+
+    final deployStatus = rolloutStages
+        .lastWhereOrNull(
+          (final stage) => stage.stageType == DeployStageType.deploy,
+        )
+        ?.stageStatus;
+    final serviceStatus = rolloutStages
+        .lastWhereOrNull(
+          (final stage) => stage.stageType == DeployStageType.service,
+        )
+        ?.stageStatus;
+
+    final combinedStage = rolloutStages.last.copyWith(
+      stageType: DeployStageType.service,
+      stageStatus: _combinedRolloutStatus(
+        deployStatus ?? DeployProgressStatus.awaiting,
+        serviceStatus ?? DeployProgressStatus.awaiting,
+      ),
+    );
+    return [...otherStages, combinedStage];
+  }
+
+  /// Combines the statuses of the deploy and service stages into a single
+  /// rollout status. The rollout is successful only when both stages have
+  /// succeeded, and failed or cancelled if either stage is.
+  static DeployProgressStatus _combinedRolloutStatus(
+    final DeployProgressStatus deployStatus,
+    final DeployProgressStatus serviceStatus,
+  ) {
+    const statusPriority = [
+      DeployProgressStatus.failure,
+      DeployProgressStatus.cancelled,
+    ];
+    for (final status in statusPriority) {
+      if (deployStatus == status || serviceStatus == status) {
+        return status;
+      }
+    }
+    if (deployStatus == serviceStatus) {
+      return deployStatus;
+    }
+    if (deployStatus == DeployProgressStatus.success ||
+        serviceStatus == DeployProgressStatus.success ||
+        deployStatus == DeployProgressStatus.running ||
+        serviceStatus == DeployProgressStatus.running) {
+      return DeployProgressStatus.running;
+    }
+    return DeployProgressStatus.awaiting;
   }
 
   static String _generateStatusLine(final DeployAttemptStage stage) {
@@ -129,8 +206,7 @@ abstract class StatusCommands {
     final stageName = switch (stage.stageType) {
       DeployStageType.upload => 'Upload',
       DeployStageType.build => 'Cloud build',
-      DeployStageType.deploy => 'Infra deploy',
-      DeployStageType.service => 'Service rollout',
+      DeployStageType.deploy || DeployStageType.service => 'Rollout',
     };
 
     final verb = switch (stage.stageStatus) {
@@ -228,6 +304,58 @@ class _StageStatusTailer {
       isSuccess: (final stage) =>
           stage.stageStatus == DeployProgressStatus.success,
     );
+  }
+
+  /// Shows the progress of the combined rollout (deploy + service) stages
+  /// as a single spinner and returns the final combined stage.
+  ///
+  /// The rollout succeeds only when both stages have succeeded; if either
+  /// fails or is cancelled the rollout spinner completes as failed.
+  Future<DeployAttemptStage> _showRolloutProgress() async {
+    final fallbackStream = withFallback(
+      _combinedRolloutStream(),
+      _fillerStage(DeployStageType.service, DeployProgressStatus.unknown),
+    );
+    return await logger.progressStream(
+      StatusCommands._generateStatusLine(
+        _fillerStage(DeployStageType.service, DeployProgressStatus.awaiting),
+      ),
+      fallbackStream,
+      toMessage: StatusCommands._generateStatusLine,
+      padRight: StatusCommands.progressMessagePadLength,
+      isSuccess: (final stage) =>
+          stage.stageStatus == DeployProgressStatus.success,
+    );
+  }
+
+  /// Merges the deploy and service stage streams into a single stream of
+  /// synthetic stages carrying the combined rollout status. The stream ends
+  /// when the combined status is final or both source streams have closed.
+  Stream<DeployAttemptStage> _combinedRolloutStream() async* {
+    var deployStatus = DeployProgressStatus.awaiting;
+    var serviceStatus = DeployProgressStatus.awaiting;
+
+    final merged = StreamGroup.merge([
+      stageStreams.getStream(DeployStageType.deploy),
+      stageStreams.getStream(DeployStageType.service),
+    ]);
+
+    await for (final stage in merged) {
+      if (stage.stageType == DeployStageType.deploy) {
+        deployStatus = stage.stageStatus;
+      } else if (stage.stageType == DeployStageType.service) {
+        serviceStatus = stage.stageStatus;
+      }
+
+      final combinedStatus = StatusCommands._combinedRolloutStatus(
+        deployStatus,
+        serviceStatus,
+      );
+      yield _fillerStage(DeployStageType.service, combinedStatus);
+      if (combinedStatus.isFinal) {
+        break;
+      }
+    }
   }
 
   DeployAttemptStage _fillerStage(

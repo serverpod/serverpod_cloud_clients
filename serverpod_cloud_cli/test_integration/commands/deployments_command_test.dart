@@ -274,8 +274,7 @@ Tracking projectId deployment $attemptId
                 containsAllInOrder([
                   contains('Upload awaiting'),
                   contains('Cloud build awaiting'),
-                  contains('Infra deploy awaiting'),
-                  contains('Service rollout awaiting'),
+                  contains('Rollout awaiting'),
                 ]),
               );
             });
@@ -627,8 +626,7 @@ Tracking projectId deployment $attemptId
               containsAllInOrder([
                 contains('Upload awaiting'),
                 contains('Cloud build awaiting'),
-                contains('Infra deploy awaiting'),
-                contains('Service rollout awaiting'),
+                contains('Rollout awaiting'),
               ]),
             );
           });
@@ -663,8 +661,7 @@ Status of projectId deployment $attemptId, started at 2021-12-31 10:20:30:
 
 Upload successful.
 Cloud build successful.
-Infra deploy successful.
-Service rollout awaiting...''');
+Rollout running...''');
           });
         },
       );
@@ -688,11 +685,11 @@ Service rollout awaiting...''');
             await expectLater(commandResult, completes);
           });
 
-          test('then outputs the single word awaiting', () async {
+          test('then outputs the single word running', () async {
             await commandResult;
 
             expect(logger.lineCalls, isNotEmpty);
-            expect(logger.lineCalls.single.line, equals('awaiting'));
+            expect(logger.lineCalls.single.line, equals('running'));
           });
         },
       );
