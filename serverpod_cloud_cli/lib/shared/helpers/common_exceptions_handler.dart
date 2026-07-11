@@ -1,6 +1,6 @@
+import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
-import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/shared/helpers/console_urls.dart';
 
 /// If the exception is a common client exception, process it by displaying
@@ -46,6 +46,16 @@ void processCommonClientExceptions(
         logger.error(
           "You need a payment method!",
           hint: 'To set up your account, visit: $setupUrl\n',
+          newParagraph: true,
+        );
+      } else if (e.reason == ProcurementDeniedReason.productNotAvailable &&
+          e.message.toLowerCase().contains('backup')) {
+        final projectsUrl = '$baseUrl/project';
+        logger.error(
+          e.message,
+          hint:
+              'Database backups are available on the Growth plan. '
+              'To upgrade the plan, visit: $projectsUrl\n',
           newParagraph: true,
         );
       } else {
