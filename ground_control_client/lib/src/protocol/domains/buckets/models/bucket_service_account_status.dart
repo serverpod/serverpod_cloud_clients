@@ -12,34 +12,25 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
-enum ProductType implements _i1.SerializableModel {
-  plan,
-  project,
-  capsule,
-  compute,
-  database,
-  bucket,
-  discount;
+enum BucketServiceAccountStatus implements _i1.SerializableModel {
+  provisioning,
+  active,
+  deleting,
+  deleted;
 
-  static ProductType fromJson(String name) {
+  static BucketServiceAccountStatus fromJson(String name) {
     switch (name) {
-      case 'plan':
-        return ProductType.plan;
-      case 'project':
-        return ProductType.project;
-      case 'capsule':
-        return ProductType.capsule;
-      case 'compute':
-        return ProductType.compute;
-      case 'database':
-        return ProductType.database;
-      case 'bucket':
-        return ProductType.bucket;
-      case 'discount':
-        return ProductType.discount;
+      case 'provisioning':
+        return BucketServiceAccountStatus.provisioning;
+      case 'active':
+        return BucketServiceAccountStatus.active;
+      case 'deleting':
+        return BucketServiceAccountStatus.deleting;
+      case 'deleted':
+        return BucketServiceAccountStatus.deleted;
       default:
         throw ArgumentError(
-          'Value "$name" cannot be converted to "ProductType"',
+          'Value "$name" cannot be converted to "BucketServiceAccountStatus"',
         );
     }
   }
