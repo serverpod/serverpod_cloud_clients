@@ -9,6 +9,7 @@ class UserBuilder {
   UserAccountStatus _accountStatus;
   String? _userAuthId;
   String _email;
+  String? _name;
   List<UserRoleMembership>? _memberships;
   List<UserLabelMapping>? _labels;
   _i1.UuidValue? _ownerId;
@@ -61,6 +62,11 @@ class UserBuilder {
     return this;
   }
 
+  UserBuilder withName(final String? name) {
+    _name = name;
+    return this;
+  }
+
   UserBuilder withMemberships(final List<UserRoleMembership>? memberships) {
     _memberships = memberships;
     return this;
@@ -92,6 +98,7 @@ class UserBuilder {
       accountStatus: _accountStatus,
       userAuthId: _userAuthId,
       email: _email,
+      name: _name,
       memberships: _memberships,
       labels: _labels,
       ownerId: _owner?.id ?? _ownerId,
