@@ -263,7 +263,8 @@ void main() {
         file.readAsStringSync(),
         equals(r'''
 {
-  "command_usage_analytics": false
+  "command_usage_analytics": false,
+  "project_context": null
 }'''),
       );
     });

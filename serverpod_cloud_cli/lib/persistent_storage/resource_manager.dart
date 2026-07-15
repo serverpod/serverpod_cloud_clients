@@ -302,6 +302,27 @@ abstract class ResourceManager {
       throw FailureException.nested(e, s, 'Failed to load settings.');
     }
   }
+
+  /// Synchronously loads Serverpod Cloud settings data from local storage.
+  ///
+  /// Returns `null` if the file does not exist or cannot be read.
+  static ServerpodCloudSettingsData? tryLoadSettingsSync({
+    required final String localStoragePath,
+  }) {
+    try {
+      final file = File(
+        p.join(localStoragePath, ResourceManagerConstants.settingsFilePath),
+      );
+      if (!file.existsSync()) {
+        return null;
+      }
+      final json = file.readAsStringSync();
+      final decoded = jsonDecode(json) as Map<String, dynamic>;
+      return ServerpodCloudSettingsData.fromJson(decoded);
+    } catch (_) {
+      return null;
+    }
+  }
 }
 
 abstract class ResourceManagerConstants {

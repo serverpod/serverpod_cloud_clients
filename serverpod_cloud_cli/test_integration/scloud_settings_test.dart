@@ -217,6 +217,127 @@ void main() {
     });
   });
 
+  group('Given no settings file exists for project context', () {
+    test('when getting projectContext then null is returned', () async {
+      final settings = ScloudSettings(localStoragePath: testFolderPath);
+
+      final result = await settings.projectContext;
+
+      expect(result, isNull);
+    });
+
+    test('when setting projectContext then settings file is created', () async {
+      final settings = ScloudSettings(localStoragePath: testFolderPath);
+
+      await settings.setProjectContext('my-project');
+
+      final expected = d.file(
+        ResourceManagerConstants.settingsFilePath,
+        isNotEmpty,
+      );
+      await expectLater(expected.validate(testFolderPath), completes);
+    });
+
+    test('when setting projectContext then value can be retrieved', () async {
+      final settings = ScloudSettings(localStoragePath: testFolderPath);
+
+      await settings.setProjectContext('my-project');
+      final result = await settings.projectContext;
+
+      expect(result, equals('my-project'));
+    });
+
+    test(
+      'when clearing projectContext then no settings file is written',
+      () async {
+        final settings = ScloudSettings(localStoragePath: testFolderPath);
+
+        await settings.setProjectContext(null);
+
+        final expected = d.nothing(ResourceManagerConstants.settingsFilePath);
+        await expectLater(expected.validate(testFolderPath), completes);
+      },
+    );
+  });
+
+  group('Given settings file exists with projectContext set', () {
+    setUp(() async {
+      final storedSettings = ServerpodCloudSettingsData()
+        ..projectContext = 'my-project';
+      await ResourceManager.storeSettings(
+        settings: storedSettings,
+        localStoragePath: testFolderPath,
+      );
+    });
+
+    test('when getting projectContext then the value is returned', () async {
+      final settings = ScloudSettings(localStoragePath: testFolderPath);
+
+      final result = await settings.projectContext;
+
+      expect(result, equals('my-project'));
+    });
+
+    test('when loading settings synchronously then the value is returned', () {
+      final result = ResourceManager.tryLoadSettingsSync(
+        localStoragePath: testFolderPath,
+      );
+
+      expect(result?.projectContext, equals('my-project'));
+    });
+
+    test(
+      'when setting projectContext to another value then it is updated',
+      () async {
+        final settings = ScloudSettings(localStoragePath: testFolderPath);
+
+        await settings.setProjectContext('other-project');
+        final result = await settings.projectContext;
+
+        expect(result, equals('other-project'));
+      },
+    );
+
+    test('when clearing projectContext then null is returned', () async {
+      final settings = ScloudSettings(localStoragePath: testFolderPath);
+
+      await settings.setProjectContext(null);
+      final result = await settings.projectContext;
+
+      expect(result, isNull);
+
+      final directLoad = await ResourceManager.tryLoadSettings(
+        localStoragePath: testFolderPath,
+      );
+      expect(directLoad?.projectContext, isNull);
+    });
+
+    test(
+      'when setting enableAnalytics then projectContext is preserved',
+      () async {
+        final settings = ScloudSettings(localStoragePath: testFolderPath);
+
+        await settings.setEnableAnalytics(true);
+
+        final directLoad = await ResourceManager.tryLoadSettings(
+          localStoragePath: testFolderPath,
+        );
+        expect(directLoad?.projectContext, equals('my-project'));
+        expect(directLoad?.enableAnalytics, isTrue);
+      },
+    );
+  });
+
+  group('Given no settings file exists for sync loading', () {
+    test('when loading settings synchronously then null is returned', () {
+      final result = ResourceManager.tryLoadSettingsSync(
+        localStoragePath: testFolderPath,
+      );
+
+      expect(result, isNull);
+    });
+  });
+
   group('Given multiple set operations', () {
     test(
       'when setting different values sequentially then final value is persisted',

@@ -27,8 +27,9 @@ class ProjectIdOption extends StringOption {
         mandatory: true,
         helpText:
             '${asFirstArg ? _helpTextFirstArg : _helpText}'
-            '\nCan be omitted for existing projects that are linked. '
-            'See `scloud project link --help`.',
+            '\nCan be omitted for existing projects that are linked '
+            'or if a global project context is set. '
+            'See `scloud project link --help` and `scloud context set --help`.',
       );
 
   const ProjectIdOption._({

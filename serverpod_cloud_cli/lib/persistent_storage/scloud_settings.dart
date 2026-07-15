@@ -48,4 +48,22 @@ class ScloudSettings {
     settings.enableAnalytics = enableAnalytics;
     await _storeSettings(settings);
   }
+
+  /// Returns the current global _project context_.
+  /// Returns `null` if not set.
+  Future<String?> get projectContext async {
+    final settings = await _fetchSettings();
+    return settings.projectContext;
+  }
+
+  /// Sets the global _project context_.
+  /// Pass `null` to clear it.
+  Future<void> setProjectContext(final String? projectId) async {
+    final settings = await _fetchSettings();
+    if (settings.projectContext == projectId) {
+      return;
+    }
+    settings.projectContext = projectId;
+    await _storeSettings(settings);
+  }
 }
