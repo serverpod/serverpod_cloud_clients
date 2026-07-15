@@ -1605,6 +1605,8 @@ class EndpointProjects extends _i1.EndpointRef {
   ///
   /// Throws [NotFoundException] if the project is not found.
   /// Throws [InvalidValueException] if the requested configuration violates the product constraints.
+  /// Throws [InvalidValueException] if the plan change would strand a feature
+  /// that is currently in use (e.g. removing backup support while backups exist).
   /// Throws [ProcurementDeniedException] if the requested new products are not available.
   _i2.Future<void> updateProjectProfile({
     required String cloudProjectId,
