@@ -21,6 +21,7 @@ import 'package:serverpod_cloud_cli/util/inline_tui/inline_tui.dart'
     show SelectList, SelectListStyle;
 import 'package:serverpod_cloud_cli/util/listener_server.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
+import 'package:serverpod_cloud_cli/util/project_files_writer.dart';
 import 'package:serverpod_cloud_cli/util/project_id_validator.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart'
     show TenantProjectPubspec;
@@ -32,6 +33,11 @@ import 'package:yaml_codec/yaml_codec.dart' show yamlDecode;
 
 abstract class Launch {
   static const _projectFactStyle = cli.AnsiStyle.cyan;
+
+  /// Internal stand-in project id for dry runs of a new project. It is never
+  /// displayed to the user; the real id is assigned by the console when the
+  /// project is created.
+  static const _dryRunProjectId = 'dry-run-project';
 
   static Future<void> launch(
     final Client cloudApiClient,
@@ -45,7 +51,7 @@ abstract class Launch {
     required final String consoleServer,
     required final bool openBrowser,
     required final int deployConcurrency,
-    required final bool deployDryRun,
+    required final bool dryRun,
     required final bool deployShowFiles,
     final String? deployOutputPath,
     final bool deploySkipTailingStatus = false,
@@ -79,7 +85,7 @@ abstract class Launch {
         consoleServer: consoleServer,
         openBrowser: openBrowser,
         deployConcurrency: deployConcurrency,
-        deployDryRun: deployDryRun,
+        dryRun: dryRun,
         deployShowFiles: deployShowFiles,
         deployOutputPath: deployOutputPath,
         deploySkipTailingStatus: deploySkipTailingStatus,
@@ -93,7 +99,7 @@ abstract class Launch {
         consoleServer: consoleServer,
         openBrowser: openBrowser,
         deployConcurrency: deployConcurrency,
-        deployDryRun: deployDryRun,
+        dryRun: dryRun,
         deployShowFiles: deployShowFiles,
         deployOutputPath: deployOutputPath,
         deploySkipTailingStatus: deploySkipTailingStatus,
@@ -109,12 +115,12 @@ abstract class Launch {
     required final String consoleServer,
     required final bool openBrowser,
     required final int deployConcurrency,
-    required final bool deployDryRun,
+    required final bool dryRun,
     required final bool deployShowFiles,
     final String? deployOutputPath,
     final bool deploySkipTailingStatus = false,
   }) async {
-    await selectProjectId(cloudApiClient, logger, projectSetup);
+    await selectProjectId(cloudApiClient, logger, projectSetup, dryRun: dryRun);
 
     await suggestCodeGenerationPreDeployHook(logger, projectSetup);
 
@@ -128,7 +134,7 @@ abstract class Launch {
       consoleServer: consoleServer,
       openBrowser: openBrowser,
       deployConcurrency: deployConcurrency,
-      deployDryRun: deployDryRun,
+      dryRun: dryRun,
       deployShowFiles: deployShowFiles,
       deployOutputPath: deployOutputPath,
       deploySkipTailingStatus: deploySkipTailingStatus,
@@ -143,7 +149,7 @@ abstract class Launch {
     required final String consoleServer,
     required final bool openBrowser,
     required final int deployConcurrency,
-    required final bool deployDryRun,
+    required final bool dryRun,
     required final bool deployShowFiles,
     final String? deployOutputPath,
     final bool deploySkipTailingStatus = false,
@@ -201,7 +207,7 @@ abstract class Launch {
             stdout: toDebugLog,
             stderr: toErrorLog,
             deployConcurrency: deployConcurrency,
-            deployDryRun: deployDryRun,
+            dryRun: dryRun,
             deployShowFiles: deployShowFiles,
             deployOutputPath: deployOutputPath,
             deploySkipTailingStatus: deploySkipTailingStatus,
@@ -271,8 +277,9 @@ abstract class Launch {
   static Future<void> selectProjectId(
     final Client cloudApiClient,
     final CommandLogger logger,
-    final ProjectLaunch projectSetup,
-  ) async {
+    final ProjectLaunch projectSetup, {
+    final bool dryRun = false,
+  }) async {
     const invalidProjectIdMessage =
         'Invalid project ID. Must be 6-32 characters long '
         'and contain only lowercase letters, numbers, and hyphens.';
@@ -291,11 +298,7 @@ abstract class Launch {
       }
 
       if (isValidProjectIdFormat(specifiedProjectId)) {
-        final confirm = await logger.confirm(
-          'Open the browser and create a new Serverpod Cloud project?',
-          defaultValue: true,
-        );
-        if (!confirm) {
+        if (!dryRun && !await _confirmProjectCreation(logger)) {
           logger.info('Setup cancelled.');
           throw UserAbortException();
         }
@@ -309,6 +312,7 @@ abstract class Launch {
       cloudApiClient,
       existingProjects,
       logger,
+      dryRun: dryRun,
     );
     if (selectedId != null) {
       projectSetup.projectId = selectedId;
@@ -320,17 +324,24 @@ abstract class Launch {
     return;
   }
 
+  /// Asks whether to create a new project via the browser handoff.
+  static Future<bool> _confirmProjectCreation(
+    final CommandLogger logger,
+  ) async {
+    return await logger.confirm(
+      'Open the browser and create a new Serverpod Cloud project?',
+      defaultValue: true,
+    );
+  }
+
   static Future<String?> _selectExistingProject(
     final Client cloudApiClient,
     final List<ProjectInfo> existingProjects,
-    final CommandLogger logger,
-  ) async {
+    final CommandLogger logger, {
+    required final bool dryRun,
+  }) async {
     if (existingProjects.isEmpty) {
-      final confirm = await logger.confirm(
-        'Open the browser and create a new Serverpod Cloud project?',
-        defaultValue: true,
-      );
-      if (!confirm) {
+      if (!dryRun && !await _confirmProjectCreation(logger)) {
         logger.info('Setup cancelled.');
         throw UserAbortException();
       }
@@ -477,7 +488,7 @@ abstract class Launch {
     required final String consoleServer,
     required final bool openBrowser,
     required final int deployConcurrency,
-    required final bool deployDryRun,
+    required final bool dryRun,
     required final bool deployShowFiles,
     final String? deployOutputPath,
     final bool deploySkipTailingStatus = false,
@@ -490,8 +501,19 @@ abstract class Launch {
     final configFilePath = projectSetup.configFilePath;
     final performDeploy = projectSetup.performDeploy;
 
-    String actualProjectId;
-    if (projectSetup.preexistingProject != true) {
+    final String actualProjectId;
+    if (projectSetup.preexistingProject == true) {
+      if (projectId == null) {
+        throw StateError('For preexisting projects, projectId must be set.');
+      }
+      actualProjectId = projectId;
+    } else if (dryRun) {
+      actualProjectId = projectId ?? _dryRunProjectId;
+      logger.info(
+        'Dry run, skipping the creation of a new project.',
+        newParagraph: true,
+      );
+    } else {
       actualProjectId = await createProject(
         logger,
         consoleServer: consoleServer,
@@ -499,49 +521,63 @@ abstract class Launch {
         projectName: projectId ?? '',
         usesDb: usesDb,
       );
-    } else {
-      if (projectId == null) {
-        throw StateError('For preexisting projects, projectId must be set.');
-      }
-      actualProjectId = projectId;
     }
 
-    final safeDartSdk = await ProjectCommands.linkProject(
-      cloudApiClient,
-      logger: logger,
+    final config = ProjectFilesWriter.resolveConfig(
       projectId: actualProjectId,
-      projectDirectory: projectDir.path,
-      configFilePath: configFilePath,
-      dartVersionOverride: projectSetup.dartVersionOverride,
       preDeployScripts: projectSetup.suggestedPreDeployScripts,
-      suppressCommandMessages: true,
+      configFilePath: configFilePath,
+      dartSdk: ProjectCommands.resolveDartSdkVersion(
+        projectDirectory: projectDir.path,
+        dartVersionOverride: projectSetup.dartVersionOverride,
+      ),
     );
 
-    final projectIdStr = logger.wrapStyle(actualProjectId, _projectFactStyle);
-    logger.info(
-      'Your Serverpod Cloud project ID is: $projectIdStr',
-      newParagraph: true,
-    );
+    if (dryRun) {
+      logger.info(
+        'Dry run, skipping writing of the cloud configuration files.',
+      );
+    } else {
+      await ProjectCommands.writeProjectFiles(
+        logger,
+        config: config,
+        configFilePath: configFilePath,
+        projectDirectory: projectDir.path,
+      );
+    }
 
-    final webUrl = logger.wrapStyle(
-      'https://$actualProjectId.${HostConstants.tenantDomain}/',
-      _projectFactStyle,
-    );
-    final apiUrl = logger.wrapStyle(
-      'https://$actualProjectId.api.${HostConstants.tenantDomain}/',
-      _projectFactStyle,
-    );
-    final insightsUrl = logger.wrapStyle(
-      'https://$actualProjectId.insights.${HostConstants.tenantDomain}/',
-      _projectFactStyle,
-    );
-    logger.info(
-      'When the server has started, you can access it at:\n'
-      '   Web:      $webUrl\n'
-      '   API:      $apiUrl\n'
-      '   Insights: $insightsUrl',
-      newParagraph: true,
-    );
+    if (dryRun && projectSetup.preexistingProject != true) {
+      logger.info(
+        'The project ID and URLs are assigned when the project is created.',
+        newParagraph: true,
+      );
+    } else {
+      final projectIdStr = logger.wrapStyle(actualProjectId, _projectFactStyle);
+      logger.info(
+        'Your Serverpod Cloud project ID is: $projectIdStr',
+        newParagraph: true,
+      );
+
+      final webUrl = logger.wrapStyle(
+        'https://$actualProjectId.${HostConstants.tenantDomain}/',
+        _projectFactStyle,
+      );
+      final apiUrl = logger.wrapStyle(
+        'https://$actualProjectId.api.${HostConstants.tenantDomain}/',
+        _projectFactStyle,
+      );
+      final insightsUrl = logger.wrapStyle(
+        'https://$actualProjectId.insights.${HostConstants.tenantDomain}/',
+        _projectFactStyle,
+      );
+      logger.info(
+        'When the server has started, you can access it at:\n'
+        '   Web:      $webUrl\n'
+        '   API:      $apiUrl\n'
+        '   Insights: $insightsUrl',
+        newParagraph: true,
+      );
+    }
 
     if (!performDeploy) {
       logger.terminalCommand(
@@ -559,14 +595,13 @@ abstract class Launch {
       logger: logger,
       projectId: actualProjectId,
       projectDir: projectDir.path,
-      projectConfigFilePath: configFilePath,
+      config: config,
       concurrency: deployConcurrency,
-      dryRun: deployDryRun,
+      dryRun: dryRun,
       showFiles: deployShowFiles,
       outputPath: deployOutputPath,
       skipTailingStatus: deploySkipTailingStatus,
       suppressCommandMessages: true,
-      dartVersionOverride: safeDartSdk,
       stdout: stdout,
       stderr: stderr,
     );

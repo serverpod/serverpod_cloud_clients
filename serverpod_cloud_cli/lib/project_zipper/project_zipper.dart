@@ -39,6 +39,9 @@ abstract final class ProjectZipper {
   /// called when the modifier decides it needs to read the file content.
   /// The [excludeFile] is an optional predicate that, when returning true for a file's
   /// relative path, causes that file to be skipped from the archive entirely.
+  /// The [additionalIgnoreRules] are applied to the [rootDirectory] as if they were
+  /// read from an ignore rules file there. This makes it possible to zip a project
+  /// with the rules of an ignore file that has not been written to disk.
   ///
   /// All exceptions thrown by this method are subclasses of [ProjectZipperExceptions].
   /// Throws [ProjectDirectoryDoesNotExistException] if the project directory
@@ -60,6 +63,7 @@ abstract final class ProjectZipper {
     )?
     fileContentModifier,
     final bool Function(String relativePath)? excludeFile,
+    final List<String> additionalIgnoreRules = const [],
   }) async {
     final projectPath = rootDirectory.path;
 
@@ -74,6 +78,7 @@ abstract final class ProjectZipper {
         logger: logger,
         rootDirectory: rootDirectory,
         beneath: b,
+        additionalIgnoreRules: additionalIgnoreRules,
       );
       filesToUpload.addAll(included);
       filesIgnored.addAll(ignored);

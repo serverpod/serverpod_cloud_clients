@@ -38,10 +38,22 @@ enum LaunchOption<V> implements OptionDefinition<V> {
       hide: true,
     ),
   ),
+  dryRun(
+    FlagOption(
+      argName: 'dry-run',
+      helpText:
+          'Do not create the project, write cloud configuration files, '
+          'or deploy. Runs the pre-deploy scripts and builds the deployment '
+          'archive. For workspace projects the generated (gitignored) '
+          '.scloud directory is still written, since the archive is built '
+          'from it.',
+      defaultsTo: false,
+      negatable: false,
+    ),
+  ),
 
   // Deploy-specific options
   concurrency(DeployConcurrencyOption(group: _deployGroup)),
-  dryRun(DeployDryRunOption(group: _deployGroup)),
   showFiles(DeployShowFilesOption(group: _deployGroup)),
   output(DeployOutputOption(group: _deployGroup)),
   wait(AwaitOption(group: _deployGroup));
@@ -106,19 +118,18 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
               'The configuration file $projectConfigFile lacks a project ID.',
         );
       }
+      final config = ScloudConfigIO.readFromFile(projectConfigFile.path);
       if (commandConfig.valueSourceType(LaunchOption.projectId) !=
-          ValueSourceType.config) {
-        final config = ScloudConfigIO.readFromFile(projectConfigFile.path);
-        if (config?.projectId != projectId) {
-          final confirm = await logger.confirm(
-            'The specified project ID "$projectId" does not match the scloud config file "${config?.projectId}".'
-            '\nContinue with deployment to "$projectId"?',
-            defaultValue: false,
-          );
-          if (!confirm) {
-            logger.info('Deployment cancelled.');
-            throw UserAbortException();
-          }
+              ValueSourceType.config &&
+          config?.projectId != projectId) {
+        final confirm = await logger.confirm(
+          'The specified project ID "$projectId" does not match the scloud config file "${config?.projectId}".'
+          '\nContinue with deployment to "$projectId"?',
+          defaultValue: false,
+        );
+        if (!confirm) {
+          logger.info('Deployment cancelled.');
+          throw UserAbortException();
         }
       }
 
@@ -130,7 +141,7 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
         logger: logger,
         projectId: projectId,
         projectDir: relativeProjectDir,
-        projectConfigFilePath: projectConfigFile.path,
+        config: config,
         concurrency: concurrency,
         dryRun: dryRun,
         showFiles: showFiles,
@@ -155,7 +166,7 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
       consoleServer: consoleServer,
       openBrowser: openBrowser,
       deployConcurrency: concurrency,
-      deployDryRun: dryRun,
+      dryRun: dryRun,
       deployShowFiles: showFiles,
       deployOutputPath: outputPath?.path,
       deploySkipTailingStatus: !wait,

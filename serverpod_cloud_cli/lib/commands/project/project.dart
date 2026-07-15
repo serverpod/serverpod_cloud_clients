@@ -11,6 +11,8 @@ import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:serverpod_cloud_cli/util/project_files_writer.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart'
     show resolveProjectDartSdkVersion;
+import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_model.dart'
+    show ScloudConfig;
 
 enum PlanProfile {
   starter('starter', 'starter', 'starter-project'),
@@ -224,7 +226,27 @@ abstract class ProjectCommands {
     tablePrinter.writeLines(logger.line);
   }
 
-  static Future<String?> linkProject(
+  /// Resolves the Dart SDK version to record for the project,
+  /// from [dartVersionOverride] if given, otherwise from the project itself.
+  static String? resolveDartSdkVersion({
+    required final String projectDirectory,
+    final String? dartVersionOverride,
+  }) {
+    final safeDartSdk = ProjectDartVersionHint.normalizeBareMajorMinorOverride(
+      dartVersionOverride,
+    );
+    if (safeDartSdk == null) {
+      return resolveProjectDartSdkVersion(Directory(projectDirectory));
+    }
+
+    ensureValidVersionConstraint(
+      safeDartSdk,
+      sourceDescription: '(from --dart-version flag)',
+    );
+    return safeDartSdk;
+  }
+
+  static Future<void> linkProject(
     final Client cloudApiClient, {
     required final CommandLogger logger,
     required final String projectId,
@@ -234,39 +256,49 @@ abstract class ProjectCommands {
     final List<String> preDeployScripts = const [],
     final bool suppressCommandMessages = false,
   }) async {
-    var safeDartSdk = ProjectDartVersionHint.normalizeBareMajorMinorOverride(
-      dartVersionOverride,
+    final config = ProjectFilesWriter.resolveConfig(
+      projectId: projectId,
+      preDeployScripts: preDeployScripts,
+      configFilePath: configFilePath,
+      dartSdk: resolveDartSdkVersion(
+        projectDirectory: projectDirectory,
+        dartVersionOverride: dartVersionOverride,
+      ),
     );
-    if (safeDartSdk != null) {
-      ensureValidVersionConstraint(
-        safeDartSdk,
-        sourceDescription: '(from --dart-version flag)',
-      );
-    } else {
-      safeDartSdk = resolveProjectDartSdkVersion(Directory(projectDirectory));
-    }
 
+    await writeProjectFiles(
+      logger,
+      config: config,
+      configFilePath: configFilePath,
+      projectDirectory: projectDirectory,
+    );
+
+    if (!suppressCommandMessages) {
+      logger.success('Linked Serverpod Cloud project.', newParagraph: true);
+    }
+  }
+
+  /// Writes the resolved project [config] and the other cloud configuration
+  /// files to the project, reporting the progress to the user.
+  static Future<void> writeProjectFiles(
+    final CommandLogger logger, {
+    required final ScloudConfig config,
+    required final String configFilePath,
+    required final String projectDirectory,
+  }) async {
     await logger.progress(
       'Writing cloud configuration files',
       successMessage: 'Configuration files written.',
       padRight: StatusCommands.progressMessagePadLength,
       () async {
         ProjectFilesWriter.writeFiles(
-          projectId: projectId,
-          preDeployScripts: preDeployScripts,
+          config: config,
           configFilePath: configFilePath,
           projectDirectory: projectDirectory,
-          dartSdk: safeDartSdk,
         );
         return true;
       },
     );
-
-    if (!suppressCommandMessages) {
-      logger.success('Linked Serverpod Cloud project.', newParagraph: true);
-    }
-
-    return safeDartSdk;
   }
 
   static Future<void> inviteUser(

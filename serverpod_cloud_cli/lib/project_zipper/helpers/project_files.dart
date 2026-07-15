@@ -27,10 +27,14 @@ abstract final class ProjectFiles {
   /// [rootDirectory] to collect files from.
   /// The default value is `'.'`, which means that all files in the
   /// [rootDirectory] will be collected.
+  ///
+  /// The [additionalIgnoreRules] are applied to the [rootDirectory] as if they
+  /// were read from an ignore rules file there, after any such file on disk.
   static (Set<String> collectedFiles, Set<String> ignoredFiles) collectFiles({
     required final CommandLogger logger,
     required final Directory rootDirectory,
     final String beneath = '.',
+    final List<String> additionalIgnoreRules = const [],
   }) {
     final uri = p.toUri(p.normalize(rootDirectory.path));
 
@@ -76,6 +80,7 @@ abstract final class ProjectFiles {
 
             return _readTextFile(filePath);
           }).nonNulls,
+          if (dir == '.') ...additionalIgnoreRules,
         ];
 
         if (rules.isEmpty) return null;

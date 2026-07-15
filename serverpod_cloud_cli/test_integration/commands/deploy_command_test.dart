@@ -16,8 +16,10 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
+import 'package:serverpod_cloud_cli/commands/deploy/deploy.dart';
 import 'package:serverpod_cloud_cli/constants.dart' show VersionConstants;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_model.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:yaml_codec/yaml_codec.dart';
@@ -2195,6 +2197,73 @@ project:
         ? null
         : 'Requires the git executable, which was not found on PATH.',
   );
+
+  group('Given authenticated and a project without an scloud.yaml file', () {
+    late String testProjectDir;
+
+    setUp(() async {
+      await ProjectFactory.serverpodServerDir().create();
+      testProjectDir = p.join(d.sandbox, ProjectFactory.defaultDirectoryName);
+    });
+
+    group('when dry run deploying with an in-memory config', () {
+      setUp(() async {
+        clearInteractions(client.deploy);
+
+        await expectLater(
+          Deploy.deploy(
+            client,
+            (final _) => mockFileUploader,
+            logger: logger,
+            projectId: BucketUploadDescription.projectId,
+            projectDir: testProjectDir,
+            concurrency: 5,
+            dryRun: true,
+            showFiles: false,
+            config: ScloudConfig(
+              projectId: BucketUploadDescription.projectId,
+              scripts: ScloudScripts(
+                preDeploy: ['echo "pre-deploy-1" > pre_deploy_output.txt'],
+                postDeploy: [],
+              ),
+            ),
+          ),
+          completes,
+        );
+      });
+
+      test(
+        'then the pre-deploy scripts of the in-memory config are executed',
+        () async {
+          final expected = d.dir(testProjectDir, [
+            d.file('pre_deploy_output.txt', contains('pre-deploy-1')),
+          ]);
+          await expectLater(expected.validate(), completes);
+        },
+      );
+
+      test('then no scloud.yaml file is written', () async {
+        expect(
+          File(p.join(testProjectDir, 'scloud.yaml')).existsSync(),
+          isFalse,
+        );
+      });
+
+      test('then nothing is uploaded', () async {
+        expect(mockFileUploader.uploadedData, isEmpty);
+        verifyNever(
+          () => client.deploy.createUploadDescription(
+            any(),
+            serverpodVersion: any(named: 'serverpodVersion'),
+            dartVersion: any(named: 'dartVersion'),
+            commitHash: any(named: 'commitHash'),
+            commitMessage: any(named: 'commitMessage'),
+            branch: any(named: 'branch'),
+          ),
+        );
+      });
+    });
+  });
 }
 
 /// Whether the `git` executable can be invoked on this machine. Used to skip

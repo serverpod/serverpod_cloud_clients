@@ -10,23 +10,27 @@ import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_model.dart'
 import 'package:serverpod_cloud_cli/util/scloudignore.dart';
 
 abstract final class ProjectFilesWriter {
+  /// Writes the [config], previously resolved with [resolveConfig],
+  /// to [configFilePath], and upserts the `.scloudignore` file.
   static void writeFiles({
-    required final String projectId,
-    required final List<String> preDeployScripts,
+    required final ScloudConfig config,
     required final String configFilePath,
     required final String projectDirectory,
-    final String? dartSdk,
   }) {
-    _upsertConfigFile(projectId, preDeployScripts, configFilePath, dartSdk);
+    ScloudConfigIO.writeToFile(config, configFilePath);
     _upsertScloudIgnoreFile(projectDirectory);
   }
 
-  static void _upsertConfigFile(
-    final String projectId,
-    final List<String> suggestedPreDeployScripts,
-    final String configFilePath,
+  /// Resolves the project config by merging the given values into the
+  /// current contents of the config file at [configFilePath], if any.
+  ///
+  /// Nothing is written to disk.
+  static ScloudConfig resolveConfig({
+    required final String projectId,
+    required final List<String> preDeployScripts,
+    required final String configFilePath,
     final String? dartSdk,
-  ) {
+  }) {
     final ScloudConfig? config;
     try {
       config = ScloudConfigIO.readFromFile(configFilePath);
@@ -38,29 +42,24 @@ abstract final class ProjectFilesWriter {
       );
     }
 
-    final ScloudConfig newConfig;
     if (config == null) {
-      newConfig = ScloudConfig(
+      return ScloudConfig(
         projectId: projectId,
         dartSdk: dartSdk,
-        scripts: ScloudScripts(
-          preDeploy: suggestedPreDeployScripts,
-          postDeploy: [],
-        ),
-      );
-    } else {
-      final existingPreDeploy = config.scripts.preDeploy
-          .where((final hook) => !suggestedPreDeployScripts.contains(hook))
-          .toList();
-      newConfig = config.copyWith(
-        projectId: projectId,
-        dartSdk: dartSdk ?? config.dartSdk,
-        scripts: config.scripts.copyWith(
-          preDeploy: [...existingPreDeploy, ...suggestedPreDeployScripts],
-        ),
+        scripts: ScloudScripts(preDeploy: preDeployScripts, postDeploy: []),
       );
     }
-    ScloudConfigIO.writeToFile(newConfig, configFilePath);
+
+    final existingPreDeploy = config.scripts.preDeploy
+        .where((final hook) => !preDeployScripts.contains(hook))
+        .toList();
+    return config.copyWith(
+      projectId: projectId,
+      dartSdk: dartSdk ?? config.dartSdk,
+      scripts: config.scripts.copyWith(
+        preDeploy: [...existingPreDeploy, ...preDeployScripts],
+      ),
+    );
   }
 
   static void _upsertScloudIgnoreFile(final String projectDirectory) {

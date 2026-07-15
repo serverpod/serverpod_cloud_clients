@@ -41,11 +41,18 @@ abstract class WorkspaceProject {
   /// Returns a tuple with the workspace root directory and the list of
   /// subpaths in the root directory to include.
   ///
+  /// If [writeScloudIgnore] is false, the workspace root's `.scloudignore` file
+  /// is not created if it is missing. The generated `.scloud` deployment files
+  /// (the bespoke workspace root pubspec and the server dir pointer) are
+  /// always written, also in dry runs, since the deployment archive is built
+  /// from disk and must contain them. They are normally gitignored.
+  ///
   /// If the preparation fails, error messages will be logged
   /// and [WorkspaceException] is thrown.
   static (Directory, Iterable<String>) prepareWorkspacePaths(
-    final Directory projectDirectory,
-  ) {
+    final Directory projectDirectory, {
+    final bool writeScloudIgnore = true,
+  }) {
     final String projectPackageName = _getPackageName(projectDirectory);
 
     // Find workspace root directory by traversing up until we find a pubspec.yaml with workspace field
@@ -89,7 +96,12 @@ abstract class WorkspaceProject {
         .map((final package) => package.dir.path)
         .toList();
 
-    _writeSCloudFiles(workspaceRootDir, includedPackagePaths, projectPackage);
+    _writeSCloudFiles(
+      workspaceRootDir,
+      includedPackagePaths,
+      projectPackage,
+      writeScloudIgnore: writeScloudIgnore,
+    );
 
     final includedPaths = [...includedPackagePaths, ScloudIgnore.scloudDirName];
     return (workspaceRootDir, includedPaths);
@@ -100,8 +112,9 @@ abstract class WorkspaceProject {
   static void _writeSCloudFiles(
     final Directory workspaceRootDir,
     final List<String> includedPackagePaths,
-    final WorkspacePackage projectPackage,
-  ) {
+    final WorkspacePackage projectPackage, {
+    required final bool writeScloudIgnore,
+  }) {
     final scloudDir = Directory(
       p.join(workspaceRootDir.path, ScloudIgnore.scloudDirName),
     );
@@ -110,7 +123,9 @@ abstract class WorkspaceProject {
     _writeScloudRootPubspec(workspaceRootDir, includedPackagePaths);
     _writeProjectServerDirFile(workspaceRootDir, projectPackage.dir);
 
-    ScloudIgnore.writeTemplateIfNotExists(rootFolder: workspaceRootDir.path);
+    if (writeScloudIgnore) {
+      ScloudIgnore.writeTemplateIfNotExists(rootFolder: workspaceRootDir.path);
+    }
   }
 
   static String _getPackageName(final Directory packageDirectory) {

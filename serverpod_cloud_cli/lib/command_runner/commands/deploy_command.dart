@@ -6,6 +6,7 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/commands/deploy/deploy.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
+import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_io.dart';
 
 import 'categories.dart';
 
@@ -22,7 +23,7 @@ class DeployConcurrencyOption extends IntOption {
 }
 
 class DeployDryRunOption extends FlagOption {
-  const DeployDryRunOption({super.group})
+  const DeployDryRunOption()
     : super(
         argName: 'dry-run',
         helpText: 'Do not actually deploy, just print the deployment steps.',
@@ -153,7 +154,7 @@ Examples
       logger: logger,
       projectId: projectId,
       projectDir: projectDirectory.path,
-      projectConfigFilePath: configFilePath,
+      config: ScloudConfigIO.readFromFile(configFilePath),
       concurrency: concurrency,
       dryRun: dryRun,
       showFiles: showFiles,

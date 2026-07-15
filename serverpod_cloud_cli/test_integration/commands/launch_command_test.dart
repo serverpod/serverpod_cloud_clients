@@ -5,6 +5,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:archive/archive.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:mocktail/mocktail.dart';
@@ -374,6 +375,479 @@ project:
         });
       });
 
+      group('when executing launch with --dry-run'
+          ' and --no-pre-deploy-scripts,', () {
+        setUp(() async {
+          await expectLater(
+            cli.run([
+              'launch',
+              '--project',
+              projectId,
+              '--project-dir',
+              testProjectDir,
+              '--no-pre-deploy-scripts',
+              '--no-browser',
+              '--dry-run',
+            ]),
+            completes,
+          );
+        });
+
+        test('then no project creation is confirmed or prompted for', () async {
+          expect(logger.confirmCalls, isEmpty);
+          expect(logger.inputCalls, isEmpty);
+        });
+
+        test('then the console project-creation handoff link is '
+            'not opened', () async {
+          expect(
+            logger.infoCalls.map((final call) => call.message),
+            isNot(contains(contains(ConsoleRoutes.createProject))),
+          );
+        });
+
+        test('then the user is informed that project creation is '
+            'skipped', () async {
+          expect(
+            logger.infoCalls,
+            contains(
+              equalsInfoCall(
+                message: 'Dry run, skipping the creation of a new project.',
+                newParagraph: true,
+              ),
+            ),
+          );
+        });
+
+        test('then no project ID or access URLs are displayed', () async {
+          expect(
+            logger.infoCalls.map((final call) => call.message),
+            isNot(
+              contains(
+                anyOf(
+                  contains('Your Serverpod Cloud project ID is'),
+                  contains('you can access it at'),
+                ),
+              ),
+            ),
+          );
+        });
+
+        test('then the user is informed that the project ID and URLs are '
+            'assigned on creation', () async {
+          expect(
+            logger.infoCalls,
+            contains(
+              equalsInfoCall(
+                message:
+                    'The project ID and URLs are assigned when the project '
+                    'is created.',
+                newParagraph: true,
+              ),
+            ),
+          );
+        });
+
+        test('then no scloud.yaml file is written', () async {
+          expect(
+            File(p.join(testProjectDir, 'scloud.yaml')).existsSync(),
+            isFalse,
+          );
+        });
+
+        test('then no .scloudignore file is written', () async {
+          expect(
+            File(p.join(testProjectDir, '.scloudignore')).existsSync(),
+            isFalse,
+          );
+        });
+
+        test('then the project is zipped and the upload is skipped', () async {
+          expect(
+            logger.progressCalls,
+            containsAllInOrder([
+              equalsProgressCall(message: 'Zipping successful.'),
+              equalsProgressCall(message: 'Dry run, skipping upload.'),
+            ]),
+          );
+        });
+
+        test('then nothing is uploaded', () async {
+          expect(mockFileUploader.uploadedData, isEmpty);
+        });
+      });
+
+      group('when executing launch with --dry-run without --project'
+          ' for a project whose name yields no valid default project id,', () {
+        setUp(() async {
+          await ProjectFactory.serverpodServerDir(
+            withDirectoryName: 'short_name_server_dir',
+            withPackageName: 'srv_server',
+          ).create();
+
+          await expectLater(
+            cli.run([
+              'launch',
+              '--project-dir',
+              p.join(d.sandbox, 'short_name_server_dir'),
+              '--no-pre-deploy-scripts',
+              '--no-browser',
+              '--dry-run',
+            ]),
+            completes,
+          );
+        });
+
+        test('then no project creation is confirmed or prompted for', () async {
+          expect(logger.confirmCalls, isEmpty);
+          expect(logger.inputCalls, isEmpty);
+        });
+
+        test('then no project ID or access URLs are displayed', () async {
+          expect(
+            logger.infoCalls.map((final call) => call.message),
+            isNot(
+              contains(
+                anyOf(
+                  contains('Your Serverpod Cloud project ID is'),
+                  contains('you can access it at'),
+                ),
+              ),
+            ),
+          );
+        });
+
+        test('then the internal stand-in project id is never '
+            'displayed', () async {
+          expect(
+            logger.infoCalls.map((final call) => call.message),
+            isNot(contains(contains('dry-run-project'))),
+          );
+        });
+
+        test('then the user is informed that the project ID and URLs are '
+            'assigned on creation', () async {
+          expect(
+            logger.infoCalls,
+            contains(
+              equalsInfoCall(
+                message:
+                    'The project ID and URLs are assigned when the project '
+                    'is created.',
+                newParagraph: true,
+              ),
+            ),
+          );
+        });
+
+        test('then the project is zipped and the upload is skipped', () async {
+          expect(
+            logger.progressCalls,
+            containsAllInOrder([
+              equalsProgressCall(message: 'Zipping successful.'),
+              equalsProgressCall(message: 'Dry run, skipping upload.'),
+            ]),
+          );
+        });
+      });
+
+      group('when executing launch with --dry-run and --output'
+          ' for a project with a gitignored web build directory,', () {
+        late String outputZipPath;
+        late Future commandResult;
+        setUp(() async {
+          await d.dir('server_dir', [
+            d.file('.gitignore', 'web/**\n'),
+            d.dir('web', [d.file('index.html', '<html></html>')]),
+          ]).create();
+
+          outputZipPath = p.join(d.sandbox, 'deployment.zip');
+
+          commandResult = cli.run([
+            'launch',
+            '--project',
+            projectId,
+            '--project-dir',
+            testProjectDir,
+            '--no-pre-deploy-scripts',
+            '--no-browser',
+            '--dry-run',
+            '--output',
+            outputZipPath,
+          ]);
+
+          await expectLater(commandResult, completes);
+        });
+
+        test('then the web build is included in the zipped project', () async {
+          final archive = ZipDecoder().decodeBytes(
+            File(outputZipPath).readAsBytesSync(),
+          );
+
+          expect(
+            archive.files.map((final file) => file.name),
+            contains('web/index.html'),
+          );
+        });
+      });
+
+      group('when executing a real launch and a dry-run launch'
+          ' on identical projects with a gitignored web build directory,', () {
+        late String realProjectDir;
+        late String dryProjectDir;
+        late String realZipPath;
+        late String dryZipPath;
+        late Map<String, List<int>> dryDirContentsBefore;
+
+        Map<String, List<int>> dirContents(final String dir) => {
+          for (final entity in Directory(dir).listSync(recursive: true))
+            if (entity is File)
+              p.relative(entity.path, from: dir): entity.readAsBytesSync(),
+        };
+
+        Set<String> zipFileNames(final String zipPath) => ZipDecoder()
+            .decodeBytes(File(zipPath).readAsBytesSync())
+            .files
+            .map((final file) => file.name)
+            .toSet();
+
+        Map<String, List<int>> zipFileContents(final String zipPath) => {
+          for (final file
+              in ZipDecoder()
+                  .decodeBytes(File(zipPath).readAsBytesSync())
+                  .files)
+            file.name: file.content as List<int>,
+        };
+
+        setUp(() async {
+          final projectContents = [
+            d.dir('config', [d.file('development.yaml', _databaseConfigYaml)]),
+            d.file('.gitignore', 'web/**\n'),
+            d.dir('web', [d.file('index.html', '<html></html>')]),
+          ];
+          await d.dir('parity_real', [
+            d.file('.git'),
+            ProjectFactory.serverpodServerDir(
+              withDirectoryName: 'server_dir',
+              contents: projectContents,
+            ),
+          ]).create();
+          await d.dir('parity_dry', [
+            d.file('.git'),
+            ProjectFactory.serverpodServerDir(
+              withDirectoryName: 'server_dir',
+              contents: projectContents,
+            ),
+          ]).create();
+          realProjectDir = p.join(d.sandbox, 'parity_real', 'server_dir');
+          dryProjectDir = p.join(d.sandbox, 'parity_dry', 'server_dir');
+          realZipPath = p.join(d.sandbox, 'real.zip');
+          dryZipPath = p.join(d.sandbox, 'dry.zip');
+
+          dryDirContentsBefore = dirContents(dryProjectDir);
+
+          logger.answerNextConfirmsWith([true]);
+          simulateConsoleProjectCreation(logger, projectId: projectId);
+          await expectLater(
+            cli.run([
+              'launch',
+              '--project',
+              projectId,
+              '--project-dir',
+              realProjectDir,
+              '--no-pre-deploy-scripts',
+              '--no-browser',
+              '--output',
+              realZipPath,
+            ]),
+            completes,
+          );
+
+          await expectLater(
+            cli.run([
+              'launch',
+              '--project',
+              projectId,
+              '--project-dir',
+              dryProjectDir,
+              '--no-pre-deploy-scripts',
+              '--no-browser',
+              '--dry-run',
+              '--output',
+              dryZipPath,
+            ]),
+            completes,
+          );
+        });
+
+        test('then the dry-run archive holds the same files as the real one'
+            ', except those only written to the project by a real launch', () {
+          final realNames = zipFileNames(realZipPath);
+          final dryNames = zipFileNames(dryZipPath);
+
+          expect(dryNames.difference(realNames), isEmpty);
+          expect(realNames.difference(dryNames), {'scloud.yaml'});
+        });
+
+        test('then the common archive files have identical contents', () {
+          final realFiles = zipFileContents(realZipPath);
+          final dryFiles = zipFileContents(dryZipPath);
+
+          final sharedRealFiles = {
+            for (final entry in realFiles.entries)
+              if (dryFiles.containsKey(entry.key)) entry.key: entry.value,
+          };
+          expect(dryFiles, equals(sharedRealFiles));
+        });
+
+        test('then the dry-run project directory is unmodified', () {
+          expect(dirContents(dryProjectDir), dryDirContentsBefore);
+        });
+      });
+
+      group('when executing a real launch and a dry-run launch'
+          ' on identical workspace projects,', () {
+        late String realWorkspaceRoot;
+        late String dryWorkspaceRoot;
+        late String realZipPath;
+        late String dryZipPath;
+        late Map<String, List<int>> dryDirContentsBefore;
+
+        Map<String, List<int>> dirContents(final String dir) => {
+          for (final entity in Directory(dir).listSync(recursive: true))
+            if (entity is File)
+              p.relative(entity.path, from: dir): entity.readAsBytesSync(),
+        };
+
+        Set<String> zipFileNames(final String zipPath) => ZipDecoder()
+            .decodeBytes(File(zipPath).readAsBytesSync())
+            .files
+            .map((final file) => file.name)
+            .toSet();
+
+        Map<String, List<int>> zipFileContents(final String zipPath) => {
+          for (final file
+              in ZipDecoder()
+                  .decodeBytes(File(zipPath).readAsBytesSync())
+                  .files)
+            file.name: file.content as List<int>,
+        };
+
+        d.DirectoryDescriptor workspaceDir(final String rootName) =>
+            d.dir(rootName, [
+              d.file('.git'),
+              d.file('pubspec.yaml', '''
+name: monorepo
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+workspace:
+  - packages/dart_utilities
+  - project/project_server
+'''),
+              d.dir('packages', [
+                d.dir('dart_utilities', [
+                  d.file('pubspec.yaml', '''
+name: dart_utilities
+version: 1.0.0
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+resolution: workspace
+'''),
+                ]),
+              ]),
+              d.dir('project', [
+                d.dir('project_server', [
+                  d.file('pubspec.yaml', '''
+name: project_server
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+resolution: workspace
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+  dart_utilities: ^1.0.0
+'''),
+                  d.file('.gitignore', 'web/**\n'),
+                  d.dir('web', [d.file('index.html', '<html></html>')]),
+                ]),
+              ]),
+            ]);
+
+        setUp(() async {
+          await workspaceDir('parity_ws_real').create();
+          await workspaceDir('parity_ws_dry').create();
+          realWorkspaceRoot = p.join(d.sandbox, 'parity_ws_real');
+          dryWorkspaceRoot = p.join(d.sandbox, 'parity_ws_dry');
+          realZipPath = p.join(d.sandbox, 'ws_real.zip');
+          dryZipPath = p.join(d.sandbox, 'ws_dry.zip');
+
+          dryDirContentsBefore = dirContents(dryWorkspaceRoot);
+
+          logger.answerNextConfirmsWith([true]);
+          simulateConsoleProjectCreation(logger, projectId: projectId);
+          await expectLater(
+            cli.run([
+              'launch',
+              '--project',
+              projectId,
+              '--project-dir',
+              p.join(realWorkspaceRoot, 'project', 'project_server'),
+              '--no-pre-deploy-scripts',
+              '--no-browser',
+              '--output',
+              realZipPath,
+            ]),
+            completes,
+          );
+
+          await expectLater(
+            cli.run([
+              'launch',
+              '--project',
+              projectId,
+              '--project-dir',
+              p.join(dryWorkspaceRoot, 'project', 'project_server'),
+              '--no-pre-deploy-scripts',
+              '--no-browser',
+              '--dry-run',
+              '--output',
+              dryZipPath,
+            ]),
+            completes,
+          );
+        });
+
+        test('then the dry-run archive holds the same files as the real one'
+            ', except those only written to the project by a real launch', () {
+          final realNames = zipFileNames(realZipPath);
+          final dryNames = zipFileNames(dryZipPath);
+
+          expect(dryNames.difference(realNames), isEmpty);
+          expect(realNames.difference(dryNames), {
+            'project/project_server/scloud.yaml',
+          });
+        });
+
+        test('then the common archive files have identical contents', () {
+          final realFiles = zipFileContents(realZipPath);
+          final dryFiles = zipFileContents(dryZipPath);
+
+          final sharedRealFiles = {
+            for (final entry in realFiles.entries)
+              if (dryFiles.containsKey(entry.key)) entry.key: entry.value,
+          };
+          expect(dryFiles, equals(sharedRealFiles));
+        });
+
+        test('then the dry-run workspace is unmodified except for the'
+            ' generated .scloud directory', () {
+          expect(dirContents(dryWorkspaceRoot), {
+            ...dryDirContentsBefore,
+            p.join('.scloud', 'scloud_server_dir'): anything,
+            p.join('.scloud', 'scloud_ws_pubspec.yaml'): anything,
+          });
+        });
+      });
+
       group('when executing launch for a project without a database config'
           ', with --no-pre-deploy-scripts'
           ', and approving confirmation,', () {
@@ -624,7 +1098,6 @@ serverpod:
           ', disabling initial deploy'
           ' and approving confirmation', () {
         late String testProjectDir;
-        late Future commandResult;
 
         setUp(() async {
           await ProjectFactory.serverpodServerDir(
@@ -636,17 +1109,18 @@ serverpod:
 
           simulateConsoleProjectCreation(logger, projectId: projectId);
 
-          commandResult = cli.run([
-            'launch',
-            '--project',
-            projectId,
-            '--project-dir',
-            testProjectDir,
-            '--no-deploy',
-            '--no-browser',
-          ]);
-
-          await expectLater(commandResult, completes);
+          await expectLater(
+            cli.run([
+              'launch',
+              '--project',
+              projectId,
+              '--project-dir',
+              testProjectDir,
+              '--no-deploy',
+              '--no-browser',
+            ]),
+            completes,
+          );
         });
 
         test('then writes scloud.yaml with pre-deploy hook', () async {

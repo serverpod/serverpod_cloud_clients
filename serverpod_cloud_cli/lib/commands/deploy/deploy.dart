@@ -21,7 +21,8 @@ import 'package:serverpod_cloud_cli/util/deploy_multi_instance_serverpod_warning
 import 'package:serverpod_cloud_cli/util/git_metadata.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart'
     show TenantProjectPubspec;
-import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_io.dart';
+import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_model.dart'
+    show ScloudConfig;
 import 'package:serverpod_cloud_cli/util/scloudignore.dart' show ScloudIgnore;
 import 'package:serverpod_cloud_cli/util/tool_versions_io.dart';
 import 'package:serverpod_cloud_cli/util/upload_description_metadata.dart';
@@ -29,13 +30,23 @@ import 'package:serverpod_cloud_cli/util/upload_description_metadata.dart';
 import 'prepare_workspace.dart';
 
 abstract class Deploy {
+  /// Deploys the project in [projectDir] to the cloud project [projectId].
+  ///
+  /// The project [config] is always passed in by the caller, whether read
+  /// from the project's config file or resolved in memory.
+  ///
+  /// If [dryRun] is true, no `.scloudignore` file is written to the project;
+  /// its rules are applied in memory if the file is missing, so that the
+  /// archive contents still match those of a regular deployment. For
+  /// workspace projects the generated `.scloud` directory is still written,
+  /// since the archive is built from disk and requires it.
   static Future<void> deploy(
     final Client cloudApiClient,
     final FileUploaderFactory fileUploaderFactory, {
     required final CommandLogger logger,
     required final String projectId,
     required final String projectDir,
-    required final String projectConfigFilePath,
+    required final ScloudConfig? config,
     required final int concurrency,
     required final bool dryRun,
     required final bool showFiles,
@@ -60,8 +71,6 @@ abstract class Deploy {
     if (issues.isNotEmpty) {
       throw FailureException(errors: issues);
     }
-
-    final config = ScloudConfigIO.readFromFile(projectConfigFilePath);
 
     if (config != null && config.scripts.preDeploy.isNotEmpty) {
       await ScriptRunner.runScripts(
@@ -93,12 +102,14 @@ abstract class Deploy {
       ],
     );
 
-    await warnIfLegacyServerpodWithMultipleInstances(
-      cloudApiClient: cloudApiClient,
-      projectId: projectId,
-      logger: logger,
-      serverpodVersionConstraint: pubspecValidator.serverpodVersion,
-    );
+    if (!dryRun) {
+      await warnIfLegacyServerpodWithMultipleInstances(
+        cloudApiClient: cloudApiClient,
+        projectId: projectId,
+        logger: logger,
+        serverpodVersionConstraint: pubspecValidator.serverpodVersion,
+      );
+    }
 
     final gitMetadata = await readGitMetadata(projectDir, logger: logger);
     if (gitMetadata != null && gitMetadata.hasUncommittedChanges) {
@@ -116,8 +127,13 @@ abstract class Deploy {
     final Iterable<String> includedSubPaths;
     final bool isWorkspace = pubspecValidator.isWorkspaceResolved();
     if (isWorkspace) {
-      (rootDirectory, includedSubPaths) =
-          WorkspaceProject.prepareWorkspacePaths(projectDirectory);
+      (
+        rootDirectory,
+        includedSubPaths,
+      ) = WorkspaceProject.prepareWorkspacePaths(
+        projectDirectory,
+        writeScloudIgnore: !dryRun,
+      );
 
       logger.list(
         title: 'Including workspace packages',
@@ -142,6 +158,11 @@ abstract class Deploy {
               p.basename(relativePath) == 'pubspec.lock'
         : null;
 
+    final additionalIgnoreRules = [
+      if (dryRun && !ScloudIgnore.fileExists(rootFolder: rootDirectory.path))
+        ScloudIgnore.template,
+    ];
+
     late final List<int> projectZip;
     final isZipped = await logger.progress(
       'Zipping project',
@@ -157,6 +178,7 @@ abstract class Deploy {
             fileReadPoolSize: concurrency,
             showFiles: showFiles,
             excludeFile: excludeFile,
+            additionalIgnoreRules: additionalIgnoreRules,
             fileContentModifier: (final relativePath, final contentReader) async {
               final isPubspec =
                   relativePath.endsWith('pubspec.yaml') &&
