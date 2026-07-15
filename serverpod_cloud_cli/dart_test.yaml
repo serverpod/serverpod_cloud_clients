@@ -1,2 +1,6 @@
 tags:
   concurrency_one: {}
+
+presets:
+  ci:
+    retry: 1
