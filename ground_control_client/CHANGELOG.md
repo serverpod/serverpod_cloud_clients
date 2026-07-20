@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.34.0] - 2026-07-20
+
+### Added
+
+- **Global project context** - Introduced a global project context for the `scloud` CLI via new `scloud context` commands, allowing you to run project-scoped commands without repeatedly specifying the `--project` flag or running them from a project directory.
+- **Database snapshot management** - Added support for managing database backups and automated schedules directly from the CLI via the new `scloud db backup` and `scloud db schedule` commands.
+
 ## 0.33.1 - 2026-07-10
 
 ### Changed
