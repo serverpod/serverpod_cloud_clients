@@ -1,0 +1,92 @@
+/* AUTOMATICALLY GENERATED CODE DO NOT MODIFY */
+/*   To generate run: "serverpod generate"    */
+
+// ignore_for_file: implementation_imports
+// ignore_for_file: library_private_types_in_public_api
+// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: public_member_api_docs
+// ignore_for_file: type_literal_in_constant_pattern
+// ignore_for_file: use_super_parameters
+// ignore_for_file: invalid_use_of_internal_member
+
+// ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
+
+abstract class DatabaseUser implements _i1.SerializableModel {
+  DatabaseUser._({
+    required this.username,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory DatabaseUser({
+    required String username,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+  }) = _DatabaseUserImpl;
+
+  factory DatabaseUser.fromJson(Map<String, dynamic> jsonSerialization) {
+    return DatabaseUser(
+      username: jsonSerialization['username'] as String,
+      createdAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['createdAt'],
+      ),
+      updatedAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['updatedAt'],
+      ),
+    );
+  }
+
+  String username;
+
+  DateTime createdAt;
+
+  DateTime updatedAt;
+
+  /// Returns a shallow copy of this [DatabaseUser]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
+  DatabaseUser copyWith({
+    String? username,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  });
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'DatabaseUser',
+      'username': username,
+      'createdAt': createdAt.toJson(),
+      'updatedAt': updatedAt.toJson(),
+    };
+  }
+
+  @override
+  String toString() {
+    return _i1.SerializationManager.encode(this);
+  }
+}
+
+class _DatabaseUserImpl extends DatabaseUser {
+  _DatabaseUserImpl({
+    required String username,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+  }) : super._(username: username, createdAt: createdAt, updatedAt: updatedAt);
+
+  /// Returns a shallow copy of this [DatabaseUser]
+  /// with some or all fields replaced by the given arguments.
+  @_i1.useResult
+  @override
+  DatabaseUser copyWith({
+    String? username,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return DatabaseUser(
+      username: username ?? this.username,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+}
