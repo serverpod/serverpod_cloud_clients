@@ -215,6 +215,21 @@ commands:
     exclusiveFlags:
       - [utc, no-utc]
 
+  - name: metrics
+    flags:
+      -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked or if a global project context is set. See `scloud project link --help` and `scloud context set --help`."
+      --range=: "The length of the time window to show, ending at --until. The sampling interval is chosen to suit the range."
+      --until=: "End the time window at this point instead of now. Accepts an ISO date (e.g. \"2026-01-15T10:30:00Z\") or a duration back from now (e.g. \"5m\", \"3h\", \"1d\")."
+      -t, --table: "Render the metrics as a table. This is the default."
+      -r, --raw: "Render the metrics as JSON, for machine consumption."
+      -u, --utc: "Display timestamps in UTC timezone instead of local."
+      --no-utc: "Display timestamps in UTC timezone instead of local."
+    exclusiveFlags:
+      - [utc, no-utc]
+    completion:
+      flag:
+        range: ["oneHour", "oneDay", "oneWeek", "oneMonth"]
+
   - name: deployment
 
     commands:

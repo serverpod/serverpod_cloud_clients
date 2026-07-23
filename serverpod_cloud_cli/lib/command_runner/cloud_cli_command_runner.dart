@@ -17,6 +17,7 @@ import 'package:serverpod_cloud_cli/command_runner/commands/auth_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/context_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/launch_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/log_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/metrics_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/project_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/secret_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/password_command.dart';
@@ -157,6 +158,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
       CloudVariableCommand(logger: logger),
       CloudCustomDomainCommand(logger: logger),
       CloudLogCommand(logger: logger),
+      CloudMetricsCommand(logger: logger),
       CloudDeploymentsCommand(logger: logger),
       CloudSecretCommand(logger: logger),
       CloudPasswordCommand(logger: logger),
