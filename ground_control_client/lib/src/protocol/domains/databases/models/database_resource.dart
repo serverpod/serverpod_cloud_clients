@@ -26,6 +26,8 @@ abstract class DatabaseResource implements _i1.SerializableModel {
     required this.connection,
     required this.scaling,
     required this.quota,
+    this.metricsExportEndpoint,
+    this.metricsExportSecretFingerprint,
   });
 
   factory DatabaseResource({
@@ -36,6 +38,8 @@ abstract class DatabaseResource implements _i1.SerializableModel {
     required _i3.DatabaseConnection connection,
     required _i4.DatabaseScaling scaling,
     required _i5.DatabaseQuota quota,
+    String? metricsExportEndpoint,
+    String? metricsExportSecretFingerprint,
   }) = _DatabaseResourceImpl;
 
   factory DatabaseResource.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -55,6 +59,10 @@ abstract class DatabaseResource implements _i1.SerializableModel {
       quota: _i6.Protocol().deserialize<_i5.DatabaseQuota>(
         jsonSerialization['quota'],
       ),
+      metricsExportEndpoint:
+          jsonSerialization['metricsExportEndpoint'] as String?,
+      metricsExportSecretFingerprint:
+          jsonSerialization['metricsExportSecretFingerprint'] as String?,
     );
   }
 
@@ -75,6 +83,10 @@ abstract class DatabaseResource implements _i1.SerializableModel {
 
   _i5.DatabaseQuota quota;
 
+  String? metricsExportEndpoint;
+
+  String? metricsExportSecretFingerprint;
+
   /// Returns a shallow copy of this [DatabaseResource]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
@@ -86,6 +98,8 @@ abstract class DatabaseResource implements _i1.SerializableModel {
     _i3.DatabaseConnection? connection,
     _i4.DatabaseScaling? scaling,
     _i5.DatabaseQuota? quota,
+    String? metricsExportEndpoint,
+    String? metricsExportSecretFingerprint,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -98,6 +112,10 @@ abstract class DatabaseResource implements _i1.SerializableModel {
       'connection': connection.toJson(),
       'scaling': scaling.toJson(),
       'quota': quota.toJson(),
+      if (metricsExportEndpoint != null)
+        'metricsExportEndpoint': metricsExportEndpoint,
+      if (metricsExportSecretFingerprint != null)
+        'metricsExportSecretFingerprint': metricsExportSecretFingerprint,
     };
   }
 
@@ -118,6 +136,8 @@ class _DatabaseResourceImpl extends DatabaseResource {
     required _i3.DatabaseConnection connection,
     required _i4.DatabaseScaling scaling,
     required _i5.DatabaseQuota quota,
+    String? metricsExportEndpoint,
+    String? metricsExportSecretFingerprint,
   }) : super._(
          id: id,
          cloudCapsuleId: cloudCapsuleId,
@@ -126,6 +146,8 @@ class _DatabaseResourceImpl extends DatabaseResource {
          connection: connection,
          scaling: scaling,
          quota: quota,
+         metricsExportEndpoint: metricsExportEndpoint,
+         metricsExportSecretFingerprint: metricsExportSecretFingerprint,
        );
 
   /// Returns a shallow copy of this [DatabaseResource]
@@ -140,6 +162,8 @@ class _DatabaseResourceImpl extends DatabaseResource {
     _i3.DatabaseConnection? connection,
     _i4.DatabaseScaling? scaling,
     _i5.DatabaseQuota? quota,
+    Object? metricsExportEndpoint = _Undefined,
+    Object? metricsExportSecretFingerprint = _Undefined,
   }) {
     return DatabaseResource(
       id: id is int? ? id : this.id,
@@ -149,6 +173,12 @@ class _DatabaseResourceImpl extends DatabaseResource {
       connection: connection ?? this.connection.copyWith(),
       scaling: scaling ?? this.scaling.copyWith(),
       quota: quota ?? this.quota.copyWith(),
+      metricsExportEndpoint: metricsExportEndpoint is String?
+          ? metricsExportEndpoint
+          : this.metricsExportEndpoint,
+      metricsExportSecretFingerprint: metricsExportSecretFingerprint is String?
+          ? metricsExportSecretFingerprint
+          : this.metricsExportSecretFingerprint,
     );
   }
 }
