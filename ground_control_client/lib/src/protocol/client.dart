@@ -42,7 +42,7 @@ import 'package:ground_control_client/src/protocol/domains/billing/models/paymen
     as _i16;
 import 'package:ground_control_client/src/protocol/domains/billing/models/payment_method.dart'
     as _i17;
-import 'package:ground_control_client/src/protocol/features/capsules/models/compute_info.dart'
+import 'package:ground_control_client/src/protocol/domains/capsules/models/compute_info.dart'
     as _i18;
 import 'package:ground_control_client/src/protocol/domains/capsules/models/compute_size_option.dart'
     as _i19;
@@ -238,6 +238,8 @@ class EndpointAdminProjects extends _i1.EndpointRef {
 
   /// Redeploys a capsule using its current image.
   /// Triggers a deploymentUpdated event to redeploy the infrastructure.
+  ///
+  /// Throws a [NoPriorDeploymentException] if the capsule has no prior deployment.
   _i2.Future<void> redeployCapsule(String cloudCapsuleId) =>
       caller.callServerEndpoint<void>('adminProjects', 'redeployCapsule', {
         'cloudCapsuleId': cloudCapsuleId,
@@ -902,6 +904,24 @@ class EndpointBilling extends _i1.EndpointRef {
   /// issues that would prevent normal operation of the service.
   _i2.Future<bool> ownerIsInGoodStanding() =>
       caller.callServerEndpoint<bool>('billing', 'ownerIsInGoodStanding', {});
+}
+
+/// Endpoint for capsule operations.
+/// {@category Endpoint}
+class EndpointCapsules extends _i1.EndpointRef {
+  EndpointCapsules(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'capsules';
+
+  /// Redeploys a capsule using its current image.
+  /// Triggers a deploymentUpdated event to redeploy the infrastructure.
+  ///
+  /// Throws a [NoPriorDeploymentException] if the capsule has no prior deployment.
+  _i2.Future<void> redeployCapsule({required String cloudCapsuleId}) =>
+      caller.callServerEndpoint<void>('capsules', 'redeployCapsule', {
+        'cloudCapsuleId': cloudCapsuleId,
+      });
 }
 
 /// Endpoint for reading and updating capsule compute configuration.
@@ -2007,6 +2027,7 @@ class Client extends _i1.ServerpodClientShared {
     googleIdp = EndpointGoogleIdp(this);
     jwtRefresh = EndpointJwtRefresh(this);
     billing = EndpointBilling(this);
+    capsules = EndpointCapsules(this);
     compute = EndpointCompute(this);
     customDomainName = EndpointCustomDomainName(this);
     database = EndpointDatabase(this);
@@ -2050,6 +2071,8 @@ class Client extends _i1.ServerpodClientShared {
   late final EndpointJwtRefresh jwtRefresh;
 
   late final EndpointBilling billing;
+
+  late final EndpointCapsules capsules;
 
   late final EndpointCompute compute;
 
@@ -2098,6 +2121,7 @@ class Client extends _i1.ServerpodClientShared {
     'googleIdp': googleIdp,
     'jwtRefresh': jwtRefresh,
     'billing': billing,
+    'capsules': capsules,
     'compute': compute,
     'customDomainName': customDomainName,
     'database': database,
