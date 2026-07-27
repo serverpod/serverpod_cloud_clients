@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.34.0] - 2026-07-27
+
+### Added
+
+- **Global project context** - Set and manage a persistent default project using `scloud context` commands, eliminating the need to pass `--project` or run commands inside a project directory.
+- **Database backup management** - Manage database snapshot backups and schedule automated recurring backups directly from the CLI using `scloud db backup` and `scloud db schedule`.
+
 ## 0.33.1 - 2026-07-10
 
 ### Changed
