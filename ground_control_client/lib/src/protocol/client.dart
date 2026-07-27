@@ -1188,7 +1188,8 @@ class EndpointDatabase extends _i1.EndpointRef {
   /// Throws [NotFoundException] if the database is not found.
   /// Throws [InvalidValueException] if the schedule parameters are invalid for
   /// the given [frequency] (e.g. a weekly/monthly schedule without a day, or a
-  /// schedule without an hour).
+  /// schedule without an hour), or if the provider rejects a value such as a
+  /// retention period that exceeds the maximum allowed.
   _i2.Future<void> setBackupSchedule({
     required String cloudCapsuleId,
     _i31.BackupFrequency? frequency,
