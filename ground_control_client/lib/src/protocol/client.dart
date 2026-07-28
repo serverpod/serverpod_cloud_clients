@@ -86,24 +86,26 @@ import 'package:ground_control_client/src/protocol/domains/metrics/models/pod_re
     as _i38;
 import 'package:ground_control_client/src/protocol/domains/metrics/models/metrics_range.dart'
     as _i39;
-import 'package:ground_control_client/src/protocol/domains/products/models/subscription_info.dart'
+import 'package:ground_control_client/src/protocol/domains/metrics/models/database_metrics.dart'
     as _i40;
-import 'package:ground_control_client/src/protocol/domains/products/models/plan_info.dart'
+import 'package:ground_control_client/src/protocol/domains/products/models/subscription_info.dart'
     as _i41;
-import 'package:ground_control_client/src/protocol/features/projects/models/project_profile_update.dart'
+import 'package:ground_control_client/src/protocol/domains/products/models/plan_info.dart'
     as _i42;
-import 'package:ground_control_client/src/protocol/features/projects/models/project_config.dart'
+import 'package:ground_control_client/src/protocol/features/projects/models/project_profile_update.dart'
     as _i43;
-import 'package:ground_control_client/src/protocol/domains/projects/models/role.dart'
+import 'package:ground_control_client/src/protocol/features/projects/models/project_config.dart'
     as _i44;
-import 'package:ground_control_client/src/protocol/domains/secrets/models/build_secret_type.dart'
+import 'package:ground_control_client/src/protocol/domains/projects/models/role.dart'
     as _i45;
-import 'package:ground_control_client/src/protocol/domains/status/models/capsule_status.dart'
+import 'package:ground_control_client/src/protocol/domains/secrets/models/build_secret_type.dart'
     as _i46;
-import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
+import 'package:ground_control_client/src/protocol/domains/status/models/capsule_status.dart'
     as _i47;
-import 'package:http/http.dart' as _i48;
-import 'protocol.dart' as _i49;
+import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
+    as _i48;
+import 'package:http/http.dart' as _i49;
+import 'protocol.dart' as _i50;
 
 /// {@category Endpoint}
 class EndpointAdminMigration extends _i1.EndpointRef {
@@ -1555,7 +1557,7 @@ class EndpointLogs extends _i1.EndpointRef {
       );
 }
 
-/// Endpoint for reading pod resource metrics.
+/// Endpoint for reading capsule metrics.
 /// {@category Endpoint}
 class EndpointMetrics extends _i1.EndpointRef {
   EndpointMetrics(_i1.EndpointCaller caller) : super(caller);
@@ -1575,6 +1577,23 @@ class EndpointMetrics extends _i1.EndpointRef {
   }) => caller.callServerEndpoint<List<_i38.PodResourceSeries>>(
     'metrics',
     'fetchPodResourceMetrics',
+    {'cloudCapsuleId': cloudCapsuleId, 'range': range, 'until': until},
+  );
+
+  /// Returns the database signal set for the capsule's database over a window
+  /// of length [range] ending at [until] (defaults to now).
+  ///
+  /// Series are sparse and share the window and step of the pod metrics for
+  /// the same capsule. An empty result is not an error: a suspended database
+  /// exports nothing, and the returned status says whether the database was
+  /// idle or does not have metrics export enabled.
+  _i2.Future<_i40.DatabaseMetrics> fetchDatabaseMetrics({
+    required String cloudCapsuleId,
+    required _i39.MetricsRange range,
+    DateTime? until,
+  }) => caller.callServerEndpoint<_i40.DatabaseMetrics>(
+    'metrics',
+    'fetchDatabaseMetrics',
     {'cloudCapsuleId': cloudCapsuleId, 'range': range, 'until': until},
   );
 }
@@ -1621,8 +1640,8 @@ class EndpointPlans extends _i1.EndpointRef {
       .callServerEndpoint<List<String>>('plans', 'listProcuredPlanNames', {});
 
   /// Lists the subscriptions owned by the user.
-  _i2.Future<List<_i40.SubscriptionInfo>> listSubscriptions() =>
-      caller.callServerEndpoint<List<_i40.SubscriptionInfo>>(
+  _i2.Future<List<_i41.SubscriptionInfo>> listSubscriptions() =>
+      caller.callServerEndpoint<List<_i41.SubscriptionInfo>>(
         'plans',
         'listSubscriptions',
         {},
@@ -1631,9 +1650,9 @@ class EndpointPlans extends _i1.EndpointRef {
   /// Gets the subscription info for the subscription of the given project id.
   ///
   /// Throws [NotFoundException] if the project's subscription is not found.
-  _i2.Future<_i40.SubscriptionInfo> getSubscriptionInfoOfProject({
+  _i2.Future<_i41.SubscriptionInfo> getSubscriptionInfoOfProject({
     required String cloudProjectId,
-  }) => caller.callServerEndpoint<_i40.SubscriptionInfo>(
+  }) => caller.callServerEndpoint<_i41.SubscriptionInfo>(
     'plans',
     'getSubscriptionInfoOfProject',
     {'cloudProjectId': cloudProjectId},
@@ -1642,9 +1661,9 @@ class EndpointPlans extends _i1.EndpointRef {
   /// Gets a subscription info of a subscription owned by the user.
   ///
   /// Throws [NotFoundException] if the subscription is not found.
-  _i2.Future<_i40.SubscriptionInfo> getSubscriptionInfo({
+  _i2.Future<_i41.SubscriptionInfo> getSubscriptionInfo({
     required _i1.UuidValue subscriptionId,
-  }) => caller.callServerEndpoint<_i40.SubscriptionInfo>(
+  }) => caller.callServerEndpoint<_i41.SubscriptionInfo>(
     'plans',
     'getSubscriptionInfo',
     {'subscriptionId': subscriptionId},
@@ -1665,11 +1684,11 @@ class EndpointPlans extends _i1.EndpointRef {
   /// Lists the public plans (`starter`, `growth`) for the private customer
   /// billing type. Each [PlanInfo] carries its bundled
   /// [PlanInfo.projectProduct].
-  _i2.Future<List<_i41.PlanInfo>> listPlans() =>
-      caller.callServerEndpoint<List<_i41.PlanInfo>>('plans', 'listPlans', {});
+  _i2.Future<List<_i42.PlanInfo>> listPlans() =>
+      caller.callServerEndpoint<List<_i42.PlanInfo>>('plans', 'listPlans', {});
 
-  _i2.Future<_i41.PlanInfo> getPlanInfo({required String planProductName}) =>
-      caller.callServerEndpoint<_i41.PlanInfo>('plans', 'getPlanInfo', {
+  _i2.Future<_i42.PlanInfo> getPlanInfo({required String planProductName}) =>
+      caller.callServerEndpoint<_i42.PlanInfo>('plans', 'getPlanInfo', {
         'planProductName': planProductName,
       });
 
@@ -1737,7 +1756,7 @@ class EndpointProjects extends _i1.EndpointRef {
   /// Throws [ProcurementDeniedException] if a procurement fails.
   _i2.Future<_i1.UuidValue> createPlanProject({
     required String cloudProjectId,
-    required _i42.ProjectProfileUpdate profile,
+    required _i43.ProjectProfileUpdate profile,
   }) => caller.callServerEndpoint<_i1.UuidValue>(
     'projects',
     'createPlanProject',
@@ -1808,15 +1827,15 @@ class EndpointProjects extends _i1.EndpointRef {
   /// Throws [ProcurementDeniedException] if the requested new products are not available.
   _i2.Future<void> updateProjectProfile({
     required String cloudProjectId,
-    required _i42.ProjectProfileUpdate resources,
+    required _i43.ProjectProfileUpdate resources,
   }) => caller.callServerEndpoint<void>('projects', 'updateProjectProfile', {
     'cloudProjectId': cloudProjectId,
     'resources': resources,
   });
 
-  _i2.Future<_i43.ProjectConfig> fetchProjectConfig({
+  _i2.Future<_i44.ProjectConfig> fetchProjectConfig({
     required String cloudProjectId,
-  }) => caller.callServerEndpoint<_i43.ProjectConfig>(
+  }) => caller.callServerEndpoint<_i44.ProjectConfig>(
     'projects',
     'fetchProjectConfig',
     {'cloudProjectId': cloudProjectId},
@@ -1867,9 +1886,9 @@ class EndpointRoles extends _i1.EndpointRef {
   String get name => 'roles';
 
   /// Fetches the user roles for a project.
-  _i2.Future<List<_i44.Role>> fetchRolesForProject({
+  _i2.Future<List<_i45.Role>> fetchRolesForProject({
     required String cloudProjectId,
-  }) => caller.callServerEndpoint<List<_i44.Role>>(
+  }) => caller.callServerEndpoint<List<_i45.Role>>(
     'roles',
     'fetchRolesForProject',
     {'cloudProjectId': cloudProjectId},
@@ -1925,7 +1944,7 @@ class EndpointSecrets extends _i1.EndpointRef {
   _i2.Future<void> upsertBuildSecret({
     required String secretKey,
     required String secretValue,
-    required _i45.BuildSecretType buildSecretType,
+    required _i46.BuildSecretType buildSecretType,
     required String cloudCapsuleId,
   }) => caller.callServerEndpoint<void>('secrets', 'upsertBuildSecret', {
     'secretKey': secretKey,
@@ -2012,9 +2031,9 @@ class EndpointStatus extends _i1.EndpointRef {
 
   /// Gets the live runtime status of the specified capsule.
   /// An unhealthy capsule is still a successful result — the status is data.
-  _i2.Future<_i46.CapsuleStatus> getCapsuleStatus({
+  _i2.Future<_i47.CapsuleStatus> getCapsuleStatus({
     required String cloudCapsuleId,
-  }) => caller.callServerEndpoint<_i46.CapsuleStatus>(
+  }) => caller.callServerEndpoint<_i47.CapsuleStatus>(
     'status',
     'getCapsuleStatus',
     {'cloudCapsuleId': cloudCapsuleId},
@@ -2023,12 +2042,12 @@ class EndpointStatus extends _i1.EndpointRef {
   /// Tails the live runtime status of the specified capsule.
   /// Emits the current status immediately, then an update whenever it
   /// changes. Continues until the client unsubscribes.
-  _i2.Stream<_i46.CapsuleStatus> tailCapsuleStatus({
+  _i2.Stream<_i47.CapsuleStatus> tailCapsuleStatus({
     required String cloudCapsuleId,
   }) =>
       caller.callStreamingServerEndpoint<
-        _i2.Stream<_i46.CapsuleStatus>,
-        _i46.CapsuleStatus
+        _i2.Stream<_i47.CapsuleStatus>,
+        _i47.CapsuleStatus
       >('status', 'tailCapsuleStatus', {'cloudCapsuleId': cloudCapsuleId}, {});
 
   /// Gets deploy attempts of the specified capsule.
@@ -2043,10 +2062,10 @@ class EndpointStatus extends _i1.EndpointRef {
   );
 
   /// Gets the specified deploy attempt status of the a capsule.
-  _i2.Future<List<_i47.DeployAttemptStage>> getDeployAttemptStatus({
+  _i2.Future<List<_i48.DeployAttemptStage>> getDeployAttemptStatus({
     required String cloudCapsuleId,
     required _i1.UuidValue attemptId,
-  }) => caller.callServerEndpoint<List<_i47.DeployAttemptStage>>(
+  }) => caller.callServerEndpoint<List<_i48.DeployAttemptStage>>(
     'status',
     'getDeployAttemptStatus',
     {'cloudCapsuleId': cloudCapsuleId, 'attemptId': attemptId},
@@ -2065,13 +2084,13 @@ class EndpointStatus extends _i1.EndpointRef {
 
   /// Tails the status updates for a deploy attempt.
   /// Continues until the client unsubscribes or the status if final.
-  _i2.Stream<_i47.DeployAttemptStage> tailDeployAttemptStatus({
+  _i2.Stream<_i48.DeployAttemptStage> tailDeployAttemptStatus({
     required String cloudCapsuleId,
     required _i1.UuidValue attemptId,
   }) =>
       caller.callStreamingServerEndpoint<
-        _i2.Stream<_i47.DeployAttemptStage>,
-        _i47.DeployAttemptStage
+        _i2.Stream<_i48.DeployAttemptStage>,
+        _i48.DeployAttemptStage
       >('status', 'tailDeployAttemptStatus', {
         'cloudCapsuleId': cloudCapsuleId,
         'attemptId': attemptId,
@@ -2128,10 +2147,10 @@ class Client extends _i1.ServerpodClientShared {
     Function(_i1.MethodCallContext, Object, StackTrace)? onFailedCall,
     Function(_i1.MethodCallContext)? onSucceededCall,
     bool? disconnectStreamsOnLostInternetConnection,
-    _i48.Client? httpClientOverride,
+    _i49.Client? httpClientOverride,
   }) : super(
          host,
-         _i49.Protocol(),
+         _i50.Protocol(),
          securityContext: securityContext,
          streamingConnectionTimeout: streamingConnectionTimeout,
          connectionTimeout: connectionTimeout,

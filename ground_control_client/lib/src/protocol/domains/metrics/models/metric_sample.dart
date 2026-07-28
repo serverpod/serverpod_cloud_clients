@@ -12,21 +12,19 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
-/// A single observed sample in a pod metric series.
+/// A single observed sample in a metric series, for a pod or a database alike.
 ///
-/// Gaps (pod not started, deploy boundary, terminated pod) are represented by
-/// the absence of a sample at a timestamp, never by an interpolated or
-/// fabricated value.
-abstract class PodMetricSample implements _i1.SerializableModel {
-  PodMetricSample._({required this.timestamp, required this.value});
+/// Gaps — a pod not yet started, a deploy boundary, a terminated pod, a
+/// suspended database compute — are represented by the absence of a sample at
+/// a timestamp, never by an interpolated or fabricated value.
+abstract class MetricSample implements _i1.SerializableModel {
+  MetricSample._({required this.timestamp, required this.value});
 
-  factory PodMetricSample({
-    required DateTime timestamp,
-    required double value,
-  }) = _PodMetricSampleImpl;
+  factory MetricSample({required DateTime timestamp, required double value}) =
+      _MetricSampleImpl;
 
-  factory PodMetricSample.fromJson(Map<String, dynamic> jsonSerialization) {
-    return PodMetricSample(
+  factory MetricSample.fromJson(Map<String, dynamic> jsonSerialization) {
+    return MetricSample(
       timestamp: _i1.DateTimeJsonExtension.fromJson(
         jsonSerialization['timestamp'],
       ),
@@ -37,17 +35,17 @@ abstract class PodMetricSample implements _i1.SerializableModel {
   /// When the sample was observed.
   DateTime timestamp;
 
-  /// The observed value: CPU cores or memory bytes, depending on the series.
+  /// The observed value; the unit depends on the series.
   double value;
 
-  /// Returns a shallow copy of this [PodMetricSample]
+  /// Returns a shallow copy of this [MetricSample]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
-  PodMetricSample copyWith({DateTime? timestamp, double? value});
+  MetricSample copyWith({DateTime? timestamp, double? value});
   @override
   Map<String, dynamic> toJson() {
     return {
-      '__className__': 'PodMetricSample',
+      '__className__': 'MetricSample',
       'timestamp': timestamp.toJson(),
       'value': value,
     };
@@ -59,16 +57,16 @@ abstract class PodMetricSample implements _i1.SerializableModel {
   }
 }
 
-class _PodMetricSampleImpl extends PodMetricSample {
-  _PodMetricSampleImpl({required DateTime timestamp, required double value})
+class _MetricSampleImpl extends MetricSample {
+  _MetricSampleImpl({required DateTime timestamp, required double value})
     : super._(timestamp: timestamp, value: value);
 
-  /// Returns a shallow copy of this [PodMetricSample]
+  /// Returns a shallow copy of this [MetricSample]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
   @override
-  PodMetricSample copyWith({DateTime? timestamp, double? value}) {
-    return PodMetricSample(
+  MetricSample copyWith({DateTime? timestamp, double? value}) {
+    return MetricSample(
       timestamp: timestamp ?? this.timestamp,
       value: value ?? this.value,
     );
