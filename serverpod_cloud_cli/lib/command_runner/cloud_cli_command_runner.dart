@@ -199,10 +199,11 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
       _printUpdateCLIPrompt(
         latestVersion: latestVersion,
         logger: logger,
-        isRequiredUpdate: isRequiredUpdate,
+        isRequiredUpdate:
+            isRequiredUpdate && globalConfiguration.breakingVersionCheck,
       );
 
-      if (isRequiredUpdate) {
+      if (isRequiredUpdate && globalConfiguration.breakingVersionCheck) {
         throw ErrorExitException.code(
           ExitCodeConstants.scloudUpdateRequired,
           'You need to update the CLI to continue.',
@@ -517,6 +518,15 @@ enum GlobalOption<V> implements OptionDefinition<V> {
       hide: true,
     ),
   ),
+  breakingVersionCheck(
+    FlagOption(
+      argName: 'breaking-version-check',
+      helpText: 'Enable / disable error if the CLI version is not the latest.',
+      defaultsTo: true,
+      negatable: true,
+      hide: true,
+    ),
+  ),
   consoleServer(
     StringOption(
       argName: 'console-url',
@@ -591,6 +601,8 @@ class GlobalConfiguration extends Configuration<GlobalOption> {
   bool get skipConfirmation => value(GlobalOption.skipConfirmation);
 
   bool get warnBillingOverdue => value(GlobalOption.warnBillingOverdue);
+
+  bool get breakingVersionCheck => value(GlobalOption.breakingVersionCheck);
 
   String? get authToken => optionalValue(GlobalOption.authToken);
 }

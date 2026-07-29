@@ -137,7 +137,7 @@ void main() {
   );
 
   group('Given latest and actual major version is 0 and minor version outdated '
-      'when calling the cli ', () {
+      'when calling the cli', () {
     late Future commandResult;
 
     setUp(() async {
@@ -235,6 +235,52 @@ void main() {
               '\n'
               'To update to the latest version, run "dart install serverpod_cloud_cli". '
               'You need to update the CLI to continue.',
+        ),
+      );
+    });
+  });
+
+  group('Given major version is outdated when calling the cli'
+      ' with option --no-breaking-version-check', () {
+    late Future commandResult;
+    setUp(() async {
+      await ResourceManager.storeLatestCliVersion(
+        cliVersionData: PackageVersionData(
+          Version(2, 0, 0),
+          DateTime.now().add(Duration(days: 1)),
+        ),
+        logger: logger,
+        localStoragePath: testCacheFolderPath,
+      );
+      final cli = CloudCliCommandRunner.create(
+        logger: logger,
+        version: Version(1, 0, 0),
+      );
+
+      commandResult = cli.run([
+        'version',
+        '--config-dir',
+        testCacheFolderPath,
+        '--no-breaking-version-check',
+      ]);
+    });
+
+    test('then should complete', () async {
+      await expectLater(commandResult, completes);
+    });
+
+    test('then should inform about update', () async {
+      try {
+        await commandResult;
+      } catch (_) {}
+
+      expect(
+        logger.boxCalls.first,
+        equalsBoxCall(
+          message:
+              'A new version 2.0.0 of Serverpod Cloud CLI is available!\n'
+              '\n'
+              'To update to the latest version, run "dart install serverpod_cloud_cli".',
         ),
       );
     });
