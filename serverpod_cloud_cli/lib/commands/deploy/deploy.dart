@@ -23,6 +23,7 @@ import 'package:serverpod_cloud_cli/util/pubspec_validator.dart'
     show TenantProjectPubspec;
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_io.dart';
 import 'package:serverpod_cloud_cli/util/scloudignore.dart' show ScloudIgnore;
+import 'package:serverpod_cloud_cli/util/scrolling_command_output.dart';
 import 'package:serverpod_cloud_cli/util/tool_versions_io.dart';
 import 'package:serverpod_cloud_cli/util/upload_description_metadata.dart';
 
@@ -39,6 +40,7 @@ abstract class Deploy {
     required final int concurrency,
     required final bool dryRun,
     required final bool showFiles,
+    final bool skipDartPubGet = false,
     final bool skipTailingStatus = false,
     final bool suppressCommandMessages = false,
     final String? outputPath,
@@ -61,6 +63,18 @@ abstract class Deploy {
       throw FailureException(errors: issues);
     }
 
+    Directory? workspaceRootDir;
+    if (pubspecValidator.isWorkspaceResolved()) {
+      (workspaceRootDir, _) = WorkspaceProject.findWorkspaceRoot(
+        projectDirectory,
+      );
+    }
+    await _runDartPubGetIfNeeded(
+      logger,
+      skipDartPubGet,
+      workspaceRootDir ?? projectDirectory,
+    );
+
     final config = ScloudConfigIO.readFromFile(projectConfigFilePath);
 
     if (config != null && config.scripts.preDeploy.isNotEmpty) {
@@ -80,13 +94,7 @@ abstract class Deploy {
       configDartSdk: config?.dartSdk,
       lazyVersionSources: [
         () {
-          final roots = <Directory>[projectDirectory];
-          if (pubspecValidator.isWorkspaceResolved()) {
-            final (workspaceRoot, _) = WorkspaceProject.findWorkspaceRoot(
-              projectDirectory,
-            );
-            roots.add(workspaceRoot);
-          }
+          final roots = <Directory>[projectDirectory, ?workspaceRootDir];
           return ToolVersionsIO.readDartVersionFromToolVersions(roots);
         },
         pubspecValidator.environmentSdkConstraint,
@@ -132,16 +140,6 @@ abstract class Deploy {
       includedSubPaths = const ['.'];
     }
 
-    // TODO: Workaround — for workspace projects we skip uploading any
-    // pubspec.lock because the workspace root's lockfile is not guaranteed
-    // to match the bespoke `scloud_ws_pubspec.yaml` we generate (which only
-    // references a subset of the original workspace members). Remove this
-    // exclusion once we resolve a lockfile against our custom workspace root.
-    final bool Function(String)? excludeFile = isWorkspace
-        ? (final String relativePath) =>
-              p.basename(relativePath) == 'pubspec.lock'
-        : null;
-
     late final List<int> projectZip;
     final isZipped = await logger.progress(
       'Zipping project',
@@ -156,7 +154,6 @@ abstract class Deploy {
             beneath: includedSubPaths,
             fileReadPoolSize: concurrency,
             showFiles: showFiles,
-            excludeFile: excludeFile,
             fileContentModifier: (final relativePath, final contentReader) async {
               final isPubspec =
                   relativePath.endsWith('pubspec.yaml') &&
@@ -305,6 +302,53 @@ abstract class Deploy {
       attemptId: attemptId,
       skipUploadStage: true,
     );
+  }
+
+  static Future<void> _runDartPubGetIfNeeded(
+    final CommandLogger logger,
+    final bool skipDartPubGet,
+    final Directory dartDir,
+  ) async {
+    final packageConfigPath = p.join(
+      dartDir.path,
+      '.dart_tool',
+      'package_config.json',
+    );
+    if (File(packageConfigPath).existsSync()) return;
+
+    final additionalOptions = <String>[];
+    final lockFilePath = p.join(dartDir.path, 'pubspec.lock');
+    if (File(lockFilePath).existsSync()) {
+      additionalOptions.add('--enforce-lockfile');
+    }
+    final command = ['dart pub get', ...additionalOptions].join(' ');
+
+    if (skipDartPubGet) {
+      logger.info(
+        'Skipping "$command" since it is disabled.',
+        newParagraph: true,
+      );
+      return;
+    }
+
+    logger.info(' ');
+    final exitCode = await ScrollingCommandOutput.runCommand(
+      command,
+      logger: logger,
+      heading: _formatHeading('Running "$command"'),
+      successMessage: _formatHeading('"$command" successful.'),
+      failedMessage: _formatHeading('"$command" failed.'),
+      workingDirectory: dartDir.path,
+    );
+    if (exitCode != 0) {
+      throw FailureException(
+        error: 'Failed to run command "$command" (exit code $exitCode)',
+      );
+    }
+  }
+
+  static String _formatHeading(final String message) {
+    return message.padRight(StatusCommands.progressMessagePadLength);
   }
 
   static Future<String> _createUploadDescription(

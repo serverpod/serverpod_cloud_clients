@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:pubspec_parse/pubspec_parse.dart';
+import 'package:serverpod_cloud_cli/util/package_graph/package_graph.dart';
 import 'package:yaml_codec/yaml_codec.dart';
 
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart'
@@ -14,8 +15,10 @@ class WorkspaceException extends FailureException {
     final Iterable<String>? errors,
     final Exception? nestedException,
     final StackTrace? nestedStackTrace,
+    final String? hint,
   ]) : super(
          errors: errors,
+         hint: hint,
          nestedException: nestedException,
          nestedStackTrace: nestedStackTrace,
        );
@@ -33,19 +36,23 @@ class WorkspacePackage {
 
 abstract class WorkspaceProject {
   static const _scloudRootPubspecFilename = 'scloud_ws_pubspec.yaml';
+  static const _scloudRootPubspecLockFilename = 'scloud_ws_pubspec.lock';
   static const _scloudServerDirFilename = 'scloud_server_dir';
 
   /// Analyzes the workspace, creates bespoke deployment files,
   /// and compiles the list of paths whose contents are to be included.
   ///
+  /// Specify [scloudDirPath] to override the default scloud directory path.
+  ///
   /// Returns a tuple with the workspace root directory and the list of
   /// subpaths in the root directory to include.
   ///
-  /// If the preparation fails, error messages will be logged
-  /// and [WorkspaceException] is thrown.
+  /// If no workspace root is found, or the preparation fails,
+  /// error messages will be logged and [WorkspaceException] is thrown.
   static (Directory, Iterable<String>) prepareWorkspacePaths(
-    final Directory projectDirectory,
-  ) {
+    final Directory projectDirectory, {
+    final String? scloudDirPath,
+  }) {
     final String projectPackageName = _getPackageName(projectDirectory);
 
     // Find workspace root directory by traversing up until we find a pubspec.yaml with workspace field
@@ -89,7 +96,28 @@ abstract class WorkspaceProject {
         .map((final package) => package.dir.path)
         .toList();
 
-    _writeSCloudFiles(workspaceRootDir, includedPackagePaths, projectPackage);
+    final scloudDir = Directory(
+      scloudDirPath ??
+          p.join(workspaceRootDir.path, ScloudIgnore.scloudDirName),
+    );
+    scloudDir.createSync(recursive: true);
+
+    try {
+      _writeSCloudFiles(
+        workspaceRootDir,
+        scloudDir,
+        includedPackagePaths,
+        projectPackage,
+      );
+    } on PackageGraphFileNotFoundException catch (e) {
+      final tailPath = p.relative(e.projectPath, from: workspaceRootDir.path);
+      _throwWorkspaceException(
+        message: '$tailPath not found.',
+        nestedException: null,
+        nestedStackTrace: null,
+        hint: 'Run "dart pub get"',
+      );
+    }
 
     final includedPaths = [...includedPackagePaths, ScloudIgnore.scloudDirName];
     return (workspaceRootDir, includedPaths);
@@ -99,16 +127,15 @@ abstract class WorkspaceProject {
   /// and creates the .scloudignore file if it doesn't exist.
   static void _writeSCloudFiles(
     final Directory workspaceRootDir,
+    final Directory scloudDir,
     final List<String> includedPackagePaths,
     final WorkspacePackage projectPackage,
   ) {
-    final scloudDir = Directory(
-      p.join(workspaceRootDir.path, ScloudIgnore.scloudDirName),
-    );
-    scloudDir.createSync();
-
-    _writeScloudRootPubspec(workspaceRootDir, includedPackagePaths);
-    _writeProjectServerDirFile(workspaceRootDir, projectPackage.dir);
+    _writeScloudRootPubspec(workspaceRootDir, scloudDir, includedPackagePaths);
+    _writeScloudRootPubspecLock(workspaceRootDir, scloudDir, [
+      projectPackage.pubspec.name,
+    ]);
+    _writeProjectServerDirFile(scloudDir, projectPackage.dir);
 
     ScloudIgnore.writeTemplateIfNotExists(rootFolder: workspaceRootDir.path);
   }
@@ -128,6 +155,7 @@ abstract class WorkspaceProject {
   /// and returns its path relative to the workspace root.
   static String _writeScloudRootPubspec(
     final Directory workspaceRootDir,
+    final Directory scloudDir,
     final Iterable<String> includedPackagePaths,
   ) {
     final rootPubspecFile = File(p.join(workspaceRootDir.path, 'pubspec.yaml'));
@@ -140,29 +168,58 @@ abstract class WorkspaceProject {
         );
 
     final scloudRootPubspecFile = File(
-      p.join(
-        workspaceRootDir.path,
-        ScloudIgnore.scloudDirName,
-        _scloudRootPubspecFilename,
-      ),
+      p.join(scloudDir.path, _scloudRootPubspecFilename),
     );
     scloudRootPubspecFile.writeAsStringSync(scloudRootPubspecContent);
 
     return p.join(ScloudIgnore.scloudDirName, _scloudRootPubspecFilename);
   }
 
+  /// Writes a filtered copy of the root pubspec.lock file under [scloudDir]
+  /// and returns its path.
+  /// Returns null if the pubspec.lock file does not exist.
+  static String? _writeScloudRootPubspecLock(
+    final Directory workspaceRootDir,
+    final Directory scloudDir,
+    final Iterable<String> includedPackagePaths,
+  ) {
+    final lockFile = File(p.join(workspaceRootDir.path, 'pubspec.lock'));
+    if (!lockFile.existsSync()) {
+      return null;
+    }
+
+    final packageGraph = PackageGraphParser.fromProjectDirectory(
+      workspaceRootDir,
+    );
+    final allPackages = packageGraph.allPackageNames();
+    final (unreachable, demotedToTransitive) = packageGraph.unreachablePackages(
+      includedPackagePaths,
+    );
+    final expectedRemainingPackages = allPackages.difference(unreachable);
+
+    final scloudRootPubspecLockFile = p.join(
+      scloudDir.path,
+      _scloudRootPubspecLockFilename,
+    );
+    PubspecLockFilter.createFilteredCopy(
+      projectPath: workspaceRootDir.path,
+      outputFilePath: scloudRootPubspecLockFile,
+      packagesToRemove: unreachable,
+      packagesToDemote: demotedToTransitive,
+      expectedRemainingPackages: expectedRemainingPackages,
+    );
+
+    return scloudRootPubspecLockFile;
+  }
+
   /// Writes the project server dir file to the workspace root directory
   /// and returns its path relative to the workspace root.
   static String _writeProjectServerDirFile(
-    final Directory workspaceRootDir,
+    final Directory scloudDir,
     final Directory projectDir,
   ) {
     final scloudServerDirFile = File(
-      p.join(
-        workspaceRootDir.path,
-        ScloudIgnore.scloudDirName,
-        _scloudServerDirFilename,
-      ),
+      p.join(scloudDir.path, _scloudServerDirFilename),
     );
     scloudServerDirFile.writeAsStringSync(projectDir.path);
 
@@ -177,7 +234,6 @@ abstract class WorkspaceProject {
   static (Directory, Pubspec) findWorkspaceRoot(final Directory projectDir) {
     var currentDir = projectDir.absolute;
     do {
-      currentDir = currentDir.parent;
       final pubspecFile = File(p.join(currentDir.path, 'pubspec.yaml'));
       if (pubspecFile.existsSync()) {
         try {
@@ -193,7 +249,10 @@ abstract class WorkspaceProject {
           );
         }
       }
-    } while (currentDir.path != currentDir.parent.path);
+      final parentDir = currentDir.parent;
+      if (currentDir.path == parentDir.path) break;
+      currentDir = parentDir;
+    } while (true);
 
     _throwWorkspaceException(
       messages: [
@@ -228,12 +287,18 @@ abstract class WorkspaceProject {
   /// Throws a [WorkspaceException] with one or more error messages.
   static Never _throwWorkspaceException({
     final String? message,
+    final String? hint,
     final Iterable<String>? messages,
     final Exception? nestedException,
     final StackTrace? nestedStackTrace,
   }) {
     final allMessages = [if (message != null) message, ...?messages];
-    throw WorkspaceException(allMessages, nestedException, nestedStackTrace);
+    throw WorkspaceException(
+      allMessages,
+      nestedException,
+      nestedStackTrace,
+      hint,
+    );
   }
 }
 

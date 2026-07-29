@@ -75,7 +75,18 @@ enum DeployCommandOption<V> implements OptionDefinition<V> {
   showFiles(DeployShowFilesOption()),
   output(DeployOutputOption()),
   wait(AwaitOption()),
-  dartVersion(DartSdkVersionOption());
+  dartVersion(DartSdkVersionOption()),
+
+  // developer options:
+  skipDartPubGet(
+    FlagOption(
+      argName: 'skip-dart-pub-get',
+      helpText: 'Skip running "dart pub get" before deploying.',
+      defaultsTo: false,
+      negatable: false,
+      hide: true,
+    ),
+  );
 
   const DeployCommandOption(this.option);
 
@@ -137,6 +148,9 @@ Examples
     final dartVersionOverride = commandConfig.optionalValue(
       DeployCommandOption.dartVersion,
     );
+    final skipDartPubGet = commandConfig.value(
+      DeployCommandOption.skipDartPubGet,
+    );
 
     final projectDirectory = runner.verifiedProjectDirectory();
     logger.debug('Project directory is: ${projectDirectory.path}');
@@ -157,6 +171,7 @@ Examples
       concurrency: concurrency,
       dryRun: dryRun,
       showFiles: showFiles,
+      skipDartPubGet: skipDartPubGet,
       skipTailingStatus: !wait,
       outputPath: outputPath?.path,
       dartVersionOverride: dartVersionOverride,

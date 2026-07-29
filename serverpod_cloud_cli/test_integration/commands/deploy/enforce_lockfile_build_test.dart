@@ -1,0 +1,185 @@
+/// Uses the Ground Control server project to represent a workspace with
+/// complex dependencies.
+@Tags(['concurrency_one'])
+@OnPlatform({'windows': Skip('Unzip is not supported on Windows by default.')})
+library;
+
+import 'dart:io' show Directory, File, Process;
+
+import 'package:archive/archive.dart' show ZipDecoder, InputFileStream, Archive;
+import 'package:ground_control_client/ground_control_client_test_tools.dart';
+import 'package:path/path.dart' as p;
+import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
+import 'package:test/test.dart';
+
+import '../../../test_utils/test_command_logger.dart';
+
+void main() {
+  final logger = TestCommandLogger();
+
+  final client = ClientMock(
+    authKeyProvider: InMemoryKeyManager.authenticated(),
+  );
+
+  final cli = CloudCliCommandRunner.create(
+    logger: logger,
+    serviceProvider: CloudCliServiceProvider(
+      apiClientFactory: (final globalCfg) => client,
+    ),
+  );
+
+  group('Given the Ground Control server project', () {
+    const zipFileName = 'deployment.zip';
+
+    final projectRoot = p.normalize(p.absolute('../..'));
+    final projectDir = p.join(
+      projectRoot,
+      'ground_control',
+      'ground_control_server',
+    );
+    late String outputZipDirPath;
+
+    setUpAll(() async {
+      await d.dir('upload_archive').create();
+      outputZipDirPath = p.join(d.sandbox, 'upload_archive');
+    });
+
+    group('when running scloud deploy with --dry-run', () {
+      late String outputZipFilePath;
+      late Future cliCommandFuture;
+
+      setUpAll(() async {
+        outputZipFilePath = p.join(outputZipDirPath, zipFileName);
+        cliCommandFuture = cli.run([
+          'deploy',
+          '--dry-run',
+          '--output',
+          outputZipFilePath,
+          '--project-dir',
+          projectDir,
+          '--project',
+          'ground_control_test_build',
+        ]);
+      });
+
+      tearDownAll(() async {
+        final scloudDir = Directory(p.join(projectRoot, '.scloud'));
+        if (scloudDir.existsSync()) {
+          scloudDir.deleteSync(recursive: true);
+        }
+        final scloudIgnoreFile = File(p.join(projectRoot, '.scloudignore'));
+        if (scloudIgnoreFile.existsSync()) {
+          scloudIgnoreFile.deleteSync();
+        }
+      });
+
+      test('then command completes successfully.', () async {
+        await expectLater(cliCommandFuture, completes);
+      });
+
+      test('then zip file is created at output path.', () async {
+        await cliCommandFuture;
+
+        final outputFile = d.file(zipFileName, isNotEmpty);
+        await expectLater(outputFile.validate(outputZipDirPath), completes);
+      });
+
+      group('and inspecting the zip archive', () {
+        late Archive archive;
+
+        setUpAll(() async {
+          await cliCommandFuture;
+
+          archive = ZipDecoder().decodeStream(
+            InputFileStream(outputZipFilePath),
+          );
+        });
+
+        test('then .scloud/scloud_ws_pubspec.yaml is included', () async {
+          final wsPubspecFile = archive.findFile(
+            p.join('.scloud', 'scloud_ws_pubspec.yaml'),
+          );
+          expect(wsPubspecFile, isNotNull);
+        });
+
+        test('then .scloud/scloud_ws_pubspec.lock is included', () async {
+          final wsPubspecLockFile = archive.findFile(
+            p.join('.scloud', 'scloud_ws_pubspec.lock'),
+          );
+          expect(wsPubspecLockFile, isNotNull);
+        });
+      });
+
+      group('and unpacking the zip archive,', () {
+        setUpAll(() async {
+          await cliCommandFuture;
+
+          final outputFile = File(outputZipFilePath);
+          expect(outputFile.existsSync(), isTrue);
+
+          final unzipCommand = await Process.run('unzip', [
+            zipFileName,
+          ], workingDirectory: outputZipDirPath);
+          expect(unzipCommand.exitCode, 0);
+
+          final copyWsPubspecCommand = await Process.run('cp', [
+            p.join('.scloud', 'scloud_ws_pubspec.yaml'),
+            'pubspec.yaml',
+          ], workingDirectory: outputZipDirPath);
+          expect(copyWsPubspecCommand.exitCode, 0);
+
+          final copyWsPubspecLockCommand = await Process.run('cp', [
+            p.join('.scloud', 'scloud_ws_pubspec.lock'),
+            'pubspec.lock',
+          ], workingDirectory: outputZipDirPath);
+          expect(copyWsPubspecLockCommand.exitCode, 0);
+        });
+
+        test(
+          'then the pubspec.yaml and pubspec.lock have been prepared',
+          () async {
+            final expected = d.dir(outputZipDirPath, [
+              d.file(
+                'pubspec.yaml',
+                stringContainsInOrder([
+                  'name: "ground_control_monorepo"',
+                  'environment:',
+                  'workspace:',
+                  'ground_control/ground_control_server',
+                ]),
+              ),
+              d.file(
+                'pubspec.lock',
+                stringContainsInOrder([
+                  '# Generated by scloud',
+                  'packages:',
+                  '  serverpod:',
+                  'sdks:',
+                ]),
+              ),
+            ]);
+            await expectLater(expected.validate(), completes);
+          },
+        );
+
+        test('and running "dart pub get --enforce-lockfile"'
+            ' then it completes successfully', () async {
+          final pubGetCommand = await Process.run('dart', [
+            'pub',
+            'get',
+            '--enforce-lockfile',
+          ], workingDirectory: outputZipDirPath);
+
+          expect(pubGetCommand.exitCode, 0);
+          expect(
+            pubGetCommand.stdout,
+            stringContainsInOrder(['Resolving dependencies...']),
+          );
+          expect(pubGetCommand.stderr, isEmpty);
+        });
+      });
+    });
+  });
+}
