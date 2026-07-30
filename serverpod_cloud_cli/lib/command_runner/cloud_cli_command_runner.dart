@@ -173,6 +173,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   Future<void> runCommand(final ArgResults topLevelResults) async {
     if (globalConfiguration.version) {
       await _versionCommand.run();
+      return;
     }
 
     final Version? latestVersion;
