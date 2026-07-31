@@ -143,7 +143,7 @@ commands:
     flags:
       -p, --project=!: "The ID of the project. Can be passed as the first argument.\nCan be omitted for existing projects that are linked or if a global project context is set. See `scloud project link --help` and `scloud context set --help`."
       -c, --concurrency=: "Number of concurrent files processed when zipping the project."
-      --dry-run: "Do not actually deploy, just print the deployment steps."
+      --wet-run: "Perform every step except the deployment, leaving the hosted application untouched. Local files may still be modified."
       --show-files: "Display the file tree that will be uploaded."
       -o, --output=: "Save the deployment zip file to the specified path. Must end with .zip"
       --await: "Await the deployment to finish while showing status progression."
@@ -401,7 +401,7 @@ commands:
       --no-pre-deploy-scripts: "Set up pre-deploy scripts."
       --dart-version=: "Overrides the Dart SDK version to use for building the project."
       -c, --concurrency=: "Number of concurrent files processed when zipping the project."
-      --dry-run: "Do not actually deploy, just print the deployment steps."
+      --wet-run: "Perform every step except the deployment, leaving the hosted application untouched. Local files and the cloud project setup may still be modified."
       --show-files: "Display the file tree that will be uploaded."
       -o, --output=: "Save the deployment zip file to the specified path. Must end with .zip"
       --await: "Await the deployment to finish while showing status progression."

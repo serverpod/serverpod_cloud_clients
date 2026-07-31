@@ -46,7 +46,7 @@ void main() {
       outputZipDirPath = p.join(d.sandbox, 'upload_archive');
     });
 
-    group('when running scloud deploy with --dry-run', () {
+    group('when running scloud deploy with --wet-run', () {
       late String outputZipFilePath;
       late Future cliCommandFuture;
 
@@ -54,7 +54,7 @@ void main() {
         outputZipFilePath = p.join(outputZipDirPath, zipFileName);
         cliCommandFuture = cli.run([
           'deploy',
-          '--dry-run',
+          '--wet-run',
           '--output',
           outputZipFilePath,
           '--project-dir',

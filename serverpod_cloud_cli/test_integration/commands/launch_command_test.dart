@@ -470,6 +470,76 @@ apiServer:
         });
       });
 
+      group('when executing launch with --wet-run'
+          ', with --no-pre-deploy-scripts'
+          ', and approving confirmation,', () {
+        late Future commandResult;
+        setUp(() async {
+          logger.answerNextConfirmsWith([true]);
+
+          simulateConsoleProjectCreation(logger, projectId: projectId);
+
+          commandResult = cli.run([
+            'launch',
+            '--project',
+            projectId,
+            '--project-dir',
+            testProjectDir,
+            '--no-pre-deploy-scripts',
+            '--no-browser',
+            '--wet-run',
+          ]);
+
+          await expectLater(commandResult, completes);
+        });
+
+        test('then logs wet run message instead of upload messages', () async {
+          expect(
+            logger.progressCalls,
+            containsAllInOrder([
+              equalsProgressCall(message: 'Zipping successful.'),
+              equalsProgressCall(message: 'Wet run, skipping deployment.'),
+            ]),
+          );
+          expect(
+            logger.progressCalls.map((final call) => call.message),
+            isNot(contains('Uploading project')),
+          );
+        });
+
+        test('then does not upload the project', () async {
+          expect(mockFileUploader.uploadedData, isEmpty);
+        });
+
+        test('then logs not deployed message', () async {
+          expect(logger.terminalCommandCalls, isEmpty);
+          expect(
+            logger.infoCalls,
+            contains(
+              equalsInfoCall(
+                message:
+                    'The project was not deployed. '
+                    'Run the command again without --wet-run to deploy it.',
+                newParagraph: true,
+              ),
+            ),
+          );
+        });
+
+        test('then still writes scloud.yaml file', () async {
+          final expected = d.dir(testProjectDir, [
+            d.file(
+              'scloud.yaml',
+              contains('''
+project:
+  projectId: "$projectId"
+'''),
+            ),
+          ]);
+          await expectLater(expected.validate(), completes);
+        });
+      });
+
       group('when executing launch with flutter_build script in pubspec.yaml'
           ', disabling initial deploy'
           ' and approving confirmation', () {
@@ -746,6 +816,80 @@ project:
             containsAllInOrder(['Zipping project', 'Uploading project']),
           );
           expect(mockFileUploader.uploadedData, isNotEmpty);
+        });
+      });
+
+      group('when an scloud.yaml exists with a matching project id'
+          ' and --wet-run is specified', () {
+        late Future commandResult;
+
+        setUp(() async {
+          await d.file(p.join(testProjectDir, 'scloud.yaml'), '''
+project:
+  projectId: "$projectId"
+  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
+''').create();
+
+          commandResult = cli.run([
+            'launch',
+            '--project',
+            projectId,
+            '--project-dir',
+            testProjectDir,
+            '--wet-run',
+          ]);
+        });
+
+        test('then command completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then the project is zipped but not uploaded', () async {
+          await commandResult;
+
+          expect(
+            logger.progressCalls.map((final call) => call.message),
+            containsAllInOrder([
+              'Zipping project',
+              'Wet run, skipping deployment.',
+            ]),
+          );
+          expect(mockFileUploader.uploadedData, isEmpty);
+        });
+      });
+
+      group('when an scloud.yaml exists with a matching project id'
+          ' and the --dry-run alias is specified', () {
+        late Future commandResult;
+
+        setUp(() async {
+          await d.file(p.join(testProjectDir, 'scloud.yaml'), '''
+project:
+  projectId: "$projectId"
+  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
+''').create();
+
+          commandResult = cli.run([
+            'launch',
+            '--project',
+            projectId,
+            '--project-dir',
+            testProjectDir,
+            '--dry-run',
+          ]);
+        });
+
+        test('then the project is zipped but not uploaded', () async {
+          await commandResult;
+
+          expect(
+            logger.progressCalls.map((final call) => call.message),
+            containsAllInOrder([
+              'Zipping project',
+              'Wet run, skipping deployment.',
+            ]),
+          );
+          expect(mockFileUploader.uploadedData, isEmpty);
         });
       });
 

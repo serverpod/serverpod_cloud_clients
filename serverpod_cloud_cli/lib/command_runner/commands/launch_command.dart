@@ -41,7 +41,19 @@ enum LaunchOption<V> implements OptionDefinition<V> {
 
   // Deploy-specific options
   concurrency(DeployConcurrencyOption(group: _deployGroup)),
-  dryRun(DeployDryRunOption(group: _deployGroup)),
+  wetRun(
+    FlagOption(
+      argName: 'wet-run',
+      argAliases: ['dry-run'],
+      helpText:
+          'Perform every step except the deployment, '
+          'leaving the hosted application untouched. '
+          'Local files and the cloud project setup may still be modified.',
+      defaultsTo: false,
+      negatable: false,
+      group: _deployGroup,
+    ),
+  ),
   showFiles(DeployShowFilesOption(group: _deployGroup)),
   output(DeployOutputOption(group: _deployGroup)),
   wait(AwaitOption(group: _deployGroup));
@@ -91,7 +103,7 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
 
     // Deploy-specific options
     final concurrency = commandConfig.value(LaunchOption.concurrency);
-    final dryRun = commandConfig.value(LaunchOption.dryRun);
+    final wetRun = commandConfig.value(LaunchOption.wetRun);
     final showFiles = commandConfig.value(LaunchOption.showFiles);
     final outputPath = commandConfig.optionalValue(LaunchOption.output);
     final wait = commandConfig.value(LaunchOption.wait);
@@ -132,7 +144,7 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
         projectDir: relativeProjectDir,
         projectConfigFilePath: projectConfigFile.path,
         concurrency: concurrency,
-        dryRun: dryRun,
+        wetRun: wetRun,
         showFiles: showFiles,
         skipTailingStatus: !wait,
         outputPath: outputPath?.path,
@@ -155,7 +167,7 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
       consoleServer: consoleServer,
       openBrowser: openBrowser,
       deployConcurrency: concurrency,
-      deployDryRun: dryRun,
+      wetRun: wetRun,
       deployShowFiles: showFiles,
       deployOutputPath: outputPath?.path,
       deploySkipTailingStatus: !wait,

@@ -21,11 +21,15 @@ class DeployConcurrencyOption extends IntOption {
       );
 }
 
-class DeployDryRunOption extends FlagOption {
-  const DeployDryRunOption({super.group})
+class DeployWetRunOption extends FlagOption {
+  const DeployWetRunOption({super.group})
     : super(
-        argName: 'dry-run',
-        helpText: 'Do not actually deploy, just print the deployment steps.',
+        argName: 'wet-run',
+        argAliases: const ['dry-run'],
+        helpText:
+            'Perform every step except the deployment, '
+            'leaving the hosted application untouched. '
+            'Local files may still be modified.',
         defaultsTo: false,
         negatable: false,
       );
@@ -71,7 +75,7 @@ class AwaitOption extends FlagOption {
 enum DeployCommandOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption(asFirstArg: true)),
   concurrency(DeployConcurrencyOption()),
-  dryRun(DeployDryRunOption()),
+  wetRun(DeployWetRunOption()),
   showFiles(DeployShowFilesOption()),
   output(DeployOutputOption()),
   wait(AwaitOption()),
@@ -118,15 +122,15 @@ Examples
   
   The output shows files that will be included in the deployment, as well as files that are ignored (marked with "(ignored)").
   
-  This is useful for verifying that your .gitignore and .scloudignore files are working as expected. You can combine it with --dry-run to preview the file tree without actually deploying:
-  
-    \$ scloud deploy --dry-run --show-files
+  This is useful for verifying that your .gitignore and .scloudignore files are working as expected. You can combine it with --wet-run to preview the file tree without actually deploying:
+
+    \$ scloud deploy --wet-run --show-files
 
   Save the deployment zip file locally
 
-    \$ scloud deploy --output deployment.zip --dry-run
+    \$ scloud deploy --output deployment.zip --wet-run
 
-  Save the deployment zip and still upload it (unless --dry-run is set)
+  Save the deployment zip and still upload it (unless --wet-run is set)
 
     \$ scloud deploy --output deployment.zip
 
@@ -141,7 +145,7 @@ Examples
   ) async {
     final projectId = commandConfig.value(DeployCommandOption.projectId);
     final concurrency = commandConfig.value(DeployCommandOption.concurrency);
-    final dryRun = commandConfig.value(DeployCommandOption.dryRun);
+    final wetRun = commandConfig.value(DeployCommandOption.wetRun);
     final showFiles = commandConfig.value(DeployCommandOption.showFiles);
     final outputPath = commandConfig.optionalValue(DeployCommandOption.output);
     final wait = commandConfig.value(DeployCommandOption.wait);
@@ -169,7 +173,7 @@ Examples
       projectDir: projectDirectory.path,
       projectConfigFilePath: configFilePath,
       concurrency: concurrency,
-      dryRun: dryRun,
+      wetRun: wetRun,
       showFiles: showFiles,
       skipDartPubGet: skipDartPubGet,
       skipTailingStatus: !wait,

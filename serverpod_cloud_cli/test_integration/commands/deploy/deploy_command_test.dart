@@ -794,7 +794,49 @@ project:
         });
       });
 
-      group('when deploying through CLI with --dry-run', () {
+      group('when deploying through CLI with --wet-run', () {
+        late Future cliCommandFuture;
+        setUp(() async {
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--wet-run',
+            '--project',
+            BucketUploadDescription.projectId,
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        test('then command completes successfully.', () async {
+          await expectLater(cliCommandFuture, completes);
+        });
+
+        test('then wet run message is logged.', () async {
+          await cliCommandFuture;
+          expect(logger.progressCalls, isNotEmpty);
+          expect(
+            logger.progressCalls.last.message,
+            'Wet run, skipping deployment.',
+          );
+        });
+
+        test('then not deployed message is logged.', () async {
+          await cliCommandFuture;
+          expect(
+            logger.infoCalls,
+            contains(
+              equalsInfoCall(
+                message:
+                    'The project was not deployed. '
+                    'Run the command again without --wet-run to deploy it.',
+                newParagraph: true,
+              ),
+            ),
+          );
+        });
+      });
+
+      group('when deploying through CLI with the --dry-run alias', () {
         late Future cliCommandFuture;
         setUp(() async {
           cliCommandFuture = cli.run([
@@ -807,28 +849,24 @@ project:
           ]);
         });
 
-        test('then command completes successfully.', () async {
-          await expectLater(cliCommandFuture, completes);
-        });
-
-        test('then dry run message is logged.', () async {
+        test('then wet run message is logged.', () async {
           await cliCommandFuture;
           expect(logger.progressCalls, isNotEmpty);
           expect(
             logger.progressCalls.last.message,
-            'Dry run, skipping upload.',
+            'Wet run, skipping deployment.',
           );
         });
       });
 
-      group('when deploying through CLI with --output and --dry-run', () {
+      group('when deploying through CLI with --output and --wet-run', () {
         late Future cliCommandFuture;
         late String outputZipPath;
         setUp(() async {
           outputZipPath = p.join(d.sandbox, 'deployment.zip');
           cliCommandFuture = cli.run([
             'deploy',
-            '--dry-run',
+            '--wet-run',
             '--output',
             outputZipPath,
             '--project',
@@ -851,13 +889,13 @@ project:
         });
       });
 
-      group('when deploying through CLI with --show-files and --dry-run', () {
+      group('when deploying through CLI with --show-files and --wet-run', () {
         late Future cliCommandFuture;
         setUp(() async {
           cliCommandFuture = cli.run([
             'deploy',
             '--show-files',
-            '--dry-run',
+            '--wet-run',
             '--project',
             BucketUploadDescription.projectId,
             '--project-dir',
@@ -880,12 +918,12 @@ project:
           expect(rawOutput, anyOf(contains('╰─'), contains('├─')));
         });
 
-        test('then dry run message is logged.', () async {
+        test('then wet run message is logged.', () async {
           await cliCommandFuture;
           expect(logger.progressCalls, isNotEmpty);
           expect(
             logger.progressCalls.last.message,
-            'Dry run, skipping upload.',
+            'Wet run, skipping deployment.',
           );
         });
       });
@@ -895,7 +933,7 @@ project:
         setUp(() async {
           cliCommandFuture = cli.run([
             'deploy',
-            '--dry-run',
+            '--wet-run',
             '--project',
             BucketUploadDescription.projectId,
             '--project-dir',
@@ -955,25 +993,25 @@ project:
       });
 
       group(
-        'when deploying through CLI without explicit project dir and with --dry-run',
+        'when deploying through CLI without explicit project dir and with --wet-run',
         () {
           late Future cliCommandFuture;
           setUp(() async {
             pushCurrentDirectory(d.sandbox);
 
-            cliCommandFuture = cli.run(['deploy', '--dry-run']);
+            cliCommandFuture = cli.run(['deploy', '--wet-run']);
           });
 
           test('then command completes successfully.', () async {
             await expectLater(cliCommandFuture, completes);
           });
 
-          test('then dry run message is logged.', () async {
+          test('then wet run message is logged.', () async {
             await cliCommandFuture;
             expect(logger.progressCalls, isNotEmpty);
             expect(
               logger.progressCalls.last.message,
-              'Dry run, skipping upload.',
+              'Wet run, skipping deployment.',
             );
           });
         },
@@ -1012,12 +1050,12 @@ project:
       );
     });
 
-    group('when deploying through CLI and with --dry-run', () {
+    group('when deploying through CLI and with --wet-run', () {
       late Future cliCommandFuture;
       setUp(() async {
         pushCurrentDirectory(d.sandbox);
 
-        cliCommandFuture = cli.run(['deploy', '--dry-run']);
+        cliCommandFuture = cli.run(['deploy', '--wet-run']);
       });
 
       test('then command throws ErrorExitException.', () async {
@@ -1099,7 +1137,7 @@ project:
     });
 
     group(
-      'when deploying through CLI without explicit project dir and with --dry-run',
+      'when deploying through CLI without explicit project dir and with --wet-run',
       () {
         late Future cliCommandFuture;
         setUp(() async {
@@ -1109,7 +1147,7 @@ project:
             'deploy',
             '--project',
             BucketUploadDescription.projectId,
-            '--dry-run',
+            '--wet-run',
           ]);
         });
 
@@ -1322,7 +1360,7 @@ project:
       });
 
       group(
-        'when deploying through CLI without explicit project dir and with --dry-run',
+        'when deploying through CLI without explicit project dir and with --wet-run',
         () {
           late Future cliCommandFuture;
           setUp(() async {
@@ -1332,7 +1370,7 @@ project:
               'deploy',
               '--project',
               BucketUploadDescription.projectId,
-              '--dry-run',
+              '--wet-run',
               '--skip-dart-pub-get',
             ]);
           });
@@ -1449,7 +1487,7 @@ project:
 
     group('without a lock file', () {
       group(
-        'when deploying through CLI without explicit project dir and with --dry-run',
+        'when deploying through CLI without explicit project dir and with --wet-run',
         () {
           late Future cliCommandFuture;
           setUp(() async {
@@ -1459,7 +1497,7 @@ project:
               'deploy',
               '--project',
               BucketUploadDescription.projectId,
-              '--dry-run',
+              '--wet-run',
               '--skip-dart-pub-get',
             ]);
           });
@@ -1471,12 +1509,13 @@ project:
           test('then "Skipping dart pub get" is logged.', () async {
             await cliCommandFuture;
 
-            expect(logger.infoCalls, hasLength(1));
             expect(
-              logger.infoCalls.single,
-              equalsInfoCall(
-                message: 'Skipping "dart pub get" since it is disabled.',
-                newParagraph: true,
+              logger.infoCalls,
+              contains(
+                equalsInfoCall(
+                  message: 'Skipping "dart pub get" since it is disabled.',
+                  newParagraph: true,
+                ),
               ),
             );
           });
@@ -1529,7 +1568,7 @@ sdks:
       });
 
       group(
-        'when deploying through CLI without explicit project dir and with --dry-run',
+        'when deploying through CLI without explicit project dir and with --wet-run',
         () {
           late Future cliCommandFuture;
           setUp(() async {
@@ -1539,7 +1578,7 @@ sdks:
               'deploy',
               '--project',
               BucketUploadDescription.projectId,
-              '--dry-run',
+              '--wet-run',
               '--skip-dart-pub-get',
             ]);
           });
@@ -1553,13 +1592,14 @@ sdks:
             () async {
               await cliCommandFuture;
 
-              expect(logger.infoCalls, hasLength(1));
               expect(
-                logger.infoCalls.single,
-                equalsInfoCall(
-                  message:
-                      'Skipping "dart pub get --enforce-lockfile" since it is disabled.',
-                  newParagraph: true,
+                logger.infoCalls,
+                contains(
+                  equalsInfoCall(
+                    message:
+                        'Skipping "dart pub get --enforce-lockfile" since it is disabled.',
+                    newParagraph: true,
+                  ),
                 ),
               );
             },
@@ -1659,7 +1699,7 @@ project:
         );
       });
 
-      group('when deploying through CLI and with --dry-run', () {
+      group('when deploying through CLI and with --wet-run', () {
         late Future cliCommandFuture;
         setUp(() async {
           pushCurrentDirectory(p.join(d.sandbox, 'monorepo', 'project'));
@@ -1668,7 +1708,7 @@ project:
             'deploy',
             '--project',
             BucketUploadDescription.projectId,
-            '--dry-run',
+            '--wet-run',
           ]);
         });
 
@@ -2155,12 +2195,12 @@ dependencies:
       );
     });
 
-    group('when deploying with --dart-version flag and --dry-run', () {
+    group('when deploying with --dart-version flag and --wet-run', () {
       late Future cliCommandFuture;
       setUp(() async {
         cliCommandFuture = cli.run([
           'deploy',
-          '--dry-run',
+          '--wet-run',
           '--dart-version',
           '3.10.0',
           '--project',
@@ -2184,7 +2224,7 @@ dependencies:
       );
     });
 
-    group('when deploying with dartSdk in scloud.yaml and --dry-run', () {
+    group('when deploying with dartSdk in scloud.yaml and --wet-run', () {
       setUp(() async {
         await d
             .file('scloud.yaml', '''
@@ -2199,7 +2239,7 @@ project:
       setUp(() async {
         cliCommandFuture = cli.run([
           'deploy',
-          '--dry-run',
+          '--wet-run',
           '--project',
           BucketUploadDescription.projectId,
           '--project-dir',
@@ -2213,7 +2253,7 @@ project:
     });
 
     group(
-      'when deploying with --dart-version overriding scloud.yaml and --dry-run',
+      'when deploying with --dart-version overriding scloud.yaml and --wet-run',
       () {
         setUp(() async {
           await d
@@ -2229,7 +2269,7 @@ project:
         setUp(() async {
           cliCommandFuture = cli.run([
             'deploy',
-            '--dry-run',
+            '--wet-run',
             '--dart-version',
             '3.10.0',
             '--project',
@@ -2255,12 +2295,12 @@ project:
       },
     );
 
-    group('when deploying without any version configured and --dry-run', () {
+    group('when deploying without any version configured and --wet-run', () {
       late Future cliCommandFuture;
       setUp(() async {
         cliCommandFuture = cli.run([
           'deploy',
-          '--dry-run',
+          '--wet-run',
           '--project',
           BucketUploadDescription.projectId,
           '--project-dir',
@@ -2274,13 +2314,13 @@ project:
     });
 
     group(
-      'when deploying with parseable --dart-version outside server range and --dry-run',
+      'when deploying with parseable --dart-version outside server range and --wet-run',
       () {
         late Future cliCommandFuture;
         setUp(() async {
           cliCommandFuture = cli.run([
             'deploy',
-            '--dry-run',
+            '--wet-run',
             '--dart-version',
             '3.7.0',
             '--project',
@@ -2296,12 +2336,12 @@ project:
       },
     );
 
-    group('when deploying with unparseable --dart-version and --dry-run', () {
+    group('when deploying with unparseable --dart-version and --wet-run', () {
       late Future cliCommandFuture;
       setUp(() async {
         cliCommandFuture = cli.run([
           'deploy',
-          '--dry-run',
+          '--wet-run',
           '--dart-version',
           'not-a-constraint',
           '--project',
@@ -2326,7 +2366,7 @@ project:
     });
 
     group(
-      'when deploying with --dart-version and existing .tool-versions and --dry-run',
+      'when deploying with --dart-version and existing .tool-versions and --wet-run',
       () {
         setUp(() async {
           await d.file('.tool-versions', 'dart 3.9.1\n').create(testProjectDir);
@@ -2336,7 +2376,7 @@ project:
         setUp(() async {
           cliCommandFuture = cli.run([
             'deploy',
-            '--dry-run',
+            '--wet-run',
             '--dart-version',
             '3.10.0',
             '--project',
@@ -2360,7 +2400,7 @@ project:
       },
     );
 
-    group('when deploying (non-dry-run) with --dart-version', () {
+    group('when deploying (non-wet-run) with --dart-version', () {
       late Future cliCommandFuture;
       setUp(() async {
         clearInteractions(client.deploy);
@@ -2411,7 +2451,7 @@ project:
       });
     });
 
-    group('when deploying (non-dry-run) with two-segment --dart-version', () {
+    group('when deploying (non-wet-run) with two-segment --dart-version', () {
       late Future cliCommandFuture;
       setUp(() async {
         clearInteractions(client.deploy);

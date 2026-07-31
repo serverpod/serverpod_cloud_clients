@@ -38,7 +38,7 @@ abstract class Deploy {
     required final String projectDir,
     required final String projectConfigFilePath,
     required final int concurrency,
-    required final bool dryRun,
+    required final bool wetRun,
     required final bool showFiles,
     final bool skipDartPubGet = false,
     final bool skipTailingStatus = false,
@@ -224,10 +224,10 @@ abstract class Deploy {
       );
     }
 
-    if (dryRun) {
+    if (wetRun) {
       await logger.progress(
-        'Dry run, skipping upload',
-        successMessage: 'Dry run, skipping upload.',
+        'Wet run, skipping deployment',
+        successMessage: 'Wet run, skipping deployment.',
         padRight: StatusCommands.progressMessagePadLength,
         () async {
           return true;
@@ -245,6 +245,12 @@ abstract class Deploy {
           stderr: stderr,
         );
       }
+
+      logger.info(
+        'The project was not deployed. '
+        'Run the command again without --wet-run to deploy it.',
+        newParagraph: true,
+      );
       return;
     }
 
