@@ -273,6 +273,27 @@ class EndpointAdminSecrets extends _i1.EndpointRef {
   );
 }
 
+/// Endpoint for the one-off storage-identity backfill.
+/// {@category Endpoint}
+class EndpointAdminStorageIdentity extends _i1.EndpointRef {
+  EndpointAdminStorageIdentity(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'adminStorageIdentity';
+
+  /// Provisions a storage identity and delivers its account key for every
+  /// capsule whose managed secret predates the storage-identity feature.
+  ///
+  /// Capsules created after the feature shipped get their identity with the
+  /// rest of the bootstrap secrets. Remove when the backfill is complete.
+  _i2.Future<void> backfillStorageIdentities() =>
+      caller.callServerEndpoint<void>(
+        'adminStorageIdentity',
+        'backfillStorageIdentities',
+        {},
+      );
+}
+
 /// {@category Endpoint}
 class EndpointAdminUpdatePlan extends _i1.EndpointRef {
   EndpointAdminUpdatePlan(_i1.EndpointCaller caller) : super(caller);
@@ -2182,6 +2203,7 @@ class Client extends _i1.ServerpodClientShared {
     adminProcurement = EndpointAdminProcurement(this);
     adminProjects = EndpointAdminProjects(this);
     adminSecrets = EndpointAdminSecrets(this);
+    adminStorageIdentity = EndpointAdminStorageIdentity(this);
     adminUpdatePlan = EndpointAdminUpdatePlan(this);
     adminUsers = EndpointAdminUsers(this);
     auth = EndpointAuth(this);
@@ -2219,6 +2241,8 @@ class Client extends _i1.ServerpodClientShared {
   late final EndpointAdminProjects adminProjects;
 
   late final EndpointAdminSecrets adminSecrets;
+
+  late final EndpointAdminStorageIdentity adminStorageIdentity;
 
   late final EndpointAdminUpdatePlan adminUpdatePlan;
 
@@ -2282,6 +2306,7 @@ class Client extends _i1.ServerpodClientShared {
     'adminProcurement': adminProcurement,
     'adminProjects': adminProjects,
     'adminSecrets': adminSecrets,
+    'adminStorageIdentity': adminStorageIdentity,
     'adminUpdatePlan': adminUpdatePlan,
     'adminUsers': adminUsers,
     'auth': auth,
