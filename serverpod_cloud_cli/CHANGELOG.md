@@ -1,6 +1,20 @@
 
 # Changelog
 
+## [0.35.0] - 2026-07-31
+
+### Added
+
+- **Dart workspace lockfile generation** - Automatically writes a filtered `.scloud/scloud_ws_pubspec.lock` during deployment for Dart workspaces.
+
+### Changed
+
+- **Rename dry-run flag** - Renamed `--dry-run` to `--wet-run` for launch workflows, while maintaining `--dry-run` as an alias.
+
+### Fixed
+
+- **Clean version flag output** - Running `scloud --version` now displays the CLI version and exits immediately without showing usage information or checking for updates.
+
 ## [0.34.0] - 2026-07-27
 
 ### Added
