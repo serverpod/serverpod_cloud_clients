@@ -52,6 +52,8 @@ class EndpointCapsulesMock extends Mock implements EndpointCapsules {}
 
 class EndpointComputeMock extends Mock implements EndpointCompute {}
 
+class EndpointMetricsMock extends Mock implements EndpointMetrics {}
+
 class EndpointPlansMock extends Mock implements EndpointPlans {}
 
 /// Modules mocks
@@ -149,6 +151,9 @@ class ClientMock extends Mock implements Client {
 
   @override
   final EndpointCompute compute = EndpointComputeMock();
+
+  @override
+  final EndpointMetrics metrics = EndpointMetricsMock();
 
   @override
   final EndpointPlans plans = EndpointPlansMock();
