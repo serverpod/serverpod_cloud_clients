@@ -34,26 +34,102 @@ class WorkspacePackage {
   WorkspacePackage(this.dir, this.pubspec);
 }
 
-abstract class WorkspaceProject {
+class ProjectFilePreparer {
+  final bool isWorkspace;
+  final Directory rootDirectory;
+  final Directory scloudDir;
+  final List<String> includedSubPaths;
+  final List<String> includedPackagePaths;
+  final String projectPackageName;
+  PackageGraph? _packageGraph;
+
+  ProjectFilePreparer({
+    required this.isWorkspace,
+    required this.rootDirectory,
+    required this.scloudDir,
+    required this.includedSubPaths,
+    required this.includedPackagePaths,
+    required this.projectPackageName,
+    final PackageGraph? packageGraph,
+  }) : _packageGraph = packageGraph;
+
+  /// The package dependency graph for lockfile filtering.
+  ///
+  /// Loaded eagerly for workspace projects. For non-workspace projects it is
+  /// loaded lazily on first use (when filtering a `pubspec.lock`).
+  PackageGraph get packageGraph {
+    final cached = _packageGraph;
+    if (cached != null) {
+      return cached;
+    }
+    final loaded = PackageGraphParser.fromProjectDirectory(rootDirectory);
+    _packageGraph = loaded;
+    return loaded;
+  }
+
+  String filterPubspecYaml(final String content) {
+    final decoded = yamlDecode(content);
+    if (decoded is Map && decoded['workspace'] is List) {
+      return WorkspaceProjectLogic.makeScloudRootPubspecContent(
+        content,
+        includedPackagePaths,
+      );
+    }
+
+    final filteredContent =
+        TenantProject.stripDevDependenciesFromPubspecContent(content);
+    return filteredContent ?? content;
+  }
+
+  String filterPubspecLock(final String content) {
+    final graph = packageGraph;
+    final allPackages = graph.allPackageNames();
+    final (unreachable, demotedToTransitive) = graph.unreachablePackages([
+      projectPackageName,
+    ]);
+    final expectedRemainingPackages = allPackages.difference(unreachable);
+
+    final (filteredContent, _) = PubspecLockFilter.filter(
+      content: content,
+      packagesToRemove: unreachable,
+      packagesToDemote: demotedToTransitive,
+      expectedRemainingPackages: expectedRemainingPackages,
+    );
+
+    return filteredContent;
+  }
+}
+
+abstract class TenantProject {
   static const _scloudRootPubspecFilename = 'scloud_ws_pubspec.yaml';
-  static const _scloudRootPubspecLockFilename = 'scloud_ws_pubspec.lock';
   static const _scloudServerDirFilename = 'scloud_server_dir';
 
-  /// Analyzes the workspace, creates bespoke deployment files,
+  /// Analyzes the tenant project structure, creates bespoke deployment files,
   /// and compiles the list of paths whose contents are to be included.
   ///
   /// Specify [scloudDirPath] to override the default scloud directory path.
   ///
-  /// Returns a tuple with the workspace root directory and the list of
-  /// subpaths in the root directory to include.
+  /// Returns a [ProjectFilePreparer] object to be used to filter project files.
   ///
   /// If no workspace root is found, or the preparation fails,
   /// error messages will be logged and [WorkspaceException] is thrown.
-  static (Directory, Iterable<String>) prepareWorkspacePaths(
+  static ProjectFilePreparer prepare(
     final Directory projectDirectory, {
+    required final TenantProjectPubspec tenantProjectPubspec,
     final String? scloudDirPath,
   }) {
     final String projectPackageName = _getPackageName(projectDirectory);
+
+    if (!tenantProjectPubspec.isWorkspaceResolved()) {
+      return ProjectFilePreparer(
+        isWorkspace: false,
+        rootDirectory: projectDirectory,
+        scloudDir: Directory(scloudDirPath ?? ScloudIgnore.scloudDirName),
+        includedSubPaths: const ['.'],
+        includedPackagePaths: [],
+        projectPackageName: projectPackageName,
+      );
+    }
 
     // Find workspace root directory by traversing up until we find a pubspec.yaml with workspace field
     final (workspaceRootDir, workspacePubspec) = findWorkspaceRoot(
@@ -109,6 +185,27 @@ abstract class WorkspaceProject {
         includedPackagePaths,
         projectPackage,
       );
+
+      final includedPaths = [
+        ...includedPackagePaths,
+        'pubspec.yaml',
+        'pubspec.lock',
+        ScloudIgnore.scloudDirName,
+      ];
+
+      final packageGraph = PackageGraphParser.fromProjectDirectory(
+        workspaceRootDir,
+      );
+
+      return ProjectFilePreparer(
+        isWorkspace: true,
+        rootDirectory: workspaceRootDir,
+        scloudDir: scloudDir,
+        includedSubPaths: includedPaths,
+        includedPackagePaths: includedPackagePaths,
+        projectPackageName: projectPackageName,
+        packageGraph: packageGraph,
+      );
     } on PackageGraphFileNotFoundException catch (e) {
       final tailPath = p.relative(e.projectPath, from: workspaceRootDir.path);
       _throwWorkspaceException(
@@ -118,9 +215,6 @@ abstract class WorkspaceProject {
         hint: 'Run "dart pub get"',
       );
     }
-
-    final includedPaths = [...includedPackagePaths, ScloudIgnore.scloudDirName];
-    return (workspaceRootDir, includedPaths);
   }
 
   /// Writes the .scloud directory and files,
@@ -132,9 +226,6 @@ abstract class WorkspaceProject {
     final WorkspacePackage projectPackage,
   ) {
     _writeScloudRootPubspec(workspaceRootDir, scloudDir, includedPackagePaths);
-    _writeScloudRootPubspecLock(workspaceRootDir, scloudDir, [
-      projectPackage.pubspec.name,
-    ]);
     _writeProjectServerDirFile(scloudDir, projectPackage.dir);
 
     ScloudIgnore.writeTemplateIfNotExists(rootFolder: workspaceRootDir.path);
@@ -173,43 +264,6 @@ abstract class WorkspaceProject {
     scloudRootPubspecFile.writeAsStringSync(scloudRootPubspecContent);
 
     return p.join(ScloudIgnore.scloudDirName, _scloudRootPubspecFilename);
-  }
-
-  /// Writes a filtered copy of the root pubspec.lock file under [scloudDir]
-  /// and returns its path.
-  /// Returns null if the pubspec.lock file does not exist.
-  static String? _writeScloudRootPubspecLock(
-    final Directory workspaceRootDir,
-    final Directory scloudDir,
-    final Iterable<String> includedPackagePaths,
-  ) {
-    final lockFile = File(p.join(workspaceRootDir.path, 'pubspec.lock'));
-    if (!lockFile.existsSync()) {
-      return null;
-    }
-
-    final packageGraph = PackageGraphParser.fromProjectDirectory(
-      workspaceRootDir,
-    );
-    final allPackages = packageGraph.allPackageNames();
-    final (unreachable, demotedToTransitive) = packageGraph.unreachablePackages(
-      includedPackagePaths,
-    );
-    final expectedRemainingPackages = allPackages.difference(unreachable);
-
-    final scloudRootPubspecLockFile = p.join(
-      scloudDir.path,
-      _scloudRootPubspecLockFilename,
-    );
-    PubspecLockFilter.createFilteredCopy(
-      projectPath: workspaceRootDir.path,
-      outputFilePath: scloudRootPubspecLockFile,
-      packagesToRemove: unreachable,
-      packagesToDemote: demotedToTransitive,
-      expectedRemainingPackages: expectedRemainingPackages,
-    );
-
-    return scloudRootPubspecLockFile;
   }
 
   /// Writes the project server dir file to the workspace root directory
@@ -341,7 +395,7 @@ abstract class WorkspaceProjectLogic {
       );
     }
     if (issues.isNotEmpty) {
-      WorkspaceProject._throwWorkspaceException(messages: issues);
+      TenantProject._throwWorkspaceException(messages: issues);
     }
   }
 
@@ -353,7 +407,7 @@ abstract class WorkspaceProjectLogic {
   ) {
     final rootPubspecYaml = yamlDecode(rootPubspecContent);
     if (rootPubspecYaml is! Map) {
-      WorkspaceProject._throwWorkspaceException(
+      TenantProject._throwWorkspaceException(
         message:
             'Invalid workspace root pubspec.yaml, '
             'type: ${rootPubspecYaml.runtimeType}',
@@ -362,7 +416,7 @@ abstract class WorkspaceProjectLogic {
 
     final originalWorkspacePaths = rootPubspecYaml['workspace'];
     if (originalWorkspacePaths is! List) {
-      WorkspaceProject._throwWorkspaceException(
+      TenantProject._throwWorkspaceException(
         message:
             'Invalid `workspace` element in workspace root pubspec.yaml, '
             'type: ${originalWorkspacePaths.runtimeType}',

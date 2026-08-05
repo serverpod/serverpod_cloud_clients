@@ -22,12 +22,11 @@ import 'package:serverpod_cloud_cli/util/git_metadata.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart'
     show TenantProjectPubspec;
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_io.dart';
-import 'package:serverpod_cloud_cli/util/scloudignore.dart' show ScloudIgnore;
 import 'package:serverpod_cloud_cli/util/scrolling_command_output.dart';
 import 'package:serverpod_cloud_cli/util/tool_versions_io.dart';
 import 'package:serverpod_cloud_cli/util/upload_description_metadata.dart';
 
-import 'prepare_workspace.dart';
+import 'prepare_project_files.dart';
 
 abstract class Deploy {
   static Future<void> deploy(
@@ -65,9 +64,7 @@ abstract class Deploy {
 
     Directory? workspaceRootDir;
     if (pubspecValidator.isWorkspaceResolved()) {
-      (workspaceRootDir, _) = WorkspaceProject.findWorkspaceRoot(
-        projectDirectory,
-      );
+      (workspaceRootDir, _) = TenantProject.findWorkspaceRoot(projectDirectory);
     }
     await _runDartPubGetIfNeeded(
       logger,
@@ -120,24 +117,18 @@ abstract class Deploy {
       );
     }
 
-    final Directory rootDirectory;
-    final Iterable<String> includedSubPaths;
-    final bool isWorkspace = pubspecValidator.isWorkspaceResolved();
-    if (isWorkspace) {
-      (rootDirectory, includedSubPaths) =
-          WorkspaceProject.prepareWorkspacePaths(projectDirectory);
+    final projectFilePreparer = TenantProject.prepare(
+      projectDirectory,
+      tenantProjectPubspec: pubspecValidator,
+    );
 
+    if (projectFilePreparer.isWorkspace) {
       logger.list(
+        projectFilePreparer.includedPackagePaths,
         title: 'Including workspace packages',
-        includedSubPaths.where(
-          (final path) => path != ScloudIgnore.scloudDirName,
-        ),
         level: LogLevel.debug,
         newParagraph: true,
       );
-    } else {
-      rootDirectory = projectDirectory;
-      includedSubPaths = const ['.'];
     }
 
     late final List<int> projectZip;
@@ -150,22 +141,24 @@ abstract class Deploy {
         try {
           projectZip = await ProjectZipper.zipProject(
             logger: logger,
-            rootDirectory: rootDirectory,
-            beneath: includedSubPaths,
+            rootDirectory: projectFilePreparer.rootDirectory,
+            beneath: projectFilePreparer.includedSubPaths,
             fileReadPoolSize: concurrency,
             showFiles: showFiles,
-            fileContentModifier: (final relativePath, final contentReader) async {
-              final isPubspec =
-                  relativePath.endsWith('pubspec.yaml') &&
-                  !relativePath.contains('.scloud/');
-              if (isPubspec) {
-                final content = await contentReader();
-                return WorkspaceProject.stripDevDependenciesFromPubspecContent(
-                  content,
-                );
-              }
-              return null;
-            },
+            fileContentModifier:
+                (final relativePath, final contentReader) async {
+                  final pathSegments = p.split(relativePath);
+                  if (pathSegments.contains('.scloud')) return null;
+                  if (pathSegments.last == 'pubspec.yaml') {
+                    final content = await contentReader();
+                    return projectFilePreparer.filterPubspecYaml(content);
+                  }
+                  if (pathSegments.last == 'pubspec.lock') {
+                    final content = await contentReader();
+                    return projectFilePreparer.filterPubspecLock(content);
+                  }
+                  return null;
+                },
           );
           return true;
         } on ProjectZipperExceptions catch (e) {

@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:serverpod_cloud_cli/commands/deploy/prepare_workspace.dart'
-    show WorkspaceProject;
+import 'package:serverpod_cloud_cli/commands/deploy/prepare_project_files.dart'
+    show TenantProject;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_io.dart';
@@ -96,7 +96,7 @@ abstract final class ProjectFilesWriter {
 
     if (projectPubspec.isWorkspaceResolved()) {
       final (workspaceRootDir, workspacePubspec) =
-          WorkspaceProject.findWorkspaceRoot(projectDir);
+          TenantProject.findWorkspaceRoot(projectDir);
       return workspaceRootDir;
     }
 

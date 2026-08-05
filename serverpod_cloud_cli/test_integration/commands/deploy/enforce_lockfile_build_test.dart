@@ -104,12 +104,21 @@ void main() {
           expect(wsPubspecFile, isNotNull);
         });
 
-        test('then .scloud/scloud_ws_pubspec.lock is included', () async {
-          final wsPubspecLockFile = archive.findFile(
-            p.join('.scloud', 'scloud_ws_pubspec.lock'),
-          );
-          expect(wsPubspecLockFile, isNotNull);
-        });
+        test(
+          'then .scloud/scloud_ws_pubspec.yaml is identical to pubspec.yaml',
+          () async {
+            final wsPubspecFile = archive.findFile(
+              p.join('.scloud', 'scloud_ws_pubspec.yaml'),
+            );
+            final pubspecFile = archive.findFile('pubspec.yaml');
+            expect(wsPubspecFile, isNotNull);
+            expect(pubspecFile, isNotNull);
+            expect(
+              wsPubspecFile!.readBytes()!,
+              equals(pubspecFile!.readBytes()!),
+            );
+          },
+        );
       });
 
       group('and unpacking the zip archive,', () {
@@ -123,18 +132,6 @@ void main() {
             zipFileName,
           ], workingDirectory: outputZipDirPath);
           expect(unzipCommand.exitCode, 0);
-
-          final copyWsPubspecCommand = await Process.run('cp', [
-            p.join('.scloud', 'scloud_ws_pubspec.yaml'),
-            'pubspec.yaml',
-          ], workingDirectory: outputZipDirPath);
-          expect(copyWsPubspecCommand.exitCode, 0);
-
-          final copyWsPubspecLockCommand = await Process.run('cp', [
-            p.join('.scloud', 'scloud_ws_pubspec.lock'),
-            'pubspec.lock',
-          ], workingDirectory: outputZipDirPath);
-          expect(copyWsPubspecLockCommand.exitCode, 0);
         });
 
         test(

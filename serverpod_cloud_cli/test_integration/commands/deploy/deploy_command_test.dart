@@ -6,7 +6,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:archive/archive.dart';
-import 'package:archive/archive_io.dart';
 import 'package:args/command_runner.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
@@ -956,27 +955,84 @@ project:
         });
       });
     });
-  });
 
-  group(
-    'and a non-workspace directory structure and a valid upload description response',
-    () {
-      setUp(() async {
-        await ProjectFactory.serverpodServerDir(
-          contents: [
-            d.file('scloud.yaml', '''
+    group(
+      'and a non-workspace directory structure and a valid upload description response',
+      () {
+        setUp(() async {
+          await ProjectFactory.serverpodServerDir(
+            contents: [
+              d.file('scloud.yaml', '''
 project:
   projectId: "my-project-id"
   dartSdk: "${VersionConstants.minSupportedSdkVersion}"
 '''),
-            d.dir('subdir', [
-              d.file('subdir_file.txt', 'file_content'),
-              d.dir('subsubdir', [
-                d.file('subsubdir_file.txt', 'file_content'),
+              d.dir('subdir', [
+                d.file('subdir_file.txt', 'file_content'),
+                d.dir('subsubdir', [
+                  d.file('subsubdir_file.txt', 'file_content'),
+                ]),
               ]),
-            ]),
-          ],
-        ).create();
+            ],
+          ).create();
+
+          when(
+            () => client.deploy.createUploadDescription(
+              any(),
+              serverpodVersion: any(named: 'serverpodVersion'),
+              dartVersion: any(named: 'dartVersion'),
+              commitHash: any(named: 'commitHash'),
+              commitMessage: any(named: 'commitMessage'),
+              branch: any(named: 'branch'),
+            ),
+          ).thenAnswer(
+            (final _) async => BucketUploadDescription.uploadDescription,
+          );
+        });
+
+        group(
+          'when deploying through CLI without explicit project dir and with --wet-run',
+          () {
+            late Future cliCommandFuture;
+            setUp(() async {
+              pushCurrentDirectory(d.sandbox);
+
+              cliCommandFuture = cli.run(['deploy', '--wet-run']);
+            });
+
+            test('then command completes successfully.', () async {
+              await expectLater(cliCommandFuture, completes);
+            });
+
+            test('then wet run message is logged.', () async {
+              await cliCommandFuture;
+              expect(logger.progressCalls, isNotEmpty);
+              expect(
+                logger.progressCalls.last.message,
+                'Wet run, skipping deployment.',
+              );
+            });
+          },
+        );
+      },
+    );
+
+    group('and a non-workspace serverpod project with a flutter dependency', () {
+      setUp(() async {
+        await d.dir('project', [
+          d.file('pubspec.yaml', '''
+name: "project"
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+  flutter: ^3.29.0
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+'''),
+          d.file('scloud.yaml', '''
+project:
+  projectId: "my-project-id"
+'''),
+        ]).create();
 
         when(
           () => client.deploy.createUploadDescription(
@@ -992,295 +1048,39 @@ project:
         );
       });
 
-      group(
-        'when deploying through CLI without explicit project dir and with --wet-run',
-        () {
-          late Future cliCommandFuture;
-          setUp(() async {
-            pushCurrentDirectory(d.sandbox);
-
-            cliCommandFuture = cli.run(['deploy', '--wet-run']);
-          });
-
-          test('then command completes successfully.', () async {
-            await expectLater(cliCommandFuture, completes);
-          });
-
-          test('then wet run message is logged.', () async {
-            await cliCommandFuture;
-            expect(logger.progressCalls, isNotEmpty);
-            expect(
-              logger.progressCalls.last.message,
-              'Wet run, skipping deployment.',
-            );
-          });
-        },
-      );
-    },
-  );
-
-  group('and a non-workspace serverpod project with a flutter dependency', () {
-    setUp(() async {
-      await d.dir('project', [
-        d.file('pubspec.yaml', '''
-name: "project"
-environment:
-  sdk: ${ProjectFactory.validSdkVersion}
-  flutter: ^3.29.0
-dependencies:
-  serverpod: ${ProjectFactory.validServerpodVersion}
-'''),
-        d.file('scloud.yaml', '''
-project:
-  projectId: "my-project-id"
-'''),
-      ]).create();
-
-      when(
-        () => client.deploy.createUploadDescription(
-          any(),
-          serverpodVersion: any(named: 'serverpodVersion'),
-          dartVersion: any(named: 'dartVersion'),
-          commitHash: any(named: 'commitHash'),
-          commitMessage: any(named: 'commitMessage'),
-          branch: any(named: 'branch'),
-        ),
-      ).thenAnswer(
-        (final _) async => BucketUploadDescription.uploadDescription,
-      );
-    });
-
-    group('when deploying through CLI and with --wet-run', () {
-      late Future cliCommandFuture;
-      setUp(() async {
-        pushCurrentDirectory(d.sandbox);
-
-        cliCommandFuture = cli.run(['deploy', '--wet-run']);
-      });
-
-      test('then command throws ErrorExitException.', () async {
-        await expectLater(cliCommandFuture, throwsA(isA<ErrorExitException>()));
-      });
-
-      test(
-        'then an unsupported flutter dependency error message is logged.',
-        () async {
-          await cliCommandFuture.catchError((final _) {});
-
-          expect(logger.errorCalls, hasLength(1));
-          expect(
-            logger.errorCalls.single.message,
-            equals(
-              'A Flutter dependency is not allowed in a server package: project',
-            ),
-          );
-        },
-      );
-    });
-  });
-
-  group('and a valid workspace directory structure without a lock file', () {
-    setUp(() async {
-      await d.dir('monorepo', [
-        d.file('pubspec.yaml', '''
-name: monorepo
-environment:
-  sdk: ${ProjectFactory.validSdkVersion}
-  flutter: 3.29.0
-workspace:
-  - packages/dart_utilities
-  - project/project_server
-'''),
-        d.dir('packages', [
-          d.dir('dart_utilities', [
-            d.file('pubspec.yaml', '''
-name: dart_utilities
-version: 1.0.0
-environment:
-  sdk: ${ProjectFactory.validSdkVersion}
-resolution: workspace
-'''),
-          ]),
-        ]),
-        d.dir('project', [
-          d.dir('project_server', [
-            d.file('pubspec.yaml', '''
-name: project_server
-environment:
-  sdk: ${ProjectFactory.validSdkVersion}
-resolution: workspace
-dependencies:
-  serverpod: ${ProjectFactory.validServerpodVersion}
-  dart_utilities: ^1.0.0
-'''),
-            d.file('scloud.yaml', '''
-project:
-  projectId: "${BucketUploadDescription.projectId}"
-  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
-'''),
-          ]),
-        ]),
-      ]).create();
-
-      when(
-        () => client.deploy.createUploadDescription(
-          any(),
-          serverpodVersion: any(named: 'serverpodVersion'),
-          dartVersion: any(named: 'dartVersion'),
-          commitHash: any(named: 'commitHash'),
-          commitMessage: any(named: 'commitMessage'),
-          branch: any(named: 'branch'),
-        ),
-      ).thenAnswer(
-        (final _) async => BucketUploadDescription.uploadDescription,
-      );
-    });
-
-    group(
-      'when deploying through CLI without explicit project dir and with --wet-run',
-      () {
+      group('when deploying through CLI and with --wet-run', () {
         late Future cliCommandFuture;
         setUp(() async {
-          pushCurrentDirectory(p.join(d.sandbox, 'monorepo', 'project'));
+          pushCurrentDirectory(d.sandbox);
 
-          cliCommandFuture = cli.run([
-            'deploy',
-            '--project',
-            BucketUploadDescription.projectId,
-            '--wet-run',
-          ]);
+          cliCommandFuture = cli.run(['deploy', '--wet-run']);
         });
 
-        test('then command completes successfully.', () async {
-          await expectLater(cliCommandFuture, completes);
-        });
-
-        test('then the included packages are logged.', () async {
-          await cliCommandFuture;
-
-          expect(logger.listCalls, hasLength(1));
-          expect(
-            logger.listCalls.single,
-            equalsListCall(
-              title: 'Including workspace packages',
-              items: ['project/project_server', 'packages/dart_utilities'],
-              newParagraph: true,
-            ),
-          );
-        });
-
-        test('then .scloud/scloud_server_dir file is created.', () async {
-          await cliCommandFuture;
-
-          final descriptor = d.dir('.scloud', [
-            d.file('scloud_server_dir', 'project/project_server'),
-          ]);
-
+        test('then command throws ErrorExitException.', () async {
           await expectLater(
-            descriptor.validate(p.join(d.sandbox, 'monorepo')),
-            completes,
+            cliCommandFuture,
+            throwsA(isA<ErrorExitException>()),
           );
         });
 
-        test('then .scloud/scloud_ws_pubspec.yaml file is created.', () async {
-          await cliCommandFuture;
+        test(
+          'then an unsupported flutter dependency error message is logged.',
+          () async {
+            await cliCommandFuture.catchError((final _) {});
 
-          final fileDescriptor = d.file('scloud_ws_pubspec.yaml', isNotEmpty);
-          final descriptor = d.dir('.scloud', [fileDescriptor]);
-
-          await expectLater(
-            descriptor.validate(p.join(d.sandbox, 'monorepo')),
-            completes,
-          );
-
-          final content = File(
-            p.join(d.sandbox, 'monorepo', '.scloud', 'scloud_ws_pubspec.yaml'),
-          ).readAsStringSync();
-          final doc = yamlDecode(content);
-          expect(doc, containsPair('name', 'monorepo'));
-          expect(doc, containsPair('environment', isNot(contains('flutter'))));
-          expect(
-            doc,
-            containsPair('environment', containsPair('sdk', isNotEmpty)),
-          );
-          expect(
-            doc,
-            containsPair(
-              'workspace',
-              containsAll([
-                'project/project_server',
-                'packages/dart_utilities',
-              ]),
-            ),
-          );
-        });
-      },
-    );
-
-    group('when deploying through CLI without explicit project dir', () {
-      late Future cliCommandFuture;
-      setUpAll(() async {
-        when(
-          () => client.status.getDeployAttemptId(
-            cloudCapsuleId: any(named: 'cloudCapsuleId'),
-            attemptNumber: any(named: 'attemptNumber'),
-          ),
-        ).thenAnswer(
-          (final _) async =>
-              UuidValue.raw('00000000-0000-4000-8000-000000000000'),
-        );
-        when(
-          () => client.status.tailDeployAttemptStatus(
-            cloudCapsuleId: any(named: 'cloudCapsuleId'),
-            attemptId: any(named: 'attemptId'),
-          ),
-        ).thenAnswer(
-          (final _) => Stream.value(DeployAttemptStageBuilder().build()),
+            expect(logger.errorCalls, hasLength(1));
+            expect(
+              logger.errorCalls.single.message,
+              equals(
+                'A Flutter dependency is not allowed in a server package: project',
+              ),
+            );
+          },
         );
       });
-
-      setUp(() async {
-        pushCurrentDirectory(p.join(d.sandbox, 'monorepo', 'project'));
-
-        cliCommandFuture = cli.run([
-          'deploy',
-          '--project',
-          BucketUploadDescription.projectId,
-        ]);
-      });
-
-      test('then command completes successfully.', () async {
-        await expectLater(cliCommandFuture, completes);
-      });
-
-      test(
-        'then .scloud/scloud_ws_pubspec.yaml is included in the zip archive',
-        () async {
-          await cliCommandFuture;
-
-          expect(mockFileUploader.uploadedData, isNotEmpty);
-
-          final archive = ZipDecoder().decodeBytes(
-            mockFileUploader.uploadedData,
-          );
-          final wsPubspecFile = archive.findFile(
-            p.join('.scloud', 'scloud_ws_pubspec.yaml'),
-          );
-          expect(
-            wsPubspecFile,
-            isNotNull,
-            reason:
-                '.scloud/scloud_ws_pubspec.yaml should be included in the deployment zip',
-          );
-        },
-      );
     });
-  });
 
-  group(
-    'and a valid workspace directory structure with a lock file but without package_graph.json',
-    // reflects the case where "dart pub get" has not been run
-    () {
+    group('and a valid workspace directory structure without a lock file', () {
       setUp(() async {
         await d.dir('monorepo', [
           d.file('pubspec.yaml', '''
@@ -1291,28 +1091,6 @@ environment:
 workspace:
   - packages/dart_utilities
   - project/project_server
-'''),
-          d.file('pubspec.lock', '''
-# Generated by pub
-# See https://dart.dev/tools/pub/glossary#lockfile
-packages:
-  dart_utilities:
-    dependency: "direct main"
-    description:
-      name: dart_utilities
-      version: 1.0.0
-    source: path
-    version: 1.0.0
-  project_server:
-    dependency: "direct main"
-    description:
-      name: project_server
-      version: 1.0.0
-    source: path
-    version: 1.0.0
-sdks:
-  dart: ${ProjectFactory.validSdkVersion}
-  flutter: 3.29.0
 '''),
           d.dir('packages', [
             d.dir('dart_utilities', [
@@ -1371,44 +1149,156 @@ project:
               '--project',
               BucketUploadDescription.projectId,
               '--wet-run',
-              '--skip-dart-pub-get',
             ]);
           });
 
-          test('then command throws ErrorExitException.', () async {
-            await expectLater(
-              cliCommandFuture,
-              throwsA(isA<ErrorExitException>()),
-            );
+          test('then command completes successfully.', () async {
+            await expectLater(cliCommandFuture, completes);
           });
 
-          test('then an error message is logged.', () async {
-            await cliCommandFuture.catchError((final _) {});
+          test('then the included packages are logged.', () async {
+            await cliCommandFuture;
 
-            expect(logger.errorCalls, hasLength(1));
+            expect(logger.listCalls, hasLength(1));
             expect(
-              logger.errorCalls.single,
-              anyOf(
-                equalsErrorCall(
-                  message: '.dart_tool/package_graph.json not found.',
-                  hint: 'Run "dart pub get"',
-                ),
-                equalsErrorCall(
-                  message: '.dart_tool\\package_graph.json not found.',
-                  hint: 'Run "dart pub get"',
-                ),
+              logger.listCalls.single,
+              equalsListCall(
+                title: 'Including workspace packages',
+                items: ['project/project_server', 'packages/dart_utilities'],
+                newParagraph: true,
               ),
             );
           });
+
+          test('then .scloud/scloud_server_dir file is created.', () async {
+            await cliCommandFuture;
+
+            final descriptor = d.dir('.scloud', [
+              d.file('scloud_server_dir', 'project/project_server'),
+            ]);
+
+            await expectLater(
+              descriptor.validate(p.join(d.sandbox, 'monorepo')),
+              completes,
+            );
+          });
+
+          test(
+            'then .scloud/scloud_ws_pubspec.yaml file is created.',
+            () async {
+              await cliCommandFuture;
+
+              final fileDescriptor = d.file(
+                'scloud_ws_pubspec.yaml',
+                isNotEmpty,
+              );
+              final descriptor = d.dir('.scloud', [fileDescriptor]);
+
+              await expectLater(
+                descriptor.validate(p.join(d.sandbox, 'monorepo')),
+                completes,
+              );
+
+              final content = File(
+                p.join(
+                  d.sandbox,
+                  'monorepo',
+                  '.scloud',
+                  'scloud_ws_pubspec.yaml',
+                ),
+              ).readAsStringSync();
+              final doc = yamlDecode(content);
+              expect(doc, containsPair('name', 'monorepo'));
+              expect(
+                doc,
+                containsPair('environment', isNot(contains('flutter'))),
+              );
+              expect(
+                doc,
+                containsPair('environment', containsPair('sdk', isNotEmpty)),
+              );
+              expect(
+                doc,
+                containsPair(
+                  'workspace',
+                  containsAll([
+                    'project/project_server',
+                    'packages/dart_utilities',
+                  ]),
+                ),
+              );
+            },
+          );
         },
       );
-    },
-  );
 
-  group('and a valid workspace directory structure with package_graph.json', () {
-    setUp(() async {
-      await d.dir('monorepo', [
-        d.file('pubspec.yaml', '''
+      group('when deploying through CLI without explicit project dir', () {
+        late Future cliCommandFuture;
+        setUpAll(() async {
+          when(
+            () => client.status.getDeployAttemptId(
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+              attemptNumber: any(named: 'attemptNumber'),
+            ),
+          ).thenAnswer(
+            (final _) async =>
+                UuidValue.raw('00000000-0000-4000-8000-000000000000'),
+          );
+          when(
+            () => client.status.tailDeployAttemptStatus(
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+              attemptId: any(named: 'attemptId'),
+            ),
+          ).thenAnswer(
+            (final _) => Stream.value(DeployAttemptStageBuilder().build()),
+          );
+        });
+
+        setUp(() async {
+          pushCurrentDirectory(p.join(d.sandbox, 'monorepo', 'project'));
+
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--project',
+            BucketUploadDescription.projectId,
+          ]);
+        });
+
+        test('then command completes successfully.', () async {
+          await expectLater(cliCommandFuture, completes);
+        });
+
+        test(
+          'then .scloud/scloud_ws_pubspec.yaml is included in the zip archive',
+          () async {
+            await cliCommandFuture;
+
+            expect(mockFileUploader.uploadedData, isNotEmpty);
+
+            final archive = ZipDecoder().decodeBytes(
+              mockFileUploader.uploadedData,
+            );
+            final wsPubspecFile = archive.findFile(
+              p.join('.scloud', 'scloud_ws_pubspec.yaml'),
+            );
+            expect(
+              wsPubspecFile,
+              isNotNull,
+              reason:
+                  '.scloud/scloud_ws_pubspec.yaml should be included in the deployment zip',
+            );
+          },
+        );
+      });
+    });
+
+    group(
+      'and a valid workspace directory structure with a lock file but without package_graph.json',
+      // reflects the case where "dart pub get" has not been run
+      () {
+        setUp(() async {
+          await d.dir('monorepo', [
+            d.file('pubspec.yaml', '''
 name: monorepo
 environment:
   sdk: ${ProjectFactory.validSdkVersion}
@@ -1417,132 +1307,7 @@ workspace:
   - packages/dart_utilities
   - project/project_server
 '''),
-        d.dir('.dart_tool', [
-          d.file('package_graph.json', '''
-{
-  "roots": [
-    "dart_utilities",
-    "project_server"
-  ],
-  "packages": [
-    {
-      "name": "dart_utilities",
-      "version": "0.0.0",
-      "dependencies": []
-    },
-    {
-      "name": "project_server",
-      "version": "0.0.0",
-      "dependencies": []
-    }
-  ],
-  "configVersion": 1
-}
-'''),
-        ]),
-        d.dir('packages', [
-          d.dir('dart_utilities', [
-            d.file('pubspec.yaml', '''
-name: dart_utilities
-version: 1.0.0
-environment:
-  sdk: ${ProjectFactory.validSdkVersion}
-resolution: workspace
-'''),
-          ]),
-        ]),
-        d.dir('project', [
-          d.dir('project_server', [
-            d.file('pubspec.yaml', '''
-name: project_server
-environment:
-  sdk: ${ProjectFactory.validSdkVersion}
-resolution: workspace
-dependencies:
-  serverpod: ${ProjectFactory.validServerpodVersion}
-  dart_utilities: ^1.0.0
-'''),
-            d.file('scloud.yaml', '''
-project:
-  projectId: "${BucketUploadDescription.projectId}"
-  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
-'''),
-          ]),
-        ]),
-      ]).create();
-
-      when(
-        () => client.deploy.createUploadDescription(
-          any(),
-          serverpodVersion: any(named: 'serverpodVersion'),
-          dartVersion: any(named: 'dartVersion'),
-          commitHash: any(named: 'commitHash'),
-          commitMessage: any(named: 'commitMessage'),
-          branch: any(named: 'branch'),
-        ),
-      ).thenAnswer(
-        (final _) async => BucketUploadDescription.uploadDescription,
-      );
-    });
-
-    group('without a lock file', () {
-      group(
-        'when deploying through CLI without explicit project dir and with --wet-run',
-        () {
-          late Future cliCommandFuture;
-          setUp(() async {
-            pushCurrentDirectory(p.join(d.sandbox, 'monorepo', 'project'));
-
-            cliCommandFuture = cli.run([
-              'deploy',
-              '--project',
-              BucketUploadDescription.projectId,
-              '--wet-run',
-              '--skip-dart-pub-get',
-            ]);
-          });
-
-          test('then command completes successfully.', () async {
-            await expectLater(cliCommandFuture, completes);
-          });
-
-          test('then "Skipping dart pub get" is logged.', () async {
-            await cliCommandFuture;
-
-            expect(
-              logger.infoCalls,
-              contains(
-                equalsInfoCall(
-                  message: 'Skipping "dart pub get" since it is disabled.',
-                  newParagraph: true,
-                ),
-              ),
-            );
-          });
-
-          test(
-            'then .scloud/scloud_ws_pubspec.lock file is not created.',
-            () async {
-              await cliCommandFuture;
-
-              final descriptor = d.dir('.scloud', [
-                d.nothing('scloud_ws_pubspec.lock'),
-              ]);
-
-              await expectLater(
-                descriptor.validate(p.join(d.sandbox, 'monorepo')),
-                completes,
-              );
-            },
-          );
-        },
-      );
-    });
-
-    group('and a lock file', () {
-      setUp(() async {
-        await d.dir('monorepo', [
-          d.file('pubspec.lock', '''
+            d.file('pubspec.lock', '''
 # Generated by pub
 # See https://dart.dev/tools/pub/glossary#lockfile
 packages:
@@ -1564,84 +1329,98 @@ sdks:
   dart: ${ProjectFactory.validSdkVersion}
   flutter: 3.29.0
 '''),
-        ]).create();
-      });
+            d.dir('packages', [
+              d.dir('dart_utilities', [
+                d.file('pubspec.yaml', '''
+name: dart_utilities
+version: 1.0.0
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+resolution: workspace
+'''),
+              ]),
+            ]),
+            d.dir('project', [
+              d.dir('project_server', [
+                d.file('pubspec.yaml', '''
+name: project_server
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+resolution: workspace
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+  dart_utilities: ^1.0.0
+'''),
+                d.file('scloud.yaml', '''
+project:
+  projectId: "${BucketUploadDescription.projectId}"
+  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
+'''),
+              ]),
+            ]),
+          ]).create();
 
-      group(
-        'when deploying through CLI without explicit project dir and with --wet-run',
-        () {
-          late Future cliCommandFuture;
-          setUp(() async {
-            pushCurrentDirectory(p.join(d.sandbox, 'monorepo', 'project'));
+          when(
+            () => client.deploy.createUploadDescription(
+              any(),
+              serverpodVersion: any(named: 'serverpodVersion'),
+              dartVersion: any(named: 'dartVersion'),
+              commitHash: any(named: 'commitHash'),
+              commitMessage: any(named: 'commitMessage'),
+              branch: any(named: 'branch'),
+            ),
+          ).thenAnswer(
+            (final _) async => BucketUploadDescription.uploadDescription,
+          );
+        });
 
-            cliCommandFuture = cli.run([
-              'deploy',
-              '--project',
-              BucketUploadDescription.projectId,
-              '--wet-run',
-              '--skip-dart-pub-get',
-            ]);
-          });
+        group(
+          'when deploying through CLI without explicit project dir and with --wet-run',
+          () {
+            late Future cliCommandFuture;
+            setUp(() async {
+              pushCurrentDirectory(p.join(d.sandbox, 'monorepo', 'project'));
 
-          test('then command completes successfully.', () async {
-            await expectLater(cliCommandFuture, completes);
-          });
+              cliCommandFuture = cli.run([
+                'deploy',
+                '--project',
+                BucketUploadDescription.projectId,
+                '--wet-run',
+                '--skip-dart-pub-get',
+              ]);
+            });
 
-          test(
-            'then "Skipping dart pub get --enforce-lockfile" is logged.',
-            () async {
-              await cliCommandFuture;
+            test('then command throws ErrorExitException.', () async {
+              await expectLater(
+                cliCommandFuture,
+                throwsA(isA<ErrorExitException>()),
+              );
+            });
 
+            test('then an error message is logged.', () async {
+              await cliCommandFuture.catchError((final _) {});
+
+              expect(logger.errorCalls, hasLength(1));
               expect(
-                logger.infoCalls,
-                contains(
-                  equalsInfoCall(
-                    message:
-                        'Skipping "dart pub get --enforce-lockfile" since it is disabled.',
-                    newParagraph: true,
+                logger.errorCalls.single,
+                anyOf(
+                  equalsErrorCall(
+                    message: '.dart_tool/package_graph.json not found.',
+                    hint: 'Run "dart pub get"',
+                  ),
+                  equalsErrorCall(
+                    message: '.dart_tool\\package_graph.json not found.',
+                    hint: 'Run "dart pub get"',
                   ),
                 ),
               );
-            },
-          );
+            });
+          },
+        );
+      },
+    );
 
-          test(
-            'then .scloud/scloud_ws_pubspec.lock file is created.',
-            () async {
-              await cliCommandFuture;
-
-              final fileDescriptor = d.file(
-                'scloud_ws_pubspec.lock',
-                isNotEmpty,
-              );
-              final descriptor = d.dir('.scloud', [fileDescriptor]);
-
-              await expectLater(
-                descriptor.validate(p.join(d.sandbox, 'monorepo')),
-                completes,
-              );
-
-              final content = File(
-                p.join(
-                  d.sandbox,
-                  'monorepo',
-                  '.scloud',
-                  'scloud_ws_pubspec.lock',
-                ),
-              ).readAsStringSync();
-              final doc = yamlDecode(content);
-              expect(doc, contains('packages'));
-              expect(doc, contains('sdks'));
-            },
-          );
-        },
-      );
-    });
-  });
-
-  group(
-    'and an invalid workspace directory structure with an indirect flutter dependency',
-    () {
+    group('and a valid workspace directory structure with package_graph.json', () {
       setUp(() async {
         await d.dir('monorepo', [
           d.file('pubspec.yaml', '''
@@ -1650,17 +1429,39 @@ environment:
   sdk: ${ProjectFactory.validSdkVersion}
   flutter: 3.29.0
 workspace:
-  - packages/flutter_utilities
+  - packages/dart_utilities
   - project/project_server
 '''),
+          d.dir('.dart_tool', [
+            d.file('package_graph.json', '''
+{
+  "roots": [
+    "dart_utilities",
+    "project_server"
+  ],
+  "packages": [
+    {
+      "name": "dart_utilities",
+      "version": "0.0.0",
+      "dependencies": []
+    },
+    {
+      "name": "project_server",
+      "version": "0.0.0",
+      "dependencies": []
+    }
+  ],
+  "configVersion": 1
+}
+'''),
+          ]),
           d.dir('packages', [
-            d.dir('flutter_utilities', [
+            d.dir('dart_utilities', [
               d.file('pubspec.yaml', '''
-name: flutter_utilities
+name: dart_utilities
 version: 1.0.0
 environment:
   sdk: ${ProjectFactory.validSdkVersion}
-  flutter: 3.29.0
 resolution: workspace
 '''),
             ]),
@@ -1674,7 +1475,7 @@ environment:
 resolution: workspace
 dependencies:
   serverpod: ${ProjectFactory.validServerpodVersion}
-  flutter_utilities: ^1.0.0
+  dart_utilities: ^1.0.0
 '''),
               d.file('scloud.yaml', '''
 project:
@@ -1699,43 +1500,475 @@ project:
         );
       });
 
-      group('when deploying through CLI and with --wet-run', () {
-        late Future cliCommandFuture;
+      group('and a lock file', () {
         setUp(() async {
-          pushCurrentDirectory(p.join(d.sandbox, 'monorepo', 'project'));
-
-          cliCommandFuture = cli.run([
-            'deploy',
-            '--project',
-            BucketUploadDescription.projectId,
-            '--wet-run',
-          ]);
+          await d.dir('monorepo', [
+            d.file('pubspec.lock', '''
+# Generated by pub
+# See https://dart.dev/tools/pub/glossary#lockfile
+packages:
+  dart_utilities:
+    dependency: "direct main"
+    description:
+      name: dart_utilities
+      version: 1.0.0
+    source: path
+    version: 1.0.0
+  project_server:
+    dependency: "direct main"
+    description:
+      name: project_server
+      version: 1.0.0
+    source: path
+    version: 1.0.0
+sdks:
+  dart: ${ProjectFactory.validSdkVersion}
+  flutter: 3.29.0
+'''),
+          ]).create();
         });
 
-        test('then command throws ErrorExitException.', () async {
-          await expectLater(
-            cliCommandFuture,
-            throwsA(isA<ErrorExitException>()),
-          );
-        });
+        group(
+          'when deploying through CLI without explicit project dir and with --wet-run',
+          () {
+            late Future cliCommandFuture;
+            late String outputZipPath;
 
-        test(
-          'then an unsupported flutter dependency error message is logged.',
-          () async {
-            await cliCommandFuture.catchError((final _) {});
+            setUp(() async {
+              pushCurrentDirectory(p.join(d.sandbox, 'monorepo', 'project'));
+              outputZipPath = p.join(d.sandbox, 'output.zip');
 
-            expect(logger.errorCalls, hasLength(1));
-            expect(
-              logger.errorCalls.single.message,
-              equals(
-                'A Flutter dependency is not allowed in a server package: flutter_utilities',
-              ),
+              cliCommandFuture = cli.run([
+                'deploy',
+                '--project',
+                BucketUploadDescription.projectId,
+                '--wet-run',
+                '--output',
+                outputZipPath,
+                '--skip-dart-pub-get',
+              ]);
+            });
+
+            test('then command completes successfully.', () async {
+              await expectLater(cliCommandFuture, completes);
+            });
+
+            test(
+              'then "Skipping dart pub get --enforce-lockfile" is logged.',
+              () async {
+                await cliCommandFuture;
+
+                expect(
+                  logger.infoCalls,
+                  contains(
+                    equalsInfoCall(
+                      message:
+                          'Skipping "dart pub get --enforce-lockfile" since it is disabled.',
+                      newParagraph: true,
+                    ),
+                  ),
+                );
+              },
             );
+
+            test('then pubspec.lock file is filtered.', () async {
+              await cliCommandFuture;
+
+              final archive = ZipDecoder().decodeBytes(
+                File(outputZipPath).readAsBytesSync(),
+              );
+              final pubspecLockFile = archive.findFile('pubspec.lock');
+              expect(pubspecLockFile, isNotNull);
+
+              final pubspecLockContent = utf8.decode(pubspecLockFile!.content);
+              expect(
+                pubspecLockContent,
+                stringContainsInOrder([
+                  '# Generated by scloud',
+                  'packages:',
+                  'sdks:',
+                ]),
+              );
+            });
           },
         );
       });
+    });
+
+    group('and a non-workspace project for pubspec filtering', () {
+      late String testProjectDir;
+      late String outputZipPath;
+
+      group('without a lock file', () {
+        setUp(() async {
+          await d.dir('project', [
+            d.file('pubspec.yaml', '''
+name: test_server
+version: 1.0.0
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+dev_dependencies:
+  test: ^1.0.0
+  lints: ^5.0.0
+'''),
+            d.file('scloud.yaml', '''
+project:
+  projectId: "${BucketUploadDescription.projectId}"
+  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
+'''),
+            d.dir('bin', [d.file('main.dart', 'void main() {}')]),
+          ]).create();
+          testProjectDir = p.join(d.sandbox, 'project');
+          outputZipPath = p.join(d.sandbox, 'deployment.zip');
+
+          when(
+            () => client.deploy.createUploadDescription(
+              any(),
+              serverpodVersion: any(named: 'serverpodVersion'),
+              dartVersion: any(named: 'dartVersion'),
+              commitHash: any(named: 'commitHash'),
+              commitMessage: any(named: 'commitMessage'),
+              branch: any(named: 'branch'),
+            ),
+          ).thenAnswer(
+            (final _) async => BucketUploadDescription.uploadDescription,
+          );
+        });
+
+        group('when deploying with --wet-run and --output', () {
+          late Future cliCommandFuture;
+          setUp(() async {
+            cliCommandFuture = cli.run([
+              'deploy',
+              '--project',
+              BucketUploadDescription.projectId,
+              '--project-dir',
+              testProjectDir,
+              '--wet-run',
+              '--output',
+              outputZipPath,
+              '--skip-dart-pub-get',
+            ]);
+          });
+
+          test('then command completes successfully.', () async {
+            await expectLater(cliCommandFuture, completes);
+          });
+
+          test('then pubspec.yaml has dev_dependencies stripped.', () async {
+            await cliCommandFuture;
+
+            final archive = ZipDecoder().decodeBytes(
+              File(outputZipPath).readAsBytesSync(),
+            );
+            final pubspecFile = archive.findFile('pubspec.yaml');
+            expect(pubspecFile, isNotNull);
+
+            final pubspecContent = utf8.decode(pubspecFile!.content);
+            final doc = yamlDecode(pubspecContent) as Map;
+            expect(doc.containsKey('dev_dependencies'), isFalse);
+            expect(doc['name'], equals('test_server'));
+            expect(doc['dependencies'], contains('serverpod'));
+          });
+
+          test('then pubspec.lock is not included in the zip.', () async {
+            await cliCommandFuture;
+
+            final archive = ZipDecoder().decodeBytes(
+              File(outputZipPath).readAsBytesSync(),
+            );
+            expect(archive.findFile('pubspec.lock'), isNull);
+          });
+
+          test('then the on-disk pubspec.yaml is unchanged.', () async {
+            await cliCommandFuture;
+
+            final onDisk = File(
+              p.join(testProjectDir, 'pubspec.yaml'),
+            ).readAsStringSync();
+            expect(onDisk, contains('dev_dependencies:'));
+            expect(onDisk, contains('test: ^1.0.0'));
+          });
+        });
+      });
+
+      group('with a lock file', () {
+        setUp(() async {
+          await d.dir('project', [
+            d.file('pubspec.yaml', '''
+name: test_server
+version: 1.0.0
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+  collection: ^1.19.0
+dev_dependencies:
+  test: ^1.0.0
+'''),
+            d.file('pubspec.lock', '''
+# Generated by pub
+# See https://dart.dev/tools/pub/glossary#lockfile
+packages:
+  collection:
+    dependency: "direct main"
+    description:
+      name: collection
+      sha256: "1111111111111111111111111111111111111111111111111111111111111111"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.19.0"
+  serverpod:
+    dependency: "direct main"
+    description:
+      name: serverpod
+      sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.9.0"
+  test:
+    dependency: "direct dev"
+    description:
+      name: test
+      sha256: "2222222222222222222222222222222222222222222222222222222222222222"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.25.0"
+sdks:
+  dart: ">=3.0.0 <4.0.0"
+'''),
+            d.dir('.dart_tool', [
+              d.file('package_graph.json', '''
+{
+  "configVersion": 1,
+  "roots": ["test_server"],
+  "packages": [
+    {
+      "name": "test_server",
+      "version": "1.0.0",
+      "dependencies": ["serverpod", "collection"],
+      "devDependencies": ["test"]
     },
-  );
+    {
+      "name": "serverpod",
+      "version": "2.9.0",
+      "dependencies": [],
+      "devDependencies": []
+    },
+    {
+      "name": "collection",
+      "version": "1.19.0",
+      "dependencies": [],
+      "devDependencies": []
+    },
+    {
+      "name": "test",
+      "version": "1.25.0",
+      "dependencies": [],
+      "devDependencies": []
+    }
+  ]
+}
+'''),
+            ]),
+            d.file('scloud.yaml', '''
+project:
+  projectId: "${BucketUploadDescription.projectId}"
+  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
+'''),
+            d.dir('bin', [d.file('main.dart', 'void main() {}')]),
+          ]).create();
+          testProjectDir = p.join(d.sandbox, 'project');
+          outputZipPath = p.join(d.sandbox, 'deployment.zip');
+
+          when(
+            () => client.deploy.createUploadDescription(
+              any(),
+              serverpodVersion: any(named: 'serverpodVersion'),
+              dartVersion: any(named: 'dartVersion'),
+              commitHash: any(named: 'commitHash'),
+              commitMessage: any(named: 'commitMessage'),
+              branch: any(named: 'branch'),
+            ),
+          ).thenAnswer(
+            (final _) async => BucketUploadDescription.uploadDescription,
+          );
+        });
+
+        group('when deploying with --wet-run and --output', () {
+          late Future cliCommandFuture;
+          late Archive archive;
+
+          setUp(() async {
+            cliCommandFuture = cli.run([
+              'deploy',
+              '--project',
+              BucketUploadDescription.projectId,
+              '--project-dir',
+              testProjectDir,
+              '--wet-run',
+              '--output',
+              outputZipPath,
+              '--skip-dart-pub-get',
+            ]);
+            await cliCommandFuture;
+            archive = ZipDecoder().decodeBytes(
+              File(outputZipPath).readAsBytesSync(),
+            );
+          });
+
+          test('then command completes successfully.', () async {
+            await expectLater(cliCommandFuture, completes);
+          });
+
+          test('then pubspec.yaml has dev_dependencies stripped.', () async {
+            final pubspecFile = archive.findFile('pubspec.yaml');
+            expect(pubspecFile, isNotNull);
+
+            final pubspecContent = utf8.decode(pubspecFile!.content);
+            final doc = yamlDecode(pubspecContent) as Map;
+            expect(doc.containsKey('dev_dependencies'), isFalse);
+            expect(doc['dependencies'], contains('serverpod'));
+            expect(doc['dependencies'], contains('collection'));
+          });
+
+          test('then pubspec.lock is filtered.', () async {
+            final pubspecLockFile = archive.findFile('pubspec.lock');
+            expect(pubspecLockFile, isNotNull);
+
+            final pubspecLockContent = utf8.decode(pubspecLockFile!.content);
+            expect(
+              pubspecLockContent,
+              stringContainsInOrder([
+                '# Generated by scloud',
+                'packages:',
+                'sdks:',
+              ]),
+            );
+
+            final packages =
+                (yamlDecode(pubspecLockContent) as Map)['packages'] as Map;
+            expect(packages.keys, containsAll(['serverpod', 'collection']));
+            expect(packages.containsKey('test'), isFalse);
+          });
+
+          test('then the on-disk pubspec files are unchanged.', () async {
+            final onDiskYaml = File(
+              p.join(testProjectDir, 'pubspec.yaml'),
+            ).readAsStringSync();
+            expect(onDiskYaml, contains('dev_dependencies:'));
+            expect(onDiskYaml, contains('test: ^1.0.0'));
+
+            final onDiskLock = File(
+              p.join(testProjectDir, 'pubspec.lock'),
+            ).readAsStringSync();
+            expect(onDiskLock, startsWith('# Generated by pub'));
+            expect(onDiskLock, contains('test:'));
+          });
+        });
+      });
+    });
+
+    group(
+      'and an invalid workspace directory structure with an indirect flutter dependency',
+      () {
+        setUp(() async {
+          await d.dir('monorepo', [
+            d.file('pubspec.yaml', '''
+name: monorepo
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+  flutter: 3.29.0
+workspace:
+  - packages/flutter_utilities
+  - project/project_server
+'''),
+            d.dir('packages', [
+              d.dir('flutter_utilities', [
+                d.file('pubspec.yaml', '''
+name: flutter_utilities
+version: 1.0.0
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+  flutter: 3.29.0
+resolution: workspace
+'''),
+              ]),
+            ]),
+            d.dir('project', [
+              d.dir('project_server', [
+                d.file('pubspec.yaml', '''
+name: project_server
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+resolution: workspace
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+  flutter_utilities: ^1.0.0
+'''),
+                d.file('scloud.yaml', '''
+project:
+  projectId: "${BucketUploadDescription.projectId}"
+  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
+'''),
+              ]),
+            ]),
+          ]).create();
+
+          when(
+            () => client.deploy.createUploadDescription(
+              any(),
+              serverpodVersion: any(named: 'serverpodVersion'),
+              dartVersion: any(named: 'dartVersion'),
+              commitHash: any(named: 'commitHash'),
+              commitMessage: any(named: 'commitMessage'),
+              branch: any(named: 'branch'),
+            ),
+          ).thenAnswer(
+            (final _) async => BucketUploadDescription.uploadDescription,
+          );
+        });
+
+        group('when deploying through CLI and with --wet-run', () {
+          late Future cliCommandFuture;
+          setUp(() async {
+            pushCurrentDirectory(p.join(d.sandbox, 'monorepo', 'project'));
+
+            cliCommandFuture = cli.run([
+              'deploy',
+              '--project',
+              BucketUploadDescription.projectId,
+              '--wet-run',
+            ]);
+          });
+
+          test('then command throws ErrorExitException.', () async {
+            await expectLater(
+              cliCommandFuture,
+              throwsA(isA<ErrorExitException>()),
+            );
+          });
+
+          test(
+            'then an unsupported flutter dependency error message is logged.',
+            () async {
+              await cliCommandFuture.catchError((final _) {});
+
+              expect(logger.errorCalls, hasLength(1));
+              expect(
+                logger.errorCalls.single.message,
+                equals(
+                  'A Flutter dependency is not allowed in a server package: flutter_utilities',
+                ),
+              );
+            },
+          );
+        });
+      },
+    );
+  });
 
   group('Given a project with dev_dependencies in pubspec.yaml', () {
     late String testProjectDir;
@@ -2164,107 +2397,37 @@ project:
         );
       });
     });
-  });
 
-  group('and a valid non-workspace project', () {
-    late String testProjectDir;
+    group('and a valid non-workspace project', () {
+      late String testProjectDir;
 
-    setUp(() async {
-      await d.dir('dart_version_project', [
-        d.file('pubspec.yaml', '''
+      setUp(() async {
+        await d.dir('dart_version_project', [
+          d.file('pubspec.yaml', '''
 name: dart_version_project
 environment:
   sdk: ${ProjectFactory.validSdkVersion}
 dependencies:
   serverpod: ${ProjectFactory.validServerpodVersion}
 '''),
-      ]).create();
-      testProjectDir = p.join(d.sandbox, 'dart_version_project');
+        ]).create();
+        testProjectDir = p.join(d.sandbox, 'dart_version_project');
 
-      when(
-        () => client.deploy.createUploadDescription(
-          any(),
-          serverpodVersion: any(named: 'serverpodVersion'),
-          dartVersion: any(named: 'dartVersion'),
-          commitHash: any(named: 'commitHash'),
-          commitMessage: any(named: 'commitMessage'),
-          branch: any(named: 'branch'),
-        ),
-      ).thenAnswer(
-        (final _) async => BucketUploadDescription.uploadDescription,
-      );
-    });
-
-    group('when deploying with --dart-version flag and --wet-run', () {
-      late Future cliCommandFuture;
-      setUp(() async {
-        cliCommandFuture = cli.run([
-          'deploy',
-          '--wet-run',
-          '--dart-version',
-          '3.10.0',
-          '--project',
-          BucketUploadDescription.projectId,
-          '--project-dir',
-          testProjectDir,
-        ]);
+        when(
+          () => client.deploy.createUploadDescription(
+            any(),
+            serverpodVersion: any(named: 'serverpodVersion'),
+            dartVersion: any(named: 'dartVersion'),
+            commitHash: any(named: 'commitHash'),
+            commitMessage: any(named: 'commitMessage'),
+            branch: any(named: 'branch'),
+          ),
+        ).thenAnswer(
+          (final _) async => BucketUploadDescription.uploadDescription,
+        );
       });
 
-      test('then command completes successfully.', () async {
-        await expectLater(cliCommandFuture, completes);
-      });
-
-      test(
-        'then .tool-versions is not created when it did not exist.',
-        () async {
-          await cliCommandFuture;
-          final toolVersions = File(p.join(testProjectDir, '.tool-versions'));
-          expect(toolVersions.existsSync(), isFalse);
-        },
-      );
-    });
-
-    group('when deploying with dartSdk in scloud.yaml and --wet-run', () {
-      setUp(() async {
-        await d
-            .file('scloud.yaml', '''
-project:
-  projectId: "${BucketUploadDescription.projectId}"
-  dartSdk: "3.9.5"
-''')
-            .create(testProjectDir);
-      });
-
-      late Future cliCommandFuture;
-      setUp(() async {
-        cliCommandFuture = cli.run([
-          'deploy',
-          '--wet-run',
-          '--project',
-          BucketUploadDescription.projectId,
-          '--project-dir',
-          testProjectDir,
-        ]);
-      });
-
-      test('then command completes successfully.', () async {
-        await expectLater(cliCommandFuture, completes);
-      });
-    });
-
-    group(
-      'when deploying with --dart-version overriding scloud.yaml and --wet-run',
-      () {
-        setUp(() async {
-          await d
-              .file('scloud.yaml', '''
-project:
-  projectId: "${BucketUploadDescription.projectId}"
-  dartSdk: "3.9.5"
-''')
-              .create(testProjectDir);
-        });
-
+      group('when deploying with --dart-version flag and --wet-run', () {
         late Future cliCommandFuture;
         setUp(() async {
           cliCommandFuture = cli.run([
@@ -2284,45 +2447,31 @@ project:
         });
 
         test(
-          'then scloud.yaml dartSdk from file is unchanged by CLI flag.',
+          'then .tool-versions is not created when it did not exist.',
           () async {
             await cliCommandFuture;
-
-            final scloudYaml = File(p.join(testProjectDir, 'scloud.yaml'));
-            expect(scloudYaml.readAsStringSync(), contains('dartSdk: "3.9.5"'));
+            final toolVersions = File(p.join(testProjectDir, '.tool-versions'));
+            expect(toolVersions.existsSync(), isFalse);
           },
         );
-      },
-    );
-
-    group('when deploying without any version configured and --wet-run', () {
-      late Future cliCommandFuture;
-      setUp(() async {
-        cliCommandFuture = cli.run([
-          'deploy',
-          '--wet-run',
-          '--project',
-          BucketUploadDescription.projectId,
-          '--project-dir',
-          testProjectDir,
-        ]);
       });
 
-      test('then command completes successfully.', () async {
-        await expectLater(cliCommandFuture, completes);
-      });
-    });
+      group('when deploying with dartSdk in scloud.yaml and --wet-run', () {
+        setUp(() async {
+          await d
+              .file('scloud.yaml', '''
+project:
+  projectId: "${BucketUploadDescription.projectId}"
+  dartSdk: "3.9.5"
+''')
+              .create(testProjectDir);
+        });
 
-    group(
-      'when deploying with parseable --dart-version outside server range and --wet-run',
-      () {
         late Future cliCommandFuture;
         setUp(() async {
           cliCommandFuture = cli.run([
             'deploy',
             '--wet-run',
-            '--dart-version',
-            '3.7.0',
             '--project',
             BucketUploadDescription.projectId,
             '--project-dir',
@@ -2330,53 +2479,176 @@ project:
           ]);
         });
 
-        test('then command completes (server validates on upload).', () async {
+        test('then command completes successfully.', () async {
           await expectLater(cliCommandFuture, completes);
         });
-      },
-    );
-
-    group('when deploying with unparseable --dart-version and --wet-run', () {
-      late Future cliCommandFuture;
-      setUp(() async {
-        cliCommandFuture = cli.run([
-          'deploy',
-          '--wet-run',
-          '--dart-version',
-          'not-a-constraint',
-          '--project',
-          BucketUploadDescription.projectId,
-          '--project-dir',
-          testProjectDir,
-        ]);
       });
 
-      test('then command throws ErrorExitException.', () async {
-        await expectLater(cliCommandFuture, throwsA(isA<ErrorExitException>()));
-      });
+      group(
+        'when deploying with --dart-version overriding scloud.yaml and --wet-run',
+        () {
+          setUp(() async {
+            await d
+                .file('scloud.yaml', '''
+project:
+  projectId: "${BucketUploadDescription.projectId}"
+  dartSdk: "3.9.5"
+''')
+                .create(testProjectDir);
+          });
 
-      test('then error message mentions invalid constraint.', () async {
-        await cliCommandFuture.catchError((final _) {});
-        expect(logger.errorCalls, isNotEmpty);
-        expect(
-          logger.errorCalls.first.message,
-          contains('Invalid Dart SDK version constraint'),
-        );
-      });
-    });
+          late Future cliCommandFuture;
+          setUp(() async {
+            cliCommandFuture = cli.run([
+              'deploy',
+              '--wet-run',
+              '--dart-version',
+              '3.10.0',
+              '--project',
+              BucketUploadDescription.projectId,
+              '--project-dir',
+              testProjectDir,
+            ]);
+          });
 
-    group(
-      'when deploying with --dart-version and existing .tool-versions and --wet-run',
-      () {
-        setUp(() async {
-          await d.file('.tool-versions', 'dart 3.9.1\n').create(testProjectDir);
-        });
+          test('then command completes successfully.', () async {
+            await expectLater(cliCommandFuture, completes);
+          });
 
+          test(
+            'then scloud.yaml dartSdk from file is unchanged by CLI flag.',
+            () async {
+              await cliCommandFuture;
+
+              final scloudYaml = File(p.join(testProjectDir, 'scloud.yaml'));
+              expect(
+                scloudYaml.readAsStringSync(),
+                contains('dartSdk: "3.9.5"'),
+              );
+            },
+          );
+        },
+      );
+
+      group('when deploying without any version configured and --wet-run', () {
         late Future cliCommandFuture;
         setUp(() async {
           cliCommandFuture = cli.run([
             'deploy',
             '--wet-run',
+            '--project',
+            BucketUploadDescription.projectId,
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        test('then command completes successfully.', () async {
+          await expectLater(cliCommandFuture, completes);
+        });
+      });
+
+      group(
+        'when deploying with parseable --dart-version outside server range and --wet-run',
+        () {
+          late Future cliCommandFuture;
+          setUp(() async {
+            cliCommandFuture = cli.run([
+              'deploy',
+              '--wet-run',
+              '--dart-version',
+              '3.7.0',
+              '--project',
+              BucketUploadDescription.projectId,
+              '--project-dir',
+              testProjectDir,
+            ]);
+          });
+
+          test(
+            'then command completes (server validates on upload).',
+            () async {
+              await expectLater(cliCommandFuture, completes);
+            },
+          );
+        },
+      );
+
+      group('when deploying with unparseable --dart-version and --wet-run', () {
+        late Future cliCommandFuture;
+        setUp(() async {
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--wet-run',
+            '--dart-version',
+            'not-a-constraint',
+            '--project',
+            BucketUploadDescription.projectId,
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        test('then command throws ErrorExitException.', () async {
+          await expectLater(
+            cliCommandFuture,
+            throwsA(isA<ErrorExitException>()),
+          );
+        });
+
+        test('then error message mentions invalid constraint.', () async {
+          await cliCommandFuture.catchError((final _) {});
+          expect(logger.errorCalls, isNotEmpty);
+          expect(
+            logger.errorCalls.first.message,
+            contains('Invalid Dart SDK version constraint'),
+          );
+        });
+      });
+
+      group(
+        'when deploying with --dart-version and existing .tool-versions and --wet-run',
+        () {
+          setUp(() async {
+            await d
+                .file('.tool-versions', 'dart 3.9.1\n')
+                .create(testProjectDir);
+          });
+
+          late Future cliCommandFuture;
+          setUp(() async {
+            cliCommandFuture = cli.run([
+              'deploy',
+              '--wet-run',
+              '--dart-version',
+              '3.10.0',
+              '--project',
+              BucketUploadDescription.projectId,
+              '--project-dir',
+              testProjectDir,
+            ]);
+          });
+
+          test('then command completes successfully.', () async {
+            await expectLater(cliCommandFuture, completes);
+          });
+
+          test('then .tool-versions is unchanged.', () async {
+            await cliCommandFuture;
+
+            final toolVersions = File(p.join(testProjectDir, '.tool-versions'));
+            expect(toolVersions.existsSync(), isTrue);
+            expect(toolVersions.readAsStringSync(), contains('dart 3.9.1'));
+          });
+        },
+      );
+
+      group('when deploying (non-wet-run) with --dart-version', () {
+        late Future cliCommandFuture;
+        setUp(() async {
+          clearInteractions(client.deploy);
+          cliCommandFuture = cli.run([
+            'deploy',
             '--dart-version',
             '3.10.0',
             '--project',
@@ -2390,103 +2662,75 @@ project:
           await expectLater(cliCommandFuture, completes);
         });
 
-        test('then .tool-versions is unchanged.', () async {
+        test(
+          'then createUploadDescription gets CLI dartVersion; zip has pubspec, no scloud.yaml.',
+          () async {
+            await cliCommandFuture;
+
+            verify(
+              () => client.deploy.createUploadDescription(
+                BucketUploadDescription.projectId,
+                serverpodVersion: any(named: 'serverpodVersion'),
+                dartVersion: '3.10.0',
+                commitHash: any(named: 'commitHash'),
+                commitMessage: any(named: 'commitMessage'),
+                branch: any(named: 'branch'),
+              ),
+            ).called(1);
+
+            expect(mockFileUploader.uploadedData, isNotEmpty);
+            final archive = ZipDecoder().decodeBytes(
+              mockFileUploader.uploadedData,
+            );
+            expect(archive.findFile('scloud.yaml'), isNull);
+          },
+        );
+
+        test('then scloud.yaml is not created on disk.', () async {
           await cliCommandFuture;
 
-          final toolVersions = File(p.join(testProjectDir, '.tool-versions'));
-          expect(toolVersions.existsSync(), isTrue);
-          expect(toolVersions.readAsStringSync(), contains('dart 3.9.1'));
+          final scloudYaml = File(p.join(testProjectDir, 'scloud.yaml'));
+          expect(scloudYaml.existsSync(), isFalse);
         });
-      },
-    );
-
-    group('when deploying (non-wet-run) with --dart-version', () {
-      late Future cliCommandFuture;
-      setUp(() async {
-        clearInteractions(client.deploy);
-        cliCommandFuture = cli.run([
-          'deploy',
-          '--dart-version',
-          '3.10.0',
-          '--project',
-          BucketUploadDescription.projectId,
-          '--project-dir',
-          testProjectDir,
-        ]);
       });
 
-      test('then command completes successfully.', () async {
-        await expectLater(cliCommandFuture, completes);
+      group('when deploying (non-wet-run) with two-segment --dart-version', () {
+        late Future cliCommandFuture;
+        setUp(() async {
+          clearInteractions(client.deploy);
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--dart-version',
+            '3.10',
+            '--project',
+            BucketUploadDescription.projectId,
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        test('then command completes successfully.', () async {
+          await expectLater(cliCommandFuture, completes);
+        });
+
+        test(
+          'then createUploadDescription gets normalized patch dartVersion.',
+          () async {
+            await cliCommandFuture;
+
+            verify(
+              () => client.deploy.createUploadDescription(
+                BucketUploadDescription.projectId,
+                serverpodVersion: any(named: 'serverpodVersion'),
+                dartVersion: '3.10.0',
+                commitHash: any(named: 'commitHash'),
+                commitMessage: any(named: 'commitMessage'),
+                branch: any(named: 'branch'),
+              ),
+            ).called(1);
+          },
+        );
       });
-
-      test(
-        'then createUploadDescription gets CLI dartVersion; zip has pubspec, no scloud.yaml.',
-        () async {
-          await cliCommandFuture;
-
-          verify(
-            () => client.deploy.createUploadDescription(
-              BucketUploadDescription.projectId,
-              serverpodVersion: any(named: 'serverpodVersion'),
-              dartVersion: '3.10.0',
-              commitHash: any(named: 'commitHash'),
-              commitMessage: any(named: 'commitMessage'),
-              branch: any(named: 'branch'),
-            ),
-          ).called(1);
-
-          expect(mockFileUploader.uploadedData, isNotEmpty);
-          final archive = ZipDecoder().decodeBytes(
-            mockFileUploader.uploadedData,
-          );
-          expect(archive.findFile('scloud.yaml'), isNull);
-        },
-      );
-
-      test('then scloud.yaml is not created on disk.', () async {
-        await cliCommandFuture;
-
-        final scloudYaml = File(p.join(testProjectDir, 'scloud.yaml'));
-        expect(scloudYaml.existsSync(), isFalse);
-      });
-    });
-
-    group('when deploying (non-wet-run) with two-segment --dart-version', () {
-      late Future cliCommandFuture;
-      setUp(() async {
-        clearInteractions(client.deploy);
-        cliCommandFuture = cli.run([
-          'deploy',
-          '--dart-version',
-          '3.10',
-          '--project',
-          BucketUploadDescription.projectId,
-          '--project-dir',
-          testProjectDir,
-        ]);
-      });
-
-      test('then command completes successfully.', () async {
-        await expectLater(cliCommandFuture, completes);
-      });
-
-      test(
-        'then createUploadDescription gets normalized patch dartVersion.',
-        () async {
-          await cliCommandFuture;
-
-          verify(
-            () => client.deploy.createUploadDescription(
-              BucketUploadDescription.projectId,
-              serverpodVersion: any(named: 'serverpodVersion'),
-              dartVersion: '3.10.0',
-              commitHash: any(named: 'commitHash'),
-              commitMessage: any(named: 'commitMessage'),
-              branch: any(named: 'branch'),
-            ),
-          ).called(1);
-        },
-      );
     });
   });
 

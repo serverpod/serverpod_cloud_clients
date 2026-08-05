@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:test/test.dart';
 
-import 'package:serverpod_cloud_cli/commands/deploy/prepare_workspace.dart';
+import 'package:serverpod_cloud_cli/commands/deploy/prepare_project_files.dart';
 
 import '../test_utils/project_factory.dart';
 
@@ -475,7 +475,7 @@ dev_dependencies:
   build_runner: ^2.0.0
 ''';
 
-      final result = WorkspaceProject.stripDevDependenciesFromPubspecContent(
+      final result = TenantProject.stripDevDependenciesFromPubspecContent(
         pubspecContent,
       );
       expect(result, isNot(contains('dev_dependencies:')));
@@ -497,7 +497,7 @@ dependencies:
   serverpod: ${ProjectFactory.validServerpodVersion}
 ''';
 
-      final result = WorkspaceProject.stripDevDependenciesFromPubspecContent(
+      final result = TenantProject.stripDevDependenciesFromPubspecContent(
         originalContent,
       );
       expect(result, isNull);
@@ -507,7 +507,7 @@ dependencies:
         'when called, then returns null', () {
       const invalidContent = 'not valid yaml: [';
 
-      final result = WorkspaceProject.stripDevDependenciesFromPubspecContent(
+      final result = TenantProject.stripDevDependenciesFromPubspecContent(
         invalidContent,
       );
       expect(result, isNull);
@@ -525,7 +525,7 @@ dev_dependencies:
   test: ^1.0.0
 ''';
 
-      final result = WorkspaceProject.stripDevDependenciesFromPubspecContent(
+      final result = TenantProject.stripDevDependenciesFromPubspecContent(
         pubspecContent,
       );
       expect(result, isNot(contains('dev_dependencies:')));

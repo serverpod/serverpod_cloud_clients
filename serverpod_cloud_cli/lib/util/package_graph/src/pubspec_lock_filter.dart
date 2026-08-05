@@ -38,6 +38,38 @@ final class PubspecLockFilter {
       );
     }
 
+    final result = filter(
+      content: content,
+      packagesToRemove: packagesToRemove,
+      packagesToDemote: packagesToDemote,
+      expectedRemainingPackages: expectedRemainingPackages,
+    );
+
+    final (output, unexpectedPackages) = result;
+    final outputFile = File(outputFilePath);
+    try {
+      outputFile.writeAsStringSync(output);
+    } on FileSystemException catch (e) {
+      throw FormatException(
+        'Failed to write filtered pubspec.lock at `$outputFilePath`: '
+        '${e.message}',
+      );
+    }
+
+    return unexpectedPackages;
+  }
+
+  /// Filters the content of a pubspec.lock file with [packagesToRemove] omitted
+  /// and [packagesToDemote] changed to `dependency: transitive`.
+  /// Returns a tuple with the filtered content and the set of unexpected
+  /// packages - package names that remain in the copy but are not listed in
+  /// [expectedRemainingPackages].
+  static (String, Set<String>) filter({
+    required final String content,
+    required final Set<String> packagesToRemove,
+    required final Set<String> packagesToDemote,
+    required final Set<String> expectedRemainingPackages,
+  }) {
     final keptPackages = <String>[];
     final outputLines = <String>[_generatedByScloudLine];
 
@@ -94,17 +126,11 @@ final class PubspecLockFilter {
       outputLines.add(line);
     }
 
-    final outputFile = File(outputFilePath);
-    try {
-      outputFile.writeAsStringSync(outputLines.join('\n'));
-    } on FileSystemException catch (e) {
-      throw FormatException(
-        'Failed to write filtered pubspec.lock at `$outputFilePath`: '
-        '${e.message}',
-      );
-    }
-
-    return keptPackages.toSet().difference(expectedRemainingPackages);
+    final output = outputLines.join('\n');
+    final unexpectedPackages = keptPackages.toSet().difference(
+      expectedRemainingPackages,
+    );
+    return (output, unexpectedPackages);
   }
 
   static bool _isPackagesSectionHeader(final String line) {
