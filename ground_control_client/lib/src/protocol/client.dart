@@ -104,10 +104,12 @@ import 'package:ground_control_client/src/protocol/domains/secrets/models/build_
     as _i47;
 import 'package:ground_control_client/src/protocol/domains/status/models/capsule_status.dart'
     as _i48;
-import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
+import 'package:ground_control_client/src/protocol/features/status/models/capsule_runtime_status.dart'
     as _i49;
-import 'package:http/http.dart' as _i50;
-import 'protocol.dart' as _i51;
+import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
+    as _i50;
+import 'package:http/http.dart' as _i51;
+import 'protocol.dart' as _i52;
 
 /// {@category Endpoint}
 class EndpointAdminMigration extends _i1.EndpointRef {
@@ -2081,6 +2083,18 @@ class EndpointStatus extends _i1.EndpointRef {
     {'cloudCapsuleId': cloudCapsuleId},
   );
 
+  /// Gets the live runtime status of the specified capsule, enriched with
+  /// summaries of the deploy attempts behind the serving and incoming
+  /// revisions.
+  /// An unhealthy capsule is still a successful result — the status is data.
+  _i2.Future<_i49.CapsuleRuntimeStatus> getCapsuleRuntimeStatus({
+    required String cloudCapsuleId,
+  }) => caller.callServerEndpoint<_i49.CapsuleRuntimeStatus>(
+    'status',
+    'getCapsuleRuntimeStatus',
+    {'cloudCapsuleId': cloudCapsuleId},
+  );
+
   /// Tails the live runtime status of the specified capsule.
   /// Emits the current status immediately, then an update whenever it
   /// changes. Continues until the client unsubscribes.
@@ -2104,10 +2118,10 @@ class EndpointStatus extends _i1.EndpointRef {
   );
 
   /// Gets the specified deploy attempt status of the a capsule.
-  _i2.Future<List<_i49.DeployAttemptStage>> getDeployAttemptStatus({
+  _i2.Future<List<_i50.DeployAttemptStage>> getDeployAttemptStatus({
     required String cloudCapsuleId,
     required _i1.UuidValue attemptId,
-  }) => caller.callServerEndpoint<List<_i49.DeployAttemptStage>>(
+  }) => caller.callServerEndpoint<List<_i50.DeployAttemptStage>>(
     'status',
     'getDeployAttemptStatus',
     {'cloudCapsuleId': cloudCapsuleId, 'attemptId': attemptId},
@@ -2126,13 +2140,13 @@ class EndpointStatus extends _i1.EndpointRef {
 
   /// Tails the status updates for a deploy attempt.
   /// Continues until the client unsubscribes or the status if final.
-  _i2.Stream<_i49.DeployAttemptStage> tailDeployAttemptStatus({
+  _i2.Stream<_i50.DeployAttemptStage> tailDeployAttemptStatus({
     required String cloudCapsuleId,
     required _i1.UuidValue attemptId,
   }) =>
       caller.callStreamingServerEndpoint<
-        _i2.Stream<_i49.DeployAttemptStage>,
-        _i49.DeployAttemptStage
+        _i2.Stream<_i50.DeployAttemptStage>,
+        _i50.DeployAttemptStage
       >('status', 'tailDeployAttemptStatus', {
         'cloudCapsuleId': cloudCapsuleId,
         'attemptId': attemptId,
@@ -2189,10 +2203,10 @@ class Client extends _i1.ServerpodClientShared {
     Function(_i1.MethodCallContext, Object, StackTrace)? onFailedCall,
     Function(_i1.MethodCallContext)? onSucceededCall,
     bool? disconnectStreamsOnLostInternetConnection,
-    _i50.Client? httpClientOverride,
+    _i51.Client? httpClientOverride,
   }) : super(
          host,
-         _i51.Protocol(),
+         _i52.Protocol(),
          securityContext: securityContext,
          streamingConnectionTimeout: streamingConnectionTimeout,
          connectionTimeout: connectionTimeout,

@@ -215,6 +215,14 @@ commands:
     exclusiveFlags:
       - [utc, no-utc]
 
+  - name: status
+    flags:
+      -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked or if a global project context is set. See `scloud project link --help` and `scloud context set --help`."
+      -u, --utc: "Display timestamps in UTC timezone instead of local."
+      --no-utc: "Display timestamps in UTC timezone instead of local."
+    exclusiveFlags:
+      - [utc, no-utc]
+
   - name: deployment
 
     commands:

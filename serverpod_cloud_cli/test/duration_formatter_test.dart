@@ -267,4 +267,145 @@ void main() {
       });
     });
   });
+
+  group('friendlyAgoFormat', () {
+    group('when the elapsed duration is zero', () {
+      test('then returns "just now"', () {
+        expect(friendlyAgoFormat(Duration.zero), 'just now');
+      });
+    });
+
+    group('when the elapsed duration is at the just-now boundary', () {
+      test('then 4 seconds returns "just now"', () {
+        expect(friendlyAgoFormat(const Duration(seconds: 4)), 'just now');
+      });
+
+      test('then 5 seconds formats as seconds', () {
+        expect(friendlyAgoFormat(const Duration(seconds: 5)), '5 seconds ago');
+      });
+    });
+
+    group('when the elapsed duration is at the minute boundary', () {
+      test('then 59 seconds formats as seconds', () {
+        expect(
+          friendlyAgoFormat(const Duration(seconds: 59)),
+          '59 seconds ago',
+        );
+      });
+
+      test('then 1 minute formats as a singular minute', () {
+        expect(friendlyAgoFormat(const Duration(minutes: 1)), '1 minute ago');
+      });
+    });
+
+    group('when the elapsed duration is at the hour boundary', () {
+      test('then 59 minutes formats as minutes', () {
+        expect(
+          friendlyAgoFormat(const Duration(minutes: 59)),
+          '59 minutes ago',
+        );
+      });
+
+      test('then 1 hour formats as a singular hour', () {
+        expect(friendlyAgoFormat(const Duration(hours: 1)), '1 hour ago');
+      });
+    });
+
+    group('when the elapsed duration is at the day boundary', () {
+      test('then 23 hours formats as hours', () {
+        expect(friendlyAgoFormat(const Duration(hours: 23)), '23 hours ago');
+      });
+
+      test('then 1 day formats as a singular day', () {
+        expect(friendlyAgoFormat(const Duration(days: 1)), '1 day ago');
+      });
+    });
+
+    group('when the elapsed duration mixes units', () {
+      test('then hours dominate minutes', () {
+        expect(
+          friendlyAgoFormat(const Duration(hours: 2, minutes: 14)),
+          '2 hours ago',
+        );
+      });
+
+      test('then days dominate hours', () {
+        expect(
+          friendlyAgoFormat(const Duration(days: 3, hours: 12)),
+          '3 days ago',
+        );
+      });
+    });
+  });
+
+  group('friendlyPastTimeFormat', () {
+    final now = DateTime(2026, 7, 31, 12, 0, 0);
+
+    group('when the time is recent', () {
+      test('then formats as a relative phrase', () {
+        expect(
+          friendlyPastTimeFormat(
+            now.subtract(const Duration(hours: 2)),
+            now: now,
+          ),
+          '2 hours ago',
+        );
+      });
+    });
+
+    group('when the time is at the relative-limit boundary', () {
+      test('then exactly 7 days formats as a relative phrase', () {
+        expect(
+          friendlyPastTimeFormat(
+            now.subtract(const Duration(days: 7)),
+            now: now,
+          ),
+          '7 days ago',
+        );
+      });
+
+      test('then more than 7 days formats as a local timestamp', () {
+        expect(
+          friendlyPastTimeFormat(
+            now.subtract(const Duration(days: 7, seconds: 1)),
+            now: now,
+          ),
+          '2026-07-24 11:59:59',
+        );
+      });
+    });
+
+    group('when the time is long past', () {
+      test('then formats as a local timestamp', () {
+        expect(
+          friendlyPastTimeFormat(DateTime(2026, 7, 1, 9, 15, 5), now: now),
+          '2026-07-01 09:15:05',
+        );
+      });
+
+      test('then formats as a utc timestamp when inUtc is set', () {
+        expect(
+          friendlyPastTimeFormat(
+            DateTime.utc(2026, 7, 1, 9, 15, 5),
+            inUtc: true,
+            now: now,
+          ),
+          '2026-07-01 09:15:05z',
+        );
+      });
+    });
+
+    group('when the time is recent and inUtc is set', () {
+      test('then still formats as a relative phrase', () {
+        expect(
+          friendlyPastTimeFormat(
+            now.subtract(const Duration(hours: 2)),
+            inUtc: true,
+            now: now,
+          ),
+          '2 hours ago',
+        );
+      });
+    });
+  });
 }
