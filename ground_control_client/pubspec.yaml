@@ -15,5 +15,8 @@ environment:
 
 
 dependencies:
+  dio: ^5.8.0+1
+  http: ^1.2.2
   serverpod_client: 3.5.0-beta.8
+  serverpod_auth_core_client: 3.5.0-beta.8
   serverpod_auth_idp_client: 3.5.0-beta.8
