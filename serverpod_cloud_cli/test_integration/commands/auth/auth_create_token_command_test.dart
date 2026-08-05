@@ -1,4 +1,4 @@
-import 'package:ground_control_client/ground_control_client_test_tools.dart';
+import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
     show AuthSuccess, AuthStrategy;
