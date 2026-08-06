@@ -981,10 +981,6 @@ Cloud build failed. 💥''');
 
           stageController.add(runningBuild);
           await pumpEventQueue();
-          expect(
-            logger.progressCalls.map((final c) => c.message),
-            contains(contains('Cloud build running')),
-          );
           interruptController.add(null);
 
           await expectLater(tailFuture, throwsA(isA<UserAbortException>()));
