@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:async/async.dart' show StreamGroup;
 import 'package:collection/collection.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:ground_control_client/ground_control_client.dart';
@@ -78,6 +81,7 @@ abstract class StatusCommands {
     required final UuidValue attemptId,
     final bool inUtc = false,
     final bool skipUploadStage = false,
+    final Stream<void>? processSignalStreamOverride,
   }) async {
     final stageStream = cloudApiClient.status.tailDeployAttemptStatus(
       cloudCapsuleId: cloudCapsuleId,
@@ -97,25 +101,48 @@ abstract class StatusCommands {
       logger.line('');
     }
 
+    final processSignalStream =
+        processSignalStreamOverride ??
+        ProcessSignal.sigint.watch().map((final _) {});
+
     final stageStatusTailer = _StageStatusTailer(
       logger: logger,
       cloudCapsuleId: cloudCapsuleId,
       attemptId: attemptId,
       stageStreams: stageStreams,
+      processSignalStream: processSignalStream,
     );
-    for (final stageType in [DeployStageType.upload, DeployStageType.build]) {
-      if (skipUploadStage && stageType == DeployStageType.upload) {
-        continue;
+    try {
+      for (final stageType in [DeployStageType.upload, DeployStageType.build]) {
+        if (skipUploadStage && stageType == DeployStageType.upload) {
+          continue;
+        }
+
+        final stage = await stageStatusTailer.showStageProgress(stageType);
+        if (stage.stageStatus == DeployProgressStatus.cancelled ||
+            stage.stageStatus == DeployProgressStatus.failure) {
+          return;
+        }
       }
 
-      final stage = await stageStatusTailer.showStageProgress(stageType);
-      if (stage.stageStatus == DeployProgressStatus.cancelled ||
-          stage.stageStatus == DeployProgressStatus.failure) {
-        return;
-      }
+      await stageStatusTailer._showRolloutProgress();
+    } on StreamInterruptedException {
+      _logDeployTailInterruptGuidance(logger);
+      throw UserAbortException();
+    } finally {
+      await stageStreams.cancel();
     }
+  }
 
-    await stageStatusTailer._showRolloutProgress();
+  static void _logDeployTailInterruptGuidance(final CommandLogger logger) {
+    logger.info(
+      'The deployment continues in Serverpod Cloud.',
+      newParagraph: true,
+    );
+    logger.terminalCommand(
+      'scloud deployment show',
+      message: 'To view the deployment status, run this command:',
+    );
   }
 
   /// Combines the deploy and service stages into a single rollout stage,
@@ -276,12 +303,14 @@ class _StageStatusTailer {
   final String cloudCapsuleId;
   final UuidValue attemptId;
   final SplitStreams<DeployStageType, DeployAttemptStage> stageStreams;
+  final Stream<void> processSignalStream;
 
   _StageStatusTailer({
     required this.logger,
     required this.cloudCapsuleId,
     required this.attemptId,
     required this.stageStreams,
+    required this.processSignalStream,
   });
 
   /// Shows the progress of a stage and returns the final stage status.
@@ -291,7 +320,7 @@ class _StageStatusTailer {
     final DeployStageType stageType,
   ) async {
     final fallbackStream = withFallback(
-      stageStreams.getStream(stageType),
+      cancelOnInterrupt(stageStreams.getStream(stageType), processSignalStream),
       _fillerStage(stageType, DeployProgressStatus.unknown),
     );
     return await logger.progressStream(
@@ -336,8 +365,14 @@ class _StageStatusTailer {
     var serviceStatus = DeployProgressStatus.awaiting;
 
     final merged = StreamGroup.merge([
-      stageStreams.getStream(DeployStageType.deploy),
-      stageStreams.getStream(DeployStageType.service),
+      cancelOnInterrupt(
+        stageStreams.getStream(DeployStageType.deploy),
+        processSignalStream,
+      ),
+      cancelOnInterrupt(
+        stageStreams.getStream(DeployStageType.service),
+        processSignalStream,
+      ),
     ]);
 
     await for (final stage in merged) {

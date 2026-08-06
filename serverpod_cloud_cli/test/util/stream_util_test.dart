@@ -4,6 +4,74 @@ import 'package:serverpod_cloud_cli/util/stream_util.dart';
 import 'package:test/test.dart';
 
 void main() {
+  group('cancelOnInterrupt -', () {
+    test(
+      'Given a source stream and an interrupt stream '
+      'when the interrupt stream emits '
+      'then StreamInterruptedException is thrown and the source is cancelled',
+      () async {
+        final source = StreamController<int>();
+        final interrupt = StreamController<void>();
+
+        final result = cancelOnInterrupt(
+          source.stream,
+          interrupt.stream,
+        ).listen((_) {}, onError: (_) {});
+
+        source.add(1);
+        await Future<void>.delayed(Duration.zero);
+        interrupt.add(null);
+
+        await expectLater(
+          result.asFuture(),
+          throwsA(isA<StreamInterruptedException>()),
+        );
+
+        expect(source.hasListener, isFalse);
+
+        await source.close();
+        await interrupt.close();
+      },
+    );
+
+    test('Given a source stream and an interrupt stream '
+        'when the interrupt stream emits '
+        'then the returned stream terminates with the error', () async {
+      final source = StreamController<int>();
+      final interrupt = StreamController<void>();
+
+      final resultFuture = cancelOnInterrupt(
+        source.stream,
+        interrupt.stream,
+      ).toList();
+
+      interrupt.add(null);
+
+      await expectLater(
+        resultFuture,
+        throwsA(isA<StreamInterruptedException>()),
+      );
+
+      await source.close();
+      await interrupt.close();
+    });
+
+    test('Given a source stream that completes '
+        'when no interrupt occurs '
+        'then all source events are emitted', () async {
+      final interrupt = StreamController<void>();
+
+      final result = await cancelOnInterrupt(
+        Stream.fromIterable([1, 2, 3]),
+        interrupt.stream,
+      ).toList();
+
+      expect(result, [1, 2, 3]);
+
+      await interrupt.close();
+    });
+  });
+
   group('withFallback -', () {
     test(
       'Given a stream with multiple elements '
@@ -232,6 +300,24 @@ void main() {
 
       expect(errors, isNotEmpty);
       expect(errors.first, isA<StateError>());
+    });
+
+    test('Given a source that is still active '
+        'when cancel is called '
+        'then the source subscription is cancelled', () async {
+      final source = StreamController<int>();
+      final split = SplitStreams<String, int>(
+        source.stream,
+        ['even'],
+        (final _) => 'even',
+        (final _) => false,
+      );
+
+      await split.cancel();
+
+      expect(source.hasListener, isFalse);
+
+      await source.close();
     });
   });
 }

@@ -1,4 +1,55 @@
-import 'dart:async' show StreamController;
+import 'dart:async';
+
+/// Thrown when a stream wrapped with [cancelOnInterrupt] is cancelled by an
+/// interrupt signal.
+class StreamInterruptedException implements Exception {}
+
+/// Returns a stream that forwards events from [source] until [interrupt]
+/// emits, then cancels [source] and completes with
+/// [StreamInterruptedException].
+///
+/// [interrupt] must be a broadcast stream if the caller wraps more than one
+/// source with the same interrupt stream.
+Stream<T> cancelOnInterrupt<T>(
+  final Stream<T> source,
+  final Stream<void> interrupt,
+) {
+  StreamSubscription<T>? sourceSubscription;
+  StreamSubscription<void>? interruptSubscription;
+  final controller = StreamController<T>();
+  var interrupted = false;
+
+  controller.onListen = () {
+    sourceSubscription = source.listen(
+      controller.add,
+      onError: controller.addError,
+      onDone: () {
+        if (!interrupted && !controller.isClosed) {
+          controller.close();
+        }
+      },
+    );
+
+    interruptSubscription = interrupt.listen((_) async {
+      if (interrupted) {
+        return;
+      }
+      interrupted = true;
+      await sourceSubscription?.cancel();
+      if (!controller.isClosed) {
+        controller.addError(StreamInterruptedException());
+        await controller.close();
+      }
+    });
+  };
+
+  controller.onCancel = () async {
+    await sourceSubscription?.cancel();
+    await interruptSubscription?.cancel();
+  };
+
+  return controller.stream;
+}
 
 /// Returns a stream that emits the events from the given stream,
 /// or the fallback element if the stream is empty.
@@ -22,6 +73,7 @@ Stream<T> withFallback<T>(
 /// yet closed.
 class SplitStreams<K, E> {
   final Map<K, StreamController<E>> _controllers = {};
+  late final StreamSubscription<E> _sourceSubscription;
 
   SplitStreams(
     final Stream<E> source,
@@ -33,7 +85,7 @@ class SplitStreams<K, E> {
       _controllers[key] = StreamController<E>();
     }
 
-    source.listen(
+    _sourceSubscription = source.listen(
       (final event) {
         final key = classify(event);
         final ctrl = _controllers[key];
@@ -57,6 +109,8 @@ class SplitStreams<K, E> {
       },
     );
   }
+
+  Future<void> cancel() => _sourceSubscription.cancel();
 
   Stream<E> getStream(final K key) {
     final ctrl = _controllers[key];

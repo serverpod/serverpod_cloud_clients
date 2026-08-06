@@ -4,6 +4,7 @@ import 'package:meta/meta.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deployments_command.dart';
+import 'package:serverpod_cloud_cli/commands/status/status.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:ground_control_client/ground_control_client.dart';
@@ -933,6 +934,80 @@ Cloud build failed. 💥''');
           projectId,
         ]);
       });
+    });
+
+    group('and a build stage that stays running, '
+        'when tailing deployment status is interrupted', () {
+      late StreamController<DeployAttemptStage> stageController;
+      late StreamController<void> interruptController;
+      final attemptId = Uuid().v4obj();
+
+      setUp(() {
+        stageController = StreamController<DeployAttemptStage>();
+        interruptController = StreamController<void>.broadcast();
+
+        when(
+          () => client.status.tailDeployAttemptStatus(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            attemptId: any(named: 'attemptId'),
+          ),
+        ).thenAnswer((final _) => stageController.stream);
+      });
+
+      tearDown(() async {
+        await stageController.close();
+        await interruptController.close();
+        reset(client.status);
+      });
+
+      test(
+        'then deployment continues guidance and show command hint are logged',
+        () async {
+          final runningBuild = DeployAttemptStageBuilder()
+              .withCloudCapsuleId(projectId)
+              .withAttemptId(attemptId)
+              .withStageType(DeployStageType.build)
+              .withStageStatus(DeployProgressStatus.running)
+              .build();
+
+          final tailFuture = StatusCommands.tailDeploymentStatus(
+            client,
+            logger: logger,
+            cloudCapsuleId: projectId,
+            attemptId: attemptId,
+            skipUploadStage: true,
+            processSignalStreamOverride: interruptController.stream,
+          );
+
+          stageController.add(runningBuild);
+          await pumpEventQueue();
+          expect(
+            logger.progressCalls.map((final c) => c.message),
+            contains(contains('Cloud build running')),
+          );
+          interruptController.add(null);
+
+          await expectLater(tailFuture, throwsA(isA<UserAbortException>()));
+
+          expect(
+            logger.infoCalls,
+            contains(
+              equalsInfoCall(
+                message: 'The deployment continues in Serverpod Cloud.',
+                newParagraph: true,
+              ),
+            ),
+          );
+          expect(logger.terminalCommandCalls, hasLength(1));
+          expect(
+            logger.terminalCommandCalls.single,
+            equalsTerminalCommandCall(
+              command: 'scloud deployment show',
+              message: 'To view the deployment status, run this command:',
+            ),
+          );
+        },
+      );
     });
   });
 }
