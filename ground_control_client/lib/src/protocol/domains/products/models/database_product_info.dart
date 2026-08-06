@@ -16,7 +16,8 @@ import '../../../domains/products/models/database_scaling_info.dart' as _i3;
 import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 /// Definition of a database product including defaults and constraints.
-abstract class DatabaseProductInfo implements _i1.SerializableModel {
+abstract class DatabaseProductInfo
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   DatabaseProductInfo._({
     required this.size,
     required this.productId,
@@ -97,6 +98,21 @@ abstract class DatabaseProductInfo implements _i1.SerializableModel {
       'name': name,
       'description': description,
       if (scaling != null) 'scaling': scaling?.toJson(),
+      if (cuHoursPerMonthLimit != null)
+        'cuHoursPerMonthLimit': cuHoursPerMonthLimit,
+      if (storageLimitGB != null) 'storageLimitGB': storageLimitGB,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'DatabaseProductInfo',
+      'size': size.toJson(),
+      'productId': productId,
+      'name': name,
+      'description': description,
+      if (scaling != null) 'scaling': scaling?.toJsonForProtocol(),
       if (cuHoursPerMonthLimit != null)
         'cuHoursPerMonthLimit': cuHoursPerMonthLimit,
       if (storageLimitGB != null) 'storageLimitGB': storageLimitGB,

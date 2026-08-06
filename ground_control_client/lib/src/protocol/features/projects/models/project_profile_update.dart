@@ -19,7 +19,8 @@ import '../../../domains/databases/models/database_size.dart' as _i4;
 /// database sizing.
 ///
 /// If null is provided for a field, the field is not updated.
-abstract class ProjectProfileUpdate implements _i1.SerializableModel {
+abstract class ProjectProfileUpdate
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   ProjectProfileUpdate._({
     this.projectProductId,
     this.planType,
@@ -109,6 +110,21 @@ abstract class ProjectProfileUpdate implements _i1.SerializableModel {
   });
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'ProjectProfileUpdate',
+      if (projectProductId != null) 'projectProductId': projectProductId,
+      if (planType != null) 'planType': planType?.toJson(),
+      if (size != null) 'size': size?.toJson(),
+      if (minInstances != null) 'minInstances': minInstances,
+      if (maxInstances != null) 'maxInstances': maxInstances,
+      if (databaseSize != null) 'databaseSize': databaseSize?.toJson(),
+      if (minCu != null) 'minCu': minCu,
+      if (maxCu != null) 'maxCu': maxCu,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'ProjectProfileUpdate',
       if (projectProductId != null) 'projectProductId': projectProductId,

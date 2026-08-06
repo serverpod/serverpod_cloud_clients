@@ -14,7 +14,8 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/capsules/models/capsule.dart' as _i2;
 import 'package:ground_control_client/src/protocol/protocol.dart' as _i3;
 
-abstract class EnvironmentVariable implements _i1.SerializableModel {
+abstract class EnvironmentVariable
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   EnvironmentVariable._({
     this.id,
     DateTime? createdAt,
@@ -97,6 +98,20 @@ abstract class EnvironmentVariable implements _i1.SerializableModel {
       'updatedAt': updatedAt.toJson(),
       'capsuleId': capsuleId,
       if (capsule != null) 'capsule': capsule?.toJson(),
+      'name': name,
+      'value': value,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'EnvironmentVariable',
+      if (id != null) 'id': id,
+      'createdAt': createdAt.toJson(),
+      'updatedAt': updatedAt.toJson(),
+      'capsuleId': capsuleId,
+      if (capsule != null) 'capsule': capsule?.toJsonForProtocol(),
       'name': name,
       'value': value,
     };

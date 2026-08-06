@@ -13,7 +13,10 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 abstract class NotFoundException
-    implements _i1.SerializableException, _i1.SerializableModel {
+    implements
+        _i1.SerializableException,
+        _i1.SerializableModel,
+        _i1.ProtocolSerialization {
   NotFoundException._({required this.message});
 
   factory NotFoundException({required String message}) = _NotFoundExceptionImpl;
@@ -30,6 +33,11 @@ abstract class NotFoundException
   NotFoundException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
+    return {'__className__': 'NotFoundException', 'message': message};
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {'__className__': 'NotFoundException', 'message': message};
   }
 

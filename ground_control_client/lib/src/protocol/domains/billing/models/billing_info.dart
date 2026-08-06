@@ -15,7 +15,8 @@ import '../../../domains/billing/models/billing_customer_type.dart' as _i2;
 import '../../../domains/billing/models/owner.dart' as _i3;
 import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
-abstract class BillingInfo implements _i1.SerializableModel {
+abstract class BillingInfo
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   BillingInfo._({
     _i1.UuidValue? id,
     this.createdAt,
@@ -147,6 +148,28 @@ abstract class BillingInfo implements _i1.SerializableModel {
       if (updatedAt != null) 'updatedAt': updatedAt?.toJson(),
       'ownerId': ownerId.toJson(),
       if (owner != null) 'owner': owner?.toJson(),
+      if (companyName != null) 'companyName': companyName,
+      'addressLine1': addressLine1,
+      if (addressLine2 != null) 'addressLine2': addressLine2,
+      'postalCode': postalCode,
+      'city': city,
+      if (state != null) 'state': state,
+      'country': country,
+      if (vatNumber != null) 'vatNumber': vatNumber,
+      if (vatType != null) 'vatType': vatType,
+      'customerType': customerType.toJson(),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'BillingInfo',
+      'id': id.toJson(),
+      if (createdAt != null) 'createdAt': createdAt?.toJson(),
+      if (updatedAt != null) 'updatedAt': updatedAt?.toJson(),
+      'ownerId': ownerId.toJson(),
+      if (owner != null) 'owner': owner?.toJsonForProtocol(),
       if (companyName != null) 'companyName': companyName,
       'addressLine1': addressLine1,
       if (addressLine2 != null) 'addressLine2': addressLine2,

@@ -20,7 +20,10 @@ import '../../../shared/exceptions/models/plan_change_denied_reason.dart'
 /// For example, moving to a plan that does not provide database backups while
 /// backups still exist.
 abstract class PlanChangeDeniedException
-    implements _i1.SerializableException, _i1.SerializableModel {
+    implements
+        _i1.SerializableException,
+        _i1.SerializableModel,
+        _i1.ProtocolSerialization {
   PlanChangeDeniedException._({required this.message, required this.reason});
 
   factory PlanChangeDeniedException({
@@ -52,6 +55,15 @@ abstract class PlanChangeDeniedException
   });
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'PlanChangeDeniedException',
+      'message': message,
+      'reason': reason.toJson(),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'PlanChangeDeniedException',
       'message': message,

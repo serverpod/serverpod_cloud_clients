@@ -12,7 +12,8 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
-abstract class PaymentSetupIntent implements _i1.SerializableModel {
+abstract class PaymentSetupIntent
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   PaymentSetupIntent._({
     required this.id,
     required this.clientSecret,
@@ -49,6 +50,16 @@ abstract class PaymentSetupIntent implements _i1.SerializableModel {
   });
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'PaymentSetupIntent',
+      'id': id,
+      'clientSecret': clientSecret,
+      'status': status,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'PaymentSetupIntent',
       'id': id,

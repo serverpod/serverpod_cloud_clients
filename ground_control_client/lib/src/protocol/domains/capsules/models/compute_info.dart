@@ -13,7 +13,8 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/capsules/models/compute_size_option.dart' as _i2;
 
-abstract class ComputeInfo implements _i1.SerializableModel {
+abstract class ComputeInfo
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   ComputeInfo._({
     required this.cloudCapsuleId,
     required this.size,
@@ -70,6 +71,18 @@ abstract class ComputeInfo implements _i1.SerializableModel {
   });
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'ComputeInfo',
+      'cloudCapsuleId': cloudCapsuleId,
+      'size': size.toJson(),
+      'minInstances': minInstances,
+      'maxInstances': maxInstances,
+      'memoryMb': memoryMb,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'ComputeInfo',
       'cloudCapsuleId': cloudCapsuleId,

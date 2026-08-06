@@ -13,7 +13,8 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 /// The identity of one revision of a capsule deployment.
-abstract class CapsuleRevision implements _i1.SerializableModel {
+abstract class CapsuleRevision
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   CapsuleRevision._({this.uploadId, this.buildId});
 
   factory CapsuleRevision({_i1.UuidValue? uploadId, _i1.UuidValue? buildId}) =
@@ -42,6 +43,15 @@ abstract class CapsuleRevision implements _i1.SerializableModel {
   CapsuleRevision copyWith({_i1.UuidValue? uploadId, _i1.UuidValue? buildId});
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'CapsuleRevision',
+      if (uploadId != null) 'uploadId': uploadId?.toJson(),
+      if (buildId != null) 'buildId': buildId?.toJson(),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'CapsuleRevision',
       if (uploadId != null) 'uploadId': uploadId?.toJson(),

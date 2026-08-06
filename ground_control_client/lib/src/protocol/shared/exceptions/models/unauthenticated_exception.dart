@@ -13,7 +13,10 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 abstract class UnauthenticatedException
-    implements _i1.SerializableException, _i1.SerializableModel {
+    implements
+        _i1.SerializableException,
+        _i1.SerializableModel,
+        _i1.ProtocolSerialization {
   UnauthenticatedException._({required this.message});
 
   factory UnauthenticatedException({required String message}) =
@@ -35,6 +38,11 @@ abstract class UnauthenticatedException
   UnauthenticatedException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
+    return {'__className__': 'UnauthenticatedException', 'message': message};
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {'__className__': 'UnauthenticatedException', 'message': message};
   }
 

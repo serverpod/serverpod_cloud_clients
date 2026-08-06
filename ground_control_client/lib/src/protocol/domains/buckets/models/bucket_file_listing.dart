@@ -15,7 +15,8 @@ import '../../../domains/buckets/models/bucket_file.dart' as _i2;
 import 'package:ground_control_client/src/protocol/protocol.dart' as _i3;
 
 /// A single page of files in a bucket together with the token for the next page.
-abstract class BucketFileListing implements _i1.SerializableModel {
+abstract class BucketFileListing
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   BucketFileListing._({required this.files, this.nextPageToken});
 
   factory BucketFileListing({
@@ -51,6 +52,15 @@ abstract class BucketFileListing implements _i1.SerializableModel {
     return {
       '__className__': 'BucketFileListing',
       'files': files.toJson(valueToJson: (v) => v.toJson()),
+      if (nextPageToken != null) 'nextPageToken': nextPageToken,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'BucketFileListing',
+      'files': files.toJson(valueToJson: (v) => v.toJsonForProtocol()),
       if (nextPageToken != null) 'nextPageToken': nextPageToken,
     };
   }

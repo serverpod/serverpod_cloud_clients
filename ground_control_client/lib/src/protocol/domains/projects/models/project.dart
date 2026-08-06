@@ -18,7 +18,8 @@ import 'package:ground_control_client/src/protocol/protocol.dart' as _i5;
 
 /// Represents a project of a tenant.
 /// Typically a serverpod project.
-abstract class Project implements _i1.SerializableModel {
+abstract class Project
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   Project._({
     this.id,
     DateTime? createdAt,
@@ -132,6 +133,24 @@ abstract class Project implements _i1.SerializableModel {
       if (roles != null) 'roles': roles?.toJson(valueToJson: (v) => v.toJson()),
       if (capsules != null)
         'capsules': capsules?.toJson(valueToJson: (v) => v.toJson()),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'Project',
+      if (id != null) 'id': id,
+      'createdAt': createdAt.toJson(),
+      'updatedAt': updatedAt.toJson(),
+      if (archivedAt != null) 'archivedAt': archivedAt?.toJson(),
+      'cloudProjectId': cloudProjectId,
+      'ownerId': ownerId.toJson(),
+      if (owner != null) 'owner': owner?.toJsonForProtocol(),
+      if (roles != null)
+        'roles': roles?.toJson(valueToJson: (v) => v.toJsonForProtocol()),
+      if (capsules != null)
+        'capsules': capsules?.toJson(valueToJson: (v) => v.toJsonForProtocol()),
     };
   }
 

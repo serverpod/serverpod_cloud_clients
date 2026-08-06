@@ -14,7 +14,8 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import 'package:ground_control_client/src/protocol/protocol.dart' as _i2;
 
 /// Scaling configuration for a database size that supports variable CU allocation.
-abstract class DatabaseScalingInfo implements _i1.SerializableModel {
+abstract class DatabaseScalingInfo
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   DatabaseScalingInfo._({
     required this.defaultMinCu,
     required this.defaultMaxCu,
@@ -63,6 +64,17 @@ abstract class DatabaseScalingInfo implements _i1.SerializableModel {
   });
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'DatabaseScalingInfo',
+      'defaultMinCu': defaultMinCu,
+      'defaultMaxCu': defaultMaxCu,
+      'allowedCuValues': allowedCuValues.toJson(),
+      'maxCuSpread': maxCuSpread,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'DatabaseScalingInfo',
       'defaultMinCu': defaultMinCu,

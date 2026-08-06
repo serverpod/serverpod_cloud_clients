@@ -16,7 +16,8 @@ import '../../../domains/databases/models/database_size.dart' as _i3;
 import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 /// A catalog of available database products.
-abstract class DatabaseCatalogInfo implements _i1.SerializableModel {
+abstract class DatabaseCatalogInfo
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   DatabaseCatalogInfo._({required this.databases, this.defaultDatabase});
 
   factory DatabaseCatalogInfo({
@@ -55,6 +56,15 @@ abstract class DatabaseCatalogInfo implements _i1.SerializableModel {
     return {
       '__className__': 'DatabaseCatalogInfo',
       'databases': databases.toJson(valueToJson: (v) => v.toJson()),
+      if (defaultDatabase != null) 'defaultDatabase': defaultDatabase?.toJson(),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'DatabaseCatalogInfo',
+      'databases': databases.toJson(valueToJson: (v) => v.toJsonForProtocol()),
       if (defaultDatabase != null) 'defaultDatabase': defaultDatabase?.toJson(),
     };
   }

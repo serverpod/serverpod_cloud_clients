@@ -13,7 +13,8 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 /// Represents a log record (entry).
-abstract class LogRecord implements _i1.SerializableModel {
+abstract class LogRecord
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   LogRecord._({
     required this.cloudProjectId,
     required this.cloudCapsuleId,
@@ -95,6 +96,21 @@ abstract class LogRecord implements _i1.SerializableModel {
   });
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'LogRecord',
+      'cloudProjectId': cloudProjectId,
+      'cloudCapsuleId': cloudCapsuleId,
+      if (deployAttemptId != null) 'deployAttemptId': deployAttemptId?.toJson(),
+      if (serverInstanceId != null) 'serverInstanceId': serverInstanceId,
+      'recordId': recordId,
+      'timestamp': timestamp.toJson(),
+      if (severity != null) 'severity': severity,
+      'content': content,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'LogRecord',
       'cloudProjectId': cloudProjectId,

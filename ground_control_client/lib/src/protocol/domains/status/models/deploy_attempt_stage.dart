@@ -17,7 +17,8 @@ import '../../../domains/status/models/deploy_progress_status.dart' as _i4;
 import 'package:ground_control_client/src/protocol/protocol.dart' as _i5;
 
 /// Represents the status information of a stage in a deployment attempt.
-abstract class DeployAttemptStage implements _i1.SerializableModel {
+abstract class DeployAttemptStage
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   DeployAttemptStage._({
     this.id,
     required this.cloudCapsuleId,
@@ -168,6 +169,28 @@ abstract class DeployAttemptStage implements _i1.SerializableModel {
       'cloudCapsuleId': cloudCapsuleId,
       'attemptId': attemptId.toJson(),
       if (attempt != null) 'attempt': attempt?.toJson(),
+      if (externalId != null) 'externalId': externalId,
+      'stageType': stageType.toJson(),
+      'stageStatus': stageStatus.toJson(),
+      if (startedAt != null) 'startedAt': startedAt?.toJson(),
+      if (endedAt != null) 'endedAt': endedAt?.toJson(),
+      if (buildId != null) 'buildId': buildId,
+      if (stageInfo != null) 'stageInfo': stageInfo,
+      if (serverpodVersionConstraint != null)
+        'serverpodVersionConstraint': serverpodVersionConstraint,
+      if (imageName != null) 'imageName': imageName,
+      if (statusInfo != null) 'statusInfo': statusInfo,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'DeployAttemptStage',
+      if (id != null) 'id': id,
+      'cloudCapsuleId': cloudCapsuleId,
+      'attemptId': attemptId.toJson(),
+      if (attempt != null) 'attempt': attempt?.toJsonForProtocol(),
       if (externalId != null) 'externalId': externalId,
       'stageType': stageType.toJson(),
       'stageStatus': stageStatus.toJson(),

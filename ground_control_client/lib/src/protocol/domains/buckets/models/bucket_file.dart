@@ -13,7 +13,8 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 /// A single stored file in a bucket.
-abstract class BucketFile implements _i1.SerializableModel {
+abstract class BucketFile
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   BucketFile._({required this.name, this.sizeBytes, this.updated});
 
   factory BucketFile({
@@ -47,6 +48,16 @@ abstract class BucketFile implements _i1.SerializableModel {
   BucketFile copyWith({String? name, int? sizeBytes, DateTime? updated});
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'BucketFile',
+      'name': name,
+      if (sizeBytes != null) 'sizeBytes': sizeBytes,
+      if (updated != null) 'updated': updated?.toJson(),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'BucketFile',
       'name': name,

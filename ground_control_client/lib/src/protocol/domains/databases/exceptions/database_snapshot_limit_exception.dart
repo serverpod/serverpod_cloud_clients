@@ -15,7 +15,10 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 /// Thrown when a manual snapshot cannot be created because the per-project
 /// snapshot limit has been reached.
 abstract class DatabaseSnapshotLimitException
-    implements _i1.SerializableException, _i1.SerializableModel {
+    implements
+        _i1.SerializableException,
+        _i1.SerializableModel,
+        _i1.ProtocolSerialization {
   DatabaseSnapshotLimitException._({required this.message});
 
   factory DatabaseSnapshotLimitException({required String message}) =
@@ -37,6 +40,14 @@ abstract class DatabaseSnapshotLimitException
   DatabaseSnapshotLimitException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'DatabaseSnapshotLimitException',
+      'message': message,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'DatabaseSnapshotLimitException',
       'message': message,

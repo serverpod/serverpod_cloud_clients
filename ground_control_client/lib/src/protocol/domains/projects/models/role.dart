@@ -17,7 +17,8 @@ import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 /// Represents an access role for a specific project.
 /// Roles are assigned to users via membership, giving them the role's access scopes.
-abstract class Role implements _i1.SerializableModel {
+abstract class Role
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   Role._({
     this.id,
     DateTime? createdAt,
@@ -126,6 +127,25 @@ abstract class Role implements _i1.SerializableModel {
       'projectScopes': projectScopes.toJson(),
       if (memberships != null)
         'memberships': memberships?.toJson(valueToJson: (v) => v.toJson()),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'Role',
+      if (id != null) 'id': id,
+      'createdAt': createdAt.toJson(),
+      'updatedAt': updatedAt.toJson(),
+      if (archivedAt != null) 'archivedAt': archivedAt?.toJson(),
+      'projectId': projectId,
+      if (project != null) 'project': project?.toJsonForProtocol(),
+      'name': name,
+      'projectScopes': projectScopes.toJson(),
+      if (memberships != null)
+        'memberships': memberships?.toJson(
+          valueToJson: (v) => v.toJsonForProtocol(),
+        ),
     };
   }
 

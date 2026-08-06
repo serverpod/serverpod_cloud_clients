@@ -17,7 +17,8 @@ import '../../../domains/databases/models/database_scaling.dart' as _i4;
 import '../../../domains/databases/models/database_quota.dart' as _i5;
 import 'package:ground_control_client/src/protocol/protocol.dart' as _i6;
 
-abstract class DatabaseResource implements _i1.SerializableModel {
+abstract class DatabaseResource
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   DatabaseResource._({
     this.id,
     required this.cloudCapsuleId,
@@ -112,6 +113,24 @@ abstract class DatabaseResource implements _i1.SerializableModel {
       'connection': connection.toJson(),
       'scaling': scaling.toJson(),
       'quota': quota.toJson(),
+      if (metricsExportEndpoint != null)
+        'metricsExportEndpoint': metricsExportEndpoint,
+      if (metricsExportSecretFingerprint != null)
+        'metricsExportSecretFingerprint': metricsExportSecretFingerprint,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'DatabaseResource',
+      if (id != null) 'id': id,
+      'cloudCapsuleId': cloudCapsuleId,
+      'providerId': providerId,
+      'provider': provider.toJson(),
+      'connection': connection.toJsonForProtocol(),
+      'scaling': scaling.toJsonForProtocol(),
+      'quota': quota.toJsonForProtocol(),
       if (metricsExportEndpoint != null)
         'metricsExportEndpoint': metricsExportEndpoint,
       if (metricsExportSecretFingerprint != null)

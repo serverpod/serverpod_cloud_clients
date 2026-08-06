@@ -12,7 +12,8 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
-abstract class DatabaseQuota implements _i1.SerializableModel {
+abstract class DatabaseQuota
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   DatabaseQuota._({this.logicalSizeBytes, this.computeTimeSeconds});
 
   factory DatabaseQuota({int? logicalSizeBytes, int? computeTimeSeconds}) =
@@ -35,6 +36,15 @@ abstract class DatabaseQuota implements _i1.SerializableModel {
   DatabaseQuota copyWith({int? logicalSizeBytes, int? computeTimeSeconds});
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'DatabaseQuota',
+      if (logicalSizeBytes != null) 'logicalSizeBytes': logicalSizeBytes,
+      if (computeTimeSeconds != null) 'computeTimeSeconds': computeTimeSeconds,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'DatabaseQuota',
       if (logicalSizeBytes != null) 'logicalSizeBytes': logicalSizeBytes,

@@ -16,7 +16,10 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 /// due to a status service failure, network error, or timeout.
 /// The operation is safe to retry.
 abstract class CapsuleStatusUnavailableException
-    implements _i1.SerializableException, _i1.SerializableModel {
+    implements
+        _i1.SerializableException,
+        _i1.SerializableModel,
+        _i1.ProtocolSerialization {
   CapsuleStatusUnavailableException._({required this.message});
 
   factory CapsuleStatusUnavailableException({required String message}) =
@@ -38,6 +41,14 @@ abstract class CapsuleStatusUnavailableException
   CapsuleStatusUnavailableException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'CapsuleStatusUnavailableException',
+      'message': message,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'CapsuleStatusUnavailableException',
       'message': message,

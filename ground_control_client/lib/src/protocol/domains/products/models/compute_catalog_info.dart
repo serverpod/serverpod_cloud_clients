@@ -17,7 +17,8 @@ import '../../../domains/products/models/compute_scaling_info.dart' as _i4;
 import 'package:ground_control_client/src/protocol/protocol.dart' as _i5;
 
 /// A catalog of available compute products.
-abstract class ComputeCatalogInfo implements _i1.SerializableModel {
+abstract class ComputeCatalogInfo
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   ComputeCatalogInfo._({
     required this.computes,
     required this.defaultCompute,
@@ -68,6 +69,16 @@ abstract class ComputeCatalogInfo implements _i1.SerializableModel {
       'computes': computes.toJson(valueToJson: (v) => v.toJson()),
       'defaultCompute': defaultCompute.toJson(),
       'scaling': scaling.toJson(),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'ComputeCatalogInfo',
+      'computes': computes.toJson(valueToJson: (v) => v.toJsonForProtocol()),
+      'defaultCompute': defaultCompute.toJson(),
+      'scaling': scaling.toJsonForProtocol(),
     };
   }
 

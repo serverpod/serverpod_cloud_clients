@@ -13,7 +13,10 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 abstract class InvalidValueException
-    implements _i1.SerializableException, _i1.SerializableModel {
+    implements
+        _i1.SerializableException,
+        _i1.SerializableModel,
+        _i1.ProtocolSerialization {
   InvalidValueException._({required this.message});
 
   factory InvalidValueException({required String message}) =
@@ -35,6 +38,11 @@ abstract class InvalidValueException
   InvalidValueException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
+    return {'__className__': 'InvalidValueException', 'message': message};
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {'__className__': 'InvalidValueException', 'message': message};
   }
 

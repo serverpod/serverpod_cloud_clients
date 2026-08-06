@@ -16,7 +16,8 @@ import '../../../domains/projects/models/role.dart' as _i3;
 import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 /// Represents a membership of a user in a role.
-abstract class UserRoleMembership implements _i1.SerializableModel {
+abstract class UserRoleMembership
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   UserRoleMembership._({
     this.id,
     DateTime? createdAt,
@@ -109,6 +110,21 @@ abstract class UserRoleMembership implements _i1.SerializableModel {
       if (user != null) 'user': user?.toJson(),
       'roleId': roleId,
       if (role != null) 'role': role?.toJson(),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'UserRoleMembership',
+      if (id != null) 'id': id,
+      'createdAt': createdAt.toJson(),
+      'updatedAt': updatedAt.toJson(),
+      if (archivedAt != null) 'archivedAt': archivedAt?.toJson(),
+      'userId': userId,
+      if (user != null) 'user': user?.toJsonForProtocol(),
+      'roleId': roleId,
+      if (role != null) 'role': role?.toJsonForProtocol(),
     };
   }
 

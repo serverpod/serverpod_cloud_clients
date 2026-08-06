@@ -16,7 +16,8 @@ import '../../../domains/status/models/capsule_revision.dart' as _i3;
 import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 /// The runtime status of a capsule's deployment.
-abstract class CapsuleDeploymentStatus implements _i1.SerializableModel {
+abstract class CapsuleDeploymentStatus
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   CapsuleDeploymentStatus._({
     required this.name,
     required this.state,
@@ -108,6 +109,20 @@ abstract class CapsuleDeploymentStatus implements _i1.SerializableModel {
       if (uploadId != null) 'uploadId': uploadId?.toJson(),
       if (buildId != null) 'buildId': buildId?.toJson(),
       if (incoming != null) 'incoming': incoming?.toJson(),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'CapsuleDeploymentStatus',
+      'name': name,
+      'state': state.toJson(),
+      if (desiredReplicas != null) 'desiredReplicas': desiredReplicas,
+      if (readyReplicas != null) 'readyReplicas': readyReplicas,
+      if (uploadId != null) 'uploadId': uploadId?.toJson(),
+      if (buildId != null) 'buildId': buildId?.toJson(),
+      if (incoming != null) 'incoming': incoming?.toJsonForProtocol(),
     };
   }
 

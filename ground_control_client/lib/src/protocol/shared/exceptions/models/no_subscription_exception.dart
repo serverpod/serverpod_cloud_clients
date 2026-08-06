@@ -14,7 +14,10 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 /// Exception thrown when a user / owner lacks a valid subscription.
 abstract class NoSubscriptionException
-    implements _i1.SerializableException, _i1.SerializableModel {
+    implements
+        _i1.SerializableException,
+        _i1.SerializableModel,
+        _i1.ProtocolSerialization {
   NoSubscriptionException._({required this.message});
 
   factory NoSubscriptionException({required String message}) =
@@ -36,6 +39,11 @@ abstract class NoSubscriptionException
   NoSubscriptionException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
+    return {'__className__': 'NoSubscriptionException', 'message': message};
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {'__className__': 'NoSubscriptionException', 'message': message};
   }
 
