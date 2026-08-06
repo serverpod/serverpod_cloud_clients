@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.36.0] - 2026-08-06
+
+### Added
+
+- **Live status command** - Run `scloud status` to view real-time runtime status, podlet readiness, deployment details, and service URLs.
+- **Interactive password setup** - Select and securely upload custom passwords from `config/passwords.yaml` automatically when launching a project.
+- **Dart workspace deployments** - Deploy Dart workspaces seamlessly with automatic dependency filtering and archive optimization.
+- **Interruption guidance** - Receive clear instructions on how to check deployment progress when interrupting status monitoring with Ctrl+C.
+
 ## [0.35.0] - 2026-07-31
 
 ### Added
