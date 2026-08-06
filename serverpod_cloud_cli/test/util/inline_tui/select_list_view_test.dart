@@ -96,6 +96,33 @@ void main() {
       expect(lines[0], endsWith('\x1b[0m'));
       expect(lines[1], isNot(contains('\x1b[')));
     });
+
+    test('when highlightBySelection is true then selected rows are highlighted '
+        'and the navigation pointer is omitted', () {
+      final model = _model(['Apple', 'Banana', 'Cherry'], multiSelect: true);
+      model
+        ..handleKey(const TuiKey(TuiKeyType.space))
+        ..handleKey(const TuiKey(TuiKeyType.arrowDown))
+        ..handleKey(const TuiKey(TuiKeyType.arrowDown))
+        ..handleKey(const TuiKey(TuiKeyType.space));
+
+      final lines = buildSelectListLines(
+        model,
+        style: style,
+        useAnsiStyles: useAnsiStyles,
+        columns: 80,
+        highlightBySelection: true,
+      );
+
+      final highlight = SelectListStyle.defaultHighlightStyle.ansiCode;
+      expect(lines[0], startsWith(highlight));
+      expect(lines[0], contains('[x] Apple'));
+      expect(lines[0], isNot(contains('>')));
+      expect(lines[1], isNot(contains('\x1b[')));
+      expect(lines[1], contains('[ ] Banana'));
+      expect(lines[2], startsWith(highlight));
+      expect(lines[2], contains('[x] Cherry'));
+    });
   });
 
   group('Given a BottomRegionRenderer', () {
@@ -151,6 +178,21 @@ void main() {
       // newline (output continues at the cleared line).
       expect(update, '\r\x1b[0J\x1b[?25h');
       expect(update, isNot(contains('\x1b[3A')));
+      expect(update, isNot(contains('\n')));
+    });
+
+    test('when finishing by clearing several last lines then it moves up to '
+        'the first cleared line and clears from there', () {
+      final term = FakeTerminal();
+      final renderer = BottomRegionRenderer(term)
+        ..hideCursor()
+        ..render(['a', 'b', 'c', 'd']);
+
+      final before = term.output.length;
+      renderer.finishClearingLastLine(lineCount: 3);
+      final update = term.output.substring(before);
+
+      expect(update, '\r\x1b[2A\x1b[0J\x1b[?25h');
       expect(update, isNot(contains('\n')));
     });
   });

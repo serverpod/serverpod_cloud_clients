@@ -38,6 +38,22 @@ database:
   user: postgres
 ''';
 
+/// A passwords.yaml with custom secrets across sections plus platform-managed
+/// secrets that launch should ignore when offering to set passwords.
+/// Production values take precedence over shared for the same name.
+const _passwordsYamlWithCustomSecrets = '''
+shared:
+  aSharedPassword: 'shared-secret'
+  apiKey: 'shared-api-key'
+production:
+  database: 'db-password'
+  serviceSecret: 'service-secret-value'
+  apiKey: 'prod-api-key'
+  customPassword: 'custom-value'
+development:
+  localOnlyPassword: 'local-secret'
+''';
+
 /// Simulates the console redirecting back to the CLI's local callback server
 /// with [projectId] once the launch command logs the project-creation handoff
 /// URL. Returns a completer that completes when the callback has been made.
@@ -1249,6 +1265,418 @@ project:
         });
       });
 
+      group('and custom passwords in config/passwords.yaml', () {
+        late String passwordsProjectDir;
+
+        setUp(() async {
+          await ProjectFactory.serverpodServerDir(
+            withDirectoryName: 'passwords_server_dir',
+            contents: [
+              d.dir('config', [
+                d.file('development.yaml', _databaseConfigYaml),
+                d.file('passwords.yaml', _passwordsYamlWithCustomSecrets),
+              ]),
+            ],
+          ).create();
+          passwordsProjectDir = p.join(d.sandbox, 'passwords_server_dir');
+
+          when(
+            () => client.secrets.upsert(
+              secrets: any(named: 'secrets'),
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            ),
+          ).thenAnswer((final _) async {});
+        });
+
+        tearDown(() {
+          clearInteractions(client.secrets);
+        });
+
+        group('when executing launch for a new project '
+            'and confirming all offered passwords', () {
+          late Future commandResult;
+
+          setUp(() async {
+            logger.answerNextConfirmsWith([true]);
+            logger.inlineTerminal = FakeTerminal()
+              ..queueInput(FakeTerminal.enter);
+
+            simulateConsoleProjectCreation(logger, projectId: projectId);
+
+            commandResult = cli.run([
+              'launch',
+              '--project',
+              projectId,
+              '--project-dir',
+              passwordsProjectDir,
+              '--no-pre-deploy-scripts',
+              '--no-deploy',
+              '--no-browser',
+            ]);
+
+            await expectLater(commandResult, completes);
+          });
+
+          test(
+            'then outputs the password selection with custom secrets only',
+            () async {
+              final output = (logger.inlineTerminal as FakeTerminal).output;
+              expect(
+                output,
+                contains(
+                  'Custom passwords were found in config/passwords.yaml.',
+                ),
+              );
+              expect(
+                output,
+                contains(
+                  '[x] apiKey:            prod*****  (from section "production")',
+                ),
+              );
+              expect(
+                output,
+                contains(
+                  '[x] customPassword:    cust*****  (from section "production")',
+                ),
+              );
+              expect(
+                output,
+                contains(
+                  '[x] aSharedPassword:   shar*****  (from section "shared")',
+                ),
+              );
+              expect(
+                output,
+                contains(
+                  '[ ] localOnlyPassword: loca*****  (from section "development")',
+                ),
+              );
+              expect(output, isNot(contains('database')));
+              expect(output, isNot(contains('serviceSecret')));
+            },
+          );
+
+          test('then sets only the initially selected shared and production '
+              'passwords in cloud', () async {
+            final captured = verify(
+              () => client.secrets.upsert(
+                secrets: captureAny(named: 'secrets'),
+                cloudCapsuleId: projectId,
+              ),
+            ).captured.cast<Map<String, String>>();
+
+            final upserted = {for (final secrets in captured) ...secrets};
+            expect(upserted, {
+              'SERVERPOD_PASSWORD_aSharedPassword': 'shared-secret',
+              'SERVERPOD_PASSWORD_apiKey': 'prod-api-key',
+              'SERVERPOD_PASSWORD_customPassword': 'custom-value',
+            });
+            expect(
+              upserted.keys,
+              isNot(contains('SERVERPOD_PASSWORD_localOnlyPassword')),
+            );
+          });
+
+          test(
+            'then does not set ignored platform-managed passwords',
+            () async {
+              final captured = verify(
+                () => client.secrets.upsert(
+                  secrets: captureAny(named: 'secrets'),
+                  cloudCapsuleId: projectId,
+                ),
+              ).captured.cast<Map<String, String>>();
+
+              final upsertedKeys = {
+                for (final secrets in captured) ...secrets.keys,
+              };
+              expect(
+                upsertedKeys,
+                isNot(contains('SERVERPOD_PASSWORD_database')),
+              );
+              expect(
+                upsertedKeys,
+                isNot(contains('SERVERPOD_PASSWORD_serviceSecret')),
+              );
+            },
+          );
+
+          test('then logs custom passwords progress message', () async {
+            expect(
+              logger.progressCalls,
+              contains(equalsProgressCall(message: 'Setting custom passwords')),
+            );
+          });
+        });
+
+        group('when executing launch for a new project '
+            'and cancelling password selection', () {
+          late Future commandResult;
+
+          setUp(() async {
+            logger.answerNextConfirmsWith([true]);
+            logger.inlineTerminal = FakeTerminal()
+              ..queueInput(FakeTerminal.escape);
+
+            simulateConsoleProjectCreation(logger, projectId: projectId);
+
+            commandResult = cli.run([
+              'launch',
+              '--project',
+              projectId,
+              '--project-dir',
+              passwordsProjectDir,
+              '--no-pre-deploy-scripts',
+              '--no-deploy',
+              '--no-browser',
+            ]);
+          });
+
+          test('then throws ErrorExitException', () async {
+            await expectLater(
+              commandResult,
+              throwsA(isA<ErrorExitException>()),
+            );
+          });
+
+          test('then logs cancellation info message', () async {
+            await commandResult.catchError((final _) {});
+
+            expect(
+              logger.infoCalls.last,
+              equalsInfoCall(message: 'Setup cancelled.'),
+            );
+          });
+
+          test('then does not set any passwords in cloud', () async {
+            await commandResult.catchError((final _) {});
+
+            verifyNever(
+              () => client.secrets.upsert(
+                secrets: any(named: 'secrets'),
+                cloudCapsuleId: any(named: 'cloudCapsuleId'),
+              ),
+            );
+          });
+        });
+
+        group('when launching against a preexisting undeployed project '
+            'that already has one custom password set '
+            'and confirming the remaining passwords', () {
+          late Future commandResult;
+
+          setUp(() async {
+            when(
+              () => client.projects.listProjectsInfo(
+                includeLatestDeployAttemptTime: any(
+                  named: 'includeLatestDeployAttemptTime',
+                ),
+              ),
+            ).thenAnswer(
+              (final _) async => [
+                ProjectInfoBuilder()
+                    .withProject(ProjectBuilder().withCloudProjectId(projectId))
+                    .build(),
+              ],
+            );
+            when(
+              () => client.secrets.list(any()),
+            ).thenAnswer((final _) async => ['SERVERPOD_PASSWORD_apiKey']);
+            when(
+              () => client.secrets.listManaged(any()),
+            ).thenAnswer((final _) async => <String>[]);
+
+            logger.inlineTerminal = FakeTerminal()
+              ..queueInput(FakeTerminal.enter);
+
+            commandResult = cli.run([
+              'launch',
+              '--project',
+              projectId,
+              '--project-dir',
+              passwordsProjectDir,
+              '--no-pre-deploy-scripts',
+              '--no-deploy',
+              '--no-browser',
+            ]);
+
+            await expectLater(commandResult, completes);
+          });
+
+          tearDown(() {
+            when(
+              () => client.projects.listProjectsInfo(
+                includeLatestDeployAttemptTime: any(
+                  named: 'includeLatestDeployAttemptTime',
+                ),
+              ),
+            ).thenAnswer((final _) async => Future.value([]));
+          });
+
+          test(
+            'then offers only custom passwords that are not already set',
+            () async {
+              final output = (logger.inlineTerminal as FakeTerminal).output;
+              expect(output, contains('aSharedPassword'));
+              expect(output, contains('customPassword'));
+              expect(output, isNot(contains('apiKey')));
+            },
+          );
+
+          test(
+            'then sets only the passwords that were not already set',
+            () async {
+              final captured = verify(
+                () => client.secrets.upsert(
+                  secrets: captureAny(named: 'secrets'),
+                  cloudCapsuleId: projectId,
+                ),
+              ).captured.cast<Map<String, String>>();
+
+              final upserted = {for (final secrets in captured) ...secrets};
+              expect(upserted, {
+                'SERVERPOD_PASSWORD_aSharedPassword': 'shared-secret',
+                'SERVERPOD_PASSWORD_customPassword': 'custom-value',
+              });
+            },
+          );
+        });
+
+        group('when passwords.yaml only contains ignored secrets', () {
+          late Future commandResult;
+
+          setUp(() async {
+            await ProjectFactory.serverpodServerDir(
+              withDirectoryName: 'ignored_passwords_server_dir',
+              contents: [
+                d.dir('config', [
+                  d.file('development.yaml', _databaseConfigYaml),
+                  d.file('passwords.yaml', '''
+shared:
+  database: 'db-password'
+production:
+  serviceSecret: 'service-secret-value'
+development:
+  database: 'dev-db-password'
+'''),
+                ]),
+              ],
+            ).create();
+            final ignoredPasswordsProjectDir = p.join(
+              d.sandbox,
+              'ignored_passwords_server_dir',
+            );
+
+            logger.answerNextConfirmsWith([true]);
+
+            simulateConsoleProjectCreation(logger, projectId: projectId);
+
+            commandResult = cli.run([
+              'launch',
+              '--project',
+              projectId,
+              '--project-dir',
+              ignoredPasswordsProjectDir,
+              '--no-pre-deploy-scripts',
+              '--no-deploy',
+              '--no-browser',
+            ]);
+
+            await expectLater(commandResult, completes);
+          });
+
+          test('then does not prompt for password selection', () async {
+            final terminal = logger.inlineTerminal;
+            if (terminal is FakeTerminal) {
+              expect(
+                terminal.output,
+                isNot(
+                  contains(
+                    'Custom passwords were found in config/passwords.yaml.',
+                  ),
+                ),
+              );
+            }
+          });
+
+          test('then does not set any passwords in cloud', () async {
+            verifyNever(
+              () => client.secrets.upsert(
+                secrets: any(named: 'secrets'),
+                cloudCapsuleId: any(named: 'cloudCapsuleId'),
+              ),
+            );
+          });
+        });
+
+        group('when passwords.yaml only contains development custom secrets '
+            'and confirming with none selected', () {
+          late Future commandResult;
+
+          setUp(() async {
+            await ProjectFactory.serverpodServerDir(
+              withDirectoryName: 'dev_passwords_server_dir',
+              contents: [
+                d.dir('config', [
+                  d.file('development.yaml', _databaseConfigYaml),
+                  d.file('passwords.yaml', '''
+development:
+  localOnlyPassword: 'local-secret'
+'''),
+                ]),
+              ],
+            ).create();
+            final devPasswordsProjectDir = p.join(
+              d.sandbox,
+              'dev_passwords_server_dir',
+            );
+
+            logger.answerNextConfirmsWith([true]);
+            // Development secrets are offered but not initially selected.
+            logger.inlineTerminal = FakeTerminal()
+              ..queueInput(FakeTerminal.enter);
+
+            simulateConsoleProjectCreation(logger, projectId: projectId);
+
+            commandResult = cli.run([
+              'launch',
+              '--project',
+              projectId,
+              '--project-dir',
+              devPasswordsProjectDir,
+              '--no-pre-deploy-scripts',
+              '--no-deploy',
+              '--no-browser',
+            ]);
+
+            await expectLater(commandResult, completes);
+          });
+
+          test(
+            'then offers the development password unselected by default',
+            () async {
+              final output = (logger.inlineTerminal as FakeTerminal).output;
+              expect(
+                output,
+                contains(
+                  '[ ] localOnlyPassword: loca*****  '
+                  '(from section "development")',
+                ),
+              );
+            },
+          );
+
+          test('then does not set any passwords in cloud', () async {
+            verifyNever(
+              () => client.secrets.upsert(
+                secrets: any(named: 'secrets'),
+                cloudCapsuleId: any(named: 'cloudCapsuleId'),
+              ),
+            );
+          });
+        });
+      });
+
       group('when executing launch with all settings provided interactively '
           'and 2 pre-existing projects are found but not selected '
           'and cancelling selection', () {
@@ -1305,7 +1733,7 @@ project:
           expect(
             output,
             contains(
-              'Select a Severpod Cloud project to deploy to, '
+              'Select a Serverpod Cloud project to deploy to, '
               'or create a new project:',
             ),
           );
@@ -1379,7 +1807,7 @@ project:
           expect(
             output,
             contains(
-              'Select a Severpod Cloud project to deploy to, '
+              'Select a Serverpod Cloud project to deploy to, '
               'or create a new project:',
             ),
           );

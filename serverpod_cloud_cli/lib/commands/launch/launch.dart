@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:cli_tools/logger.dart' as cli show AnsiStyle;
 import 'package:collection/collection.dart' show IterableExtension;
@@ -12,6 +13,7 @@ import 'package:serverpod_cloud_cli/commands/deploy/deploy.dart';
 import 'package:serverpod_cloud_cli/commands/launch/tui/app.dart';
 import 'package:serverpod_cloud_cli/commands/launch/tui/state.dart';
 import 'package:serverpod_cloud_cli/commands/launch/tui/state_holder.dart';
+import 'package:serverpod_cloud_cli/commands/password/password.dart';
 import 'package:serverpod_cloud_cli/commands/project/project.dart';
 import 'package:serverpod_cloud_cli/commands/status/status.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
@@ -116,9 +118,21 @@ abstract class Launch {
   }) async {
     await selectProjectId(cloudApiClient, logger, projectSetup);
 
+    if (projectSetup.preexistingProject != true) {
+      projectSetup.projectId = await createProject(
+        logger,
+        consoleServer: consoleServer,
+        openBrowser: openBrowser,
+        projectName: projectSetup.projectId ?? '',
+        usesDb: projectSetup.usesDb,
+      );
+    }
+
     await suggestCodeGenerationPreDeployHook(logger, projectSetup);
 
     await suggestFlutterBuildPreDeployHook(logger, projectSetup);
+
+    await selectCustomPasswords(cloudApiClient, logger, projectSetup);
 
     await performLaunch(
       cloudApiClient,
@@ -283,10 +297,13 @@ abstract class Launch {
 
     final specifiedProjectId = projectSetup.projectId;
     if (specifiedProjectId != null) {
-      if (existingProjects.any(
+      final preexistingProject = existingProjects.firstWhereOrNull(
         (final p) => p.project.cloudProjectId == specifiedProjectId,
-      )) {
+      );
+      if (preexistingProject != null) {
         projectSetup.preexistingProject = true;
+        projectSetup.preexistingProjectDeployed =
+            preexistingProject.latestDeployAttemptTime?.timestamp != null;
         return;
       }
 
@@ -313,11 +330,144 @@ abstract class Launch {
     if (selectedId != null) {
       projectSetup.projectId = selectedId;
       projectSetup.preexistingProject = true;
+      final preexistingProject = existingProjects.firstWhereOrNull(
+        (final p) => p.project.cloudProjectId == selectedId,
+      );
+      projectSetup.preexistingProjectDeployed =
+          preexistingProject?.latestDeployAttemptTime?.timestamp != null;
       return;
     }
 
     projectSetup.projectId = _getDefaultProjectId(projectSetup);
     return;
+  }
+
+  static Future<void> selectCustomPasswords(
+    final Client cloudApiClient,
+    final CommandLogger logger,
+    final ProjectLaunch projectSetup,
+  ) async {
+    const ignoredSecretNames = [
+      'database',
+      'emailSecretHashPepper',
+      'jwtHmacSha512PrivateKey',
+      'jwtRefreshTokenHashPepper',
+      'serviceSecret',
+      'redis',
+      'mySharedPassword',
+    ];
+
+    final allPasswords = _readAllPasswords(projectSetup.projectDir);
+    if (allPasswords.isEmpty) return;
+
+    List<String> alreadySetSecretNames;
+    final projectId = projectSetup.projectId;
+    if (projectSetup.preexistingProject == true && projectId != null) {
+      alreadySetSecretNames = await PasswordCommands.fetchPasswords(
+        cloudApiClient,
+        projectId: projectId,
+      ).then((final passwords) => passwords.map((final p) => p.name).toList());
+    } else {
+      alreadySetSecretNames = [];
+    }
+
+    final filteredPasswords = allPasswords.where(
+      (final p) =>
+          !ignoredSecretNames.contains(p.name) &&
+          !alreadySetSecretNames.contains(p.name),
+    );
+    if (filteredPasswords.isEmpty) return;
+
+    final sortedPasswords = filteredPasswords.toList()
+      ..sort((final a, final b) => a.section.index.compareTo(b.section.index));
+
+    final longestPasswordNameLength = sortedPasswords
+        .map((final p) => p.name.length)
+        .reduce((final a, final b) => math.max(a, b));
+    String padAfterName(final String name) {
+      return ''.padRight(longestPasswordNameLength - name.length);
+    }
+
+    final options = sortedPasswords
+        .map(
+          (final p) =>
+              '${p.name}: ${padAfterName(p.name)}${_hidePassword(p.value)}'
+              '  (from section "${p.section.name}")',
+        )
+        .toList();
+    final initiallySelected = options.where(
+      (final s) => s.endsWith('"production")') || s.endsWith('"shared")'),
+    );
+
+    final selected = await SelectList.chooseMultiple<String>(
+      prompt:
+          'Custom passwords were found in config/passwords.yaml.\n'
+          'You can select which of them to copy securely to Serverpod Cloud now.\n'
+          '${logger.wrapStyle('Set them later with `scloud password set`.', cli.AnsiStyle.darkGray)}',
+      options: options,
+      initiallySelected: initiallySelected,
+      terminal: logger.inlineTerminal,
+      style: SelectListStyle(highlightStyle: _projectFactStyle.ansiCode),
+    );
+    if (selected == null) {
+      logger.info('Setup cancelled.');
+      throw UserAbortException();
+    }
+
+    final selectedNames = selected
+        .map((final option) => option.split(':').first)
+        .toSet();
+    final selectedPasswords = sortedPasswords.where(
+      (final p) => selectedNames.contains(p.name),
+    );
+    projectSetup.selectedPasswords = {
+      for (final p in selectedPasswords) p.name: p.value,
+    };
+  }
+
+  static Set<_Password> _readAllPasswords(final Directory projectDir) {
+    final file = File(p.join(projectDir.path, 'config', 'passwords.yaml'));
+    if (!file.existsSync()) return {};
+
+    final Object? decoded;
+    try {
+      decoded = yamlDecode(file.readAsStringSync());
+    } on Exception catch (e, s) {
+      throw FailureException.nested(
+        e,
+        s,
+        'Failed to parse config/passwords.yaml',
+      );
+    }
+    if (decoded is! Map) return {};
+
+    final passwords = <_Password>{
+      for (final section in PasswordSection.values)
+        ..._readPasswords(decoded, section),
+    };
+
+    return passwords;
+  }
+
+  static Set<_Password> _readPasswords(
+    final Map<dynamic, dynamic> decoded,
+    final PasswordSection section,
+  ) {
+    final passwords = <_Password>{};
+    final sectionData = decoded[section.name];
+    if (sectionData is! Map) return {};
+    for (final entry in sectionData.entries) {
+      final value = entry.value;
+      if (value == null || value is Map || value is Iterable) continue;
+      passwords.add(
+        _Password(
+          name: entry.key.toString(),
+          value: value.toString(),
+          section: section,
+        ),
+      );
+    }
+    return passwords;
   }
 
   static Future<String?> _selectExistingProject(
@@ -364,7 +514,7 @@ abstract class Launch {
 
     final selected = await SelectList.choose(
       prompt:
-          'Select a Severpod Cloud project to deploy to, or create a new project:\n',
+          'Select a Serverpod Cloud project to deploy to, or create a new project:',
       options: options,
       label: (final o) => o.$2,
       terminal: logger.inlineTerminal,
@@ -485,31 +635,18 @@ abstract class Launch {
     final IOSink? stderr,
   }) async {
     final projectId = projectSetup.projectId;
+    if (projectId == null) {
+      throw StateError('Project ID not set in project setup.');
+    }
+
     final projectDir = projectSetup.projectDir;
-    final usesDb = projectSetup.usesDb;
     final configFilePath = projectSetup.configFilePath;
     final performDeploy = projectSetup.performDeploy;
-
-    String actualProjectId;
-    if (projectSetup.preexistingProject != true) {
-      actualProjectId = await createProject(
-        logger,
-        consoleServer: consoleServer,
-        openBrowser: openBrowser,
-        projectName: projectId ?? '',
-        usesDb: usesDb,
-      );
-    } else {
-      if (projectId == null) {
-        throw StateError('For preexisting projects, projectId must be set.');
-      }
-      actualProjectId = projectId;
-    }
 
     final safeDartSdk = await ProjectCommands.linkProject(
       cloudApiClient,
       logger: logger,
-      projectId: actualProjectId,
+      projectId: projectId,
       projectDirectory: projectDir.path,
       configFilePath: configFilePath,
       dartVersionOverride: projectSetup.dartVersionOverride,
@@ -517,6 +654,56 @@ abstract class Launch {
       suppressCommandMessages: true,
     );
 
+    await _populateCustomPasswords(
+      cloudApiClient,
+      logger,
+      projectId: projectId,
+      passwords: projectSetup.selectedPasswords,
+    );
+
+    if (!performDeploy) {
+      logger.terminalCommand(
+        'scloud launch',
+        message:
+            'Deployment skipped. Run this command again to deploy to the cloud:',
+        newParagraph: true,
+      );
+      return;
+    }
+
+    await Deploy.deploy(
+      cloudApiClient,
+      fileUploaderFactory,
+      logger: logger,
+      projectId: projectId,
+      projectDir: projectDir.path,
+      projectConfigFilePath: configFilePath,
+      concurrency: deployConcurrency,
+      wetRun: wetRun,
+      showFiles: deployShowFiles,
+      outputPath: deployOutputPath,
+      skipTailingStatus: deploySkipTailingStatus,
+      suppressCommandMessages: true,
+      dartVersionOverride: safeDartSdk,
+      stdout: stdout,
+      stderr: stderr,
+    );
+
+    if (wetRun) return;
+
+    _displayProjectInfo(logger: logger, actualProjectId: projectId);
+
+    logger.terminalCommand(
+      'scloud help deployment',
+      message: 'To see how to view deployment statuses, run this command:',
+      newParagraph: true,
+    );
+  }
+
+  static void _displayProjectInfo({
+    required final CommandLogger logger,
+    required final String actualProjectId,
+  }) {
     final projectIdStr = logger.wrapStyle(actualProjectId, _projectFactStyle);
     logger.info(
       'Your Serverpod Cloud project ID is: $projectIdStr',
@@ -540,42 +727,6 @@ abstract class Launch {
       '   Web:      $webUrl\n'
       '   API:      $apiUrl\n'
       '   Insights: $insightsUrl',
-      newParagraph: true,
-    );
-
-    if (!performDeploy) {
-      logger.terminalCommand(
-        'scloud launch',
-        message:
-            'Deployment skipped. Run this command again to deploy to the cloud:',
-        newParagraph: true,
-      );
-      return;
-    }
-
-    await Deploy.deploy(
-      cloudApiClient,
-      fileUploaderFactory,
-      logger: logger,
-      projectId: actualProjectId,
-      projectDir: projectDir.path,
-      projectConfigFilePath: configFilePath,
-      concurrency: deployConcurrency,
-      wetRun: wetRun,
-      showFiles: deployShowFiles,
-      outputPath: deployOutputPath,
-      skipTailingStatus: deploySkipTailingStatus,
-      suppressCommandMessages: true,
-      dartVersionOverride: safeDartSdk,
-      stdout: stdout,
-      stderr: stderr,
-    );
-
-    if (wetRun) return;
-
-    logger.terminalCommand(
-      'scloud help deployment',
-      message: 'To see how to view deployment statuses, run this command:',
       newParagraph: true,
     );
   }
@@ -639,6 +790,7 @@ abstract class Launch {
         return createdProjectId != null;
       },
     );
+    logger.info(' ');
 
     final projectId = createdProjectId;
     if (projectId == null) {
@@ -650,6 +802,62 @@ abstract class Launch {
 
     return projectId;
   }
+
+  static Future<void> _populateCustomPasswords(
+    final Client cloudApiClient,
+    final CommandLogger logger, {
+    required final String projectId,
+    required final Map<String, String> passwords,
+  }) async {
+    if (passwords.isEmpty) return;
+
+    await logger.progress(
+      'Setting custom passwords',
+      successMessage: 'Custom passwords set in cloud.',
+      padRight: StatusCommands.progressMessagePadLength,
+      () async {
+        await PasswordCommands.setPasswords(
+          cloudApiClient,
+          logger: logger,
+          projectId: projectId,
+          passwords: passwords,
+          suppressCommandMessages: true,
+        );
+        return true;
+      },
+    );
+  }
+}
+
+String _hidePassword(final String password) {
+  final included = math.min(password.length, 4);
+  return '${password.substring(0, included)}*****';
+}
+
+/// The order of the sections is significant for the password value precedence.
+/// Earlier sections override later sections.
+enum PasswordSection { production, shared, staging, test, development }
+
+class _Password {
+  final String name;
+  final String value;
+  final PasswordSection section;
+
+  _Password({required this.name, required this.value, required this.section});
+
+  @override
+  String toString() {
+    return '$name: ${_hidePassword(value)}';
+  }
+
+  @override
+  bool operator ==(final Object other) {
+    if (other is _Password) return name == other.name;
+    return false;
+  }
+
+  @override
+  int get hashCode => name.hashCode;
 }
 
 class ProjectLaunch {
@@ -660,9 +868,11 @@ class ProjectLaunch {
   String? projectId;
   String? dartVersionOverride;
   bool? preexistingProject;
+  bool? preexistingProjectDeployed;
   final bool performDeploy;
   final bool includePreDeployScripts;
   final List<String> suggestedPreDeployScripts;
+  Map<String, String> selectedPasswords;
 
   ProjectLaunch({
     required this.projectDir,
@@ -672,9 +882,12 @@ class ProjectLaunch {
     this.projectId,
     this.dartVersionOverride,
     this.preexistingProject,
+    this.preexistingProjectDeployed,
     this.performDeploy = true,
     final List<String>? suggestedPreDeployScripts,
-  }) : suggestedPreDeployScripts = suggestedPreDeployScripts ?? [] {
+    final Map<String, String>? selectedPasswords,
+  }) : suggestedPreDeployScripts = suggestedPreDeployScripts ?? [],
+       selectedPasswords = selectedPasswords ?? {} {
     configFilePath = _constructConfigFilePath(projectDir.path);
   }
 

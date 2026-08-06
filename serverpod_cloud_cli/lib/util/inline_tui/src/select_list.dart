@@ -28,14 +28,30 @@ abstract final class SelectList {
   ///
   /// Throws a [UserAbortException] if the user aborts with Ctrl+C.
   ///
+  /// [options] are the values to choose from.
+  ///
   /// [terminal] is supplied by the caller, which owns its lifecycle; this prompt
   /// cleans up after itself before returning but does not dispose [terminal].
   ///
+  /// [prompt] is optional text printed once above the list. It may contain
+  /// newlines and is not part of the in-place re-rendered region.
+  ///
+  /// [footerText] is optional additional text shown below the key-hint row.
+  /// It may contain newlines; after selection or cancel it is cleared together
+  /// with the hint row.
+  ///
   /// [label] maps each option to its displayed text (defaults to `toString`).
+  ///
+  /// [initialIndex] is the initially highlighted option (defaults to 0).
+  ///
+  /// [isEnabled] returns whether an option can be selected (defaults to true).
+  ///
+  /// [style] customizes glyphs and ANSI colors (defaults to [SelectListStyle]).
   static Future<T?> choose<T>({
     required final List<T> options,
     required final InlineTerminal terminal,
     final String? prompt,
+    final String? footerText,
     final String Function(T option)? label,
     final int initialIndex = 0,
     final bool Function(T option)? isEnabled,
@@ -52,6 +68,7 @@ abstract final class SelectList {
       terminal: terminal,
       style: style,
       prompt: prompt,
+      footerText: footerText,
     );
     if (result.status != SelectListStatus.submitted) return null;
     return result.selectedValues.isEmpty ? null : result.selectedValues.first;
@@ -62,12 +79,33 @@ abstract final class SelectList {
   ///
   /// Throws a [UserAbortException] if the user aborts with Ctrl+C.
   ///
+  /// [options] are the values to choose from.
+  ///
+  /// [terminal] is supplied by the caller, which owns its lifecycle; this prompt
+  /// cleans up after itself before returning but does not dispose [terminal].
+  ///
+  /// [prompt] is optional text printed once above the list. It may contain
+  /// newlines and is not part of the in-place re-rendered region.
+  ///
+  /// [footerText] is optional additional text shown below the key-hint row.
+  /// It may contain newlines; after selection or cancel it is cleared together
+  /// with the hint row.
+  ///
+  /// [label] maps each option to its displayed text (defaults to `toString`).
+  ///
+  /// [initiallySelected] are the options that start checked.
+  ///
   /// [minSelections] and [maxSelections] constrain how many items may be
   /// selected. Enter only confirms once at least [minSelections] are selected.
+  ///
+  /// [isEnabled] returns whether an option can be selected (defaults to true).
+  ///
+  /// [style] customizes glyphs and ANSI colors (defaults to [SelectListStyle]).
   static Future<List<T>?> chooseMultiple<T>({
     required final List<T> options,
     required final InlineTerminal terminal,
     final String? prompt,
+    final String? footerText,
     final String Function(T option)? label,
     final Iterable<T> initiallySelected = const [],
     final int minSelections = 0,
@@ -92,6 +130,7 @@ abstract final class SelectList {
       terminal: terminal,
       style: style,
       prompt: prompt,
+      footerText: footerText,
     );
     if (result.status != SelectListStatus.submitted) return null;
     return result.selectedValues;
@@ -117,6 +156,7 @@ abstract final class SelectList {
     required final InlineTerminal terminal,
     required final SelectListStyle? style,
     required final String? prompt,
+    required final String? footerText,
   }) async {
     final resolvedStyle = style ?? SelectListStyle();
     final runner = SelectListRunner<T>(
@@ -124,6 +164,7 @@ abstract final class SelectList {
       terminal: terminal,
       style: resolvedStyle,
       prompt: prompt,
+      footerText: footerText,
     );
     await runner.run();
     return model;
@@ -139,6 +180,7 @@ class SelectListRunner<T> {
   final InlineTerminal _terminal;
   final SelectListStyle _style;
   final String? _prompt;
+  final String? _footerText;
 
   /// Creates a runner for [model] rendered to [terminal] using [style].
   SelectListRunner({
@@ -146,10 +188,12 @@ class SelectListRunner<T> {
     required final InlineTerminal terminal,
     required final SelectListStyle style,
     final String? prompt,
+    final String? footerText,
   }) : _model = model,
        _terminal = terminal,
        _style = style,
-       _prompt = prompt;
+       _prompt = prompt,
+       _footerText = footerText;
 
   /// Runs the interaction until the user submits, cancels, or aborts.
   Future<void> run() async {
@@ -159,9 +203,10 @@ class SelectListRunner<T> {
     StreamSubscription<void>? interruptSubscription;
 
     void restoreTerminal() {
-      // Clear the hint row and leave the cursor at its start, keeping the menu
-      // and the blank line above it so subsequent output begins there.
-      renderer.finishClearingLastLine();
+      // Clear the hint row and any additional footer text, leave the cursor at
+      // the start of the hint row, and keep the menu and the blank line above
+      // the hint so subsequent output begins there.
+      renderer.finishClearingLastLine(lineCount: _clearedFooterLineCount);
       _terminal.disableRawMode();
     }
 
@@ -169,6 +214,12 @@ class SelectListRunner<T> {
     // throwing [UserAbortException] when aborted. Used for every exit path so
     // Ctrl+C is cleaned up exactly like a cancel.
     void finish(final SelectListStatus status) {
+      if (status == SelectListStatus.submitted ||
+          status == SelectListStatus.cancelled) {
+        // Drop the navigation pointer and highlight selected rows so the
+        // remaining menu summarizes the selection after the footer is cleared.
+        renderer.render(_buildLines(highlightBySelection: true));
+      }
       restoreTerminal();
       unawaited(inputSubscription?.cancel());
       unawaited(interruptSubscription?.cancel());
@@ -227,7 +278,7 @@ class SelectListRunner<T> {
     return completer.future;
   }
 
-  List<String> _buildLines() {
+  List<String> _buildLines({final bool highlightBySelection = false}) {
     // The prompt/header is intentionally not included here; it is printed once
     // above the region so it is never part of an in-place re-render.
     return buildSelectListLines<T>(
@@ -235,17 +286,28 @@ class SelectListRunner<T> {
       style: _style,
       useAnsiStyles: _terminal.supportsColor,
       columns: _terminal.columns,
-      footer: _hint(),
+      footer: _footer(),
+      highlightBySelection: highlightBySelection,
     );
   }
 
-  String _hint() {
+  /// Hint row plus optional additional [footerText], preceded by a blank line.
+  String _footer() {
     const navigate = 'up/down move';
     final select = _model.multiSelect
         ? 'space select, enter confirm'
         : 'enter select';
     const cancel = 'esc cancel';
     final hint = '$navigate, $select, $cancel';
-    return '\n$hint';
+    final footerText = _footerText;
+    if (footerText == null) return '\n$hint';
+    return '\n$hint\n$footerText';
+  }
+
+  /// Hint line plus each line of optional additional footer text.
+  int get _clearedFooterLineCount {
+    final footerText = _footerText;
+    if (footerText == null) return 1;
+    return 1 + footerText.split('\n').length;
   }
 }

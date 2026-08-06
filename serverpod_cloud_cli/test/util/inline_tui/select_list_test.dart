@@ -1,5 +1,6 @@
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/inline_tui/src/select_list.dart';
+import 'package:serverpod_cloud_cli/util/inline_tui/src/select_list_style.dart';
 import 'package:test/test.dart';
 
 import 'helpers/fake_terminal.dart';
@@ -33,6 +34,51 @@ void main() {
       },
     );
 
+    test('when confirming then the chosen row is highlighted without a '
+        'navigation pointer', () async {
+      final term = FakeTerminal(supportsColor: true);
+      final future = SelectList.choose<String>(
+        options: ['Apple', 'Banana', 'Cherry'],
+        terminal: term,
+      );
+
+      await pumpEventQueue();
+      term.sendBytes(_down);
+      await pumpEventQueue();
+      term.sendBytes(_enter);
+
+      expect(await future, 'Banana');
+
+      final clears = term.output.split('\x1b[0J');
+      final finalRender = clears[clears.length - 2];
+      final highlight = SelectListStyle.defaultHighlightStyle.ansiCode;
+      expect(finalRender, contains('$highlight  (*) Banana'));
+      expect(finalRender, isNot(contains('> (*) Banana')));
+      expect(finalRender, contains('  ( ) Apple'));
+      expect(finalRender, isNot(contains('$highlight  ( ) Apple')));
+    });
+
+    test('when cancelling then the navigation pointer is removed', () async {
+      final term = FakeTerminal();
+      final future = SelectList.choose<String>(
+        options: ['Apple', 'Banana'],
+        terminal: term,
+      );
+
+      await pumpEventQueue();
+      term.sendBytes(_down);
+      await pumpEventQueue();
+      term.sendBytes(_escape);
+
+      expect(await future, isNull);
+
+      final clears = term.output.split('\x1b[0J');
+      final finalRender = clears[clears.length - 2];
+      expect(finalRender, isNot(contains('>')));
+      expect(finalRender, contains('  ( ) Apple'));
+      expect(finalRender, contains('  ( ) Banana'));
+    });
+
     test('when a selection is made then the hint row is cleared and the '
         'cursor is left at its start for subsequent output', () async {
       final term = FakeTerminal();
@@ -49,6 +95,41 @@ void main() {
       // Output ends by moving to the start of the hint row and clearing it
       // (no trailing newline), so the next output starts there.
       expect(term.output, endsWith('\r\x1b[0J\x1b[?25h'));
+    });
+
+    test('when footerText is given then it is shown below the hint', () async {
+      final term = FakeTerminal();
+      final future = SelectList.choose<String>(
+        options: ['Apple', 'Banana'],
+        footerText: 'Extra context',
+        terminal: term,
+      );
+
+      await pumpEventQueue();
+      expect(term.output, contains('Extra context'));
+      expect(term.output, contains('up/down move'));
+
+      term.sendBytes(_enter);
+      expect(await future, 'Apple');
+    });
+
+    test('when multi-line footerText is given then each line is shown and '
+        'cleared on selection with the cursor at the hint row', () async {
+      final term = FakeTerminal();
+      final future = SelectList.choose<String>(
+        options: ['Apple', 'Banana'],
+        footerText: 'Line one\nLine two',
+        terminal: term,
+      );
+
+      await pumpEventQueue();
+      expect(term.output, contains('Line one\nLine two'));
+
+      term.sendBytes(_enter);
+      await future;
+
+      // Hint + two footer lines = 3 lines cleared: move up 2, then clear.
+      expect(term.output, endsWith('\r\x1b[2A\x1b[0J\x1b[?25h'));
     });
 
     test('when pressing Escape then it returns null', () async {
@@ -134,6 +215,79 @@ void main() {
       term.sendBytes(_enter);
 
       expect(await future, ['Apple', 'Cherry']);
+    });
+
+    test('when confirming then selected rows are highlighted and unselected '
+        'rows are not', () async {
+      final term = FakeTerminal(supportsColor: true);
+      final future = SelectList.chooseMultiple<String>(
+        options: ['Apple', 'Banana', 'Cherry'],
+        terminal: term,
+      );
+
+      await pumpEventQueue();
+      term.sendBytes(_space); // Apple
+      await pumpEventQueue();
+      term.sendBytes(_down);
+      await pumpEventQueue();
+      term.sendBytes(_down);
+      await pumpEventQueue();
+      term.sendBytes(_space); // Cherry
+      await pumpEventQueue();
+      term.sendBytes(_enter);
+
+      expect(await future, ['Apple', 'Cherry']);
+
+      // The final menu render (after confirm, before footer clear) is the
+      // second-to-last clear-region chunk.
+      final clears = term.output.split('\x1b[0J');
+      final finalRender = clears[clears.length - 2];
+      final highlight = SelectListStyle.defaultHighlightStyle.ansiCode;
+      expect(finalRender, contains('$highlight  [x] Apple'));
+      expect(finalRender, contains('  [ ] Banana'));
+      expect(finalRender, isNot(contains('$highlight  [ ] Banana')));
+      expect(finalRender, contains('$highlight  [x] Cherry'));
+    });
+
+    test('when cancelling then selected rows remain highlighted', () async {
+      final term = FakeTerminal(supportsColor: true);
+      final future = SelectList.chooseMultiple<String>(
+        options: ['Apple', 'Banana'],
+        terminal: term,
+      );
+
+      await pumpEventQueue();
+      term.sendBytes(_space); // Apple
+      await pumpEventQueue();
+      term.sendBytes(_escape);
+
+      expect(await future, isNull);
+
+      final clears = term.output.split('\x1b[0J');
+      final finalRender = clears[clears.length - 2];
+      final highlight = SelectListStyle.defaultHighlightStyle.ansiCode;
+      expect(finalRender, contains('$highlight  [x] Apple'));
+      expect(finalRender, contains('  [ ] Banana'));
+      expect(finalRender, isNot(contains('$highlight  [ ] Banana')));
+    });
+
+    test('when footerText is given and the user cancels then the hint and '
+        'footer are cleared', () async {
+      final term = FakeTerminal();
+      final future = SelectList.chooseMultiple<String>(
+        options: ['Apple', 'Banana'],
+        footerText: 'Pick any',
+        terminal: term,
+      );
+
+      await pumpEventQueue();
+      expect(term.output, contains('Pick any'));
+
+      term.sendBytes(_escape);
+      expect(await future, isNull);
+
+      // Hint + one footer line = 2 lines cleared: move up 1, then clear.
+      expect(term.output, endsWith('\r\x1b[1A\x1b[0J\x1b[?25h'));
     });
 
     test(

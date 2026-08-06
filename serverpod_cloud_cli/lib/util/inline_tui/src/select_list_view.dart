@@ -9,6 +9,10 @@ import 'select_list_style.dart';
 /// entry per line so each returned entry occupies a single terminal row.
 /// [columns] is used to fit each row to the terminal width while keeping any
 /// color codes intact.
+///
+/// When [highlightBySelection] is true, selected rows use the highlight style
+/// and the navigation pointer is omitted; otherwise the cursor row is
+/// highlighted.
 List<String> buildSelectListLines<T>(
   final SelectListModel<T> model, {
   required final SelectListStyle style,
@@ -16,14 +20,19 @@ List<String> buildSelectListLines<T>(
   required final int columns,
   final String? header,
   final String? footer,
+  final bool highlightBySelection = false,
 }) {
   final lines = <String>[];
   if (header != null) lines.add(_fit(header, columns));
 
   for (var i = 0; i < model.items.length; i++) {
     final item = model.items[i];
-    final highlighted = i == model.highlightedIndex;
-    final pointer = highlighted ? style.pointer : style.noPointer;
+    final highlighted = highlightBySelection
+        ? model.isSelected(i)
+        : i == model.highlightedIndex;
+    final pointer = highlightBySelection
+        ? style.noPointer
+        : (highlighted ? style.pointer : style.noPointer);
 
     final String marker;
     if (model.multiSelect) {

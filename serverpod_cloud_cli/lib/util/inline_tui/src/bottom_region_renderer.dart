@@ -70,17 +70,25 @@ class BottomRegionRenderer {
     _renderedLineCount = 0;
   }
 
-  /// Finishes by clearing only the last rendered line, preserving the lines
-  /// above it and leaving the cursor at the start of the cleared line.
+  /// Finishes by clearing the last [lineCount] rendered lines, preserving the
+  /// lines above them and leaving the cursor at the start of the first cleared
+  /// line.
   ///
-  /// Subsequent output therefore begins where the last line was. Relies on the
-  /// cursor being at the end of the last rendered line, which is the case right
-  /// after a [render].
-  void finishClearingLastLine() {
-    if (_renderedLineCount > 0) {
-      // Move to the start of the (current) last line and clear from there to
-      // the end of the screen.
-      _terminal.write('\r$_esc[0J');
+  /// Subsequent output therefore begins where those cleared lines started.
+  /// Relies on the cursor being at the end of the last rendered line, which is
+  /// the case right after a [render].
+  void finishClearingLastLine({final int lineCount = 1}) {
+    if (_renderedLineCount > 0 && lineCount > 0) {
+      final clearCount = lineCount > _renderedLineCount
+          ? _renderedLineCount
+          : lineCount;
+      final buffer = StringBuffer('\r');
+      if (clearCount > 1) {
+        buffer.write('$_esc[${clearCount - 1}A');
+      }
+      // Clear from the start of the first cleared line to the end of the screen.
+      buffer.write('$_esc[0J');
+      _terminal.write(buffer.toString());
     }
     showCursor();
     _renderedLineCount = 0;

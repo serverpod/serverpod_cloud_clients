@@ -155,9 +155,8 @@ abstract final class PasswordDefinitions {
 }
 
 abstract class PasswordCommands {
-  static Future<void> listPasswords(
+  static Future<List<PasswordInfo>> fetchPasswords(
     final Client cloudApiClient, {
-    required final CommandLogger logger,
     required final String projectId,
   }) async {
     late List<String> userSecrets;
@@ -204,7 +203,20 @@ abstract class PasswordCommands {
       }
     }
 
-    _printPasswords(logger, passwordInfos.values.toList());
+    return passwordInfos.values.toList();
+  }
+
+  static Future<void> listPasswords(
+    final Client cloudApiClient, {
+    required final CommandLogger logger,
+    required final String projectId,
+  }) async {
+    final passwords = await fetchPasswords(
+      cloudApiClient,
+      projectId: projectId,
+    );
+
+    _printPasswords(logger, passwords);
   }
 
   static void _printPasswords(
@@ -260,24 +272,48 @@ abstract class PasswordCommands {
     required final String projectId,
     required final String name,
     required final String value,
+    final bool suppressCommandMessages = false,
   }) async {
-    final validationError = PasswordDefinitions.isValidValue(name, value);
-    if (validationError != null) {
-      throw ErrorExitException('Password "$name": $validationError');
+    await setPasswords(
+      cloudApiClient,
+      logger: logger,
+      projectId: projectId,
+      passwords: {name: value},
+      suppressCommandMessages: suppressCommandMessages,
+    );
+
+    if (!suppressCommandMessages) {
+      logger.success('Successfully set password "$name".');
+    }
+  }
+
+  static Future<void> setPasswords(
+    final Client cloudApiClient, {
+    required final CommandLogger logger,
+    required final String projectId,
+    required final Map<String, String> passwords,
+    final bool suppressCommandMessages = false,
+  }) async {
+    for (final MapEntry(key: name, value: value) in passwords.entries) {
+      final validationError = PasswordDefinitions.isValidValue(name, value);
+      if (validationError != null) {
+        throw ErrorExitException('Password "$name": $validationError');
+      }
     }
 
-    final fullSecretName = PasswordDefinitions.getFullSecretName(name);
+    final secrets = {
+      for (final MapEntry(key: name, value: value) in passwords.entries)
+        PasswordDefinitions.getFullSecretName(name): value,
+    };
 
     try {
       await cloudApiClient.secrets.upsert(
-        secrets: {fullSecretName: value},
+        secrets: secrets,
         cloudCapsuleId: projectId,
       );
     } on Exception catch (e, s) {
-      throw FailureException.nested(e, s, 'Failed to set password');
+      throw FailureException.nested(e, s, 'Failed to set passwords');
     }
-
-    logger.success('Successfully set password "$name".');
   }
 
   static Future<void> unsetPassword(
