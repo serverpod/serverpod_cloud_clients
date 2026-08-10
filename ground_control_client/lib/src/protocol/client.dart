@@ -111,6 +111,27 @@ import 'package:ground_control_client/src/protocol/domains/status/models/deploy_
 import 'package:http/http.dart' as _i51;
 import 'protocol.dart' as _i52;
 
+/// Endpoint for the one-off auth-email key backfill.
+/// {@category Endpoint}
+class EndpointAdminAuthEmailKey extends _i1.EndpointRef {
+  EndpointAdminAuthEmailKey(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'adminAuthEmailKey';
+
+  /// Delivers the `scloudAuthEmailKey` managed secret to every capsule that
+  /// does not have it yet. Capsules that already have the key are left
+  /// unchanged.
+  ///
+  /// Capsules created after the key shipped get it with the rest of the
+  /// bootstrap secrets. Remove when the backfill is complete.
+  _i2.Future<void> backfillAuthEmailKeys() => caller.callServerEndpoint<void>(
+    'adminAuthEmailKey',
+    'backfillAuthEmailKeys',
+    {},
+  );
+}
+
 /// {@category Endpoint}
 class EndpointAdminMigration extends _i1.EndpointRef {
   EndpointAdminMigration(_i1.EndpointCaller caller) : super(caller);
@@ -2216,6 +2237,7 @@ class Client extends _i1.ServerpodClientShared {
              disconnectStreamsOnLostInternetConnection,
          httpClientOverride: httpClientOverride,
        ) {
+    adminAuthEmailKey = EndpointAdminAuthEmailKey(this);
     adminMigration = EndpointAdminMigration(this);
     adminProcurement = EndpointAdminProcurement(this);
     adminProjects = EndpointAdminProjects(this);
@@ -2250,6 +2272,8 @@ class Client extends _i1.ServerpodClientShared {
     users = EndpointUsers(this);
     modules = Modules(this);
   }
+
+  late final EndpointAdminAuthEmailKey adminAuthEmailKey;
 
   late final EndpointAdminMigration adminMigration;
 
@@ -2319,6 +2343,7 @@ class Client extends _i1.ServerpodClientShared {
 
   @override
   Map<String, _i1.EndpointRef> get endpointRefLookup => {
+    'adminAuthEmailKey': adminAuthEmailKey,
     'adminMigration': adminMigration,
     'adminProcurement': adminProcurement,
     'adminProjects': adminProjects,
