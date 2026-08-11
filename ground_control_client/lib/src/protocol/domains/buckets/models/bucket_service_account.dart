@@ -14,7 +14,8 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/buckets/models/bucket_service_account_status.dart'
     as _i2;
 
-abstract class BucketServiceAccount implements _i1.SerializableModel {
+abstract class BucketServiceAccount
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   BucketServiceAccount._({
     this.id,
     required this.cloudCapsuleId,
@@ -70,6 +71,18 @@ abstract class BucketServiceAccount implements _i1.SerializableModel {
   });
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'BucketServiceAccount',
+      if (id != null) 'id': id,
+      'cloudCapsuleId': cloudCapsuleId,
+      'saEmail': saEmail,
+      if (activeKeyId != null) 'activeKeyId': activeKeyId,
+      'status': status.toJson(),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'BucketServiceAccount',
       if (id != null) 'id': id,

@@ -12,7 +12,8 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
-abstract class Timestamp implements _i1.SerializableModel {
+abstract class Timestamp
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   Timestamp._({this.timestamp});
 
   factory Timestamp({DateTime? timestamp}) = _TimestampImpl;
@@ -33,6 +34,14 @@ abstract class Timestamp implements _i1.SerializableModel {
   Timestamp copyWith({DateTime? timestamp});
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'Timestamp',
+      if (timestamp != null) 'timestamp': timestamp?.toJson(),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'Timestamp',
       if (timestamp != null) 'timestamp': timestamp?.toJson(),

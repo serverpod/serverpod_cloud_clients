@@ -22,7 +22,8 @@ import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 /// connections, and is storage growing. Series are sparse and share the
 /// window and step of the pod metrics for the same capsule, so both can be
 /// drawn on one time axis.
-abstract class DatabaseMetrics implements _i1.SerializableModel {
+abstract class DatabaseMetrics
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   DatabaseMetrics._({
     required this.status,
     required this.cpuCores,
@@ -94,6 +95,24 @@ abstract class DatabaseMetrics implements _i1.SerializableModel {
       'memoryBytes': memoryBytes.toJson(valueToJson: (v) => v.toJson()),
       'connections': connections.toJson(valueToJson: (v) => v.toJson()),
       'storageBytes': storageBytes.toJson(valueToJson: (v) => v.toJson()),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'DatabaseMetrics',
+      'status': status.toJson(),
+      'cpuCores': cpuCores.toJson(valueToJson: (v) => v.toJsonForProtocol()),
+      'memoryBytes': memoryBytes.toJson(
+        valueToJson: (v) => v.toJsonForProtocol(),
+      ),
+      'connections': connections.toJson(
+        valueToJson: (v) => v.toJsonForProtocol(),
+      ),
+      'storageBytes': storageBytes.toJson(
+        valueToJson: (v) => v.toJsonForProtocol(),
+      ),
     };
   }
 

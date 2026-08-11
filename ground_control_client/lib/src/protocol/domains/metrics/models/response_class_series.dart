@@ -23,7 +23,8 @@ import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 /// class that recorded zero. Zeros reach the wire unchanged — an
 /// idle-but-deployed capsule still has its counters, so a zero is a real
 /// reading.
-abstract class ResponseClassSeries implements _i1.SerializableModel {
+abstract class ResponseClassSeries
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   ResponseClassSeries._({
     required this.responseClass,
     required this.responsesPerSecond,
@@ -65,6 +66,17 @@ abstract class ResponseClassSeries implements _i1.SerializableModel {
       'responseClass': responseClass.toJson(),
       'responsesPerSecond': responsesPerSecond.toJson(
         valueToJson: (v) => v.toJson(),
+      ),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'ResponseClassSeries',
+      'responseClass': responseClass.toJson(),
+      'responsesPerSecond': responsesPerSecond.toJson(
+        valueToJson: (v) => v.toJsonForProtocol(),
       ),
     };
   }

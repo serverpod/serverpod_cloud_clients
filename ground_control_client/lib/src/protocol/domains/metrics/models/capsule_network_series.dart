@@ -25,7 +25,8 @@ import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 /// that is present with zero-rate samples, which reads as "no traffic" — an
 /// idle-but-deployed capsule still has its Envoy counters. The store
 /// disambiguates the two, so this model carries no status flag.
-abstract class CapsuleNetworkSeries implements _i1.SerializableModel {
+abstract class CapsuleNetworkSeries
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   CapsuleNetworkSeries._({
     required this.requestsPerSecond,
     required this.responses,
@@ -72,6 +73,17 @@ abstract class CapsuleNetworkSeries implements _i1.SerializableModel {
         valueToJson: (v) => v.toJson(),
       ),
       'responses': responses.toJson(valueToJson: (v) => v.toJson()),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'CapsuleNetworkSeries',
+      'requestsPerSecond': requestsPerSecond.toJson(
+        valueToJson: (v) => v.toJsonForProtocol(),
+      ),
+      'responses': responses.toJson(valueToJson: (v) => v.toJsonForProtocol()),
     };
   }
 

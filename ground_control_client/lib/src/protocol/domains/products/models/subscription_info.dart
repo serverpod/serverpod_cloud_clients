@@ -15,7 +15,8 @@ import '../../../domains/products/models/plan_type.dart' as _i2;
 
 /// Information about a subscription.
 /// Contains information to be sent to the client.
-abstract class SubscriptionInfo implements _i1.SerializableModel {
+abstract class SubscriptionInfo
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   SubscriptionInfo._({
     required this.createdAt,
     required this.startDate,
@@ -135,6 +136,25 @@ abstract class SubscriptionInfo implements _i1.SerializableModel {
   });
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'SubscriptionInfo',
+      'createdAt': createdAt.toJson(),
+      'startDate': startDate.toJson(),
+      if (trialEndDate != null) 'trialEndDate': trialEndDate?.toJson(),
+      if (endDate != null) 'endDate': endDate?.toJson(),
+      'cancelled': cancelled,
+      'subscriptionId': subscriptionId.toJson(),
+      'planProductId': planProductId,
+      'planType': planType.toJson(),
+      if (planName != null) 'planName': planName,
+      'planDisplayName': planDisplayName,
+      if (planDescription != null) 'planDescription': planDescription,
+      if (projectsLimit != null) 'projectsLimit': projectsLimit,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'SubscriptionInfo',
       'createdAt': createdAt.toJson(),

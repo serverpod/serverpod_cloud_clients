@@ -21,7 +21,8 @@ import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 /// Ancillary information fields are included according to use case,
 /// in which case they are non-null.
 /// In other words, null ancillary fields correspond to `undefined`.
-abstract class ProjectInfo implements _i1.SerializableModel {
+abstract class ProjectInfo
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   ProjectInfo._({
     required this.project,
     required this.productId,
@@ -75,6 +76,17 @@ abstract class ProjectInfo implements _i1.SerializableModel {
       'productId': productId,
       if (latestDeployAttemptTime != null)
         'latestDeployAttemptTime': latestDeployAttemptTime?.toJson(),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'ProjectInfo',
+      'project': project.toJsonForProtocol(),
+      'productId': productId,
+      if (latestDeployAttemptTime != null)
+        'latestDeployAttemptTime': latestDeployAttemptTime?.toJsonForProtocol(),
     };
   }
 

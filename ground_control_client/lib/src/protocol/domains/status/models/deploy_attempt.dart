@@ -17,7 +17,8 @@ import '../../../domains/status/models/deploy_attempt_stage.dart' as _i4;
 import 'package:ground_control_client/src/protocol/protocol.dart' as _i5;
 
 /// Represents the status information of a deployment attempt.
-abstract class DeployAttempt implements _i1.SerializableModel {
+abstract class DeployAttempt
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   DeployAttempt._({
     _i1.UuidValue? id,
     required this.cloudCapsuleId,
@@ -207,6 +208,32 @@ abstract class DeployAttempt implements _i1.SerializableModel {
       if (statusInfo != null) 'statusInfo': statusInfo,
       if (stages != null)
         'stages': stages?.toJson(valueToJson: (v) => v.toJson()),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'DeployAttempt',
+      'id': id.toJson(),
+      'cloudCapsuleId': cloudCapsuleId,
+      if (attemptId != null) 'attemptId': attemptId,
+      if (status != null) 'status': status?.toJson(),
+      if (startedAt != null) 'startedAt': startedAt?.toJson(),
+      if (endedAt != null) 'endedAt': endedAt?.toJson(),
+      'createdAt': createdAt.toJson(),
+      'updatedAt': updatedAt.toJson(),
+      if (imageName != null) 'imageName': imageName,
+      if (serverpodVersion != null) 'serverpodVersion': serverpodVersion,
+      if (dartVersion != null) 'dartVersion': dartVersion,
+      if (commitHash != null) 'commitHash': commitHash,
+      if (commitMessage != null) 'commitMessage': commitMessage,
+      if (branch != null) 'branch': branch,
+      if (deployedById != null) 'deployedById': deployedById,
+      if (deployedBy != null) 'deployedBy': deployedBy?.toJsonForProtocol(),
+      if (statusInfo != null) 'statusInfo': statusInfo,
+      if (stages != null)
+        'stages': stages?.toJson(valueToJson: (v) => v.toJsonForProtocol()),
     };
   }
 

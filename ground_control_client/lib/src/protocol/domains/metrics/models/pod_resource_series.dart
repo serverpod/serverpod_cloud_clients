@@ -19,7 +19,8 @@ import 'package:ground_control_client/src/protocol/protocol.dart' as _i3;
 /// CPU is measured in cores and memory in bytes. Series are sparse: a period
 /// with no backend samples simply has no points, so a client can distinguish
 /// "no data" from a real zero.
-abstract class PodResourceSeries implements _i1.SerializableModel {
+abstract class PodResourceSeries
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   PodResourceSeries._({
     required this.podName,
     required this.cpuCores,
@@ -68,6 +69,18 @@ abstract class PodResourceSeries implements _i1.SerializableModel {
       'podName': podName,
       'cpuCores': cpuCores.toJson(valueToJson: (v) => v.toJson()),
       'memoryBytes': memoryBytes.toJson(valueToJson: (v) => v.toJson()),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'PodResourceSeries',
+      'podName': podName,
+      'cpuCores': cpuCores.toJson(valueToJson: (v) => v.toJsonForProtocol()),
+      'memoryBytes': memoryBytes.toJson(
+        valueToJson: (v) => v.toJsonForProtocol(),
+      ),
     };
   }
 

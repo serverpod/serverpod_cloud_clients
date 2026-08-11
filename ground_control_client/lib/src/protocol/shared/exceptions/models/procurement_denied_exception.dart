@@ -19,7 +19,10 @@ import '../../../shared/exceptions/models/procurement_denied_reason.dart'
 ///
 /// This is distinct from access authorization, and from quota limits.
 abstract class ProcurementDeniedException
-    implements _i1.SerializableException, _i1.SerializableModel {
+    implements
+        _i1.SerializableException,
+        _i1.SerializableModel,
+        _i1.ProtocolSerialization {
   ProcurementDeniedException._({required this.message, required this.reason});
 
   factory ProcurementDeniedException({
@@ -51,6 +54,15 @@ abstract class ProcurementDeniedException
   });
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'ProcurementDeniedException',
+      'message': message,
+      'reason': reason.toJson(),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'ProcurementDeniedException',
       'message': message,

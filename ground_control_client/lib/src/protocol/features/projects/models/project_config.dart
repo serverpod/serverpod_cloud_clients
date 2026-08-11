@@ -12,7 +12,8 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
-abstract class ProjectConfig implements _i1.SerializableModel {
+abstract class ProjectConfig
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   ProjectConfig._({required this.projectId});
 
   factory ProjectConfig({required String projectId}) = _ProjectConfigImpl;
@@ -29,6 +30,11 @@ abstract class ProjectConfig implements _i1.SerializableModel {
   ProjectConfig copyWith({String? projectId});
   @override
   Map<String, dynamic> toJson() {
+    return {'__className__': 'ProjectConfig', 'projectId': projectId};
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {'__className__': 'ProjectConfig', 'projectId': projectId};
   }
 

@@ -13,7 +13,8 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/databases/models/database_size.dart' as _i2;
 
-abstract class DatabaseScaling implements _i1.SerializableModel {
+abstract class DatabaseScaling
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   DatabaseScaling._({
     required this.minCu,
     required this.maxCu,
@@ -52,6 +53,16 @@ abstract class DatabaseScaling implements _i1.SerializableModel {
   });
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'DatabaseScaling',
+      'minCu': minCu,
+      'maxCu': maxCu,
+      'size': size.toJson(),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'DatabaseScaling',
       'minCu': minCu,

@@ -16,7 +16,8 @@ import '../../../domains/products/models/database_catalog_info.dart' as _i3;
 import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 /// Definition of a project product including its compute and database sub-products.
-abstract class ProjectProductInfo implements _i1.SerializableModel {
+abstract class ProjectProductInfo
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   ProjectProductInfo._({
     required this.productId,
     required this.name,
@@ -81,6 +82,18 @@ abstract class ProjectProductInfo implements _i1.SerializableModel {
       'description': description,
       'computeCatalog': computeCatalog.toJson(),
       'databaseCatalog': databaseCatalog.toJson(),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'ProjectProductInfo',
+      'productId': productId,
+      'name': name,
+      'description': description,
+      'computeCatalog': computeCatalog.toJsonForProtocol(),
+      'databaseCatalog': databaseCatalog.toJsonForProtocol(),
     };
   }
 

@@ -14,7 +14,10 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 /// Exception thrown when another subscription update is in progress.
 abstract class ConcurrentSubscriptionUpdateException
-    implements _i1.SerializableException, _i1.SerializableModel {
+    implements
+        _i1.SerializableException,
+        _i1.SerializableModel,
+        _i1.ProtocolSerialization {
   ConcurrentSubscriptionUpdateException._({required this.subscriptionId});
 
   factory ConcurrentSubscriptionUpdateException({
@@ -41,6 +44,14 @@ abstract class ConcurrentSubscriptionUpdateException
   });
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'ConcurrentSubscriptionUpdateException',
+      'subscriptionId': subscriptionId.toJson(),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'ConcurrentSubscriptionUpdateException',
       'subscriptionId': subscriptionId.toJson(),

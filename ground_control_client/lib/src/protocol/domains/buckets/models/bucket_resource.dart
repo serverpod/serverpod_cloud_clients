@@ -16,7 +16,8 @@ import '../../../domains/buckets/models/bucket_visibility.dart' as _i3;
 import '../../../shared/models/serverpod_region.dart' as _i4;
 import '../../../domains/buckets/models/bucket_status.dart' as _i5;
 
-abstract class BucketResource implements _i1.SerializableModel {
+abstract class BucketResource
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   BucketResource._({
     this.id,
     required this.cloudCapsuleId,
@@ -94,6 +95,21 @@ abstract class BucketResource implements _i1.SerializableModel {
   });
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'BucketResource',
+      if (id != null) 'id': id,
+      'cloudCapsuleId': cloudCapsuleId,
+      'provider': provider.toJson(),
+      'storageId': storageId,
+      'visibility': visibility.toJson(),
+      'bucketName': bucketName,
+      'region': region.toJson(),
+      'status': status.toJson(),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'BucketResource',
       if (id != null) 'id': id,

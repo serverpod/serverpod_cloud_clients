@@ -18,7 +18,8 @@ import '../../../domains/users/models/user_label_mapping.dart' as _i5;
 import 'package:ground_control_client/src/protocol/protocol.dart' as _i6;
 
 /// Represents a Serverpod cloud customer user, invited or registered.
-abstract class User implements _i1.SerializableModel {
+abstract class User
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   User._({
     this.id,
     DateTime? createdAt,
@@ -161,6 +162,29 @@ abstract class User implements _i1.SerializableModel {
       if (owner != null) 'owner': owner?.toJson(),
       if (labels != null)
         'labels': labels?.toJson(valueToJson: (v) => v.toJson()),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'User',
+      if (id != null) 'id': id,
+      'createdAt': createdAt.toJson(),
+      'updatedAt': updatedAt.toJson(),
+      if (archivedAt != null) 'archivedAt': archivedAt?.toJson(),
+      'accountStatus': accountStatus.toJson(),
+      if (userAuthId != null) 'userAuthId': userAuthId,
+      'email': email,
+      if (name != null) 'name': name,
+      if (memberships != null)
+        'memberships': memberships?.toJson(
+          valueToJson: (v) => v.toJsonForProtocol(),
+        ),
+      if (ownerId != null) 'ownerId': ownerId?.toJson(),
+      if (owner != null) 'owner': owner?.toJsonForProtocol(),
+      if (labels != null)
+        'labels': labels?.toJson(valueToJson: (v) => v.toJsonForProtocol()),
     };
   }
 

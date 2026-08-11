@@ -15,7 +15,8 @@ import '../../../domains/capsules/models/capsule.dart' as _i2;
 import '../../../domains/capsules/models/compute_size_option.dart' as _i3;
 import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
-abstract class CapsuleResource implements _i1.SerializableModel {
+abstract class CapsuleResource
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   CapsuleResource._({
     this.id,
     required this.cloudCapsuleId,
@@ -155,6 +156,26 @@ abstract class CapsuleResource implements _i1.SerializableModel {
       if (id != null) 'id': id,
       'cloudCapsuleId': cloudCapsuleId,
       if (capsule != null) 'capsule': capsule?.toJson(),
+      'computeRequestCpu': computeRequestCpu,
+      'computeRequestMemory': computeRequestMemory,
+      'computeRequestEphemeralStorage': computeRequestEphemeralStorage,
+      'computeLimitCpu': computeLimitCpu,
+      'computeLimitMemory': computeLimitMemory,
+      'computeLimitEphemeralStorage': computeLimitEphemeralStorage,
+      'computeScalingEnabled': computeScalingEnabled,
+      'computeScalingMinReplicas': computeScalingMinReplicas,
+      'computeScalingMaxReplicas': computeScalingMaxReplicas,
+      'computeSize': computeSize.toJson(),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'CapsuleResource',
+      if (id != null) 'id': id,
+      'cloudCapsuleId': cloudCapsuleId,
+      if (capsule != null) 'capsule': capsule?.toJsonForProtocol(),
       'computeRequestCpu': computeRequestCpu,
       'computeRequestMemory': computeRequestMemory,
       'computeRequestEphemeralStorage': computeRequestEphemeralStorage,

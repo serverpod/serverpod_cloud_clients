@@ -15,7 +15,8 @@ import '../../../features/custom_domains/models/domain_name_status.dart' as _i2;
 import '../../../features/custom_domains/models/domain_name_target.dart' as _i3;
 import '../../../features/custom_domains/models/dns_record_type.dart' as _i4;
 
-abstract class CustomDomainName implements _i1.SerializableModel {
+abstract class CustomDomainName
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   CustomDomainName._({
     this.id,
     required this.name,
@@ -94,6 +95,21 @@ abstract class CustomDomainName implements _i1.SerializableModel {
   });
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'CustomDomainName',
+      if (id != null) 'id': id,
+      'name': name,
+      'status': status.toJson(),
+      'target': target.toJson(),
+      if (createdAt != null) 'createdAt': createdAt?.toJson(),
+      'capsuleId': capsuleId,
+      'dnsRecordVerificationValue': dnsRecordVerificationValue,
+      'dnsRecordType': dnsRecordType.toJson(),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'CustomDomainName',
       if (id != null) 'id': id,

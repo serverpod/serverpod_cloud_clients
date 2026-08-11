@@ -14,7 +14,8 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/billing/models/payment_method_card.dart' as _i2;
 import 'package:ground_control_client/src/protocol/protocol.dart' as _i3;
 
-abstract class PaymentMethod implements _i1.SerializableModel {
+abstract class PaymentMethod
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   PaymentMethod._({
     required this.id,
     required this.type,
@@ -66,6 +67,17 @@ abstract class PaymentMethod implements _i1.SerializableModel {
       'id': id,
       'type': type,
       if (card != null) 'card': card?.toJson(),
+      'isDefault': isDefault,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'PaymentMethod',
+      'id': id,
+      'type': type,
+      if (card != null) 'card': card?.toJsonForProtocol(),
       'isDefault': isDefault,
     };
   }

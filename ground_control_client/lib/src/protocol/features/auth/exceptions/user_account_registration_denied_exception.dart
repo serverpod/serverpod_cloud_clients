@@ -15,7 +15,10 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 /// Indicates that the user account registration request was denied,
 /// due to incomplete information or missing approval.
 abstract class UserAccountRegistrationDeniedException
-    implements _i1.SerializableException, _i1.SerializableModel {
+    implements
+        _i1.SerializableException,
+        _i1.SerializableModel,
+        _i1.ProtocolSerialization {
   UserAccountRegistrationDeniedException._({required this.message});
 
   factory UserAccountRegistrationDeniedException({required String message}) =
@@ -37,6 +40,14 @@ abstract class UserAccountRegistrationDeniedException
   UserAccountRegistrationDeniedException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'UserAccountRegistrationDeniedException',
+      'message': message,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'UserAccountRegistrationDeniedException',
       'message': message,

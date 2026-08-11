@@ -15,7 +15,10 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 /// Thrown when a user attempts to sign in with email/password
 /// for an account that was registered with another identity provider.
 abstract class EmailMethodBlockedException
-    implements _i1.SerializableException, _i1.SerializableModel {
+    implements
+        _i1.SerializableException,
+        _i1.SerializableModel,
+        _i1.ProtocolSerialization {
   EmailMethodBlockedException._({required this.message});
 
   factory EmailMethodBlockedException({required String message}) =
@@ -37,6 +40,11 @@ abstract class EmailMethodBlockedException
   EmailMethodBlockedException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
+    return {'__className__': 'EmailMethodBlockedException', 'message': message};
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {'__className__': 'EmailMethodBlockedException', 'message': message};
   }
 

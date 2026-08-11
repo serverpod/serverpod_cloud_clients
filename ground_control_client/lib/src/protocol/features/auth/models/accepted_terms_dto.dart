@@ -13,7 +13,8 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../features/auth/models/terms.dart' as _i2;
 
-abstract class AcceptedTermsDTO implements _i1.SerializableModel {
+abstract class AcceptedTermsDTO
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   AcceptedTermsDTO._({required this.termsType, required this.termsVersion});
 
   factory AcceptedTermsDTO({
@@ -38,6 +39,15 @@ abstract class AcceptedTermsDTO implements _i1.SerializableModel {
   AcceptedTermsDTO copyWith({_i2.Terms? termsType, String? termsVersion});
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'AcceptedTermsDTO',
+      'termsType': termsType.toJson(),
+      'termsVersion': termsVersion,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'AcceptedTermsDTO',
       'termsType': termsType.toJson(),

@@ -15,7 +15,8 @@ import '../../../domains/secrets/models/secret_type.dart' as _i2;
 import '../../../domains/secrets/models/stored_secret_version.dart' as _i3;
 import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
-abstract class SecretResource implements _i1.SerializableModel {
+abstract class SecretResource
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   SecretResource._({
     this.id,
     required this.cloudCapsuleId,
@@ -106,6 +107,24 @@ abstract class SecretResource implements _i1.SerializableModel {
       if (storedSecretVersions != null)
         'storedSecretVersions': storedSecretVersions?.toJson(
           valueToJson: (v) => v.toJson(),
+        ),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'SecretResource',
+      if (id != null) 'id': id,
+      'cloudCapsuleId': cloudCapsuleId,
+      'secretId': secretId,
+      'secretType': secretType.toJson(),
+      if (latestVersionId != null) 'latestVersionId': latestVersionId,
+      if (activeVersionId != null) 'activeVersionId': activeVersionId,
+      if (createdAt != null) 'createdAt': createdAt?.toJson(),
+      if (storedSecretVersions != null)
+        'storedSecretVersions': storedSecretVersions?.toJson(
+          valueToJson: (v) => v.toJsonForProtocol(),
         ),
     };
   }

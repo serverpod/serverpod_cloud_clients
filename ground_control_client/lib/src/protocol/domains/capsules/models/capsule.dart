@@ -19,7 +19,8 @@ import '../../../domains/capsules/models/capsule_resource_config.dart' as _i6;
 import 'package:ground_control_client/src/protocol/protocol.dart' as _i7;
 
 /// Represents an infrastructure capsule instance (a deployment target).
-abstract class Capsule implements _i1.SerializableModel {
+abstract class Capsule
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   Capsule._({
     this.id,
     DateTime? createdAt,
@@ -166,6 +167,32 @@ abstract class Capsule implements _i1.SerializableModel {
       if (domainNames != null)
         'domainNames': domainNames?.toJson(valueToJson: (v) => v.toJson()),
       if (resourceConfig != null) 'resourceConfig': resourceConfig?.toJson(),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'Capsule',
+      if (id != null) 'id': id,
+      'createdAt': createdAt.toJson(),
+      'updatedAt': updatedAt.toJson(),
+      if (archivedAt != null) 'archivedAt': archivedAt?.toJson(),
+      'name': name,
+      'cloudCapsuleId': cloudCapsuleId,
+      'region': region.toJson(),
+      'projectId': projectId,
+      if (project != null) 'project': project?.toJsonForProtocol(),
+      if (environmentVariables != null)
+        'environmentVariables': environmentVariables?.toJson(
+          valueToJson: (v) => v.toJsonForProtocol(),
+        ),
+      if (domainNames != null)
+        'domainNames': domainNames?.toJson(
+          valueToJson: (v) => v.toJsonForProtocol(),
+        ),
+      if (resourceConfig != null)
+        'resourceConfig': resourceConfig?.toJsonForProtocol(),
     };
   }
 

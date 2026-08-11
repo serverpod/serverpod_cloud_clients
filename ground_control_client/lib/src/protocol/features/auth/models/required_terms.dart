@@ -13,7 +13,8 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../features/auth/models/terms.dart' as _i2;
 
-abstract class RequiredTerms implements _i1.SerializableModel {
+abstract class RequiredTerms
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   RequiredTerms._({
     required this.termsType,
     required this.termsVersion,
@@ -50,6 +51,16 @@ abstract class RequiredTerms implements _i1.SerializableModel {
   });
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'RequiredTerms',
+      'termsType': termsType.toJson(),
+      'termsVersion': termsVersion,
+      'termsUrl': termsUrl,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'RequiredTerms',
       'termsType': termsType.toJson(),

@@ -15,7 +15,10 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 /// Thrown when a bucket cannot be created yet because the capsule's storage
 /// identity has not finished provisioning. The operation is safe to retry.
 abstract class BucketStorageIdentityUnavailableException
-    implements _i1.SerializableException, _i1.SerializableModel {
+    implements
+        _i1.SerializableException,
+        _i1.SerializableModel,
+        _i1.ProtocolSerialization {
   BucketStorageIdentityUnavailableException._({required this.message});
 
   factory BucketStorageIdentityUnavailableException({required String message}) =
@@ -37,6 +40,14 @@ abstract class BucketStorageIdentityUnavailableException
   BucketStorageIdentityUnavailableException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'BucketStorageIdentityUnavailableException',
+      'message': message,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'BucketStorageIdentityUnavailableException',
       'message': message,

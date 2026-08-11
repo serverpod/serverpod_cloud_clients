@@ -17,7 +17,10 @@ import '../../../domains/products/models/product_type.dart' as _i2;
 ///
 /// This is distinct from access authorization, and from quota limits.
 abstract class ProcurementCancellationException
-    implements _i1.SerializableException, _i1.SerializableModel {
+    implements
+        _i1.SerializableException,
+        _i1.SerializableModel,
+        _i1.ProtocolSerialization {
   ProcurementCancellationException._({
     required this.message,
     required this.productType,
@@ -61,6 +64,16 @@ abstract class ProcurementCancellationException
   });
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'ProcurementCancellationException',
+      'message': message,
+      'productType': productType.toJson(),
+      'productId': productId,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'ProcurementCancellationException',
       'message': message,

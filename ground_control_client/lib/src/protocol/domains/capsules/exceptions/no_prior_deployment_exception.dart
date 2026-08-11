@@ -14,7 +14,10 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 /// Exception thrown when no prior deployment exists for a capsule.
 abstract class NoPriorDeploymentException
-    implements _i1.SerializableException, _i1.SerializableModel {
+    implements
+        _i1.SerializableException,
+        _i1.SerializableModel,
+        _i1.ProtocolSerialization {
   NoPriorDeploymentException._({required this.capsuleId});
 
   factory NoPriorDeploymentException({required String capsuleId}) =
@@ -36,6 +39,14 @@ abstract class NoPriorDeploymentException
   NoPriorDeploymentException copyWith({String? capsuleId});
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'NoPriorDeploymentException',
+      'capsuleId': capsuleId,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'NoPriorDeploymentException',
       'capsuleId': capsuleId,

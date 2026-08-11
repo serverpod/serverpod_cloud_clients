@@ -13,7 +13,8 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 /// Scaling configuration for a compute size that supports variable replica scaling.
-abstract class ComputeScalingInfo implements _i1.SerializableModel {
+abstract class ComputeScalingInfo
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   ComputeScalingInfo._({
     required this.defaultMinReplicas,
     required this.defaultMaxReplicas,
@@ -60,6 +61,17 @@ abstract class ComputeScalingInfo implements _i1.SerializableModel {
   });
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'ComputeScalingInfo',
+      'defaultMinReplicas': defaultMinReplicas,
+      'defaultMaxReplicas': defaultMaxReplicas,
+      'allowedReplicasMin': allowedReplicasMin,
+      'allowedReplicasMax': allowedReplicasMax,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'ComputeScalingInfo',
       'defaultMinReplicas': defaultMinReplicas,

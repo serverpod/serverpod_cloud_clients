@@ -92,7 +92,9 @@ class HttpServerBuilder {
       final Map<String, dynamic> requestBody =
           jsonDecode(await utf8.decoder.bind(request).join())
               as Map<String, dynamic>;
-      final methodName = requestBody.remove('method');
+      final methodName = request.uri.pathSegments.length > 1
+          ? request.uri.pathSegments[1]
+          : requestBody.remove('method');
       final handler = _methodHandlers['$endpointPath.$methodName'];
       if (handler != null) {
         handler(request.response, requestBody);

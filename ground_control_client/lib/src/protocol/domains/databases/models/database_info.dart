@@ -13,7 +13,8 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/databases/models/database_size.dart' as _i2;
 
-abstract class DatabaseInfo implements _i1.SerializableModel {
+abstract class DatabaseInfo
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   DatabaseInfo._({
     required this.cloudCapsuleId,
     required this.size,
@@ -86,6 +87,20 @@ abstract class DatabaseInfo implements _i1.SerializableModel {
   });
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'DatabaseInfo',
+      'cloudCapsuleId': cloudCapsuleId,
+      'size': size.toJson(),
+      if (minCu != null) 'minCu': minCu,
+      if (maxCu != null) 'maxCu': maxCu,
+      'memoryMb': memoryMb,
+      if (storageLimitGB != null) 'storageLimitGB': storageLimitGB,
+      if (computeHoursLimit != null) 'computeHoursLimit': computeHoursLimit,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'DatabaseInfo',
       'cloudCapsuleId': cloudCapsuleId,

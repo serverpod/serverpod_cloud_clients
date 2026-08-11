@@ -12,7 +12,8 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
-abstract class InsightsConnectionDetail implements _i1.SerializableModel {
+abstract class InsightsConnectionDetail
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   InsightsConnectionDetail._({required this.url, required this.serviceSecret});
 
   factory InsightsConnectionDetail({
@@ -39,6 +40,15 @@ abstract class InsightsConnectionDetail implements _i1.SerializableModel {
   InsightsConnectionDetail copyWith({Uri? url, String? serviceSecret});
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'InsightsConnectionDetail',
+      'url': url.toJson(),
+      'serviceSecret': serviceSecret,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'InsightsConnectionDetail',
       'url': url.toJson(),

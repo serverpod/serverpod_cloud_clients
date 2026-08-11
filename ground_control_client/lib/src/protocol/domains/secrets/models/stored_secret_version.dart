@@ -14,7 +14,8 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/secrets/models/secret_resource.dart' as _i2;
 import 'package:ground_control_client/src/protocol/protocol.dart' as _i3;
 
-abstract class StoredSecretVersion implements _i1.SerializableModel {
+abstract class StoredSecretVersion
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   StoredSecretVersion._({
     this.id,
     this.createdAt,
@@ -86,6 +87,20 @@ abstract class StoredSecretVersion implements _i1.SerializableModel {
       if (createdAt != null) 'createdAt': createdAt?.toJson(),
       'secretResourceId': secretResourceId,
       if (secretResource != null) 'secretResource': secretResource?.toJson(),
+      'secretId': secretId,
+      'values': values.toJson(),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'StoredSecretVersion',
+      if (id != null) 'id': id,
+      if (createdAt != null) 'createdAt': createdAt?.toJson(),
+      'secretResourceId': secretResourceId,
+      if (secretResource != null)
+        'secretResource': secretResource?.toJsonForProtocol(),
       'secretId': secretId,
       'values': values.toJson(),
     };

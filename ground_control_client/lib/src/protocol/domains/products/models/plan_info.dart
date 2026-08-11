@@ -17,7 +17,8 @@ import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 /// Information about a plan product.
 /// Contains information to be sent to the client.
-abstract class PlanInfo implements _i1.SerializableModel {
+abstract class PlanInfo
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   PlanInfo._({
     required this.planType,
     required this.projectProduct,
@@ -140,6 +141,26 @@ abstract class PlanInfo implements _i1.SerializableModel {
       if (projectProductInfo != null)
         'projectProductInfo': projectProductInfo?.toJson(
           valueToJson: (v) => v.toJson(),
+        ),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'PlanInfo',
+      'planType': planType.toJson(),
+      'projectProduct': projectProduct.toJsonForProtocol(),
+      if (productId != null) 'productId': productId,
+      if (name != null) 'name': name,
+      'displayName': displayName,
+      if (description != null) 'description': description,
+      if (trialLength != null) 'trialLength': trialLength,
+      if (trialEndDate != null) 'trialEndDate': trialEndDate?.toJson(),
+      if (projectsLimit != null) 'projectsLimit': projectsLimit,
+      if (projectProductInfo != null)
+        'projectProductInfo': projectProductInfo?.toJson(
+          valueToJson: (v) => v.toJsonForProtocol(),
         ),
     };
   }

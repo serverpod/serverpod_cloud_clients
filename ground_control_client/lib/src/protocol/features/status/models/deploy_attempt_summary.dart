@@ -17,7 +17,8 @@ import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 /// Display summary of a deploy attempt, for presenting the deployment
 /// behind a capsule revision without the full attempt aggregate.
-abstract class DeployAttemptSummary implements _i1.SerializableModel {
+abstract class DeployAttemptSummary
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   DeployAttemptSummary._({
     required this.attemptId,
     this.status,
@@ -116,6 +117,21 @@ abstract class DeployAttemptSummary implements _i1.SerializableModel {
       if (commitMessage != null) 'commitMessage': commitMessage,
       if (branch != null) 'branch': branch,
       if (deployedBy != null) 'deployedBy': deployedBy?.toJson(),
+      'startedAt': startedAt.toJson(),
+      if (endedAt != null) 'endedAt': endedAt?.toJson(),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'DeployAttemptSummary',
+      'attemptId': attemptId.toJson(),
+      if (status != null) 'status': status?.toJson(),
+      if (commitHash != null) 'commitHash': commitHash,
+      if (commitMessage != null) 'commitMessage': commitMessage,
+      if (branch != null) 'branch': branch,
+      if (deployedBy != null) 'deployedBy': deployedBy?.toJsonForProtocol(),
       'startedAt': startedAt.toJson(),
       if (endedAt != null) 'endedAt': endedAt?.toJson(),
     };

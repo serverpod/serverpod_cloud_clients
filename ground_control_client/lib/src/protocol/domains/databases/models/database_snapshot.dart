@@ -13,7 +13,8 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 /// A point-in-time snapshot (backup) of a database.
-abstract class DatabaseSnapshot implements _i1.SerializableModel {
+abstract class DatabaseSnapshot
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   DatabaseSnapshot._({
     required this.id,
     required this.name,
@@ -88,6 +89,20 @@ abstract class DatabaseSnapshot implements _i1.SerializableModel {
   });
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'DatabaseSnapshot',
+      'id': id,
+      'name': name,
+      'createdAt': createdAt.toJson(),
+      if (expiresAt != null) 'expiresAt': expiresAt?.toJson(),
+      'manual': manual,
+      if (fullSizeBytes != null) 'fullSizeBytes': fullSizeBytes,
+      if (diffSizeBytes != null) 'diffSizeBytes': diffSizeBytes,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'DatabaseSnapshot',
       'id': id,

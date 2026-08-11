@@ -16,7 +16,8 @@ import '../../../domains/users/models/user_label.dart' as _i3;
 import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 /// Associates users (including invited, not yet registered) with user labels.
-abstract class UserLabelMapping implements _i1.SerializableModel {
+abstract class UserLabelMapping
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   UserLabelMapping._({
     this.id,
     DateTime? createdAt,
@@ -80,6 +81,18 @@ abstract class UserLabelMapping implements _i1.SerializableModel {
       'createdAt': createdAt.toJson(),
       'userId': userId,
       if (user != null) 'user': user?.toJson(),
+      'label': label.toJson(),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'UserLabelMapping',
+      if (id != null) 'id': id,
+      'createdAt': createdAt.toJson(),
+      'userId': userId,
+      if (user != null) 'user': user?.toJsonForProtocol(),
       'label': label.toJson(),
     };
   }

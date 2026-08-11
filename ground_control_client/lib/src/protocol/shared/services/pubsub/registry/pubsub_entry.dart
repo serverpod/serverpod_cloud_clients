@@ -13,7 +13,8 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 /// Represents the receiving of a Pubsub message.
-abstract class PubsubEntry implements _i1.SerializableModel {
+abstract class PubsubEntry
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   PubsubEntry._({
     this.id,
     DateTime? createdAt,
@@ -82,6 +83,19 @@ abstract class PubsubEntry implements _i1.SerializableModel {
   });
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'PubsubEntry',
+      if (id != null) 'id': id,
+      'createdAt': createdAt.toJson(),
+      if (publishedAt != null) 'publishedAt': publishedAt?.toJson(),
+      'messageId': messageId,
+      'topic': topic,
+      'subscriber': subscriber,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'PubsubEntry',
       if (id != null) 'id': id,

@@ -18,7 +18,7 @@ import '../../../../features/custom_domains/models/domain_name_target.dart'
 import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 abstract class CustomDomainNameWithDefaultDomains
-    implements _i1.SerializableModel {
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   CustomDomainNameWithDefaultDomains._({
     required this.customDomainName,
     required this.defaultDomainsByTarget,
@@ -59,6 +59,17 @@ abstract class CustomDomainNameWithDefaultDomains
     return {
       '__className__': 'CustomDomainNameWithDefaultDomains',
       'customDomainName': customDomainName.toJson(),
+      'defaultDomainsByTarget': defaultDomainsByTarget.toJson(
+        keyToJson: (k) => k.toJson(),
+      ),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'CustomDomainNameWithDefaultDomains',
+      'customDomainName': customDomainName.toJsonForProtocol(),
       'defaultDomainsByTarget': defaultDomainsByTarget.toJson(
         keyToJson: (k) => k.toJson(),
       ),

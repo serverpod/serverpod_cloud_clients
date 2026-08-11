@@ -17,7 +17,8 @@ import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 /// The live runtime status of a capsule, enriched with summaries of the
 /// deploy attempts behind the serving and incoming revisions.
-abstract class CapsuleRuntimeStatus implements _i1.SerializableModel {
+abstract class CapsuleRuntimeStatus
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   CapsuleRuntimeStatus._({
     required this.status,
     this.serving,
@@ -92,6 +93,18 @@ abstract class CapsuleRuntimeStatus implements _i1.SerializableModel {
       if (serving != null) 'serving': serving?.toJson(),
       if (incoming != null) 'incoming': incoming?.toJson(),
       if (latestAttempt != null) 'latestAttempt': latestAttempt?.toJson(),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'CapsuleRuntimeStatus',
+      'status': status.toJsonForProtocol(),
+      if (serving != null) 'serving': serving?.toJsonForProtocol(),
+      if (incoming != null) 'incoming': incoming?.toJsonForProtocol(),
+      if (latestAttempt != null)
+        'latestAttempt': latestAttempt?.toJsonForProtocol(),
     };
   }
 

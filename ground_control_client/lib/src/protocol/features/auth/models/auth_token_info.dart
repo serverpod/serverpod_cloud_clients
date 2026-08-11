@@ -12,7 +12,8 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
-abstract class AuthTokenInfo implements _i1.SerializableModel {
+abstract class AuthTokenInfo
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   AuthTokenInfo._({
     required this.tokenId,
     required this.issuer,
@@ -83,6 +84,21 @@ abstract class AuthTokenInfo implements _i1.SerializableModel {
   });
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'AuthTokenInfo',
+      'tokenId': tokenId,
+      'issuer': issuer,
+      'method': method,
+      'createdAt': createdAt.toJson(),
+      if (expiresAt != null) 'expiresAt': expiresAt?.toJson(),
+      if (expireAfterUnusedFor != null)
+        'expireAfterUnusedFor': expireAfterUnusedFor?.toJson(),
+      if (lastUsedAt != null) 'lastUsedAt': lastUsedAt?.toJson(),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'AuthTokenInfo',
       'tokenId': tokenId,

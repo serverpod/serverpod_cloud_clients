@@ -12,7 +12,8 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
-abstract class DatabaseUser implements _i1.SerializableModel {
+abstract class DatabaseUser
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   DatabaseUser._({
     required this.username,
     required this.createdAt,
@@ -53,6 +54,16 @@ abstract class DatabaseUser implements _i1.SerializableModel {
   });
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'DatabaseUser',
+      'username': username,
+      'createdAt': createdAt.toJson(),
+      'updatedAt': updatedAt.toJson(),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'DatabaseUser',
       'username': username,

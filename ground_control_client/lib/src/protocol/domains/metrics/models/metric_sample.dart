@@ -17,7 +17,8 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 /// Gaps — a pod not yet started, a deploy boundary, a terminated pod, a
 /// suspended database compute — are represented by the absence of a sample at
 /// a timestamp, never by an interpolated or fabricated value.
-abstract class MetricSample implements _i1.SerializableModel {
+abstract class MetricSample
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   MetricSample._({required this.timestamp, required this.value});
 
   factory MetricSample({required DateTime timestamp, required double value}) =
@@ -44,6 +45,15 @@ abstract class MetricSample implements _i1.SerializableModel {
   MetricSample copyWith({DateTime? timestamp, double? value});
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'MetricSample',
+      'timestamp': timestamp.toJson(),
+      'value': value,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'MetricSample',
       'timestamp': timestamp.toJson(),

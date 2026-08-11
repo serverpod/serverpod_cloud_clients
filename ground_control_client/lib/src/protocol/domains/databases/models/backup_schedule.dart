@@ -14,7 +14,8 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/databases/models/backup_frequency.dart' as _i2;
 
 /// An automated backup (snapshot) schedule for a database.
-abstract class BackupSchedule implements _i1.SerializableModel {
+abstract class BackupSchedule
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   BackupSchedule._({
     required this.frequency,
     this.hour,
@@ -66,6 +67,17 @@ abstract class BackupSchedule implements _i1.SerializableModel {
   });
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'BackupSchedule',
+      'frequency': frequency.toJson(),
+      if (hour != null) 'hour': hour,
+      if (day != null) 'day': day,
+      if (retention != null) 'retention': retention?.toJson(),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'BackupSchedule',
       'frequency': frequency.toJson(),
