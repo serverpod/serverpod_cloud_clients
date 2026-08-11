@@ -438,24 +438,14 @@ $_buildSecretsExplanation""";
       BuildSecretSetCommandConfig.projectId,
     );
     final name = commandConfig.value(BuildSecretSetCommandConfig.name);
-    final value = commandConfig.optionalValue(
-      BuildSecretSetCommandConfig.value,
-    );
-    final valueFile = commandConfig.optionalValue(
-      BuildSecretSetCommandConfig.valueFile,
-    );
     final buildSecretType = commandConfig.value(
       BuildSecretSetCommandConfig.buildSecretType,
     );
 
-    String valueToSet;
-    if (value != null) {
-      valueToSet = value;
-    } else if (valueFile != null) {
-      valueToSet = valueFile.readAsStringSync();
-    } else {
-      throw StateError('Expected one of the value options to be set.');
-    }
+    final valueToSet = commandConfig.valueOrFileContent(
+      value: BuildSecretSetCommandConfig.value,
+      valueFile: BuildSecretSetCommandConfig.valueFile,
+    );
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 

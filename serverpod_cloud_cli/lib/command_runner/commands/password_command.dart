@@ -122,21 +122,10 @@ class CloudPasswordSetCommand
   ) async {
     final projectId = commandConfig.value(PasswordSetCommandConfig.projectId);
     final name = commandConfig.value(PasswordSetCommandConfig.name);
-    final value = commandConfig.optionalValue(PasswordSetCommandConfig.value);
-    final valueFile = commandConfig.optionalValue(
-      PasswordSetCommandConfig.valueFile,
+    final valueToSet = commandConfig.valueOrFileContent(
+      value: PasswordSetCommandConfig.value,
+      valueFile: PasswordSetCommandConfig.valueFile,
     );
-
-    String valueToSet;
-    if (value != null) {
-      valueToSet = value;
-    } else if (valueFile != null) {
-      valueToSet = valueFile.readAsStringSync();
-    } else {
-      throw ErrorExitException(
-        'Either a value or --from-file must be provided.',
-      );
-    }
 
     await PasswordCommands.setPassword(
       runner.serviceProvider.cloudApiClient,

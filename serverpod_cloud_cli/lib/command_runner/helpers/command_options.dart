@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/commands/project/project.dart'
     show PlanProfile;
@@ -85,23 +87,64 @@ class NameOption extends StringOption {
     : super(argName: 'name', mandatory: true);
 }
 
-const _valueGroup = MutuallyExclusive(
+/// Mandatory, mutually exclusive [OptionGroup] for [ValueOption] and
+/// [ValueFileOption].
+const valueOptionGroup = MutuallyExclusive(
   'Value',
   mode: MutuallyExclusiveMode.mandatory,
 );
 
+/// Command-line value given directly as a positional or named argument.
+///
+/// Belongs to [valueOptionGroup] together with [ValueFileOption]: exactly one
+/// of them must be provided.
 class ValueOption extends StringOption {
   const ValueOption({required String super.helpText, required int super.argPos})
-    : super(argName: 'value', group: _valueGroup);
+    : super(argName: 'value', group: valueOptionGroup);
 }
 
+/// Command-line value read from a file.
+///
+/// Belongs to [valueOptionGroup] together with [ValueOption]: exactly one of
+/// them must be provided.
 class ValueFileOption extends FileOption {
   const ValueFileOption({required String super.helpText})
     : super(
         argName: 'from-file',
-        group: _valueGroup,
+        group: valueOptionGroup,
         mode: PathExistMode.mustExist,
       );
+}
+
+/// Resolution of the mutually exclusive [ValueOption] and [ValueFileOption]
+/// pair to the single value they denote.
+extension ValueOptionResolution on Configuration {
+  /// The value of the [value] option if it is set, otherwise the full contents
+  /// of the file given by the [valueFile] option, decoded as UTF-8.
+  ///
+  /// [value] and [valueFile] are expected to belong to [valueOptionGroup], as
+  /// [ValueOption] and [ValueFileOption] do: configuration resolution then
+  /// fails with a [UsageException] if neither or both of them are set, before
+  /// `runWithConfig` is reached.
+  ///
+  /// Throws a [StateError] if neither option is set, which therefore signals a
+  /// programming error rather than bad user input.
+  String valueOrFileContent({
+    required final OptionDefinition<String> value,
+    required final OptionDefinition<File> valueFile,
+  }) {
+    final providedValue = optionalValue(value);
+    if (providedValue != null) {
+      return providedValue;
+    }
+
+    final providedFile = optionalValue(valueFile);
+    if (providedFile != null) {
+      return providedFile.readAsStringSync();
+    }
+
+    throw StateError('Expected one of the value options to be set.');
+  }
 }
 
 class UtcOption extends FlagOption {

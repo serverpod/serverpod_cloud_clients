@@ -69,19 +69,10 @@ class CloudSecretSetCommand extends CloudCliCommand<SetSecretCommandConfig> {
   ) async {
     final projectId = commandConfig.value(SetSecretCommandConfig.projectId);
     final name = commandConfig.value(SetSecretCommandConfig.name);
-    final value = commandConfig.optionalValue(SetSecretCommandConfig.value);
-    final valueFile = commandConfig.optionalValue(
-      SetSecretCommandConfig.valueFile,
+    final valueToSet = commandConfig.valueOrFileContent(
+      value: SetSecretCommandConfig.value,
+      valueFile: SetSecretCommandConfig.valueFile,
     );
-
-    String valueToSet;
-    if (value != null) {
-      valueToSet = value;
-    } else if (valueFile != null) {
-      valueToSet = valueFile.readAsStringSync();
-    } else {
-      throw StateError('Expected one of the value options to be set.');
-    }
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 

@@ -109,21 +109,10 @@ Examples
     final variableName = commandConfig.value(
       SetVariableCommandConfig.variableName,
     );
-    final variableValue = commandConfig.optionalValue(
-      SetVariableCommandConfig.variableValue,
+    final valueToSet = commandConfig.valueOrFileContent(
+      value: SetVariableCommandConfig.variableValue,
+      valueFile: SetVariableCommandConfig.valueFile,
     );
-    final valueFile = commandConfig.optionalValue(
-      SetVariableCommandConfig.valueFile,
-    );
-
-    String valueToSet;
-    if (variableValue != null) {
-      valueToSet = variableValue;
-    } else if (valueFile != null) {
-      valueToSet = valueFile.readAsStringSync();
-    } else {
-      throw StateError('Expected one of the value options to be set.');
-    }
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 

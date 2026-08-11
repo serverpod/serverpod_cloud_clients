@@ -203,6 +203,69 @@ void main() {
         });
       });
 
+      group('with both value arg and value file arg', () {
+        late Future commandResult;
+
+        setUp(() async {
+          await d.file('value.txt', 'password-value').create();
+
+          commandResult = cli.run([
+            'password',
+            'set',
+            'database',
+            'value',
+            '--from-file',
+            p.join(d.sandbox, 'value.txt'),
+            '--project',
+            projectId,
+          ]);
+        });
+
+        test('then command throws UsageException', () async {
+          await expectLater(
+            commandResult,
+            throwsA(
+              isA<UsageException>().having(
+                (final e) => e.message,
+                'message',
+                equals(
+                  'These options are mutually exclusive: from-file, value.',
+                ),
+              ),
+            ),
+          );
+        });
+      });
+
+      group('with neither value arg nor value file arg', () {
+        late Future commandResult;
+
+        setUp(() async {
+          commandResult = cli.run([
+            'password',
+            'set',
+            'database',
+            '--project',
+            projectId,
+          ]);
+        });
+
+        test('then command throws UsageException', () async {
+          await expectLater(
+            commandResult,
+            throwsA(
+              isA<UsageException>().having(
+                (final e) => e.message,
+                'message',
+                equals(
+                  'Option group Value requires one of the options to be provided.',
+                ),
+              ),
+            ),
+          );
+        });
+      });
+
       group('with serviceSecret and valid length', () {
         late Future commandResult;
 
