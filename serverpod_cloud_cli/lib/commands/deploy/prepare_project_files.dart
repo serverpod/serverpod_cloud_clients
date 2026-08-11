@@ -94,6 +94,7 @@ class ProjectFilePreparer {
       packagesToRemove: unreachable,
       packagesToDemote: demotedToTransitive,
       expectedRemainingPackages: expectedRemainingPackages,
+      scriptName: 'scloud',
     );
 
     return filteredContent;
