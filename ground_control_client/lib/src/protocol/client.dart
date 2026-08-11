@@ -1921,6 +1921,20 @@ class EndpointProjects extends _i1.EndpointRef {
     'assignRoleNames': assignRoleNames,
   });
 
+  /// Resends the invitation email to a user that has been invited to the
+  /// project but has not accepted the invitation yet.
+  ///
+  /// Throws [NotFoundException] if the project or the user does not exist.
+  /// Throws [InvalidValueException] if the user has already accepted
+  /// the invitation.
+  _i2.Future<void> resendUserInvitation({
+    required String cloudProjectId,
+    required String email,
+  }) => caller.callServerEndpoint<void>('projects', 'resendUserInvitation', {
+    'cloudProjectId': cloudProjectId,
+    'email': email,
+  });
+
   /// Revokes a user from a project by unassigning the specified project roles.
   /// If any of the roles do not exist or are not previously assigned to the
   /// user, they are simply ignored.
