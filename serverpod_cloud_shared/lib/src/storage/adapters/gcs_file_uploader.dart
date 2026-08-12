@@ -38,14 +38,19 @@ class GoogleCloudStorageUploader implements FileUploaderClient {
   /// Uploads a file contained by a [ByteData] object, returns true if
   /// successful.
   @override
-  Future<bool> uploadByteData(ByteData byteData) async {
-    var stream = Stream.fromIterable([byteData.buffer.asUint8List()]);
+  Future<bool> uploadByteData(final ByteData byteData) async {
+    final stream = Stream.fromIterable([
+      byteData.buffer.asUint8List(
+        byteData.offsetInBytes,
+        byteData.lengthInBytes,
+      ),
+    ]);
     return upload(stream, byteData.lengthInBytes);
   }
 
   /// Uploads a file from a [Stream], returns true if successful.
   @override
-  Future<bool> upload(Stream<List<int>> stream, int length) async {
+  Future<bool> upload(final Stream<List<int>> stream, final int length) async {
     if (_attemptedUpload) {
       throw Exception(
         'Data has already been uploaded using this FileUploader.',
@@ -85,7 +90,7 @@ class GoogleCloudStorageUploader implements FileUploaderClient {
         );
 
       case _UploadType.multipart:
-        var multipartFile = MultipartFile.fromStream(
+        final multipartFile = MultipartFile.fromStream(
           () => stream,
           length,
           filename: _uploadDescription.fileName,
@@ -137,8 +142,11 @@ class _UploadDescription {
   Map<String, String> headers = {};
   Map<String, String> requestFields = {};
 
-  _UploadDescription(String description) {
-    var data = jsonDecode(description);
+  _UploadDescription(final String description) {
+    final data = jsonDecode(description);
+    if (data is! Map<String, dynamic>) {
+      throw const FormatException('Upload description must be a JSON object');
+    }
     if (data['type'] == 'binary') {
       type = _UploadType.binary;
     } else if (data['type'] == 'multipart') {
@@ -159,6 +167,7 @@ class _UploadDescription {
     }
   }
 
+  @override
   String toString() {
     return '_UploadDescription{type: $type, url: $url, field: $field, fileName: $fileName, requestFields: $requestFields}';
   }

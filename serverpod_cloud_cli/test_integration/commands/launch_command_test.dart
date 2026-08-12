@@ -18,6 +18,7 @@ import 'package:serverpod_cloud_cli/constants.dart' show VersionConstants;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart'
     show resolveProjectDartSdkVersion;
+import 'package:serverpod_cloud_shared/serverpod_cloud_shared.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 

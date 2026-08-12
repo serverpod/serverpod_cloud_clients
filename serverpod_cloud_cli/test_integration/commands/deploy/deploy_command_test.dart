@@ -18,6 +18,7 @@ import 'package:serverpod_cloud_cli/command_runner/commands/deploy_command.dart'
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/constants.dart' show VersionConstants;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:serverpod_cloud_shared/serverpod_cloud_shared.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:yaml_codec/yaml_codec.dart';

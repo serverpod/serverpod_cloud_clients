@@ -4,6 +4,7 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/build_token_provider.
 import 'package:serverpod_cloud_cli/persistent_storage/scloud_settings.dart';
 import 'package:serverpod_cloud_cli/util/cli_authentication_key_manager.dart';
 import 'package:ground_control_client/ground_control_client.dart';
+import 'package:serverpod_cloud_shared/serverpod_cloud_shared.dart';
 
 import 'file_uploader_factory.dart';
 
