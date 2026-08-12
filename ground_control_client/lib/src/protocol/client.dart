@@ -2019,7 +2019,8 @@ class EndpointSecrets extends _i1.EndpointRef {
   /// Secret value changes are applied at the next deployment.
   ///
   /// Throws [NotFoundException] if the capsule is not found.
-  /// Throws [InvalidValueException] if secret names are invalid.
+  /// Throws [InvalidValueException] if secret names are invalid or the secret
+  /// value exceeds the build-secret encryption size limit.
   _i2.Future<void> upsertBuildSecret({
     required String secretKey,
     required String secretValue,

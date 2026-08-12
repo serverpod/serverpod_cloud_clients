@@ -456,6 +456,8 @@ $_buildSecretsExplanation""";
         secretValue: valueToSet,
         buildSecretType: buildSecretType,
       );
+    } on InvalidValueException catch (e) {
+      throw FailureException(error: e.message);
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Failed to set build secret');
     }

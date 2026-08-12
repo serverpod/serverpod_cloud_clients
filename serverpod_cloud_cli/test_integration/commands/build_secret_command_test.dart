@@ -313,6 +313,57 @@ void main() {
           );
         });
       });
+
+      group('when server rejects an oversized secret value', () {
+        late Future commandResult;
+
+        setUp(() async {
+          when(
+            () => client.secrets.upsertBuildSecret(
+              secretKey: any(named: 'secretKey'),
+              secretValue: any(named: 'secretValue'),
+              buildSecretType: any(named: 'buildSecretType'),
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            ),
+          ).thenThrow(
+            InvalidValueException(
+              message:
+                  'Secret value is too big '
+                  '(max 446 bytes, got 447).',
+            ),
+          );
+
+          commandResult = cli.run([
+            'deployment',
+            'build-secret',
+            'set',
+            'key',
+            'value',
+            '--project',
+            projectId,
+          ]);
+        });
+
+        test('then throws exception', () async {
+          await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+        });
+
+        test('then logs server validation message', () async {
+          try {
+            await commandResult;
+          } catch (_) {}
+
+          expect(logger.errorCalls, isNotEmpty);
+          expect(
+            logger.errorCalls.first,
+            equalsErrorCall(
+              message:
+                  'Secret value is too big '
+                  '(max 446 bytes, got 447).',
+            ),
+          );
+        });
+      });
     });
 
     group(
