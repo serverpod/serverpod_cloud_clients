@@ -2,10 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:cli_tools/cli_tools.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
+import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/custom_domain_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
@@ -23,6 +25,17 @@ void main() {
   final cli = CloudCliCommandRunner.create(logger: logger);
 
   final testCacheFolderPath = p.join('test_integration', const Uuid().v4());
+
+  setUp(() async {
+    await ResourceManager.storeLatestCliVersion(
+      cliVersionData: PackageVersionData(
+        Version(0, 0, 1),
+        DateTime.now().add(Duration(days: 1)),
+      ),
+      logger: logger,
+      localStoragePath: testCacheFolderPath,
+    );
+  });
 
   tearDown(() {
     final directory = Directory(testCacheFolderPath);

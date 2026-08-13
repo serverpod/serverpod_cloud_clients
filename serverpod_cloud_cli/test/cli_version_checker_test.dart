@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:pub_semver/pub_semver.dart';
@@ -75,6 +76,52 @@ void main() {
       );
 
       expect(result, isNull);
+    });
+
+    test('when calling fetchLatestCLIVersion '
+        'then does not log an error', () async {
+      await CLIVersionChecker.fetchLatestCLIVersion(
+        logger: logger,
+        localStoragePath: testCacheFolderPath,
+        pubClientOverride: pubClient,
+      );
+
+      expect(logger.errorCalls, isEmpty);
+    });
+  });
+
+  group('Given pub api client throws TimeoutException', () {
+    late PubApiClient pubClient;
+
+    setUp(() async {
+      pubClient = PubApiClientMock();
+      when(
+        () => pubClient.tryFetchLatestStableVersion('serverpod_cloud_cli'),
+      ).thenThrow(
+        TimeoutException('Future not completed', const Duration(seconds: 2)),
+      );
+    });
+
+    test('when calling fetchLatestCLIVersion '
+        'then returns null', () async {
+      final result = await CLIVersionChecker.fetchLatestCLIVersion(
+        logger: logger,
+        localStoragePath: testCacheFolderPath,
+        pubClientOverride: pubClient,
+      );
+
+      expect(result, isNull);
+    });
+
+    test('when calling fetchLatestCLIVersion '
+        'then does not log an error', () async {
+      await CLIVersionChecker.fetchLatestCLIVersion(
+        logger: logger,
+        localStoragePath: testCacheFolderPath,
+        pubClientOverride: pubClient,
+      );
+
+      expect(logger.errorCalls, isEmpty);
     });
   });
 
