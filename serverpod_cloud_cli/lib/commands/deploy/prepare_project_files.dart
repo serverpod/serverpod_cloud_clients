@@ -180,7 +180,12 @@ abstract class TenantProject {
     scloudDir.createSync(recursive: true);
 
     try {
-      _writeSCloudFiles(workspaceRootDir, scloudDir, projectPackage);
+      _writeSCloudFiles(
+        workspaceRootDir,
+        scloudDir,
+        includedPackagePaths,
+        projectPackage,
+      );
 
       final includedPaths = [
         ...includedPackagePaths,
@@ -218,10 +223,10 @@ abstract class TenantProject {
   static void _writeSCloudFiles(
     final Directory workspaceRootDir,
     final Directory scloudDir,
+    final List<String> includedPackagePaths,
     final WorkspacePackage projectPackage,
   ) {
-    _deleteOldScloudRootPubspec(scloudDir);
-
+    _writeScloudRootPubspec(workspaceRootDir, scloudDir, includedPackagePaths);
     _writeProjectServerDirFile(scloudDir, projectPackage.dir);
 
     ScloudIgnore.writeTemplateIfNotExists(rootFolder: workspaceRootDir.path);
@@ -238,14 +243,28 @@ abstract class TenantProject {
     return pubspec.name;
   }
 
-  /// Deletes obsolete scloud root pubspec file if it exists.
-  static void _deleteOldScloudRootPubspec(final Directory scloudDir) {
+  /// Writes the scloud root pubspec file to the workspace root directory
+  /// and returns its path relative to the workspace root.
+  static String _writeScloudRootPubspec(
+    final Directory workspaceRootDir,
+    final Directory scloudDir,
+    final Iterable<String> includedPackagePaths,
+  ) {
+    final rootPubspecFile = File(p.join(workspaceRootDir.path, 'pubspec.yaml'));
+    final rootPubspecContent = rootPubspecFile.readAsStringSync();
+
+    final scloudRootPubspecContent =
+        WorkspaceProjectLogic.makeScloudRootPubspecContent(
+          rootPubspecContent,
+          includedPackagePaths,
+        );
+
     final scloudRootPubspecFile = File(
       p.join(scloudDir.path, _scloudRootPubspecFilename),
     );
-    if (scloudRootPubspecFile.existsSync()) {
-      scloudRootPubspecFile.deleteSync();
-    }
+    scloudRootPubspecFile.writeAsStringSync(scloudRootPubspecContent);
+
+    return p.join(ScloudIgnore.scloudDirName, _scloudRootPubspecFilename);
   }
 
   /// Writes the project server dir file to the workspace root directory

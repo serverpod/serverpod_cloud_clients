@@ -6,6 +6,7 @@ library;
 
 import 'dart:io' show Directory, File, Process;
 
+import 'package:archive/archive.dart' show ZipDecoder, InputFileStream, Archive;
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
@@ -83,6 +84,41 @@ void main() {
 
         final outputFile = d.file(zipFileName, isNotEmpty);
         await expectLater(outputFile.validate(outputZipDirPath), completes);
+      });
+
+      group('and inspecting the zip archive', () {
+        late Archive archive;
+
+        setUpAll(() async {
+          await cliCommandFuture;
+
+          archive = ZipDecoder().decodeStream(
+            InputFileStream(outputZipFilePath),
+          );
+        });
+
+        test('then .scloud/scloud_ws_pubspec.yaml is included', () async {
+          final wsPubspecFile = archive.findFile(
+            p.join('.scloud', 'scloud_ws_pubspec.yaml'),
+          );
+          expect(wsPubspecFile, isNotNull);
+        });
+
+        test(
+          'then .scloud/scloud_ws_pubspec.yaml is identical to pubspec.yaml',
+          () async {
+            final wsPubspecFile = archive.findFile(
+              p.join('.scloud', 'scloud_ws_pubspec.yaml'),
+            );
+            final pubspecFile = archive.findFile('pubspec.yaml');
+            expect(wsPubspecFile, isNotNull);
+            expect(pubspecFile, isNotNull);
+            expect(
+              wsPubspecFile!.readBytes()!,
+              equals(pubspecFile!.readBytes()!),
+            );
+          },
+        );
       });
 
       group('and unpacking the zip archive,', () {

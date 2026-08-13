@@ -1184,6 +1184,53 @@ project:
               completes,
             );
           });
+
+          test(
+            'then .scloud/scloud_ws_pubspec.yaml file is created.',
+            () async {
+              await cliCommandFuture;
+
+              final fileDescriptor = d.file(
+                'scloud_ws_pubspec.yaml',
+                isNotEmpty,
+              );
+              final descriptor = d.dir('.scloud', [fileDescriptor]);
+
+              await expectLater(
+                descriptor.validate(p.join(d.sandbox, 'monorepo')),
+                completes,
+              );
+
+              final content = File(
+                p.join(
+                  d.sandbox,
+                  'monorepo',
+                  '.scloud',
+                  'scloud_ws_pubspec.yaml',
+                ),
+              ).readAsStringSync();
+              final doc = yamlDecode(content);
+              expect(doc, containsPair('name', 'monorepo'));
+              expect(
+                doc,
+                containsPair('environment', isNot(contains('flutter'))),
+              );
+              expect(
+                doc,
+                containsPair('environment', containsPair('sdk', isNotEmpty)),
+              );
+              expect(
+                doc,
+                containsPair(
+                  'workspace',
+                  containsAll([
+                    'project/project_server',
+                    'packages/dart_utilities',
+                  ]),
+                ),
+              );
+            },
+          );
         },
       );
 
@@ -1222,6 +1269,28 @@ project:
         test('then command completes successfully.', () async {
           await expectLater(cliCommandFuture, completes);
         });
+
+        test(
+          'then .scloud/scloud_ws_pubspec.yaml is included in the zip archive',
+          () async {
+            await cliCommandFuture;
+
+            expect(mockFileUploader.uploadedData, isNotEmpty);
+
+            final archive = ZipDecoder().decodeBytes(
+              mockFileUploader.uploadedData,
+            );
+            final wsPubspecFile = archive.findFile(
+              p.join('.scloud', 'scloud_ws_pubspec.yaml'),
+            );
+            expect(
+              wsPubspecFile,
+              isNotNull,
+              reason:
+                  '.scloud/scloud_ws_pubspec.yaml should be included in the deployment zip',
+            );
+          },
+        );
       });
     });
 
