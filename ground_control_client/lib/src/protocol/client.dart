@@ -503,16 +503,22 @@ class EndpointAuthWithAuth extends _i1.EndpointRef {
   /// Creates a new authenticated session for the current user to use as
   /// CLI token / personal access token.
   ///
+  /// If [name] is provided, it is stored as the name of the token and
+  /// returned by [listAuthSessions].
   /// If [expiresAt] is provided, the token will expire at the specified time.
   /// If [expiresAfter] is provided, the token will expire after being unused
   /// for the specified duration.
+  ///
+  /// Throws an [InvalidValueException] if [name] is blank or longer than
+  /// 100 characters.
   _i2.Future<_i10.AuthSuccess> createCliToken({
+    String? name,
     DateTime? expiresAt,
     Duration? expiresAfter,
   }) => caller.callServerEndpoint<_i10.AuthSuccess>(
     'authWithAuth',
     'createCliToken',
-    {'expiresAt': expiresAt, 'expiresAfter': expiresAfter},
+    {'name': name, 'expiresAt': expiresAt, 'expiresAfter': expiresAfter},
   );
 
   _i2.Future<List<_i11.AuthTokenInfo>> listAuthSessions() =>

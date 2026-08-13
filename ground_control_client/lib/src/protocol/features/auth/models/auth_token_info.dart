@@ -22,6 +22,7 @@ abstract class AuthTokenInfo
     this.expiresAt,
     this.expireAfterUnusedFor,
     this.lastUsedAt,
+    this.name,
   });
 
   factory AuthTokenInfo({
@@ -32,6 +33,7 @@ abstract class AuthTokenInfo
     DateTime? expiresAt,
     Duration? expireAfterUnusedFor,
     DateTime? lastUsedAt,
+    String? name,
   }) = _AuthTokenInfoImpl;
 
   factory AuthTokenInfo.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -53,6 +55,7 @@ abstract class AuthTokenInfo
       lastUsedAt: jsonSerialization['lastUsedAt'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['lastUsedAt']),
+      name: jsonSerialization['name'] as String?,
     );
   }
 
@@ -70,6 +73,8 @@ abstract class AuthTokenInfo
 
   DateTime? lastUsedAt;
 
+  String? name;
+
   /// Returns a shallow copy of this [AuthTokenInfo]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
@@ -81,6 +86,7 @@ abstract class AuthTokenInfo
     DateTime? expiresAt,
     Duration? expireAfterUnusedFor,
     DateTime? lastUsedAt,
+    String? name,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -94,6 +100,7 @@ abstract class AuthTokenInfo
       if (expireAfterUnusedFor != null)
         'expireAfterUnusedFor': expireAfterUnusedFor?.toJson(),
       if (lastUsedAt != null) 'lastUsedAt': lastUsedAt?.toJson(),
+      if (name != null) 'name': name,
     };
   }
 
@@ -109,6 +116,7 @@ abstract class AuthTokenInfo
       if (expireAfterUnusedFor != null)
         'expireAfterUnusedFor': expireAfterUnusedFor?.toJson(),
       if (lastUsedAt != null) 'lastUsedAt': lastUsedAt?.toJson(),
+      if (name != null) 'name': name,
     };
   }
 
@@ -129,6 +137,7 @@ class _AuthTokenInfoImpl extends AuthTokenInfo {
     DateTime? expiresAt,
     Duration? expireAfterUnusedFor,
     DateTime? lastUsedAt,
+    String? name,
   }) : super._(
          tokenId: tokenId,
          issuer: issuer,
@@ -137,6 +146,7 @@ class _AuthTokenInfoImpl extends AuthTokenInfo {
          expiresAt: expiresAt,
          expireAfterUnusedFor: expireAfterUnusedFor,
          lastUsedAt: lastUsedAt,
+         name: name,
        );
 
   /// Returns a shallow copy of this [AuthTokenInfo]
@@ -151,6 +161,7 @@ class _AuthTokenInfoImpl extends AuthTokenInfo {
     Object? expiresAt = _Undefined,
     Object? expireAfterUnusedFor = _Undefined,
     Object? lastUsedAt = _Undefined,
+    Object? name = _Undefined,
   }) {
     return AuthTokenInfo(
       tokenId: tokenId ?? this.tokenId,
@@ -162,6 +173,7 @@ class _AuthTokenInfoImpl extends AuthTokenInfo {
           ? expireAfterUnusedFor
           : this.expireAfterUnusedFor,
       lastUsedAt: lastUsedAt is DateTime? ? lastUsedAt : this.lastUsedAt,
+      name: name is String? ? name : this.name,
     );
   }
 }
