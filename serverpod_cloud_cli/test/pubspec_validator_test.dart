@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:serverpod_cloud_cli/constants.dart' show VersionConstants;
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../test_utils/project_factory.dart';
 
@@ -83,7 +86,7 @@ dependencies:
         Pubspec.parse('''
 name: my_project
 environment:
-  sdk: '3.11.0'
+  sdk: '3.12.0'
 dependencies:
   serverpod: ${ProjectFactory.validServerpodVersion}
 '''),
@@ -395,4 +398,152 @@ dependencies:
       expect(result, isFalse);
     },
   );
+
+  group('TenantProjectPubspec.lockfileDependencyIssues', () {
+    test(
+      'Given a compatible pubspec sdk and an incompatible lockfile sdk, when both are validated, then the lockfile sdk error is returned',
+      () async {
+        await d.dir('mismatch', [
+          d.file('pubspec.lock', '''
+sdks:
+  dart: ">=3.12.0 <4.0.0"
+'''),
+        ]).create();
+
+        final pubspec = TenantProjectPubspec(
+          Pubspec.parse('''
+name: my_project
+environment:
+  sdk: '^3.10.3'
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+'''),
+        );
+
+        final pubspecIssues = pubspec.projectDependencyIssues();
+        final lockfileIssues = TenantProjectPubspec.lockfileDependencyIssues(
+          File(d.path('mismatch/pubspec.lock')),
+        );
+
+        expect(pubspecIssues, isEmpty);
+        expect(lockfileIssues, isNotEmpty);
+        expect(
+          lockfileIssues.first,
+          contains('Unsupported sdk version constraint in pubspec.lock'),
+        );
+      },
+    );
+
+    test(
+      'Given no pubspec.lock file, when lockfileDependencyIssues is called, then the result is empty',
+      () async {
+        await d.dir('no_lockfile').create();
+        final lockfile = d.path('no_lockfile/pubspec.lock');
+
+        final result = TenantProjectPubspec.lockfileDependencyIssues(
+          File(lockfile),
+        );
+        expect(result, isEmpty);
+      },
+    );
+
+    test(
+      'Given a pubspec.lock with a supported dart sdk constraint, when lockfileDependencyIssues is called, then the result is empty',
+      () async {
+        await d.dir('supported_lockfile', [
+          d.file('pubspec.lock', '''
+sdks:
+  dart: ">=3.10.0 <4.0.0"
+'''),
+        ]).create();
+
+        final result = TenantProjectPubspec.lockfileDependencyIssues(
+          File(d.path('supported_lockfile/pubspec.lock')),
+        );
+        expect(result, isEmpty);
+      },
+    );
+
+    test(
+      'Given a pubspec.lock with a too advanced dart sdk constraint, when lockfileDependencyIssues is called, then the result contains the sdk error',
+      () async {
+        await d.dir('advanced_lockfile', [
+          d.file('pubspec.lock', '''
+sdks:
+  dart: ">=3.12.0 <4.0.0"
+  flutter: ">=3.44.0 <4.0.0"
+'''),
+        ]).create();
+
+        final result = TenantProjectPubspec.lockfileDependencyIssues(
+          File(d.path('advanced_lockfile/pubspec.lock')),
+        );
+        expect(result, isNotEmpty);
+        expect(
+          result.first,
+          contains('Unsupported sdk version constraint in pubspec.lock'),
+        );
+      },
+    );
+
+    test(
+      'Given a pubspec.lock with a too old dart sdk constraint, when lockfileDependencyIssues is called, then the result contains the sdk error',
+      () async {
+        await d.dir('old_lockfile', [
+          d.file('pubspec.lock', '''
+sdks:
+  dart: ">=3.1.0 <3.2.0"
+'''),
+        ]).create();
+
+        final result = TenantProjectPubspec.lockfileDependencyIssues(
+          File(d.path('old_lockfile/pubspec.lock')),
+        );
+        expect(result, isNotEmpty);
+        expect(
+          result.first,
+          contains('Unsupported sdk version constraint in pubspec.lock'),
+        );
+      },
+    );
+
+    test(
+      'Given a pubspec.lock with an invalid dart sdk constraint, when lockfileDependencyIssues is called, then the result contains a parse error',
+      () async {
+        await d.dir('invalid_lockfile', [
+          d.file('pubspec.lock', '''
+sdks:
+  dart: not-a-version
+'''),
+        ]).create();
+
+        final result = TenantProjectPubspec.lockfileDependencyIssues(
+          File(d.path('invalid_lockfile/pubspec.lock')),
+        );
+        expect(result, isNotEmpty);
+        expect(
+          result.first,
+          contains('Invalid Dart SDK version constraint in pubspec.lock'),
+        );
+      },
+    );
+
+    test(
+      'Given a pubspec.lock without an sdks section, when lockfileDependencyIssues is called, then the result is empty',
+      () async {
+        await d.dir('no_sdks_lockfile', [
+          d.file('pubspec.lock', '''
+packages:
+  foo:
+    dependency: direct
+'''),
+        ]).create();
+
+        final result = TenantProjectPubspec.lockfileDependencyIssues(
+          File(d.path('no_sdks_lockfile/pubspec.lock')),
+        );
+        expect(result, isEmpty);
+      },
+    );
+  });
 }

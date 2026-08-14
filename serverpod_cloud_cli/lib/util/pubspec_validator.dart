@@ -193,6 +193,72 @@ class TenantProjectPubspec {
     return sdk.toString();
   }
 
+  /// Validates the Dart SDK constraint recorded in [lockfile].
+  ///
+  /// Returns an empty list if the lockfile is missing, has no Dart SDK
+  /// constraint, or the constraint is supported. Otherwise returns error
+  /// messages.
+  static List<String> lockfileDependencyIssues(final File lockfile) {
+    if (!lockfile.existsSync()) {
+      return const [];
+    }
+
+    final String rawContent;
+    try {
+      rawContent = lockfile.readAsStringSync();
+    } catch (e) {
+      return ['Failed to read pubspec.lock: ${e.toString()}'];
+    }
+
+    final YamlNode document;
+    try {
+      document = loadYamlNode(rawContent);
+    } catch (e) {
+      return ['Failed to parse pubspec.lock: ${e.toString()}'];
+    }
+
+    if (document is! YamlMap) {
+      return ['Failed to parse pubspec.lock: expected a YAML map'];
+    }
+
+    final sdks = document.value['sdks'];
+    if (sdks is! YamlMap) {
+      return const [];
+    }
+
+    final dartSdk = sdks.value['dart'];
+    if (dartSdk == null) {
+      return const [];
+    }
+
+    final sdkConstraintText = dartSdk.toString().trim();
+    if (sdkConstraintText.isEmpty) {
+      return const [];
+    }
+
+    final VersionConstraint sdkConstraint;
+    try {
+      sdkConstraint = VersionConstraint.parse(sdkConstraintText);
+    } on FormatException {
+      return [
+        'Invalid Dart SDK version constraint in pubspec.lock: '
+            '"$sdkConstraintText".',
+      ];
+    }
+
+    final supportedSdk = VersionConstraint.parse(
+      VersionConstants.supportedSdkConstraint,
+    );
+    if (!supportedSdk.allowsAny(sdkConstraint)) {
+      return [
+        'Unsupported sdk version constraint in pubspec.lock: $sdkConstraintText'
+            ' (must accept: $supportedSdk)',
+      ];
+    }
+
+    return const [];
+  }
+
   /// Returns true if the pubspec.yaml defines a `serverpod.scripts.flutter_build` entry.
   bool hasFlutterBuildScript() {
     if (_rawYamlContent.isEmpty) {

@@ -10,6 +10,8 @@ import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/file_uploader_factory.dart';
 import 'package:serverpod_cloud_cli/commands/deploy/deploy.dart';
+import 'package:serverpod_cloud_cli/commands/deploy/prepare_project_files.dart'
+    show TenantProject;
 import 'package:serverpod_cloud_cli/commands/launch/tui/app.dart';
 import 'package:serverpod_cloud_cli/commands/launch/tui/state.dart';
 import 'package:serverpod_cloud_cli/commands/launch/tui/state_holder.dart';
@@ -248,7 +250,17 @@ abstract class Launch {
       );
     }
 
-    final issues = pubspecValidator.projectDependencyIssues();
+    final lockfileDirectory = TenantProject.resolveLockfileDirectory(
+      projectDir,
+      isWorkspaceResolved: pubspecValidator.isWorkspaceResolved(),
+    );
+
+    final issues = [
+      ...pubspecValidator.projectDependencyIssues(),
+      ...TenantProjectPubspec.lockfileDependencyIssues(
+        File(p.join(lockfileDirectory.path, 'pubspec.lock')),
+      ),
+    ];
     if (issues.isEmpty) {
       return pubspecValidator;
     }
