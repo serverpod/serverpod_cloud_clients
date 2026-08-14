@@ -118,7 +118,7 @@ abstract class DbBackupCommands {
       final confirmed = await logger.confirm('''
 WARNING: Restores the database for project "$projectId" to snapshot "$snapshotId".
 The live database is replaced with the data from the snapshot.
-The current state is retained by the provider as a separate backup.
+This action cannot be undone.
 
 Do you want to proceed?''', defaultValue: false);
       if (!confirmed) {
