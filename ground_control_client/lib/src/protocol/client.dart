@@ -90,26 +90,28 @@ import 'package:ground_control_client/src/protocol/domains/metrics/models/capsul
     as _i40;
 import 'package:ground_control_client/src/protocol/domains/metrics/models/database_metrics.dart'
     as _i41;
-import 'package:ground_control_client/src/protocol/domains/products/models/subscription_info.dart'
+import 'package:ground_control_client/src/protocol/features/platform/models/dart_sdk_version_policy.dart'
     as _i42;
-import 'package:ground_control_client/src/protocol/domains/products/models/plan_info.dart'
+import 'package:ground_control_client/src/protocol/domains/products/models/subscription_info.dart'
     as _i43;
-import 'package:ground_control_client/src/protocol/features/projects/models/project_profile_update.dart'
+import 'package:ground_control_client/src/protocol/domains/products/models/plan_info.dart'
     as _i44;
-import 'package:ground_control_client/src/protocol/features/projects/models/project_config.dart'
+import 'package:ground_control_client/src/protocol/features/projects/models/project_profile_update.dart'
     as _i45;
-import 'package:ground_control_client/src/protocol/domains/projects/models/role.dart'
+import 'package:ground_control_client/src/protocol/features/projects/models/project_config.dart'
     as _i46;
-import 'package:ground_control_client/src/protocol/domains/secrets/models/build_secret_type.dart'
+import 'package:ground_control_client/src/protocol/domains/projects/models/role.dart'
     as _i47;
-import 'package:ground_control_client/src/protocol/domains/status/models/capsule_status.dart'
+import 'package:ground_control_client/src/protocol/domains/secrets/models/build_secret_type.dart'
     as _i48;
-import 'package:ground_control_client/src/protocol/features/status/models/capsule_runtime_status.dart'
+import 'package:ground_control_client/src/protocol/domains/status/models/capsule_status.dart'
     as _i49;
-import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
+import 'package:ground_control_client/src/protocol/features/status/models/capsule_runtime_status.dart'
     as _i50;
-import 'package:http/http.dart' as _i51;
-import 'protocol.dart' as _i52;
+import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
+    as _i51;
+import 'package:http/http.dart' as _i52;
+import 'protocol.dart' as _i53;
 
 /// {@category Endpoint}
 class EndpointAdminMigration extends _i1.EndpointRef {
@@ -1639,6 +1641,25 @@ class EndpointMetrics extends _i1.EndpointRef {
   );
 }
 
+/// Endpoint for reading platform information about Serverpod Cloud.
+/// {@category Endpoint}
+class EndpointPlatform extends _i1.EndpointRef {
+  EndpointPlatform(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'platform';
+
+  /// Gets the Dart SDK version policy for projects deployed to Serverpod Cloud.
+  ///
+  /// This method requires no authentication.
+  _i2.Future<_i42.DartSdkVersionPolicy> getDartSdkVersionPolicy() =>
+      caller.callServerEndpoint<_i42.DartSdkVersionPolicy>(
+        'platform',
+        'getDartSdkVersionPolicy',
+        {},
+      );
+}
+
 /// Endpoint for managing subscription plans.
 ///
 /// - Throws [ProcurementDeniedException] if the procurement fails.
@@ -1681,8 +1702,8 @@ class EndpointPlans extends _i1.EndpointRef {
       .callServerEndpoint<List<String>>('plans', 'listProcuredPlanNames', {});
 
   /// Lists the subscriptions owned by the user.
-  _i2.Future<List<_i42.SubscriptionInfo>> listSubscriptions() =>
-      caller.callServerEndpoint<List<_i42.SubscriptionInfo>>(
+  _i2.Future<List<_i43.SubscriptionInfo>> listSubscriptions() =>
+      caller.callServerEndpoint<List<_i43.SubscriptionInfo>>(
         'plans',
         'listSubscriptions',
         {},
@@ -1691,9 +1712,9 @@ class EndpointPlans extends _i1.EndpointRef {
   /// Gets the subscription info for the subscription of the given project id.
   ///
   /// Throws [NotFoundException] if the project's subscription is not found.
-  _i2.Future<_i42.SubscriptionInfo> getSubscriptionInfoOfProject({
+  _i2.Future<_i43.SubscriptionInfo> getSubscriptionInfoOfProject({
     required String cloudProjectId,
-  }) => caller.callServerEndpoint<_i42.SubscriptionInfo>(
+  }) => caller.callServerEndpoint<_i43.SubscriptionInfo>(
     'plans',
     'getSubscriptionInfoOfProject',
     {'cloudProjectId': cloudProjectId},
@@ -1702,9 +1723,9 @@ class EndpointPlans extends _i1.EndpointRef {
   /// Gets a subscription info of a subscription owned by the user.
   ///
   /// Throws [NotFoundException] if the subscription is not found.
-  _i2.Future<_i42.SubscriptionInfo> getSubscriptionInfo({
+  _i2.Future<_i43.SubscriptionInfo> getSubscriptionInfo({
     required _i1.UuidValue subscriptionId,
-  }) => caller.callServerEndpoint<_i42.SubscriptionInfo>(
+  }) => caller.callServerEndpoint<_i43.SubscriptionInfo>(
     'plans',
     'getSubscriptionInfo',
     {'subscriptionId': subscriptionId},
@@ -1725,11 +1746,11 @@ class EndpointPlans extends _i1.EndpointRef {
   /// Lists the public plans (`starter`, `growth`) for the private customer
   /// billing type. Each [PlanInfo] carries its bundled
   /// [PlanInfo.projectProduct].
-  _i2.Future<List<_i43.PlanInfo>> listPlans() =>
-      caller.callServerEndpoint<List<_i43.PlanInfo>>('plans', 'listPlans', {});
+  _i2.Future<List<_i44.PlanInfo>> listPlans() =>
+      caller.callServerEndpoint<List<_i44.PlanInfo>>('plans', 'listPlans', {});
 
-  _i2.Future<_i43.PlanInfo> getPlanInfo({required String planProductName}) =>
-      caller.callServerEndpoint<_i43.PlanInfo>('plans', 'getPlanInfo', {
+  _i2.Future<_i44.PlanInfo> getPlanInfo({required String planProductName}) =>
+      caller.callServerEndpoint<_i44.PlanInfo>('plans', 'getPlanInfo', {
         'planProductName': planProductName,
       });
 
@@ -1797,7 +1818,7 @@ class EndpointProjects extends _i1.EndpointRef {
   /// Throws [ProcurementDeniedException] if a procurement fails.
   _i2.Future<_i1.UuidValue> createPlanProject({
     required String cloudProjectId,
-    required _i44.ProjectProfileUpdate profile,
+    required _i45.ProjectProfileUpdate profile,
   }) => caller.callServerEndpoint<_i1.UuidValue>(
     'projects',
     'createPlanProject',
@@ -1873,15 +1894,15 @@ class EndpointProjects extends _i1.EndpointRef {
   /// Throws [ConcurrentSubscriptionUpdateException] if another update is in progress.
   _i2.Future<void> updateProjectProfile({
     required String cloudProjectId,
-    required _i44.ProjectProfileUpdate resources,
+    required _i45.ProjectProfileUpdate resources,
   }) => caller.callServerEndpoint<void>('projects', 'updateProjectProfile', {
     'cloudProjectId': cloudProjectId,
     'resources': resources,
   });
 
-  _i2.Future<_i45.ProjectConfig> fetchProjectConfig({
+  _i2.Future<_i46.ProjectConfig> fetchProjectConfig({
     required String cloudProjectId,
-  }) => caller.callServerEndpoint<_i45.ProjectConfig>(
+  }) => caller.callServerEndpoint<_i46.ProjectConfig>(
     'projects',
     'fetchProjectConfig',
     {'cloudProjectId': cloudProjectId},
@@ -1946,9 +1967,9 @@ class EndpointRoles extends _i1.EndpointRef {
   String get name => 'roles';
 
   /// Fetches the user roles for a project.
-  _i2.Future<List<_i46.Role>> fetchRolesForProject({
+  _i2.Future<List<_i47.Role>> fetchRolesForProject({
     required String cloudProjectId,
-  }) => caller.callServerEndpoint<List<_i46.Role>>(
+  }) => caller.callServerEndpoint<List<_i47.Role>>(
     'roles',
     'fetchRolesForProject',
     {'cloudProjectId': cloudProjectId},
@@ -2005,7 +2026,7 @@ class EndpointSecrets extends _i1.EndpointRef {
   _i2.Future<void> upsertBuildSecret({
     required String secretKey,
     required String secretValue,
-    required _i47.BuildSecretType buildSecretType,
+    required _i48.BuildSecretType buildSecretType,
     required String cloudCapsuleId,
   }) => caller.callServerEndpoint<void>('secrets', 'upsertBuildSecret', {
     'secretKey': secretKey,
@@ -2092,9 +2113,9 @@ class EndpointStatus extends _i1.EndpointRef {
 
   /// Gets the live runtime status of the specified capsule.
   /// An unhealthy capsule is still a successful result — the status is data.
-  _i2.Future<_i48.CapsuleStatus> getCapsuleStatus({
+  _i2.Future<_i49.CapsuleStatus> getCapsuleStatus({
     required String cloudCapsuleId,
-  }) => caller.callServerEndpoint<_i48.CapsuleStatus>(
+  }) => caller.callServerEndpoint<_i49.CapsuleStatus>(
     'status',
     'getCapsuleStatus',
     {'cloudCapsuleId': cloudCapsuleId},
@@ -2104,9 +2125,9 @@ class EndpointStatus extends _i1.EndpointRef {
   /// summaries of the deploy attempts behind the serving and incoming
   /// revisions.
   /// An unhealthy capsule is still a successful result — the status is data.
-  _i2.Future<_i49.CapsuleRuntimeStatus> getCapsuleRuntimeStatus({
+  _i2.Future<_i50.CapsuleRuntimeStatus> getCapsuleRuntimeStatus({
     required String cloudCapsuleId,
-  }) => caller.callServerEndpoint<_i49.CapsuleRuntimeStatus>(
+  }) => caller.callServerEndpoint<_i50.CapsuleRuntimeStatus>(
     'status',
     'getCapsuleRuntimeStatus',
     {'cloudCapsuleId': cloudCapsuleId},
@@ -2115,12 +2136,12 @@ class EndpointStatus extends _i1.EndpointRef {
   /// Tails the live runtime status of the specified capsule.
   /// Emits the current status immediately, then an update whenever it
   /// changes. Continues until the client unsubscribes.
-  _i2.Stream<_i48.CapsuleStatus> tailCapsuleStatus({
+  _i2.Stream<_i49.CapsuleStatus> tailCapsuleStatus({
     required String cloudCapsuleId,
   }) =>
       caller.callStreamingServerEndpoint<
-        _i2.Stream<_i48.CapsuleStatus>,
-        _i48.CapsuleStatus
+        _i2.Stream<_i49.CapsuleStatus>,
+        _i49.CapsuleStatus
       >('status', 'tailCapsuleStatus', {'cloudCapsuleId': cloudCapsuleId}, {});
 
   /// Gets deploy attempts of the specified capsule.
@@ -2135,10 +2156,10 @@ class EndpointStatus extends _i1.EndpointRef {
   );
 
   /// Gets the specified deploy attempt status of the a capsule.
-  _i2.Future<List<_i50.DeployAttemptStage>> getDeployAttemptStatus({
+  _i2.Future<List<_i51.DeployAttemptStage>> getDeployAttemptStatus({
     required String cloudCapsuleId,
     required _i1.UuidValue attemptId,
-  }) => caller.callServerEndpoint<List<_i50.DeployAttemptStage>>(
+  }) => caller.callServerEndpoint<List<_i51.DeployAttemptStage>>(
     'status',
     'getDeployAttemptStatus',
     {'cloudCapsuleId': cloudCapsuleId, 'attemptId': attemptId},
@@ -2157,13 +2178,13 @@ class EndpointStatus extends _i1.EndpointRef {
 
   /// Tails the status updates for a deploy attempt.
   /// Continues until the client unsubscribes or the status if final.
-  _i2.Stream<_i50.DeployAttemptStage> tailDeployAttemptStatus({
+  _i2.Stream<_i51.DeployAttemptStage> tailDeployAttemptStatus({
     required String cloudCapsuleId,
     required _i1.UuidValue attemptId,
   }) =>
       caller.callStreamingServerEndpoint<
-        _i2.Stream<_i50.DeployAttemptStage>,
-        _i50.DeployAttemptStage
+        _i2.Stream<_i51.DeployAttemptStage>,
+        _i51.DeployAttemptStage
       >('status', 'tailDeployAttemptStatus', {
         'cloudCapsuleId': cloudCapsuleId,
         'attemptId': attemptId,
@@ -2220,10 +2241,10 @@ class Client extends _i1.ServerpodClientShared {
     Function(_i1.MethodCallContext, Object, StackTrace)? onFailedCall,
     Function(_i1.MethodCallContext)? onSucceededCall,
     bool? disconnectStreamsOnLostInternetConnection,
-    _i51.Client? httpClientOverride,
+    _i52.Client? httpClientOverride,
   }) : super(
          host,
-         _i52.Protocol(),
+         _i53.Protocol(),
          securityContext: securityContext,
          streamingConnectionTimeout: streamingConnectionTimeout,
          connectionTimeout: connectionTimeout,
@@ -2259,6 +2280,7 @@ class Client extends _i1.ServerpodClientShared {
     insights = EndpointInsights(this);
     logs = EndpointLogs(this);
     metrics = EndpointMetrics(this);
+    platform = EndpointPlatform(this);
     plans = EndpointPlans(this);
     projects = EndpointProjects(this);
     roles = EndpointRoles(this);
@@ -2320,6 +2342,8 @@ class Client extends _i1.ServerpodClientShared {
 
   late final EndpointMetrics metrics;
 
+  late final EndpointPlatform platform;
+
   late final EndpointPlans plans;
 
   late final EndpointProjects projects;
@@ -2362,6 +2386,7 @@ class Client extends _i1.ServerpodClientShared {
     'insights': insights,
     'logs': logs,
     'metrics': metrics,
+    'platform': platform,
     'plans': plans,
     'projects': projects,
     'roles': roles,
