@@ -15,8 +15,9 @@ abstract final class VersionConstants {
   static const minSupportedSdkVersion = '3.8.0';
 
   /// The constraint for which SDK versions are supported for tenant projects
-  /// in Serverpod Cloud. This is the highest tested version plus 0.1.
-  static const supportedSdkConstraint = '>=$minSupportedSdkVersion <3.11.0';
+  /// in Serverpod Cloud. Upper bound is one minor above the highest supported
+  /// Docker image tag (see ground_control dart_image_tags.dart).
+  static const supportedSdkConstraint = '>=$minSupportedSdkVersion <3.12.0';
 
   /// The minimum Serverpod version supported for tenant projects in Serverpod Cloud.
   static const minSupportedServerpodVersion = '2.3.0';

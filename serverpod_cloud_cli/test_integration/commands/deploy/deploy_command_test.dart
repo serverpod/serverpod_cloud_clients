@@ -411,6 +411,120 @@ dependencies:
       });
     });
 
+    group('and current directory is a Serverpod server directory '
+        'with compatible pubspec sdk but outdated lockfile sdk '
+        'when running deploy command', () {
+      late String testProjectDir;
+      late Future cliCommandFuture;
+
+      setUp(() async {
+        await d.dir('project', [
+          d.file('pubspec.yaml', '''
+name: my_project
+environment:
+  sdk: ${ProjectFactory.highValidSdkVersion}
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+'''),
+          d.file('pubspec.lock', '''
+sdks:
+  dart: ">=3.12.0 <4.0.0"
+'''),
+        ]).create();
+        testProjectDir = p.join(d.sandbox, 'project');
+
+        cliCommandFuture = cli.run([
+          'deploy',
+          '--project',
+          '123',
+          '--project-dir',
+          testProjectDir,
+          '--skip-dart-pub-get',
+        ]);
+      });
+
+      test('then ExitErrorException is thrown.', () async {
+        await expectLater(cliCommandFuture, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then error message is logged', () async {
+        await cliCommandFuture.catchError((final _) {});
+        expect(logger.errorCalls, isNotEmpty);
+        expect(
+          logger.errorCalls.first.message,
+          contains('Unsupported sdk version constraint in pubspec.lock'),
+        );
+      });
+    });
+
+    group(
+      'and a workspace with compatible pubspec sdk but outdated root lockfile sdk '
+      'when running deploy command',
+      () {
+        late String testProjectDir;
+        late Future cliCommandFuture;
+
+        setUp(() async {
+          await d.dir('monorepo', [
+            d.file('pubspec.yaml', '''
+name: monorepo
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+workspace:
+  - project/project_server
+'''),
+            d.file('pubspec.lock', '''
+sdks:
+  dart: ">=3.12.0 <4.0.0"
+'''),
+            d.dir('project', [
+              d.dir('project_server', [
+                d.file('pubspec.yaml', '''
+name: project_server
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+resolution: workspace
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+'''),
+              ]),
+            ]),
+          ]).create();
+          testProjectDir = p.join(
+            d.sandbox,
+            'monorepo',
+            'project',
+            'project_server',
+          );
+
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--project',
+            '123',
+            '--project-dir',
+            testProjectDir,
+            '--skip-dart-pub-get',
+          ]);
+        });
+
+        test('then ExitErrorException is thrown.', () async {
+          await expectLater(
+            cliCommandFuture,
+            throwsA(isA<ErrorExitException>()),
+          );
+        });
+
+        test('then error message is logged', () async {
+          await cliCommandFuture.catchError((final _) {});
+          expect(logger.errorCalls, isNotEmpty);
+          expect(
+            logger.errorCalls.first.message,
+            contains('Unsupported sdk version constraint in pubspec.lock'),
+          );
+        });
+      },
+    );
+
     group('and current directory is a Serverpod server directory', () {
       late String testProjectDir;
 

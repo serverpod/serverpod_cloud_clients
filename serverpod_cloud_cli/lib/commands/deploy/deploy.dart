@@ -57,20 +57,28 @@ abstract class Deploy {
       projectDirectory,
     );
 
-    final issues = pubspecValidator.projectDependencyIssues();
-    if (issues.isNotEmpty) {
-      throw FailureException(errors: issues);
+    final pubspecIssues = pubspecValidator.projectDependencyIssues();
+    if (pubspecIssues.isNotEmpty) {
+      throw FailureException(errors: pubspecIssues);
     }
 
-    Directory? workspaceRootDir;
-    if (pubspecValidator.isWorkspaceResolved()) {
-      (workspaceRootDir, _) = TenantProject.findWorkspaceRoot(projectDirectory);
-    }
-    await _runDartPubGetIfNeeded(
-      logger,
-      skipDartPubGet,
-      workspaceRootDir ?? projectDirectory,
+    final lockfileDirectory = TenantProject.resolveLockfileDirectory(
+      projectDirectory,
+      isWorkspaceResolved: pubspecValidator.isWorkspaceResolved(),
     );
+
+    await _runDartPubGetIfNeeded(logger, skipDartPubGet, lockfileDirectory);
+
+    final lockfileIssues = TenantProjectPubspec.lockfileDependencyIssues(
+      File(p.join(lockfileDirectory.path, 'pubspec.lock')),
+    );
+    if (lockfileIssues.isNotEmpty) {
+      throw FailureException(errors: lockfileIssues);
+    }
+
+    final workspaceRootDir = pubspecValidator.isWorkspaceResolved()
+        ? lockfileDirectory
+        : null;
 
     final config = ScloudConfigIO.readFromFile(projectConfigFilePath);
 

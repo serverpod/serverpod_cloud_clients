@@ -1918,6 +1918,45 @@ dependencies:
       });
     });
 
+    group('and a Serverpod server directory with compatible pubspec sdk '
+        'but outdated lockfile sdk when executing launch', () {
+      late String invalidProjectDir;
+      late Future commandResult;
+
+      setUp(() async {
+        await d.dir('invalid_lockfile_server_dir', [
+          d.file('pubspec.yaml', '''
+name: my_project_server
+environment:
+  sdk: ${ProjectFactory.highValidSdkVersion}
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+'''),
+          d.file('pubspec.lock', '''
+sdks:
+  dart: ">=3.12.0 <4.0.0"
+'''),
+        ]).create();
+        invalidProjectDir = p.join(d.sandbox, 'invalid_lockfile_server_dir');
+
+        commandResult = cli.run(['launch', '--project-dir', invalidProjectDir]);
+      });
+
+      test('then throws ErrorExitException', () async {
+        expect(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then logs error message for lockfile sdk constraint', () async {
+        await commandResult.catchError((final _) {});
+
+        expect(logger.errorCalls, hasLength(1));
+        expect(
+          logger.errorCalls.single.message,
+          contains('Unsupported sdk version constraint in pubspec.lock'),
+        );
+      });
+    });
+
     group(
       'and a Dart workspace directory structure containing a serverpod directory',
       () {

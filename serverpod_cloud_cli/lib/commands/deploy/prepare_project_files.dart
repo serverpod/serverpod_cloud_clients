@@ -298,6 +298,18 @@ abstract class TenantProject {
     );
   }
 
+  /// Returns the directory that holds the tenant project's `pubspec.lock`.
+  static Directory resolveLockfileDirectory(
+    final Directory projectDirectory, {
+    required final bool isWorkspaceResolved,
+  }) {
+    if (!isWorkspaceResolved) {
+      return projectDirectory;
+    }
+    final (workspaceRootDir, _) = findWorkspaceRoot(projectDirectory);
+    return workspaceRootDir;
+  }
+
   /// Strips dev_dependencies from pubspec.yaml content in memory.
   /// Returns the modified content, or null if no changes were needed.
   static String? stripDevDependenciesFromPubspecContent(
