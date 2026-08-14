@@ -466,9 +466,10 @@ class EndpointAuthWithAuth extends _i1.EndpointRef {
   @override
   String get name => 'authWithAuth';
 
-  /// Log out the current user from a login session.
-  /// If no [authTokenId] is provided, it will log out the current one.
-  /// The user's other login sessions and API tokens will not be affected.
+  /// Log out the current user from a login session or API token.
+  /// If no [authTokenId] is provided, it will log out the current session.
+  /// Only the targeted session is logged out; the user's other login sessions
+  /// and API tokens will not be affected.
   ///
   /// Returns true if it was the current session that was logged out,
   /// false if it was a different session.
