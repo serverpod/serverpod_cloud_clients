@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cli_tools/cli_tools.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
@@ -29,9 +31,13 @@ abstract final class CLIVersionChecker {
               .tryFetchLatestStableVersion('serverpod_cloud_cli')
               .timeout(const Duration(seconds: 2));
         } on VersionFetchException catch (e) {
-          logger.error(e.message);
+          logger.debug(e.message);
         } on VersionParseException catch (e) {
-          logger.error(e.message);
+          logger.debug(e.message);
+        } on TimeoutException catch (e) {
+          logger.debug(
+            'Failed to fetch latest version for serverpod_cloud_cli: $e',
+          );
         } finally {
           pubClient.close();
         }
