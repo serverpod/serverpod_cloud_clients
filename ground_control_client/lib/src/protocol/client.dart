@@ -1750,6 +1750,14 @@ class EndpointPlans extends _i1.EndpointRef {
   _i2.Future<List<_i44.PlanInfo>> listPlans() =>
       caller.callServerEndpoint<List<_i44.PlanInfo>>('plans', 'listPlans', {});
 
+  /// Gets the plan info for the named plan product.
+  ///
+  /// For plans that depend on the customer billing type (private / business),
+  /// the plan product matching the user's customer billing type is resolved,
+  /// with [BillingCustomerType.private] used when no customer billing type
+  /// is set.
+  ///
+  /// Throws [NotFoundException] if the plan is not found.
   _i2.Future<_i44.PlanInfo> getPlanInfo({required String planProductName}) =>
       caller.callServerEndpoint<_i44.PlanInfo>('plans', 'getPlanInfo', {
         'planProductName': planProductName,
