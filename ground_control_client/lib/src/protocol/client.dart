@@ -1864,6 +1864,8 @@ class EndpointProjects extends _i1.EndpointRef {
   /// When [resources.databaseSize] is null, database sizing is not changed.
   ///
   /// Throws [NotFoundException] if the project is not found.
+  /// Throws [UnauthorizedException] if the user is not the owner of the
+  /// project's subscription.
   /// Throws [InvalidValueException] if the requested configuration violates the product constraints.
   /// Throws [PlanChangeDeniedException] if the plan change would strand a feature
   /// that is currently in use (e.g. removing backup support while backups exist).
