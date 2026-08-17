@@ -41,6 +41,20 @@ class ErrorExitException extends ExitException {
   }
 }
 
+/// An [ErrorExitException] caused by an exception that the CLI code
+/// did not anticipate.
+///
+/// Indicates a potential internal error in the CLI or Serverpod Cloud,
+/// rather than a failure the user can correct.
+/// Errors of this type are eligible for diagnostics reporting.
+class UnexpectedErrorExitException extends ErrorExitException {
+  UnexpectedErrorExitException([
+    super.reason,
+    super.nestedException,
+    super.nestedStackTrace,
+  ]);
+}
+
 /// Indicates that we are existing with an error code since the user
 /// has aborted the operation / command.
 class UserAbortException extends ErrorExitException {

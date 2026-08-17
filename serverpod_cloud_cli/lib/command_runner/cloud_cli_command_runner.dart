@@ -40,11 +40,31 @@ import 'commands/settings_command.dart';
 import 'completion/completion_script_carapace.dart';
 import 'completion/completion_script_completely.dart';
 
+typedef OnAnalyticsConsentResolved = void Function(bool consented);
+
+typedef OnCommandResolved = void Function(String commandPath);
+
+typedef OnApiServerResolved = void Function(String apiServerUrl);
+
 /// Represents the Serverpod Cloud CLI main command, its global options, and subcommands.
 class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   final Version version;
   final CommandLogger logger;
   final CloudCliServiceProvider _serviceProvider;
+
+  /// Called with the resolved analytics consent each time [run] resolves it.
+  final OnAnalyticsConsentResolved? _onAnalyticsConsentResolved;
+
+  /// Called with the space-separated command name path followed by the
+  /// flags used (e.g. `variable set --project`) each time [runCommand]
+  /// resolves the command to run.
+  /// The path contains command and flag names only - no option values or
+  /// positional arguments.
+  final OnCommandResolved? _onCommandResolved;
+
+  /// Called with the resolved API server URL each time [run] resolves
+  /// the global configuration.
+  final OnApiServerResolved? _onApiServerResolved;
 
   /// If true, analytics will be not be suppressed for non-production usage.
   final bool _enableAnalyticsForAllEnvs;
@@ -71,10 +91,10 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   /// each call to [run].)
   @override
   set globalConfiguration(final Configuration<GlobalOption> configuration) {
-    _globalConfiguration = GlobalConfiguration.from(
-      configuration: configuration,
-    );
-    logger.configuration = _globalConfiguration;
+    final globalConfig = GlobalConfiguration.from(configuration: configuration);
+    _globalConfiguration = globalConfig;
+    logger.configuration = globalConfig;
+    _onApiServerResolved?.call(globalConfig.apiServer);
   }
 
   /// Gets the initialized service provider for the Serverpod Cloud CLI.
@@ -95,9 +115,15 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     required final CloudCliServiceProvider serviceProvider,
     required final bool enableAnalyticsForAllEnvs,
     required final bool adminUserMode,
+    final OnAnalyticsConsentResolved? onAnalyticsConsentResolved,
+    final OnCommandResolved? onCommandResolved,
+    final OnApiServerResolved? onApiServerResolved,
     super.onAnalyticsEvent,
     super.setLogLevel,
-  }) : _serviceProvider = serviceProvider,
+  }) : _onAnalyticsConsentResolved = onAnalyticsConsentResolved,
+       _onCommandResolved = onCommandResolved,
+       _onApiServerResolved = onApiServerResolved,
+       _serviceProvider = serviceProvider,
        _versionCommand = VersionCommand(logger: logger),
        _enableAnalyticsForAllEnvs = enableAnalyticsForAllEnvs,
        _adminUserMode = adminUserMode,
@@ -119,6 +145,9 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     final Version? version,
     final CloudCliServiceProvider? serviceProvider,
     final OnAnalyticsEvent? onAnalyticsEvent,
+    final OnAnalyticsConsentResolved? onAnalyticsConsentResolved,
+    final OnCommandResolved? onCommandResolved,
+    final OnApiServerResolved? onApiServerResolved,
     final bool enableAnalyticsForAllEnvs = false,
     bool? adminUserMode,
   }) {
@@ -135,6 +164,9 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
       serviceProvider: serviceProvider ?? CloudCliServiceProvider(),
       enableAnalyticsForAllEnvs: enableAnalyticsForAllEnvs,
       adminUserMode: adminUserMode,
+      onAnalyticsConsentResolved: onAnalyticsConsentResolved,
+      onCommandResolved: onCommandResolved,
+      onApiServerResolved: onApiServerResolved,
       onAnalyticsEvent: onAnalyticsEvent,
       setLogLevel:
           ({
@@ -173,6 +205,11 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
 
   @override
   Future<void> runCommand(final ArgResults topLevelResults) async {
+    final commandPath = _commandPath(topLevelResults);
+    if (commandPath != null) {
+      _onCommandResolved?.call(commandPath);
+    }
+
     if (globalConfiguration.version) {
       await _versionCommand.run();
       return;
@@ -221,6 +258,30 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     }
   }
 
+  static String? _commandPath(final ArgResults topLevelResults) {
+    final names = <String>[];
+    final flags = <String>[];
+    ArgResults? commandResults = topLevelResults;
+    while (commandResults != null) {
+      final results = commandResults;
+      final name = results.name;
+      if (name != null) {
+        names.add(name);
+      }
+      flags.addAll(
+        results.options
+            .where(results.wasParsed)
+            .map((final option) => '--$option'),
+      );
+      commandResults = results.command;
+    }
+    if (names.isEmpty) {
+      return null;
+    }
+    flags.sort();
+    return [...names, ...flags].join(' ');
+  }
+
   @override
   void sendAnalyticsEvent(
     final String event, [
@@ -241,6 +302,12 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
 
   @override
   Future<bool> determineAnalyticsSettings() async {
+    final analyticsEnabled = await _resolveAnalyticsConsent();
+    _onAnalyticsConsentResolved?.call(analyticsEnabled);
+    return analyticsEnabled;
+  }
+
+  Future<bool> _resolveAnalyticsConsent() async {
     if (onAnalyticsEvent == null) {
       return false;
     }
