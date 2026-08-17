@@ -314,7 +314,7 @@ void main() {
         });
       });
 
-      group('when server rejects an oversized secret value', () {
+      group('when server rejects the secret name', () {
         late Future commandResult;
 
         setUp(() async {
@@ -327,9 +327,7 @@ void main() {
             ),
           ).thenThrow(
             InvalidValueException(
-              message:
-                  'Secret value is too big '
-                  '(max 446 bytes, got 447).',
+              message: 'The provided secret name "key" is not a valid name.',
             ),
           );
 
@@ -357,9 +355,7 @@ void main() {
           expect(
             logger.errorCalls.first,
             equalsErrorCall(
-              message:
-                  'Secret value is too big '
-                  '(max 446 bytes, got 447).',
+              message: 'The provided secret name "key" is not a valid name.',
             ),
           );
         });
