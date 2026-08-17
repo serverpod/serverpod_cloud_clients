@@ -134,7 +134,7 @@ import 'shared/exceptions/models/unauthenticated_exception.dart' as _i110;
 import 'shared/exceptions/models/unauthorized_exception.dart' as _i111;
 import 'shared/models/http_response_class.dart' as _i112;
 import 'shared/models/serverpod_region.dart' as _i113;
-import 'shared/services/pubsub/registry/pubsub_entry.dart' as _i114;
+import 'shared/pubsub/registry/pubsub_entry.dart' as _i114;
 import 'package:ground_control_client/src/protocol/domains/projects/models/project.dart'
     as _i115;
 import 'package:ground_control_client/src/protocol/features/projects/models/project_info/project_info.dart'
@@ -285,7 +285,7 @@ export 'shared/exceptions/models/unauthenticated_exception.dart';
 export 'shared/exceptions/models/unauthorized_exception.dart';
 export 'shared/models/http_response_class.dart';
 export 'shared/models/serverpod_region.dart';
-export 'shared/services/pubsub/registry/pubsub_entry.dart';
+export 'shared/pubsub/registry/pubsub_entry.dart';
 export 'client.dart';
 
 class Protocol extends _i1.SerializationManager {
