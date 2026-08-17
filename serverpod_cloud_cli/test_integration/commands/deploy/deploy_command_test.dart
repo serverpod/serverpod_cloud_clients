@@ -2055,6 +2055,15 @@ project:
       ).thenAnswer(
         (final _) async => BucketUploadDescription.uploadDescription,
       );
+
+      when(
+        () => client.status.tailDeployAttemptStatus(
+          cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          attemptId: any(named: 'attemptId'),
+        ),
+      ).thenAnswer(
+        (final _) => Stream.value(DeployAttemptStageBuilder().build()),
+      );
     });
 
     group('when deploying through CLI', () {
@@ -2066,6 +2075,7 @@ project:
           BucketUploadDescription.projectId,
           '--project-dir',
           testProjectDir,
+          '--skip-dart-pub-get',
         ]);
       });
 
