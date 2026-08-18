@@ -1583,6 +1583,19 @@ class EndpointLogs extends _i1.EndpointRef {
         },
         {},
       );
+
+  /// Tails the build log records for the specified deploy attempt.
+  /// Continues until the client unsubscribes or the build stage is final.
+  _i2.Stream<_i37.LogRecord> tailBuildLog({
+    required String cloudCapsuleId,
+    required _i1.UuidValue attemptId,
+  }) => caller
+      .callStreamingServerEndpoint<_i2.Stream<_i37.LogRecord>, _i37.LogRecord>(
+        'logs',
+        'tailBuildLog',
+        {'cloudCapsuleId': cloudCapsuleId, 'attemptId': attemptId},
+        {},
+      );
 }
 
 /// Endpoint for reading capsule metrics.
