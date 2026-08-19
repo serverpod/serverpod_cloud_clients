@@ -330,6 +330,98 @@ project:
         },
       );
 
+      group('and the pubspec has no sdk constraint '
+          'and no other version hint exists when executing link', () {
+        late String noHintProjectDir;
+        late Future commandResult;
+
+        setUp(() async {
+          await d.dir('no_hint_server_dir', [
+            d.file('pubspec.yaml', '''
+name: my_project_server
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+'''),
+          ]).create();
+          noHintProjectDir = p.join(d.sandbox, 'no_hint_server_dir');
+
+          commandResult = cli.run([
+            'project',
+            'link',
+            '--project',
+            projectId,
+            '--project-dir',
+            noHintProjectDir,
+          ]);
+        });
+
+        test('then command completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then scloud.yaml holds the project id', () async {
+          await commandResult;
+
+          final expected = d.dir(noHintProjectDir, [
+            d.file('scloud.yaml', contains('projectId: "$projectId"')),
+          ]);
+          await expectLater(expected.validate(), completes);
+        });
+
+        test('then scloud.yaml omits dartSdk', () async {
+          await commandResult;
+
+          final expected = d.dir(noHintProjectDir, [
+            d.file('scloud.yaml', isNot(contains('dartSdk'))),
+          ]);
+          await expectLater(expected.validate(), completes);
+        });
+      });
+
+      group('and the pubspec has no sdk constraint '
+          'and an existing scloud.yaml has a dartSdk when executing link', () {
+        late String noHintProjectDir;
+        late Future commandResult;
+
+        setUp(() async {
+          await d.dir('no_hint_server_dir', [
+            d.file('pubspec.yaml', '''
+name: my_project_server
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+'''),
+            d.file('scloud.yaml', '''
+project:
+  projectId: "$projectId"
+  dartSdk: "3.9.0"
+'''),
+          ]).create();
+          noHintProjectDir = p.join(d.sandbox, 'no_hint_server_dir');
+
+          commandResult = cli.run([
+            'project',
+            'link',
+            '--project',
+            projectId,
+            '--project-dir',
+            noHintProjectDir,
+          ]);
+        });
+
+        test('then command completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then the existing dartSdk in scloud.yaml is kept', () async {
+          await commandResult;
+
+          final expected = d.dir(noHintProjectDir, [
+            d.file('scloud.yaml', contains('dartSdk: "3.9.0"')),
+          ]);
+          await expectLater(expected.validate(), completes);
+        });
+      });
+
       group('and .tool-versions file with dart entry when executing link', () {
         late Future commandResult;
 

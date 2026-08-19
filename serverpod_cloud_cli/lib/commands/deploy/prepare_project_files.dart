@@ -7,6 +7,8 @@ import 'package:yaml_codec/yaml_codec.dart';
 
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart'
     show FailureException;
+import 'package:serverpod_cloud_cli/util/dart_version_util.dart'
+    show SupportedDartSdkPolicy;
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:serverpod_cloud_cli/util/scloudignore.dart';
 
@@ -108,6 +110,10 @@ abstract class TenantProject {
   /// Analyzes the tenant project structure, creates bespoke deployment files,
   /// and compiles the list of paths whose contents are to be included.
   ///
+  /// [supportedSdkPolicy] is the Dart SDK version policy of Serverpod Cloud,
+  /// fetched from the server, or null if it could not be fetched.
+  /// See [TenantProjectPubspec.projectDependencyIssues].
+  ///
   /// Specify [scloudDirPath] to override the default scloud directory path.
   ///
   /// Returns a [ProjectFilePreparer] object to be used to filter project files.
@@ -117,6 +123,7 @@ abstract class TenantProject {
   static ProjectFilePreparer prepare(
     final Directory projectDirectory, {
     required final TenantProjectPubspec tenantProjectPubspec,
+    required final SupportedDartSdkPolicy? supportedSdkPolicy,
     final String? scloudDirPath,
   }) {
     final String projectPackageName = _getPackageName(projectDirectory);
@@ -167,6 +174,7 @@ abstract class TenantProject {
 
     WorkspaceProjectLogic.validateIncludedPackages(
       includedPackages.values.map((final package) => package.pubspec),
+      supportedSdkPolicy: supportedSdkPolicy,
     );
 
     final includedPackagePaths = includedPackages.values
@@ -375,15 +383,22 @@ abstract class WorkspaceProjectLogic {
   }
 
   /// Validates that the included packages are compatible with Serverpod Cloud.
+  ///
+  /// [supportedSdkPolicy] is the Dart SDK version policy of Serverpod Cloud,
+  /// fetched from the server, or null if it could not be fetched.
+  /// See [TenantProjectPubspec.projectDependencyIssues].
+  ///
   /// Throws [WorkspaceException] if any issues are found.
   static void validateIncludedPackages(
-    final Iterable<Pubspec> includedPackagePubspecs,
-  ) {
+    final Iterable<Pubspec> includedPackagePubspecs, {
+    required final SupportedDartSdkPolicy? supportedSdkPolicy,
+  }) {
     final List<String> issues = [];
     for (final pubspec in includedPackagePubspecs) {
       final includedPackageValidator = TenantProjectPubspec(pubspec);
       issues.addAll(
         includedPackageValidator.projectDependencyIssues(
+          supportedSdkPolicy: supportedSdkPolicy,
           requireServerpod: false,
         ),
       );

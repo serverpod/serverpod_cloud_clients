@@ -1,7 +1,8 @@
 import 'dart:io';
 
+import 'package:pub_semver/pub_semver.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
-import 'package:serverpod_cloud_cli/constants.dart' show VersionConstants;
+import 'package:serverpod_cloud_cli/util/dart_version_util.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -9,6 +10,14 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 import '../test_utils/project_factory.dart';
 
 void main() {
+  final supportedSdk = SupportedDartSdkPolicy(
+    supportedRange: VersionConstraint.parse('>=3.8.0 <3.12.0'),
+    supportedVersions: ['3.8', '3.9', '3.10', '3.11'],
+    documentationUrl: Uri.parse(
+      'https://docs.serverpod.dev/cloud/reference/dart-sdk-versions',
+    ),
+  );
+
   test(
     'Given a pubspec with a serverpod dependency, when the isServerpodServer method is called, then the result is true',
     () {
@@ -55,7 +64,9 @@ dependencies:
 '''),
       );
 
-      final result = pubspec.projectDependencyIssues();
+      final result = pubspec.projectDependencyIssues(
+        supportedSdkPolicy: supportedSdk,
+      );
       expect(result, contains('No sdk constraint found in package my_project'));
     },
   );
@@ -73,11 +84,50 @@ dependencies:
 '''),
       );
 
-      final result = pubspec.projectDependencyIssues();
+      final result = pubspec.projectDependencyIssues(
+        supportedSdkPolicy: supportedSdk,
+      );
       expect(result, isNotEmpty);
       expect(result.first, contains('Unsupported sdk version constraint'));
     },
   );
+
+  group('Given a pubspec with an unsupported sdk version '
+      'when the projectDependencyIssues method is called', () {
+    late List<String> result;
+
+    setUp(() {
+      final pubspec = TenantProjectPubspec(
+        Pubspec.parse('''
+name: my_project
+environment:
+  sdk: '>=3.999.0 <4.0.0'
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+'''),
+      );
+
+      result = pubspec.projectDependencyIssues(
+        supportedSdkPolicy: supportedSdk,
+      );
+    });
+
+    test('then the error lists the available versions', () {
+      expect(
+        result.first,
+        contains('Available Dart SDK versions: 3.8, 3.9, 3.10, 3.11.'),
+      );
+    });
+
+    test('then the error links the documentation page', () {
+      expect(
+        result.first,
+        contains(
+          'See: https://docs.serverpod.dev/cloud/reference/dart-sdk-versions',
+        ),
+      );
+    });
+  });
 
   test(
     'Given a pubspec with a serverpod dependency and sdk version just above the supported range, when the projectDependencyIssues method is called, then the result contains the sdk error',
@@ -92,7 +142,9 @@ dependencies:
 '''),
       );
 
-      final result = pubspec.projectDependencyIssues();
+      final result = pubspec.projectDependencyIssues(
+        supportedSdkPolicy: supportedSdk,
+      );
       expect(
         result,
         isNotEmpty,
@@ -115,7 +167,9 @@ dependencies:
 '''),
       );
 
-      final result = pubspec.projectDependencyIssues();
+      final result = pubspec.projectDependencyIssues(
+        supportedSdkPolicy: supportedSdk,
+      );
       expect(result, isNotEmpty);
       expect(result.first, contains('Unsupported sdk version constraint'));
     },
@@ -134,7 +188,9 @@ dependencies:
 '''),
       );
 
-      final result = pubspec.projectDependencyIssues();
+      final result = pubspec.projectDependencyIssues(
+        supportedSdkPolicy: supportedSdk,
+      );
       expect(result, isNotEmpty);
       expect(
         result.first,
@@ -156,7 +212,9 @@ dependencies:
 '''),
       );
 
-      final result = pubspec.projectDependencyIssues();
+      final result = pubspec.projectDependencyIssues(
+        supportedSdkPolicy: supportedSdk,
+      );
       expect(result, isEmpty);
     },
   );
@@ -168,13 +226,15 @@ dependencies:
         Pubspec.parse('''
 name: my_project
 environment:
-  sdk: "${VersionConstants.minSupportedSdkVersion}"
+  sdk: "3.8.0"
 dependencies:
   serverpod: ${ProjectFactory.validServerpodVersion}
 '''),
       );
 
-      final result = pubspec.projectDependencyIssues();
+      final result = pubspec.projectDependencyIssues(
+        supportedSdkPolicy: supportedSdk,
+      );
       expect(result, isEmpty);
     },
   );
@@ -192,7 +252,9 @@ dependencies:
 '''),
       );
 
-      final result = pubspec.projectDependencyIssues();
+      final result = pubspec.projectDependencyIssues(
+        supportedSdkPolicy: supportedSdk,
+      );
       expect(result, isEmpty);
     },
   );
@@ -208,7 +270,9 @@ environment:
 '''),
       );
 
-      final result = pubspec.projectDependencyIssues();
+      final result = pubspec.projectDependencyIssues(
+        supportedSdkPolicy: supportedSdk,
+      );
       expect(result, contains('No serverpod dependency found in pubspec.yaml'));
     },
   );
@@ -225,7 +289,9 @@ dependencies:
 '''),
       );
 
-      final result = pubspec.projectDependencyIssues();
+      final result = pubspec.projectDependencyIssues(
+        supportedSdkPolicy: supportedSdk,
+      );
       expect(result, contains('No serverpod dependency found in pubspec.yaml'));
     },
   );
@@ -244,7 +310,9 @@ dependencies:
 '''),
       );
 
-      final result = pubspec.projectDependencyIssues();
+      final result = pubspec.projectDependencyIssues(
+        supportedSdkPolicy: supportedSdk,
+      );
       expect(
         result,
         contains(
@@ -265,7 +333,9 @@ dependencies:
 '''),
       );
 
-      final result = pubspec.projectDependencyIssues();
+      final result = pubspec.projectDependencyIssues(
+        supportedSdkPolicy: supportedSdk,
+      );
       expect(
         result,
         allOf([
@@ -399,6 +469,65 @@ dependencies:
     },
   );
 
+  test(
+    'Given a null supported sdk constraint and a pubspec without a sdk constraint, when the projectDependencyIssues method is called, then the result contains the sdk error',
+    () {
+      final pubspec = TenantProjectPubspec(
+        Pubspec.parse('''
+name: my_project
+environment:
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+'''),
+      );
+
+      final result = pubspec.projectDependencyIssues(supportedSdkPolicy: null);
+      expect(result, contains('No sdk constraint found in package my_project'));
+    },
+  );
+
+  test(
+    'Given a null supported sdk constraint and a pubspec with a too advanced sdk version, when the projectDependencyIssues method is called, then the result is empty',
+    () {
+      final pubspec = TenantProjectPubspec(
+        Pubspec.parse('''
+name: my_project
+environment:
+  sdk: '>=3.999.0 <4.0.0'
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+'''),
+      );
+
+      final result = pubspec.projectDependencyIssues(supportedSdkPolicy: null);
+      expect(result, isEmpty);
+    },
+  );
+
+  test(
+    'Given a null supported sdk constraint and a pubspec with a flutter dependency, when the projectDependencyIssues method is called, then the result contains the flutter error',
+    () {
+      final pubspec = TenantProjectPubspec(
+        Pubspec.parse('''
+name: my_project
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+  flutter: '3.29.0'
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+'''),
+      );
+
+      final result = pubspec.projectDependencyIssues(supportedSdkPolicy: null);
+      expect(
+        result,
+        contains(
+          'A Flutter dependency is not allowed in a server package: my_project',
+        ),
+      );
+    },
+  );
+
   group('TenantProjectPubspec.lockfileDependencyIssues', () {
     test(
       'Given a compatible pubspec sdk and an incompatible lockfile sdk, when both are validated, then the lockfile sdk error is returned',
@@ -420,9 +549,12 @@ dependencies:
 '''),
         );
 
-        final pubspecIssues = pubspec.projectDependencyIssues();
+        final pubspecIssues = pubspec.projectDependencyIssues(
+          supportedSdkPolicy: supportedSdk,
+        );
         final lockfileIssues = TenantProjectPubspec.lockfileDependencyIssues(
           File(d.path('mismatch/pubspec.lock')),
+          supportedSdkPolicy: supportedSdk,
         );
 
         expect(pubspecIssues, isEmpty);
@@ -442,6 +574,7 @@ dependencies:
 
         final result = TenantProjectPubspec.lockfileDependencyIssues(
           File(lockfile),
+          supportedSdkPolicy: supportedSdk,
         );
         expect(result, isEmpty);
       },
@@ -459,6 +592,7 @@ sdks:
 
         final result = TenantProjectPubspec.lockfileDependencyIssues(
           File(d.path('supported_lockfile/pubspec.lock')),
+          supportedSdkPolicy: supportedSdk,
         );
         expect(result, isEmpty);
       },
@@ -477,6 +611,7 @@ sdks:
 
         final result = TenantProjectPubspec.lockfileDependencyIssues(
           File(d.path('advanced_lockfile/pubspec.lock')),
+          supportedSdkPolicy: supportedSdk,
         );
         expect(result, isNotEmpty);
         expect(
@@ -498,6 +633,7 @@ sdks:
 
         final result = TenantProjectPubspec.lockfileDependencyIssues(
           File(d.path('old_lockfile/pubspec.lock')),
+          supportedSdkPolicy: supportedSdk,
         );
         expect(result, isNotEmpty);
         expect(
@@ -519,6 +655,47 @@ sdks:
 
         final result = TenantProjectPubspec.lockfileDependencyIssues(
           File(d.path('invalid_lockfile/pubspec.lock')),
+          supportedSdkPolicy: supportedSdk,
+        );
+        expect(result, isNotEmpty);
+        expect(
+          result.first,
+          contains('Invalid Dart SDK version constraint in pubspec.lock'),
+        );
+      },
+    );
+
+    test(
+      'Given a null supported sdk constraint and a pubspec.lock with a too advanced dart sdk constraint, when lockfileDependencyIssues is called, then the result is empty',
+      () async {
+        await d.dir('advanced_lockfile_no_policy', [
+          d.file('pubspec.lock', '''
+sdks:
+  dart: ">=3.12.0 <4.0.0"
+'''),
+        ]).create();
+
+        final result = TenantProjectPubspec.lockfileDependencyIssues(
+          File(d.path('advanced_lockfile_no_policy/pubspec.lock')),
+          supportedSdkPolicy: null,
+        );
+        expect(result, isEmpty);
+      },
+    );
+
+    test(
+      'Given a null supported sdk constraint and a pubspec.lock with an invalid dart sdk constraint, when lockfileDependencyIssues is called, then the result contains a parse error',
+      () async {
+        await d.dir('invalid_lockfile_no_policy', [
+          d.file('pubspec.lock', '''
+sdks:
+  dart: not-a-version
+'''),
+        ]).create();
+
+        final result = TenantProjectPubspec.lockfileDependencyIssues(
+          File(d.path('invalid_lockfile_no_policy/pubspec.lock')),
+          supportedSdkPolicy: null,
         );
         expect(result, isNotEmpty);
         expect(
@@ -541,6 +718,7 @@ packages:
 
         final result = TenantProjectPubspec.lockfileDependencyIssues(
           File(d.path('no_sdks_lockfile/pubspec.lock')),
+          supportedSdkPolicy: supportedSdk,
         );
         expect(result, isEmpty);
       },
