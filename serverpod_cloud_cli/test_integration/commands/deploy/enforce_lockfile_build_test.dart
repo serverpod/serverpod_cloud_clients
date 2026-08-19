@@ -6,7 +6,9 @@ library;
 
 import 'dart:io' show Directory, File, Process;
 
+import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
@@ -41,6 +43,10 @@ void main() {
     late String outputZipDirPath;
 
     setUpAll(() async {
+      when(
+        () => client.platform.getDartSdkVersionPolicy(),
+      ).thenAnswer((final _) async => DartSdkVersionPolicyBuilder().build());
+
       await d.dir('upload_archive').create();
       outputZipDirPath = p.join(d.sandbox, 'upload_archive');
     });

@@ -9,8 +9,7 @@ import 'package:uuid/uuid.dart';
 class ProjectFactory {
   static const defaultDirectoryName = 'serverpod_server';
   static const defaultPackageName = 'my_project_server';
-  static const validSdkVersion =
-      '"^${VersionConstants.minSupportedSdkVersion}"';
+  static const validSdkVersion = '"^3.8.0"';
   static const highValidSdkVersion = '"^3.10.3"';
   static const validServerpodVersion =
       '"^${VersionConstants.minSupportedServerpodVersion}"';

@@ -21,6 +21,8 @@ import 'package:serverpod_cloud_cli/commands/status/status.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/browser_launcher.dart';
+import 'package:serverpod_cloud_cli/util/dart_version_util.dart'
+    show SupportedDartSdkPolicy, fetchSupportedDartSdkPolicy;
 import 'package:serverpod_cloud_cli/util/inline_tui/inline_tui.dart'
     show SelectList, SelectListStyle;
 import 'package:serverpod_cloud_cli/util/listener_server.dart';
@@ -57,7 +59,16 @@ abstract class Launch {
   }) async {
     logger.init('Launching a Serverpod Cloud project.\n');
 
-    final pubspec = _validateProjectDir(logger, projectDirectory);
+    final supportedSdkPolicy = await fetchSupportedDartSdkPolicy(
+      cloudApiClient,
+      logger: logger,
+    );
+
+    final pubspec = _validateProjectDir(
+      logger,
+      projectDirectory,
+      supportedSdkPolicy: supportedSdkPolicy,
+    );
 
     final dirPath = logger.wrapStyle(projectDirectory.path, _projectFactStyle);
     logger.info('Project directory: $dirPath\n');
@@ -239,8 +250,9 @@ abstract class Launch {
   /// otherwise throws a [FailureException].
   static TenantProjectPubspec _validateProjectDir(
     final CommandLogger logger,
-    final Directory projectDir,
-  ) {
+    final Directory projectDir, {
+    required final SupportedDartSdkPolicy? supportedSdkPolicy,
+  }) {
     final pubspecValidator = TenantProjectPubspec.fromProjectDir(projectDir);
 
     if (!pubspecValidator.isServerpodServer()) {
@@ -256,9 +268,12 @@ abstract class Launch {
     );
 
     final issues = [
-      ...pubspecValidator.projectDependencyIssues(),
+      ...pubspecValidator.projectDependencyIssues(
+        supportedSdkPolicy: supportedSdkPolicy,
+      ),
       ...TenantProjectPubspec.lockfileDependencyIssues(
         File(p.join(lockfileDirectory.path, 'pubspec.lock')),
+        supportedSdkPolicy: supportedSdkPolicy,
       ),
     ];
     if (issues.isEmpty) {

@@ -121,6 +121,23 @@ void main() {
     ).thenAnswer(
       (final _) async => ComputeInfoBuilder().withMaxInstances(1).build(),
     );
+    reset(client.platform);
+    when(() => client.platform.getDartSdkVersionPolicy()).thenAnswer(
+      (final _) async => DartSdkVersionPolicyBuilder()
+          .withSupportedVersions([
+            '3.7',
+            '3.8',
+            '3.9',
+            '3.10',
+            '3.11',
+            '3.12',
+            '3.13',
+            '3.14',
+          ])
+          .withMinVersionInclusive('3.7.0')
+          .withMaxVersionExclusive('3.15.0')
+          .build(),
+    );
 
     // sentinel .git file to prevent search above the sandbox root
     await d.file('.git').create();
@@ -803,7 +820,7 @@ serverpod:
           await d.file(p.join(testProjectDir, 'scloud.yaml'), '''
 project:
   projectId: "$projectId"
-  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
+  dartSdk: "3.8.0"
 ''').create();
 
           commandResult = cli.run([
@@ -845,7 +862,7 @@ project:
           await d.file(p.join(testProjectDir, 'scloud.yaml'), '''
 project:
   projectId: "$projectId"
-  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
+  dartSdk: "3.8.0"
 ''').create();
 
           commandResult = cli.run([
@@ -884,7 +901,7 @@ project:
           await d.file(p.join(testProjectDir, 'scloud.yaml'), '''
 project:
   projectId: "$projectId"
-  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
+  dartSdk: "3.8.0"
 ''').create();
 
           commandResult = cli.run([
@@ -922,7 +939,7 @@ project:
           await d.file(p.join(testProjectDir, 'scloud.yaml'), '''
 project:
   projectId: "$projectId"
-  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
+  dartSdk: "3.8.0"
 ''').create();
 
           commandResult = cli.run([
@@ -965,7 +982,7 @@ project:
           await d.file(p.join(testProjectDir, 'scloud.yaml'), '''
 project:
   projectId: "$projectId"
-  dartSdk: "${VersionConstants.minSupportedSdkVersion}"
+  dartSdk: "3.8.0"
 ''').create();
 
           commandResult = cli.run([
@@ -1924,6 +1941,14 @@ dependencies:
       late Future commandResult;
 
       setUp(() async {
+        when(() => client.platform.getDartSdkVersionPolicy()).thenAnswer(
+          (final _) async => DartSdkVersionPolicyBuilder()
+              .withSupportedVersions(['3.8', '3.9', '3.10'])
+              .withMinVersionInclusive('3.8.0')
+              .withMaxVersionExclusive('3.11.0')
+              .build(),
+        );
+
         await d.dir('invalid_lockfile_server_dir', [
           d.file('pubspec.yaml', '''
 name: my_project_server

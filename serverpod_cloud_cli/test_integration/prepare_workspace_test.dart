@@ -1,7 +1,10 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/commands/deploy/prepare_project_files.dart';
+import 'package:serverpod_cloud_cli/util/dart_version_util.dart'
+    show SupportedDartSdkPolicy;
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test/test.dart';
@@ -13,6 +16,13 @@ import '../test_utils/test_command_logger.dart' show TestCommandLogger;
 
 void main() {
   final logger = TestCommandLogger();
+  final supportedSdk = SupportedDartSdkPolicy(
+    supportedRange: VersionConstraint.parse('>=3.8.0 <3.12.0'),
+    supportedVersions: ['3.8', '3.9', '3.10', '3.11'],
+    documentationUrl: Uri.parse(
+      'https://docs.serverpod.dev/cloud/reference/dart-sdk-versions',
+    ),
+  );
 
   group('Given a complex workspace directory structure '
       'when preparing the workspace for deployment', () {
@@ -230,6 +240,7 @@ dependencies:
       );
       projectFilePreparer = TenantProject.prepare(
         projectDirectory,
+        supportedSdkPolicy: supportedSdk,
         tenantProjectPubspec: TenantProjectPubspec.fromProjectDir(
           projectDirectory,
         ),
@@ -431,6 +442,7 @@ dependencies:
       );
       TenantProject.prepare(
         projectDirectory,
+        supportedSdkPolicy: supportedSdk,
         tenantProjectPubspec: TenantProjectPubspec.fromProjectDir(
           projectDirectory,
         ),
@@ -536,6 +548,7 @@ sdks:
       );
       projectFilePreparer = TenantProject.prepare(
         projectDirectory,
+        supportedSdkPolicy: supportedSdk,
         tenantProjectPubspec: TenantProjectPubspec.fromProjectDir(
           projectDirectory,
         ),
@@ -685,6 +698,7 @@ dependencies:
         );
         return TenantProject.prepare(
           projectDirectory,
+          supportedSdkPolicy: supportedSdk,
           tenantProjectPubspec: TenantProjectPubspec.fromProjectDir(
             projectDirectory,
           ),
@@ -750,6 +764,7 @@ dependencies:
       );
       return TenantProject.prepare(
         projectDirectory,
+        supportedSdkPolicy: supportedSdk,
         tenantProjectPubspec: TenantProjectPubspec.fromProjectDir(
           projectDirectory,
         ),

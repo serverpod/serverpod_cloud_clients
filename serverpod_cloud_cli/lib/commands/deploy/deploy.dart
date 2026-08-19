@@ -16,7 +16,7 @@ import 'package:serverpod_cloud_cli/project_zipper/project_zipper.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/dart_version_util.dart'
-    show ProjectDartVersionHint;
+    show ProjectDartVersionHint, fetchSupportedDartSdkPolicy;
 import 'package:serverpod_cloud_cli/util/deploy_multi_instance_serverpod_warning.dart';
 import 'package:serverpod_cloud_cli/util/git_metadata.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart'
@@ -53,11 +53,18 @@ abstract class Deploy {
 
     final projectDirectory = Directory(projectDir);
 
+    final supportedSdkPolicy = await fetchSupportedDartSdkPolicy(
+      cloudApiClient,
+      logger: logger,
+    );
+
     final pubspecValidator = TenantProjectPubspec.fromProjectDir(
       projectDirectory,
     );
 
-    final pubspecIssues = pubspecValidator.projectDependencyIssues();
+    final pubspecIssues = pubspecValidator.projectDependencyIssues(
+      supportedSdkPolicy: supportedSdkPolicy,
+    );
     if (pubspecIssues.isNotEmpty) {
       throw FailureException(errors: pubspecIssues);
     }
@@ -71,6 +78,7 @@ abstract class Deploy {
 
     final lockfileIssues = TenantProjectPubspec.lockfileDependencyIssues(
       File(p.join(lockfileDirectory.path, 'pubspec.lock')),
+      supportedSdkPolicy: supportedSdkPolicy,
     );
     if (lockfileIssues.isNotEmpty) {
       throw FailureException(errors: lockfileIssues);
@@ -128,6 +136,7 @@ abstract class Deploy {
     final projectFilePreparer = TenantProject.prepare(
       projectDirectory,
       tenantProjectPubspec: pubspecValidator,
+      supportedSdkPolicy: supportedSdkPolicy,
     );
 
     if (projectFilePreparer.isWorkspace) {
