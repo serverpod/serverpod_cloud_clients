@@ -1,12 +1,14 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:async/async.dart' show StreamGroup;
 import 'package:collection/collection.dart';
+import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
+import 'package:serverpod_cloud_cli/util/inline_tui/inline_tui.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
-import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/util/stream_util.dart';
 
 /// Status subcommand implementations
@@ -107,6 +109,7 @@ abstract class StatusCommands {
 
     final stageStatusTailer = _StageStatusTailer(
       logger: logger,
+      cloudApiClient: cloudApiClient,
       cloudCapsuleId: cloudCapsuleId,
       attemptId: attemptId,
       stageStreams: stageStreams,
@@ -118,10 +121,15 @@ abstract class StatusCommands {
           continue;
         }
 
-        final stage = await stageStatusTailer.showStageProgress(stageType);
+        final stage = stageType == DeployStageType.build
+            ? await stageStatusTailer.showBuildStageProgress()
+            : await stageStatusTailer.showStageProgress(stageType);
         if (stage.stageStatus == DeployProgressStatus.cancelled ||
             stage.stageStatus == DeployProgressStatus.failure) {
-          return;
+          _logStageFailureGuidance(logger, stage);
+          throw FailureException(
+            reason: '${stage.stageType.name} stage ${stage.stageStatus.name}',
+          );
         }
       }
 
@@ -142,6 +150,27 @@ abstract class StatusCommands {
     logger.terminalCommand(
       'scloud deployment show',
       message: 'To view the deployment status, run this command:',
+    );
+  }
+
+  static void _logStageFailureGuidance(
+    final CommandLogger logger,
+    final DeployAttemptStage stage,
+  ) {
+    if (stage.stageType == DeployStageType.build &&
+        stage.stageStatus == DeployProgressStatus.failure) {
+      logger.terminalCommand(
+        'scloud deployment build-log',
+        message: 'To view the build log again, run this command:',
+        newParagraph: true,
+      );
+      return;
+    }
+
+    logger.terminalCommand(
+      'scloud deployment show',
+      message: 'To view the deployment status, run this command:',
+      newParagraph: true,
     );
   }
 
@@ -300,6 +329,7 @@ extension FinalDeployProgressStatus on DeployProgressStatus {
 
 class _StageStatusTailer {
   final CommandLogger logger;
+  final Client cloudApiClient;
   final String cloudCapsuleId;
   final UuidValue attemptId;
   final SplitStreams<DeployStageType, DeployAttemptStage> stageStreams;
@@ -307,6 +337,7 @@ class _StageStatusTailer {
 
   _StageStatusTailer({
     required this.logger,
+    required this.cloudApiClient,
     required this.cloudCapsuleId,
     required this.attemptId,
     required this.stageStreams,
@@ -326,13 +357,84 @@ class _StageStatusTailer {
     return await logger.progressStream(
       StatusCommands._generateStatusLine(
         _fillerStage(stageType, DeployProgressStatus.awaiting),
-      ),
+      ).padRight(StatusCommands.progressMessagePadLength),
       fallbackStream,
       toMessage: StatusCommands._generateStatusLine,
       padRight: StatusCommands.progressMessagePadLength,
       isSuccess: (final stage) =>
           stage.stageStatus == DeployProgressStatus.success,
     );
+  }
+
+  /// Shows the progress of the build stage and returns the final stage status.
+  ///
+  /// On an interactive terminal, the build log is streamed live into a
+  /// scrolling section below the heading while the stage is running: cleared
+  /// on success, kept in full on failure or cancellation. On a non-interactive
+  /// terminal (CI, piped output) this falls back to [showStageProgress]
+  /// unchanged, since cursor-movement output would corrupt non-TTY logs.
+  Future<DeployAttemptStage> showBuildStageProgress() async {
+    if (!logger.inlineTerminal.hasTerminal) {
+      return showStageProgress(DeployStageType.build);
+    }
+
+    final fallbackStream = withFallback(
+      cancelOnInterrupt(
+        stageStreams.getStream(DeployStageType.build),
+        processSignalStream,
+      ),
+      _fillerStage(DeployStageType.build, DeployProgressStatus.unknown),
+    );
+
+    final section = ScrollingSection(
+      terminal: logger.inlineTerminal,
+      heading: StatusCommands._generateStatusLine(
+        _fillerStage(DeployStageType.build, DeployProgressStatus.awaiting),
+      ).padRight(StatusCommands.progressMessagePadLength),
+      successMessage: StatusCommands._generateStatusLine(
+        _fillerStage(DeployStageType.build, DeployProgressStatus.success),
+      ).padRight(StatusCommands.progressMessagePadLength),
+      captureOutput: true,
+    );
+
+    StreamSubscription<LogRecord>? logSubscription;
+    var lastStage = _fillerStage(
+      DeployStageType.build,
+      DeployProgressStatus.unknown,
+    );
+    try {
+      await for (final stage in fallbackStream) {
+        lastStage = stage;
+        section.updateHeading(
+          StatusCommands._generateStatusLine(
+            stage,
+          ).padRight(StatusCommands.progressMessagePadLength),
+        );
+        if (logSubscription == null &&
+            stage.stageStatus == DeployProgressStatus.running) {
+          logSubscription = cloudApiClient.logs
+              .tailBuildLog(
+                cloudCapsuleId: cloudCapsuleId,
+                attemptId: attemptId,
+              )
+              .listen(
+                (final record) => section.appendLine(record.content),
+                // Best-effort: a failure to fetch build-log lines should not
+                // derail the stage tailing that drives the heading and the
+                // final failure/success outcome.
+                onError: (final _, final _) {},
+              );
+        }
+      }
+    } finally {
+      await logSubscription?.cancel();
+      if (lastStage.stageStatus == DeployProgressStatus.success) {
+        section.clear();
+      } else {
+        section.keep(full: true);
+      }
+    }
+    return lastStage;
   }
 
   /// Shows the progress of the combined rollout (deploy + service) stages
@@ -348,7 +450,7 @@ class _StageStatusTailer {
     return await logger.progressStream(
       StatusCommands._generateStatusLine(
         _fillerStage(DeployStageType.service, DeployProgressStatus.awaiting),
-      ),
+      ).padRight(StatusCommands.progressMessagePadLength),
       fallbackStream,
       toMessage: StatusCommands._generateStatusLine,
       padRight: StatusCommands.progressMessagePadLength,

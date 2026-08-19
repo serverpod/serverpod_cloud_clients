@@ -1,17 +1,18 @@
 import 'dart:async';
 
+import 'package:ground_control_client/ground_control_client.dart';
+import 'package:ground_control_client/ground_control_client_test_tools.dart';
+import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:meta/meta.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deployments_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/commands/status/status.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
-import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
-import 'package:ground_control_client/ground_control_client.dart';
-import 'package:ground_control_client/ground_control_client_test_tools.dart';
-import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:test/test.dart';
 
+import '../../test/util/inline_tui/helpers/fake_terminal.dart';
 import '../../test_utils/command_logger_matchers.dart';
 import '../../test_utils/test_command_logger.dart';
 
@@ -176,6 +177,13 @@ void main() {
     });
 
     group('and a successful status, when running deployments show command', () {
+      // These groups assert on the plain progressStream messages, not on the
+      // interactive build-log streaming, so they use a non-interactive
+      // terminal to keep exercising the showStageProgress fallback path.
+      setUp(() {
+        logger.inlineTerminal = FakeTerminal(hasTerminal: false);
+      });
+
       group('with correct args to get the most recent deploy status', () {
         setUpAll(() async {
           final attemptStages = [
@@ -534,6 +542,13 @@ Tracking projectId deployment $attemptId
     });
 
     group('and an awaiting service stage status,', () {
+      // Asserts on the plain progressStream messages, not on the interactive
+      // build-log streaming, so it uses a non-interactive terminal to keep
+      // exercising the showStageProgress fallback path.
+      setUp(() {
+        logger.inlineTerminal = FakeTerminal(hasTerminal: false);
+      });
+
       setUpAll(() async {
         final attemptStages = [
           DeployAttemptStageBuilder()
@@ -698,6 +713,13 @@ Rollout running...''');
     });
 
     group('and a failed build stage status,', () {
+      // Asserts on the plain progressStream messages, not on the interactive
+      // build-log streaming, so it uses a non-interactive terminal to keep
+      // exercising the showStageProgress fallback path.
+      setUp(() {
+        logger.inlineTerminal = FakeTerminal(hasTerminal: false);
+      });
+
       setUpAll(() async {
         final attemptStages = [
           DeployAttemptStageBuilder()
@@ -759,12 +781,18 @@ Rollout running...''');
             ]);
           });
 
-          test('then completes successfully', () async {
-            await expectLater(commandResult, completes);
+          test('then throws a failure exception', () async {
+            await expectLater(
+              commandResult,
+              throwsA(isA<ErrorExitException>()),
+            );
           });
 
           test('then outputs the status', () async {
-            await commandResult;
+            await expectLater(
+              commandResult,
+              throwsA(isA<ErrorExitException>()),
+            );
 
             expect(logger.lineCalls, isNotEmpty);
             expect(logger.lineCalls.map((final l) => l.line).join('\n'), '''
@@ -783,6 +811,23 @@ Tracking projectId deployment $attemptId
                 contains('Cloud build awaiting'),
                 contains('Cloud build failed. 💥'),
               ]),
+            );
+          });
+
+          test('then the build log command hint is logged', () async {
+            await expectLater(
+              commandResult,
+              throwsA(isA<ErrorExitException>()),
+            );
+
+            expect(logger.terminalCommandCalls, hasLength(1));
+            expect(
+              logger.terminalCommandCalls.single,
+              equalsTerminalCommandCall(
+                command: 'scloud deployment build-log',
+                message: 'To view the build log again, run this command:',
+                newParagraph: true,
+              ),
             );
           });
         },
@@ -952,12 +997,19 @@ Cloud build failed. 💥''');
             attemptId: any(named: 'attemptId'),
           ),
         ).thenAnswer((final _) => stageController.stream);
+        when(
+          () => client.logs.tailBuildLog(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            attemptId: any(named: 'attemptId'),
+          ),
+        ).thenAnswer((final _) => const Stream<LogRecord>.empty());
       });
 
       tearDown(() async {
         await stageController.close();
         await interruptController.close();
         reset(client.status);
+        reset(client.logs);
       });
 
       test(
@@ -1002,6 +1054,295 @@ Cloud build failed. 💥''');
               message: 'To view the deployment status, run this command:',
             ),
           );
+        },
+      );
+    });
+
+    group('and the build stage streams its log,', () {
+      late StreamController<DeployAttemptStage> stageController;
+      final streamingAttemptId = Uuid().v4obj();
+
+      DeployAttemptStage buildStage(final DeployProgressStatus status) =>
+          DeployAttemptStageBuilder()
+              .withCloudCapsuleId(projectId)
+              .withAttemptId(streamingAttemptId)
+              .withStageType(DeployStageType.build)
+              .withStageStatus(status)
+              .build();
+
+      LogRecord logRecord(final String recordId, final String content) =>
+          LogRecordBuilder()
+              .withCloudIds(projectId)
+              .withDeployAttemptId(streamingAttemptId)
+              .withRecordId(recordId)
+              .withContent(content)
+              .build();
+
+      setUp(() {
+        stageController = StreamController<DeployAttemptStage>();
+        when(
+          () => client.status.tailDeployAttemptStatus(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            attemptId: any(named: 'attemptId'),
+          ),
+        ).thenAnswer((final _) => stageController.stream);
+      });
+
+      tearDown(() async {
+        await stageController.close();
+        reset(client.status);
+        reset(client.logs);
+      });
+
+      group('given an interactive terminal', () {
+        setUp(() {
+          logger.inlineTerminal = FakeTerminal(hasTerminal: true);
+        });
+
+        test('and a running build stage then the build log lines are shown '
+            'while running and the section clears on success', () async {
+          when(
+            () => client.logs.tailBuildLog(
+              cloudCapsuleId: projectId,
+              attemptId: streamingAttemptId,
+            ),
+          ).thenAnswer(
+            (final _) =>
+                Stream.fromIterable([logRecord('1', 'Building image...')]),
+          );
+
+          final tailFuture = StatusCommands.tailDeploymentStatus(
+            client,
+            logger: logger,
+            cloudCapsuleId: projectId,
+            attemptId: streamingAttemptId,
+            skipUploadStage: true,
+          );
+
+          stageController.add(buildStage(DeployProgressStatus.running));
+          await pumpEventQueue();
+          stageController.add(buildStage(DeployProgressStatus.success));
+          await stageController.close();
+
+          await tailFuture;
+
+          final terminal = logger.inlineTerminal as FakeTerminal;
+          expect(terminal.output, contains('Building image...'));
+          expect(terminal.output, endsWith('\x1b[?25h'));
+        });
+
+        test('and a failing build stage then the build log lines are kept in '
+            'the failure output', () async {
+          when(
+            () => client.logs.tailBuildLog(
+              cloudCapsuleId: projectId,
+              attemptId: streamingAttemptId,
+            ),
+          ).thenAnswer(
+            (final _) =>
+                Stream.fromIterable([logRecord('1', 'Error: build failed')]),
+          );
+
+          final tailFuture = StatusCommands.tailDeploymentStatus(
+            client,
+            logger: logger,
+            cloudCapsuleId: projectId,
+            attemptId: streamingAttemptId,
+            skipUploadStage: true,
+          );
+
+          stageController.add(buildStage(DeployProgressStatus.running));
+          await pumpEventQueue();
+          stageController.add(buildStage(DeployProgressStatus.failure));
+
+          await expectLater(tailFuture, throwsA(isA<FailureException>()));
+
+          final terminal = logger.inlineTerminal as FakeTerminal;
+          expect(terminal.output, contains('Error: build failed'));
+          expect(
+            terminal.output,
+            contains(
+              'Cloud build failed. 💥'.padRight(
+                StatusCommands.progressMessagePadLength,
+              ),
+            ),
+          );
+          expect(terminal.output, endsWith('\n\x1b[?25h'));
+        });
+
+        test('and a build stage that is only awaiting then no build log '
+            'tail happens yet', () async {
+          final tailFuture = StatusCommands.tailDeploymentStatus(
+            client,
+            logger: logger,
+            cloudCapsuleId: projectId,
+            attemptId: streamingAttemptId,
+            skipUploadStage: true,
+          );
+
+          stageController.add(buildStage(DeployProgressStatus.awaiting));
+          await pumpEventQueue();
+
+          verifyNever(
+            () => client.logs.tailBuildLog(
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+              attemptId: any(named: 'attemptId'),
+            ),
+          );
+
+          stageController.add(buildStage(DeployProgressStatus.success));
+          await stageController.close();
+          await tailFuture;
+        });
+
+        test('and Ctrl+C during the running build stage then interrupt '
+            'guidance is still logged with the log subscription unwound '
+            'cleanly', () async {
+          final interruptController = StreamController<void>.broadcast();
+          addTearDown(interruptController.close);
+          when(
+            () => client.logs.tailBuildLog(
+              cloudCapsuleId: projectId,
+              attemptId: streamingAttemptId,
+            ),
+          ).thenAnswer(
+            (final _) =>
+                Stream.fromIterable([logRecord('1', 'Building image...')]),
+          );
+
+          final tailFuture = StatusCommands.tailDeploymentStatus(
+            client,
+            logger: logger,
+            cloudCapsuleId: projectId,
+            attemptId: streamingAttemptId,
+            skipUploadStage: true,
+            processSignalStreamOverride: interruptController.stream,
+          );
+
+          stageController.add(buildStage(DeployProgressStatus.running));
+          await pumpEventQueue();
+          interruptController.add(null);
+
+          await expectLater(tailFuture, throwsA(isA<UserAbortException>()));
+
+          expect(
+            logger.infoCalls,
+            contains(
+              equalsInfoCall(
+                message: 'The deployment continues in Serverpod Cloud.',
+                newParagraph: true,
+              ),
+            ),
+          );
+          final terminal = logger.inlineTerminal as FakeTerminal;
+          expect(terminal.output, contains('Building image...'));
+          expect(terminal.output, contains('Cloud build running...'));
+          expect(terminal.output, isNot(contains('Cloud build failed.')));
+          expect(terminal.output, endsWith('\x1b[?25h'));
+        });
+      });
+
+      test(
+        'given a non-interactive terminal then no build-log tail happens',
+        () async {
+          logger.inlineTerminal = FakeTerminal(hasTerminal: false);
+
+          final tailFuture = StatusCommands.tailDeploymentStatus(
+            client,
+            logger: logger,
+            cloudCapsuleId: projectId,
+            attemptId: streamingAttemptId,
+            skipUploadStage: true,
+          );
+
+          stageController.add(buildStage(DeployProgressStatus.running));
+          await pumpEventQueue();
+          stageController.add(buildStage(DeployProgressStatus.success));
+          await stageController.close();
+
+          await tailFuture;
+
+          verifyNever(
+            () => client.logs.tailBuildLog(
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+              attemptId: any(named: 'attemptId'),
+            ),
+          );
+        },
+      );
+    });
+
+    group('and a failed upload stage status,', () {
+      final failedUploadAttemptId = Uuid().v4obj();
+
+      setUpAll(() async {
+        final attemptStages = [
+          DeployAttemptStageBuilder()
+              .withCloudCapsuleId(projectId)
+              .withAttemptId(failedUploadAttemptId)
+              .withStageType(DeployStageType.upload)
+              .withStageStatus(DeployProgressStatus.failure)
+              .withStartedAt(DateTime.parse("2021-12-31 10:20:30"))
+              .withEndedAt(DateTime.parse("2021-12-31 10:20:40"))
+              .build(),
+        ];
+
+        when(
+          () => client.status.getDeployAttemptId(
+            cloudCapsuleId: projectId,
+            attemptNumber: 0,
+          ),
+        ).thenAnswer((final _) async => failedUploadAttemptId);
+
+        when(
+          () => client.status.tailDeployAttemptStatus(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            attemptId: any(named: 'attemptId'),
+          ),
+        ).thenAnswer((final _) => Stream.fromIterable(attemptStages));
+      });
+
+      tearDownAll(() {
+        reset(client.status);
+      });
+
+      group(
+        'when running deployments show command to get the deploy status',
+        () {
+          late Future commandResult;
+
+          setUp(() async {
+            commandResult = cli.run([
+              'deployment',
+              'show',
+              '--project',
+              projectId,
+            ]);
+          });
+
+          test('then throws a failure exception', () async {
+            await expectLater(
+              commandResult,
+              throwsA(isA<ErrorExitException>()),
+            );
+          });
+
+          test('then the deployment show command hint is logged', () async {
+            await expectLater(
+              commandResult,
+              throwsA(isA<ErrorExitException>()),
+            );
+
+            expect(logger.terminalCommandCalls, hasLength(1));
+            expect(
+              logger.terminalCommandCalls.single,
+              equalsTerminalCommandCall(
+                command: 'scloud deployment show',
+                message: 'To view the deployment status, run this command:',
+                newParagraph: true,
+              ),
+            );
+          });
         },
       );
     });

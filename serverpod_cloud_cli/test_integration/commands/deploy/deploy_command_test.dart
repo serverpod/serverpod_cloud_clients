@@ -1314,6 +1314,74 @@ project:
           expect(rawOutput, isNot(contains('├─')));
         });
       });
+
+      group('when deploying through CLI and the cloud build fails', () {
+        late Future cliCommandFuture;
+        final failedBuildAttemptId = UuidValue.raw(
+          '00000000-0000-4000-8000-000000000001',
+        );
+
+        setUp(() async {
+          final attemptStages = [
+            DeployAttemptStageBuilder()
+                .withCloudCapsuleId(BucketUploadDescription.projectId)
+                .withAttemptId(failedBuildAttemptId)
+                .withStageType(DeployStageType.upload)
+                .withStageStatus(DeployProgressStatus.success)
+                .build(),
+            DeployAttemptStageBuilder()
+                .withCloudCapsuleId(BucketUploadDescription.projectId)
+                .withAttemptId(failedBuildAttemptId)
+                .withStageType(DeployStageType.build)
+                .withStageStatus(DeployProgressStatus.failure)
+                .build(),
+          ];
+
+          when(
+            () => client.status.tailDeployAttemptStatus(
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+              attemptId: any(named: 'attemptId'),
+            ),
+          ).thenAnswer((final _) => Stream.fromIterable(attemptStages));
+
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--project',
+            BucketUploadDescription.projectId,
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        tearDown(() {
+          reset(client.status);
+        });
+
+        test('then an error exit exception is thrown.', () async {
+          await expectLater(
+            cliCommandFuture,
+            throwsA(isA<ErrorExitException>()),
+          );
+        });
+
+        test('then the build log command hint is logged.', () async {
+          await expectLater(
+            cliCommandFuture,
+            throwsA(isA<ErrorExitException>()),
+          );
+
+          expect(
+            logger.terminalCommandCalls,
+            contains(
+              equalsTerminalCommandCall(
+                command: 'scloud deployment build-log',
+                message: 'To view the build log again, run this command:',
+                newParagraph: true,
+              ),
+            ),
+          );
+        });
+      });
     });
 
     group(

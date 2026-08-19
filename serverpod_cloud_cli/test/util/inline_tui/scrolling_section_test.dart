@@ -312,6 +312,43 @@ void main() {
     });
   });
 
+  group('Given an active section with a heading', () {
+    test('when updateHeading is called then the new heading is rendered', () {
+      final term = FakeTerminal();
+      final section = ScrollingSection(
+        terminal: term,
+        rows: 3,
+        heading: 'Old',
+        scheduleTicker: _noTicker,
+      );
+      final outputBeforeUpdate = term.output;
+
+      section.updateHeading('New');
+
+      final rendered = term.output.substring(outputBeforeUpdate.length);
+      expect(rendered, contains('New'));
+      expect(rendered, isNot(contains('Old')));
+    });
+
+    test('when updateHeading is called after keep then it has no effect', () {
+      final term = FakeTerminal();
+      final section = ScrollingSection(
+        terminal: term,
+        rows: 3,
+        heading: 'Old',
+        failedMessage: 'Failed',
+        scheduleTicker: _noTicker,
+      );
+
+      section.keep();
+      final outputBeforeUpdate = term.output;
+      section.updateHeading('New');
+
+      expect(term.output, outputBeforeUpdate);
+      expect(term.output, isNot(contains('New')));
+    });
+  });
+
   group('Given a ScrollingSection with a spinner heading', () {
     test('when constructed then the spinner, heading and elapsed are rendered '
         'in order', () {
