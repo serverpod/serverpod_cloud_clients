@@ -53,7 +53,6 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
   @override
   final description = 'Create a Serverpod Cloud project.';
 
-  @override
   CloudProjectCreateCommand({required super.logger})
     : super(options: ProjectCreateOption.values);
 

@@ -83,7 +83,6 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
   @override
   String get category => CommandCategories.gettingStarted;
 
-  @override
   CloudLaunchCommand({required super.logger})
     : super(options: LaunchOption.values);
 
