@@ -1,5 +1,6 @@
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
+import 'package:serverpod_cloud_cli/constants.dart' show numTimeStampChars;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 
@@ -288,7 +289,7 @@ Do you want to proceed?''', defaultValue: false);
   }) {
     if (timestamp == null) return '-';
     final local = utc ? timestamp.toUtc() : timestamp.toLocal();
-    return local.toString().substring(0, 19);
+    return local.toString().substring(0, numTimeStampChars);
   }
 
   static String _formatBytes(final int? bytes) {

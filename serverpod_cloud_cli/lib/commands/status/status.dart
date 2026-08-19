@@ -3,9 +3,10 @@ import 'dart:io';
 import 'package:async/async.dart' show StreamGroup;
 import 'package:collection/collection.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
+import 'package:serverpod_cloud_cli/constants.dart' show numTimeStampChars;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
-import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
+import 'package:serverpod_cloud_cli/util/output/command_output.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/util/stream_util.dart';
 
@@ -16,7 +17,7 @@ abstract class StatusCommands {
   /// Subcommand to list the most recent deploy attempts.
   static Future<void> listDeployAttempts(
     final Client cloudApiClient, {
-    required final CommandLogger logger,
+    required final CommandOutput output,
     required final String cloudCapsuleId,
     required final int limit,
     final bool inUtc = false,
@@ -27,15 +28,28 @@ abstract class StatusCommands {
     );
 
     if (statuses.isEmpty) {
-      logger.terminalCommand(
+      output.logger.terminalCommand(
         message: 'No deployment status found. Run this command to deploy:',
         'scloud deploy',
       );
       return;
     }
 
-    final table = DeployStatusTable(inUtc: inUtc)..addRows(statuses);
-    table.writeLines(logger.line);
+    final items = statuses
+        .mapIndexed(
+          (final index, final attempt) => DeploymentListItem(
+            index: index,
+            projectId: attempt.cloudCapsuleId,
+            deployId: attempt.attemptId.toString(),
+            status: attempt.status?.name,
+            startedAt: attempt.startedAt,
+            finishedAt: attempt.endedAt,
+            info: attempt.statusInfo,
+          ),
+        )
+        .toList();
+
+    output.outputList(items, deploymentListSchema);
   }
 
   /// Subcommand to show the status of a deployment attempt.
@@ -64,7 +78,7 @@ abstract class StatusCommands {
 
     final List<String> rows = [
       'Status of $cloudCapsuleId deployment $attemptId'
-          ', started at ${stages.first.startedAt?.toTzString(inUtc, _numTimeStampChars)}:',
+          ', started at ${stages.first.startedAt?.toTzString(inUtc, numTimeStampChars)}:',
       '',
       ...displayStages.map(_generateStatusLine),
     ];
@@ -248,43 +262,63 @@ abstract class StatusCommands {
   }
 }
 
-const _numTimeStampChars = 19;
+class DeploymentListItem {
+  final int index;
+  final String projectId;
+  final String deployId;
+  final String? status;
+  final DateTime? startedAt;
+  final DateTime? finishedAt;
+  final String? info;
 
-class DeployStatusTable extends TablePrinter {
-  final bool inUtc;
-
-  DeployStatusTable({this.inUtc = false})
-    : super(
-        headers: [
-          '#',
-          'Project',
-          'Deploy Id',
-          'Status',
-          'Started',
-          'Finished',
-          'Info',
-        ],
-      );
-
-  void addRows(final Iterable<DeployAttempt> attempts) {
-    attempts.mapIndexed(_tableRowFromDeployAttempt).forEach(addRow);
-  }
-
-  List<String?> _tableRowFromDeployAttempt(
-    final int index,
-    final DeployAttempt attempt,
-  ) {
-    return [
-      index.toString(),
-      attempt.cloudCapsuleId,
-      attempt.attemptId,
-      attempt.status?.name.toUpperCase(),
-      attempt.startedAt?.toTzString(inUtc, _numTimeStampChars),
-      attempt.endedAt?.toTzString(inUtc, _numTimeStampChars),
-      attempt.statusInfo,
-    ];
-  }
+  const DeploymentListItem({
+    required this.index,
+    required this.projectId,
+    required this.deployId,
+    this.status,
+    this.startedAt,
+    this.finishedAt,
+    this.info,
+  });
 }
+
+final deploymentListSchema = OutputSchemaObject<DeploymentListItem>([
+  OutputSchemaField(
+    name: 'index',
+    label: '#',
+    value: (final item) => item.index,
+  ),
+  OutputSchemaField(
+    name: 'projectId',
+    label: 'Project',
+    value: (final item) => item.projectId,
+  ),
+  OutputSchemaField(
+    name: 'deployId',
+    label: 'Deploy Id',
+    value: (final item) => item.deployId,
+  ),
+  OutputSchemaField(
+    name: 'status',
+    label: 'Status',
+    value: (final item) => item.status?.toUpperCase(),
+  ),
+  OutputSchemaField(
+    name: 'startedAt',
+    label: 'Started',
+    value: (final item) => item.startedAt,
+  ),
+  OutputSchemaField(
+    name: 'finishedAt',
+    label: 'Finished',
+    value: (final item) => item.finishedAt,
+  ),
+  OutputSchemaField(
+    name: 'info',
+    label: 'Info',
+    value: (final item) => item.info,
+  ),
+]);
 
 extension FinalDeployProgressStatus on DeployProgressStatus {
   /// Returns true if this stage status is final, i.e. will not change anymore.

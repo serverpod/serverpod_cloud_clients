@@ -40,3 +40,6 @@ abstract final class ProjectConfigFileConstants {
 
 ''';
 }
+
+/// The number of characters to display in user-friendly format for a timestamp.
+const numTimeStampChars = 19;

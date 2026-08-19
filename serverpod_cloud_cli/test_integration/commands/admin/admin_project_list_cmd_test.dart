@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
+import 'package:yaml_codec/yaml_codec.dart';
 
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/admin_projects_commands.dart';
@@ -113,6 +115,168 @@ void main() {
             ),
           ]),
         );
+      });
+    });
+
+    group('when executing admin project list with --format json', () {
+      late Future commandResult;
+      setUp(() async {
+        when(
+          () => client.adminProjects.listProjectsInfo(
+            includeArchived: any(named: 'includeArchived', that: isTrue),
+            includeLatestDeployAttemptTime: any(
+              named: 'includeLatestDeployAttemptTime',
+              that: isTrue,
+            ),
+          ),
+        ).thenAnswer(
+          (final invocation) async => Future.value([
+            ProjectInfoBuilder()
+                .withProject(
+                  ProjectBuilder()
+                      .withCreatedAt(DateTime.parse('2025-07-02T11:00:00'))
+                      .withCloudProjectId('projectId')
+                      .withUserOwner(
+                        UserBuilder().withEmail('test@example.com').build(),
+                      ),
+                )
+                .build(),
+            ProjectInfoBuilder()
+                .withProject(
+                  ProjectBuilder()
+                      .withCreatedAt(DateTime.parse('2025-07-02T11:00:00'))
+                      .withArchivedAt(DateTime.parse('2025-07-02T12:10:00'))
+                      .withCloudProjectId('projectId2')
+                      .withUserOwner(
+                        UserBuilder().withEmail('test@example.com').build(),
+                      )
+                      .withDeveloperUser(
+                        UserBuilder().withEmail('dev@example.com').build(),
+                      ),
+                )
+                .build(),
+          ]),
+        );
+
+        commandResult = cli.run([
+          'admin',
+          'project',
+          'list',
+          '--include-archived',
+          '--format',
+          'json',
+        ]);
+      });
+
+      test('then emits project objects', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        expect(jsonDecode(logger.rawCalls.single.content), [
+          {
+            'projectId': 'projectId',
+            'createdAt': DateTime.parse(
+              '2025-07-02T11:00:00',
+            ).toUtc().toIso8601String(),
+            'archivedAt': null,
+            'lastDeployAttemptAt': null,
+            'ownerEmail': 'test@example.com',
+            'users': 'Admin: test@example.com',
+          },
+          {
+            'projectId': 'projectId2',
+            'createdAt': DateTime.parse(
+              '2025-07-02T11:00:00',
+            ).toUtc().toIso8601String(),
+            'archivedAt': DateTime.parse(
+              '2025-07-02T12:10:00',
+            ).toUtc().toIso8601String(),
+            'lastDeployAttemptAt': null,
+            'ownerEmail': 'test@example.com',
+            'users': 'Admin: test@example.com; Developer: dev@example.com',
+          },
+        ]);
+      });
+    });
+
+    group('when executing admin project list with --format yaml', () {
+      late Future commandResult;
+      setUp(() async {
+        when(
+          () => client.adminProjects.listProjectsInfo(
+            includeArchived: any(named: 'includeArchived', that: isTrue),
+            includeLatestDeployAttemptTime: any(
+              named: 'includeLatestDeployAttemptTime',
+              that: isTrue,
+            ),
+          ),
+        ).thenAnswer(
+          (final invocation) async => Future.value([
+            ProjectInfoBuilder()
+                .withProject(
+                  ProjectBuilder()
+                      .withCreatedAt(DateTime.parse('2025-07-02T11:00:00'))
+                      .withCloudProjectId('projectId')
+                      .withUserOwner(
+                        UserBuilder().withEmail('test@example.com').build(),
+                      ),
+                )
+                .build(),
+            ProjectInfoBuilder()
+                .withProject(
+                  ProjectBuilder()
+                      .withCreatedAt(DateTime.parse('2025-07-02T11:00:00'))
+                      .withArchivedAt(DateTime.parse('2025-07-02T12:10:00'))
+                      .withCloudProjectId('projectId2')
+                      .withUserOwner(
+                        UserBuilder().withEmail('test@example.com').build(),
+                      )
+                      .withDeveloperUser(
+                        UserBuilder().withEmail('dev@example.com').build(),
+                      ),
+                )
+                .build(),
+          ]),
+        );
+
+        commandResult = cli.run([
+          'admin',
+          'project',
+          'list',
+          '--include-archived',
+          '--format',
+          'yaml',
+        ]);
+      });
+
+      test('then emits project objects', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        expect(yamlDecode(logger.rawCalls.single.content), [
+          {
+            'projectId': 'projectId',
+            'createdAt': DateTime.parse(
+              '2025-07-02T11:00:00',
+            ).toUtc().toIso8601String(),
+            'archivedAt': null,
+            'lastDeployAttemptAt': null,
+            'ownerEmail': 'test@example.com',
+            'users': 'Admin: test@example.com',
+          },
+          {
+            'projectId': 'projectId2',
+            'createdAt': DateTime.parse(
+              '2025-07-02T11:00:00',
+            ).toUtc().toIso8601String(),
+            'archivedAt': DateTime.parse(
+              '2025-07-02T12:10:00',
+            ).toUtc().toIso8601String(),
+            'lastDeployAttemptAt': null,
+            'ownerEmail': 'test@example.com',
+            'users': 'Admin: test@example.com; Developer: dev@example.com',
+          },
+        ]);
       });
     });
   });

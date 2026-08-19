@@ -1,13 +1,12 @@
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
-import 'package:serverpod_cloud_cli/util/common.dart';
-import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
+import 'package:serverpod_cloud_cli/util/output/command_output.dart';
 
 abstract class UserAdminCommands {
   static Future<void> listUsers(
     final Client cloudApiClient, {
-    required final CommandLogger logger,
+    required final CommandOutput output,
     final bool inUtc = false,
     final String? projectId,
     final UserAccountStatus? ofAccountStatus,
@@ -29,34 +28,46 @@ abstract class UserAdminCommands {
               .where((final p) => p.$2 == 'PlanProduct')
               .map((final p) => p.$1);
           userPlanMap[user.email] = procuredPlans.join(', ');
-          break;
         case UserAccountStatus.invited:
           userPlanMap[user.email] = '';
-          break;
       }
     }
 
     final timezoneName = inUtc ? 'UTC' : 'local';
 
-    final table = TablePrinter(
-      headers: [
-        'User',
-        'Account status',
-        'Created at ($timezoneName)',
-        'Archived at ($timezoneName)',
-        'Subscribed Plans',
-      ],
-      rows: users.map(
-        (final user) => [
-          user.email,
-          user.accountStatus.toString(),
-          user.createdAt.toTzString(inUtc, 19),
-          user.archivedAt?.toTzString(inUtc, 19),
-          userPlanMap[user.email] ?? '',
-        ],
-      ),
+    output.outputList(
+      users,
+      OutputSchemaObject<User>([
+        OutputSchemaField(
+          name: 'email',
+          label: 'User',
+          value: (final user) => user.email,
+        ),
+        OutputSchemaField(
+          name: 'accountStatus',
+          label: 'Account status',
+          value: (final user) => user.accountStatus,
+        ),
+        OutputSchemaField(
+          name: 'createdAt',
+          label: 'Created at ($timezoneName)',
+          value: (final user) => user.createdAt,
+        ),
+        OutputSchemaField(
+          name: 'archivedAt',
+          label: 'Archived at ($timezoneName)',
+          value: (final user) => user.archivedAt,
+        ),
+        OutputSchemaField(
+          name: 'subscribedPlans',
+          label: 'Subscribed Plans',
+          value: (final user) => [
+            for (final plan in (userPlanMap[user.email] ?? '').split(', '))
+              if (plan.isNotEmpty) plan,
+          ],
+        ),
+      ]),
     );
-    table.writeLines(logger.line);
   }
 
   static Future<void> inviteUser(

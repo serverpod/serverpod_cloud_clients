@@ -3,7 +3,7 @@ import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
-import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
+import 'package:serverpod_cloud_cli/util/output/command_output.dart';
 
 import 'categories.dart';
 
@@ -68,7 +68,8 @@ enum UnsetVariableCommandConfig<V> implements OptionDefinition<V> {
 }
 
 enum ListVariableCommandConfig<V> implements OptionDefinition<V> {
-  projectId(VariableCommandConfig.projectId);
+  projectId(VariableCommandConfig.projectId),
+  format(FormatOption());
 
   const ListVariableCommandConfig(this.option);
 
@@ -221,6 +222,7 @@ class CloudVariableListCommand
     final Configuration<ListVariableCommandConfig> commandConfig,
   ) async {
     final projectId = commandConfig.value(ListVariableCommandConfig.projectId);
+    final format = commandConfig.value(ListVariableCommandConfig.format);
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
@@ -237,12 +239,20 @@ class CloudVariableListCommand
       );
     }
 
-    final tablePrinter = TablePrinter();
-    tablePrinter.addHeaders(['Name', 'Value']);
-    for (var variable in environmentVariables) {
-      tablePrinter.addRow([variable.name, variable.value]);
-    }
-
-    tablePrinter.writeLines(logger.line);
+    CommandOutput.forFormat(format, logger).outputList(
+      environmentVariables,
+      OutputSchemaObject<EnvironmentVariable>([
+        OutputSchemaField(
+          name: 'name',
+          label: 'Name',
+          value: (final variable) => variable.name,
+        ),
+        OutputSchemaField(
+          name: 'value',
+          label: 'Value',
+          value: (final variable) => variable.value,
+        ),
+      ]),
+    );
   }
 }

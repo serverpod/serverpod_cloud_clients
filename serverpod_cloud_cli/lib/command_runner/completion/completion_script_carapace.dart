@@ -70,8 +70,12 @@ commands:
         flags:
           -u, --utc: "Display timestamps in UTC timezone instead of local."
           --no-utc: "Display timestamps in UTC timezone instead of local."
+          --format=: "Selects the command output format."
         exclusiveFlags:
           - [utc, no-utc]
+        completion:
+          flag:
+            format: ["text", "json", "yaml"]
 
       - name: create-token
         flags:
@@ -80,6 +84,11 @@ commands:
           --no-idle-ttl: "Do not expire the token after a duration of non-use."
 
   - name: me
+    flags:
+      --format=: "Selects the command output format."
+    completion:
+      flag:
+        format: ["text", "json", "yaml"]
 
   - name: project
 
@@ -103,6 +112,10 @@ commands:
       - name: list
         flags:
           --all: "Include deleted projects."
+          --format=: "Selects the command output format."
+        completion:
+          flag:
+            format: ["text", "json", "yaml"]
 
       - name: link
         flags:
@@ -115,6 +128,10 @@ commands:
           - name: list
             flags:
               -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked or if a global project context is set. See `scloud project link --help` and `scloud context set --help`."
+              --format=: "Selects the command output format."
+            completion:
+              flag:
+                format: ["text", "json", "yaml"]
 
           - name: invite
             flags:
@@ -130,6 +147,11 @@ commands:
 
     commands:
       - name: list
+        flags:
+          --format=: "Selects the command output format."
+        completion:
+          flag:
+            format: ["text", "json", "yaml"]
 
       - name: show
 
@@ -161,6 +183,10 @@ commands:
       - name: list
         flags:
           -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked or if a global project context is set. See `scloud project link --help` and `scloud context set --help`."
+          --format=: "Selects the command output format."
+        completion:
+          flag:
+            format: ["text", "json", "yaml"]
 
       - name: set
         flags:
@@ -245,8 +271,12 @@ commands:
           --limit=: "The maximum number of records to fetch."
           -u, --utc: "Display timestamps in UTC timezone instead of local."
           --no-utc: "Display timestamps in UTC timezone instead of local."
+          --format=: "Selects the command output format."
         exclusiveFlags:
           - [utc, no-utc]
+        completion:
+          flag:
+            format: ["text", "json", "yaml"]
 
       - name: build-log
         flags:
@@ -275,6 +305,10 @@ commands:
           - name: list
             flags:
               -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked or if a global project context is set. See `scloud project link --help` and `scloud context set --help`."
+              --format=: "Selects the command output format."
+            completion:
+              flag:
+                format: ["text", "json", "yaml"]
 
           - name: unset
             flags:
@@ -297,6 +331,10 @@ commands:
       - name: list
         flags:
           -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked or if a global project context is set. See `scloud project link --help` and `scloud context set --help`."
+          --format=: "Selects the command output format."
+        completion:
+          flag:
+            format: ["text", "json", "yaml"]
 
       - name: unset
         flags:

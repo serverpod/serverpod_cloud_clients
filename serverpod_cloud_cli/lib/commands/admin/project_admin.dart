@@ -1,13 +1,12 @@
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
-import 'package:serverpod_cloud_cli/util/common.dart';
-import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
+import 'package:serverpod_cloud_cli/util/output/command_output.dart';
 
 abstract class ProjectAdminCommands {
   static Future<void> listProjects(
     final Client cloudApiClient, {
-    required final CommandLogger logger,
+    required final CommandOutput output,
     final bool inUtc = false,
     final bool includeArchived = false,
   }) async {
@@ -18,27 +17,41 @@ abstract class ProjectAdminCommands {
 
     final timezoneName = inUtc ? 'UTC' : 'local';
 
-    final table = TablePrinter(
-      headers: [
-        'Project Id',
-        'Created At ($timezoneName)',
-        'Archived At ($timezoneName)',
-        'Last Deploy Attempt',
-        'Owner',
-        'Users',
-      ],
-      rows: projects.map(
-        (final p) => [
-          p.project.cloudProjectId,
-          p.project.createdAt.toTzString(inUtc, 19),
-          p.project.archivedAt?.toTzString(inUtc, 19),
-          p.latestDeployAttemptTime?.timestamp?.toTzString(inUtc, 19),
-          p.project.owner?.user?.email ?? '',
-          _formatProjectUsers(p.project),
-        ],
-      ),
+    output.outputList(
+      projects,
+      OutputSchemaObject<ProjectInfo>([
+        OutputSchemaField(
+          name: 'projectId',
+          label: 'Project Id',
+          value: (final p) => p.project.cloudProjectId,
+        ),
+        OutputSchemaField(
+          name: 'createdAt',
+          label: 'Created At ($timezoneName)',
+          value: (final p) => p.project.createdAt,
+        ),
+        OutputSchemaField(
+          name: 'archivedAt',
+          label: 'Archived At ($timezoneName)',
+          value: (final p) => p.project.archivedAt,
+        ),
+        OutputSchemaField(
+          name: 'lastDeployAttemptAt',
+          label: 'Last Deploy Attempt',
+          value: (final p) => p.latestDeployAttemptTime?.timestamp,
+        ),
+        OutputSchemaField(
+          name: 'ownerEmail',
+          label: 'Owner',
+          value: (final p) => p.project.owner?.user?.email,
+        ),
+        OutputSchemaField(
+          name: 'users',
+          label: 'Users',
+          value: (final p) => _formatProjectUsers(p.project),
+        ),
+      ]),
     );
-    table.writeLines(logger.line);
   }
 
   static Future<void> redeployProject(

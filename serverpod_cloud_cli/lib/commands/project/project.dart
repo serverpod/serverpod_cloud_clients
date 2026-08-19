@@ -7,7 +7,7 @@ import 'package:serverpod_cloud_cli/commands/status/status.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/shared/user_interaction/user_confirmations.dart';
 import 'package:serverpod_cloud_cli/util/dart_version_util.dart';
-import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
+import 'package:serverpod_cloud_cli/util/output/command_output.dart';
 import 'package:serverpod_cloud_cli/util/project_files_writer.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart'
     show resolveProjectDartSdkVersion;
@@ -21,6 +21,20 @@ enum PlanProfile {
   final String name;
   final String planProductName;
   final String projectProductName;
+}
+
+class ProjectListItem {
+  final String projectId;
+  final DateTime createdAt;
+  final DateTime? lastDeployAttemptAt;
+  final DateTime? archivedAt;
+
+  const ProjectListItem({
+    required this.projectId,
+    required this.createdAt,
+    this.lastDeployAttemptAt,
+    this.archivedAt,
+  });
 }
 
 abstract class ProjectCommands {
@@ -182,7 +196,7 @@ abstract class ProjectCommands {
 
   static Future<void> listProjects(
     final Client cloudApiClient, {
-    required final CommandLogger logger,
+    required final CommandOutput output,
     final bool showArchived = false,
   }) async {
     late List<ProjectInfo> projects;
@@ -198,30 +212,45 @@ abstract class ProjectCommands {
         ? projects
         : projects.where((final p) => p.project.archivedAt == null);
 
-    if (activeProjects.isEmpty) {
-      logger.info('No projects available.');
-      return;
-    }
+    final items = activeProjects
+        .sortedBy((final p) => p.project.createdAt)
+        .map(
+          (final project) => ProjectListItem(
+            projectId: project.project.cloudProjectId,
+            createdAt: project.project.createdAt,
+            lastDeployAttemptAt: project.latestDeployAttemptTime?.timestamp,
+            archivedAt: project.project.archivedAt,
+          ),
+        )
+        .toList();
 
-    final tablePrinter = TablePrinter();
-    tablePrinter.addHeaders([
-      'Project Id',
-      'Created At',
-      'Last Deploy Attempt',
-      if (showArchived) 'Deleted At',
-    ]);
-    for (final project in activeProjects.sortedBy(
-      (final p) => p.project.createdAt,
-    )) {
-      tablePrinter.addRow([
-        project.project.cloudProjectId,
-        project.project.createdAt.toString().substring(0, 19),
-        project.latestDeployAttemptTime?.timestamp?.toString().substring(0, 19),
+    output.outputList(
+      items,
+      OutputSchemaObject<ProjectListItem>([
+        OutputSchemaField(
+          name: 'projectId',
+          label: 'Project Id',
+          value: (final item) => item.projectId,
+        ),
+        OutputSchemaField(
+          name: 'createdAt',
+          label: 'Created At',
+          value: (final item) => item.createdAt,
+        ),
+        OutputSchemaField(
+          name: 'lastDeployAttemptAt',
+          label: 'Last Deploy Attempt',
+          value: (final item) => item.lastDeployAttemptAt,
+        ),
         if (showArchived)
-          project.project.archivedAt?.toString().substring(0, 19),
-      ]);
-    }
-    tablePrinter.writeLines(logger.line);
+          OutputSchemaField(
+            name: 'archivedAt',
+            label: 'Deleted At',
+            value: (final item) => item.archivedAt,
+          ),
+      ]),
+      onEmpty: (final logger) => logger.info('No projects available.'),
+    );
   }
 
   static Future<String?> linkProject(

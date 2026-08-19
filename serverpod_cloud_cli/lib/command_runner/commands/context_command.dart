@@ -3,6 +3,7 @@ import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/commands/project/project.dart';
+import 'package:serverpod_cloud_cli/util/output/command_output.dart';
 
 class CloudContextCommand extends CloudCliCommand {
   @override
@@ -26,7 +27,16 @@ class CloudContextCommand extends CloudCliCommand {
   }
 }
 
-class CloudContextListCommand extends CloudCliCommand {
+enum ContextListOption<V> implements OptionDefinition<V> {
+  format(FormatOption());
+
+  const ContextListOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class CloudContextListCommand extends CloudCliCommand<ContextListOption> {
   @override
   final name = 'list';
 
@@ -36,13 +46,18 @@ class CloudContextListCommand extends CloudCliCommand {
   @override
   final bool takesArguments = false;
 
-  CloudContextListCommand({required super.logger});
+  CloudContextListCommand({required super.logger})
+    : super(options: ContextListOption.values);
 
   @override
-  Future<void> runWithConfig(final Configuration commandConfig) async {
+  Future<void> runWithConfig(
+    final Configuration<ContextListOption> commandConfig,
+  ) async {
+    final format = commandConfig.value(ContextListOption.format);
+
     await ProjectCommands.listProjects(
       runner.serviceProvider.cloudApiClient,
-      logger: logger,
+      output: CommandOutput.forFormat(format, logger),
     );
   }
 }

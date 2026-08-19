@@ -1,6 +1,9 @@
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart'
+    show FormatOption;
 import 'package:serverpod_cloud_cli/commands/admin/plan_admin.dart';
+import 'package:serverpod_cloud_cli/util/output/command_output.dart';
 
 class AdminPlanCommand extends CloudCliCommand {
   @override
@@ -15,20 +18,35 @@ class AdminPlanCommand extends CloudCliCommand {
   }
 }
 
-class AdminListOrbPlansCommand extends CloudCliCommand {
+enum AdminListOrbPlansOption<V> implements OptionDefinition<V> {
+  format(FormatOption());
+
+  const AdminListOrbPlansOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class AdminListOrbPlansCommand
+    extends CloudCliCommand<AdminListOrbPlansOption> {
   @override
   final name = 'list';
 
   @override
   final description = 'List maintainable Orb plans.';
 
-  AdminListOrbPlansCommand({required super.logger});
+  AdminListOrbPlansCommand({required super.logger})
+    : super(options: AdminListOrbPlansOption.values);
 
   @override
-  Future<void> runWithConfig(final Configuration commandConfig) async {
+  Future<void> runWithConfig(
+    final Configuration<AdminListOrbPlansOption> commandConfig,
+  ) async {
+    final format = commandConfig.value(AdminListOrbPlansOption.format);
+
     await PlanAdminCommands.listOrbPlans(
       runner.serviceProvider.cloudApiClient,
-      logger: logger,
+      output: CommandOutput.forFormat(format, logger),
     );
   }
 }
