@@ -219,7 +219,7 @@ void main() {
       final archive = ZipDecoder().decodeBytes(zippedProject);
       final archiveNames = archive.map((final file) => file.name).toSet();
 
-      expect(archiveNames, {'pubspec.yaml', p.join('pkg', 'pubspec.yaml')});
+      expect(archiveNames, {'pubspec.yaml', 'pkg/pubspec.yaml'});
     },
   );
 }
