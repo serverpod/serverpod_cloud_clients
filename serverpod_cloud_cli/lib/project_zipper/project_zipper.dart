@@ -24,8 +24,20 @@ abstract final class ProjectZipper {
     return p.relative(p.normalize(fullPath), from: rootPath);
   }
 
+  /// Converts a platform-native relative path to a zip archive entry name.
+  /// Entry names are always posix (`/`) separated, per the zip specification.
+  static String toArchiveEntryName(
+    final String relativePath, {
+    final p.Context? pathContext,
+  }) {
+    final context = pathContext ?? p.context;
+    return p.posix.joinAll(context.split(relativePath));
+  }
+
   /// Zips a project directory.
   /// Returns a list of bytes representing the zipped project.
+  /// Archive entry names are always posix (`/`) separated, regardless of
+  /// platform.
   ///
   /// The [logger] is used to log debug information and warnings.
   /// The [rootDirectory] is the directory under which contents will be zipped.
@@ -123,7 +135,9 @@ abstract final class ProjectZipper {
           bytes = await file.readAsBytes();
         }
 
-        archive.addFile(ArchiveFile(relativePath, bytes.length, bytes));
+        archive.addFile(
+          ArchiveFile(toArchiveEntryName(relativePath), bytes.length, bytes),
+        );
       });
     }
 
