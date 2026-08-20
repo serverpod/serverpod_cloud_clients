@@ -1,0 +1,45 @@
+name: Publish package
+
+on:
+  push:
+    tags:
+      - '*-v[0-9]+.[0-9]+.[0-9]+-[a-zA-Z]*'
+      - '*-v[0-9]+.[0-9]+.[0-9]'
+  workflow_dispatch:
+    inputs:
+      package:
+        description: Package directory to publish
+        required: true
+        type: choice
+        options:
+          - ground_control_client
+          - serverpod_cloud_cli
+          - serverpod_cloud_shared
+
+jobs:
+  publish:
+    permissions:
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dart-lang/setup-dart@v1
+      - name: Resolve package
+        id: package
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            PACKAGE="${{ inputs.package }}"
+          else
+            TAG="${GITHUB_REF#refs/tags/}"
+            PACKAGE="${TAG%-v*}"
+          fi
+
+          if [ ! -d "$PACKAGE" ]; then
+            echo "Package directory does not exist: $PACKAGE"
+            exit 1
+          fi
+
+          echo "package=$PACKAGE" >> "$GITHUB_OUTPUT"
+      - name: Publish
+        run: dart pub publish --force --skip-validation
+        working-directory: ${{ steps.package.outputs.package }}
