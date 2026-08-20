@@ -114,7 +114,7 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
         exception: e,
         stackTrace: stackTrace,
       );
-      throw ErrorExitException(e.toString(), e, stackTrace);
+      throw UnexpectedErrorExitException(e.toString(), e, stackTrace);
     }
   }
 
@@ -144,7 +144,10 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
       logger.log(hint, level: LogLevel.info, type: TextLogType.hint);
     }
 
-    throw ErrorExitException(e.reason, e.nestedException, e.nestedStackTrace);
+    if (nested != null) {
+      throw UnexpectedErrorExitException(e.reason, nested, e.nestedStackTrace);
+    }
+    throw ErrorExitException(e.reason, null, e.nestedStackTrace);
   }
 
   @override

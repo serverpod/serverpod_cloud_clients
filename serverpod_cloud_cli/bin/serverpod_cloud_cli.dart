@@ -7,19 +7,22 @@ import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
+import 'package:serverpod_cloud_cli/shared/error_reporting/sentry_error_reporter.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/scloud_version.dart';
 
 void main(final List<String> args) async {
   final logger = CommandLogger.create();
+  final errorReporter = SentryErrorReporter.forCli();
 
   await runZonedGuarded(
     () async {
       try {
-        await _main(args, logger);
+        await _main(args, logger, errorReporter);
         await _preExit(logger);
-      } on ExitException catch (e) {
+      } on ExitException catch (e, stackTrace) {
         await _preExit(logger);
+        await errorReporter.report(e, stackTrace);
         exit(e.exitCode);
       } catch (error, stackTrace) {
         // Last resort error handling.
@@ -29,6 +32,7 @@ void main(final List<String> args) async {
           forcePrintStackTrace: true,
         );
         await _preExit(logger);
+        await errorReporter.report(error, stackTrace);
         exit(ExitException.codeError);
       }
     },
@@ -39,17 +43,29 @@ void main(final List<String> args) async {
         forcePrintStackTrace: true,
       );
       await _preExit(logger);
+      await errorReporter.report(error, stackTrace);
       exit(ExitException.codeError);
     },
   );
 }
 
-Future<void> _main(final List<String> args, final CommandLogger logger) async {
+Future<void> _main(
+  final List<String> args,
+  final CommandLogger logger,
+  final SentryErrorReporter errorReporter,
+) async {
   final runner = CloudCliCommandRunner.create(
     logger: logger,
     version: cliVersion,
     onAnalyticsEvent: (final event, final properties) =>
         _reportAnalyticsEvent(event, properties, logger),
+    onRunContextResolved: (final context) {
+      errorReporter.analyticsConsent = context.analyticsConsent;
+      errorReporter.command = context.command;
+      errorReporter.flags = context.flags;
+      errorReporter.apiServerUrl = context.apiServerUrl;
+      errorReporter.cloudUserId = context.cloudUserId;
+    },
   );
   try {
     await runner.run(args);
