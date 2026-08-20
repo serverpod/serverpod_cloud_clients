@@ -827,6 +827,9 @@ class EndpointBilling extends _i1.EndpointRef {
   /// All data is overwritten.
   ///
   /// Returns the updated [Owner] object.
+  ///
+  /// Throws [InvalidValueException] if required business billing fields are
+  /// missing or invalid.
   _i2.Future<_i13.Owner> updateOwnerBilling({
     required List<String> billingEmails,
     required _i14.BillingInfo billingInfo,
@@ -903,8 +906,8 @@ class EndpointBilling extends _i1.EndpointRef {
   /// [paymentMethodId] The ID of the payment method to remove.
   ///
   /// Throws [NotFoundException] if the user is not found or has no payment customer.
-  /// Throws [InvalidValueServerException] if the payment method doesn't belong to the user.
-  /// Throws [InvalidValueServerException] if payment method is required and this is the last payment method.
+  /// Throws [InvalidValueException] if the payment method doesn't belong to the user.
+  /// Throws [InvalidValueException] if payment method is required and this is the last payment method.
   _i2.Future<void> removePaymentMethod({required String paymentMethodId}) =>
       caller.callServerEndpoint<void>('billing', 'removePaymentMethod', {
         'paymentMethodId': paymentMethodId,
@@ -928,7 +931,7 @@ class EndpointBilling extends _i1.EndpointRef {
   /// [paymentMethodId] The ID of the payment method to set as default.
   ///
   /// Throws [NotFoundException] if the user is not found or has no payment customer.
-  /// Throws [InvalidValueServerException] if the payment method doesn't belong to the user.
+  /// Throws [InvalidValueException] if the payment method doesn't belong to the user.
   _i2.Future<void> setDefaultPaymentMethod({required String paymentMethodId}) =>
       caller.callServerEndpoint<void>('billing', 'setDefaultPaymentMethod', {
         'paymentMethodId': paymentMethodId,
