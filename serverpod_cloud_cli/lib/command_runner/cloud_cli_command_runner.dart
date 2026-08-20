@@ -27,6 +27,7 @@ import 'package:serverpod_cloud_cli/command_runner/commands/me_command.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cli_version_checker.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/cli_run_context_resolver.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_cloud_cli/util/activation_checker.dart';
@@ -40,11 +41,38 @@ import 'commands/settings_command.dart';
 import 'completion/completion_script_carapace.dart';
 import 'completion/completion_script_completely.dart';
 
+/// The resolved context of a CLI run.
+///
+/// [command] is the space-separated command name path including subcommands
+/// (e.g. `variable set`), or null when the run resolved no command.
+/// [flags] holds the names of the flags and options passed on the command
+/// line (e.g. `['--project']`), without their values.
+/// Neither contains option values or positional arguments.
+/// [cloudUserId] is the id of the logged in cloud user, or null when the
+/// user is not logged in.
+typedef CliRunContext = ({
+  bool analyticsConsent,
+  String? command,
+  List<String> flags,
+  String apiServerUrl,
+  String? cloudUserId,
+});
+
+typedef OnRunContextResolved = void Function(CliRunContext context);
+
 /// Represents the Serverpod Cloud CLI main command, its global options, and subcommands.
 class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   final Version version;
   final CommandLogger logger;
   final CloudCliServiceProvider _serviceProvider;
+
+  /// Called with the resolved run context each time [runCommand] is entered,
+  /// which is after the global configuration and the analytics consent are
+  /// resolved.
+  ///
+  /// An error thrown by the callback is logged and ignored, so telemetry
+  /// cannot break the command being run.
+  final OnRunContextResolved? _onRunContextResolved;
 
   /// If true, analytics will be not be suppressed for non-production usage.
   final bool _enableAnalyticsForAllEnvs;
@@ -55,6 +83,8 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   final VersionCommand _versionCommand;
 
   GlobalConfiguration? _globalConfiguration;
+
+  bool _analyticsConsent = false;
 
   /// The curremt global configuration for the Serverpod Cloud CLI.
   @override
@@ -95,9 +125,11 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     required final CloudCliServiceProvider serviceProvider,
     required final bool enableAnalyticsForAllEnvs,
     required final bool adminUserMode,
+    final OnRunContextResolved? onRunContextResolved,
     super.onAnalyticsEvent,
     super.setLogLevel,
-  }) : _serviceProvider = serviceProvider,
+  }) : _onRunContextResolved = onRunContextResolved,
+       _serviceProvider = serviceProvider,
        _versionCommand = VersionCommand(logger: logger),
        _enableAnalyticsForAllEnvs = enableAnalyticsForAllEnvs,
        _adminUserMode = adminUserMode,
@@ -119,6 +151,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     final Version? version,
     final CloudCliServiceProvider? serviceProvider,
     final OnAnalyticsEvent? onAnalyticsEvent,
+    final OnRunContextResolved? onRunContextResolved,
     final bool enableAnalyticsForAllEnvs = false,
     bool? adminUserMode,
   }) {
@@ -135,6 +168,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
       serviceProvider: serviceProvider ?? CloudCliServiceProvider(),
       enableAnalyticsForAllEnvs: enableAnalyticsForAllEnvs,
       adminUserMode: adminUserMode,
+      onRunContextResolved: onRunContextResolved,
       onAnalyticsEvent: onAnalyticsEvent,
       setLogLevel:
           ({
@@ -173,6 +207,12 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
 
   @override
   Future<void> runCommand(final ArgResults topLevelResults) async {
+    try {
+      _onRunContextResolved?.call(_runContext(topLevelResults));
+    } catch (e, stackTrace) {
+      logger.debug('Failed to resolve the run context: $e\n$stackTrace');
+    }
+
     if (globalConfiguration.version) {
       await _versionCommand.run();
       return;
@@ -221,6 +261,19 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     }
   }
 
+  CliRunContext _runContext(final ArgResults topLevelResults) {
+    final globalConfig = globalConfiguration;
+    return (
+      analyticsConsent: _analyticsConsent,
+      command: CliRunContextResolver.commandPath(topLevelResults),
+      flags: CliRunContextResolver.commandFlags(topLevelResults),
+      apiServerUrl: globalConfig.apiServer,
+      cloudUserId: CliRunContextResolver.fetchCloudUserId(
+        globalConfig.scloudDir.path,
+      ),
+    );
+  }
+
   @override
   void sendAnalyticsEvent(
     final String event, [
@@ -228,19 +281,23 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   ]) {
     final enrichedProperties = Map<String, dynamic>.from(properties);
     final globalConfig = _globalConfiguration;
-    final cloudUser = globalConfig != null
-        ? ResourceManager.tryFetchServerpodCloudUserDataSync(
-            localStoragePath: globalConfig.scloudDir.path,
-          )
+    final cloudUserId = globalConfig != null
+        ? CliRunContextResolver.fetchCloudUserId(globalConfig.scloudDir.path)
         : null;
-    if (cloudUser != null) {
-      enrichedProperties['cloud_user_id'] = cloudUser.id;
+    if (cloudUserId != null) {
+      enrichedProperties['cloud_user_id'] = cloudUserId;
     }
     super.sendAnalyticsEvent(event, enrichedProperties);
   }
 
   @override
   Future<bool> determineAnalyticsSettings() async {
+    final analyticsEnabled = await _resolveAnalyticsConsent();
+    _analyticsConsent = analyticsEnabled;
+    return analyticsEnabled;
+  }
+
+  Future<bool> _resolveAnalyticsConsent() async {
     if (onAnalyticsEvent == null) {
       return false;
     }
