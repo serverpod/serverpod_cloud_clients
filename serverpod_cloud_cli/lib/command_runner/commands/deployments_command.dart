@@ -345,7 +345,7 @@ Build secrets are used to securely store sensitive information that needs to be
 available when building your server, for example SSH keys.
 
 Build secrets are not available at runtime.
-(See `scloud secret` for managing runtime secrets: ${CloudCliCommand.commandDocBaseUrl}secret)""";
+(See `scloud variable set --secret` for managing runtime secrets: ${CloudCliCommand.commandDocBaseUrl}variable)""";
 
 class CloudDeploymentsBuildSecretCommand extends CloudCliCommand {
   @override

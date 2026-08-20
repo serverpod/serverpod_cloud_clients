@@ -1,17 +1,16 @@
 import 'dart:async';
 
 import 'package:args/command_runner.dart';
+import 'package:ground_control_client/ground_control_client.dart';
+import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
-import 'package:test_descriptor/test_descriptor.dart' as d;
-import 'package:test/test.dart';
-
-import 'package:ground_control_client_mock/ground_control_client_mock.dart';
-import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/variable_command.dart';
-import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../../test_utils/command_logger_matchers.dart';
 import '../../test_utils/test_command_logger.dart';
@@ -44,7 +43,7 @@ void main() {
 
       setUp(() async {
         when(
-          () => client.environmentVariables.create(any(), any(), any()),
+          () => client.environmentVariables.list(any()),
         ).thenThrow(ServerpodClientUnauthorized());
 
         commandResult = cli.run([
@@ -77,13 +76,18 @@ void main() {
       });
     });
 
-    group('when executing variable set and create throws duplicate', () {
+    group('when executing variable set and the variable already exists', () {
       late Future commandResult;
 
       setUp(() async {
+        when(() => client.environmentVariables.list(any())).thenAnswer(
+          (final _) async => [
+            EnvironmentVariable(name: 'key', value: 'old', capsuleId: 0),
+          ],
+        );
         when(
-          () => client.environmentVariables.create(any(), any(), any()),
-        ).thenThrow(DuplicateEntryException(message: 'exists'));
+          () => client.secrets.list(any()),
+        ).thenAnswer((final _) async => <String>[]);
         when(
           () => client.environmentVariables.update(
             name: any(named: 'name'),
@@ -122,18 +126,14 @@ void main() {
       });
     });
 
-    group('when executing variable unset and confirming prompt', () {
+    group('when executing variable unset', () {
       late Future commandResult;
 
       setUp(() async {
         when(
-          () => client.environmentVariables.delete(
-            name: any(named: 'name'),
-            cloudCapsuleId: any(named: 'cloudCapsuleId'),
-          ),
+          () => client.environmentVariables.list(any()),
         ).thenThrow(ServerpodClientUnauthorized());
 
-        logger.answerNextConfirmWith(true);
         commandResult = cli.run([
           'variable',
           'unset',
@@ -202,6 +202,12 @@ void main() {
 
     group('when executing variable set', () {
       setUp(() async {
+        when(
+          () => client.environmentVariables.list(any()),
+        ).thenAnswer((final _) async => <EnvironmentVariable>[]);
+        when(
+          () => client.secrets.list(any()),
+        ).thenAnswer((final _) async => <String>[]);
         when(
           () => client.environmentVariables.create(
             any(that: equals('key')),
@@ -351,6 +357,12 @@ void main() {
     group('when executing variable set with multi-line values', () {
       setUp(() async {
         when(
+          () => client.environmentVariables.list(any()),
+        ).thenAnswer((final _) async => <EnvironmentVariable>[]);
+        when(
+          () => client.secrets.list(any()),
+        ).thenAnswer((final _) async => <String>[]);
+        when(
           () => client.environmentVariables.create(
             any(that: equals('key')),
             any(that: equals('value1\nline2')),
@@ -433,33 +445,159 @@ void main() {
       });
     });
 
-    group('when executing variable set and name already exists', () {
+    group(
+      'when executing variable set and name already exists as unmasked',
+      () {
+        setUp(() async {
+          when(() => client.environmentVariables.list(any())).thenAnswer(
+            (final _) async => [
+              EnvironmentVariable(name: 'key', value: 'old', capsuleId: 0),
+            ],
+          );
+          when(
+            () => client.secrets.list(any()),
+          ).thenAnswer((final _) async => <String>[]);
+          when(
+            () => client.environmentVariables.update(
+              name: any(named: 'name', that: equals('key')),
+              value: any(named: 'value', that: equals('value')),
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            ),
+          ).thenAnswer(
+            (final invocation) async => Future.value(
+              EnvironmentVariable(
+                name: invocation.namedArguments[#name],
+                value: invocation.namedArguments[#value],
+                capsuleId: 0,
+              ),
+            ),
+          );
+        });
+
+        group('with value arg', () {
+          late Future commandResult;
+
+          setUp(() async {
+            commandResult = cli.run([
+              'variable',
+              'set',
+              'key',
+              'value',
+              '--project',
+              projectId,
+            ]);
+          });
+
+          test('then completes successfully', () async {
+            await expectLater(commandResult, completes);
+          });
+
+          test('then logs success message', () async {
+            await commandResult;
+
+            expect(logger.successCalls, isNotEmpty);
+            expect(
+              logger.successCalls.first,
+              equalsSuccessCall(
+                message: 'Successfully set environment variable: key.',
+              ),
+            );
+          });
+        });
+
+        group('with --no-secret', () {
+          late Future commandResult;
+
+          setUp(() async {
+            commandResult = cli.run([
+              'variable',
+              'set',
+              '--no-secret',
+              'key',
+              'value',
+              '--project',
+              projectId,
+            ]);
+          });
+
+          test('then completes successfully', () async {
+            await expectLater(commandResult, completes);
+          });
+
+          test('then logs success message', () async {
+            await commandResult;
+
+            expect(logger.successCalls, isNotEmpty);
+            expect(
+              logger.successCalls.first,
+              equalsSuccessCall(
+                message: 'Successfully set environment variable: key.',
+              ),
+            );
+          });
+        });
+
+        group('with --secret', () {
+          late Future commandResult;
+
+          setUp(() async {
+            commandResult = cli.run([
+              'variable',
+              'set',
+              '--secret',
+              'key',
+              'value',
+              '--project',
+              projectId,
+            ]);
+          });
+
+          test('then throws exception', () async {
+            await expectLater(
+              commandResult,
+              throwsA(isA<ErrorExitException>()),
+            );
+          });
+
+          test('then logs error with recreate commands', () async {
+            try {
+              await commandResult;
+            } catch (_) {}
+
+            expect(logger.errorCalls, isNotEmpty);
+            expect(
+              logger.errorCalls.first,
+              equalsErrorCall(
+                message:
+                    '"key" already exists as an unmasked variable. '
+                    'To recreate it as a secret:',
+                hint:
+                    'scloud variable unset key\n'
+                    '  scloud variable set --secret key <value>',
+              ),
+            );
+          });
+        });
+      },
+    );
+
+    group('when executing variable set and name already exists as secret', () {
       setUp(() async {
         when(
-          () => client.environmentVariables.create(
-            any(that: equals('key')),
-            any(),
-            any(),
-          ),
-        ).thenThrow(DuplicateEntryException(message: 'exists'));
+          () => client.environmentVariables.list(any()),
+        ).thenAnswer((final _) async => <EnvironmentVariable>[]);
         when(
-          () => client.environmentVariables.update(
-            name: any(named: 'name', that: equals('key')),
-            value: any(named: 'value', that: equals('value')),
+          () => client.secrets.list(any()),
+        ).thenAnswer((final _) async => ['key']);
+        when(
+          () => client.secrets.upsert(
+            secrets: any(named: 'secrets', that: equals({'key': 'value'})),
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
           ),
-        ).thenAnswer(
-          (final invocation) async => Future.value(
-            EnvironmentVariable(
-              name: invocation.namedArguments[#name],
-              value: invocation.namedArguments[#value],
-              capsuleId: 0,
-            ),
-          ),
-        );
+        ).thenAnswer((final _) async {});
       });
 
-      group('with value arg', () {
+      group('without flag', () {
         late Future commandResult;
 
         setUp(() async {
@@ -483,48 +621,21 @@ void main() {
           expect(logger.successCalls, isNotEmpty);
           expect(
             logger.successCalls.first,
-            equalsSuccessCall(
-              message: 'Successfully set environment variable: key.',
-            ),
+            equalsSuccessCall(message: 'Successfully set secret: key.'),
           );
         });
       });
 
-      group('with value file arg', () {
+      group('with --secret', () {
         late Future commandResult;
 
         setUp(() async {
-          when(
-            () => client.environmentVariables.create(
-              any(that: equals('key')),
-              any(that: equals('value')),
-              any(),
-            ),
-          ).thenThrow(DuplicateEntryException(message: 'exists'));
-          when(
-            () => client.environmentVariables.update(
-              name: any(named: 'name', that: equals('key')),
-              value: any(named: 'value', that: equals('value')),
-              cloudCapsuleId: any(named: 'cloudCapsuleId'),
-            ),
-          ).thenAnswer(
-            (final invocation) async => Future.value(
-              EnvironmentVariable(
-                name: invocation.namedArguments[#name],
-                value: invocation.namedArguments[#value],
-                capsuleId: 0,
-              ),
-            ),
-          );
-
-          await d.file('value.txt', 'value').create();
-
           commandResult = cli.run([
             'variable',
             'set',
+            '--secret',
             'key',
-            '--from-file',
-            p.join(d.sandbox, 'value.txt'),
+            'value',
             '--project',
             projectId,
           ]);
@@ -540,11 +651,206 @@ void main() {
           expect(logger.successCalls, isNotEmpty);
           expect(
             logger.successCalls.first,
-            equalsSuccessCall(
-              message: 'Successfully set environment variable: key.',
+            equalsSuccessCall(message: 'Successfully set secret: key.'),
+          );
+        });
+      });
+
+      group('with --no-secret', () {
+        late Future commandResult;
+
+        setUp(() async {
+          commandResult = cli.run([
+            'variable',
+            'set',
+            '--no-secret',
+            'key',
+            'value',
+            '--project',
+            projectId,
+          ]);
+        });
+
+        test('then throws exception', () async {
+          await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+        });
+
+        test('then logs error with recreate commands', () async {
+          try {
+            await commandResult;
+          } catch (_) {}
+
+          expect(logger.errorCalls, isNotEmpty);
+          expect(
+            logger.errorCalls.first,
+            equalsErrorCall(
+              message:
+                  '"key" already exists as a secret. '
+                  'To recreate it as an unmasked variable:',
+              hint:
+                  'scloud variable unset key\n'
+                  '  scloud variable set --no-secret key <value>',
             ),
           );
         });
+      });
+    });
+
+    group('when executing variable set --secret and name does not exist', () {
+      late Future commandResult;
+
+      setUp(() async {
+        when(
+          () => client.environmentVariables.list(any()),
+        ).thenAnswer((final _) async => <EnvironmentVariable>[]);
+        when(
+          () => client.secrets.list(any()),
+        ).thenAnswer((final _) async => <String>[]);
+        when(
+          () => client.secrets.create(
+            secrets: any(named: 'secrets', that: equals({'key': 'value'})),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenAnswer((final _) async {});
+
+        commandResult = cli.run([
+          'variable',
+          'set',
+          '--secret',
+          'key',
+          'value',
+          '--project',
+          projectId,
+        ]);
+      });
+
+      test('then command completes successfully', () async {
+        await expectLater(commandResult, completes);
+      });
+
+      test('then logs success message', () async {
+        await commandResult;
+
+        expect(logger.successCalls, isNotEmpty);
+        expect(
+          logger.successCalls.first,
+          equalsSuccessCall(message: 'Successfully set secret: key.'),
+        );
+      });
+    });
+
+    group('when executing variable set --secret with value file arg', () {
+      late Future commandResult;
+
+      setUp(() async {
+        when(
+          () => client.environmentVariables.list(any()),
+        ).thenAnswer((final _) async => <EnvironmentVariable>[]);
+        when(
+          () => client.secrets.list(any()),
+        ).thenAnswer((final _) async => <String>[]);
+        when(
+          () => client.secrets.create(
+            secrets: any(named: 'secrets', that: equals({'key': 'value'})),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenAnswer((final _) async {});
+
+        await d.file('value.txt', 'value').create();
+
+        commandResult = cli.run([
+          'variable',
+          'set',
+          '--secret',
+          'key',
+          '--from-file',
+          p.join(d.sandbox, 'value.txt'),
+          '--project',
+          projectId,
+        ]);
+      });
+
+      test('then command completes successfully', () async {
+        await expectLater(commandResult, completes);
+      });
+
+      test('then logs success message', () async {
+        await commandResult;
+
+        expect(logger.successCalls, isNotEmpty);
+        expect(
+          logger.successCalls.first,
+          equalsSuccessCall(message: 'Successfully set secret: key.'),
+        );
+      });
+    });
+
+    group('when executing variable set with an invalid name', () {
+      late Future commandResult;
+
+      setUp(() async {
+        commandResult = cli.run([
+          'variable',
+          'set',
+          'new-secret',
+          'value',
+          '--project',
+          projectId,
+        ]);
+      });
+
+      test('then throws exception', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then logs validation error', () async {
+        try {
+          await commandResult;
+        } catch (_) {}
+
+        expect(logger.errorCalls, isNotEmpty);
+        expect(
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message:
+                'Use letters, digits and underscores, starting with a letter or '
+                'an underscore.',
+          ),
+        );
+      });
+    });
+
+    group('when executing variable set with a password-prefixed name', () {
+      late Future commandResult;
+
+      setUp(() async {
+        commandResult = cli.run([
+          'variable',
+          'set',
+          'SERVERPOD_PASSWORD_database',
+          'value',
+          '--project',
+          projectId,
+        ]);
+      });
+
+      test('then throws exception', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then logs prefix error', () async {
+        try {
+          await commandResult;
+        } catch (_) {}
+
+        expect(logger.errorCalls, isNotEmpty);
+        expect(
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message: "Names can't start with 'SERVERPOD_PASSWORD_'.",
+            hint: 'Use `scloud password set` to manage passwords.',
+          ),
+        );
       });
     });
 
@@ -552,6 +858,14 @@ void main() {
       late Future commandResult;
 
       setUp(() async {
+        when(() => client.environmentVariables.list(any())).thenAnswer(
+          (final _) async => [
+            EnvironmentVariable(name: 'key', value: 'value', capsuleId: 0),
+          ],
+        );
+        when(
+          () => client.secrets.list(any()),
+        ).thenAnswer((final _) async => <String>[]);
         when(
           () => client.environmentVariables.delete(
             name: any(named: 'name'),
@@ -610,10 +924,103 @@ void main() {
       });
     });
 
+    group(
+      'when executing variable unset for a secret and confirming prompt',
+      () {
+        late Future commandResult;
+
+        setUp(() async {
+          when(
+            () => client.environmentVariables.list(any()),
+          ).thenAnswer((final _) async => <EnvironmentVariable>[]);
+          when(
+            () => client.secrets.list(any()),
+          ).thenAnswer((final _) async => ['key']);
+          when(
+            () => client.secrets.delete(
+              key: any(named: 'key'),
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            ),
+          ).thenAnswer((final _) async {});
+
+          logger.answerNextConfirmWith(true);
+          commandResult = cli.run([
+            'variable',
+            'unset',
+            'key',
+            '--project',
+            projectId,
+          ]);
+        });
+
+        test('then completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then logs success message', () async {
+          await commandResult;
+
+          expect(logger.successCalls, isNotEmpty);
+          expect(
+            logger.successCalls.first,
+            equalsSuccessCall(message: 'Successfully removed secret: key.'),
+          );
+        });
+      },
+    );
+
+    group('when executing variable unset and the name is not found', () {
+      late Future commandResult;
+
+      setUp(() async {
+        when(
+          () => client.environmentVariables.list(any()),
+        ).thenAnswer((final _) async => <EnvironmentVariable>[]);
+        when(
+          () => client.secrets.list(any()),
+        ).thenAnswer((final _) async => <String>[]);
+
+        commandResult = cli.run([
+          'variable',
+          'unset',
+          'key',
+          '--project',
+          projectId,
+        ]);
+      });
+
+      test('then throws exception', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then logs not found error', () async {
+        try {
+          await commandResult;
+        } catch (_) {}
+
+        expect(logger.errorCalls, isNotEmpty);
+        expect(
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message: 'The environment variable "key" was not found.',
+          ),
+        );
+      });
+    });
+
     group('when executing variable unset and rejecting prompt', () {
       late Future commandResult;
 
       setUp(() async {
+        when(() => client.environmentVariables.list(any())).thenAnswer(
+          (final _) async => [
+            EnvironmentVariable(name: 'key', value: 'value', capsuleId: 0),
+          ],
+        );
+        when(
+          () => client.secrets.list(any()),
+        ).thenAnswer((final _) async => <String>[]);
+
         logger.answerNextConfirmWith(false);
         commandResult = cli.run([
           'variable',
@@ -658,9 +1065,17 @@ void main() {
 
       setUp(() async {
         when(() => client.environmentVariables.list(any())).thenAnswer(
-          (final invocation) async => Future.value([
-            EnvironmentVariable(name: 'name', value: 'value', capsuleId: 0),
-          ]),
+          (final _) async => [
+            EnvironmentVariable(name: 'zebra', value: 'one', capsuleId: 0),
+            EnvironmentVariable(name: 'alpha', value: 'two', capsuleId: 0),
+          ],
+        );
+        when(() => client.secrets.list(any())).thenAnswer(
+          (final _) async => [
+            'secret_z',
+            'SERVERPOD_PASSWORD_database',
+            'secret_a',
+          ],
         );
 
         commandResult = cli.run(['variable', 'list', '--project', projectId]);
@@ -670,17 +1085,28 @@ void main() {
         await expectLater(commandResult, completes);
       });
 
-      test('then logs success message', () async {
+      test('then logs unmasked variables first then masked secrets', () async {
         await commandResult;
 
-        expect(logger.lineCalls, isNotEmpty);
         expect(
           logger.lineCalls,
           containsAllInOrder([
-            equalsLineCall(line: 'Name | Value'),
-            equalsLineCall(line: '-----+------'),
-            equalsLineCall(line: 'name | value'),
+            equalsLineCall(line: 'Name     | Value   '),
+            equalsLineCall(line: '---------+---------'),
+            equalsLineCall(line: 'zebra    | one     '),
+            equalsLineCall(line: 'alpha    | two     '),
+            equalsLineCall(line: 'secret_z | ••••••••'),
+            equalsLineCall(line: 'secret_a | ••••••••'),
           ]),
+        );
+      });
+
+      test('then omits password-prefixed secrets', () async {
+        await commandResult;
+
+        expect(
+          logger.lineCalls.map((final call) => call.line),
+          isNot(contains(contains('SERVERPOD_PASSWORD_database'))),
         );
       });
     });
