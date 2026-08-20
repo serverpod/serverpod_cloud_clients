@@ -63,7 +63,11 @@ class ScrollingSection {
 
   /// An optional heading rendered undimmed immediately above the scrolling
   /// lines.
-  final String? heading;
+  ///
+  /// Mutable so callers can reflect changing progress in the heading text via
+  /// [updateHeading]; use the constructor's `heading` parameter for the
+  /// initial value.
+  String? _heading;
 
   /// The message that replaces the [heading] when the section is finished with
   /// [clear] (i.e. on success). Ignored when null.
@@ -107,7 +111,7 @@ class ScrollingSection {
     required final InlineTerminal terminal,
     this.rows = 5,
     this.dim = true,
-    this.heading,
+    final String? heading,
     this.successMessage,
     this.failedMessage,
     this.captureOutput = false,
@@ -115,6 +119,7 @@ class ScrollingSection {
     final Duration Function()? elapsed,
     final SpinnerScheduler? scheduleTicker,
   }) : assert(rows >= 1, 'rows must be at least 1'),
+       _heading = heading,
        _terminal = terminal,
        _renderer = BottomRegionRenderer(terminal),
        _spinnerInterval = spinnerInterval,
@@ -174,6 +179,17 @@ class ScrollingSection {
 
   /// Whether the section has been finished with [keep] or [clear].
   bool get isFinished => _finished;
+
+  /// Updates the heading text and re-renders.
+  ///
+  /// Has no effect once the section [isFinished]; the completion message
+  /// ([successMessage] or [failedMessage]) still takes precedence at that
+  /// point, exactly as it did with the heading set at construction time.
+  void updateHeading(final String newHeading) {
+    if (_finished) return;
+    _heading = newHeading;
+    _render();
+  }
 
   /// Appends [line] to the section and re-renders.
   ///
@@ -279,7 +295,7 @@ class ScrollingSection {
   /// applied when the terminal supports them.
   String? _buildHeaderLine(final int width) {
     if (!_finished) {
-      final text = heading;
+      final text = _heading;
       if (text == null) return null;
       if (!_spinnerActive) return _format(text, width, dimmed: false);
       final frame = _brailleFrames[_frameIndex % _brailleFrames.length];
@@ -287,7 +303,7 @@ class ScrollingSection {
       return _composeHeader(frame, _greenStyle, text, elapsed, width);
     }
 
-    final base = _finishMessage ?? heading;
+    final base = _finishMessage ?? _heading;
     if (base == null) return null;
     if (!_spinnerActive) return _format(base, width, dimmed: false);
     final icon = _success ? _successIcon : _failureIcon;
