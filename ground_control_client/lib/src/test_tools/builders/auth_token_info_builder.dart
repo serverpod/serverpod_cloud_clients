@@ -50,6 +50,24 @@ class AuthTokenInfoBuilder {
     return this;
   }
 
+  AuthTokenInfoBuilder withPersonalAccessToken() {
+    _issuer = 'session';
+    _method = 'PAT';
+    return this;
+  }
+
+  AuthTokenInfoBuilder withServerSideSession() {
+    _issuer = 'session';
+    _method = 'email';
+    return this;
+  }
+
+  AuthTokenInfoBuilder withJwtSession() {
+    _issuer = 'jwt';
+    _method = 'email';
+    return this;
+  }
+
   AuthTokenInfoBuilder withLastUsedAt(final DateTime? lastUsedAt) {
     this.lastUsedAt = lastUsedAt;
     return this;
