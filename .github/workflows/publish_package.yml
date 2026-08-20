@@ -34,15 +34,6 @@ jobs:
             PACKAGE="${TAG%-v*}"
           fi
 
-          case "$PACKAGE" in
-            ground_control_client|serverpod_cloud_cli|serverpod_cloud_shared)
-              ;;
-            *)
-              echo "Unknown package: $PACKAGE"
-              exit 1
-              ;;
-          esac
-
           if [ ! -d "$PACKAGE" ]; then
             echo "Package directory does not exist: $PACKAGE"
             exit 1
