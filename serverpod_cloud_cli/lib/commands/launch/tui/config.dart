@@ -121,7 +121,7 @@ class ProjectIdInputConfig implements FormInputConfig {
         if (selectionConfig != null)
           FormRequirement(
             config: selectionConfig,
-            configOption: kCreateNewProjectOption,
+            configOptions: {kCreateNewProjectOption},
           ),
       ];
 

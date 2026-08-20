@@ -349,6 +349,28 @@ dependencies:
         );
         expect(selected?.projectId, 'project');
       });
+
+      test('then the project ID input is hidden', () {
+        final form = state.projectSelectionFormState;
+
+        expect(form.configurations.whereType<ProjectIdInputConfig>(), isEmpty);
+      });
+    });
+
+    group('When the "Create new project" option is selected', () {
+      test('then the project ID input is shown', () {
+        final form = state.projectSelectionFormState;
+        final config = form.configurations
+            .whereType<ProjectSelectionConfig>()
+            .first;
+
+        form.updateSelectedOption(config, kCreateNewProjectOption);
+
+        expect(
+          form.configurations.whereType<ProjectIdInputConfig>(),
+          hasLength(1),
+        );
+      });
     });
 
     group('When goToConfiguration is called', () {
