@@ -961,7 +961,8 @@ class EndpointBucket extends _i1.EndpointRef {
   /// Throws [DuplicateEntryException] if the storage id is already in use
   /// for this capsule.
   /// Throws [ProcurementDeniedException] if the capsule has no remaining bucket
-  /// allowance.
+  /// allowance, or when the capsule's plan limits buckets of the requested
+  /// visibility and that limit is reached.
   /// Throws [BucketStorageIdentityUnavailableException] if the storage identity
   /// is not ready yet (safe to retry).
   _i2.Future<_i18.BucketResource> createBucket({
