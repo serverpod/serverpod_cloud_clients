@@ -66,17 +66,7 @@ class AdminListProjectsCommand
 }
 
 enum AdminProjectStatusOption<V> implements OptionDefinition<V> {
-  projectId(
-    StringOption(
-      argName: 'project',
-      argAbbrev: 'p',
-      argPos: 0,
-      mandatory: true,
-      helpText:
-          'The ID of the project. '
-          'Can be passed as the first argument.',
-    ),
-  ),
+  projectId(ProjectIdOption.argsOnly(asFirstArg: true)),
   limit(
     IntOption(
       argName: 'limit',
@@ -121,17 +111,7 @@ class AdminProjectStatusCommand
 }
 
 enum AdminProjectDeleteOption<V> implements OptionDefinition<V> {
-  projectId(
-    StringOption(
-      argName: 'project',
-      argAbbrev: 'p',
-      argPos: 0,
-      mandatory: true,
-      helpText:
-          'The ID of the project. '
-          'Can be passed as the first argument.',
-    ),
-  );
+  projectId(ProjectIdOption.argsOnly(asFirstArg: true));
 
   const AdminProjectDeleteOption(this.option);
 
