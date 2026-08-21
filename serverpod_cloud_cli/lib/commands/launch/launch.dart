@@ -21,8 +21,6 @@ import 'package:serverpod_cloud_cli/commands/status/status.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/browser_launcher.dart';
-import 'package:serverpod_cloud_cli/util/dart_version_util.dart'
-    show SupportedDartSdkPolicy, fetchSupportedDartSdkPolicy;
 import 'package:serverpod_cloud_cli/util/inline_tui/inline_tui.dart'
     show SelectList, SelectListStyle;
 import 'package:serverpod_cloud_cli/util/listener_server.dart';
@@ -59,16 +57,7 @@ abstract class Launch {
   }) async {
     logger.init('Launching a Serverpod Cloud project.\n');
 
-    final supportedSdkPolicy = await fetchSupportedDartSdkPolicy(
-      cloudApiClient,
-      logger: logger,
-    );
-
-    final pubspec = _validateProjectDir(
-      logger,
-      projectDirectory,
-      supportedSdkPolicy: supportedSdkPolicy,
-    );
+    final pubspec = _validateProjectDir(logger, projectDirectory);
 
     final dirPath = logger.wrapStyle(projectDirectory.path, _projectFactStyle);
     logger.info('Project directory: $dirPath\n');
@@ -250,9 +239,8 @@ abstract class Launch {
   /// otherwise throws a [FailureException].
   static TenantProjectPubspec _validateProjectDir(
     final CommandLogger logger,
-    final Directory projectDir, {
-    required final SupportedDartSdkPolicy? supportedSdkPolicy,
-  }) {
+    final Directory projectDir,
+  ) {
     final pubspecValidator = TenantProjectPubspec.fromProjectDir(projectDir);
 
     if (!pubspecValidator.isServerpodServer()) {
@@ -268,13 +256,10 @@ abstract class Launch {
     );
 
     final issues = [
-      ...pubspecValidator.projectDependencyIssues(
-        supportedSdkPolicy: supportedSdkPolicy,
-      ),
-      ...TenantProjectPubspec.lockfileDependencyIssues(
+      ...pubspecValidator.projectDependencyIssues(),
+      ...TenantProjectPubspec.readLockfileDartSdk(
         File(p.join(lockfileDirectory.path, 'pubspec.lock')),
-        supportedSdkPolicy: supportedSdkPolicy,
-      ),
+      ).issues,
     ];
     if (issues.isEmpty) {
       return pubspecValidator;
@@ -670,7 +655,7 @@ abstract class Launch {
     final configFilePath = projectSetup.configFilePath;
     final performDeploy = projectSetup.performDeploy;
 
-    final safeDartSdk = await ProjectCommands.linkProject(
+    await ProjectCommands.linkProject(
       cloudApiClient,
       logger: logger,
       projectId: projectId,
@@ -711,7 +696,7 @@ abstract class Launch {
       outputPath: deployOutputPath,
       skipTailingStatus: deploySkipTailingStatus,
       suppressCommandMessages: true,
-      dartVersionOverride: safeDartSdk,
+      dartVersionOverride: projectSetup.dartVersionOverride,
       stdout: stdout,
       stderr: stderr,
     );

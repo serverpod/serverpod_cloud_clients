@@ -94,7 +94,6 @@ void main() {
             d.file('scloud.yaml', '''
 project:
   projectId: "123"
-  dartSdk: "3.8.0"
 '''),
           ],
         ).create();
@@ -194,7 +193,6 @@ dependencies:
             d.file('scloud.yaml', '''
 project:
   projectId: "${BucketUploadDescription.projectId}"
-  dartSdk: "3.8.0"
 '''),
           ]).create();
           testProjectDir = p.join(
@@ -271,7 +269,6 @@ dependencies:
             d.file('scloud.yaml', '''
 project:
   projectId: "${BucketUploadDescription.projectId}"
-  dartSdk: "3.8.0"
 '''),
           ]).create();
           testProjectDir = p.join(
@@ -419,6 +416,7 @@ dependencies:
           '123',
           '--project-dir',
           testProjectDir,
+          '--skip-dart-pub-get',
         ]);
       });
 
@@ -431,7 +429,12 @@ dependencies:
         expect(logger.errorCalls, isNotEmpty);
         expect(
           logger.errorCalls.first.message,
-          contains('Unsupported sdk version constraint'),
+          allOf(
+            contains(
+              'No Dart SDK version supported by Serverpod Cloud satisfies',
+            ),
+            contains('pubspec.yaml'),
+          ),
         );
       });
     });
@@ -485,7 +488,12 @@ sdks:
         expect(logger.errorCalls, isNotEmpty);
         expect(
           logger.errorCalls.first.message,
-          contains('Unsupported sdk version constraint in pubspec.lock'),
+          allOf(
+            contains(
+              'No Dart SDK version supported by Serverpod Cloud satisfies',
+            ),
+            contains('pubspec.lock'),
+          ),
         );
       });
     });
@@ -560,7 +568,12 @@ dependencies:
           expect(logger.errorCalls, isNotEmpty);
           expect(
             logger.errorCalls.first.message,
-            contains('Unsupported sdk version constraint in pubspec.lock'),
+            allOf(
+              contains(
+                'No Dart SDK version supported by Serverpod Cloud satisfies',
+              ),
+              contains('pubspec.lock'),
+            ),
           );
         });
       },
@@ -598,6 +611,7 @@ dependencies:
           '123',
           '--project-dir',
           testProjectDir,
+          '--skip-dart-pub-get',
         ]);
       });
 
@@ -605,69 +619,37 @@ dependencies:
         await expectLater(cliCommandFuture, throwsA(isA<ErrorExitException>()));
       });
 
-      test('then the fetched constraint is in the error message', () async {
+      test('then the supported versions are in the error message', () async {
         await cliCommandFuture.catchError((final _) {});
         expect(logger.errorCalls, isNotEmpty);
         expect(
           logger.errorCalls.first.message,
-          contains('must accept: >=3.9.0 <3.13.0'),
+          contains('Available Dart SDK versions: 3.9, 3.10, 3.11, 3.12.'),
         );
       });
     });
 
-    group('and a workspace member package with an sdk outside the fetched '
-        'policy when running deploy command', () {
+    group('and no supported version satisfies both the pubspec sdk constraint '
+        'and the lockfile sdk constraint '
+        'when running deploy command', () {
       late String testProjectDir;
       late Future cliCommandFuture;
 
       setUp(() async {
-        when(() => client.platform.getDartSdkVersionPolicy()).thenAnswer(
-          (final _) async => DartSdkVersionPolicyBuilder()
-              .withSupportedVersions(['3.9', '3.10', '3.11', '3.12'])
-              .withMinVersionInclusive('3.9.0')
-              .withMaxVersionExclusive('3.13.0')
-              .build(),
-        );
-
-        await d.dir('monorepo', [
+        await d.dir('project', [
           d.file('pubspec.yaml', '''
-name: monorepo
+name: my_project
 environment:
-  sdk: ">=3.9.0 <4.0.0"
-workspace:
-  - packages/dart_utilities
-  - project/project_server
-'''),
-          d.dir('packages', [
-            d.dir('dart_utilities', [
-              d.file('pubspec.yaml', '''
-name: dart_utilities
-environment:
-  sdk: ">=3.8.0 <3.9.0"
-resolution: workspace
-'''),
-            ]),
-          ]),
-          d.dir('project', [
-            d.dir('project_server', [
-              d.file('pubspec.yaml', '''
-name: project_server
-environment:
-  sdk: ">=3.9.0 <4.0.0"
-resolution: workspace
+  sdk: ">=3.12.0 <4.0.0"
 dependencies:
   serverpod: ${ProjectFactory.validServerpodVersion}
-  dart_utilities: any
 '''),
-            ]),
-          ]),
+          d.file('pubspec.lock', '''
+sdks:
+  dart: ">=3.9.0 <3.11.0"
+'''),
         ]).create();
-        testProjectDir = p.join(
-          d.sandbox,
-          'monorepo',
-          'project',
-          'project_server',
-        );
+        testProjectDir = p.join(d.sandbox, 'project');
 
         cliCommandFuture = cli.run([
           'deploy',
@@ -683,27 +665,17 @@ dependencies:
         await expectLater(cliCommandFuture, throwsA(isA<ErrorExitException>()));
       });
 
-      test('then the offending member package is named in the error', () async {
+      test('then the error names both constraint sources', () async {
         await cliCommandFuture.catchError((final _) {});
         expect(logger.errorCalls, isNotEmpty);
-        expect(logger.errorCalls.first.message, contains('dart_utilities'));
+        expect(
+          logger.errorCalls.first.message,
+          allOf(contains('pubspec.yaml'), contains('pubspec.lock')),
+        );
       });
-
-      test(
-        'then the fetched constraint is in the member package error',
-        () async {
-          await cliCommandFuture.catchError((final _) {});
-          expect(logger.errorCalls, isNotEmpty);
-          expect(
-            logger.errorCalls.first.message,
-            contains('must accept: >=3.9.0 <3.13.0'),
-          );
-        },
-      );
     });
 
     group('and the Dart SDK version policy cannot be fetched '
-        'and the project sdk constraints are outside the policy '
         'when running deploy command with --wet-run', () {
       late Future cliCommandFuture;
 
@@ -712,36 +684,11 @@ dependencies:
           () => client.platform.getDartSdkVersionPolicy(),
         ).thenThrow(ServerpodClientException('connection failed', 500));
 
-        await d.dir('project', [
-          d.file('pubspec.yaml', '''
-name: my_project
-environment:
-  sdk: '>=3.1.0 <3.2.0'
-dependencies:
-  serverpod: ${ProjectFactory.validServerpodVersion}
-'''),
-          d.file('pubspec.lock', '''
-sdks:
-  dart: ">=3.12.0 <4.0.0"
-'''),
-          d.dir('.dart_tool', [
-            d.file('package_graph.json', '''
-{
-  "configVersion": 1,
-  "roots": ["my_project"],
-  "packages": [
-    {
-      "name": "my_project",
-      "version": "0.0.0",
-      "dependencies": [],
-      "devDependencies": []
-    }
-  ]
-}
-'''),
-          ]),
-        ]).create();
-        final testProjectDir = p.join(d.sandbox, 'project');
+        await ProjectFactory.serverpodServerDir().create();
+        final testProjectDir = p.join(
+          d.sandbox,
+          ProjectFactory.defaultDirectoryName,
+        );
 
         cliCommandFuture = cli.run([
           'deploy',
@@ -754,19 +701,21 @@ sdks:
         ]);
       });
 
-      test('then command completes successfully.', () async {
-        await expectLater(cliCommandFuture, completes);
+      test('then ExitErrorException is thrown.', () async {
+        await expectLater(cliCommandFuture, throwsA(isA<ErrorExitException>()));
       });
 
-      test('then no error is logged.', () async {
-        await cliCommandFuture.catchError((final _) {});
-        expect(logger.errorCalls, isEmpty);
-      });
-
-      test('then no warning is logged.', () async {
-        await cliCommandFuture.catchError((final _) {});
-        expect(logger.warningCalls, isEmpty);
-      });
+      test(
+        'then the error states that the fault is not the project.',
+        () async {
+          await cliCommandFuture.catchError((final _) {});
+          expect(logger.errorCalls, isNotEmpty);
+          expect(
+            logger.errorCalls.first.hint,
+            contains('not with your project'),
+          );
+        },
+      );
     });
 
     group('and current directory is a Serverpod server directory', () {
@@ -778,7 +727,6 @@ sdks:
             d.file('scloud.yaml', '''
 project:
   projectId: "${BucketUploadDescription.projectId}"
-  dartSdk: "3.8.0"
 '''),
           ],
         ).create();
@@ -1088,7 +1036,6 @@ project:
             d.file('scloud.yaml', '''
 project:
   projectId: "${BucketUploadDescription.projectId}"
-  dartSdk: "3.8.0"
 '''),
           ],
         ).create();
@@ -1393,7 +1340,6 @@ project:
               d.file('scloud.yaml', '''
 project:
   projectId: "my-project-id"
-  dartSdk: "3.8.0"
 '''),
               d.dir('subdir', [
                 d.file('subdir_file.txt', 'file_content'),
@@ -1545,7 +1491,6 @@ dependencies:
               d.file('scloud.yaml', '''
 project:
   projectId: "${BucketUploadDescription.projectId}"
-  dartSdk: "3.8.0"
 '''),
             ]),
           ]),
@@ -1713,7 +1658,6 @@ dependencies:
                 d.file('scloud.yaml', '''
 project:
   projectId: "${BucketUploadDescription.projectId}"
-  dartSdk: "3.8.0"
 '''),
               ]),
             ]),
@@ -1839,7 +1783,6 @@ dependencies:
               d.file('scloud.yaml', '''
 project:
   projectId: "${BucketUploadDescription.projectId}"
-  dartSdk: "3.8.0"
 '''),
             ]),
           ]),
@@ -1975,7 +1918,6 @@ dev_dependencies:
             d.file('scloud.yaml', '''
 project:
   projectId: "${BucketUploadDescription.projectId}"
-  dartSdk: "3.8.0"
 '''),
             d.dir('bin', [d.file('main.dart', 'void main() {}')]),
           ]).create();
@@ -2135,7 +2077,6 @@ sdks:
             d.file('scloud.yaml', '''
 project:
   projectId: "${BucketUploadDescription.projectId}"
-  dartSdk: "3.8.0"
 '''),
             d.dir('bin', [d.file('main.dart', 'void main() {}')]),
           ]).create();
@@ -2270,7 +2211,6 @@ dependencies:
                 d.file('scloud.yaml', '''
 project:
   projectId: "${BucketUploadDescription.projectId}"
-  dartSdk: "3.8.0"
 '''),
               ]),
             ]),
@@ -2349,7 +2289,6 @@ dev_dependencies:
         d.file('scloud.yaml', '''
 project:
   projectId: "${BucketUploadDescription.projectId}"
-  dartSdk: "3.8.0"
 '''),
         d.dir('bin', [d.file('main.dart', 'void main() {}')]),
       ]).create();
@@ -2443,7 +2382,6 @@ project:
             .file('scloud.yaml', '''
 project:
   projectId: ${BucketUploadDescription.projectId}
-  dartSdk: "3.8.0"
   scripts:
     pre_deploy:
       - echo "pre-deploy-1" > pre_deploy_output.txt
@@ -2521,7 +2459,6 @@ project:
             .file('scloud.yaml', '''
 project:
   projectId: ${BucketUploadDescription.projectId}
-  dartSdk: "3.8.0"
   scripts:
     pre_deploy: 
       - echo "pre-deploy-1" > pre_deploy_output.txt
@@ -2578,7 +2515,6 @@ project:
             .file('scloud.yaml', '''
 project:
   projectId: ${BucketUploadDescription.projectId}
-  dartSdk: "3.8.0"
   scripts:
     post_deploy:
       - echo "post-deploy-1" > post_deploy_output.txt
@@ -2624,7 +2560,6 @@ project:
             .file('scloud.yaml', '''
 project:
   projectId: ${BucketUploadDescription.projectId}
-  dartSdk: "3.8.0"
   scripts:
     pre_deploy: echo "single-pre-deploy" > single_pre_deploy_output.txt
     post_deploy: echo "single-post-deploy" > single_post_deploy_output.txt
@@ -2684,7 +2619,6 @@ project:
             .file('scloud.yaml', '''
 project:
   projectId: ${BucketUploadDescription.projectId}
-  dartSdk: "3.8.0"
 ''')
             .create(testProjectDir);
       });
@@ -2801,6 +2735,7 @@ dependencies:
         setUp(() async {
           cliCommandFuture = cli.run([
             'deploy',
+            '--skip-dart-pub-get',
             '--wet-run',
             '--dart-version',
             '3.10.0',
@@ -2840,6 +2775,7 @@ project:
         setUp(() async {
           cliCommandFuture = cli.run([
             'deploy',
+            '--skip-dart-pub-get',
             '--wet-run',
             '--project',
             BucketUploadDescription.projectId,
@@ -2870,6 +2806,7 @@ project:
           setUp(() async {
             cliCommandFuture = cli.run([
               'deploy',
+              '--skip-dart-pub-get',
               '--wet-run',
               '--dart-version',
               '3.10.0',
@@ -2904,6 +2841,7 @@ project:
         setUp(() async {
           cliCommandFuture = cli.run([
             'deploy',
+            '--skip-dart-pub-get',
             '--wet-run',
             '--project',
             BucketUploadDescription.projectId,
@@ -2918,12 +2856,14 @@ project:
       });
 
       group(
-        'when deploying with parseable --dart-version outside server range and --wet-run',
+        'when deploying with a --dart-version below the pubspec sdk constraint '
+        'and --wet-run',
         () {
           late Future cliCommandFuture;
           setUp(() async {
             cliCommandFuture = cli.run([
               'deploy',
+              '--skip-dart-pub-get',
               '--wet-run',
               '--dart-version',
               '3.7.0',
@@ -2934,20 +2874,58 @@ project:
             ]);
           });
 
-          test(
-            'then command completes (server validates on upload).',
-            () async {
-              await expectLater(cliCommandFuture, completes);
-            },
-          );
+          test('then command completes successfully.', () async {
+            await expectLater(cliCommandFuture, completes);
+          });
         },
       );
+
+      group('when deploying with a --dart-version above the supported versions '
+          'and --wet-run', () {
+        late Future cliCommandFuture;
+        setUp(() async {
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--skip-dart-pub-get',
+            '--wet-run',
+            '--dart-version',
+            '3.20.0',
+            '--project',
+            BucketUploadDescription.projectId,
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        test('then command throws ErrorExitException.', () async {
+          await expectLater(
+            cliCommandFuture,
+            throwsA(isA<ErrorExitException>()),
+          );
+        });
+
+        test('then the error lists the supported versions.', () async {
+          await cliCommandFuture.catchError((final _) {});
+
+          expect(logger.errorCalls, isNotEmpty);
+          expect(
+            logger.errorCalls.first.message,
+            allOf(
+              contains(
+                'No Dart SDK version supported by Serverpod Cloud satisfies',
+              ),
+              contains('Available Dart SDK versions'),
+            ),
+          );
+        });
+      });
 
       group('when deploying with unparseable --dart-version and --wet-run', () {
         late Future cliCommandFuture;
         setUp(() async {
           cliCommandFuture = cli.run([
             'deploy',
+            '--skip-dart-pub-get',
             '--wet-run',
             '--dart-version',
             'not-a-constraint',
@@ -2988,6 +2966,7 @@ project:
           setUp(() async {
             cliCommandFuture = cli.run([
               'deploy',
+              '--skip-dart-pub-get',
               '--wet-run',
               '--dart-version',
               '3.10.0',
@@ -3018,6 +2997,7 @@ project:
           clearInteractions(client.deploy);
           cliCommandFuture = cli.run([
             'deploy',
+            '--skip-dart-pub-get',
             '--dart-version',
             '3.10.0',
             '--project',
@@ -3069,6 +3049,7 @@ project:
           clearInteractions(client.deploy);
           cliCommandFuture = cli.run([
             'deploy',
+            '--skip-dart-pub-get',
             '--dart-version',
             '3.10',
             '--project',
@@ -3152,12 +3133,13 @@ dependencies:
         await deploy();
       });
 
-      test('then the pubspec sdk constraint is sent as the Dart version', () {
+      test('then the highest supported version within the pubspec sdk '
+          'constraint is sent as the Dart version', () {
         verify(
           () => client.deploy.createUploadDescription(
             BucketUploadDescription.projectId,
             serverpodVersion: any(named: 'serverpodVersion'),
-            dartVersion: '^3.8.0',
+            dartVersion: '3.14.0',
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
             branch: any(named: 'branch'),
@@ -3176,18 +3158,21 @@ dependencies:
           await deploy();
         });
 
-        test('then the .tool-versions version is sent as the Dart version', () {
-          verify(
-            () => client.deploy.createUploadDescription(
-              BucketUploadDescription.projectId,
-              serverpodVersion: any(named: 'serverpodVersion'),
-              dartVersion: '3.9.1',
-              commitHash: any(named: 'commitHash'),
-              commitMessage: any(named: 'commitMessage'),
-              branch: any(named: 'branch'),
-            ),
-          ).called(1);
-        });
+        test(
+          'then the .tool-versions minor line is sent as the Dart version',
+          () {
+            verify(
+              () => client.deploy.createUploadDescription(
+                BucketUploadDescription.projectId,
+                serverpodVersion: any(named: 'serverpodVersion'),
+                dartVersion: '3.9.0',
+                commitHash: any(named: 'commitHash'),
+                commitMessage: any(named: 'commitMessage'),
+                branch: any(named: 'branch'),
+              ),
+            ).called(1);
+          },
+        );
       });
 
       group('and a dartSdk field in scloud.yaml', () {
@@ -3206,18 +3191,21 @@ project:
             await deploy();
           });
 
-          test('then the scloud.yaml version is sent as the Dart version', () {
-            verify(
-              () => client.deploy.createUploadDescription(
-                BucketUploadDescription.projectId,
-                serverpodVersion: any(named: 'serverpodVersion'),
-                dartVersion: '3.10.5',
-                commitHash: any(named: 'commitHash'),
-                commitMessage: any(named: 'commitMessage'),
-                branch: any(named: 'branch'),
-              ),
-            ).called(1);
-          });
+          test(
+            'then the scloud.yaml minor line is sent as the Dart version',
+            () {
+              verify(
+                () => client.deploy.createUploadDescription(
+                  BucketUploadDescription.projectId,
+                  serverpodVersion: any(named: 'serverpodVersion'),
+                  dartVersion: '3.10.0',
+                  commitHash: any(named: 'commitHash'),
+                  commitMessage: any(named: 'commitMessage'),
+                  branch: any(named: 'branch'),
+                ),
+              ).called(1);
+            },
+          );
         });
 
         group('when deploying with the --dart-version flag', () {
@@ -3365,6 +3353,76 @@ dependencies:
     });
   });
 
+  group('Given authenticated and a project with a pre-deploy script '
+      'and an unsupported Dart SDK version in scloud.yaml', () {
+    late String testProjectDir;
+    late String zipOutputPath;
+    late Future cliCommandFuture;
+
+    setUp(() async {
+      await ProjectFactory.serverpodServerDir(
+        contents: [
+          d.file('scloud.yaml', '''
+project:
+  projectId: "${BucketUploadDescription.projectId}"
+  dartSdk: "3.20.0"
+  scripts:
+    pre_deploy:
+      - echo "pre-deploy" > pre_deploy_output.txt
+'''),
+        ],
+      ).create();
+      testProjectDir = p.join(d.sandbox, ProjectFactory.defaultDirectoryName);
+      zipOutputPath = p.join(d.sandbox, 'unsupported_project.zip');
+
+      clearInteractions(client.deploy);
+      cliCommandFuture = cli.run([
+        'deploy',
+        '--skip-dart-pub-get',
+        '--output',
+        zipOutputPath,
+        '--project',
+        BucketUploadDescription.projectId,
+        '--project-dir',
+        testProjectDir,
+      ]);
+    });
+
+    test('then the command throws ErrorExitException.', () async {
+      await expectLater(cliCommandFuture, throwsA(isA<ErrorExitException>()));
+    });
+
+    test('then the pre-deploy script has not run.', () async {
+      await cliCommandFuture.catchError((final _) {});
+
+      final preDeployFile = File(
+        p.join(testProjectDir, 'pre_deploy_output.txt'),
+      );
+      expect(preDeployFile.existsSync(), isFalse);
+    });
+
+    test('then no zip file was written.', () async {
+      await cliCommandFuture.catchError((final _) {});
+
+      expect(File(zipOutputPath).existsSync(), isFalse);
+    });
+
+    test('then no upload description was requested.', () async {
+      await cliCommandFuture.catchError((final _) {});
+
+      verifyNever(
+        () => client.deploy.createUploadDescription(
+          any(),
+          serverpodVersion: any(named: 'serverpodVersion'),
+          dartVersion: any(named: 'dartVersion'),
+          commitHash: any(named: 'commitHash'),
+          commitMessage: any(named: 'commitMessage'),
+          branch: any(named: 'branch'),
+        ),
+      );
+    });
+  });
+
   group(
     'Given authenticated and a git repository with a committed project',
     () {
@@ -3376,7 +3434,6 @@ dependencies:
             d.file('scloud.yaml', '''
 project:
   projectId: "${BucketUploadDescription.projectId}"
-  dartSdk: "3.8.0"
 '''),
           ],
         ).create();

@@ -1,8 +1,6 @@
 import 'dart:io';
 
-import 'package:pub_semver/pub_semver.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
-import 'package:serverpod_cloud_cli/util/dart_version_util.dart';
 import 'package:test/test.dart';
 
 import 'package:serverpod_cloud_cli/commands/deploy/prepare_project_files.dart';
@@ -10,14 +8,6 @@ import 'package:serverpod_cloud_cli/commands/deploy/prepare_project_files.dart';
 import '../test_utils/project_factory.dart';
 
 void main() {
-  final supportedSdk = SupportedDartSdkPolicy(
-    supportedRange: VersionConstraint.parse('>=3.8.0 <3.12.0'),
-    supportedVersions: ['3.8', '3.9', '3.10', '3.11'],
-    documentationUrl: Uri.parse(
-      'https://docs.serverpod.dev/cloud/reference/dart-sdk-versions',
-    ),
-  );
-
   group('WorkspaceProjectLogic.getWorkspaceDependencies -', () {
     test('Given a single package with no dependencies, '
         'when called, then returns only itself', () {
@@ -219,7 +209,7 @@ dependencies:
         () => WorkspaceProjectLogic.validateIncludedPackages([
           pubspecA,
           pubspecB,
-        ], supportedSdkPolicy: supportedSdk),
+        ]),
         returnsNormally,
       );
     });
@@ -229,21 +219,19 @@ dependencies:
       final pubspecA = Pubspec.parse('''
 name: package_a
 environment:
-  sdk: ">=2.12.0 <3.0.0"
+  sdk: ${ProjectFactory.validSdkVersion}
+  flutter: ">=3.0.0"
 dependencies:
 ''');
       expect(
-        () => WorkspaceProjectLogic.validateIncludedPackages([
-          pubspecA,
-        ], supportedSdkPolicy: supportedSdk),
+        () => WorkspaceProjectLogic.validateIncludedPackages([pubspecA]),
         throwsA(
           isA<WorkspaceException>().having(
             (final e) => e.errors,
             'errors',
             contains(
-              startsWith(
-                'Unsupported sdk version constraint in package package_a: >=2.12.0 <3.0.0',
-              ),
+              'A Flutter dependency is not allowed in a server package: '
+              'package_a',
             ),
           ),
         ),
@@ -262,23 +250,18 @@ dependencies:
       final pubspecB = Pubspec.parse('''
 name: package_b
 environment:
-  sdk: ">=2.12.0 <3.0.0"
 dependencies:
 ''');
       expect(
         () => WorkspaceProjectLogic.validateIncludedPackages([
           pubspecA,
           pubspecB,
-        ], supportedSdkPolicy: supportedSdk),
+        ]),
         throwsA(
           isA<WorkspaceException>().having(
             (final e) => e.errors,
             'errors',
-            contains(
-              startsWith(
-                'Unsupported sdk version constraint in package package_b: >=2.12.0 <3.0.0',
-              ),
-            ),
+            contains('No sdk constraint found in package package_b'),
           ),
         ),
       );
@@ -289,20 +272,18 @@ dependencies:
       final pubspecA = Pubspec.parse('''
 name: package_a
 environment:
-  sdk: ">=2.12.0 <3.0.0"
 dependencies:
 ''');
       final pubspecB = Pubspec.parse('''
 name: package_b
 environment:
-  sdk: ">=2.10.0 <2.12.0"
 dependencies:
 ''');
       expect(
         () => WorkspaceProjectLogic.validateIncludedPackages([
           pubspecA,
           pubspecB,
-        ], supportedSdkPolicy: supportedSdk),
+        ]),
         throwsA(
           isA<WorkspaceException>().having(
             (final e) => e.errors,
@@ -315,10 +296,7 @@ dependencies:
 
     test('Given an empty package list, when called, then does not throw', () {
       expect(
-        () => WorkspaceProjectLogic.validateIncludedPackages(
-          [],
-          supportedSdkPolicy: supportedSdk,
-        ),
+        () => WorkspaceProjectLogic.validateIncludedPackages([]),
         returnsNormally,
       );
     });
@@ -333,26 +311,7 @@ dev_dependencies:
   test: any
 ''');
       expect(
-        () => WorkspaceProjectLogic.validateIncludedPackages([
-          pubspecA,
-        ], supportedSdkPolicy: supportedSdk),
-        returnsNormally,
-      );
-    });
-
-    test('Given a null supported sdk constraint '
-        'and a package with an unsupported sdk version, '
-        'when called, then does not throw', () {
-      final pubspecA = Pubspec.parse('''
-name: package_a
-environment:
-  sdk: ">=2.12.0 <3.0.0"
-dependencies:
-''');
-      expect(
-        () => WorkspaceProjectLogic.validateIncludedPackages([
-          pubspecA,
-        ], supportedSdkPolicy: null),
+        () => WorkspaceProjectLogic.validateIncludedPackages([pubspecA]),
         returnsNormally,
       );
     });
@@ -367,9 +326,7 @@ dependencies:
 ''');
       // The logic sets requireServerpod: false, so this should not throw
       expect(
-        () => WorkspaceProjectLogic.validateIncludedPackages([
-          pubspecA,
-        ], supportedSdkPolicy: supportedSdk),
+        () => WorkspaceProjectLogic.validateIncludedPackages([pubspecA]),
         returnsNormally,
       );
     });
