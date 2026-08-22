@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:args/command_runner.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test/test.dart';
+import 'package:yaml_codec/yaml_codec.dart';
 
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:ground_control_client/ground_control_client.dart';
@@ -458,6 +460,66 @@ void main() {
             equalsLineCall(line: 'SECRET_3   '),
           ]),
         );
+      });
+    });
+
+    group('when executing secrets list with --format json', () {
+      late Future commandResult;
+
+      setUp(() async {
+        when(() => client.secrets.list(any())).thenAnswer(
+          (final _) async => Future.value(['SECRET_1', 'SECRET_2', 'SECRET_3']),
+        );
+
+        commandResult = cli.run([
+          'secret',
+          'list',
+          '--project',
+          projectId,
+          '--format',
+          'json',
+        ]);
+      });
+
+      test('then emits name objects', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        expect(jsonDecode(logger.rawCalls.single.content), [
+          'SECRET_1',
+          'SECRET_2',
+          'SECRET_3',
+        ]);
+      });
+    });
+
+    group('when executing secrets list with --format yaml', () {
+      late Future commandResult;
+
+      setUp(() async {
+        when(() => client.secrets.list(any())).thenAnswer(
+          (final _) async => Future.value(['SECRET_1', 'SECRET_2', 'SECRET_3']),
+        );
+
+        commandResult = cli.run([
+          'secret',
+          'list',
+          '--project',
+          projectId,
+          '--format',
+          'yaml',
+        ]);
+      });
+
+      test('then emits name objects', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        expect(yamlDecode(logger.rawCalls.single.content), [
+          'SECRET_1',
+          'SECRET_2',
+          'SECRET_3',
+        ]);
       });
     });
   });

@@ -4,6 +4,9 @@ import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/commands/project/project.dart';
+import 'package:serverpod_cloud_cli/commands/project/project_ui.dart'
+    show ProjectListUi;
+import 'package:serverpod_cloud_cli/util/output/command_output.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/user_command.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 
@@ -111,7 +114,8 @@ enum ProjectListCommandOption<V> implements OptionDefinition<V> {
       defaultsTo: false,
       negatable: false,
     ),
-  );
+  ),
+  format(FormatOption());
 
   const ProjectListCommandOption(this.option);
 
@@ -138,11 +142,16 @@ class CloudProjectListCommand
     final Configuration<ProjectListCommandOption> commandConfig,
   ) async {
     final showArchived = commandConfig.value(ProjectListCommandOption.all);
+    final format = commandConfig.value(ProjectListCommandOption.format);
 
-    await ProjectCommands.listProjects(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      showArchived: showArchived,
+    final output = CommandOutput(format: format, logger: logger);
+
+    await output.render(
+      operation: () => ProjectCommands.listProjectsOperation(
+        runner.serviceProvider.cloudApiClient,
+        showArchived: showArchived,
+      ),
+      ui: ProjectListUi(utc: false, showArchived: showArchived),
     );
   }
 }

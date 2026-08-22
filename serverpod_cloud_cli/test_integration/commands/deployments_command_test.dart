@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
@@ -11,6 +12,7 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_pro
 import 'package:serverpod_cloud_cli/commands/status/status.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:test/test.dart';
+import 'package:yaml_codec/yaml_codec.dart';
 
 import '../../test/util/inline_tui/helpers/fake_terminal.dart';
 import '../../test_utils/command_logger_matchers.dart';
@@ -978,6 +980,102 @@ Cloud build failed. 💥''');
           '--project',
           projectId,
         ]);
+
+        group('when executing deployments list with --format json', () {
+          late Future commandResult;
+          setUp(() async {
+            commandResult = cli.run([
+              'deployment',
+              'list',
+              '--project',
+              projectId,
+              '--format',
+              'json',
+            ]);
+          });
+
+          test('then emits deployment objects', () async {
+            await commandResult;
+
+            expect(logger.lineCalls, isEmpty);
+            expect(jsonDecode(logger.rawCalls.single.content), [
+              {
+                'index': 0,
+                'projectId': 'projectId',
+                'deployId': attemptId1.toString(),
+                'status': 'SUCCESS',
+                'startedAt': DateTime.parse(
+                  '2021-12-31 10:20:30',
+                ).toUtc().toIso8601String(),
+                'finishedAt': DateTime.parse(
+                  '2021-12-31 10:20:40',
+                ).toUtc().toIso8601String(),
+                'info': null,
+              },
+              {
+                'index': 1,
+                'projectId': 'projectId',
+                'deployId': attemptId2.toString(),
+                'status': 'FAILURE',
+                'startedAt': DateTime.parse(
+                  '2021-12-31 10:10:30',
+                ).toUtc().toIso8601String(),
+                'finishedAt': DateTime.parse(
+                  '2021-12-31 10:10:40',
+                ).toUtc().toIso8601String(),
+                'info': 'Some error',
+              },
+            ]);
+          });
+        });
+
+        group('when executing deployments list with --format yaml', () {
+          late Future commandResult;
+          setUp(() async {
+            commandResult = cli.run([
+              'deployment',
+              'list',
+              '--project',
+              projectId,
+              '--format',
+              'yaml',
+            ]);
+          });
+
+          test('then emits deployment objects', () async {
+            await commandResult;
+
+            expect(logger.lineCalls, isEmpty);
+            expect(yamlDecode(logger.rawCalls.single.content), [
+              {
+                'index': 0,
+                'projectId': 'projectId',
+                'deployId': attemptId1.toString(),
+                'status': 'SUCCESS',
+                'startedAt': DateTime.parse(
+                  '2021-12-31 10:20:30',
+                ).toUtc().toIso8601String(),
+                'finishedAt': DateTime.parse(
+                  '2021-12-31 10:20:40',
+                ).toUtc().toIso8601String(),
+                'info': null,
+              },
+              {
+                'index': 1,
+                'projectId': 'projectId',
+                'deployId': attemptId2.toString(),
+                'status': 'FAILURE',
+                'startedAt': DateTime.parse(
+                  '2021-12-31 10:10:30',
+                ).toUtc().toIso8601String(),
+                'finishedAt': DateTime.parse(
+                  '2021-12-31 10:10:40',
+                ).toUtc().toIso8601String(),
+                'info': 'Some error',
+              },
+            ]);
+          });
+        });
       });
     });
 

@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:args/command_runner.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
+import 'package:yaml_codec/yaml_codec.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
@@ -347,6 +349,63 @@ void main() {
         expect(
           logger.lineCalls.map((final call) => call.line),
           isNot(contains(startsWith('projectId2'))),
+        );
+      });
+    });
+
+    group('when executing context list with --format json', () {
+      late Future commandResult;
+      setUp(() async {
+        commandResult = cli.run([
+          'context',
+          'list',
+          '--config-dir',
+          testConfigDirPath,
+          '--format',
+          'json',
+        ]);
+      });
+
+      test('then emits project objects', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        final payload = jsonDecode(logger.rawCalls.single.content) as List;
+        expect(payload, hasLength(1));
+        expect(
+          ((payload.single as Map)['project'] as Map)['cloudProjectId'],
+          'projectId',
+        );
+        expect(
+          ((payload.single as Map)['latestDeployAttemptTime']
+              as Map)['timestamp'],
+          DateTime.parse('2024-12-31 10:20:30').toUtc().toIso8601String(),
+        );
+      });
+    });
+
+    group('when executing context list with --format yaml', () {
+      late Future commandResult;
+      setUp(() async {
+        commandResult = cli.run([
+          'context',
+          'list',
+          '--config-dir',
+          testConfigDirPath,
+          '--format',
+          'yaml',
+        ]);
+      });
+
+      test('then emits project objects', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        final payload = yamlDecode(logger.rawCalls.single.content) as List;
+        expect(payload, hasLength(1));
+        expect(
+          ((payload.single as Map)['project'] as Map)['cloudProjectId'],
+          'projectId',
         );
       });
     });

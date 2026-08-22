@@ -4,6 +4,8 @@ import 'package:ground_control_client/ground_control_client.dart'
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/commands/admin/user_admin.dart';
+import 'package:serverpod_cloud_cli/commands/admin/user_admin_ui.dart';
+import 'package:serverpod_cloud_cli/util/output/command_output.dart';
 
 enum AdminListUsersOption<V> implements OptionDefinition<V> {
   projectId(
@@ -27,7 +29,8 @@ enum AdminListUsersOption<V> implements OptionDefinition<V> {
       negatable: false,
     ),
   ),
-  utc(UtcOption());
+  utc(UtcOption()),
+  format(FormatOption());
 
   const AdminListUsersOption(this.option);
 
@@ -59,14 +62,17 @@ class AdminListUsersCommand extends CloudCliCommand<AdminListUsersOption> {
       AdminListUsersOption.includeArchived,
     );
     final inUtc = commandConfig.value(AdminListUsersOption.utc);
+    final format = commandConfig.value(AdminListUsersOption.format);
 
-    await UserAdminCommands.listUsers(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      inUtc: inUtc,
-      projectId: projectId,
-      ofAccountStatus: accountStatus,
-      includeArchived: includeArchived,
+    final output = CommandOutput(format: format, logger: logger);
+    await output.render(
+      operation: () => UserAdminCommands.listUsersOperation(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+        ofAccountStatus: accountStatus,
+        includeArchived: includeArchived,
+      ),
+      ui: AdminUserListUi(utc: inUtc),
     );
   }
 }

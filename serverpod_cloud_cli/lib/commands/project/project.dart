@@ -7,7 +7,6 @@ import 'package:serverpod_cloud_cli/commands/status/status.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/shared/user_interaction/user_confirmations.dart';
 import 'package:serverpod_cloud_cli/util/dart_version_util.dart';
-import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:serverpod_cloud_cli/util/project_files_writer.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart'
     show resolveProjectDartSdkVersion;
@@ -180,9 +179,8 @@ abstract class ProjectCommands {
     logger.success('Deleted the project "$projectId".', newParagraph: true);
   }
 
-  static Future<void> listProjects(
+  static Future<List<ProjectInfo>> listProjectsOperation(
     final Client cloudApiClient, {
-    required final CommandLogger logger,
     final bool showArchived = false,
   }) async {
     late List<ProjectInfo> projects;
@@ -198,30 +196,7 @@ abstract class ProjectCommands {
         ? projects
         : projects.where((final p) => p.project.archivedAt == null);
 
-    if (activeProjects.isEmpty) {
-      logger.info('No projects available.');
-      return;
-    }
-
-    final tablePrinter = TablePrinter();
-    tablePrinter.addHeaders([
-      'Project Id',
-      'Created At',
-      'Last Deploy Attempt',
-      if (showArchived) 'Deleted At',
-    ]);
-    for (final project in activeProjects.sortedBy(
-      (final p) => p.project.createdAt,
-    )) {
-      tablePrinter.addRow([
-        project.project.cloudProjectId,
-        project.project.createdAt.toString().substring(0, 19),
-        project.latestDeployAttemptTime?.timestamp?.toString().substring(0, 19),
-        if (showArchived)
-          project.project.archivedAt?.toString().substring(0, 19),
-      ]);
-    }
-    tablePrinter.writeLines(logger.line);
+    return activeProjects.sortedBy((final p) => p.project.createdAt).toList();
   }
 
   static Future<String?> linkProject(

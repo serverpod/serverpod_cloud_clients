@@ -1,14 +1,10 @@
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
-import 'package:serverpod_cloud_cli/util/common.dart';
-import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 
 abstract class UserAdminCommands {
-  static Future<void> listUsers(
+  static Future<List<Map<String, Object?>>> listUsersOperation(
     final Client cloudApiClient, {
-    required final CommandLogger logger,
-    final bool inUtc = false,
     final String? projectId,
     final UserAccountStatus? ofAccountStatus,
     final bool includeArchived = false,
@@ -29,34 +25,24 @@ abstract class UserAdminCommands {
               .where((final p) => p.$2 == 'PlanProduct')
               .map((final p) => p.$1);
           userPlanMap[user.email] = procuredPlans.join(', ');
-          break;
         case UserAccountStatus.invited:
           userPlanMap[user.email] = '';
-          break;
       }
     }
 
-    final timezoneName = inUtc ? 'UTC' : 'local';
-
-    final table = TablePrinter(
-      headers: [
-        'User',
-        'Account status',
-        'Created at ($timezoneName)',
-        'Archived at ($timezoneName)',
-        'Subscribed Plans',
-      ],
-      rows: users.map(
-        (final user) => [
-          user.email,
-          user.accountStatus.toString(),
-          user.createdAt.toTzString(inUtc, 19),
-          user.archivedAt?.toTzString(inUtc, 19),
-          userPlanMap[user.email] ?? '',
-        ],
-      ),
-    );
-    table.writeLines(logger.line);
+    return [
+      for (final user in users)
+        {
+          'email': user.email,
+          'accountStatus': user.accountStatus,
+          'createdAt': user.createdAt,
+          'archivedAt': user.archivedAt,
+          'subscribedPlans': [
+            for (final plan in (userPlanMap[user.email] ?? '').split(', '))
+              if (plan.isNotEmpty) plan,
+          ],
+        },
+    ];
   }
 
   static Future<void> inviteUser(

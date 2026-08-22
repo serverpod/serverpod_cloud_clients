@@ -2,6 +2,8 @@ import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/commands/user/user.dart';
+import 'package:serverpod_cloud_cli/commands/user/user_ui.dart';
+import 'package:serverpod_cloud_cli/util/output/command_output.dart';
 import 'package:serverpod_cloud_cli/commands/project/project.dart';
 
 import 'categories.dart';
@@ -24,7 +26,8 @@ class CloudProjectUserCommand extends CloudCliCommand {
 }
 
 enum ProjectUserListOption<V> implements OptionDefinition<V> {
-  projectId(ProjectIdOption());
+  projectId(ProjectIdOption()),
+  format(FormatOption());
 
   const ProjectUserListOption(this.option);
 
@@ -57,11 +60,15 @@ Examples
     final Configuration<ProjectUserListOption> commandConfig,
   ) async {
     final projectId = commandConfig.value(ProjectUserListOption.projectId);
+    final format = commandConfig.value(ProjectUserListOption.format);
 
-    await UserCommands.listUsers(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      projectId: projectId,
+    final output = CommandOutput(format: format, logger: logger);
+    await output.render(
+      operation: () => UserCommands.listUsersOperation(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+      ),
+      ui: ProjectUserListUi(projectId: projectId),
     );
   }
 }

@@ -1,11 +1,14 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
+import 'package:yaml_codec/yaml_codec.dart';
 
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/project_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
+import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import '../../../test_utils/command_logger_matchers.dart';
@@ -160,6 +163,100 @@ void main() {
             ),
           ]),
         );
+      });
+    });
+
+    group('when executing project list with --format json', () {
+      late Future commandResult;
+      setUp(() async {
+        commandResult = cli.run(['project', 'list', '--format', 'json']);
+      });
+
+      test('then completes successfully', () async {
+        await expectLater(commandResult, completes);
+      });
+
+      test('then emits a JSON array of projects', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        final payload = jsonDecode(logger.rawCalls.single.content) as List;
+        expect(payload, hasLength(2));
+        expect(
+          ((payload[0] as Map)['project'] as Map)['cloudProjectId'],
+          'projectId3',
+        );
+        expect(
+          ((payload[0] as Map)['latestDeployAttemptTime'] as Map)['timestamp'],
+          isNull,
+        );
+        expect(
+          ((payload[1] as Map)['project'] as Map)['cloudProjectId'],
+          'projectId',
+        );
+        expect(
+          ((payload[1] as Map)['latestDeployAttemptTime'] as Map)['timestamp'],
+          DateTime.parse('2024-12-31 10:20:30').toUtc().toIso8601String(),
+        );
+      });
+    });
+
+    group('when executing project list with --format yaml', () {
+      late Future commandResult;
+      setUp(() async {
+        commandResult = cli.run(['project', 'list', '--format', 'yaml']);
+      });
+
+      test('then emits YAML of the same projects', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        final payload = yamlDecode(logger.rawCalls.single.content) as List;
+        expect(payload, hasLength(2));
+        expect(
+          ((payload[0] as Map)['project'] as Map)['cloudProjectId'],
+          'projectId3',
+        );
+        expect(
+          ((payload[0] as Map)['latestDeployAttemptTime'] as Map)['timestamp'],
+          isNull,
+        );
+        expect(
+          ((payload[1] as Map)['project'] as Map)['cloudProjectId'],
+          'projectId',
+        );
+      });
+    });
+  });
+
+  group('Given authenticated with no projects', () {
+    setUpAll(() async {
+      when(
+        () => client.projects.listProjectsInfo(
+          includeLatestDeployAttemptTime: any(
+            named: 'includeLatestDeployAttemptTime',
+            that: isTrue,
+          ),
+        ),
+      ).thenAnswer((final _) async => <ProjectInfo>[]);
+    });
+
+    tearDownAll(() {
+      reset(client.projects);
+    });
+
+    group('when executing project list with --format json', () {
+      late Future commandResult;
+      setUp(() async {
+        commandResult = cli.run(['project', 'list', '--format', 'json']);
+      });
+
+      test('then emits an empty JSON array', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        expect(logger.infoCalls, isEmpty);
+        expect(jsonDecode(logger.rawCalls.single.content), <Object?>[]);
       });
     });
   });

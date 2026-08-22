@@ -6,8 +6,10 @@ import 'package:serverpod_cloud_cli/command_runner/commands/deploy_command.dart'
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/commands/status/status.dart';
+import 'package:serverpod_cloud_cli/commands/status/status_ui.dart';
 import 'package:serverpod_cloud_cli/commands/logs/logs.dart';
-import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
+import 'package:serverpod_cloud_cli/util/output/command_output.dart';
+import 'package:serverpod_cloud_cli/util/output/command_ui.dart';
 
 import 'categories.dart';
 
@@ -161,7 +163,8 @@ abstract final class _DeploymentsListOptions {
 enum DeploymentsListOption<V> implements OptionDefinition<V> {
   projectId(_DeploymentsListOptions.projectId),
   limit(_DeploymentsListOptions.limit),
-  utc(_DeploymentsListOptions.utc);
+  utc(_DeploymentsListOptions.utc),
+  format(FormatOption());
 
   const DeploymentsListOption(this.option);
 
@@ -202,14 +205,17 @@ Examples
     final projectId = commandConfig.value(DeploymentsListOption.projectId);
     final limit = commandConfig.value(DeploymentsListOption.limit);
     final inUtc = commandConfig.value(DeploymentsListOption.utc);
+    final format = commandConfig.value(DeploymentsListOption.format);
 
     try {
-      await StatusCommands.listDeployAttempts(
-        runner.serviceProvider.cloudApiClient,
-        logger: logger,
-        cloudCapsuleId: projectId,
-        limit: limit,
-        inUtc: inUtc,
+      final output = CommandOutput(format: format, logger: logger);
+      await output.render(
+        operation: () => StatusCommands.listDeployAttemptsOperation(
+          runner.serviceProvider.cloudApiClient,
+          cloudCapsuleId: projectId,
+          limit: limit,
+        ),
+        ui: DeploymentListUi(utc: inUtc),
       );
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Failed to get deployments list');
@@ -467,7 +473,8 @@ $_buildSecretsExplanation""";
 }
 
 enum BuildSecretsListCommandConfig<V> implements OptionDefinition<V> {
-  projectId(_BuildSecretCommandConfig.projectId);
+  projectId(_BuildSecretCommandConfig.projectId),
+  format(FormatOption());
 
   const BuildSecretsListCommandConfig(this.option);
 
@@ -495,6 +502,7 @@ $_buildSecretsExplanation""";
     final projectId = commandConfig.value(
       BuildSecretsListCommandConfig.projectId,
     );
+    final format = commandConfig.value(BuildSecretsListCommandConfig.format);
 
     final apiCloudClient = runner.serviceProvider.cloudApiClient;
 
@@ -505,14 +513,11 @@ $_buildSecretsExplanation""";
       throw FailureException.nested(e, s, 'Failed to list build secrets');
     }
 
-    final secretsPrinter = TablePrinter();
-    secretsPrinter.addHeaders(['Secret name']);
-
-    for (var secret in secrets) {
-      secretsPrinter.addRow([secret]);
-    }
-
-    secretsPrinter.writeLines(logger.line);
+    final output = CommandOutput(format: format, logger: logger);
+    await output.render(
+      operation: () async => secrets,
+      ui: const StringColumnListUi(heading: 'Secret name'),
+    );
   }
 }
 

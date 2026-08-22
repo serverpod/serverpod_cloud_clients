@@ -5,10 +5,10 @@ import 'package:async/async.dart' show StreamGroup;
 import 'package:collection/collection.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
+import 'package:serverpod_cloud_cli/constants.dart' show numTimeStampChars;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
 import 'package:serverpod_cloud_cli/util/inline_tui/inline_tui.dart';
-import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:serverpod_cloud_cli/util/stream_util.dart';
 
 /// Status subcommand implementations
@@ -16,28 +16,17 @@ abstract class StatusCommands {
   static const progressMessagePadLength = 40;
 
   /// Subcommand to list the most recent deploy attempts.
-  static Future<void> listDeployAttempts(
+  static Future<List<Map<String, Object?>>> listDeployAttemptsOperation(
     final Client cloudApiClient, {
-    required final CommandLogger logger,
     required final String cloudCapsuleId,
     required final int limit,
-    final bool inUtc = false,
   }) async {
     final statuses = await cloudApiClient.status.getDeployAttempts(
       cloudCapsuleId: cloudCapsuleId,
       limit: limit,
     );
 
-    if (statuses.isEmpty) {
-      logger.terminalCommand(
-        message: 'No deployment status found. Run this command to deploy:',
-        'scloud deploy',
-      );
-      return;
-    }
-
-    final table = DeployStatusTable(inUtc: inUtc)..addRows(statuses);
-    table.writeLines(logger.line);
+    return deploymentListRows(statuses);
   }
 
   /// Subcommand to show the status of a deployment attempt.
@@ -66,7 +55,7 @@ abstract class StatusCommands {
 
     final List<String> rows = [
       'Status of $cloudCapsuleId deployment $attemptId'
-          ', started at ${stages.first.startedAt?.toTzString(inUtc, _numTimeStampChars)}:',
+          ', started at ${stages.first.startedAt?.toTzString(inUtc, numTimeStampChars)}:',
       '',
       ...displayStages.map(_generateStatusLine),
     ];
@@ -277,42 +266,21 @@ abstract class StatusCommands {
   }
 }
 
-const _numTimeStampChars = 19;
-
-class DeployStatusTable extends TablePrinter {
-  final bool inUtc;
-
-  DeployStatusTable({this.inUtc = false})
-    : super(
-        headers: [
-          '#',
-          'Project',
-          'Deploy Id',
-          'Status',
-          'Started',
-          'Finished',
-          'Info',
-        ],
-      );
-
-  void addRows(final Iterable<DeployAttempt> attempts) {
-    attempts.mapIndexed(_tableRowFromDeployAttempt).forEach(addRow);
-  }
-
-  List<String?> _tableRowFromDeployAttempt(
-    final int index,
-    final DeployAttempt attempt,
-  ) {
-    return [
-      index.toString(),
-      attempt.cloudCapsuleId,
-      attempt.attemptId,
-      attempt.status?.name.toUpperCase(),
-      attempt.startedAt?.toTzString(inUtc, _numTimeStampChars),
-      attempt.endedAt?.toTzString(inUtc, _numTimeStampChars),
-      attempt.statusInfo,
-    ];
-  }
+List<Map<String, Object?>> deploymentListRows(
+  final List<DeployAttempt> statuses,
+) {
+  return [
+    for (final (index, attempt) in statuses.indexed)
+      {
+        'index': index,
+        'projectId': attempt.cloudCapsuleId,
+        'deployId': attempt.attemptId.toString(),
+        'status': attempt.status?.name.toUpperCase(),
+        'startedAt': attempt.startedAt,
+        'finishedAt': attempt.endedAt,
+        'info': attempt.statusInfo,
+      },
+  ];
 }
 
 extension FinalDeployProgressStatus on DeployProgressStatus {

@@ -3,6 +3,8 @@ import 'package:ground_control_client/ground_control_client.dart' show Client;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/commands/auth/auth_login.dart';
+import 'package:serverpod_cloud_cli/commands/auth/auth_ui.dart';
+import 'package:serverpod_cloud_cli/util/output/command_output.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
@@ -234,7 +236,8 @@ See also "scloud auth list", to list the current authentication sessions.''';
 }
 
 enum ListAuthSessionsOption<V> implements OptionDefinition<V> {
-  utc(UtcOption());
+  utc(UtcOption()),
+  format(FormatOption());
 
   const ListAuthSessionsOption(this.option);
 
@@ -260,8 +263,13 @@ class ListAuthSessionsCommand extends CloudCliCommand<ListAuthSessionsOption> {
     final Configuration<ListAuthSessionsOption> commandConfig,
   ) async {
     final inUtc = commandConfig.value(ListAuthSessionsOption.utc);
-    final cloudClient = runner.serviceProvider.cloudApiClient;
-    await Auth.listAuthSessions(cloudClient, logger: logger, inUtc: inUtc);
+    final format = commandConfig.value(ListAuthSessionsOption.format);
+    final output = CommandOutput(format: format, logger: logger);
+    await output.render(
+      operation: () =>
+          Auth.listAuthSessionsOperation(runner.serviceProvider.cloudApiClient),
+      ui: AuthSessionListUi(utc: inUtc),
+    );
   }
 }
 

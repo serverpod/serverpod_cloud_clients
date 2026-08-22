@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:args/command_runner.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test/test.dart';
+import 'package:yaml_codec/yaml_codec.dart';
 
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:ground_control_client/ground_control_client.dart';
@@ -682,6 +684,68 @@ void main() {
             equalsLineCall(line: 'name | value'),
           ]),
         );
+      });
+    });
+
+    group('when executing variable list with --format json', () {
+      late Future commandResult;
+
+      setUp(() async {
+        when(() => client.environmentVariables.list(any())).thenAnswer(
+          (final invocation) async => Future.value([
+            EnvironmentVariable(name: 'name', value: 'value', capsuleId: 0),
+          ]),
+        );
+
+        commandResult = cli.run([
+          'variable',
+          'list',
+          '--project',
+          projectId,
+          '--format',
+          'json',
+        ]);
+      });
+
+      test('then emits name and value objects', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        final payload = jsonDecode(logger.rawCalls.single.content) as List;
+        expect(payload, hasLength(1));
+        expect((payload.single as Map)['name'], 'name');
+        expect((payload.single as Map)['value'], 'value');
+      });
+    });
+
+    group('when executing variable list with --format yaml', () {
+      late Future commandResult;
+
+      setUp(() async {
+        when(() => client.environmentVariables.list(any())).thenAnswer(
+          (final invocation) async => Future.value([
+            EnvironmentVariable(name: 'name', value: 'value', capsuleId: 0),
+          ]),
+        );
+
+        commandResult = cli.run([
+          'variable',
+          'list',
+          '--project',
+          projectId,
+          '--format',
+          'yaml',
+        ]);
+      });
+
+      test('then emits name and value objects', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        final payload = yamlDecode(logger.rawCalls.single.content) as List;
+        expect(payload, hasLength(1));
+        expect((payload.single as Map)['name'], 'name');
+        expect((payload.single as Map)['value'], 'value');
       });
     });
   });

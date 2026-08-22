@@ -1,9 +1,11 @@
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/commands/admin/product_admin.dart';
+import 'package:serverpod_cloud_cli/commands/admin/product_admin_ui.dart';
 import 'package:uuid/uuid_value.dart';
 
 import '../../helpers/command_options.dart';
+import 'package:serverpod_cloud_cli/util/output/command_output.dart';
 
 class AdminProductCommand extends CloudCliCommand {
   @override
@@ -20,7 +22,8 @@ class AdminProductCommand extends CloudCliCommand {
 }
 
 enum AdminListProcuredOption<V> implements OptionDefinition<V> {
-  user(UserEmailOption(argPos: 0, mandatory: true));
+  user(UserEmailOption(argPos: 0, mandatory: true)),
+  format(FormatOption());
 
   const AdminListProcuredOption(this.option);
 
@@ -44,11 +47,15 @@ class AdminListProcuredCommand
     final Configuration<AdminListProcuredOption> commandConfig,
   ) async {
     final userEmail = commandConfig.value(AdminListProcuredOption.user);
+    final format = commandConfig.value(AdminListProcuredOption.format);
 
-    await ProductAdminCommands.listProcuredProducts(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      userEmail: userEmail,
+    final output = CommandOutput(format: format, logger: logger);
+    await output.render(
+      operation: () => ProductAdminCommands.listProcuredProductsOperation(
+        runner.serviceProvider.cloudApiClient,
+        userEmail: userEmail,
+      ),
+      ui: ProductListUi(),
     );
   }
 }
