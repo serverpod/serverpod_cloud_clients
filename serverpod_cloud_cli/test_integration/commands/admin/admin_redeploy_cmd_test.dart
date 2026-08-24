@@ -5,7 +5,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/admin/admin_redeploy_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/admin/redeploy/admin_redeploy_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 

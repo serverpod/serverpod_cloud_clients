@@ -1,0 +1,225 @@
+import 'package:config/config.dart';
+import 'package:path/path.dart' as p;
+
+import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/project/project_ops.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/project/project_ui.dart'
+    show ProjectListUi;
+import 'package:serverpod_cloud_cli/util/output/command_output.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/user/user_command.dart';
+import 'package:serverpod_cloud_cli/constants.dart';
+
+import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
+
+class CloudProjectCommand extends CloudCliCommand {
+  @override
+  final name = 'project';
+
+  @override
+  final description = 'Manage Serverpod Cloud projects.';
+
+  @override
+  String get category => CommandCategories.manage;
+
+  CloudProjectCommand({required super.logger}) {
+    // Subcommands
+    addSubcommand(CloudProjectCreateCommand(logger: logger));
+    addSubcommand(CloudProjectDeleteCommand(logger: logger));
+    addSubcommand(CloudProjectListCommand(logger: logger));
+    addSubcommand(CloudProjectLinkCommand(logger: logger));
+    addSubcommand(CloudProjectUserCommand(logger: logger));
+  }
+}
+
+enum ProjectCreateOption<V> implements OptionDefinition<V> {
+  projectId(ProjectIdOption.argsOnly(asFirstArg: true)),
+  plan(
+    EnumOption<PlanProfile>(
+      argName: 'plan',
+      helpText: 'Selects the plan to use.',
+      enumParser: EnumParser(PlanProfile.values),
+    ),
+  ),
+  enableDb(
+    FlagOption(
+      argName: 'enable-db',
+      helpText: 'Flag to enable the database for the project.',
+      mandatory: true,
+    ),
+  );
+
+  const ProjectCreateOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
+  @override
+  final name = 'create';
+
+  @override
+  final description = 'Create a Serverpod Cloud project.';
+
+  CloudProjectCreateCommand({required super.logger})
+    : super(options: ProjectCreateOption.values);
+
+  @override
+  Future<void> runWithConfig(final Configuration commandConfig) async {
+    final projectId = commandConfig.value(ProjectCreateOption.projectId);
+    final plan = commandConfig.optionalValue(ProjectCreateOption.plan);
+    final enableDb = commandConfig.value(ProjectCreateOption.enableDb);
+
+    await ProjectCommands.createProject(
+      runner.serviceProvider.cloudApiClient,
+      logger: logger,
+      projectId: projectId,
+      plan: plan,
+      enableDb: enableDb,
+    );
+  }
+}
+
+enum ProjectDeleteOption<V> implements OptionDefinition<V> {
+  projectId(ProjectIdOption.argsOnly(asFirstArg: true));
+
+  const ProjectDeleteOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class CloudProjectDeleteCommand extends CloudCliCommand {
+  @override
+  final name = 'delete';
+
+  @override
+  final description = 'Delete a Serverpod Cloud project.';
+
+  CloudProjectDeleteCommand({required super.logger})
+    : super(options: ProjectDeleteOption.values);
+
+  @override
+  Future<void> runWithConfig(final Configuration commandConfig) async {
+    final projectId = commandConfig.value(ProjectDeleteOption.projectId);
+
+    await ProjectCommands.deleteProject(
+      runner.serviceProvider.cloudApiClient,
+      logger: logger,
+      projectId: projectId,
+    );
+  }
+}
+
+enum ProjectListCommandOption<V> implements OptionDefinition<V> {
+  all(
+    FlagOption(
+      argName: 'all',
+      helpText: 'Include deleted projects.',
+      defaultsTo: false,
+      negatable: false,
+    ),
+  ),
+  format(FormatOption());
+
+  const ProjectListCommandOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class CloudProjectListCommand
+    extends CloudCliCommand<ProjectListCommandOption> {
+  @override
+  final name = 'list';
+
+  @override
+  final description = 'List the Serverpod Cloud projects.';
+
+  @override
+  final bool takesArguments = false;
+
+  CloudProjectListCommand({required super.logger})
+    : super(options: ProjectListCommandOption.values);
+
+  @override
+  Future<void> runWithConfig(
+    final Configuration<ProjectListCommandOption> commandConfig,
+  ) async {
+    final showArchived = commandConfig.value(ProjectListCommandOption.all);
+    final format = commandConfig.value(ProjectListCommandOption.format);
+
+    final output = CommandOutput(format: format, logger: logger);
+
+    await output.render(
+      operation: () => ProjectCommands.listProjectsOperation(
+        runner.serviceProvider.cloudApiClient,
+        showArchived: showArchived,
+      ),
+      ui: ProjectListUi(utc: false, showArchived: showArchived),
+    );
+  }
+}
+
+enum ProjectLinkCommandOption<V> implements OptionDefinition<V> {
+  projectId(ProjectIdOption.argsOnly(asFirstArg: true)),
+  dartVersion(DartSdkVersionOption());
+
+  const ProjectLinkCommandOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class CloudProjectLinkCommand
+    extends CloudCliCommand<ProjectLinkCommandOption> {
+  @override
+  String get description =>
+      'Link your local project to an existing Serverpod Cloud project.\n'
+      '\n'
+      'This command creates or updates the project configuration files in your local '
+      'codebase to connect it to an existing Serverpod Cloud project. It will:\n'
+      '  - Create or update the scloud.yaml configuration file with the project ID\n'
+      '  - Create a .scloudignore file if it does not exist\n'
+      '  - Update .gitignore to exclude the .scloud/ directory (if in a workspace)\n'
+      '\n'
+      'The scloud.yaml file contains the project ID and is used by other scloud commands '
+      'to identify which Serverpod Cloud project to use. This file can be safely '
+      'committed to version control as it only contains the project identifier, not '
+      'sensitive credentials.';
+
+  @override
+  String get name => 'link';
+
+  CloudProjectLinkCommand({required super.logger})
+    : super(options: ProjectLinkCommandOption.values);
+
+  @override
+  Future<void> runWithConfig(
+    final Configuration<ProjectLinkCommandOption> commandConfig,
+  ) async {
+    final projectId = commandConfig.value(ProjectLinkCommandOption.projectId);
+    final dartVersionOverride = commandConfig.optionalValue(
+      ProjectLinkCommandOption.dartVersion,
+    );
+    final projectDirectory = runner.verifiedProjectDirectory();
+    final configFilePath =
+        globalConfiguration.projectConfigFile?.path ??
+        p.join(
+          projectDirectory.path,
+          ProjectConfigFileConstants.defaultFileName,
+        );
+
+    logger.debug('Project directory is: ${projectDirectory.path}');
+
+    await ProjectCommands.linkProject(
+      runner.serviceProvider.cloudApiClient,
+      logger: logger,
+      projectId: projectId,
+      projectDirectory: projectDirectory.path,
+      configFilePath: configFilePath,
+      dartVersionOverride: dartVersionOverride,
+    );
+  }
+}

@@ -1,11 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
+import 'package:yaml_codec/yaml_codec.dart';
 
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/admin/admin_plan_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/admin/plan/admin_plan_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 
 import '../../../test_utils/command_logger_matchers.dart';
@@ -69,6 +71,48 @@ void main() {
             equalsLineCall(line: 'plan-beta       '),
           ]),
         );
+      });
+    });
+
+    group('when executing admin plan list with --format json', () {
+      late Future commandResult;
+      setUp(() async {
+        when(
+          () => client.adminUpdatePlan.listOrbPlans(),
+        ).thenAnswer((final invocation) async => ['plan-alpha', 'plan-beta']);
+
+        commandResult = cli.run(['admin', 'plan', 'list', '--format', 'json']);
+      });
+
+      test('then emits a JSON list of plan IDs', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        expect(jsonDecode(logger.rawCalls.single.content), [
+          'plan-alpha',
+          'plan-beta',
+        ]);
+      });
+    });
+
+    group('when executing admin plan list with --format yaml', () {
+      late Future commandResult;
+      setUp(() async {
+        when(
+          () => client.adminUpdatePlan.listOrbPlans(),
+        ).thenAnswer((final invocation) async => ['plan-alpha', 'plan-beta']);
+
+        commandResult = cli.run(['admin', 'plan', 'list', '--format', 'yaml']);
+      });
+
+      test('then emits a YAML list of plan IDs', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        expect(yamlDecode(logger.rawCalls.single.content), [
+          'plan-alpha',
+          'plan-beta',
+        ]);
       });
     });
 

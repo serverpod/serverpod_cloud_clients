@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:serverpod_cloud_cli/commands/deploy/script_runner.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/deploy/script_runner.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:test/test.dart';
 

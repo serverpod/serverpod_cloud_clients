@@ -1,0 +1,226 @@
+import 'package:config/config.dart';
+import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/admin/product/product_admin_ops.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/admin/product/product_admin_ui.dart';
+import 'package:uuid/uuid_value.dart';
+
+import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
+import 'package:serverpod_cloud_cli/util/output/command_output.dart';
+
+class AdminProductCommand extends CloudCliCommand {
+  @override
+  final name = 'product';
+
+  @override
+  final description = 'Product procurement administration.';
+
+  AdminProductCommand({required super.logger}) {
+    addSubcommand(AdminListProcuredCommand(logger: logger));
+    addSubcommand(AdminProcurePlanCommand(logger: logger));
+    addSubcommand(AdminCancelPlanCommand(logger: logger));
+  }
+}
+
+enum AdminListProcuredOption<V> implements OptionDefinition<V> {
+  user(UserEmailOption(argPos: 0, mandatory: true)),
+  format(FormatOption());
+
+  const AdminListProcuredOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class AdminListProcuredCommand
+    extends CloudCliCommand<AdminListProcuredOption> {
+  @override
+  final name = 'list-procured';
+
+  @override
+  final description = "List an owner's procured products.";
+
+  AdminListProcuredCommand({required super.logger})
+    : super(options: AdminListProcuredOption.values);
+
+  @override
+  Future<void> runWithConfig(
+    final Configuration<AdminListProcuredOption> commandConfig,
+  ) async {
+    final userEmail = commandConfig.value(AdminListProcuredOption.user);
+    final format = commandConfig.value(AdminListProcuredOption.format);
+
+    final output = CommandOutput(format: format, logger: logger);
+    await output.render(
+      operation: () => ProductAdminCommands.listProcuredProductsOperation(
+        runner.serviceProvider.cloudApiClient,
+        userEmail: userEmail,
+      ),
+      ui: ProductListUi(),
+    );
+  }
+}
+
+enum AdminProcurePlanOption<V> implements OptionDefinition<V> {
+  user(UserEmailOption(argPos: 0, mandatory: true)),
+  productName(
+    StringOption(
+      argName: 'name',
+      argAbbrev: 'n',
+      argPos: 1,
+      helpText:
+          'The name of the plan to procure.'
+          ' Can be passed as the second argument.',
+      mandatory: true,
+    ),
+  ),
+  productVersion(
+    IntOption(
+      argName: 'version',
+      argAbbrev: 'v',
+      argPos: 2,
+      helpText:
+          'The plan version (latest if unspecified).'
+          ' Can be passed as the third argument.',
+      min: 0,
+    ),
+  ),
+  trialPeriod(
+    IntOption(
+      argName: 'trial-period',
+      helpText:
+          'Override the default trial period of the plan, in number of days.',
+      min: 0,
+    ),
+  ),
+  overrideChecks(
+    FlagOption(
+      argName: 'override',
+      helpText: 'Override the product availability checks.',
+      negatable: false,
+      defaultsTo: false,
+    ),
+  );
+
+  const AdminProcurePlanOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class AdminProcurePlanCommand extends CloudCliCommand<AdminProcurePlanOption> {
+  @override
+  final name = 'procure-plan';
+
+  @override
+  final description =
+      'Procure a plan for a user.\n'
+      'By specifying the override flag, the plan is procured '
+      'even if locked or the owner lacks allowance.';
+
+  AdminProcurePlanCommand({required super.logger})
+    : super(options: AdminProcurePlanOption.values);
+
+  @override
+  Future<void> runWithConfig(
+    final Configuration<AdminProcurePlanOption> commandConfig,
+  ) async {
+    final userEmail = commandConfig.value(AdminProcurePlanOption.user);
+    final productName = commandConfig.value(AdminProcurePlanOption.productName);
+    final ver = commandConfig.optionalValue(
+      AdminProcurePlanOption.productVersion,
+    );
+    final trialPeriod = commandConfig.optionalValue(
+      AdminProcurePlanOption.trialPeriod,
+    );
+    final override = commandConfig.value(AdminProcurePlanOption.overrideChecks);
+
+    await ProductAdminCommands.procurePlan(
+      runner.serviceProvider.cloudApiClient,
+      logger: logger,
+      userEmail: userEmail,
+      planName: productName,
+      planVersion: ver,
+      trialPeriodOverride: trialPeriod,
+      overrideChecks: override,
+    );
+  }
+}
+
+enum AdminCancelPlanOption<V> implements OptionDefinition<V> {
+  user(UserEmailOption(argPos: 0, mandatory: true)),
+  cloudProjectId(
+    StringOption(
+      argName: 'project',
+      argAbbrev: 'p',
+      argPos: 1,
+      helpText: 'The id of the cloud project whose subscription to cancel.',
+      group: _subscriptionGroup,
+    ),
+  ),
+  subscriptionId(
+    StringOption(
+      argName: 'subscription-id',
+      helpText: 'The id of the subscription to cancel.',
+      group: _subscriptionGroup,
+      customValidator: UuidValue.withValidation,
+    ),
+  ),
+  terminateImmediately(
+    FlagOption(
+      argName: 'immediately',
+      helpText: 'Terminate the subscription immediately.',
+      negatable: false,
+      defaultsTo: false,
+    ),
+  );
+
+  static const _subscriptionGroup = MutuallyExclusive(
+    'Subscription',
+    mode: MutuallyExclusiveMode.mandatory,
+  );
+
+  const AdminCancelPlanOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class AdminCancelPlanCommand extends CloudCliCommand<AdminCancelPlanOption> {
+  @override
+  final name = 'cancel-plan';
+
+  @override
+  final description = "Cancels a user's subscription.\n";
+
+  AdminCancelPlanCommand({required super.logger})
+    : super(options: AdminCancelPlanOption.values);
+
+  @override
+  Future<void> runWithConfig(
+    final Configuration<AdminCancelPlanOption> commandConfig,
+  ) async {
+    final userEmail = commandConfig.value(AdminCancelPlanOption.user);
+    final subscriptionId = commandConfig.optionalValue(
+      AdminCancelPlanOption.subscriptionId,
+    );
+    final cloudProjectId = commandConfig.optionalValue(
+      AdminCancelPlanOption.cloudProjectId,
+    );
+    final terminateImmediately = commandConfig.value(
+      AdminCancelPlanOption.terminateImmediately,
+    );
+
+    final subscriptionUuid = subscriptionId != null
+        ? UuidValue.withValidation(subscriptionId)
+        : null;
+
+    await ProductAdminCommands.cancelPlan(
+      runner.serviceProvider.cloudApiClient,
+      logger: logger,
+      userEmail: userEmail,
+      subscriptionId: subscriptionUuid,
+      cloudProjectId: cloudProjectId,
+      terminateImmediately: terminateImmediately,
+    );
+  }
+}

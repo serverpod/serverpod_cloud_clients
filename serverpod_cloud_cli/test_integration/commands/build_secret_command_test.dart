@@ -1,15 +1,17 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:args/command_runner.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test/test.dart';
+import 'package:yaml_codec/yaml_codec.dart';
 
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/deployments_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployments_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
@@ -555,6 +557,68 @@ void main() {
             equalsLineCall(line: 'SECRET_3   '),
           ]),
         );
+      });
+    });
+
+    group('when executing deployment build-secret list with --format json', () {
+      late Future commandResult;
+
+      setUp(() async {
+        when(() => client.secrets.listBuild(any())).thenAnswer(
+          (final _) async => Future.value(['SECRET_1', 'SECRET_2', 'SECRET_3']),
+        );
+
+        commandResult = cli.run([
+          'deployment',
+          'build-secret',
+          'list',
+          '--project',
+          projectId,
+          '--format',
+          'json',
+        ]);
+      });
+
+      test('then emits a JSON list of secret names', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        expect(jsonDecode(logger.rawCalls.single.content), [
+          'SECRET_1',
+          'SECRET_2',
+          'SECRET_3',
+        ]);
+      });
+    });
+
+    group('when executing deployment build-secret list with --format yaml', () {
+      late Future commandResult;
+
+      setUp(() async {
+        when(() => client.secrets.listBuild(any())).thenAnswer(
+          (final _) async => Future.value(['SECRET_1', 'SECRET_2', 'SECRET_3']),
+        );
+
+        commandResult = cli.run([
+          'deployment',
+          'build-secret',
+          'list',
+          '--project',
+          projectId,
+          '--format',
+          'yaml',
+        ]);
+      });
+
+      test('then emits a YAML list of secret names', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        expect(yamlDecode(logger.rawCalls.single.content), [
+          'SECRET_1',
+          'SECRET_2',
+          'SECRET_3',
+        ]);
       });
     });
   });

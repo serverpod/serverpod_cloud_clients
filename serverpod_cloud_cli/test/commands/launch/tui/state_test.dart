@@ -1,8 +1,8 @@
 import 'dart:io' show Directory;
 
-import 'package:serverpod_cloud_cli/commands/launch/launch.dart';
-import 'package:serverpod_cloud_cli/commands/launch/tui/config.dart';
-import 'package:serverpod_cloud_cli/commands/launch/tui/state.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/launch/launch.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/launch/tui/config.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/launch/tui/state.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:serverpod_tui/serverpod_tui.dart';
 import 'package:test/test.dart';

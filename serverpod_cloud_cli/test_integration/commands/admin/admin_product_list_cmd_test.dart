@@ -1,11 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/admin/admin_product_commands.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/admin/product/admin_product_commands.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:test/test.dart';
+import 'package:yaml_codec/yaml_codec.dart';
 
 import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/test_command_logger.dart';
@@ -73,6 +75,76 @@ void main() {
             equalsLineCall(line: 'test-plan2 | PlanProduct'),
           ]),
         );
+      });
+    });
+
+    group('when executing admin product list-procured with --format json', () {
+      late Future commandResult;
+      setUp(() async {
+        when(
+          () => client.adminProcurement.listProcuredProducts(
+            userEmail: any(named: 'userEmail'),
+          ),
+        ).thenAnswer(
+          (final invocation) async => Future.value([
+            ('test-plan', 'PlanProduct'),
+            ('test-plan2', 'PlanProduct'),
+          ]),
+        );
+
+        commandResult = cli.run([
+          'admin',
+          'product',
+          'list-procured',
+          'test@example.com',
+          '--format',
+          'json',
+        ]);
+      });
+
+      test('then emits product objects', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        expect(jsonDecode(logger.rawCalls.single.content), [
+          {'name': 'test-plan', 'type': 'PlanProduct'},
+          {'name': 'test-plan2', 'type': 'PlanProduct'},
+        ]);
+      });
+    });
+
+    group('when executing admin product list-procured with --format yaml', () {
+      late Future commandResult;
+      setUp(() async {
+        when(
+          () => client.adminProcurement.listProcuredProducts(
+            userEmail: any(named: 'userEmail'),
+          ),
+        ).thenAnswer(
+          (final invocation) async => Future.value([
+            ('test-plan', 'PlanProduct'),
+            ('test-plan2', 'PlanProduct'),
+          ]),
+        );
+
+        commandResult = cli.run([
+          'admin',
+          'product',
+          'list-procured',
+          'test@example.com',
+          '--format',
+          'yaml',
+        ]);
+      });
+
+      test('then emits product objects', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        expect(yamlDecode(logger.rawCalls.single.content), [
+          {'name': 'test-plan', 'type': 'PlanProduct'},
+          {'name': 'test-plan2', 'type': 'PlanProduct'},
+        ]);
       });
     });
   });

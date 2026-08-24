@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:args/command_runner.dart';
 import 'package:ground_control_client/ground_control_client.dart';
@@ -6,11 +7,12 @@ import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/variable_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/variable/variable_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
+import 'package:yaml_codec/yaml_codec.dart';
 
 import '../../test_utils/command_logger_matchers.dart';
 import '../../test_utils/test_command_logger.dart';
@@ -1108,6 +1110,92 @@ void main() {
           logger.lineCalls.map((final call) => call.line),
           isNot(contains(contains('SERVERPOD_PASSWORD_database'))),
         );
+      });
+    });
+
+    group('when executing variable list with --format json', () {
+      late Future commandResult;
+
+      setUp(() async {
+        when(() => client.environmentVariables.list(any())).thenAnswer(
+          (final _) async => [
+            EnvironmentVariable(name: 'zebra', value: 'one', capsuleId: 0),
+            EnvironmentVariable(name: 'alpha', value: 'two', capsuleId: 0),
+          ],
+        );
+        when(() => client.secrets.list(any())).thenAnswer(
+          (final _) async => [
+            'secret_z',
+            'SERVERPOD_PASSWORD_database',
+            'secret_a',
+          ],
+        );
+
+        commandResult = cli.run([
+          'variable',
+          'list',
+          '--project',
+          projectId,
+          '--format',
+          'json',
+        ]);
+      });
+
+      test('then emits a JSON list of variables', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        expect(jsonDecode(logger.rawCalls.single.content), [
+          {'name': 'zebra', 'value': 'one'},
+          {'name': 'alpha', 'value': 'two'},
+          {'name': 'secret_z', 'value': '••••••••'},
+          {'name': 'secret_a', 'value': '••••••••'},
+        ]);
+      });
+    });
+
+    group('when executing variable list with --format yaml', () {
+      late Future commandResult;
+
+      setUp(() async {
+        when(() => client.environmentVariables.list(any())).thenAnswer(
+          (final _) async => [
+            EnvironmentVariable(name: 'zebra', value: 'one', capsuleId: 0),
+            EnvironmentVariable(name: 'alpha', value: 'two', capsuleId: 0),
+          ],
+        );
+        when(() => client.secrets.list(any())).thenAnswer(
+          (final _) async => [
+            'secret_z',
+            'SERVERPOD_PASSWORD_database',
+            'secret_a',
+          ],
+        );
+
+        commandResult = cli.run([
+          'variable',
+          'list',
+          '--project',
+          projectId,
+          '--format',
+          'yaml',
+        ]);
+      });
+
+      test('then emits a YAML list of variables', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        final payload = yamlDecode(logger.rawCalls.single.content) as List;
+        expect(payload, hasLength(4));
+        expect((payload[0] as Map)['name'], 'zebra');
+        expect((payload[0] as Map)['value'], 'one');
+        expect((payload[1] as Map)['name'], 'alpha');
+        expect((payload[1] as Map)['value'], 'two');
+        expect((payload[2] as Map)['name'], 'secret_z');
+        expect((payload[2] as Map)['value'], '••••••••');
+        expect((payload[3] as Map)['name'], 'secret_a');
+        expect((payload[3] as Map)['value'], '••••••••');
       });
     });
   });
