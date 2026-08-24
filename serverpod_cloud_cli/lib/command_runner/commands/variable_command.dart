@@ -1,9 +1,7 @@
 import 'package:config/config.dart';
-import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
-import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
-import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
+import 'package:serverpod_cloud_cli/commands/variable/variable.dart';
 
 import 'categories.dart';
 
@@ -13,7 +11,7 @@ class CloudVariableCommand extends CloudCliCommand {
 
   @override
   final description =
-      'Manage Serverpod Cloud environment variables for a project.';
+      'Manage Serverpod Cloud environment variables and secrets for a project.';
 
   @override
   String get category => CommandCategories.control;
@@ -43,13 +41,22 @@ abstract final class VariableCommandConfig {
   static const valueFile = ValueFileOption(
     helpText: 'The name of the file with the environment variable value.',
   );
+
+  static const secret = FlagOption(
+    argName: 'secret',
+    helpText:
+        'Store the value as a secret. The value is encrypted and masked. '
+        'Without this flag the value is unmasked and visible.',
+    negatable: true,
+  );
 }
 
 enum SetVariableCommandConfig<V> implements OptionDefinition<V> {
   projectId(VariableCommandConfig.projectId),
   variableName(VariableCommandConfig.variableName),
   variableValue(VariableCommandConfig.variableValue),
-  valueFile(VariableCommandConfig.valueFile);
+  valueFile(VariableCommandConfig.valueFile),
+  secret(VariableCommandConfig.secret);
 
   const SetVariableCommandConfig(this.option);
 
@@ -79,7 +86,8 @@ enum ListVariableCommandConfig<V> implements OptionDefinition<V> {
 class CloudVariableSetCommand
     extends CloudCliCommand<SetVariableCommandConfig> {
   @override
-  String get description => 'Set an environment variable (create or update).';
+  String get description =>
+      'Set an environment variable or secret (create or update).';
 
   @override
   String get name => 'set';
@@ -91,6 +99,10 @@ Examples
   Set an environment variable called SERVICE_EMAIL to support@example.com.
   
     \$ scloud variable set SERVICE_EMAIL support@example.com
+
+  Set a secret environment variable. The value is encrypted and masked.
+  
+    \$ scloud variable set --secret API_KEY sk-...
 
   To set the variable from a file, use the --from-file option.
   The full content of the file will be used as the value.
@@ -113,45 +125,25 @@ Examples
       value: SetVariableCommandConfig.variableValue,
       valueFile: SetVariableCommandConfig.valueFile,
     );
+    final secretFlag = commandConfig.optionalValue(
+      SetVariableCommandConfig.secret,
+    );
 
-    final apiCloudClient = runner.serviceProvider.cloudApiClient;
-
-    try {
-      await apiCloudClient.environmentVariables.create(
-        variableName,
-        valueToSet,
-        projectId,
-      );
-    } on DuplicateEntryException {
-      try {
-        await apiCloudClient.environmentVariables.update(
-          name: variableName,
-          value: valueToSet,
-          cloudCapsuleId: projectId,
-        );
-      } on Exception catch (e, s) {
-        throw FailureException.nested(
-          e,
-          s,
-          'Failed to set the environment variable',
-        );
-      }
-    } on Exception catch (e, s) {
-      throw FailureException.nested(
-        e,
-        s,
-        'Failed to set the environment variable',
-      );
-    }
-
-    logger.success('Successfully set environment variable: $variableName.');
+    await VariableCommands.setVariable(
+      runner.serviceProvider.cloudApiClient,
+      logger: logger,
+      projectId: projectId,
+      name: variableName,
+      value: valueToSet,
+      secret: secretFlag,
+    );
   }
 }
 
 class CloudVariableUnsetCommand
     extends CloudCliCommand<UnsetVariableCommandConfig> {
   @override
-  String get description => 'Remove an environment variable.';
+  String get description => 'Remove an environment variable or secret.';
 
   @override
   String get name => 'unset';
@@ -177,38 +169,20 @@ Examples
       UnsetVariableCommandConfig.variableName,
     );
 
-    final shouldUnset = await logger.confirm(
-      'Are you sure you want to remove the environment variable "$variableName"?',
-      defaultValue: false,
+    await VariableCommands.unsetVariable(
+      runner.serviceProvider.cloudApiClient,
+      logger: logger,
+      projectId: projectId,
+      name: variableName,
     );
-
-    if (!shouldUnset) {
-      throw UserAbortException();
-    }
-
-    final apiCloudClient = runner.serviceProvider.cloudApiClient;
-
-    try {
-      await apiCloudClient.environmentVariables.delete(
-        name: variableName,
-        cloudCapsuleId: projectId,
-      );
-    } on Exception catch (e, s) {
-      throw FailureException.nested(
-        e,
-        s,
-        'Failed to remove the environment variable',
-      );
-    }
-
-    logger.success('Successfully removed environment variable: $variableName.');
   }
 }
 
 class CloudVariableListCommand
     extends CloudCliCommand<ListVariableCommandConfig> {
   @override
-  String get description => 'Lists all environment variables for the project.';
+  String get description =>
+      'Lists all environment variables and secrets for the project.';
 
   @override
   String get name => 'list';
@@ -222,27 +196,10 @@ class CloudVariableListCommand
   ) async {
     final projectId = commandConfig.value(ListVariableCommandConfig.projectId);
 
-    final apiCloudClient = runner.serviceProvider.cloudApiClient;
-
-    late List<EnvironmentVariable> environmentVariables;
-    try {
-      environmentVariables = await apiCloudClient.environmentVariables.list(
-        projectId,
-      );
-    } on Exception catch (e, s) {
-      throw FailureException.nested(
-        e,
-        s,
-        'Failed to list environment variables',
-      );
-    }
-
-    final tablePrinter = TablePrinter();
-    tablePrinter.addHeaders(['Name', 'Value']);
-    for (var variable in environmentVariables) {
-      tablePrinter.addRow([variable.name, variable.value]);
-    }
-
-    tablePrinter.writeLines(logger.line);
+    await VariableCommands.listVariables(
+      runner.serviceProvider.cloudApiClient,
+      logger: logger,
+      projectId: projectId,
+    );
   }
 }

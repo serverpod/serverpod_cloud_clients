@@ -26,12 +26,12 @@ abstract final class ScloudIgnore {
 # Ignoring all passwords, service passwords such as for the database are 
 # automatically managed by Serverpod Cloud.
 # If you need to configure custom api keys or other passwords, you can do so by
-# using the `scloud secret set <name> <value>` command.
+# using the `scloud password set <name> <value>` command.
 #
-# Secrets prefixed with SERVERPOD_PASSWORD_myKey are available in the session.
+# Passwords are prefixed with SERVERPOD_PASSWORD_ and available in the session.
 # session.serverpod.getPassword('myKey');
 #
-# Run `scloud secret --help` for more information.
+# Run `scloud password --help` for more information.
 config/passwords.yaml
 config/google_client_secret.json
 config/firebase_service_account_key.json

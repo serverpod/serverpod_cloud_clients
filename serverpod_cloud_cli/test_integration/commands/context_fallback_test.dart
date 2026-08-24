@@ -1,16 +1,15 @@
 import 'dart:async';
 
 import 'package:args/command_runner.dart';
+import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
-import 'package:test/test.dart';
-import 'package:test_descriptor/test_descriptor.dart' as d;
-
-import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/scloud_settings_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
+import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../../test_utils/test_command_logger.dart';
 
@@ -37,10 +36,14 @@ void main() {
     when(
       () => client.environmentVariables.list(any()),
     ).thenAnswer((final _) async => []);
+    when(
+      () => client.secrets.list(any()),
+    ).thenAnswer((final _) async => <String>[]);
   });
 
   tearDown(() async {
     reset(client.environmentVariables);
+    reset(client.secrets);
     logger.clear();
   });
 
