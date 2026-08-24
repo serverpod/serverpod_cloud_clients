@@ -7,7 +7,7 @@ import 'package:test/test.dart';
 
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/user_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/user/user_command.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 

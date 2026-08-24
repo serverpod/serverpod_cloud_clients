@@ -5,7 +5,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/admin/admin_users_commands.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/admin/users/admin_users_commands.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 
 import '../../../test_utils/command_logger_matchers.dart';

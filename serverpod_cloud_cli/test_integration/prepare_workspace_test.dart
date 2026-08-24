@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
-import 'package:serverpod_cloud_cli/commands/deploy/prepare_project_files.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/deploy/prepare_project_files.dart';
 import 'package:serverpod_cloud_cli/util/dart_version_util.dart'
     show SupportedDartSdkPolicy;
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';

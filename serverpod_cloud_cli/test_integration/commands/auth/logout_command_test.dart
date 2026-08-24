@@ -5,7 +5,7 @@ import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/auth_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/auth/auth_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_auth_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_user_data.dart';

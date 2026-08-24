@@ -3,7 +3,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
     show AuthSuccess, AuthStrategy;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/auth_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/auth/auth_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:test/test.dart';
 import 'package:uuid/uuid.dart';

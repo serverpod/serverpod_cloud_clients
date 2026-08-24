@@ -1,15 +1,17 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:config/config.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test/test.dart';
+import 'package:yaml_codec/yaml_codec.dart';
 
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/password_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/password/password_command.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 
@@ -308,14 +310,19 @@ void main() {
         });
 
         test('then throws ErrorExitException', () async {
-          await expectLater(
-            commandResult,
-            throwsA(
-              isA<ErrorExitException>().having(
-                (final e) => e.reason,
-                'reason',
-                contains('must be at least 20 characters'),
-              ),
+          await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+        });
+
+        test('then logs validation error', () async {
+          try {
+            await commandResult;
+          } catch (_) {}
+
+          expect(
+            logger.errorCalls.first,
+            equalsErrorCall(
+              message:
+                  'Password "serviceSecret": Password must be at least 20 characters long.',
             ),
           );
         });
@@ -363,17 +370,91 @@ void main() {
         });
 
         test('then throws ErrorExitException', () async {
-          await expectLater(
-            commandResult,
-            throwsA(
-              isA<ErrorExitException>().having(
-                (final e) => e.reason,
-                'reason',
-                contains('must be at least 10 characters'),
-              ),
+          await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+        });
+
+        test('then logs validation error', () async {
+          try {
+            await commandResult;
+          } catch (_) {}
+
+          expect(
+            logger.errorCalls.first,
+            equalsErrorCall(
+              message:
+                  'Password "jwtRefreshTokenHashPepper": Password must be at least 10 characters long.',
             ),
           );
         });
+      });
+    });
+
+    group('when executing password set with --format json', () {
+      late Future commandResult;
+
+      setUp(() async {
+        reset(client);
+        when(
+          () => client.secrets.upsert(
+            secrets: any(named: 'secrets'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenAnswer((final _) async => Future.value());
+
+        commandResult = cli.run([
+          'password',
+          'set',
+          'database',
+          'value',
+          '--project',
+          projectId,
+          '--format',
+          'json',
+        ]);
+      });
+
+      test('then emits a JSON object with the password name', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        expect(logger.successCalls, isEmpty);
+        expect(jsonDecode(logger.rawCalls.single.content), {
+          'name': 'database',
+        });
+      });
+    });
+
+    group('when executing password set with --format yaml', () {
+      late Future commandResult;
+
+      setUp(() async {
+        reset(client);
+        when(
+          () => client.secrets.upsert(
+            secrets: any(named: 'secrets'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenAnswer((final _) async => Future.value());
+
+        commandResult = cli.run([
+          'password',
+          'set',
+          'database',
+          'value',
+          '--project',
+          projectId,
+          '--format',
+          'yaml',
+        ]);
+      });
+
+      test('then emits a YAML object with the password name', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        expect(logger.successCalls, isEmpty);
+        final payload = yamlDecode(logger.rawCalls.single.content) as Map;
+        expect(payload['name'], 'database');
       });
     });
 
@@ -465,6 +546,75 @@ void main() {
 
           expect(logger.successCalls, isEmpty);
         });
+      });
+    });
+
+    group('when executing password unset with --format json', () {
+      late Future commandResult;
+
+      setUp(() async {
+        reset(client);
+        when(
+          () => client.secrets.delete(
+            key: any(named: 'key'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenAnswer((final _) async => Future.value());
+
+        logger.answerNextConfirmWith(true);
+        commandResult = cli.run([
+          'password',
+          'unset',
+          'database',
+          '--project',
+          projectId,
+          '--format',
+          'json',
+        ]);
+      });
+
+      test('then emits a JSON object with the password name', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        expect(logger.successCalls, isEmpty);
+        expect(jsonDecode(logger.rawCalls.single.content), {
+          'name': 'database',
+        });
+      });
+    });
+
+    group('when executing password unset with --format yaml', () {
+      late Future commandResult;
+
+      setUp(() async {
+        reset(client);
+        when(
+          () => client.secrets.delete(
+            key: any(named: 'key'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenAnswer((final _) async => Future.value());
+
+        logger.answerNextConfirmWith(true);
+        commandResult = cli.run([
+          'password',
+          'unset',
+          'database',
+          '--project',
+          projectId,
+          '--format',
+          'yaml',
+        ]);
+      });
+
+      test('then emits a YAML object with the password name', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        expect(logger.successCalls, isEmpty);
+        final payload = yamlDecode(logger.rawCalls.single.content) as Map;
+        expect(payload['name'], 'database');
       });
     });
 
@@ -597,15 +747,154 @@ void main() {
           await expectLater(commandResult, completes);
         });
 
-        test('then displays Custom section with empty message', () async {
+        test('then displays no passwords available', () async {
           await commandResult;
 
-          expect(logger.lineCalls, isNotEmpty);
-          final lines = logger.lineCalls.map((final c) => c.line).toList();
-
-          expect(lines, contains('Custom'));
-          expect(lines, contains('<no rows data>'));
+          expect(logger.lineCalls, isEmpty);
+          expect(
+            logger.infoCalls.single,
+            equalsInfoCall(message: 'No passwords available.'),
+          );
         });
+      });
+    });
+
+    group('when executing password list with --format json', () {
+      group('with user-defined and platform-managed passwords', () {
+        late Future commandResult;
+
+        setUp(() async {
+          when(() => client.secrets.list(any())).thenAnswer(
+            (final _) async => Future.value([
+              'SERVERPOD_PASSWORD_database',
+              'SERVERPOD_PASSWORD_serviceSecret',
+              'SERVERPOD_PASSWORD_customPassword',
+            ]),
+          );
+
+          when(() => client.secrets.listManaged(any())).thenAnswer(
+            (final _) async => Future.value([
+              'SERVERPOD_PASSWORD_database',
+              'SERVERPOD_PASSWORD_emailSecretHashPepper',
+            ]),
+          );
+
+          commandResult = cli.run([
+            'password',
+            'list',
+            '--project',
+            projectId,
+            '--format',
+            'json',
+          ]);
+        });
+
+        test('then emits a JSON list of passwords', () async {
+          await commandResult;
+
+          expect(logger.lineCalls, isEmpty);
+          final payload = jsonDecode(logger.rawCalls.single.content) as List;
+          expect(payload, hasLength(4));
+
+          final custom = payload[0] as Map;
+          expect(custom['name'], 'customPassword');
+          expect(custom['category'], 'custom');
+          expect(custom['status'], 'SET (User)');
+          expect(custom['isPlatformManaged'], isFalse);
+          expect(custom['isUserSet'], isTrue);
+
+          final database = payload[1] as Map;
+          expect(database['name'], 'database');
+          expect(database['category'], 'services');
+          expect(database['status'], 'SET (User)');
+          expect(database['isPlatformManaged'], isTrue);
+          expect(database['isUserSet'], isTrue);
+
+          final serviceSecret = payload[2] as Map;
+          expect(serviceSecret['name'], 'serviceSecret');
+          expect(serviceSecret['status'], 'SET (User)');
+
+          final authPepper = payload[3] as Map;
+          expect(authPepper['name'], 'emailSecretHashPepper');
+          expect(authPepper['category'], 'auth');
+          expect(authPepper['status'], 'AUTO (Platform)');
+          expect(authPepper['isPlatformManaged'], isTrue);
+          expect(authPepper['isUserSet'], isFalse);
+        });
+      });
+
+      group('with no passwords', () {
+        late Future commandResult;
+
+        setUp(() async {
+          when(
+            () => client.secrets.list(any()),
+          ).thenAnswer((final _) async => Future.value([]));
+          when(
+            () => client.secrets.listManaged(any()),
+          ).thenAnswer((final _) async => Future.value([]));
+
+          commandResult = cli.run([
+            'password',
+            'list',
+            '--project',
+            projectId,
+            '--format',
+            'json',
+          ]);
+        });
+
+        test('then emits an empty JSON array', () async {
+          await commandResult;
+
+          expect(logger.lineCalls, isEmpty);
+          expect(logger.infoCalls, isEmpty);
+          expect(jsonDecode(logger.rawCalls.single.content), <Object?>[]);
+        });
+      });
+    });
+
+    group('when executing password list with --format yaml', () {
+      late Future commandResult;
+
+      setUp(() async {
+        when(() => client.secrets.list(any())).thenAnswer(
+          (final _) async => Future.value([
+            'SERVERPOD_PASSWORD_database',
+            'SERVERPOD_PASSWORD_serviceSecret',
+            'SERVERPOD_PASSWORD_customPassword',
+          ]),
+        );
+
+        when(() => client.secrets.listManaged(any())).thenAnswer(
+          (final _) async => Future.value([
+            'SERVERPOD_PASSWORD_database',
+            'SERVERPOD_PASSWORD_emailSecretHashPepper',
+          ]),
+        );
+
+        commandResult = cli.run([
+          'password',
+          'list',
+          '--project',
+          projectId,
+          '--format',
+          'yaml',
+        ]);
+      });
+
+      test('then emits a YAML list of passwords', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        final payload = yamlDecode(logger.rawCalls.single.content) as List;
+        expect(payload, hasLength(4));
+        expect((payload[0] as Map)['name'], 'customPassword');
+        expect((payload[0] as Map)['category'], 'custom');
+        expect((payload[1] as Map)['name'], 'database');
+        expect((payload[1] as Map)['status'], 'SET (User)');
+        expect((payload[3] as Map)['name'], 'emailSecretHashPepper');
+        expect((payload[3] as Map)['status'], 'AUTO (Platform)');
       });
     });
   });

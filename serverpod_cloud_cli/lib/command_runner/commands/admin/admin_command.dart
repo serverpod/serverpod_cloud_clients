@@ -1,10 +1,10 @@
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 
-import 'admin_plan_command.dart';
-import 'admin_product_commands.dart';
-import 'admin_projects_commands.dart';
-import 'admin_redeploy_command.dart';
-import 'admin_users_commands.dart';
+import 'plan/admin_plan_command.dart';
+import 'product/admin_product_commands.dart';
+import 'projects/admin_projects_commands.dart';
+import 'redeploy/admin_redeploy_command.dart';
+import 'users/admin_users_commands.dart';
 
 /// The admin command is used internally for Serverpod Cloud administration.
 ///

@@ -5,7 +5,7 @@ import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:serverpod_cloud_cli/util/dart_version_util.dart';
 import 'package:test/test.dart';
 
-import 'package:serverpod_cloud_cli/commands/deploy/prepare_project_files.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/deploy/prepare_project_files.dart';
 
 import '../test_utils/project_factory.dart';
 

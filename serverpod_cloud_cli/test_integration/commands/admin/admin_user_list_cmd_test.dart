@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:ground_control_client/ground_control_client.dart'
     show UserAccountStatus;
@@ -6,9 +7,10 @@ import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
+import 'package:yaml_codec/yaml_codec.dart';
 
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/admin/admin_users_commands.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/admin/users/admin_users_commands.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 
 import '../../../test_utils/command_logger_matchers.dart';
@@ -103,6 +105,148 @@ void main() {
             ),
           ]),
         );
+      });
+    });
+
+    group('when executing admin list-users with --format json', () {
+      late Future commandResult;
+      setUp(() async {
+        when(
+          () => client.adminUsers.listUsers(
+            cloudProjectId: any(named: 'cloudProjectId'),
+            ofAccountStatus: any(named: 'ofAccountStatus'),
+            includeArchived: any(named: 'includeArchived'),
+          ),
+        ).thenAnswer(
+          (final invocation) async => Future.value([
+            UserBuilder()
+                .withEmail('test@example.com')
+                .withCreatedAt(DateTime.parse('2025-07-02T11:00:00'))
+                .withAccountStatus(UserAccountStatus.registered)
+                .build(),
+            UserBuilder()
+                .withEmail('test2@example.com')
+                .withCreatedAt(DateTime.parse('2025-07-02T12:00:00'))
+                .withAccountStatus(UserAccountStatus.invited)
+                .withArchivedAt(DateTime.parse('2025-07-02T12:10:00'))
+                .build(),
+          ]),
+        );
+        when(
+          () => client.adminProcurement.listProcuredProducts(
+            userEmail: any(named: 'userEmail'),
+          ),
+        ).thenAnswer(
+          (final invocation) async =>
+              Future.value([('test-plan', 'PlanProduct')]),
+        );
+
+        commandResult = cli.run([
+          'admin',
+          'list-users',
+          '--include-archived',
+          '--format',
+          'json',
+        ]);
+      });
+
+      test('then emits user objects', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        expect(jsonDecode(logger.rawCalls.single.content), [
+          {
+            'email': 'test@example.com',
+            'accountStatus': 'registered',
+            'createdAt': DateTime.parse(
+              '2025-07-02T11:00:00',
+            ).toUtc().toIso8601String(),
+            'archivedAt': null,
+            'subscribedPlans': ['test-plan'],
+          },
+          {
+            'email': 'test2@example.com',
+            'accountStatus': 'invited',
+            'createdAt': DateTime.parse(
+              '2025-07-02T12:00:00',
+            ).toUtc().toIso8601String(),
+            'archivedAt': DateTime.parse(
+              '2025-07-02T12:10:00',
+            ).toUtc().toIso8601String(),
+            'subscribedPlans': <Object?>[],
+          },
+        ]);
+      });
+    });
+
+    group('when executing admin list-users with --format yaml', () {
+      late Future commandResult;
+      setUp(() async {
+        when(
+          () => client.adminUsers.listUsers(
+            cloudProjectId: any(named: 'cloudProjectId'),
+            ofAccountStatus: any(named: 'ofAccountStatus'),
+            includeArchived: any(named: 'includeArchived'),
+          ),
+        ).thenAnswer(
+          (final invocation) async => Future.value([
+            UserBuilder()
+                .withEmail('test@example.com')
+                .withCreatedAt(DateTime.parse('2025-07-02T11:00:00'))
+                .withAccountStatus(UserAccountStatus.registered)
+                .build(),
+            UserBuilder()
+                .withEmail('test2@example.com')
+                .withCreatedAt(DateTime.parse('2025-07-02T12:00:00'))
+                .withAccountStatus(UserAccountStatus.invited)
+                .withArchivedAt(DateTime.parse('2025-07-02T12:10:00'))
+                .build(),
+          ]),
+        );
+        when(
+          () => client.adminProcurement.listProcuredProducts(
+            userEmail: any(named: 'userEmail'),
+          ),
+        ).thenAnswer(
+          (final invocation) async =>
+              Future.value([('test-plan', 'PlanProduct')]),
+        );
+
+        commandResult = cli.run([
+          'admin',
+          'list-users',
+          '--include-archived',
+          '--format',
+          'yaml',
+        ]);
+      });
+
+      test('then emits user objects', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        expect(yamlDecode(logger.rawCalls.single.content), [
+          {
+            'email': 'test@example.com',
+            'accountStatus': 'registered',
+            'createdAt': DateTime.parse(
+              '2025-07-02T11:00:00',
+            ).toUtc().toIso8601String(),
+            'archivedAt': null,
+            'subscribedPlans': ['test-plan'],
+          },
+          {
+            'email': 'test2@example.com',
+            'accountStatus': 'invited',
+            'createdAt': DateTime.parse(
+              '2025-07-02T12:00:00',
+            ).toUtc().toIso8601String(),
+            'archivedAt': DateTime.parse(
+              '2025-07-02T12:10:00',
+            ).toUtc().toIso8601String(),
+            'subscribedPlans': <Object?>[],
+          },
+        ]);
       });
     });
   });

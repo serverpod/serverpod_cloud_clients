@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:cli_tools/cli_tools.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/db_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/db/db_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';

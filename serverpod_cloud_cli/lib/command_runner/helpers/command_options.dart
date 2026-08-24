@@ -1,8 +1,7 @@
 import 'dart:io';
 
 import 'package:config/config.dart';
-import 'package:serverpod_cloud_cli/commands/project/project.dart'
-    show PlanProfile;
+import 'package:serverpod_cloud_cli/util/output/output_format.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
 
 import 'email_validator.dart';
@@ -72,13 +71,14 @@ class ProjectIdOption extends StringOption {
        );
 }
 
-class PlanOption extends EnumOption<PlanProfile> {
-  const PlanOption({final PlanProfile? defaultValue})
+class FormatOption extends EnumOption<OutputFormat> {
+  const FormatOption()
     : super(
-        argName: 'plan',
-        helpText: 'Selects the plan to use.',
-        enumParser: const EnumParser(PlanProfile.values),
-        defaultsTo: defaultValue,
+        argName: 'format',
+        envName: 'SERVERPOD_CLOUD_FORMAT',
+        enumParser: const EnumParser(OutputFormat.values),
+        defaultsTo: OutputFormat.text,
+        helpText: 'Selects the command output format.',
       );
 }
 

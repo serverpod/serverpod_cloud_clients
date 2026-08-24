@@ -1,7 +1,7 @@
+import 'package:serverpod_cloud_cli/constants.dart' show numTimeStampChars;
 import 'package:serverpod_cloud_cli/util/common.dart';
 
 const _relativeTimeLimit = Duration(days: 7);
-const _numTimestampChars = 19;
 
 extension DurationFormatter on Duration {
   /// Formats a duration in a friendly format
@@ -44,7 +44,7 @@ String friendlyPastTimeFormat(
 }) {
   final elapsed = (now ?? DateTime.now()).difference(time);
   if (elapsed > _relativeTimeLimit) {
-    return time.toTzString(inUtc, _numTimestampChars);
+    return time.toTzString(inUtc, numTimeStampChars);
   }
   return friendlyAgoFormat(elapsed);
 }

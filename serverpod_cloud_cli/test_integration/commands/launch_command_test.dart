@@ -12,7 +12,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/launch_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/launch/launch_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/constants.dart' show VersionConstants;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
