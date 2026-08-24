@@ -191,6 +191,9 @@ void main() {
       when(
         () => client.environmentVariables.list(any()),
       ).thenAnswer((final _) async => <EnvironmentVariable>[]);
+      when(
+        () => client.secrets.list(any()),
+      ).thenAnswer((final _) async => <String>[]);
 
       await cli.run([
         '--config-dir',
@@ -211,6 +214,9 @@ void main() {
         when(
           () => client.environmentVariables.list(any()),
         ).thenAnswer((final _) async => <EnvironmentVariable>[]);
+        when(
+          () => client.secrets.list(any()),
+        ).thenAnswer((final _) async => <String>[]);
 
         await cli.run([
           '--config-dir',

@@ -168,6 +168,10 @@ commands:
           --name=!: "The name of the environment variable. Can be passed as the first argument."
           --value=: "The value of the environment variable. Can be passed as the second argument."
           --from-file=: "The name of the file with the environment variable value."
+          --secret: "Store the value as a secret. The value is encrypted and masked. Without this flag the value is unmasked and visible."
+          --no-secret: "Store the value as a secret. The value is encrypted and masked. Without this flag the value is unmasked and visible."
+        exclusiveFlags:
+          - [secret, no-secret]
         completion:
           flag:
             from-file: ["$files"]
@@ -280,28 +284,6 @@ commands:
             flags:
               -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked or if a global project context is set. See `scloud project link --help` and `scloud context set --help`."
               --name=!: "The name of the build secret. Can be passed as the first argument."
-
-  - name: secret
-
-    commands:
-      - name: set
-        flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked or if a global project context is set. See `scloud project link --help` and `scloud context set --help`."
-          --name=!: "The name of the secret. Can be passed as the first argument."
-          --value=: "The value of the secret. Can be passed as the second argument."
-          --from-file=: "The name of the file with the secret value."
-        completion:
-          flag:
-            from-file: ["$files"]
-
-      - name: list
-        flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked or if a global project context is set. See `scloud project link --help` and `scloud context set --help`."
-
-      - name: unset
-        flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked or if a global project context is set. See `scloud project link --help` and `scloud context set --help`."
-          --name=!: "The name of the secret. Can be passed as the first argument."
 
   - name: password
 
