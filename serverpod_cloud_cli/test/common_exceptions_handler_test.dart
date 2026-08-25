@@ -43,6 +43,55 @@ void main() {
     );
   });
 
+  test('Given a database that is still being provisioned '
+      'when calling processCommonClientExceptions '
+      'then should throw ExitErrorException and say it is on its way', () {
+    expect(
+      () => processCommonClientExceptions(
+        logger,
+        DatabaseNotReadyException(
+          status: DatabaseStatus.provisioning,
+          message: 'The database for my-project is still being created.',
+        ),
+        StackTrace.current,
+      ),
+      throwsA(isA<ErrorExitException>()),
+    );
+
+    expect(
+      logger.errorCalls.last,
+      equalsErrorCall(
+        message: 'The database for my-project is still being created.',
+        hint:
+            'It is created in the background and is usually ready within '
+            'a minute.',
+      ),
+    );
+  });
+
+  test('Given a database whose provisioning failed '
+      'when calling processCommonClientExceptions '
+      'then should not tell the user to wait for it', () {
+    expect(
+      () => processCommonClientExceptions(
+        logger,
+        DatabaseNotReadyException(
+          status: DatabaseStatus.failed,
+          message: 'The database for my-project could not be created.',
+        ),
+        StackTrace.current,
+      ),
+      throwsA(isA<ErrorExitException>()),
+    );
+
+    expect(
+      logger.errorCalls.last,
+      equalsErrorCall(
+        message: 'The database for my-project could not be created.',
+      ),
+    );
+  });
+
   test('Given a UnauthorizedException '
       'when calling processCommonClientExceptions '
       'then should throw ExitErrorException and log error message', () {

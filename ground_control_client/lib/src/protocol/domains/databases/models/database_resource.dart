@@ -29,6 +29,7 @@ abstract class DatabaseResource
     required this.quota,
     this.metricsExportEndpoint,
     this.metricsExportSecretFingerprint,
+    this.procurementResourceId,
   });
 
   factory DatabaseResource({
@@ -41,6 +42,7 @@ abstract class DatabaseResource
     required _i5.DatabaseQuota quota,
     String? metricsExportEndpoint,
     String? metricsExportSecretFingerprint,
+    String? procurementResourceId,
   }) = _DatabaseResourceImpl;
 
   factory DatabaseResource.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -64,6 +66,8 @@ abstract class DatabaseResource
           jsonSerialization['metricsExportEndpoint'] as String?,
       metricsExportSecretFingerprint:
           jsonSerialization['metricsExportSecretFingerprint'] as String?,
+      procurementResourceId:
+          jsonSerialization['procurementResourceId'] as String?,
     );
   }
 
@@ -88,6 +92,14 @@ abstract class DatabaseResource
 
   String? metricsExportSecretFingerprint;
 
+  /// The product-allocation resourceId this database is billed under.
+  ///
+  /// Null on databases created before this was recorded: those were procured
+  /// under their `providerId`, so that is what they fall back to. Databases
+  /// created since are procured under the `cloudCapsuleId`, because the
+  /// provider id does not exist when the procurement is registered.
+  String? procurementResourceId;
+
   /// Returns a shallow copy of this [DatabaseResource]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
@@ -101,6 +113,7 @@ abstract class DatabaseResource
     _i5.DatabaseQuota? quota,
     String? metricsExportEndpoint,
     String? metricsExportSecretFingerprint,
+    String? procurementResourceId,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -117,6 +130,8 @@ abstract class DatabaseResource
         'metricsExportEndpoint': metricsExportEndpoint,
       if (metricsExportSecretFingerprint != null)
         'metricsExportSecretFingerprint': metricsExportSecretFingerprint,
+      if (procurementResourceId != null)
+        'procurementResourceId': procurementResourceId,
     };
   }
 
@@ -135,6 +150,8 @@ abstract class DatabaseResource
         'metricsExportEndpoint': metricsExportEndpoint,
       if (metricsExportSecretFingerprint != null)
         'metricsExportSecretFingerprint': metricsExportSecretFingerprint,
+      if (procurementResourceId != null)
+        'procurementResourceId': procurementResourceId,
     };
   }
 
@@ -157,6 +174,7 @@ class _DatabaseResourceImpl extends DatabaseResource {
     required _i5.DatabaseQuota quota,
     String? metricsExportEndpoint,
     String? metricsExportSecretFingerprint,
+    String? procurementResourceId,
   }) : super._(
          id: id,
          cloudCapsuleId: cloudCapsuleId,
@@ -167,6 +185,7 @@ class _DatabaseResourceImpl extends DatabaseResource {
          quota: quota,
          metricsExportEndpoint: metricsExportEndpoint,
          metricsExportSecretFingerprint: metricsExportSecretFingerprint,
+         procurementResourceId: procurementResourceId,
        );
 
   /// Returns a shallow copy of this [DatabaseResource]
@@ -183,6 +202,7 @@ class _DatabaseResourceImpl extends DatabaseResource {
     _i5.DatabaseQuota? quota,
     Object? metricsExportEndpoint = _Undefined,
     Object? metricsExportSecretFingerprint = _Undefined,
+    Object? procurementResourceId = _Undefined,
   }) {
     return DatabaseResource(
       id: id is int? ? id : this.id,
@@ -198,6 +218,9 @@ class _DatabaseResourceImpl extends DatabaseResource {
       metricsExportSecretFingerprint: metricsExportSecretFingerprint is String?
           ? metricsExportSecretFingerprint
           : this.metricsExportSecretFingerprint,
+      procurementResourceId: procurementResourceId is String?
+          ? procurementResourceId
+          : this.procurementResourceId,
     );
   }
 }

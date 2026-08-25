@@ -68,6 +68,20 @@ void processCommonClientExceptions(
       }
       throw ErrorExitException('The procurement was not allowed.');
 
+    case DatabaseNotReadyException():
+      // The database is created in the background after a project is, so a
+      // command can arrive before it exists. Say that, rather than reporting
+      // it as missing.
+      logger.error(
+        e.message,
+        hint: e.status == DatabaseStatus.failed
+            ? null
+            : 'It is created in the background and is usually ready within '
+                  'a minute.',
+      );
+
+      throw ErrorExitException(e.message, e, stackTrace);
+
     case NotFoundException():
       logger.error('The requested resource did not exist.', hint: e.message);
 

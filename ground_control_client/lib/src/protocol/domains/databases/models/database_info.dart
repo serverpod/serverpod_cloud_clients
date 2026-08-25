@@ -12,6 +12,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/databases/models/database_size.dart' as _i2;
+import '../../../domains/databases/models/database_status.dart' as _i3;
 
 abstract class DatabaseInfo
     implements _i1.SerializableModel, _i1.ProtocolSerialization {
@@ -23,6 +24,8 @@ abstract class DatabaseInfo
     required this.memoryMb,
     this.storageLimitGB,
     this.computeHoursLimit,
+    required this.status,
+    this.statusMessage,
   });
 
   factory DatabaseInfo({
@@ -33,6 +36,8 @@ abstract class DatabaseInfo
     required int memoryMb,
     int? storageLimitGB,
     int? computeHoursLimit,
+    required _i3.DatabaseStatus status,
+    String? statusMessage,
   }) = _DatabaseInfoImpl;
 
   factory DatabaseInfo.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -46,6 +51,10 @@ abstract class DatabaseInfo
       memoryMb: jsonSerialization['memoryMb'] as int,
       storageLimitGB: jsonSerialization['storageLimitGB'] as int?,
       computeHoursLimit: jsonSerialization['computeHoursLimit'] as int?,
+      status: _i3.DatabaseStatus.fromJson(
+        (jsonSerialization['status'] as String),
+      ),
+      statusMessage: jsonSerialization['statusMessage'] as String?,
     );
   }
 
@@ -73,6 +82,13 @@ abstract class DatabaseInfo
   /// The compute hours limit of the database in hours. Null means no limit.
   int? computeHoursLimit;
 
+  /// The provisioning state of the database.
+  _i3.DatabaseStatus status;
+
+  /// A user-safe description of the current status. Set when status is
+  /// `failed`; never contains raw provider error detail.
+  String? statusMessage;
+
   /// Returns a shallow copy of this [DatabaseInfo]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
@@ -84,6 +100,8 @@ abstract class DatabaseInfo
     int? memoryMb,
     int? storageLimitGB,
     int? computeHoursLimit,
+    _i3.DatabaseStatus? status,
+    String? statusMessage,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -96,6 +114,8 @@ abstract class DatabaseInfo
       'memoryMb': memoryMb,
       if (storageLimitGB != null) 'storageLimitGB': storageLimitGB,
       if (computeHoursLimit != null) 'computeHoursLimit': computeHoursLimit,
+      'status': status.toJson(),
+      if (statusMessage != null) 'statusMessage': statusMessage,
     };
   }
 
@@ -110,6 +130,8 @@ abstract class DatabaseInfo
       'memoryMb': memoryMb,
       if (storageLimitGB != null) 'storageLimitGB': storageLimitGB,
       if (computeHoursLimit != null) 'computeHoursLimit': computeHoursLimit,
+      'status': status.toJson(),
+      if (statusMessage != null) 'statusMessage': statusMessage,
     };
   }
 
@@ -130,6 +152,8 @@ class _DatabaseInfoImpl extends DatabaseInfo {
     required int memoryMb,
     int? storageLimitGB,
     int? computeHoursLimit,
+    required _i3.DatabaseStatus status,
+    String? statusMessage,
   }) : super._(
          cloudCapsuleId: cloudCapsuleId,
          size: size,
@@ -138,6 +162,8 @@ class _DatabaseInfoImpl extends DatabaseInfo {
          memoryMb: memoryMb,
          storageLimitGB: storageLimitGB,
          computeHoursLimit: computeHoursLimit,
+         status: status,
+         statusMessage: statusMessage,
        );
 
   /// Returns a shallow copy of this [DatabaseInfo]
@@ -152,6 +178,8 @@ class _DatabaseInfoImpl extends DatabaseInfo {
     int? memoryMb,
     Object? storageLimitGB = _Undefined,
     Object? computeHoursLimit = _Undefined,
+    _i3.DatabaseStatus? status,
+    Object? statusMessage = _Undefined,
   }) {
     return DatabaseInfo(
       cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
@@ -165,6 +193,10 @@ class _DatabaseInfoImpl extends DatabaseInfo {
       computeHoursLimit: computeHoursLimit is int?
           ? computeHoursLimit
           : this.computeHoursLimit,
+      status: status ?? this.status,
+      statusMessage: statusMessage is String?
+          ? statusMessage
+          : this.statusMessage,
     );
   }
 }

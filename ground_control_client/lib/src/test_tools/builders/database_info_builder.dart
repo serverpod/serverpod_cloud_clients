@@ -8,6 +8,8 @@ class DatabaseInfoBuilder {
   int _memoryMb;
   int? _storageLimitGB;
   int? _computeHoursLimit;
+  DatabaseStatus _status;
+  String? _statusMessage;
 
   DatabaseInfoBuilder()
     : _cloudCapsuleId = 'test',
@@ -16,7 +18,9 @@ class DatabaseInfoBuilder {
       _maxCu = 2,
       _memoryMb = 512,
       _storageLimitGB = 2,
-      _computeHoursLimit = 100;
+      _computeHoursLimit = 100,
+      _status = DatabaseStatus.ready,
+      _statusMessage = null;
 
   DatabaseInfoBuilder withCloudCapsuleId(final String cloudCapsuleId) {
     _cloudCapsuleId = cloudCapsuleId;
@@ -53,6 +57,16 @@ class DatabaseInfoBuilder {
     return this;
   }
 
+  DatabaseInfoBuilder withStatus(final DatabaseStatus status) {
+    _status = status;
+    return this;
+  }
+
+  DatabaseInfoBuilder withStatusMessage(final String? statusMessage) {
+    _statusMessage = statusMessage;
+    return this;
+  }
+
   DatabaseInfo build() {
     return DatabaseInfo(
       cloudCapsuleId: _cloudCapsuleId,
@@ -62,6 +76,8 @@ class DatabaseInfoBuilder {
       memoryMb: _memoryMb,
       storageLimitGB: _storageLimitGB,
       computeHoursLimit: _computeHoursLimit,
+      status: _status,
+      statusMessage: _statusMessage,
     );
   }
 }
