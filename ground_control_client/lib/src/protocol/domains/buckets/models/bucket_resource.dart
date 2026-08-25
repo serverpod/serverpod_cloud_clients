@@ -15,6 +15,8 @@ import '../../../domains/buckets/models/bucket_provider.dart' as _i2;
 import '../../../domains/buckets/models/bucket_visibility.dart' as _i3;
 import '../../../shared/models/serverpod_region.dart' as _i4;
 import '../../../domains/buckets/models/bucket_status.dart' as _i5;
+import '../../../domains/buckets/models/bucket_access_revocation_reason.dart'
+    as _i6;
 
 abstract class BucketResource
     implements _i1.SerializableModel, _i1.ProtocolSerialization {
@@ -27,6 +29,10 @@ abstract class BucketResource
     required this.bucketName,
     required this.region,
     required this.status,
+    this.lastMeteredSizeBytes,
+    this.meteredAt,
+    this.accessRevokedAt,
+    this.accessRevokedReason,
   });
 
   factory BucketResource({
@@ -38,6 +44,10 @@ abstract class BucketResource
     required String bucketName,
     required _i4.ServerpodRegion region,
     required _i5.BucketStatus status,
+    int? lastMeteredSizeBytes,
+    DateTime? meteredAt,
+    DateTime? accessRevokedAt,
+    _i6.BucketAccessRevocationReason? accessRevokedReason,
   }) = _BucketResourceImpl;
 
   factory BucketResource.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -58,6 +68,20 @@ abstract class BucketResource
       status: _i5.BucketStatus.fromJson(
         (jsonSerialization['status'] as String),
       ),
+      lastMeteredSizeBytes: jsonSerialization['lastMeteredSizeBytes'] as int?,
+      meteredAt: jsonSerialization['meteredAt'] == null
+          ? null
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['meteredAt']),
+      accessRevokedAt: jsonSerialization['accessRevokedAt'] == null
+          ? null
+          : _i1.DateTimeJsonExtension.fromJson(
+              jsonSerialization['accessRevokedAt'],
+            ),
+      accessRevokedReason: jsonSerialization['accessRevokedReason'] == null
+          ? null
+          : _i6.BucketAccessRevocationReason.fromJson(
+              (jsonSerialization['accessRevokedReason'] as String),
+            ),
     );
   }
 
@@ -80,6 +104,23 @@ abstract class BucketResource
 
   _i5.BucketStatus status;
 
+  /// The bucket's average stored bytes over the most recently metered day,
+  /// written by the consumption ingestion run.
+  int? lastMeteredSizeBytes;
+
+  /// The UTC date (midnight) of the day on which the measured window of
+  /// [lastMeteredSizeBytes] ended. Written monotonically — an older sample
+  /// never overwrites a newer one.
+  DateTime? meteredAt;
+
+  /// When customer access to the bucket was revoked by cap enforcement.
+  /// Null while access is intact. Cleared automatically on restore.
+  DateTime? accessRevokedAt;
+
+  /// Which cap breach caused the revocation. Informational — restore always
+  /// re-evaluates every cap.
+  _i6.BucketAccessRevocationReason? accessRevokedReason;
+
   /// Returns a shallow copy of this [BucketResource]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
@@ -92,6 +133,10 @@ abstract class BucketResource
     String? bucketName,
     _i4.ServerpodRegion? region,
     _i5.BucketStatus? status,
+    int? lastMeteredSizeBytes,
+    DateTime? meteredAt,
+    DateTime? accessRevokedAt,
+    _i6.BucketAccessRevocationReason? accessRevokedReason,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -105,6 +150,12 @@ abstract class BucketResource
       'bucketName': bucketName,
       'region': region.toJson(),
       'status': status.toJson(),
+      if (lastMeteredSizeBytes != null)
+        'lastMeteredSizeBytes': lastMeteredSizeBytes,
+      if (meteredAt != null) 'meteredAt': meteredAt?.toJson(),
+      if (accessRevokedAt != null) 'accessRevokedAt': accessRevokedAt?.toJson(),
+      if (accessRevokedReason != null)
+        'accessRevokedReason': accessRevokedReason?.toJson(),
     };
   }
 
@@ -120,6 +171,12 @@ abstract class BucketResource
       'bucketName': bucketName,
       'region': region.toJson(),
       'status': status.toJson(),
+      if (lastMeteredSizeBytes != null)
+        'lastMeteredSizeBytes': lastMeteredSizeBytes,
+      if (meteredAt != null) 'meteredAt': meteredAt?.toJson(),
+      if (accessRevokedAt != null) 'accessRevokedAt': accessRevokedAt?.toJson(),
+      if (accessRevokedReason != null)
+        'accessRevokedReason': accessRevokedReason?.toJson(),
     };
   }
 
@@ -141,6 +198,10 @@ class _BucketResourceImpl extends BucketResource {
     required String bucketName,
     required _i4.ServerpodRegion region,
     required _i5.BucketStatus status,
+    int? lastMeteredSizeBytes,
+    DateTime? meteredAt,
+    DateTime? accessRevokedAt,
+    _i6.BucketAccessRevocationReason? accessRevokedReason,
   }) : super._(
          id: id,
          cloudCapsuleId: cloudCapsuleId,
@@ -150,6 +211,10 @@ class _BucketResourceImpl extends BucketResource {
          bucketName: bucketName,
          region: region,
          status: status,
+         lastMeteredSizeBytes: lastMeteredSizeBytes,
+         meteredAt: meteredAt,
+         accessRevokedAt: accessRevokedAt,
+         accessRevokedReason: accessRevokedReason,
        );
 
   /// Returns a shallow copy of this [BucketResource]
@@ -165,6 +230,10 @@ class _BucketResourceImpl extends BucketResource {
     String? bucketName,
     _i4.ServerpodRegion? region,
     _i5.BucketStatus? status,
+    Object? lastMeteredSizeBytes = _Undefined,
+    Object? meteredAt = _Undefined,
+    Object? accessRevokedAt = _Undefined,
+    Object? accessRevokedReason = _Undefined,
   }) {
     return BucketResource(
       id: id is int? ? id : this.id,
@@ -175,6 +244,17 @@ class _BucketResourceImpl extends BucketResource {
       bucketName: bucketName ?? this.bucketName,
       region: region ?? this.region,
       status: status ?? this.status,
+      lastMeteredSizeBytes: lastMeteredSizeBytes is int?
+          ? lastMeteredSizeBytes
+          : this.lastMeteredSizeBytes,
+      meteredAt: meteredAt is DateTime? ? meteredAt : this.meteredAt,
+      accessRevokedAt: accessRevokedAt is DateTime?
+          ? accessRevokedAt
+          : this.accessRevokedAt,
+      accessRevokedReason:
+          accessRevokedReason is _i6.BucketAccessRevocationReason?
+          ? accessRevokedReason
+          : this.accessRevokedReason,
     );
   }
 }
