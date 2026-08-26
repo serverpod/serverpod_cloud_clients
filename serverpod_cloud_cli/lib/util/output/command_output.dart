@@ -1,5 +1,6 @@
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 
+import 'interactive_widgets.dart';
 import 'output_context.dart';
 import 'output_format.dart';
 import 'output_widget.dart';
@@ -30,5 +31,13 @@ class CommandOutput {
       }
       Error.throwWithStackTrace(error, stackTrace);
     }
+  }
+
+  Future<T> renderInteractive<T extends Object?>({
+    required final InteractiveWidget<T> ui,
+  }) {
+    final context = OutputContext(format);
+    ui.buildTree(context).renderTree(logger: logger);
+    return ui.completer.future;
   }
 }

@@ -12,6 +12,8 @@ import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart'
     show processCommonClientExceptions;
 import 'package:serverpod_cloud_cli/util/cli_authentication_key_manager.dart';
+import 'package:serverpod_cloud_cli/util/output/output.dart'
+    show CommandOutput, ConfirmationWidget;
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_broker.dart'
     show scloudCliConfigBroker;
 
@@ -170,5 +172,35 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
     throw UnimplementedError(
       'CLI command $name has not implemented runWithConfig.',
     );
+  }
+
+  /// Confirms with the user whether to continue with the action.
+  ///
+  /// Throws a [UserAbortException] if the user does not confirm.
+  /// Throws a [CloudCliUsageException] if the configured format and interaction
+  /// mode is not supported.
+  Future<void> confirmToContinue(
+    final CommandOutput output, {
+    required final String message,
+    final bool? defaultValue,
+  }) async {
+    if (globalConfiguration.skipConfirmation == true) {
+      return;
+    }
+
+    if (output.format.isStructured) {
+      // TODO: Add custom validation group to --yes and --format options when --format is made global
+      throw CloudCliUsageException(
+        'Interactive UI is not supported with structured format "${output.format.name}".',
+        hint: 'Use "--yes" with "--format json|yaml" for interactive commands.',
+      );
+    }
+
+    final confirmed = await output.renderInteractive(
+      ui: ConfirmationWidget(message, defaultValue: defaultValue),
+    );
+    if (!confirmed) {
+      throw UserAbortException();
+    }
   }
 }
