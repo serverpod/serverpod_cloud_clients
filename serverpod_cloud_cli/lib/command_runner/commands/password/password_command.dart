@@ -1,10 +1,9 @@
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
-import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/password/password_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/password/password_ui.dart';
-import 'package:serverpod_cloud_cli/util/output/command_output.dart';
+import 'package:serverpod_cloud_cli/util/output/output.dart';
 
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
 
@@ -180,16 +179,14 @@ class CloudPasswordUnsetCommand
     final name = commandConfig.value(PasswordUnsetCommandConfig.name);
     final format = commandConfig.value(PasswordUnsetCommandConfig.format);
 
-    final shouldDelete = await logger.confirm(
-      'Are you sure you want to unset the password "$name"?',
+    final output = CommandOutput(format: format, logger: logger);
+
+    await confirmToContinue(
+      output,
+      message: 'Are you sure you want to unset the password "$name"?',
       defaultValue: false,
     );
 
-    if (!shouldDelete) {
-      throw UserAbortException();
-    }
-
-    final output = CommandOutput(format: format, logger: logger);
     await output.render(
       operation: () => PasswordOperations.unsetPassword(
         runner.serviceProvider.cloudApiClient,

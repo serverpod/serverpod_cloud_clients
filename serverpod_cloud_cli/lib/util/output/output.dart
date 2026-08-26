@@ -4,6 +4,7 @@ library;
 
 export 'command_output.dart';
 export 'command_ui.dart';
+export 'interactive_widgets.dart';
 export 'output_context.dart';
 export 'output_formatter.dart';
 export 'output_widget.dart';

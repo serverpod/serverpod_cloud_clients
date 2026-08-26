@@ -573,6 +573,42 @@ void main() {
         ]);
       });
 
+      test('then throws exception', () async {
+        await expectLater(commandResult, throwsA(isA<Exception>()));
+      });
+
+      test('then logs no confirm message', () async {
+        await commandResult.catchError((final error) => null);
+
+        expect(logger.confirmCalls, isEmpty);
+      });
+    });
+
+    group('when executing password unset with --yes and --format json', () {
+      late Future commandResult;
+
+      setUp(() async {
+        reset(client);
+        when(
+          () => client.secrets.delete(
+            key: any(named: 'key'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenAnswer((final _) async => Future.value());
+
+        logger.answerNextConfirmWith(true);
+        commandResult = cli.run([
+          'password',
+          'unset',
+          'database',
+          '--project',
+          projectId,
+          '--format',
+          'json',
+          '--yes',
+        ]);
+      });
+
       test('then emits a JSON object with the password name', () async {
         await commandResult;
 
@@ -582,9 +618,15 @@ void main() {
           'name': 'database',
         });
       });
+
+      test('then logs no confirm message', () async {
+        await commandResult;
+
+        expect(logger.confirmCalls, isEmpty);
+      });
     });
 
-    group('when executing password unset with --format yaml', () {
+    group('when executing password unset with --yes and --format yaml', () {
       late Future commandResult;
 
       setUp(() async {
@@ -605,6 +647,7 @@ void main() {
           projectId,
           '--format',
           'yaml',
+          '--yes',
         ]);
       });
 
@@ -615,6 +658,12 @@ void main() {
         expect(logger.successCalls, isEmpty);
         final payload = yamlDecode(logger.rawCalls.single.content) as Map;
         expect(payload['name'], 'database');
+      });
+
+      test('then logs no confirm message', () async {
+        await commandResult;
+
+        expect(logger.confirmCalls, isEmpty);
       });
     });
 
