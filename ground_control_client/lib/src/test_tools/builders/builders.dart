@@ -18,5 +18,6 @@ export 'project_builder.dart';
 export 'plan_info_builder.dart';
 export 'project_info_builder.dart';
 export 'subscription_info_builder.dart';
+export 'upload_description_builder.dart';
 export 'user_builder.dart';
 export 'user_role_membership_builder.dart';
