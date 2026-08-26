@@ -126,6 +126,11 @@ _scloud_completions() {
       while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -A file -- "$cur")
       ;;
 
+    'auth revoke-token'*'--project-config-file')
+      compopt -o filenames 2>/dev/null
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -A file -- "$cur")
+      ;;
+
     'db schedule unset'*'--project-config-file')
       compopt -o filenames 2>/dev/null
       while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -A file -- "$cur")
@@ -361,6 +366,11 @@ _scloud_completions() {
       ;;
 
     'auth create-token'*'--project-dir')
+      compopt -o filenames 2>/dev/null
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -A directory -- "$cur")
+      ;;
+
+    'auth revoke-token'*'--project-dir')
       compopt -o filenames 2>/dev/null
       while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -A directory -- "$cur")
       ;;
@@ -842,6 +852,11 @@ _scloud_completions() {
       while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -A directory -- "$cur")
       ;;
 
+    'auth revoke-token'*'-d')
+      compopt -o filenames 2>/dev/null
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -A directory -- "$cur")
+      ;;
+
     'db backup restore'*'-d')
       compopt -o filenames 2>/dev/null
       while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -A directory -- "$cur")
@@ -936,6 +951,10 @@ _scloud_completions() {
 
     'auth create-token'*)
       while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --token --project-dir -d --project-config-file --timeout --yes --expire-at --idle-ttl --no-idle-ttl")" -- "$cur")
+      ;;
+
+    'auth revoke-token'*)
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --token --project-dir -d --project-config-file --timeout --yes --token-id")" -- "$cur")
       ;;
 
     'password unset'*'-d')
@@ -1376,7 +1395,7 @@ _scloud_completions() {
       ;;
 
     'auth'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "login logout list create-token --quiet -q --verbose -v --analytics --no-analytics -a --version --token --project-dir -d --project-config-file --timeout --yes")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "login logout list create-token revoke-token --quiet -q --verbose -v --analytics --no-analytics -a --version --token --project-dir -d --project-config-file --timeout --yes")" -- "$cur")
       ;;
 
     'log'*)
