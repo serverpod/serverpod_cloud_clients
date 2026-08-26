@@ -4,6 +4,7 @@ export 'billing/billing_info_builder.dart';
 export 'billing/payment_method_builder.dart';
 export 'billing/payment_method_card_builder.dart';
 export 'billing/payment_setup_intent_builder.dart';
+export 'bucket_file_builder.dart';
 export 'bucket_resource_builder.dart';
 export 'capsule_builder.dart';
 export 'compute_info_builder.dart';
