@@ -248,7 +248,7 @@ project:
           expect(logger.warningCalls, isNotEmpty);
           expect(
             logger.warningCalls.first.message,
-            contains(VersionConstants.serverpodMultiInstanceSafeMinVersion),
+            contains(VersionConstants.serverpodMultiPodletSafeMinVersion),
           );
         });
       },

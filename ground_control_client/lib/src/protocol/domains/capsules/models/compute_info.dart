@@ -50,10 +50,10 @@ abstract class ComputeInfo
   /// A value of unknown means the size could not be determined.
   _i2.ComputeSizeOption size;
 
-  /// The minimum number of instances the capsule can scale to.
+  /// The minimum number of podlets the capsule can scale to.
   int minInstances;
 
-  /// The maximum number of instances the capsule can scale to.
+  /// The maximum number of podlets the capsule can scale to.
   int maxInstances;
 
   /// The memory of the capsule compute in megabytes.

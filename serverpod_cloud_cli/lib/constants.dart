@@ -23,8 +23,8 @@ abstract final class VersionConstants {
   static const supportedServerpodConstraint = '>=$minSupportedServerpodVersion';
 
   /// Minimum Serverpod version recommended when deploying with more than one
-  /// server instance (scaling / rolling deploy behavior).
-  static const serverpodMultiInstanceSafeMinVersion = '3.3.0';
+  /// podlet (scaling / rolling deploy behavior).
+  static const serverpodMultiPodletSafeMinVersion = '3.3.0';
 }
 
 abstract final class ProjectConfigFileConstants {
