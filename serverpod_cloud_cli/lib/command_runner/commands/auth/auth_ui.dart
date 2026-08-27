@@ -1,22 +1,11 @@
 import 'package:ground_control_client/ground_control_client.dart'
     show AuthTokenInfo;
-import 'package:serverpod_cloud_cli/util/output/output.dart';
+import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 
-class AuthSessionListUi extends OutputWidget {
+class AuthSessionListTextUi extends OutputWidget {
   final bool utc;
 
-  AuthSessionListUi({required this.utc});
-
-  @override
-  OutputWidget build(final OutputContext context) {
-    return CommandWidget.text(textOutputUi: _AuthSessionListTextUi(utc: utc));
-  }
-}
-
-class _AuthSessionListTextUi extends OutputWidget {
-  final bool utc;
-
-  _AuthSessionListTextUi({required this.utc});
+  AuthSessionListTextUi({required this.utc});
 
   @override
   OutputWidget build(final OutputContext context) {

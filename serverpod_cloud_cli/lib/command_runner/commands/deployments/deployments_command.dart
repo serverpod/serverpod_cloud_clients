@@ -6,8 +6,7 @@ import 'package:serverpod_cloud_cli/command_runner/commands/deploy/deploy_comman
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployments_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployments_ui.dart';
-import 'package:serverpod_cloud_cli/util/output/command_output.dart';
-import 'package:serverpod_cloud_cli/util/output/command_ui.dart';
+import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
 
@@ -185,13 +184,14 @@ Examples
     final format = commandConfig.value(DeploymentsListOption.format);
 
     final output = CommandOutput(format: format, logger: logger);
-    await output.render(
+    await renderCommand(
+      output,
       operation: () => DeploymentCommands.listDeployAttemptsOperation(
         runner.serviceProvider.cloudApiClient,
         cloudCapsuleId: projectId,
         limit: limit,
       ),
-      ui: DeploymentListUi(utc: inUtc),
+      textOutputUi: DeploymentListTextUi(utc: inUtc),
     );
   }
 }
@@ -422,12 +422,13 @@ $_buildSecretsExplanation""";
     final format = commandConfig.value(BuildSecretsListCommandConfig.format);
 
     final output = CommandOutput(format: format, logger: logger);
-    await output.render(
+    await renderCommand(
+      output,
       operation: () => DeploymentCommands.listBuildSecretsOperation(
         runner.serviceProvider.cloudApiClient,
         projectId: projectId,
       ),
-      ui: const StringColumnListUi(heading: 'Secret name'),
+      textOutputUi: const StringColumnListWidget(heading: 'Secret name'),
     );
   }
 }

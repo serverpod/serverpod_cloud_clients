@@ -11,7 +11,7 @@ import '../test_utils/command_logger_matchers.dart';
 import '../test_utils/test_command_logger.dart';
 
 void main() {
-  final logger = TestCommandLogger(printToStdout: false);
+  final logger = TestCommandLogger();
 
   final List<String> analyticsEvents = [];
   final List<Map<String, dynamic>> analyticsProperties = [];

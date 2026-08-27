@@ -85,12 +85,13 @@ class CloudPasswordListCommand
     final format = commandConfig.value(PasswordListCommandConfig.format);
 
     final output = CommandOutput(format: format, logger: logger);
-    await output.render(
+    await renderCommand(
+      output,
       operation: () => PasswordOperations.listPasswords(
         runner.serviceProvider.cloudApiClient,
         projectId: projectId,
       ),
-      ui: PasswordListUi(),
+      textOutputUi: PasswordListTextUi(),
     );
   }
 }
@@ -136,14 +137,15 @@ class CloudPasswordSetCommand
     final format = commandConfig.value(PasswordSetCommandConfig.format);
 
     final output = CommandOutput(format: format, logger: logger);
-    await output.render(
+    await renderCommand(
+      output,
       operation: () => PasswordOperations.setPassword(
         runner.serviceProvider.cloudApiClient,
         projectId: projectId,
         name: name,
         value: valueToSet,
       ).then((final _) => {'name': name}),
-      ui: PasswordSetUi(),
+      textOutputUi: PasswordSetTextUi(),
     );
   }
 }
@@ -187,13 +189,14 @@ class CloudPasswordUnsetCommand
       defaultValue: false,
     );
 
-    await output.render(
+    await renderCommand(
+      output,
       operation: () => PasswordOperations.unsetPassword(
         runner.serviceProvider.cloudApiClient,
         projectId: projectId,
         name: name,
       ).then((final _) => {'name': name}),
-      ui: PasswordUnsetUi(),
+      textOutputUi: PasswordUnsetTextUi(),
     );
   }
 }

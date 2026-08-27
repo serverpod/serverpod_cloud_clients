@@ -28,7 +28,7 @@ void main() {
     expect(stdout.output, '\nDEBUG: Debugging information\n');
   });
 
-  test('Given empty standard out '
+  test('Given empty standard err '
       'when calling error with hint property '
       'then both error and hint are logged correctly', () async {
     final (:stdout, :stderr, :stdin) = await collectOutput(() {
@@ -39,16 +39,16 @@ void main() {
     });
 
     expect(
-      stdout.output,
+      stderr.output,
       stringContainsInOrder([
         'ERROR: An error occurred',
         'Try running the command with different arguments.',
       ]),
     );
-    expect(stderr.output, '');
+    expect(stdout.output, '');
   });
 
-  test('Given empty standard out '
+  test('Given empty standard err '
       'when calling error with hint property and newParagraph enabled '
       'then error output starts with a new paragraph', () async {
     final (:stdout, :stderr, :stdin) = await collectOutput(() {
@@ -60,24 +60,24 @@ void main() {
     });
 
     expect(
-      stdout.output,
+      stderr.output,
       stringContainsInOrder([
         'ERROR: An error occurred',
         'Try running the command with different arguments.',
       ]),
     );
-    expect(stderr.output, '');
+    expect(stdout.output, '');
   });
 
-  test('Given empty standard out '
+  test('Given empty standard err '
       'when calling error without hint property '
       'then only error is printed', () async {
     final (:stdout, :stderr, :stdin) = await collectOutput(() {
       commandLogger.error('An error occurred', newParagraph: true);
     });
 
-    expect(stdout.output, '\nERROR: An error occurred\n');
-    expect(stderr.output, '');
+    expect(stderr.output, '\nERROR: An error occurred\n');
+    expect(stdout.output, '');
   });
 
   test('Given empty standard out '
@@ -280,18 +280,18 @@ void main() {
     );
   });
 
-  test('Given empty standard out '
+  test('Given empty standard err '
       'when calling warning '
       'then logs message correctly', () async {
     final (:stdout, :stderr, :stdin) = await collectOutput(() {
       commandLogger.warning('Invalid value found in config');
     });
 
-    expect(stdout.output, 'WARNING: Invalid value found in config\n');
-    expect(stderr.output, '');
+    expect(stderr.output, 'WARNING: Invalid value found in config\n');
+    expect(stdout.output, '');
   });
 
-  test('Given empty standard out '
+  test('Given empty standard err '
       'when calling warning with newParagraph enabled '
       'then output starts with new paragraph', () async {
     final (:stdout, :stderr, :stdin) = await collectOutput(() {
@@ -302,13 +302,13 @@ void main() {
     });
 
     expect(
-      stdout.output,
+      stderr.output,
       stringContainsInOrder(['\n', 'WARNING: Invalid value found in config\n']),
     );
-    expect(stderr.output, '');
+    expect(stdout.output, '');
   });
 
-  test('Given empty standard out '
+  test('Given empty standard err '
       'when calling warning with hint property '
       'then both warning and hint are logged correctly', () async {
     final (:stdout, :stderr, :stdin) = await collectOutput(() {
@@ -319,13 +319,13 @@ void main() {
     });
 
     expect(
-      stdout.output,
+      stderr.output,
       stringContainsInOrder([
         'WARNING: Invalid value found in config',
         'Try removing the value.',
       ]),
     );
-    expect(stderr.output, '');
+    expect(stdout.output, '');
   });
 
   test('Given empty standard out '

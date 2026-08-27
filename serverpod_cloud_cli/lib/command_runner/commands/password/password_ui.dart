@@ -1,16 +1,9 @@
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/password/password_ops.dart';
-import 'package:serverpod_cloud_cli/util/output/output.dart';
+import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 
-class PasswordListUi extends OutputWidget {
-  @override
-  OutputWidget build(final OutputContext context) {
-    return CommandWidget.text(textOutputUi: const _PasswordListTextUi());
-  }
-}
-
-class _PasswordListTextUi extends OutputWidget {
-  const _PasswordListTextUi();
+class PasswordListTextUi extends OutputWidget {
+  const PasswordListTextUi();
 
   @override
   OutputWidget build(final OutputContext context) {
@@ -92,15 +85,8 @@ class _LineWidget extends OutputWidget {
   }
 }
 
-class PasswordSetUi extends OutputWidget {
-  @override
-  OutputWidget build(final OutputContext context) {
-    return CommandWidget.text(textOutputUi: const _PasswordSetTextUi());
-  }
-}
-
-class _PasswordSetTextUi extends OutputWidget {
-  const _PasswordSetTextUi();
+class PasswordSetTextUi extends OutputWidget {
+  const PasswordSetTextUi();
 
   @override
   OutputWidget build(final OutputContext context) {
@@ -113,15 +99,8 @@ class _PasswordSetTextUi extends OutputWidget {
   }
 }
 
-class PasswordUnsetUi extends OutputWidget {
-  @override
-  OutputWidget build(final OutputContext context) {
-    return CommandWidget.text(textOutputUi: const _PasswordUnsetTextUi());
-  }
-}
-
-class _PasswordUnsetTextUi extends OutputWidget {
-  const _PasswordUnsetTextUi();
+class PasswordUnsetTextUi extends OutputWidget {
+  const PasswordUnsetTextUi();
 
   @override
   OutputWidget build(final OutputContext context) {

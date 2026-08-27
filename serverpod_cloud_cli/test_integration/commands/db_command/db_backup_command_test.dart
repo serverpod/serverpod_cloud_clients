@@ -1,4 +1,5 @@
 import 'package:cli_tools/cli_tools.dart';
+import 'package:config/config.dart' show UsageException;
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:mocktail/mocktail.dart';
@@ -390,14 +391,15 @@ void main() {
           '8',
         ]);
 
-        await expectLater(result, throwsA(isA<ExitException>()));
-        expect(
-          logger.errorCalls.any(
-            (final c) => c.message.contains(
+        await expectLater(
+          result,
+          throwsA(
+            isA<UsageException>().having(
+              (final e) => e.message,
+              'message',
               'The --day value must be between 1 and 7 for a weekly schedule.',
             ),
           ),
-          isTrue,
         );
         verifyNever(
           () => client.database.setBackupSchedule(

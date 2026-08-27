@@ -5,7 +5,7 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/project/project_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/project/project_ui.dart'
-    show ProjectListUi;
+    show ProjectListTextUi;
 import 'package:serverpod_cloud_cli/util/output/command_output.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/user/user_command.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
@@ -152,12 +152,13 @@ class CloudProjectListCommand
 
     final output = CommandOutput(format: format, logger: logger);
 
-    await output.render(
+    await renderCommand(
+      output,
       operation: () => ProjectCommands.listProjectsOperation(
         runner.serviceProvider.cloudApiClient,
         showArchived: showArchived,
       ),
-      ui: ProjectListUi(utc: false, showArchived: showArchived),
+      textOutputUi: ProjectListTextUi(utc: false, showArchived: showArchived),
     );
   }
 }

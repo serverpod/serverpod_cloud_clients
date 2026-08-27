@@ -1,22 +1,11 @@
 import 'package:ground_control_client/ground_control_client.dart'
     show Project, ProjectInfo;
-import 'package:serverpod_cloud_cli/util/output/output.dart';
+import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 
-class AdminProjectListUi extends OutputWidget {
+class AdminProjectListTextUi extends OutputWidget {
   final bool utc;
 
-  AdminProjectListUi({required this.utc});
-
-  @override
-  OutputWidget build(final OutputContext context) {
-    return CommandWidget.text(textOutputUi: _AdminProjectListTextUi(utc: utc));
-  }
-}
-
-class _AdminProjectListTextUi extends OutputWidget {
-  final bool utc;
-
-  _AdminProjectListTextUi({required this.utc});
+  AdminProjectListTextUi({required this.utc});
 
   @override
   OutputWidget build(final OutputContext context) {

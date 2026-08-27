@@ -62,12 +62,13 @@ class AdminListProjectsCommand
     final format = commandConfig.value(AdminListProjectsOption.format);
 
     final output = CommandOutput(format: format, logger: logger);
-    await output.render(
+    await renderCommand(
+      output,
       operation: () => ProjectAdminCommands.listProjectsOperation(
         runner.serviceProvider.cloudApiClient,
         includeArchived: includeArchived,
       ),
-      ui: AdminProjectListUi(utc: inUtc),
+      textOutputUi: AdminProjectListTextUi(utc: inUtc),
     );
   }
 }
@@ -112,7 +113,8 @@ class AdminProjectStatusCommand
     final format = commandConfig.value(AdminProjectStatusOption.format);
 
     final output = CommandOutput(format: format, logger: logger);
-    await output.render(
+    await renderCommand(
+      output,
       operation: () async {
         final statuses = await runner
             .serviceProvider
@@ -121,7 +123,7 @@ class AdminProjectStatusCommand
             .getDeployAttempts(cloudCapsuleId: projectId, limit: limit);
         return deploymentListRows(statuses);
       },
-      ui: DeploymentListUi(utc: inUtc),
+      textOutputUi: DeploymentListTextUi(utc: inUtc),
     );
   }
 }

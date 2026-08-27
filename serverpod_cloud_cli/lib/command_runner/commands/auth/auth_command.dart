@@ -266,10 +266,11 @@ class ListAuthSessionsCommand extends CloudCliCommand<ListAuthSessionsOption> {
     final inUtc = commandConfig.value(ListAuthSessionsOption.utc);
     final format = commandConfig.value(ListAuthSessionsOption.format);
     final output = CommandOutput(format: format, logger: logger);
-    await output.render(
+    await renderCommand(
+      output,
       operation: () =>
           Auth.listAuthSessionsOperation(runner.serviceProvider.cloudApiClient),
-      ui: AuthSessionListUi(utc: inUtc),
+      textOutputUi: AuthSessionListTextUi(utc: inUtc),
     );
   }
 }

@@ -1,14 +1,7 @@
-import 'package:serverpod_cloud_cli/util/output/output.dart';
+import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 
-class ProductListUi extends OutputWidget {
-  @override
-  OutputWidget build(final OutputContext context) {
-    return CommandWidget.text(textOutputUi: const _ProductListTextUi());
-  }
-}
-
-class _ProductListTextUi extends OutputWidget {
-  const _ProductListTextUi();
+class ProductListTextUi extends OutputWidget {
+  const ProductListTextUi();
 
   @override
   OutputWidget build(final OutputContext context) {

@@ -50,12 +50,13 @@ class AdminListProcuredCommand
     final format = commandConfig.value(AdminListProcuredOption.format);
 
     final output = CommandOutput(format: format, logger: logger);
-    await output.render(
+    await renderCommand(
+      output,
       operation: () => ProductAdminCommands.listProcuredProductsOperation(
         runner.serviceProvider.cloudApiClient,
         userEmail: userEmail,
       ),
-      ui: ProductListUi(),
+      textOutputUi: ProductListTextUi(),
     );
   }
 }

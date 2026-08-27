@@ -65,14 +65,15 @@ class AdminListUsersCommand extends CloudCliCommand<AdminListUsersOption> {
     final format = commandConfig.value(AdminListUsersOption.format);
 
     final output = CommandOutput(format: format, logger: logger);
-    await output.render(
+    await renderCommand(
+      output,
       operation: () => UserAdminCommands.listUsersOperation(
         runner.serviceProvider.cloudApiClient,
         projectId: projectId,
         ofAccountStatus: accountStatus,
         includeArchived: includeArchived,
       ),
-      ui: AdminUserListUi(utc: inUtc),
+      textOutputUi: AdminUserListTextUi(utc: inUtc),
     );
   }
 }

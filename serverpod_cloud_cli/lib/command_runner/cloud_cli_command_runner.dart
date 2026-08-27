@@ -244,20 +244,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
         return;
       }
 
-      final Version? latestVersion;
-      try {
-        latestVersion = await CLIVersionChecker.fetchLatestCLIVersion(
-          logger: logger,
-          localStoragePath: globalConfiguration.scloudDir.path,
-        );
-      } catch (e, stackTrace) {
-        logger.debug('Failed to fetch latest CLI version: $e');
-        throw ErrorExitException(
-          'Failed to fetch latest CLI version',
-          e,
-          stackTrace,
-        );
-      }
+      final latestVersion = await _fetchLatestCliVersion();
 
       if (latestVersion != null && version < latestVersion) {
         if (_isRequiredUpdate(latestVersion) &&
@@ -277,6 +264,18 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
       await super.runCommand(topLevelResults);
     } finally {
       _serviceProvider.shutdown();
+    }
+  }
+
+  Future<Version?> _fetchLatestCliVersion() async {
+    try {
+      return await CLIVersionChecker.fetchLatestCLIVersion(
+        logger: logger,
+        localStoragePath: globalConfiguration.scloudDir.path,
+      );
+    } catch (e) {
+      logger.debug('Failed to fetch latest CLI version: $e');
+      return null;
     }
   }
 

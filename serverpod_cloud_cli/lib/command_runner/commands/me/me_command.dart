@@ -37,11 +37,12 @@ class CloudMeCommand extends CloudCliCommand<MeCommandOption> {
     final format = commandConfig.value(MeCommandOption.format);
 
     final output = CommandOutput(format: format, logger: logger);
-    await output.render(
+    await renderCommand(
+      output,
       operation: () => MeCommands.showCurrentUserOperation(
         runner.serviceProvider.cloudApiClient,
       ),
-      ui: MeUi(),
+      textOutputUi: MeTextUi(),
     );
   }
 }

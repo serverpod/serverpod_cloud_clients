@@ -13,7 +13,7 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 import '../test_utils/test_command_logger.dart';
 
 void main() {
-  final logger = TestCommandLogger(printToStdout: false);
+  final logger = TestCommandLogger();
 
   final List<CliRunContext> resolvedContexts = [];
 
