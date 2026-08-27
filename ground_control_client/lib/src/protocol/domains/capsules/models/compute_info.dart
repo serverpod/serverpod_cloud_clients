@@ -10,11 +10,11 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../domains/capsules/models/compute_size_option.dart' as _i2;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../domains/capsules/models/compute_size_option.dart' as _ike5w393;
 
 abstract class ComputeInfo
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   ComputeInfo._({
     required this.cloudCapsuleId,
     required this.size,
@@ -25,7 +25,7 @@ abstract class ComputeInfo
 
   factory ComputeInfo({
     required String cloudCapsuleId,
-    required _i2.ComputeSizeOption size,
+    required _ike5w393.ComputeSizeOption size,
     required int minInstances,
     required int maxInstances,
     required int memoryMb,
@@ -34,7 +34,7 @@ abstract class ComputeInfo
   factory ComputeInfo.fromJson(Map<String, dynamic> jsonSerialization) {
     return ComputeInfo(
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
-      size: _i2.ComputeSizeOption.fromJson(
+      size: _ike5w393.ComputeSizeOption.fromJson(
         (jsonSerialization['size'] as String),
       ),
       minInstances: jsonSerialization['minInstances'] as int,
@@ -48,7 +48,7 @@ abstract class ComputeInfo
 
   /// The size of the capsule compute. small, medium, large, or unknown.
   /// A value of unknown means the size could not be determined.
-  _i2.ComputeSizeOption size;
+  _ike5w393.ComputeSizeOption size;
 
   /// The minimum number of podlets the capsule can scale to.
   int minInstances;
@@ -61,10 +61,10 @@ abstract class ComputeInfo
 
   /// Returns a shallow copy of this [ComputeInfo]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   ComputeInfo copyWith({
     String? cloudCapsuleId,
-    _i2.ComputeSizeOption? size,
+    _ike5w393.ComputeSizeOption? size,
     int? minInstances,
     int? maxInstances,
     int? memoryMb,
@@ -95,14 +95,14 @@ abstract class ComputeInfo
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
 class _ComputeInfoImpl extends ComputeInfo {
   _ComputeInfoImpl({
     required String cloudCapsuleId,
-    required _i2.ComputeSizeOption size,
+    required _ike5w393.ComputeSizeOption size,
     required int minInstances,
     required int maxInstances,
     required int memoryMb,
@@ -116,11 +116,11 @@ class _ComputeInfoImpl extends ComputeInfo {
 
   /// Returns a shallow copy of this [ComputeInfo]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   ComputeInfo copyWith({
     String? cloudCapsuleId,
-    _i2.ComputeSizeOption? size,
+    _ike5w393.ComputeSizeOption? size,
     int? minInstances,
     int? maxInstances,
     int? memoryMb,

@@ -10,10 +10,10 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
 abstract class DatabaseConnection
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   DatabaseConnection._({
     required this.host,
     required this.port,
@@ -38,7 +38,7 @@ abstract class DatabaseConnection
       user: jsonSerialization['user'] as String,
       requiresSsl: jsonSerialization['requiresSsl'] == null
           ? null
-          : _i1.BoolJsonExtension.fromJson(jsonSerialization['requiresSsl']),
+          : _isc.BoolJsonExtension.fromJson(jsonSerialization['requiresSsl']),
     );
   }
 
@@ -54,7 +54,7 @@ abstract class DatabaseConnection
 
   /// Returns a shallow copy of this [DatabaseConnection]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   DatabaseConnection copyWith({
     String? host,
     int? port,
@@ -88,7 +88,7 @@ abstract class DatabaseConnection
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
@@ -109,7 +109,7 @@ class _DatabaseConnectionImpl extends DatabaseConnection {
 
   /// Returns a shallow copy of this [DatabaseConnection]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   DatabaseConnection copyWith({
     String? host,

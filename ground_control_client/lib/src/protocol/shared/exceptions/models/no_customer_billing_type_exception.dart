@@ -10,14 +10,14 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
 /// Exception thrown when the owner has no customer billing type configured.
 abstract class NoCustomerBillingTypeException
     implements
-        _i1.SerializableException,
-        _i1.SerializableModel,
-        _i1.ProtocolSerialization {
+        _isc.SerializableException,
+        _isc.SerializableModel,
+        _isc.ProtocolSerialization {
   NoCustomerBillingTypeException._({required this.message});
 
   factory NoCustomerBillingTypeException({required String message}) =
@@ -35,7 +35,7 @@ abstract class NoCustomerBillingTypeException
 
   /// Returns a shallow copy of this [NoCustomerBillingTypeException]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   NoCustomerBillingTypeException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
@@ -66,7 +66,7 @@ class _NoCustomerBillingTypeExceptionImpl
 
   /// Returns a shallow copy of this [NoCustomerBillingTypeException]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   NoCustomerBillingTypeException copyWith({String? message}) {
     return NoCustomerBillingTypeException(message: message ?? this.message);

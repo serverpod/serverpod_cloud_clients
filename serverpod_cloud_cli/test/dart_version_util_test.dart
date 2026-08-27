@@ -1,5 +1,5 @@
 import 'package:ground_control_client/ground_control_client.dart'
-    show ServerpodClientException;
+    show ServerpodClientInternalServerError;
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:mocktail/mocktail.dart';
@@ -36,7 +36,7 @@ void main() {
       setUp(() {
         when(
           () => client.platform.getDartSdkVersionPolicy(),
-        ).thenThrow(ServerpodClientException('connection failed', 500));
+        ).thenThrow(ServerpodClientInternalServerError());
       });
 
       test('then FailureException is thrown', () async {

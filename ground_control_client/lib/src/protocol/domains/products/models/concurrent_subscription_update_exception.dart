@@ -10,37 +10,37 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
 /// Exception thrown when another subscription update is in progress.
 abstract class ConcurrentSubscriptionUpdateException
     implements
-        _i1.SerializableException,
-        _i1.SerializableModel,
-        _i1.ProtocolSerialization {
+        _isc.SerializableException,
+        _isc.SerializableModel,
+        _isc.ProtocolSerialization {
   ConcurrentSubscriptionUpdateException._({required this.subscriptionId});
 
   factory ConcurrentSubscriptionUpdateException({
-    required _i1.UuidValue subscriptionId,
+    required _isc.UuidValue subscriptionId,
   }) = _ConcurrentSubscriptionUpdateExceptionImpl;
 
   factory ConcurrentSubscriptionUpdateException.fromJson(
     Map<String, dynamic> jsonSerialization,
   ) {
     return ConcurrentSubscriptionUpdateException(
-      subscriptionId: _i1.UuidValueJsonExtension.fromJson(
+      subscriptionId: _isc.UuidValueJsonExtension.fromJson(
         jsonSerialization['subscriptionId'],
       ),
     );
   }
 
-  _i1.UuidValue subscriptionId;
+  _isc.UuidValue subscriptionId;
 
   /// Returns a shallow copy of this [ConcurrentSubscriptionUpdateException]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   ConcurrentSubscriptionUpdateException copyWith({
-    _i1.UuidValue? subscriptionId,
+    _isc.UuidValue? subscriptionId,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -67,15 +67,15 @@ abstract class ConcurrentSubscriptionUpdateException
 class _ConcurrentSubscriptionUpdateExceptionImpl
     extends ConcurrentSubscriptionUpdateException {
   _ConcurrentSubscriptionUpdateExceptionImpl({
-    required _i1.UuidValue subscriptionId,
+    required _isc.UuidValue subscriptionId,
   }) : super._(subscriptionId: subscriptionId);
 
   /// Returns a shallow copy of this [ConcurrentSubscriptionUpdateException]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   ConcurrentSubscriptionUpdateException copyWith({
-    _i1.UuidValue? subscriptionId,
+    _isc.UuidValue? subscriptionId,
   }) {
     return ConcurrentSubscriptionUpdateException(
       subscriptionId: subscriptionId ?? this.subscriptionId,

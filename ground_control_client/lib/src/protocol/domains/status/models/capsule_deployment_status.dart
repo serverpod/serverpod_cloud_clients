@@ -10,14 +10,14 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../domains/status/models/capsule_state.dart' as _i2;
-import '../../../domains/status/models/capsule_revision.dart' as _i3;
-import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../domains/status/models/capsule_revision.dart' as _itkte3el;
+import '../../../domains/status/models/capsule_state.dart' as _ian82d1d;
 
 /// The runtime status of a capsule's deployment.
 abstract class CapsuleDeploymentStatus
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   CapsuleDeploymentStatus._({
     required this.name,
     required this.state,
@@ -30,12 +30,12 @@ abstract class CapsuleDeploymentStatus
 
   factory CapsuleDeploymentStatus({
     required String name,
-    required _i2.CapsuleState state,
+    required _ian82d1d.CapsuleState state,
     int? desiredReplicas,
     int? readyReplicas,
-    _i1.UuidValue? uploadId,
-    _i1.UuidValue? buildId,
-    _i3.CapsuleRevision? incoming,
+    _isc.UuidValue? uploadId,
+    _isc.UuidValue? buildId,
+    _itkte3el.CapsuleRevision? incoming,
   }) = _CapsuleDeploymentStatusImpl;
 
   factory CapsuleDeploymentStatus.fromJson(
@@ -43,18 +43,20 @@ abstract class CapsuleDeploymentStatus
   ) {
     return CapsuleDeploymentStatus(
       name: jsonSerialization['name'] as String,
-      state: _i2.CapsuleState.fromJson((jsonSerialization['state'] as String)),
+      state: _ian82d1d.CapsuleState.fromJson(
+        (jsonSerialization['state'] as String),
+      ),
       desiredReplicas: jsonSerialization['desiredReplicas'] as int?,
       readyReplicas: jsonSerialization['readyReplicas'] as int?,
       uploadId: jsonSerialization['uploadId'] == null
           ? null
-          : _i1.UuidValueJsonExtension.fromJson(jsonSerialization['uploadId']),
+          : _isc.UuidValueJsonExtension.fromJson(jsonSerialization['uploadId']),
       buildId: jsonSerialization['buildId'] == null
           ? null
-          : _i1.UuidValueJsonExtension.fromJson(jsonSerialization['buildId']),
+          : _isc.UuidValueJsonExtension.fromJson(jsonSerialization['buildId']),
       incoming: jsonSerialization['incoming'] == null
           ? null
-          : _i4.Protocol().deserialize<_i3.CapsuleRevision>(
+          : _iod2a87h.Protocol().deserialize<_itkte3el.CapsuleRevision>(
               jsonSerialization['incoming'],
             ),
     );
@@ -64,7 +66,7 @@ abstract class CapsuleDeploymentStatus
   String name;
 
   /// The runtime state of the deployment.
-  _i2.CapsuleState state;
+  _ian82d1d.CapsuleState state;
 
   /// The number of replicas the deployment wants.
   /// Present whenever the workload exists.
@@ -76,27 +78,27 @@ abstract class CapsuleDeploymentStatus
 
   /// The upload the deployment is currently serving.
   /// Absent when unknown.
-  _i1.UuidValue? uploadId;
+  _isc.UuidValue? uploadId;
 
   /// The build the deployment is currently serving.
   /// Absent when unknown.
-  _i1.UuidValue? buildId;
+  _isc.UuidValue? buildId;
 
   /// The revision currently being rolled out toward this deployment.
   /// Present only while a rollout is in flight.
-  _i3.CapsuleRevision? incoming;
+  _itkte3el.CapsuleRevision? incoming;
 
   /// Returns a shallow copy of this [CapsuleDeploymentStatus]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   CapsuleDeploymentStatus copyWith({
     String? name,
-    _i2.CapsuleState? state,
+    _ian82d1d.CapsuleState? state,
     int? desiredReplicas,
     int? readyReplicas,
-    _i1.UuidValue? uploadId,
-    _i1.UuidValue? buildId,
-    _i3.CapsuleRevision? incoming,
+    _isc.UuidValue? uploadId,
+    _isc.UuidValue? buildId,
+    _itkte3el.CapsuleRevision? incoming,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -128,7 +130,7 @@ abstract class CapsuleDeploymentStatus
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
@@ -137,12 +139,12 @@ class _Undefined {}
 class _CapsuleDeploymentStatusImpl extends CapsuleDeploymentStatus {
   _CapsuleDeploymentStatusImpl({
     required String name,
-    required _i2.CapsuleState state,
+    required _ian82d1d.CapsuleState state,
     int? desiredReplicas,
     int? readyReplicas,
-    _i1.UuidValue? uploadId,
-    _i1.UuidValue? buildId,
-    _i3.CapsuleRevision? incoming,
+    _isc.UuidValue? uploadId,
+    _isc.UuidValue? buildId,
+    _itkte3el.CapsuleRevision? incoming,
   }) : super._(
          name: name,
          state: state,
@@ -155,11 +157,11 @@ class _CapsuleDeploymentStatusImpl extends CapsuleDeploymentStatus {
 
   /// Returns a shallow copy of this [CapsuleDeploymentStatus]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   CapsuleDeploymentStatus copyWith({
     String? name,
-    _i2.CapsuleState? state,
+    _ian82d1d.CapsuleState? state,
     Object? desiredReplicas = _Undefined,
     Object? readyReplicas = _Undefined,
     Object? uploadId = _Undefined,
@@ -173,9 +175,9 @@ class _CapsuleDeploymentStatusImpl extends CapsuleDeploymentStatus {
           ? desiredReplicas
           : this.desiredReplicas,
       readyReplicas: readyReplicas is int? ? readyReplicas : this.readyReplicas,
-      uploadId: uploadId is _i1.UuidValue? ? uploadId : this.uploadId,
-      buildId: buildId is _i1.UuidValue? ? buildId : this.buildId,
-      incoming: incoming is _i3.CapsuleRevision?
+      uploadId: uploadId is _isc.UuidValue? ? uploadId : this.uploadId,
+      buildId: buildId is _isc.UuidValue? ? buildId : this.buildId,
+      incoming: incoming is _itkte3el.CapsuleRevision?
           ? incoming
           : this.incoming?.copyWith(),
     );

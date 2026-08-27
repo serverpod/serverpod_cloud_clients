@@ -10,11 +10,11 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../domains/databases/models/database_size.dart' as _i2;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../domains/databases/models/database_size.dart' as _its7dxaf;
 
 abstract class DatabaseScaling
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   DatabaseScaling._({
     required this.minCu,
     required this.maxCu,
@@ -24,14 +24,14 @@ abstract class DatabaseScaling
   factory DatabaseScaling({
     required double minCu,
     required double maxCu,
-    required _i2.DatabaseSizeOption size,
+    required _its7dxaf.DatabaseSizeOption size,
   }) = _DatabaseScalingImpl;
 
   factory DatabaseScaling.fromJson(Map<String, dynamic> jsonSerialization) {
     return DatabaseScaling(
       minCu: (jsonSerialization['minCu'] as num).toDouble(),
       maxCu: (jsonSerialization['maxCu'] as num).toDouble(),
-      size: _i2.DatabaseSizeOption.fromJson(
+      size: _its7dxaf.DatabaseSizeOption.fromJson(
         (jsonSerialization['size'] as String),
       ),
     );
@@ -41,15 +41,15 @@ abstract class DatabaseScaling
 
   double maxCu;
 
-  _i2.DatabaseSizeOption size;
+  _its7dxaf.DatabaseSizeOption size;
 
   /// Returns a shallow copy of this [DatabaseScaling]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   DatabaseScaling copyWith({
     double? minCu,
     double? maxCu,
-    _i2.DatabaseSizeOption? size,
+    _its7dxaf.DatabaseSizeOption? size,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -73,7 +73,7 @@ abstract class DatabaseScaling
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
@@ -81,17 +81,17 @@ class _DatabaseScalingImpl extends DatabaseScaling {
   _DatabaseScalingImpl({
     required double minCu,
     required double maxCu,
-    required _i2.DatabaseSizeOption size,
+    required _its7dxaf.DatabaseSizeOption size,
   }) : super._(minCu: minCu, maxCu: maxCu, size: size);
 
   /// Returns a shallow copy of this [DatabaseScaling]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   DatabaseScaling copyWith({
     double? minCu,
     double? maxCu,
-    _i2.DatabaseSizeOption? size,
+    _its7dxaf.DatabaseSizeOption? size,
   }) {
     return DatabaseScaling(
       minCu: minCu ?? this.minCu,
