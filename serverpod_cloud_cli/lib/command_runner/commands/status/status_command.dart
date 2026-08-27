@@ -1,6 +1,6 @@
 import 'package:config/config.dart';
 import 'package:ground_control_client/ground_control_client.dart'
-    show CapsuleStatusUnavailableException;
+    show CapsuleStatusUnavailableException, NotFoundException;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart'
     show ProjectIdOption, UtcOption;
@@ -68,6 +68,8 @@ Examples
             'The status service is temporarily unavailable — '
             'try again shortly.',
       );
+    } on NotFoundException {
+      throw FailureException(error: 'Project "$projectId" was not found.');
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Failed to get the podlet status');
     }

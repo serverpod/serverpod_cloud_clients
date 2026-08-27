@@ -410,10 +410,10 @@ class CloudVerifyCustomDomainRecordCommand
 
       return;
     } on DNSVerificationFailedException catch (e) {
-      logger.error(
-        'Failed to verify the DNS record for the custom domain: ${e.message}',
+      throw FailureException(
+        error:
+            'Failed to verify the DNS record for the custom domain: ${e.message}',
       );
-      return;
     } on Exception catch (e, stackTrace) {
       throw FailureException.nested(
         e,

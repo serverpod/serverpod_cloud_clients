@@ -708,4 +708,78 @@ void main() {
       );
     });
   });
+
+  group('Given the project does not exist when executing status', () {
+    late Future<void> commandResult;
+
+    setUp(() {
+      when(
+        () => client.status.getCapsuleRuntimeStatus(cloudCapsuleId: projectId),
+      ).thenThrow(NotFoundException(message: 'Capsule $projectId not found'));
+
+      commandResult = cli.run(['status', '--project', projectId]);
+    });
+
+    test('then throws error exit exception', () async {
+      await expectLater(
+        commandResult,
+        throwsA(
+          isA<ErrorExitException>().having(
+            (final e) => e.exitCode,
+            'exitCode',
+            1,
+          ),
+        ),
+      );
+    });
+
+    test('then logs a not-found error that names the project', () async {
+      await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+
+      expect(logger.errorCalls, hasLength(1));
+      expect(
+        logger.errorCalls.first,
+        equalsErrorCall(message: 'Project "$projectId" was not found.'),
+      );
+    });
+  });
+
+  group('Given the project is not in the cluster when executing status', () {
+    late Future<void> commandResult;
+
+    setUp(() {
+      when(
+        () => client.status.getCapsuleRuntimeStatus(cloudCapsuleId: projectId),
+      ).thenThrow(
+        NotFoundException(
+          message: 'Capsule $projectId not found in the cluster',
+        ),
+      );
+
+      commandResult = cli.run(['status', '--project', projectId]);
+    });
+
+    test('then throws error exit exception', () async {
+      await expectLater(
+        commandResult,
+        throwsA(
+          isA<ErrorExitException>().having(
+            (final e) => e.exitCode,
+            'exitCode',
+            1,
+          ),
+        ),
+      );
+    });
+
+    test('then logs a not-found error that names the project', () async {
+      await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+
+      expect(logger.errorCalls, hasLength(1));
+      expect(
+        logger.errorCalls.first,
+        equalsErrorCall(message: 'Project "$projectId" was not found.'),
+      );
+    });
+  });
 }
