@@ -67,7 +67,7 @@ class CloudPasswordListCommand
   Passwords are grouped by category:
   - Custom: User-defined passwords that are not part of the platform.
   - Services: Passwords for services like databases, insights, etc.
-  - Auth: Passwords for authentication like JWT, email, for package serverpod_auth_idp_server.
+  - Auth: Passwords for authentication like JWT and email for package serverpod_auth_idp_server, and the Serverpod Cloud email service.
   - Legacy Auth: Passwords for the legacy authentication module.
   ''';
 

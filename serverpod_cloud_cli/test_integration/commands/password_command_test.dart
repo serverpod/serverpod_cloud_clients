@@ -777,6 +777,38 @@ void main() {
         });
       });
 
+      group('with platform-managed scloudAuthEmailKey', () {
+        late Future commandResult;
+
+        setUp(() async {
+          when(
+            () => client.secrets.list(any()),
+          ).thenAnswer((final _) async => Future.value([]));
+
+          when(() => client.secrets.listManaged(any())).thenAnswer(
+            (final _) async =>
+                Future.value(['SERVERPOD_PASSWORD_scloudAuthEmailKey']),
+          );
+
+          commandResult = cli.run(['password', 'list', '--project', projectId]);
+        });
+
+        test('then completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then lists scloudAuthEmailKey under Auth', () async {
+          await commandResult;
+
+          final lines = logger.lineCalls.map((final c) => c.line).toList();
+
+          expect(
+            lines,
+            containsAllInOrder(['Auth', contains('scloudAuthEmailKey')]),
+          );
+        });
+      });
+
       group('with no passwords', () {
         late Future commandResult;
 
@@ -899,6 +931,44 @@ void main() {
           expect(logger.lineCalls, isEmpty);
           expect(logger.infoCalls, isEmpty);
           expect(jsonDecode(logger.rawCalls.single.content), <Object?>[]);
+        });
+      });
+
+      group('with platform-managed scloudAuthEmailKey', () {
+        late Future commandResult;
+
+        setUp(() async {
+          when(
+            () => client.secrets.list(any()),
+          ).thenAnswer((final _) async => Future.value([]));
+
+          when(() => client.secrets.listManaged(any())).thenAnswer(
+            (final _) async =>
+                Future.value(['SERVERPOD_PASSWORD_scloudAuthEmailKey']),
+          );
+
+          commandResult = cli.run([
+            'password',
+            'list',
+            '--project',
+            projectId,
+            '--format',
+            'json',
+          ]);
+        });
+
+        test('then categorizes scloudAuthEmailKey as auth', () async {
+          await commandResult;
+
+          expect(logger.lineCalls, isEmpty);
+          final payload = jsonDecode(logger.rawCalls.single.content) as List;
+          final entry = payload.single as Map;
+
+          expect(entry['name'], 'scloudAuthEmailKey');
+          expect(entry['category'], 'auth');
+          expect(entry['status'], 'AUTO (Platform)');
+          expect(entry['isPlatformManaged'], isTrue);
+          expect(entry['isUserSet'], isFalse);
         });
       });
     });
