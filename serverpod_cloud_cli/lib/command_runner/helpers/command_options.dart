@@ -182,6 +182,7 @@ class DartSdkVersionOption extends StringOption {
         argName: 'dart-version',
         helpText:
             'Overrides the Dart SDK version to use for building the project.',
+        envName: 'SERVERPOD_CLOUD_DEPLOY_DART_VERSION',
       );
 }
 
