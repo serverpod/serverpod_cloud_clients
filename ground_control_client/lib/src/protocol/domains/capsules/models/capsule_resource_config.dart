@@ -122,10 +122,10 @@ abstract class CapsuleResource
   /// DEPRECATED (see issue https://linear.app/serverpod/issue/CLD-483/remove-deprecated-fields-from-capsuleresource)
   bool computeScalingEnabled;
 
-  /// The minimum number of compute instances to scale to.
+  /// The minimum number of podlets to scale to.
   int computeScalingMinReplicas;
 
-  /// The maximum number of compute instances to scale to.
+  /// The maximum number of podlets to scale to.
   int computeScalingMaxReplicas;
 
   /// The compute size of the capsule.

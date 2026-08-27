@@ -65,7 +65,7 @@ abstract class LogRecord
   /// The ID of the deploy attempt (i.e. version) this log record is from.
   _i1.UuidValue? deployAttemptId;
 
-  /// The ID of the server instance this log record is from.
+  /// The ID of the podlet this log record is from.
   /// Null if this is a build log record.
   String? serverInstanceId;
 

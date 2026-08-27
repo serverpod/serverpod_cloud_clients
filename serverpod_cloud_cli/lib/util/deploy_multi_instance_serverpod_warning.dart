@@ -5,7 +5,7 @@ import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/constants.dart' show VersionConstants;
 
 /// True when the pubspec's Serverpod constraint does not allow any
-/// [VersionConstants.serverpodMultiInstanceSafeMinVersion] or newer release.
+/// [VersionConstants.serverpodMultiPodletSafeMinVersion] or newer release.
 bool serverpodConstraintPrecludesMultiInstanceSafeRelease(
   final String? serverpodVersionConstraint,
 ) {
@@ -17,7 +17,7 @@ bool serverpodConstraintPrecludesMultiInstanceSafeRelease(
       serverpodVersionConstraint,
     );
     final fromSafe = VersionConstraint.parse(
-      '>=${VersionConstants.serverpodMultiInstanceSafeMinVersion}',
+      '>=${VersionConstants.serverpodMultiPodletSafeMinVersion}',
     );
     return !projectConstraint.allowsAny(fromSafe);
   } on FormatException {
@@ -25,14 +25,14 @@ bool serverpodConstraintPrecludesMultiInstanceSafeRelease(
   }
 }
 
-/// True when compute is configured for more than one running instance
+/// True when compute is configured for more than one running podlet
 /// at minimum or maximum scale.
 bool computeUsesMoreThanOneInstance(final ComputeInfo compute) =>
     compute.minInstances > 1 || compute.maxInstances > 1;
 
 /// When the project cannot resolve to Serverpod
-/// [VersionConstants.serverpodMultiInstanceSafeMinVersion]+ and the capsule
-/// is scaled beyond a single instance, logs a warning. Failures reading
+/// [VersionConstants.serverpodMultiPodletSafeMinVersion]+ and the capsule
+/// is scaled beyond a single podlet, logs a warning. Failures reading
 /// compute are ignored (debug log only).
 Future<void> warnIfLegacyServerpodWithMultipleInstances({
   required final Client cloudApiClient,
@@ -53,8 +53,8 @@ Future<void> warnIfLegacyServerpodWithMultipleInstances({
       return;
     }
     logger.warning(
-      'Multiple server instances are enabled, but your Serverpod constraint does not allow it. '
-      'Upgrade to Serverpod ${VersionConstants.serverpodMultiInstanceSafeMinVersion} '
+      'Multiple podlets are enabled, but your Serverpod constraint does not allow it. '
+      'Upgrade to Serverpod ${VersionConstants.serverpodMultiPodletSafeMinVersion} '
       'or later to reduce the risk of disruption during scaling and deployment.',
       newParagraph: true,
     );
