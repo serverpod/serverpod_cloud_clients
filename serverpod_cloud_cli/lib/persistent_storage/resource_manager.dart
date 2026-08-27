@@ -310,6 +310,25 @@ abstract class ResourceManager {
     required final String localStoragePath,
   }) {
     try {
+      final json = tryLoadRawSettingsSync(localStoragePath: localStoragePath);
+      if (json == null) {
+        return null;
+      }
+      final decoded = jsonDecode(json) as Map<String, dynamic>;
+      return ServerpodCloudSettingsData.fromJson(decoded);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Synchronously loads Serverpod Cloud settings data from local storage
+  /// and returns the raw content as a string.
+  ///
+  /// Returns `null` if the file does not exist or cannot be read.
+  static String? tryLoadRawSettingsSync({
+    required final String localStoragePath,
+  }) {
+    try {
       final file = File(
         p.join(localStoragePath, ResourceManagerConstants.settingsFilePath),
       );
@@ -317,8 +336,7 @@ abstract class ResourceManager {
         return null;
       }
       final json = file.readAsStringSync();
-      final decoded = jsonDecode(json) as Map<String, dynamic>;
-      return ServerpodCloudSettingsData.fromJson(decoded);
+      return json;
     } catch (_) {
       return null;
     }
