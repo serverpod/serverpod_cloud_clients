@@ -3,7 +3,6 @@ library;
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
@@ -16,8 +15,6 @@ import 'package:serverpod_cloud_cli/command_runner/commands/launch/launch_comman
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/constants.dart' show VersionConstants;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
-import 'package:serverpod_cloud_cli/util/pubspec_validator.dart'
-    show resolveProjectDartSdkVersion;
 import 'package:serverpod_cloud_shared/serverpod_cloud_shared.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -373,25 +370,6 @@ project:
           await expectLater(expected.validate(), completes);
         });
 
-        test(
-          'then writes scloud.yaml with dartSdk resolved from project',
-          () async {
-            final resolved = resolveProjectDartSdkVersion(
-              Directory(testProjectDir),
-            );
-            final expected = d.dir(testProjectDir, [
-              d.file(
-                'scloud.yaml',
-                allOf([
-                  contains('projectId: "$projectId"'),
-                  contains('dartSdk: "$resolved"'),
-                ]),
-              ),
-            ]);
-            await expectLater(expected.validate(), completes);
-          },
-        );
-
         test('then .scloudignore is created in the project dir', () async {
           final expected = d.dir(testProjectDir, [
             d.file(
@@ -573,6 +551,49 @@ project:
           ]);
           await expectLater(expected.validate(), completes);
         });
+      });
+
+      group('and .tool-versions holds an unsupported Dart SDK version'
+          ', when executing launch with --wet-run'
+          ', with --no-pre-deploy-scripts'
+          ', and approving confirmation,', () {
+        late Future commandResult;
+        setUp(() async {
+          await d
+              .file('.tool-versions', 'dart 3.20.0\n')
+              .create(testProjectDir);
+
+          logger.answerNextConfirmsWith([true]);
+
+          simulateConsoleProjectCreation(logger, projectId: projectId);
+
+          commandResult = cli.run([
+            'launch',
+            '--project',
+            projectId,
+            '--project-dir',
+            testProjectDir,
+            '--no-pre-deploy-scripts',
+            '--no-browser',
+            '--wet-run',
+          ]);
+        });
+
+        test('then throws ErrorExitException', () async {
+          await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+        });
+
+        test(
+          'then the error names .tool-versions as the source of the version',
+          () async {
+            await commandResult.catchError((final _) {});
+
+            expect(
+              logger.errorCalls.map((final call) => call.message),
+              contains(allOf(contains('3.20.0'), contains('.tool-versions'))),
+            );
+          },
+        );
       });
 
       group('when executing launch with flutter_build script in pubspec.yaml'
@@ -820,7 +841,6 @@ serverpod:
           await d.file(p.join(testProjectDir, 'scloud.yaml'), '''
 project:
   projectId: "$projectId"
-  dartSdk: "3.8.0"
 ''').create();
 
           commandResult = cli.run([
@@ -862,7 +882,6 @@ project:
           await d.file(p.join(testProjectDir, 'scloud.yaml'), '''
 project:
   projectId: "$projectId"
-  dartSdk: "3.8.0"
 ''').create();
 
           commandResult = cli.run([
@@ -901,7 +920,6 @@ project:
           await d.file(p.join(testProjectDir, 'scloud.yaml'), '''
 project:
   projectId: "$projectId"
-  dartSdk: "3.8.0"
 ''').create();
 
           commandResult = cli.run([
@@ -939,7 +957,6 @@ project:
           await d.file(p.join(testProjectDir, 'scloud.yaml'), '''
 project:
   projectId: "$projectId"
-  dartSdk: "3.8.0"
 ''').create();
 
           commandResult = cli.run([
@@ -982,7 +999,6 @@ project:
           await d.file(p.join(testProjectDir, 'scloud.yaml'), '''
 project:
   projectId: "$projectId"
-  dartSdk: "3.8.0"
 ''').create();
 
           commandResult = cli.run([
@@ -1110,6 +1126,7 @@ project:
             ),
           );
         });
+
         test('then logs no success messages', () async {
           await commandResult.catchError((final _) {});
 
@@ -1932,53 +1949,6 @@ dependencies:
 
         final expected = d.dir(validProjectDir, [d.nothing('scloud.yaml')]);
         await expectLater(expected.validate(), completes);
-      });
-    });
-
-    group('and a Serverpod server directory with compatible pubspec sdk '
-        'but outdated lockfile sdk when executing launch', () {
-      late String invalidProjectDir;
-      late Future commandResult;
-
-      setUp(() async {
-        when(() => client.platform.getDartSdkVersionPolicy()).thenAnswer(
-          (final _) async => DartSdkVersionPolicyBuilder()
-              .withSupportedVersions(['3.8', '3.9', '3.10'])
-              .withMinVersionInclusive('3.8.0')
-              .withMaxVersionExclusive('3.11.0')
-              .build(),
-        );
-
-        await d.dir('invalid_lockfile_server_dir', [
-          d.file('pubspec.yaml', '''
-name: my_project_server
-environment:
-  sdk: ${ProjectFactory.highValidSdkVersion}
-dependencies:
-  serverpod: ${ProjectFactory.validServerpodVersion}
-'''),
-          d.file('pubspec.lock', '''
-sdks:
-  dart: ">=3.12.0 <4.0.0"
-'''),
-        ]).create();
-        invalidProjectDir = p.join(d.sandbox, 'invalid_lockfile_server_dir');
-
-        commandResult = cli.run(['launch', '--project-dir', invalidProjectDir]);
-      });
-
-      test('then throws ErrorExitException', () async {
-        expect(commandResult, throwsA(isA<ErrorExitException>()));
-      });
-
-      test('then logs error message for lockfile sdk constraint', () async {
-        await commandResult.catchError((final _) {});
-
-        expect(logger.errorCalls, hasLength(1));
-        expect(
-          logger.errorCalls.single.message,
-          contains('Unsupported sdk version constraint in pubspec.lock'),
-        );
       });
     });
 

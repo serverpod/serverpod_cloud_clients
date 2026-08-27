@@ -4,8 +4,6 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:serverpod_cloud_cli/constants.dart' show VersionConstants;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
-import 'package:serverpod_cloud_cli/util/dart_version_util.dart';
-import 'package:serverpod_cloud_cli/util/tool_versions_io.dart';
 import 'package:yaml/yaml.dart';
 
 /// Convenience function to check if a directory is a Serverpod server directory.
@@ -111,24 +109,19 @@ class TenantProjectPubspec {
   /// Validates the pubspec.yaml dependencies of a customer project
   /// in order to be deployed to Serverpod Cloud.
   ///
-  /// [supportedSdkPolicy] is the Dart SDK version policy of Serverpod Cloud,
-  /// fetched from the server. If it is null the SDK version range check is
-  /// skipped - the server enforces the policy when the deployment is created.
-  /// The check that the pubspec declares a sdk constraint at all always runs,
-  /// since it needs no server data.
+  /// The Dart SDK version the project is built with is chosen by
+  /// [DartSdkSelector], which validates the declared bound against the
+  /// version policy. This method only checks that the bound is declared.
   ///
   /// If the dependencies are not valid,
   /// the returned list will contain the error messages.
   /// If the dependencies are valid, the list will be empty.
-  List<String> projectDependencyIssues({
-    required final SupportedDartSdkPolicy? supportedSdkPolicy,
-    final bool requireServerpod = true,
-  }) {
+  List<String> projectDependencyIssues({final bool requireServerpod = true}) {
     final supportedServerpod = VersionConstraint.parse(
       VersionConstants.supportedServerpodConstraint,
     );
 
-    final sdkError = _validateEnvironmentConstraints(supportedSdkPolicy);
+    final sdkError = _validateEnvironmentConstraints();
 
     final serverpodError = _validateHostedDependencyConstraint(
       packageName: 'serverpod',
@@ -146,18 +139,10 @@ class TenantProjectPubspec {
   /// They represent what SDK versions are supported by the project,
   /// including the SDK the deployed project is built with,
   /// and a possible but unsupported Flutter dependency.
-  String? _validateEnvironmentConstraints(
-    final SupportedDartSdkPolicy? supportedSdkPolicy,
-  ) {
+  String? _validateEnvironmentConstraints() {
     final sdkConstraint = pubspec.environment['sdk'];
     if (sdkConstraint == null) {
       return 'No sdk constraint found in package ${pubspec.name}';
-    }
-    if (supportedSdkPolicy != null &&
-        !supportedSdkPolicy.supportedRange.allowsAny(sdkConstraint)) {
-      return 'Unsupported sdk version constraint in package ${pubspec.name}: $sdkConstraint'
-          ' (must accept: ${supportedSdkPolicy.supportedRange})\n'
-          '${supportedSdkPolicy.availabilityDescription}';
     }
 
     final flutterConstraint = pubspec.environment['flutter'];
@@ -193,6 +178,8 @@ class TenantProjectPubspec {
     return null;
   }
 
+  /// The Dart SDK constraint the package declares in `environment.sdk`,
+  /// or null if it declares none.
   String? environmentSdkConstraint() {
     final sdk = pubspec.environment['sdk'];
     if (sdk == null || sdk.isEmpty) {
@@ -201,77 +188,56 @@ class TenantProjectPubspec {
     return sdk.toString();
   }
 
-  /// Validates the Dart SDK constraint recorded in [lockfile].
+  /// Reads the Dart SDK constraint recorded as `sdks.dart` in [lockfile].
   ///
-  /// [supportedSdkPolicy] is the Dart SDK version policy of Serverpod Cloud,
-  /// fetched from the server. If it is null the constraint is only checked
-  /// for valid syntax - the server enforces the policy when the deployment
-  /// is created.
-  ///
-  /// Returns an empty list if the lockfile is missing, has no Dart SDK
-  /// constraint, or the constraint is supported. Otherwise returns error
-  /// messages.
-  static List<String> lockfileDependencyIssues(
-    final File lockfile, {
-    required final SupportedDartSdkPolicy? supportedSdkPolicy,
-  }) {
+  /// The constraint is null if the lockfile is missing, cannot be read or
+  /// parsed, or records no Dart SDK constraint. The issues describe the
+  /// cases where the lockfile itself could not be read.
+  static ({String? constraint, List<String> issues}) readLockfileDartSdk(
+    final File lockfile,
+  ) {
     if (!lockfile.existsSync()) {
-      return const [];
+      return (constraint: null, issues: const []);
     }
 
     final String rawContent;
     try {
       rawContent = lockfile.readAsStringSync();
     } catch (e) {
-      return ['Failed to read pubspec.lock: ${e.toString()}'];
+      return (
+        constraint: null,
+        issues: ['Failed to read pubspec.lock: ${e.toString()}'],
+      );
     }
 
     final YamlNode document;
     try {
       document = loadYamlNode(rawContent);
     } catch (e) {
-      return ['Failed to parse pubspec.lock: ${e.toString()}'];
+      return (
+        constraint: null,
+        issues: ['Failed to parse pubspec.lock: ${e.toString()}'],
+      );
     }
 
     if (document is! YamlMap) {
-      return ['Failed to parse pubspec.lock: expected a YAML map'];
+      return (
+        constraint: null,
+        issues: const ['Failed to parse pubspec.lock: expected a YAML map'],
+      );
     }
 
     final sdks = document.value['sdks'];
     if (sdks is! YamlMap) {
-      return const [];
+      return (constraint: null, issues: const []);
     }
 
-    final dartSdk = sdks.value['dart'];
-    if (dartSdk == null) {
-      return const [];
+    final dartSdk = sdks.value['dart']?.toString().trim();
+    if (dartSdk == null || dartSdk.isEmpty) {
+      return (constraint: null, issues: const []);
     }
 
-    final sdkConstraintText = dartSdk.toString().trim();
-    if (sdkConstraintText.isEmpty) {
-      return const [];
-    }
-
-    final VersionConstraint sdkConstraint;
-    try {
-      sdkConstraint = VersionConstraint.parse(sdkConstraintText);
-    } on FormatException {
-      return [
-        'Invalid Dart SDK version constraint in pubspec.lock: '
-            '"$sdkConstraintText".',
-      ];
-    }
-
-    if (supportedSdkPolicy != null &&
-        !supportedSdkPolicy.supportedRange.allowsAny(sdkConstraint)) {
-      return [
-        'Unsupported sdk version constraint in pubspec.lock: $sdkConstraintText'
-            ' (must accept: ${supportedSdkPolicy.supportedRange})\n'
-            '${supportedSdkPolicy.availabilityDescription}',
-      ];
-    }
-
-    return const [];
+    return (constraint: dartSdk, issues: const []);
   }
 
   /// Returns true if the pubspec.yaml defines a `serverpod.scripts.flutter_build` entry.
@@ -301,43 +267,4 @@ class TenantProjectPubspec {
       return false;
     }
   }
-}
-
-/// Resolves the Dart SDK version to use for the project in [rootDir].
-///
-/// Resolution order:
-/// `.tool-versions` in [rootDir] → `environment.sdk` from
-/// [rootDir]/pubspec.yaml.
-///
-/// Returns null if the project defines no Dart SDK version hint,
-/// in which case the server default applies.
-///
-/// Throws [FailureException] if a version found in `.tool-versions` is invalid.
-String? resolveProjectDartSdkVersion(final Directory rootDir) {
-  final fromToolVersions = ToolVersionsIO.readDartVersionFromToolVersions([
-    rootDir,
-  ]);
-  if (fromToolVersions != null) {
-    ensureValidVersionConstraint(
-      fromToolVersions,
-      sourceDescription: '(from .tool-versions)',
-    );
-    return fromToolVersions;
-  }
-
-  final pubspecFile = File('${rootDir.path}/pubspec.yaml');
-  if (pubspecFile.existsSync()) {
-    final fromPubspec = TenantProjectPubspec.fromFile(
-      pubspecFile,
-    ).environmentSdkConstraint();
-    if (fromPubspec != null) {
-      ensureValidVersionConstraint(
-        fromPubspec,
-        sourceDescription: '(from pubspec.yaml)',
-      );
-      return fromPubspec;
-    }
-  }
-
-  return null;
 }

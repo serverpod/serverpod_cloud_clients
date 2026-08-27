@@ -1,5 +1,3 @@
-import 'dart:io' show Directory;
-
 import 'package:collection/collection.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
@@ -8,8 +6,6 @@ import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/shared/user_interaction/user_confirmations.dart';
 import 'package:serverpod_cloud_cli/util/dart_version_util.dart';
 import 'package:serverpod_cloud_cli/util/project_files_writer.dart';
-import 'package:serverpod_cloud_cli/util/pubspec_validator.dart'
-    show resolveProjectDartSdkVersion;
 
 enum PlanProfile {
   starter('starter', 'starter', 'starter-project'),
@@ -209,7 +205,7 @@ abstract class ProjectCommands {
     final List<String> preDeployScripts = const [],
     final bool suppressCommandMessages = false,
   }) async {
-    var safeDartSdk = ProjectDartVersionHint.normalizeBareMajorMinorOverride(
+    final safeDartSdk = ProjectDartVersionHint.normalizeBareMajorMinorOverride(
       dartVersionOverride,
     );
     if (safeDartSdk != null) {
@@ -217,8 +213,6 @@ abstract class ProjectCommands {
         safeDartSdk,
         sourceDescription: '(from --dart-version flag)',
       );
-    } else {
-      safeDartSdk = resolveProjectDartSdkVersion(Directory(projectDirectory));
     }
 
     await logger.progress(

@@ -2,7 +2,6 @@
 library;
 
 import 'dart:async';
-import 'dart:io';
 
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
@@ -13,8 +12,6 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart
 import 'package:serverpod_cloud_cli/command_runner/commands/project/project_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
-import 'package:serverpod_cloud_cli/util/pubspec_validator.dart'
-    show resolveProjectDartSdkVersion;
 import 'package:serverpod_cloud_cli/util/scloud_config/yaml_schema.dart';
 import 'package:serverpod_cloud_cli/util/scloudignore.dart' show ScloudIgnore;
 import 'package:test/test.dart';
@@ -134,21 +131,6 @@ project:
           ]);
           await expectLater(expected.validate(), completes);
         });
-
-        test(
-          'then scloud.yaml contains dartSdk resolved from the project',
-          () async {
-            await commandResult;
-
-            final resolved = resolveProjectDartSdkVersion(
-              Directory(testProjectDir),
-            );
-            final expected = d.dir(testProjectDir, [
-              d.file('scloud.yaml', contains('dartSdk: "$resolved"')),
-            ]);
-            await expectLater(expected.validate(), completes);
-          },
-        );
       });
 
       group('and scloud.yaml exists when executing link', () {
@@ -443,21 +425,6 @@ project:
         test('then command completes successfully', () async {
           await expectLater(commandResult, completes);
         });
-
-        test(
-          'then scloud.yaml omits dartSdk when only .tool-versions is present',
-          () async {
-            await commandResult;
-
-            final resolved = resolveProjectDartSdkVersion(
-              Directory(testProjectDir),
-            );
-            final expected = d.dir(testProjectDir, [
-              d.file('scloud.yaml', contains('dartSdk: "$resolved"')),
-            ]);
-            await expectLater(expected.validate(), completes);
-          },
-        );
       });
 
       group('and .tool-versions file with dart entry when executing link '
