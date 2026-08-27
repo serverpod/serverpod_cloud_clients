@@ -66,6 +66,7 @@ Future<void> _main(
       errorReporter.apiServerUrl = context.apiServerUrl;
       errorReporter.cloudUserId = context.cloudUserId;
     },
+    onErrorReport: errorReporter.report,
   );
   try {
     await runner.run(args);

@@ -8,6 +8,10 @@ abstract class HostConstants {
 abstract final class ExitCodeConstants {
   /// The exit code for when `scloud` must be updated.
   static const scloudUpdateRequired = 69;
+
+  /// The exit code for when `scloud` has updated itself and the command
+  /// must be run again with the new version.
+  static const scloudUpdatedRerunRequired = 75;
 }
 
 abstract final class VersionConstants {

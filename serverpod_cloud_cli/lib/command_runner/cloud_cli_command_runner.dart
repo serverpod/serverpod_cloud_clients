@@ -7,28 +7,28 @@ import 'package:ground_control_client/ground_control_client.dart'
     show ConsoleRoutes;
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
-
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/auth/auth_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/context/context_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/custom_domain/custom_domain_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/db/db_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy/deploy_command.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/variable/variable_command.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/auth/auth_command.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/context/context_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployments_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/launch/launch_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/log/log_command.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/status/status_command.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/project/project_command.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/password/password_command.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployments_command.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/version/version_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/me/me_command.dart';
-import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
-import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
-import 'package:serverpod_cloud_cli/command_runner/helpers/cli_version_checker.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/password/password_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/project/project_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/status/status_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/variable/variable_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/version/version_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cli_run_context_resolver.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/cli_updater.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/cli_version_checker.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/activation_checker.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
@@ -59,6 +59,10 @@ typedef CliRunContext = ({
 
 typedef OnRunContextResolved = void Function(CliRunContext context);
 
+/// Reports an error for diagnostics.
+typedef OnErrorReport =
+    Future<void> Function(Object error, StackTrace stackTrace);
+
 /// Represents the Serverpod Cloud CLI main command, its global options, and subcommands.
 class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   final Version version;
@@ -73,6 +77,10 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   /// cannot break the command being run.
   final OnRunContextResolved? _onRunContextResolved;
 
+  /// Called to report an error that the CLI handled but that shall still be
+  /// reported for diagnostics.
+  final OnErrorReport? _onErrorReport;
+
   /// If true, analytics will be not be suppressed for non-production usage.
   final bool _enableAnalyticsForAllEnvs;
 
@@ -80,6 +88,12 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   final bool _adminUserMode;
 
   final VersionCommand _versionCommand;
+
+  final CliUpdater _cliUpdater;
+
+  /// The version this process was already updated to, if any,
+  /// which must not be installed again.
+  final Version? _attemptedUpdateVersion;
 
   GlobalConfiguration? _globalConfiguration;
 
@@ -124,11 +138,17 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     required final CloudCliServiceProvider serviceProvider,
     required final bool enableAnalyticsForAllEnvs,
     required final bool adminUserMode,
+    required final CliUpdater cliUpdater,
+    required final Version? attemptedUpdateVersion,
     final OnRunContextResolved? onRunContextResolved,
+    final OnErrorReport? onErrorReport,
     super.onAnalyticsEvent,
     super.setLogLevel,
   }) : _onRunContextResolved = onRunContextResolved,
+       _onErrorReport = onErrorReport,
        _serviceProvider = serviceProvider,
+       _cliUpdater = cliUpdater,
+       _attemptedUpdateVersion = attemptedUpdateVersion,
        _versionCommand = VersionCommand(logger: logger),
        _enableAnalyticsForAllEnvs = enableAnalyticsForAllEnvs,
        _adminUserMode = adminUserMode,
@@ -151,8 +171,11 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     final CloudCliServiceProvider? serviceProvider,
     final OnAnalyticsEvent? onAnalyticsEvent,
     final OnRunContextResolved? onRunContextResolved,
+    final OnErrorReport? onErrorReport,
     final bool enableAnalyticsForAllEnvs = false,
     bool? adminUserMode,
+    final CliUpdater? cliUpdater,
+    final Version? attemptedUpdateVersion,
   }) {
     adminUserMode ??=
         bool.tryParse(
@@ -167,7 +190,11 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
       serviceProvider: serviceProvider ?? CloudCliServiceProvider(),
       enableAnalyticsForAllEnvs: enableAnalyticsForAllEnvs,
       adminUserMode: adminUserMode,
+      cliUpdater: cliUpdater ?? const DartCliUpdater(),
+      attemptedUpdateVersion:
+          attemptedUpdateVersion ?? attemptedCliUpdateVersion(),
       onRunContextResolved: onRunContextResolved,
+      onErrorReport: onErrorReport,
       onAnalyticsEvent: onAnalyticsEvent,
       setLogLevel:
           ({
@@ -206,56 +233,169 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   @override
   Future<void> runCommand(final ArgResults topLevelResults) async {
     try {
-      _onRunContextResolved?.call(_runContext(topLevelResults));
-    } catch (e, stackTrace) {
-      logger.debug('Failed to resolve the run context: $e\n$stackTrace');
-    }
+      try {
+        _onRunContextResolved?.call(_runContext(topLevelResults));
+      } catch (e, stackTrace) {
+        logger.debug('Failed to resolve the run context: $e\n$stackTrace');
+      }
 
-    if (globalConfiguration.version) {
-      await _versionCommand.run();
-      return;
-    }
+      if (globalConfiguration.version) {
+        await _versionCommand.run();
+        return;
+      }
 
-    final Version? latestVersion;
-    try {
-      latestVersion = await CLIVersionChecker.fetchLatestCLIVersion(
-        logger: logger,
-        localStoragePath: globalConfiguration.scloudDir.path,
-      );
-    } catch (e, stackTrace) {
-      logger.debug('Failed to fetch latest CLI version: $e');
-      throw ErrorExitException(
-        'Failed to fetch latest CLI version',
-        e,
-        stackTrace,
-      );
-    }
-
-    if (latestVersion != null && version < latestVersion) {
-      final isRequiredUpdate = CLIVersionChecker.isBreakingUpdate(
-        currentVersion: version,
-        latestVersion: latestVersion,
-      );
-
-      _printUpdateCLIPrompt(
-        latestVersion: latestVersion,
-        logger: logger,
-        isRequiredUpdate:
-            isRequiredUpdate && globalConfiguration.breakingVersionCheck,
-      );
-
-      if (isRequiredUpdate && globalConfiguration.breakingVersionCheck) {
-        throw ErrorExitException.code(
-          ExitCodeConstants.scloudUpdateRequired,
-          'You need to update the CLI to continue.',
+      final Version? latestVersion;
+      try {
+        latestVersion = await CLIVersionChecker.fetchLatestCLIVersion(
+          logger: logger,
+          localStoragePath: globalConfiguration.scloudDir.path,
+        );
+      } catch (e, stackTrace) {
+        logger.debug('Failed to fetch latest CLI version: $e');
+        throw ErrorExitException(
+          'Failed to fetch latest CLI version',
+          e,
+          stackTrace,
         );
       }
-    }
 
-    try {
+      if (latestVersion != null && version < latestVersion) {
+        if (_isRequiredUpdate(latestVersion) &&
+            _attemptedUpdateVersion != latestVersion) {
+          final didRerun = await _updateAndRerunCommand(
+            latestVersion: latestVersion,
+            topLevelResults: topLevelResults,
+          );
+          if (didRerun) {
+            return;
+          }
+        } else {
+          _alertUpdateNotInstalled(latestVersion);
+        }
+      }
+
       await super.runCommand(topLevelResults);
     } finally {
-      serviceProvider.shutdown();
+      _serviceProvider.shutdown();
+    }
+  }
+
+  /// Whether [latestVersion] is a breaking update that the user must install
+  /// to continue.
+  bool _isRequiredUpdate(final Version latestVersion) =>
+      CLIVersionChecker.isBreakingUpdate(
+        currentVersion: version,
+        latestVersion: latestVersion,
+      ) &&
+      globalConfiguration.breakingVersionCheck;
+
+  /// Updates the CLI to [latestVersion] and reruns the command with it.
+  ///
+  /// Returns true if the command was rerun, and so must not be run again in
+  /// this process. Returns false if the update failed and the command shall
+  /// run on the current version.
+  ///
+  /// Throws [ErrorExitException] with [ExitCodeConstants.scloudUpdatedRerunRequired]
+  /// if the rerun is turned off, with the rerun's exit code if the rerun
+  /// failed, and with [ExitCodeConstants.scloudUpdateRequired] if a breaking
+  /// update could not be installed.
+  /// Throws [UnexpectedErrorExitException] if the rerun could not be started.
+  Future<bool> _updateAndRerunCommand({
+    required final Version latestVersion,
+    required final ArgResults topLevelResults,
+  }) async {
+    if (!_cliUpdater.canSelfUpdate) {
+      logger.debug('This CLI installation cannot update itself.');
+      _alertUpdateNotInstalled(latestVersion);
+      return false;
+    }
+
+    final updated = await logger.progress(
+      'Updating Serverpod Cloud CLI to $latestVersion',
+      () async {
+        try {
+          await _cliUpdater.install(latestVersion, logger: logger);
+          return true;
+        } on CliUpdateFailedException catch (e, stackTrace) {
+          logger.debug('Failed to update the CLI: $e\n$stackTrace');
+          await _reportError(e, stackTrace);
+          return false;
+        }
+      },
+      successMessage: 'Updated Serverpod Cloud CLI to $latestVersion',
+    );
+
+    if (!updated) {
+      _alertUpdateNotInstalled(latestVersion);
+      return false;
+    }
+
+    if (globalConfiguration.exitOnUpdated) {
+      throw ErrorExitException.code(
+        ExitCodeConstants.scloudUpdatedRerunRequired,
+        'Updated to $latestVersion, the command must be run again.',
+      );
+    }
+
+    final int rerunExitCode;
+    try {
+      rerunExitCode = await _cliUpdater.rerun(
+        topLevelResults.arguments,
+        installedVersion: latestVersion,
+        logger: logger,
+      );
+    } on ProcessException catch (e, stackTrace) {
+      await _reportError(e, stackTrace);
+      logger.error(
+        'The CLI was updated to $latestVersion,'
+        ' but the command could not be run again.',
+        hint: 'Run the command again.',
+      );
+      throw UnexpectedErrorExitException(e.message, e, stackTrace);
+    }
+
+    if (rerunExitCode != 0) {
+      throw ErrorExitException.code(
+        rerunExitCode,
+        'The rerun of the command exited with $rerunExitCode.',
+      );
+    }
+
+    return true;
+  }
+
+  /// Alerts that [latestVersion] is available but was not installed.
+  ///
+  /// Throws [ErrorExitException] with [ExitCodeConstants.scloudUpdateRequired]
+  /// if the update is breaking and the breaking version check is enabled.
+  void _alertUpdateNotInstalled(final Version latestVersion) {
+    final isRequiredUpdate = _isRequiredUpdate(latestVersion);
+
+    _printUpdateCLIAlert(
+      latestVersion: latestVersion,
+      logger: logger,
+      isRequiredUpdate: isRequiredUpdate,
+    );
+
+    if (isRequiredUpdate) {
+      throw ErrorExitException.code(
+        ExitCodeConstants.scloudUpdateRequired,
+        'You need to update the CLI to continue.',
+      );
+    }
+  }
+
+  /// Reports [error] for diagnostics, if a reporter is configured.
+  ///
+  /// Never throws, so reporting cannot break the command being run.
+  Future<void> _reportError(
+    final Object error,
+    final StackTrace stackTrace,
+  ) async {
+    try {
+      await _onErrorReport?.call(error, stackTrace);
+    } catch (e, s) {
+      logger.debug('Failed to report the error: $e\n$s');
     }
   }
 
@@ -437,7 +577,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     logger.logLevel = logLevel;
   }
 
-  static void _printUpdateCLIPrompt({
+  static void _printUpdateCLIAlert({
     required final Version latestVersion,
     required final CommandLogger logger,
     required final bool isRequiredUpdate,
@@ -585,6 +725,19 @@ enum GlobalOption<V> implements OptionDefinition<V> {
       hide: true,
     ),
   ),
+  exitOnUpdated(
+    FlagOption(
+      argName: 'exit-on-updated',
+      envName: 'SERVERPOD_CLOUD_EXIT_ON_UPDATED',
+      helpText:
+          'Exit with code '
+          '${ExitCodeConstants.scloudUpdatedRerunRequired} after updating the '
+          'CLI instead of rerunning the command.',
+      defaultsTo: false,
+      negatable: false,
+      hide: true,
+    ),
+  ),
   consoleServer(
     StringOption(
       argName: 'console-url',
@@ -661,6 +814,8 @@ class GlobalConfiguration extends Configuration<GlobalOption> {
   bool get warnBillingOverdue => value(GlobalOption.warnBillingOverdue);
 
   bool get breakingVersionCheck => value(GlobalOption.breakingVersionCheck);
+
+  bool get exitOnUpdated => value(GlobalOption.exitOnUpdated);
 
   String? get authToken => optionalValue(GlobalOption.authToken);
 }
