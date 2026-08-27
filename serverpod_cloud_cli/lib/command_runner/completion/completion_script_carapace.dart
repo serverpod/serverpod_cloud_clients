@@ -79,6 +79,10 @@ commands:
           --idle-ttl=: "The duration of non-use after which the token will expire."
           --no-idle-ttl: "Do not expire the token after a duration of non-use."
 
+      - name: revoke-token
+        flags:
+          --token-id=!: "The ID of the token to revoke. Can be passed as the first argument."
+
   - name: me
 
   - name: project

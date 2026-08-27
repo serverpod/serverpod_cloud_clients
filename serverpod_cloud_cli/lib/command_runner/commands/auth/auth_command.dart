@@ -26,6 +26,7 @@ class CloudAuthCommand extends CloudCliCommand {
     addSubcommand(CloudLogoutCommand(logger: logger));
     addSubcommand(ListAuthSessionsCommand(logger: logger));
     addSubcommand(CreateTokenCommand(logger: logger));
+    addSubcommand(CloudRevokeTokenCommand(logger: logger));
   }
 }
 
@@ -346,6 +347,62 @@ the --token option or the SERVERPOD_CLOUD_TOKEN environment variable.''';
       logger: logger,
       expiresAt: expiresAt,
       expiresAfter: noExpiresAfter ? null : expiresAfter,
+    );
+  }
+}
+
+enum RevokeTokenCommandOption<V> implements OptionDefinition<V> {
+  tokenId(
+    StringOption(
+      argName: 'token-id',
+      argPos: 0,
+      mandatory: true,
+      helpText:
+          'The ID of the token to revoke. Can be passed as the first argument.',
+    ),
+  );
+
+  const RevokeTokenCommandOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class CloudRevokeTokenCommand
+    extends CloudCliCommand<RevokeTokenCommandOption> {
+  CloudRevokeTokenCommand({required super.logger})
+    : super(options: RevokeTokenCommandOption.values);
+
+  @override
+  final name = 'revoke-token';
+
+  @override
+  final description = '''Revoke an authentication token.
+
+Revokes a specific login session or CLI / personal access token.
+See also "scloud auth list", to list the current authentication sessions.''';
+
+  @override
+  String get usageExamples => '''\n
+Examples
+
+  Revoke a token by ID.
+
+    \$ scloud auth revoke-token <token-id>
+
+''';
+
+  @override
+  Future<void> runWithConfig(
+    final Configuration<RevokeTokenCommandOption> commandConfig,
+  ) async {
+    final tokenId = commandConfig.value(RevokeTokenCommandOption.tokenId);
+
+    await Auth.revokeToken(
+      runner.serviceProvider.cloudApiClient,
+      logger: logger,
+      tokenId: tokenId,
+      localStoragePath: globalConfiguration.scloudDir.path,
     );
   }
 }
