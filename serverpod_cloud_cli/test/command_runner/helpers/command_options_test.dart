@@ -59,4 +59,134 @@ void main() {
       expect(() => _valueFromUnvalidatedArgs([]), throwsA(isA<StateError>()));
     });
   });
+
+  group('Given a ProjectIdOption', () {
+    const option = ProjectIdOption();
+
+    group('when the scloud project config and the project context both have '
+        'values', () {
+      test('then the project id is the scloud project config', () {
+        final config = Configuration.resolveNoExcept(
+          options: [option],
+          configBroker: _MapConfigBroker({
+            'scloud:/project/projectId': 'scloud-project',
+            'settings:/project_context': 'settings-project',
+          }),
+        );
+
+        expect(config.value(option), 'scloud-project');
+      });
+    });
+
+    group('when only the project context has a value', () {
+      test('then the project id is the project context', () {
+        final config = Configuration.resolveNoExcept(
+          options: [option],
+          configBroker: _MapConfigBroker({
+            'settings:/project_context': 'settings-project',
+          }),
+        );
+
+        expect(config.value(option), 'settings-project');
+      });
+    });
+  });
+
+  group('Given a ProjectIdOption.nonMandatory', () {
+    const option = ProjectIdOption.nonMandatory();
+
+    group('when the scloud project config and the project context both have '
+        'values', () {
+      test('then the project id is the scloud project config', () {
+        final config = Configuration.resolveNoExcept(
+          options: [option],
+          configBroker: _MapConfigBroker({
+            'scloud:/project/projectId': 'scloud-project',
+            'settings:/project_context': 'settings-project',
+          }),
+        );
+
+        expect(config.optionalValue(option), 'scloud-project');
+      });
+    });
+
+    group('when only the project context has a value', () {
+      test('then the project id is the project context', () {
+        final config = Configuration.resolveNoExcept(
+          options: [option],
+          configBroker: _MapConfigBroker({
+            'settings:/project_context': 'settings-project',
+          }),
+        );
+
+        expect(config.optionalValue(option), 'settings-project');
+      });
+    });
+
+    group('when neither the scloud project config nor the project context has '
+        'a value', () {
+      test('then the option has no value', () {
+        final config = Configuration.resolveNoExcept(
+          options: [option],
+          configBroker: _MapConfigBroker({}),
+        );
+
+        expect(config.optionalValue(option), isNull);
+      });
+    });
+  });
+
+  group('Given a ProjectIdOption.nonMandatory with excludeSettings', () {
+    const option = ProjectIdOption.nonMandatory(excludeSettings: true);
+
+    group('when the scloud project config and the project context both have '
+        'values', () {
+      test('then the project id is the scloud project config', () {
+        final config = Configuration.resolveNoExcept(
+          options: [option],
+          configBroker: _MapConfigBroker({
+            'scloud:/project/projectId': 'scloud-project',
+            'settings:/project_context': 'settings-project',
+          }),
+        );
+
+        expect(config.optionalValue(option), 'scloud-project');
+      });
+    });
+
+    group('when only the scloud project config has a value', () {
+      test('then the project id is the scloud project config', () {
+        final config = Configuration.resolveNoExcept(
+          options: [option],
+          configBroker: _MapConfigBroker({
+            'scloud:/project/projectId': 'scloud-project',
+          }),
+        );
+
+        expect(config.optionalValue(option), 'scloud-project');
+      });
+    });
+
+    group('when only the project context has a value', () {
+      test('then the option has no value', () {
+        final config = Configuration.resolveNoExcept(
+          options: [option],
+          configBroker: _MapConfigBroker({
+            'settings:/project_context': 'settings-project',
+          }),
+        );
+
+        expect(config.optionalValue(option), isNull);
+      });
+    });
+  });
+}
+
+class _MapConfigBroker implements ConfigurationBroker {
+  const _MapConfigBroker(this.values);
+
+  final Map<String, String> values;
+
+  @override
+  String? valueOrNull(final String key, final Configuration cfg) => values[key];
 }

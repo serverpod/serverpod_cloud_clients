@@ -73,7 +73,7 @@ class AwaitOption extends FlagOption {
 }
 
 enum DeployCommandOption<V> implements OptionDefinition<V> {
-  projectId(ProjectIdOption(asFirstArg: true)),
+  projectId(ProjectIdOption(asFirstArg: true, excludeSettings: true)),
   concurrency(DeployConcurrencyOption()),
   wetRun(DeployWetRunOption()),
   showFiles(DeployShowFilesOption()),

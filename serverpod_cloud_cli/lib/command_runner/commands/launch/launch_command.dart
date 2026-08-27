@@ -13,7 +13,7 @@ import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart'
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_io.dart';
 
 enum LaunchOption<V> implements OptionDefinition<V> {
-  projectId(ProjectIdOption.nonMandatory()),
+  projectId(ProjectIdOption.nonMandatory(excludeSettings: true)),
   preDeployScripts(
     FlagOption(
       argName: 'pre-deploy-scripts',

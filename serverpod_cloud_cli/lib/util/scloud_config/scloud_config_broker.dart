@@ -3,12 +3,13 @@ import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 
-/// The prefix for the scloud configuration domain.
+/// The prefix for the scloud.yaml project file configuration domain.
 /// Used in qualified keys, e.g: `scloud:/project/projectId`
 const scloudConfigDomainPrefix = 'scloud';
 
-/// The value key for the project id in the scloud configuration domain.
-const projectIdConfigValueKey = '/project/projectId';
+/// The prefix for the scloud user settings configuration domain.
+/// Used in qualified keys, e.g: `settings:/projectId`
+const settingsConfigDomainPrefix = 'settings';
 
 /// Creates a [ConfigurationBroker] for the scloud cli.
 ///
@@ -24,16 +25,16 @@ ConfigurationBroker<T> scloudCliConfigBroker<T extends OptionDefinition>({
       globalConfig: globalConfig,
       logger: logger,
     ),
+    settingsConfigDomainPrefix: _ScloudSettingsConfigProvider<T>(
+      globalConfig: globalConfig,
+      logger: logger,
+    ),
   });
 }
 
 /// A [ConfigSourceProvider] for the scloud project configuration.
 ///
 /// The configuration data used depends on the projectConfig... global options.
-///
-/// If the project configuration does not specify the project id,
-/// it falls back to the globally set project context, if any.
-/// See `scloud context set --help`.
 class _ScloudProjectConfigProvider<T extends OptionDefinition>
     extends ConfigSourceProvider<T> {
   final GlobalConfiguration globalConfig;
@@ -45,11 +46,7 @@ class _ScloudProjectConfigProvider<T extends OptionDefinition>
 
   @override
   ConfigurationSource getConfigSource(final Configuration<T> cfg) {
-    return _configSource ??= _ProjectContextFallbackSource(
-      primary: _makeConfigSource(cfg),
-      globalConfig: globalConfig,
-      logger: logger,
-    );
+    return _configSource ??= _makeConfigSource(cfg);
   }
 
   ConfigurationSource _makeConfigSource(final Configuration<T> cfg) {
@@ -76,43 +73,35 @@ class _ScloudProjectConfigProvider<T extends OptionDefinition>
       return ConfigurationParser.fromFile(configFile.path);
     }
 
-    return MapConfigSource({}); // empty configuration content
+    return MapConfigSource({});
   }
 }
 
-/// A [ConfigurationSource] that falls back to the globally set
-/// project context for the project id value key, if the primary source
-/// does not provide a value for it.
-class _ProjectContextFallbackSource implements ConfigurationSource {
-  final ConfigurationSource primary;
+class _ScloudSettingsConfigProvider<T extends OptionDefinition>
+    extends ConfigSourceProvider<T> {
   final GlobalConfiguration globalConfig;
   final CommandLogger? logger;
 
-  _ProjectContextFallbackSource({
-    required this.primary,
-    required this.globalConfig,
-    this.logger,
-  });
+  ConfigurationSource? _configSource;
+
+  _ScloudSettingsConfigProvider({required this.globalConfig, this.logger});
 
   @override
-  Object? valueOrNull(final String key) {
-    final value = primary.valueOrNull(key);
-    if (value != null) {
-      return value;
-    }
+  ConfigurationSource getConfigSource(final Configuration<T> cfg) {
+    return _configSource ??= _makeConfigSource(cfg);
+  }
 
-    if (key != projectIdConfigValueKey) {
-      return null;
-    }
-
-    final projectContext = ResourceManager.tryLoadSettingsSync(
+  ConfigurationSource _makeConfigSource(final Configuration<T> cfg) {
+    final settingsJson = ResourceManager.tryLoadRawSettingsSync(
       localStoragePath: globalConfig.scloudDir.path,
-    )?.projectContext;
-
-    if (projectContext != null) {
-      logger?.debug('Using the globally set project context: $projectContext');
+    );
+    if (settingsJson != null) {
+      return ConfigurationParser.fromString(
+        settingsJson,
+        format: ConfigEncoding.json,
+      );
     }
 
-    return projectContext;
+    return MapConfigSource({});
   }
 }

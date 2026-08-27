@@ -22,19 +22,26 @@ class ProjectIdOption extends StringOption {
   /// Project ID option that can be passed as command line argument
   /// (and if asFirstArg is true, also as the first positional argument),
   /// env variable, and scloud config file.
-  const ProjectIdOption({final bool asFirstArg = false})
-    : this._(
-        asFirstArg: asFirstArg,
-        mandatory: true,
-        helpText:
-            '${asFirstArg ? _helpTextFirstArg : _helpText}'
-            '\nCan be omitted for existing projects that are linked '
-            'or if a global project context is set. '
-            'See `scloud project link --help` and `scloud context set --help`.',
-      );
+  const ProjectIdOption({
+    final bool asFirstArg = false,
+    final bool excludeSettings = false,
+  }) : this._(
+         asFirstArg: asFirstArg,
+         excludeSettings: excludeSettings,
+         mandatory: true,
+         helpText:
+             '${asFirstArg ? _helpTextFirstArg : _helpText}'
+             '\nCan be omitted for existing projects that are linked'
+             ' (see `scloud project link --help`)'
+             '${excludeSettings ? '.' : ' or if a global project context is set'
+                       ' (see `scloud context set --help`).'}',
+       );
 
+  /// If [asFirstArg] is true, the project ID can be also passed as the first positional argument.
+  /// If [excludeSettings] is true, the user's context setting will not affect this value.
   const ProjectIdOption._({
     final bool asFirstArg = false,
+    final bool excludeSettings = false,
     super.mandatory,
     super.helpText,
     super.group,
@@ -43,11 +50,16 @@ class ProjectIdOption extends StringOption {
          argAbbrev: _projectIdArgAbbrev,
          argPos: asFirstArg ? 0 : null,
          envName: 'SERVERPOD_CLOUD_PROJECT_ID',
-         configKey: '$scloudConfigDomainPrefix:/project/projectId',
+         configKeys: excludeSettings
+             ? const ['$scloudConfigDomainPrefix:/project/projectId']
+             : const [
+                 '$scloudConfigDomainPrefix:/project/projectId',
+                 '$settingsConfigDomainPrefix:/project_context',
+               ],
        );
 
   /// Used for commands that require explicit command line argument for the
-  /// project ID, i.e. not from env variable or scloud config file.
+  /// project ID, i.e. not from env variable or config files.
   /// (And if asFirstArg is true, also as the first positional argument.)
   const ProjectIdOption.argsOnly({final bool asFirstArg = false})
     : super(
@@ -60,11 +72,16 @@ class ProjectIdOption extends StringOption {
 
   /// Used for commands that interactively ask for the project ID if not already
   /// specified.
+  ///
+  /// If [asFirstArg] is true, the project ID can be also passed as the first positional argument.
+  /// If [excludeSettings] is true, the user's context setting will not affect this value.
   const ProjectIdOption.nonMandatory({
     final bool asFirstArg = false,
+    final bool excludeSettings = false,
     final OptionGroup? group,
   }) : this._(
          asFirstArg: asFirstArg,
+         excludeSettings: excludeSettings,
          mandatory: false,
          helpText: asFirstArg ? _helpTextFirstArg : _helpText,
          group: group,
