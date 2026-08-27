@@ -353,6 +353,42 @@ void main() {
         ).called(1);
       });
 
+      test('then omitted retention is shown as kept indefinitely', () async {
+        await cli.run([
+          'db',
+          'schedule',
+          'set',
+          '--project',
+          projectId,
+          '--frequency',
+          'daily',
+        ]);
+
+        expect(
+          logger.lineCalls.map((final c) => c.line),
+          contains(allOf(contains('Retention'), contains('kept indefinitely'))),
+        );
+      });
+
+      test('then an explicit 24 hour retention is shown as 24 hours', () async {
+        await cli.run([
+          'db',
+          'schedule',
+          'set',
+          '--project',
+          projectId,
+          '--frequency',
+          'daily',
+          '--retention',
+          '24h',
+        ]);
+
+        expect(
+          logger.lineCalls.map((final c) => c.line),
+          contains(allOf(contains('Retention'), contains('24 hours'))),
+        );
+      });
+
       test('then a weekly schedule defaults day to 1', () async {
         await cli.run([
           'db',

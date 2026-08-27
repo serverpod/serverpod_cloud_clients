@@ -274,11 +274,10 @@ Do you want to proceed?''', defaultValue: false);
     if (schedule.frequency != BackupFrequency.daily) {
       table.addRow(['Day', schedule.day?.toString() ?? '-']);
     }
+    final retention = schedule.retention;
     table.addRow([
       'Retention',
-      schedule.retention == null
-          ? 'kept indefinitely'
-          : _formatDuration(schedule.retention),
+      retention == null ? 'kept indefinitely' : _formatDuration(retention),
     ]);
     return table;
   }
@@ -305,11 +304,9 @@ Do you want to proceed?''', defaultValue: false);
     return '${size.toStringAsFixed(1)} ${units[unitIndex]}';
   }
 
-  static String _formatDuration(final Duration? duration) {
-    if (duration == null) return '-';
-    if (duration.inHours % 24 == 0 && duration.inHours != 0) {
-      final days = duration.inDays;
-      return '$days ${days == 1 ? 'day' : 'days'}';
+  static String _formatDuration(final Duration duration) {
+    if (duration.inDays >= 2 && duration.inHours % 24 == 0) {
+      return '${duration.inDays} days';
     }
     final hours = duration.inHours;
     return '$hours ${hours == 1 ? 'hour' : 'hours'}';

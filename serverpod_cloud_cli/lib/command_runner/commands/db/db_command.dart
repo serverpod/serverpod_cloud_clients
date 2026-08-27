@@ -467,7 +467,7 @@ enum DbScheduleSetOption<V> implements OptionDefinition<V> {
     IntOption(
       argName: 'hour',
       helpText:
-          'The hour of the day (0-23) to take the snapshot. Defaults to 0.',
+          'The hour of the day (0-23, UTC) to take the snapshot. Defaults to 0.',
       min: 0,
       max: 23,
     ),
@@ -477,7 +477,7 @@ enum DbScheduleSetOption<V> implements OptionDefinition<V> {
       argName: 'retention',
       helpText:
           'How long scheduled snapshots are kept before being automatically '
-          'deleted (e.g. "30d"). Uses the platform default if omitted.',
+          'deleted (e.g. "30d"). Kept indefinitely if omitted.',
     ),
   );
 
