@@ -373,7 +373,7 @@ commands:
           - name: reset-password
             flags:
               -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
-              --username=!: "The username of the DB user to create."
+              --username=!: "The username of the DB user whose password is reset."
 
       - name: backup
 
