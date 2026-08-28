@@ -10,16 +10,15 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
-import '../../../domains/status/models/deploy_attempt.dart' as _inqbrt2s;
-import '../../../domains/status/models/deploy_progress_status.dart'
-    as _izk8c25p;
-import '../../../domains/status/models/deploy_stage_type.dart' as _i6ej73e4;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import '../../../domains/status/models/deploy_attempt.dart' as _i2;
+import '../../../domains/status/models/deploy_stage_type.dart' as _i3;
+import '../../../domains/status/models/deploy_progress_status.dart' as _i4;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i5;
 
 /// Represents the status information of a stage in a deployment attempt.
 abstract class DeployAttemptStage
-    implements _isc.SerializableModel, _isc.ProtocolSerialization {
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   DeployAttemptStage._({
     this.id,
     required this.cloudCapsuleId,
@@ -40,11 +39,11 @@ abstract class DeployAttemptStage
   factory DeployAttemptStage({
     int? id,
     required String cloudCapsuleId,
-    required _isc.UuidValue attemptId,
-    _inqbrt2s.DeployAttempt? attempt,
+    required _i1.UuidValue attemptId,
+    _i2.DeployAttempt? attempt,
     String? externalId,
-    required _i6ej73e4.DeployStageType stageType,
-    required _izk8c25p.DeployProgressStatus stageStatus,
+    required _i3.DeployStageType stageType,
+    required _i4.DeployProgressStatus stageStatus,
     DateTime? startedAt,
     DateTime? endedAt,
     String? buildId,
@@ -58,27 +57,27 @@ abstract class DeployAttemptStage
     return DeployAttemptStage(
       id: jsonSerialization['id'] as int?,
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
-      attemptId: _isc.UuidValueJsonExtension.fromJson(
+      attemptId: _i1.UuidValueJsonExtension.fromJson(
         jsonSerialization['attemptId'],
       ),
       attempt: jsonSerialization['attempt'] == null
           ? null
-          : _iod2a87h.Protocol().deserialize<_inqbrt2s.DeployAttempt>(
+          : _i5.Protocol().deserialize<_i2.DeployAttempt>(
               jsonSerialization['attempt'],
             ),
       externalId: jsonSerialization['externalId'] as String?,
-      stageType: _i6ej73e4.DeployStageType.fromJson(
+      stageType: _i3.DeployStageType.fromJson(
         (jsonSerialization['stageType'] as String),
       ),
-      stageStatus: _izk8c25p.DeployProgressStatus.fromJson(
+      stageStatus: _i4.DeployProgressStatus.fromJson(
         (jsonSerialization['stageStatus'] as String),
       ),
       startedAt: jsonSerialization['startedAt'] == null
           ? null
-          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['startedAt']),
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['startedAt']),
       endedAt: jsonSerialization['endedAt'] == null
           ? null
-          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['endedAt']),
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['endedAt']),
       buildId: jsonSerialization['buildId'] as String?,
       stageInfo: jsonSerialization['stageInfo'] as String?,
       serverpodVersionConstraint:
@@ -97,20 +96,20 @@ abstract class DeployAttemptStage
   String cloudCapsuleId;
 
   /// The ID of the deploy attempt.
-  _isc.UuidValue attemptId;
+  _i1.UuidValue attemptId;
 
   /// The deployment attempt this stage belongs to.
-  _inqbrt2s.DeployAttempt? attempt;
+  _i2.DeployAttempt? attempt;
 
   /// The external ID of the stage, if any.
   String? externalId;
 
   /// The type of this stage.
   /// Unique within the deployment attempt.
-  _i6ej73e4.DeployStageType stageType;
+  _i3.DeployStageType stageType;
 
   /// The current / last known status of this stage.
-  _izk8c25p.DeployProgressStatus stageStatus;
+  _i4.DeployProgressStatus stageStatus;
 
   /// The timestamp of the start of the stage.
   DateTime? startedAt;
@@ -145,15 +144,15 @@ abstract class DeployAttemptStage
 
   /// Returns a shallow copy of this [DeployAttemptStage]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   DeployAttemptStage copyWith({
     int? id,
     String? cloudCapsuleId,
-    _isc.UuidValue? attemptId,
-    _inqbrt2s.DeployAttempt? attempt,
+    _i1.UuidValue? attemptId,
+    _i2.DeployAttempt? attempt,
     String? externalId,
-    _i6ej73e4.DeployStageType? stageType,
-    _izk8c25p.DeployProgressStatus? stageStatus,
+    _i3.DeployStageType? stageType,
+    _i4.DeployProgressStatus? stageStatus,
     DateTime? startedAt,
     DateTime? endedAt,
     String? buildId,
@@ -208,7 +207,7 @@ abstract class DeployAttemptStage
 
   @override
   String toString() {
-    return _isc.SerializationManager.encode(this);
+    return _i1.SerializationManager.encode(this);
   }
 }
 
@@ -218,11 +217,11 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
   _DeployAttemptStageImpl({
     int? id,
     required String cloudCapsuleId,
-    required _isc.UuidValue attemptId,
-    _inqbrt2s.DeployAttempt? attempt,
+    required _i1.UuidValue attemptId,
+    _i2.DeployAttempt? attempt,
     String? externalId,
-    required _i6ej73e4.DeployStageType stageType,
-    required _izk8c25p.DeployProgressStatus stageStatus,
+    required _i3.DeployStageType stageType,
+    required _i4.DeployProgressStatus stageStatus,
     DateTime? startedAt,
     DateTime? endedAt,
     String? buildId,
@@ -249,16 +248,16 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
 
   /// Returns a shallow copy of this [DeployAttemptStage]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
   DeployAttemptStage copyWith({
     Object? id = _Undefined,
     String? cloudCapsuleId,
-    _isc.UuidValue? attemptId,
+    _i1.UuidValue? attemptId,
     Object? attempt = _Undefined,
     Object? externalId = _Undefined,
-    _i6ej73e4.DeployStageType? stageType,
-    _izk8c25p.DeployProgressStatus? stageStatus,
+    _i3.DeployStageType? stageType,
+    _i4.DeployProgressStatus? stageStatus,
     Object? startedAt = _Undefined,
     Object? endedAt = _Undefined,
     Object? buildId = _Undefined,
@@ -271,7 +270,7 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
       id: id is int? ? id : this.id,
       cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
       attemptId: attemptId ?? this.attemptId,
-      attempt: attempt is _inqbrt2s.DeployAttempt?
+      attempt: attempt is _i2.DeployAttempt?
           ? attempt
           : this.attempt?.copyWith(),
       externalId: externalId is String? ? externalId : this.externalId,

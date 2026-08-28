@@ -10,7 +10,7 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 /// Why a database series may be empty over the queried window.
 ///
@@ -18,7 +18,7 @@ import 'package:serverpod_client/serverpod_client.dart' as _isc;
 /// exporting entirely, and a database that does not have export enabled has no
 /// series at all. Both are reported as state, so a client can say which one
 /// it is looking at.
-enum DatabaseMetricsStatus implements _isc.SerializableModel {
+enum DatabaseMetricsStatus implements _i1.SerializableModel {
   /// The database exported at least one sample in the window.
   reporting,
 

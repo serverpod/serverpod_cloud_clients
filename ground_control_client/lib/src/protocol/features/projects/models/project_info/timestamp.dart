@@ -10,10 +10,10 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 abstract class Timestamp
-    implements _isc.SerializableModel, _isc.ProtocolSerialization {
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   Timestamp._({this.timestamp});
 
   factory Timestamp({DateTime? timestamp}) = _TimestampImpl;
@@ -22,7 +22,7 @@ abstract class Timestamp
     return Timestamp(
       timestamp: jsonSerialization['timestamp'] == null
           ? null
-          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['timestamp']),
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['timestamp']),
     );
   }
 
@@ -30,7 +30,7 @@ abstract class Timestamp
 
   /// Returns a shallow copy of this [Timestamp]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   Timestamp copyWith({DateTime? timestamp});
   @override
   Map<String, dynamic> toJson() {
@@ -50,7 +50,7 @@ abstract class Timestamp
 
   @override
   String toString() {
-    return _isc.SerializationManager.encode(this);
+    return _i1.SerializationManager.encode(this);
   }
 }
 
@@ -61,7 +61,7 @@ class _TimestampImpl extends Timestamp {
 
   /// Returns a shallow copy of this [Timestamp]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
   Timestamp copyWith({Object? timestamp = _Undefined}) {
     return Timestamp(

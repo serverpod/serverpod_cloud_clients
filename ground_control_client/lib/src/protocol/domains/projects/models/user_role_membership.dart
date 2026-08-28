@@ -10,14 +10,14 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
-import '../../../domains/projects/models/role.dart' as _im7cbtgg;
-import '../../../domains/users/models/user.dart' as _ijl94k1v;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import '../../../domains/users/models/user.dart' as _i2;
+import '../../../domains/projects/models/role.dart' as _i3;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 /// Represents a membership of a user in a role.
 abstract class UserRoleMembership
-    implements _isc.SerializableModel, _isc.ProtocolSerialization {
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   UserRoleMembership._({
     this.id,
     DateTime? createdAt,
@@ -36,9 +36,9 @@ abstract class UserRoleMembership
     DateTime? updatedAt,
     DateTime? archivedAt,
     required int userId,
-    _ijl94k1v.User? user,
+    _i2.User? user,
     required int roleId,
-    _im7cbtgg.Role? role,
+    _i3.Role? role,
   }) = _UserRoleMembershipImpl;
 
   factory UserRoleMembership.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -46,27 +46,21 @@ abstract class UserRoleMembership
       id: jsonSerialization['id'] as int?,
       createdAt: jsonSerialization['createdAt'] == null
           ? null
-          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
       updatedAt: jsonSerialization['updatedAt'] == null
           ? null
-          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
       archivedAt: jsonSerialization['archivedAt'] == null
           ? null
-          : _isc.DateTimeJsonExtension.fromJson(
-              jsonSerialization['archivedAt'],
-            ),
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['archivedAt']),
       userId: jsonSerialization['userId'] as int,
       user: jsonSerialization['user'] == null
           ? null
-          : _iod2a87h.Protocol().deserialize<_ijl94k1v.User>(
-              jsonSerialization['user'],
-            ),
+          : _i4.Protocol().deserialize<_i2.User>(jsonSerialization['user']),
       roleId: jsonSerialization['roleId'] as int,
       role: jsonSerialization['role'] == null
           ? null
-          : _iod2a87h.Protocol().deserialize<_im7cbtgg.Role>(
-              jsonSerialization['role'],
-            ),
+          : _i4.Protocol().deserialize<_i3.Role>(jsonSerialization['role']),
     );
   }
 
@@ -84,25 +78,25 @@ abstract class UserRoleMembership
   int userId;
 
   /// The user that is a member of the role.
-  _ijl94k1v.User? user;
+  _i2.User? user;
 
   int roleId;
 
   /// The role the user is a member of.
-  _im7cbtgg.Role? role;
+  _i3.Role? role;
 
   /// Returns a shallow copy of this [UserRoleMembership]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   UserRoleMembership copyWith({
     int? id,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? archivedAt,
     int? userId,
-    _ijl94k1v.User? user,
+    _i2.User? user,
     int? roleId,
-    _im7cbtgg.Role? role,
+    _i3.Role? role,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -136,7 +130,7 @@ abstract class UserRoleMembership
 
   @override
   String toString() {
-    return _isc.SerializationManager.encode(this);
+    return _i1.SerializationManager.encode(this);
   }
 }
 
@@ -149,9 +143,9 @@ class _UserRoleMembershipImpl extends UserRoleMembership {
     DateTime? updatedAt,
     DateTime? archivedAt,
     required int userId,
-    _ijl94k1v.User? user,
+    _i2.User? user,
     required int roleId,
-    _im7cbtgg.Role? role,
+    _i3.Role? role,
   }) : super._(
          id: id,
          createdAt: createdAt,
@@ -165,7 +159,7 @@ class _UserRoleMembershipImpl extends UserRoleMembership {
 
   /// Returns a shallow copy of this [UserRoleMembership]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
   UserRoleMembership copyWith({
     Object? id = _Undefined,
@@ -183,9 +177,9 @@ class _UserRoleMembershipImpl extends UserRoleMembership {
       updatedAt: updatedAt ?? this.updatedAt,
       archivedAt: archivedAt is DateTime? ? archivedAt : this.archivedAt,
       userId: userId ?? this.userId,
-      user: user is _ijl94k1v.User? ? user : this.user?.copyWith(),
+      user: user is _i2.User? ? user : this.user?.copyWith(),
       roleId: roleId ?? this.roleId,
-      role: role is _im7cbtgg.Role? ? role : this.role?.copyWith(),
+      role: role is _i3.Role? ? role : this.role?.copyWith(),
     );
   }
 }

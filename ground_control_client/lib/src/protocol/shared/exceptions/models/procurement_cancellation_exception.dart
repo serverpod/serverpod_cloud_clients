@@ -10,17 +10,17 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
-import '../../../domains/products/models/product_type.dart' as _ibyyfohr;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import '../../../domains/products/models/product_type.dart' as _i2;
 
 /// Exception thrown when the cancellation of a procured product failed.
 ///
 /// This is distinct from access authorization, and from quota limits.
 abstract class ProcurementCancellationException
     implements
-        _isc.SerializableException,
-        _isc.SerializableModel,
-        _isc.ProtocolSerialization {
+        _i1.SerializableException,
+        _i1.SerializableModel,
+        _i1.ProtocolSerialization {
   ProcurementCancellationException._({
     required this.message,
     required this.productType,
@@ -29,7 +29,7 @@ abstract class ProcurementCancellationException
 
   factory ProcurementCancellationException({
     required String message,
-    required _ibyyfohr.ProductType productType,
+    required _i2.ProductType productType,
     required String productId,
   }) = _ProcurementCancellationExceptionImpl;
 
@@ -38,7 +38,7 @@ abstract class ProcurementCancellationException
   ) {
     return ProcurementCancellationException(
       message: jsonSerialization['message'] as String,
-      productType: _ibyyfohr.ProductType.fromJson(
+      productType: _i2.ProductType.fromJson(
         (jsonSerialization['productType'] as String),
       ),
       productId: jsonSerialization['productId'] as String,
@@ -49,17 +49,17 @@ abstract class ProcurementCancellationException
   String message;
 
   /// The type of the product that was being cancelled.
-  _ibyyfohr.ProductType productType;
+  _i2.ProductType productType;
 
   /// The id of the product that was being cancelled.
   String productId;
 
   /// Returns a shallow copy of this [ProcurementCancellationException]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   ProcurementCancellationException copyWith({
     String? message,
-    _ibyyfohr.ProductType? productType,
+    _i2.ProductType? productType,
     String? productId,
   });
   @override
@@ -92,7 +92,7 @@ class _ProcurementCancellationExceptionImpl
     extends ProcurementCancellationException {
   _ProcurementCancellationExceptionImpl({
     required String message,
-    required _ibyyfohr.ProductType productType,
+    required _i2.ProductType productType,
     required String productId,
   }) : super._(
          message: message,
@@ -102,11 +102,11 @@ class _ProcurementCancellationExceptionImpl
 
   /// Returns a shallow copy of this [ProcurementCancellationException]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
   ProcurementCancellationException copyWith({
     String? message,
-    _ibyyfohr.ProductType? productType,
+    _i2.ProductType? productType,
     String? productId,
   }) {
     return ProcurementCancellationException(

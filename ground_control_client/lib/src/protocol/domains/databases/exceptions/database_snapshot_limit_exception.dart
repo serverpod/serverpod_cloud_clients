@@ -10,15 +10,15 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 /// Thrown when a manual snapshot cannot be created because the per-project
 /// snapshot limit has been reached.
 abstract class DatabaseSnapshotLimitException
     implements
-        _isc.SerializableException,
-        _isc.SerializableModel,
-        _isc.ProtocolSerialization {
+        _i1.SerializableException,
+        _i1.SerializableModel,
+        _i1.ProtocolSerialization {
   DatabaseSnapshotLimitException._({required this.message});
 
   factory DatabaseSnapshotLimitException({required String message}) =
@@ -36,7 +36,7 @@ abstract class DatabaseSnapshotLimitException
 
   /// Returns a shallow copy of this [DatabaseSnapshotLimitException]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   DatabaseSnapshotLimitException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
@@ -67,7 +67,7 @@ class _DatabaseSnapshotLimitExceptionImpl
 
   /// Returns a shallow copy of this [DatabaseSnapshotLimitException]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
   DatabaseSnapshotLimitException copyWith({String? message}) {
     return DatabaseSnapshotLimitException(message: message ?? this.message);

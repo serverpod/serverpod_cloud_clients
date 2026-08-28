@@ -10,11 +10,11 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
-import '../../../domains/databases/models/database_size.dart' as _its7dxaf;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import '../../../domains/databases/models/database_size.dart' as _i2;
 
 abstract class DatabaseInfo
-    implements _isc.SerializableModel, _isc.ProtocolSerialization {
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   DatabaseInfo._({
     required this.cloudCapsuleId,
     required this.size,
@@ -27,7 +27,7 @@ abstract class DatabaseInfo
 
   factory DatabaseInfo({
     required String cloudCapsuleId,
-    required _its7dxaf.DatabaseSizeOption size,
+    required _i2.DatabaseSizeOption size,
     double? minCu,
     double? maxCu,
     required int memoryMb,
@@ -38,7 +38,7 @@ abstract class DatabaseInfo
   factory DatabaseInfo.fromJson(Map<String, dynamic> jsonSerialization) {
     return DatabaseInfo(
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
-      size: _its7dxaf.DatabaseSizeOption.fromJson(
+      size: _i2.DatabaseSizeOption.fromJson(
         (jsonSerialization['size'] as String),
       ),
       minCu: (jsonSerialization['minCu'] as num?)?.toDouble(),
@@ -54,7 +54,7 @@ abstract class DatabaseInfo
 
   /// The size of the database: small, medium, large, largePlus, or unknown.
   /// A value of unknown means the size could not be determined.
-  _its7dxaf.DatabaseSizeOption size;
+  _i2.DatabaseSizeOption size;
 
   /// The minimum number of CPUs that the database can be scaled to.
   /// Null if the database size does not support scaling.
@@ -75,10 +75,10 @@ abstract class DatabaseInfo
 
   /// Returns a shallow copy of this [DatabaseInfo]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   DatabaseInfo copyWith({
     String? cloudCapsuleId,
-    _its7dxaf.DatabaseSizeOption? size,
+    _i2.DatabaseSizeOption? size,
     double? minCu,
     double? maxCu,
     int? memoryMb,
@@ -115,7 +115,7 @@ abstract class DatabaseInfo
 
   @override
   String toString() {
-    return _isc.SerializationManager.encode(this);
+    return _i1.SerializationManager.encode(this);
   }
 }
 
@@ -124,7 +124,7 @@ class _Undefined {}
 class _DatabaseInfoImpl extends DatabaseInfo {
   _DatabaseInfoImpl({
     required String cloudCapsuleId,
-    required _its7dxaf.DatabaseSizeOption size,
+    required _i2.DatabaseSizeOption size,
     double? minCu,
     double? maxCu,
     required int memoryMb,
@@ -142,11 +142,11 @@ class _DatabaseInfoImpl extends DatabaseInfo {
 
   /// Returns a shallow copy of this [DatabaseInfo]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
   DatabaseInfo copyWith({
     String? cloudCapsuleId,
-    _its7dxaf.DatabaseSizeOption? size,
+    _i2.DatabaseSizeOption? size,
     Object? minCu = _Undefined,
     Object? maxCu = _Undefined,
     int? memoryMb,

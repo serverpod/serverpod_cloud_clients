@@ -10,11 +10,11 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
-import '../../../features/auth/models/terms.dart' as _iv8ziy30;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import '../../../features/auth/models/terms.dart' as _i2;
 
 abstract class AcceptedTerms
-    implements _isc.SerializableModel, _isc.ProtocolSerialization {
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   AcceptedTerms._({
     this.id,
     required this.termsType,
@@ -25,7 +25,7 @@ abstract class AcceptedTerms
 
   factory AcceptedTerms({
     int? id,
-    required _iv8ziy30.Terms termsType,
+    required _i2.Terms termsType,
     required String termsVersion,
     DateTime? createdAt,
     required String identifier,
@@ -34,13 +34,11 @@ abstract class AcceptedTerms
   factory AcceptedTerms.fromJson(Map<String, dynamic> jsonSerialization) {
     return AcceptedTerms(
       id: jsonSerialization['id'] as int?,
-      termsType: _iv8ziy30.Terms.fromJson(
-        (jsonSerialization['termsType'] as String),
-      ),
+      termsType: _i2.Terms.fromJson((jsonSerialization['termsType'] as String)),
       termsVersion: jsonSerialization['termsVersion'] as String,
       createdAt: jsonSerialization['createdAt'] == null
           ? null
-          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
       identifier: jsonSerialization['identifier'] as String,
     );
   }
@@ -50,7 +48,7 @@ abstract class AcceptedTerms
   /// the id will be null.
   int? id;
 
-  _iv8ziy30.Terms termsType;
+  _i2.Terms termsType;
 
   String termsVersion;
 
@@ -60,10 +58,10 @@ abstract class AcceptedTerms
 
   /// Returns a shallow copy of this [AcceptedTerms]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   AcceptedTerms copyWith({
     int? id,
-    _iv8ziy30.Terms? termsType,
+    _i2.Terms? termsType,
     String? termsVersion,
     DateTime? createdAt,
     String? identifier,
@@ -94,7 +92,7 @@ abstract class AcceptedTerms
 
   @override
   String toString() {
-    return _isc.SerializationManager.encode(this);
+    return _i1.SerializationManager.encode(this);
   }
 }
 
@@ -103,7 +101,7 @@ class _Undefined {}
 class _AcceptedTermsImpl extends AcceptedTerms {
   _AcceptedTermsImpl({
     int? id,
-    required _iv8ziy30.Terms termsType,
+    required _i2.Terms termsType,
     required String termsVersion,
     DateTime? createdAt,
     required String identifier,
@@ -117,11 +115,11 @@ class _AcceptedTermsImpl extends AcceptedTerms {
 
   /// Returns a shallow copy of this [AcceptedTerms]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
   AcceptedTerms copyWith({
     Object? id = _Undefined,
-    _iv8ziy30.Terms? termsType,
+    _i2.Terms? termsType,
     String? termsVersion,
     DateTime? createdAt,
     String? identifier,

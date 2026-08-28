@@ -10,9 +10,9 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../shared/exceptions/models/procurement_denied_reason.dart'
-    as _i0kagna1;
+    as _i2;
 
 /// Exception thrown when a procurement is denied to the user / organization
 /// due to insufficient allowance or other subscription limits.
@@ -20,14 +20,14 @@ import '../../../shared/exceptions/models/procurement_denied_reason.dart'
 /// This is distinct from access authorization, and from quota limits.
 abstract class ProcurementDeniedException
     implements
-        _isc.SerializableException,
-        _isc.SerializableModel,
-        _isc.ProtocolSerialization {
+        _i1.SerializableException,
+        _i1.SerializableModel,
+        _i1.ProtocolSerialization {
   ProcurementDeniedException._({required this.message, required this.reason});
 
   factory ProcurementDeniedException({
     required String message,
-    required _i0kagna1.ProcurementDeniedReason reason,
+    required _i2.ProcurementDeniedReason reason,
   }) = _ProcurementDeniedExceptionImpl;
 
   factory ProcurementDeniedException.fromJson(
@@ -35,7 +35,7 @@ abstract class ProcurementDeniedException
   ) {
     return ProcurementDeniedException(
       message: jsonSerialization['message'] as String,
-      reason: _i0kagna1.ProcurementDeniedReason.fromJson(
+      reason: _i2.ProcurementDeniedReason.fromJson(
         (jsonSerialization['reason'] as String),
       ),
     );
@@ -43,14 +43,14 @@ abstract class ProcurementDeniedException
 
   String message;
 
-  _i0kagna1.ProcurementDeniedReason reason;
+  _i2.ProcurementDeniedReason reason;
 
   /// Returns a shallow copy of this [ProcurementDeniedException]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   ProcurementDeniedException copyWith({
     String? message,
-    _i0kagna1.ProcurementDeniedReason? reason,
+    _i2.ProcurementDeniedReason? reason,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -79,16 +79,16 @@ abstract class ProcurementDeniedException
 class _ProcurementDeniedExceptionImpl extends ProcurementDeniedException {
   _ProcurementDeniedExceptionImpl({
     required String message,
-    required _i0kagna1.ProcurementDeniedReason reason,
+    required _i2.ProcurementDeniedReason reason,
   }) : super._(message: message, reason: reason);
 
   /// Returns a shallow copy of this [ProcurementDeniedException]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
   ProcurementDeniedException copyWith({
     String? message,
-    _i0kagna1.ProcurementDeniedReason? reason,
+    _i2.ProcurementDeniedReason? reason,
   }) {
     return ProcurementDeniedException(
       message: message ?? this.message,

@@ -10,12 +10,12 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i2;
 
 /// Scaling configuration for a database size that supports variable CU allocation.
 abstract class DatabaseScalingInfo
-    implements _isc.SerializableModel, _isc.ProtocolSerialization {
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   DatabaseScalingInfo._({
     required this.defaultMinCu,
     required this.defaultMaxCu,
@@ -34,7 +34,7 @@ abstract class DatabaseScalingInfo
     return DatabaseScalingInfo(
       defaultMinCu: (jsonSerialization['defaultMinCu'] as num).toDouble(),
       defaultMaxCu: (jsonSerialization['defaultMaxCu'] as num).toDouble(),
-      allowedCuValues: _iod2a87h.Protocol().deserialize<List<double>>(
+      allowedCuValues: _i2.Protocol().deserialize<List<double>>(
         jsonSerialization['allowedCuValues'],
       ),
       maxCuSpread: jsonSerialization['maxCuSpread'] as int,
@@ -55,7 +55,7 @@ abstract class DatabaseScalingInfo
 
   /// Returns a shallow copy of this [DatabaseScalingInfo]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   DatabaseScalingInfo copyWith({
     double? defaultMinCu,
     double? defaultMaxCu,
@@ -86,7 +86,7 @@ abstract class DatabaseScalingInfo
 
   @override
   String toString() {
-    return _isc.SerializationManager.encode(this);
+    return _i1.SerializationManager.encode(this);
   }
 }
 
@@ -105,7 +105,7 @@ class _DatabaseScalingInfoImpl extends DatabaseScalingInfo {
 
   /// Returns a shallow copy of this [DatabaseScalingInfo]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
   DatabaseScalingInfo copyWith({
     double? defaultMinCu,

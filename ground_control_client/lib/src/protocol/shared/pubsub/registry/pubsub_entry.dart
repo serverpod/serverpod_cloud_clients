@@ -10,11 +10,11 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 /// Represents the receiving of a Pubsub message.
 abstract class PubsubEntry
-    implements _isc.SerializableModel, _isc.ProtocolSerialization {
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   PubsubEntry._({
     this.id,
     DateTime? createdAt,
@@ -38,10 +38,10 @@ abstract class PubsubEntry
       id: jsonSerialization['id'] as int?,
       createdAt: jsonSerialization['createdAt'] == null
           ? null
-          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
       publishedAt: jsonSerialization['publishedAt'] == null
           ? null
-          : _isc.DateTimeJsonExtension.fromJson(
+          : _i1.DateTimeJsonExtension.fromJson(
               jsonSerialization['publishedAt'],
             ),
       messageId: jsonSerialization['messageId'] as String,
@@ -72,7 +72,7 @@ abstract class PubsubEntry
 
   /// Returns a shallow copy of this [PubsubEntry]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   PubsubEntry copyWith({
     int? id,
     DateTime? createdAt,
@@ -109,7 +109,7 @@ abstract class PubsubEntry
 
   @override
   String toString() {
-    return _isc.SerializationManager.encode(this);
+    return _i1.SerializationManager.encode(this);
   }
 }
 
@@ -134,7 +134,7 @@ class _PubsubEntryImpl extends PubsubEntry {
 
   /// Returns a shallow copy of this [PubsubEntry]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
   PubsubEntry copyWith({
     Object? id = _Undefined,

@@ -10,16 +10,15 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
-import '../../../domains/billing/models/billing_customer_type.dart'
-    as _ipm3sphs;
-import '../../../domains/billing/models/owner.dart' as _icig531b;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import '../../../domains/billing/models/billing_customer_type.dart' as _i2;
+import '../../../domains/billing/models/owner.dart' as _i3;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 abstract class BillingInfo
-    implements _isc.SerializableModel, _isc.ProtocolSerialization {
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   BillingInfo._({
-    _isc.UuidValue? id,
+    _i1.UuidValue? id,
     this.createdAt,
     this.updatedAt,
     required this.ownerId,
@@ -33,16 +32,16 @@ abstract class BillingInfo
     required this.country,
     this.vatNumber,
     this.vatType,
-    _ipm3sphs.BillingCustomerType? customerType,
-  }) : id = id ?? const _isc.Uuid().v4obj(),
-       customerType = customerType ?? _ipm3sphs.BillingCustomerType.private;
+    _i2.BillingCustomerType? customerType,
+  }) : id = id ?? const _i1.Uuid().v4obj(),
+       customerType = customerType ?? _i2.BillingCustomerType.private;
 
   factory BillingInfo({
-    _isc.UuidValue? id,
+    _i1.UuidValue? id,
     DateTime? createdAt,
     DateTime? updatedAt,
-    required _isc.UuidValue ownerId,
-    _icig531b.Owner? owner,
+    required _i1.UuidValue ownerId,
+    _i3.Owner? owner,
     String? companyName,
     required String addressLine1,
     String? addressLine2,
@@ -52,28 +51,26 @@ abstract class BillingInfo
     required String country,
     String? vatNumber,
     String? vatType,
-    _ipm3sphs.BillingCustomerType? customerType,
+    _i2.BillingCustomerType? customerType,
   }) = _BillingInfoImpl;
 
   factory BillingInfo.fromJson(Map<String, dynamic> jsonSerialization) {
     return BillingInfo(
       id: jsonSerialization['id'] == null
           ? null
-          : _isc.UuidValueJsonExtension.fromJson(jsonSerialization['id']),
+          : _i1.UuidValueJsonExtension.fromJson(jsonSerialization['id']),
       createdAt: jsonSerialization['createdAt'] == null
           ? null
-          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
       updatedAt: jsonSerialization['updatedAt'] == null
           ? null
-          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
-      ownerId: _isc.UuidValueJsonExtension.fromJson(
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
+      ownerId: _i1.UuidValueJsonExtension.fromJson(
         jsonSerialization['ownerId'],
       ),
       owner: jsonSerialization['owner'] == null
           ? null
-          : _iod2a87h.Protocol().deserialize<_icig531b.Owner>(
-              jsonSerialization['owner'],
-            ),
+          : _i4.Protocol().deserialize<_i3.Owner>(jsonSerialization['owner']),
       companyName: jsonSerialization['companyName'] as String?,
       addressLine1: jsonSerialization['addressLine1'] as String,
       addressLine2: jsonSerialization['addressLine2'] as String?,
@@ -85,22 +82,22 @@ abstract class BillingInfo
       vatType: jsonSerialization['vatType'] as String?,
       customerType: jsonSerialization['customerType'] == null
           ? null
-          : _ipm3sphs.BillingCustomerType.fromJson(
+          : _i2.BillingCustomerType.fromJson(
               (jsonSerialization['customerType'] as String),
             ),
     );
   }
 
   /// The id of the object.
-  _isc.UuidValue id;
+  _i1.UuidValue id;
 
   DateTime? createdAt;
 
   DateTime? updatedAt;
 
-  _isc.UuidValue ownerId;
+  _i1.UuidValue ownerId;
 
-  _icig531b.Owner? owner;
+  _i3.Owner? owner;
 
   String? companyName;
 
@@ -120,17 +117,17 @@ abstract class BillingInfo
 
   String? vatType;
 
-  _ipm3sphs.BillingCustomerType customerType;
+  _i2.BillingCustomerType customerType;
 
   /// Returns a shallow copy of this [BillingInfo]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   BillingInfo copyWith({
-    _isc.UuidValue? id,
+    _i1.UuidValue? id,
     DateTime? createdAt,
     DateTime? updatedAt,
-    _isc.UuidValue? ownerId,
-    _icig531b.Owner? owner,
+    _i1.UuidValue? ownerId,
+    _i3.Owner? owner,
     String? companyName,
     String? addressLine1,
     String? addressLine2,
@@ -140,7 +137,7 @@ abstract class BillingInfo
     String? country,
     String? vatNumber,
     String? vatType,
-    _ipm3sphs.BillingCustomerType? customerType,
+    _i2.BillingCustomerType? customerType,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -188,7 +185,7 @@ abstract class BillingInfo
 
   @override
   String toString() {
-    return _isc.SerializationManager.encode(this);
+    return _i1.SerializationManager.encode(this);
   }
 }
 
@@ -196,11 +193,11 @@ class _Undefined {}
 
 class _BillingInfoImpl extends BillingInfo {
   _BillingInfoImpl({
-    _isc.UuidValue? id,
+    _i1.UuidValue? id,
     DateTime? createdAt,
     DateTime? updatedAt,
-    required _isc.UuidValue ownerId,
-    _icig531b.Owner? owner,
+    required _i1.UuidValue ownerId,
+    _i3.Owner? owner,
     String? companyName,
     required String addressLine1,
     String? addressLine2,
@@ -210,7 +207,7 @@ class _BillingInfoImpl extends BillingInfo {
     required String country,
     String? vatNumber,
     String? vatType,
-    _ipm3sphs.BillingCustomerType? customerType,
+    _i2.BillingCustomerType? customerType,
   }) : super._(
          id: id,
          createdAt: createdAt,
@@ -231,13 +228,13 @@ class _BillingInfoImpl extends BillingInfo {
 
   /// Returns a shallow copy of this [BillingInfo]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
   BillingInfo copyWith({
-    _isc.UuidValue? id,
+    _i1.UuidValue? id,
     Object? createdAt = _Undefined,
     Object? updatedAt = _Undefined,
-    _isc.UuidValue? ownerId,
+    _i1.UuidValue? ownerId,
     Object? owner = _Undefined,
     Object? companyName = _Undefined,
     String? addressLine1,
@@ -248,14 +245,14 @@ class _BillingInfoImpl extends BillingInfo {
     String? country,
     Object? vatNumber = _Undefined,
     Object? vatType = _Undefined,
-    _ipm3sphs.BillingCustomerType? customerType,
+    _i2.BillingCustomerType? customerType,
   }) {
     return BillingInfo(
       id: id ?? this.id,
       createdAt: createdAt is DateTime? ? createdAt : this.createdAt,
       updatedAt: updatedAt is DateTime? ? updatedAt : this.updatedAt,
       ownerId: ownerId ?? this.ownerId,
-      owner: owner is _icig531b.Owner? ? owner : this.owner?.copyWith(),
+      owner: owner is _i3.Owner? ? owner : this.owner?.copyWith(),
       companyName: companyName is String? ? companyName : this.companyName,
       addressLine1: addressLine1 ?? this.addressLine1,
       addressLine2: addressLine2 is String? ? addressLine2 : this.addressLine2,

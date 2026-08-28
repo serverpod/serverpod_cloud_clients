@@ -10,17 +10,15 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
-import '../../../domains/capsules/models/compute_size_option.dart' as _ike5w393;
-import '../../../domains/products/models/compute_product_info.dart'
-    as _itbzu52c;
-import '../../../domains/products/models/compute_scaling_info.dart'
-    as _i6ffibot;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import '../../../domains/products/models/compute_product_info.dart' as _i2;
+import '../../../domains/capsules/models/compute_size_option.dart' as _i3;
+import '../../../domains/products/models/compute_scaling_info.dart' as _i4;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i5;
 
 /// A catalog of available compute products.
 abstract class ComputeCatalogInfo
-    implements _isc.SerializableModel, _isc.ProtocolSerialization {
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   ComputeCatalogInfo._({
     required this.computes,
     required this.defaultCompute,
@@ -28,42 +26,41 @@ abstract class ComputeCatalogInfo
   });
 
   factory ComputeCatalogInfo({
-    required List<_itbzu52c.ComputeProductInfo> computes,
-    required _ike5w393.ComputeSizeOption defaultCompute,
-    required _i6ffibot.ComputeScalingInfo scaling,
+    required List<_i2.ComputeProductInfo> computes,
+    required _i3.ComputeSizeOption defaultCompute,
+    required _i4.ComputeScalingInfo scaling,
   }) = _ComputeCatalogInfoImpl;
 
   factory ComputeCatalogInfo.fromJson(Map<String, dynamic> jsonSerialization) {
     return ComputeCatalogInfo(
-      computes: _iod2a87h.Protocol()
-          .deserialize<List<_itbzu52c.ComputeProductInfo>>(
-            jsonSerialization['computes'],
-          ),
-      defaultCompute: _ike5w393.ComputeSizeOption.fromJson(
+      computes: _i5.Protocol().deserialize<List<_i2.ComputeProductInfo>>(
+        jsonSerialization['computes'],
+      ),
+      defaultCompute: _i3.ComputeSizeOption.fromJson(
         (jsonSerialization['defaultCompute'] as String),
       ),
-      scaling: _iod2a87h.Protocol().deserialize<_i6ffibot.ComputeScalingInfo>(
+      scaling: _i5.Protocol().deserialize<_i4.ComputeScalingInfo>(
         jsonSerialization['scaling'],
       ),
     );
   }
 
   /// The compute product definitions available.
-  List<_itbzu52c.ComputeProductInfo> computes;
+  List<_i2.ComputeProductInfo> computes;
 
   /// The default compute product.
-  _ike5w393.ComputeSizeOption defaultCompute;
+  _i3.ComputeSizeOption defaultCompute;
 
   /// Scaling configuration.
-  _i6ffibot.ComputeScalingInfo scaling;
+  _i4.ComputeScalingInfo scaling;
 
   /// Returns a shallow copy of this [ComputeCatalogInfo]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   ComputeCatalogInfo copyWith({
-    List<_itbzu52c.ComputeProductInfo>? computes,
-    _ike5w393.ComputeSizeOption? defaultCompute,
-    _i6ffibot.ComputeScalingInfo? scaling,
+    List<_i2.ComputeProductInfo>? computes,
+    _i3.ComputeSizeOption? defaultCompute,
+    _i4.ComputeScalingInfo? scaling,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -87,15 +84,15 @@ abstract class ComputeCatalogInfo
 
   @override
   String toString() {
-    return _isc.SerializationManager.encode(this);
+    return _i1.SerializationManager.encode(this);
   }
 }
 
 class _ComputeCatalogInfoImpl extends ComputeCatalogInfo {
   _ComputeCatalogInfoImpl({
-    required List<_itbzu52c.ComputeProductInfo> computes,
-    required _ike5w393.ComputeSizeOption defaultCompute,
-    required _i6ffibot.ComputeScalingInfo scaling,
+    required List<_i2.ComputeProductInfo> computes,
+    required _i3.ComputeSizeOption defaultCompute,
+    required _i4.ComputeScalingInfo scaling,
   }) : super._(
          computes: computes,
          defaultCompute: defaultCompute,
@@ -104,12 +101,12 @@ class _ComputeCatalogInfoImpl extends ComputeCatalogInfo {
 
   /// Returns a shallow copy of this [ComputeCatalogInfo]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
   ComputeCatalogInfo copyWith({
-    List<_itbzu52c.ComputeProductInfo>? computes,
-    _ike5w393.ComputeSizeOption? defaultCompute,
-    _i6ffibot.ComputeScalingInfo? scaling,
+    List<_i2.ComputeProductInfo>? computes,
+    _i3.ComputeSizeOption? defaultCompute,
+    _i4.ComputeScalingInfo? scaling,
   }) {
     return ComputeCatalogInfo(
       computes: computes ?? this.computes.map((e0) => e0.copyWith()).toList(),

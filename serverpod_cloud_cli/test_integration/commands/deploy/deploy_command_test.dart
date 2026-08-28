@@ -682,7 +682,7 @@ sdks:
       setUp(() async {
         when(
           () => client.platform.getDartSdkVersionPolicy(),
-        ).thenThrow(ServerpodClientInternalServerError());
+        ).thenThrow(ServerpodClientException('connection failed', 500));
 
         await ProjectFactory.serverpodServerDir().create();
         final testProjectDir = p.join(

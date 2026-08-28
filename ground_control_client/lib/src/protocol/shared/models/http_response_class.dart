@@ -10,13 +10,13 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 /// An HTTP response status class.
 ///
 /// Naming by meaning rather than digit keeps the wire self-describing, and
 /// `byName` serialization keeps the order stable if a class is ever added.
-enum HttpResponseClass implements _isc.SerializableModel {
+enum HttpResponseClass implements _i1.SerializableModel {
   /// 1xx — informational.
   informational,
 

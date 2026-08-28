@@ -10,11 +10,11 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
-import '../../../../domains/projects/models/project.dart' as _iwujrmz5;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import '../../../../domains/projects/models/project.dart' as _i2;
 import '../../../../features/projects/models/project_info/timestamp.dart'
-    as _iv6ntt36;
+    as _i3;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 /// Augments a project object with ancillary information.
 ///
@@ -22,7 +22,7 @@ import '../../../../features/projects/models/project_info/timestamp.dart'
 /// in which case they are non-null.
 /// In other words, null ancillary fields correspond to `undefined`.
 abstract class ProjectInfo
-    implements _isc.SerializableModel, _isc.ProtocolSerialization {
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   ProjectInfo._({
     required this.project,
     required this.productId,
@@ -30,27 +30,27 @@ abstract class ProjectInfo
   });
 
   factory ProjectInfo({
-    required _iwujrmz5.Project project,
+    required _i2.Project project,
     required String productId,
-    _iv6ntt36.Timestamp? latestDeployAttemptTime,
+    _i3.Timestamp? latestDeployAttemptTime,
   }) = _ProjectInfoImpl;
 
   factory ProjectInfo.fromJson(Map<String, dynamic> jsonSerialization) {
     return ProjectInfo(
-      project: _iod2a87h.Protocol().deserialize<_iwujrmz5.Project>(
+      project: _i4.Protocol().deserialize<_i2.Project>(
         jsonSerialization['project'],
       ),
       productId: jsonSerialization['productId'] as String,
       latestDeployAttemptTime:
           jsonSerialization['latestDeployAttemptTime'] == null
           ? null
-          : _iod2a87h.Protocol().deserialize<_iv6ntt36.Timestamp>(
+          : _i4.Protocol().deserialize<_i3.Timestamp>(
               jsonSerialization['latestDeployAttemptTime'],
             ),
     );
   }
 
-  _iwujrmz5.Project project;
+  _i2.Project project;
 
   /// The procured product id for the project product type.
   String productId;
@@ -58,15 +58,15 @@ abstract class ProjectInfo
   /// The timestamp of the latest deploy attempt, or null if never deployed.
   /// (When deploy status is overhauled, this will likely be replaced by a
   /// `DeployAttempt` object.)
-  _iv6ntt36.Timestamp? latestDeployAttemptTime;
+  _i3.Timestamp? latestDeployAttemptTime;
 
   /// Returns a shallow copy of this [ProjectInfo]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   ProjectInfo copyWith({
-    _iwujrmz5.Project? project,
+    _i2.Project? project,
     String? productId,
-    _iv6ntt36.Timestamp? latestDeployAttemptTime,
+    _i3.Timestamp? latestDeployAttemptTime,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -92,7 +92,7 @@ abstract class ProjectInfo
 
   @override
   String toString() {
-    return _isc.SerializationManager.encode(this);
+    return _i1.SerializationManager.encode(this);
   }
 }
 
@@ -100,9 +100,9 @@ class _Undefined {}
 
 class _ProjectInfoImpl extends ProjectInfo {
   _ProjectInfoImpl({
-    required _iwujrmz5.Project project,
+    required _i2.Project project,
     required String productId,
-    _iv6ntt36.Timestamp? latestDeployAttemptTime,
+    _i3.Timestamp? latestDeployAttemptTime,
   }) : super._(
          project: project,
          productId: productId,
@@ -111,17 +111,17 @@ class _ProjectInfoImpl extends ProjectInfo {
 
   /// Returns a shallow copy of this [ProjectInfo]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
   ProjectInfo copyWith({
-    _iwujrmz5.Project? project,
+    _i2.Project? project,
     String? productId,
     Object? latestDeployAttemptTime = _Undefined,
   }) {
     return ProjectInfo(
       project: project ?? this.project.copyWith(),
       productId: productId ?? this.productId,
-      latestDeployAttemptTime: latestDeployAttemptTime is _iv6ntt36.Timestamp?
+      latestDeployAttemptTime: latestDeployAttemptTime is _i3.Timestamp?
           ? latestDeployAttemptTime
           : this.latestDeployAttemptTime?.copyWith(),
     );

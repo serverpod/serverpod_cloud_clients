@@ -10,14 +10,13 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
-import '../../../domains/secrets/models/secret_type.dart' as _iufgioqt;
-import '../../../domains/secrets/models/stored_secret_version.dart'
-    as _idoslex6;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import '../../../domains/secrets/models/secret_type.dart' as _i2;
+import '../../../domains/secrets/models/stored_secret_version.dart' as _i3;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 abstract class SecretResource
-    implements _isc.SerializableModel, _isc.ProtocolSerialization {
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   SecretResource._({
     this.id,
     required this.cloudCapsuleId,
@@ -33,11 +32,11 @@ abstract class SecretResource
     int? id,
     required String cloudCapsuleId,
     required String secretId,
-    required _iufgioqt.SecretType secretType,
+    required _i2.SecretType secretType,
     String? latestVersionId,
     String? activeVersionId,
     DateTime? createdAt,
-    List<_idoslex6.StoredSecretVersion>? storedSecretVersions,
+    List<_i3.StoredSecretVersion>? storedSecretVersions,
   }) = _SecretResourceImpl;
 
   factory SecretResource.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -45,20 +44,19 @@ abstract class SecretResource
       id: jsonSerialization['id'] as int?,
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
       secretId: jsonSerialization['secretId'] as String,
-      secretType: _iufgioqt.SecretType.fromJson(
+      secretType: _i2.SecretType.fromJson(
         (jsonSerialization['secretType'] as String),
       ),
       latestVersionId: jsonSerialization['latestVersionId'] as String?,
       activeVersionId: jsonSerialization['activeVersionId'] as String?,
       createdAt: jsonSerialization['createdAt'] == null
           ? null
-          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
       storedSecretVersions: jsonSerialization['storedSecretVersions'] == null
           ? null
-          : _iod2a87h.Protocol()
-                .deserialize<List<_idoslex6.StoredSecretVersion>>(
-                  jsonSerialization['storedSecretVersions'],
-                ),
+          : _i4.Protocol().deserialize<List<_i3.StoredSecretVersion>>(
+              jsonSerialization['storedSecretVersions'],
+            ),
     );
   }
 
@@ -71,7 +69,7 @@ abstract class SecretResource
 
   String secretId;
 
-  _iufgioqt.SecretType secretType;
+  _i2.SecretType secretType;
 
   String? latestVersionId;
 
@@ -80,20 +78,20 @@ abstract class SecretResource
   DateTime? createdAt;
 
   /// For secret types stored in the database this is the list of the stored versions
-  List<_idoslex6.StoredSecretVersion>? storedSecretVersions;
+  List<_i3.StoredSecretVersion>? storedSecretVersions;
 
   /// Returns a shallow copy of this [SecretResource]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   SecretResource copyWith({
     int? id,
     String? cloudCapsuleId,
     String? secretId,
-    _iufgioqt.SecretType? secretType,
+    _i2.SecretType? secretType,
     String? latestVersionId,
     String? activeVersionId,
     DateTime? createdAt,
-    List<_idoslex6.StoredSecretVersion>? storedSecretVersions,
+    List<_i3.StoredSecretVersion>? storedSecretVersions,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -133,7 +131,7 @@ abstract class SecretResource
 
   @override
   String toString() {
-    return _isc.SerializationManager.encode(this);
+    return _i1.SerializationManager.encode(this);
   }
 }
 
@@ -144,11 +142,11 @@ class _SecretResourceImpl extends SecretResource {
     int? id,
     required String cloudCapsuleId,
     required String secretId,
-    required _iufgioqt.SecretType secretType,
+    required _i2.SecretType secretType,
     String? latestVersionId,
     String? activeVersionId,
     DateTime? createdAt,
-    List<_idoslex6.StoredSecretVersion>? storedSecretVersions,
+    List<_i3.StoredSecretVersion>? storedSecretVersions,
   }) : super._(
          id: id,
          cloudCapsuleId: cloudCapsuleId,
@@ -162,13 +160,13 @@ class _SecretResourceImpl extends SecretResource {
 
   /// Returns a shallow copy of this [SecretResource]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
   SecretResource copyWith({
     Object? id = _Undefined,
     String? cloudCapsuleId,
     String? secretId,
-    _iufgioqt.SecretType? secretType,
+    _i2.SecretType? secretType,
     Object? latestVersionId = _Undefined,
     Object? activeVersionId = _Undefined,
     Object? createdAt = _Undefined,
@@ -187,7 +185,7 @@ class _SecretResourceImpl extends SecretResource {
           : this.activeVersionId,
       createdAt: createdAt is DateTime? ? createdAt : this.createdAt,
       storedSecretVersions:
-          storedSecretVersions is List<_idoslex6.StoredSecretVersion>?
+          storedSecretVersions is List<_i3.StoredSecretVersion>?
           ? storedSecretVersions
           : this.storedSecretVersions?.map((e0) => e0.copyWith()).toList(),
     );

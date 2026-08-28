@@ -10,12 +10,12 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/buckets/models/bucket_service_account_status.dart'
-    as _i7ms9ssh;
+    as _i2;
 
 abstract class BucketServiceAccount
-    implements _isc.SerializableModel, _isc.ProtocolSerialization {
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   BucketServiceAccount._({
     this.id,
     required this.cloudCapsuleId,
@@ -29,7 +29,7 @@ abstract class BucketServiceAccount
     required String cloudCapsuleId,
     required String saEmail,
     String? activeKeyId,
-    required _i7ms9ssh.BucketServiceAccountStatus status,
+    required _i2.BucketServiceAccountStatus status,
   }) = _BucketServiceAccountImpl;
 
   factory BucketServiceAccount.fromJson(
@@ -40,7 +40,7 @@ abstract class BucketServiceAccount
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
       saEmail: jsonSerialization['saEmail'] as String,
       activeKeyId: jsonSerialization['activeKeyId'] as String?,
-      status: _i7ms9ssh.BucketServiceAccountStatus.fromJson(
+      status: _i2.BucketServiceAccountStatus.fromJson(
         (jsonSerialization['status'] as String),
       ),
     );
@@ -57,17 +57,17 @@ abstract class BucketServiceAccount
 
   String? activeKeyId;
 
-  _i7ms9ssh.BucketServiceAccountStatus status;
+  _i2.BucketServiceAccountStatus status;
 
   /// Returns a shallow copy of this [BucketServiceAccount]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   BucketServiceAccount copyWith({
     int? id,
     String? cloudCapsuleId,
     String? saEmail,
     String? activeKeyId,
-    _i7ms9ssh.BucketServiceAccountStatus? status,
+    _i2.BucketServiceAccountStatus? status,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -95,7 +95,7 @@ abstract class BucketServiceAccount
 
   @override
   String toString() {
-    return _isc.SerializationManager.encode(this);
+    return _i1.SerializationManager.encode(this);
   }
 }
 
@@ -107,7 +107,7 @@ class _BucketServiceAccountImpl extends BucketServiceAccount {
     required String cloudCapsuleId,
     required String saEmail,
     String? activeKeyId,
-    required _i7ms9ssh.BucketServiceAccountStatus status,
+    required _i2.BucketServiceAccountStatus status,
   }) : super._(
          id: id,
          cloudCapsuleId: cloudCapsuleId,
@@ -118,14 +118,14 @@ class _BucketServiceAccountImpl extends BucketServiceAccount {
 
   /// Returns a shallow copy of this [BucketServiceAccount]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
   BucketServiceAccount copyWith({
     Object? id = _Undefined,
     String? cloudCapsuleId,
     String? saEmail,
     Object? activeKeyId = _Undefined,
-    _i7ms9ssh.BucketServiceAccountStatus? status,
+    _i2.BucketServiceAccountStatus? status,
   }) {
     return BucketServiceAccount(
       id: id is int? ? id : this.id,

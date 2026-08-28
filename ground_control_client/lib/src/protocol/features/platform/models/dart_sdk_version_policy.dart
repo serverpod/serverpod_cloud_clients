@@ -10,13 +10,13 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
-import '../../../features/platform/models/dart_sdk_version.dart' as _ip471g3j;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import '../../../features/platform/models/dart_sdk_version.dart' as _i2;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i3;
 
 /// The Dart SDK version policy for projects deployed to Serverpod Cloud.
 abstract class DartSdkVersionPolicy
-    implements _isc.SerializableModel, _isc.ProtocolSerialization {
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   DartSdkVersionPolicy._({
     required this.supportedVersions,
     required this.defaultVersion,
@@ -26,7 +26,7 @@ abstract class DartSdkVersionPolicy
   });
 
   factory DartSdkVersionPolicy({
-    required List<_ip471g3j.DartSdkVersion> supportedVersions,
+    required List<_i2.DartSdkVersion> supportedVersions,
     required String defaultVersion,
     required String minVersionInclusive,
     required String maxVersionExclusive,
@@ -37,21 +37,20 @@ abstract class DartSdkVersionPolicy
     Map<String, dynamic> jsonSerialization,
   ) {
     return DartSdkVersionPolicy(
-      supportedVersions: _iod2a87h.Protocol()
-          .deserialize<List<_ip471g3j.DartSdkVersion>>(
-            jsonSerialization['supportedVersions'],
-          ),
+      supportedVersions: _i3.Protocol().deserialize<List<_i2.DartSdkVersion>>(
+        jsonSerialization['supportedVersions'],
+      ),
       defaultVersion: jsonSerialization['defaultVersion'] as String,
       minVersionInclusive: jsonSerialization['minVersionInclusive'] as String,
       maxVersionExclusive: jsonSerialization['maxVersionExclusive'] as String,
-      documentationUrl: _isc.UriJsonExtension.fromJson(
+      documentationUrl: _i1.UriJsonExtension.fromJson(
         jsonSerialization['documentationUrl'],
       ),
     );
   }
 
   /// The supported Dart SDK versions, ordered lowest to highest.
-  List<_ip471g3j.DartSdkVersion> supportedVersions;
+  List<_i2.DartSdkVersion> supportedVersions;
 
   /// The version used when a deployment requests no specific Dart SDK version.
   /// Always one of the versions in [supportedVersions], as a minor version
@@ -71,9 +70,9 @@ abstract class DartSdkVersionPolicy
 
   /// Returns a shallow copy of this [DartSdkVersionPolicy]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   DartSdkVersionPolicy copyWith({
-    List<_ip471g3j.DartSdkVersion>? supportedVersions,
+    List<_i2.DartSdkVersion>? supportedVersions,
     String? defaultVersion,
     String? minVersionInclusive,
     String? maxVersionExclusive,
@@ -109,13 +108,13 @@ abstract class DartSdkVersionPolicy
 
   @override
   String toString() {
-    return _isc.SerializationManager.encode(this);
+    return _i1.SerializationManager.encode(this);
   }
 }
 
 class _DartSdkVersionPolicyImpl extends DartSdkVersionPolicy {
   _DartSdkVersionPolicyImpl({
-    required List<_ip471g3j.DartSdkVersion> supportedVersions,
+    required List<_i2.DartSdkVersion> supportedVersions,
     required String defaultVersion,
     required String minVersionInclusive,
     required String maxVersionExclusive,
@@ -130,10 +129,10 @@ class _DartSdkVersionPolicyImpl extends DartSdkVersionPolicy {
 
   /// Returns a shallow copy of this [DartSdkVersionPolicy]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
   DartSdkVersionPolicy copyWith({
-    List<_ip471g3j.DartSdkVersion>? supportedVersions,
+    List<_i2.DartSdkVersion>? supportedVersions,
     String? defaultVersion,
     String? minVersionInclusive,
     String? maxVersionExclusive,

@@ -10,16 +10,14 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
-import '../../../domains/products/models/compute_catalog_info.dart'
-    as _ixot701a;
-import '../../../domains/products/models/database_catalog_info.dart'
-    as _ikaa1o73;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import '../../../domains/products/models/compute_catalog_info.dart' as _i2;
+import '../../../domains/products/models/database_catalog_info.dart' as _i3;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 /// Definition of a project product including its compute and database sub-products.
 abstract class ProjectProductInfo
-    implements _isc.SerializableModel, _isc.ProtocolSerialization {
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   ProjectProductInfo._({
     required this.productId,
     required this.name,
@@ -32,8 +30,8 @@ abstract class ProjectProductInfo
     required String productId,
     required String name,
     required String description,
-    required _ixot701a.ComputeCatalogInfo computeCatalog,
-    required _ikaa1o73.DatabaseCatalogInfo databaseCatalog,
+    required _i2.ComputeCatalogInfo computeCatalog,
+    required _i3.DatabaseCatalogInfo databaseCatalog,
   }) = _ProjectProductInfoImpl;
 
   factory ProjectProductInfo.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -41,14 +39,12 @@ abstract class ProjectProductInfo
       productId: jsonSerialization['productId'] as String,
       name: jsonSerialization['name'] as String,
       description: jsonSerialization['description'] as String,
-      computeCatalog: _iod2a87h.Protocol()
-          .deserialize<_ixot701a.ComputeCatalogInfo>(
-            jsonSerialization['computeCatalog'],
-          ),
-      databaseCatalog: _iod2a87h.Protocol()
-          .deserialize<_ikaa1o73.DatabaseCatalogInfo>(
-            jsonSerialization['databaseCatalog'],
-          ),
+      computeCatalog: _i4.Protocol().deserialize<_i2.ComputeCatalogInfo>(
+        jsonSerialization['computeCatalog'],
+      ),
+      databaseCatalog: _i4.Protocol().deserialize<_i3.DatabaseCatalogInfo>(
+        jsonSerialization['databaseCatalog'],
+      ),
     );
   }
 
@@ -62,20 +58,20 @@ abstract class ProjectProductInfo
   String description;
 
   /// The compute products available under this project product.
-  _ixot701a.ComputeCatalogInfo computeCatalog;
+  _i2.ComputeCatalogInfo computeCatalog;
 
   /// The database products available under this project product.
-  _ikaa1o73.DatabaseCatalogInfo databaseCatalog;
+  _i3.DatabaseCatalogInfo databaseCatalog;
 
   /// Returns a shallow copy of this [ProjectProductInfo]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   ProjectProductInfo copyWith({
     String? productId,
     String? name,
     String? description,
-    _ixot701a.ComputeCatalogInfo? computeCatalog,
-    _ikaa1o73.DatabaseCatalogInfo? databaseCatalog,
+    _i2.ComputeCatalogInfo? computeCatalog,
+    _i3.DatabaseCatalogInfo? databaseCatalog,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -103,7 +99,7 @@ abstract class ProjectProductInfo
 
   @override
   String toString() {
-    return _isc.SerializationManager.encode(this);
+    return _i1.SerializationManager.encode(this);
   }
 }
 
@@ -112,8 +108,8 @@ class _ProjectProductInfoImpl extends ProjectProductInfo {
     required String productId,
     required String name,
     required String description,
-    required _ixot701a.ComputeCatalogInfo computeCatalog,
-    required _ikaa1o73.DatabaseCatalogInfo databaseCatalog,
+    required _i2.ComputeCatalogInfo computeCatalog,
+    required _i3.DatabaseCatalogInfo databaseCatalog,
   }) : super._(
          productId: productId,
          name: name,
@@ -124,14 +120,14 @@ class _ProjectProductInfoImpl extends ProjectProductInfo {
 
   /// Returns a shallow copy of this [ProjectProductInfo]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
   ProjectProductInfo copyWith({
     String? productId,
     String? name,
     String? description,
-    _ixot701a.ComputeCatalogInfo? computeCatalog,
-    _ikaa1o73.DatabaseCatalogInfo? databaseCatalog,
+    _i2.ComputeCatalogInfo? computeCatalog,
+    _i3.DatabaseCatalogInfo? databaseCatalog,
   }) {
     return ProjectProductInfo(
       productId: productId ?? this.productId,
