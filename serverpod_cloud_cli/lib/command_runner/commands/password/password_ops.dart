@@ -107,6 +107,11 @@ abstract final class PasswordDefinitions {
       notes: 'Used by serverpod_auth_idp_server',
       isValidValue: (_) => null,
     ),
+    'scloudAuthEmailKey': PasswordMetadata(
+      category: PasswordCategory.auth,
+      notes: 'Used by the Serverpod Cloud email service',
+      isValidValue: (_) => null,
+    ),
     'serverpod_auth_googleClientSecret': PasswordMetadata(
       category: PasswordCategory.legacyAuth,
       notes: 'Client secret for Google authentication',
