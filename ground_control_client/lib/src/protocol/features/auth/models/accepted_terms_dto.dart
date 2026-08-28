@@ -10,35 +10,33 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
-import '../../../features/auth/models/terms.dart' as _iv8ziy30;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import '../../../features/auth/models/terms.dart' as _i2;
 
 abstract class AcceptedTermsDTO
-    implements _isc.SerializableModel, _isc.ProtocolSerialization {
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   AcceptedTermsDTO._({required this.termsType, required this.termsVersion});
 
   factory AcceptedTermsDTO({
-    required _iv8ziy30.Terms termsType,
+    required _i2.Terms termsType,
     required String termsVersion,
   }) = _AcceptedTermsDTOImpl;
 
   factory AcceptedTermsDTO.fromJson(Map<String, dynamic> jsonSerialization) {
     return AcceptedTermsDTO(
-      termsType: _iv8ziy30.Terms.fromJson(
-        (jsonSerialization['termsType'] as String),
-      ),
+      termsType: _i2.Terms.fromJson((jsonSerialization['termsType'] as String)),
       termsVersion: jsonSerialization['termsVersion'] as String,
     );
   }
 
-  _iv8ziy30.Terms termsType;
+  _i2.Terms termsType;
 
   String termsVersion;
 
   /// Returns a shallow copy of this [AcceptedTermsDTO]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
-  AcceptedTermsDTO copyWith({_iv8ziy30.Terms? termsType, String? termsVersion});
+  @_i1.useResult
+  AcceptedTermsDTO copyWith({_i2.Terms? termsType, String? termsVersion});
   @override
   Map<String, dynamic> toJson() {
     return {
@@ -59,24 +57,21 @@ abstract class AcceptedTermsDTO
 
   @override
   String toString() {
-    return _isc.SerializationManager.encode(this);
+    return _i1.SerializationManager.encode(this);
   }
 }
 
 class _AcceptedTermsDTOImpl extends AcceptedTermsDTO {
   _AcceptedTermsDTOImpl({
-    required _iv8ziy30.Terms termsType,
+    required _i2.Terms termsType,
     required String termsVersion,
   }) : super._(termsType: termsType, termsVersion: termsVersion);
 
   /// Returns a shallow copy of this [AcceptedTermsDTO]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
-  AcceptedTermsDTO copyWith({
-    _iv8ziy30.Terms? termsType,
-    String? termsVersion,
-  }) {
+  AcceptedTermsDTO copyWith({_i2.Terms? termsType, String? termsVersion}) {
     return AcceptedTermsDTO(
       termsType: termsType ?? this.termsType,
       termsVersion: termsVersion ?? this.termsVersion,

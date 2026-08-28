@@ -10,13 +10,13 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
-import '../../../domains/products/models/plan_type.dart' as _iic46wsa;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import '../../../domains/products/models/plan_type.dart' as _i2;
 
 /// Information about a subscription.
 /// Contains information to be sent to the client.
 abstract class SubscriptionInfo
-    implements _isc.SerializableModel, _isc.ProtocolSerialization {
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   SubscriptionInfo._({
     required this.createdAt,
     required this.startDate,
@@ -38,9 +38,9 @@ abstract class SubscriptionInfo
     DateTime? trialEndDate,
     DateTime? endDate,
     required bool cancelled,
-    required _isc.UuidValue subscriptionId,
+    required _i1.UuidValue subscriptionId,
     required String planProductId,
-    required _iic46wsa.PlanType planType,
+    required _i2.PlanType planType,
     String? planName,
     required String planDisplayName,
     String? planDescription,
@@ -49,28 +49,26 @@ abstract class SubscriptionInfo
 
   factory SubscriptionInfo.fromJson(Map<String, dynamic> jsonSerialization) {
     return SubscriptionInfo(
-      createdAt: _isc.DateTimeJsonExtension.fromJson(
+      createdAt: _i1.DateTimeJsonExtension.fromJson(
         jsonSerialization['createdAt'],
       ),
-      startDate: _isc.DateTimeJsonExtension.fromJson(
+      startDate: _i1.DateTimeJsonExtension.fromJson(
         jsonSerialization['startDate'],
       ),
       trialEndDate: jsonSerialization['trialEndDate'] == null
           ? null
-          : _isc.DateTimeJsonExtension.fromJson(
+          : _i1.DateTimeJsonExtension.fromJson(
               jsonSerialization['trialEndDate'],
             ),
       endDate: jsonSerialization['endDate'] == null
           ? null
-          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['endDate']),
-      cancelled: _isc.BoolJsonExtension.fromJson(
-        jsonSerialization['cancelled'],
-      ),
-      subscriptionId: _isc.UuidValueJsonExtension.fromJson(
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['endDate']),
+      cancelled: _i1.BoolJsonExtension.fromJson(jsonSerialization['cancelled']),
+      subscriptionId: _i1.UuidValueJsonExtension.fromJson(
         jsonSerialization['subscriptionId'],
       ),
       planProductId: jsonSerialization['planProductId'] as String,
-      planType: _iic46wsa.PlanType.fromJson(
+      planType: _i2.PlanType.fromJson(
         (jsonSerialization['planType'] as String),
       ),
       planName: jsonSerialization['planName'] as String?,
@@ -96,7 +94,7 @@ abstract class SubscriptionInfo
   bool cancelled;
 
   /// The id of the subscription.
-  _isc.UuidValue subscriptionId;
+  _i1.UuidValue subscriptionId;
 
   /// The id of the plan's product.
   String planProductId;
@@ -105,7 +103,7 @@ abstract class SubscriptionInfo
   /// subscription's plan product maps to one. [PlanType.unknown] for internal
   /// plans (e.g. early-access, hackathon, closed-beta) that aren't
   /// user-selectable.
-  _iic46wsa.PlanType planType;
+  _i2.PlanType planType;
 
   /// Deprecated: Use planDisplayName instead.
   String? planName;
@@ -121,16 +119,16 @@ abstract class SubscriptionInfo
 
   /// Returns a shallow copy of this [SubscriptionInfo]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   SubscriptionInfo copyWith({
     DateTime? createdAt,
     DateTime? startDate,
     DateTime? trialEndDate,
     DateTime? endDate,
     bool? cancelled,
-    _isc.UuidValue? subscriptionId,
+    _i1.UuidValue? subscriptionId,
     String? planProductId,
-    _iic46wsa.PlanType? planType,
+    _i2.PlanType? planType,
     String? planName,
     String? planDisplayName,
     String? planDescription,
@@ -176,7 +174,7 @@ abstract class SubscriptionInfo
 
   @override
   String toString() {
-    return _isc.SerializationManager.encode(this);
+    return _i1.SerializationManager.encode(this);
   }
 }
 
@@ -189,9 +187,9 @@ class _SubscriptionInfoImpl extends SubscriptionInfo {
     DateTime? trialEndDate,
     DateTime? endDate,
     required bool cancelled,
-    required _isc.UuidValue subscriptionId,
+    required _i1.UuidValue subscriptionId,
     required String planProductId,
-    required _iic46wsa.PlanType planType,
+    required _i2.PlanType planType,
     String? planName,
     required String planDisplayName,
     String? planDescription,
@@ -213,7 +211,7 @@ class _SubscriptionInfoImpl extends SubscriptionInfo {
 
   /// Returns a shallow copy of this [SubscriptionInfo]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
   SubscriptionInfo copyWith({
     DateTime? createdAt,
@@ -221,9 +219,9 @@ class _SubscriptionInfoImpl extends SubscriptionInfo {
     Object? trialEndDate = _Undefined,
     Object? endDate = _Undefined,
     bool? cancelled,
-    _isc.UuidValue? subscriptionId,
+    _i1.UuidValue? subscriptionId,
     String? planProductId,
-    _iic46wsa.PlanType? planType,
+    _i2.PlanType? planType,
     Object? planName = _Undefined,
     String? planDisplayName,
     Object? planDescription = _Undefined,

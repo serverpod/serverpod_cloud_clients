@@ -10,10 +10,10 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 abstract class DatabaseQuota
-    implements _isc.SerializableModel, _isc.ProtocolSerialization {
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   DatabaseQuota._({this.logicalSizeBytes, this.computeTimeSeconds});
 
   factory DatabaseQuota({int? logicalSizeBytes, int? computeTimeSeconds}) =
@@ -32,7 +32,7 @@ abstract class DatabaseQuota
 
   /// Returns a shallow copy of this [DatabaseQuota]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   DatabaseQuota copyWith({int? logicalSizeBytes, int? computeTimeSeconds});
   @override
   Map<String, dynamic> toJson() {
@@ -54,7 +54,7 @@ abstract class DatabaseQuota
 
   @override
   String toString() {
-    return _isc.SerializationManager.encode(this);
+    return _i1.SerializationManager.encode(this);
   }
 }
 
@@ -69,7 +69,7 @@ class _DatabaseQuotaImpl extends DatabaseQuota {
 
   /// Returns a shallow copy of this [DatabaseQuota]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
   DatabaseQuota copyWith({
     Object? logicalSizeBytes = _Undefined,

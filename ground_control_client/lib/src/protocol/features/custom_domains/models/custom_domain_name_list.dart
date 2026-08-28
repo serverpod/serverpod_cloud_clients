@@ -10,50 +10,47 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
-import '../../../features/custom_domains/models/custom_domain_name.dart'
-    as _ioxd3ndl;
-import '../../../features/custom_domains/models/domain_name_target.dart'
-    as _ijnwcgjj;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import '../../../features/custom_domains/models/custom_domain_name.dart' as _i2;
+import '../../../features/custom_domains/models/domain_name_target.dart' as _i3;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 abstract class CustomDomainNameList
-    implements _isc.SerializableModel, _isc.ProtocolSerialization {
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   CustomDomainNameList._({
     required this.customDomainNames,
     required this.defaultDomainsByTarget,
   });
 
   factory CustomDomainNameList({
-    required List<_ioxd3ndl.CustomDomainName> customDomainNames,
-    required Map<_ijnwcgjj.DomainNameTarget, String> defaultDomainsByTarget,
+    required List<_i2.CustomDomainName> customDomainNames,
+    required Map<_i3.DomainNameTarget, String> defaultDomainsByTarget,
   }) = _CustomDomainNameListImpl;
 
   factory CustomDomainNameList.fromJson(
     Map<String, dynamic> jsonSerialization,
   ) {
     return CustomDomainNameList(
-      customDomainNames: _iod2a87h.Protocol()
-          .deserialize<List<_ioxd3ndl.CustomDomainName>>(
-            jsonSerialization['customDomainNames'],
-          ),
-      defaultDomainsByTarget: _iod2a87h.Protocol()
-          .deserialize<Map<_ijnwcgjj.DomainNameTarget, String>>(
+      customDomainNames: _i4.Protocol().deserialize<List<_i2.CustomDomainName>>(
+        jsonSerialization['customDomainNames'],
+      ),
+      defaultDomainsByTarget: _i4.Protocol()
+          .deserialize<Map<_i3.DomainNameTarget, String>>(
             jsonSerialization['defaultDomainsByTarget'],
           ),
     );
   }
 
-  List<_ioxd3ndl.CustomDomainName> customDomainNames;
+  List<_i2.CustomDomainName> customDomainNames;
 
-  Map<_ijnwcgjj.DomainNameTarget, String> defaultDomainsByTarget;
+  Map<_i3.DomainNameTarget, String> defaultDomainsByTarget;
 
   /// Returns a shallow copy of this [CustomDomainNameList]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   CustomDomainNameList copyWith({
-    List<_ioxd3ndl.CustomDomainName>? customDomainNames,
-    Map<_ijnwcgjj.DomainNameTarget, String>? defaultDomainsByTarget,
+    List<_i2.CustomDomainName>? customDomainNames,
+    Map<_i3.DomainNameTarget, String>? defaultDomainsByTarget,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -83,14 +80,14 @@ abstract class CustomDomainNameList
 
   @override
   String toString() {
-    return _isc.SerializationManager.encode(this);
+    return _i1.SerializationManager.encode(this);
   }
 }
 
 class _CustomDomainNameListImpl extends CustomDomainNameList {
   _CustomDomainNameListImpl({
-    required List<_ioxd3ndl.CustomDomainName> customDomainNames,
-    required Map<_ijnwcgjj.DomainNameTarget, String> defaultDomainsByTarget,
+    required List<_i2.CustomDomainName> customDomainNames,
+    required Map<_i3.DomainNameTarget, String> defaultDomainsByTarget,
   }) : super._(
          customDomainNames: customDomainNames,
          defaultDomainsByTarget: defaultDomainsByTarget,
@@ -98,11 +95,11 @@ class _CustomDomainNameListImpl extends CustomDomainNameList {
 
   /// Returns a shallow copy of this [CustomDomainNameList]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
   CustomDomainNameList copyWith({
-    List<_ioxd3ndl.CustomDomainName>? customDomainNames,
-    Map<_ijnwcgjj.DomainNameTarget, String>? defaultDomainsByTarget,
+    List<_i2.CustomDomainName>? customDomainNames,
+    Map<_i3.DomainNameTarget, String>? defaultDomainsByTarget,
   }) {
     return CustomDomainNameList(
       customDomainNames:

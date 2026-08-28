@@ -10,10 +10,10 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 abstract class PaymentSetupIntent
-    implements _isc.SerializableModel, _isc.ProtocolSerialization {
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   PaymentSetupIntent._({
     required this.id,
     required this.clientSecret,
@@ -42,7 +42,7 @@ abstract class PaymentSetupIntent
 
   /// Returns a shallow copy of this [PaymentSetupIntent]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   PaymentSetupIntent copyWith({
     String? id,
     String? clientSecret,
@@ -70,7 +70,7 @@ abstract class PaymentSetupIntent
 
   @override
   String toString() {
-    return _isc.SerializationManager.encode(this);
+    return _i1.SerializationManager.encode(this);
   }
 }
 
@@ -83,7 +83,7 @@ class _PaymentSetupIntentImpl extends PaymentSetupIntent {
 
   /// Returns a shallow copy of this [PaymentSetupIntent]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
   PaymentSetupIntent copyWith({
     String? id,

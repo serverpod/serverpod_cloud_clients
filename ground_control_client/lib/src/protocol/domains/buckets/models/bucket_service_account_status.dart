@@ -10,11 +10,11 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 /// The lifecycle state of a capsule's storage-identity service account,
 /// recording facts that have happened rather than operations in flight.
-enum BucketServiceAccountStatus implements _isc.SerializableModel {
+enum BucketServiceAccountStatus implements _i1.SerializableModel {
   /// The database row exists; the service account key has not yet been
   /// delivered to the capsule's secrets.
   created,

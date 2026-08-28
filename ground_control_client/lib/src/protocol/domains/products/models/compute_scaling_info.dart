@@ -10,11 +10,11 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 /// Scaling configuration for a compute size that supports variable replica scaling.
 abstract class ComputeScalingInfo
-    implements _isc.SerializableModel, _isc.ProtocolSerialization {
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   ComputeScalingInfo._({
     required this.defaultMinReplicas,
     required this.defaultMaxReplicas,
@@ -52,7 +52,7 @@ abstract class ComputeScalingInfo
 
   /// Returns a shallow copy of this [ComputeScalingInfo]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   ComputeScalingInfo copyWith({
     int? defaultMinReplicas,
     int? defaultMaxReplicas,
@@ -83,7 +83,7 @@ abstract class ComputeScalingInfo
 
   @override
   String toString() {
-    return _isc.SerializationManager.encode(this);
+    return _i1.SerializationManager.encode(this);
   }
 }
 
@@ -102,7 +102,7 @@ class _ComputeScalingInfoImpl extends ComputeScalingInfo {
 
   /// Returns a shallow copy of this [ComputeScalingInfo]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
   ComputeScalingInfo copyWith({
     int? defaultMinReplicas,

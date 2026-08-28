@@ -10,9 +10,9 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
-import '../../../domains/metrics/models/metric_sample.dart' as _ic8vhv48;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import '../../../domains/metrics/models/metric_sample.dart' as _i2;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i3;
 
 /// Per-pod CPU and memory series for a capsule over a time range.
 ///
@@ -20,7 +20,7 @@ import '../../../domains/metrics/models/metric_sample.dart' as _ic8vhv48;
 /// with no backend samples simply has no points, so a client can distinguish
 /// "no data" from a real zero.
 abstract class PodResourceSeries
-    implements _isc.SerializableModel, _isc.ProtocolSerialization {
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   PodResourceSeries._({
     required this.podName,
     required this.cpuCores,
@@ -29,20 +29,19 @@ abstract class PodResourceSeries
 
   factory PodResourceSeries({
     required String podName,
-    required List<_ic8vhv48.MetricSample> cpuCores,
-    required List<_ic8vhv48.MetricSample> memoryBytes,
+    required List<_i2.MetricSample> cpuCores,
+    required List<_i2.MetricSample> memoryBytes,
   }) = _PodResourceSeriesImpl;
 
   factory PodResourceSeries.fromJson(Map<String, dynamic> jsonSerialization) {
     return PodResourceSeries(
       podName: jsonSerialization['podName'] as String,
-      cpuCores: _iod2a87h.Protocol().deserialize<List<_ic8vhv48.MetricSample>>(
+      cpuCores: _i3.Protocol().deserialize<List<_i2.MetricSample>>(
         jsonSerialization['cpuCores'],
       ),
-      memoryBytes: _iod2a87h.Protocol()
-          .deserialize<List<_ic8vhv48.MetricSample>>(
-            jsonSerialization['memoryBytes'],
-          ),
+      memoryBytes: _i3.Protocol().deserialize<List<_i2.MetricSample>>(
+        jsonSerialization['memoryBytes'],
+      ),
     );
   }
 
@@ -50,18 +49,18 @@ abstract class PodResourceSeries
   String podName;
 
   /// CPU usage samples, in cores.
-  List<_ic8vhv48.MetricSample> cpuCores;
+  List<_i2.MetricSample> cpuCores;
 
   /// Memory usage samples, in bytes.
-  List<_ic8vhv48.MetricSample> memoryBytes;
+  List<_i2.MetricSample> memoryBytes;
 
   /// Returns a shallow copy of this [PodResourceSeries]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   PodResourceSeries copyWith({
     String? podName,
-    List<_ic8vhv48.MetricSample>? cpuCores,
-    List<_ic8vhv48.MetricSample>? memoryBytes,
+    List<_i2.MetricSample>? cpuCores,
+    List<_i2.MetricSample>? memoryBytes,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -87,25 +86,25 @@ abstract class PodResourceSeries
 
   @override
   String toString() {
-    return _isc.SerializationManager.encode(this);
+    return _i1.SerializationManager.encode(this);
   }
 }
 
 class _PodResourceSeriesImpl extends PodResourceSeries {
   _PodResourceSeriesImpl({
     required String podName,
-    required List<_ic8vhv48.MetricSample> cpuCores,
-    required List<_ic8vhv48.MetricSample> memoryBytes,
+    required List<_i2.MetricSample> cpuCores,
+    required List<_i2.MetricSample> memoryBytes,
   }) : super._(podName: podName, cpuCores: cpuCores, memoryBytes: memoryBytes);
 
   /// Returns a shallow copy of this [PodResourceSeries]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
   PodResourceSeries copyWith({
     String? podName,
-    List<_ic8vhv48.MetricSample>? cpuCores,
-    List<_ic8vhv48.MetricSample>? memoryBytes,
+    List<_i2.MetricSample>? cpuCores,
+    List<_i2.MetricSample>? memoryBytes,
   }) {
     return PodResourceSeries(
       podName: podName ?? this.podName,

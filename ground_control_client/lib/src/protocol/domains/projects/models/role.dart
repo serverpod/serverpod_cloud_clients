@@ -10,16 +10,15 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
-import '../../../domains/projects/models/project.dart' as _i2isqmwh;
-import '../../../domains/projects/models/user_role_membership.dart'
-    as _i28atcql;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import '../../../domains/projects/models/project.dart' as _i2;
+import '../../../domains/projects/models/user_role_membership.dart' as _i3;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
 /// Represents an access role for a specific project.
 /// Roles are assigned to users via membership, giving them the role's access scopes.
 abstract class Role
-    implements _isc.SerializableModel, _isc.ProtocolSerialization {
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   Role._({
     this.id,
     DateTime? createdAt,
@@ -39,10 +38,10 @@ abstract class Role
     DateTime? updatedAt,
     DateTime? archivedAt,
     required int projectId,
-    _i2isqmwh.Project? project,
+    _i2.Project? project,
     required String name,
     required List<String> projectScopes,
-    List<_i28atcql.UserRoleMembership>? memberships,
+    List<_i3.UserRoleMembership>? memberships,
   }) = _RoleImpl;
 
   factory Role.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -50,31 +49,28 @@ abstract class Role
       id: jsonSerialization['id'] as int?,
       createdAt: jsonSerialization['createdAt'] == null
           ? null
-          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
       updatedAt: jsonSerialization['updatedAt'] == null
           ? null
-          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
       archivedAt: jsonSerialization['archivedAt'] == null
           ? null
-          : _isc.DateTimeJsonExtension.fromJson(
-              jsonSerialization['archivedAt'],
-            ),
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['archivedAt']),
       projectId: jsonSerialization['projectId'] as int,
       project: jsonSerialization['project'] == null
           ? null
-          : _iod2a87h.Protocol().deserialize<_i2isqmwh.Project>(
+          : _i4.Protocol().deserialize<_i2.Project>(
               jsonSerialization['project'],
             ),
       name: jsonSerialization['name'] as String,
-      projectScopes: _iod2a87h.Protocol().deserialize<List<String>>(
+      projectScopes: _i4.Protocol().deserialize<List<String>>(
         jsonSerialization['projectScopes'],
       ),
       memberships: jsonSerialization['memberships'] == null
           ? null
-          : _iod2a87h.Protocol()
-                .deserialize<List<_i28atcql.UserRoleMembership>>(
-                  jsonSerialization['memberships'],
-                ),
+          : _i4.Protocol().deserialize<List<_i3.UserRoleMembership>>(
+              jsonSerialization['memberships'],
+            ),
     );
   }
 
@@ -92,7 +88,7 @@ abstract class Role
   int projectId;
 
   /// A role belongs to a project. Cannot be changed.
-  _i2isqmwh.Project? project;
+  _i2.Project? project;
 
   /// The name of the role, e.g. 'Admin'. Can be changed.
   String name;
@@ -101,21 +97,21 @@ abstract class Role
   List<String> projectScopes;
 
   /// The user memberships of this role.
-  List<_i28atcql.UserRoleMembership>? memberships;
+  List<_i3.UserRoleMembership>? memberships;
 
   /// Returns a shallow copy of this [Role]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   Role copyWith({
     int? id,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? archivedAt,
     int? projectId,
-    _i2isqmwh.Project? project,
+    _i2.Project? project,
     String? name,
     List<String>? projectScopes,
-    List<_i28atcql.UserRoleMembership>? memberships,
+    List<_i3.UserRoleMembership>? memberships,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -155,7 +151,7 @@ abstract class Role
 
   @override
   String toString() {
-    return _isc.SerializationManager.encode(this);
+    return _i1.SerializationManager.encode(this);
   }
 }
 
@@ -168,10 +164,10 @@ class _RoleImpl extends Role {
     DateTime? updatedAt,
     DateTime? archivedAt,
     required int projectId,
-    _i2isqmwh.Project? project,
+    _i2.Project? project,
     required String name,
     required List<String> projectScopes,
-    List<_i28atcql.UserRoleMembership>? memberships,
+    List<_i3.UserRoleMembership>? memberships,
   }) : super._(
          id: id,
          createdAt: createdAt,
@@ -186,7 +182,7 @@ class _RoleImpl extends Role {
 
   /// Returns a shallow copy of this [Role]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
   Role copyWith({
     Object? id = _Undefined,
@@ -205,13 +201,11 @@ class _RoleImpl extends Role {
       updatedAt: updatedAt ?? this.updatedAt,
       archivedAt: archivedAt is DateTime? ? archivedAt : this.archivedAt,
       projectId: projectId ?? this.projectId,
-      project: project is _i2isqmwh.Project?
-          ? project
-          : this.project?.copyWith(),
+      project: project is _i2.Project? ? project : this.project?.copyWith(),
       name: name ?? this.name,
       projectScopes:
           projectScopes ?? this.projectScopes.map((e0) => e0).toList(),
-      memberships: memberships is List<_i28atcql.UserRoleMembership>?
+      memberships: memberships is List<_i3.UserRoleMembership>?
           ? memberships
           : this.memberships?.map((e0) => e0.copyWith()).toList(),
     );

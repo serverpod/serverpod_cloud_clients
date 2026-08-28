@@ -10,10 +10,10 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 abstract class AuthTokenInfo
-    implements _isc.SerializableModel, _isc.ProtocolSerialization {
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   AuthTokenInfo._({
     required this.tokenId,
     required this.issuer,
@@ -39,22 +39,20 @@ abstract class AuthTokenInfo
       tokenId: jsonSerialization['tokenId'] as String,
       issuer: jsonSerialization['issuer'] as String,
       method: jsonSerialization['method'] as String,
-      createdAt: _isc.DateTimeJsonExtension.fromJson(
+      createdAt: _i1.DateTimeJsonExtension.fromJson(
         jsonSerialization['createdAt'],
       ),
       expiresAt: jsonSerialization['expiresAt'] == null
           ? null
-          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['expiresAt']),
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['expiresAt']),
       expireAfterUnusedFor: jsonSerialization['expireAfterUnusedFor'] == null
           ? null
-          : _isc.DurationJsonExtension.fromJson(
+          : _i1.DurationJsonExtension.fromJson(
               jsonSerialization['expireAfterUnusedFor'],
             ),
       lastUsedAt: jsonSerialization['lastUsedAt'] == null
           ? null
-          : _isc.DateTimeJsonExtension.fromJson(
-              jsonSerialization['lastUsedAt'],
-            ),
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['lastUsedAt']),
     );
   }
 
@@ -74,7 +72,7 @@ abstract class AuthTokenInfo
 
   /// Returns a shallow copy of this [AuthTokenInfo]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   AuthTokenInfo copyWith({
     String? tokenId,
     String? issuer,
@@ -116,7 +114,7 @@ abstract class AuthTokenInfo
 
   @override
   String toString() {
-    return _isc.SerializationManager.encode(this);
+    return _i1.SerializationManager.encode(this);
   }
 }
 
@@ -143,7 +141,7 @@ class _AuthTokenInfoImpl extends AuthTokenInfo {
 
   /// Returns a shallow copy of this [AuthTokenInfo]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
   AuthTokenInfo copyWith({
     String? tokenId,

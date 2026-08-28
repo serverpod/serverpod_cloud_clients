@@ -10,23 +10,22 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
-import '../../../domains/billing/models/owner.dart' as _icig531b;
-import '../../../domains/projects/models/user_role_membership.dart'
-    as _i28atcql;
-import '../../../domains/users/models/user_account_status.dart' as _isy42w70;
-import '../../../domains/users/models/user_label_mapping.dart' as _ibl32xb7;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import '../../../domains/users/models/user_account_status.dart' as _i2;
+import '../../../domains/projects/models/user_role_membership.dart' as _i3;
+import '../../../domains/billing/models/owner.dart' as _i4;
+import '../../../domains/users/models/user_label_mapping.dart' as _i5;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i6;
 
 /// Represents a Serverpod cloud customer user, invited or registered.
 abstract class User
-    implements _isc.SerializableModel, _isc.ProtocolSerialization {
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   User._({
     this.id,
     DateTime? createdAt,
     DateTime? updatedAt,
     this.archivedAt,
-    _isy42w70.UserAccountStatus? accountStatus,
+    _i2.UserAccountStatus? accountStatus,
     this.userAuthId,
     required this.email,
     this.name,
@@ -36,21 +35,21 @@ abstract class User
     this.labels,
   }) : createdAt = createdAt ?? DateTime.now(),
        updatedAt = updatedAt ?? DateTime.now(),
-       accountStatus = accountStatus ?? _isy42w70.UserAccountStatus.registered;
+       accountStatus = accountStatus ?? _i2.UserAccountStatus.registered;
 
   factory User({
     int? id,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? archivedAt,
-    _isy42w70.UserAccountStatus? accountStatus,
+    _i2.UserAccountStatus? accountStatus,
     String? userAuthId,
     required String email,
     String? name,
-    List<_i28atcql.UserRoleMembership>? memberships,
-    _isc.UuidValue? ownerId,
-    _icig531b.Owner? owner,
-    List<_ibl32xb7.UserLabelMapping>? labels,
+    List<_i3.UserRoleMembership>? memberships,
+    _i1.UuidValue? ownerId,
+    _i4.Owner? owner,
+    List<_i5.UserLabelMapping>? labels,
   }) = _UserImpl;
 
   factory User.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -58,18 +57,16 @@ abstract class User
       id: jsonSerialization['id'] as int?,
       createdAt: jsonSerialization['createdAt'] == null
           ? null
-          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
       updatedAt: jsonSerialization['updatedAt'] == null
           ? null
-          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
       archivedAt: jsonSerialization['archivedAt'] == null
           ? null
-          : _isc.DateTimeJsonExtension.fromJson(
-              jsonSerialization['archivedAt'],
-            ),
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['archivedAt']),
       accountStatus: jsonSerialization['accountStatus'] == null
           ? null
-          : _isy42w70.UserAccountStatus.fromJson(
+          : _i2.UserAccountStatus.fromJson(
               (jsonSerialization['accountStatus'] as String),
             ),
       userAuthId: jsonSerialization['userAuthId'] as String?,
@@ -77,21 +74,18 @@ abstract class User
       name: jsonSerialization['name'] as String?,
       memberships: jsonSerialization['memberships'] == null
           ? null
-          : _iod2a87h.Protocol()
-                .deserialize<List<_i28atcql.UserRoleMembership>>(
-                  jsonSerialization['memberships'],
-                ),
+          : _i6.Protocol().deserialize<List<_i3.UserRoleMembership>>(
+              jsonSerialization['memberships'],
+            ),
       ownerId: jsonSerialization['ownerId'] == null
           ? null
-          : _isc.UuidValueJsonExtension.fromJson(jsonSerialization['ownerId']),
+          : _i1.UuidValueJsonExtension.fromJson(jsonSerialization['ownerId']),
       owner: jsonSerialization['owner'] == null
           ? null
-          : _iod2a87h.Protocol().deserialize<_icig531b.Owner>(
-              jsonSerialization['owner'],
-            ),
+          : _i6.Protocol().deserialize<_i4.Owner>(jsonSerialization['owner']),
       labels: jsonSerialization['labels'] == null
           ? null
-          : _iod2a87h.Protocol().deserialize<List<_ibl32xb7.UserLabelMapping>>(
+          : _i6.Protocol().deserialize<List<_i5.UserLabelMapping>>(
               jsonSerialization['labels'],
             ),
     );
@@ -109,7 +103,7 @@ abstract class User
   DateTime? archivedAt;
 
   /// The status of the user's account.
-  _isy42w70.UserAccountStatus accountStatus;
+  _i2.UserAccountStatus accountStatus;
 
   /// External user authentication id. Must be unique.
   /// Not set for invitees.
@@ -122,33 +116,33 @@ abstract class User
   String? name;
 
   /// The role memberships of this user.
-  List<_i28atcql.UserRoleMembership>? memberships;
+  List<_i3.UserRoleMembership>? memberships;
 
   /// The owner id of the user.
-  _isc.UuidValue? ownerId;
+  _i1.UuidValue? ownerId;
 
   /// The owner container for all projects and billing info managed by this user.
-  _icig531b.Owner? owner;
+  _i4.Owner? owner;
 
   /// The labels of the user.
-  List<_ibl32xb7.UserLabelMapping>? labels;
+  List<_i5.UserLabelMapping>? labels;
 
   /// Returns a shallow copy of this [User]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   User copyWith({
     int? id,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? archivedAt,
-    _isy42w70.UserAccountStatus? accountStatus,
+    _i2.UserAccountStatus? accountStatus,
     String? userAuthId,
     String? email,
     String? name,
-    List<_i28atcql.UserRoleMembership>? memberships,
-    _isc.UuidValue? ownerId,
-    _icig531b.Owner? owner,
-    List<_ibl32xb7.UserLabelMapping>? labels,
+    List<_i3.UserRoleMembership>? memberships,
+    _i1.UuidValue? ownerId,
+    _i4.Owner? owner,
+    List<_i5.UserLabelMapping>? labels,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -196,7 +190,7 @@ abstract class User
 
   @override
   String toString() {
-    return _isc.SerializationManager.encode(this);
+    return _i1.SerializationManager.encode(this);
   }
 }
 
@@ -208,14 +202,14 @@ class _UserImpl extends User {
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? archivedAt,
-    _isy42w70.UserAccountStatus? accountStatus,
+    _i2.UserAccountStatus? accountStatus,
     String? userAuthId,
     required String email,
     String? name,
-    List<_i28atcql.UserRoleMembership>? memberships,
-    _isc.UuidValue? ownerId,
-    _icig531b.Owner? owner,
-    List<_ibl32xb7.UserLabelMapping>? labels,
+    List<_i3.UserRoleMembership>? memberships,
+    _i1.UuidValue? ownerId,
+    _i4.Owner? owner,
+    List<_i5.UserLabelMapping>? labels,
   }) : super._(
          id: id,
          createdAt: createdAt,
@@ -233,14 +227,14 @@ class _UserImpl extends User {
 
   /// Returns a shallow copy of this [User]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
   User copyWith({
     Object? id = _Undefined,
     DateTime? createdAt,
     DateTime? updatedAt,
     Object? archivedAt = _Undefined,
-    _isy42w70.UserAccountStatus? accountStatus,
+    _i2.UserAccountStatus? accountStatus,
     Object? userAuthId = _Undefined,
     String? email,
     Object? name = _Undefined,
@@ -258,12 +252,12 @@ class _UserImpl extends User {
       userAuthId: userAuthId is String? ? userAuthId : this.userAuthId,
       email: email ?? this.email,
       name: name is String? ? name : this.name,
-      memberships: memberships is List<_i28atcql.UserRoleMembership>?
+      memberships: memberships is List<_i3.UserRoleMembership>?
           ? memberships
           : this.memberships?.map((e0) => e0.copyWith()).toList(),
-      ownerId: ownerId is _isc.UuidValue? ? ownerId : this.ownerId,
-      owner: owner is _icig531b.Owner? ? owner : this.owner?.copyWith(),
-      labels: labels is List<_ibl32xb7.UserLabelMapping>?
+      ownerId: ownerId is _i1.UuidValue? ? ownerId : this.ownerId,
+      owner: owner is _i4.Owner? ? owner : this.owner?.copyWith(),
+      labels: labels is List<_i5.UserLabelMapping>?
           ? labels
           : this.labels?.map((e0) => e0.copyWith()).toList(),
     );

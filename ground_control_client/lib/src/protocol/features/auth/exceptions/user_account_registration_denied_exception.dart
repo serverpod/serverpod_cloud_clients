@@ -10,15 +10,15 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 /// Indicates that the user account registration request was denied,
 /// due to incomplete information or missing approval.
 abstract class UserAccountRegistrationDeniedException
     implements
-        _isc.SerializableException,
-        _isc.SerializableModel,
-        _isc.ProtocolSerialization {
+        _i1.SerializableException,
+        _i1.SerializableModel,
+        _i1.ProtocolSerialization {
   UserAccountRegistrationDeniedException._({required this.message});
 
   factory UserAccountRegistrationDeniedException({required String message}) =
@@ -36,7 +36,7 @@ abstract class UserAccountRegistrationDeniedException
 
   /// Returns a shallow copy of this [UserAccountRegistrationDeniedException]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   UserAccountRegistrationDeniedException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
@@ -67,7 +67,7 @@ class _UserAccountRegistrationDeniedExceptionImpl
 
   /// Returns a shallow copy of this [UserAccountRegistrationDeniedException]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
   UserAccountRegistrationDeniedException copyWith({String? message}) {
     return UserAccountRegistrationDeniedException(

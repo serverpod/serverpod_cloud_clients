@@ -10,13 +10,13 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 abstract class DartSdkUnsupportedConstraintException
     implements
-        _isc.SerializableException,
-        _isc.SerializableModel,
-        _isc.ProtocolSerialization {
+        _i1.SerializableException,
+        _i1.SerializableModel,
+        _i1.ProtocolSerialization {
   DartSdkUnsupportedConstraintException._({required this.message});
 
   factory DartSdkUnsupportedConstraintException({required String message}) =
@@ -34,7 +34,7 @@ abstract class DartSdkUnsupportedConstraintException
 
   /// Returns a shallow copy of this [DartSdkUnsupportedConstraintException]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   DartSdkUnsupportedConstraintException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
@@ -65,7 +65,7 @@ class _DartSdkUnsupportedConstraintExceptionImpl
 
   /// Returns a shallow copy of this [DartSdkUnsupportedConstraintException]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
   DartSdkUnsupportedConstraintException copyWith({String? message}) {
     return DartSdkUnsupportedConstraintException(

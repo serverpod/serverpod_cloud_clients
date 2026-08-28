@@ -10,20 +10,17 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
-import 'package:serverpod_client/serverpod_client.dart' as _isc;
-import '../../../domains/capsules/models/capsule_resource_config.dart'
-    as _iy6c9ccr;
-import '../../../domains/environment_variables/models/variable.dart'
-    as _iguj8ckb;
-import '../../../domains/projects/models/project.dart' as _i2isqmwh;
-import '../../../features/custom_domains/models/custom_domain_name.dart'
-    as _ioxd3ndl;
-import '../../../shared/models/serverpod_region.dart' as _irrrfshl;
+import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import '../../../shared/models/serverpod_region.dart' as _i2;
+import '../../../domains/projects/models/project.dart' as _i3;
+import '../../../domains/environment_variables/models/variable.dart' as _i4;
+import '../../../features/custom_domains/models/custom_domain_name.dart' as _i5;
+import '../../../domains/capsules/models/capsule_resource_config.dart' as _i6;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i7;
 
 /// Represents an infrastructure capsule instance (a deployment target).
 abstract class Capsule
-    implements _isc.SerializableModel, _isc.ProtocolSerialization {
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   Capsule._({
     this.id,
     DateTime? createdAt,
@@ -47,12 +44,12 @@ abstract class Capsule
     DateTime? archivedAt,
     required String name,
     required String cloudCapsuleId,
-    required _irrrfshl.ServerpodRegion region,
+    required _i2.ServerpodRegion region,
     required int projectId,
-    _i2isqmwh.Project? project,
-    List<_iguj8ckb.EnvironmentVariable>? environmentVariables,
-    List<_ioxd3ndl.CustomDomainName>? domainNames,
-    _iy6c9ccr.CapsuleResource? resourceConfig,
+    _i3.Project? project,
+    List<_i4.EnvironmentVariable>? environmentVariables,
+    List<_i5.CustomDomainName>? domainNames,
+    _i6.CapsuleResource? resourceConfig,
   }) = _CapsuleImpl;
 
   factory Capsule.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -60,40 +57,37 @@ abstract class Capsule
       id: jsonSerialization['id'] as int?,
       createdAt: jsonSerialization['createdAt'] == null
           ? null
-          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
       updatedAt: jsonSerialization['updatedAt'] == null
           ? null
-          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
       archivedAt: jsonSerialization['archivedAt'] == null
           ? null
-          : _isc.DateTimeJsonExtension.fromJson(
-              jsonSerialization['archivedAt'],
-            ),
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['archivedAt']),
       name: jsonSerialization['name'] as String,
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
-      region: _irrrfshl.ServerpodRegion.fromJson(
+      region: _i2.ServerpodRegion.fromJson(
         (jsonSerialization['region'] as int),
       ),
       projectId: jsonSerialization['projectId'] as int,
       project: jsonSerialization['project'] == null
           ? null
-          : _iod2a87h.Protocol().deserialize<_i2isqmwh.Project>(
+          : _i7.Protocol().deserialize<_i3.Project>(
               jsonSerialization['project'],
             ),
       environmentVariables: jsonSerialization['environmentVariables'] == null
           ? null
-          : _iod2a87h.Protocol()
-                .deserialize<List<_iguj8ckb.EnvironmentVariable>>(
-                  jsonSerialization['environmentVariables'],
-                ),
+          : _i7.Protocol().deserialize<List<_i4.EnvironmentVariable>>(
+              jsonSerialization['environmentVariables'],
+            ),
       domainNames: jsonSerialization['domainNames'] == null
           ? null
-          : _iod2a87h.Protocol().deserialize<List<_ioxd3ndl.CustomDomainName>>(
+          : _i7.Protocol().deserialize<List<_i5.CustomDomainName>>(
               jsonSerialization['domainNames'],
             ),
       resourceConfig: jsonSerialization['resourceConfig'] == null
           ? null
-          : _iod2a87h.Protocol().deserialize<_iy6c9ccr.CapsuleResource>(
+          : _i7.Protocol().deserialize<_i6.CapsuleResource>(
               jsonSerialization['resourceConfig'],
             ),
     );
@@ -120,25 +114,25 @@ abstract class Capsule
   String cloudCapsuleId;
 
   /// The region where the capsule is hosted. Cannot be changed.
-  _irrrfshl.ServerpodRegion region;
+  _i2.ServerpodRegion region;
 
   int projectId;
 
   /// The project this capsule belongs to. Cannot be changed.
-  _i2isqmwh.Project? project;
+  _i3.Project? project;
 
   /// Environment variables for this capsule.
-  List<_iguj8ckb.EnvironmentVariable>? environmentVariables;
+  List<_i4.EnvironmentVariable>? environmentVariables;
 
   /// The domain names for this capsule.
-  List<_ioxd3ndl.CustomDomainName>? domainNames;
+  List<_i5.CustomDomainName>? domainNames;
 
   /// The resource config for the capsule.
-  _iy6c9ccr.CapsuleResource? resourceConfig;
+  _i6.CapsuleResource? resourceConfig;
 
   /// Returns a shallow copy of this [Capsule]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   Capsule copyWith({
     int? id,
     DateTime? createdAt,
@@ -146,12 +140,12 @@ abstract class Capsule
     DateTime? archivedAt,
     String? name,
     String? cloudCapsuleId,
-    _irrrfshl.ServerpodRegion? region,
+    _i2.ServerpodRegion? region,
     int? projectId,
-    _i2isqmwh.Project? project,
-    List<_iguj8ckb.EnvironmentVariable>? environmentVariables,
-    List<_ioxd3ndl.CustomDomainName>? domainNames,
-    _iy6c9ccr.CapsuleResource? resourceConfig,
+    _i3.Project? project,
+    List<_i4.EnvironmentVariable>? environmentVariables,
+    List<_i5.CustomDomainName>? domainNames,
+    _i6.CapsuleResource? resourceConfig,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -204,7 +198,7 @@ abstract class Capsule
 
   @override
   String toString() {
-    return _isc.SerializationManager.encode(this);
+    return _i1.SerializationManager.encode(this);
   }
 }
 
@@ -218,12 +212,12 @@ class _CapsuleImpl extends Capsule {
     DateTime? archivedAt,
     required String name,
     required String cloudCapsuleId,
-    required _irrrfshl.ServerpodRegion region,
+    required _i2.ServerpodRegion region,
     required int projectId,
-    _i2isqmwh.Project? project,
-    List<_iguj8ckb.EnvironmentVariable>? environmentVariables,
-    List<_ioxd3ndl.CustomDomainName>? domainNames,
-    _iy6c9ccr.CapsuleResource? resourceConfig,
+    _i3.Project? project,
+    List<_i4.EnvironmentVariable>? environmentVariables,
+    List<_i5.CustomDomainName>? domainNames,
+    _i6.CapsuleResource? resourceConfig,
   }) : super._(
          id: id,
          createdAt: createdAt,
@@ -241,7 +235,7 @@ class _CapsuleImpl extends Capsule {
 
   /// Returns a shallow copy of this [Capsule]
   /// with some or all fields replaced by the given arguments.
-  @_isc.useResult
+  @_i1.useResult
   @override
   Capsule copyWith({
     Object? id = _Undefined,
@@ -250,7 +244,7 @@ class _CapsuleImpl extends Capsule {
     Object? archivedAt = _Undefined,
     String? name,
     String? cloudCapsuleId,
-    _irrrfshl.ServerpodRegion? region,
+    _i2.ServerpodRegion? region,
     int? projectId,
     Object? project = _Undefined,
     Object? environmentVariables = _Undefined,
@@ -266,17 +260,15 @@ class _CapsuleImpl extends Capsule {
       cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
       region: region ?? this.region,
       projectId: projectId ?? this.projectId,
-      project: project is _i2isqmwh.Project?
-          ? project
-          : this.project?.copyWith(),
+      project: project is _i3.Project? ? project : this.project?.copyWith(),
       environmentVariables:
-          environmentVariables is List<_iguj8ckb.EnvironmentVariable>?
+          environmentVariables is List<_i4.EnvironmentVariable>?
           ? environmentVariables
           : this.environmentVariables?.map((e0) => e0.copyWith()).toList(),
-      domainNames: domainNames is List<_ioxd3ndl.CustomDomainName>?
+      domainNames: domainNames is List<_i5.CustomDomainName>?
           ? domainNames
           : this.domainNames?.map((e0) => e0.copyWith()).toList(),
-      resourceConfig: resourceConfig is _iy6c9ccr.CapsuleResource?
+      resourceConfig: resourceConfig is _i6.CapsuleResource?
           ? resourceConfig
           : this.resourceConfig?.copyWith(),
     );
