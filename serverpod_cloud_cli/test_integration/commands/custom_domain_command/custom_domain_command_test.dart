@@ -630,12 +630,21 @@ void main() {
         ]);
       });
 
-      test('then completes successfully', () async {
-        await expectLater(commandResult, completes);
+      test('then throws error exit exception', () async {
+        await expectLater(
+          commandResult,
+          throwsA(
+            isA<ErrorExitException>().having(
+              (final e) => e.exitCode,
+              'exitCode',
+              1,
+            ),
+          ),
+        );
       });
 
-      test('then logs information message about status', () async {
-        await commandResult;
+      test('then logs error message about the DNS record', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
 
         expect(logger.errorCalls, hasLength(1));
         expect(
