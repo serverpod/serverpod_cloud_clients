@@ -41,15 +41,6 @@ class CloudDbUserCommand extends CloudCliCommand {
   }
 }
 
-abstract final class _CommonDbOptions {
-  static const dbUsername = StringOption(
-    argName: 'username',
-    argPos: 0,
-    helpText: 'The username of the DB user to create.',
-    mandatory: true,
-  );
-}
-
 enum DbConnectionDetailsOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption());
 
@@ -109,7 +100,14 @@ This psql command can be used to connect to the database (it will prompt for the
 
 enum DbUserCreateOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption()),
-  username(_CommonDbOptions.dbUsername);
+  username(
+    StringOption(
+      argName: 'username',
+      argPos: 0,
+      helpText: 'The username of the DB user to create.',
+      mandatory: true,
+    ),
+  );
 
   const DbUserCreateOption(this.option);
 
@@ -157,7 +155,14 @@ $password''');
 
 enum DbUserResetPasswordOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption()),
-  username(_CommonDbOptions.dbUsername);
+  username(
+    StringOption(
+      argName: 'username',
+      argPos: 0,
+      helpText: 'The username of the DB user whose password is reset.',
+      mandatory: true,
+    ),
+  );
 
   const DbUserResetPasswordOption(this.option);
 
