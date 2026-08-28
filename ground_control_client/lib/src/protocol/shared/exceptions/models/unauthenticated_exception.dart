@@ -10,13 +10,13 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
 abstract class UnauthenticatedException
     implements
-        _i1.SerializableException,
-        _i1.SerializableModel,
-        _i1.ProtocolSerialization {
+        _isc.SerializableException,
+        _isc.SerializableModel,
+        _isc.ProtocolSerialization {
   UnauthenticatedException._({required this.message});
 
   factory UnauthenticatedException({required String message}) =
@@ -34,7 +34,7 @@ abstract class UnauthenticatedException
 
   /// Returns a shallow copy of this [UnauthenticatedException]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   UnauthenticatedException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
@@ -58,7 +58,7 @@ class _UnauthenticatedExceptionImpl extends UnauthenticatedException {
 
   /// Returns a shallow copy of this [UnauthenticatedException]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   UnauthenticatedException copyWith({String? message}) {
     return UnauthenticatedException(message: message ?? this.message);

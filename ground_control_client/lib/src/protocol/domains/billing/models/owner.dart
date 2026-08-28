@@ -10,17 +10,18 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../domains/users/models/user.dart' as _i2;
-import '../../../domains/billing/models/billing_info.dart' as _i3;
-import '../../../domains/projects/models/project.dart' as _i4;
-import '../../../domains/billing/models/billing_customer_type.dart' as _i5;
-import 'package:ground_control_client/src/protocol/protocol.dart' as _i6;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../domains/billing/models/billing_customer_type.dart'
+    as _ipm3sphs;
+import '../../../domains/billing/models/billing_info.dart' as _i3r9gs4n;
+import '../../../domains/projects/models/project.dart' as _i2isqmwh;
+import '../../../domains/users/models/user.dart' as _ijl94k1v;
 
 abstract class Owner
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   Owner._({
-    _i1.UuidValue? id,
+    _isc.UuidValue? id,
     DateTime? createdAt,
     DateTime? updatedAt,
     this.archivedAt,
@@ -33,12 +34,12 @@ abstract class Owner
     this.projects,
     this.trialEndingAt,
     this.customerType,
-  }) : id = id ?? const _i1.Uuid().v4obj(),
+  }) : id = id ?? const _isc.Uuid().v4obj(),
        createdAt = createdAt ?? DateTime.now(),
        updatedAt = updatedAt ?? DateTime.now();
 
   factory Owner({
-    _i1.UuidValue? id,
+    _isc.UuidValue? id,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? archivedAt,
@@ -46,63 +47,67 @@ abstract class Owner
     required String externalPaymentId,
     required Uri billingPortalUrl,
     required List<String> billingEmails,
-    _i2.User? user,
-    _i3.BillingInfo? billingInfo,
-    List<_i4.Project>? projects,
+    _ijl94k1v.User? user,
+    _i3r9gs4n.BillingInfo? billingInfo,
+    List<_i2isqmwh.Project>? projects,
     DateTime? trialEndingAt,
-    _i5.BillingCustomerType? customerType,
+    _ipm3sphs.BillingCustomerType? customerType,
   }) = _OwnerImpl;
 
   factory Owner.fromJson(Map<String, dynamic> jsonSerialization) {
     return Owner(
       id: jsonSerialization['id'] == null
           ? null
-          : _i1.UuidValueJsonExtension.fromJson(jsonSerialization['id']),
+          : _isc.UuidValueJsonExtension.fromJson(jsonSerialization['id']),
       createdAt: jsonSerialization['createdAt'] == null
           ? null
-          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
       updatedAt: jsonSerialization['updatedAt'] == null
           ? null
-          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
+          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
       archivedAt: jsonSerialization['archivedAt'] == null
           ? null
-          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['archivedAt']),
+          : _isc.DateTimeJsonExtension.fromJson(
+              jsonSerialization['archivedAt'],
+            ),
       externalBillingId: jsonSerialization['externalBillingId'] as String,
       externalPaymentId: jsonSerialization['externalPaymentId'] as String,
-      billingPortalUrl: _i1.UriJsonExtension.fromJson(
+      billingPortalUrl: _isc.UriJsonExtension.fromJson(
         jsonSerialization['billingPortalUrl'],
       ),
-      billingEmails: _i6.Protocol().deserialize<List<String>>(
+      billingEmails: _iod2a87h.Protocol().deserialize<List<String>>(
         jsonSerialization['billingEmails'],
       ),
       user: jsonSerialization['user'] == null
           ? null
-          : _i6.Protocol().deserialize<_i2.User>(jsonSerialization['user']),
+          : _iod2a87h.Protocol().deserialize<_ijl94k1v.User>(
+              jsonSerialization['user'],
+            ),
       billingInfo: jsonSerialization['billingInfo'] == null
           ? null
-          : _i6.Protocol().deserialize<_i3.BillingInfo>(
+          : _iod2a87h.Protocol().deserialize<_i3r9gs4n.BillingInfo>(
               jsonSerialization['billingInfo'],
             ),
       projects: jsonSerialization['projects'] == null
           ? null
-          : _i6.Protocol().deserialize<List<_i4.Project>>(
+          : _iod2a87h.Protocol().deserialize<List<_i2isqmwh.Project>>(
               jsonSerialization['projects'],
             ),
       trialEndingAt: jsonSerialization['trialEndingAt'] == null
           ? null
-          : _i1.DateTimeJsonExtension.fromJson(
+          : _isc.DateTimeJsonExtension.fromJson(
               jsonSerialization['trialEndingAt'],
             ),
       customerType: jsonSerialization['customerType'] == null
           ? null
-          : _i5.BillingCustomerType.fromJson(
+          : _ipm3sphs.BillingCustomerType.fromJson(
               (jsonSerialization['customerType'] as String),
             ),
     );
   }
 
   /// The id of the object.
-  _i1.UuidValue id;
+  _isc.UuidValue id;
 
   DateTime createdAt;
 
@@ -119,11 +124,11 @@ abstract class Owner
 
   List<String> billingEmails;
 
-  _i2.User? user;
+  _ijl94k1v.User? user;
 
-  _i3.BillingInfo? billingInfo;
+  _i3r9gs4n.BillingInfo? billingInfo;
 
-  List<_i4.Project>? projects;
+  List<_i2isqmwh.Project>? projects;
 
   /// When non-null, the owner's subscription trial ends at this instant (UTC).
   DateTime? trialEndingAt;
@@ -131,13 +136,13 @@ abstract class Owner
   /// Stop-gap until B2C/B2B migration is supported.
   /// Once non-null this value is mirrored into [BillingInfo.customerType] when
   /// billing info is set/updated, and may not be changed thereafter.
-  _i5.BillingCustomerType? customerType;
+  _ipm3sphs.BillingCustomerType? customerType;
 
   /// Returns a shallow copy of this [Owner]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   Owner copyWith({
-    _i1.UuidValue? id,
+    _isc.UuidValue? id,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? archivedAt,
@@ -145,11 +150,11 @@ abstract class Owner
     String? externalPaymentId,
     Uri? billingPortalUrl,
     List<String>? billingEmails,
-    _i2.User? user,
-    _i3.BillingInfo? billingInfo,
-    List<_i4.Project>? projects,
+    _ijl94k1v.User? user,
+    _i3r9gs4n.BillingInfo? billingInfo,
+    List<_i2isqmwh.Project>? projects,
     DateTime? trialEndingAt,
-    _i5.BillingCustomerType? customerType,
+    _ipm3sphs.BillingCustomerType? customerType,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -195,7 +200,7 @@ abstract class Owner
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
@@ -203,7 +208,7 @@ class _Undefined {}
 
 class _OwnerImpl extends Owner {
   _OwnerImpl({
-    _i1.UuidValue? id,
+    _isc.UuidValue? id,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? archivedAt,
@@ -211,11 +216,11 @@ class _OwnerImpl extends Owner {
     required String externalPaymentId,
     required Uri billingPortalUrl,
     required List<String> billingEmails,
-    _i2.User? user,
-    _i3.BillingInfo? billingInfo,
-    List<_i4.Project>? projects,
+    _ijl94k1v.User? user,
+    _i3r9gs4n.BillingInfo? billingInfo,
+    List<_i2isqmwh.Project>? projects,
     DateTime? trialEndingAt,
-    _i5.BillingCustomerType? customerType,
+    _ipm3sphs.BillingCustomerType? customerType,
   }) : super._(
          id: id,
          createdAt: createdAt,
@@ -234,10 +239,10 @@ class _OwnerImpl extends Owner {
 
   /// Returns a shallow copy of this [Owner]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   Owner copyWith({
-    _i1.UuidValue? id,
+    _isc.UuidValue? id,
     DateTime? createdAt,
     DateTime? updatedAt,
     Object? archivedAt = _Undefined,
@@ -261,17 +266,17 @@ class _OwnerImpl extends Owner {
       billingPortalUrl: billingPortalUrl ?? this.billingPortalUrl,
       billingEmails:
           billingEmails ?? this.billingEmails.map((e0) => e0).toList(),
-      user: user is _i2.User? ? user : this.user?.copyWith(),
-      billingInfo: billingInfo is _i3.BillingInfo?
+      user: user is _ijl94k1v.User? ? user : this.user?.copyWith(),
+      billingInfo: billingInfo is _i3r9gs4n.BillingInfo?
           ? billingInfo
           : this.billingInfo?.copyWith(),
-      projects: projects is List<_i4.Project>?
+      projects: projects is List<_i2isqmwh.Project>?
           ? projects
           : this.projects?.map((e0) => e0.copyWith()).toList(),
       trialEndingAt: trialEndingAt is DateTime?
           ? trialEndingAt
           : this.trialEndingAt,
-      customerType: customerType is _i5.BillingCustomerType?
+      customerType: customerType is _ipm3sphs.BillingCustomerType?
           ? customerType
           : this.customerType,
     );

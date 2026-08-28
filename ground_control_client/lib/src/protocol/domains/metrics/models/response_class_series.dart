@@ -10,10 +10,10 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../shared/models/http_response_class.dart' as _i2;
-import '../../../domains/metrics/models/metric_sample.dart' as _i3;
-import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../domains/metrics/models/metric_sample.dart' as _ic8vhv48;
+import '../../../shared/models/http_response_class.dart' as _i7lgsbza;
 
 /// Response-rate series for a single status class of a capsule's aggregate
 /// traffic.
@@ -24,40 +24,41 @@ import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 /// idle-but-deployed capsule still has its counters, so a zero is a real
 /// reading.
 abstract class ResponseClassSeries
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   ResponseClassSeries._({
     required this.responseClass,
     required this.responsesPerSecond,
   });
 
   factory ResponseClassSeries({
-    required _i2.HttpResponseClass responseClass,
-    required List<_i3.MetricSample> responsesPerSecond,
+    required _i7lgsbza.HttpResponseClass responseClass,
+    required List<_ic8vhv48.MetricSample> responsesPerSecond,
   }) = _ResponseClassSeriesImpl;
 
   factory ResponseClassSeries.fromJson(Map<String, dynamic> jsonSerialization) {
     return ResponseClassSeries(
-      responseClass: _i2.HttpResponseClass.fromJson(
+      responseClass: _i7lgsbza.HttpResponseClass.fromJson(
         (jsonSerialization['responseClass'] as String),
       ),
-      responsesPerSecond: _i4.Protocol().deserialize<List<_i3.MetricSample>>(
-        jsonSerialization['responsesPerSecond'],
-      ),
+      responsesPerSecond: _iod2a87h.Protocol()
+          .deserialize<List<_ic8vhv48.MetricSample>>(
+            jsonSerialization['responsesPerSecond'],
+          ),
     );
   }
 
   /// The status class these samples belong to.
-  _i2.HttpResponseClass responseClass;
+  _i7lgsbza.HttpResponseClass responseClass;
 
   /// Response-rate samples, in requests per second.
-  List<_i3.MetricSample> responsesPerSecond;
+  List<_ic8vhv48.MetricSample> responsesPerSecond;
 
   /// Returns a shallow copy of this [ResponseClassSeries]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   ResponseClassSeries copyWith({
-    _i2.HttpResponseClass? responseClass,
-    List<_i3.MetricSample>? responsesPerSecond,
+    _i7lgsbza.HttpResponseClass? responseClass,
+    List<_ic8vhv48.MetricSample>? responsesPerSecond,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -83,14 +84,14 @@ abstract class ResponseClassSeries
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
 class _ResponseClassSeriesImpl extends ResponseClassSeries {
   _ResponseClassSeriesImpl({
-    required _i2.HttpResponseClass responseClass,
-    required List<_i3.MetricSample> responsesPerSecond,
+    required _i7lgsbza.HttpResponseClass responseClass,
+    required List<_ic8vhv48.MetricSample> responsesPerSecond,
   }) : super._(
          responseClass: responseClass,
          responsesPerSecond: responsesPerSecond,
@@ -98,11 +99,11 @@ class _ResponseClassSeriesImpl extends ResponseClassSeries {
 
   /// Returns a shallow copy of this [ResponseClassSeries]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   ResponseClassSeries copyWith({
-    _i2.HttpResponseClass? responseClass,
-    List<_i3.MetricSample>? responsesPerSecond,
+    _i7lgsbza.HttpResponseClass? responseClass,
+    List<_ic8vhv48.MetricSample>? responsesPerSecond,
   }) {
     return ResponseClassSeries(
       responseClass: responseClass ?? this.responseClass,

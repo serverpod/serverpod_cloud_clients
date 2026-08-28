@@ -10,13 +10,16 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../features/custom_domains/models/domain_name_status.dart' as _i2;
-import '../../../features/custom_domains/models/domain_name_target.dart' as _i3;
-import '../../../features/custom_domains/models/dns_record_type.dart' as _i4;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../features/custom_domains/models/dns_record_type.dart'
+    as _iy8uljps;
+import '../../../features/custom_domains/models/domain_name_status.dart'
+    as _iuex1ymu;
+import '../../../features/custom_domains/models/domain_name_target.dart'
+    as _ijnwcgjj;
 
 abstract class CustomDomainName
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   CustomDomainName._({
     this.id,
     required this.name,
@@ -31,31 +34,31 @@ abstract class CustomDomainName
   factory CustomDomainName({
     int? id,
     required String name,
-    required _i2.DomainNameStatus status,
-    required _i3.DomainNameTarget target,
+    required _iuex1ymu.DomainNameStatus status,
+    required _ijnwcgjj.DomainNameTarget target,
     DateTime? createdAt,
     required int capsuleId,
     required String dnsRecordVerificationValue,
-    required _i4.DnsRecordType dnsRecordType,
+    required _iy8uljps.DnsRecordType dnsRecordType,
   }) = _CustomDomainNameImpl;
 
   factory CustomDomainName.fromJson(Map<String, dynamic> jsonSerialization) {
     return CustomDomainName(
       id: jsonSerialization['id'] as int?,
       name: jsonSerialization['name'] as String,
-      status: _i2.DomainNameStatus.fromJson(
+      status: _iuex1ymu.DomainNameStatus.fromJson(
         (jsonSerialization['status'] as String),
       ),
-      target: _i3.DomainNameTarget.fromJson(
+      target: _ijnwcgjj.DomainNameTarget.fromJson(
         (jsonSerialization['target'] as String),
       ),
       createdAt: jsonSerialization['createdAt'] == null
           ? null
-          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
       capsuleId: jsonSerialization['capsuleId'] as int,
       dnsRecordVerificationValue:
           jsonSerialization['dnsRecordVerificationValue'] as String,
-      dnsRecordType: _i4.DnsRecordType.fromJson(
+      dnsRecordType: _iy8uljps.DnsRecordType.fromJson(
         (jsonSerialization['dnsRecordType'] as String),
       ),
     );
@@ -68,9 +71,9 @@ abstract class CustomDomainName
 
   String name;
 
-  _i2.DomainNameStatus status;
+  _iuex1ymu.DomainNameStatus status;
 
-  _i3.DomainNameTarget target;
+  _ijnwcgjj.DomainNameTarget target;
 
   DateTime? createdAt;
 
@@ -78,20 +81,20 @@ abstract class CustomDomainName
 
   String dnsRecordVerificationValue;
 
-  _i4.DnsRecordType dnsRecordType;
+  _iy8uljps.DnsRecordType dnsRecordType;
 
   /// Returns a shallow copy of this [CustomDomainName]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   CustomDomainName copyWith({
     int? id,
     String? name,
-    _i2.DomainNameStatus? status,
-    _i3.DomainNameTarget? target,
+    _iuex1ymu.DomainNameStatus? status,
+    _ijnwcgjj.DomainNameTarget? target,
     DateTime? createdAt,
     int? capsuleId,
     String? dnsRecordVerificationValue,
-    _i4.DnsRecordType? dnsRecordType,
+    _iy8uljps.DnsRecordType? dnsRecordType,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -125,7 +128,7 @@ abstract class CustomDomainName
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
@@ -135,12 +138,12 @@ class _CustomDomainNameImpl extends CustomDomainName {
   _CustomDomainNameImpl({
     int? id,
     required String name,
-    required _i2.DomainNameStatus status,
-    required _i3.DomainNameTarget target,
+    required _iuex1ymu.DomainNameStatus status,
+    required _ijnwcgjj.DomainNameTarget target,
     DateTime? createdAt,
     required int capsuleId,
     required String dnsRecordVerificationValue,
-    required _i4.DnsRecordType dnsRecordType,
+    required _iy8uljps.DnsRecordType dnsRecordType,
   }) : super._(
          id: id,
          name: name,
@@ -154,17 +157,17 @@ class _CustomDomainNameImpl extends CustomDomainName {
 
   /// Returns a shallow copy of this [CustomDomainName]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   CustomDomainName copyWith({
     Object? id = _Undefined,
     String? name,
-    _i2.DomainNameStatus? status,
-    _i3.DomainNameTarget? target,
+    _iuex1ymu.DomainNameStatus? status,
+    _ijnwcgjj.DomainNameTarget? target,
     Object? createdAt = _Undefined,
     int? capsuleId,
     String? dnsRecordVerificationValue,
-    _i4.DnsRecordType? dnsRecordType,
+    _iy8uljps.DnsRecordType? dnsRecordType,
   }) {
     return CustomDomainName(
       id: id is int? ? id : this.id,
