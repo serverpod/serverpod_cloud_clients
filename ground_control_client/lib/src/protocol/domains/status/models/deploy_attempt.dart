@@ -10,17 +10,18 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../domains/status/models/deploy_progress_status.dart' as _i2;
-import '../../../domains/users/models/user.dart' as _i3;
-import '../../../domains/status/models/deploy_attempt_stage.dart' as _i4;
-import 'package:ground_control_client/src/protocol/protocol.dart' as _i5;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../domains/status/models/deploy_attempt_stage.dart' as _ieja195n;
+import '../../../domains/status/models/deploy_progress_status.dart'
+    as _izk8c25p;
+import '../../../domains/users/models/user.dart' as _ijl94k1v;
 
 /// Represents the status information of a deployment attempt.
 abstract class DeployAttempt
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   DeployAttempt._({
-    _i1.UuidValue? id,
+    _isc.UuidValue? id,
     required this.cloudCapsuleId,
     this.attemptId,
     required this.status,
@@ -38,15 +39,15 @@ abstract class DeployAttempt
     this.deployedBy,
     this.statusInfo,
     this.stages,
-  }) : id = id ?? const _i1.Uuid().v4obj(),
+  }) : id = id ?? const _isc.Uuid().v4obj(),
        createdAt = createdAt ?? DateTime.now(),
        updatedAt = updatedAt ?? DateTime.now();
 
   factory DeployAttempt({
-    _i1.UuidValue? id,
+    _isc.UuidValue? id,
     required String cloudCapsuleId,
     String? attemptId,
-    required _i2.DeployProgressStatus? status,
+    required _izk8c25p.DeployProgressStatus? status,
     required DateTime? startedAt,
     required DateTime? endedAt,
     DateTime? createdAt,
@@ -58,35 +59,35 @@ abstract class DeployAttempt
     required String? commitMessage,
     required String? branch,
     required int? deployedById,
-    _i3.User? deployedBy,
+    _ijl94k1v.User? deployedBy,
     String? statusInfo,
-    List<_i4.DeployAttemptStage>? stages,
+    List<_ieja195n.DeployAttemptStage>? stages,
   }) = _DeployAttemptImpl;
 
   factory DeployAttempt.fromJson(Map<String, dynamic> jsonSerialization) {
     return DeployAttempt(
       id: jsonSerialization['id'] == null
           ? null
-          : _i1.UuidValueJsonExtension.fromJson(jsonSerialization['id']),
+          : _isc.UuidValueJsonExtension.fromJson(jsonSerialization['id']),
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
       attemptId: jsonSerialization['attemptId'] as String?,
       status: jsonSerialization['status'] == null
           ? null
-          : _i2.DeployProgressStatus.fromJson(
+          : _izk8c25p.DeployProgressStatus.fromJson(
               (jsonSerialization['status'] as String),
             ),
       startedAt: jsonSerialization['startedAt'] == null
           ? null
-          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['startedAt']),
+          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['startedAt']),
       endedAt: jsonSerialization['endedAt'] == null
           ? null
-          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['endedAt']),
+          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['endedAt']),
       createdAt: jsonSerialization['createdAt'] == null
           ? null
-          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
       updatedAt: jsonSerialization['updatedAt'] == null
           ? null
-          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
+          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
       imageName: jsonSerialization['imageName'] as String?,
       serverpodVersion: jsonSerialization['serverpodVersion'] as String?,
       dartVersion: jsonSerialization['dartVersion'] as String?,
@@ -96,20 +97,21 @@ abstract class DeployAttempt
       deployedById: jsonSerialization['deployedById'] as int?,
       deployedBy: jsonSerialization['deployedBy'] == null
           ? null
-          : _i5.Protocol().deserialize<_i3.User>(
+          : _iod2a87h.Protocol().deserialize<_ijl94k1v.User>(
               jsonSerialization['deployedBy'],
             ),
       statusInfo: jsonSerialization['statusInfo'] as String?,
       stages: jsonSerialization['stages'] == null
           ? null
-          : _i5.Protocol().deserialize<List<_i4.DeployAttemptStage>>(
-              jsonSerialization['stages'],
-            ),
+          : _iod2a87h.Protocol()
+                .deserialize<List<_ieja195n.DeployAttemptStage>>(
+                  jsonSerialization['stages'],
+                ),
     );
   }
 
   /// The ID of this deploy attempt.
-  _i1.UuidValue id;
+  _isc.UuidValue id;
 
   /// The ID of the capsule of this deployment.
   String cloudCapsuleId;
@@ -118,7 +120,7 @@ abstract class DeployAttempt
   String? attemptId;
 
   /// The current status of this deployment.
-  _i2.DeployProgressStatus? status;
+  _izk8c25p.DeployProgressStatus? status;
 
   /// The timestamp of the start of the deployment attempt.
   DateTime? startedAt;
@@ -154,22 +156,22 @@ abstract class DeployAttempt
   int? deployedById;
 
   /// Display name / handle of the user who triggered this deploy, if known.
-  _i3.User? deployedBy;
+  _ijl94k1v.User? deployedBy;
 
   /// Optionally contains user-readable information about the current status of this attempt.
   String? statusInfo;
 
   /// The stages of the deployment attempt. Placeholder for future relation.
-  List<_i4.DeployAttemptStage>? stages;
+  List<_ieja195n.DeployAttemptStage>? stages;
 
   /// Returns a shallow copy of this [DeployAttempt]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   DeployAttempt copyWith({
-    _i1.UuidValue? id,
+    _isc.UuidValue? id,
     String? cloudCapsuleId,
     String? attemptId,
-    _i2.DeployProgressStatus? status,
+    _izk8c25p.DeployProgressStatus? status,
     DateTime? startedAt,
     DateTime? endedAt,
     DateTime? createdAt,
@@ -181,9 +183,9 @@ abstract class DeployAttempt
     String? commitMessage,
     String? branch,
     int? deployedById,
-    _i3.User? deployedBy,
+    _ijl94k1v.User? deployedBy,
     String? statusInfo,
-    List<_i4.DeployAttemptStage>? stages,
+    List<_ieja195n.DeployAttemptStage>? stages,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -239,7 +241,7 @@ abstract class DeployAttempt
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
@@ -247,10 +249,10 @@ class _Undefined {}
 
 class _DeployAttemptImpl extends DeployAttempt {
   _DeployAttemptImpl({
-    _i1.UuidValue? id,
+    _isc.UuidValue? id,
     required String cloudCapsuleId,
     String? attemptId,
-    required _i2.DeployProgressStatus? status,
+    required _izk8c25p.DeployProgressStatus? status,
     required DateTime? startedAt,
     required DateTime? endedAt,
     DateTime? createdAt,
@@ -262,9 +264,9 @@ class _DeployAttemptImpl extends DeployAttempt {
     required String? commitMessage,
     required String? branch,
     required int? deployedById,
-    _i3.User? deployedBy,
+    _ijl94k1v.User? deployedBy,
     String? statusInfo,
-    List<_i4.DeployAttemptStage>? stages,
+    List<_ieja195n.DeployAttemptStage>? stages,
   }) : super._(
          id: id,
          cloudCapsuleId: cloudCapsuleId,
@@ -288,10 +290,10 @@ class _DeployAttemptImpl extends DeployAttempt {
 
   /// Returns a shallow copy of this [DeployAttempt]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   DeployAttempt copyWith({
-    _i1.UuidValue? id,
+    _isc.UuidValue? id,
     String? cloudCapsuleId,
     Object? attemptId = _Undefined,
     Object? status = _Undefined,
@@ -314,7 +316,7 @@ class _DeployAttemptImpl extends DeployAttempt {
       id: id ?? this.id,
       cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
       attemptId: attemptId is String? ? attemptId : this.attemptId,
-      status: status is _i2.DeployProgressStatus? ? status : this.status,
+      status: status is _izk8c25p.DeployProgressStatus? ? status : this.status,
       startedAt: startedAt is DateTime? ? startedAt : this.startedAt,
       endedAt: endedAt is DateTime? ? endedAt : this.endedAt,
       createdAt: createdAt ?? this.createdAt,
@@ -330,11 +332,11 @@ class _DeployAttemptImpl extends DeployAttempt {
           : this.commitMessage,
       branch: branch is String? ? branch : this.branch,
       deployedById: deployedById is int? ? deployedById : this.deployedById,
-      deployedBy: deployedBy is _i3.User?
+      deployedBy: deployedBy is _ijl94k1v.User?
           ? deployedBy
           : this.deployedBy?.copyWith(),
       statusInfo: statusInfo is String? ? statusInfo : this.statusInfo,
-      stages: stages is List<_i4.DeployAttemptStage>?
+      stages: stages is List<_ieja195n.DeployAttemptStage>?
           ? stages
           : this.stages?.map((e0) => e0.copyWith()).toList(),
     );

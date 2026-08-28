@@ -10,49 +10,50 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import '../../../../features/custom_domains/models/custom_domain_name.dart'
-    as _i2;
+    as _i7wn9knr;
 import '../../../../features/custom_domains/models/domain_name_target.dart'
-    as _i3;
-import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
+    as _ittmpk6d;
 
 abstract class CustomDomainNameWithDefaultDomains
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   CustomDomainNameWithDefaultDomains._({
     required this.customDomainName,
     required this.defaultDomainsByTarget,
   });
 
   factory CustomDomainNameWithDefaultDomains({
-    required _i2.CustomDomainName customDomainName,
-    required Map<_i3.DomainNameTarget, String> defaultDomainsByTarget,
+    required _i7wn9knr.CustomDomainName customDomainName,
+    required Map<_ittmpk6d.DomainNameTarget, String> defaultDomainsByTarget,
   }) = _CustomDomainNameWithDefaultDomainsImpl;
 
   factory CustomDomainNameWithDefaultDomains.fromJson(
     Map<String, dynamic> jsonSerialization,
   ) {
     return CustomDomainNameWithDefaultDomains(
-      customDomainName: _i4.Protocol().deserialize<_i2.CustomDomainName>(
-        jsonSerialization['customDomainName'],
-      ),
-      defaultDomainsByTarget: _i4.Protocol()
-          .deserialize<Map<_i3.DomainNameTarget, String>>(
+      customDomainName: _iod2a87h.Protocol()
+          .deserialize<_i7wn9knr.CustomDomainName>(
+            jsonSerialization['customDomainName'],
+          ),
+      defaultDomainsByTarget: _iod2a87h.Protocol()
+          .deserialize<Map<_ittmpk6d.DomainNameTarget, String>>(
             jsonSerialization['defaultDomainsByTarget'],
           ),
     );
   }
 
-  _i2.CustomDomainName customDomainName;
+  _i7wn9knr.CustomDomainName customDomainName;
 
-  Map<_i3.DomainNameTarget, String> defaultDomainsByTarget;
+  Map<_ittmpk6d.DomainNameTarget, String> defaultDomainsByTarget;
 
   /// Returns a shallow copy of this [CustomDomainNameWithDefaultDomains]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   CustomDomainNameWithDefaultDomains copyWith({
-    _i2.CustomDomainName? customDomainName,
-    Map<_i3.DomainNameTarget, String>? defaultDomainsByTarget,
+    _i7wn9knr.CustomDomainName? customDomainName,
+    Map<_ittmpk6d.DomainNameTarget, String>? defaultDomainsByTarget,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -78,15 +79,15 @@ abstract class CustomDomainNameWithDefaultDomains
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
 class _CustomDomainNameWithDefaultDomainsImpl
     extends CustomDomainNameWithDefaultDomains {
   _CustomDomainNameWithDefaultDomainsImpl({
-    required _i2.CustomDomainName customDomainName,
-    required Map<_i3.DomainNameTarget, String> defaultDomainsByTarget,
+    required _i7wn9knr.CustomDomainName customDomainName,
+    required Map<_ittmpk6d.DomainNameTarget, String> defaultDomainsByTarget,
   }) : super._(
          customDomainName: customDomainName,
          defaultDomainsByTarget: defaultDomainsByTarget,
@@ -94,11 +95,11 @@ class _CustomDomainNameWithDefaultDomainsImpl
 
   /// Returns a shallow copy of this [CustomDomainNameWithDefaultDomains]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   CustomDomainNameWithDefaultDomains copyWith({
-    _i2.CustomDomainName? customDomainName,
-    Map<_i3.DomainNameTarget, String>? defaultDomainsByTarget,
+    _i7wn9knr.CustomDomainName? customDomainName,
+    Map<_ittmpk6d.DomainNameTarget, String>? defaultDomainsByTarget,
   }) {
     return CustomDomainNameWithDefaultDomains(
       customDomainName: customDomainName ?? this.customDomainName.copyWith(),
