@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.38.0] - 2026-08-31
+
+### Added
+
+- **Structured output** - Added `--format` (`json`, `yaml`, `text`) support across multiple list and management commands to simplify automation and scripting.
+- **Account information command** - Added `scloud me` to display current user and account details.
+- **Token revocation** - Added `scloud auth revoke-token` to revoke active sessions and personal access tokens by ID.
+- **Automatic self-updates** - The CLI now automatically installs required updates and seamlessly reruns the command.
+
+### Changed
+
+- **Unified secret and variable management** - Merged `scloud secret` functionality into `scloud variable` using the `--secret` flag.
+- **Interactive confirmation prompts** - Added standardized confirmation prompts for destructive actions, requiring `--yes` when using structured formats like JSON or YAML.
+- **Terminology updates** - Replaced occurrences of "instance" with "podlet" across CLI output, scaling guidance, and logs.
+
+### Removed
+
+- **Standalone secret commands** - Removed the dedicated `scloud secret` command suite in favor of `scloud variable --secret`.
+
+### Fixed
+
+- **Early Dart SDK validation** - Deployments now validate Dart SDK version compatibility before running pre-deploy scripts to catch issues sooner.
+- **Project launch context isolation** - Fixed an issue where globally active project context interfered with creating new projects via `scloud launch`.
+- **Domain verification exit status** - Ensured `scloud domain verify` exits with a non-zero status code when DNS verification fails.
+- **Password list categorization** - Fixed platform-managed email authentication keys showing up under Custom instead of Auth in `scloud password list`.
+- **Database user reset help text** - Corrected the `--username` option description under `scloud db user reset-password`.
+
 ## 0.37.0 - 2026-08-20
 
 ### Added
