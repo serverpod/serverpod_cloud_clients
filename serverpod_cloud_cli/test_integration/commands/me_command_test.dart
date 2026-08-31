@@ -8,8 +8,11 @@ import 'package:yaml_codec/yaml_codec.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/me/me_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
+import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import '../../test_utils/command_logger_matchers.dart';
 import '../../test_utils/test_command_logger.dart';
 
 void main() {
@@ -130,6 +133,69 @@ void main() {
         final payload = yamlDecode(logger.rawCalls.single.content) as List;
         expect(payload, hasLength(1));
         expect((payload.single as Map)['email'], 'test@example.com');
+      });
+    });
+  });
+
+  group('Given a session with invalid credentials', () {
+    setUp(() {
+      when(
+        () => client.users.readUser(),
+      ).thenThrow(ServerpodClientUnauthorized());
+    });
+
+    tearDown(() {
+      reset(client.users);
+    });
+
+    group('when executing me command', () {
+      late Future commandResult;
+      setUp(() {
+        commandResult = cli.run(['me']);
+      });
+
+      test('then throws ErrorExitException', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then logs the credentials error once', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+
+        expect(
+          logger.errorCalls,
+          equals([
+            equalsErrorCall(
+              message:
+                  'The credentials for this session seem to no longer be valid.',
+            ),
+          ]),
+        );
+      });
+
+      test('then hints how to re-authenticate once', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+
+        expect(
+          logger.terminalCommandCalls.map((final c) => c.command),
+          equals(['scloud auth logout', 'scloud auth login']),
+        );
+      });
+    });
+
+    group('when executing me command with --format json', () {
+      late Future commandResult;
+      setUp(() {
+        commandResult = cli.run(['me', '--format', 'json']);
+      });
+
+      test('then emits a single structured error document', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+
+        expect(logger.errorCalls, hasLength(1));
+        expect(
+          () => jsonDecode(logger.errorCalls.single.message),
+          returnsNormally,
+        );
       });
     });
   });
