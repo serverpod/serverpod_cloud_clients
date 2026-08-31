@@ -72,27 +72,28 @@ class CloudDeploymentsShowCommand
   String get description => 'Show the status of a deployment.';
 
   @override
-  String get usageExamples => '''\n
+  String get usageExamples =>
+      '''\n
 Examples
 
   Show the status of the latest deployment and wait for it to finish.
   
-    \$ scloud deployment show
+    \$ $baseCommand deployment show
 
 
   Show the status of the latest deployment without waiting for it to finish.
   
-    \$ scloud deployment show --no-await
+    \$ $baseCommand deployment show --no-await
 
 
   Show the status of a specific deployment by sequence number.
   
-    \$ scloud deployment show 3
+    \$ $baseCommand deployment show 3
 
 
   Show the status of a specific deployment by UUID.
   
-    \$ scloud deployment show 550e8400-e29b-41d4-a716-446655440000
+    \$ $baseCommand deployment show 550e8400-e29b-41d4-a716-446655440000
 
 ''';
 
@@ -116,6 +117,7 @@ Examples
     await DeploymentCommands.showDeployment(
       runner.serviceProvider.cloudApiClient,
       logger: logger,
+      baseCommand: baseCommand,
       projectId: projectId,
       wait: wait,
       overallStatus: overallStatus,
@@ -157,17 +159,18 @@ class CloudDeploymentsListCommand
   String get description => 'List recent deployments.';
 
   @override
-  String get usageExamples => '''\n
+  String get usageExamples =>
+      '''\n
 Examples
 
   List the 10 most recent deployments.
   
-    \$ scloud deployment list
+    \$ $baseCommand deployment list
 
 
   List the 20 most recent deployments.
   
-    \$ scloud deployment list --limit 20
+    \$ $baseCommand deployment list --limit 20
 
 ''';
 
@@ -191,7 +194,7 @@ Examples
         cloudCapsuleId: projectId,
         limit: limit,
       ),
-      textOutputUi: DeploymentListTextUi(utc: inUtc),
+      textOutputUi: DeploymentListTextUi(utc: inUtc, baseCommand: baseCommand),
     );
   }
 }
@@ -229,22 +232,23 @@ class CloudDeploymentsBuildLogCommand
   String get description => "View a deployment's build log.";
 
   @override
-  String get usageExamples => '''\n
+  String get usageExamples =>
+      '''\n
 Examples
 
   View the build log of the latest deployment.
   
-    \$ scloud deployment build-log
+    \$ $baseCommand deployment build-log
 
 
   View the build log of a specific deployment by sequence number.
   
-    \$ scloud deployment build-log 3
+    \$ $baseCommand deployment build-log 3
 
 
   View the build log of a specific deployment by UUID.
   
-    \$ scloud deployment build-log 550e8400-e29b-41d4-a716-446655440000
+    \$ $baseCommand deployment build-log 550e8400-e29b-41d4-a716-446655440000
 
 ''';
 
@@ -264,6 +268,7 @@ Examples
     await DeploymentCommands.fetchBuildLog(
       runner.serviceProvider.cloudApiClient,
       logger: logger,
+      baseCommand: baseCommand,
       projectId: projectId,
       inUtc: inUtc,
       deploymentArg: deploymentArg,
@@ -271,12 +276,12 @@ Examples
   }
 }
 
-const _buildSecretsExplanation = """
+String _buildSecretsExplanation(final String baseCommand) => """
 Build secrets are used to securely store sensitive information that needs to be
 available when building your server, for example SSH keys.
 
 Build secrets are not available at runtime.
-(See `scloud variable set --secret` for managing runtime secrets: ${CloudCliCommand.commandDocBaseUrl}variable)""";
+(See `$baseCommand variable set --secret` for managing runtime secrets: ${CloudCliCommand.commandDocBaseUrl}variable)""";
 
 class CloudDeploymentsBuildSecretCommand extends CloudCliCommand {
   @override
@@ -285,20 +290,21 @@ class CloudDeploymentsBuildSecretCommand extends CloudCliCommand {
   @override
   String get description => """Manage build secrets.
 
-$_buildSecretsExplanation""";
+${_buildSecretsExplanation(baseCommand)}""";
 
   @override
-  String get usageExamples => """
+  String get usageExamples =>
+      """
 
 Examples
 
   List the current build secrets.
 
-    \$ scloud deployment build-secret list
+    \$ $baseCommand deployment build-secret list
 
   Add or modify a build secret.
 
-    \$ scloud deployment build-secret set MY_SECRET_NAME "my-secret-value"
+    \$ $baseCommand deployment build-secret set MY_SECRET_NAME "my-secret-value"
 """;
 
   CloudDeploymentsBuildSecretCommand({required super.logger}) {
@@ -353,7 +359,7 @@ class BuildSecretSetCommand
   @override
   String get description => """Set a build secret (create or update).
   
-$_buildSecretsExplanation""";
+${_buildSecretsExplanation(baseCommand)}""";
 
   @override
   String get name => 'set';
@@ -404,7 +410,7 @@ class BuildSecretsListCommand
   @override
   String get description => """List all build secrets.
   
-$_buildSecretsExplanation""";
+${_buildSecretsExplanation(baseCommand)}""";
 
   @override
   String get name => 'list';
@@ -448,7 +454,7 @@ class BuildSecretUnsetCommand
   @override
   String get description => """Remove a build secret.
 
-$_buildSecretsExplanation""";
+${_buildSecretsExplanation(baseCommand)}""";
 
   @override
   String get name => 'unset';

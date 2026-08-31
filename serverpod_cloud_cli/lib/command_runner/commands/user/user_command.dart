@@ -43,12 +43,13 @@ class ProjectUserListCommand extends CloudCliCommand<ProjectUserListOption> {
   final description = 'List users in a Serverpod Cloud project.';
 
   @override
-  String get usageExamples => '''\n
+  String get usageExamples =>
+      '''\n
 Examples
 
   List all users in a project.
   
-    \$ scloud project user list --project my-project
+    \$ $baseCommand project user list --project my-project
 
 ''';
 
@@ -107,12 +108,13 @@ class ProjectUserInviteCommand
   String get name => 'invite';
 
   @override
-  String get usageExamples => '''\n
+  String get usageExamples =>
+      '''\n
 Examples
 
   Invite a user to the project
 
-    \$ scloud project user invite user@example.com
+    \$ $baseCommand project user invite user@example.com
 
 ''';
 
@@ -156,12 +158,13 @@ class ProjectUserRevokeCommand
   String get name => 'revoke';
 
   @override
-  String get usageExamples => '''\n
+  String get usageExamples =>
+      '''\n
 Examples
 
   Revoke a user from a project.
   
-    \$ scloud project user revoke user@example.com
+    \$ $baseCommand project user revoke user@example.com
 
 ''';
 

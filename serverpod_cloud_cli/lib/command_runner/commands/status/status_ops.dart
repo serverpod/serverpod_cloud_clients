@@ -54,6 +54,7 @@ abstract class StatusCommands {
   static Future<void> tailDeploymentStatus(
     final Client cloudApiClient, {
     required final CommandLogger logger,
+    required final String baseCommand,
     required final String cloudCapsuleId,
     required final UuidValue attemptId,
     final bool inUtc = false,
@@ -101,7 +102,7 @@ abstract class StatusCommands {
             : await stageStatusTailer.showStageProgress(stageType);
         if (stage.stageStatus == DeployProgressStatus.cancelled ||
             stage.stageStatus == DeployProgressStatus.failure) {
-          _logStageFailureGuidance(logger, stage);
+          _logStageFailureGuidance(logger, baseCommand, stage);
           throw FailureException(
             reason: '${stage.stageType.name} stage ${stage.stageStatus.name}',
           );
@@ -110,32 +111,36 @@ abstract class StatusCommands {
 
       await stageStatusTailer._showRolloutProgress();
     } on StreamInterruptedException {
-      _logDeployTailInterruptGuidance(logger);
+      _logDeployTailInterruptGuidance(logger, baseCommand);
       throw UserAbortException();
     } finally {
       await stageStreams.cancel();
     }
   }
 
-  static void _logDeployTailInterruptGuidance(final CommandLogger logger) {
+  static void _logDeployTailInterruptGuidance(
+    final CommandLogger logger,
+    final String baseCommand,
+  ) {
     logger.info(
       'The deployment continues in Serverpod Cloud.',
       newParagraph: true,
     );
     logger.terminalCommand(
-      'scloud deployment show',
+      '$baseCommand deployment show',
       message: 'To view the deployment status, run this command:',
     );
   }
 
   static void _logStageFailureGuidance(
     final CommandLogger logger,
+    final String baseCommand,
     final DeployAttemptStage stage,
   ) {
     if (stage.stageType == DeployStageType.build &&
         stage.stageStatus == DeployProgressStatus.failure) {
       logger.terminalCommand(
-        'scloud deployment build-log',
+        '$baseCommand deployment build-log',
         message: 'To view the build log again, run this command:',
         newParagraph: true,
       );
@@ -143,7 +148,7 @@ abstract class StatusCommands {
     }
 
     logger.terminalCommand(
-      'scloud deployment show',
+      '$baseCommand deployment show',
       message: 'To view the deployment status, run this command:',
       newParagraph: true,
     );

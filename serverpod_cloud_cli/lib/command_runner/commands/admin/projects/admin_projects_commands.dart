@@ -123,7 +123,7 @@ class AdminProjectStatusCommand
             .getDeployAttempts(cloudCapsuleId: projectId, limit: limit);
         return deploymentListRows(statuses);
       },
-      textOutputUi: DeploymentListTextUi(utc: inUtc),
+      textOutputUi: DeploymentListTextUi(utc: inUtc, baseCommand: baseCommand),
     );
   }
 }

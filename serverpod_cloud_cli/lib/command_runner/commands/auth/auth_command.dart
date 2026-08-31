@@ -91,7 +91,7 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
         'Detected an existing login session for Serverpod cloud. '
         'Log out first to log in again.',
       );
-      logger.terminalCommand('scloud auth logout');
+      logger.terminalCommand('$baseCommand auth logout');
       throw FailureException();
     }
 
@@ -147,11 +147,11 @@ class CloudLogoutCommand extends CloudCliCommand<LogoutCommandOption> {
   final name = 'logout';
 
   @override
-  final description = '''Log out from Serverpod Cloud.
+  String get description => '''Log out from Serverpod Cloud.
 
 By default the current session is logged out.
 Use options to log out other sessions and CLI / personal access tokens.
-See also "scloud auth list", to list the current authentication sessions.''';
+See also "$baseCommand auth list", to list the current authentication sessions.''';
 
   CloudLogoutCommand({required super.logger})
     : super(options: LogoutCommandOption.values);
@@ -322,10 +322,11 @@ class CreateTokenCommand extends CloudCliCommand<CreateTokenCommandOption> {
   final name = 'create-token';
 
   @override
-  final description = '''Create a personal access token.
+  String get description =>
+      '''Create a personal access token.
   
 Creates an additional CLI / personal access token for the current user.
-This token can be used to authenticate scloud commands by using
+This token can be used to authenticate $baseCommand commands by using
 the --token option or the SERVERPOD_CLOUD_TOKEN environment variable.''';
 
   @override
@@ -346,6 +347,7 @@ the --token option or the SERVERPOD_CLOUD_TOKEN environment variable.''';
     await Auth.createApiToken(
       cloudClient,
       logger: logger,
+      baseCommand: baseCommand,
       expiresAt: expiresAt,
       expiresAfter: noExpiresAfter ? null : expiresAfter,
     );
@@ -378,18 +380,19 @@ class CloudRevokeTokenCommand
   final name = 'revoke-token';
 
   @override
-  final description = '''Revoke an authentication token.
+  String get description => '''Revoke an authentication token.
 
 Revokes a specific login session or CLI / personal access token.
-See also "scloud auth list", to list the current authentication sessions.''';
+See also "$baseCommand auth list", to list the current authentication sessions.''';
 
   @override
-  String get usageExamples => '''\n
+  String get usageExamples =>
+      '''\n
 Examples
 
   Revoke a token by ID.
 
-    \$ scloud auth revoke-token <token-id>
+    \$ $baseCommand auth revoke-token <token-id>
 
 ''';
 

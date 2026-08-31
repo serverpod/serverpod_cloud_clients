@@ -7,6 +7,7 @@ abstract class Auth {
   static Future<void> createApiToken(
     final Client cloudApiClient, {
     required final CommandLogger logger,
+    required final String baseCommand,
     final DateTime? expiresAt,
     final Duration? expiresAfter,
   }) async {
@@ -19,7 +20,7 @@ abstract class Auth {
       newParagraph: true,
       followUp: '''
 Use the --token option or the SERVERPOD_CLOUD_TOKEN environment variable to
-authenticate with this token in scloud commands.''',
+authenticate with this token in $baseCommand commands.''',
     );
     logger.info(
       'The token is only visible once:\n${authSuccess.token}\n',

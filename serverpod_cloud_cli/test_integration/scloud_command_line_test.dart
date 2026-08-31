@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:cli_tools/cli_tools.dart';
 import 'package:path/path.dart' as p;
+import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_cloud_cli/util/scloud_version.dart';
 import 'package:test/test.dart';
@@ -32,7 +33,10 @@ void main() {
     }
   });
 
-  Future<ProcessResult> runScloud(final List<String> args) {
+  Future<ProcessResult> runScloud(
+    final List<String> args, {
+    final Map<String, String>? environment,
+  }) {
     return Process.run(Platform.resolvedExecutable, [
       p.join('bin', 'serverpod_cloud_cli.dart'),
       ...args,
@@ -40,7 +44,7 @@ void main() {
       configDir.path,
       '--no-analytics',
       '--no-breaking-version-check',
-    ]);
+    ], environment: environment);
   }
 
   group('Given the scloud command line entrypoint', () {
@@ -223,4 +227,45 @@ void main() {
       });
     });
   }, timeout: const Timeout(Duration(minutes: 1)));
+
+  group('Given the base command name environment variable', () {
+    group('and it is set to a wrapper command name', () {
+      late ProcessResult result;
+
+      setUpAll(() async {
+        result = await runScloud(
+          ['--help'],
+          environment: {
+            CloudCliCommandRunner.baseCommandEnvName: 'serverpod cloud',
+          },
+        );
+      });
+
+      test('then the usage text uses that command name', () {
+        expect(
+          result.stdout,
+          contains('serverpod cloud <command> [arguments]'),
+        );
+      });
+
+      test('then the usage text does not use the default command name', () {
+        expect(result.stdout, isNot(contains('scloud <command> [arguments]')));
+      });
+    });
+
+    group('and it is set to an empty value', () {
+      late ProcessResult result;
+
+      setUpAll(() async {
+        result = await runScloud(
+          ['--help'],
+          environment: {CloudCliCommandRunner.baseCommandEnvName: ''},
+        );
+      });
+
+      test('then the usage text uses the default command name', () {
+        expect(result.stdout, contains('scloud <command> [arguments]'));
+      });
+    });
+  });
 }

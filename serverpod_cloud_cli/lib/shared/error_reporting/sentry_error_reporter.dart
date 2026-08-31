@@ -9,6 +9,7 @@ import 'package:ground_control_client/ground_control_client.dart'
 import 'package:sentry/sentry.dart';
 
 import 'package:serverpod_cloud_cli/constants.dart';
+import 'package:serverpod_cloud_cli/shared/base_command.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/scloud_version.dart';
 
@@ -46,6 +47,8 @@ class SentryErrorReporter {
   List<String> _flags = const [];
 
   String? _cloudUserId;
+
+  BaseCommandInvocation? _baseCommand;
 
   SentryErrorReporter({
     required this.dsn,
@@ -100,6 +103,13 @@ class SentryErrorReporter {
   /// which determines the reported [environment].
   set apiServerUrl(final String url) {
     _environment = environmentFromApiServerUrl(url);
+  }
+
+  /// Sets the invocation path the CLI was run through.
+  ///
+  /// Attached to reported events as a `base_command` tag.
+  set baseCommand(final BaseCommandInvocation baseCommand) {
+    _baseCommand = baseCommand;
   }
 
   /// Sets the id of the logged in cloud user, or null if not logged in.
@@ -244,8 +254,9 @@ class SentryErrorReporter {
   }
 
   /// Applies the event data to [scope]: the command as the transaction and
-  /// a `command` tag, the flags as a `flags` tag, an `is_ci` tag, and the
-  /// cloud user id as the user when the user is logged in.
+  /// a `command` tag, the flags as a `flags` tag, the invocation path as a
+  /// `base_command` tag, an `is_ci` tag, and the cloud user id as the user
+  /// when the user is logged in.
   Future<void> _configureScope(final Scope scope) async {
     final command = _command;
     if (command != null) {
@@ -255,6 +266,10 @@ class SentryErrorReporter {
     final flags = _flags;
     if (flags.isNotEmpty) {
       await scope.setTag('flags', flags.join(' '));
+    }
+    final baseCommand = _baseCommand;
+    if (baseCommand != null) {
+      await scope.setTag('base_command', baseCommand.reportedName);
     }
     await scope.setTag('is_ci', ci.isCI.toString());
     final cloudUserId = _cloudUserId;

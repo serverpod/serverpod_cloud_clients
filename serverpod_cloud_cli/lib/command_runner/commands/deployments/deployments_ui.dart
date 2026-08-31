@@ -2,16 +2,17 @@ import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 
 class DeploymentListTextUi extends OutputWidget {
   final bool utc;
+  final String baseCommand;
 
-  DeploymentListTextUi({required this.utc});
+  DeploymentListTextUi({required this.utc, required this.baseCommand});
 
   @override
   OutputWidget build(final OutputContext context) {
     final deployments = context.get<List<Map<String, Object?>>>();
     if (deployments.isEmpty) {
-      return const CommandHintTextWidget(
+      return CommandHintTextWidget(
         'No deployment status found. Run this command to deploy:',
-        command: 'scloud deploy',
+        command: '$baseCommand deploy',
       );
     }
     return FormattedTableWidget(

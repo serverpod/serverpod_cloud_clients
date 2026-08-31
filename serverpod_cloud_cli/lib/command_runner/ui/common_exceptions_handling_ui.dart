@@ -9,9 +9,13 @@ import 'package:serverpod_cloud_cli/util/output/widgets.dart';
 /// Displays text errors for common Ground Control client exceptions.
 /// For other exceptions it renders [elseWidget] if provided.
 class CommonClientExceptionsWidget extends OutputWidget {
+  final String baseCommand;
   final OutputWidget? elseWidget;
 
-  const CommonClientExceptionsWidget({this.elseWidget});
+  const CommonClientExceptionsWidget({
+    required this.baseCommand,
+    this.elseWidget,
+  });
 
   @override
   OutputWidget build(final OutputContext context) {
@@ -20,7 +24,10 @@ class CommonClientExceptionsWidget extends OutputWidget {
       final e = _unwrapException(exc);
 
       return switch (e) {
-        ServerpodClientUnauthorized() => ServerpodClientUnauthorizedWidget(e),
+        ServerpodClientUnauthorized() => ServerpodClientUnauthorizedWidget(
+          e,
+          baseCommand: baseCommand,
+        ),
         UnauthorizedException() => UnauthorizedExceptionWidget(e),
         ProcurementDeniedException() => ProcurementDeniedExceptionWidget(e),
         NotFoundException() => NotFoundExceptionWidget(e),
@@ -45,8 +52,12 @@ class ServerpodClientUnauthorizedWidget extends OutputWidget {
   static const message =
       'The credentials for this session seem to no longer be valid.';
   final ServerpodClientUnauthorized exception;
+  final String baseCommand;
 
-  const ServerpodClientUnauthorizedWidget(this.exception);
+  const ServerpodClientUnauthorizedWidget(
+    this.exception, {
+    required this.baseCommand,
+  });
 
   @override
   OutputWidget build(final OutputContext context) {
@@ -54,9 +65,9 @@ class ServerpodClientUnauthorizedWidget extends OutputWidget {
       TextErrorOutputWidget(message),
       CommandHintTextWidget(
         'Run the following commands to re-authenticate:',
-        command: 'scloud auth logout',
+        command: '$baseCommand auth logout',
       ),
-      CommandHintTextWidget.command('scloud auth login'),
+      CommandHintTextWidget.command('$baseCommand auth login'),
     ]);
   }
 }

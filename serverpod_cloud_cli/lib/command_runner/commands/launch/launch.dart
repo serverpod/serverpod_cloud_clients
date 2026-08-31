@@ -41,6 +41,7 @@ abstract class Launch {
     final Client cloudApiClient,
     final FileUploaderFactory fileUploaderFactory, {
     required final CommandLogger logger,
+    required final String baseCommand,
     required final Directory projectDirectory,
     required final String? projectId,
     required final bool includePreDeployScripts,
@@ -79,6 +80,7 @@ abstract class Launch {
         cloudApiClient,
         fileUploaderFactory,
         logger: logger,
+        baseCommand: baseCommand,
         projectSetup: projectSetup,
         consoleServer: consoleServer,
         openBrowser: openBrowser,
@@ -93,6 +95,7 @@ abstract class Launch {
         cloudApiClient,
         fileUploaderFactory,
         logger: logger,
+        baseCommand: baseCommand,
         projectSetup: projectSetup,
         consoleServer: consoleServer,
         openBrowser: openBrowser,
@@ -109,6 +112,7 @@ abstract class Launch {
     final Client cloudApiClient,
     final FileUploaderFactory fileUploaderFactory, {
     required final CommandLogger logger,
+    required final String baseCommand,
     required final ProjectLaunch projectSetup,
     required final String consoleServer,
     required final bool openBrowser,
@@ -134,12 +138,18 @@ abstract class Launch {
 
     await suggestFlutterBuildPreDeployHook(logger, projectSetup);
 
-    await selectCustomPasswords(cloudApiClient, logger, projectSetup);
+    await selectCustomPasswords(
+      cloudApiClient,
+      logger,
+      baseCommand,
+      projectSetup,
+    );
 
     await performLaunch(
       cloudApiClient,
       fileUploaderFactory,
       logger,
+      baseCommand,
       projectSetup,
       consoleServer: consoleServer,
       openBrowser: openBrowser,
@@ -155,6 +165,7 @@ abstract class Launch {
     final Client cloudApiClient,
     final FileUploaderFactory fileUploaderFactory, {
     required final CommandLogger logger,
+    required final String baseCommand,
     required final ProjectLaunch projectSetup,
     required final String consoleServer,
     required final bool openBrowser,
@@ -211,6 +222,7 @@ abstract class Launch {
             cloudApiClient,
             fileUploaderFactory,
             logger,
+            baseCommand,
             state.projectSetup,
             consoleServer: consoleServer,
             openBrowser: openBrowser,
@@ -357,6 +369,7 @@ abstract class Launch {
   static Future<void> selectCustomPasswords(
     final Client cloudApiClient,
     final CommandLogger logger,
+    final String baseCommand,
     final ProjectLaunch projectSetup,
   ) async {
     const ignoredSecretNames = [
@@ -415,7 +428,7 @@ abstract class Launch {
       prompt:
           'Custom passwords were found in config/passwords.yaml.\n'
           'You can select which of them to copy securely to Serverpod Cloud now.\n'
-          '${logger.wrapStyle('Set them later with `scloud password set`.', cli.AnsiStyle.darkGray)}',
+          '${logger.wrapStyle('Set them later with `$baseCommand password set`.', cli.AnsiStyle.darkGray)}',
       options: options,
       initiallySelected: initiallySelected,
       terminal: logger.inlineTerminal,
@@ -635,6 +648,7 @@ abstract class Launch {
     final Client cloudApiClient,
     final FileUploaderFactory fileUploaderFactory,
     final CommandLogger logger,
+    final String baseCommand,
     final ProjectLaunch projectSetup, {
     required final String consoleServer,
     required final bool openBrowser,
@@ -675,7 +689,7 @@ abstract class Launch {
 
     if (!performDeploy) {
       logger.terminalCommand(
-        'scloud launch',
+        '$baseCommand launch',
         message:
             'Deployment skipped. Run this command again to deploy to the cloud:',
         newParagraph: true,
@@ -687,6 +701,7 @@ abstract class Launch {
       cloudApiClient,
       fileUploaderFactory,
       logger: logger,
+      baseCommand: baseCommand,
       projectId: projectId,
       projectDir: projectDir.path,
       projectConfigFilePath: configFilePath,
@@ -706,7 +721,7 @@ abstract class Launch {
     _displayProjectInfo(logger: logger, actualProjectId: projectId);
 
     logger.terminalCommand(
-      'scloud help deployment',
+      '$baseCommand help deployment',
       message: 'To see how to view deployment statuses, run this command:',
       newParagraph: true,
     );

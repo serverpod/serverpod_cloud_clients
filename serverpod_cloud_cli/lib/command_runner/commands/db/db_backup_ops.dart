@@ -52,6 +52,7 @@ abstract class DbBackupCommands {
   static Future<void> listSnapshots(
     final Client cloudApiClient, {
     required final CommandLogger logger,
+    required final String baseCommand,
     required final String projectId,
     final bool utc = false,
   }) async {
@@ -68,7 +69,7 @@ abstract class DbBackupCommands {
       logger.info('No snapshots found for project "$projectId".');
       logger.terminalCommand(
         message: 'Create a snapshot with:',
-        'scloud db backup create --project $projectId',
+        '$baseCommand db backup create --project $projectId',
       );
       return;
     }
@@ -202,6 +203,7 @@ Do you want to proceed?''', defaultValue: false);
   static Future<void> showSchedule(
     final Client cloudApiClient, {
     required final CommandLogger logger,
+    required final String baseCommand,
     required final String projectId,
   }) async {
     final BackupSchedule? schedule;
@@ -217,7 +219,8 @@ Do you want to proceed?''', defaultValue: false);
       logger.info('No backup schedule is configured for project "$projectId".');
       logger.terminalCommand(
         message: 'Set a schedule with:',
-        'scloud db schedule set --project $projectId --frequency daily',
+        '$baseCommand db schedule set --project $projectId '
+        '--frequency daily',
       );
       return;
     }

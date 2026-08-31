@@ -32,9 +32,9 @@ class ProjectIdOption extends StringOption {
          helpText:
              '${asFirstArg ? _helpTextFirstArg : _helpText}'
              '\nCan be omitted for existing projects that are linked'
-             ' (see `scloud project link --help`)'
+             ' (see the "project link" command)'
              '${excludeSettings ? '.' : ' or if a global project context is set'
-                       ' (see `scloud context set --help`).'}',
+                       ' (see the "context set" command).'}',
        );
 
   /// If [asFirstArg] is true, the project ID can be also passed as the first positional argument.

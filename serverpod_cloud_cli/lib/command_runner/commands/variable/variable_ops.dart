@@ -13,12 +13,13 @@ abstract class VariableCommands {
   static Future<void> setVariable(
     final Client cloudApiClient, {
     required final CommandLogger logger,
+    required final String baseCommand,
     required final String projectId,
     required final String name,
     required final String value,
     final bool? secret,
   }) async {
-    _validateName(name);
+    _validateName(baseCommand, name);
 
     final listed = await _fetch(cloudApiClient, projectId);
     final existingStore = _storeOf(
@@ -33,8 +34,8 @@ abstract class VariableCommands {
             '"$name" already exists as an unmasked variable. '
             'To recreate it as a secret:',
         hint:
-            'scloud variable unset $name\n'
-            '  scloud variable set --secret $name <value>',
+            '$baseCommand variable unset $name\n'
+            '  $baseCommand variable set --secret $name <value>',
       );
     }
     if (existingStore == _VariableStore.secret && secret == false) {
@@ -43,8 +44,8 @@ abstract class VariableCommands {
             '"$name" already exists as a secret. '
             'To recreate it as an unmasked variable:',
         hint:
-            'scloud variable unset $name\n'
-            '  scloud variable set --no-secret $name <value>',
+            '$baseCommand variable unset $name\n'
+            '  $baseCommand variable set --no-secret $name <value>',
       );
     }
 
@@ -99,10 +100,11 @@ abstract class VariableCommands {
   static Future<void> unsetVariable(
     final Client cloudApiClient, {
     required final CommandLogger logger,
+    required final String baseCommand,
     required final String projectId,
     required final String name,
   }) async {
-    _validateName(name);
+    _validateName(baseCommand, name);
 
     final listed = await _fetch(cloudApiClient, projectId);
     final existingStore = _storeOf(
@@ -169,11 +171,11 @@ abstract class VariableCommands {
     ];
   }
 
-  static void _validateName(final String name) {
+  static void _validateName(final String baseCommand, final String name) {
     if (name.startsWith(PasswordDefinitions.prefix)) {
       throw FailureException(
         error: "Names can't start with '${PasswordDefinitions.prefix}'.",
-        hint: 'Use `scloud password set` to manage passwords.',
+        hint: 'Use `$baseCommand password set` to manage passwords.',
       );
     }
 

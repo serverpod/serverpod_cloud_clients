@@ -96,21 +96,22 @@ class CloudVariableSetCommand
   String get name => 'set';
 
   @override
-  String? get usageExamples => '''\n
+  String? get usageExamples =>
+      '''\n
 Examples
 
   Set an environment variable called SERVICE_EMAIL to support@example.com.
   
-    \$ scloud variable set SERVICE_EMAIL support@example.com
+    \$ $baseCommand variable set SERVICE_EMAIL support@example.com
 
   Set a secret environment variable. The value is encrypted and masked.
   
-    \$ scloud variable set --secret API_KEY sk-...
+    \$ $baseCommand variable set --secret API_KEY sk-...
 
   To set the variable from a file, use the --from-file option.
   The full content of the file will be used as the value.
 
-    \$ scloud variable set SERVICE_EMAIL --from-file email.txt
+    \$ $baseCommand variable set SERVICE_EMAIL --from-file email.txt
 ''';
 
   CloudVariableSetCommand({required super.logger})
@@ -135,6 +136,7 @@ Examples
     await VariableCommands.setVariable(
       runner.serviceProvider.cloudApiClient,
       logger: logger,
+      baseCommand: baseCommand,
       projectId: projectId,
       name: variableName,
       value: valueToSet,
@@ -152,12 +154,13 @@ class CloudVariableUnsetCommand
   String get name => 'unset';
 
   @override
-  String? get usageExamples => '''\n
+  String? get usageExamples =>
+      '''\n
 Examples
 
   Remove an environment variable called SERVICE_EMAIL.
   
-    \$ scloud variable unset SERVICE_EMAIL
+    \$ $baseCommand variable unset SERVICE_EMAIL
 ''';
 
   CloudVariableUnsetCommand({required super.logger})
@@ -175,6 +178,7 @@ Examples
     await VariableCommands.unsetVariable(
       runner.serviceProvider.cloudApiClient,
       logger: logger,
+      baseCommand: baseCommand,
       projectId: projectId,
       name: variableName,
     );

@@ -185,7 +185,8 @@ class CloudProjectLinkCommand
       '  - Create a .scloudignore file if it does not exist\n'
       '  - Update .gitignore to exclude the .scloud/ directory (if in a workspace)\n'
       '\n'
-      'The scloud.yaml file contains the project ID and is used by other scloud commands '
+      'The scloud.yaml file contains the project ID and is used by other '
+      '$baseCommand commands '
       'to identify which Serverpod Cloud project to use. This file can be safely '
       'committed to version control as it only contains the project identifier, not '
       'sensitive credentials.';

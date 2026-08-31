@@ -8,6 +8,7 @@ abstract class DeploymentCommands {
   static Future<void> showDeployment(
     final Client cloudApiClient, {
     required final CommandLogger logger,
+    required final String baseCommand,
     required final String projectId,
     required final bool wait,
     required final bool overallStatus,
@@ -17,6 +18,7 @@ abstract class DeploymentCommands {
     try {
       final attemptId = await _getDeployAttemptId(
         cloudApiClient,
+        baseCommand,
         projectId,
         deploymentArg,
       );
@@ -25,6 +27,7 @@ abstract class DeploymentCommands {
         await StatusCommands.tailDeploymentStatus(
           cloudApiClient,
           logger: logger,
+          baseCommand: baseCommand,
           cloudCapsuleId: projectId,
           attemptId: attemptId,
           inUtc: inUtc,
@@ -66,6 +69,7 @@ abstract class DeploymentCommands {
   static Future<void> fetchBuildLog(
     final Client cloudApiClient, {
     required final CommandLogger logger,
+    required final String baseCommand,
     required final String projectId,
     required final bool inUtc,
     final String? deploymentArg,
@@ -73,6 +77,7 @@ abstract class DeploymentCommands {
     try {
       final attemptId = await _getDeployAttemptId(
         cloudApiClient,
+        baseCommand,
         projectId,
         deploymentArg,
       );
@@ -153,6 +158,7 @@ abstract class DeploymentCommands {
 
   static Future<UuidValue> _getDeployAttemptId(
     final Client cloudApiClient,
+    final String baseCommand,
     final String projectId,
     String? deploymentArg,
   ) async {
@@ -177,14 +183,14 @@ abstract class DeploymentCommands {
       if (deploymentArg == '0') {
         throw FailureException(
           error: 'No deployment status found.',
-          hint: 'Run this command to deploy: scloud deploy',
+          hint: 'Run this command to deploy: $baseCommand deploy',
         );
       }
       throw FailureException(
         error: 'No such deployment status found.',
         hint:
             'Run this command to see recent deployments: '
-            'scloud deployment list',
+            '$baseCommand deployment list',
       );
     }
   }
