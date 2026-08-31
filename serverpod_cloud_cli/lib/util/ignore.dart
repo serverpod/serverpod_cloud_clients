@@ -372,7 +372,7 @@ Iterable<_IgnoreRule> _parseIgnorePatterns(
 }) sync* {
   ArgumentError.checkNotNull(patterns, 'patterns');
   ArgumentError.checkNotNull(ignoreCase, 'ignoreCase');
-  onInvalidPattern ??= (final _, final __) {};
+  onInvalidPattern ??= (final _, final _) {};
 
   final parsedPatterns = patterns
       .expand((final s) => s.split(_lineBreakPattern))

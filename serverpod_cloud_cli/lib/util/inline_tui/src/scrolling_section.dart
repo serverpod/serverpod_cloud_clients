@@ -268,13 +268,10 @@ class ScrollingSection {
     if (full && captureOutput) {
       // Render the complete output untruncated (the terminal wraps long lines)
       // and undimmed, since this is a one-shot final render for inspection.
-      return [
-        if (header != null) header,
-        for (final line in _captured) _formatFull(line),
-      ];
+      return [?header, for (final line in _captured) _formatFull(line)];
     }
     return [
-      if (header != null) header,
+      ?header,
       for (final line in _visibleLines) _format(line, width, dimmed: dim),
     ];
   }

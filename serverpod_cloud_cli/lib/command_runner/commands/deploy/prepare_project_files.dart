@@ -340,7 +340,7 @@ abstract class TenantProject {
     final Exception? nestedException,
     final StackTrace? nestedStackTrace,
   }) {
-    final allMessages = [if (message != null) message, ...?messages];
+    final allMessages = [?message, ...?messages];
     throw WorkspaceException(
       allMessages,
       nestedException,

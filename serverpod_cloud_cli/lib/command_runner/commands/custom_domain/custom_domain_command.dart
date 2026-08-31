@@ -283,7 +283,7 @@ class CloudListCustomDomainCommand
     customDomainPrinter.writeLines(logger.line);
   }
 
-  _getStatusLabel(final DomainNameStatus status) {
+  String _getStatusLabel(final DomainNameStatus status) {
     switch (status) {
       case DomainNameStatus.configured:
         return 'Configured';

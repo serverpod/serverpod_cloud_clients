@@ -84,10 +84,7 @@ class LaunchConfigState extends TuiState {
     _projectSelectionConfig = selectionConfig;
     _projectIdInputConfig = ProjectIdInputConfig(selectionConfig);
 
-    final configs = <FormConfig>[
-      if (selectionConfig != null) selectionConfig,
-      _projectIdInputConfig!,
-    ];
+    final configs = <FormConfig>[?selectionConfig, _projectIdInputConfig!];
     _projectSelectionFormState = FormState(configs);
 
     // Select the first existing project by default.

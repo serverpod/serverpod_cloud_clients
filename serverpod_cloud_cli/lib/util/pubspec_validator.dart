@@ -129,10 +129,7 @@ class TenantProjectPubspec {
       requireDependency: requireServerpod,
     );
 
-    return [
-      if (sdkError != null) sdkError,
-      if (serverpodError != null) serverpodError,
-    ];
+    return [?sdkError, ?serverpodError];
   }
 
   /// The environment constraints are handled differently than other dependencies.
