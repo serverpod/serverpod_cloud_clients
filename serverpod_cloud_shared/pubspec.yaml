@@ -1,6 +1,6 @@
 name: serverpod_cloud_shared
 description: Shared logic between Serverpod Cloud server and its clients.
-version: 0.37.0
+version: 0.38.0
 repository: https://github.com/serverpod/serverpod_cloud_clients
 homepage: https://serverpod.dev/
 issue_tracker: https://github.com/serverpod/serverpod_cloud_clients/issues
