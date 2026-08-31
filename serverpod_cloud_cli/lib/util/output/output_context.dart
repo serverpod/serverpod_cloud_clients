@@ -10,7 +10,7 @@ class OutputContext {
   final Map<Type, Object> _objects;
 
   OutputContext(this.format, [final Object? object])
-    : _objects = {if (object != null) object.runtimeType: object};
+    : _objects = {object.runtimeType: ?object};
 
   OutputContext.exception(
     final OutputFormat format,

@@ -98,7 +98,7 @@ class FailureException extends ExitException {
     this.reason,
     this.nestedException,
     this.nestedStackTrace,
-  }) : errors = [if (error != null) error, ...?errors],
+  }) : errors = [?error, ...?errors],
        super.error();
 
   /// Simplified factory constructor for a [FailureException] with a nested

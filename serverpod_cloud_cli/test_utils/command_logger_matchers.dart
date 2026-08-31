@@ -396,7 +396,7 @@ class _TerminalCommandCallMatcher extends Matcher {
 
 /// Test matcher to assert TestCommandLogger.warning calls
 Matcher equalsWarningCall({
-  required final message,
+  required final String message,
   final String? hint,
   final bool newParagraph = false,
 }) {
@@ -459,7 +459,7 @@ class _WarningCallMatcher extends Matcher {
 
 /// Test matcher to assert TestCommandLogger.progress calls
 Matcher equalsProgressCall({
-  required final message,
+  required final String message,
   final bool newParagraph = false,
 }) {
   return _ProgressCallMatcher(
@@ -517,7 +517,10 @@ class _ProgressCallMatcher extends Matcher {
 }
 
 /// Test matcher to assert TestCommandLogger.confirm calls
-equalsConfirmCall({required final String message, final bool? defaultValue}) {
+Matcher equalsConfirmCall({
+  required final String message,
+  final bool? defaultValue,
+}) {
   return _ConfirmCallMatcher(
     ConfirmCall(message: message, defaultValue: defaultValue),
   );
@@ -571,7 +574,10 @@ class _ConfirmCallMatcher extends Matcher {
 }
 
 /// Test matcher to assert TestCommandLogger.input calls
-equalsInputCall({required final String message, final String? defaultValue}) {
+Matcher equalsInputCall({
+  required final String message,
+  final String? defaultValue,
+}) {
   return _InputCallMatcher(
     InputCall(message: message, defaultValue: defaultValue),
   );
@@ -625,7 +631,7 @@ class _InputCallMatcher extends Matcher {
 }
 
 Matcher equalsBoxCall({
-  required final message,
+  required final String message,
   final bool newParagraph = false,
 }) {
   return _BoxCallMatcher(BoxCall(message: message, newParagraph: newParagraph));

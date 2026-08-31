@@ -10,6 +10,7 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../domains/products/models/compute_catalog_info.dart' as _i2;
 import '../../../domains/products/models/database_catalog_info.dart' as _i3;
