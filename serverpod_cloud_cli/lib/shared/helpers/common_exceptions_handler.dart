@@ -14,6 +14,9 @@ void processCommonClientExceptions(
   final Exception e,
   final StackTrace stackTrace,
 ) {
+  final exitException = commonClientExceptionExit(e, stackTrace);
+  if (exitException == null) return;
+
   switch (e) {
     case ServerpodClientUnauthorized():
       logger.error(
@@ -25,20 +28,8 @@ void processCommonClientExceptions(
       );
       logger.terminalCommand('$baseCommand auth login');
 
-      throw ErrorExitException(
-        'The credentials for this session seem to no longer be valid.',
-        e,
-        stackTrace,
-      );
-
     case UnauthorizedException():
       logger.error('You are not authorized to perform this action.');
-
-      throw ErrorExitException(
-        'You are not authorized to perform this action.',
-        e,
-        stackTrace,
-      );
 
     case ProcurementDeniedException():
       final baseUrl = getConsoleBaseUrl();
@@ -67,15 +58,43 @@ void processCommonClientExceptions(
           newParagraph: true,
         );
       }
-      throw ErrorExitException('The procurement was not allowed.');
 
     case NotFoundException():
       logger.error('The requested resource did not exist.', hint: e.message);
-
-      throw ErrorExitException(
-        'The requested resource did not exist.',
-        e,
-        stackTrace,
-      );
   }
+
+  throw exitException;
+}
+
+/// Returns the [ErrorExitException] that corresponds to a common client
+/// exception, or null if the exception is not one of them.
+///
+/// Use this instead of [processCommonClientExceptions] when the exception
+/// has already been displayed to the user, for instance by an error output
+/// widget, and only the process exit remains to be performed.
+ErrorExitException? commonClientExceptionExit(
+  final Exception e,
+  final StackTrace stackTrace,
+) {
+  return switch (e) {
+    ServerpodClientUnauthorized() => ErrorExitException(
+      'The credentials for this session seem to no longer be valid.',
+      e,
+      stackTrace,
+    ),
+    UnauthorizedException() => ErrorExitException(
+      'You are not authorized to perform this action.',
+      e,
+      stackTrace,
+    ),
+    ProcurementDeniedException() => ErrorExitException(
+      'The procurement was not allowed.',
+    ),
+    NotFoundException() => ErrorExitException(
+      'The requested resource did not exist.',
+      e,
+      stackTrace,
+    ),
+    _ => null,
+  };
 }

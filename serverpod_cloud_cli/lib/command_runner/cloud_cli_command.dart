@@ -10,7 +10,7 @@ import 'package:serverpod_cloud_cli/commands/billing/billing_commands.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart'
-    show processCommonClientExceptions;
+    show commonClientExceptionExit, processCommonClientExceptions;
 import 'package:serverpod_cloud_cli/util/cli_authentication_key_manager.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_broker.dart'
     show scloudCliConfigBroker;
@@ -240,6 +240,13 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
           );
         }
         throw ErrorExitException(f.reason, null, f.nestedStackTrace);
+      }
+      final exitException = commonClientExceptionExit(
+        qe.exception,
+        qe.stackTrace,
+      );
+      if (exitException != null) {
+        throw exitException;
       }
       Error.throwWithStackTrace(qe.exception, qe.stackTrace);
     }
