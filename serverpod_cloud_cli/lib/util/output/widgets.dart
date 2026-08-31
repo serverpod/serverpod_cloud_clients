@@ -1,8 +1,52 @@
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 
 import 'output_context.dart';
+import 'output_format.dart';
 import 'output_formatter.dart';
 import 'output_widget.dart';
+
+class FormatBranchingWidget extends OutputWidget {
+  final OutputWidget textWidget;
+  final OutputWidget jsonWidget;
+  final OutputWidget yamlWidget;
+
+  const FormatBranchingWidget({
+    required this.textWidget,
+    required this.jsonWidget,
+    required this.yamlWidget,
+  });
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    final format = context.format;
+    return switch (format) {
+      OutputFormat.text => textWidget,
+      OutputFormat.json => jsonWidget,
+      OutputFormat.yaml => yamlWidget,
+    };
+  }
+}
+
+/// Renders an error widget if the context contains a matching exception.
+/// Otherwise it renders the [elseWidget] if provided.
+class ExceptionHandlingWidget<E extends Exception> extends OutputWidget {
+  final OutputWidget Function(E exception) errorWidgetMaker;
+  final OutputWidget? elseWidget;
+
+  const ExceptionHandlingWidget({
+    required this.errorWidgetMaker,
+    this.elseWidget,
+  });
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    final error = context.find<QualifiedException>();
+    if (error?.exception case final E e) {
+      return errorWidgetMaker(e);
+    }
+    return elseWidget ?? this;
+  }
+}
 
 /// Renders a raw string.
 class RawStringWidget extends OutputWidget {
@@ -44,7 +88,7 @@ class SuccessTextWidget extends OutputWidget {
 
 /// Renders a "command hint" message.
 class CommandHintTextWidget extends OutputWidget {
-  final String message;
+  final String? message;
   final String command;
   final bool? newParagraph;
 
@@ -53,6 +97,9 @@ class CommandHintTextWidget extends OutputWidget {
     required this.command,
     this.newParagraph,
   });
+
+  const CommandHintTextWidget.command(this.command, {this.newParagraph})
+    : message = null;
 
   @override
   void render({required final CommandLogger logger}) {
@@ -81,22 +128,80 @@ class FormattedStringWidget<O extends Object> extends OutputWidget {
 }
 
 abstract class ErrorWidget extends OutputWidget {
-  final Object error;
-
-  const ErrorWidget(this.error);
+  const ErrorWidget();
 }
 
 class TextErrorWidget extends ErrorWidget {
-  const TextErrorWidget(super.error);
+  const TextErrorWidget();
 
   @override
-  void render({required final CommandLogger logger}) {
-    logger.error(error.toString());
+  OutputWidget build(final OutputContext context) {
+    final error = context.get<QualifiedException>();
+    return TextErrorOutputWidget(
+      error,
+      message: error.exception.toString(),
+      exception: error.exception,
+      stackTrace: error.stackTrace,
+    );
   }
 }
 
 class JsonErrorWidget extends ErrorWidget {
-  const JsonErrorWidget(super.error);
+  const JsonErrorWidget();
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    final error = context.get<QualifiedException>();
+    return JsonErrorOutputWidget(error);
+  }
+}
+
+class YamlErrorWidget extends ErrorWidget {
+  const YamlErrorWidget();
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    final error = context.get<QualifiedException>();
+    return YamlErrorOutputWidget(error);
+  }
+}
+
+abstract class ErrorOutputWidget extends OutputWidget {
+  final Object error;
+
+  const ErrorOutputWidget(this.error);
+}
+
+class TextErrorOutputWidget extends ErrorOutputWidget {
+  final String? message;
+  final String? hint;
+  final Exception? exception;
+  final StackTrace? stackTrace;
+  final bool newParagraph;
+
+  const TextErrorOutputWidget(
+    super.error, {
+    this.message,
+    this.hint,
+    this.exception,
+    this.stackTrace,
+    this.newParagraph = false,
+  });
+
+  @override
+  void render({required final CommandLogger logger}) {
+    logger.error(
+      message ?? error.toString(),
+      hint: hint,
+      exception: exception,
+      stackTrace: stackTrace,
+      newParagraph: newParagraph,
+    );
+  }
+}
+
+class JsonErrorOutputWidget extends ErrorOutputWidget {
+  const JsonErrorOutputWidget(super.error);
 
   @override
   void render({required final CommandLogger logger}) {
@@ -105,8 +210,8 @@ class JsonErrorWidget extends ErrorWidget {
   }
 }
 
-class YamlErrorWidget extends ErrorWidget {
-  const YamlErrorWidget(super.error);
+class YamlErrorOutputWidget extends ErrorOutputWidget {
+  const YamlErrorOutputWidget(super.error);
 
   @override
   void render({required final CommandLogger logger}) {

@@ -1,27 +1,13 @@
 import 'package:ground_control_client/ground_control_client.dart'
     show ProjectInfo;
-import 'package:serverpod_cloud_cli/util/output/output.dart';
+import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 
-class ProjectListUi extends OutputWidget {
-  final bool utc;
-  final bool showArchived;
-
-  ProjectListUi({required this.utc, required this.showArchived});
-
-  @override
-  OutputWidget build(final OutputContext context) {
-    return CommandWidget.text(
-      textOutputUi: _ProjectListTextUi(utc: utc, showArchived: showArchived),
-    );
-  }
-}
-
-class _ProjectListTextUi extends OutputWidget {
+class ProjectListTextUi extends OutputWidget {
   final bool utc;
 
   late final List<TableColumnFormatter<ProjectInfo>> _projectTableColumns;
 
-  _ProjectListTextUi({required this.utc, required final bool showArchived}) {
+  ProjectListTextUi({required this.utc, required final bool showArchived}) {
     _projectTableColumns = [
       TableColumnFormatter.forElement(
         'Project Id',

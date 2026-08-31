@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:config/config.dart';
+import 'package:config/config.dart' show UsageException;
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -111,6 +111,86 @@ void main() {
         await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
       });
     });
+
+    group('when executing password list with --format json', () {
+      late Future commandResult;
+
+      setUp(() async {
+        when(
+          () => client.secrets.list(any()),
+        ).thenThrow(ServerpodClientUnauthorized());
+        when(
+          () => client.secrets.listManaged(any()),
+        ).thenThrow(ServerpodClientUnauthorized());
+
+        commandResult = cli.run([
+          'password',
+          'list',
+          '--project',
+          projectId,
+          '--format',
+          'json',
+        ]);
+      });
+
+      test('then throws exception', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then emits a JSON error for the unauthorized exception', () async {
+        try {
+          await commandResult;
+        } catch (_) {}
+
+        expect(logger.lineCalls, isEmpty);
+        expect(logger.rawCalls, isEmpty);
+        expect(logger.errorCalls, isNotEmpty);
+        final payload = jsonDecode(logger.errorCalls.single.message);
+        expect(payload, contains('Failed to list passwords'));
+        expect(payload, contains('Unauthorized'));
+      });
+    });
+
+    group('when executing password list with --format yaml', () {
+      late Future commandResult;
+
+      setUp(() async {
+        when(
+          () => client.secrets.list(any()),
+        ).thenThrow(ServerpodClientUnauthorized());
+        when(
+          () => client.secrets.listManaged(any()),
+        ).thenThrow(ServerpodClientUnauthorized());
+
+        commandResult = cli.run([
+          'password',
+          'list',
+          '--project',
+          projectId,
+          '--format',
+          'yaml',
+        ]);
+      });
+
+      test('then throws exception', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then emits a YAML error for the unauthorized exception', () async {
+        try {
+          await commandResult;
+        } catch (_) {}
+
+        expect(logger.lineCalls, isEmpty);
+        expect(logger.rawCalls, isEmpty);
+        expect(logger.errorCalls, isNotEmpty);
+        expect(
+          logger.errorCalls.single.message,
+          contains('Failed to list passwords'),
+        );
+        expect(logger.errorCalls.single.message, contains('Unauthorized'));
+      });
+    });
   });
 
   group('Given authenticated', () {
@@ -201,7 +281,16 @@ void main() {
             projectId,
           ]);
 
-          await expectLater(commandResult, throwsA(isA<UsageException>()));
+          await expectLater(
+            commandResult,
+            throwsA(
+              isA<UsageException>().having(
+                (final e) => e.message,
+                'message',
+                contains('Invalid value for option `from-file`'),
+              ),
+            ),
+          );
         });
       });
 
@@ -323,6 +412,82 @@ void main() {
             equalsErrorCall(
               message:
                   'Password "serviceSecret": Password must be at least 20 characters long.',
+            ),
+          );
+        });
+      });
+
+      group('with serviceSecret and invalid length and --format json', () {
+        late Future commandResult;
+
+        setUp(() async {
+          commandResult = cli.run([
+            'password',
+            'set',
+            'serviceSecret',
+            'a' * 19,
+            '--project',
+            projectId,
+            '--format',
+            'json',
+          ]);
+        });
+
+        test('then throws ErrorExitException', () async {
+          await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+        });
+
+        test('then emits a JSON error for the validation failure', () async {
+          try {
+            await commandResult;
+          } catch (_) {}
+
+          expect(logger.lineCalls, isEmpty);
+          expect(logger.rawCalls, isEmpty);
+          expect(logger.errorCalls, isNotEmpty);
+          final payload = jsonDecode(logger.errorCalls.single.message);
+          expect(
+            payload,
+            contains(
+              'Password "serviceSecret": Password must be at least 20 characters long.',
+            ),
+          );
+        });
+      });
+
+      group('with serviceSecret and invalid length and --format yaml', () {
+        late Future commandResult;
+
+        setUp(() async {
+          commandResult = cli.run([
+            'password',
+            'set',
+            'serviceSecret',
+            'a' * 19,
+            '--project',
+            projectId,
+            '--format',
+            'yaml',
+          ]);
+        });
+
+        test('then throws ErrorExitException', () async {
+          await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+        });
+
+        test('then emits a YAML error for the validation failure', () async {
+          try {
+            await commandResult;
+          } catch (_) {}
+
+          expect(logger.lineCalls, isEmpty);
+          expect(logger.rawCalls, isEmpty);
+          expect(logger.errorCalls, isNotEmpty);
+          final payload = yamlDecode(logger.errorCalls.single.message);
+          expect(
+            payload,
+            contains(
+              'Password "serviceSecret": Password must be at least 20 characters long.',
             ),
           );
         });

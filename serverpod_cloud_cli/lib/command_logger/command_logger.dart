@@ -47,6 +47,8 @@ class CommandLogger {
 
   static const Map<String, String> windowsReplacements = {'🚀': ''};
 
+  static const _logToStderrLevelThreshold = cli.LogLevel.warning;
+
   /// The shared terminal used by inline TUI components (e.g. selection lists and
   /// scrolling output sections).
   ///
@@ -66,8 +68,15 @@ class CommandLogger {
     final cli.LogLevel logLevel = cli.LogLevel.info,
   ]) {
     final stdOutLogger = Platform.isWindows
-        ? cli.StdOutLogger(logLevel, replacements: windowsReplacements)
-        : cli.StdOutLogger(logLevel);
+        ? cli.StdOutLogger(
+            logLevel,
+            replacements: windowsReplacements,
+            logToStderrLevelThreshold: _logToStderrLevelThreshold,
+          )
+        : cli.StdOutLogger(
+            logLevel,
+            logToStderrLevelThreshold: _logToStderrLevelThreshold,
+          );
 
     return CommandLogger(stdOutLogger);
   }
@@ -81,8 +90,15 @@ class CommandLogger {
   /// This is typically used to reset logger previously set using [initializeWith].
   void reset() {
     _logger = Platform.isWindows
-        ? cli.StdOutLogger(logLevel, replacements: windowsReplacements)
-        : cli.StdOutLogger(logLevel);
+        ? cli.StdOutLogger(
+            logLevel,
+            replacements: windowsReplacements,
+            logToStderrLevelThreshold: _logToStderrLevelThreshold,
+          )
+        : cli.StdOutLogger(
+            logLevel,
+            logToStderrLevelThreshold: _logToStderrLevelThreshold,
+          );
   }
 
   /// Replaces the current logger with the given [logger].
@@ -147,7 +163,7 @@ class CommandLogger {
     _logger.warning(message, newParagraph: newParagraph);
 
     if (hint != null) {
-      _logger.info(hint, type: cli.TextLogType.hint);
+      _logger.log(hint, cli.LogLevel.warning, type: cli.TextLogType.hint);
     }
   }
 
@@ -192,7 +208,7 @@ class CommandLogger {
     );
 
     if (hint != null) {
-      _logger.info(hint, type: cli.TextLogType.hint);
+      _logger.log(hint, cli.LogLevel.error, type: cli.TextLogType.hint);
     }
   }
 

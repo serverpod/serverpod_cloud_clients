@@ -201,12 +201,13 @@ class CloudVariableListCommand
     final format = commandConfig.value(ListVariableCommandConfig.format);
 
     final output = CommandOutput(format: format, logger: logger);
-    await output.render(
+    await renderCommand(
+      output,
       operation: () => VariableCommands.listVariablesOperation(
         runner.serviceProvider.cloudApiClient,
         projectId: projectId,
       ),
-      ui: VariableListUi(),
+      textOutputUi: VariableListTextUi(),
     );
   }
 }

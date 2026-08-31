@@ -3,8 +3,7 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart'
     show FormatOption;
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/plan/plan_admin_ops.dart';
-import 'package:serverpod_cloud_cli/util/output/command_output.dart';
-import 'package:serverpod_cloud_cli/util/output/command_ui.dart';
+import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 
 class AdminPlanCommand extends CloudCliCommand {
   @override
@@ -46,11 +45,12 @@ class AdminListOrbPlansCommand
     final format = commandConfig.value(AdminListOrbPlansOption.format);
 
     final output = CommandOutput(format: format, logger: logger);
-    await output.render(
+    await renderCommand(
+      output,
       operation: () => PlanAdminCommands.listOrbPlansOperation(
         runner.serviceProvider.cloudApiClient,
       ),
-      ui: const StringColumnListUi(heading: 'External Plan ID'),
+      textOutputUi: const StringColumnListWidget(heading: 'External Plan ID'),
     );
   }
 }

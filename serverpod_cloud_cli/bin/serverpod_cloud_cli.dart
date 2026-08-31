@@ -2,13 +2,14 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:cli_tools/analytics.dart';
-import 'package:cli_tools/better_command_runner.dart' show ExitException;
-import 'package:config/config.dart';
+import 'package:cli_tools/cli_tools.dart' show ExitException;
+import 'package:config/config.dart' show UsageException;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_cloud_cli/shared/error_reporting/sentry_error_reporter.dart';
-import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart'
+    show ErrorExitException;
 import 'package:serverpod_cloud_cli/util/scloud_version.dart';
 
 void main(final List<String> args) async {
@@ -68,6 +69,7 @@ Future<void> _main(
     },
     onErrorReport: errorReporter.report,
   );
+
   try {
     await runner.run(args);
   } on UsageException catch (e, stackTrace) {

@@ -1,6 +1,5 @@
 import 'package:args/command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:test/test.dart';
@@ -165,19 +164,15 @@ void main() {
           } catch (_) {}
         });
 
-        test('then throws ExitErrorException', () async {
-          await expectLater(result, throwsA(isA<ErrorExitException>()));
-        });
-
-        test('then logs error', () async {
-          try {
-            await result;
-          } catch (_) {}
-
-          expect(
-            logger.errorCalls.last,
-            equalsErrorCall(
-              message: 'The --until value must be after --since value.',
+        test('then throws UsageException', () async {
+          await expectLater(
+            result,
+            throwsA(
+              isA<UsageException>().having(
+                (final e) => e.message,
+                'message',
+                contains('The --until value must be after --since value.'),
+              ),
             ),
           );
         });

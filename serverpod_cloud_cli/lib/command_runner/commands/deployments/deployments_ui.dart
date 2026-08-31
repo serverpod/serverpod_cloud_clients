@@ -1,20 +1,9 @@
-import 'package:serverpod_cloud_cli/util/output/output.dart';
+import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 
-class DeploymentListUi extends OutputWidget {
+class DeploymentListTextUi extends OutputWidget {
   final bool utc;
 
-  DeploymentListUi({required this.utc});
-
-  @override
-  OutputWidget build(final OutputContext context) {
-    return CommandWidget.text(textOutputUi: _DeploymentListTextUi(utc: utc));
-  }
-}
-
-class _DeploymentListTextUi extends OutputWidget {
-  final bool utc;
-
-  _DeploymentListTextUi({required this.utc});
+  DeploymentListTextUi({required this.utc});
 
   @override
   OutputWidget build(final OutputContext context) {

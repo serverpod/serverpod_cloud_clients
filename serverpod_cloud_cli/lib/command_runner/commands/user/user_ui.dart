@@ -1,23 +1,10 @@
 import 'package:ground_control_client/ground_control_client.dart' show User;
-import 'package:serverpod_cloud_cli/util/output/output.dart';
+import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 
-class ProjectUserListUi extends OutputWidget {
+class ProjectUserListTextUi extends OutputWidget {
   final String projectId;
 
-  ProjectUserListUi({required this.projectId});
-
-  @override
-  OutputWidget build(final OutputContext context) {
-    return CommandWidget.text(
-      textOutputUi: _ProjectUserListTextUi(projectId: projectId),
-    );
-  }
-}
-
-class _ProjectUserListTextUi extends OutputWidget {
-  final String projectId;
-
-  _ProjectUserListTextUi({required this.projectId});
+  ProjectUserListTextUi({required this.projectId});
 
   @override
   OutputWidget build(final OutputContext context) {

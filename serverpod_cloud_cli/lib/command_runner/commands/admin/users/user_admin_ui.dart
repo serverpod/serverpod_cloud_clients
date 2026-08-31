@@ -1,20 +1,9 @@
-import 'package:serverpod_cloud_cli/util/output/output.dart';
+import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 
-class AdminUserListUi extends OutputWidget {
+class AdminUserListTextUi extends OutputWidget {
   final bool utc;
 
-  AdminUserListUi({required this.utc});
-
-  @override
-  OutputWidget build(final OutputContext context) {
-    return CommandWidget.text(textOutputUi: _AdminUserListTextUi(utc: utc));
-  }
-}
-
-class _AdminUserListTextUi extends OutputWidget {
-  final bool utc;
-
-  _AdminUserListTextUi({required this.utc});
+  AdminUserListTextUi({required this.utc});
 
   @override
   OutputWidget build(final OutputContext context) {

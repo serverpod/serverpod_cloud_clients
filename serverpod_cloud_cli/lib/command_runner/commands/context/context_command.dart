@@ -57,11 +57,12 @@ class CloudContextListCommand extends CloudCliCommand<ContextListOption> {
     final format = commandConfig.value(ContextListOption.format);
 
     final output = CommandOutput(format: format, logger: logger);
-    await output.render(
+    await renderCommand(
+      output,
       operation: () => ProjectCommands.listProjectsOperation(
         runner.serviceProvider.cloudApiClient,
       ),
-      ui: ProjectListUi(utc: false, showArchived: false),
+      textOutputUi: ProjectListTextUi(utc: false, showArchived: false),
     );
   }
 }

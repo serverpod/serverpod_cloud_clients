@@ -12,10 +12,10 @@ import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart'
     show processCommonClientExceptions;
 import 'package:serverpod_cloud_cli/util/cli_authentication_key_manager.dart';
-import 'package:serverpod_cloud_cli/util/output/output.dart'
-    show CommandOutput, ConfirmationWidget;
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_broker.dart'
     show scloudCliConfigBroker;
+
+import 'ui/ui.dart';
 
 abstract class CloudCliCommand<O extends OptionDefinition>
     extends BetterCommand<O, void> {
@@ -100,14 +100,9 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
       await super.run();
     } on FailureException catch (e, stackTrace) {
       _processFailureException(e, stackTrace);
-    } on CloudCliUsageException catch (e, stackTrace) {
-      // TODO: Don't catch CloudCliUsageException,
-      // it's a UsageException and is handled by the caller.
-      logger.error(e.message, hint: e.hint);
-      throw ErrorExitException(e.message, e, stackTrace);
     } on UsageException catch (_) {
       rethrow;
-    } on ErrorExitException catch (_) {
+    } on ExitException catch (_) {
       rethrow;
     } on Exception catch (e, stackTrace) {
       processCommonClientExceptions(logger, e, stackTrace);
@@ -202,5 +197,63 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
     if (!confirmed) {
       throw UserAbortException();
     }
+  }
+
+  Future<OutputContext> renderCommand<T extends Object>(
+    final CommandOutput output, {
+    required final Operation<T> operation,
+    required final OutputWidget textOutputUi,
+    final OutputWidget? fallbackErrorUi,
+  }) async {
+    final exceptionHandlingUi = CommonClientExceptionsWidget(
+      elseWidget: ExceptionHandlingWidget<FailureException>(
+        errorWidgetMaker: (final e) => FailureExceptionWidget(e),
+        elseWidget: fallbackErrorUi,
+      ),
+    );
+
+    final ui = CommandWidget.text(
+      textOutputUi: textOutputUi,
+      textErrorUi: exceptionHandlingUi,
+    );
+
+    final context = await output.render(operation: operation, ui: ui);
+
+    // Re-throw exceptions as appropriate so that Sentry reporting and process exit
+    // are performed.
+    final qe = context.find<QualifiedException>();
+    if (qe != null) {
+      if (qe.exception case final FailureException f) {
+        final nested = f.nestedException;
+        if (nested != null) {
+          throw UnexpectedErrorExitException(
+            f.reason,
+            nested,
+            f.nestedStackTrace,
+          );
+        }
+        throw ErrorExitException(f.reason, null, f.nestedStackTrace);
+      }
+      Error.throwWithStackTrace(qe.exception, qe.stackTrace);
+    }
+
+    return context;
+  }
+}
+
+class FailureExceptionWidget extends OutputWidget {
+  final FailureException exception;
+
+  const FailureExceptionWidget(this.exception);
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    return TextErrorOutputWidget(
+      exception,
+      message: exception.errors.join('\n'),
+      hint: exception.hint,
+      exception: exception.nestedException,
+      stackTrace: exception.nestedStackTrace,
+    );
   }
 }

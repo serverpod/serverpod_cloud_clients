@@ -63,12 +63,13 @@ Examples
     final format = commandConfig.value(ProjectUserListOption.format);
 
     final output = CommandOutput(format: format, logger: logger);
-    await output.render(
+    await renderCommand(
+      output,
       operation: () => UserCommands.listUsersOperation(
         runner.serviceProvider.cloudApiClient,
         projectId: projectId,
       ),
-      ui: ProjectUserListUi(projectId: projectId),
+      textOutputUi: ProjectUserListTextUi(projectId: projectId),
     );
   }
 }

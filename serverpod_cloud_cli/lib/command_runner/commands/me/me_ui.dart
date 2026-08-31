@@ -1,15 +1,8 @@
 import 'package:ground_control_client/ground_control_client.dart' show User;
-import 'package:serverpod_cloud_cli/util/output/output.dart';
+import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 
-class MeUi extends OutputWidget {
-  @override
-  OutputWidget build(final OutputContext context) {
-    return CommandWidget.text(textOutputUi: const _MeTextUi());
-  }
-}
-
-class _MeTextUi extends OutputWidget {
-  const _MeTextUi();
+class MeTextUi extends OutputWidget {
+  const MeTextUi();
 
   @override
   OutputWidget build(final OutputContext context) {

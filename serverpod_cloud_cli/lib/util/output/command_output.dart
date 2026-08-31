@@ -16,20 +16,23 @@ class CommandOutput {
 
   CommandOutput({required this.format, required this.logger});
 
-  Future<void> render<O extends Object>({
+  Future<OutputContext> render<O extends Object>({
     required final Operation<O> operation,
     required final OutputWidget ui,
   }) async {
+    final context = await _doOperation(operation: operation);
+    ui.buildTree(context).renderTree(logger: logger);
+    return context;
+  }
+
+  Future<OutputContext> _doOperation<O extends Object>({
+    required final Operation<O> operation,
+  }) async {
     try {
       final data = await operation();
-      final context = OutputContext(format, data);
-      ui.buildTree(context).renderTree(logger: logger);
-    } catch (error, stackTrace) {
-      if (format.isStructured) {
-        final context = OutputContext.error(format, error);
-        ui.buildTree(context).renderTree(logger: logger);
-      }
-      Error.throwWithStackTrace(error, stackTrace);
+      return OutputContext(format, data);
+    } on Exception catch (error, stackTrace) {
+      return OutputContext.exception(format, error, stackTrace);
     }
   }
 
