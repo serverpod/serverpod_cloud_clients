@@ -28,6 +28,7 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/cli_version_checker.d
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
+import 'package:serverpod_cloud_cli/shared/base_command.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/activation_checker.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
@@ -49,12 +50,14 @@ import 'completion/completion_script_completely.dart';
 /// Neither contains option values or positional arguments.
 /// [cloudUserId] is the id of the logged in cloud user, or null when the
 /// user is not logged in.
+/// [baseCommand] is the invocation path the CLI was run through.
 typedef CliRunContext = ({
   bool analyticsConsent,
   String? command,
   List<String> flags,
   String apiServerUrl,
   String? cloudUserId,
+  BaseCommandInvocation baseCommand,
 });
 
 typedef OnRunContextResolved = void Function(CliRunContext context);
@@ -86,6 +89,9 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
 
   /// If true, the admin subcommands are enabled.
   final bool _adminUserMode;
+
+  /// The invocation path the CLI was run through, as reported to telemetry.
+  final BaseCommandInvocation _baseCommandInvocation;
 
   final VersionCommand _versionCommand;
 
@@ -135,6 +141,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   CloudCliCommandRunner._({
     required this.logger,
     required this.version,
+    required final String baseCommand,
     required final CloudCliServiceProvider serviceProvider,
     required final bool enableAnalyticsForAllEnvs,
     required final bool adminUserMode,
@@ -152,8 +159,9 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
        _versionCommand = VersionCommand(logger: logger),
        _enableAnalyticsForAllEnvs = enableAnalyticsForAllEnvs,
        _adminUserMode = adminUserMode,
+       _baseCommandInvocation = BaseCommandInvocation.from(baseCommand),
        super(
-         'scloud',
+         baseCommand,
          'Manage your Serverpod Cloud projects',
          globalOptions: GlobalOption.values,
          wrapTextColumn: logger.wrapTextColumn,
@@ -164,6 +172,15 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
            completionScriptCarapace,
          ],
        );
+
+  /// The environment variable that overrides the base command name shown in
+  /// user-facing text.
+  ///
+  /// It holds the literal display name, such as `serverpod cloud`, and is
+  /// written by the wrapper that invokes this CLI under another name - above
+  /// all the `serverpod cloud` command of the Serverpod framework. The value
+  /// is used verbatim, and an unset or empty value means [defaultBaseCommand].
+  static const baseCommandEnvName = 'SERVERPOD_CLOUD_BASE_COMMAND';
 
   static CloudCliCommandRunner create({
     required final CommandLogger logger,
@@ -176,6 +193,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     bool? adminUserMode,
     final CliUpdater? cliUpdater,
     final Version? attemptedUpdateVersion,
+    String? baseCommand,
   }) {
     adminUserMode ??=
         bool.tryParse(
@@ -184,9 +202,15 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
         ) ??
         false;
 
+    baseCommand ??= Platform.environment[baseCommandEnvName];
+    final resolvedBaseCommand = baseCommand == null || baseCommand.isEmpty
+        ? defaultBaseCommand
+        : baseCommand;
+
     final runner = CloudCliCommandRunner._(
       logger: logger,
       version: version ?? cliVersion,
+      baseCommand: resolvedBaseCommand,
       serviceProvider: serviceProvider ?? CloudCliServiceProvider(),
       enableAnalyticsForAllEnvs: enableAnalyticsForAllEnvs,
       adminUserMode: adminUserMode,
@@ -408,6 +432,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
       cloudUserId: CliRunContextResolver.fetchCloudUserId(
         globalConfig.scloudDir.path,
       ),
+      baseCommand: _baseCommandInvocation,
     );
   }
 
@@ -417,6 +442,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     final Map<String, dynamic> properties = const {},
   ]) {
     final enrichedProperties = Map<String, dynamic>.from(properties);
+    enrichedProperties['base_command'] = _baseCommandInvocation.reportedName;
     final globalConfig = _globalConfiguration;
     final cloudUserId = globalConfig != null
         ? CliRunContextResolver.fetchCloudUserId(globalConfig.scloudDir.path)

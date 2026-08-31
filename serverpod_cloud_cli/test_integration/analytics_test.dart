@@ -305,4 +305,52 @@ void main() {
       });
     });
   });
+
+  group('Given the CLI invoked under a base command name', () {
+    late String settingsDir;
+
+    setUp(() async {
+      await d.dir('base_command_settings_dir').create();
+      settingsDir = p.join(d.sandbox, 'base_command_settings_dir');
+    });
+
+    CloudCliCommandRunner createCli(final String baseCommand) {
+      return CloudCliCommandRunner.create(
+        logger: logger,
+        baseCommand: baseCommand,
+        serviceProvider: CloudCliServiceProvider(
+          apiClientFactory: (final globalCfg) => client,
+        ),
+        onAnalyticsEvent: (final event, final properties) {
+          analyticsEvents.add(event);
+          analyticsProperties.add(Map<String, dynamic>.from(properties));
+        },
+      );
+    }
+
+    group('and the name is a known invocation', () {
+      test('when invoking command with analytics'
+          ' then analytics properties report that base command', () async {
+        final cli = createCli('serverpod cloud');
+        await cli.run(['--config-dir', settingsDir, 'version', '--analytics']);
+
+        expect(analyticsProperties, hasLength(1));
+        expect(
+          analyticsProperties.single['base_command'],
+          equals('serverpod cloud'),
+        );
+      });
+    });
+
+    group('and the name is an unknown invocation', () {
+      test('when invoking command with analytics'
+          ' then analytics properties report it as other', () async {
+        final cli = createCli('some-wrapper');
+        await cli.run(['--config-dir', settingsDir, 'version', '--analytics']);
+
+        expect(analyticsProperties, hasLength(1));
+        expect(analyticsProperties.single['base_command'], equals('other'));
+      });
+    });
+  });
 }

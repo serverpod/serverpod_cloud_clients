@@ -109,30 +109,31 @@ class CloudDeployCommand extends CloudCliCommand<DeployCommandOption> {
   String get category => CommandCategories.control;
 
   @override
-  String get usageExamples => '''\n
+  String get usageExamples =>
+      '''\n
 Examples
 
   Deploy your project to the cloud
 
-    \$ scloud deploy
+    \$ $baseCommand deploy
 
   Preview the file tree that will be uploaded
   
-    \$ scloud deploy --show-files
+    \$ $baseCommand deploy --show-files
   
   The output shows files that will be included in the deployment, as well as files that are ignored (marked with "(ignored)").
   
   This is useful for verifying that your .gitignore and .scloudignore files are working as expected. You can combine it with --wet-run to preview the file tree without actually deploying:
 
-    \$ scloud deploy --wet-run --show-files
+    \$ $baseCommand deploy --wet-run --show-files
 
   Save the deployment zip file locally
 
-    \$ scloud deploy --output deployment.zip --wet-run
+    \$ $baseCommand deploy --output deployment.zip --wet-run
 
   Save the deployment zip and still upload it (unless --wet-run is set)
 
-    \$ scloud deploy --output deployment.zip
+    \$ $baseCommand deploy --output deployment.zip
 
 ''';
 
@@ -169,6 +170,7 @@ Examples
       runner.serviceProvider.cloudApiClient,
       runner.serviceProvider.fileUploaderFactory,
       logger: logger,
+      baseCommand: baseCommand,
       projectId: projectId,
       projectDir: projectDirectory.path,
       projectConfigFilePath: configFilePath,

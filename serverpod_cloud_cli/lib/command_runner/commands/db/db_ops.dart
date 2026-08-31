@@ -6,6 +6,7 @@ abstract class DbCommands {
   static Future<void> wipeDatabase(
     final Client cloudApiClient, {
     required final CommandLogger logger,
+    required final String baseCommand,
     required final String projectId,
     required final bool skipConfirmation,
   }) async {
@@ -36,7 +37,7 @@ Do you want to proceed?''', defaultValue: false);
       );
 
       logger.success('Database wiped successfully.');
-      logger.info('Redeploy is needed, run: scloud deploy');
+      logger.info('Redeploy is needed, run: $baseCommand deploy');
     } on Exception catch (e, stackTrace) {
       throw FailureException.nested(e, stackTrace, 'Failed to wipe database');
     }

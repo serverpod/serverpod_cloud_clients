@@ -80,48 +80,48 @@ Examples
 
   View the most recent logs (default limit is $_defaultLogLimit records).
   
-    \$ scloud log
+    \$ $baseCommand log
 
 
   View the most recent logs with UTC timestamps and a custom limit.
   
-    \$ scloud log --utc --limit 100
+    \$ $baseCommand log --utc --limit 100
 
 
   Stream logs in real-time.
   
-    \$ scloud log --tail
+    \$ $baseCommand log --tail
 
 
   View logs from the last hour using duration.
   
-    \$ scloud log 1h
+    \$ $baseCommand log 1h
 
-    \$ scloud log --since 1h
+    \$ $baseCommand log --since 1h
 
 
   View logs since a specific time using ISO date format:
   
-    \$ scloud log --since 2025-01-15T14:00:00Z
+    \$ $baseCommand log --since 2025-01-15T14:00:00Z
 
-    \$ scloud log --since "2025-01-15 14:00"
+    \$ $baseCommand log --since "2025-01-15 14:00"
 
-    \$ scloud log --since 2025-01-15
+    \$ $baseCommand log --since 2025-01-15
 
 
   View logs in a time range using durations:
   
-    \$ scloud log --since 1h --until 5m
+    \$ $baseCommand log --since 1h --until 5m
 
 
   View logs in a time range using ISO dates:
   
-    \$ scloud log --since 2025-01-15 --until 2025-01-16
+    \$ $baseCommand log --since 2025-01-15 --until 2025-01-16
 
 
   Mix ISO dates and durations:
   
-    \$ scloud log --since 2025-01-15T14:00:00Z --until 30m
+    \$ $baseCommand log --since 2025-01-15T14:00:00Z --until 30m
 
 ''';
 

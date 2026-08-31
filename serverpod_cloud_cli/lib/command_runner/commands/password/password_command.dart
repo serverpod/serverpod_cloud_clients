@@ -12,12 +12,13 @@ class CloudPasswordCommand extends CloudCliCommand {
   final name = 'password';
 
   @override
-  final description = '''Manage Serverpod Cloud passwords.
+  String get description =>
+      '''Manage Serverpod Cloud passwords.
 
 The passwords are automatically prefixed with SERVERPOD_PASSWORD_ and will be injected as environment variables.
 Passwords defined by this command can be accessed with the getPassword function.
 
-If you need to set a secret without the SERVERPOD_PASSWORD_ prefix, you can do so by using `scloud variable set --secret`.
+If you need to set a secret without the SERVERPOD_PASSWORD_ prefix, you can do so by using `$baseCommand variable set --secret`.
 ''';
 
   @override

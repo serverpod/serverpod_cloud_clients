@@ -66,6 +66,7 @@ Future<void> _main(
       errorReporter.flags = context.flags;
       errorReporter.apiServerUrl = context.apiServerUrl;
       errorReporter.cloudUserId = context.cloudUserId;
+      errorReporter.baseCommand = context.baseCommand;
     },
     onErrorReport: errorReporter.report,
   );

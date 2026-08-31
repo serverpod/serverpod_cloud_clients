@@ -131,7 +131,7 @@ commands:
         commands:
           - name: list
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
               --format=: "Selects the command output format."
             completion:
               flag:
@@ -139,12 +139,12 @@ commands:
 
           - name: invite
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
               -u, --user=!: "The user email address. Can be passed as the first argument."
 
           - name: revoke
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
               -u, --user=!: "The user email address. Can be passed as the first argument."
 
   - name: context
@@ -167,7 +167,7 @@ commands:
 
   - name: deploy
     flags:
-      -p, --project=!: "The ID of the project. Can be passed as the first argument.\nCan be omitted for existing projects that are linked (see `scloud project link --help`)."
+      -p, --project=!: "The ID of the project. Can be passed as the first argument.\nCan be omitted for existing projects that are linked (see the \"project link\" command)."
       -c, --concurrency=: "Number of concurrent files processed when zipping the project."
       --wet-run: "Perform every step except the deployment, leaving the hosted application untouched. Local files may still be modified."
       --show-files: "Display the file tree that will be uploaded."
@@ -186,7 +186,7 @@ commands:
     commands:
       - name: list
         flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
           --format=: "Selects the command output format."
         completion:
           flag:
@@ -194,7 +194,7 @@ commands:
 
       - name: set
         flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
           --name=!: "The name of the environment variable. Can be passed as the first argument."
           --value=: "The value of the environment variable. Can be passed as the second argument."
           --from-file=: "The name of the file with the environment variable value."
@@ -208,7 +208,7 @@ commands:
 
       - name: unset
         flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
           --name=!: "The name of the environment variable. Can be passed as the first argument."
 
   - name: domain
@@ -216,7 +216,7 @@ commands:
     commands:
       - name: attach
         flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
           --name=!: "The custom domain name. Can be passed as the first argument."
           -t, --target=!: "The Serverpod server target of the custom domain, only one can be specified."
         completion:
@@ -225,21 +225,21 @@ commands:
 
       - name: list
         flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
 
       - name: detach
         flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
           --name=!: "The custom domain name. Can be passed as the first argument."
 
       - name: verify
         flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
           --name=!: "The custom domain name. Can be passed as the first argument."
 
   - name: log
     flags:
-      -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+      -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
       --limit=: "The maximum number of log records to fetch."
       -u, --utc: "Display timestamps in UTC timezone instead of local."
       --no-utc: "Display timestamps in UTC timezone instead of local."
@@ -251,7 +251,7 @@ commands:
 
   - name: status
     flags:
-      -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+      -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
       -u, --utc: "Display timestamps in UTC timezone instead of local."
       --no-utc: "Display timestamps in UTC timezone instead of local."
     exclusiveFlags:
@@ -262,7 +262,7 @@ commands:
     commands:
       - name: show
         flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
           -u, --utc: "Display timestamps in UTC timezone instead of local."
           --no-utc: "Display timestamps in UTC timezone instead of local."
           --deploy=: "View a specific deployment, with uuid or sequence number, 0 for latest. Can be passed as the first argument."
@@ -275,7 +275,7 @@ commands:
 
       - name: list
         flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
           --limit=: "The maximum number of records to fetch."
           -u, --utc: "Display timestamps in UTC timezone instead of local."
           --no-utc: "Display timestamps in UTC timezone instead of local."
@@ -288,7 +288,7 @@ commands:
 
       - name: build-log
         flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
           -u, --utc: "Display timestamps in UTC timezone instead of local."
           --no-utc: "Display timestamps in UTC timezone instead of local."
           --deploy=: "View a specific deployment, with uuid or sequence number, 0 for latest. Can be passed as the first argument."
@@ -300,7 +300,7 @@ commands:
         commands:
           - name: set
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
               --name=!: "The name of the build secret. Can be passed as the first argument."
               --value=: "The value of the build secret. Can be passed as the second argument."
               --from-file=: "The name of the file with the build secret value."
@@ -312,7 +312,7 @@ commands:
 
           - name: list
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
               --format=: "Selects the command output format."
             completion:
               flag:
@@ -320,7 +320,7 @@ commands:
 
           - name: unset
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
               --name=!: "The name of the build secret. Can be passed as the first argument."
 
   - name: password
@@ -328,7 +328,7 @@ commands:
     commands:
       - name: list
         flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
           --format=: "Selects the command output format."
         completion:
           flag:
@@ -336,7 +336,7 @@ commands:
 
       - name: set
         flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
           --name=!: "The name of the password (without SERVERPOD_PASSWORD_ prefix). Can be passed as the first argument."
           --value=: "The value of the password. Can be passed as the second argument."
           --from-file=: "The name of the file with the password value."
@@ -348,7 +348,7 @@ commands:
 
       - name: unset
         flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
           --name=!: "The name of the password (without SERVERPOD_PASSWORD_ prefix). Can be passed as the first argument."
           --format=: "Selects the command output format."
         completion:
@@ -360,19 +360,19 @@ commands:
     commands:
       - name: connection
         flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
 
       - name: user
 
         commands:
           - name: create
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
               --username=!: "The username of the DB user to create."
 
           - name: reset-password
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
               --username=!: "The username of the DB user whose password is reset."
 
       - name: backup
@@ -380,7 +380,7 @@ commands:
         commands:
           - name: create
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
               --name=: "An optional name for the snapshot."
               --expire-in=: "How long to keep the snapshot before it is automatically deleted (e.g. \"7d\", \"24h\"). Kept indefinitely if omitted."
               -u, --utc: "Display timestamps in UTC timezone instead of local."
@@ -390,7 +390,7 @@ commands:
 
           - name: list
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
               -u, --utc: "Display timestamps in UTC timezone instead of local."
               --no-utc: "Display timestamps in UTC timezone instead of local."
             exclusiveFlags:
@@ -398,12 +398,12 @@ commands:
 
           - name: delete
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
               --snapshot=!: "The ID of the snapshot."
 
           - name: restore
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
               --snapshot=!: "The ID of the snapshot."
 
       - name: schedule
@@ -411,7 +411,7 @@ commands:
         commands:
           - name: set
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
               -f, --frequency=!: "How often a snapshot is taken."
               --day=: "The day for a weekly (1-7) or monthly (1-31) schedule. Defaults to 1. Not applicable to a daily schedule."
               --hour=: "The hour of the day (0-23) to take the snapshot. Defaults to 0."
@@ -422,15 +422,15 @@ commands:
 
           - name: show
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
 
           - name: unset
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
 
       - name: wipe
         flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see `scloud project link --help`) or if a global project context is set (see `scloud context set --help`)."
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
 
   - name: launch
     flags:

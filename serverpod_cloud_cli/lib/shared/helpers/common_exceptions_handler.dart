@@ -10,6 +10,7 @@ import 'package:serverpod_cloud_cli/shared/helpers/console_urls.dart';
 /// needs to continue processing the exception.
 void processCommonClientExceptions(
   final CommandLogger logger,
+  final String baseCommand,
   final Exception e,
   final StackTrace stackTrace,
 ) {
@@ -20,9 +21,9 @@ void processCommonClientExceptions(
       );
       logger.terminalCommand(
         message: 'Run the following commands to re-authenticate:',
-        'scloud auth logout',
+        '$baseCommand auth logout',
       );
-      logger.terminalCommand('scloud auth login');
+      logger.terminalCommand('$baseCommand auth login');
 
       throw ErrorExitException(
         'The credentials for this session seem to no longer be valid.',

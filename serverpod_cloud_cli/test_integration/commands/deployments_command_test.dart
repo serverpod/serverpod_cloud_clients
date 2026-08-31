@@ -11,6 +11,7 @@ import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployme
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/status/status_ops.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/shared/base_command.dart';
 import 'package:test/test.dart';
 import 'package:yaml_codec/yaml_codec.dart';
 
@@ -1123,6 +1124,7 @@ Cloud build failed. 💥''');
           final tailFuture = StatusCommands.tailDeploymentStatus(
             client,
             logger: logger,
+            baseCommand: defaultBaseCommand,
             cloudCapsuleId: projectId,
             attemptId: attemptId,
             skipUploadStage: true,
@@ -1212,6 +1214,7 @@ Cloud build failed. 💥''');
           final tailFuture = StatusCommands.tailDeploymentStatus(
             client,
             logger: logger,
+            baseCommand: defaultBaseCommand,
             cloudCapsuleId: projectId,
             attemptId: streamingAttemptId,
             skipUploadStage: true,
@@ -1244,6 +1247,7 @@ Cloud build failed. 💥''');
           final tailFuture = StatusCommands.tailDeploymentStatus(
             client,
             logger: logger,
+            baseCommand: defaultBaseCommand,
             cloudCapsuleId: projectId,
             attemptId: streamingAttemptId,
             skipUploadStage: true,
@@ -1273,6 +1277,7 @@ Cloud build failed. 💥''');
           final tailFuture = StatusCommands.tailDeploymentStatus(
             client,
             logger: logger,
+            baseCommand: defaultBaseCommand,
             cloudCapsuleId: projectId,
             attemptId: streamingAttemptId,
             skipUploadStage: true,
@@ -1311,6 +1316,7 @@ Cloud build failed. 💥''');
           final tailFuture = StatusCommands.tailDeploymentStatus(
             client,
             logger: logger,
+            baseCommand: defaultBaseCommand,
             cloudCapsuleId: projectId,
             attemptId: streamingAttemptId,
             skipUploadStage: true,
@@ -1348,6 +1354,7 @@ Cloud build failed. 💥''');
           final tailFuture = StatusCommands.tailDeploymentStatus(
             client,
             logger: logger,
+            baseCommand: defaultBaseCommand,
             cloudCapsuleId: projectId,
             attemptId: streamingAttemptId,
             skipUploadStage: true,

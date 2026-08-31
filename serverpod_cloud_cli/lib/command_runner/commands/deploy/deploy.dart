@@ -35,6 +35,7 @@ abstract class Deploy {
     final Client cloudApiClient,
     final FileUploaderFactory fileUploaderFactory, {
     required final CommandLogger logger,
+    required final String baseCommand,
     required final String projectId,
     required final String projectDir,
     required final String projectConfigFilePath,
@@ -291,7 +292,7 @@ abstract class Deploy {
 
     if (skipTailingStatus) {
       logger.terminalCommand(
-        'scloud deployment show',
+        '$baseCommand deployment show',
         message: 'To view the deployment status, run this command:',
         newParagraph: true,
       );
@@ -304,13 +305,14 @@ abstract class Deploy {
         error: 'Failed to get deployment status.',
         hint:
             'Run this command to see recent deployments: '
-            'scloud deployment list',
+            '$baseCommand deployment list',
       );
     }
 
     await StatusCommands.tailDeploymentStatus(
       cloudApiClient,
       logger: logger,
+      baseCommand: baseCommand,
       cloudCapsuleId: projectId,
       attemptId: attemptId,
       skipUploadStage: true,

@@ -60,6 +60,11 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
   @override
   CloudCliCommandRunner get runner => super.runner as CloudCliCommandRunner;
 
+  /// The base command name the CLI was invoked under, e.g. `scloud`.
+  ///
+  /// Valid once the command has been added to the command runner.
+  String get baseCommand => runner.executableName;
+
   /// Gets the current global configuration.
   /// Valid after the command runner has started running.
   GlobalConfiguration get globalConfiguration => runner.globalConfiguration;
@@ -105,7 +110,7 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
     } on ExitException catch (_) {
       rethrow;
     } on Exception catch (e, stackTrace) {
-      processCommonClientExceptions(logger, e, stackTrace);
+      processCommonClientExceptions(logger, baseCommand, e, stackTrace);
       logger.error(
         'Error when running command `$name`',
         exception: e,
@@ -125,6 +130,7 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
     if (nested != null) {
       processCommonClientExceptions(
         logger,
+        baseCommand,
         nested,
         e.nestedStackTrace ?? stackTrace,
       );
@@ -206,6 +212,7 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
     final OutputWidget? fallbackErrorUi,
   }) async {
     final exceptionHandlingUi = CommonClientExceptionsWidget(
+      baseCommand: baseCommand,
       elseWidget: ExceptionHandlingWidget<FailureException>(
         errorWidgetMaker: (final e) => FailureExceptionWidget(e),
         elseWidget: fallbackErrorUi,

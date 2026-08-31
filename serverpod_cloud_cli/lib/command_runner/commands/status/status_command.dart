@@ -30,17 +30,18 @@ class CloudStatusCommand extends CloudCliCommand<StatusOption> {
   String get category => CommandCategories.control;
 
   @override
-  String get usageExamples => '''\n
+  String get usageExamples =>
+      '''\n
 Examples
 
   Show the live status of the project's podlets.
 
-    \$ scloud status
+    \$ $baseCommand status
 
 
   Show the live status of a specific project's podlets.
 
-    \$ scloud status --project my-project
+    \$ $baseCommand status --project my-project
 
 ''';
 
@@ -58,6 +59,7 @@ Examples
       await RuntimeStatusCommands.showRuntimeStatus(
         runner.serviceProvider.cloudApiClient,
         logger: logger,
+        baseCommand: baseCommand,
         projectId: projectId,
         inUtc: inUtc,
       );

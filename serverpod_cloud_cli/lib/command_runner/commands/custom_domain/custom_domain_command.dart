@@ -14,12 +14,13 @@ class CloudCustomDomainCommand extends CloudCliCommand {
   final name = 'domain';
 
   @override
-  final description = r'''
+  String get description =>
+      '''
 Bring your own domain to Serverpod Cloud. 
 
 Get started by attaching a custom domain to your project with the command:
 
-  $ scloud domain attach example.com <target> --project <project-id>
+  \$ $baseCommand domain attach example.com <target> --project <project-id>
 
 The valid targets are:
 - api: Serverpod endpoints
@@ -196,7 +197,7 @@ The valid targets are:
 
     logger.terminalCommand(
       newParagraph: true,
-      'scloud domain list --project $projectId',
+      '$baseCommand domain list --project $projectId',
     );
 
     logger.list(title: 'Additional context', [
@@ -207,7 +208,7 @@ The valid targets are:
 
     logger.terminalCommand(
       newParagraph: true,
-      'scloud domain verify $domainName --project $projectId',
+      '$baseCommand domain verify $domainName --project $projectId',
     );
 
     logger.info(' ', newParagraph: true);

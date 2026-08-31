@@ -1,6 +1,7 @@
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart';
 import 'package:ground_control_client/ground_control_client.dart';
+import 'package:serverpod_cloud_cli/shared/base_command.dart';
 import 'package:test/test.dart';
 
 import '../test_utils/command_logger_matchers.dart';
@@ -19,6 +20,7 @@ void main() {
     expect(
       () => processCommonClientExceptions(
         logger,
+        defaultBaseCommand,
         ServerpodClientUnauthorized(),
         StackTrace.current,
       ),
@@ -49,6 +51,7 @@ void main() {
     expect(
       () => processCommonClientExceptions(
         logger,
+        defaultBaseCommand,
         UnauthorizedException(message: 'some error'),
         StackTrace.current,
       ),
@@ -69,6 +72,7 @@ void main() {
     expect(
       () => processCommonClientExceptions(
         logger,
+        defaultBaseCommand,
         ProcurementDeniedException(
           message:
               'The maximum number of projects that can be created has been reached (5).',
@@ -97,6 +101,7 @@ void main() {
     expect(
       () => processCommonClientExceptions(
         logger,
+        defaultBaseCommand,
         NotFoundException(message: 'No such project.'),
         StackTrace.current,
       ),
@@ -118,6 +123,7 @@ void main() {
     expect(
       () => processCommonClientExceptions(
         logger,
+        defaultBaseCommand,
         Exception(),
         StackTrace.current,
       ),

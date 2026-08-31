@@ -10,6 +10,7 @@ abstract class RuntimeStatusCommands {
   static Future<void> showRuntimeStatus(
     final Client cloudApiClient, {
     required final CommandLogger logger,
+    required final String baseCommand,
     required final String projectId,
     final bool inUtc = false,
   }) async {
@@ -19,6 +20,7 @@ abstract class RuntimeStatusCommands {
 
     _RuntimeStatusPanel(
       logger: logger,
+      baseCommand: baseCommand,
       projectId: projectId,
       runtime: runtime,
       inUtc: inUtc,
@@ -36,12 +38,14 @@ class _RuntimeStatusPanel {
   static const _commandStyle = cli.AnsiStyle.cyan;
 
   final CommandLogger logger;
+  final String baseCommand;
   final String projectId;
   final CapsuleRuntimeStatus runtime;
   final bool inUtc;
 
   _RuntimeStatusPanel({
     required this.logger,
+    required this.baseCommand,
     required this.projectId,
     required this.runtime,
     required this.inUtc,
@@ -214,12 +218,12 @@ class _RuntimeStatusPanel {
         case _LatestDeployPhase.building:
           return (
             message: 'Follow the build:',
-            command: 'scloud deployment show',
+            command: '$baseCommand deployment show',
           );
         case _LatestDeployPhase.failed || _LatestDeployPhase.cancelled:
           return (
             message: 'See what went wrong:',
-            command: 'scloud deployment show',
+            command: '$baseCommand deployment show',
           );
         case null:
           break;
@@ -230,15 +234,15 @@ class _RuntimeStatusPanel {
       CapsuleState.ready => null,
       CapsuleState.progressing => (
         message: 'Follow the rollout:',
-        command: 'scloud deployment show',
+        command: '$baseCommand deployment show',
       ),
       CapsuleState.degraded => (
         message: 'Check for errors:',
-        command: 'scloud log --tail',
+        command: '$baseCommand log --tail',
       ),
       CapsuleState.unavailable => (
         message: 'Check for crash output:',
-        command: 'scloud log',
+        command: '$baseCommand log',
       ),
       CapsuleState.suspended => (
         message: 'Resume the project from the Serverpod Cloud console.',
@@ -246,7 +250,7 @@ class _RuntimeStatusPanel {
       ),
       CapsuleState.notProvisioned => (
         message: 'Launch your project:',
-        command: 'scloud launch',
+        command: '$baseCommand launch',
       ),
       CapsuleState.unknown => (
         message: 'If this persists, contact Serverpod support.',

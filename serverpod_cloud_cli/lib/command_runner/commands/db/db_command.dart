@@ -238,6 +238,7 @@ class CloudDbWipeCommand extends CloudCliCommand<DbWipeOption> {
     await DbCommands.wipeDatabase(
       runner.serviceProvider.cloudApiClient,
       logger: logger,
+      baseCommand: baseCommand,
       projectId: projectId,
       skipConfirmation: skipConfirmation,
     );
@@ -366,6 +367,7 @@ class CloudDbBackupListCommand extends CloudCliCommand<DbBackupListOption> {
     await DbBackupCommands.listSnapshots(
       runner.serviceProvider.cloudApiClient,
       logger: logger,
+      baseCommand: baseCommand,
       projectId: commandConfig.value(DbBackupListOption.projectId),
       utc: commandConfig.value(DbBackupListOption.utc),
     );
@@ -555,6 +557,7 @@ class CloudDbScheduleShowCommand extends CloudCliCommand<DbScheduleShowOption> {
     await DbBackupCommands.showSchedule(
       runner.serviceProvider.cloudApiClient,
       logger: logger,
+      baseCommand: baseCommand,
       projectId: commandConfig.value(DbScheduleShowOption.projectId),
     );
   }
