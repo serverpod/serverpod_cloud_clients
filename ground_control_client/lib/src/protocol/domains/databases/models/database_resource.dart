@@ -10,15 +10,17 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../domains/databases/models/database_provider.dart' as _i2;
-import '../../../domains/databases/models/database_connection.dart' as _i3;
-import '../../../domains/databases/models/database_scaling.dart' as _i4;
-import '../../../domains/databases/models/database_quota.dart' as _i5;
-import 'package:ground_control_client/src/protocol/protocol.dart' as _i6;
+
+import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../domains/databases/models/database_connection.dart'
+    as _ige3u73h;
+import '../../../domains/databases/models/database_provider.dart' as _ikd8hsk5;
+import '../../../domains/databases/models/database_quota.dart' as _iq6ve2ql;
+import '../../../domains/databases/models/database_scaling.dart' as _io14rsas;
 
 abstract class DatabaseResource
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   DatabaseResource._({
     this.id,
     required this.cloudCapsuleId,
@@ -35,10 +37,10 @@ abstract class DatabaseResource
     int? id,
     required String cloudCapsuleId,
     required String providerId,
-    required _i2.DatabaseProvider provider,
-    required _i3.DatabaseConnection connection,
-    required _i4.DatabaseScaling scaling,
-    required _i5.DatabaseQuota quota,
+    required _ikd8hsk5.DatabaseProvider provider,
+    required _ige3u73h.DatabaseConnection connection,
+    required _io14rsas.DatabaseScaling scaling,
+    required _iq6ve2ql.DatabaseQuota quota,
     String? metricsExportEndpoint,
     String? metricsExportSecretFingerprint,
   }) = _DatabaseResourceImpl;
@@ -48,16 +50,17 @@ abstract class DatabaseResource
       id: jsonSerialization['id'] as int?,
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
       providerId: jsonSerialization['providerId'] as String,
-      provider: _i2.DatabaseProvider.fromJson(
+      provider: _ikd8hsk5.DatabaseProvider.fromJson(
         (jsonSerialization['provider'] as String),
       ),
-      connection: _i6.Protocol().deserialize<_i3.DatabaseConnection>(
-        jsonSerialization['connection'],
-      ),
-      scaling: _i6.Protocol().deserialize<_i4.DatabaseScaling>(
+      connection: _iod2a87h.Protocol()
+          .deserialize<_ige3u73h.DatabaseConnection>(
+            jsonSerialization['connection'],
+          ),
+      scaling: _iod2a87h.Protocol().deserialize<_io14rsas.DatabaseScaling>(
         jsonSerialization['scaling'],
       ),
-      quota: _i6.Protocol().deserialize<_i5.DatabaseQuota>(
+      quota: _iod2a87h.Protocol().deserialize<_iq6ve2ql.DatabaseQuota>(
         jsonSerialization['quota'],
       ),
       metricsExportEndpoint:
@@ -76,13 +79,13 @@ abstract class DatabaseResource
 
   String providerId;
 
-  _i2.DatabaseProvider provider;
+  _ikd8hsk5.DatabaseProvider provider;
 
-  _i3.DatabaseConnection connection;
+  _ige3u73h.DatabaseConnection connection;
 
-  _i4.DatabaseScaling scaling;
+  _io14rsas.DatabaseScaling scaling;
 
-  _i5.DatabaseQuota quota;
+  _iq6ve2ql.DatabaseQuota quota;
 
   String? metricsExportEndpoint;
 
@@ -90,15 +93,15 @@ abstract class DatabaseResource
 
   /// Returns a shallow copy of this [DatabaseResource]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   DatabaseResource copyWith({
     int? id,
     String? cloudCapsuleId,
     String? providerId,
-    _i2.DatabaseProvider? provider,
-    _i3.DatabaseConnection? connection,
-    _i4.DatabaseScaling? scaling,
-    _i5.DatabaseQuota? quota,
+    _ikd8hsk5.DatabaseProvider? provider,
+    _ige3u73h.DatabaseConnection? connection,
+    _io14rsas.DatabaseScaling? scaling,
+    _iq6ve2ql.DatabaseQuota? quota,
     String? metricsExportEndpoint,
     String? metricsExportSecretFingerprint,
   });
@@ -140,7 +143,7 @@ abstract class DatabaseResource
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
@@ -151,10 +154,10 @@ class _DatabaseResourceImpl extends DatabaseResource {
     int? id,
     required String cloudCapsuleId,
     required String providerId,
-    required _i2.DatabaseProvider provider,
-    required _i3.DatabaseConnection connection,
-    required _i4.DatabaseScaling scaling,
-    required _i5.DatabaseQuota quota,
+    required _ikd8hsk5.DatabaseProvider provider,
+    required _ige3u73h.DatabaseConnection connection,
+    required _io14rsas.DatabaseScaling scaling,
+    required _iq6ve2ql.DatabaseQuota quota,
     String? metricsExportEndpoint,
     String? metricsExportSecretFingerprint,
   }) : super._(
@@ -171,16 +174,16 @@ class _DatabaseResourceImpl extends DatabaseResource {
 
   /// Returns a shallow copy of this [DatabaseResource]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   DatabaseResource copyWith({
     Object? id = _Undefined,
     String? cloudCapsuleId,
     String? providerId,
-    _i2.DatabaseProvider? provider,
-    _i3.DatabaseConnection? connection,
-    _i4.DatabaseScaling? scaling,
-    _i5.DatabaseQuota? quota,
+    _ikd8hsk5.DatabaseProvider? provider,
+    _ige3u73h.DatabaseConnection? connection,
+    _io14rsas.DatabaseScaling? scaling,
+    _iq6ve2ql.DatabaseQuota? quota,
     Object? metricsExportEndpoint = _Undefined,
     Object? metricsExportSecretFingerprint = _Undefined,
   }) {

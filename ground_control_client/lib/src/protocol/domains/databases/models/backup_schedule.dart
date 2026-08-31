@@ -10,12 +10,13 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../domains/databases/models/backup_frequency.dart' as _i2;
+
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../domains/databases/models/backup_frequency.dart' as _inc79lxx;
 
 /// An automated backup (snapshot) schedule for a database.
 abstract class BackupSchedule
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   BackupSchedule._({
     required this.frequency,
     this.hour,
@@ -24,7 +25,7 @@ abstract class BackupSchedule
   });
 
   factory BackupSchedule({
-    required _i2.BackupFrequency frequency,
+    required _inc79lxx.BackupFrequency frequency,
     int? hour,
     int? day,
     Duration? retention,
@@ -32,19 +33,19 @@ abstract class BackupSchedule
 
   factory BackupSchedule.fromJson(Map<String, dynamic> jsonSerialization) {
     return BackupSchedule(
-      frequency: _i2.BackupFrequency.fromJson(
+      frequency: _inc79lxx.BackupFrequency.fromJson(
         (jsonSerialization['frequency'] as String),
       ),
       hour: jsonSerialization['hour'] as int?,
       day: jsonSerialization['day'] as int?,
       retention: jsonSerialization['retention'] == null
           ? null
-          : _i1.DurationJsonExtension.fromJson(jsonSerialization['retention']),
+          : _isc.DurationJsonExtension.fromJson(jsonSerialization['retention']),
     );
   }
 
   /// How often a snapshot is taken.
-  _i2.BackupFrequency frequency;
+  _inc79lxx.BackupFrequency frequency;
 
   /// The hour of the day (0-23) to take the snapshot, if applicable.
   int? hour;
@@ -58,9 +59,9 @@ abstract class BackupSchedule
 
   /// Returns a shallow copy of this [BackupSchedule]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   BackupSchedule copyWith({
-    _i2.BackupFrequency? frequency,
+    _inc79lxx.BackupFrequency? frequency,
     int? hour,
     int? day,
     Duration? retention,
@@ -89,7 +90,7 @@ abstract class BackupSchedule
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
@@ -97,7 +98,7 @@ class _Undefined {}
 
 class _BackupScheduleImpl extends BackupSchedule {
   _BackupScheduleImpl({
-    required _i2.BackupFrequency frequency,
+    required _inc79lxx.BackupFrequency frequency,
     int? hour,
     int? day,
     Duration? retention,
@@ -110,10 +111,10 @@ class _BackupScheduleImpl extends BackupSchedule {
 
   /// Returns a shallow copy of this [BackupSchedule]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   BackupSchedule copyWith({
-    _i2.BackupFrequency? frequency,
+    _inc79lxx.BackupFrequency? frequency,
     Object? hour = _Undefined,
     Object? day = _Undefined,
     Object? retention = _Undefined,

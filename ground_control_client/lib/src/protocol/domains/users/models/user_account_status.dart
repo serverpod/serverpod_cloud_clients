@@ -10,9 +10,10 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
-enum UserAccountStatus implements _i1.SerializableModel {
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
+
+enum UserAccountStatus implements _isc.SerializableModel {
   /// User has been invited to access the system (implies pre-authorized).
   invited,
 

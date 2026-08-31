@@ -10,15 +10,16 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
+
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
 /// Thrown when a user attempts to sign in with email/password
 /// for an account that was registered with another identity provider.
 abstract class EmailMethodBlockedException
     implements
-        _i1.SerializableException,
-        _i1.SerializableModel,
-        _i1.ProtocolSerialization {
+        _isc.SerializableException,
+        _isc.SerializableModel,
+        _isc.ProtocolSerialization {
   EmailMethodBlockedException._({required this.message});
 
   factory EmailMethodBlockedException({required String message}) =
@@ -36,7 +37,7 @@ abstract class EmailMethodBlockedException
 
   /// Returns a shallow copy of this [EmailMethodBlockedException]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   EmailMethodBlockedException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
@@ -60,7 +61,7 @@ class _EmailMethodBlockedExceptionImpl extends EmailMethodBlockedException {
 
   /// Returns a shallow copy of this [EmailMethodBlockedException]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   EmailMethodBlockedException copyWith({String? message}) {
     return EmailMethodBlockedException(message: message ?? this.message);

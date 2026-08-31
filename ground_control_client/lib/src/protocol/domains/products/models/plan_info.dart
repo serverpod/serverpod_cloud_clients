@@ -10,15 +10,17 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../domains/products/models/plan_type.dart' as _i2;
-import '../../../domains/products/models/project_product_info.dart' as _i3;
-import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
+
+import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../domains/products/models/plan_type.dart' as _iic46wsa;
+import '../../../domains/products/models/project_product_info.dart'
+    as _izjzpv9e;
 
 /// Information about a plan product.
 /// Contains information to be sent to the client.
 abstract class PlanInfo
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   PlanInfo._({
     required this.planType,
     required this.projectProduct,
@@ -33,8 +35,8 @@ abstract class PlanInfo
   });
 
   factory PlanInfo({
-    required _i2.PlanType planType,
-    required _i3.ProjectProductInfo projectProduct,
+    required _iic46wsa.PlanType planType,
+    required _izjzpv9e.ProjectProductInfo projectProduct,
     String? productId,
     String? name,
     required String displayName,
@@ -42,17 +44,18 @@ abstract class PlanInfo
     int? trialLength,
     DateTime? trialEndDate,
     int? projectsLimit,
-    List<_i3.ProjectProductInfo>? projectProductInfo,
+    List<_izjzpv9e.ProjectProductInfo>? projectProductInfo,
   }) = _PlanInfoImpl;
 
   factory PlanInfo.fromJson(Map<String, dynamic> jsonSerialization) {
     return PlanInfo(
-      planType: _i2.PlanType.fromJson(
+      planType: _iic46wsa.PlanType.fromJson(
         (jsonSerialization['planType'] as String),
       ),
-      projectProduct: _i4.Protocol().deserialize<_i3.ProjectProductInfo>(
-        jsonSerialization['projectProduct'],
-      ),
+      projectProduct: _iod2a87h.Protocol()
+          .deserialize<_izjzpv9e.ProjectProductInfo>(
+            jsonSerialization['projectProduct'],
+          ),
       productId: jsonSerialization['productId'] as String?,
       name: jsonSerialization['name'] as String?,
       displayName: jsonSerialization['displayName'] as String,
@@ -60,26 +63,27 @@ abstract class PlanInfo
       trialLength: jsonSerialization['trialLength'] as int?,
       trialEndDate: jsonSerialization['trialEndDate'] == null
           ? null
-          : _i1.DateTimeJsonExtension.fromJson(
+          : _isc.DateTimeJsonExtension.fromJson(
               jsonSerialization['trialEndDate'],
             ),
       projectsLimit: jsonSerialization['projectsLimit'] as int?,
       projectProductInfo: jsonSerialization['projectProductInfo'] == null
           ? null
-          : _i4.Protocol().deserialize<List<_i3.ProjectProductInfo>>(
-              jsonSerialization['projectProductInfo'],
-            ),
+          : _iod2a87h.Protocol()
+                .deserialize<List<_izjzpv9e.ProjectProductInfo>>(
+                  jsonSerialization['projectProductInfo'],
+                ),
     );
   }
 
   /// The public plan type ([PlanType.starter] / [PlanType.growth]) when this
   /// plan is user-selectable. [PlanType.unknown] for internal plans
   /// (e.g. early-access, hackathon, closed-beta).
-  _i2.PlanType planType;
+  _iic46wsa.PlanType planType;
 
   /// The bundled project product, resolved for the owner's customer billing
   /// type when available. Always set for plans returned to clients.
-  _i3.ProjectProductInfo projectProduct;
+  _izjzpv9e.ProjectProductInfo projectProduct;
 
   /// Deprecated: Plans are identified by [planType]. The catalog product id
   /// is no longer exposed to clients.
@@ -108,14 +112,14 @@ abstract class PlanInfo
 
   /// Deprecated: Use [projectProduct] instead. The list-style field is kept
   /// for backwards-compatibility with clients still reading bundled products.
-  List<_i3.ProjectProductInfo>? projectProductInfo;
+  List<_izjzpv9e.ProjectProductInfo>? projectProductInfo;
 
   /// Returns a shallow copy of this [PlanInfo]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   PlanInfo copyWith({
-    _i2.PlanType? planType,
-    _i3.ProjectProductInfo? projectProduct,
+    _iic46wsa.PlanType? planType,
+    _izjzpv9e.ProjectProductInfo? projectProduct,
     String? productId,
     String? name,
     String? displayName,
@@ -123,7 +127,7 @@ abstract class PlanInfo
     int? trialLength,
     DateTime? trialEndDate,
     int? projectsLimit,
-    List<_i3.ProjectProductInfo>? projectProductInfo,
+    List<_izjzpv9e.ProjectProductInfo>? projectProductInfo,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -167,7 +171,7 @@ abstract class PlanInfo
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
@@ -175,8 +179,8 @@ class _Undefined {}
 
 class _PlanInfoImpl extends PlanInfo {
   _PlanInfoImpl({
-    required _i2.PlanType planType,
-    required _i3.ProjectProductInfo projectProduct,
+    required _iic46wsa.PlanType planType,
+    required _izjzpv9e.ProjectProductInfo projectProduct,
     String? productId,
     String? name,
     required String displayName,
@@ -184,7 +188,7 @@ class _PlanInfoImpl extends PlanInfo {
     int? trialLength,
     DateTime? trialEndDate,
     int? projectsLimit,
-    List<_i3.ProjectProductInfo>? projectProductInfo,
+    List<_izjzpv9e.ProjectProductInfo>? projectProductInfo,
   }) : super._(
          planType: planType,
          projectProduct: projectProduct,
@@ -200,11 +204,11 @@ class _PlanInfoImpl extends PlanInfo {
 
   /// Returns a shallow copy of this [PlanInfo]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   PlanInfo copyWith({
-    _i2.PlanType? planType,
-    _i3.ProjectProductInfo? projectProduct,
+    _iic46wsa.PlanType? planType,
+    _izjzpv9e.ProjectProductInfo? projectProduct,
     Object? productId = _Undefined,
     Object? name = _Undefined,
     String? displayName,
@@ -226,7 +230,8 @@ class _PlanInfoImpl extends PlanInfo {
           ? trialEndDate
           : this.trialEndDate,
       projectsLimit: projectsLimit is int? ? projectsLimit : this.projectsLimit,
-      projectProductInfo: projectProductInfo is List<_i3.ProjectProductInfo>?
+      projectProductInfo:
+          projectProductInfo is List<_izjzpv9e.ProjectProductInfo>?
           ? projectProductInfo
           : this.projectProductInfo?.map((e0) => e0.copyWith()).toList(),
     );

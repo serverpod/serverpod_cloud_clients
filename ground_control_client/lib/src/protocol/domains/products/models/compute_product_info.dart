@@ -10,12 +10,13 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../domains/capsules/models/compute_size_option.dart' as _i2;
+
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../domains/capsules/models/compute_size_option.dart' as _ike5w393;
 
 /// Definition of a compute product including defaults and constraints.
 abstract class ComputeProductInfo
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   ComputeProductInfo._({
     required this.size,
     required this.productId,
@@ -24,7 +25,7 @@ abstract class ComputeProductInfo
   });
 
   factory ComputeProductInfo({
-    required _i2.ComputeSizeOption size,
+    required _ike5w393.ComputeSizeOption size,
     required String productId,
     required String name,
     required String description,
@@ -32,7 +33,7 @@ abstract class ComputeProductInfo
 
   factory ComputeProductInfo.fromJson(Map<String, dynamic> jsonSerialization) {
     return ComputeProductInfo(
-      size: _i2.ComputeSizeOption.fromJson(
+      size: _ike5w393.ComputeSizeOption.fromJson(
         (jsonSerialization['size'] as String),
       ),
       productId: jsonSerialization['productId'] as String,
@@ -42,7 +43,7 @@ abstract class ComputeProductInfo
   }
 
   /// The compute size.
-  _i2.ComputeSizeOption size;
+  _ike5w393.ComputeSizeOption size;
 
   /// The id of the product.
   String productId;
@@ -55,9 +56,9 @@ abstract class ComputeProductInfo
 
   /// Returns a shallow copy of this [ComputeProductInfo]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   ComputeProductInfo copyWith({
-    _i2.ComputeSizeOption? size,
+    _ike5w393.ComputeSizeOption? size,
     String? productId,
     String? name,
     String? description,
@@ -86,13 +87,13 @@ abstract class ComputeProductInfo
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
 class _ComputeProductInfoImpl extends ComputeProductInfo {
   _ComputeProductInfoImpl({
-    required _i2.ComputeSizeOption size,
+    required _ike5w393.ComputeSizeOption size,
     required String productId,
     required String name,
     required String description,
@@ -105,10 +106,10 @@ class _ComputeProductInfoImpl extends ComputeProductInfo {
 
   /// Returns a shallow copy of this [ComputeProductInfo]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   ComputeProductInfo copyWith({
-    _i2.ComputeSizeOption? size,
+    _ike5w393.ComputeSizeOption? size,
     String? productId,
     String? name,
     String? description,

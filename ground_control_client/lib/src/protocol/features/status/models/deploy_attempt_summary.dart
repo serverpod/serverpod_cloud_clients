@@ -10,15 +10,17 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../domains/status/models/deploy_progress_status.dart' as _i2;
-import '../../../domains/users/models/user.dart' as _i3;
-import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
+
+import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../domains/status/models/deploy_progress_status.dart'
+    as _izk8c25p;
+import '../../../domains/users/models/user.dart' as _ijl94k1v;
 
 /// Display summary of a deploy attempt, for presenting the deployment
 /// behind a capsule revision without the full attempt aggregate.
 abstract class DeployAttemptSummary
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   DeployAttemptSummary._({
     required this.attemptId,
     this.status,
@@ -31,12 +33,12 @@ abstract class DeployAttemptSummary
   });
 
   factory DeployAttemptSummary({
-    required _i1.UuidValue attemptId,
-    _i2.DeployProgressStatus? status,
+    required _isc.UuidValue attemptId,
+    _izk8c25p.DeployProgressStatus? status,
     String? commitHash,
     String? commitMessage,
     String? branch,
-    _i3.User? deployedBy,
+    _ijl94k1v.User? deployedBy,
     required DateTime startedAt,
     DateTime? endedAt,
   }) = _DeployAttemptSummaryImpl;
@@ -45,12 +47,12 @@ abstract class DeployAttemptSummary
     Map<String, dynamic> jsonSerialization,
   ) {
     return DeployAttemptSummary(
-      attemptId: _i1.UuidValueJsonExtension.fromJson(
+      attemptId: _isc.UuidValueJsonExtension.fromJson(
         jsonSerialization['attemptId'],
       ),
       status: jsonSerialization['status'] == null
           ? null
-          : _i2.DeployProgressStatus.fromJson(
+          : _izk8c25p.DeployProgressStatus.fromJson(
               (jsonSerialization['status'] as String),
             ),
       commitHash: jsonSerialization['commitHash'] as String?,
@@ -58,23 +60,23 @@ abstract class DeployAttemptSummary
       branch: jsonSerialization['branch'] as String?,
       deployedBy: jsonSerialization['deployedBy'] == null
           ? null
-          : _i4.Protocol().deserialize<_i3.User>(
+          : _iod2a87h.Protocol().deserialize<_ijl94k1v.User>(
               jsonSerialization['deployedBy'],
             ),
-      startedAt: _i1.DateTimeJsonExtension.fromJson(
+      startedAt: _isc.DateTimeJsonExtension.fromJson(
         jsonSerialization['startedAt'],
       ),
       endedAt: jsonSerialization['endedAt'] == null
           ? null
-          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['endedAt']),
+          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['endedAt']),
     );
   }
 
   /// The ID of the deploy attempt.
-  _i1.UuidValue attemptId;
+  _isc.UuidValue attemptId;
 
   /// The overall progress status of the deploy attempt.
-  _i2.DeployProgressStatus? status;
+  _izk8c25p.DeployProgressStatus? status;
 
   /// Short git commit hash, if provided by the client at deploy time.
   String? commitHash;
@@ -86,7 +88,7 @@ abstract class DeployAttemptSummary
   String? branch;
 
   /// The user who triggered the deploy, if known.
-  _i3.User? deployedBy;
+  _ijl94k1v.User? deployedBy;
 
   /// The timestamp of the start of the deploy attempt.
   DateTime startedAt;
@@ -96,14 +98,14 @@ abstract class DeployAttemptSummary
 
   /// Returns a shallow copy of this [DeployAttemptSummary]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   DeployAttemptSummary copyWith({
-    _i1.UuidValue? attemptId,
-    _i2.DeployProgressStatus? status,
+    _isc.UuidValue? attemptId,
+    _izk8c25p.DeployProgressStatus? status,
     String? commitHash,
     String? commitMessage,
     String? branch,
-    _i3.User? deployedBy,
+    _ijl94k1v.User? deployedBy,
     DateTime? startedAt,
     DateTime? endedAt,
   });
@@ -139,7 +141,7 @@ abstract class DeployAttemptSummary
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
@@ -147,12 +149,12 @@ class _Undefined {}
 
 class _DeployAttemptSummaryImpl extends DeployAttemptSummary {
   _DeployAttemptSummaryImpl({
-    required _i1.UuidValue attemptId,
-    _i2.DeployProgressStatus? status,
+    required _isc.UuidValue attemptId,
+    _izk8c25p.DeployProgressStatus? status,
     String? commitHash,
     String? commitMessage,
     String? branch,
-    _i3.User? deployedBy,
+    _ijl94k1v.User? deployedBy,
     required DateTime startedAt,
     DateTime? endedAt,
   }) : super._(
@@ -168,10 +170,10 @@ class _DeployAttemptSummaryImpl extends DeployAttemptSummary {
 
   /// Returns a shallow copy of this [DeployAttemptSummary]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   DeployAttemptSummary copyWith({
-    _i1.UuidValue? attemptId,
+    _isc.UuidValue? attemptId,
     Object? status = _Undefined,
     Object? commitHash = _Undefined,
     Object? commitMessage = _Undefined,
@@ -182,13 +184,13 @@ class _DeployAttemptSummaryImpl extends DeployAttemptSummary {
   }) {
     return DeployAttemptSummary(
       attemptId: attemptId ?? this.attemptId,
-      status: status is _i2.DeployProgressStatus? ? status : this.status,
+      status: status is _izk8c25p.DeployProgressStatus? ? status : this.status,
       commitHash: commitHash is String? ? commitHash : this.commitHash,
       commitMessage: commitMessage is String?
           ? commitMessage
           : this.commitMessage,
       branch: branch is String? ? branch : this.branch,
-      deployedBy: deployedBy is _i3.User?
+      deployedBy: deployedBy is _ijl94k1v.User?
           ? deployedBy
           : this.deployedBy?.copyWith(),
       startedAt: startedAt ?? this.startedAt,

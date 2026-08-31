@@ -10,11 +10,12 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
+
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
 /// A point-in-time snapshot (backup) of a database.
 abstract class DatabaseSnapshot
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   DatabaseSnapshot._({
     required this.id,
     required this.name,
@@ -39,13 +40,13 @@ abstract class DatabaseSnapshot
     return DatabaseSnapshot(
       id: jsonSerialization['id'] as String,
       name: jsonSerialization['name'] as String,
-      createdAt: _i1.DateTimeJsonExtension.fromJson(
+      createdAt: _isc.DateTimeJsonExtension.fromJson(
         jsonSerialization['createdAt'],
       ),
       expiresAt: jsonSerialization['expiresAt'] == null
           ? null
-          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['expiresAt']),
-      manual: _i1.BoolJsonExtension.fromJson(jsonSerialization['manual']),
+          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['expiresAt']),
+      manual: _isc.BoolJsonExtension.fromJson(jsonSerialization['manual']),
       fullSizeBytes: jsonSerialization['fullSizeBytes'] as int?,
       diffSizeBytes: jsonSerialization['diffSizeBytes'] as int?,
     );
@@ -77,7 +78,7 @@ abstract class DatabaseSnapshot
 
   /// Returns a shallow copy of this [DatabaseSnapshot]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   DatabaseSnapshot copyWith({
     String? id,
     String? name,
@@ -117,7 +118,7 @@ abstract class DatabaseSnapshot
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
@@ -144,7 +145,7 @@ class _DatabaseSnapshotImpl extends DatabaseSnapshot {
 
   /// Returns a shallow copy of this [DatabaseSnapshot]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   DatabaseSnapshot copyWith({
     String? id,

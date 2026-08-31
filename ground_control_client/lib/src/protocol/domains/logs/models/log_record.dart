@@ -10,11 +10,12 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
+
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
 /// Represents a log record (entry).
 abstract class LogRecord
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   LogRecord._({
     required this.cloudProjectId,
     required this.cloudCapsuleId,
@@ -29,7 +30,7 @@ abstract class LogRecord
   factory LogRecord({
     required String cloudProjectId,
     required String cloudCapsuleId,
-    _i1.UuidValue? deployAttemptId,
+    _isc.UuidValue? deployAttemptId,
     String? serverInstanceId,
     required String recordId,
     required DateTime timestamp,
@@ -43,12 +44,12 @@ abstract class LogRecord
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
       deployAttemptId: jsonSerialization['deployAttemptId'] == null
           ? null
-          : _i1.UuidValueJsonExtension.fromJson(
+          : _isc.UuidValueJsonExtension.fromJson(
               jsonSerialization['deployAttemptId'],
             ),
       serverInstanceId: jsonSerialization['serverInstanceId'] as String?,
       recordId: jsonSerialization['recordId'] as String,
-      timestamp: _i1.DateTimeJsonExtension.fromJson(
+      timestamp: _isc.DateTimeJsonExtension.fromJson(
         jsonSerialization['timestamp'],
       ),
       severity: jsonSerialization['severity'] as String?,
@@ -63,7 +64,7 @@ abstract class LogRecord
   String cloudCapsuleId;
 
   /// The ID of the deploy attempt (i.e. version) this log record is from.
-  _i1.UuidValue? deployAttemptId;
+  _isc.UuidValue? deployAttemptId;
 
   /// The ID of the podlet this log record is from.
   /// Null if this is a build log record.
@@ -83,11 +84,11 @@ abstract class LogRecord
 
   /// Returns a shallow copy of this [LogRecord]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   LogRecord copyWith({
     String? cloudProjectId,
     String? cloudCapsuleId,
-    _i1.UuidValue? deployAttemptId,
+    _isc.UuidValue? deployAttemptId,
     String? serverInstanceId,
     String? recordId,
     DateTime? timestamp,
@@ -126,7 +127,7 @@ abstract class LogRecord
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
@@ -136,7 +137,7 @@ class _LogRecordImpl extends LogRecord {
   _LogRecordImpl({
     required String cloudProjectId,
     required String cloudCapsuleId,
-    _i1.UuidValue? deployAttemptId,
+    _isc.UuidValue? deployAttemptId,
     String? serverInstanceId,
     required String recordId,
     required DateTime timestamp,
@@ -155,7 +156,7 @@ class _LogRecordImpl extends LogRecord {
 
   /// Returns a shallow copy of this [LogRecord]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   LogRecord copyWith({
     String? cloudProjectId,
@@ -170,7 +171,7 @@ class _LogRecordImpl extends LogRecord {
     return LogRecord(
       cloudProjectId: cloudProjectId ?? this.cloudProjectId,
       cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
-      deployAttemptId: deployAttemptId is _i1.UuidValue?
+      deployAttemptId: deployAttemptId is _isc.UuidValue?
           ? deployAttemptId
           : this.deployAttemptId,
       serverInstanceId: serverInstanceId is String?

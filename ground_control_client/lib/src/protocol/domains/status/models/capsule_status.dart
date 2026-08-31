@@ -10,14 +10,16 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../domains/status/models/capsule_state.dart' as _i2;
-import '../../../domains/status/models/capsule_deployment_status.dart' as _i3;
-import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
+
+import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../domains/status/models/capsule_deployment_status.dart'
+    as _ipungqwh;
+import '../../../domains/status/models/capsule_state.dart' as _ian82d1d;
 
 /// The live runtime status of a capsule.
 abstract class CapsuleStatus
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   CapsuleStatus._({
     required this.cloudCapsuleId,
     required this.status,
@@ -26,19 +28,19 @@ abstract class CapsuleStatus
 
   factory CapsuleStatus({
     required String cloudCapsuleId,
-    required _i2.CapsuleState status,
-    _i3.CapsuleDeploymentStatus? deployment,
+    required _ian82d1d.CapsuleState status,
+    _ipungqwh.CapsuleDeploymentStatus? deployment,
   }) = _CapsuleStatusImpl;
 
   factory CapsuleStatus.fromJson(Map<String, dynamic> jsonSerialization) {
     return CapsuleStatus(
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
-      status: _i2.CapsuleState.fromJson(
+      status: _ian82d1d.CapsuleState.fromJson(
         (jsonSerialization['status'] as String),
       ),
       deployment: jsonSerialization['deployment'] == null
           ? null
-          : _i4.Protocol().deserialize<_i3.CapsuleDeploymentStatus>(
+          : _iod2a87h.Protocol().deserialize<_ipungqwh.CapsuleDeploymentStatus>(
               jsonSerialization['deployment'],
             ),
     );
@@ -49,20 +51,20 @@ abstract class CapsuleStatus
 
   /// The overall runtime state of the capsule.
   /// Mirrors the state of the capsule's deployment.
-  _i2.CapsuleState status;
+  _ian82d1d.CapsuleState status;
 
   /// The runtime status of the capsule's deployment.
   /// Absent when no workload is identifiable,
   /// in which case [status] is [CapsuleState.notProvisioned].
-  _i3.CapsuleDeploymentStatus? deployment;
+  _ipungqwh.CapsuleDeploymentStatus? deployment;
 
   /// Returns a shallow copy of this [CapsuleStatus]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   CapsuleStatus copyWith({
     String? cloudCapsuleId,
-    _i2.CapsuleState? status,
-    _i3.CapsuleDeploymentStatus? deployment,
+    _ian82d1d.CapsuleState? status,
+    _ipungqwh.CapsuleDeploymentStatus? deployment,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -86,7 +88,7 @@ abstract class CapsuleStatus
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
@@ -95,8 +97,8 @@ class _Undefined {}
 class _CapsuleStatusImpl extends CapsuleStatus {
   _CapsuleStatusImpl({
     required String cloudCapsuleId,
-    required _i2.CapsuleState status,
-    _i3.CapsuleDeploymentStatus? deployment,
+    required _ian82d1d.CapsuleState status,
+    _ipungqwh.CapsuleDeploymentStatus? deployment,
   }) : super._(
          cloudCapsuleId: cloudCapsuleId,
          status: status,
@@ -105,17 +107,17 @@ class _CapsuleStatusImpl extends CapsuleStatus {
 
   /// Returns a shallow copy of this [CapsuleStatus]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   CapsuleStatus copyWith({
     String? cloudCapsuleId,
-    _i2.CapsuleState? status,
+    _ian82d1d.CapsuleState? status,
     Object? deployment = _Undefined,
   }) {
     return CapsuleStatus(
       cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
       status: status ?? this.status,
-      deployment: deployment is _i3.CapsuleDeploymentStatus?
+      deployment: deployment is _ipungqwh.CapsuleDeploymentStatus?
           ? deployment
           : this.deployment?.copyWith(),
     );

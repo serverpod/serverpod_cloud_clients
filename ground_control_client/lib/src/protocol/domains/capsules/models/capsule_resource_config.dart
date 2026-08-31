@@ -10,13 +10,14 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../domains/capsules/models/capsule.dart' as _i2;
-import '../../../domains/capsules/models/compute_size_option.dart' as _i3;
-import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
+
+import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../domains/capsules/models/capsule.dart' as _ictbn9k6;
+import '../../../domains/capsules/models/compute_size_option.dart' as _ike5w393;
 
 abstract class CapsuleResource
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   CapsuleResource._({
     this.id,
     required this.cloudCapsuleId,
@@ -44,7 +45,7 @@ abstract class CapsuleResource
   factory CapsuleResource({
     int? id,
     required int cloudCapsuleId,
-    _i2.Capsule? capsule,
+    _ictbn9k6.Capsule? capsule,
     String? computeRequestCpu,
     String? computeRequestMemory,
     String? computeRequestEphemeralStorage,
@@ -54,7 +55,7 @@ abstract class CapsuleResource
     bool? computeScalingEnabled,
     int? computeScalingMinReplicas,
     int? computeScalingMaxReplicas,
-    required _i3.ComputeSizeOption computeSize,
+    required _ike5w393.ComputeSizeOption computeSize,
   }) = _CapsuleResourceImpl;
 
   factory CapsuleResource.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -63,7 +64,7 @@ abstract class CapsuleResource
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as int,
       capsule: jsonSerialization['capsule'] == null
           ? null
-          : _i4.Protocol().deserialize<_i2.Capsule>(
+          : _iod2a87h.Protocol().deserialize<_ictbn9k6.Capsule>(
               jsonSerialization['capsule'],
             ),
       computeRequestCpu: jsonSerialization['computeRequestCpu'] as String?,
@@ -77,14 +78,14 @@ abstract class CapsuleResource
           jsonSerialization['computeLimitEphemeralStorage'] as String?,
       computeScalingEnabled: jsonSerialization['computeScalingEnabled'] == null
           ? null
-          : _i1.BoolJsonExtension.fromJson(
+          : _isc.BoolJsonExtension.fromJson(
               jsonSerialization['computeScalingEnabled'],
             ),
       computeScalingMinReplicas:
           jsonSerialization['computeScalingMinReplicas'] as int?,
       computeScalingMaxReplicas:
           jsonSerialization['computeScalingMaxReplicas'] as int?,
-      computeSize: _i3.ComputeSizeOption.fromJson(
+      computeSize: _ike5w393.ComputeSizeOption.fromJson(
         (jsonSerialization['computeSize'] as String),
       ),
     );
@@ -99,7 +100,7 @@ abstract class CapsuleResource
   int cloudCapsuleId;
 
   /// The capsule this resource config belongs to.
-  _i2.Capsule? capsule;
+  _ictbn9k6.Capsule? capsule;
 
   /// The compute request cpu.
   String computeRequestCpu;
@@ -129,15 +130,15 @@ abstract class CapsuleResource
   int computeScalingMaxReplicas;
 
   /// The compute size of the capsule.
-  _i3.ComputeSizeOption computeSize;
+  _ike5w393.ComputeSizeOption computeSize;
 
   /// Returns a shallow copy of this [CapsuleResource]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   CapsuleResource copyWith({
     int? id,
     int? cloudCapsuleId,
-    _i2.Capsule? capsule,
+    _ictbn9k6.Capsule? capsule,
     String? computeRequestCpu,
     String? computeRequestMemory,
     String? computeRequestEphemeralStorage,
@@ -147,7 +148,7 @@ abstract class CapsuleResource
     bool? computeScalingEnabled,
     int? computeScalingMinReplicas,
     int? computeScalingMaxReplicas,
-    _i3.ComputeSizeOption? computeSize,
+    _ike5w393.ComputeSizeOption? computeSize,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -191,7 +192,7 @@ abstract class CapsuleResource
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
@@ -201,7 +202,7 @@ class _CapsuleResourceImpl extends CapsuleResource {
   _CapsuleResourceImpl({
     int? id,
     required int cloudCapsuleId,
-    _i2.Capsule? capsule,
+    _ictbn9k6.Capsule? capsule,
     String? computeRequestCpu,
     String? computeRequestMemory,
     String? computeRequestEphemeralStorage,
@@ -211,7 +212,7 @@ class _CapsuleResourceImpl extends CapsuleResource {
     bool? computeScalingEnabled,
     int? computeScalingMinReplicas,
     int? computeScalingMaxReplicas,
-    required _i3.ComputeSizeOption computeSize,
+    required _ike5w393.ComputeSizeOption computeSize,
   }) : super._(
          id: id,
          cloudCapsuleId: cloudCapsuleId,
@@ -230,7 +231,7 @@ class _CapsuleResourceImpl extends CapsuleResource {
 
   /// Returns a shallow copy of this [CapsuleResource]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   CapsuleResource copyWith({
     Object? id = _Undefined,
@@ -245,12 +246,14 @@ class _CapsuleResourceImpl extends CapsuleResource {
     bool? computeScalingEnabled,
     int? computeScalingMinReplicas,
     int? computeScalingMaxReplicas,
-    _i3.ComputeSizeOption? computeSize,
+    _ike5w393.ComputeSizeOption? computeSize,
   }) {
     return CapsuleResource(
       id: id is int? ? id : this.id,
       cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
-      capsule: capsule is _i2.Capsule? ? capsule : this.capsule?.copyWith(),
+      capsule: capsule is _ictbn9k6.Capsule?
+          ? capsule
+          : this.capsule?.copyWith(),
       computeRequestCpu: computeRequestCpu ?? this.computeRequestCpu,
       computeRequestMemory: computeRequestMemory ?? this.computeRequestMemory,
       computeRequestEphemeralStorage:

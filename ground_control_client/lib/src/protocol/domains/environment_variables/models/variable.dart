@@ -10,12 +10,13 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../domains/capsules/models/capsule.dart' as _i2;
-import 'package:ground_control_client/src/protocol/protocol.dart' as _i3;
+
+import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../domains/capsules/models/capsule.dart' as _ictbn9k6;
 
 abstract class EnvironmentVariable
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   EnvironmentVariable._({
     this.id,
     DateTime? createdAt,
@@ -32,7 +33,7 @@ abstract class EnvironmentVariable
     DateTime? createdAt,
     DateTime? updatedAt,
     required int capsuleId,
-    _i2.Capsule? capsule,
+    _ictbn9k6.Capsule? capsule,
     required String name,
     required String value,
   }) = _EnvironmentVariableImpl;
@@ -42,14 +43,14 @@ abstract class EnvironmentVariable
       id: jsonSerialization['id'] as int?,
       createdAt: jsonSerialization['createdAt'] == null
           ? null
-          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
       updatedAt: jsonSerialization['updatedAt'] == null
           ? null
-          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
+          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
       capsuleId: jsonSerialization['capsuleId'] as int,
       capsule: jsonSerialization['capsule'] == null
           ? null
-          : _i3.Protocol().deserialize<_i2.Capsule>(
+          : _iod2a87h.Protocol().deserialize<_ictbn9k6.Capsule>(
               jsonSerialization['capsule'],
             ),
       name: jsonSerialization['name'] as String,
@@ -69,7 +70,7 @@ abstract class EnvironmentVariable
   int capsuleId;
 
   /// An environment variable belongs to a capsule. Cannot be changed.
-  _i2.Capsule? capsule;
+  _ictbn9k6.Capsule? capsule;
 
   /// The name of the environment variable, e.g. 'HOST'. Can be changed.
   String name;
@@ -79,13 +80,13 @@ abstract class EnvironmentVariable
 
   /// Returns a shallow copy of this [EnvironmentVariable]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   EnvironmentVariable copyWith({
     int? id,
     DateTime? createdAt,
     DateTime? updatedAt,
     int? capsuleId,
-    _i2.Capsule? capsule,
+    _ictbn9k6.Capsule? capsule,
     String? name,
     String? value,
   });
@@ -119,7 +120,7 @@ abstract class EnvironmentVariable
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
@@ -131,7 +132,7 @@ class _EnvironmentVariableImpl extends EnvironmentVariable {
     DateTime? createdAt,
     DateTime? updatedAt,
     required int capsuleId,
-    _i2.Capsule? capsule,
+    _ictbn9k6.Capsule? capsule,
     required String name,
     required String value,
   }) : super._(
@@ -146,7 +147,7 @@ class _EnvironmentVariableImpl extends EnvironmentVariable {
 
   /// Returns a shallow copy of this [EnvironmentVariable]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   EnvironmentVariable copyWith({
     Object? id = _Undefined,
@@ -162,7 +163,9 @@ class _EnvironmentVariableImpl extends EnvironmentVariable {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       capsuleId: capsuleId ?? this.capsuleId,
-      capsule: capsule is _i2.Capsule? ? capsule : this.capsule?.copyWith(),
+      capsule: capsule is _ictbn9k6.Capsule?
+          ? capsule
+          : this.capsule?.copyWith(),
       name: name ?? this.name,
       value: value ?? this.value,
     );

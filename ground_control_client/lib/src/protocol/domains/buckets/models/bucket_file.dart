@@ -10,11 +10,12 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
+
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
 /// A single stored file in a bucket.
 abstract class BucketFile
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   BucketFile._({required this.name, this.sizeBytes, this.updated});
 
   factory BucketFile({
@@ -29,7 +30,7 @@ abstract class BucketFile
       sizeBytes: jsonSerialization['sizeBytes'] as int?,
       updated: jsonSerialization['updated'] == null
           ? null
-          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updated']),
+          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['updated']),
     );
   }
 
@@ -44,7 +45,7 @@ abstract class BucketFile
 
   /// Returns a shallow copy of this [BucketFile]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   BucketFile copyWith({String? name, int? sizeBytes, DateTime? updated});
   @override
   Map<String, dynamic> toJson() {
@@ -68,7 +69,7 @@ abstract class BucketFile
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
@@ -80,7 +81,7 @@ class _BucketFileImpl extends BucketFile {
 
   /// Returns a shallow copy of this [BucketFile]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   BucketFile copyWith({
     String? name,

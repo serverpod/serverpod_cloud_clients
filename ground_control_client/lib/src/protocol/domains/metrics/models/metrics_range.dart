@@ -10,14 +10,15 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
+
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
 /// A predefined span length for pod resource metrics queries.
 ///
 /// The span is combined with an anchor (see `until`) to form the query
 /// window. Each span maps to a server-side sampling step; callers never choose
 /// the granularity directly, so a query can never be oversized.
-enum MetricsRange implements _i1.SerializableModel {
+enum MetricsRange implements _isc.SerializableModel {
   oneHour,
   oneDay,
   oneWeek,

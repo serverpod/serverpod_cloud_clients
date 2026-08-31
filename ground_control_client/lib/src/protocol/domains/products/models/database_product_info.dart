@@ -10,14 +10,16 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../domains/databases/models/database_size.dart' as _i2;
-import '../../../domains/products/models/database_scaling_info.dart' as _i3;
-import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
+
+import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../domains/databases/models/database_size.dart' as _its7dxaf;
+import '../../../domains/products/models/database_scaling_info.dart'
+    as _in8146o7;
 
 /// Definition of a database product including defaults and constraints.
 abstract class DatabaseProductInfo
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   DatabaseProductInfo._({
     required this.size,
     required this.productId,
@@ -29,18 +31,18 @@ abstract class DatabaseProductInfo
   });
 
   factory DatabaseProductInfo({
-    required _i2.DatabaseSizeOption size,
+    required _its7dxaf.DatabaseSizeOption size,
     required String productId,
     required String name,
     required String description,
-    _i3.DatabaseScalingInfo? scaling,
+    _in8146o7.DatabaseScalingInfo? scaling,
     int? cuHoursPerMonthLimit,
     int? storageLimitGB,
   }) = _DatabaseProductInfoImpl;
 
   factory DatabaseProductInfo.fromJson(Map<String, dynamic> jsonSerialization) {
     return DatabaseProductInfo(
-      size: _i2.DatabaseSizeOption.fromJson(
+      size: _its7dxaf.DatabaseSizeOption.fromJson(
         (jsonSerialization['size'] as String),
       ),
       productId: jsonSerialization['productId'] as String,
@@ -48,7 +50,7 @@ abstract class DatabaseProductInfo
       description: jsonSerialization['description'] as String,
       scaling: jsonSerialization['scaling'] == null
           ? null
-          : _i4.Protocol().deserialize<_i3.DatabaseScalingInfo>(
+          : _iod2a87h.Protocol().deserialize<_in8146o7.DatabaseScalingInfo>(
               jsonSerialization['scaling'],
             ),
       cuHoursPerMonthLimit: jsonSerialization['cuHoursPerMonthLimit'] as int?,
@@ -57,7 +59,7 @@ abstract class DatabaseProductInfo
   }
 
   /// The database size.
-  _i2.DatabaseSizeOption size;
+  _its7dxaf.DatabaseSizeOption size;
 
   /// The id of the product.
   String productId;
@@ -69,7 +71,7 @@ abstract class DatabaseProductInfo
   String description;
 
   /// Scaling configuration, if this size supports variable CU allocation.
-  _i3.DatabaseScalingInfo? scaling;
+  _in8146o7.DatabaseScalingInfo? scaling;
 
   /// The limit on compute unit hours per month, if any.
   int? cuHoursPerMonthLimit;
@@ -79,13 +81,13 @@ abstract class DatabaseProductInfo
 
   /// Returns a shallow copy of this [DatabaseProductInfo]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   DatabaseProductInfo copyWith({
-    _i2.DatabaseSizeOption? size,
+    _its7dxaf.DatabaseSizeOption? size,
     String? productId,
     String? name,
     String? description,
-    _i3.DatabaseScalingInfo? scaling,
+    _in8146o7.DatabaseScalingInfo? scaling,
     int? cuHoursPerMonthLimit,
     int? storageLimitGB,
   });
@@ -121,7 +123,7 @@ abstract class DatabaseProductInfo
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
@@ -129,11 +131,11 @@ class _Undefined {}
 
 class _DatabaseProductInfoImpl extends DatabaseProductInfo {
   _DatabaseProductInfoImpl({
-    required _i2.DatabaseSizeOption size,
+    required _its7dxaf.DatabaseSizeOption size,
     required String productId,
     required String name,
     required String description,
-    _i3.DatabaseScalingInfo? scaling,
+    _in8146o7.DatabaseScalingInfo? scaling,
     int? cuHoursPerMonthLimit,
     int? storageLimitGB,
   }) : super._(
@@ -148,10 +150,10 @@ class _DatabaseProductInfoImpl extends DatabaseProductInfo {
 
   /// Returns a shallow copy of this [DatabaseProductInfo]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   DatabaseProductInfo copyWith({
-    _i2.DatabaseSizeOption? size,
+    _its7dxaf.DatabaseSizeOption? size,
     String? productId,
     String? name,
     String? description,
@@ -164,7 +166,7 @@ class _DatabaseProductInfoImpl extends DatabaseProductInfo {
       productId: productId ?? this.productId,
       name: name ?? this.name,
       description: description ?? this.description,
-      scaling: scaling is _i3.DatabaseScalingInfo?
+      scaling: scaling is _in8146o7.DatabaseScalingInfo?
           ? scaling
           : this.scaling?.copyWith(),
       cuHoursPerMonthLimit: cuHoursPerMonthLimit is int?
