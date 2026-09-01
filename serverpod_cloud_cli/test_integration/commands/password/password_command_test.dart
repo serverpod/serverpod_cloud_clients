@@ -242,6 +242,15 @@ void main() {
             logger.successCalls.first,
             equalsSuccessCall(message: 'Successfully set password "database".'),
           );
+          expect(
+            logger.terminalCommandCalls.single,
+            equalsTerminalCommandCall(
+              command: 'scloud deploy',
+              message:
+                  'The changes will not take effect until your server is '
+                  're-deployed.',
+            ),
+          );
         });
       });
 
@@ -681,6 +690,15 @@ void main() {
             logger.successCalls.first,
             equalsSuccessCall(
               message: 'Successfully unset password "database".',
+            ),
+          );
+          expect(
+            logger.terminalCommandCalls.single,
+            equalsTerminalCommandCall(
+              command: 'scloud deploy',
+              message:
+                  'The changes will not take effect until your server is '
+                  're-deployed.',
             ),
           );
         });

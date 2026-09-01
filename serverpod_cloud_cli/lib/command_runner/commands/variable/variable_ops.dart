@@ -95,6 +95,11 @@ abstract class VariableCommands {
           ? 'Successfully set secret: $name.'
           : 'Successfully set environment variable: $name.',
     );
+    logger.terminalCommand(
+      '$baseCommand deploy',
+      message:
+          'The changes will not take effect until your server is re-deployed.',
+    );
   }
 
   static Future<void> unsetVariable(
@@ -153,6 +158,11 @@ abstract class VariableCommands {
       existingStore == _VariableStore.secret
           ? 'Successfully removed secret: $name.'
           : 'Successfully removed environment variable: $name.',
+    );
+    logger.terminalCommand(
+      '$baseCommand deploy',
+      message:
+          'The changes will not take effect until your server is re-deployed.',
     );
   }
 

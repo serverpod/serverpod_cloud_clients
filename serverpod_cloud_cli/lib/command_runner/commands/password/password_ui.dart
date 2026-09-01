@@ -86,29 +86,45 @@ class _LineWidget extends OutputWidget {
 }
 
 class PasswordSetTextUi extends OutputWidget {
-  const PasswordSetTextUi();
+  final String baseCommand;
+
+  const PasswordSetTextUi({required this.baseCommand});
 
   @override
   OutputWidget build(final OutputContext context) {
     final result = context.get<Map<String, Object?>>();
     final name = result['name'];
-    if (name is! String) {
-      return const SuccessTextWidget('Successfully set password.');
-    }
-    return SuccessTextWidget('Successfully set password "$name".');
+    final success = name is! String
+        ? const SuccessTextWidget('Successfully set password.')
+        : SuccessTextWidget('Successfully set password "$name".');
+    return OutputWidgetList([
+      success,
+      CommandHintTextWidget(
+        'The changes will not take effect until your server is re-deployed.',
+        command: '$baseCommand deploy',
+      ),
+    ]);
   }
 }
 
 class PasswordUnsetTextUi extends OutputWidget {
-  const PasswordUnsetTextUi();
+  final String baseCommand;
+
+  const PasswordUnsetTextUi({required this.baseCommand});
 
   @override
   OutputWidget build(final OutputContext context) {
     final result = context.get<Map<String, Object?>>();
     final name = result['name'];
-    if (name is! String) {
-      return const SuccessTextWidget('Successfully unset password.');
-    }
-    return SuccessTextWidget('Successfully unset password "$name".');
+    final success = name is! String
+        ? const SuccessTextWidget('Successfully unset password.')
+        : SuccessTextWidget('Successfully unset password "$name".');
+    return OutputWidgetList([
+      success,
+      CommandHintTextWidget(
+        'The changes will not take effect until your server is re-deployed.',
+        command: '$baseCommand deploy',
+      ),
+    ]);
   }
 }

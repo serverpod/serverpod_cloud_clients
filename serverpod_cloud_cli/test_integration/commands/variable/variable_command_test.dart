@@ -256,6 +256,20 @@ void main() {
             ),
           );
         });
+
+        test('then logs redeploy hint', () async {
+          await commandResult;
+
+          expect(
+            logger.terminalCommandCalls.single,
+            equalsTerminalCommandCall(
+              command: 'scloud deploy',
+              message:
+                  'The changes will not take effect until your server is '
+                  're-deployed.',
+            ),
+          );
+        });
       });
 
       group('with value file arg', () {
@@ -626,6 +640,20 @@ void main() {
             equalsSuccessCall(message: 'Successfully set secret: key.'),
           );
         });
+
+        test('then logs redeploy hint', () async {
+          await commandResult;
+
+          expect(
+            logger.terminalCommandCalls.single,
+            equalsTerminalCommandCall(
+              command: 'scloud deploy',
+              message:
+                  'The changes will not take effect until your server is '
+                  're-deployed.',
+            ),
+          );
+        });
       });
 
       group('with --secret', () {
@@ -921,6 +949,20 @@ void main() {
           logger.successCalls.first,
           equalsSuccessCall(
             message: 'Successfully removed environment variable: key.',
+          ),
+        );
+      });
+
+      test('then logs redeploy hint', () async {
+        await commandResult;
+
+        expect(
+          logger.terminalCommandCalls.single,
+          equalsTerminalCommandCall(
+            command: 'scloud deploy',
+            message:
+                'The changes will not take effect until your server is '
+                're-deployed.',
           ),
         );
       });
