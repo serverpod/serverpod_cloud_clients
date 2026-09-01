@@ -11,7 +11,7 @@ import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
-import '../../test_utils/test_command_logger.dart';
+import '../../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();
