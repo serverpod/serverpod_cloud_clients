@@ -146,7 +146,7 @@ class CloudPasswordSetCommand
         name: name,
         value: valueToSet,
       ).then((final _) => {'name': name}),
-      textOutputUi: PasswordSetTextUi(),
+      textOutputUi: PasswordSetTextUi(baseCommand: baseCommand),
     );
   }
 }
@@ -197,7 +197,7 @@ class CloudPasswordUnsetCommand
         projectId: projectId,
         name: name,
       ).then((final _) => {'name': name}),
-      textOutputUi: PasswordUnsetTextUi(),
+      textOutputUi: PasswordUnsetTextUi(baseCommand: baseCommand),
     );
   }
 }
