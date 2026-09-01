@@ -1,7 +1,6 @@
-import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
-import 'package:serverpod_cloud_cli/shared/helpers/console_urls.dart';
+import 'package:serverpod_cloud_cli/shared/helpers/common_client_exception_view.dart';
 
 /// If the exception is a common client exception, process it by displaying
 /// relevant messages to the user and throwing an [ErrorExitException].
@@ -14,56 +13,18 @@ void processCommonClientExceptions(
   final Exception e,
   final StackTrace stackTrace,
 ) {
-  final exitException = commonClientExceptionExit(e, stackTrace);
-  if (exitException == null) return;
+  final view = CommonClientExceptionView.tryDescribe(
+    e,
+    baseCommand: baseCommand,
+  );
+  if (view == null) return;
 
-  switch (e) {
-    case ServerpodClientUnauthorized():
-      logger.error(
-        'The credentials for this session seem to no longer be valid.',
-      );
-      logger.terminalCommand(
-        message: 'Run the following commands to re-authenticate:',
-        '$baseCommand auth logout',
-      );
-      logger.terminalCommand('$baseCommand auth login');
-
-    case UnauthorizedException():
-      logger.error('You are not authorized to perform this action.');
-
-    case ProcurementDeniedException():
-      final baseUrl = getConsoleBaseUrl();
-      if (e.message.contains('no valid payment method')) {
-        final setupUrl = '$baseUrl/project/create';
-        logger.error(
-          "You need a payment method!",
-          hint: 'To set up your account, visit: $setupUrl\n',
-          newParagraph: true,
-        );
-      } else if (e.reason == ProcurementDeniedReason.productNotAvailable &&
-          e.message.toLowerCase().contains('backup')) {
-        final projectsUrl = '$baseUrl/project';
-        logger.error(
-          e.message,
-          hint:
-              'Database backups are available on the Growth plan. '
-              'To upgrade the plan, visit: $projectsUrl\n',
-          newParagraph: true,
-        );
-      } else {
-        final projectsUrl = '$baseUrl/project';
-        logger.error(
-          e.message,
-          hint: 'To see your account, visit: $projectsUrl\n',
-          newParagraph: true,
-        );
-      }
-
-    case NotFoundException():
-      logger.error('The requested resource did not exist.', hint: e.message);
+  logger.error(view.message, hint: view.hint, newParagraph: view.newParagraph);
+  for (final commandHint in view.commandHints) {
+    logger.terminalCommand(commandHint.command, message: commandHint.message);
   }
 
-  throw exitException;
+  throw _exitException(e, stackTrace, view);
 }
 
 /// Returns the [ErrorExitException] that corresponds to a common client
@@ -72,29 +33,26 @@ void processCommonClientExceptions(
 /// Use this instead of [processCommonClientExceptions] when the exception
 /// has already been displayed to the user, for instance by an error output
 /// widget, and only the process exit remains to be performed.
+///
+/// A procurement-denied exception carries no nested cause or stack trace,
+/// unlike the other common exceptions. That asymmetry is deliberate and
+/// predates the shared view.
 ErrorExitException? commonClientExceptionExit(
   final Exception e,
   final StackTrace stackTrace,
 ) {
-  return switch (e) {
-    ServerpodClientUnauthorized() => ErrorExitException(
-      'The credentials for this session seem to no longer be valid.',
-      e,
-      stackTrace,
-    ),
-    UnauthorizedException() => ErrorExitException(
-      'You are not authorized to perform this action.',
-      e,
-      stackTrace,
-    ),
-    ProcurementDeniedException() => ErrorExitException(
-      'The procurement was not allowed.',
-    ),
-    NotFoundException() => ErrorExitException(
-      'The requested resource did not exist.',
-      e,
-      stackTrace,
-    ),
-    _ => null,
-  };
+  final view = CommonClientExceptionView.tryDescribe(e, baseCommand: '');
+  if (view == null) return null;
+  return _exitException(e, stackTrace, view);
+}
+
+ErrorExitException _exitException(
+  final Exception e,
+  final StackTrace stackTrace,
+  final CommonClientExceptionView view,
+) {
+  if (view.attachCauseToExit) {
+    return ErrorExitException(view.exitReason, e, stackTrace);
+  }
+  return ErrorExitException(view.exitReason);
 }
