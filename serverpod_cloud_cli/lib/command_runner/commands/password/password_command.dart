@@ -1,9 +1,9 @@
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/password/password_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/password/password_ui.dart';
-import 'package:serverpod_cloud_cli/util/output/output.dart';
 
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
 
@@ -50,8 +50,7 @@ abstract final class PasswordCommandConfig {
 }
 
 enum PasswordListCommandConfig<V> implements OptionDefinition<V> {
-  projectId(PasswordCommandConfig.projectId),
-  format(FormatOption());
+  projectId(PasswordCommandConfig.projectId);
 
   const PasswordListCommandConfig(this.option);
 
@@ -79,13 +78,12 @@ class CloudPasswordListCommand
     : super(options: PasswordListCommandConfig.values);
 
   @override
-  Future<void> runWithConfig(
+  Future<void> runWithOutput(
     final Configuration<PasswordListCommandConfig> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(PasswordListCommandConfig.projectId);
-    final format = commandConfig.value(PasswordListCommandConfig.format);
 
-    final output = CommandOutput(format: format, logger: logger);
     await renderCommand(
       output,
       operation: () => PasswordOperations.listPasswords(
@@ -101,8 +99,7 @@ enum PasswordSetCommandConfig<V> implements OptionDefinition<V> {
   projectId(PasswordCommandConfig.projectId),
   name(PasswordCommandConfig.name),
   value(PasswordCommandConfig.value),
-  valueFile(PasswordCommandConfig.valueFile),
-  format(FormatOption());
+  valueFile(PasswordCommandConfig.valueFile);
 
   const PasswordSetCommandConfig(this.option);
 
@@ -126,8 +123,9 @@ class CloudPasswordSetCommand
     : super(options: PasswordSetCommandConfig.values);
 
   @override
-  Future<void> runWithConfig(
+  Future<void> runWithOutput(
     final Configuration<PasswordSetCommandConfig> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(PasswordSetCommandConfig.projectId);
     final name = commandConfig.value(PasswordSetCommandConfig.name);
@@ -135,9 +133,7 @@ class CloudPasswordSetCommand
       value: PasswordSetCommandConfig.value,
       valueFile: PasswordSetCommandConfig.valueFile,
     );
-    final format = commandConfig.value(PasswordSetCommandConfig.format);
 
-    final output = CommandOutput(format: format, logger: logger);
     await renderCommand(
       output,
       operation: () => PasswordOperations.setPassword(
@@ -153,8 +149,7 @@ class CloudPasswordSetCommand
 
 enum PasswordUnsetCommandConfig<V> implements OptionDefinition<V> {
   projectId(PasswordCommandConfig.projectId),
-  name(PasswordCommandConfig.name),
-  format(FormatOption());
+  name(PasswordCommandConfig.name);
 
   const PasswordUnsetCommandConfig(this.option);
 
@@ -175,14 +170,12 @@ class CloudPasswordUnsetCommand
     : super(options: PasswordUnsetCommandConfig.values);
 
   @override
-  Future<void> runWithConfig(
+  Future<void> runWithOutput(
     final Configuration<PasswordUnsetCommandConfig> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(PasswordUnsetCommandConfig.projectId);
     final name = commandConfig.value(PasswordUnsetCommandConfig.name);
-    final format = commandConfig.value(PasswordUnsetCommandConfig.format);
-
-    final output = CommandOutput(format: format, logger: logger);
 
     await confirmToContinue(
       output,

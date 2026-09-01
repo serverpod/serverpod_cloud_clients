@@ -1,5 +1,4 @@
 import 'package:ground_control_client/ground_control_client.dart';
-import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 
 abstract class ProductAdminCommands {
   static Future<List<Map<String, Object?>>> listProcuredProductsOperation(
@@ -15,9 +14,8 @@ abstract class ProductAdminCommands {
     ];
   }
 
-  static Future<void> procurePlan(
+  static Future<Map<String, Object?>> procurePlan(
     final Client cloudApiClient, {
-    required final CommandLogger logger,
     required final String userEmail,
     required final String planName,
     final int? planVersion,
@@ -32,15 +30,11 @@ abstract class ProductAdminCommands {
       overrideChecks: overrideChecks,
     );
 
-    logger.success(
-      'The plan $planName has been procured for the user.',
-      newParagraph: true,
-    );
+    return {'planName': planName};
   }
 
   static Future<void> cancelPlan(
     final Client cloudApiClient, {
-    required final CommandLogger logger,
     required final String userEmail,
     final UuidValue? subscriptionId,
     final String? cloudProjectId,
@@ -52,7 +46,5 @@ abstract class ProductAdminCommands {
       cloudProjectId: cloudProjectId,
       terminateImmediately: terminateImmediately,
     );
-
-    logger.success("The user's plan has been cancelled.", newParagraph: true);
   }
 }

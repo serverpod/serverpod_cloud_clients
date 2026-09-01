@@ -1,8 +1,7 @@
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
-import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart'
-    show FormatOption;
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/plan/plan_admin_ops.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/admin/plan/plan_admin_ui.dart';
 import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 
 class AdminPlanCommand extends CloudCliCommand {
@@ -18,33 +17,20 @@ class AdminPlanCommand extends CloudCliCommand {
   }
 }
 
-enum AdminListOrbPlansOption<V> implements OptionDefinition<V> {
-  format(FormatOption());
-
-  const AdminListOrbPlansOption(this.option);
-
-  @override
-  final ConfigOptionBase<V> option;
-}
-
-class AdminListOrbPlansCommand
-    extends CloudCliCommand<AdminListOrbPlansOption> {
+class AdminListOrbPlansCommand extends CloudCliCommand {
   @override
   final name = 'list';
 
   @override
   final description = 'List maintainable Orb plans.';
 
-  AdminListOrbPlansCommand({required super.logger})
-    : super(options: AdminListOrbPlansOption.values);
+  AdminListOrbPlansCommand({required super.logger});
 
   @override
-  Future<void> runWithConfig(
-    final Configuration<AdminListOrbPlansOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration commandConfig,
+    final CommandOutput output,
   ) async {
-    final format = commandConfig.value(AdminListOrbPlansOption.format);
-
-    final output = CommandOutput(format: format, logger: logger);
     await renderCommand(
       output,
       operation: () => PlanAdminCommands.listOrbPlansOperation(
@@ -84,17 +70,21 @@ class AdminUpdatePlanCommand extends CloudCliCommand<AdminUpdatePlanOption> {
     : super(options: AdminUpdatePlanOption.values);
 
   @override
-  Future<void> runWithConfig(
+  Future<void> runWithOutput(
     final Configuration<AdminUpdatePlanOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final externalPlanId = commandConfig.value(
       AdminUpdatePlanOption.externalPlanId,
     );
 
-    await PlanAdminCommands.updateOrbPlan(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      externalPlanId: externalPlanId,
+    await renderCommand(
+      output,
+      operation: () => PlanAdminCommands.updateOrbPlan(
+        runner.serviceProvider.cloudApiClient,
+        externalPlanId: externalPlanId,
+      ),
+      textOutputUi: const PlanUpdateTextUi(),
     );
   }
 }

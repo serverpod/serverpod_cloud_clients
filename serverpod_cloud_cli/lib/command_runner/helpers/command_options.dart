@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:config/config.dart';
-import 'package:serverpod_cloud_cli/util/output/output_format.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
 
 import 'email_validator.dart';
@@ -88,17 +87,6 @@ class ProjectIdOption extends StringOption {
        );
 }
 
-class FormatOption extends EnumOption<OutputFormat> {
-  const FormatOption()
-    : super(
-        argName: 'format',
-        envName: 'SERVERPOD_CLOUD_FORMAT',
-        enumParser: const EnumParser(OutputFormat.values),
-        defaultsTo: OutputFormat.text,
-        helpText: 'Selects the command output format.',
-      );
-}
-
 class NameOption extends StringOption {
   const NameOption({required String super.helpText, required int super.argPos})
     : super(argName: 'name', mandatory: true);
@@ -142,7 +130,7 @@ extension ValueOptionResolution on Configuration {
   /// [value] and [valueFile] are expected to belong to [valueOptionGroup], as
   /// [ValueOption] and [ValueFileOption] do: configuration resolution then
   /// fails with a [UsageException] if neither or both of them are set, before
-  /// `runWithConfig` is reached.
+  /// `runWithOutput` is reached.
   ///
   /// Throws a [StateError] if neither option is set, which therefore signals a
   /// programming error rather than bad user input.

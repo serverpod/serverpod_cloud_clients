@@ -1,7 +1,9 @@
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/admin/redeploy/redeploy_ops.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/admin/redeploy/redeploy_ui.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/admin/projects/project_admin_ops.dart';
+import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 
 enum AdminRedeployOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption.argsOnly(asFirstArg: true));
@@ -24,15 +26,19 @@ class AdminRedeployCommand extends CloudCliCommand<AdminRedeployOption> {
     : super(options: AdminRedeployOption.values);
 
   @override
-  Future<void> runWithConfig(
+  Future<void> runWithOutput(
     final Configuration<AdminRedeployOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(AdminRedeployOption.projectId);
 
-    await ProjectAdminCommands.redeployProject(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      projectId: projectId,
+    await renderCommand(
+      output,
+      operation: () => RedeployOperations.redeployProject(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+      ),
+      textOutputUi: const RedeployTextUi(),
     );
   }
 }

@@ -5,9 +5,7 @@ import 'package:async/async.dart' show StreamGroup;
 import 'package:collection/collection.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
-import 'package:serverpod_cloud_cli/constants.dart' show numTimeStampChars;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
-import 'package:serverpod_cloud_cli/util/common.dart';
 import 'package:serverpod_cloud_cli/util/inline_tui/inline_tui.dart';
 import 'package:serverpod_cloud_cli/util/stream_util.dart';
 
@@ -15,41 +13,47 @@ import 'package:serverpod_cloud_cli/util/stream_util.dart';
 abstract class StatusCommands {
   static const progressMessagePadLength = 40;
 
-  /// Subcommand to show the status of a deployment attempt.
-  /// If [outputOverallStatus] is true, only the overall status word
-  /// is shown (e.g. "success").
-  static Future<void> showDeploymentStatus(
+  static Future<CapsuleRuntimeStatus> fetchRuntimeStatus(
     final Client cloudApiClient, {
-    required final CommandLogger logger,
+    required final String projectId,
+  }) async {
+    try {
+      return await cloudApiClient.status.getCapsuleRuntimeStatus(
+        cloudCapsuleId: projectId,
+      );
+    } on CapsuleStatusUnavailableException {
+      throw FailureException(
+        error: 'Could not retrieve the podlet status for project "$projectId".',
+        hint:
+            'The status service is temporarily unavailable — '
+            'try again shortly.',
+      );
+    } on NotFoundException {
+      throw FailureException(error: 'Project "$projectId" was not found.');
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Failed to get the podlet status');
+    }
+  }
+
+  static Future<({DateTime? startedAt, List<DeployAttemptStage> stages})>
+  fetchDeployAttemptStatus(
+    final Client cloudApiClient, {
     required final String cloudCapsuleId,
     required final UuidValue attemptId,
-    final bool inUtc = false,
-    final bool outputOverallStatus = false,
   }) async {
     final stages = await cloudApiClient.status.getDeployAttemptStatus(
       cloudCapsuleId: cloudCapsuleId,
       attemptId: attemptId,
     );
 
-    final displayStages = _combineRolloutStages(stages);
-
-    if (outputOverallStatus) {
-      final overallStatus = displayStages.last.stageStatus;
-      logger.line(overallStatus.name);
-      return;
-    }
-
-    final List<String> rows = [
-      'Status of $cloudCapsuleId deployment $attemptId'
-          ', started at ${stages.first.startedAt?.toTzString(inUtc, numTimeStampChars)}:',
-      '',
-      ...displayStages.map(_generateStatusLine),
-    ];
-
-    for (final line in rows) {
-      logger.line(line);
-    }
+    return (
+      startedAt: stages.first.startedAt,
+      stages: _combineRolloutStages(stages),
+    );
   }
+
+  static String statusLine(final DeployAttemptStage stage) =>
+      _generateStatusLine(stage);
 
   static Future<void> tailDeploymentStatus(
     final Client cloudApiClient, {

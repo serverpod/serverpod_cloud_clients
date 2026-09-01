@@ -61,3 +61,16 @@ String _formatProjectUsers(final Project project) {
           .join('; ') ??
       '';
 }
+
+class AdminProjectDeleteTextUi extends OutputWidget {
+  const AdminProjectDeleteTextUi();
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    final result = context.get<Map<String, Object?>>();
+    return SuccessTextWidget(
+      'Deleted the project "${result['projectId']}".',
+      newParagraph: true,
+    );
+  }
+}

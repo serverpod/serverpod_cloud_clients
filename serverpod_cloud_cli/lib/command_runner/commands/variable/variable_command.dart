@@ -1,9 +1,9 @@
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/variable/variable_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/variable/variable_ui.dart';
-import 'package:serverpod_cloud_cli/util/output/command_output.dart';
 
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
 
@@ -77,8 +77,7 @@ enum UnsetVariableCommandConfig<V> implements OptionDefinition<V> {
 }
 
 enum ListVariableCommandConfig<V> implements OptionDefinition<V> {
-  projectId(VariableCommandConfig.projectId),
-  format(FormatOption());
+  projectId(VariableCommandConfig.projectId);
 
   const ListVariableCommandConfig(this.option);
 
@@ -118,8 +117,9 @@ Examples
     : super(options: SetVariableCommandConfig.values);
 
   @override
-  Future<void> runWithConfig(
+  Future<void> runWithOutput(
     final Configuration<SetVariableCommandConfig> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(SetVariableCommandConfig.projectId);
     final variableName = commandConfig.value(
@@ -133,14 +133,17 @@ Examples
       SetVariableCommandConfig.secret,
     );
 
-    await VariableCommands.setVariable(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      baseCommand: baseCommand,
-      projectId: projectId,
-      name: variableName,
-      value: valueToSet,
-      secret: secretFlag,
+    await renderCommand(
+      output,
+      operation: () => VariableCommands.setVariable(
+        runner.serviceProvider.cloudApiClient,
+        baseCommand: baseCommand,
+        projectId: projectId,
+        name: variableName,
+        value: valueToSet,
+        secret: secretFlag,
+      ),
+      textOutputUi: VariableSetTextUi(baseCommand: baseCommand),
     );
   }
 }
@@ -167,20 +170,38 @@ Examples
     : super(options: UnsetVariableCommandConfig.values);
 
   @override
-  Future<void> runWithConfig(
+  Future<void> runWithOutput(
     final Configuration<UnsetVariableCommandConfig> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(UnsetVariableCommandConfig.projectId);
     final variableName = commandConfig.value(
       UnsetVariableCommandConfig.variableName,
     );
 
-    await VariableCommands.unsetVariable(
+    await VariableCommands.findVariable(
       runner.serviceProvider.cloudApiClient,
-      logger: logger,
       baseCommand: baseCommand,
       projectId: projectId,
       name: variableName,
+    );
+
+    await confirmToContinue(
+      output,
+      message:
+          'Are you sure you want to remove the environment variable "$variableName"?',
+      defaultValue: false,
+    );
+
+    await renderCommand(
+      output,
+      operation: () => VariableCommands.unsetVariable(
+        runner.serviceProvider.cloudApiClient,
+        baseCommand: baseCommand,
+        projectId: projectId,
+        name: variableName,
+      ),
+      textOutputUi: VariableUnsetTextUi(baseCommand: baseCommand),
     );
   }
 }
@@ -198,13 +219,12 @@ class CloudVariableListCommand
     : super(options: ListVariableCommandConfig.values);
 
   @override
-  Future<void> runWithConfig(
+  Future<void> runWithOutput(
     final Configuration<ListVariableCommandConfig> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(ListVariableCommandConfig.projectId);
-    final format = commandConfig.value(ListVariableCommandConfig.format);
 
-    final output = CommandOutput(format: format, logger: logger);
     await renderCommand(
       output,
       operation: () => VariableCommands.listVariablesOperation(

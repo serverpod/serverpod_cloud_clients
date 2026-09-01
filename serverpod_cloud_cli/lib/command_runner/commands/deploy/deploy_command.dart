@@ -3,6 +3,7 @@ import 'dart:io' show File;
 import 'package:config/config.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy/deploy.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
@@ -159,8 +160,9 @@ Examples
     : super(options: DeployCommandOption.values);
 
   @override
-  Future<void> runWithConfig(
+  Future<void> runWithOutput(
     final Configuration<DeployCommandOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(DeployCommandOption.projectId);
     final concurrency = commandConfig.value(DeployCommandOption.concurrency);

@@ -1,43 +1,64 @@
 import 'package:ground_control_client/ground_control_client.dart';
-import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
-abstract class DbCommands {
+abstract class DbOperations {
+  static Future<DatabaseConnection> getConnectionDetails(
+    final Client cloudApiClient, {
+    required final String projectId,
+  }) async {
+    try {
+      return await cloudApiClient.database.getConnectionDetails(
+        cloudCapsuleId: projectId,
+      );
+    } on Exception catch (e, stackTrace) {
+      throw FailureException.nested(
+        e,
+        stackTrace,
+        'Failed to get connection details',
+      );
+    }
+  }
+
+  static Future<String> createSuperUser(
+    final Client cloudApiClient, {
+    required final String projectId,
+    required final String username,
+  }) async {
+    try {
+      return await cloudApiClient.database.createSuperUser(
+        cloudCapsuleId: projectId,
+        username: username,
+      );
+    } on Exception catch (e, stackTrace) {
+      throw FailureException.nested(
+        e,
+        stackTrace,
+        'Failed to create superuser',
+      );
+    }
+  }
+
+  static Future<String> resetPassword(
+    final Client cloudApiClient, {
+    required final String projectId,
+    required final String username,
+  }) async {
+    try {
+      return await cloudApiClient.database.resetDatabasePassword(
+        cloudCapsuleId: projectId,
+        username: username,
+      );
+    } on Exception catch (e, stackTrace) {
+      throw FailureException.nested(e, stackTrace, 'Failed to reset password');
+    }
+  }
+
   static Future<void> wipeDatabase(
     final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String baseCommand,
     required final String projectId,
-    required final bool skipConfirmation,
   }) async {
-    if (!skipConfirmation) {
-      final confirmed = await logger.confirm('''
-WARNING: Deletes all tables and data in the database for project "$projectId".
-This is a NON-REVERSIBLE action.
-The server will error until a redeploy is performed.
-
-Do you want to proceed?''', defaultValue: false);
-
-      if (!confirmed) {
-        logger.info('Database wipe cancelled.');
-        return;
-      }
-    }
-
-    final apiCloudClient = cloudApiClient;
-
     try {
-      await logger.progress(
-        'Wiping database for project "$projectId"...',
-        newParagraph: true,
-        () async {
-          await apiCloudClient.database.wipeDatabase(cloudCapsuleId: projectId);
-          return true;
-        },
-      );
-
-      logger.success('Database wiped successfully.');
-      logger.info('Redeploy is needed, run: $baseCommand deploy');
+      await cloudApiClient.database.wipeDatabase(cloudCapsuleId: projectId);
     } on Exception catch (e, stackTrace) {
       throw FailureException.nested(e, stackTrace, 'Failed to wipe database');
     }

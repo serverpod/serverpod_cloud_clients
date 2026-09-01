@@ -17,12 +17,14 @@ persistentFlags:
   --project-config-file=: "The path to the Serverpod Cloud project configuration file (defaults to <server-package>/scloud.yaml)"
   --timeout=: "The timeout for the connection to the Serverpod Cloud API."
   --yes: "Automatically accept confirmation prompts. For use in non-interactive environments."
+  --format=: "Selects the command output format."
 exclusiveFlags:
   - [analytics, no-analytics]
 completion:
   flag:
     project-dir: ["$directories"]
     project-config-file: ["$files"]
+    format: ["text", "json", "yaml"]
 
 commands:
   - name: completion
@@ -70,12 +72,8 @@ commands:
         flags:
           -u, --utc: "Display timestamps in UTC timezone instead of local."
           --no-utc: "Display timestamps in UTC timezone instead of local."
-          --format=: "Selects the command output format."
         exclusiveFlags:
           - [utc, no-utc]
-        completion:
-          flag:
-            format: ["text", "json", "yaml"]
 
       - name: create-token
         flags:
@@ -88,11 +86,6 @@ commands:
           --token-id=!: "The ID of the token to revoke. Can be passed as the first argument."
 
   - name: me
-    flags:
-      --format=: "Selects the command output format."
-    completion:
-      flag:
-        format: ["text", "json", "yaml"]
 
   - name: project
 
@@ -116,10 +109,6 @@ commands:
       - name: list
         flags:
           --all: "Include deleted projects."
-          --format=: "Selects the command output format."
-        completion:
-          flag:
-            format: ["text", "json", "yaml"]
 
       - name: link
         flags:
@@ -132,10 +121,6 @@ commands:
           - name: list
             flags:
               -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
-              --format=: "Selects the command output format."
-            completion:
-              flag:
-                format: ["text", "json", "yaml"]
 
           - name: invite
             flags:
@@ -151,11 +136,6 @@ commands:
 
     commands:
       - name: list
-        flags:
-          --format=: "Selects the command output format."
-        completion:
-          flag:
-            format: ["text", "json", "yaml"]
 
       - name: show
 
@@ -188,10 +168,6 @@ commands:
       - name: list
         flags:
           -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
-          --format=: "Selects the command output format."
-        completion:
-          flag:
-            format: ["text", "json", "yaml"]
 
       - name: set
         flags:
@@ -280,12 +256,8 @@ commands:
           --limit=: "The maximum number of records to fetch."
           -u, --utc: "Display timestamps in UTC timezone instead of local."
           --no-utc: "Display timestamps in UTC timezone instead of local."
-          --format=: "Selects the command output format."
         exclusiveFlags:
           - [utc, no-utc]
-        completion:
-          flag:
-            format: ["text", "json", "yaml"]
 
       - name: build-log
         flags:
@@ -314,10 +286,6 @@ commands:
           - name: list
             flags:
               -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
-              --format=: "Selects the command output format."
-            completion:
-              flag:
-                format: ["text", "json", "yaml"]
 
           - name: unset
             flags:
@@ -330,10 +298,6 @@ commands:
       - name: list
         flags:
           -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
-          --format=: "Selects the command output format."
-        completion:
-          flag:
-            format: ["text", "json", "yaml"]
 
       - name: set
         flags:
@@ -341,20 +305,14 @@ commands:
           --name=!: "The name of the password (without SERVERPOD_PASSWORD_ prefix). Can be passed as the first argument."
           --value=: "The value of the password. Can be passed as the second argument."
           --from-file=: "The name of the file with the password value."
-          --format=: "Selects the command output format."
         completion:
           flag:
             from-file: ["$files"]
-            format: ["text", "json", "yaml"]
 
       - name: unset
         flags:
           -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
           --name=!: "The name of the password (without SERVERPOD_PASSWORD_ prefix). Can be passed as the first argument."
-          --format=: "Selects the command output format."
-        completion:
-          flag:
-            format: ["text", "json", "yaml"]
 
   - name: db
 

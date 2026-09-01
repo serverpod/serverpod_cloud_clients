@@ -1,5 +1,6 @@
 import 'package:ground_control_client/ground_control_client.dart';
-import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployments_ops.dart'
+    show deploymentListRows;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
 abstract class ProjectAdminCommands {
@@ -13,9 +14,20 @@ abstract class ProjectAdminCommands {
     );
   }
 
-  static Future<void> redeployProject(
+  static Future<List<Map<String, Object?>>> listDeployAttemptsOperation(
     final Client cloudApiClient, {
-    required final CommandLogger logger,
+    required final String projectId,
+    required final int limit,
+  }) async {
+    final statuses = await cloudApiClient.adminProjects.getDeployAttempts(
+      cloudCapsuleId: projectId,
+      limit: limit,
+    );
+    return deploymentListRows(statuses);
+  }
+
+  static Future<Map<String, Object?>> redeployProject(
+    final Client cloudApiClient, {
     required final String projectId,
   }) async {
     try {
@@ -24,26 +36,13 @@ abstract class ProjectAdminCommands {
       throw FailureException.nested(e, s, 'Failed to redeploy project');
     }
 
-    logger.success(
-      'Redeployment triggered for project: $projectId',
-      newParagraph: true,
-    );
+    return {'projectId': projectId};
   }
 
-  static Future<void> deleteProject(
+  static Future<Map<String, Object?>> deleteProject(
     final Client cloudApiClient, {
-    required final CommandLogger logger,
     required final String projectId,
   }) async {
-    final shouldDelete = await logger.confirm(
-      'Are you sure you want to delete the project "$projectId"?',
-      defaultValue: false,
-    );
-
-    if (!shouldDelete) {
-      throw UserAbortException();
-    }
-
     try {
       await cloudApiClient.adminProjects.deleteProject(
         cloudProjectId: projectId,
@@ -56,6 +55,6 @@ abstract class ProjectAdminCommands {
       );
     }
 
-    logger.success('Deleted the project "$projectId".', newParagraph: true);
+    return {'projectId': projectId};
   }
 }

@@ -6,6 +6,7 @@ import 'package:serverpod_cloud_cli/command_runner/commands/deploy/deploy_comman
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployments_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployments_ui.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/log/log_ui.dart';
 import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
@@ -101,8 +102,9 @@ Examples
     : super(options: DeploymentsShowOption.values);
 
   @override
-  Future<void> runWithConfig(
+  Future<void> runWithOutput(
     final Configuration<DeploymentsShowOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(DeploymentsShowOption.projectId);
     final inUtc = commandConfig.value(DeploymentsShowOption.utc);
@@ -114,15 +116,30 @@ Examples
       DeploymentsShowOption.overallStatus,
     );
 
-    await DeploymentCommands.showDeployment(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      baseCommand: baseCommand,
-      projectId: projectId,
-      wait: wait,
-      overallStatus: overallStatus,
-      inUtc: inUtc,
-      deploymentArg: deploymentArg,
+    if (wait && !overallStatus) {
+      await DeploymentCommands.tailDeployment(
+        runner.serviceProvider.cloudApiClient,
+        logger: logger,
+        baseCommand: baseCommand,
+        projectId: projectId,
+        inUtc: inUtc,
+        deploymentArg: deploymentArg,
+      );
+      return;
+    }
+
+    await renderCommand(
+      output,
+      operation: () => DeploymentCommands.fetchDeploymentStatus(
+        runner.serviceProvider.cloudApiClient,
+        baseCommand: baseCommand,
+        projectId: projectId,
+        deploymentArg: deploymentArg,
+      ),
+      textOutputUi: DeploymentShowTextUi(
+        utc: inUtc,
+        overallStatus: overallStatus,
+      ),
     );
   }
 }
@@ -141,8 +158,7 @@ abstract final class _DeploymentsListOptions {
 enum DeploymentsListOption<V> implements OptionDefinition<V> {
   projectId(_DeploymentsListOptions.projectId),
   limit(_DeploymentsListOptions.limit),
-  utc(_DeploymentsListOptions.utc),
-  format(FormatOption());
+  utc(_DeploymentsListOptions.utc);
 
   const DeploymentsListOption(this.option);
 
@@ -178,15 +194,14 @@ Examples
     : super(options: DeploymentsListOption.values);
 
   @override
-  Future<void> runWithConfig(
+  Future<void> runWithOutput(
     final Configuration<DeploymentsListOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(DeploymentsListOption.projectId);
     final limit = commandConfig.value(DeploymentsListOption.limit);
     final inUtc = commandConfig.value(DeploymentsListOption.utc);
-    final format = commandConfig.value(DeploymentsListOption.format);
 
-    final output = CommandOutput(format: format, logger: logger);
     await renderCommand(
       output,
       operation: () => DeploymentCommands.listDeployAttemptsOperation(
@@ -256,8 +271,9 @@ Examples
     : super(options: DeploymentsBuildLogOption.values);
 
   @override
-  Future<void> runWithConfig(
+  Future<void> runWithOutput(
     final Configuration<DeploymentsBuildLogOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(DeploymentsBuildLogOption.projectId);
     final inUtc = commandConfig.value(DeploymentsBuildLogOption.utc);
@@ -265,13 +281,19 @@ Examples
       DeploymentsBuildLogOption.deploy,
     );
 
-    await DeploymentCommands.fetchBuildLog(
+    final buildLog = await DeploymentCommands.fetchBuildLog(
       runner.serviceProvider.cloudApiClient,
-      logger: logger,
       baseCommand: baseCommand,
       projectId: projectId,
-      inUtc: inUtc,
       deploymentArg: deploymentArg,
+    );
+    logger.line(
+      LogsUi.buildLogHeader(attemptId: buildLog.attemptId, inUtc: inUtc),
+    );
+    await LogsUi.writeLogStream(
+      buildLog.records,
+      writeln: logger.line,
+      inUtc: inUtc,
     );
   }
 }
@@ -368,8 +390,9 @@ ${_buildSecretsExplanation(baseCommand)}""";
     : super(options: BuildSecretSetCommandConfig.values);
 
   @override
-  Future<void> runWithConfig(
+  Future<void> runWithOutput(
     final Configuration<BuildSecretSetCommandConfig> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(
       BuildSecretSetCommandConfig.projectId,
@@ -384,20 +407,22 @@ ${_buildSecretsExplanation(baseCommand)}""";
       valueFile: BuildSecretSetCommandConfig.valueFile,
     );
 
-    await DeploymentCommands.setBuildSecret(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      projectId: projectId,
-      name: name,
-      value: valueToSet,
-      buildSecretType: buildSecretType,
+    await renderCommand(
+      output,
+      operation: () => DeploymentCommands.setBuildSecret(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+        name: name,
+        value: valueToSet,
+        buildSecretType: buildSecretType,
+      ),
+      textOutputUi: const BuildSecretSetTextUi(),
     );
   }
 }
 
 enum BuildSecretsListCommandConfig<V> implements OptionDefinition<V> {
-  projectId(_BuildSecretCommandConfig.projectId),
-  format(FormatOption());
+  projectId(_BuildSecretCommandConfig.projectId);
 
   const BuildSecretsListCommandConfig(this.option);
 
@@ -419,15 +444,14 @@ ${_buildSecretsExplanation(baseCommand)}""";
     : super(options: BuildSecretsListCommandConfig.values);
 
   @override
-  Future<void> runWithConfig(
+  Future<void> runWithOutput(
     final Configuration<BuildSecretsListCommandConfig> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(
       BuildSecretsListCommandConfig.projectId,
     );
-    final format = commandConfig.value(BuildSecretsListCommandConfig.format);
 
-    final output = CommandOutput(format: format, logger: logger);
     await renderCommand(
       output,
       operation: () => DeploymentCommands.listBuildSecretsOperation(
@@ -463,19 +487,29 @@ ${_buildSecretsExplanation(baseCommand)}""";
     : super(options: BuildSecretUnsetCommandConfig.values);
 
   @override
-  Future<void> runWithConfig(
+  Future<void> runWithOutput(
     final Configuration<BuildSecretUnsetCommandConfig> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(
       BuildSecretUnsetCommandConfig.projectId,
     );
     final name = commandConfig.value(BuildSecretUnsetCommandConfig.name);
 
-    await DeploymentCommands.unsetBuildSecret(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      projectId: projectId,
-      name: name,
+    await confirmToContinue(
+      output,
+      message: 'Are you sure you want to remove the build secret "$name"?',
+      defaultValue: false,
+    );
+
+    await renderCommand(
+      output,
+      operation: () => DeploymentCommands.unsetBuildSecret(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+        name: name,
+      ),
+      textOutputUi: const BuildSecretUnsetTextUi(),
     );
   }
 }

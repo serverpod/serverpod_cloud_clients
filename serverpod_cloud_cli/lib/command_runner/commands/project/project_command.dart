@@ -2,11 +2,11 @@ import 'package:config/config.dart';
 import 'package:path/path.dart' as p;
 
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/project/project_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/project/project_ui.dart'
-    show ProjectListTextUi;
-import 'package:serverpod_cloud_cli/util/output/command_output.dart';
+    show ProjectDeleteTextUi, ProjectListTextUi;
 import 'package:serverpod_cloud_cli/command_runner/commands/user/user_command.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 
@@ -66,7 +66,10 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
     : super(options: ProjectCreateOption.values);
 
   @override
-  Future<void> runWithConfig(final Configuration commandConfig) async {
+  Future<void> runWithOutput(
+    final Configuration commandConfig,
+    final CommandOutput output,
+  ) async {
     final projectId = commandConfig.value(ProjectCreateOption.projectId);
     final plan = commandConfig.optionalValue(ProjectCreateOption.plan);
     final enableDb = commandConfig.value(ProjectCreateOption.enableDb);
@@ -101,13 +104,25 @@ class CloudProjectDeleteCommand extends CloudCliCommand {
     : super(options: ProjectDeleteOption.values);
 
   @override
-  Future<void> runWithConfig(final Configuration commandConfig) async {
+  Future<void> runWithOutput(
+    final Configuration commandConfig,
+    final CommandOutput output,
+  ) async {
     final projectId = commandConfig.value(ProjectDeleteOption.projectId);
 
-    await ProjectCommands.deleteProject(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      projectId: projectId,
+    await confirmToContinue(
+      output,
+      message: 'Are you sure you want to delete the project "$projectId"?',
+      defaultValue: false,
+    );
+
+    await renderCommand(
+      output,
+      operation: () => ProjectCommands.deleteProject(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+      ),
+      textOutputUi: const ProjectDeleteTextUi(),
     );
   }
 }
@@ -120,8 +135,7 @@ enum ProjectListCommandOption<V> implements OptionDefinition<V> {
       defaultsTo: false,
       negatable: false,
     ),
-  ),
-  format(FormatOption());
+  );
 
   const ProjectListCommandOption(this.option);
 
@@ -144,13 +158,11 @@ class CloudProjectListCommand
     : super(options: ProjectListCommandOption.values);
 
   @override
-  Future<void> runWithConfig(
+  Future<void> runWithOutput(
     final Configuration<ProjectListCommandOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final showArchived = commandConfig.value(ProjectListCommandOption.all);
-    final format = commandConfig.value(ProjectListCommandOption.format);
-
-    final output = CommandOutput(format: format, logger: logger);
 
     await renderCommand(
       output,
@@ -198,8 +210,9 @@ class CloudProjectLinkCommand
     : super(options: ProjectLinkCommandOption.values);
 
   @override
-  Future<void> runWithConfig(
+  Future<void> runWithOutput(
     final Configuration<ProjectLinkCommandOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(ProjectLinkCommandOption.projectId);
     final dartVersionOverride = commandConfig.optionalValue(

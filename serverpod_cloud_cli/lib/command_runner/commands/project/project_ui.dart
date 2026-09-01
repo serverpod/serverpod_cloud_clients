@@ -44,3 +44,16 @@ class ProjectListTextUi extends OutputWidget {
     }
   }
 }
+
+class ProjectDeleteTextUi extends OutputWidget {
+  const ProjectDeleteTextUi();
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    final result = context.get<Map<String, Object?>>();
+    return SuccessTextWidget(
+      'Deleted the project "${result['projectId']}".',
+      newParagraph: true,
+    );
+  }
+}

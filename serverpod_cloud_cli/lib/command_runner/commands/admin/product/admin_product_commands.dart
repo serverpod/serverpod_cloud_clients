@@ -1,11 +1,11 @@
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/product/product_admin_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/product/product_admin_ui.dart';
 import 'package:uuid/uuid_value.dart';
 
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
-import 'package:serverpod_cloud_cli/util/output/command_output.dart';
 
 class AdminProductCommand extends CloudCliCommand {
   @override
@@ -22,8 +22,7 @@ class AdminProductCommand extends CloudCliCommand {
 }
 
 enum AdminListProcuredOption<V> implements OptionDefinition<V> {
-  user(UserEmailOption(argPos: 0, mandatory: true)),
-  format(FormatOption());
+  user(UserEmailOption(argPos: 0, mandatory: true));
 
   const AdminListProcuredOption(this.option);
 
@@ -43,13 +42,12 @@ class AdminListProcuredCommand
     : super(options: AdminListProcuredOption.values);
 
   @override
-  Future<void> runWithConfig(
+  Future<void> runWithOutput(
     final Configuration<AdminListProcuredOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final userEmail = commandConfig.value(AdminListProcuredOption.user);
-    final format = commandConfig.value(AdminListProcuredOption.format);
 
-    final output = CommandOutput(format: format, logger: logger);
     await renderCommand(
       output,
       operation: () => ProductAdminCommands.listProcuredProductsOperation(
@@ -122,8 +120,9 @@ class AdminProcurePlanCommand extends CloudCliCommand<AdminProcurePlanOption> {
     : super(options: AdminProcurePlanOption.values);
 
   @override
-  Future<void> runWithConfig(
+  Future<void> runWithOutput(
     final Configuration<AdminProcurePlanOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final userEmail = commandConfig.value(AdminProcurePlanOption.user);
     final productName = commandConfig.value(AdminProcurePlanOption.productName);
@@ -135,14 +134,17 @@ class AdminProcurePlanCommand extends CloudCliCommand<AdminProcurePlanOption> {
     );
     final override = commandConfig.value(AdminProcurePlanOption.overrideChecks);
 
-    await ProductAdminCommands.procurePlan(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      userEmail: userEmail,
-      planName: productName,
-      planVersion: ver,
-      trialPeriodOverride: trialPeriod,
-      overrideChecks: override,
+    await renderCommand(
+      output,
+      operation: () => ProductAdminCommands.procurePlan(
+        runner.serviceProvider.cloudApiClient,
+        userEmail: userEmail,
+        planName: productName,
+        planVersion: ver,
+        trialPeriodOverride: trialPeriod,
+        overrideChecks: override,
+      ),
+      textOutputUi: const ProductProcureTextUi(),
     );
   }
 }
@@ -197,8 +199,9 @@ class AdminCancelPlanCommand extends CloudCliCommand<AdminCancelPlanOption> {
     : super(options: AdminCancelPlanOption.values);
 
   @override
-  Future<void> runWithConfig(
+  Future<void> runWithOutput(
     final Configuration<AdminCancelPlanOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final userEmail = commandConfig.value(AdminCancelPlanOption.user);
     final subscriptionId = commandConfig.optionalValue(
@@ -215,13 +218,16 @@ class AdminCancelPlanCommand extends CloudCliCommand<AdminCancelPlanOption> {
         ? UuidValue.withValidation(subscriptionId)
         : null;
 
-    await ProductAdminCommands.cancelPlan(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      userEmail: userEmail,
-      subscriptionId: subscriptionUuid,
-      cloudProjectId: cloudProjectId,
-      terminateImmediately: terminateImmediately,
+    await renderCommand(
+      output,
+      operation: () => ProductAdminCommands.cancelPlan(
+        runner.serviceProvider.cloudApiClient,
+        userEmail: userEmail,
+        subscriptionId: subscriptionUuid,
+        cloudProjectId: cloudProjectId,
+        terminateImmediately: terminateImmediately,
+      ).then((final _) => const <String, Object?>{}),
+      textOutputUi: const ProductCancelTextUi(),
     );
   }
 }
