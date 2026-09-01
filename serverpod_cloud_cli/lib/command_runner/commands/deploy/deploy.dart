@@ -7,6 +7,8 @@ import 'package:ground_control_client/ground_control_client.dart'
         Client,
         DartSdkUnsupportedConstraintException,
         InvalidValueException,
+        NoPriorDeploymentException,
+        NotFoundException,
         ServerpodClientException;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/file_uploader_factory.dart';
@@ -31,6 +33,53 @@ import 'package:serverpod_cloud_cli/util/upload_description_metadata.dart';
 import 'prepare_project_files.dart';
 
 abstract class Deploy {
+  static Future<void> redeploy(
+    final Client cloudApiClient, {
+    required final CommandLogger logger,
+    required final String projectId,
+  }) async {
+    logger.init('Redeploying Serverpod Cloud project "$projectId".');
+
+    try {
+      await logger.progress(
+        'Requesting redeploy',
+        successMessage: 'Redeploy requested.',
+        padRight: StatusCommands.progressMessagePadLength,
+        newParagraph: true,
+        () async {
+          await cloudApiClient.capsules.redeployCapsule(
+            cloudCapsuleId: projectId,
+          );
+          return true;
+        },
+      );
+    } on NoPriorDeploymentException {
+      throw FailureException(
+        error: "This project hasn't been deployed yet.",
+        hint: 'Deploy it first with: scloud deploy',
+      );
+    } on NotFoundException catch (e) {
+      throw FailureException(error: e.message);
+    } on Exception catch (e, stackTrace) {
+      throw FailureException.nested(
+        e,
+        stackTrace,
+        'Redeploy failed. Please try again.',
+      );
+    }
+
+    logger.success(
+      'Redeploy started.',
+      followUp: 'Your changes take effect once the deployment finishes.',
+      newParagraph: true,
+    );
+    logger.terminalCommand(
+      'scloud status',
+      message: 'To view the deployment status, run this command:',
+      newParagraph: true,
+    );
+  }
+
   static Future<void> deploy(
     final Client cloudApiClient,
     final FileUploaderFactory fileUploaderFactory, {

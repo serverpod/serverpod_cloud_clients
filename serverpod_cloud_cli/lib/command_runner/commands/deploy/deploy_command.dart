@@ -6,6 +6,7 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy/deploy.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
 
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
 
@@ -45,6 +46,18 @@ class DeployShowFilesOption extends FlagOption {
       );
 }
 
+class DeployRedeployOption extends FlagOption {
+  const DeployRedeployOption({super.group})
+    : super(
+        argName: 'redeploy',
+        helpText:
+            'Redeploy the currently running build with the latest variables and '
+            'secrets. Skips zipping and uploading the project.',
+        defaultsTo: false,
+        negatable: false,
+      );
+}
+
 class DeployOutputOption extends FileOption {
   const DeployOutputOption({super.group})
     : super(
@@ -77,6 +90,7 @@ enum DeployCommandOption<V> implements OptionDefinition<V> {
   concurrency(DeployConcurrencyOption()),
   wetRun(DeployWetRunOption()),
   showFiles(DeployShowFilesOption()),
+  redeploy(DeployRedeployOption()),
   output(DeployOutputOption()),
   wait(AwaitOption()),
   dartVersion(DartSdkVersionOption()),
@@ -135,6 +149,10 @@ Examples
 
     \$ $baseCommand deploy --output deployment.zip
 
+  Redeploy the currently running build with the latest variables and secrets
+
+    \$ scloud deploy --redeploy
+
 ''';
 
   CloudDeployCommand({required super.logger})
@@ -148,6 +166,7 @@ Examples
     final concurrency = commandConfig.value(DeployCommandOption.concurrency);
     final wetRun = commandConfig.value(DeployCommandOption.wetRun);
     final showFiles = commandConfig.value(DeployCommandOption.showFiles);
+    final redeploy = commandConfig.value(DeployCommandOption.redeploy);
     final outputPath = commandConfig.optionalValue(DeployCommandOption.output);
     final wait = commandConfig.value(DeployCommandOption.wait);
     final dartVersionOverride = commandConfig.optionalValue(
@@ -156,6 +175,25 @@ Examples
     final skipDartPubGet = commandConfig.value(
       DeployCommandOption.skipDartPubGet,
     );
+
+    if (redeploy) {
+      if (wetRun ||
+          showFiles ||
+          outputPath != null ||
+          dartVersionOverride != null) {
+        throw CloudCliUsageException(
+          'The --redeploy option cannot be combined with '
+          '--wet-run, --show-files, --output, or --dart-version.',
+        );
+      }
+
+      await Deploy.redeploy(
+        runner.serviceProvider.cloudApiClient,
+        logger: logger,
+        projectId: projectId,
+      );
+      return;
+    }
 
     final projectDirectory = runner.verifiedProjectDirectory();
     logger.debug('Project directory is: ${projectDirectory.path}');
