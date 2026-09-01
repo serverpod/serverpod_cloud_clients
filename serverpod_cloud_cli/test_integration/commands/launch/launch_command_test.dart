@@ -19,12 +19,12 @@ import 'package:serverpod_cloud_shared/serverpod_cloud_shared.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
-import '../../test/util/inline_tui/helpers/fake_terminal.dart';
-import '../../test_utils/command_logger_matchers.dart';
-import '../../test_utils/project_factory.dart';
-import '../../test_utils/push_current_dir.dart';
-import '../../test_utils/test_command_logger.dart';
-import '../../test_utils/wait_for_callback_info.dart';
+import '../../../test/util/inline_tui/helpers/fake_terminal.dart';
+import '../../../test_utils/command_logger_matchers.dart';
+import '../../../test_utils/project_factory.dart';
+import '../../../test_utils/push_current_dir.dart';
+import '../../../test_utils/test_command_logger.dart';
+import '../../../test_utils/wait_for_callback_info.dart';
 
 /// A Serverpod config file content that declares a database,
 /// causing the database to be detected as used by the project.

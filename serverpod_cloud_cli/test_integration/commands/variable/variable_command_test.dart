@@ -14,8 +14,8 @@ import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:yaml_codec/yaml_codec.dart';
 
-import '../../test_utils/command_logger_matchers.dart';
-import '../../test_utils/test_command_logger.dart';
+import '../../../test_utils/command_logger_matchers.dart';
+import '../../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();

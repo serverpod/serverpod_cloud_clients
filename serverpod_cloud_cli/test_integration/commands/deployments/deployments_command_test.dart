@@ -15,9 +15,9 @@ import 'package:serverpod_cloud_cli/shared/base_command.dart';
 import 'package:test/test.dart';
 import 'package:yaml_codec/yaml_codec.dart';
 
-import '../../test/util/inline_tui/helpers/fake_terminal.dart';
-import '../../test_utils/command_logger_matchers.dart';
-import '../../test_utils/test_command_logger.dart';
+import '../../../test/util/inline_tui/helpers/fake_terminal.dart';
+import '../../../test_utils/command_logger_matchers.dart';
+import '../../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();

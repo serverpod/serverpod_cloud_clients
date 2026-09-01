@@ -16,8 +16,8 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_pro
 import 'package:serverpod_cloud_cli/persistent_storage/models/scloud_settings_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 
-import '../../test_utils/command_logger_matchers.dart';
-import '../../test_utils/test_command_logger.dart';
+import '../../../test_utils/command_logger_matchers.dart';
+import '../../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();
