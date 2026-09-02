@@ -7,7 +7,7 @@ class DeploymentListTextUi extends OutputWidget {
   DeploymentListTextUi({required this.utc, required this.baseCommand});
 
   @override
-  OutputWidget build(final OutputContext context) {
+  OutputWidget build(OutputContext context) {
     final deployments = context.get<List<Map<String, Object?>>>();
     if (deployments.isEmpty) {
       return CommandHintTextWidget(

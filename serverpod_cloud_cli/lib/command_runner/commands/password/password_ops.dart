@@ -61,7 +61,7 @@ abstract final class PasswordDefinitions {
     'serviceSecret': PasswordMetadata(
       category: PasswordCategory.services,
       notes: 'Insights password',
-      isValidValue: (final value) => value.length >= 20
+      isValidValue: (value) => value.length >= 20
           ? null
           : 'Password must be at least 20 characters long.',
     ),
@@ -98,7 +98,7 @@ abstract final class PasswordDefinitions {
     'jwtRefreshTokenHashPepper': PasswordMetadata(
       category: PasswordCategory.auth,
       notes: 'Used by serverpod_auth_idp_server',
-      isValidValue: (final value) => value.length >= 10
+      isValidValue: (value) => value.length >= 10
           ? null
           : 'Password must be at least 10 characters long.',
     ),
@@ -124,15 +124,15 @@ abstract final class PasswordDefinitions {
     ),
   };
 
-  static PasswordCategory getCategory(final String name) {
+  static PasswordCategory getCategory(String name) {
     return metadataMap[name]?.category ?? PasswordCategory.custom;
   }
 
-  static String? getNotes(final String name) {
+  static String? getNotes(String name) {
     return metadataMap[name]?.notes;
   }
 
-  static String getDisplayNotes(final String name) {
+  static String getDisplayNotes(String name) {
     final metadata = metadataMap[name];
     if (metadata == null) {
       return '';
@@ -141,15 +141,15 @@ abstract final class PasswordDefinitions {
     return metadata.notes;
   }
 
-  static String? isValidValue(final String name, final String value) {
+  static String? isValidValue(String name, String value) {
     return metadataMap[name]?.isValidValue(value);
   }
 
-  static String getFullSecretName(final String name) {
+  static String getFullSecretName(String name) {
     return '$prefix$name';
   }
 
-  static String? stripPrefix(final String secretName) {
+  static String? stripPrefix(String secretName) {
     if (secretName.startsWith(prefix)) {
       return secretName.substring(prefix.length);
     }
@@ -159,8 +159,8 @@ abstract final class PasswordDefinitions {
 
 abstract class PasswordOperations {
   static Future<List<PasswordInfo>> fetchPasswords(
-    final Client cloudApiClient, {
-    required final String projectId,
+    Client cloudApiClient, {
+    required String projectId,
   }) async {
     late List<String> userSecrets;
     late List<String> managedSecrets;
@@ -210,15 +210,15 @@ abstract class PasswordOperations {
   }
 
   static Future<List<Map<String, Object?>>> listPasswords(
-    final Client cloudApiClient, {
-    required final String projectId,
+    Client cloudApiClient, {
+    required String projectId,
   }) async {
     final passwords = await fetchPasswords(
       cloudApiClient,
       projectId: projectId,
     );
 
-    passwords.sort((final a, final b) {
+    passwords.sort((a, b) {
       final byCategory = a.category.index.compareTo(b.category.index);
       if (byCategory != 0) {
         return byCategory;
@@ -240,10 +240,10 @@ abstract class PasswordOperations {
   }
 
   static Future<void> setPassword(
-    final Client cloudApiClient, {
-    required final String projectId,
-    required final String name,
-    required final String value,
+    Client cloudApiClient, {
+    required String projectId,
+    required String name,
+    required String value,
   }) async {
     await setPasswords(
       cloudApiClient,
@@ -253,9 +253,9 @@ abstract class PasswordOperations {
   }
 
   static Future<void> setPasswords(
-    final Client cloudApiClient, {
-    required final String projectId,
-    required final Map<String, String> passwords,
+    Client cloudApiClient, {
+    required String projectId,
+    required Map<String, String> passwords,
   }) async {
     for (final MapEntry(key: name, value: value) in passwords.entries) {
       final validationError = PasswordDefinitions.isValidValue(name, value);
@@ -280,9 +280,9 @@ abstract class PasswordOperations {
   }
 
   static Future<void> unsetPassword(
-    final Client cloudApiClient, {
-    required final String projectId,
-    required final String name,
+    Client cloudApiClient, {
+    required String projectId,
+    required String name,
   }) async {
     final fullSecretName = PasswordDefinitions.getFullSecretName(name);
 

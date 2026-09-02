@@ -24,7 +24,7 @@ void main() {
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
     adminUserMode: true,
   );
@@ -51,7 +51,7 @@ void main() {
             includeArchived: any(named: 'includeArchived'),
           ),
         ).thenAnswer(
-          (final invocation) async => Future.value([
+          (invocation) async => Future.value([
             UserBuilder()
                 .withEmail('test@example.com')
                 .withCreatedAt(DateTime.parse('2025-07-02T11:00:00'))
@@ -70,8 +70,7 @@ void main() {
             userEmail: any(named: 'userEmail'),
           ),
         ).thenAnswer(
-          (final invocation) async =>
-              Future.value([('test-plan', 'PlanProduct')]),
+          (invocation) async => Future.value([('test-plan', 'PlanProduct')]),
         );
 
         commandResult = cli.run(['admin', 'list-users', '--include-archived']);
@@ -82,7 +81,7 @@ void main() {
       });
 
       test('then command outputs user list', () async {
-        await commandResult.catchError((final _) {});
+        await commandResult.catchError((_) {});
 
         expect(
           logger.lineCalls,
@@ -118,7 +117,7 @@ void main() {
             includeArchived: any(named: 'includeArchived'),
           ),
         ).thenAnswer(
-          (final invocation) async => Future.value([
+          (invocation) async => Future.value([
             UserBuilder()
                 .withEmail('test@example.com')
                 .withCreatedAt(DateTime.parse('2025-07-02T11:00:00'))
@@ -137,8 +136,7 @@ void main() {
             userEmail: any(named: 'userEmail'),
           ),
         ).thenAnswer(
-          (final invocation) async =>
-              Future.value([('test-plan', 'PlanProduct')]),
+          (invocation) async => Future.value([('test-plan', 'PlanProduct')]),
         );
 
         commandResult = cli.run([
@@ -189,7 +187,7 @@ void main() {
             includeArchived: any(named: 'includeArchived'),
           ),
         ).thenAnswer(
-          (final invocation) async => Future.value([
+          (invocation) async => Future.value([
             UserBuilder()
                 .withEmail('test@example.com')
                 .withCreatedAt(DateTime.parse('2025-07-02T11:00:00'))
@@ -208,8 +206,7 @@ void main() {
             userEmail: any(named: 'userEmail'),
           ),
         ).thenAnswer(
-          (final invocation) async =>
-              Future.value([('test-plan', 'PlanProduct')]),
+          (invocation) async => Future.value([('test-plan', 'PlanProduct')]),
         );
 
         commandResult = cli.run([

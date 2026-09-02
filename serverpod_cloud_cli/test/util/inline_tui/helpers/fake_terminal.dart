@@ -54,14 +54,14 @@ class FakeTerminal implements InlineTerminal {
   String get output => _output.toString();
 
   /// Feeds raw [bytes] as a single input chunk.
-  void sendBytes(final List<int> bytes) => _input.add(bytes);
+  void sendBytes(List<int> bytes) => _input.add(bytes);
 
   /// Queues [bytes] to be delivered as a single input chunk once a component
   /// subscribes (or immediately if one already has).
   ///
   /// Use this from integration tests where the component reading the input only
   /// starts listening later during an asynchronous command run.
-  void queueInput(final List<int> bytes) {
+  void queueInput(List<int> bytes) {
     _queuedInput.add(bytes);
     if (_input.hasListener) _flushQueuedInput();
   }
@@ -72,7 +72,7 @@ class FakeTerminal implements InlineTerminal {
   /// The whole sequence is delivered as one chunk; the key decoder and selection
   /// model process the presses in order, so this selects the option as if the
   /// user navigated to it and pressed Enter.
-  void queueSelectIndex(final int index, {final int fromIndex = 0}) {
+  void queueSelectIndex(int index, {int fromIndex = 0}) {
     final steps = index - fromIndex;
     final keys = <int>[
       for (var i = 0; i < steps.abs(); i++)
@@ -116,7 +116,7 @@ class FakeTerminal implements InlineTerminal {
   Stream<void> get interruptSignals => _interrupts.stream;
 
   @override
-  void write(final String text) => _output.write(text);
+  void write(String text) => _output.write(text);
 
   @override
   void enableRawMode() {

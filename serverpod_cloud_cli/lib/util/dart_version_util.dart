@@ -14,7 +14,7 @@ const platformFaultHint =
 /// error or a server that does not serve the policy endpoint.
 /// A deployment cannot select a Dart SDK version without them.
 Future<List<String>> fetchSupportedDartSdkVersions(
-  final Client cloudApiClient,
+  Client cloudApiClient,
 ) async {
   try {
     final policy = await cloudApiClient.platform.getDartSdkVersionPolicy();
@@ -32,10 +32,7 @@ Future<List<String>> fetchSupportedDartSdkVersions(
 }
 
 /// Throws [FailureException] if [value] is not a parseable [VersionConstraint].
-void ensureValidVersionConstraint(
-  final String value, {
-  final String? sourceDescription,
-}) {
+void ensureValidVersionConstraint(String value, {String? sourceDescription}) {
   final trimmed = value.trim();
   try {
     VersionConstraint.parse(trimmed);
@@ -55,7 +52,7 @@ final class ProjectDartVersionHint {
 
   static final RegExp _bareMajorMinorOverride = RegExp(r'^\d+\.\d+$');
 
-  static String? normalizeBareMajorMinorOverride(final String? value) {
+  static String? normalizeBareMajorMinorOverride(String? value) {
     final trimmed = value?.trim();
     if (trimmed == null || trimmed.isEmpty) {
       return null;

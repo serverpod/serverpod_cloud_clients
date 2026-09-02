@@ -87,7 +87,7 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
     : super(options: LaunchOption.values);
 
   @override
-  Future<void> runWithConfig(final Configuration commandConfig) async {
+  Future<void> runWithConfig(Configuration commandConfig) async {
     final projectConfigFile = globalConfiguration.projectConfigFile;
     final consoleServer = globalConfiguration.consoleServer;
     final openBrowser = globalConfiguration.browser;

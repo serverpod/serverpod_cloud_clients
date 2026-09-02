@@ -2,14 +2,15 @@
 import 'package:test/test.dart';
 
 import 'test_command_logger.dart';
+
 import 'package:collection/collection.dart';
 
 /// Test matcher to assert TestCommandLogger.error calls
 Matcher equalsErrorCall({
-  required final String message,
-  final Exception? exception,
-  final String? hint,
-  final bool newParagraph = false,
+  required String message,
+  Exception? exception,
+  String? hint,
+  bool newParagraph = false,
 }) {
   return _ErrorCallMatcher(
     ErrorCall(
@@ -27,7 +28,7 @@ class _ErrorCallMatcher extends Matcher {
   _ErrorCallMatcher(this.errorCall);
 
   @override
-  bool matches(final Object? item, final Map matchState) {
+  bool matches(Object? item, Map matchState) {
     if (item is! ErrorCall) return false;
     return item.message == errorCall.message &&
         item.exception?.toString() == errorCall.exception?.toString() &&
@@ -36,7 +37,7 @@ class _ErrorCallMatcher extends Matcher {
   }
 
   @override
-  Description describe(final Description description) {
+  Description describe(Description description) {
     return description.add(
       'an error log with message "${errorCall.message}", '
       'exception "${errorCall.exception}", '
@@ -47,10 +48,10 @@ class _ErrorCallMatcher extends Matcher {
 
   @override
   Description describeMismatch(
-    final item,
-    final Description mismatchDescription,
-    final Map matchState,
-    final bool verbose,
+    item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
   ) {
     if (item is! ErrorCall) {
       return mismatchDescription.add('is not an ErrorCall');
@@ -82,10 +83,7 @@ class _ErrorCallMatcher extends Matcher {
 }
 
 /// Test matcher to assert TestCommandLogger.info calls
-Matcher equalsInfoCall({
-  required final String message,
-  final bool newParagraph = false,
-}) {
+Matcher equalsInfoCall({required String message, bool newParagraph = false}) {
   return _InfoCallMatcher(
     InfoCall(message: message, newParagraph: newParagraph),
   );
@@ -97,14 +95,14 @@ class _InfoCallMatcher extends Matcher {
   _InfoCallMatcher(this.infoCall);
 
   @override
-  bool matches(final Object? item, final Map matchState) {
+  bool matches(Object? item, Map matchState) {
     if (item is! InfoCall) return false;
     return item.message == infoCall.message &&
         item.newParagraph == infoCall.newParagraph;
   }
 
   @override
-  Description describe(final Description description) {
+  Description describe(Description description) {
     return description.add(
       'an info log with message "${infoCall.message}" and newParagraph ${infoCall.newParagraph}',
     );
@@ -112,10 +110,10 @@ class _InfoCallMatcher extends Matcher {
 
   @override
   Description describeMismatch(
-    final item,
-    final Description mismatchDescription,
-    final Map matchState,
-    final bool verbose,
+    item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
   ) {
     if (item is! InfoCall) {
       return mismatchDescription.add('is not an InfoCall');
@@ -139,7 +137,7 @@ class _InfoCallMatcher extends Matcher {
 }
 
 /// Test matcher to assert TestCommandLogger.line calls
-Matcher equalsLineCall({required final String line}) {
+Matcher equalsLineCall({required String line}) {
   return _LineCallMatcher(LineCall(line: line));
 }
 
@@ -149,22 +147,22 @@ class _LineCallMatcher extends Matcher {
   _LineCallMatcher(this.lineCall);
 
   @override
-  bool matches(final Object? item, final Map matchState) {
+  bool matches(Object? item, Map matchState) {
     if (item is! LineCall) return false;
     return item.line == lineCall.line;
   }
 
   @override
-  Description describe(final Description description) {
+  Description describe(Description description) {
     return description.add('an info log with line "${lineCall.line}"');
   }
 
   @override
   Description describeMismatch(
-    final item,
-    final Description mismatchDescription,
-    final Map matchState,
-    final bool verbose,
+    item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
   ) {
     if (item is! LineCall) {
       return mismatchDescription.add('is not a LineCall');
@@ -184,9 +182,9 @@ class _LineCallMatcher extends Matcher {
 
 /// Test matcher to assert TestCommandLogger.list calls
 Matcher equalsListCall({
-  required final List<String> items,
-  final String? title,
-  final bool newParagraph = false,
+  required List<String> items,
+  String? title,
+  bool newParagraph = false,
 }) {
   return _ListCallMatcher(
     ListCall(items: items, title: title, newParagraph: newParagraph),
@@ -199,7 +197,7 @@ class _ListCallMatcher extends Matcher {
   _ListCallMatcher(this.listCall);
 
   @override
-  bool matches(final Object? item, final Map matchState) {
+  bool matches(Object? item, Map matchState) {
     if (item is! ListCall) return false;
 
     return ListEquality().equals(item.items, listCall.items) &&
@@ -208,7 +206,7 @@ class _ListCallMatcher extends Matcher {
   }
 
   @override
-  Description describe(final Description description) {
+  Description describe(Description description) {
     return description.add(
       'a list log with items "${listCall.items}", title "${listCall.title}", and newParagraph ${listCall.newParagraph}',
     );
@@ -216,10 +214,10 @@ class _ListCallMatcher extends Matcher {
 
   @override
   Description describeMismatch(
-    final item,
-    final Description mismatchDescription,
-    final Map matchState,
-    final bool verbose,
+    item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
   ) {
     if (item is! ListCall) {
       return mismatchDescription.add('is not a ListCall');
@@ -247,10 +245,10 @@ class _ListCallMatcher extends Matcher {
 
 /// Test matcher to assert TestCommandLogger.success calls
 Matcher equalsSuccessCall({
-  required final String message,
-  final bool trailingRocket = false,
-  final bool newParagraph = false,
-  final String? followUp,
+  required String message,
+  bool trailingRocket = false,
+  bool newParagraph = false,
+  String? followUp,
 }) {
   return _SuccessCallMatcher(
     SuccessCall(
@@ -268,7 +266,7 @@ class _SuccessCallMatcher extends Matcher {
   _SuccessCallMatcher(this.successCall);
 
   @override
-  bool matches(final Object? item, final Map matchState) {
+  bool matches(Object? item, Map matchState) {
     if (item is! SuccessCall) return false;
     return item.message == successCall.message &&
         item.trailingRocket == successCall.trailingRocket &&
@@ -277,7 +275,7 @@ class _SuccessCallMatcher extends Matcher {
   }
 
   @override
-  Description describe(final Description description) {
+  Description describe(Description description) {
     return description.add(
       'a success log with message "${successCall.message}", '
       'trailingRocket ${successCall.trailingRocket}, newParagraph ${successCall.newParagraph}, '
@@ -287,10 +285,10 @@ class _SuccessCallMatcher extends Matcher {
 
   @override
   Description describeMismatch(
-    final item,
-    final Description mismatchDescription,
-    final Map matchState,
-    final bool verbose,
+    item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
   ) {
     if (item is! SuccessCall) {
       return mismatchDescription.add('is not a SuccessCall');
@@ -325,9 +323,9 @@ class _SuccessCallMatcher extends Matcher {
 
 /// Test matcher to assert TestCommandLogger.terminalCommand calls
 Matcher equalsTerminalCommandCall({
-  required final String command,
-  final String? message,
-  final bool newParagraph = false,
+  required String command,
+  String? message,
+  bool newParagraph = false,
 }) {
   return _TerminalCommandCallMatcher(
     TerminalCommandCall(
@@ -344,7 +342,7 @@ class _TerminalCommandCallMatcher extends Matcher {
   _TerminalCommandCallMatcher(this.terminalCommandCall);
 
   @override
-  bool matches(final Object? item, final Map matchState) {
+  bool matches(Object? item, Map matchState) {
     if (item is! TerminalCommandCall) return false;
     return item.command == terminalCommandCall.command &&
         item.message == terminalCommandCall.message &&
@@ -352,7 +350,7 @@ class _TerminalCommandCallMatcher extends Matcher {
   }
 
   @override
-  Description describe(final Description description) {
+  Description describe(Description description) {
     return description.add(
       'a terminal command log with command "${terminalCommandCall.command}", '
       'message "${terminalCommandCall.message}", and newParagraph ${terminalCommandCall.newParagraph}',
@@ -361,10 +359,10 @@ class _TerminalCommandCallMatcher extends Matcher {
 
   @override
   Description describeMismatch(
-    final item,
-    final Description mismatchDescription,
-    final Map matchState,
-    final bool verbose,
+    item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
   ) {
     if (item is! TerminalCommandCall) {
       return mismatchDescription.add('is not a TerminalCommandCall');
@@ -396,9 +394,9 @@ class _TerminalCommandCallMatcher extends Matcher {
 
 /// Test matcher to assert TestCommandLogger.warning calls
 Matcher equalsWarningCall({
-  required final String message,
-  final String? hint,
-  final bool newParagraph = false,
+  required String message,
+  String? hint,
+  bool newParagraph = false,
 }) {
   return _WarningCallMatcher(
     WarningCall(message: message, hint: hint, newParagraph: newParagraph),
@@ -411,7 +409,7 @@ class _WarningCallMatcher extends Matcher {
   _WarningCallMatcher(this.warningCall);
 
   @override
-  bool matches(final Object? item, final Map matchState) {
+  bool matches(Object? item, Map matchState) {
     if (item is! WarningCall) return false;
     return item.message == warningCall.message &&
         item.hint == warningCall.hint &&
@@ -419,7 +417,7 @@ class _WarningCallMatcher extends Matcher {
   }
 
   @override
-  Description describe(final Description description) {
+  Description describe(Description description) {
     return description.add(
       'a warning log with message "${warningCall.message}", '
       'hint "${warningCall.hint}", and newParagraph ${warningCall.newParagraph}',
@@ -428,10 +426,10 @@ class _WarningCallMatcher extends Matcher {
 
   @override
   Description describeMismatch(
-    final item,
-    final Description mismatchDescription,
-    final Map matchState,
-    final bool verbose,
+    item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
   ) {
     if (item is! WarningCall) {
       return mismatchDescription.add('is not a WarningCall');
@@ -459,8 +457,8 @@ class _WarningCallMatcher extends Matcher {
 
 /// Test matcher to assert TestCommandLogger.progress calls
 Matcher equalsProgressCall({
-  required final String message,
-  final bool newParagraph = false,
+  required String message,
+  bool newParagraph = false,
 }) {
   return _ProgressCallMatcher(
     ProgressCall(message: message, newParagraph: newParagraph),
@@ -473,14 +471,14 @@ class _ProgressCallMatcher extends Matcher {
   _ProgressCallMatcher(this.progressCall);
 
   @override
-  bool matches(final Object? item, final Map matchState) {
+  bool matches(Object? item, Map matchState) {
     if (item is! ProgressCall) return false;
     return item.message == progressCall.message &&
         item.newParagraph == progressCall.newParagraph;
   }
 
   @override
-  Description describe(final Description description) {
+  Description describe(Description description) {
     return description.add(
       'a progress log with message "${progressCall.message}" and newParagraph ${progressCall.newParagraph}',
     );
@@ -488,10 +486,10 @@ class _ProgressCallMatcher extends Matcher {
 
   @override
   Description describeMismatch(
-    final item,
-    final Description mismatchDescription,
-    final Map matchState,
-    final bool verbose,
+    item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
   ) {
     if (item is! ProgressCall) {
       return mismatchDescription.add('is not a ProgressCall');
@@ -517,10 +515,7 @@ class _ProgressCallMatcher extends Matcher {
 }
 
 /// Test matcher to assert TestCommandLogger.confirm calls
-Matcher equalsConfirmCall({
-  required final String message,
-  final bool? defaultValue,
-}) {
+Matcher equalsConfirmCall({required String message, bool? defaultValue}) {
   return _ConfirmCallMatcher(
     ConfirmCall(message: message, defaultValue: defaultValue),
   );
@@ -532,14 +527,14 @@ class _ConfirmCallMatcher extends Matcher {
   _ConfirmCallMatcher(this.confirmCall);
 
   @override
-  bool matches(final Object? item, final Map matchState) {
+  bool matches(Object? item, Map matchState) {
     if (item is! ConfirmCall) return false;
     return item.message == confirmCall.message &&
         item.defaultValue == confirmCall.defaultValue;
   }
 
   @override
-  Description describe(final Description description) {
+  Description describe(Description description) {
     return description.add(
       'a confirm log with message "${confirmCall.message}" and defaultValue ${confirmCall.defaultValue}',
     );
@@ -547,10 +542,10 @@ class _ConfirmCallMatcher extends Matcher {
 
   @override
   Description describeMismatch(
-    final item,
-    final Description mismatchDescription,
-    final Map matchState,
-    final bool verbose,
+    item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
   ) {
     if (item is! ConfirmCall) {
       return mismatchDescription.add('is not a ConfirmCall');
@@ -574,10 +569,7 @@ class _ConfirmCallMatcher extends Matcher {
 }
 
 /// Test matcher to assert TestCommandLogger.input calls
-Matcher equalsInputCall({
-  required final String message,
-  final String? defaultValue,
-}) {
+Matcher equalsInputCall({required String message, String? defaultValue}) {
   return _InputCallMatcher(
     InputCall(message: message, defaultValue: defaultValue),
   );
@@ -589,14 +581,14 @@ class _InputCallMatcher extends Matcher {
   _InputCallMatcher(this.inputCall);
 
   @override
-  bool matches(final Object? item, final Map matchState) {
+  bool matches(Object? item, Map matchState) {
     if (item is! InputCall) return false;
     return item.message == inputCall.message &&
         item.defaultValue == inputCall.defaultValue;
   }
 
   @override
-  Description describe(final Description description) {
+  Description describe(Description description) {
     return description.add(
       'an input log with message "${inputCall.message}" and defaultValue ${inputCall.defaultValue}',
     );
@@ -604,10 +596,10 @@ class _InputCallMatcher extends Matcher {
 
   @override
   Description describeMismatch(
-    final item,
-    final Description mismatchDescription,
-    final Map matchState,
-    final bool verbose,
+    item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
   ) {
     if (item is! InputCall) {
       return mismatchDescription.add('is not an InputCall');
@@ -630,10 +622,7 @@ class _InputCallMatcher extends Matcher {
   }
 }
 
-Matcher equalsBoxCall({
-  required final String message,
-  final bool newParagraph = false,
-}) {
+Matcher equalsBoxCall({required String message, bool newParagraph = false}) {
   return _BoxCallMatcher(BoxCall(message: message, newParagraph: newParagraph));
 }
 
@@ -643,14 +632,14 @@ class _BoxCallMatcher extends Matcher {
   _BoxCallMatcher(this.boxCall);
 
   @override
-  bool matches(final Object? item, final Map matchState) {
+  bool matches(Object? item, Map matchState) {
     if (item is! BoxCall) return false;
     return item.message == boxCall.message &&
         item.newParagraph == boxCall.newParagraph;
   }
 
   @override
-  Description describe(final Description description) {
+  Description describe(Description description) {
     return description.add(
       'a box log with message "${boxCall.message}" and newParagraph ${boxCall.newParagraph}',
     );
@@ -658,10 +647,10 @@ class _BoxCallMatcher extends Matcher {
 
   @override
   Description describeMismatch(
-    final item,
-    final Description mismatchDescription,
-    final Map matchState,
-    final bool verbose,
+    item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
   ) {
     if (item is! BoxCall) {
       return mismatchDescription.add('is not a BoxCall');

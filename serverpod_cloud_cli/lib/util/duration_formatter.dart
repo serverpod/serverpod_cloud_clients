@@ -13,7 +13,7 @@ extension DurationFormatter on Duration {
 
 /// Formats a duration in a friendly format
 /// like "1d 2h 3m 4s 5ms 6us".
-String friendlyFormatDuration(final Duration value) {
+String friendlyFormatDuration(Duration value) {
   if (value == Duration.zero) return '0s';
 
   final sign = value.isNegative ? '-' : '';
@@ -25,7 +25,7 @@ String friendlyFormatDuration(final Duration value) {
   final us = _unitStr(value.inMicroseconds, 1000, 'us');
 
   final elements = [d, h, m, s, ms, us];
-  final displayed = elements.where((final element) => element.isNotEmpty);
+  final displayed = elements.where((element) => element.isNotEmpty);
 
   return '$sign${displayed.join(' ')}';
 }
@@ -38,9 +38,9 @@ String friendlyFormatDuration(final Duration value) {
 /// timestamp instead, like "2026-07-23 09:15:05" — in the local time
 /// zone, or in UTC if [inUtc] is set.
 String friendlyPastTimeFormat(
-  final DateTime time, {
-  final bool inUtc = false,
-  final DateTime? now,
+  DateTime time, {
+  bool inUtc = false,
+  DateTime? now,
 }) {
   final elapsed = (now ?? DateTime.now()).difference(time);
   if (elapsed > _relativeTimeLimit) {
@@ -54,7 +54,7 @@ String friendlyPastTimeFormat(
 ///
 /// Only the largest applicable time unit is shown,
 /// and durations under 5 seconds are treated as "just now".
-String friendlyAgoFormat(final Duration elapsed) {
+String friendlyAgoFormat(Duration elapsed) {
   if (elapsed.inSeconds < 5) {
     return 'just now';
   }
@@ -70,12 +70,12 @@ String friendlyAgoFormat(final Duration elapsed) {
   return _pluralizedAgo(elapsed.inDays, 'day');
 }
 
-String _pluralizedAgo(final int count, final String unit) {
+String _pluralizedAgo(int count, String unit) {
   final pluralizedUnit = count == 1 ? unit : '${unit}s';
   return '$count $pluralizedUnit ago';
 }
 
-String _unitStr(final int value, final int? mod, final String unit) {
+String _unitStr(int value, int? mod, String unit) {
   final absValue = value.abs();
   if (mod == null) {
     return absValue > 0 ? '$absValue$unit' : '';

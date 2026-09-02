@@ -5,10 +5,7 @@ import 'helpers/fake_terminal.dart';
 
 /// A spinner scheduler that never ticks, for tests that don't drive the
 /// animation themselves.
-void Function() _noTicker(
-  final Duration period,
-  final void Function() onTick,
-) => () {};
+void Function() _noTicker(Duration period, void Function() onTick) => () {};
 
 void main() {
   group('Given a ScrollingSection', () {
@@ -372,7 +369,7 @@ void main() {
         rows: 3,
         heading: 'Building',
         elapsed: () => Duration.zero,
-        scheduleTicker: (final period, final onTick) {
+        scheduleTicker: (period, onTick) {
           tick = onTick;
           return () {};
         },
@@ -395,7 +392,7 @@ void main() {
         rows: 3,
         heading: 'Building',
         elapsed: () => elapsed,
-        scheduleTicker: (final period, final onTick) {
+        scheduleTicker: (period, onTick) {
           tick = onTick;
           return () {};
         },
@@ -419,7 +416,7 @@ void main() {
         heading: 'Building',
         failedMessage: 'Build failed',
         elapsed: () => const Duration(milliseconds: 500),
-        scheduleTicker: (final period, final onTick) =>
+        scheduleTicker: (period, onTick) =>
             () => cancelled = true,
       )..appendLine('boom');
 

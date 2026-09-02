@@ -7,7 +7,7 @@ import 'package:serverpod_cloud_cli/constants.dart' show VersionConstants;
 /// True when the pubspec's Serverpod constraint does not allow any
 /// [VersionConstants.serverpodMultiPodletSafeMinVersion] or newer release.
 bool serverpodConstraintPrecludesMultiInstanceSafeRelease(
-  final String? serverpodVersionConstraint,
+  String? serverpodVersionConstraint,
 ) {
   if (serverpodVersionConstraint == null) {
     return false;
@@ -27,7 +27,7 @@ bool serverpodConstraintPrecludesMultiInstanceSafeRelease(
 
 /// True when compute is configured for more than one running podlet
 /// at minimum or maximum scale.
-bool computeUsesMoreThanOneInstance(final ComputeInfo compute) =>
+bool computeUsesMoreThanOneInstance(ComputeInfo compute) =>
     compute.minInstances > 1 || compute.maxInstances > 1;
 
 /// When the project cannot resolve to Serverpod
@@ -35,10 +35,10 @@ bool computeUsesMoreThanOneInstance(final ComputeInfo compute) =>
 /// is scaled beyond a single podlet, logs a warning. Failures reading
 /// compute are ignored (debug log only).
 Future<void> warnIfLegacyServerpodWithMultipleInstances({
-  required final Client cloudApiClient,
-  required final String projectId,
-  required final CommandLogger logger,
-  required final String? serverpodVersionConstraint,
+  required Client cloudApiClient,
+  required String projectId,
+  required CommandLogger logger,
+  required String? serverpodVersionConstraint,
 }) async {
   if (!serverpodConstraintPrecludesMultiInstanceSafeRelease(
     serverpodVersionConstraint,

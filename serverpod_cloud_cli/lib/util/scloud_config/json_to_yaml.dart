@@ -1,17 +1,14 @@
-String jsonToYaml(
-  final Map<String, dynamic> data, {
-  final int indentation = 2,
-}) {
+String jsonToYaml(Map<String, dynamic> data, {int indentation = 2}) {
   final buffer = StringBuffer();
   _convertToYaml(data, buffer, indentation: indentation);
   return buffer.toString();
 }
 
 void _convertToYaml(
-  final dynamic value,
-  final StringBuffer buffer, {
-  final int indentation = 2,
-  final int currentIndent = 0,
+  dynamic value,
+  StringBuffer buffer, {
+  int indentation = 2,
+  int currentIndent = 0,
 }) {
   if (value is Map<String, dynamic>) {
     if (value.isEmpty) {
@@ -19,7 +16,7 @@ void _convertToYaml(
       return;
     }
 
-    value.forEach((final key, final val) {
+    value.forEach((key, val) {
       _writeIndent(buffer, currentIndent);
       buffer.write('$key:');
 
@@ -76,6 +73,6 @@ void _convertToYaml(
   buffer.writeln(value.toString());
 }
 
-void _writeIndent(final StringBuffer buffer, final int indent) {
+void _writeIndent(StringBuffer buffer, int indent) {
   buffer.write(' ' * indent);
 }

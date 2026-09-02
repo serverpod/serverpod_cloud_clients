@@ -70,67 +70,67 @@ class DeployAttemptBuilder {
     return this;
   }
 
-  DeployAttemptBuilder withCloudCapsuleId(final String cloudCapsuleId) {
+  DeployAttemptBuilder withCloudCapsuleId(String cloudCapsuleId) {
     _cloudCapsuleId = cloudCapsuleId;
     return this;
   }
 
-  DeployAttemptBuilder withAttemptId(final UuidValue attemptId) {
+  DeployAttemptBuilder withAttemptId(UuidValue attemptId) {
     _attemptId = attemptId;
     return this;
   }
 
-  DeployAttemptBuilder withStatus(final DeployProgressStatus status) {
+  DeployAttemptBuilder withStatus(DeployProgressStatus status) {
     _status = status;
     return this;
   }
 
-  DeployAttemptBuilder withStatusInfo(final String? statusInfo) {
+  DeployAttemptBuilder withStatusInfo(String? statusInfo) {
     _statusInfo = statusInfo;
     return this;
   }
 
-  DeployAttemptBuilder withServerpodVersion(final String? serverpodVersion) {
+  DeployAttemptBuilder withServerpodVersion(String? serverpodVersion) {
     _serverpodVersion = serverpodVersion;
     return this;
   }
 
-  DeployAttemptBuilder withDartVersion(final String? dartVersion) {
+  DeployAttemptBuilder withDartVersion(String? dartVersion) {
     _dartVersion = dartVersion;
     return this;
   }
 
-  DeployAttemptBuilder withCommitHash(final String? commitHash) {
+  DeployAttemptBuilder withCommitHash(String? commitHash) {
     _commitHash = commitHash;
     return this;
   }
 
-  DeployAttemptBuilder withCommitMessage(final String? commitMessage) {
+  DeployAttemptBuilder withCommitMessage(String? commitMessage) {
     _commitMessage = commitMessage;
     return this;
   }
 
-  DeployAttemptBuilder withBranch(final String? branch) {
+  DeployAttemptBuilder withBranch(String? branch) {
     _branch = branch;
     return this;
   }
 
-  DeployAttemptBuilder withDeployedBy(final User? deployedBy) {
+  DeployAttemptBuilder withDeployedBy(User? deployedBy) {
     _deployedBy = deployedBy;
     return this;
   }
 
-  DeployAttemptBuilder withStages(final List<DeployAttemptStage> stages) {
+  DeployAttemptBuilder withStages(List<DeployAttemptStage> stages) {
     _stages = stages;
     return this;
   }
 
-  DeployAttemptBuilder withStartedAt(final DateTime? startedAt) {
+  DeployAttemptBuilder withStartedAt(DateTime? startedAt) {
     _startedAt = startedAt;
     return this;
   }
 
-  DeployAttemptBuilder withEndedAt(final DateTime? endedAt) {
+  DeployAttemptBuilder withEndedAt(DateTime? endedAt) {
     _endedAt = endedAt;
     return this;
   }
@@ -155,7 +155,7 @@ class DeployAttemptBuilder {
       deployedBy: _deployedBy,
       stages: _stages
           ?.map(
-            (final e) => e.copyWith(
+            (e) => e.copyWith(
               attemptId: _attemptId,
               cloudCapsuleId: _cloudCapsuleId,
             ),

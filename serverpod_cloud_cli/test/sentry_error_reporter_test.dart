@@ -234,18 +234,15 @@ void main() {
     final capturedErrors = <Object>[];
     final capturedStackTraces = <StackTrace>[];
 
-    Future<void> recordingCapture(
-      final Object error,
-      final StackTrace stackTrace,
-    ) async {
+    Future<void> recordingCapture(Object error, StackTrace stackTrace) async {
       capturedErrors.add(error);
       capturedStackTraces.add(stackTrace);
     }
 
     SentryErrorReporter createReporter({
-      final String dsn = 'https://key@sentry.example.com/1',
-      final Duration flushTimeout = const Duration(seconds: 3),
-      final SentryCapture? captureOverride,
+      String dsn = 'https://key@sentry.example.com/1',
+      Duration flushTimeout = const Duration(seconds: 3),
+      SentryCapture? captureOverride,
     }) {
       return SentryErrorReporter(
         dsn: dsn,
@@ -377,8 +374,7 @@ void main() {
           'then report completes after the flush timeout', () async {
         final reporter = createReporter(
           flushTimeout: const Duration(milliseconds: 50),
-          captureOverride: (final error, final stackTrace) =>
-              Completer<void>().future,
+          captureOverride: (error, stackTrace) => Completer<void>().future,
         );
         reporter.analyticsConsent = true;
         final stopwatch = Stopwatch()..start();
@@ -394,7 +390,7 @@ void main() {
       test('when the capture throws '
           'then report completes normally', () async {
         final reporter = createReporter(
-          captureOverride: (final error, final stackTrace) =>
+          captureOverride: (error, stackTrace) =>
               throw StateError('sentry is broken'),
         );
         reporter.analyticsConsent = true;

@@ -18,7 +18,7 @@ void main() {
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
   );
 
@@ -28,10 +28,10 @@ void main() {
   const projectId = 'projectId';
 
   DatabaseSnapshot snapshot({
-    final String id = 'snap-1',
-    final String name = 'nightly',
-    final bool manual = true,
-    final DateTime? expiresAt,
+    String id = 'snap-1',
+    String name = 'nightly',
+    bool manual = true,
+    DateTime? expiresAt,
   }) => DatabaseSnapshot(
     id: id,
     name: name,
@@ -68,7 +68,7 @@ void main() {
             name: any(named: 'name'),
             expiresAt: any(named: 'expiresAt'),
           ),
-        ).thenAnswer((final _) async => snapshot());
+        ).thenAnswer((_) async => snapshot());
       });
 
       tearDownAll(() {
@@ -81,10 +81,7 @@ void main() {
       test('then succeeds and outputs the snapshot', () async {
         await cli.run(['db', 'backup', 'create', '--project', projectId]);
 
-        expect(
-          logger.lineCalls.any((final c) => c.line.contains('snap-1')),
-          isTrue,
-        );
+        expect(logger.lineCalls.any((c) => c.line.contains('snap-1')), isTrue);
       });
 
       test('then calls createSnapshot without expiry by default', () async {
@@ -136,7 +133,7 @@ void main() {
               cloudCapsuleId: any(named: 'cloudCapsuleId'),
             ),
           ).thenAnswer(
-            (final _) async => [
+            (_) async => [
               snapshot(id: 'snap-1', name: 'nightly', manual: false),
               snapshot(id: 'snap-2', name: 'manual-1'),
             ],
@@ -150,16 +147,13 @@ void main() {
         test('then outputs a table with the snapshots', () async {
           await cli.run(['db', 'backup', 'list', '--project', projectId]);
 
+          expect(logger.lineCalls.any((c) => c.line.contains('Name')), isTrue);
           expect(
-            logger.lineCalls.any((final c) => c.line.contains('Name')),
+            logger.lineCalls.any((c) => c.line.contains('snap-1')),
             isTrue,
           );
           expect(
-            logger.lineCalls.any((final c) => c.line.contains('snap-1')),
-            isTrue,
-          );
-          expect(
-            logger.lineCalls.any((final c) => c.line.contains('snap-2')),
+            logger.lineCalls.any((c) => c.line.contains('snap-2')),
             isTrue,
           );
         });
@@ -171,7 +165,7 @@ void main() {
             () => client.database.listSnapshots(
               cloudCapsuleId: any(named: 'cloudCapsuleId'),
             ),
-          ).thenAnswer((final _) async => []);
+          ).thenAnswer((_) async => []);
         });
 
         tearDownAll(() {
@@ -183,13 +177,13 @@ void main() {
 
           expect(
             logger.infoCalls.any(
-              (final c) => c.message.contains('No snapshots found'),
+              (c) => c.message.contains('No snapshots found'),
             ),
             isTrue,
           );
           expect(
             logger.terminalCommandCalls.any(
-              (final c) => c.command.contains('scloud db backup create'),
+              (c) => c.command.contains('scloud db backup create'),
             ),
             isTrue,
           );
@@ -204,7 +198,7 @@ void main() {
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
             snapshotId: any(named: 'snapshotId'),
           ),
-        ).thenAnswer((final _) async {});
+        ).thenAnswer((_) async {});
       });
 
       tearDownAll(() {
@@ -262,7 +256,7 @@ void main() {
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
             snapshotId: any(named: 'snapshotId'),
           ),
-        ).thenAnswer((final _) async {});
+        ).thenAnswer((_) async {});
       });
 
       tearDownAll(() {
@@ -322,7 +316,7 @@ void main() {
             hour: any(named: 'hour'),
             retention: any(named: 'retention'),
           ),
-        ).thenAnswer((final _) async {});
+        ).thenAnswer((_) async {});
       });
 
       tearDownAll(() {
@@ -395,7 +389,7 @@ void main() {
           result,
           throwsA(
             isA<UsageException>().having(
-              (final e) => e.message,
+              (e) => e.message,
               'message',
               'The --day value must be between 1 and 7 for a weekly schedule.',
             ),
@@ -421,7 +415,7 @@ void main() {
               cloudCapsuleId: any(named: 'cloudCapsuleId'),
             ),
           ).thenAnswer(
-            (final _) async => BackupSchedule(
+            (_) async => BackupSchedule(
               frequency: BackupFrequency.weekly,
               day: 2,
               hour: 4,
@@ -438,11 +432,11 @@ void main() {
           await cli.run(['db', 'schedule', 'show', '--project', projectId]);
 
           expect(
-            logger.lineCalls.any((final c) => c.line.contains('weekly')),
+            logger.lineCalls.any((c) => c.line.contains('weekly')),
             isTrue,
           );
           expect(
-            logger.lineCalls.any((final c) => c.line.contains('30 days')),
+            logger.lineCalls.any((c) => c.line.contains('30 days')),
             isTrue,
           );
         });
@@ -454,7 +448,7 @@ void main() {
             () => client.database.getBackupSchedule(
               cloudCapsuleId: any(named: 'cloudCapsuleId'),
             ),
-          ).thenAnswer((final _) async => null);
+          ).thenAnswer((_) async => null);
         });
 
         tearDownAll(() {
@@ -466,7 +460,7 @@ void main() {
 
           expect(
             logger.infoCalls.any(
-              (final c) => c.message.contains('No backup schedule'),
+              (c) => c.message.contains('No backup schedule'),
             ),
             isTrue,
           );
@@ -484,7 +478,7 @@ void main() {
             hour: any(named: 'hour'),
             retention: any(named: 'retention'),
           ),
-        ).thenAnswer((final _) async {});
+        ).thenAnswer((_) async {});
       });
 
       tearDownAll(() {

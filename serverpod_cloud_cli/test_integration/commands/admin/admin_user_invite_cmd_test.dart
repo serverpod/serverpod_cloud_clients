@@ -19,7 +19,7 @@ void main() {
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
     adminUserMode: true,
   );
@@ -41,7 +41,7 @@ void main() {
       setUp(() async {
         when(
           () => client.adminUsers.inviteUser(email: any(named: 'email')),
-        ).thenAnswer((final invocation) async => Future.value());
+        ).thenAnswer((invocation) async => Future.value());
 
         commandResult = cli.run([
           'admin',
@@ -56,7 +56,7 @@ void main() {
       });
 
       test('then command outputs success message', () async {
-        await commandResult.catchError((final _) {});
+        await commandResult.catchError((_) {});
 
         expect(
           logger.successCalls.first,

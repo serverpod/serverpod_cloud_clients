@@ -11,7 +11,7 @@ abstract final class CliRunContextResolver {
   /// Contains command names only - never option values or positional
   /// arguments, since those can hold project ids and other user data.
   /// Returns null if no command was resolved.
-  static String? commandPath(final ArgResults topLevelResults) {
+  static String? commandPath(ArgResults topLevelResults) {
     final names = <String>[];
     ArgResults? commandResults = topLevelResults.command;
     while (commandResults != null) {
@@ -33,15 +33,13 @@ abstract final class CliRunContextResolver {
   ///
   /// Contains flag and option names only - never their values, since those
   /// can hold project ids and other user data.
-  static List<String> commandFlags(final ArgResults topLevelResults) {
+  static List<String> commandFlags(ArgResults topLevelResults) {
     final flags = <String>[];
     ArgResults? commandResults = topLevelResults;
     while (commandResults != null) {
       final results = commandResults;
       flags.addAll(
-        results.options
-            .where(results.wasParsed)
-            .map((final option) => '--$option'),
+        results.options.where(results.wasParsed).map((option) => '--$option'),
       );
       commandResults = results.command;
     }
@@ -51,7 +49,7 @@ abstract final class CliRunContextResolver {
 
   /// Returns the id of the cloud user logged in on [localStoragePath],
   /// or null if the user is not logged in.
-  static String? fetchCloudUserId(final String localStoragePath) {
+  static String? fetchCloudUserId(String localStoragePath) {
     final cloudUser = ResourceManager.tryFetchServerpodCloudUserDataSync(
       localStoragePath: localStoragePath,
     );

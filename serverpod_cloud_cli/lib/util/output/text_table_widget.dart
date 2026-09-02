@@ -23,7 +23,7 @@ class TextTableWidget extends OutputWidget {
   });
 
   @override
-  void render({required final CommandLogger logger}) {
+  void render({required CommandLogger logger}) {
     final printer = TablePrinter(
       headers: content.headers,
       rows: content.rows,
@@ -52,7 +52,7 @@ class FormattedTableWidget<R extends Object> extends OutputWidget {
   });
 
   @override
-  OutputWidget build(final OutputContext context) {
+  OutputWidget build(OutputContext context) {
     final object = context.get<List<R>>();
     final content = formatter.format(object);
     return TextTableWidget(
@@ -82,12 +82,12 @@ class TableColumnFormatter<R extends Object> {
 
   TableColumnFormatter.forElement(
     this.heading, {
-    required final ValueGetter<R> getter,
+    required ValueGetter<R> getter,
   }) : formatter = objValueFormatter(getter: getter);
 
   static TableColumnFormatter<Map<String, Object?>> forKey(
-    final String heading, {
-    required final String key,
+    String heading, {
+    required String key,
   }) {
     return TableColumnFormatter<Map<String, Object?>>(
       heading,
@@ -110,7 +110,7 @@ class TextTableOutputFormatter<R extends Object>
   const TextTableOutputFormatter({required this.columns, required super.utc});
 
   @override
-  TextTableData format(final List<R> objects) {
+  TextTableData format(List<R> objects) {
     final headers = [for (final column in columns) column.heading];
 
     return TextTableData(headers, [
@@ -126,13 +126,13 @@ class StringColumnListWidget extends OutputWidget {
   const StringColumnListWidget({required this.heading});
 
   @override
-  OutputWidget build(final OutputContext context) {
+  OutputWidget build(OutputContext context) {
     return FormattedTableWidget(
       formatter: TextTableOutputFormatter(
         columns: [
           TableColumnFormatter<String>.forElement(
             heading,
-            getter: (final value) => value,
+            getter: (value) => value,
           ),
         ],
         utc: false,

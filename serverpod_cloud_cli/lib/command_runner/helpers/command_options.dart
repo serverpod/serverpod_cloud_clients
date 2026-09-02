@@ -22,26 +22,24 @@ class ProjectIdOption extends StringOption {
   /// Project ID option that can be passed as command line argument
   /// (and if asFirstArg is true, also as the first positional argument),
   /// env variable, and scloud config file.
-  const ProjectIdOption({
-    final bool asFirstArg = false,
-    final bool excludeSettings = false,
-  }) : this._(
-         asFirstArg: asFirstArg,
-         excludeSettings: excludeSettings,
-         mandatory: true,
-         helpText:
-             '${asFirstArg ? _helpTextFirstArg : _helpText}'
-             '\nCan be omitted for existing projects that are linked'
-             ' (see the "project link" command)'
-             '${excludeSettings ? '.' : ' or if a global project context is set'
-                       ' (see the "context set" command).'}',
-       );
+  const ProjectIdOption({bool asFirstArg = false, bool excludeSettings = false})
+    : this._(
+        asFirstArg: asFirstArg,
+        excludeSettings: excludeSettings,
+        mandatory: true,
+        helpText:
+            '${asFirstArg ? _helpTextFirstArg : _helpText}'
+            '\nCan be omitted for existing projects that are linked'
+            ' (see the "project link" command)'
+            '${excludeSettings ? '.' : ' or if a global project context is set'
+                      ' (see the "context set" command).'}',
+      );
 
   /// If [asFirstArg] is true, the project ID can be also passed as the first positional argument.
   /// If [excludeSettings] is true, the user's context setting will not affect this value.
   const ProjectIdOption._({
-    final bool asFirstArg = false,
-    final bool excludeSettings = false,
+    bool asFirstArg = false,
+    bool excludeSettings = false,
     super.mandatory,
     super.helpText,
     super.group,
@@ -61,7 +59,7 @@ class ProjectIdOption extends StringOption {
   /// Used for commands that require explicit command line argument for the
   /// project ID, i.e. not from env variable or config files.
   /// (And if asFirstArg is true, also as the first positional argument.)
-  const ProjectIdOption.argsOnly({final bool asFirstArg = false})
+  const ProjectIdOption.argsOnly({bool asFirstArg = false})
     : super(
         argName: _projectIdArgName,
         argAbbrev: _projectIdArgAbbrev,
@@ -76,9 +74,9 @@ class ProjectIdOption extends StringOption {
   /// If [asFirstArg] is true, the project ID can be also passed as the first positional argument.
   /// If [excludeSettings] is true, the user's context setting will not affect this value.
   const ProjectIdOption.nonMandatory({
-    final bool asFirstArg = false,
-    final bool excludeSettings = false,
-    final OptionGroup? group,
+    bool asFirstArg = false,
+    bool excludeSettings = false,
+    OptionGroup? group,
   }) : this._(
          asFirstArg: asFirstArg,
          excludeSettings: excludeSettings,
@@ -147,8 +145,8 @@ extension ValueOptionResolution on Configuration {
   /// Throws a [StateError] if neither option is set, which therefore signals a
   /// programming error rather than bad user input.
   String valueOrFileContent({
-    required final OptionDefinition<String> value,
-    required final OptionDefinition<File> valueFile,
+    required OptionDefinition<String> value,
+    required OptionDefinition<File> valueFile,
   }) {
     final providedValue = optionalValue(value);
     if (providedValue != null) {
@@ -207,7 +205,7 @@ class DateTimeOrDurationParser extends ValueParser<DateTime> {
   const DateTimeOrDurationParser();
 
   @override
-  DateTime parse(final String value) {
+  DateTime parse(String value) {
     final result = _parseDateTimeOrDuration(value);
     if (result == null) {
       throw FormatException(
@@ -218,7 +216,7 @@ class DateTimeOrDurationParser extends ValueParser<DateTime> {
     return result;
   }
 
-  DateTime? _parseDateTimeOrDuration(final String value) {
+  DateTime? _parseDateTimeOrDuration(String value) {
     try {
       return const DateTimeParser().parse(value);
     } on FormatException {
@@ -230,7 +228,7 @@ class DateTimeOrDurationParser extends ValueParser<DateTime> {
     }
   }
 
-  Duration? _tryParseDuration(final String value) {
+  Duration? _tryParseDuration(String value) {
     try {
       return const DurationParser().parse(value);
     } on FormatException {

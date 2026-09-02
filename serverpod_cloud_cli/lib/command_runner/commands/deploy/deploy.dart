@@ -81,23 +81,23 @@ abstract class Deploy {
   }
 
   static Future<void> deploy(
-    final Client cloudApiClient,
-    final FileUploaderFactory fileUploaderFactory, {
-    required final CommandLogger logger,
-    required final String baseCommand,
-    required final String projectId,
-    required final String projectDir,
-    required final String projectConfigFilePath,
-    required final int concurrency,
-    required final bool wetRun,
-    required final bool showFiles,
-    final bool skipDartPubGet = false,
-    final bool skipTailingStatus = false,
-    final bool suppressCommandMessages = false,
-    final String? outputPath,
-    final String? dartVersionOverride,
-    final IOSink? stdout,
-    final IOSink? stderr,
+    Client cloudApiClient,
+    FileUploaderFactory fileUploaderFactory, {
+    required CommandLogger logger,
+    required String baseCommand,
+    required String projectId,
+    required String projectDir,
+    required String projectConfigFilePath,
+    required int concurrency,
+    required bool wetRun,
+    required bool showFiles,
+    bool skipDartPubGet = false,
+    bool skipTailingStatus = false,
+    bool suppressCommandMessages = false,
+    String? outputPath,
+    String? dartVersionOverride,
+    IOSink? stdout,
+    IOSink? stderr,
   }) async {
     if (!suppressCommandMessages) {
       logger.init('Deploying Serverpod Cloud project "$projectId".');
@@ -209,20 +209,19 @@ abstract class Deploy {
             beneath: projectFilePreparer.includedSubPaths,
             fileReadPoolSize: concurrency,
             showFiles: showFiles,
-            fileContentModifier:
-                (final relativePath, final contentReader) async {
-                  final pathSegments = p.split(relativePath);
-                  if (pathSegments.contains('.scloud')) return null;
-                  if (pathSegments.last == 'pubspec.yaml') {
-                    final content = await contentReader();
-                    return projectFilePreparer.filterPubspecYaml(content);
-                  }
-                  if (pathSegments.last == 'pubspec.lock') {
-                    final content = await contentReader();
-                    return projectFilePreparer.filterPubspecLock(content);
-                  }
-                  return null;
-                },
+            fileContentModifier: (relativePath, contentReader) async {
+              final pathSegments = p.split(relativePath);
+              if (pathSegments.contains('.scloud')) return null;
+              if (pathSegments.last == 'pubspec.yaml') {
+                final content = await contentReader();
+                return projectFilePreparer.filterPubspecYaml(content);
+              }
+              if (pathSegments.last == 'pubspec.lock') {
+                final content = await contentReader();
+                return projectFilePreparer.filterPubspecLock(content);
+              }
+              return null;
+            },
           );
           return true;
         } on ProjectZipperExceptions catch (e) {
@@ -369,9 +368,9 @@ abstract class Deploy {
   }
 
   static Future<void> _runDartPubGetIfNeeded(
-    final CommandLogger logger,
-    final bool skipDartPubGet,
-    final Directory dartDir,
+    CommandLogger logger,
+    bool skipDartPubGet,
+    Directory dartDir,
   ) async {
     final packageConfigPath = p.join(
       dartDir.path,
@@ -411,17 +410,17 @@ abstract class Deploy {
     }
   }
 
-  static String _formatHeading(final String message) {
+  static String _formatHeading(String message) {
     return message.padRight(StatusCommands.progressMessagePadLength);
   }
 
   static Future<String> _createUploadDescription(
-    final CommandLogger logger,
-    final Client cloudApiClient,
-    final String projectId,
-    final String? serverpodVersion,
-    final String dartVersion,
-    final GitMetadata? gitMetadata,
+    CommandLogger logger,
+    Client cloudApiClient,
+    String projectId,
+    String? serverpodVersion,
+    String dartVersion,
+    GitMetadata? gitMetadata,
   ) async {
     try {
       final uploadDescription = await cloudApiClient.deploy
@@ -471,10 +470,10 @@ abstract class Deploy {
   }
 
   static Future<void> _uploadProject(
-    final CommandLogger logger,
-    final FileUploaderFactory fileUploaderFactory,
-    final String uploadDescription,
-    final List<int> projectZip,
+    CommandLogger logger,
+    FileUploaderFactory fileUploaderFactory,
+    String uploadDescription,
+    List<int> projectZip,
   ) async {
     final success = await logger.progress(
       'Uploading project',
@@ -508,7 +507,7 @@ abstract class Deploy {
     }
   }
 
-  static Never _uploadDioException(final DioException e) {
+  static Never _uploadDioException(DioException e) {
     switch (e.type) {
       case DioExceptionType.connectionTimeout:
         throw FailureException(

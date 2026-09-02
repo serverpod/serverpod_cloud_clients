@@ -19,7 +19,7 @@ void main() {
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
     adminUserMode: true,
   );
@@ -46,7 +46,7 @@ void main() {
             planProductVersion: any(named: 'planProductVersion'),
             overrideChecks: any(named: 'overrideChecks'),
           ),
-        ).thenAnswer((final invocation) async => Future.value(Uuid().v4obj()));
+        ).thenAnswer((invocation) async => Future.value(Uuid().v4obj()));
 
         commandResult = cli.run([
           'admin',
@@ -62,7 +62,7 @@ void main() {
       });
 
       test('then command outputs success message', () async {
-        await commandResult.catchError((final _) {});
+        await commandResult.catchError((_) {});
 
         expect(
           logger.successCalls.first,

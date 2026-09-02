@@ -8,35 +8,34 @@ class AdminProjectListTextUi extends OutputWidget {
   AdminProjectListTextUi({required this.utc});
 
   @override
-  OutputWidget build(final OutputContext context) {
+  OutputWidget build(OutputContext context) {
     final timezoneName = utc ? 'UTC' : 'local';
     return FormattedTableWidget(
       formatter: TextTableOutputFormatter<ProjectInfo>(
         columns: [
           TableColumnFormatter.forElement(
             'Project Id',
-            getter: (final project) => project.project.cloudProjectId,
+            getter: (project) => project.project.cloudProjectId,
           ),
           TableColumnFormatter.forElement(
             'Created At ($timezoneName)',
-            getter: (final project) => project.project.createdAt,
+            getter: (project) => project.project.createdAt,
           ),
           TableColumnFormatter.forElement(
             'Archived At ($timezoneName)',
-            getter: (final project) => project.project.archivedAt,
+            getter: (project) => project.project.archivedAt,
           ),
           TableColumnFormatter.forElement(
             'Last Deploy Attempt',
-            getter: (final project) =>
-                project.latestDeployAttemptTime?.timestamp,
+            getter: (project) => project.latestDeployAttemptTime?.timestamp,
           ),
           TableColumnFormatter.forElement(
             'Owner',
-            getter: (final project) => project.project.owner?.user?.email,
+            getter: (project) => project.project.owner?.user?.email,
           ),
           TableColumnFormatter.forElement(
             'Users',
-            getter: (final project) => _formatProjectUsers(project.project),
+            getter: (project) => _formatProjectUsers(project.project),
           ),
         ],
         utc: utc,
@@ -45,14 +44,14 @@ class AdminProjectListTextUi extends OutputWidget {
   }
 }
 
-String _formatProjectUsers(final Project project) {
+String _formatProjectUsers(Project project) {
   return project.roles
-          ?.map((final role) {
+          ?.map((role) {
             final memberships = role.memberships;
             if (memberships == null) return '';
 
             final users = memberships
-                .map((final membership) => membership.user?.email)
+                .map((membership) => membership.user?.email)
                 .nonNulls;
             if (users.isEmpty) return '';
 

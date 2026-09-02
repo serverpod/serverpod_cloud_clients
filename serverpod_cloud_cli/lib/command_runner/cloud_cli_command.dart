@@ -122,10 +122,7 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
 
   /// Process a [FailureException] by displaying relevant messages to the user
   /// and throw an [ErrorExitException].
-  Never _processFailureException(
-    final FailureException e,
-    final StackTrace stackTrace,
-  ) {
+  Never _processFailureException(FailureException e, StackTrace stackTrace) {
     final nested = e.nestedException;
     if (nested != null) {
       processCommonClientExceptions(
@@ -154,7 +151,7 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
   }
 
   @override
-  Configuration<O> resolveConfiguration(final ArgResults? argResults) {
+  Configuration<O> resolveConfiguration(ArgResults? argResults) {
     return Configuration.resolve(
       options: options,
       argResults: argResults,
@@ -169,7 +166,7 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
   /// Runs this command with prepared configuration (options).
   /// Subclasses should override this method.
   @override
-  Future<void> runWithConfig(final Configuration<O> commandConfig) async {
+  Future<void> runWithConfig(Configuration<O> commandConfig) async {
     throw UnimplementedError(
       'CLI command $name has not implemented runWithConfig.',
     );
@@ -181,9 +178,9 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
   /// Throws a [CloudCliUsageException] if the configured format and interaction
   /// mode is not supported.
   Future<void> confirmToContinue(
-    final CommandOutput output, {
-    required final String message,
-    final bool? defaultValue,
+    CommandOutput output, {
+    required String message,
+    bool? defaultValue,
   }) async {
     if (globalConfiguration.skipConfirmation == true) {
       return;
@@ -206,15 +203,15 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
   }
 
   Future<OutputContext> renderCommand<T extends Object>(
-    final CommandOutput output, {
-    required final Operation<T> operation,
-    required final OutputWidget textOutputUi,
-    final OutputWidget? fallbackErrorUi,
+    CommandOutput output, {
+    required Operation<T> operation,
+    required OutputWidget textOutputUi,
+    OutputWidget? fallbackErrorUi,
   }) async {
     final exceptionHandlingUi = CommonClientExceptionsWidget(
       baseCommand: baseCommand,
       elseWidget: ExceptionHandlingWidget<FailureException>(
-        errorWidgetMaker: (final e) => FailureExceptionWidget(e),
+        errorWidgetMaker: (e) => FailureExceptionWidget(e),
         elseWidget: fallbackErrorUi,
       ),
     );
@@ -261,7 +258,7 @@ class FailureExceptionWidget extends OutputWidget {
   const FailureExceptionWidget(this.exception);
 
   @override
-  OutputWidget build(final OutputContext context) {
+  OutputWidget build(OutputContext context) {
     return TextErrorOutputWidget(
       exception,
       message: exception.errors.join('\n'),

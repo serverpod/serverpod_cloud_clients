@@ -9,7 +9,7 @@ abstract class UserConfirmations {
   ///
   /// Throws [UserAbortException] if the user does not confirm.
   static Future<void> confirmNewProjectCostAcceptance(
-    final CommandLogger logger,
+    CommandLogger logger,
   ) async {
     final confirm = await logger.confirm(
       'Depending on your subscription, a new project may incur additional costs. Continue?',

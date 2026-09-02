@@ -94,7 +94,7 @@ The valid targets are:
 
   @override
   Future<void> runWithConfig(
-    final Configuration<AttachCustomDomainCommandConfig> commandConfig,
+    Configuration<AttachCustomDomainCommandConfig> commandConfig,
   ) async {
     final projectId = commandConfig.value(
       AttachCustomDomainCommandConfig.projectId,
@@ -170,10 +170,10 @@ The valid targets are:
   }
 
   void _logDomainInstructions({
-    required final CommandLogger logger,
-    required final String domainName,
-    required final String projectId,
-    required final List<({String type, String domain, String value})> records,
+    required CommandLogger logger,
+    required String domainName,
+    required String projectId,
+    required List<({String type, String domain, String value})> records,
   }) {
     logger.info(
       'Complete the setup by adding the following records to your DNS '
@@ -237,7 +237,7 @@ class CloudListCustomDomainCommand
 
   @override
   Future<void> runWithConfig(
-    final Configuration<ListCustomDomainCommandConfig> commandConfig,
+    Configuration<ListCustomDomainCommandConfig> commandConfig,
   ) async {
     final projectId = commandConfig.value(
       ListCustomDomainCommandConfig.projectId,
@@ -283,7 +283,7 @@ class CloudListCustomDomainCommand
     customDomainPrinter.writeLines(logger.line);
   }
 
-  String _getStatusLabel(final DomainNameStatus status) {
+  String _getStatusLabel(DomainNameStatus status) {
     switch (status) {
       case DomainNameStatus.configured:
         return 'Configured';
@@ -318,7 +318,7 @@ class CloudDetachCustomDomainCommand
 
   @override
   Future<void> runWithConfig(
-    final Configuration<DetachCustomDomainCommandConfig> commandConfig,
+    Configuration<DetachCustomDomainCommandConfig> commandConfig,
   ) async {
     final projectId = commandConfig.value(
       DetachCustomDomainCommandConfig.projectId,
@@ -378,7 +378,7 @@ class CloudVerifyCustomDomainRecordCommand
 
   @override
   Future<void> runWithConfig(
-    final Configuration<RefreshCustomDomainRecordCommandConfig> commandConfig,
+    Configuration<RefreshCustomDomainRecordCommandConfig> commandConfig,
   ) async {
     final projectId = commandConfig.value(
       RefreshCustomDomainRecordCommandConfig.projectId,

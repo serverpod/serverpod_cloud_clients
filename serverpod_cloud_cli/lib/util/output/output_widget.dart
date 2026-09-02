@@ -10,17 +10,17 @@ abstract class OutputWidget {
   ///
   /// The build method is responsbile for building the tree of widgets below this one.
   /// It must never invoke the build or render methods of other widgets.
-  OutputWidget build(final OutputContext context) => this;
+  OutputWidget build(OutputContext context) => this;
 
   /// Renders this widget using the given IO facade.
   ///
   /// The render method is responsible for rendering this widget.
   /// It must never invoke the build or render methods of other widgets.
-  void render({required final CommandLogger logger}) {}
+  void render({required CommandLogger logger}) {}
 
   /// Builds the tree of widgets below this one.
   /// This is not usually to be overridden by subclasses.
-  WidgetNode buildTree(final OutputContext context) {
+  WidgetNode buildTree(OutputContext context) {
     final child = build(context);
     if (child != this) {
       final childNode = child.buildTree(context);
@@ -37,7 +37,7 @@ class OutputWidgetList extends OutputWidget {
   const OutputWidgetList(this.children);
 
   @override
-  WidgetNode buildTree(final OutputContext context) {
+  WidgetNode buildTree(OutputContext context) {
     return WidgetNode(
       widget: this,
       children: [for (final child in children) child.buildTree(context)],
@@ -51,7 +51,7 @@ class WidgetNode {
 
   WidgetNode({required this.widget, required this.children});
 
-  void renderTree({required final CommandLogger logger}) {
+  void renderTree({required CommandLogger logger}) {
     widget.render(logger: logger);
     for (final child in children) {
       child.renderTree(logger: logger);

@@ -3,11 +3,11 @@ import 'package:serverpod_cloud_cli/util/inline_tui/src/tui_key.dart';
 import 'package:test/test.dart';
 
 SelectListModel<String> _model(
-  final List<String> labels, {
-  final bool multiSelect = false,
-  final int minSelections = 0,
-  final int? maxSelections,
-  final Set<int> disabled = const {},
+  List<String> labels, {
+  bool multiSelect = false,
+  int minSelections = 0,
+  int? maxSelections,
+  Set<int> disabled = const {},
 }) {
   return SelectListModel<String>(
     items: [

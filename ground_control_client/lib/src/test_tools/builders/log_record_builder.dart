@@ -21,48 +21,48 @@ class LogRecordBuilder {
       _content = 'test-log-record-message';
 
   /// Sets the cloud project and capsule IDs to the same value.
-  LogRecordBuilder withCloudIds(final String cloudId) {
+  LogRecordBuilder withCloudIds(String cloudId) {
     _cloudProjectId = cloudId;
     _cloudCapsuleId = cloudId;
     return this;
   }
 
-  LogRecordBuilder withCloudProjectId(final String cloudProjectId) {
+  LogRecordBuilder withCloudProjectId(String cloudProjectId) {
     _cloudProjectId = cloudProjectId;
     return this;
   }
 
-  LogRecordBuilder withCloudCapsuleId(final String cloudCapsuleId) {
+  LogRecordBuilder withCloudCapsuleId(String cloudCapsuleId) {
     _cloudCapsuleId = cloudCapsuleId;
     return this;
   }
 
-  LogRecordBuilder withDeployAttemptId(final UuidValue deployAttemptId) {
+  LogRecordBuilder withDeployAttemptId(UuidValue deployAttemptId) {
     _deployAttemptId = deployAttemptId;
     return this;
   }
 
-  LogRecordBuilder withServerInstanceId(final String? serverInstanceId) {
+  LogRecordBuilder withServerInstanceId(String? serverInstanceId) {
     _serverInstanceId = serverInstanceId;
     return this;
   }
 
-  LogRecordBuilder withRecordId(final String recordId) {
+  LogRecordBuilder withRecordId(String recordId) {
     _recordId = recordId;
     return this;
   }
 
-  LogRecordBuilder withTimestamp(final DateTime timestamp) {
+  LogRecordBuilder withTimestamp(DateTime timestamp) {
     _timestamp = timestamp;
     return this;
   }
 
-  LogRecordBuilder withSeverity(final String? severity) {
+  LogRecordBuilder withSeverity(String? severity) {
     _severity = severity;
     return this;
   }
 
-  LogRecordBuilder withContent(final String content) {
+  LogRecordBuilder withContent(String content) {
     _content = content;
     return this;
   }

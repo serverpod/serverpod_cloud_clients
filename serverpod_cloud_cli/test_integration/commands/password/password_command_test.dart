@@ -26,7 +26,7 @@ void main() {
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
   );
 
@@ -203,7 +203,7 @@ void main() {
               secrets: any(named: 'secrets'),
               cloudCapsuleId: any(named: 'cloudCapsuleId'),
             ),
-          ).thenAnswer((final _) async => Future.value());
+          ).thenAnswer((_) async => Future.value());
 
           final commandResult = cli.run([
             'password',
@@ -224,7 +224,7 @@ void main() {
               secrets: any(named: 'secrets'),
               cloudCapsuleId: any(named: 'cloudCapsuleId'),
             ),
-          ).thenAnswer((final _) async => Future.value());
+          ).thenAnswer((_) async => Future.value());
 
           final commandResult = cli.run([
             'password',
@@ -262,7 +262,7 @@ void main() {
               secrets: any(named: 'secrets'),
               cloudCapsuleId: any(named: 'cloudCapsuleId'),
             ),
-          ).thenAnswer((final _) async => Future.value());
+          ).thenAnswer((_) async => Future.value());
 
           await d.file('value.txt', 'password-value').create();
 
@@ -294,7 +294,7 @@ void main() {
             commandResult,
             throwsA(
               isA<UsageException>().having(
-                (final e) => e.message,
+                (e) => e.message,
                 'message',
                 contains('Invalid value for option `from-file`'),
               ),
@@ -326,7 +326,7 @@ void main() {
             commandResult,
             throwsA(
               isA<UsageException>().having(
-                (final e) => e.message,
+                (e) => e.message,
                 'message',
                 equals(
                   'These options are mutually exclusive: from-file, value.',
@@ -355,7 +355,7 @@ void main() {
             commandResult,
             throwsA(
               isA<UsageException>().having(
-                (final e) => e.message,
+                (e) => e.message,
                 'message',
                 equals(
                   'Option group Value requires one of the options to be provided.',
@@ -376,7 +376,7 @@ void main() {
               secrets: any(named: 'secrets'),
               cloudCapsuleId: any(named: 'cloudCapsuleId'),
             ),
-          ).thenAnswer((final _) async => Future.value());
+          ).thenAnswer((_) async => Future.value());
 
           commandResult = cli.run([
             'password',
@@ -512,7 +512,7 @@ void main() {
               secrets: any(named: 'secrets'),
               cloudCapsuleId: any(named: 'cloudCapsuleId'),
             ),
-          ).thenAnswer((final _) async => Future.value());
+          ).thenAnswer((_) async => Future.value());
 
           commandResult = cli.run([
             'password',
@@ -573,7 +573,7 @@ void main() {
             secrets: any(named: 'secrets'),
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
           ),
-        ).thenAnswer((final _) async => Future.value());
+        ).thenAnswer((_) async => Future.value());
 
         commandResult = cli.run([
           'password',
@@ -608,7 +608,7 @@ void main() {
             secrets: any(named: 'secrets'),
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
           ),
-        ).thenAnswer((final _) async => Future.value());
+        ).thenAnswer((_) async => Future.value());
 
         commandResult = cli.run([
           'password',
@@ -641,7 +641,7 @@ void main() {
               key: any(named: 'key'),
               cloudCapsuleId: any(named: 'cloudCapsuleId'),
             ),
-          ).thenAnswer((final _) async => Future.value());
+          ).thenAnswer((_) async => Future.value());
 
           logger.answerNextConfirmWith(true);
           final commandResult = cli.run([
@@ -672,7 +672,7 @@ void main() {
               key: any(named: 'key'),
               cloudCapsuleId: any(named: 'cloudCapsuleId'),
             ),
-          ).thenAnswer((final _) async => Future.value());
+          ).thenAnswer((_) async => Future.value());
 
           logger.answerNextConfirmWith(true);
           final commandResult = cli.run([
@@ -742,7 +742,7 @@ void main() {
             key: any(named: 'key'),
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
           ),
-        ).thenAnswer((final _) async => Future.value());
+        ).thenAnswer((_) async => Future.value());
 
         logger.answerNextConfirmWith(true);
         commandResult = cli.run([
@@ -761,7 +761,7 @@ void main() {
       });
 
       test('then logs no confirm message', () async {
-        await commandResult.catchError((final error) => null);
+        await commandResult.catchError((error) => null);
 
         expect(logger.confirmCalls, isEmpty);
       });
@@ -777,7 +777,7 @@ void main() {
             key: any(named: 'key'),
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
           ),
-        ).thenAnswer((final _) async => Future.value());
+        ).thenAnswer((_) async => Future.value());
 
         logger.answerNextConfirmWith(true);
         commandResult = cli.run([
@@ -819,7 +819,7 @@ void main() {
             key: any(named: 'key'),
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
           ),
-        ).thenAnswer((final _) async => Future.value());
+        ).thenAnswer((_) async => Future.value());
 
         logger.answerNextConfirmWith(true);
         commandResult = cli.run([
@@ -856,7 +856,7 @@ void main() {
 
         setUp(() async {
           when(() => client.secrets.list(any())).thenAnswer(
-            (final _) async => Future.value([
+            (_) async => Future.value([
               'SERVERPOD_PASSWORD_database',
               'SERVERPOD_PASSWORD_serviceSecret',
               'SERVERPOD_PASSWORD_customPassword',
@@ -864,7 +864,7 @@ void main() {
           );
 
           when(() => client.secrets.listManaged(any())).thenAnswer(
-            (final _) async => Future.value([
+            (_) async => Future.value([
               'SERVERPOD_PASSWORD_database',
               'SERVERPOD_PASSWORD_emailSecretHashPepper',
             ]),
@@ -881,7 +881,7 @@ void main() {
           await commandResult;
 
           expect(logger.lineCalls, isNotEmpty);
-          final lines = logger.lineCalls.map((final c) => c.line).toList();
+          final lines = logger.lineCalls.map((c) => c.line).toList();
 
           expect(lines, contains('Custom'));
           expect(lines, contains('Services'));
@@ -899,7 +899,7 @@ void main() {
 
         setUp(() async {
           when(() => client.secrets.list(any())).thenAnswer(
-            (final _) async => Future.value([
+            (_) async => Future.value([
               'SERVERPOD_PASSWORD_database',
               'SERVERPOD_PASSWORD_customPassword',
             ]),
@@ -907,7 +907,7 @@ void main() {
 
           when(
             () => client.secrets.listManaged(any()),
-          ).thenAnswer((final _) async => Future.value([]));
+          ).thenAnswer((_) async => Future.value([]));
 
           commandResult = cli.run(['password', 'list', '--project', projectId]);
         });
@@ -920,7 +920,7 @@ void main() {
           await commandResult;
 
           expect(logger.lineCalls, isNotEmpty);
-          final lines = logger.lineCalls.map((final c) => c.line).toList();
+          final lines = logger.lineCalls.map((c) => c.line).toList();
 
           expect(lines, contains(contains('database')));
           expect(lines, contains(contains('customPassword')));
@@ -933,10 +933,10 @@ void main() {
         setUp(() async {
           when(
             () => client.secrets.list(any()),
-          ).thenAnswer((final _) async => Future.value([]));
+          ).thenAnswer((_) async => Future.value([]));
 
           when(() => client.secrets.listManaged(any())).thenAnswer(
-            (final _) async => Future.value([
+            (_) async => Future.value([
               'SERVERPOD_PASSWORD_database',
               'SERVERPOD_PASSWORD_emailSecretHashPepper',
             ]),
@@ -953,7 +953,7 @@ void main() {
           await commandResult;
 
           expect(logger.lineCalls, isNotEmpty);
-          final lines = logger.lineCalls.map((final c) => c.line).toList();
+          final lines = logger.lineCalls.map((c) => c.line).toList();
 
           expect(lines, contains(contains('database')));
           expect(lines, contains(contains('emailSecretHashPepper')));
@@ -966,10 +966,10 @@ void main() {
         setUp(() async {
           when(
             () => client.secrets.list(any()),
-          ).thenAnswer((final _) async => Future.value([]));
+          ).thenAnswer((_) async => Future.value([]));
 
           when(() => client.secrets.listManaged(any())).thenAnswer(
-            (final _) async =>
+            (_) async =>
                 Future.value(['SERVERPOD_PASSWORD_scloudAuthEmailKey']),
           );
 
@@ -983,7 +983,7 @@ void main() {
         test('then lists scloudAuthEmailKey under Auth', () async {
           await commandResult;
 
-          final lines = logger.lineCalls.map((final c) => c.line).toList();
+          final lines = logger.lineCalls.map((c) => c.line).toList();
 
           expect(
             lines,
@@ -998,11 +998,11 @@ void main() {
         setUp(() async {
           when(
             () => client.secrets.list(any()),
-          ).thenAnswer((final _) async => Future.value([]));
+          ).thenAnswer((_) async => Future.value([]));
 
           when(
             () => client.secrets.listManaged(any()),
-          ).thenAnswer((final _) async => Future.value([]));
+          ).thenAnswer((_) async => Future.value([]));
 
           commandResult = cli.run(['password', 'list', '--project', projectId]);
         });
@@ -1029,7 +1029,7 @@ void main() {
 
         setUp(() async {
           when(() => client.secrets.list(any())).thenAnswer(
-            (final _) async => Future.value([
+            (_) async => Future.value([
               'SERVERPOD_PASSWORD_database',
               'SERVERPOD_PASSWORD_serviceSecret',
               'SERVERPOD_PASSWORD_customPassword',
@@ -1037,7 +1037,7 @@ void main() {
           );
 
           when(() => client.secrets.listManaged(any())).thenAnswer(
-            (final _) async => Future.value([
+            (_) async => Future.value([
               'SERVERPOD_PASSWORD_database',
               'SERVERPOD_PASSWORD_emailSecretHashPepper',
             ]),
@@ -1093,10 +1093,10 @@ void main() {
         setUp(() async {
           when(
             () => client.secrets.list(any()),
-          ).thenAnswer((final _) async => Future.value([]));
+          ).thenAnswer((_) async => Future.value([]));
           when(
             () => client.secrets.listManaged(any()),
-          ).thenAnswer((final _) async => Future.value([]));
+          ).thenAnswer((_) async => Future.value([]));
 
           commandResult = cli.run([
             'password',
@@ -1123,10 +1123,10 @@ void main() {
         setUp(() async {
           when(
             () => client.secrets.list(any()),
-          ).thenAnswer((final _) async => Future.value([]));
+          ).thenAnswer((_) async => Future.value([]));
 
           when(() => client.secrets.listManaged(any())).thenAnswer(
-            (final _) async =>
+            (_) async =>
                 Future.value(['SERVERPOD_PASSWORD_scloudAuthEmailKey']),
           );
 
@@ -1161,7 +1161,7 @@ void main() {
 
       setUp(() async {
         when(() => client.secrets.list(any())).thenAnswer(
-          (final _) async => Future.value([
+          (_) async => Future.value([
             'SERVERPOD_PASSWORD_database',
             'SERVERPOD_PASSWORD_serviceSecret',
             'SERVERPOD_PASSWORD_customPassword',
@@ -1169,7 +1169,7 @@ void main() {
         );
 
         when(() => client.secrets.listManaged(any())).thenAnswer(
-          (final _) async => Future.value([
+          (_) async => Future.value([
             'SERVERPOD_PASSWORD_database',
             'SERVERPOD_PASSWORD_emailSecretHashPepper',
           ]),

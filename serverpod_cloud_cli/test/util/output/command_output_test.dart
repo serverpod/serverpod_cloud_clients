@@ -248,7 +248,7 @@ void main() {
       context = await output.render(
         operation: () async => throw FormatException('boom'),
         ui: ExceptionHandlingWidget(
-          errorWidgetMaker: (final e) => const InfoTextWidget('failed'),
+          errorWidgetMaker: (e) => const InfoTextWidget('failed'),
           elseWidget: const InfoTextWidget('ok'),
         ),
       );

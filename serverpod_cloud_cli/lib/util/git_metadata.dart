@@ -48,9 +48,9 @@ class GitMetadata {
 /// When a [logger] is provided, the reason for skipping git metadata is
 /// recorded as a debug message.
 Future<GitMetadata?> readGitMetadata(
-  final String projectDirectory, {
-  final GitCommandRunner runGitCommand = _runGitCommand,
-  final CommandLogger? logger,
+  String projectDirectory, {
+  GitCommandRunner runGitCommand = _runGitCommand,
+  CommandLogger? logger,
 }) async {
   final ProcessResult isInsideWorkTreeResult;
   try {
@@ -104,9 +104,9 @@ Future<GitMetadata?> readGitMetadata(
 /// Runs a git command and returns its trimmed stdout, or `null` when the
 /// command fails (non-zero exit code or the `git` executable is missing).
 Future<String?> _gitOutput(
-  final GitCommandRunner runGitCommand,
-  final List<String> arguments,
-  final String workingDirectory,
+  GitCommandRunner runGitCommand,
+  List<String> arguments,
+  String workingDirectory,
 ) async {
   final ProcessResult result;
   try {
@@ -122,19 +122,19 @@ Future<String?> _gitOutput(
 
 /// Extracts stdout from [result] as a string, or `null` when stdout was not
 /// captured as text.
-String? _stdoutString(final ProcessResult result) {
+String? _stdoutString(ProcessResult result) {
   final stdout = result.stdout;
   return stdout is String ? stdout : null;
 }
 
 Future<ProcessResult> _runGitCommand(
-  final List<String> arguments,
-  final String workingDirectory,
+  List<String> arguments,
+  String workingDirectory,
 ) {
   return Process.run('git', arguments, workingDirectory: workingDirectory);
 }
 
-String? _nullIfEmpty(final String? value) {
+String? _nullIfEmpty(String? value) {
   if (value == null || value.isEmpty) {
     return null;
   }

@@ -7,7 +7,7 @@ class ServerpodCloudSettingsData {
 
   ServerpodCloudSettingsData._(this.enableAnalytics, this.projectContext);
 
-  factory ServerpodCloudSettingsData.fromJson(final Map<String, dynamic> json) {
+  factory ServerpodCloudSettingsData.fromJson(Map<String, dynamic> json) {
     return ServerpodCloudSettingsData._(
       json['command_usage_analytics'] as bool?,
       json['project_context'] as String?,

@@ -18,37 +18,37 @@ class DatabaseInfoBuilder {
       _storageLimitGB = 2,
       _computeHoursLimit = 100;
 
-  DatabaseInfoBuilder withCloudCapsuleId(final String cloudCapsuleId) {
+  DatabaseInfoBuilder withCloudCapsuleId(String cloudCapsuleId) {
     _cloudCapsuleId = cloudCapsuleId;
     return this;
   }
 
-  DatabaseInfoBuilder withSize(final DatabaseSizeOption size) {
+  DatabaseInfoBuilder withSize(DatabaseSizeOption size) {
     _size = size;
     return this;
   }
 
-  DatabaseInfoBuilder withMinCu(final double? minCu) {
+  DatabaseInfoBuilder withMinCu(double? minCu) {
     _minCu = minCu;
     return this;
   }
 
-  DatabaseInfoBuilder withMaxCu(final double? maxCu) {
+  DatabaseInfoBuilder withMaxCu(double? maxCu) {
     _maxCu = maxCu;
     return this;
   }
 
-  DatabaseInfoBuilder withMemoryMb(final int memoryMb) {
+  DatabaseInfoBuilder withMemoryMb(int memoryMb) {
     _memoryMb = memoryMb;
     return this;
   }
 
-  DatabaseInfoBuilder withStorageLimitGB(final int? storageLimitGB) {
+  DatabaseInfoBuilder withStorageLimitGB(int? storageLimitGB) {
     _storageLimitGB = storageLimitGB;
     return this;
   }
 
-  DatabaseInfoBuilder withComputeHoursLimit(final int? computeHoursLimit) {
+  DatabaseInfoBuilder withComputeHoursLimit(int? computeHoursLimit) {
     _computeHoursLimit = computeHoursLimit;
     return this;
   }

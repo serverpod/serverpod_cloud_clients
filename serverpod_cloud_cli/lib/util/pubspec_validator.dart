@@ -9,7 +9,7 @@ import 'package:yaml/yaml.dart';
 /// Convenience function to check if a directory is a Serverpod server directory.
 ///
 /// Returns true if the directory is a Serverpod server directory, false otherwise.
-bool isServerpodServerDirectory(final Directory dir) {
+bool isServerpodServerDirectory(Directory dir) {
   try {
     return TenantProjectPubspec.fromProjectDir(dir).isServerpodServer();
   } catch (_) {
@@ -20,7 +20,7 @@ bool isServerpodServerDirectory(final Directory dir) {
 /// Convenience function to check if a pubspec.yaml file is a Serverpod server package.
 ///
 /// Returns true if the pubspec.yaml file is a Serverpod server package, false otherwise.
-bool isServerpodServerPackage(final File pubspecFile) {
+bool isServerpodServerPackage(File pubspecFile) {
   try {
     return TenantProjectPubspec.fromFile(pubspecFile).isServerpodServer();
   } catch (_) {
@@ -34,7 +34,7 @@ class TenantProjectPubspec {
   final Pubspec pubspec;
   final String _rawYamlContent;
 
-  TenantProjectPubspec(this.pubspec, [final String? rawYamlContent])
+  TenantProjectPubspec(this.pubspec, [String? rawYamlContent])
     : _rawYamlContent = rawYamlContent ?? '';
 
   /// Reads and parses the pubspec.yaml file in the given project directory.
@@ -42,9 +42,7 @@ class TenantProjectPubspec {
   /// If the pubspec.yaml file is not found or if it cannot be parsed,
   /// error messages are printed to logger if provided,
   /// and [FailureException] is thrown.
-  factory TenantProjectPubspec.fromProjectDir(
-    final Directory projectDirectory,
-  ) {
+  factory TenantProjectPubspec.fromProjectDir(Directory projectDirectory) {
     final pubspecFile = File('${projectDirectory.path}/pubspec.yaml');
     return TenantProjectPubspec.fromFile(pubspecFile);
   }
@@ -54,7 +52,7 @@ class TenantProjectPubspec {
   /// If the pubspec.yaml file is not found or if it cannot be parsed,
   /// error messages are printed to logger if provided,
   /// and [FailureException] is thrown.
-  factory TenantProjectPubspec.fromFile(final File pubspecFile) {
+  factory TenantProjectPubspec.fromFile(File pubspecFile) {
     if (!pubspecFile.existsSync()) {
       throw FailureException(
         error:
@@ -116,7 +114,7 @@ class TenantProjectPubspec {
   /// If the dependencies are not valid,
   /// the returned list will contain the error messages.
   /// If the dependencies are valid, the list will be empty.
-  List<String> projectDependencyIssues({final bool requireServerpod = true}) {
+  List<String> projectDependencyIssues({bool requireServerpod = true}) {
     final supportedServerpod = VersionConstraint.parse(
       VersionConstants.supportedServerpodConstraint,
     );
@@ -153,9 +151,9 @@ class TenantProjectPubspec {
   /// Validates that the given dependency is hosted
   /// and is within the supported range.
   String? _validateHostedDependencyConstraint({
-    required final String packageName,
-    required final VersionConstraint supported,
-    required final bool requireDependency,
+    required String packageName,
+    required VersionConstraint supported,
+    required bool requireDependency,
   }) {
     final dependency = pubspec.dependencies[packageName];
     if (dependency == null) {
@@ -191,7 +189,7 @@ class TenantProjectPubspec {
   /// parsed, or records no Dart SDK constraint. The issues describe the
   /// cases where the lockfile itself could not be read.
   static ({String? constraint, List<String> issues}) readLockfileDartSdk(
-    final File lockfile,
+    File lockfile,
   ) {
     if (!lockfile.existsSync()) {
       return (constraint: null, issues: const []);

@@ -9,7 +9,7 @@ class ScloudConfig {
     required this.scripts,
   });
 
-  factory ScloudConfig.fromMap(final Map<String, dynamic> map) {
+  factory ScloudConfig.fromMap(Map<String, dynamic> map) {
     final project = map['project'] as Map<String, dynamic>? ?? {};
 
     return ScloudConfig(
@@ -30,9 +30,9 @@ class ScloudConfig {
   }
 
   ScloudConfig copyWith({
-    final String? projectId,
-    final String? dartSdk,
-    final ScloudScripts? scripts,
+    String? projectId,
+    String? dartSdk,
+    ScloudScripts? scripts,
   }) {
     return ScloudConfig(
       projectId: projectId ?? this.projectId,
@@ -48,7 +48,7 @@ class ScloudScripts {
 
   const ScloudScripts({required this.preDeploy, required this.postDeploy});
 
-  factory ScloudScripts.fromMap(final dynamic map) {
+  factory ScloudScripts.fromMap(dynamic map) {
     if (map is! Map) throw ArgumentError.value(map, 'map', 'Must be a map');
 
     return ScloudScripts(
@@ -61,10 +61,7 @@ class ScloudScripts {
     return const ScloudScripts(preDeploy: [], postDeploy: []);
   }
 
-  ScloudScripts copyWith({
-    final List<String>? preDeploy,
-    final List<String>? postDeploy,
-  }) {
+  ScloudScripts copyWith({List<String>? preDeploy, List<String>? postDeploy}) {
     return ScloudScripts(
       preDeploy: preDeploy ?? this.preDeploy,
       postDeploy: postDeploy ?? this.postDeploy,
@@ -75,7 +72,7 @@ class ScloudScripts {
     return {'pre_deploy': preDeploy, 'post_deploy': postDeploy};
   }
 
-  static List<String> _normalizeScript(final dynamic script) {
+  static List<String> _normalizeScript(dynamic script) {
     if (script == null) {
       return const [];
     }
@@ -85,10 +82,7 @@ class ScloudScripts {
     }
 
     if (script is List) {
-      return script
-          .whereType<String>()
-          .where((final s) => s.isNotEmpty)
-          .toList();
+      return script.whereType<String>().where((s) => s.isNotEmpty).toList();
     }
 
     return const [];

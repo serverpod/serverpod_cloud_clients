@@ -19,7 +19,7 @@ void main() {
         () => context.get<int>(),
         throwsA(
           isA<StateError>().having(
-            (final error) => error.message,
+            (error) => error.message,
             'message',
             contains('int'),
           ),

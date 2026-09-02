@@ -36,7 +36,7 @@ void main() {
       version = Version(1, 0, 0);
       when(
         () => pubClient.tryFetchLatestStableVersion('serverpod_cloud_cli'),
-      ).thenAnswer((final _) async => version);
+      ).thenAnswer((_) async => version);
     });
 
     test('when calling fetchLatestCLIVersion '
@@ -147,7 +147,7 @@ void main() {
         result,
         throwsA(
           isA<Exception>().having(
-            (final e) => e.toString(),
+            (e) => e.toString(),
             'toString()',
             'Exception: Unexpected',
           ),

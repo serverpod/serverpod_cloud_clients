@@ -158,8 +158,8 @@ SessionKeyResult _buildLegacySessionKeyResult() {
   // This is how we built the session key in 3.0.0-alpha.2
   // Source: https://github.com/serverpod/serverpod/blob/8640fbc1c6400839e5274309cc039193d58fb700/modules/new_serverpod_auth/serverpod_auth_core/serverpod_auth_core_server/lib/src/session/business/session_key.dart#L12-L20
   String buildLegacySessionKey({
-    required final UuidValue authSessionId,
-    required final Uint8List secret,
+    required UuidValue authSessionId,
+    required Uint8List secret,
   }) {
     const sessionKeyPrefix = 'sas';
     return '$sessionKeyPrefix:${base64Url.encode(authSessionId.toBytes())}:${base64Url.encode(secret)}';
@@ -185,7 +185,7 @@ typedef SessionKeyData = ({UuidValue serverSideSessionId, Uint8List secret});
 /// Source: https://github.com/serverpod/serverpod/blob/a9069564a0ba14054963988deac2f12623ce5e1a/modules/new_serverpod_auth/serverpod_auth_core/serverpod_auth_core_server/lib/src/session/business/server_side_sessions_token.dart#L29-L69
 SessionKeyData? _tryParseServerSideSessionToken(
   // final Session session,
-  final String key,
+  String key,
 ) {
   final sessionKeyPrefix = utf8.encode('sas');
   final sessionKeyPrefixBase64 = base64Url.encode(sessionKeyPrefix);

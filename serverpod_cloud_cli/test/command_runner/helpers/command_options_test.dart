@@ -17,7 +17,7 @@ enum _ValueOptionsUnderTest<V> implements OptionDefinition<V> {
 /// Resolves the value options from [args] without the usage validation that
 /// the command runner applies, so that inputs the mandatory option group
 /// rejects can reach [ValueOptionResolution.valueOrFileContent].
-String _valueFromUnvalidatedArgs(final List<String> args) {
+String _valueFromUnvalidatedArgs(List<String> args) {
   final configuration = Configuration<_ValueOptionsUnderTest>.resolveNoExcept(
     options: _ValueOptionsUnderTest.values,
     args: args,
@@ -188,5 +188,5 @@ class _MapConfigBroker implements ConfigurationBroker {
   final Map<String, String> values;
 
   @override
-  String? valueOrNull(final String key, final Configuration cfg) => values[key];
+  String? valueOrNull(String key, Configuration cfg) => values[key];
 }

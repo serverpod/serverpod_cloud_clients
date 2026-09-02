@@ -21,10 +21,10 @@ void main() {
 
   group('pub', () {
     void testIgnorePath(
-      final TestData c,
-      final String path,
-      final bool expected,
-      final bool ignoreCase,
+      TestData c,
+      String path,
+      bool expected,
+      bool ignoreCase,
     ) {
       final casing = 'with ignoreCase = $ignoreCase';
       test(
@@ -35,7 +35,7 @@ void main() {
               ? path.substring(0, path.length - 1)
               : path;
 
-          Iterable<String> listDir(final String dir) {
+          Iterable<String> listDir(String dir) {
             // List the next part of path:
             if (dir == pathWithoutSlash) return [];
             final nextSlash = path.indexOf(
@@ -47,15 +47,15 @@ void main() {
             ];
           }
 
-          Ignore? ignoreForDir(final String dir) => c.patterns[dir] == null
+          Ignore? ignoreForDir(String dir) => c.patterns[dir] == null
               ? null
               : Ignore(
                   c.patterns[dir]!,
-                  onInvalidPattern: (final _, final _) => hasWarning = true,
+                  onInvalidPattern: (_, _) => hasWarning = true,
                   ignoreCase: ignoreCase,
                 );
 
-          bool isDir(final String candidate) =>
+          bool isDir(String candidate) =>
               candidate == '.' ||
               path.length > candidate.length && path[candidate.length] == '/';
 
@@ -104,7 +104,7 @@ void main() {
     }
 
     for (final c in testData) {
-      c.paths.forEach((final path, final expected) {
+      c.paths.forEach((path, expected) {
         final ignoreCase = c.ignoreCase;
         if (ignoreCase == null) {
           testIgnorePath(c, path, expected, false);
@@ -116,12 +116,12 @@ void main() {
     }
   });
 
-  ProcessResult runGit(List<String> args, {final String? workingDirectory}) {
+  ProcessResult runGit(List<String> args, {String? workingDirectory}) {
     final executable = Platform.isWindows ? 'cmd' : 'git';
-    args = Platform.isWindows ? ['/c', 'git', ...args] : args;
+    final gitArgs = Platform.isWindows ? ['/c', 'git', ...args] : args;
     return Process.runSync(
       executable,
-      args,
+      gitArgs,
       workingDirectory: workingDirectory,
     );
   }
@@ -153,10 +153,10 @@ void main() {
     });
 
     void testIgnorePath(
-      final TestData c,
-      final String path,
-      final bool expected,
-      final bool ignoreCase,
+      TestData c,
+      String path,
+      bool expected,
+      bool ignoreCase,
     ) {
       final casing = 'with ignoreCase = $ignoreCase';
       final result = expected ? 'IGNORED' : 'NOT ignored';
@@ -214,7 +214,7 @@ void main() {
     }
 
     for (final c in testData) {
-      c.paths.forEach((final path, final expected) {
+      c.paths.forEach((path, expected) {
         final ignoreCase = c.ignoreCase;
         if (ignoreCase == null) {
           testIgnorePath(c, path, expected, false);
@@ -229,7 +229,7 @@ void main() {
 
 /// In order to print a string representation of test cases containing control characters,
 /// strip them out before including them in test output messages.
-String _stripControlCharacters(final String input) {
+String _stripControlCharacters(String input) {
   final buffer = StringBuffer();
   for (var codeUnit in input.codeUnits) {
     if (codeUnit >= 32 && codeUnit <= 126) {
@@ -268,7 +268,7 @@ class TestData {
   });
 
   TestData.single(
-    final String pattern,
+    String pattern,
     this.paths, {
     this.hasWarning = false,
     this.skipOnWindows = false,

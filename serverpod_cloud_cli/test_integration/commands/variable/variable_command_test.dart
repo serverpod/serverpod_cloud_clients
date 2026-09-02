@@ -25,7 +25,7 @@ void main() {
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
   );
 
@@ -83,13 +83,13 @@ void main() {
 
       setUp(() async {
         when(() => client.environmentVariables.list(any())).thenAnswer(
-          (final _) async => [
+          (_) async => [
             EnvironmentVariable(name: 'key', value: 'old', capsuleId: 0),
           ],
         );
         when(
           () => client.secrets.list(any()),
-        ).thenAnswer((final _) async => <String>[]);
+        ).thenAnswer((_) async => <String>[]);
         when(
           () => client.environmentVariables.update(
             name: any(named: 'name'),
@@ -206,10 +206,10 @@ void main() {
       setUp(() async {
         when(
           () => client.environmentVariables.list(any()),
-        ).thenAnswer((final _) async => <EnvironmentVariable>[]);
+        ).thenAnswer((_) async => <EnvironmentVariable>[]);
         when(
           () => client.secrets.list(any()),
-        ).thenAnswer((final _) async => <String>[]);
+        ).thenAnswer((_) async => <String>[]);
         when(
           () => client.environmentVariables.create(
             any(that: equals('key')),
@@ -217,7 +217,7 @@ void main() {
             any(),
           ),
         ).thenAnswer(
-          (final invocation) async => Future.value(
+          (invocation) async => Future.value(
             EnvironmentVariable(
               name: invocation.positionalArguments[0],
               value: invocation.positionalArguments[1],
@@ -329,7 +329,7 @@ void main() {
             commandResult,
             throwsA(
               isA<UsageException>().having(
-                (final e) => e.message,
+                (e) => e.message,
                 'message',
                 equals(
                   'These options are mutually exclusive: from-file, value.',
@@ -358,7 +358,7 @@ void main() {
             commandResult,
             throwsA(
               isA<UsageException>().having(
-                (final e) => e.message,
+                (e) => e.message,
                 'message',
                 equals(
                   'Option group Value requires one of the options to be provided.',
@@ -374,10 +374,10 @@ void main() {
       setUp(() async {
         when(
           () => client.environmentVariables.list(any()),
-        ).thenAnswer((final _) async => <EnvironmentVariable>[]);
+        ).thenAnswer((_) async => <EnvironmentVariable>[]);
         when(
           () => client.secrets.list(any()),
-        ).thenAnswer((final _) async => <String>[]);
+        ).thenAnswer((_) async => <String>[]);
         when(
           () => client.environmentVariables.create(
             any(that: equals('key')),
@@ -385,7 +385,7 @@ void main() {
             any(),
           ),
         ).thenAnswer(
-          (final invocation) async => Future.value(
+          (invocation) async => Future.value(
             EnvironmentVariable(
               name: invocation.positionalArguments[0],
               value: invocation.positionalArguments[1],
@@ -466,13 +466,13 @@ void main() {
       () {
         setUp(() async {
           when(() => client.environmentVariables.list(any())).thenAnswer(
-            (final _) async => [
+            (_) async => [
               EnvironmentVariable(name: 'key', value: 'old', capsuleId: 0),
             ],
           );
           when(
             () => client.secrets.list(any()),
-          ).thenAnswer((final _) async => <String>[]);
+          ).thenAnswer((_) async => <String>[]);
           when(
             () => client.environmentVariables.update(
               name: any(named: 'name', that: equals('key')),
@@ -480,7 +480,7 @@ void main() {
               cloudCapsuleId: any(named: 'cloudCapsuleId'),
             ),
           ).thenAnswer(
-            (final invocation) async => Future.value(
+            (invocation) async => Future.value(
               EnvironmentVariable(
                 name: invocation.namedArguments[#name],
                 value: invocation.namedArguments[#value],
@@ -601,16 +601,14 @@ void main() {
       setUp(() async {
         when(
           () => client.environmentVariables.list(any()),
-        ).thenAnswer((final _) async => <EnvironmentVariable>[]);
-        when(
-          () => client.secrets.list(any()),
-        ).thenAnswer((final _) async => ['key']);
+        ).thenAnswer((_) async => <EnvironmentVariable>[]);
+        when(() => client.secrets.list(any())).thenAnswer((_) async => ['key']);
         when(
           () => client.secrets.upsert(
             secrets: any(named: 'secrets', that: equals({'key': 'value'})),
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
           ),
-        ).thenAnswer((final _) async {});
+        ).thenAnswer((_) async {});
       });
 
       group('without flag', () {
@@ -732,16 +730,16 @@ void main() {
       setUp(() async {
         when(
           () => client.environmentVariables.list(any()),
-        ).thenAnswer((final _) async => <EnvironmentVariable>[]);
+        ).thenAnswer((_) async => <EnvironmentVariable>[]);
         when(
           () => client.secrets.list(any()),
-        ).thenAnswer((final _) async => <String>[]);
+        ).thenAnswer((_) async => <String>[]);
         when(
           () => client.secrets.create(
             secrets: any(named: 'secrets', that: equals({'key': 'value'})),
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
           ),
-        ).thenAnswer((final _) async {});
+        ).thenAnswer((_) async {});
 
         commandResult = cli.run([
           'variable',
@@ -775,16 +773,16 @@ void main() {
       setUp(() async {
         when(
           () => client.environmentVariables.list(any()),
-        ).thenAnswer((final _) async => <EnvironmentVariable>[]);
+        ).thenAnswer((_) async => <EnvironmentVariable>[]);
         when(
           () => client.secrets.list(any()),
-        ).thenAnswer((final _) async => <String>[]);
+        ).thenAnswer((_) async => <String>[]);
         when(
           () => client.secrets.create(
             secrets: any(named: 'secrets', that: equals({'key': 'value'})),
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
           ),
-        ).thenAnswer((final _) async {});
+        ).thenAnswer((_) async {});
 
         await d.file('value.txt', 'value').create();
 
@@ -889,20 +887,20 @@ void main() {
 
       setUp(() async {
         when(() => client.environmentVariables.list(any())).thenAnswer(
-          (final _) async => [
+          (_) async => [
             EnvironmentVariable(name: 'key', value: 'value', capsuleId: 0),
           ],
         );
         when(
           () => client.secrets.list(any()),
-        ).thenAnswer((final _) async => <String>[]);
+        ).thenAnswer((_) async => <String>[]);
         when(
           () => client.environmentVariables.delete(
             name: any(named: 'name'),
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
           ),
         ).thenAnswer(
-          (final invocation) async => Future.value(
+          (invocation) async => Future.value(
             EnvironmentVariable(
               name: invocation.namedArguments[#name],
               value: 'placeholder',
@@ -976,16 +974,16 @@ void main() {
         setUp(() async {
           when(
             () => client.environmentVariables.list(any()),
-          ).thenAnswer((final _) async => <EnvironmentVariable>[]);
+          ).thenAnswer((_) async => <EnvironmentVariable>[]);
           when(
             () => client.secrets.list(any()),
-          ).thenAnswer((final _) async => ['key']);
+          ).thenAnswer((_) async => ['key']);
           when(
             () => client.secrets.delete(
               key: any(named: 'key'),
               cloudCapsuleId: any(named: 'cloudCapsuleId'),
             ),
-          ).thenAnswer((final _) async {});
+          ).thenAnswer((_) async {});
 
           logger.answerNextConfirmWith(true);
           commandResult = cli.run([
@@ -1019,10 +1017,10 @@ void main() {
       setUp(() async {
         when(
           () => client.environmentVariables.list(any()),
-        ).thenAnswer((final _) async => <EnvironmentVariable>[]);
+        ).thenAnswer((_) async => <EnvironmentVariable>[]);
         when(
           () => client.secrets.list(any()),
-        ).thenAnswer((final _) async => <String>[]);
+        ).thenAnswer((_) async => <String>[]);
 
         commandResult = cli.run([
           'variable',
@@ -1057,13 +1055,13 @@ void main() {
 
       setUp(() async {
         when(() => client.environmentVariables.list(any())).thenAnswer(
-          (final _) async => [
+          (_) async => [
             EnvironmentVariable(name: 'key', value: 'value', capsuleId: 0),
           ],
         );
         when(
           () => client.secrets.list(any()),
-        ).thenAnswer((final _) async => <String>[]);
+        ).thenAnswer((_) async => <String>[]);
 
         logger.answerNextConfirmWith(false);
         commandResult = cli.run([
@@ -1109,17 +1107,13 @@ void main() {
 
       setUp(() async {
         when(() => client.environmentVariables.list(any())).thenAnswer(
-          (final _) async => [
+          (_) async => [
             EnvironmentVariable(name: 'zebra', value: 'one', capsuleId: 0),
             EnvironmentVariable(name: 'alpha', value: 'two', capsuleId: 0),
           ],
         );
         when(() => client.secrets.list(any())).thenAnswer(
-          (final _) async => [
-            'secret_z',
-            'SERVERPOD_PASSWORD_database',
-            'secret_a',
-          ],
+          (_) async => ['secret_z', 'SERVERPOD_PASSWORD_database', 'secret_a'],
         );
 
         commandResult = cli.run(['variable', 'list', '--project', projectId]);
@@ -1149,7 +1143,7 @@ void main() {
         await commandResult;
 
         expect(
-          logger.lineCalls.map((final call) => call.line),
+          logger.lineCalls.map((call) => call.line),
           isNot(contains(contains('SERVERPOD_PASSWORD_database'))),
         );
       });
@@ -1160,17 +1154,13 @@ void main() {
 
       setUp(() async {
         when(() => client.environmentVariables.list(any())).thenAnswer(
-          (final _) async => [
+          (_) async => [
             EnvironmentVariable(name: 'zebra', value: 'one', capsuleId: 0),
             EnvironmentVariable(name: 'alpha', value: 'two', capsuleId: 0),
           ],
         );
         when(() => client.secrets.list(any())).thenAnswer(
-          (final _) async => [
-            'secret_z',
-            'SERVERPOD_PASSWORD_database',
-            'secret_a',
-          ],
+          (_) async => ['secret_z', 'SERVERPOD_PASSWORD_database', 'secret_a'],
         );
 
         commandResult = cli.run([
@@ -1201,17 +1191,13 @@ void main() {
 
       setUp(() async {
         when(() => client.environmentVariables.list(any())).thenAnswer(
-          (final _) async => [
+          (_) async => [
             EnvironmentVariable(name: 'zebra', value: 'one', capsuleId: 0),
             EnvironmentVariable(name: 'alpha', value: 'two', capsuleId: 0),
           ],
         );
         when(() => client.secrets.list(any())).thenAnswer(
-          (final _) async => [
-            'secret_z',
-            'SERVERPOD_PASSWORD_database',
-            'secret_a',
-          ],
+          (_) async => ['secret_z', 'SERVERPOD_PASSWORD_database', 'secret_a'],
         );
 
         commandResult = cli.run([

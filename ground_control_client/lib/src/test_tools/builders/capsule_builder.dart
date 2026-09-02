@@ -22,32 +22,32 @@ class CapsuleBuilder {
       _domainNames = [],
       _resourceConfig = null;
 
-  CapsuleBuilder withId(final int? id) {
+  CapsuleBuilder withId(int? id) {
     _id = id;
     return this;
   }
 
-  CapsuleBuilder withName(final String name) {
+  CapsuleBuilder withName(String name) {
     _name = name;
     return this;
   }
 
-  CapsuleBuilder withCloudCapsuleId(final String cloudCapsuleId) {
+  CapsuleBuilder withCloudCapsuleId(String cloudCapsuleId) {
     _cloudCapsuleId = cloudCapsuleId;
     return this;
   }
 
-  CapsuleBuilder withRegion(final ServerpodRegion region) {
+  CapsuleBuilder withRegion(ServerpodRegion region) {
     _region = region;
     return this;
   }
 
-  CapsuleBuilder withProjectId(final int projectId) {
+  CapsuleBuilder withProjectId(int projectId) {
     _projectId = projectId;
     return this;
   }
 
-  CapsuleBuilder withProject(final Project? project) {
+  CapsuleBuilder withProject(Project? project) {
     _project = project;
     if (project != null) {
       _projectId = project.id ?? 1;
@@ -56,18 +56,18 @@ class CapsuleBuilder {
   }
 
   CapsuleBuilder withEnvironmentVariables(
-    final List<EnvironmentVariable>? environmentVariables,
+    List<EnvironmentVariable>? environmentVariables,
   ) {
     _environmentVariables = environmentVariables;
     return this;
   }
 
-  CapsuleBuilder withDomainNames(final List<CustomDomainName>? domainNames) {
+  CapsuleBuilder withDomainNames(List<CustomDomainName>? domainNames) {
     _domainNames = domainNames;
     return this;
   }
 
-  CapsuleBuilder withResourceConfig(final CapsuleResource? resourceConfig) {
+  CapsuleBuilder withResourceConfig(CapsuleResource? resourceConfig) {
     _resourceConfig = resourceConfig;
     return this;
   }

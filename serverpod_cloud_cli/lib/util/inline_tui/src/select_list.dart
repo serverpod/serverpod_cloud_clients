@@ -48,14 +48,14 @@ abstract final class SelectList {
   ///
   /// [style] customizes glyphs and ANSI colors (defaults to [SelectListStyle]).
   static Future<T?> choose<T>({
-    required final List<T> options,
-    required final InlineTerminal terminal,
-    final String? prompt,
-    final String? footerText,
-    final String Function(T option)? label,
-    final int initialIndex = 0,
-    final bool Function(T option)? isEnabled,
-    final SelectListStyle? style,
+    required List<T> options,
+    required InlineTerminal terminal,
+    String? prompt,
+    String? footerText,
+    String Function(T option)? label,
+    int initialIndex = 0,
+    bool Function(T option)? isEnabled,
+    SelectListStyle? style,
   }) async {
     final model = SelectListModel<T>(
       items: _itemsFor(options, label, isEnabled),
@@ -102,16 +102,16 @@ abstract final class SelectList {
   ///
   /// [style] customizes glyphs and ANSI colors (defaults to [SelectListStyle]).
   static Future<List<T>?> chooseMultiple<T>({
-    required final List<T> options,
-    required final InlineTerminal terminal,
-    final String? prompt,
-    final String? footerText,
-    final String Function(T option)? label,
-    final Iterable<T> initiallySelected = const [],
-    final int minSelections = 0,
-    final int? maxSelections,
-    final bool Function(T option)? isEnabled,
-    final SelectListStyle? style,
+    required List<T> options,
+    required InlineTerminal terminal,
+    String? prompt,
+    String? footerText,
+    String Function(T option)? label,
+    Iterable<T> initiallySelected = const [],
+    int minSelections = 0,
+    int? maxSelections,
+    bool Function(T option)? isEnabled,
+    SelectListStyle? style,
   }) async {
     final initialIndices = <int>[
       for (var i = 0; i < options.length; i++)
@@ -137,9 +137,9 @@ abstract final class SelectList {
   }
 
   static List<SelectListItem<T>> _itemsFor<T>(
-    final List<T> options,
-    final String Function(T option)? label,
-    final bool Function(T option)? isEnabled,
+    List<T> options,
+    String Function(T option)? label,
+    bool Function(T option)? isEnabled,
   ) {
     return [
       for (final option in options)
@@ -152,11 +152,11 @@ abstract final class SelectList {
   }
 
   static Future<SelectListModel<T>> _run<T>(
-    final SelectListModel<T> model, {
-    required final InlineTerminal terminal,
-    required final SelectListStyle? style,
-    required final String? prompt,
-    required final String? footerText,
+    SelectListModel<T> model, {
+    required InlineTerminal terminal,
+    required SelectListStyle? style,
+    required String? prompt,
+    required String? footerText,
   }) async {
     final resolvedStyle = style ?? SelectListStyle();
     final runner = SelectListRunner<T>(
@@ -184,11 +184,11 @@ class SelectListRunner<T> {
 
   /// Creates a runner for [model] rendered to [terminal] using [style].
   SelectListRunner({
-    required final SelectListModel<T> model,
-    required final InlineTerminal terminal,
-    required final SelectListStyle style,
-    final String? prompt,
-    final String? footerText,
+    required SelectListModel<T> model,
+    required InlineTerminal terminal,
+    required SelectListStyle style,
+    String? prompt,
+    String? footerText,
   }) : _model = model,
        _terminal = terminal,
        _style = style,
@@ -213,7 +213,7 @@ class SelectListRunner<T> {
     // Restores the terminal and resolves the run with the given [status],
     // throwing [UserAbortException] when aborted. Used for every exit path so
     // Ctrl+C is cleaned up exactly like a cancel.
-    void finish(final SelectListStatus status) {
+    void finish(SelectListStatus status) {
       if (status == SelectListStatus.submitted ||
           status == SelectListStatus.cancelled) {
         // Drop the navigation pointer and highlight selected rows so the
@@ -244,12 +244,12 @@ class SelectListRunner<T> {
 
     // A Ctrl+C in raw mode usually arrives as an interrupt signal rather than
     // an input byte, so handle it here and abort with the same cleanup.
-    interruptSubscription = _terminal.interruptSignals.listen((final _) {
+    interruptSubscription = _terminal.interruptSignals.listen((_) {
       finish(SelectListStatus.aborted);
     });
 
     inputSubscription = _terminal.input.listen(
-      (final data) {
+      (data) {
         var status = _model.status;
         for (final key in TuiKeyDecoder.decode(data)) {
           status = _model.handleKey(key);
@@ -263,7 +263,7 @@ class SelectListRunner<T> {
 
         finish(status);
       },
-      onError: (final Object error, final StackTrace stackTrace) {
+      onError: (Object error, StackTrace stackTrace) {
         restoreTerminal();
         unawaited(inputSubscription?.cancel());
         unawaited(interruptSubscription?.cancel());
@@ -278,7 +278,7 @@ class SelectListRunner<T> {
     return completer.future;
   }
 
-  List<String> _buildLines({final bool highlightBySelection = false}) {
+  List<String> _buildLines({bool highlightBySelection = false}) {
     // The prompt/header is intentionally not included here; it is printed once
     // above the region so it is never part of an in-place re-render.
     return buildSelectListLines<T>(

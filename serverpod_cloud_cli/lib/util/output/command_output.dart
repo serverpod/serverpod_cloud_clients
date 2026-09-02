@@ -17,8 +17,8 @@ class CommandOutput {
   CommandOutput({required this.format, required this.logger});
 
   Future<OutputContext> render<O extends Object>({
-    required final Operation<O> operation,
-    required final OutputWidget ui,
+    required Operation<O> operation,
+    required OutputWidget ui,
   }) async {
     final context = await _doOperation(operation: operation);
     ui.buildTree(context).renderTree(logger: logger);
@@ -26,7 +26,7 @@ class CommandOutput {
   }
 
   Future<OutputContext> _doOperation<O extends Object>({
-    required final Operation<O> operation,
+    required Operation<O> operation,
   }) async {
     try {
       final data = await operation();
@@ -37,7 +37,7 @@ class CommandOutput {
   }
 
   Future<T> renderInteractive<T extends Object?>({
-    required final InteractiveWidget<T> ui,
+    required InteractiveWidget<T> ui,
   }) {
     final context = OutputContext(format);
     ui.buildTree(context).renderTree(logger: logger);

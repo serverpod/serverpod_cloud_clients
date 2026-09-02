@@ -378,7 +378,7 @@ void main() {
       final term = FakeTerminal();
       final future = SelectList.choose<int>(
         options: [1, 2, 3],
-        label: (final n) => 'Number $n',
+        label: (n) => 'Number $n',
         terminal: term,
       );
 

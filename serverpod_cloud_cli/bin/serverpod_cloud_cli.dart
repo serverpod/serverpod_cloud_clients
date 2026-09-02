@@ -12,7 +12,7 @@ import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart'
     show ErrorExitException;
 import 'package:serverpod_cloud_cli/util/scloud_version.dart';
 
-void main(final List<String> args) async {
+void main(List<String> args) async {
   final logger = CommandLogger.create();
   final errorReporter = SentryErrorReporter.forCli();
 
@@ -37,7 +37,7 @@ void main(final List<String> args) async {
         exit(ExitException.codeError);
       }
     },
-    (final error, final stackTrace) async {
+    (error, stackTrace) async {
       logger.error(
         _formatInternalError(error, zonedError: true),
         stackTrace: stackTrace,
@@ -51,16 +51,16 @@ void main(final List<String> args) async {
 }
 
 Future<void> _main(
-  final List<String> args,
-  final CommandLogger logger,
-  final SentryErrorReporter errorReporter,
+  List<String> args,
+  CommandLogger logger,
+  SentryErrorReporter errorReporter,
 ) async {
   final runner = CloudCliCommandRunner.create(
     logger: logger,
     version: cliVersion,
-    onAnalyticsEvent: (final event, final properties) =>
+    onAnalyticsEvent: (event, properties) =>
         _reportAnalyticsEvent(event, properties, logger),
-    onRunContextResolved: (final context) {
+    onRunContextResolved: (context) {
       errorReporter.analyticsConsent = context.analyticsConsent;
       errorReporter.command = context.command;
       errorReporter.flags = context.flags;
@@ -79,15 +79,12 @@ Future<void> _main(
   }
 }
 
-Future<void> _preExit(final CommandLogger logger) async {
+Future<void> _preExit(CommandLogger logger) async {
   await logger.disposeInlineTerminal();
   await logger.flush();
 }
 
-String _formatInternalError(
-  final dynamic error, {
-  final bool zonedError = false,
-}) {
+String _formatInternalError(dynamic error, {bool zonedError = false}) {
   return 'Yikes! It is possible that this error is caused by an'
       ' internal issue with the Serverpod tooling. We would appreciate if you '
       'filed an issue over at Github. Please include the stack trace below and '
@@ -100,9 +97,9 @@ ${error.runtimeType} $error''';
 }
 
 void _reportAnalyticsEvent(
-  final String event,
-  final Map<String, dynamic> properties,
-  final CommandLogger logger,
+  String event,
+  Map<String, dynamic> properties,
+  CommandLogger logger,
 ) {
   try {
     _postHogAnalytics.track(event: event, properties: properties);

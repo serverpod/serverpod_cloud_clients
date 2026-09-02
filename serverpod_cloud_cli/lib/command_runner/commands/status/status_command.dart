@@ -49,9 +49,7 @@ Examples
     : super(options: StatusOption.values);
 
   @override
-  Future<void> runWithConfig(
-    final Configuration<StatusOption> commandConfig,
-  ) async {
+  Future<void> runWithConfig(Configuration<StatusOption> commandConfig) async {
     final projectId = commandConfig.value(StatusOption.projectId);
     final inUtc = commandConfig.value(StatusOption.utc);
 

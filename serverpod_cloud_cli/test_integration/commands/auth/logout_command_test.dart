@@ -26,7 +26,7 @@ void main() {
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
   );
 
@@ -66,7 +66,7 @@ void main() {
           () => client.authWithAuth.logoutDevice(
             authTokenId: any(named: 'authTokenId'),
           ),
-        ).thenAnswer((final _) async => true);
+        ).thenAnswer((_) async => true);
       });
 
       group('when logging out the current session', () {
@@ -193,7 +193,7 @@ void main() {
           () => client.authWithAuth.logoutDevice(
             authTokenId: any(named: 'authTokenId'),
           ),
-        ).thenAnswer((final _) async => false);
+        ).thenAnswer((_) async => false);
       });
 
       group('when logging out the current session', () {
@@ -305,9 +305,7 @@ void main() {
           localStoragePath: testCacheFolderPath,
         );
 
-        when(
-          () => client.authWithAuth.logoutAll(),
-        ).thenAnswer((final _) async {});
+        when(() => client.authWithAuth.logoutAll()).thenAnswer((_) async {});
       });
 
       group('when logging out all sessions', () {

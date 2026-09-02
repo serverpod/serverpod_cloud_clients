@@ -10,8 +10,8 @@ enum LaunchPhase { projectSelection, configuration, launching }
 class LaunchConfigState extends TuiState {
   LaunchConfigState({
     required this.defaultProjectId,
-    required final ProjectLaunch projectSetup,
-    final List<String> existingProjectIds = const [],
+    required ProjectLaunch projectSetup,
+    List<String> existingProjectIds = const [],
   }) : _projectSetup = projectSetup,
        _existingProjectIds = existingProjectIds {
     _initializeProjectSelectionFormState();
@@ -108,7 +108,7 @@ class LaunchConfigState extends TuiState {
     final config = _projectIdInputConfig;
     if (config == null) return;
 
-    _projectSelectionFormState.setValidator(config, (final text) {
+    _projectSelectionFormState.setValidator(config, (text) {
       if (!isValidProjectIdFormat(text.trim())) {
         return 'Invalid project ID. Must be 6-32 characters long '
             'and contain only lowercase letters, numbers, and hyphens.';

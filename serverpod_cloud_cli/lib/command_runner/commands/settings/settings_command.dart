@@ -31,7 +31,7 @@ class CliUserSettingsCommand extends CloudCliCommand<CliUserSettingsOption> {
 
   @override
   Future<void> runWithConfig(
-    final Configuration<CliUserSettingsOption> commandConfig,
+    Configuration<CliUserSettingsOption> commandConfig,
   ) async {
     var settingSpecified = false;
 

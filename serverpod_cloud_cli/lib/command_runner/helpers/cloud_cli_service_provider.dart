@@ -23,8 +23,8 @@ class CloudCliServiceProvider {
   ScloudSettings? _scloudSettings;
 
   CloudCliServiceProvider({
-    final Client Function(GlobalConfiguration globalCfg)? apiClientFactory,
-    final FileUploaderFactory? fileUploaderFactory,
+    Client Function(GlobalConfiguration globalCfg)? apiClientFactory,
+    FileUploaderFactory? fileUploaderFactory,
   }) : _apiClientFactory = apiClientFactory {
     _fileUploaderFactory = fileUploaderFactory ?? _createGcsFileUploader;
   }
@@ -32,8 +32,8 @@ class CloudCliServiceProvider {
   bool get initialized => _initialized;
 
   void initialize({
-    required final GlobalConfiguration globalConfiguration,
-    required final CommandLogger logger,
+    required GlobalConfiguration globalConfiguration,
+    required CommandLogger logger,
   }) {
     if (_initialized) {
       throw StateError('CloudCliServiceProvider already initialized');
@@ -93,7 +93,7 @@ class CloudCliServiceProvider {
     localStoragePath: _globalConfiguration.scloudDir.path,
   );
 
-  FileUploaderClient _createGcsFileUploader(final String uploadDescription) {
+  FileUploaderClient _createGcsFileUploader(String uploadDescription) {
     return GoogleCloudStorageUploader(
       uploadDescription,
       timeout: _globalConfiguration.connectionTimeout,

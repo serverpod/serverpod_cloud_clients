@@ -50,7 +50,7 @@ class AdminListUsersCommand extends CloudCliCommand<AdminListUsersOption> {
 
   @override
   Future<void> runWithConfig(
-    final Configuration<AdminListUsersOption> commandConfig,
+    Configuration<AdminListUsersOption> commandConfig,
   ) async {
     final projectId = commandConfig.optionalValue(
       AdminListUsersOption.projectId,
@@ -99,7 +99,7 @@ class AdminInviteUserCommand extends CloudCliCommand<AdminInviteUserOption> {
 
   @override
   Future<void> runWithConfig(
-    final Configuration<AdminInviteUserOption> commandConfig,
+    Configuration<AdminInviteUserOption> commandConfig,
   ) async {
     final email = commandConfig.value(AdminInviteUserOption.user);
 

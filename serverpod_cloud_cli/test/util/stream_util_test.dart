@@ -154,8 +154,8 @@ void main() {
       final split = SplitStreams<String, int>(
         source.stream,
         ['even', 'odd'],
-        (final e) => e.isEven ? 'even' : 'odd',
-        (final _) => false,
+        (e) => e.isEven ? 'even' : 'odd',
+        (_) => false,
       );
 
       final evenFuture = split.getStream('even').toList();
@@ -179,8 +179,8 @@ void main() {
       final split = SplitStreams<String, int>(
         source.stream,
         ['even', 'odd'],
-        (final e) => e.isEven ? 'even' : 'odd',
-        (final e) => e == 2,
+        (e) => e.isEven ? 'even' : 'odd',
+        (e) => e == 2,
       );
 
       final evenFuture = split.getStream('even').toList();
@@ -203,8 +203,8 @@ void main() {
       final split = SplitStreams<String, int>(
         source.stream,
         ['even', 'odd'],
-        (final e) => e.isEven ? 'even' : 'odd',
-        (final _) => false,
+        (e) => e.isEven ? 'even' : 'odd',
+        (_) => false,
       );
 
       final evenFuture = split.getStream('even').toList();
@@ -224,8 +224,8 @@ void main() {
       final split = SplitStreams<String, int>(
         source.stream,
         ['even', 'odd'],
-        (final e) => e.isEven ? 'even' : 'odd',
-        (final _) => false,
+        (e) => e.isEven ? 'even' : 'odd',
+        (_) => false,
       );
 
       final evenFuture = split.getStream('even').toList();
@@ -246,8 +246,8 @@ void main() {
       final split = SplitStreams<String, int>(
         source.stream,
         ['even', 'odd'],
-        (final e) => e.isEven ? 'even' : 'odd',
-        (final e) => e == 2,
+        (e) => e.isEven ? 'even' : 'odd',
+        (e) => e == 2,
       );
 
       final evenFuture = split.getStream('even').toList();
@@ -270,8 +270,8 @@ void main() {
       final split = SplitStreams<String, int>(
         source.stream,
         ['even'],
-        (final _) => 'even',
-        (final _) => false,
+        (_) => 'even',
+        (_) => false,
       );
 
       expect(() => split.getStream('missing'), throwsA(isA<StateError>()));
@@ -289,14 +289,14 @@ void main() {
         SplitStreams<String, int>(
           source.stream,
           ['even'],
-          (final _) => 'unregistered',
-          (final _) => false,
+          (_) => 'unregistered',
+          (_) => false,
         );
 
         source.add(1);
         await source.close();
         await Future<void>.delayed(Duration.zero);
-      }, (final error, final _) => errors.add(error));
+      }, (error, _) => errors.add(error));
 
       expect(errors, isNotEmpty);
       expect(errors.first, isA<StateError>());
@@ -309,8 +309,8 @@ void main() {
       final split = SplitStreams<String, int>(
         source.stream,
         ['even'],
-        (final _) => 'even',
-        (final _) => false,
+        (_) => 'even',
+        (_) => false,
       );
 
       await split.cancel();

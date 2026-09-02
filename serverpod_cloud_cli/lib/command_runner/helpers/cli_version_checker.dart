@@ -9,12 +9,12 @@ abstract final class CLIVersionChecker {
   /// Check current Serverpod CLI version and prompt user to update if needed
   /// Returns true if the CLI should be updated, false otherwise
   static Future<Version?> fetchLatestCLIVersion({
-    required final CommandLogger logger,
-    required final String localStoragePath,
-    final PubApiClient? pubClientOverride,
+    required CommandLogger logger,
+    required String localStoragePath,
+    PubApiClient? pubClientOverride,
   }) async {
     return PackageVersion.fetchLatestPackageVersion(
-      storePackageVersionData: (final PackageVersionData versionArtefact) =>
+      storePackageVersionData: (PackageVersionData versionArtefact) =>
           ResourceManager.storeLatestCliVersion(
             cliVersionData: versionArtefact,
             logger: logger,
@@ -49,8 +49,8 @@ abstract final class CLIVersionChecker {
 
   /// Returns true if the latest CLI version is a breaking update from the current
   static bool isBreakingUpdate({
-    required final Version currentVersion,
-    required final Version latestVersion,
+    required Version currentVersion,
+    required Version latestVersion,
   }) {
     return currentVersion.nextBreaking <= latestVersion;
   }

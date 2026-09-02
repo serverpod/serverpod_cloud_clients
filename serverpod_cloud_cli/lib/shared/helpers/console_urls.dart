@@ -1,4 +1,5 @@
 import 'dart:io' show Platform;
+
 import 'package:serverpod_cloud_cli/constants.dart';
 
 String getConsoleBaseUrl() {

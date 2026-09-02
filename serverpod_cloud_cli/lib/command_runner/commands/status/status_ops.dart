@@ -19,12 +19,12 @@ abstract class StatusCommands {
   /// If [outputOverallStatus] is true, only the overall status word
   /// is shown (e.g. "success").
   static Future<void> showDeploymentStatus(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String cloudCapsuleId,
-    required final UuidValue attemptId,
-    final bool inUtc = false,
-    final bool outputOverallStatus = false,
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String cloudCapsuleId,
+    required UuidValue attemptId,
+    bool inUtc = false,
+    bool outputOverallStatus = false,
   }) async {
     final stages = await cloudApiClient.status.getDeployAttemptStatus(
       cloudCapsuleId: cloudCapsuleId,
@@ -52,14 +52,14 @@ abstract class StatusCommands {
   }
 
   static Future<void> tailDeploymentStatus(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String baseCommand,
-    required final String cloudCapsuleId,
-    required final UuidValue attemptId,
-    final bool inUtc = false,
-    final bool skipUploadStage = false,
-    final Stream<void>? processSignalStreamOverride,
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String baseCommand,
+    required String cloudCapsuleId,
+    required UuidValue attemptId,
+    bool inUtc = false,
+    bool skipUploadStage = false,
+    Stream<void>? processSignalStreamOverride,
   }) async {
     final stageStream = cloudApiClient.status.tailDeployAttemptStatus(
       cloudCapsuleId: cloudCapsuleId,
@@ -69,8 +69,8 @@ abstract class StatusCommands {
     final stageStreams = SplitStreams<DeployStageType, DeployAttemptStage>(
       stageStream,
       DeployStageType.values,
-      (final stage) => stage.stageType,
-      (final stage) => stage.stageStatus.isFinal,
+      (stage) => stage.stageType,
+      (stage) => stage.stageStatus.isFinal,
     );
 
     if (!skipUploadStage) {
@@ -80,8 +80,7 @@ abstract class StatusCommands {
     }
 
     final processSignalStream =
-        processSignalStreamOverride ??
-        ProcessSignal.sigint.watch().map((final _) {});
+        processSignalStreamOverride ?? ProcessSignal.sigint.watch().map((_) {});
 
     final stageStatusTailer = _StageStatusTailer(
       logger: logger,
@@ -119,8 +118,8 @@ abstract class StatusCommands {
   }
 
   static void _logDeployTailInterruptGuidance(
-    final CommandLogger logger,
-    final String baseCommand,
+    CommandLogger logger,
+    String baseCommand,
   ) {
     logger.info(
       'The deployment continues in Serverpod Cloud.',
@@ -133,9 +132,9 @@ abstract class StatusCommands {
   }
 
   static void _logStageFailureGuidance(
-    final CommandLogger logger,
-    final String baseCommand,
-    final DeployAttemptStage stage,
+    CommandLogger logger,
+    String baseCommand,
+    DeployAttemptStage stage,
   ) {
     if (stage.stageType == DeployStageType.build &&
         stage.stageStatus == DeployProgressStatus.failure) {
@@ -160,17 +159,17 @@ abstract class StatusCommands {
   /// The rollout is successful only when both stages have succeeded;
   /// if either fails or is cancelled, so has the rollout.
   static List<DeployAttemptStage> _combineRolloutStages(
-    final List<DeployAttemptStage> stages,
+    List<DeployAttemptStage> stages,
   ) {
     final rolloutStages = stages
         .where(
-          (final stage) =>
+          (stage) =>
               stage.stageType == DeployStageType.deploy ||
               stage.stageType == DeployStageType.service,
         )
         .toList();
     final otherStages = stages
-        .where((final stage) => !rolloutStages.contains(stage))
+        .where((stage) => !rolloutStages.contains(stage))
         .toList();
 
     if (rolloutStages.isEmpty) {
@@ -178,14 +177,10 @@ abstract class StatusCommands {
     }
 
     final deployStatus = rolloutStages
-        .lastWhereOrNull(
-          (final stage) => stage.stageType == DeployStageType.deploy,
-        )
+        .lastWhereOrNull((stage) => stage.stageType == DeployStageType.deploy)
         ?.stageStatus;
     final serviceStatus = rolloutStages
-        .lastWhereOrNull(
-          (final stage) => stage.stageType == DeployStageType.service,
-        )
+        .lastWhereOrNull((stage) => stage.stageType == DeployStageType.service)
         ?.stageStatus;
 
     final combinedStage = rolloutStages.last.copyWith(
@@ -202,8 +197,8 @@ abstract class StatusCommands {
   /// rollout status. The rollout is successful only when both stages have
   /// succeeded, and failed or cancelled if either stage is.
   static DeployProgressStatus _combinedRolloutStatus(
-    final DeployProgressStatus deployStatus,
-    final DeployProgressStatus serviceStatus,
+    DeployProgressStatus deployStatus,
+    DeployProgressStatus serviceStatus,
   ) {
     const statusPriority = [
       DeployProgressStatus.failure,
@@ -226,7 +221,7 @@ abstract class StatusCommands {
     return DeployProgressStatus.awaiting;
   }
 
-  static String _generateStatusLine(final DeployAttemptStage stage) {
+  static String _generateStatusLine(DeployAttemptStage stage) {
     final status = _getStatusPhrase(stage);
 
     final rocket =
@@ -238,7 +233,7 @@ abstract class StatusCommands {
     return '$status$rocket';
   }
 
-  static String _getStatusPhrase(final DeployAttemptStage stage) {
+  static String _getStatusPhrase(DeployAttemptStage stage) {
     final stageName = switch (stage.stageType) {
       DeployStageType.upload => 'Upload',
       DeployStageType.build => 'Cloud build',
@@ -290,7 +285,7 @@ class _StageStatusTailer {
   /// If the input stream closes but was empty, the spinner is completed with a
   /// filler stage with unknown status, which is then returned.
   Future<DeployAttemptStage> showStageProgress(
-    final DeployStageType stageType,
+    DeployStageType stageType,
   ) async {
     final fallbackStream = withFallback(
       cancelOnInterrupt(stageStreams.getStream(stageType), processSignalStream),
@@ -303,8 +298,7 @@ class _StageStatusTailer {
       fallbackStream,
       toMessage: StatusCommands._generateStatusLine,
       padRight: StatusCommands.progressMessagePadLength,
-      isSuccess: (final stage) =>
-          stage.stageStatus == DeployProgressStatus.success,
+      isSuccess: (stage) => stage.stageStatus == DeployProgressStatus.success,
     );
   }
 
@@ -360,11 +354,11 @@ class _StageStatusTailer {
                 attemptId: attemptId,
               )
               .listen(
-                (final record) => section.appendLine(record.content),
+                (record) => section.appendLine(record.content),
                 // Best-effort: a failure to fetch build-log lines should not
                 // derail the stage tailing that drives the heading and the
                 // final failure/success outcome.
-                onError: (final _, final _) {},
+                onError: (_, _) {},
               );
         }
       }
@@ -396,8 +390,7 @@ class _StageStatusTailer {
       fallbackStream,
       toMessage: StatusCommands._generateStatusLine,
       padRight: StatusCommands.progressMessagePadLength,
-      isSuccess: (final stage) =>
-          stage.stageStatus == DeployProgressStatus.success,
+      isSuccess: (stage) => stage.stageStatus == DeployProgressStatus.success,
     );
   }
 
@@ -438,8 +431,8 @@ class _StageStatusTailer {
   }
 
   DeployAttemptStage _fillerStage(
-    final DeployStageType stageType,
-    final DeployProgressStatus status,
+    DeployStageType stageType,
+    DeployProgressStatus status,
   ) {
     return DeployAttemptStage(
       cloudCapsuleId: cloudCapsuleId,

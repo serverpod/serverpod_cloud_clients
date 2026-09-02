@@ -34,8 +34,8 @@ void main() {
   });
 
   Future<ProcessResult> runScloud(
-    final List<String> args, {
-    final Map<String, String>? environment,
+    List<String> args, {
+    Map<String, String>? environment,
   }) {
     return Process.run(Platform.resolvedExecutable, [
       p.join('bin', 'serverpod_cloud_cli.dart'),

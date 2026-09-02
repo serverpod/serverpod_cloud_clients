@@ -40,22 +40,20 @@ class SelectListStyle {
     this.uncheckedBox = '[ ]',
     this.radioOn = '(*)',
     this.radioOff = '( )',
-    final String? dimStyle,
-    final String? highlightStyle,
+    String? dimStyle,
+    String? highlightStyle,
   }) : dimStyle = dimStyle ?? defaultDimStyle.ansiCode,
        highlightStyle = highlightStyle ?? defaultHighlightStyle.ansiCode;
 
   /// A style using Unicode glyphs for terminals that render them well.
-  SelectListStyle.unicode({
-    final String? dimStyle,
-    final String? highlightStyle,
-  }) : this(
-         pointer: '\u276f', // ❯
-         checkedBox: '\u25c9', // ◉
-         uncheckedBox: '\u25ef', // ◯
-         radioOn: '\u25c9',
-         radioOff: '\u25ef',
-         dimStyle: dimStyle,
-         highlightStyle: highlightStyle,
-       );
+  SelectListStyle.unicode({String? dimStyle, String? highlightStyle})
+    : this(
+        pointer: '\u276f', // ❯
+        checkedBox: '\u25c9', // ◉
+        uncheckedBox: '\u25ef', // ◯
+        radioOn: '\u25c9',
+        radioOff: '\u25ef',
+        dimStyle: dimStyle,
+        highlightStyle: highlightStyle,
+      );
 }

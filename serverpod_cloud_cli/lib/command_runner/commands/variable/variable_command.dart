@@ -119,7 +119,7 @@ Examples
 
   @override
   Future<void> runWithConfig(
-    final Configuration<SetVariableCommandConfig> commandConfig,
+    Configuration<SetVariableCommandConfig> commandConfig,
   ) async {
     final projectId = commandConfig.value(SetVariableCommandConfig.projectId);
     final variableName = commandConfig.value(
@@ -168,7 +168,7 @@ Examples
 
   @override
   Future<void> runWithConfig(
-    final Configuration<UnsetVariableCommandConfig> commandConfig,
+    Configuration<UnsetVariableCommandConfig> commandConfig,
   ) async {
     final projectId = commandConfig.value(UnsetVariableCommandConfig.projectId);
     final variableName = commandConfig.value(
@@ -199,7 +199,7 @@ class CloudVariableListCommand
 
   @override
   Future<void> runWithConfig(
-    final Configuration<ListVariableCommandConfig> commandConfig,
+    Configuration<ListVariableCommandConfig> commandConfig,
   ) async {
     final projectId = commandConfig.value(ListVariableCommandConfig.projectId);
     final format = commandConfig.value(ListVariableCommandConfig.format);

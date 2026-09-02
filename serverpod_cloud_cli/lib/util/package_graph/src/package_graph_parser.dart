@@ -31,7 +31,7 @@ final class PackageGraphParser {
   ///
   /// Throws [PackageGraphFileNotFoundException] if the file is not found.
   /// Throws [FormatException] if the file is not a valid package graph file.
-  static PackageGraph fromProjectPath(final String projectPath) {
+  static PackageGraph fromProjectPath(String projectPath) {
     return fromProjectDirectory(Directory(projectPath));
   }
 
@@ -39,7 +39,7 @@ final class PackageGraphParser {
   ///
   /// Throws [PackageGraphFileNotFoundException] if the file is not found.
   /// Throws [FormatException] if the file is not a valid package graph file.
-  static PackageGraph fromProjectDirectory(final Directory projectDirectory) {
+  static PackageGraph fromProjectDirectory(Directory projectDirectory) {
     return fromFile(File(p.join(projectDirectory.path, _relativePath)));
   }
 
@@ -47,7 +47,7 @@ final class PackageGraphParser {
   ///
   /// Throws [PackageGraphFileNotFoundException] if the file is not found.
   /// Throws [FormatException] if the file is not a valid package graph file.
-  static PackageGraph fromFile(final File file) {
+  static PackageGraph fromFile(File file) {
     final String contents;
     try {
       contents = file.readAsStringSync();
@@ -70,7 +70,7 @@ final class PackageGraphParser {
   /// Parses a decoded `package_graph.json` value.
   ///
   /// Throws [FormatException] if the file is not a valid package graph file.
-  static PackageGraph fromJson(final Object? json) {
+  static PackageGraph fromJson(Object? json) {
     if (json is! Map) {
       throw const FormatException(
         'Expected package_graph.json top level to be a map',
@@ -173,10 +173,7 @@ final class PackageGraphParser {
     return PackageGraph(roots: roots);
   }
 
-  static List<String> _parseStringList(
-    final Map<String, dynamic> map,
-    final String key,
-  ) {
+  static List<String> _parseStringList(Map<String, dynamic> map, String key) {
     final value = map[key];
     if (value == null) {
       return [];

@@ -27,7 +27,7 @@ class ScrollingProcessResult {
   ///
   /// When [full] is true (and the section was created with capture enabled), the
   /// complete output is rendered instead of only the last visible lines.
-  void keep({final bool full = false}) => section.keep(full: full);
+  void keep({bool full = false}) => section.keep(full: full);
 
   /// Clears the scrolling section so the area can be overwritten.
   void clear() => section.clear();
@@ -46,19 +46,19 @@ abstract final class ScrollingProcess {
   /// [terminal] is supplied and owned by the caller; this method does not
   /// dispose it.
   static Future<ScrollingProcessResult> run(
-    final String executable,
-    final List<String> arguments, {
-    required final InlineTerminal terminal,
-    final String? workingDirectory,
-    final Map<String, String>? environment,
-    final bool includeParentEnvironment = true,
-    final bool runInShell = false,
-    final int rows = 5,
-    final bool dim = true,
-    final String? heading,
-    final String? successMessage,
-    final String? failedMessage,
-    final bool captureOutput = false,
+    String executable,
+    List<String> arguments, {
+    required InlineTerminal terminal,
+    String? workingDirectory,
+    Map<String, String>? environment,
+    bool includeParentEnvironment = true,
+    bool runInShell = false,
+    int rows = 5,
+    bool dim = true,
+    String? heading,
+    String? successMessage,
+    String? failedMessage,
+    bool captureOutput = false,
   }) async {
     final section = ScrollingSection(
       terminal: terminal,
@@ -97,8 +97,8 @@ abstract final class ScrollingProcess {
   }
 
   static Future<void> _tail(
-    final Stream<List<int>> stream,
-    final ScrollingSection section,
+    Stream<List<int>> stream,
+    ScrollingSection section,
   ) {
     return stream
         .transform(const Utf8Decoder(allowMalformed: true))

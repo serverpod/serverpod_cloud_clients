@@ -16,6 +16,6 @@ bool isActivatedFromPub() {
   return false;
 }
 
-bool _isInPubCache(final String path) {
+bool _isInPubCache(String path) {
   return path.contains('pub-cache') || path.contains('.pub-cache');
 }

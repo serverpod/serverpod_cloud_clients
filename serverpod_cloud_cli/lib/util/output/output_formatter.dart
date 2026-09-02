@@ -14,14 +14,14 @@ abstract class OutputFormatter<O extends Object, D extends Object> {
 
   const OutputFormatter({required this.utc});
 
-  D format(final O object);
+  D format(O object);
 }
 
 class JsonOutputFormatter<O extends Object> extends OutputFormatter<O, String> {
   const JsonOutputFormatter({super.utc = false});
 
   @override
-  String format(final O object) {
+  String format(O object) {
     final encoded = jsonEncode(object, toEncodable: _structuredValue);
     return '$encoded\n';
   }
@@ -31,7 +31,7 @@ class YamlOutputFormatter<O extends Object> extends OutputFormatter<O, String> {
   const YamlOutputFormatter({super.utc = false});
 
   @override
-  String format(final O object) {
+  String format(O object) {
     // decode via json to support the same value types
     final jsonEncoded = jsonEncode(object, toEncodable: _structuredValue);
     final tmp = jsonDecode(jsonEncoded);
@@ -52,9 +52,9 @@ typedef ValueFormatter<O extends Object> =
 /// an object and applies standard formatting on it,
 /// depending on its datatype.
 ValueFormatter<O> objValueFormatter<O extends Object>({
-  required final ValueGetter<O> getter,
+  required ValueGetter<O> getter,
 }) {
-  return (final O object, {final bool? utc}) {
+  return (O object, {bool? utc}) {
     return _tableCell(getter(object), utc: utc ?? false) ?? '';
   };
 }
@@ -63,12 +63,12 @@ ValueFormatter<O> objValueFormatter<O extends Object>({
 /// of a [Map<String, Object?>] and applies standard formatting on it,
 /// depending on its datatype.
 ValueFormatter<O> mapValueFormatter<O extends Map<String, Object?>>({
-  required final String key,
+  required String key,
 }) {
-  return objValueFormatter(getter: (final object) => object[key]);
+  return objValueFormatter(getter: (object) => object[key]);
 }
 
-Object? _structuredValue(final Object? value) {
+Object? _structuredValue(Object? value) {
   if (value == null) {
     return null;
   }
@@ -99,7 +99,7 @@ Object? _structuredValue(final Object? value) {
   return value.toString();
 }
 
-String? _tableCell(final Object? value, {required final bool utc}) {
+String? _tableCell(Object? value, {required bool utc}) {
   if (value == null) {
     return null;
   }

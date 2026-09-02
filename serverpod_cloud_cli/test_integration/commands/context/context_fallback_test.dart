@@ -23,7 +23,7 @@ void main() {
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
   );
 
@@ -35,10 +35,8 @@ void main() {
 
     when(
       () => client.environmentVariables.list(any()),
-    ).thenAnswer((final _) async => []);
-    when(
-      () => client.secrets.list(any()),
-    ).thenAnswer((final _) async => <String>[]);
+    ).thenAnswer((_) async => []);
+    when(() => client.secrets.list(any())).thenAnswer((_) async => <String>[]);
   });
 
   tearDown(() async {
@@ -169,7 +167,7 @@ void main() {
               commandResult,
               throwsA(
                 isA<UsageException>().having(
-                  (final e) => e.message,
+                  (e) => e.message,
                   'message',
                   equals('Option `project` is mandatory.'),
                 ),

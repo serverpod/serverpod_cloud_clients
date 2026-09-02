@@ -8,11 +8,11 @@ import 'package:serverpod_cloud_cli/util/duration_formatter.dart';
 abstract class RuntimeStatusCommands {
   /// Shows the live runtime status panel for a project's podlets.
   static Future<void> showRuntimeStatus(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String baseCommand,
-    required final String projectId,
-    final bool inUtc = false,
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String baseCommand,
+    required String projectId,
+    bool inUtc = false,
   }) async {
     final runtime = await cloudApiClient.status.getCapsuleRuntimeStatus(
       cloudCapsuleId: projectId,
@@ -73,7 +73,7 @@ class _RuntimeStatusPanel {
     };
   }
 
-  void _writeStatusRow(final CapsuleState state) {
+  void _writeStatusRow(CapsuleState state) {
     if (state == CapsuleState.notProvisioned &&
         _latestPhase == _LatestDeployPhase.building) {
       final stateWord = _style('◌ Building', cli.AnsiStyle.yellow);
@@ -91,7 +91,7 @@ class _RuntimeStatusPanel {
     _writeRow('Status', '$stateWord$suffix');
   }
 
-  void _writePodletsRow(final CapsuleState state) {
+  void _writePodletsRow(CapsuleState state) {
     final deployment = runtime.status.deployment;
     final desired = deployment?.desiredReplicas;
     final ready = deployment?.readyReplicas;
@@ -111,7 +111,7 @@ class _RuntimeStatusPanel {
     _writeRow('Podlets', _style('$ready/$desired ready', style));
   }
 
-  void _writeDeploymentRows(final CapsuleState state) {
+  void _writeDeploymentRows(CapsuleState state) {
     final servingLabel = switch (state) {
       CapsuleState.ready ||
       CapsuleState.progressing ||
@@ -152,7 +152,7 @@ class _RuntimeStatusPanel {
     _writeLatestAttemptRows(separateFromServing);
   }
 
-  void _writeLatestAttemptRows(final void Function() separateFromServing) {
+  void _writeLatestAttemptRows(void Function() separateFromServing) {
     final latest = runtime.latestAttempt;
     final phase = _latestPhase;
     if (latest == null || phase == null) {
@@ -188,11 +188,11 @@ class _RuntimeStatusPanel {
   }
 
   void _writeAttemptRows(
-    final String label,
-    final DeployAttemptSummary summary, {
-    final String? prefix,
-    required final DateTime when,
-    final cli.AnsiStyle labelStyle = _labelStyle,
+    String label,
+    DeployAttemptSummary summary, {
+    String? prefix,
+    required DateTime when,
+    cli.AnsiStyle labelStyle = _labelStyle,
   }) {
     final deployedBy = summary.deployedBy;
     final deployerName = deployedBy?.name ?? deployedBy?.email;
@@ -210,7 +210,7 @@ class _RuntimeStatusPanel {
     logger.line('$_indent${' ' * _labelWidth}${_style(commitLine, _dimStyle)}');
   }
 
-  ({String message, String? command})? _resolveHint(final CapsuleState state) {
+  ({String message, String? command})? _resolveHint(CapsuleState state) {
     final stateIsQuiet =
         state == CapsuleState.ready || state == CapsuleState.notProvisioned;
     if (stateIsQuiet) {
@@ -259,7 +259,7 @@ class _RuntimeStatusPanel {
     };
   }
 
-  void _writeHint(final ({String message, String? command})? hint) {
+  void _writeHint(({String message, String? command})? hint) {
     if (hint == null) {
       return;
     }
@@ -272,10 +272,7 @@ class _RuntimeStatusPanel {
     logger.line('$_indent$line');
   }
 
-  void _writeUrlFooter(
-    final CapsuleState state, {
-    required final bool hasHint,
-  }) {
+  void _writeUrlFooter(CapsuleState state, {required bool hasHint}) {
     if (state != CapsuleState.ready || hasHint) {
       return;
     }
@@ -296,9 +293,9 @@ class _RuntimeStatusPanel {
   }
 
   void _writeRow(
-    final String label,
-    final String value, {
-    final cli.AnsiStyle labelStyle = _labelStyle,
+    String label,
+    String value, {
+    cli.AnsiStyle labelStyle = _labelStyle,
   }) {
     logger.line(
       '$_indent${_style(label.padRight(_labelWidth), labelStyle)}$value',
@@ -306,7 +303,7 @@ class _RuntimeStatusPanel {
   }
 
   ({String glyph, String label, cli.AnsiStyle? style}) _stateLook(
-    final CapsuleState state,
+    CapsuleState state,
   ) {
     return switch (state) {
       CapsuleState.ready => (
@@ -343,7 +340,7 @@ class _RuntimeStatusPanel {
     };
   }
 
-  String? _diagnosis(final CapsuleState state) {
+  String? _diagnosis(CapsuleState state) {
     final deployment = runtime.status.deployment;
     final desired = deployment?.desiredReplicas;
     final ready = deployment?.readyReplicas;
@@ -358,16 +355,13 @@ class _RuntimeStatusPanel {
     };
   }
 
-  String _degradedDiagnosis({
-    required final int desired,
-    required final int ready,
-  }) {
+  String _degradedDiagnosis({required int desired, required int ready}) {
     final notReady = desired - ready;
     final verb = notReady == 1 ? 'is' : 'are';
     return '$notReady of $desired podlets $verb not ready';
   }
 
-  String _style(final String text, final cli.AnsiStyle? style) {
+  String _style(String text, cli.AnsiStyle? style) {
     if (style == null) {
       return text;
     }

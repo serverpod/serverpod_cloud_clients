@@ -21,7 +21,7 @@ void main() {
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
     adminUserMode: true,
   );
@@ -49,7 +49,7 @@ void main() {
             cloudProjectId: any(named: 'cloudProjectId'),
           ),
         ).thenAnswer(
-          (final invocation) async =>
+          (invocation) async =>
               ProjectBuilder().withCloudProjectId(projectId).build(),
         );
 
@@ -100,7 +100,7 @@ void main() {
             cloudProjectId: any(named: 'cloudProjectId'),
           ),
         ).thenAnswer(
-          (final invocation) async =>
+          (invocation) async =>
               ProjectBuilder().withCloudProjectId(projectId).build(),
         );
 

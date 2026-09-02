@@ -62,7 +62,7 @@ void main() {
 
   group('Given an error-branching widget', () {
     final widget = ExceptionHandlingWidget(
-      errorWidgetMaker: (final e) => InfoTextWidget('failed'),
+      errorWidgetMaker: (e) => InfoTextWidget('failed'),
       elseWidget: InfoTextWidget('ok'),
     );
 
@@ -94,7 +94,7 @@ void main() {
 
   group('Given an exception-handling widget for a handled exception', () {
     final widget = ExceptionHandlingWidget<_HandledException>(
-      errorWidgetMaker: (final e) => InfoTextWidget('handled'),
+      errorWidgetMaker: (e) => InfoTextWidget('handled'),
     );
 
     test(

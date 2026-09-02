@@ -11,6 +11,7 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_pro
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
+
 import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/test_command_logger.dart';
 
@@ -24,7 +25,7 @@ void main() {
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
   );
 
@@ -73,7 +74,7 @@ void main() {
             that: isTrue,
           ),
         ),
-      ).thenAnswer((final _) async => projects);
+      ).thenAnswer((_) async => projects);
     });
 
     tearDownAll(() {
@@ -118,7 +119,7 @@ void main() {
 
         expect(logger.lineCalls, isNotEmpty);
         expect(
-          logger.lineCalls.map((final call) => call.line),
+          logger.lineCalls.map((call) => call.line),
           isNot(contains('projectId2')),
         );
       });
@@ -238,7 +239,7 @@ void main() {
             that: isTrue,
           ),
         ),
-      ).thenAnswer((final _) async => <ProjectInfo>[]);
+      ).thenAnswer((_) async => <ProjectInfo>[]);
     });
 
     tearDownAll(() {

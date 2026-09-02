@@ -102,7 +102,7 @@ Examples
 
   @override
   Future<void> runWithConfig(
-    final Configuration<DeploymentsShowOption> commandConfig,
+    Configuration<DeploymentsShowOption> commandConfig,
   ) async {
     final projectId = commandConfig.value(DeploymentsShowOption.projectId);
     final inUtc = commandConfig.value(DeploymentsShowOption.utc);
@@ -179,7 +179,7 @@ Examples
 
   @override
   Future<void> runWithConfig(
-    final Configuration<DeploymentsListOption> commandConfig,
+    Configuration<DeploymentsListOption> commandConfig,
   ) async {
     final projectId = commandConfig.value(DeploymentsListOption.projectId);
     final limit = commandConfig.value(DeploymentsListOption.limit);
@@ -257,7 +257,7 @@ Examples
 
   @override
   Future<void> runWithConfig(
-    final Configuration<DeploymentsBuildLogOption> commandConfig,
+    Configuration<DeploymentsBuildLogOption> commandConfig,
   ) async {
     final projectId = commandConfig.value(DeploymentsBuildLogOption.projectId);
     final inUtc = commandConfig.value(DeploymentsBuildLogOption.utc);
@@ -276,7 +276,7 @@ Examples
   }
 }
 
-String _buildSecretsExplanation(final String baseCommand) => """
+String _buildSecretsExplanation(String baseCommand) => """
 Build secrets are used to securely store sensitive information that needs to be
 available when building your server, for example SSH keys.
 
@@ -369,7 +369,7 @@ ${_buildSecretsExplanation(baseCommand)}""";
 
   @override
   Future<void> runWithConfig(
-    final Configuration<BuildSecretSetCommandConfig> commandConfig,
+    Configuration<BuildSecretSetCommandConfig> commandConfig,
   ) async {
     final projectId = commandConfig.value(
       BuildSecretSetCommandConfig.projectId,
@@ -420,7 +420,7 @@ ${_buildSecretsExplanation(baseCommand)}""";
 
   @override
   Future<void> runWithConfig(
-    final Configuration<BuildSecretsListCommandConfig> commandConfig,
+    Configuration<BuildSecretsListCommandConfig> commandConfig,
   ) async {
     final projectId = commandConfig.value(
       BuildSecretsListCommandConfig.projectId,
@@ -464,7 +464,7 @@ ${_buildSecretsExplanation(baseCommand)}""";
 
   @override
   Future<void> runWithConfig(
-    final Configuration<BuildSecretUnsetCommandConfig> commandConfig,
+    Configuration<BuildSecretUnsetCommandConfig> commandConfig,
   ) async {
     final projectId = commandConfig.value(
       BuildSecretUnsetCommandConfig.projectId,

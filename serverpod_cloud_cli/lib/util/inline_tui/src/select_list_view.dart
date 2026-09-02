@@ -14,13 +14,13 @@ import 'select_list_style.dart';
 /// and the navigation pointer is omitted; otherwise the cursor row is
 /// highlighted.
 List<String> buildSelectListLines<T>(
-  final SelectListModel<T> model, {
-  required final SelectListStyle style,
-  required final bool useAnsiStyles,
-  required final int columns,
-  final String? header,
-  final String? footer,
-  final bool highlightBySelection = false,
+  SelectListModel<T> model, {
+  required SelectListStyle style,
+  required bool useAnsiStyles,
+  required int columns,
+  String? header,
+  String? footer,
+  bool highlightBySelection = false,
 }) {
   final lines = <String>[];
   if (header != null) lines.add(_fit(header, columns));
@@ -64,11 +64,11 @@ List<String> buildSelectListLines<T>(
 }
 
 String _decorate(
-  final String text, {
-  required final bool highlighted,
-  required final bool enabled,
-  required final SelectListStyle style,
-  required final bool useAnsiStyles,
+  String text, {
+  required bool highlighted,
+  required bool enabled,
+  required SelectListStyle style,
+  required bool useAnsiStyles,
 }) {
   if (!useAnsiStyles) return text;
   if (!enabled) return _dimText(text, style);
@@ -76,19 +76,19 @@ String _decorate(
   return text;
 }
 
-String _dimText(final String text, final SelectListStyle style) {
+String _dimText(String text, SelectListStyle style) {
   final dimStyle = style.dimStyle;
   if (dimStyle == null) return text;
   return dimStyle + text + AnsiStyle.reset.ansiCode;
 }
 
-String _highlightText(final String text, final SelectListStyle style) {
+String _highlightText(String text, SelectListStyle style) {
   final highlightStyle = style.highlightStyle;
   if (highlightStyle == null) return text;
   return highlightStyle + text + AnsiStyle.reset.ansiCode;
 }
 
-String _fit(final String text, final int columns) {
+String _fit(String text, int columns) {
   final maxWidth = columns - 1;
   if (maxWidth <= 0 || text.length <= maxWidth) return text;
   if (maxWidth <= 1) return text.substring(0, maxWidth);

@@ -76,7 +76,7 @@ Directory _defaultWorkspaceRoot() => Directory('.');
 ///   --package ground_control_server \
 ///   --output ground_control/ground_control_server/pubspec_ws_root.lock
 /// ```
-void main(final List<String> arguments) {
+void main(List<String> arguments) {
   final config = Configuration.resolveNoExcept(
     options: FilterPubspecLockOption.values,
     args: arguments,

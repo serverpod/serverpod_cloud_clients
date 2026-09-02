@@ -9,7 +9,7 @@ void main() {
   final tempPath = tempDir.path;
 
   tearDown(() {
-    tempDir.listSync().forEach((final file) => file.deleteSync());
+    tempDir.listSync().forEach((file) => file.deleteSync());
   });
 
   test('Given path does not exist '

@@ -63,7 +63,7 @@ class CloudDbConnectionDetailsCommand
 
   @override
   Future<void> runWithConfig(
-    final Configuration<DbConnectionDetailsOption> commandConfig,
+    Configuration<DbConnectionDetailsOption> commandConfig,
   ) async {
     final projectId = commandConfig.value(DbConnectionDetailsOption.projectId);
 
@@ -127,7 +127,7 @@ class CloudDbUserCreateCommand extends CloudCliCommand<DbUserCreateOption> {
 
   @override
   Future<void> runWithConfig(
-    final Configuration<DbUserCreateOption> commandConfig,
+    Configuration<DbUserCreateOption> commandConfig,
   ) async {
     final projectId = commandConfig.value(DbUserCreateOption.projectId);
     final username = commandConfig.value(DbUserCreateOption.username);
@@ -183,7 +183,7 @@ class CloudDbUserResetPasswordCommand
 
   @override
   Future<void> runWithConfig(
-    final Configuration<DbUserResetPasswordOption> commandConfig,
+    Configuration<DbUserResetPasswordOption> commandConfig,
   ) async {
     final projectId = commandConfig.value(DbUserResetPasswordOption.projectId);
     final username = commandConfig.value(DbUserResetPasswordOption.username);
@@ -229,9 +229,7 @@ class CloudDbWipeCommand extends CloudCliCommand<DbWipeOption> {
     : super(options: DbWipeOption.values);
 
   @override
-  Future<void> runWithConfig(
-    final Configuration<DbWipeOption> commandConfig,
-  ) async {
+  Future<void> runWithConfig(Configuration<DbWipeOption> commandConfig) async {
     final projectId = commandConfig.value(DbWipeOption.projectId);
     final skipConfirmation = globalConfiguration.skipConfirmation;
 
@@ -327,7 +325,7 @@ class CloudDbBackupCreateCommand extends CloudCliCommand<DbBackupCreateOption> {
 
   @override
   Future<void> runWithConfig(
-    final Configuration<DbBackupCreateOption> commandConfig,
+    Configuration<DbBackupCreateOption> commandConfig,
   ) async {
     await DbBackupCommands.createSnapshot(
       runner.serviceProvider.cloudApiClient,
@@ -362,7 +360,7 @@ class CloudDbBackupListCommand extends CloudCliCommand<DbBackupListOption> {
 
   @override
   Future<void> runWithConfig(
-    final Configuration<DbBackupListOption> commandConfig,
+    Configuration<DbBackupListOption> commandConfig,
   ) async {
     await DbBackupCommands.listSnapshots(
       runner.serviceProvider.cloudApiClient,
@@ -399,7 +397,7 @@ class CloudDbBackupDeleteCommand extends CloudCliCommand<DbBackupDeleteOption> {
 
   @override
   Future<void> runWithConfig(
-    final Configuration<DbBackupDeleteOption> commandConfig,
+    Configuration<DbBackupDeleteOption> commandConfig,
   ) async {
     await DbBackupCommands.deleteSnapshot(
       runner.serviceProvider.cloudApiClient,
@@ -437,7 +435,7 @@ class CloudDbBackupRestoreCommand
 
   @override
   Future<void> runWithConfig(
-    final Configuration<DbBackupRestoreOption> commandConfig,
+    Configuration<DbBackupRestoreOption> commandConfig,
   ) async {
     await DbBackupCommands.restoreSnapshot(
       runner.serviceProvider.cloudApiClient,
@@ -506,7 +504,7 @@ class CloudDbScheduleSetCommand extends CloudCliCommand<DbScheduleSetOption> {
 
   @override
   Future<void> runWithConfig(
-    final Configuration<DbScheduleSetOption> commandConfig,
+    Configuration<DbScheduleSetOption> commandConfig,
   ) async {
     final frequency = commandConfig.value(DbScheduleSetOption.frequency);
     final day = commandConfig.optionalValue(DbScheduleSetOption.day);
@@ -552,7 +550,7 @@ class CloudDbScheduleShowCommand extends CloudCliCommand<DbScheduleShowOption> {
 
   @override
   Future<void> runWithConfig(
-    final Configuration<DbScheduleShowOption> commandConfig,
+    Configuration<DbScheduleShowOption> commandConfig,
   ) async {
     await DbBackupCommands.showSchedule(
       runner.serviceProvider.cloudApiClient,
@@ -585,7 +583,7 @@ class CloudDbScheduleUnsetCommand
 
   @override
   Future<void> runWithConfig(
-    final Configuration<DbScheduleUnsetOption> commandConfig,
+    Configuration<DbScheduleUnsetOption> commandConfig,
   ) async {
     await DbBackupCommands.disableSchedule(
       runner.serviceProvider.cloudApiClient,

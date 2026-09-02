@@ -56,8 +56,8 @@ development:
 /// with [projectId] once the launch command logs the project-creation handoff
 /// URL. Returns a completer that completes when the callback has been made.
 Completer<void> simulateConsoleProjectCreation(
-  final TestCommandLogger logger, {
-  required final String projectId,
+  TestCommandLogger logger, {
+  required String projectId,
 }) {
   final completer = Completer<void>();
   unawaited(
@@ -80,8 +80,8 @@ void main() {
     logger: logger,
     version: Version.parse('999.0.0'),
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
-      fileUploaderFactory: (final _) => mockFileUploader,
+      apiClientFactory: (globalCfg) => client,
+      fileUploaderFactory: (_) => mockFileUploader,
     ),
   );
 
@@ -115,12 +115,10 @@ void main() {
       () => client.compute.readCompute(
         cloudCapsuleId: any(named: 'cloudCapsuleId'),
       ),
-    ).thenAnswer(
-      (final _) async => ComputeInfoBuilder().withMaxInstances(1).build(),
-    );
+    ).thenAnswer((_) async => ComputeInfoBuilder().withMaxInstances(1).build());
     reset(client.platform);
     when(() => client.platform.getDartSdkVersionPolicy()).thenAnswer(
-      (final _) async => DartSdkVersionPolicyBuilder()
+      (_) async => DartSdkVersionPolicyBuilder()
           .withSupportedVersions([
             '3.7',
             '3.8',
@@ -164,14 +162,14 @@ void main() {
             named: 'includeLatestDeployAttemptTime',
           ),
         ),
-      ).thenAnswer((final _) async => Future.value([]));
+      ).thenAnswer((_) async => Future.value([]));
 
       when(
         () => client.projects.fetchProjectConfig(
           cloudProjectId: any(named: 'cloudProjectId'),
         ),
       ).thenAnswer(
-        (final invocation) async => Future.value(
+        (invocation) async => Future.value(
           ProjectConfig(projectId: invocation.namedArguments[#cloudProjectId]),
         ),
       );
@@ -180,7 +178,7 @@ void main() {
         () => client.database.enableDatabase(
           cloudCapsuleId: any(named: 'cloudCapsuleId'),
         ),
-      ).thenAnswer((final _) async => {});
+      ).thenAnswer((_) async => {});
 
       when(
         () => client.deploy.createUploadDescription(
@@ -191,7 +189,7 @@ void main() {
           commitMessage: any(named: 'commitMessage'),
           branch: any(named: 'branch'),
         ),
-      ).thenAnswer((final _) async => jsonEncode(descriptionContent));
+      ).thenAnswer((_) async => jsonEncode(descriptionContent));
 
       final attemptStages = [
         DeployAttemptStage(
@@ -207,43 +205,43 @@ void main() {
           cloudCapsuleId: projectId,
           attemptNumber: 0,
         ),
-      ).thenAnswer((final _) async => attemptStages.first.attemptId);
+      ).thenAnswer((_) async => attemptStages.first.attemptId);
 
       when(
         () => client.status.getDeployAttemptStatus(
           cloudCapsuleId: projectId,
           attemptId: attemptStages.first.attemptId,
         ),
-      ).thenAnswer((final _) async => attemptStages);
+      ).thenAnswer((_) async => attemptStages);
 
       when(
         () => client.status.tailDeployAttemptStatus(
           cloudCapsuleId: any(named: 'cloudCapsuleId'),
           attemptId: any(named: 'attemptId'),
         ),
-      ).thenAnswer((final _) => Stream.fromIterable(attemptStages));
+      ).thenAnswer((_) => Stream.fromIterable(attemptStages));
 
       when(
         () => client.plans.listProcuredPlanNames(),
-      ).thenAnswer((final invocation) async => Future.value([]));
+      ).thenAnswer((invocation) async => Future.value([]));
       when(
         () => client.plans.listSubscriptions(),
-      ).thenAnswer((final invocation) async => Future.value([]));
+      ).thenAnswer((invocation) async => Future.value([]));
 
       when(
         () => client.plans.procurePlan(
           planProductName: any(named: 'planProductName'),
         ),
-      ).thenAnswer((final invocation) async => Future.value(Uuid().v4obj()));
+      ).thenAnswer((invocation) async => Future.value(Uuid().v4obj()));
 
       when(
         () => client.plans.checkPlanAvailability(
           planProductName: any(named: 'planProductName'),
         ),
-      ).thenAnswer((final invocation) async => Future.value());
+      ).thenAnswer((invocation) async => Future.value());
 
       when(() => client.billing.readOwner()).thenAnswer(
-        (final _) async => OwnerBuilder()
+        (_) async => OwnerBuilder()
             .withBillingInfo(BillingInfoBuilder().withPrivateUser().build())
             .build(),
       );
@@ -287,7 +285,7 @@ void main() {
         });
 
         test('then logs no input prompts', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           expect(logger.inputCalls, isEmpty);
         });
@@ -303,7 +301,7 @@ void main() {
 
         test('then opens the console project-creation handoff link', () async {
           expect(
-            logger.infoCalls.map((final call) => call.message),
+            logger.infoCalls.map((call) => call.message),
             contains(
               allOf(
                 contains(ConsoleRoutes.createProject),
@@ -428,14 +426,14 @@ apiServer:
 
         test('then forwards database-disabled to the console', () async {
           expect(
-            logger.infoCalls.map((final call) => call.message),
+            logger.infoCalls.map((call) => call.message),
             contains(contains('database-enabled=false')),
           );
         });
 
         test('then does not request database creation', () async {
           expect(
-            logger.progressCalls.map((final call) => call.message),
+            logger.progressCalls.map((call) => call.message),
             isNot(contains('Database creation request sent.')),
           );
           verifyNever(
@@ -515,7 +513,7 @@ apiServer:
             ]),
           );
           expect(
-            logger.progressCalls.map((final call) => call.message),
+            logger.progressCalls.map((call) => call.message),
             isNot(contains('Uploading project')),
           );
         });
@@ -586,10 +584,10 @@ project:
         test(
           'then the error names .tool-versions as the source of the version',
           () async {
-            await commandResult.catchError((final _) {});
+            await commandResult.catchError((_) {});
 
             expect(
-              logger.errorCalls.map((final call) => call.message),
+              logger.errorCalls.map((call) => call.message),
               contains(allOf(contains('3.20.0'), contains('.tool-versions'))),
             );
           },
@@ -690,10 +688,10 @@ serverpod:
         });
 
         test('then does not log pre-deploy hook messages', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           expect(
-            logger.infoCalls.map((final call) => call.message),
+            logger.infoCalls.map((call) => call.message),
             isNot(contains(contains('as a pre-deploy hook'))),
           );
         });
@@ -817,10 +815,10 @@ serverpod:
         test(
           'then does not log code generation pre-deploy hook message',
           () async {
-            await commandResult.catchError((final _) {});
+            await commandResult.catchError((_) {});
 
             expect(
-              logger.infoCalls.map((final call) => call.message),
+              logger.infoCalls.map((call) => call.message),
               isNot(contains(contains('as a pre-deploy hook'))),
             );
           },
@@ -857,7 +855,7 @@ project:
         });
 
         test('then no input or confirmation prompts are logged', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           expect(logger.inputCalls, isEmpty);
           expect(logger.confirmCalls, isEmpty);
@@ -867,7 +865,7 @@ project:
           await commandResult;
 
           expect(
-            logger.progressCalls.map((final call) => call.message),
+            logger.progressCalls.map((call) => call.message),
             containsAllInOrder(['Zipping project', 'Uploading project']),
           );
           expect(mockFileUploader.uploadedData, isNotEmpty);
@@ -902,7 +900,7 @@ project:
           await commandResult;
 
           expect(
-            logger.progressCalls.map((final call) => call.message),
+            logger.progressCalls.map((call) => call.message),
             containsAllInOrder([
               'Zipping project',
               'Wet run, skipping deployment.',
@@ -936,7 +934,7 @@ project:
           await commandResult;
 
           expect(
-            logger.progressCalls.map((final call) => call.message),
+            logger.progressCalls.map((call) => call.message),
             containsAllInOrder([
               'Zipping project',
               'Wet run, skipping deployment.',
@@ -973,16 +971,16 @@ project:
         });
 
         test('then logs confirmation-to-deploy message', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           expect(
-            logger.confirmCalls.map((final call) => call.message),
+            logger.confirmCalls.map((call) => call.message),
             contains(contains('Continue with deployment')),
           );
         });
 
         test('then does not zip or upload the project', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           expect(mockFileUploader.uploadedData, isEmpty);
         });
@@ -1011,10 +1009,10 @@ project:
         });
 
         test('then logs confirmation-to-deploy message', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           expect(
-            logger.confirmCalls.map((final call) => call.message),
+            logger.confirmCalls.map((call) => call.message),
             contains(contains('Continue with deployment')),
           );
         });
@@ -1054,13 +1052,13 @@ project:
         });
 
         test('then logs no input prompts', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           expect(logger.inputCalls, isEmpty);
         });
 
         test('then logs confirmation-to-apply message', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           expect(
             logger.confirmCalls,
@@ -1075,13 +1073,13 @@ project:
         });
 
         test('then logs no success messages', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           expect(logger.successCalls, isEmpty);
         });
 
         test('then logs cancellation info message', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           expect(
             logger.infoCalls.last,
@@ -1090,7 +1088,7 @@ project:
         });
 
         test('then does not write scloud.yaml file', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           final expected = d.dir(testProjectDir, [d.nothing('scloud.yaml')]);
           await expectLater(expected.validate(), completes);
@@ -1115,7 +1113,7 @@ project:
         });
 
         test('then logs error message for invalid project directory', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           expect(logger.errorCalls, hasLength(1));
           expect(
@@ -1128,13 +1126,13 @@ project:
         });
 
         test('then logs no success messages', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           expect(logger.successCalls, isEmpty);
         });
 
         test('then does not write scloud.yaml file', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           final expected = d.dir(testProjectDir, [d.nothing('scloud.yaml')]);
           await expectLater(expected.validate(), completes);
@@ -1161,7 +1159,7 @@ project:
         });
 
         test('then logs error message for invalid project id', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           expect(logger.errorCalls, hasLength(1));
           expect(
@@ -1175,13 +1173,13 @@ project:
         });
 
         test('then logs no success messages', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           expect(logger.successCalls, isEmpty);
         });
 
         test('then does not write scloud.yaml file', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           final expected = d.dir(testProjectDir, [d.nothing('scloud.yaml')]);
           await expectLater(expected.validate(), completes);
@@ -1204,7 +1202,7 @@ project:
         });
 
         test('then logs confirmation messages', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           expect(logger.confirmCalls, isNotEmpty);
           expect(
@@ -1220,13 +1218,13 @@ project:
         });
 
         test('then logs no success messages', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           expect(logger.successCalls, isEmpty);
         });
 
         test('then logs cancellation info message', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           expect(
             logger.infoCalls.last,
@@ -1235,7 +1233,7 @@ project:
         });
 
         test('then does not write scloud.yaml file', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           final expected = d.dir(testProjectDir, [d.nothing('scloud.yaml')]);
           await expectLater(expected.validate(), completes);
@@ -1261,7 +1259,7 @@ project:
         });
 
         test('then logs confirmation messages', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           expect(logger.confirmCalls, isNotEmpty);
           expect(
@@ -1277,13 +1275,13 @@ project:
         });
 
         test('then logs no success messages', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           expect(logger.successCalls, isEmpty);
         });
 
         test('then logs cancellation info message', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           expect(logger.infoCalls, isNotEmpty);
           expect(
@@ -1293,7 +1291,7 @@ project:
         });
 
         test('then does not write scloud.yaml file', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           final expected = d.dir(testProjectDir, [d.nothing('scloud.yaml')]);
           await expectLater(expected.validate(), completes);
@@ -1320,7 +1318,7 @@ project:
               secrets: any(named: 'secrets'),
               cloudCapsuleId: any(named: 'cloudCapsuleId'),
             ),
-          ).thenAnswer((final _) async {});
+          ).thenAnswer((_) async {});
         });
 
         tearDown(() {
@@ -1475,7 +1473,7 @@ project:
           });
 
           test('then logs cancellation info message', () async {
-            await commandResult.catchError((final _) {});
+            await commandResult.catchError((_) {});
 
             expect(
               logger.infoCalls.last,
@@ -1484,7 +1482,7 @@ project:
           });
 
           test('then does not set any passwords in cloud', () async {
-            await commandResult.catchError((final _) {});
+            await commandResult.catchError((_) {});
 
             verifyNever(
               () => client.secrets.upsert(
@@ -1508,7 +1506,7 @@ project:
                 ),
               ),
             ).thenAnswer(
-              (final _) async => [
+              (_) async => [
                 ProjectInfoBuilder()
                     .withProject(ProjectBuilder().withCloudProjectId(projectId))
                     .build(),
@@ -1516,10 +1514,10 @@ project:
             );
             when(
               () => client.secrets.list(any()),
-            ).thenAnswer((final _) async => ['SERVERPOD_PASSWORD_apiKey']);
+            ).thenAnswer((_) async => ['SERVERPOD_PASSWORD_apiKey']);
             when(
               () => client.secrets.listManaged(any()),
-            ).thenAnswer((final _) async => <String>[]);
+            ).thenAnswer((_) async => <String>[]);
 
             logger.inlineTerminal = FakeTerminal()
               ..queueInput(FakeTerminal.enter);
@@ -1545,7 +1543,7 @@ project:
                   named: 'includeLatestDeployAttemptTime',
                 ),
               ),
-            ).thenAnswer((final _) async => Future.value([]));
+            ).thenAnswer((_) async => Future.value([]));
           });
 
           test(
@@ -1723,7 +1721,7 @@ development:
               ),
             ),
           ).thenAnswer(
-            (final _) async => Future.value([
+            (_) async => Future.value([
               ProjectInfoBuilder()
                   .withProject(
                     ProjectBuilder().withCloudProjectId(
@@ -1762,7 +1760,7 @@ development:
 
         test('then outputs the selection menu with both projects'
             ' and the create-new option', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           final output = (logger.inlineTerminal as FakeTerminal).output;
           expect(
@@ -1778,13 +1776,13 @@ development:
         });
 
         test('then logs no success messages', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           expect(logger.successCalls, isEmpty);
         });
 
         test('then logs cancellation info message', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           expect(
             logger.infoCalls.last,
@@ -1793,7 +1791,7 @@ development:
         });
 
         test('then does not write scloud.yaml file', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           final expected = d.dir(testProjectDir, [d.nothing('scloud.yaml')]);
           await expectLater(expected.validate(), completes);
@@ -1811,7 +1809,7 @@ development:
               ),
             ),
           ).thenAnswer(
-            (final _) async => Future.value([
+            (_) async => Future.value([
               ProjectInfoBuilder()
                   .withProject(
                     ProjectBuilder().withCloudProjectId('pre-existing-project'),
@@ -1836,7 +1834,7 @@ development:
 
         test('then outputs the selection menu with the project'
             ' and the create-new option', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           final output = (logger.inlineTerminal as FakeTerminal).output;
           expect(
@@ -1851,13 +1849,13 @@ development:
         });
 
         test('then logs no success messages', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           expect(logger.successCalls, isEmpty);
         });
 
         test('then logs cancellation info message', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           expect(
             logger.infoCalls.last,
@@ -1866,7 +1864,7 @@ development:
         });
 
         test('then does not write scloud.yaml file', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           final expected = d.dir(testProjectDir, [d.nothing('scloud.yaml')]);
           await expectLater(expected.validate(), completes);
@@ -1910,13 +1908,13 @@ dependencies:
       });
 
       test('then logs no input messages', () async {
-        await commandResult.catchError((final _) {});
+        await commandResult.catchError((_) {});
 
         expect(logger.inputCalls, isEmpty);
       });
 
       test('then logs error message for invalid project directory', () async {
-        await commandResult.catchError((final _) {});
+        await commandResult.catchError((_) {});
 
         expect(logger.errorCalls, hasLength(1));
         expect(
@@ -1933,19 +1931,19 @@ dependencies:
       });
 
       test('then logs no confirmation message', () async {
-        await commandResult.catchError((final _) {});
+        await commandResult.catchError((_) {});
 
         expect(logger.confirmCalls, isEmpty);
       });
 
       test('then logs no success messages', () async {
-        await commandResult.catchError((final _) {});
+        await commandResult.catchError((_) {});
 
         expect(logger.successCalls, isEmpty);
       });
 
       test('then does not write scloud.yaml file', () async {
-        await commandResult.catchError((final _) {});
+        await commandResult.catchError((_) {});
 
         final expected = d.dir(validProjectDir, [d.nothing('scloud.yaml')]);
         await expectLater(expected.validate(), completes);

@@ -58,15 +58,13 @@ class CommandLogger {
   InlineTerminal? _inlineTerminal;
 
   CommandLogger(
-    final cli.Logger logger, {
+    cli.Logger logger, {
     this.configuration,
-    final InlineTerminal? inlineTerminal,
+    InlineTerminal? inlineTerminal,
   }) : _logger = logger,
        _inlineTerminal = inlineTerminal;
 
-  factory CommandLogger.create([
-    final cli.LogLevel logLevel = cli.LogLevel.info,
-  ]) {
+  factory CommandLogger.create([cli.LogLevel logLevel = cli.LogLevel.info]) {
     final stdOutLogger = Platform.isWindows
         ? cli.StdOutLogger(
             logLevel,
@@ -82,7 +80,7 @@ class CommandLogger {
   }
 
   cli.LogLevel get logLevel => _logger.logLevel;
-  set logLevel(final cli.LogLevel level) => _logger.logLevel = level;
+  set logLevel(cli.LogLevel level) => _logger.logLevel = level;
 
   int? get wrapTextColumn => _logger.wrapTextColumn;
 
@@ -103,7 +101,7 @@ class CommandLogger {
 
   /// Replaces the current logger with the given [logger].
   /// This is typically used to set a TUI compatible logger.
-  void initializeWith(final cli.Logger logger) {
+  void initializeWith(cli.Logger logger) {
     logger.logLevel = _logger.logLevel;
     _logger = logger;
   }
@@ -113,9 +111,9 @@ class CommandLogger {
   /// Should contain information that could be helpful when debugging user issues.
   /// These messages are not intended to be shown to the user.
   void debug(
-    final String message, {
-    final cli.LogType type = cli.TextLogType.normal,
-    final bool newParagraph = false,
+    String message, {
+    cli.LogType type = cli.TextLogType.normal,
+    bool newParagraph = false,
   }) {
     _logger.debug(message, type: type, newParagraph: newParagraph);
   }
@@ -136,7 +134,7 @@ class CommandLogger {
   /// ```bash
   /// The current project is set to my-project.
   /// ```
-  void info(final String message, {final bool newParagraph = false}) {
+  void info(String message, {bool newParagraph = false}) {
     _logger.info(
       message,
       type: cli.TextLogType.normal,
@@ -155,11 +153,7 @@ class CommandLogger {
   /// WARNING: <Short description>
   /// <Actionable suggestion/hint>
   /// ```
-  void warning(
-    final String message, {
-    final bool newParagraph = false,
-    final String? hint,
-  }) {
+  void warning(String message, {bool newParagraph = false, String? hint}) {
     _logger.warning(message, newParagraph: newParagraph);
 
     if (hint != null) {
@@ -182,12 +176,12 @@ class CommandLogger {
   ///  $ scloud variable list
   /// ```
   void error(
-    final String message, {
-    final Exception? exception,
-    final String? hint,
-    final bool newParagraph = false,
-    final StackTrace? stackTrace,
-    final bool forcePrintStackTrace = false,
+    String message, {
+    Exception? exception,
+    String? hint,
+    bool newParagraph = false,
+    StackTrace? stackTrace,
+    bool forcePrintStackTrace = false,
   }) {
     final String msg;
     if (exception != null) {
@@ -218,10 +212,10 @@ class CommandLogger {
   /// You should usually not use this directly, but rely on prebuilt methods
   /// like [info], [error] and [success].
   void log(
-    final String message, {
-    required final cli.LogLevel level,
-    final bool newParagraph = false,
-    final cli.LogType type = cli.TextLogType.normal,
+    String message, {
+    required cli.LogLevel level,
+    bool newParagraph = false,
+    cli.LogType type = cli.TextLogType.normal,
   }) {
     _logger.log(message, level, newParagraph: newParagraph, type: type);
   }
@@ -241,9 +235,9 @@ class CommandLogger {
   /// <content>
   /// ```
   void raw(
-    final String content, {
-    final cli.AnsiStyle? style,
-    final cli.LogLevel logLevel = cli.LogLevel.info,
+    String content, {
+    cli.AnsiStyle? style,
+    cli.LogLevel logLevel = cli.LogLevel.info,
   }) {
     final String characters = style?.wrap(content) ?? content;
 
@@ -258,7 +252,7 @@ class CommandLogger {
   /// supports ANSI escape codes.
   /// Note that it will reset to the default color after the string, which may
   /// or may not be the same as the previous color.
-  String wrapStyle(final String string, final cli.AnsiStyle style) {
+  String wrapStyle(String string, cli.AnsiStyle style) {
     return style.wrap(string);
   }
 
@@ -285,9 +279,9 @@ class CommandLogger {
   ///
   /// Displays a box around the message.
   void box(
-    final String message, {
-    final bool newParagraph = false,
-    final cli.LogLevel level = cli.LogLevel.info,
+    String message, {
+    bool newParagraph = false,
+    cli.LogLevel level = cli.LogLevel.info,
   }) {
     _logger.log(
       message,
@@ -314,7 +308,7 @@ class CommandLogger {
   /// ----------------------------+---------+--------
   /// 2024-11-26 16:38:44.113541  | INFO    | Webserver listening on port 8082
   /// ```
-  void line(final String line, {final cli.LogLevel level = cli.LogLevel.info}) {
+  void line(String line, {cli.LogLevel level = cli.LogLevel.info}) {
     _logger.log('$line\n', level, type: cli.RawLogType(), newParagraph: false);
   }
 
@@ -335,10 +329,10 @@ class CommandLogger {
   ///  • second step
   /// ```
   void list(
-    final Iterable<String> items, {
-    final String? title,
-    final cli.LogLevel level = cli.LogLevel.info,
-    final bool newParagraph = false,
+    Iterable<String> items, {
+    String? title,
+    cli.LogLevel level = cli.LogLevel.info,
+    bool newParagraph = false,
   }) {
     if (title != null) {
       _logger.log(
@@ -349,7 +343,7 @@ class CommandLogger {
       );
     }
 
-    items.forEachIndexed((final i, final item) {
+    items.forEachIndexed((i, item) {
       _logger.log(
         item,
         level,
@@ -375,9 +369,9 @@ class CommandLogger {
   /// Creating Serverpod Cloud project "$name".
   /// ```
   void init(
-    final String message, {
-    final cli.LogLevel level = cli.LogLevel.info,
-    final bool newParagraph = false,
+    String message, {
+    cli.LogLevel level = cli.LogLevel.info,
+    bool newParagraph = false,
   }) {
     _logger.log(
       message,
@@ -400,11 +394,11 @@ class CommandLogger {
   /// The --project flag can now be omitted from commands.
   /// ```
   void success(
-    final String message, {
-    final cli.LogLevel level = cli.LogLevel.info,
-    final bool trailingRocket = false,
-    final bool newParagraph = false,
-    final String? followUp,
+    String message, {
+    cli.LogLevel level = cli.LogLevel.info,
+    bool trailingRocket = false,
+    bool newParagraph = false,
+    String? followUp,
   }) {
     _logger.log(
       '$message${trailingRocket ? ' 🚀' : ''}',
@@ -431,10 +425,10 @@ class CommandLogger {
   ///  $ scloud project list
   /// ```
   void terminalCommand(
-    final String command, {
-    final String? message,
-    final cli.LogLevel level = cli.LogLevel.info,
-    final bool newParagraph = false,
+    String command, {
+    String? message,
+    cli.LogLevel level = cli.LogLevel.info,
+    bool newParagraph = false,
   }) {
     if (message != null) {
       _logger.log(
@@ -464,11 +458,11 @@ class CommandLogger {
   /// Uses the return value from [runner] to print success or failure status.
   /// Returns the return value from [runner].
   Future<bool> progress(
-    final String initialMessage,
-    final Future<bool> Function() runner, {
-    final String? successMessage,
-    final int padRight = 0,
-    final bool newParagraph = false,
+    String initialMessage,
+    Future<bool> Function() runner, {
+    String? successMessage,
+    int padRight = 0,
+    bool newParagraph = false,
   }) async {
     final message = initialMessage.endsWith('...')
         ? initialMessage
@@ -477,9 +471,9 @@ class CommandLogger {
     return await progressStream(
       message,
       Stream.fromFuture(runner()),
-      toMessage: (final r) => r ? successMessage ?? message : message,
+      toMessage: (r) => r ? successMessage ?? message : message,
       padRight: padRight,
-      isSuccess: (final result) => result,
+      isSuccess: (result) => result,
       newParagraph: newParagraph,
     );
   }
@@ -505,15 +499,15 @@ class CommandLogger {
   /// If the stream ends with an error, that error is rethrown.
   /// If the stream is empty, [StateError] is thrown.
   Future<T> progressStream<T>(
-    final String initialMessage,
-    final Stream<T> stream, {
-    final String Function(T)? toMessage,
-    final int padRight = 0,
-    final bool Function(T)? isSuccess,
-    final bool newParagraph = false,
+    String initialMessage,
+    Stream<T> stream, {
+    String Function(T)? toMessage,
+    int padRight = 0,
+    bool Function(T)? isSuccess,
+    bool newParagraph = false,
   }) async {
-    String paddedMessage(final T event) =>
-        (toMessage ?? (final r) => r.toString()).call(event).padRight(padRight);
+    String paddedMessage(T event) =>
+        (toMessage ?? (r) => r.toString()).call(event).padRight(padRight);
 
     return _logger.progressStream(
       initialMessage.padRight(padRight),
@@ -537,7 +531,7 @@ class CommandLogger {
   /// ```bash
   /// <message prompt> [y/n]:
   /// ```
-  Future<bool> confirm(final String message, {final bool? defaultValue}) async {
+  Future<bool> confirm(String message, {bool? defaultValue}) async {
     if (configuration?.skipConfirmation == true) {
       info('$message: y');
       return true;
@@ -560,10 +554,7 @@ class CommandLogger {
   /// ```bash
   /// <message prompt>:
   /// ```
-  Future<String> input(
-    final String message, {
-    final String? defaultValue,
-  }) async {
+  Future<String> input(String message, {String? defaultValue}) async {
     return prompts.input(message, defaultValue: defaultValue, logger: _logger);
   }
 }

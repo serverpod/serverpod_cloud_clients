@@ -52,7 +52,7 @@ class CloudContextListCommand extends CloudCliCommand<ContextListOption> {
 
   @override
   Future<void> runWithConfig(
-    final Configuration<ContextListOption> commandConfig,
+    Configuration<ContextListOption> commandConfig,
   ) async {
     final format = commandConfig.value(ContextListOption.format);
 
@@ -83,7 +83,7 @@ class CloudContextShowCommand extends CloudCliCommand {
   CloudContextShowCommand({required super.logger});
 
   @override
-  Future<void> runWithConfig(final Configuration commandConfig) async {
+  Future<void> runWithConfig(Configuration commandConfig) async {
     final settings = runner.serviceProvider.scloudSettings;
     final projectContext = await settings.projectContext;
 
@@ -119,7 +119,7 @@ class CloudContextSetCommand extends CloudCliCommand<ContextSetOption> {
 
   @override
   Future<void> runWithConfig(
-    final Configuration<ContextSetOption> commandConfig,
+    Configuration<ContextSetOption> commandConfig,
   ) async {
     final projectId = commandConfig.value(ContextSetOption.projectId);
 
@@ -146,7 +146,7 @@ class CloudContextUnsetCommand extends CloudCliCommand {
   CloudContextUnsetCommand({required super.logger});
 
   @override
-  Future<void> runWithConfig(final Configuration commandConfig) async {
+  Future<void> runWithConfig(Configuration commandConfig) async {
     final settings = runner.serviceProvider.scloudSettings;
     await settings.setProjectContext(null);
 

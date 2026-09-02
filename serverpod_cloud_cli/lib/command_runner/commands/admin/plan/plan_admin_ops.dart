@@ -2,16 +2,14 @@ import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 
 abstract class PlanAdminCommands {
-  static Future<List<String>> listOrbPlansOperation(
-    final Client cloudApiClient,
-  ) {
+  static Future<List<String>> listOrbPlansOperation(Client cloudApiClient) {
     return cloudApiClient.adminUpdatePlan.listOrbPlans();
   }
 
   static Future<void> updateOrbPlan(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String externalPlanId,
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String externalPlanId,
   }) async {
     final result = await cloudApiClient.adminUpdatePlan.updateOrbPlan(
       externalPlanId: externalPlanId,

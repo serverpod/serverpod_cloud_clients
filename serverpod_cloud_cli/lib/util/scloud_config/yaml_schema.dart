@@ -31,7 +31,7 @@ class YamlSchema {
 
   /// Validates the given data against the schema.
   /// Throws a SchemaValidationException if the data is invalid.
-  void validate(final YamlMap data) {
+  void validate(YamlMap data) {
     for (final entry in _schema.entries) {
       final key = entry.key;
       final type = entry.value;
@@ -41,11 +41,7 @@ class YamlSchema {
     }
   }
 
-  void _validate(
-    final dynamic value,
-    final dynamic schemaType, {
-    required final String path,
-  }) {
+  void _validate(dynamic value, dynamic schemaType, {required String path}) {
     if (value == null) {
       if (schemaType is YamlOptional) return;
 
@@ -106,9 +102,7 @@ class YamlSchema {
             }
           }
 
-          final typeNames = type.types
-              .map((final t) => t.toString())
-              .join(', ');
+          final typeNames = type.types.map((t) => t.toString()).join(', ');
           throw SchemaValidationException(
             'At path "$path": Expected one of $typeNames, got ${value.runtimeType}',
           );
@@ -130,11 +124,7 @@ class YamlSchema {
     );
   }
 
-  bool _isValidBasicType(
-    final dynamic value,
-    final dynamic schemaType,
-    final String path,
-  ) {
+  bool _isValidBasicType(dynamic value, dynamic schemaType, String path) {
     if (schemaType is Type) {
       if (schemaType == String && value is String) return true;
       if (schemaType == int && value is int) return true;

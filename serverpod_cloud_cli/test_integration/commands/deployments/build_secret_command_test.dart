@@ -26,7 +26,7 @@ void main() {
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
   );
 
@@ -185,7 +185,7 @@ void main() {
             buildSecretType: any(named: 'buildSecretType'),
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
           ),
-        ).thenAnswer((final _) async => Future.value());
+        ).thenAnswer((_) async => Future.value());
       });
 
       group('with value arg', () {
@@ -275,7 +275,7 @@ void main() {
             commandResult,
             throwsA(
               isA<UsageException>().having(
-                (final e) => e.message,
+                (e) => e.message,
                 'message',
                 equals(
                   'These options are mutually exclusive: from-file, value.',
@@ -305,7 +305,7 @@ void main() {
             commandResult,
             throwsA(
               isA<UsageException>().having(
-                (final e) => e.message,
+                (e) => e.message,
                 'message',
                 equals(
                   'Option group Value requires one of the options to be provided.',
@@ -380,7 +380,7 @@ void main() {
               buildSecretType: any(named: 'buildSecretType'),
               cloudCapsuleId: any(named: 'cloudCapsuleId'),
             ),
-          ).thenAnswer((final _) async => Future.value());
+          ).thenAnswer((_) async => Future.value());
 
           await d.file('value.txt', 'value1\nline2').create();
 
@@ -423,7 +423,7 @@ void main() {
               key: any(named: 'key'),
               cloudCapsuleId: any(named: 'cloudCapsuleId'),
             ),
-          ).thenAnswer((final _) async => Future.value());
+          ).thenAnswer((_) async => Future.value());
 
           logger.answerNextConfirmWith(true);
           commandResult = cli.run([
@@ -479,7 +479,7 @@ void main() {
               key: any(named: 'key'),
               cloudCapsuleId: any(named: 'cloudCapsuleId'),
             ),
-          ).thenAnswer((final _) async => Future.value());
+          ).thenAnswer((_) async => Future.value());
 
           logger.answerNextConfirmWith(false);
           commandResult = cli.run([
@@ -527,7 +527,7 @@ void main() {
 
       setUp(() async {
         when(() => client.secrets.listBuild(any())).thenAnswer(
-          (final _) async => Future.value(['SECRET_1', 'SECRET_2', 'SECRET_3']),
+          (_) async => Future.value(['SECRET_1', 'SECRET_2', 'SECRET_3']),
         );
 
         commandResult = cli.run([
@@ -565,7 +565,7 @@ void main() {
 
       setUp(() async {
         when(() => client.secrets.listBuild(any())).thenAnswer(
-          (final _) async => Future.value(['SECRET_1', 'SECRET_2', 'SECRET_3']),
+          (_) async => Future.value(['SECRET_1', 'SECRET_2', 'SECRET_3']),
         );
 
         commandResult = cli.run([
@@ -596,7 +596,7 @@ void main() {
 
       setUp(() async {
         when(() => client.secrets.listBuild(any())).thenAnswer(
-          (final _) async => Future.value(['SECRET_1', 'SECRET_2', 'SECRET_3']),
+          (_) async => Future.value(['SECRET_1', 'SECRET_2', 'SECRET_3']),
         );
 
         commandResult = cli.run([

@@ -28,9 +28,9 @@ abstract final class ProjectFiles {
   /// The default value is `'.'`, which means that all files in the
   /// [rootDirectory] will be collected.
   static (Set<String> collectedFiles, Set<String> ignoredFiles) collectFiles({
-    required final CommandLogger logger,
-    required final Directory rootDirectory,
-    final String beneath = '.',
+    required CommandLogger logger,
+    required Directory rootDirectory,
+    String beneath = '.',
   }) {
     final uri = p.toUri(p.normalize(rootDirectory.path));
 
@@ -42,11 +42,11 @@ abstract final class ProjectFiles {
 
     final (collectedFiles, ignoredFiles) = Ignore.listFiles(
       beneath: beneath,
-      listDir: (final dir) {
+      listDir: (dir) {
         final contents = Directory(
           _resolve(from: root, path: dir),
         ).listSync(recursive: true);
-        return contents.map((final entity) {
+        return contents.map((entity) {
           final path = entity.path;
           if (_linkExists(path)) {
             final target = Link(path).targetSync();
@@ -64,14 +64,14 @@ abstract final class ProjectFiles {
           return relative;
         });
       },
-      ignoreForDir: (final dir) {
+      ignoreForDir: (dir) {
         final ignoreRuleFiles = ProjectZipper.recognizedIgnoreRuleFiles.map(
-          (final fileName) => _resolve(from: root, path: '$dir/$fileName'),
+          (fileName) => _resolve(from: root, path: '$dir/$fileName'),
         );
 
         final rules = [
           ...ProjectZipper.defaultIgnoreRules,
-          ...ignoreRuleFiles.map((final filePath) {
+          ...ignoreRuleFiles.map((filePath) {
             if (!_fileExists(filePath)) return null;
 
             return _readTextFile(filePath);
@@ -82,7 +82,7 @@ abstract final class ProjectFiles {
 
         return Ignore(
           rules,
-          onInvalidPattern: (final pattern, final exception) {
+          onInvalidPattern: (pattern, exception) {
             logger.warning(
               'Ignoring invalid pattern in ignore file: $pattern. Remove it to avoid this warning.',
             );
@@ -124,41 +124,37 @@ abstract final class ProjectFiles {
           ignoreCase: Platform.isMacOS || Platform.isWindows,
         );
       },
-      isDir: (final dir) => _dirExists(_resolve(from: root, path: dir)),
+      isDir: (dir) => _dirExists(_resolve(from: root, path: dir)),
     );
 
     final collected = collectedFiles
-        .map((final file) => _resolve(from: root, path: file))
+        .map((file) => _resolve(from: root, path: file))
         .toSet();
 
     final ignored = ignoredFiles
-        .map((final file) => _resolve(from: root, path: file))
+        .map((file) => _resolve(from: root, path: file))
         .toSet();
 
     return (collected, ignored);
   }
 
   static String resolvePath({
-    required final Directory fromDir,
-    required final String path,
+    required Directory fromDir,
+    required String path,
   }) {
     final root = p.toUri(p.normalize(fromDir.path)).path;
     return _resolve(from: root, path: path);
   }
 
-  static String _resolve({
-    required final String from,
-    required final String path,
-  }) {
+  static String _resolve({required String from, required String path}) {
     if (Platform.isWindows) {
       return p.joinAll([from, ...p.posix.split(path)]);
     }
     return p.join(from, path);
   }
 
-  static bool _linkExists(final String link) => Link(link).existsSync();
-  static bool _dirExists(final String dir) => Directory(dir).existsSync();
-  static bool _fileExists(final String file) => File(file).existsSync();
-  static String _readTextFile(final String path) =>
-      File(path).readAsStringSync();
+  static bool _linkExists(String link) => Link(link).existsSync();
+  static bool _dirExists(String dir) => Directory(dir).existsSync();
+  static bool _fileExists(String file) => File(file).existsSync();
+  static String _readTextFile(String path) => File(path).readAsStringSync();
 }

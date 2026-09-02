@@ -5,8 +5,8 @@ import 'package:uuid/uuid_value.dart';
 /// Reads a header value from a Ground Control direct-upload JSON description.
 /// Returns null if the header is not found or in an invalid format.
 String? resolveHeaderValueFromUploadDescription(
-  final String uploadDescription,
-  final String headerName,
+  String uploadDescription,
+  String headerName,
 ) {
   try {
     final decoded = jsonDecode(uploadDescription);
@@ -34,9 +34,7 @@ String? resolveHeaderValueFromUploadDescription(
 /// Reads `x-goog-meta-dart-version` from a Ground Control direct-upload JSON
 /// description.
 /// Returns null if the Dart image is not found.
-String? resolveDartImageTagFromUploadDescription(
-  final String uploadDescription,
-) {
+String? resolveDartImageTagFromUploadDescription(String uploadDescription) {
   return resolveHeaderValueFromUploadDescription(
     uploadDescription,
     'x-goog-meta-dart-version',
@@ -46,9 +44,7 @@ String? resolveDartImageTagFromUploadDescription(
 /// Reads `x-goog-meta-upload-id` from a Ground Control direct-upload JSON
 /// description and converts it to the proper UuidValue.
 /// Returns null if the upload ID is not found or in an invalid format.
-UuidValue? resolveUploadIdFromUploadDescription(
-  final String uploadDescription,
-) {
+UuidValue? resolveUploadIdFromUploadDescription(String uploadDescription) {
   final uploadIdString = resolveHeaderValueFromUploadDescription(
     uploadDescription,
     'x-goog-meta-upload-id',

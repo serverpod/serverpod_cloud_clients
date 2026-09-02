@@ -31,7 +31,7 @@ void main() {
     logger: logger,
     version: Version.parse('999.0.0'),
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
   );
 
@@ -57,7 +57,7 @@ void main() {
           cloudProjectId: any(named: 'cloudProjectId'),
         ),
       ).thenAnswer(
-        (final invocation) async => Future.value(
+        (invocation) async => Future.value(
           ProjectConfig(projectId: invocation.namedArguments[#cloudProjectId]),
         ),
       );

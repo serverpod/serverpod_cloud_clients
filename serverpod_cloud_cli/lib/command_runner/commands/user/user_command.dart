@@ -58,7 +58,7 @@ Examples
 
   @override
   Future<void> runWithConfig(
-    final Configuration<ProjectUserListOption> commandConfig,
+    Configuration<ProjectUserListOption> commandConfig,
   ) async {
     final projectId = commandConfig.value(ProjectUserListOption.projectId);
     final format = commandConfig.value(ProjectUserListOption.format);
@@ -123,7 +123,7 @@ Examples
 
   @override
   Future<void> runWithConfig(
-    final Configuration<ProjectUserInviteOption> commandConfig,
+    Configuration<ProjectUserInviteOption> commandConfig,
   ) async {
     final projectId = commandConfig.value(ProjectUserInviteOption.projectId);
     final userEmail = commandConfig.value(ProjectUserInviteOption.user);
@@ -173,7 +173,7 @@ Examples
 
   @override
   Future<void> runWithConfig(
-    final Configuration<ProjectUserRevokeOption> commandConfig,
+    Configuration<ProjectUserRevokeOption> commandConfig,
   ) async {
     final projectId = commandConfig.value(ProjectUserRevokeOption.projectId);
     final userEmail = commandConfig.value(ProjectUserRevokeOption.user);

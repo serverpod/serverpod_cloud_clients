@@ -227,7 +227,7 @@ dependencies:
         () => WorkspaceProjectLogic.validateIncludedPackages([pubspecA]),
         throwsA(
           isA<WorkspaceException>().having(
-            (final e) => e.errors,
+            (e) => e.errors,
             'errors',
             contains(
               'A Flutter dependency is not allowed in a server package: '
@@ -259,7 +259,7 @@ dependencies:
         ]),
         throwsA(
           isA<WorkspaceException>().having(
-            (final e) => e.errors,
+            (e) => e.errors,
             'errors',
             contains('No sdk constraint found in package package_b'),
           ),
@@ -286,7 +286,7 @@ dependencies:
         ]),
         throwsA(
           isA<WorkspaceException>().having(
-            (final e) => e.errors,
+            (e) => e.errors,
             'errors',
             hasLength(2),
           ),

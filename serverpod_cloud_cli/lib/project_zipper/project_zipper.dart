@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:archive/archive_io.dart';
 import 'package:pool/pool.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
@@ -20,15 +21,15 @@ import 'package:path/path.dart' as p;
 ///
 /// The [zipProject] method is the main entry point for this class.
 abstract final class ProjectZipper {
-  static String stripRoot(final String rootPath, final String fullPath) {
+  static String stripRoot(String rootPath, String fullPath) {
     return p.relative(p.normalize(fullPath), from: rootPath);
   }
 
   /// Converts a platform-native relative path to a zip archive entry name.
   /// Entry names are always posix (`/`) separated, per the zip specification.
   static String toArchiveEntryName(
-    final String relativePath, {
-    final p.Context? pathContext,
+    String relativePath, {
+    p.Context? pathContext,
   }) {
     final context = pathContext ?? p.context;
     return p.posix.joinAll(context.split(relativePath));
@@ -61,17 +62,17 @@ abstract final class ProjectZipper {
   /// Throws [NonResolvingSymlinkException] if the project directory contains
   /// a non-resolving symlink.
   static Future<List<int>> zipProject({
-    required final CommandLogger logger,
-    required final Directory rootDirectory,
-    final Iterable<String> beneath = const ['.'],
-    final int fileReadPoolSize = 5,
-    final bool showFiles = false,
-    final Future<String?> Function(
+    required CommandLogger logger,
+    required Directory rootDirectory,
+    Iterable<String> beneath = const ['.'],
+    int fileReadPoolSize = 5,
+    bool showFiles = false,
+    Future<String?> Function(
       String relativePath,
       Future<String> Function() contentReader,
     )?
     fileContentModifier,
-    final bool Function(String relativePath)? excludeFile,
+    bool Function(String relativePath)? excludeFile,
   }) async {
     final projectPath = rootDirectory.path;
 
@@ -93,7 +94,7 @@ abstract final class ProjectZipper {
 
     if (excludeFile != null) {
       filesToUpload.removeWhere(
-        (final path) => excludeFile(stripRoot(projectPath, path)),
+        (path) => excludeFile(stripRoot(projectPath, path)),
       );
     }
 
@@ -101,10 +102,10 @@ abstract final class ProjectZipper {
     if (showFiles) {
       FileTreePrinter.writeFileTree(
         filePaths: filesToUpload
-            .map((final file) => stripRoot(projectPath, file))
+            .map((file) => stripRoot(projectPath, file))
             .toSet(),
         ignoredPaths: filesIgnored
-            .map((final file) => stripRoot(projectPath, file))
+            .map((file) => stripRoot(projectPath, file))
             .toSet(),
         write: logger.raw,
       );
@@ -113,7 +114,7 @@ abstract final class ProjectZipper {
     final archive = Archive();
     final fileReadPool = Pool(fileReadPoolSize);
 
-    Future<void> addFileToArchive(final String path) async {
+    Future<void> addFileToArchive(String path) async {
       final file = File(path);
       if (!file.existsSync()) return;
 
@@ -155,7 +156,7 @@ abstract final class ProjectZipper {
     return encoded;
   }
 
-  static String _formatFileSize(final int bytes) {
+  static String _formatFileSize(int bytes) {
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
     if (bytes < 1024 * 1024 * 1024) {

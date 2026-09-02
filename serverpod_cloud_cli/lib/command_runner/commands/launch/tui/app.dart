@@ -31,7 +31,7 @@ class ScloudLaunchAppState extends TuiAppState<ScloudLaunchApp> {
   }
 
   @override
-  Component buildApp(final BuildContext context) {
+  Component buildApp(BuildContext context) {
     return MainScreen(
       holder: component.holder,
       logScrollController: _logScrollController,

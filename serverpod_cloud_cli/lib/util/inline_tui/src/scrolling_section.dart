@@ -108,16 +108,16 @@ class ScrollingSection {
   /// elapsed time can be driven deterministically; production code should leave
   /// them unset.
   ScrollingSection({
-    required final InlineTerminal terminal,
+    required InlineTerminal terminal,
     this.rows = 5,
     this.dim = true,
-    final String? heading,
+    String? heading,
     this.successMessage,
     this.failedMessage,
     this.captureOutput = false,
-    final Duration spinnerInterval = _defaultSpinnerInterval,
-    final Duration Function()? elapsed,
-    final SpinnerScheduler? scheduleTicker,
+    Duration spinnerInterval = _defaultSpinnerInterval,
+    Duration Function()? elapsed,
+    SpinnerScheduler? scheduleTicker,
   }) : assert(rows >= 1, 'rows must be at least 1'),
        _heading = heading,
        _terminal = terminal,
@@ -140,10 +140,10 @@ class ScrollingSection {
   }
 
   static void Function() _defaultScheduler(
-    final Duration period,
-    final void Function() onTick,
+    Duration period,
+    void Function() onTick,
   ) {
-    final timer = Timer.periodic(period, (final _) => onTick());
+    final timer = Timer.periodic(period, (_) => onTick());
     return timer.cancel;
   }
 
@@ -151,7 +151,7 @@ class ScrollingSection {
 
   /// Formats [duration] like the reference spinner: sub-100ms in milliseconds,
   /// otherwise seconds with a single decimal.
-  static String _formatElapsed(final Duration duration) {
+  static String _formatElapsed(Duration duration) {
     final ms = duration.inMilliseconds;
     if (ms < 100) return '${ms}ms';
     return '${(ms / 1000).toStringAsFixed(1)}s';
@@ -185,7 +185,7 @@ class ScrollingSection {
   /// Has no effect once the section [isFinished]; the completion message
   /// ([successMessage] or [failedMessage]) still takes precedence at that
   /// point, exactly as it did with the heading set at construction time.
-  void updateHeading(final String newHeading) {
+  void updateHeading(String newHeading) {
     if (_finished) return;
     _heading = newHeading;
     _render();
@@ -196,7 +196,7 @@ class ScrollingSection {
   /// If [line] itself contains newlines it is split so each part occupies a
   /// single visual row. Once more than [rows] lines have been appended, the
   /// oldest lines scroll out of view.
-  void appendLine(final String line) {
+  void appendLine(String line) {
     if (_finished) {
       throw StateError('Cannot append to a finished ScrollingSection.');
     }
@@ -227,7 +227,7 @@ class ScrollingSection {
   /// When [full] is true and [captureOutput] was enabled, the complete captured
   /// output is rendered (untruncated and undimmed) instead of only the last
   /// visible lines, so the full output is visible after a failure.
-  void keep({final bool full = false}) {
+  void keep({bool full = false}) {
     if (_finished) return;
     _finished = true;
     _success = false;
@@ -262,7 +262,7 @@ class ScrollingSection {
     _renderer.render(_buildLines());
   }
 
-  List<String> _buildLines({final bool full = false}) {
+  List<String> _buildLines({bool full = false}) {
     final width = _terminal.columns;
     final header = _buildHeaderLine(width);
     if (full && captureOutput) {
@@ -276,7 +276,7 @@ class ScrollingSection {
     ];
   }
 
-  String _formatFull(final String line) {
+  String _formatFull(String line) {
     if (!_terminal.supportsColor) return line;
     // Keep any color codes but reset at the end so they do not bleed.
     return line.contains(_esc) ? '$line$_reset' : line;
@@ -290,7 +290,7 @@ class ScrollingSection {
   /// red `✗` (failure) icon and [heading] is replaced with the completion
   /// message when one is set, keeping the gray elapsed time. Colors are only
   /// applied when the terminal supports them.
-  String? _buildHeaderLine(final int width) {
+  String? _buildHeaderLine(int width) {
     if (!_finished) {
       final text = _heading;
       if (text == null) return null;
@@ -314,11 +314,11 @@ class ScrollingSection {
   /// segment. Falls back to the plain, fitted text when color is unsupported or
   /// the colored line would not fit.
   String _composeHeader(
-    final String marker,
-    final String markerStyle,
-    final String text,
-    final String elapsed,
-    final int width,
+    String marker,
+    String markerStyle,
+    String text,
+    String elapsed,
+    int width,
   ) {
     final plain = '$marker $text $elapsed';
     final fitted = _fit(plain, width);
@@ -328,11 +328,7 @@ class ScrollingSection {
     return '$markerStyle$marker$_reset $text $_grayStyle$elapsed$_reset';
   }
 
-  String _format(
-    final String line,
-    final int width, {
-    required final bool dimmed,
-  }) {
+  String _format(String line, int width, {required bool dimmed}) {
     final text = _fit(line, width);
     if (!_terminal.supportsColor) return text;
     // A trailing reset prevents any color codes in the subprocess output (or
@@ -346,7 +342,7 @@ class ScrollingSection {
   static final RegExp _ansiEscape = RegExp('$_esc\\[[0-9;?]*[a-zA-Z]');
 
   /// The number of visible columns in [text], ignoring ANSI escape sequences.
-  static int _visibleLength(final String text) =>
+  static int _visibleLength(String text) =>
       text.replaceAll(_ansiEscape, '').length;
 
   /// Truncates [text] to at most [columns] - 1 visible columns, appending an
@@ -355,7 +351,7 @@ class ScrollingSection {
   /// ANSI escape sequences are not counted as visible columns and are never cut
   /// mid-sequence, so colored subprocess output stays well-formed even when it
   /// exceeds the terminal width.
-  static String _fit(final String text, final int columns) {
+  static String _fit(String text, int columns) {
     final maxWidth = columns - 1;
     if (maxWidth <= 0 || _visibleLength(text) <= maxWidth) return text;
     if (maxWidth <= 1) return _takeVisibleColumns(text, maxWidth);
@@ -366,7 +362,7 @@ class ScrollingSection {
   /// columns, copying any ANSI escape sequences verbatim (they do not count
   /// towards the visible width). Escape sequences immediately following the cut
   /// point (e.g. a trailing reset) are kept so colors stay balanced.
-  static String _takeVisibleColumns(final String text, final int maxVisible) {
+  static String _takeVisibleColumns(String text, int maxVisible) {
     final buffer = StringBuffer();
     var visible = 0;
     var i = 0;

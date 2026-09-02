@@ -4,8 +4,8 @@ import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
 abstract class ProjectAdminCommands {
   static Future<List<ProjectInfo>> listProjectsOperation(
-    final Client cloudApiClient, {
-    final bool includeArchived = false,
+    Client cloudApiClient, {
+    bool includeArchived = false,
   }) async {
     return cloudApiClient.adminProjects.listProjectsInfo(
       includeArchived: includeArchived,
@@ -14,9 +14,9 @@ abstract class ProjectAdminCommands {
   }
 
   static Future<void> redeployProject(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String projectId,
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String projectId,
   }) async {
     try {
       await cloudApiClient.adminProjects.redeployCapsule(projectId);
@@ -31,9 +31,9 @@ abstract class ProjectAdminCommands {
   }
 
   static Future<void> deleteProject(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String projectId,
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String projectId,
   }) async {
     final shouldDelete = await logger.confirm(
       'Are you sure you want to delete the project "$projectId"?',

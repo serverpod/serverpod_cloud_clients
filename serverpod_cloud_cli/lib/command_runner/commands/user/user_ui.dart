@@ -7,23 +7,20 @@ class ProjectUserListTextUi extends OutputWidget {
   ProjectUserListTextUi({required this.projectId});
 
   @override
-  OutputWidget build(final OutputContext context) {
+  OutputWidget build(OutputContext context) {
     return FormattedTableWidget(
       formatter: TextTableOutputFormatter<User>(
         columns: [
-          TableColumnFormatter.forElement(
-            'User',
-            getter: (final user) => user.email,
-          ),
+          TableColumnFormatter.forElement('User', getter: (user) => user.email),
           TableColumnFormatter.forElement(
             'Project',
-            getter: (final user) => projectId,
+            getter: (user) => projectId,
           ),
           TableColumnFormatter.forElement(
             'Project roles',
-            getter: (final user) =>
+            getter: (user) =>
                 user.memberships
-                    ?.map((final membership) => membership.role?.name)
+                    ?.map((membership) => membership.role?.name)
                     .nonNulls
                     .toList() ??
                 const <String>[],

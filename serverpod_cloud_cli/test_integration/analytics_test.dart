@@ -35,9 +35,9 @@ void main() {
       cli = CloudCliCommandRunner.create(
         logger: logger,
         serviceProvider: CloudCliServiceProvider(
-          apiClientFactory: (final globalCfg) => client,
+          apiClientFactory: (globalCfg) => client,
         ),
-        onAnalyticsEvent: (final event, final properties) {
+        onAnalyticsEvent: (event, properties) {
           analyticsEvents.add(event);
           analyticsProperties.add(Map<String, dynamic>.from(properties));
         },
@@ -100,9 +100,9 @@ void main() {
       cli = CloudCliCommandRunner.create(
         logger: logger,
         serviceProvider: CloudCliServiceProvider(
-          apiClientFactory: (final globalCfg) => client,
+          apiClientFactory: (globalCfg) => client,
         ),
-        onAnalyticsEvent: (final event, final properties) {
+        onAnalyticsEvent: (event, properties) {
           analyticsEvents.add(event);
           analyticsProperties.add(Map<String, dynamic>.from(properties));
         },
@@ -314,14 +314,14 @@ void main() {
       settingsDir = p.join(d.sandbox, 'base_command_settings_dir');
     });
 
-    CloudCliCommandRunner createCli(final String baseCommand) {
+    CloudCliCommandRunner createCli(String baseCommand) {
       return CloudCliCommandRunner.create(
         logger: logger,
         baseCommand: baseCommand,
         serviceProvider: CloudCliServiceProvider(
-          apiClientFactory: (final globalCfg) => client,
+          apiClientFactory: (globalCfg) => client,
         ),
-        onAnalyticsEvent: (final event, final properties) {
+        onAnalyticsEvent: (event, properties) {
           analyticsEvents.add(event);
           analyticsProperties.add(Map<String, dynamic>.from(properties));
         },

@@ -3,7 +3,7 @@ class ServerpodCloudUserData {
 
   ServerpodCloudUserData(this.id);
 
-  factory ServerpodCloudUserData.fromJson(final Map<String, dynamic> json) {
+  factory ServerpodCloudUserData.fromJson(Map<String, dynamic> json) {
     return ServerpodCloudUserData(json['id'] as String);
   }
 

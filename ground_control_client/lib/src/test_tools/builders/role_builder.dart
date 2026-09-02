@@ -34,32 +34,32 @@ class RoleBuilder {
       _projectScopes = ['P0-all'],
       _memberships = [];
 
-  RoleBuilder withId(final int id) {
+  RoleBuilder withId(int id) {
     _id = id;
     return this;
   }
 
-  RoleBuilder withCreatedAt(final DateTime createdAt) {
+  RoleBuilder withCreatedAt(DateTime createdAt) {
     _createdAt = createdAt;
     return this;
   }
 
-  RoleBuilder withUpdatedAt(final DateTime updatedAt) {
+  RoleBuilder withUpdatedAt(DateTime updatedAt) {
     _updatedAt = updatedAt;
     return this;
   }
 
-  RoleBuilder withArchivedAt(final DateTime? archivedAt) {
+  RoleBuilder withArchivedAt(DateTime? archivedAt) {
     _archivedAt = archivedAt;
     return this;
   }
 
-  RoleBuilder withProjectId(final int projectId) {
+  RoleBuilder withProjectId(int projectId) {
     _projectId = projectId;
     return this;
   }
 
-  RoleBuilder withProject(final Project? project) {
+  RoleBuilder withProject(Project? project) {
     _project = project;
     if (project != null) {
       _projectId = project.id ?? 1;
@@ -67,33 +67,33 @@ class RoleBuilder {
     return this;
   }
 
-  RoleBuilder withName(final String name) {
+  RoleBuilder withName(String name) {
     _name = name;
     return this;
   }
 
-  RoleBuilder withProjectScopes(final List<String> projectScopes) {
+  RoleBuilder withProjectScopes(List<String> projectScopes) {
     _projectScopes = projectScopes;
     return this;
   }
 
-  RoleBuilder withProjectScope(final String scope) {
+  RoleBuilder withProjectScope(String scope) {
     _projectScopes.add(scope);
     return this;
   }
 
-  RoleBuilder withMemberships(final List<UserRoleMembership>? memberships) {
+  RoleBuilder withMemberships(List<UserRoleMembership>? memberships) {
     _memberships = memberships;
     return this;
   }
 
-  RoleBuilder withMembership(final UserRoleMembership membership) {
+  RoleBuilder withMembership(UserRoleMembership membership) {
     _memberships ??= [];
     _memberships!.add(membership);
     return this;
   }
 
-  RoleBuilder withUser(final User user) {
+  RoleBuilder withUser(User user) {
     _memberships ??= [];
     _memberships!.add(UserRoleMembershipBuilder().withUser(user).build());
     return this;

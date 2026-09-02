@@ -678,7 +678,7 @@ dependencies:
         logger.clear();
       });
 
-      task(final String baseDir) {
+      task(String baseDir) {
         final projectDirectory = Directory(
           p.join(baseDir, 'monorepo', 'project', 'project_server'),
         );
@@ -695,7 +695,7 @@ dependencies:
           () => task(d.sandbox),
           throwsA(
             isA<WorkspaceException>().having(
-              (final e) => e.errors,
+              (e) => e.errors,
               'errors',
               equals([
                 'A Flutter dependency is not allowed in a server package: flutter_utilities',
@@ -743,7 +743,7 @@ dependencies:
       logger.clear();
     });
 
-    task(final String baseDir) {
+    task(String baseDir) {
       final projectDirectory = Directory(
         p.join(baseDir, 'monorepo', 'project', 'project_server'),
       );
@@ -760,7 +760,7 @@ dependencies:
         () => task(d.sandbox),
         throwsA(
           isA<WorkspaceException>().having(
-            (final e) => e.errors,
+            (e) => e.errors,
             'errors',
             equals([
               'Could not find the workspace root directory.',

@@ -26,58 +26,58 @@ class SubscriptionInfoBuilder {
       _planDescription = 'A test plan description',
       _projectsLimit = 1;
 
-  SubscriptionInfoBuilder withCreatedAt(final DateTime createdAt) {
+  SubscriptionInfoBuilder withCreatedAt(DateTime createdAt) {
     _createdAt = createdAt;
     return this;
   }
 
-  SubscriptionInfoBuilder withStartDate(final DateTime startDate) {
+  SubscriptionInfoBuilder withStartDate(DateTime startDate) {
     _startDate = startDate;
     return this;
   }
 
-  SubscriptionInfoBuilder withTrialEndDate(final DateTime? trialEndDate) {
+  SubscriptionInfoBuilder withTrialEndDate(DateTime? trialEndDate) {
     _trialEndDate = trialEndDate;
     return this;
   }
 
-  SubscriptionInfoBuilder withEndDate(final DateTime? endDate) {
+  SubscriptionInfoBuilder withEndDate(DateTime? endDate) {
     _endDate = endDate;
     return this;
   }
 
-  SubscriptionInfoBuilder withCancelled(final bool cancelled) {
+  SubscriptionInfoBuilder withCancelled(bool cancelled) {
     _cancelled = cancelled;
     return this;
   }
 
-  SubscriptionInfoBuilder withSubscriptionId(final UuidValue subscriptionId) {
+  SubscriptionInfoBuilder withSubscriptionId(UuidValue subscriptionId) {
     _subscriptionId = subscriptionId;
     return this;
   }
 
-  SubscriptionInfoBuilder withPlanProductId(final String planProductId) {
+  SubscriptionInfoBuilder withPlanProductId(String planProductId) {
     assert(planProductId.contains(':'), 'Plan product ID must contain a colon');
     _planProductId = planProductId;
     return this;
   }
 
-  SubscriptionInfoBuilder withPlanType(final PlanType planType) {
+  SubscriptionInfoBuilder withPlanType(PlanType planType) {
     _planType = planType;
     return this;
   }
 
-  SubscriptionInfoBuilder withPlanDisplayName(final String planDisplayName) {
+  SubscriptionInfoBuilder withPlanDisplayName(String planDisplayName) {
     _planDisplayName = planDisplayName;
     return this;
   }
 
-  SubscriptionInfoBuilder withPlanDescription(final String? planDescription) {
+  SubscriptionInfoBuilder withPlanDescription(String? planDescription) {
     _planDescription = planDescription;
     return this;
   }
 
-  SubscriptionInfoBuilder withProjectsLimit(final int? projectsLimit) {
+  SubscriptionInfoBuilder withProjectsLimit(int? projectsLimit) {
     _projectsLimit = projectsLimit;
     return this;
   }

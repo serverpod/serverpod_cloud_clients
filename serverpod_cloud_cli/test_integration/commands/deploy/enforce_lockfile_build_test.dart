@@ -27,7 +27,7 @@ void main() {
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
   );
 
@@ -45,7 +45,7 @@ void main() {
     setUpAll(() async {
       when(
         () => client.platform.getDartSdkVersionPolicy(),
-      ).thenAnswer((final _) async => DartSdkVersionPolicyBuilder().build());
+      ).thenAnswer((_) async => DartSdkVersionPolicyBuilder().build());
 
       await d.dir('upload_archive').create();
       outputZipDirPath = p.join(d.sandbox, 'upload_archive');

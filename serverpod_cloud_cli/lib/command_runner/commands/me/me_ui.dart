@@ -5,13 +5,13 @@ class MeTextUi extends OutputWidget {
   const MeTextUi();
 
   @override
-  OutputWidget build(final OutputContext context) {
+  OutputWidget build(OutputContext context) {
     return FormattedTableWidget(
       formatter: TextTableOutputFormatter<User>(
         columns: [
           TableColumnFormatter.forElement(
             'Email',
-            getter: (final user) => user.email,
+            getter: (user) => user.email,
           ),
         ],
         utc: false,

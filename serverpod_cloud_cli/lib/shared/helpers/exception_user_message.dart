@@ -1,6 +1,6 @@
 import 'package:ground_control_client/ground_control_client.dart';
 
-String userFriendlyExceptionMessage(final Exception e) {
+String userFriendlyExceptionMessage(Exception e) {
   if (e is SerializableException) {
     final json = e.toJson();
     if (json is Map<String, dynamic>) {

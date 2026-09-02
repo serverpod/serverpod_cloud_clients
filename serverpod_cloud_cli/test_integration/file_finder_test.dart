@@ -9,14 +9,14 @@ import 'package:serverpod_cloud_cli/util/scloud_config/file_finder.dart';
 void main() {
   group('Given an scloudFileFinder,', () {
     finder(
-      final String startingDir, {
-      final int searchLevelsUp = 2,
-      final int searchLevelsDown = 2,
-      final FileContentCondition? fileContentCondition,
+      String startingDir, {
+      int searchLevelsUp = 2,
+      int searchLevelsDown = 2,
+      FileContentCondition? fileContentCondition,
     }) => scloudFileFinder(
       fileBaseName: 'scloud',
       supportedExtensions: ['yaml', 'yml'],
-      startingDirectory: (final String dir) => dir,
+      startingDirectory: (String dir) => dir,
       searchLevelsUp: searchLevelsUp,
       searchLevelsDown: searchLevelsDown,
       fileContentCondition: fileContentCondition,
@@ -72,7 +72,7 @@ void main() {
           () => finder(d.sandbox),
           throwsA(
             isA<AmbiguousSearchException>().having(
-              (final e) => e.message,
+              (e) => e.message,
               'message',
               contains('Ambiguous search, multiple candidates found'),
             ),
@@ -138,7 +138,7 @@ void main() {
           () => finder(d.sandbox),
           throwsA(
             isA<AmbiguousSearchException>().having(
-              (final e) => e.message,
+              (e) => e.message,
               'message',
               contains('Ambiguous search, multiple candidates found'),
             ),
@@ -362,7 +362,7 @@ void main() {
       test('then the file passing the condition is returned', () {
         final result = finder(
           d.sandbox,
-          fileContentCondition: (final filePath) =>
+          fileContentCondition: (filePath) =>
               File(filePath).readAsStringSync() == 'keep',
         );
         expect(result, equals(p.join(d.sandbox, 'subdir', 'scloud.yaml')));
@@ -570,8 +570,8 @@ void main() {
   });
 }
 
-String _workspacePubspec(final List<String> packages) {
-  final packageList = packages.map((final pkg) => '  - $pkg').join('\n');
+String _workspacePubspec(List<String> packages) {
+  final packageList = packages.map((pkg) => '  - $pkg').join('\n');
   return '''
 name: my_workspace
 environment:

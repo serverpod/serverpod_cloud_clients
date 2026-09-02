@@ -53,7 +53,7 @@ class AdminListProjectsCommand
 
   @override
   Future<void> runWithConfig(
-    final Configuration<AdminListProjectsOption> commandConfig,
+    Configuration<AdminListProjectsOption> commandConfig,
   ) async {
     final includeArchived = commandConfig.value(
       AdminListProjectsOption.includeArchived,
@@ -105,7 +105,7 @@ class AdminProjectStatusCommand
 
   @override
   Future<void> runWithConfig(
-    final Configuration<AdminProjectStatusOption> commandConfig,
+    Configuration<AdminProjectStatusOption> commandConfig,
   ) async {
     final projectId = commandConfig.value(AdminProjectStatusOption.projectId);
     final limit = commandConfig.value(AdminProjectStatusOption.limit);
@@ -150,7 +150,7 @@ class AdminProjectDeleteCommand
 
   @override
   Future<void> runWithConfig(
-    final Configuration<AdminProjectDeleteOption> commandConfig,
+    Configuration<AdminProjectDeleteOption> commandConfig,
   ) async {
     final projectId = commandConfig.value(AdminProjectDeleteOption.projectId);
 

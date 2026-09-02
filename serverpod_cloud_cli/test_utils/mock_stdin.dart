@@ -12,31 +12,31 @@ class MockStdin implements Stdin {
   bool get echoMode => throw UnimplementedError();
 
   @override
-  set echoMode(final bool value) => throw UnimplementedError();
+  set echoMode(bool value) => throw UnimplementedError();
 
   @override
   bool get lineMode => throw UnimplementedError();
 
   @override
-  Future<bool> any(final bool Function(List<int> element) test) {
+  Future<bool> any(bool Function(List<int> element) test) {
     throw UnimplementedError();
   }
 
   @override
   Stream<List<int>> asBroadcastStream({
-    final void Function(StreamSubscription<List<int>> subscription)? onListen,
-    final void Function(StreamSubscription<List<int>> subscription)? onCancel,
+    void Function(StreamSubscription<List<int>> subscription)? onListen,
+    void Function(StreamSubscription<List<int>> subscription)? onCancel,
   }) {
     throw UnimplementedError();
   }
 
   @override
-  Stream<E> asyncExpand<E>(final Stream<E>? Function(List<int> event) convert) {
+  Stream<E> asyncExpand<E>(Stream<E>? Function(List<int> event) convert) {
     throw UnimplementedError();
   }
 
   @override
-  Stream<E> asyncMap<E>(final FutureOr<E> Function(List<int> event) convert) {
+  Stream<E> asyncMap<E>(FutureOr<E> Function(List<int> event) convert) {
     throw UnimplementedError();
   }
 
@@ -46,34 +46,34 @@ class MockStdin implements Stdin {
   }
 
   @override
-  Future<bool> contains(final Object? needle) {
+  Future<bool> contains(Object? needle) {
     throw UnimplementedError();
   }
 
   @override
   Stream<List<int>> distinct([
-    final bool Function(List<int> previous, List<int> next)? equals,
+    bool Function(List<int> previous, List<int> next)? equals,
   ]) {
     throw UnimplementedError();
   }
 
   @override
-  Future<E> drain<E>([final E? futureValue]) {
+  Future<E> drain<E>([E? futureValue]) {
     throw UnimplementedError();
   }
 
   @override
-  Future<List<int>> elementAt(final int index) {
+  Future<List<int>> elementAt(int index) {
     throw UnimplementedError();
   }
 
   @override
-  Future<bool> every(final bool Function(List<int> element) test) {
+  Future<bool> every(bool Function(List<int> element) test) {
     throw UnimplementedError();
   }
 
   @override
-  Stream<S> expand<S>(final Iterable<S> Function(List<int> element) convert) {
+  Stream<S> expand<S>(Iterable<S> Function(List<int> element) convert) {
     throw UnimplementedError();
   }
 
@@ -82,29 +82,29 @@ class MockStdin implements Stdin {
 
   @override
   Future<List<int>> firstWhere(
-    final bool Function(List<int> element) test, {
-    final List<int> Function()? orElse,
+    bool Function(List<int> element) test, {
+    List<int> Function()? orElse,
   }) {
     throw UnimplementedError();
   }
 
   @override
   Future<S> fold<S>(
-    final S initialValue,
-    final S Function(S previous, List<int> element) combine,
+    S initialValue,
+    S Function(S previous, List<int> element) combine,
   ) {
     throw UnimplementedError();
   }
 
   @override
-  Future<void> forEach(final void Function(List<int> element) action) {
+  Future<void> forEach(void Function(List<int> element) action) {
     throw UnimplementedError();
   }
 
   @override
   Stream<List<int>> handleError(
-    final Function onError, {
-    final bool Function(dynamic error)? test,
+    Function onError, {
+    bool Function(dynamic error)? test,
   }) {
     throw UnimplementedError();
   }
@@ -119,7 +119,7 @@ class MockStdin implements Stdin {
   Future<bool> get isEmpty => throw UnimplementedError();
 
   @override
-  Future<String> join([final String separator = ""]) {
+  Future<String> join([String separator = ""]) {
     throw UnimplementedError();
   }
 
@@ -128,8 +128,8 @@ class MockStdin implements Stdin {
 
   @override
   Future<List<int>> lastWhere(
-    final bool Function(List<int> element) test, {
-    final List<int> Function()? orElse,
+    bool Function(List<int> element) test, {
+    List<int> Function()? orElse,
   }) {
     throw UnimplementedError();
   }
@@ -139,21 +139,21 @@ class MockStdin implements Stdin {
 
   @override
   StreamSubscription<List<int>> listen(
-    final void Function(List<int> event)? onData, {
-    final Function? onError,
-    final void Function()? onDone,
-    final bool? cancelOnError,
+    void Function(List<int> event)? onData, {
+    Function? onError,
+    void Function()? onDone,
+    bool? cancelOnError,
   }) {
     throw UnimplementedError();
   }
 
   @override
-  Stream<S> map<S>(final S Function(List<int> event) convert) {
+  Stream<S> map<S>(S Function(List<int> event) convert) {
     throw UnimplementedError();
   }
 
   @override
-  Future pipe(final StreamConsumer<List<int>> streamConsumer) {
+  Future pipe(StreamConsumer<List<int>> streamConsumer) {
     throw UnimplementedError();
   }
 
@@ -164,8 +164,8 @@ class MockStdin implements Stdin {
 
   @override
   String? readLineSync({
-    final Encoding encoding = systemEncoding,
-    final bool retainNewlines = false,
+    Encoding encoding = systemEncoding,
+    bool retainNewlines = false,
   }) {
     if (_currentIndex < _inputs.length) {
       return _inputs[_currentIndex++];
@@ -175,7 +175,7 @@ class MockStdin implements Stdin {
 
   @override
   Future<List<int>> reduce(
-    final List<int> Function(List<int> previous, List<int> element) combine,
+    List<int> Function(List<int> previous, List<int> element) combine,
   ) {
     throw UnimplementedError();
   }
@@ -185,19 +185,19 @@ class MockStdin implements Stdin {
 
   @override
   Future<List<int>> singleWhere(
-    final bool Function(List<int> element) test, {
-    final List<int> Function()? orElse,
+    bool Function(List<int> element) test, {
+    List<int> Function()? orElse,
   }) {
     throw UnimplementedError();
   }
 
   @override
-  Stream<List<int>> skip(final int count) {
+  Stream<List<int>> skip(int count) {
     throw UnimplementedError();
   }
 
   @override
-  Stream<List<int>> skipWhile(final bool Function(List<int> element) test) {
+  Stream<List<int>> skipWhile(bool Function(List<int> element) test) {
     throw UnimplementedError();
   }
 
@@ -205,19 +205,19 @@ class MockStdin implements Stdin {
   bool get supportsAnsiEscapes => throw UnimplementedError();
 
   @override
-  Stream<List<int>> take(final int count) {
+  Stream<List<int>> take(int count) {
     throw UnimplementedError();
   }
 
   @override
-  Stream<List<int>> takeWhile(final bool Function(List<int> element) test) {
+  Stream<List<int>> takeWhile(bool Function(List<int> element) test) {
     throw UnimplementedError();
   }
 
   @override
   Stream<List<int>> timeout(
-    final Duration timeLimit, {
-    final void Function(EventSink<List<int>> sink)? onTimeout,
+    Duration timeLimit, {
+    void Function(EventSink<List<int>> sink)? onTimeout,
   }) {
     throw UnimplementedError();
   }
@@ -233,19 +233,17 @@ class MockStdin implements Stdin {
   }
 
   @override
-  Stream<S> transform<S>(
-    final StreamTransformer<List<int>, S> streamTransformer,
-  ) {
+  Stream<S> transform<S>(StreamTransformer<List<int>, S> streamTransformer) {
     throw UnimplementedError();
   }
 
   @override
-  Stream<List<int>> where(final bool Function(List<int> event) test) {
+  Stream<List<int>> where(bool Function(List<int> event) test) {
     throw UnimplementedError();
   }
 
   @override
-  set lineMode(final bool lineMode) {}
+  set lineMode(bool lineMode) {}
 
   @override
   bool echoNewlineMode = false;

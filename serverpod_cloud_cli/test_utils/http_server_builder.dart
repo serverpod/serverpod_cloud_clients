@@ -16,27 +16,27 @@ class HttpServerBuilder {
 
   HttpServerBuilder() : _host = 'localhost', _path = '/', _methodHandlers = {};
 
-  HttpServerBuilder withHost(final String host) {
+  HttpServerBuilder withHost(String host) {
     _host = host;
     return this;
   }
 
-  HttpServerBuilder withPath(final String path) {
+  HttpServerBuilder withPath(String path) {
     _path = path;
     return this;
   }
 
   /// Adds a handler for all requests.
   HttpServerBuilder withOnRequest(
-    final void Function(HttpRequest request) onRequest,
+    void Function(HttpRequest request) onRequest,
   ) {
     _onRequest = onRequest;
     return this;
   }
 
   /// Adds a handler that gives a successful response for all requests.
-  HttpServerBuilder withSuccessfulResponse([final Object? responseBody]) {
-    return withOnRequest((final request) {
+  HttpServerBuilder withSuccessfulResponse([Object? responseBody]) {
+    return withOnRequest((request) {
       request.response.statusCode = 200;
 
       if (responseBody != null) {
@@ -53,14 +53,13 @@ class HttpServerBuilder {
 
   /// Adds a handler that gives a response for a specific endpoint method.
   HttpServerBuilder withMethodResponse(
-    final String endpointName,
-    final String methodName,
-    final (int, Object?) Function(Map<String, dynamic> parameters)
-    methodResponse,
+    String endpointName,
+    String methodName,
+    (int, Object?) Function(Map<String, dynamic> parameters) methodResponse,
   ) {
     final methodKey = '$endpointName.$methodName';
     _methodHandlers[methodKey] =
-        (final response, final Map<String, dynamic> parameters) async {
+        (response, Map<String, dynamic> parameters) async {
           final (responseCode, responseBody) = methodResponse(parameters);
 
           response.statusCode = responseCode;
@@ -82,7 +81,7 @@ class HttpServerBuilder {
     final server = await HttpServer.bind(_host, 0 /* Pick available port */);
     final localServerAddress = Uri.http('$_host:${server.port}', _path);
 
-    server.listen((final request) async {
+    server.listen((request) async {
       if (_onRequest != null) {
         _onRequest?.call(request);
         return;
