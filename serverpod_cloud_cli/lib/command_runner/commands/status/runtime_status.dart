@@ -218,12 +218,12 @@ class _RuntimeStatusPanel {
         case _LatestDeployPhase.building:
           return (
             message: 'Follow the build:',
-            command: '$baseCommand deployment show',
+            command: '$baseCommand status deployment show',
           );
         case _LatestDeployPhase.failed || _LatestDeployPhase.cancelled:
           return (
             message: 'See what went wrong:',
-            command: '$baseCommand deployment show',
+            command: '$baseCommand status deployment show',
           );
         case null:
           break;
@@ -234,7 +234,7 @@ class _RuntimeStatusPanel {
       CapsuleState.ready => null,
       CapsuleState.progressing => (
         message: 'Follow the rollout:',
-        command: '$baseCommand deployment show',
+        command: '$baseCommand status deployment show',
       ),
       CapsuleState.degraded => (
         message: 'Check for errors:',

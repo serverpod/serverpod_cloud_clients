@@ -1,5 +1,6 @@
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployment_command_names.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/log/logs_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/status/status_ops.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
@@ -13,12 +14,14 @@ abstract class DeploymentCommands {
     required bool wait,
     required bool overallStatus,
     required bool inUtc,
+    DeploymentCommandNames commandNames = DeploymentCommandNames.public,
     String? deploymentArg,
   }) async {
     try {
       final attemptId = await _getDeployAttemptId(
         cloudApiClient,
         baseCommand,
+        commandNames,
         projectId,
         deploymentArg,
       );
@@ -28,6 +31,7 @@ abstract class DeploymentCommands {
           cloudApiClient,
           logger: logger,
           baseCommand: baseCommand,
+          commandNames: commandNames,
           cloudCapsuleId: projectId,
           attemptId: attemptId,
           inUtc: inUtc,
@@ -72,12 +76,14 @@ abstract class DeploymentCommands {
     required String baseCommand,
     required String projectId,
     required bool inUtc,
+    DeploymentCommandNames commandNames = DeploymentCommandNames.public,
     String? deploymentArg,
   }) async {
     try {
       final attemptId = await _getDeployAttemptId(
         cloudApiClient,
         baseCommand,
+        commandNames,
         projectId,
         deploymentArg,
       );
@@ -159,6 +165,7 @@ abstract class DeploymentCommands {
   static Future<UuidValue> _getDeployAttemptId(
     Client cloudApiClient,
     String baseCommand,
+    DeploymentCommandNames commandNames,
     String projectId,
     String? deploymentArg,
   ) async {
@@ -190,7 +197,7 @@ abstract class DeploymentCommands {
         error: 'No such deployment status found.',
         hint:
             'Run this command to see recent deployments: '
-            '$baseCommand deployment list',
+            '$baseCommand ${commandNames.list}',
       );
     }
   }

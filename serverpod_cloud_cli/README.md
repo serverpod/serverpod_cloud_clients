@@ -37,10 +37,10 @@ If the project requires any environment variables or secrets, they can be added 
 scloud deploy
 ```
 
-To follow the progress of the deployment, use the [`deployment show` command](https://docs.serverpod.dev/cloud/reference/cli/commands/deployment):
+To follow the progress of the deployment, use the [`status deployment show` command](https://docs.serverpod.dev/cloud/reference/cli/commands/status):
 
 ```sh
-scloud deployment show
+scloud status deployment show
 ```
 
 That's it, you have now deployed your Serverpod app! 🚀

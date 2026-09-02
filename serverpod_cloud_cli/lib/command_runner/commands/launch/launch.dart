@@ -719,7 +719,7 @@ abstract class Launch {
     _displayProjectInfo(logger: logger, actualProjectId: projectId);
 
     logger.terminalCommand(
-      '$baseCommand help deployment',
+      '$baseCommand help status',
       message: 'To see how to view deployment statuses, run this command:',
       newParagraph: true,
     );

@@ -340,7 +340,7 @@ abstract class Deploy {
 
     if (skipTailingStatus) {
       logger.terminalCommand(
-        '$baseCommand deployment show',
+        '$baseCommand status deployment show',
         message: 'To view the deployment status, run this command:',
         newParagraph: true,
       );
@@ -353,7 +353,7 @@ abstract class Deploy {
         error: 'Failed to get deployment status.',
         hint:
             'Run this command to see recent deployments: '
-            '$baseCommand deployment list',
+            '$baseCommand status deployment list',
       );
     }
 

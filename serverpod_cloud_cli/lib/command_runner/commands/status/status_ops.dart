@@ -6,6 +6,7 @@ import 'package:collection/collection.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/constants.dart' show numTimeStampChars;
+import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployment_command_names.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
 import 'package:serverpod_cloud_cli/util/inline_tui/inline_tui.dart';
@@ -57,6 +58,7 @@ abstract class StatusCommands {
     required String baseCommand,
     required String cloudCapsuleId,
     required UuidValue attemptId,
+    DeploymentCommandNames commandNames = DeploymentCommandNames.public,
     bool inUtc = false,
     bool skipUploadStage = false,
     Stream<void>? processSignalStreamOverride,
@@ -101,7 +103,7 @@ abstract class StatusCommands {
             : await stageStatusTailer.showStageProgress(stageType);
         if (stage.stageStatus == DeployProgressStatus.cancelled ||
             stage.stageStatus == DeployProgressStatus.failure) {
-          _logStageFailureGuidance(logger, baseCommand, stage);
+          _logStageFailureGuidance(logger, baseCommand, commandNames, stage);
           throw FailureException(
             reason: '${stage.stageType.name} stage ${stage.stageStatus.name}',
           );
@@ -110,7 +112,7 @@ abstract class StatusCommands {
 
       await stageStatusTailer._showRolloutProgress();
     } on StreamInterruptedException {
-      _logDeployTailInterruptGuidance(logger, baseCommand);
+      _logDeployTailInterruptGuidance(logger, baseCommand, commandNames);
       throw UserAbortException();
     } finally {
       await stageStreams.cancel();
@@ -120,13 +122,14 @@ abstract class StatusCommands {
   static void _logDeployTailInterruptGuidance(
     CommandLogger logger,
     String baseCommand,
+    DeploymentCommandNames commandNames,
   ) {
     logger.info(
       'The deployment continues in Serverpod Cloud.',
       newParagraph: true,
     );
     logger.terminalCommand(
-      '$baseCommand deployment show',
+      '$baseCommand ${commandNames.show}',
       message: 'To view the deployment status, run this command:',
     );
   }
@@ -134,12 +137,13 @@ abstract class StatusCommands {
   static void _logStageFailureGuidance(
     CommandLogger logger,
     String baseCommand,
+    DeploymentCommandNames commandNames,
     DeployAttemptStage stage,
   ) {
     if (stage.stageType == DeployStageType.build &&
         stage.stageStatus == DeployProgressStatus.failure) {
       logger.terminalCommand(
-        '$baseCommand deployment build-log',
+        '$baseCommand ${commandNames.log}',
         message: 'To view the build log again, run this command:',
         newParagraph: true,
       );
@@ -147,7 +151,7 @@ abstract class StatusCommands {
     }
 
     logger.terminalCommand(
-      '$baseCommand deployment show',
+      '$baseCommand ${commandNames.show}',
       message: 'To view the deployment status, run this command:',
       newParagraph: true,
     );

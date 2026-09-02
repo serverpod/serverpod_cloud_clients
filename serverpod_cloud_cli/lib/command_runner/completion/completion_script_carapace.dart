@@ -227,70 +227,49 @@ commands:
       - [utc, no-utc]
 
   - name: status
-    flags:
-      -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
-      -u, --utc: "Display timestamps in UTC timezone instead of local."
-      --no-utc: "Display timestamps in UTC timezone instead of local."
-    exclusiveFlags:
-      - [utc, no-utc]
-
-  - name: deployment
 
     commands:
-      - name: show
+      - name: live
         flags:
           -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
-          -u, --utc: "Display timestamps in UTC timezone instead of local."
-          --no-utc: "Display timestamps in UTC timezone instead of local."
-          --deploy=: "View a specific deployment, with uuid or sequence number, 0 for latest. Can be passed as the first argument."
-          --output-overall-status: "View a deployment's overall status as a single word, one of: success, failure, awaiting, running, cancelled, unknown."
-          --await: "Await the deployment to finish while showing status progression."
-          --no-await: "Await the deployment to finish while showing status progression."
-        exclusiveFlags:
-          - [utc, no-utc]
-          - [await, no-await]
-
-      - name: list
-        flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
-          --limit=: "The maximum number of records to fetch."
           -u, --utc: "Display timestamps in UTC timezone instead of local."
           --no-utc: "Display timestamps in UTC timezone instead of local."
         exclusiveFlags:
           - [utc, no-utc]
 
-      - name: build-log
-        flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
-          -u, --utc: "Display timestamps in UTC timezone instead of local."
-          --no-utc: "Display timestamps in UTC timezone instead of local."
-          --deploy=: "View a specific deployment, with uuid or sequence number, 0 for latest. Can be passed as the first argument."
-        exclusiveFlags:
-          - [utc, no-utc]
-
-      - name: build-secret
+      - name: deployment
 
         commands:
-          - name: set
+          - name: show
             flags:
               -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
-              --name=!: "The name of the build secret. Can be passed as the first argument."
-              --value=: "The value of the build secret. Can be passed as the second argument."
-              --from-file=: "The name of the file with the build secret value."
-              --type=: "The type of the build secret."
-            completion:
-              flag:
-                from-file: ["$files"]
-                type: ["ssh"]
+              -u, --utc: "Display timestamps in UTC timezone instead of local."
+              --no-utc: "Display timestamps in UTC timezone instead of local."
+              --deploy=: "View a specific deployment, with uuid or sequence number, 0 for latest. Can be passed as the first argument."
+              --output-overall-status: "View a deployment's overall status as a single word, one of: success, failure, awaiting, running, cancelled, unknown."
+              --await: "Await the deployment to finish while showing status progression."
+              --no-await: "Await the deployment to finish while showing status progression."
+            exclusiveFlags:
+              - [utc, no-utc]
+              - [await, no-await]
 
           - name: list
             flags:
               -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+              --limit=: "The maximum number of records to fetch."
+              -u, --utc: "Display timestamps in UTC timezone instead of local."
+              --no-utc: "Display timestamps in UTC timezone instead of local."
+            exclusiveFlags:
+              - [utc, no-utc]
 
-          - name: unset
+          - name: log
             flags:
               -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
-              --name=!: "The name of the build secret. Can be passed as the first argument."
+              -u, --utc: "Display timestamps in UTC timezone instead of local."
+              --no-utc: "Display timestamps in UTC timezone instead of local."
+              --deploy=: "View a specific deployment, with uuid or sequence number, 0 for latest. Can be passed as the first argument."
+            exclusiveFlags:
+              - [utc, no-utc]
 
   - name: password
 
