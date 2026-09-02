@@ -12,9 +12,9 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../../features/custom_domains/models/custom_domain_name.dart'
+import '../../../../domains/custom_domains/models/custom_domain_name.dart'
     as _i2;
-import '../../../../features/custom_domains/models/domain_name_target.dart'
+import '../../../../domains/custom_domains/models/domain_name_target.dart'
     as _i3;
 import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 
