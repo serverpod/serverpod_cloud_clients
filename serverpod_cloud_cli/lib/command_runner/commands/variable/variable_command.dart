@@ -1,9 +1,9 @@
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/variable/variable_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/variable/variable_ui.dart';
-import 'package:serverpod_cloud_cli/util/output/command_output.dart';
 
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
 
@@ -77,8 +77,7 @@ enum UnsetVariableCommandConfig<V> implements OptionDefinition<V> {
 }
 
 enum ListVariableCommandConfig<V> implements OptionDefinition<V> {
-  projectId(VariableCommandConfig.projectId),
-  format(FormatOption());
+  projectId(VariableCommandConfig.projectId);
 
   const ListVariableCommandConfig(this.option);
 
@@ -118,8 +117,9 @@ Examples
     : super(options: SetVariableCommandConfig.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<SetVariableCommandConfig> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<SetVariableCommandConfig> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(SetVariableCommandConfig.projectId);
     final variableName = commandConfig.value(
@@ -167,8 +167,9 @@ Examples
     : super(options: UnsetVariableCommandConfig.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<UnsetVariableCommandConfig> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<UnsetVariableCommandConfig> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(UnsetVariableCommandConfig.projectId);
     final variableName = commandConfig.value(
@@ -198,13 +199,12 @@ class CloudVariableListCommand
     : super(options: ListVariableCommandConfig.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<ListVariableCommandConfig> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<ListVariableCommandConfig> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(ListVariableCommandConfig.projectId);
-    final format = commandConfig.value(ListVariableCommandConfig.format);
 
-    final output = CommandOutput(format: format, logger: logger);
     await renderCommand(
       output,
       operation: () => VariableCommands.listVariablesOperation(

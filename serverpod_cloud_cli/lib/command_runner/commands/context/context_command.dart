@@ -1,10 +1,10 @@
 import 'package:config/config.dart';
 
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/project/project_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/project/project_ui.dart';
-import 'package:serverpod_cloud_cli/util/output/command_output.dart';
 
 class CloudContextCommand extends CloudCliCommand {
   @override
@@ -28,16 +28,7 @@ class CloudContextCommand extends CloudCliCommand {
   }
 }
 
-enum ContextListOption<V> implements OptionDefinition<V> {
-  format(FormatOption());
-
-  const ContextListOption(this.option);
-
-  @override
-  final ConfigOptionBase<V> option;
-}
-
-class CloudContextListCommand extends CloudCliCommand<ContextListOption> {
+class CloudContextListCommand extends CloudCliCommand {
   @override
   final name = 'list';
 
@@ -47,16 +38,13 @@ class CloudContextListCommand extends CloudCliCommand<ContextListOption> {
   @override
   final bool takesArguments = false;
 
-  CloudContextListCommand({required super.logger})
-    : super(options: ContextListOption.values);
+  CloudContextListCommand({required super.logger});
 
   @override
-  Future<void> runWithConfig(
-    Configuration<ContextListOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration commandConfig,
+    final CommandOutput output,
   ) async {
-    final format = commandConfig.value(ContextListOption.format);
-
-    final output = CommandOutput(format: format, logger: logger);
     await renderCommand(
       output,
       operation: () => ProjectCommands.listProjectsOperation(
@@ -83,7 +71,10 @@ class CloudContextShowCommand extends CloudCliCommand {
   CloudContextShowCommand({required super.logger});
 
   @override
-  Future<void> runWithConfig(Configuration commandConfig) async {
+  Future<void> runWithOutput(
+    final Configuration commandConfig,
+    final CommandOutput output,
+  ) async {
     final settings = runner.serviceProvider.scloudSettings;
     final projectContext = await settings.projectContext;
 
@@ -118,8 +109,9 @@ class CloudContextSetCommand extends CloudCliCommand<ContextSetOption> {
     : super(options: ContextSetOption.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<ContextSetOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<ContextSetOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(ContextSetOption.projectId);
 
@@ -146,7 +138,10 @@ class CloudContextUnsetCommand extends CloudCliCommand {
   CloudContextUnsetCommand({required super.logger});
 
   @override
-  Future<void> runWithConfig(Configuration commandConfig) async {
+  Future<void> runWithOutput(
+    final Configuration commandConfig,
+    final CommandOutput output,
+  ) async {
     final settings = runner.serviceProvider.scloudSettings;
     await settings.setProjectContext(null);
 

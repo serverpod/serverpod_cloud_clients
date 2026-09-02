@@ -2,6 +2,7 @@ import 'package:config/config.dart';
 import 'package:ground_control_client/ground_control_client.dart'
     show CapsuleStatusUnavailableException, NotFoundException;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart'
     show ProjectIdOption, UtcOption;
 import 'package:serverpod_cloud_cli/command_runner/commands/status/runtime_status.dart';
@@ -49,7 +50,10 @@ Examples
     : super(options: StatusOption.values);
 
   @override
-  Future<void> runWithConfig(Configuration<StatusOption> commandConfig) async {
+  Future<void> runWithOutput(
+    final Configuration<StatusOption> commandConfig,
+    final CommandOutput output,
+  ) async {
     final projectId = commandConfig.value(StatusOption.projectId);
     final inUtc = commandConfig.value(StatusOption.utc);
 

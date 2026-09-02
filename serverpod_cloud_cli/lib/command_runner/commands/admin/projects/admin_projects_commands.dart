@@ -1,12 +1,12 @@
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/projects/project_admin_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/projects/project_admin_ui.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployments_ops.dart'
     show deploymentListRows;
 import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployments_ui.dart';
-import 'package:serverpod_cloud_cli/util/output/command_output.dart';
 
 class AdminProjectCommand extends CloudCliCommand {
   @override
@@ -31,8 +31,7 @@ enum AdminListProjectsOption<V> implements OptionDefinition<V> {
       negatable: false,
     ),
   ),
-  utc(UtcOption()),
-  format(FormatOption());
+  utc(UtcOption());
 
   const AdminListProjectsOption(this.option);
 
@@ -52,16 +51,15 @@ class AdminListProjectsCommand
     : super(options: AdminListProjectsOption.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<AdminListProjectsOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<AdminListProjectsOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final includeArchived = commandConfig.value(
       AdminListProjectsOption.includeArchived,
     );
     final inUtc = commandConfig.value(AdminListProjectsOption.utc);
-    final format = commandConfig.value(AdminListProjectsOption.format);
 
-    final output = CommandOutput(format: format, logger: logger);
     await renderCommand(
       output,
       operation: () => ProjectAdminCommands.listProjectsOperation(
@@ -83,8 +81,7 @@ enum AdminProjectStatusOption<V> implements OptionDefinition<V> {
       min: 1,
     ),
   ),
-  utc(UtcOption()),
-  format(FormatOption());
+  utc(UtcOption());
 
   const AdminProjectStatusOption(this.option);
 
@@ -104,15 +101,14 @@ class AdminProjectStatusCommand
     : super(options: AdminProjectStatusOption.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<AdminProjectStatusOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<AdminProjectStatusOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(AdminProjectStatusOption.projectId);
     final limit = commandConfig.value(AdminProjectStatusOption.limit);
     final inUtc = commandConfig.value(AdminProjectStatusOption.utc);
-    final format = commandConfig.value(AdminProjectStatusOption.format);
 
-    final output = CommandOutput(format: format, logger: logger);
     await renderCommand(
       output,
       operation: () async {
@@ -149,8 +145,9 @@ class AdminProjectDeleteCommand
     : super(options: AdminProjectDeleteOption.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<AdminProjectDeleteOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<AdminProjectDeleteOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(AdminProjectDeleteOption.projectId);
 

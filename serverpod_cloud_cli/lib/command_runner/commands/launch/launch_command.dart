@@ -3,6 +3,7 @@ import 'dart:io' show Directory;
 import 'package:config/config.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy/deploy_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
@@ -87,7 +88,10 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
     : super(options: LaunchOption.values);
 
   @override
-  Future<void> runWithConfig(Configuration commandConfig) async {
+  Future<void> runWithOutput(
+    final Configuration commandConfig,
+    final CommandOutput output,
+  ) async {
     final projectConfigFile = globalConfiguration.projectConfigFile;
     final consoleServer = globalConfiguration.consoleServer;
     final openBrowser = globalConfiguration.browser;

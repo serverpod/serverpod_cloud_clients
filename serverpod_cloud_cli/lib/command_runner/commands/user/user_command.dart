@@ -1,9 +1,9 @@
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/user/user_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/user/user_ui.dart';
-import 'package:serverpod_cloud_cli/util/output/command_output.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/project/project_ops.dart';
 
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
@@ -26,8 +26,7 @@ class CloudProjectUserCommand extends CloudCliCommand {
 }
 
 enum ProjectUserListOption<V> implements OptionDefinition<V> {
-  projectId(ProjectIdOption()),
-  format(FormatOption());
+  projectId(ProjectIdOption());
 
   const ProjectUserListOption(this.option);
 
@@ -57,13 +56,12 @@ Examples
     : super(options: ProjectUserListOption.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<ProjectUserListOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<ProjectUserListOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(ProjectUserListOption.projectId);
-    final format = commandConfig.value(ProjectUserListOption.format);
 
-    final output = CommandOutput(format: format, logger: logger);
     await renderCommand(
       output,
       operation: () => UserCommands.listUsersOperation(
@@ -122,8 +120,9 @@ Examples
     : super(options: ProjectUserInviteOption.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<ProjectUserInviteOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<ProjectUserInviteOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(ProjectUserInviteOption.projectId);
     final userEmail = commandConfig.value(ProjectUserInviteOption.user);
@@ -172,8 +171,9 @@ Examples
     : super(options: ProjectUserRevokeOption.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<ProjectUserRevokeOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<ProjectUserRevokeOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(ProjectUserRevokeOption.projectId);
     final userEmail = commandConfig.value(ProjectUserRevokeOption.user);

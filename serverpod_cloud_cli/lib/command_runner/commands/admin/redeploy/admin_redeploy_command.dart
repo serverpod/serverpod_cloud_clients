@@ -1,5 +1,6 @@
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/projects/project_admin_ops.dart';
 
@@ -24,8 +25,9 @@ class AdminRedeployCommand extends CloudCliCommand<AdminRedeployOption> {
     : super(options: AdminRedeployOption.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<AdminRedeployOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<AdminRedeployOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(AdminRedeployOption.projectId);
 

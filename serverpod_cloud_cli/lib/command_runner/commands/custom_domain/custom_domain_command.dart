@@ -2,6 +2,7 @@ import 'package:basic_utils/basic_utils.dart';
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
@@ -93,8 +94,9 @@ The valid targets are:
     : super(options: AttachCustomDomainCommandConfig.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<AttachCustomDomainCommandConfig> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<AttachCustomDomainCommandConfig> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(
       AttachCustomDomainCommandConfig.projectId,
@@ -236,8 +238,9 @@ class CloudListCustomDomainCommand
     : super(options: ListCustomDomainCommandConfig.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<ListCustomDomainCommandConfig> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<ListCustomDomainCommandConfig> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(
       ListCustomDomainCommandConfig.projectId,
@@ -317,8 +320,9 @@ class CloudDetachCustomDomainCommand
     : super(options: DetachCustomDomainCommandConfig.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<DetachCustomDomainCommandConfig> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<DetachCustomDomainCommandConfig> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(
       DetachCustomDomainCommandConfig.projectId,
@@ -377,8 +381,9 @@ class CloudVerifyCustomDomainRecordCommand
     : super(options: RefreshCustomDomainRecordCommandConfig.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<RefreshCustomDomainRecordCommandConfig> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<RefreshCustomDomainRecordCommandConfig> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(
       RefreshCustomDomainRecordCommandConfig.projectId,

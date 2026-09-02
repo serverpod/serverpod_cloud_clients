@@ -1,10 +1,10 @@
 import 'package:config/config.dart';
 import 'package:ground_control_client/ground_control_client.dart' show Client;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/auth/auth_login.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/auth/auth_ui.dart';
-import 'package:serverpod_cloud_cli/util/output/command_output.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
@@ -71,8 +71,9 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
   final description = 'Log in to Serverpod cloud.';
 
   @override
-  Future<void> runWithConfig(
-    Configuration<LoginCommandOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<LoginCommandOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final signInPath = globalConfiguration.signInPath;
     final timeLimit = commandConfig.value(LoginCommandOption.timeoutOpt);
@@ -157,8 +158,9 @@ See also "$baseCommand auth list", to list the current authentication sessions.'
     : super(options: LogoutCommandOption.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<LogoutCommandOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<LogoutCommandOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final tokenIds = commandConfig.value(LogoutCommandOption.tokenId);
     final all = commandConfig.value(LogoutCommandOption.all);
@@ -237,8 +239,7 @@ See also "$baseCommand auth list", to list the current authentication sessions.'
 }
 
 enum ListAuthSessionsOption<V> implements OptionDefinition<V> {
-  utc(UtcOption()),
-  format(FormatOption());
+  utc(UtcOption());
 
   const ListAuthSessionsOption(this.option);
 
@@ -260,12 +261,11 @@ class ListAuthSessionsCommand extends CloudCliCommand<ListAuthSessionsOption> {
   final description = 'List the current authentication sessions.';
 
   @override
-  Future<void> runWithConfig(
-    Configuration<ListAuthSessionsOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<ListAuthSessionsOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final inUtc = commandConfig.value(ListAuthSessionsOption.utc);
-    final format = commandConfig.value(ListAuthSessionsOption.format);
-    final output = CommandOutput(format: format, logger: logger);
     await renderCommand(
       output,
       operation: () =>
@@ -330,8 +330,9 @@ This token can be used to authenticate $baseCommand commands by using
 the --token option or the SERVERPOD_CLOUD_TOKEN environment variable.''';
 
   @override
-  Future<void> runWithConfig(
-    Configuration<CreateTokenCommandOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<CreateTokenCommandOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final expiresAt = commandConfig.optionalValue(
       CreateTokenCommandOption.expireAt,
@@ -397,8 +398,9 @@ Examples
 ''';
 
   @override
-  Future<void> runWithConfig(
-    Configuration<RevokeTokenCommandOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<RevokeTokenCommandOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final tokenId = commandConfig.value(RevokeTokenCommandOption.tokenId);
 
