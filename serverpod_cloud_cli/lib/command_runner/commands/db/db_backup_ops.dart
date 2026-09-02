@@ -12,12 +12,12 @@ abstract class DbBackupCommands {
   /// When [expireIn] is provided the snapshot is scheduled for automatic
   /// deletion after that duration, otherwise it is retained indefinitely.
   static Future<void> createSnapshot(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String projectId,
-    final String? name,
-    final Duration? expireIn,
-    final bool utc = false,
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String projectId,
+    String? name,
+    Duration? expireIn,
+    bool utc = false,
   }) async {
     final expiresAt = expireIn == null
         ? null
@@ -50,11 +50,11 @@ abstract class DbBackupCommands {
 
   /// Lists all snapshots of the project's database.
   static Future<void> listSnapshots(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String baseCommand,
-    required final String projectId,
-    final bool utc = false,
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String baseCommand,
+    required String projectId,
+    bool utc = false,
   }) async {
     final List<DatabaseSnapshot> snapshots;
     try {
@@ -79,11 +79,11 @@ abstract class DbBackupCommands {
 
   /// Deletes a single snapshot of the project's database.
   static Future<void> deleteSnapshot(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String projectId,
-    required final String snapshotId,
-    final bool skipConfirmation = false,
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String projectId,
+    required String snapshotId,
+    bool skipConfirmation = false,
   }) async {
     if (!skipConfirmation) {
       final confirmed = await logger.confirm(
@@ -110,11 +110,11 @@ abstract class DbBackupCommands {
 
   /// Restores the project's live database to a snapshot.
   static Future<void> restoreSnapshot(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String projectId,
-    required final String snapshotId,
-    final bool skipConfirmation = false,
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String projectId,
+    required String snapshotId,
+    bool skipConfirmation = false,
   }) async {
     if (!skipConfirmation) {
       final confirmed = await logger.confirm('''
@@ -153,13 +153,13 @@ Do you want to proceed?''', defaultValue: false);
   /// [day] defaults to 1 when omitted; it is not applicable to daily schedules
   /// and is ignored in that case.
   static Future<void> setSchedule(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String projectId,
-    required final BackupFrequency frequency,
-    final int? day,
-    final int? hour,
-    final Duration? retention,
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String projectId,
+    required BackupFrequency frequency,
+    int? day,
+    int? hour,
+    Duration? retention,
   }) async {
     final effectiveHour = hour ?? 0;
     final effectiveDay = switch (frequency) {
@@ -201,10 +201,10 @@ Do you want to proceed?''', defaultValue: false);
 
   /// Shows the automated backup schedule for the project's database.
   static Future<void> showSchedule(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String baseCommand,
-    required final String projectId,
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String baseCommand,
+    required String projectId,
   }) async {
     final BackupSchedule? schedule;
     try {
@@ -230,9 +230,9 @@ Do you want to proceed?''', defaultValue: false);
 
   /// Disables the automated backup schedule for the project's database.
   static Future<void> disableSchedule(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String projectId,
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String projectId,
   }) async {
     try {
       await cloudApiClient.database.setBackupSchedule(
@@ -250,13 +250,13 @@ Do you want to proceed?''', defaultValue: false);
   }
 
   static TablePrinter _snapshotsTable(
-    final List<DatabaseSnapshot> snapshots, {
-    required final bool utc,
+    List<DatabaseSnapshot> snapshots, {
+    required bool utc,
   }) {
     return TablePrinter(
       headers: ['ID', 'Name', 'Type', 'Created', 'Expires', 'Size'],
       rows: snapshots.map(
-        (final snapshot) => [
+        (snapshot) => [
           snapshot.id,
           snapshot.name,
           snapshot.manual ? 'manual' : 'scheduled',
@@ -270,7 +270,7 @@ Do you want to proceed?''', defaultValue: false);
     );
   }
 
-  static TablePrinter _scheduleTable(final BackupSchedule schedule) {
+  static TablePrinter _scheduleTable(BackupSchedule schedule) {
     final table = TablePrinter(headers: ['Setting', 'Value']);
     table.addRow(['Frequency', schedule.frequency.name]);
     table.addRow(['Hour (UTC)', schedule.hour?.toString() ?? '-']);
@@ -286,16 +286,13 @@ Do you want to proceed?''', defaultValue: false);
     return table;
   }
 
-  static String _formatTimestamp(
-    final DateTime? timestamp, {
-    required final bool utc,
-  }) {
+  static String _formatTimestamp(DateTime? timestamp, {required bool utc}) {
     if (timestamp == null) return '-';
     final local = utc ? timestamp.toUtc() : timestamp.toLocal();
     return local.toString().substring(0, numTimeStampChars);
   }
 
-  static String _formatBytes(final int? bytes) {
+  static String _formatBytes(int? bytes) {
     if (bytes == null) return '-';
     if (bytes < 1024) return '$bytes B';
     const units = ['KB', 'MB', 'GB', 'TB'];
@@ -308,7 +305,7 @@ Do you want to proceed?''', defaultValue: false);
     return '${size.toStringAsFixed(1)} ${units[unitIndex]}';
   }
 
-  static String _formatDuration(final Duration? duration) {
+  static String _formatDuration(Duration? duration) {
     if (duration == null) return '-';
     if (duration.inHours % 24 == 0 && duration.inHours != 0) {
       final days = duration.inDays;

@@ -15,7 +15,7 @@ void main() {
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
   );
 
@@ -37,7 +37,7 @@ void main() {
           result,
           throwsA(
             isA<UsageException>().having(
-              (final e) => e.message,
+              (e) => e.message,
               'message',
               contains('Invalid value for option `limit` <integer>'),
             ),
@@ -65,7 +65,7 @@ void main() {
           result,
           throwsA(
             isA<UsageException>().having(
-              (final e) => e.message,
+              (e) => e.message,
               'message',
               contains('Invalid value: expected ISO date string'),
             ),
@@ -93,7 +93,7 @@ void main() {
           result,
           throwsA(
             isA<UsageException>().having(
-              (final e) => e.message,
+              (e) => e.message,
               'message',
               contains('Invalid value: expected ISO date string'),
             ),
@@ -115,7 +115,7 @@ void main() {
           result,
           throwsA(
             isA<UsageException>().having(
-              (final e) => e.message,
+              (e) => e.message,
               'message',
               contains('Invalid value: expected ISO date string'),
             ),
@@ -137,7 +137,7 @@ void main() {
           result,
           throwsA(
             isA<UsageException>().having(
-              (final e) => e.message,
+              (e) => e.message,
               'message',
               contains('Invalid value: expected ISO date string'),
             ),
@@ -169,7 +169,7 @@ void main() {
             result,
             throwsA(
               isA<UsageException>().having(
-                (final e) => e.message,
+                (e) => e.message,
                 'message',
                 contains('The --until value must be after --since value.'),
               ),

@@ -12,10 +12,10 @@ import 'package:serverpod_cloud_cli/util/scloudignore.dart';
 
 class WorkspaceException extends FailureException {
   WorkspaceException([
-    final Iterable<String>? errors,
-    final Exception? nestedException,
-    final StackTrace? nestedStackTrace,
-    final String? hint,
+    Iterable<String>? errors,
+    Exception? nestedException,
+    StackTrace? nestedStackTrace,
+    String? hint,
   ]) : super(
          errors: errors,
          hint: hint,
@@ -50,7 +50,7 @@ class ProjectFilePreparer {
     required this.includedSubPaths,
     required this.includedPackagePaths,
     required this.projectPackageName,
-    final PackageGraph? packageGraph,
+    PackageGraph? packageGraph,
   }) : _packageGraph = packageGraph;
 
   /// The package dependency graph for lockfile filtering.
@@ -67,7 +67,7 @@ class ProjectFilePreparer {
     return loaded;
   }
 
-  String filterPubspecYaml(final String content) {
+  String filterPubspecYaml(String content) {
     final decoded = yamlDecode(content);
     if (decoded is Map && decoded['workspace'] is List) {
       return WorkspaceProjectLogic.makeScloudRootPubspecContent(
@@ -81,7 +81,7 @@ class ProjectFilePreparer {
     return filteredContent ?? content;
   }
 
-  String filterPubspecLock(final String content) {
+  String filterPubspecLock(String content) {
     final graph = packageGraph;
     final allPackages = graph.allPackageNames();
     final (unreachable, demotedToTransitive) = graph.unreachablePackages([
@@ -115,9 +115,9 @@ abstract class TenantProject {
   /// If no workspace root is found, or the preparation fails,
   /// error messages will be logged and [WorkspaceException] is thrown.
   static ProjectFilePreparer prepare(
-    final Directory projectDirectory, {
-    required final TenantProjectPubspec tenantProjectPubspec,
-    final String? scloudDirPath,
+    Directory projectDirectory, {
+    required TenantProjectPubspec tenantProjectPubspec,
+    String? scloudDirPath,
   }) {
     final String projectPackageName = _getPackageName(projectDirectory);
 
@@ -166,11 +166,11 @@ abstract class TenantProject {
     );
 
     WorkspaceProjectLogic.validateIncludedPackages(
-      includedPackages.values.map((final package) => package.pubspec),
+      includedPackages.values.map((package) => package.pubspec),
     );
 
     final includedPackagePaths = includedPackages.values
-        .map((final package) => package.dir.path)
+        .map((package) => package.dir.path)
         .toList();
 
     final scloudDir = Directory(
@@ -216,9 +216,9 @@ abstract class TenantProject {
   /// Writes the .scloud directory and files,
   /// and creates the .scloudignore file if it doesn't exist.
   static void _writeSCloudFiles(
-    final Directory workspaceRootDir,
-    final Directory scloudDir,
-    final WorkspacePackage projectPackage,
+    Directory workspaceRootDir,
+    Directory scloudDir,
+    WorkspacePackage projectPackage,
   ) {
     _deleteOldScloudRootPubspec(scloudDir);
 
@@ -227,7 +227,7 @@ abstract class TenantProject {
     ScloudIgnore.writeTemplateIfNotExists(rootFolder: workspaceRootDir.path);
   }
 
-  static String _getPackageName(final Directory packageDirectory) {
+  static String _getPackageName(Directory packageDirectory) {
     final pubspecFile = File(p.join(packageDirectory.path, 'pubspec.yaml'));
     if (!pubspecFile.existsSync()) {
       _throwWorkspaceException(
@@ -239,7 +239,7 @@ abstract class TenantProject {
   }
 
   /// Deletes obsolete scloud root pubspec file if it exists.
-  static void _deleteOldScloudRootPubspec(final Directory scloudDir) {
+  static void _deleteOldScloudRootPubspec(Directory scloudDir) {
     final scloudRootPubspecFile = File(
       p.join(scloudDir.path, _scloudRootPubspecFilename),
     );
@@ -251,8 +251,8 @@ abstract class TenantProject {
   /// Writes the project server dir file to the workspace root directory
   /// and returns its path relative to the workspace root.
   static String _writeProjectServerDirFile(
-    final Directory scloudDir,
-    final Directory projectDir,
+    Directory scloudDir,
+    Directory projectDir,
   ) {
     final scloudServerDirFile = File(
       p.join(scloudDir.path, _scloudServerDirFilename),
@@ -267,7 +267,7 @@ abstract class TenantProject {
   /// for its pubspec.yaml file.
   ///
   /// Throws [WorkspaceException] if no workspace root is found.
-  static (Directory, Pubspec) findWorkspaceRoot(final Directory projectDir) {
+  static (Directory, Pubspec) findWorkspaceRoot(Directory projectDir) {
     var currentDir = projectDir.absolute;
     do {
       final pubspecFile = File(p.join(currentDir.path, 'pubspec.yaml'));
@@ -300,8 +300,8 @@ abstract class TenantProject {
 
   /// Returns the directory that holds the tenant project's `pubspec.lock`.
   static Directory resolveLockfileDirectory(
-    final Directory projectDirectory, {
-    required final bool isWorkspaceResolved,
+    Directory projectDirectory, {
+    required bool isWorkspaceResolved,
   }) {
     if (!isWorkspaceResolved) {
       return projectDirectory;
@@ -312,9 +312,7 @@ abstract class TenantProject {
 
   /// Strips dev_dependencies from pubspec.yaml content in memory.
   /// Returns the modified content, or null if no changes were needed.
-  static String? stripDevDependenciesFromPubspecContent(
-    final String pubspecContent,
-  ) {
+  static String? stripDevDependenciesFromPubspecContent(String pubspecContent) {
     try {
       final pubspecYaml = yamlDecode(pubspecContent);
       if (pubspecYaml is! Map) {
@@ -334,11 +332,11 @@ abstract class TenantProject {
 
   /// Throws a [WorkspaceException] with one or more error messages.
   static Never _throwWorkspaceException({
-    final String? message,
-    final String? hint,
-    final Iterable<String>? messages,
-    final Exception? nestedException,
-    final StackTrace? nestedStackTrace,
+    String? message,
+    String? hint,
+    Iterable<String>? messages,
+    Exception? nestedException,
+    StackTrace? nestedStackTrace,
   }) {
     final allMessages = [?message, ...?messages];
     throw WorkspaceException(
@@ -354,9 +352,9 @@ abstract class TenantProject {
 abstract class WorkspaceProjectLogic {
   /// Recursively gets all workspace dependencies of a package, without duplicates.
   static Map<String, WorkspacePackage> getWorkspaceDependencies({
-    required final Map<String, WorkspacePackage> allWorkspacePackages,
-    required final WorkspacePackage package,
-    required final Map<String, WorkspacePackage> included,
+    required Map<String, WorkspacePackage> allWorkspacePackages,
+    required WorkspacePackage package,
+    required Map<String, WorkspacePackage> included,
   }) {
     for (final packageDependency in package.pubspec.dependencies.entries) {
       final workspaceDependency = allWorkspacePackages[packageDependency.key];
@@ -378,7 +376,7 @@ abstract class WorkspaceProjectLogic {
   ///
   /// Throws [WorkspaceException] if any issues are found.
   static void validateIncludedPackages(
-    final Iterable<Pubspec> includedPackagePubspecs,
+    Iterable<Pubspec> includedPackagePubspecs,
   ) {
     final List<String> issues = [];
     for (final pubspec in includedPackagePubspecs) {
@@ -397,8 +395,8 @@ abstract class WorkspaceProjectLogic {
   /// Creates the scloud root pubspec content based on
   /// the source root pubspec content.
   static String makeScloudRootPubspecContent(
-    final String rootPubspecContent,
-    final Iterable<String> includedPackagePaths,
+    String rootPubspecContent,
+    Iterable<String> includedPackagePaths,
   ) {
     final rootPubspecYaml = yamlDecode(rootPubspecContent);
     if (rootPubspecYaml is! Map) {

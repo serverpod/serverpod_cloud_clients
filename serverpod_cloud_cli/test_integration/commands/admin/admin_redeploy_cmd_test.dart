@@ -20,7 +20,7 @@ void main() {
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
     adminUserMode: true,
   );
@@ -42,7 +42,7 @@ void main() {
       setUp(() async {
         when(
           () => client.adminProjects.redeployCapsule('test-project'),
-        ).thenAnswer((final invocation) async => Future.value());
+        ).thenAnswer((invocation) async => Future.value());
 
         commandResult = cli.run(['admin', 'redeploy', 'test-project']);
       });
@@ -52,7 +52,7 @@ void main() {
       });
 
       test('then logs success message', () async {
-        await commandResult.catchError((final _) {});
+        await commandResult.catchError((_) {});
 
         expect(
           logger.successCalls,
@@ -71,7 +71,7 @@ void main() {
       setUp(() async {
         when(
           () => client.adminProjects.redeployCapsule('another-project'),
-        ).thenAnswer((final invocation) async => Future.value());
+        ).thenAnswer((invocation) async => Future.value());
 
         commandResult = cli.run(['admin', 'redeploy', 'another-project']);
       });
@@ -81,7 +81,7 @@ void main() {
       });
 
       test('then logs success message with correct project ID', () async {
-        await commandResult.catchError((final _) {});
+        await commandResult.catchError((_) {});
 
         expect(
           logger.successCalls,
@@ -110,7 +110,7 @@ void main() {
       });
 
       test('then logs error message', () async {
-        await commandResult.catchError((final _) {});
+        await commandResult.catchError((_) {});
 
         expect(logger.errorCalls, isNotEmpty);
         expect(

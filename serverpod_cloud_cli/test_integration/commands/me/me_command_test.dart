@@ -25,7 +25,7 @@ void main() {
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
   );
 
@@ -57,7 +57,7 @@ void main() {
 
         expect(logger.lineCalls, isNotEmpty);
         expect(
-          logger.lineCalls.map((final l) => l.line),
+          logger.lineCalls.map((l) => l.line),
           containsAllInOrder([
             'Email           ',
             '----------------',
@@ -86,7 +86,7 @@ void main() {
 
         expect(logger.lineCalls, isNotEmpty);
         expect(
-          logger.lineCalls.map((final l) => l.line),
+          logger.lineCalls.map((l) => l.line),
           containsAllInOrder([
             'Email           ',
             '----------------',
@@ -176,7 +176,7 @@ void main() {
         await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
 
         expect(
-          logger.terminalCommandCalls.map((final c) => c.command),
+          logger.terminalCommandCalls.map((c) => c.command),
           equals(['scloud auth logout', 'scloud auth login']),
         );
       });

@@ -119,7 +119,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   /// (Since this object is re-entrant, the global config is regenerated
   /// each call to [run].)
   @override
-  set globalConfiguration(final Configuration<GlobalOption> configuration) {
+  set globalConfiguration(Configuration<GlobalOption> configuration) {
     _globalConfiguration = GlobalConfiguration.from(
       configuration: configuration,
     );
@@ -141,14 +141,14 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   CloudCliCommandRunner._({
     required this.logger,
     required this.version,
-    required final String baseCommand,
-    required final CloudCliServiceProvider serviceProvider,
-    required final bool enableAnalyticsForAllEnvs,
-    required final bool adminUserMode,
-    required final CliUpdater cliUpdater,
-    required final Version? attemptedUpdateVersion,
-    final OnRunContextResolved? onRunContextResolved,
-    final OnErrorReport? onErrorReport,
+    required String baseCommand,
+    required CloudCliServiceProvider serviceProvider,
+    required bool enableAnalyticsForAllEnvs,
+    required bool adminUserMode,
+    required CliUpdater cliUpdater,
+    required Version? attemptedUpdateVersion,
+    OnRunContextResolved? onRunContextResolved,
+    OnErrorReport? onErrorReport,
     super.onAnalyticsEvent,
     super.setLogLevel,
   }) : _onRunContextResolved = onRunContextResolved,
@@ -183,16 +183,16 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   static const baseCommandEnvName = 'SERVERPOD_CLOUD_BASE_COMMAND';
 
   static CloudCliCommandRunner create({
-    required final CommandLogger logger,
-    final Version? version,
-    final CloudCliServiceProvider? serviceProvider,
-    final OnAnalyticsEvent? onAnalyticsEvent,
-    final OnRunContextResolved? onRunContextResolved,
-    final OnErrorReport? onErrorReport,
-    final bool enableAnalyticsForAllEnvs = false,
+    required CommandLogger logger,
+    Version? version,
+    CloudCliServiceProvider? serviceProvider,
+    OnAnalyticsEvent? onAnalyticsEvent,
+    OnRunContextResolved? onRunContextResolved,
+    OnErrorReport? onErrorReport,
+    bool enableAnalyticsForAllEnvs = false,
     bool? adminUserMode,
-    final CliUpdater? cliUpdater,
-    final Version? attemptedUpdateVersion,
+    CliUpdater? cliUpdater,
+    Version? attemptedUpdateVersion,
     String? baseCommand,
   }) {
     adminUserMode ??=
@@ -222,8 +222,8 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
       onAnalyticsEvent: onAnalyticsEvent,
       setLogLevel:
           ({
-            final String? commandName,
-            required final CommandRunnerLogLevel parsedLogLevel,
+            String? commandName,
+            required CommandRunnerLogLevel parsedLogLevel,
           }) => _configureLogLevel(
             logger: logger,
             parsedLogLevel: parsedLogLevel,
@@ -255,7 +255,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   }
 
   @override
-  Future<void> runCommand(final ArgResults topLevelResults) async {
+  Future<void> runCommand(ArgResults topLevelResults) async {
     try {
       try {
         _onRunContextResolved?.call(_runContext(topLevelResults));
@@ -305,7 +305,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
 
   /// Whether [latestVersion] is a breaking update that the user must install
   /// to continue.
-  bool _isRequiredUpdate(final Version latestVersion) =>
+  bool _isRequiredUpdate(Version latestVersion) =>
       CLIVersionChecker.isBreakingUpdate(
         currentVersion: version,
         latestVersion: latestVersion,
@@ -324,8 +324,8 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   /// update could not be installed.
   /// Throws [UnexpectedErrorExitException] if the rerun could not be started.
   Future<bool> _updateAndRerunCommand({
-    required final Version latestVersion,
-    required final ArgResults topLevelResults,
+    required Version latestVersion,
+    required ArgResults topLevelResults,
   }) async {
     if (!_cliUpdater.canSelfUpdate) {
       logger.debug('This CLI installation cannot update itself.');
@@ -391,7 +391,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   ///
   /// Throws [ErrorExitException] with [ExitCodeConstants.scloudUpdateRequired]
   /// if the update is breaking and the breaking version check is enabled.
-  void _alertUpdateNotInstalled(final Version latestVersion) {
+  void _alertUpdateNotInstalled(Version latestVersion) {
     final isRequiredUpdate = _isRequiredUpdate(latestVersion);
 
     _printUpdateCLIAlert(
@@ -411,10 +411,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   /// Reports [error] for diagnostics, if a reporter is configured.
   ///
   /// Never throws, so reporting cannot break the command being run.
-  Future<void> _reportError(
-    final Object error,
-    final StackTrace stackTrace,
-  ) async {
+  Future<void> _reportError(Object error, StackTrace stackTrace) async {
     try {
       await _onErrorReport?.call(error, stackTrace);
     } catch (e, s) {
@@ -422,7 +419,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     }
   }
 
-  CliRunContext _runContext(final ArgResults topLevelResults) {
+  CliRunContext _runContext(ArgResults topLevelResults) {
     final globalConfig = globalConfiguration;
     return (
       analyticsConsent: _analyticsConsent,
@@ -438,8 +435,8 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
 
   @override
   void sendAnalyticsEvent(
-    final String event, [
-    final Map<String, dynamic> properties = const {},
+    String event, [
+    Map<String, dynamic> properties = const {},
   ]) {
     final enrichedProperties = Map<String, dynamic>.from(properties);
     enrichedProperties['base_command'] = _baseCommandInvocation.reportedName;
@@ -575,7 +572,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     final finder = scloudFileFinder(
       fileBaseName: 'pubspec',
       supportedExtensions: ['yaml', 'yml'],
-      fileContentCondition: (final filePath) =>
+      fileContentCondition: (filePath) =>
           isServerpodServerPackage(File(filePath)),
     );
     try {
@@ -587,9 +584,9 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   }
 
   static void _configureLogLevel({
-    required final CommandLogger logger,
-    required final CommandRunnerLogLevel parsedLogLevel,
-    final String? commandName,
+    required CommandLogger logger,
+    required CommandRunnerLogLevel parsedLogLevel,
+    String? commandName,
   }) {
     var logLevel = LogLevel.info;
 
@@ -603,9 +600,9 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   }
 
   static void _printUpdateCLIAlert({
-    required final Version latestVersion,
-    required final CommandLogger logger,
-    required final bool isRequiredUpdate,
+    required Version latestVersion,
+    required CommandLogger logger,
+    required bool isRequiredUpdate,
   }) {
     var infoMessage =
         '''A new version $latestVersion of Serverpod Cloud CLI is available!
@@ -787,12 +784,12 @@ enum GlobalOption<V> implements OptionDefinition<V> {
   final ConfigOptionBase<V> option;
 }
 
-File? _projectConfigFileFinder(final Configuration cfg) {
+File? _projectConfigFileFinder(Configuration cfg) {
   // if the dir option is set, we use it as starting directory
   final finder = scloudFileFinder<Configuration>(
     fileBaseName: ProjectConfigFileConstants.fileBaseName,
     supportedExtensions: ['yaml', 'yml', 'json'],
-    startingDirectory: (final cfg) {
+    startingDirectory: (cfg) {
       return cfg.optionalValue(GlobalOption.projectDir)?.path;
     },
   );

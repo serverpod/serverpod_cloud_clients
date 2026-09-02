@@ -92,8 +92,8 @@ class FailureException extends ExitException {
   /// Provide a reason and causing exception if available
   /// which aids in testing and debugging.
   FailureException({
-    final String? error,
-    final Iterable<String>? errors,
+    String? error,
+    Iterable<String>? errors,
     this.hint,
     this.reason,
     this.nestedException,
@@ -105,10 +105,10 @@ class FailureException extends ExitException {
   /// exception.
   /// If the nested exception is a [FailureException] it is returned as is.
   factory FailureException.nested(
-    final Exception nestedException, [
-    final StackTrace? nestedStackTrace,
-    final String? error,
-    final String? hint,
+    Exception nestedException, [
+    StackTrace? nestedStackTrace,
+    String? error,
+    String? hint,
   ]) {
     if (nestedException is FailureException) {
       return nestedException;

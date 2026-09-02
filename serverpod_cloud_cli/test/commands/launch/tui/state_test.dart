@@ -297,7 +297,7 @@ serverpod:
 
         expect(
           state.projectSetup.suggestedPreDeployScripts
-              .where((final s) => s == 'serverpod generate')
+              .where((s) => s == 'serverpod generate')
               .length,
           1,
         );

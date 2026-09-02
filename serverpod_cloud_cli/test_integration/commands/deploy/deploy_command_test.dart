@@ -39,8 +39,8 @@ void main() {
     logger: logger,
     version: Version.parse('999.0.0'),
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
-      fileUploaderFactory: (final _) => mockFileUploader,
+      apiClientFactory: (globalCfg) => client,
+      fileUploaderFactory: (_) => mockFileUploader,
     ),
   );
   var readComputeMaxInstancesForTest = 1;
@@ -61,10 +61,10 @@ void main() {
       () => client.compute.readCompute(
         cloudCapsuleId: any(named: 'cloudCapsuleId'),
       ),
-    ).thenAnswer((final _) async => buildReadComputeAnswer());
+    ).thenAnswer((_) async => buildReadComputeAnswer());
     reset(client.platform);
     when(() => client.platform.getDartSdkVersionPolicy()).thenAnswer(
-      (final _) async => DartSdkVersionPolicyBuilder()
+      (_) async => DartSdkVersionPolicyBuilder()
           .withSupportedVersions([
             '3.7',
             '3.8',
@@ -347,7 +347,7 @@ project:
             cliCommandFuture,
             throwsA(
               isA<UsageException>().having(
-                (final e) => e.message,
+                (e) => e.message,
                 'message',
                 contains('Invalid value for option `concurrency` <integer>'),
               ),
@@ -390,9 +390,7 @@ project:
               commitMessage: any(named: 'commitMessage'),
               branch: any(named: 'branch'),
             ),
-          ).thenAnswer(
-            (final _) async => BucketUploadDescription.uploadDescription,
-          );
+          ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
 
           when(
             () => client.status.getDeployAttemptId(
@@ -400,8 +398,7 @@ project:
               attemptNumber: any(named: 'attemptNumber'),
             ),
           ).thenAnswer(
-            (final _) async =>
-                UuidValue.raw('00000000-0000-4000-8000-000000000000'),
+            (_) async => UuidValue.raw('00000000-0000-4000-8000-000000000000'),
           );
           when(
             () => client.status.tailDeployAttemptStatus(
@@ -409,7 +406,7 @@ project:
               attemptId: any(named: 'attemptId'),
             ),
           ).thenAnswer(
-            (final _) => Stream.value(DeployAttemptStageBuilder().build()),
+            (_) => Stream.value(DeployAttemptStageBuilder().build()),
           );
 
           readComputeMaxInstancesForTest = 2;
@@ -466,9 +463,7 @@ project:
               commitMessage: any(named: 'commitMessage'),
               branch: any(named: 'branch'),
             ),
-          ).thenAnswer(
-            (final _) async => BucketUploadDescription.uploadDescription,
-          );
+          ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
           readComputeMaxInstancesForTest = 2;
         });
 
@@ -510,7 +505,7 @@ project:
           cliCommandFuture,
           throwsA(
             isA<UsageException>().having(
-              (final e) => e.message,
+              (e) => e.message,
               'message',
               contains('The path must end with .zip'),
             ),
@@ -552,7 +547,7 @@ environment:
         });
 
         test('then error message is logged', () async {
-          await cliCommandFuture.catchError((final _) {});
+          await cliCommandFuture.catchError((_) {});
           expect(logger.errorCalls, isNotEmpty);
           expect(
             logger.errorCalls.first,
@@ -573,7 +568,7 @@ environment:
 
       setUp(() async {
         when(() => client.platform.getDartSdkVersionPolicy()).thenAnswer(
-          (final _) async => DartSdkVersionPolicyBuilder()
+          (_) async => DartSdkVersionPolicyBuilder()
               .withSupportedVersions(['3.8', '3.9', '3.10'])
               .withMinVersionInclusive('3.8.0')
               .withMaxVersionExclusive('3.11.0')
@@ -606,7 +601,7 @@ dependencies:
       });
 
       test('then error message is logged', () async {
-        await cliCommandFuture.catchError((final _) {});
+        await cliCommandFuture.catchError((_) {});
         expect(logger.errorCalls, isNotEmpty);
         expect(
           logger.errorCalls.first.message,
@@ -628,7 +623,7 @@ dependencies:
 
       setUp(() async {
         when(() => client.platform.getDartSdkVersionPolicy()).thenAnswer(
-          (final _) async => DartSdkVersionPolicyBuilder()
+          (_) async => DartSdkVersionPolicyBuilder()
               .withSupportedVersions(['3.8', '3.9', '3.10'])
               .withMinVersionInclusive('3.8.0')
               .withMaxVersionExclusive('3.11.0')
@@ -665,7 +660,7 @@ sdks:
       });
 
       test('then error message is logged', () async {
-        await cliCommandFuture.catchError((final _) {});
+        await cliCommandFuture.catchError((_) {});
         expect(logger.errorCalls, isNotEmpty);
         expect(
           logger.errorCalls.first.message,
@@ -688,7 +683,7 @@ sdks:
 
         setUp(() async {
           when(() => client.platform.getDartSdkVersionPolicy()).thenAnswer(
-            (final _) async => DartSdkVersionPolicyBuilder()
+            (_) async => DartSdkVersionPolicyBuilder()
                 .withSupportedVersions(['3.8', '3.9', '3.10'])
                 .withMinVersionInclusive('3.8.0')
                 .withMaxVersionExclusive('3.11.0')
@@ -745,7 +740,7 @@ dependencies:
         });
 
         test('then error message is logged', () async {
-          await cliCommandFuture.catchError((final _) {});
+          await cliCommandFuture.catchError((_) {});
           expect(logger.errorCalls, isNotEmpty);
           expect(
             logger.errorCalls.first.message,
@@ -768,7 +763,7 @@ dependencies:
 
       setUp(() async {
         when(() => client.platform.getDartSdkVersionPolicy()).thenAnswer(
-          (final _) async => DartSdkVersionPolicyBuilder()
+          (_) async => DartSdkVersionPolicyBuilder()
               .withSupportedVersions(['3.9', '3.10', '3.11', '3.12'])
               .withMinVersionInclusive('3.9.0')
               .withMaxVersionExclusive('3.13.0')
@@ -801,7 +796,7 @@ dependencies:
       });
 
       test('then the supported versions are in the error message', () async {
-        await cliCommandFuture.catchError((final _) {});
+        await cliCommandFuture.catchError((_) {});
         expect(logger.errorCalls, isNotEmpty);
         expect(
           logger.errorCalls.first.message,
@@ -847,7 +842,7 @@ sdks:
       });
 
       test('then the error names both constraint sources', () async {
-        await cliCommandFuture.catchError((final _) {});
+        await cliCommandFuture.catchError((_) {});
         expect(logger.errorCalls, isNotEmpty);
         expect(
           logger.errorCalls.first.message,
@@ -889,7 +884,7 @@ sdks:
       test(
         'then the error states that the fault is not the project.',
         () async {
-          await cliCommandFuture.catchError((final _) {});
+          await cliCommandFuture.catchError((_) {});
           expect(logger.errorCalls, isNotEmpty);
           expect(
             logger.errorCalls.first.hint,
@@ -952,7 +947,7 @@ project:
           test(
             'then failed to fetch upload description error message is logged.',
             () async {
-              await cliCommandFuture.catchError((final _) {});
+              await cliCommandFuture.catchError((_) {});
               expect(logger.errorCalls, isNotEmpty);
               expect(
                 logger.errorCalls.first.message,
@@ -977,7 +972,7 @@ project:
                 branch: any(named: 'branch'),
               ),
             ).thenAnswer(
-              (final _) async => BucketUploadDescription.uploadDescription,
+              (_) async => BucketUploadDescription.uploadDescription,
             );
 
             const symlinkedDirectoryName = 'symlinked_directory';
@@ -1023,7 +1018,7 @@ project:
             test(
               'then directory symlinks are unsupported message is logged.',
               () async {
-                await cliCommandFuture.catchError((final _) {});
+                await cliCommandFuture.catchError((_) {});
                 expect(logger.errorCalls, isNotEmpty);
                 expect(
                   logger.errorCalls.first.message,
@@ -1052,7 +1047,7 @@ project:
                 branch: any(named: 'branch'),
               ),
             ).thenAnswer(
-              (final _) async => BucketUploadDescription.uploadDescription,
+              (_) async => BucketUploadDescription.uploadDescription,
             );
 
             DirectoryFactory(
@@ -1087,7 +1082,7 @@ project:
             });
 
             test('then non-resolving symlinks message is logged.', () async {
-              await cliCommandFuture.catchError((final _) {});
+              await cliCommandFuture.catchError((_) {});
               expect(logger.errorCalls, isNotEmpty);
               expect(
                 logger.errorCalls.first.message,
@@ -1131,7 +1126,7 @@ project:
               commitMessage: any(named: 'commitMessage'),
               branch: any(named: 'branch'),
             ),
-          ).thenAnswer((final _) async => jsonEncode(descriptionContent));
+          ).thenAnswer((_) async => jsonEncode(descriptionContent));
 
           mockFileUploader.init(uploadResponse: false);
         });
@@ -1160,7 +1155,7 @@ project:
           test(
             'then failed to upload project error message is logged.',
             () async {
-              await cliCommandFuture.catchError((final _) {});
+              await cliCommandFuture.catchError((_) {});
               expect(logger.errorCalls, isNotEmpty);
               expect(
                 logger.errorCalls.first.message,
@@ -1182,9 +1177,7 @@ project:
               commitMessage: any(named: 'commitMessage'),
               branch: any(named: 'branch'),
             ),
-          ).thenAnswer(
-            (final _) async => BucketUploadDescription.uploadDescription,
-          );
+          ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
         });
 
         group('when deploying through CLI', () {
@@ -1231,9 +1224,7 @@ project:
             commitMessage: any(named: 'commitMessage'),
             branch: any(named: 'branch'),
           ),
-        ).thenAnswer(
-          (final _) async => BucketUploadDescription.uploadDescription,
-        );
+        ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
       });
 
       group('when deploying through CLI with --no-await', () {
@@ -1257,7 +1248,7 @@ project:
           await cliCommandFuture;
           expect(logger.progressCalls, isNotEmpty);
           expect(
-            logger.progressCalls.map((final call) => call.message),
+            logger.progressCalls.map((call) => call.message),
             containsAllInOrder(['Zipping project', 'Uploading project']),
           );
         });
@@ -1266,7 +1257,7 @@ project:
           await cliCommandFuture;
           expect(logger.progressCalls, isNotEmpty);
           expect(
-            logger.progressCalls.map((final call) => call.message),
+            logger.progressCalls.map((call) => call.message),
             isNot(contains(contains('build awaiting'))),
           );
         });
@@ -1399,7 +1390,7 @@ project:
 
           expect(logger.rawCalls, isNotEmpty);
           final rawOutput = logger.rawCalls
-              .map((final call) => call.content)
+              .map((call) => call.content)
               .join('');
           expect(rawOutput, contains('pubspec.yaml'));
           expect(rawOutput, anyOf(contains('╰─'), contains('├─')));
@@ -1436,7 +1427,7 @@ project:
           await cliCommandFuture;
 
           final rawOutput = logger.rawCalls
-              .map((final call) => call.content)
+              .map((call) => call.content)
               .join('');
           expect(rawOutput, isNot(contains('╰─')));
           expect(rawOutput, isNot(contains('├─')));
@@ -1470,7 +1461,7 @@ project:
               cloudCapsuleId: any(named: 'cloudCapsuleId'),
               attemptId: any(named: 'attemptId'),
             ),
-          ).thenAnswer((final _) => Stream.fromIterable(attemptStages));
+          ).thenAnswer((_) => Stream.fromIterable(attemptStages));
 
           cliCommandFuture = cli.run([
             'deploy',
@@ -1540,9 +1531,7 @@ project:
               commitMessage: any(named: 'commitMessage'),
               branch: any(named: 'branch'),
             ),
-          ).thenAnswer(
-            (final _) async => BucketUploadDescription.uploadDescription,
-          );
+          ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
         });
 
         group(
@@ -1598,9 +1587,7 @@ project:
             commitMessage: any(named: 'commitMessage'),
             branch: any(named: 'branch'),
           ),
-        ).thenAnswer(
-          (final _) async => BucketUploadDescription.uploadDescription,
-        );
+        ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
       });
 
       group('when deploying through CLI and with --wet-run', () {
@@ -1621,7 +1608,7 @@ project:
         test(
           'then an unsupported flutter dependency error message is logged.',
           () async {
-            await cliCommandFuture.catchError((final _) {});
+            await cliCommandFuture.catchError((_) {});
 
             expect(logger.errorCalls, hasLength(1));
             expect(
@@ -1686,9 +1673,7 @@ project:
             commitMessage: any(named: 'commitMessage'),
             branch: any(named: 'branch'),
           ),
-        ).thenAnswer(
-          (final _) async => BucketUploadDescription.uploadDescription,
-        );
+        ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
       });
 
       group(
@@ -1748,8 +1733,7 @@ project:
               attemptNumber: any(named: 'attemptNumber'),
             ),
           ).thenAnswer(
-            (final _) async =>
-                UuidValue.raw('00000000-0000-4000-8000-000000000000'),
+            (_) async => UuidValue.raw('00000000-0000-4000-8000-000000000000'),
           );
           when(
             () => client.status.tailDeployAttemptStatus(
@@ -1757,7 +1741,7 @@ project:
               attemptId: any(named: 'attemptId'),
             ),
           ).thenAnswer(
-            (final _) => Stream.value(DeployAttemptStageBuilder().build()),
+            (_) => Stream.value(DeployAttemptStageBuilder().build()),
           );
         });
 
@@ -1853,9 +1837,7 @@ project:
               commitMessage: any(named: 'commitMessage'),
               branch: any(named: 'branch'),
             ),
-          ).thenAnswer(
-            (final _) async => BucketUploadDescription.uploadDescription,
-          );
+          ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
         });
 
         group(
@@ -1882,7 +1864,7 @@ project:
             });
 
             test('then an error message is logged.', () async {
-              await cliCommandFuture.catchError((final _) {});
+              await cliCommandFuture.catchError((_) {});
 
               expect(logger.errorCalls, hasLength(1));
               expect(
@@ -1978,9 +1960,7 @@ project:
             commitMessage: any(named: 'commitMessage'),
             branch: any(named: 'branch'),
           ),
-        ).thenAnswer(
-          (final _) async => BucketUploadDescription.uploadDescription,
-        );
+        ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
       });
 
       group('and a lock file', () {
@@ -2114,9 +2094,7 @@ project:
               commitMessage: any(named: 'commitMessage'),
               branch: any(named: 'branch'),
             ),
-          ).thenAnswer(
-            (final _) async => BucketUploadDescription.uploadDescription,
-          );
+          ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
         });
 
         group('when deploying with --wet-run and --output', () {
@@ -2273,9 +2251,7 @@ project:
               commitMessage: any(named: 'commitMessage'),
               branch: any(named: 'branch'),
             ),
-          ).thenAnswer(
-            (final _) async => BucketUploadDescription.uploadDescription,
-          );
+          ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
         });
 
         group('when deploying with --wet-run and --output', () {
@@ -2406,9 +2382,7 @@ project:
               commitMessage: any(named: 'commitMessage'),
               branch: any(named: 'branch'),
             ),
-          ).thenAnswer(
-            (final _) async => BucketUploadDescription.uploadDescription,
-          );
+          ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
         });
 
         group('when deploying through CLI and with --wet-run', () {
@@ -2434,7 +2408,7 @@ project:
           test(
             'then an unsupported flutter dependency error message is logged.',
             () async {
-              await cliCommandFuture.catchError((final _) {});
+              await cliCommandFuture.catchError((_) {});
 
               expect(logger.errorCalls, hasLength(1));
               expect(
@@ -2484,18 +2458,14 @@ project:
           commitMessage: any(named: 'commitMessage'),
           branch: any(named: 'branch'),
         ),
-      ).thenAnswer(
-        (final _) async => BucketUploadDescription.uploadDescription,
-      );
+      ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
 
       when(
         () => client.status.tailDeployAttemptStatus(
           cloudCapsuleId: any(named: 'cloudCapsuleId'),
           attemptId: any(named: 'attemptId'),
         ),
-      ).thenAnswer(
-        (final _) => Stream.value(DeployAttemptStageBuilder().build()),
-      );
+      ).thenAnswer((_) => Stream.value(DeployAttemptStageBuilder().build()));
     });
 
     group('when deploying through CLI', () {
@@ -2552,9 +2522,7 @@ project:
           commitMessage: any(named: 'commitMessage'),
           branch: any(named: 'branch'),
         ),
-      ).thenAnswer(
-        (final _) async => BucketUploadDescription.uploadDescription,
-      );
+      ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
     });
 
     group('and scloud.yaml with pre-deploy and post-deploy scripts', () {
@@ -2624,7 +2592,7 @@ project:
           await cliCommandFuture;
 
           expect(
-            logger.infoCalls.map((final call) => call.message),
+            logger.infoCalls.map((call) => call.message),
             containsAllInOrder([
               'Running pre-deploy scripts:',
               'Running post-deploy scripts:',
@@ -2671,7 +2639,7 @@ project:
         });
 
         test('then subsequent pre-deploy scripts are not executed', () async {
-          await cliCommandFuture.catchError((final _) {});
+          await cliCommandFuture.catchError((_) {});
 
           final preDeployFile = d.dir(testProjectDir, [
             d.file('pre_deploy_output.txt', contains('pre-deploy-1')),
@@ -2680,7 +2648,7 @@ project:
         });
 
         test('then post-deploy scripts are not executed', () async {
-          await cliCommandFuture.catchError((final _) {});
+          await cliCommandFuture.catchError((_) {});
 
           final postDeployFile = d.dir(testProjectDir, [
             d.nothing('post_deploy_output.txt'),
@@ -2725,7 +2693,7 @@ project:
         });
 
         test('then subsequent post-deploy scripts are not executed', () async {
-          await cliCommandFuture.catchError((final _) {});
+          await cliCommandFuture.catchError((_) {});
 
           final postDeployFile = d.dir(testProjectDir, [
             d.file('post_deploy_output.txt', contains('post-deploy-1')),
@@ -2824,7 +2792,7 @@ project:
           await cliCommandFuture;
 
           final progressMessages = logger.progressCalls
-              .map((final c) => c.message)
+              .map((c) => c.message)
               .toList();
           expect(
             progressMessages,
@@ -2864,7 +2832,7 @@ project:
             await cliCommandFuture;
 
             final progressMessages = logger.progressCalls
-                .map((final c) => c.message)
+                .map((c) => c.message)
                 .toList();
             expect(
               progressMessages,
@@ -2906,9 +2874,7 @@ dependencies:
             commitMessage: any(named: 'commitMessage'),
             branch: any(named: 'branch'),
           ),
-        ).thenAnswer(
-          (final _) async => BucketUploadDescription.uploadDescription,
-        );
+        ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
       });
 
       group('when deploying with --dart-version flag and --wet-run', () {
@@ -3086,7 +3052,7 @@ project:
         });
 
         test('then the error lists the supported versions.', () async {
-          await cliCommandFuture.catchError((final _) {});
+          await cliCommandFuture.catchError((_) {});
 
           expect(logger.errorCalls, isNotEmpty);
           expect(
@@ -3125,7 +3091,7 @@ project:
         });
 
         test('then error message mentions invalid constraint.', () async {
-          await cliCommandFuture.catchError((final _) {});
+          await cliCommandFuture.catchError((_) {});
           expect(logger.errorCalls, isNotEmpty);
           expect(
             logger.errorCalls.first.message,
@@ -3269,7 +3235,7 @@ project:
       'in pubspec.yaml', () {
     late String testProjectDir;
 
-    Future<void> deploy({final List<String> withArguments = const []}) {
+    Future<void> deploy({List<String> withArguments = const []}) {
       clearInteractions(client.deploy);
       return cli.run([
         'deploy',
@@ -3304,9 +3270,7 @@ dependencies:
           commitMessage: any(named: 'commitMessage'),
           branch: any(named: 'branch'),
         ),
-      ).thenAnswer(
-        (final _) async => BucketUploadDescription.uploadDescription,
-      );
+      ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
     });
 
     group('when deploying', () {
@@ -3481,9 +3445,7 @@ dependencies:
           commitMessage: any(named: 'commitMessage'),
           branch: any(named: 'branch'),
         ),
-      ).thenAnswer(
-        (final _) async => BucketUploadDescription.uploadDescription,
-      );
+      ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
     });
 
     group('when deploying', () {
@@ -3574,7 +3536,7 @@ project:
     });
 
     test('then the pre-deploy script has not run.', () async {
-      await cliCommandFuture.catchError((final _) {});
+      await cliCommandFuture.catchError((_) {});
 
       final preDeployFile = File(
         p.join(testProjectDir, 'pre_deploy_output.txt'),
@@ -3583,13 +3545,13 @@ project:
     });
 
     test('then no zip file was written.', () async {
-      await cliCommandFuture.catchError((final _) {});
+      await cliCommandFuture.catchError((_) {});
 
       expect(File(zipOutputPath).existsSync(), isFalse);
     });
 
     test('then no upload description was requested.', () async {
-      await cliCommandFuture.catchError((final _) {});
+      await cliCommandFuture.catchError((_) {});
 
       verifyNever(
         () => client.deploy.createUploadDescription(
@@ -3629,18 +3591,14 @@ project:
             commitMessage: any(named: 'commitMessage'),
             branch: any(named: 'branch'),
           ),
-        ).thenAnswer(
-          (final _) async => BucketUploadDescription.uploadDescription,
-        );
+        ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
 
         when(
           () => client.status.tailDeployAttemptStatus(
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
             attemptId: any(named: 'attemptId'),
           ),
-        ).thenAnswer(
-          (final _) => Stream.value(DeployAttemptStageBuilder().build()),
-        );
+        ).thenAnswer((_) => Stream.value(DeployAttemptStageBuilder().build()));
 
         await _initGitRepo(testProjectDir);
         await _gitCommitAll(testProjectDir, 'Initial commit');
@@ -3683,7 +3641,7 @@ project:
 
           expect(
             logger.warningCalls.where(
-              (final call) => call.message.contains('uncommitted changes'),
+              (call) => call.message.contains('uncommitted changes'),
             ),
             isEmpty,
           );
@@ -3711,7 +3669,7 @@ project:
 
           expect(
             logger.warningCalls.any(
-              (final call) => call.message.contains('uncommitted changes'),
+              (call) => call.message.contains('uncommitted changes'),
             ),
             isTrue,
           );
@@ -3750,12 +3708,12 @@ bool _isGitExecutableAvailable() {
   }
 }
 
-Future<void> _initGitRepo(final String directory) async {
+Future<void> _initGitRepo(String directory) async {
   await _runGit(['init'], directory);
   await _runGit(['checkout', '-b', 'main'], directory);
 }
 
-Future<void> _gitCommitAll(final String directory, final String message) async {
+Future<void> _gitCommitAll(String directory, String message) async {
   await _runGit(['add', '.'], directory);
   await _runGit([
     '-c',
@@ -3770,10 +3728,7 @@ Future<void> _gitCommitAll(final String directory, final String message) async {
   ], directory);
 }
 
-Future<void> _runGit(
-  final List<String> arguments,
-  final String workingDirectory,
-) async {
+Future<void> _runGit(List<String> arguments, String workingDirectory) async {
   final result = await Process.run(
     'git',
     arguments,

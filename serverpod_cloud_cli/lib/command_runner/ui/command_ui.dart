@@ -27,11 +27,11 @@ class CommandWidget extends OutputWidget {
   /// widgets unless provided.
   CommandWidget.text({
     required this.textOutputUi,
-    final OutputWidget? jsonOutputUi,
-    final OutputWidget? yamlOutputUi,
-    final OutputWidget? textErrorUi,
-    final OutputWidget? jsonErrorUi,
-    final OutputWidget? yamlErrorUi,
+    OutputWidget? jsonOutputUi,
+    OutputWidget? yamlOutputUi,
+    OutputWidget? textErrorUi,
+    OutputWidget? jsonErrorUi,
+    OutputWidget? yamlErrorUi,
   }) : jsonOutputUi =
            jsonOutputUi ??
            FormattedStringWidget(formatter: JsonOutputFormatter()),
@@ -43,19 +43,19 @@ class CommandWidget extends OutputWidget {
        yamlErrorUi = yamlErrorUi ?? YamlErrorWidget();
 
   @override
-  OutputWidget build(final OutputContext context) {
+  OutputWidget build(OutputContext context) {
     return FormatBranchingWidget(
       textWidget: ExceptionHandlingWidget(
         elseWidget: textOutputUi,
-        errorWidgetMaker: (final e) => textErrorUi,
+        errorWidgetMaker: (e) => textErrorUi,
       ),
       jsonWidget: ExceptionHandlingWidget(
         elseWidget: jsonOutputUi,
-        errorWidgetMaker: (final e) => jsonErrorUi,
+        errorWidgetMaker: (e) => jsonErrorUi,
       ),
       yamlWidget: ExceptionHandlingWidget(
         elseWidget: yamlOutputUi,
-        errorWidgetMaker: (final e) => yamlErrorUi,
+        errorWidgetMaker: (e) => yamlErrorUi,
       ),
     );
   }

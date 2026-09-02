@@ -8,10 +8,10 @@ abstract final class CallbackHelper {
   /// Simulates the browser hitting the authentication callback URL that the CLI
   /// logged, optionally providing an authentication [token].
   static Future<void> completeAuthCallback({
-    required final TestCommandLogger logger,
-    required final Completer<void> completer,
-    final String? token,
-    final Duration timeout = const Duration(seconds: 25),
+    required TestCommandLogger logger,
+    required Completer<void> completer,
+    String? token,
+    Duration timeout = const Duration(seconds: 25),
   }) {
     return CallbackHelper.completeCallback(
       logger: logger,
@@ -26,10 +26,10 @@ abstract final class CallbackHelper {
   /// Simulates the console redirecting back to the CLI callback URL after a
   /// project has been created, optionally providing the created [projectId].
   static Future<void> completeProjectCreateCallback({
-    required final TestCommandLogger logger,
-    required final Completer<void> completer,
-    final String? projectId,
-    final Duration timeout = const Duration(seconds: 25),
+    required TestCommandLogger logger,
+    required Completer<void> completer,
+    String? projectId,
+    Duration timeout = const Duration(seconds: 25),
   }) {
     return CallbackHelper.completeCallback(
       logger: logger,
@@ -46,12 +46,12 @@ abstract final class CallbackHelper {
   /// that URL — optionally with `<responseParameter>=<responseValue>` appended —
   /// to simulate the browser/console redirecting back to the local CLI server.
   static Future<void> completeCallback({
-    required final TestCommandLogger logger,
-    required final Completer<void> completer,
-    required final String callbackUrlParameter,
-    required final String responseParameter,
-    final String? responseValue,
-    final Duration timeout = const Duration(seconds: 25),
+    required TestCommandLogger logger,
+    required Completer<void> completer,
+    required String callbackUrlParameter,
+    required String responseParameter,
+    String? responseValue,
+    Duration timeout = const Duration(seconds: 25),
   }) async {
     final marker = '$callbackUrlParameter=';
     try {
@@ -60,7 +60,7 @@ abstract final class CallbackHelper {
       while (DateTime.now().isBefore(deadline)) {
         await logger.waitForLog();
         final callbackInfo = logger.infoCalls
-            .where((final call) => call.message.contains(marker))
+            .where((call) => call.message.contains(marker))
             .firstOrNull;
         if (callbackInfo != null) {
           final loggedMessage = callbackInfo.message;

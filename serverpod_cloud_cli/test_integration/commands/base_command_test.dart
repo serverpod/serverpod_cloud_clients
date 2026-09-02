@@ -22,25 +22,24 @@ void main() {
     logger: logger,
     baseCommand: _baseCommand,
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
   );
 
   /// Runs [args] and returns everything the CLI wrote to the user, both
   /// through the logger and directly to the terminal.
-  Future<String> runAndCaptureOutput(final List<String> args) async {
+  Future<String> runAndCaptureOutput(List<String> args) async {
     final printed = StringBuffer();
     await runZoned(
       () => cli.run(args),
       zoneSpecification: ZoneSpecification(
-        print: (final self, final parent, final zone, final line) =>
-            printed.writeln(line),
+        print: (self, parent, zone, line) => printed.writeln(line),
       ),
     );
     return [
       printed.toString(),
-      ...logger.infoCalls.map((final call) => call.message),
-      ...logger.lineCalls.map((final call) => call.line),
+      ...logger.infoCalls.map((call) => call.message),
+      ...logger.lineCalls.map((call) => call.line),
     ].join('\n');
   }
 
@@ -93,7 +92,7 @@ void main() {
       });
 
       test('then the suggested terminal commands use the base command', () {
-        expect(logger.terminalCommandCalls.map((final call) => call.command), [
+        expect(logger.terminalCommandCalls.map((call) => call.command), [
           '$_baseCommand auth logout',
           '$_baseCommand auth login',
         ]);
@@ -128,7 +127,7 @@ void main() {
 
       setUp(() async {
         when(() => client.environmentVariables.list(any())).thenAnswer(
-          (final _) async => [
+          (_) async => [
             EnvironmentVariable(
               name: 'BUCKET',
               value: 'scloud-artifacts',
@@ -138,7 +137,7 @@ void main() {
         );
         when(
           () => client.secrets.list(any()),
-        ).thenAnswer((final _) async => <String>[]);
+        ).thenAnswer((_) async => <String>[]);
 
         output = await runAndCaptureOutput([
           'variable',

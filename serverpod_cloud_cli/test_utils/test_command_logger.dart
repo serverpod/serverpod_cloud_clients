@@ -216,8 +216,7 @@ class TestCommandLogger extends CommandLogger {
   @override
   InlineTerminal get inlineTerminal => _inlineTerminal ??= FakeTerminal();
 
-  set inlineTerminal(final InlineTerminal terminal) =>
-      _inlineTerminal = terminal;
+  set inlineTerminal(InlineTerminal terminal) => _inlineTerminal = terminal;
 
   int get totalLogCalls =>
       boxCalls.length +
@@ -232,9 +231,9 @@ class TestCommandLogger extends CommandLogger {
 
   @override
   void box(
-    final String message, {
-    final LogLevel level = LogLevel.info,
-    final bool newParagraph = false,
+    String message, {
+    LogLevel level = LogLevel.info,
+    bool newParagraph = false,
   }) {
     if (printToStdout) {
       print('log box: $message');
@@ -268,9 +267,9 @@ class TestCommandLogger extends CommandLogger {
 
   @override
   void debug(
-    final String message, {
-    final LogType type = TextLogType.normal,
-    final bool newParagraph = false,
+    String message, {
+    LogType type = TextLogType.normal,
+    bool newParagraph = false,
   }) {
     if (printToStdout) {
       print('log debug: $message');
@@ -281,12 +280,12 @@ class TestCommandLogger extends CommandLogger {
 
   @override
   void error(
-    final String message, {
-    final Exception? exception,
-    final String? hint,
-    final bool newParagraph = false,
-    final StackTrace? stackTrace,
-    final bool forcePrintStackTrace = false,
+    String message, {
+    Exception? exception,
+    String? hint,
+    bool newParagraph = false,
+    StackTrace? stackTrace,
+    bool forcePrintStackTrace = false,
   }) {
     if (printToStdout) {
       print('log error: $message');
@@ -327,7 +326,7 @@ class TestCommandLogger extends CommandLogger {
   }
 
   @override
-  void info(final String message, {final bool newParagraph = false}) {
+  void info(String message, {bool newParagraph = false}) {
     if (printToStdout) {
       print('log info: $message');
     }
@@ -340,7 +339,7 @@ class TestCommandLogger extends CommandLogger {
   }
 
   @override
-  void line(final String line, {final LogLevel level = LogLevel.info}) {
+  void line(String line, {LogLevel level = LogLevel.info}) {
     if (printToStdout) {
       print('log line: $line');
     }
@@ -354,10 +353,10 @@ class TestCommandLogger extends CommandLogger {
 
   @override
   void list(
-    final Iterable<String> items, {
-    final LogLevel level = LogLevel.info,
-    final String? title,
-    final bool newParagraph = false,
+    Iterable<String> items, {
+    LogLevel level = LogLevel.info,
+    String? title,
+    bool newParagraph = false,
   }) {
     final itemList = items.toList();
     if (printToStdout) {
@@ -375,11 +374,11 @@ class TestCommandLogger extends CommandLogger {
 
   @override
   Future<bool> progress(
-    final String message,
-    final Future<bool> Function() runner, {
-    final String? successMessage,
-    final int padRight = 0,
-    final bool newParagraph = false,
+    String message,
+    Future<bool> Function() runner, {
+    String? successMessage,
+    int padRight = 0,
+    bool newParagraph = false,
   }) async {
     if (printToStdout) {
       print('log progress: $message');
@@ -401,12 +400,12 @@ class TestCommandLogger extends CommandLogger {
 
   @override
   Future<T> progressStream<T>(
-    final String initialMessage,
-    final Stream<T> stream, {
-    final String Function(T)? toMessage,
-    final int padRight = 0,
-    final bool Function(T)? isSuccess,
-    final bool newParagraph = false,
+    String initialMessage,
+    Stream<T> stream, {
+    String Function(T)? toMessage,
+    int padRight = 0,
+    bool Function(T)? isSuccess,
+    bool newParagraph = false,
   }) async {
     if (printToStdout) {
       print('log progressStream: $initialMessage');
@@ -435,11 +434,11 @@ class TestCommandLogger extends CommandLogger {
 
   @override
   void success(
-    final String message, {
-    final LogLevel level = LogLevel.info,
-    final bool trailingRocket = false,
-    final bool newParagraph = false,
-    final String? followUp,
+    String message, {
+    LogLevel level = LogLevel.info,
+    bool trailingRocket = false,
+    bool newParagraph = false,
+    String? followUp,
   }) {
     if (printToStdout) {
       print('log success: $message');
@@ -461,10 +460,10 @@ class TestCommandLogger extends CommandLogger {
 
   @override
   void terminalCommand(
-    final String command, {
-    final String? message,
-    final LogLevel level = LogLevel.info,
-    final bool newParagraph = false,
+    String command, {
+    String? message,
+    LogLevel level = LogLevel.info,
+    bool newParagraph = false,
   }) {
     if (printToStdout) {
       print('log terminal command: $command, message: $message');
@@ -484,11 +483,7 @@ class TestCommandLogger extends CommandLogger {
   }
 
   @override
-  void warning(
-    final String message, {
-    final bool newParagraph = false,
-    final String? hint,
-  }) {
+  void warning(String message, {bool newParagraph = false, String? hint}) {
     if (printToStdout) {
       print('log warning: $message');
     }
@@ -504,9 +499,9 @@ class TestCommandLogger extends CommandLogger {
 
   @override
   void raw(
-    final String content, {
-    final AnsiStyle? style,
-    final LogLevel logLevel = LogLevel.info,
+    String content, {
+    AnsiStyle? style,
+    LogLevel logLevel = LogLevel.info,
   }) {
     if (printToStdout) {
       print('log raw: $content');
@@ -520,7 +515,7 @@ class TestCommandLogger extends CommandLogger {
   }
 
   @override
-  Future<bool> confirm(final String message, {final bool? defaultValue}) async {
+  Future<bool> confirm(String message, {bool? defaultValue}) async {
     if (printToStdout) {
       print('log confirm: $message');
     }
@@ -539,10 +534,7 @@ class TestCommandLogger extends CommandLogger {
   }
 
   @override
-  Future<String> input(
-    final String message, {
-    final String? defaultValue,
-  }) async {
+  Future<String> input(String message, {String? defaultValue}) async {
     if (printToStdout) {
       print('log input: $message');
     }
@@ -560,15 +552,15 @@ class TestCommandLogger extends CommandLogger {
     return nextInputAnswer;
   }
 
-  void answerNextConfirmWith(final bool answer) {
+  void answerNextConfirmWith(bool answer) {
     _nextConfirmAnswers.add(answer);
   }
 
-  void answerNextConfirmsWith(final Iterable<bool> answers) {
+  void answerNextConfirmsWith(Iterable<bool> answers) {
     _nextConfirmAnswers.addAll(answers);
   }
 
-  void answerNextInputsWith(final Iterable<String> answers) {
+  void answerNextInputsWith(Iterable<String> answers) {
     _nextInputAnswers.addAll(answers);
   }
 }
@@ -592,11 +584,11 @@ class WarningCall {
 
 Future<({MockStdout stdout, MockStdout stderr, MockStdin stdin})>
 collectOutput<T>(
-  final FutureOr<T> Function() runner, {
-  final List<String> stdinLines = const [],
-  final MockStdout? stdout,
-  final MockStdout? stderr,
-  final MockStdin? stdin,
+  FutureOr<T> Function() runner, {
+  List<String> stdinLines = const [],
+  MockStdout? stdout,
+  MockStdout? stderr,
+  MockStdin? stdin,
 }) async {
   final standardOut = stdout ?? MockStdout();
   final standardError = stderr ?? MockStdout();

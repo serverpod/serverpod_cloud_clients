@@ -14,27 +14,27 @@ class ComputeInfoBuilder {
       _maxInstances = 2,
       _memoryMb = 512;
 
-  ComputeInfoBuilder withCloudCapsuleId(final String cloudCapsuleId) {
+  ComputeInfoBuilder withCloudCapsuleId(String cloudCapsuleId) {
     _cloudCapsuleId = cloudCapsuleId;
     return this;
   }
 
-  ComputeInfoBuilder withSize(final ComputeSizeOption size) {
+  ComputeInfoBuilder withSize(ComputeSizeOption size) {
     _size = size;
     return this;
   }
 
-  ComputeInfoBuilder withMinInstances(final int minInstances) {
+  ComputeInfoBuilder withMinInstances(int minInstances) {
     _minInstances = minInstances;
     return this;
   }
 
-  ComputeInfoBuilder withMaxInstances(final int maxInstances) {
+  ComputeInfoBuilder withMaxInstances(int maxInstances) {
     _maxInstances = maxInstances;
     return this;
   }
 
-  ComputeInfoBuilder withMemoryMb(final int memoryMb) {
+  ComputeInfoBuilder withMemoryMb(int memoryMb) {
     _memoryMb = memoryMb;
     return this;
   }

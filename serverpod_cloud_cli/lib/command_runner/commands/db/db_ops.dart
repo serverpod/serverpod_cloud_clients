@@ -4,11 +4,11 @@ import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
 abstract class DbCommands {
   static Future<void> wipeDatabase(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String baseCommand,
-    required final String projectId,
-    required final bool skipConfirmation,
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String baseCommand,
+    required String projectId,
+    required bool skipConfirmation,
   }) async {
     if (!skipConfirmation) {
       final confirmed = await logger.confirm('''

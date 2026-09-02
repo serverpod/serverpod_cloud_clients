@@ -10,19 +10,19 @@ class BucketFileBuilder {
       _sizeBytes = 1024,
       _updated = DateTime.utc(2026, 7, 20, 10);
 
-  BucketFileBuilder withName(final String name) {
+  BucketFileBuilder withName(String name) {
     _name = name;
 
     return this;
   }
 
-  BucketFileBuilder withSizeBytes(final int? sizeBytes) {
+  BucketFileBuilder withSizeBytes(int? sizeBytes) {
     _sizeBytes = sizeBytes;
 
     return this;
   }
 
-  BucketFileBuilder withUpdated(final DateTime? updated) {
+  BucketFileBuilder withUpdated(DateTime? updated) {
     _updated = updated;
 
     return this;

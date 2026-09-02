@@ -8,8 +8,8 @@ import 'package:test/test.dart';
 import 'helpers/fake_terminal.dart';
 
 SelectListModel<String> _model(
-  final List<String> labels, {
-  final bool multiSelect = false,
+  List<String> labels, {
+  bool multiSelect = false,
 }) {
   return SelectListModel<String>(
     items: [for (final l in labels) SelectListItem(value: l, label: l)],

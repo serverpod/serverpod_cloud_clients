@@ -218,7 +218,7 @@ void main() {
         () => graph.unreachablePackages(['foo']),
         throwsA(
           isA<ArgumentError>().having(
-            (final e) => e.message,
+            (e) => e.message,
             'message',
             contains('not a "root" package'),
           ),
@@ -243,9 +243,9 @@ void main() {
 }
 
 PgPackage _package(
-  final String name, {
-  final List<PgPackage> dependencies = const [],
-  final List<PgPackage> devDependencies = const [],
+  String name, {
+  List<PgPackage> dependencies = const [],
+  List<PgPackage> devDependencies = const [],
 }) {
   return PgPackage(
     name: name,

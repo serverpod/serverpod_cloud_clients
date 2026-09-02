@@ -33,7 +33,7 @@ final _schema = YamlMap.wrap({
 final _yamlSchema = YamlSchema(_schema);
 
 abstract final class ScloudConfigIO {
-  static Map<String, dynamic> _parseConfigYaml(final String configYaml) {
+  static Map<String, dynamic> _parseConfigYaml(String configYaml) {
     final data = loadYaml(configYaml);
 
     if (data is! YamlMap) {
@@ -44,16 +44,16 @@ abstract final class ScloudConfigIO {
     return _convertYamlToMap(data);
   }
 
-  static Map<String, dynamic> _convertYamlToMap(final YamlMap yamlMap) {
+  static Map<String, dynamic> _convertYamlToMap(YamlMap yamlMap) {
     return Map<String, dynamic>.fromEntries(
       yamlMap.entries.map(
-        (final entry) =>
+        (entry) =>
             MapEntry(entry.key as String, _convertYamlValue(entry.value)),
       ),
     );
   }
 
-  static dynamic _convertYamlValue(final dynamic value) {
+  static dynamic _convertYamlValue(dynamic value) {
     if (value is YamlMap) {
       return _convertYamlToMap(value);
     } else if (value is YamlList) {
@@ -63,10 +63,7 @@ abstract final class ScloudConfigIO {
     }
   }
 
-  static void writeToFile(
-    final ScloudConfig config,
-    final String configFilePath,
-  ) {
+  static void writeToFile(ScloudConfig config, String configFilePath) {
     final output = _mergeProjectConfigWithCurrentConfigAsYaml(
       config,
       configFilePath,
@@ -77,7 +74,7 @@ abstract final class ScloudConfigIO {
       ..writeAsStringSync(content);
   }
 
-  static ScloudConfig? readFromFile(final String configFilePath) {
+  static ScloudConfig? readFromFile(String configFilePath) {
     final yaml = _tryReadFile(configFilePath);
     if (yaml == null) {
       return null;
@@ -86,7 +83,7 @@ abstract final class ScloudConfigIO {
     return ScloudConfig.fromMap(_parseConfigYaml(yaml));
   }
 
-  static String? _tryReadFile(final String filePath) {
+  static String? _tryReadFile(String filePath) {
     try {
       return File(filePath).readAsStringSync();
     } catch (e) {
@@ -95,8 +92,8 @@ abstract final class ScloudConfigIO {
   }
 
   static String _mergeProjectConfigWithCurrentConfigAsYaml(
-    final ScloudConfig config,
-    final String filePath,
+    ScloudConfig config,
+    String filePath,
   ) {
     final yaml = _tryReadFile(filePath);
 

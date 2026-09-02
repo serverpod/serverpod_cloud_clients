@@ -17,10 +17,7 @@ class MockFileUploader implements FileUploaderClient {
   MockFileUploader({this.uploadResponse = true, this.uploadedData = const []});
 
   /// Initializes the [MockFileUploader].
-  void init({
-    final bool uploadResponse = true,
-    final List<int> uploadedData = const [],
-  }) {
+  void init({bool uploadResponse = true, List<int> uploadedData = const []}) {
     this.uploadResponse = uploadResponse;
     this.uploadedData = uploadedData;
   }
@@ -28,7 +25,7 @@ class MockFileUploader implements FileUploaderClient {
   /// Uploads a file contained by a [ByteData] object,
   /// returns true if successful.
   @override
-  Future<bool> uploadByteData(final ByteData byteData) async {
+  Future<bool> uploadByteData(ByteData byteData) async {
     final stream = http.ByteStream.fromBytes(
       byteData.buffer.asUint8List(
         byteData.offsetInBytes,
@@ -40,14 +37,12 @@ class MockFileUploader implements FileUploaderClient {
 
   /// Uploads a file from a [Stream], returns true if successful.
   @override
-  Future<bool> upload(final Stream<List<int>> stream, final int length) async {
+  Future<bool> upload(Stream<List<int>> stream, int length) async {
     uploadedData = await _readStreamData(stream);
     return uploadResponse;
   }
 
-  static Future<List<int>> _readStreamData(
-    final Stream<List<int>> stream,
-  ) async {
+  static Future<List<int>> _readStreamData(Stream<List<int>> stream) async {
     final data = <int>[];
     await for (final segment in stream) {
       data.addAll(segment);

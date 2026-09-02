@@ -21,7 +21,7 @@ void main() {
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
   );
 
@@ -39,7 +39,7 @@ void main() {
   group('Given authenticated', () {
     const testToken = 'created-api-token-123';
 
-    AuthSuccess buildAuthSuccess({final String token = testToken}) {
+    AuthSuccess buildAuthSuccess({String token = testToken}) {
       return AuthSuccess(
         token: token,
         authStrategy: AuthStrategy.session.name,
@@ -54,7 +54,7 @@ void main() {
           expiresAt: any(named: 'expiresAt'),
           expiresAfter: any(named: 'expiresAfter'),
         ),
-      ).thenAnswer((final _) async => buildAuthSuccess());
+      ).thenAnswer((_) async => buildAuthSuccess());
     });
 
     tearDown(() {

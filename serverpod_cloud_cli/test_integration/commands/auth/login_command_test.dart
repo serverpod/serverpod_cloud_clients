@@ -60,7 +60,7 @@ void main() {
           result,
           throwsA(
             isA<ErrorExitException>().having(
-              (final e) => e.exitCode,
+              (e) => e.exitCode,
               'exitCode',
               equals(1),
             ),
@@ -292,7 +292,7 @@ void main() {
         ]);
 
         // Silence the error message.
-        final cliFuture = cliOnDone.catchError((final _) {});
+        final cliFuture = cliOnDone.catchError((_) {});
 
         await tokenSent.future;
 

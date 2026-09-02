@@ -11,21 +11,21 @@ import 'package:serverpod_cloud_cli/util/scloudignore.dart';
 
 abstract final class ProjectFilesWriter {
   static void writeFiles({
-    required final String projectId,
-    required final List<String> preDeployScripts,
-    required final String configFilePath,
-    required final String projectDirectory,
-    final String? dartSdk,
+    required String projectId,
+    required List<String> preDeployScripts,
+    required String configFilePath,
+    required String projectDirectory,
+    String? dartSdk,
   }) {
     _upsertConfigFile(projectId, preDeployScripts, configFilePath, dartSdk);
     _upsertScloudIgnoreFile(projectDirectory);
   }
 
   static void _upsertConfigFile(
-    final String projectId,
-    final List<String> suggestedPreDeployScripts,
-    final String configFilePath,
-    final String? dartSdk,
+    String projectId,
+    List<String> suggestedPreDeployScripts,
+    String configFilePath,
+    String? dartSdk,
   ) {
     final ScloudConfig? config;
     try {
@@ -50,7 +50,7 @@ abstract final class ProjectFilesWriter {
       );
     } else {
       final existingPreDeploy = config.scripts.preDeploy
-          .where((final hook) => !suggestedPreDeployScripts.contains(hook))
+          .where((hook) => !suggestedPreDeployScripts.contains(hook))
           .toList();
       newConfig = config.copyWith(
         projectId: projectId,
@@ -63,7 +63,7 @@ abstract final class ProjectFilesWriter {
     ScloudConfigIO.writeToFile(newConfig, configFilePath);
   }
 
-  static void _upsertScloudIgnoreFile(final String projectDirectory) {
+  static void _upsertScloudIgnoreFile(String projectDirectory) {
     final workspaceRootDir = _findWorkspaceRootDir(Directory(projectDirectory));
 
     try {
@@ -91,7 +91,7 @@ abstract final class ProjectFilesWriter {
     }
   }
 
-  static Directory? _findWorkspaceRootDir(final Directory projectDir) {
+  static Directory? _findWorkspaceRootDir(Directory projectDir) {
     final projectPubspec = TenantProjectPubspec.fromProjectDir(projectDir);
 
     if (projectPubspec.isWorkspaceResolved()) {
@@ -103,7 +103,7 @@ abstract final class ProjectFilesWriter {
     return null;
   }
 
-  static bool _updateScloudIgnore(final Directory workspaceRootDir) {
+  static bool _updateScloudIgnore(Directory workspaceRootDir) {
     const scloudIgnoreTemplate =
         '''
 # scloud deployment generated files should not be committed to git

@@ -20,13 +20,13 @@ enum BaseCommandInvocation {
   /// Returns the invocation that [baseCommand] identifies.
   ///
   /// A null or empty name is the direct [scloud] invocation.
-  static BaseCommandInvocation from(final String? baseCommand) {
+  static BaseCommandInvocation from(String? baseCommand) {
     final name = baseCommand?.trim().toLowerCase();
     if (name == null || name.isEmpty) {
       return BaseCommandInvocation.scloud;
     }
     return values.firstWhere(
-      (final invocation) => invocation.reportedName == name,
+      (invocation) => invocation.reportedName == name,
       orElse: () => BaseCommandInvocation.other,
     );
   }

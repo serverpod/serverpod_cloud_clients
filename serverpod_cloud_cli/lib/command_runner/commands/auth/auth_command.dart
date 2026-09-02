@@ -72,7 +72,7 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
 
   @override
   Future<void> runWithConfig(
-    final Configuration<LoginCommandOption> commandConfig,
+    Configuration<LoginCommandOption> commandConfig,
   ) async {
     final signInPath = globalConfiguration.signInPath;
     final timeLimit = commandConfig.value(LoginCommandOption.timeoutOpt);
@@ -158,7 +158,7 @@ See also "$baseCommand auth list", to list the current authentication sessions.'
 
   @override
   Future<void> runWithConfig(
-    final Configuration<LogoutCommandOption> commandConfig,
+    Configuration<LogoutCommandOption> commandConfig,
   ) async {
     final tokenIds = commandConfig.value(LogoutCommandOption.tokenId);
     final all = commandConfig.value(LogoutCommandOption.all);
@@ -209,9 +209,9 @@ See also "$baseCommand auth list", to list the current authentication sessions.'
   }
 
   Future<bool> _logout(
-    final Client cloudClient,
-    final List<String> tokenIds,
-    final bool all,
+    Client cloudClient,
+    List<String> tokenIds,
+    bool all,
   ) async {
     if (tokenIds.isNotEmpty) {
       bool currentSessionLoggedOut = false;
@@ -261,7 +261,7 @@ class ListAuthSessionsCommand extends CloudCliCommand<ListAuthSessionsOption> {
 
   @override
   Future<void> runWithConfig(
-    final Configuration<ListAuthSessionsOption> commandConfig,
+    Configuration<ListAuthSessionsOption> commandConfig,
   ) async {
     final inUtc = commandConfig.value(ListAuthSessionsOption.utc);
     final format = commandConfig.value(ListAuthSessionsOption.format);
@@ -331,7 +331,7 @@ the --token option or the SERVERPOD_CLOUD_TOKEN environment variable.''';
 
   @override
   Future<void> runWithConfig(
-    final Configuration<CreateTokenCommandOption> commandConfig,
+    Configuration<CreateTokenCommandOption> commandConfig,
   ) async {
     final expiresAt = commandConfig.optionalValue(
       CreateTokenCommandOption.expireAt,
@@ -398,7 +398,7 @@ Examples
 
   @override
   Future<void> runWithConfig(
-    final Configuration<RevokeTokenCommandOption> commandConfig,
+    Configuration<RevokeTokenCommandOption> commandConfig,
   ) async {
     final tokenId = commandConfig.value(RevokeTokenCommandOption.tokenId);
 

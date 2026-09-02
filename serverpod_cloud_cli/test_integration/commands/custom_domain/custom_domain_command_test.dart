@@ -68,7 +68,7 @@ void main() {
       );
 
       final serverBuilder = HttpServerBuilder();
-      serverBuilder.withOnRequest((final request) {
+      serverBuilder.withOnRequest((request) {
         requestCompleter.complete();
         request.response.statusCode = 401;
         request.response.close();
@@ -258,7 +258,7 @@ void main() {
       setUp(() async {
         final serverBuilder = HttpServerBuilder();
 
-        serverBuilder.withMethodResponse('customDomainName', 'add', (final _) {
+        serverBuilder.withMethodResponse('customDomainName', 'add', (_) {
           return (
             200,
             CustomDomainNameWithDefaultDomains(
@@ -319,16 +319,14 @@ void main() {
       test('then logs follow up instructions', () async {
         await commandResult;
 
-        final followUpLogCalls = logger.infoCalls.map(
-          (final call) => call.message,
-        );
+        final followUpLogCalls = logger.infoCalls.map((call) => call.message);
 
         expect(followUpLogCalls, isNotEmpty);
         expect(
           followUpLogCalls,
           contains(
             predicate<String>(
-              (final m) => m.contains('Complete the setup by adding'),
+              (m) => m.contains('Complete the setup by adding'),
             ),
           ),
         );
@@ -340,9 +338,7 @@ void main() {
       setUp(() async {
         final serverBuilder = HttpServerBuilder();
 
-        serverBuilder.withMethodResponse('customDomainName', 'remove', (
-          final _,
-        ) {
+        serverBuilder.withMethodResponse('customDomainName', 'remove', (_) {
           return (200, '');
         });
 
@@ -403,9 +399,7 @@ void main() {
       setUp(() async {
         final serverBuilder = HttpServerBuilder();
 
-        serverBuilder.withMethodResponse('customDomainName', 'remove', (
-          final _,
-        ) {
+        serverBuilder.withMethodResponse('customDomainName', 'remove', (_) {
           return (200, '');
         });
 
@@ -603,7 +597,7 @@ void main() {
       setUp(() async {
         final serverBuilder = HttpServerBuilder();
         serverBuilder.withMethodResponse('customDomainName', 'refreshRecord', (
-          final _,
+          _,
         ) {
           return (
             400,
@@ -634,11 +628,7 @@ void main() {
         await expectLater(
           commandResult,
           throwsA(
-            isA<ErrorExitException>().having(
-              (final e) => e.exitCode,
-              'exitCode',
-              1,
-            ),
+            isA<ErrorExitException>().having((e) => e.exitCode, 'exitCode', 1),
           ),
         );
       });
@@ -729,13 +719,13 @@ void main() {
         await commandResult;
 
         expect(logger.lineCalls, isNotEmpty);
-        final lines = logger.lineCalls.map((final c) => c.line).toList();
+        final lines = logger.lineCalls.map((c) => c.line).toList();
 
         expect(
           lines,
           contains(
             predicate<String>(
-              (final l) =>
+              (l) =>
                   l.contains('Custom domain name') &&
                   l.contains('Target') &&
                   l.contains('Status'),
@@ -746,7 +736,7 @@ void main() {
           lines,
           contains(
             predicate<String>(
-              (final l) =>
+              (l) =>
                   l.contains('api.domain.com') &&
                   l.contains('my-magical-project.api.serverpod.space') &&
                   l.contains('Configured'),
@@ -757,7 +747,7 @@ void main() {
           lines,
           contains(
             predicate<String>(
-              (final l) =>
+              (l) =>
                   l.contains('domain.com') &&
                   l.contains('Certificate creation pending'),
             ),
@@ -767,7 +757,7 @@ void main() {
           lines,
           contains(
             predicate<String>(
-              (final l) =>
+              (l) =>
                   l.contains('insights.domain.com') &&
                   l.contains('Needs setup'),
             ),
@@ -821,12 +811,12 @@ void main() {
         await commandResult;
 
         expect(logger.lineCalls, isNotEmpty);
-        final lines = logger.lineCalls.map((final c) => c.line).toList();
+        final lines = logger.lineCalls.map((c) => c.line).toList();
         expect(
           lines,
           contains(
             predicate<String>(
-              (final l) =>
+              (l) =>
                   l.contains('Custom domain name') &&
                   l.contains('Target') &&
                   l.contains('Status'),
@@ -846,7 +836,7 @@ void main() {
     final mockedCli = CloudCliCommandRunner.create(
       logger: logger,
       serviceProvider: CloudCliServiceProvider(
-        apiClientFactory: (final globalCfg) => client,
+        apiClientFactory: (globalCfg) => client,
       ),
     );
 
@@ -860,7 +850,7 @@ void main() {
             cloudCapsuleId: projectId,
           ),
         ).thenAnswer(
-          (final _) async => CustomDomainNameWithDefaultDomains(
+          (_) async => CustomDomainNameWithDefaultDomains(
             customDomainName: CustomDomainName(
               name: 'domain.com',
               status: DomainNameStatus.needsSetup,
@@ -898,13 +888,13 @@ void main() {
       test('then logs a www CNAME record for the apex web domain', () async {
         await commandResult;
 
-        final boxMessages = logger.boxCalls.map((final call) => call.message);
+        final boxMessages = logger.boxCalls.map((call) => call.message);
 
         expect(
           boxMessages,
           contains(
             predicate<String>(
-              (final m) => m.contains('CNAME') && m.contains('www.domain.com'),
+              (m) => m.contains('CNAME') && m.contains('www.domain.com'),
             ),
           ),
         );
@@ -921,7 +911,7 @@ void main() {
             cloudCapsuleId: projectId,
           ),
         ).thenAnswer(
-          (final _) async => CustomDomainNameWithDefaultDomains(
+          (_) async => CustomDomainNameWithDefaultDomains(
             customDomainName: CustomDomainName(
               name: 'domain.com',
               status: DomainNameStatus.needsSetup,
@@ -959,14 +949,12 @@ void main() {
       test('then logs no www CNAME record', () async {
         await commandResult;
 
-        final boxMessages = logger.boxCalls.map((final call) => call.message);
+        final boxMessages = logger.boxCalls.map((call) => call.message);
 
         expect(
           boxMessages,
           isNot(
-            contains(
-              predicate<String>((final m) => m.contains('www.domain.com')),
-            ),
+            contains(predicate<String>((m) => m.contains('www.domain.com'))),
           ),
         );
       });

@@ -18,43 +18,43 @@ class BucketResourceBuilder {
       _region = ServerpodRegion.values.first,
       _status = BucketStatus.provisioned;
 
-  BucketResourceBuilder withCloudCapsuleId(final String cloudCapsuleId) {
+  BucketResourceBuilder withCloudCapsuleId(String cloudCapsuleId) {
     _cloudCapsuleId = cloudCapsuleId;
 
     return this;
   }
 
-  BucketResourceBuilder withProvider(final BucketProvider provider) {
+  BucketResourceBuilder withProvider(BucketProvider provider) {
     _provider = provider;
 
     return this;
   }
 
-  BucketResourceBuilder withStorageId(final String storageId) {
+  BucketResourceBuilder withStorageId(String storageId) {
     _storageId = storageId;
 
     return this;
   }
 
-  BucketResourceBuilder withVisibility(final BucketVisibility visibility) {
+  BucketResourceBuilder withVisibility(BucketVisibility visibility) {
     _visibility = visibility;
 
     return this;
   }
 
-  BucketResourceBuilder withBucketName(final String bucketName) {
+  BucketResourceBuilder withBucketName(String bucketName) {
     _bucketName = bucketName;
 
     return this;
   }
 
-  BucketResourceBuilder withRegion(final ServerpodRegion region) {
+  BucketResourceBuilder withRegion(ServerpodRegion region) {
     _region = region;
 
     return this;
   }
 
-  BucketResourceBuilder withStatus(final BucketStatus status) {
+  BucketResourceBuilder withStatus(BucketStatus status) {
     _status = status;
 
     return this;

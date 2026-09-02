@@ -25,7 +25,7 @@ class AdminRedeployCommand extends CloudCliCommand<AdminRedeployOption> {
 
   @override
   Future<void> runWithConfig(
-    final Configuration<AdminRedeployOption> commandConfig,
+    Configuration<AdminRedeployOption> commandConfig,
   ) async {
     final projectId = commandConfig.value(AdminRedeployOption.projectId);
 

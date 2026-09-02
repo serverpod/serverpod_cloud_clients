@@ -94,10 +94,9 @@ final class Ignore {
   /// [1]: https://git-scm.com/docs/gitignore
   /// [2]: https://git-scm.com/docs/git-config#Documentation/git-config.txt-coreignoreCase
   Ignore(
-    final List<String> patterns, {
-    final bool ignoreCase = false,
-    final void Function(String pattern, FormatException exception)?
-    onInvalidPattern,
+    List<String> patterns, {
+    bool ignoreCase = false,
+    void Function(String pattern, FormatException exception)? onInvalidPattern,
   }) : _rules = _parseIgnorePatterns(
          patterns,
          ignoreCase,
@@ -126,7 +125,7 @@ final class Ignore {
   ///   print(ignore.ignores('lib/helper.c')); // false
   /// }
   /// ```
-  bool ignores(final String path) {
+  bool ignores(String path) {
     ArgumentError.checkNotNull(path, 'path');
     if (path.isEmpty) {
       throw ArgumentError.value(path, 'path', 'must be not empty');
@@ -152,15 +151,15 @@ final class Ignore {
       beneath: pathWithoutSlash,
       includeDirs: true,
       // because we are listing below pathWithoutSlash
-      listDir: (final dir) {
+      listDir: (dir) {
         // List the next part of path:
         if (dir == pathWithoutSlash) return [];
         final startOfNext = dir.isEmpty ? 0 : dir.length + 1;
         final nextSlash = path.indexOf('/', startOfNext);
         return [path.substring(startOfNext, nextSlash)];
       },
-      ignoreForDir: (final dir) => dir == '.' || dir.isEmpty ? this : null,
-      isDir: (final candidate) =>
+      ignoreForDir: (dir) => dir == '.' || dir.isEmpty ? this : null,
+      isDir: (candidate) =>
           candidate == '.' ||
           candidate.isEmpty ||
           path.length > candidate.length && path[candidate.length] == '/',
@@ -222,10 +221,10 @@ final class Ignore {
   /// ```
   static (Set<String> collectedFiles, Set<String> ignoredFiles) listFiles({
     String beneath = '',
-    required final Iterable<String> Function(String) listDir,
-    required final Ignore? Function(String) ignoreForDir,
-    required final bool Function(String) isDir,
-    final bool includeDirs = false,
+    required Iterable<String> Function(String) listDir,
+    required Ignore? Function(String) ignoreForDir,
+    required bool Function(String) isDir,
+    bool includeDirs = false,
   }) {
     if (beneath.startsWith('/') ||
         beneath.startsWith('./') ||
@@ -241,8 +240,7 @@ final class Ignore {
     }
     // To streamline the algorithm we represent all paths as starting with '/'
     // and the empty path as just '/'.
-    if (beneath == '.') beneath = '';
-    beneath = '/$beneath';
+    final rootedBeneath = beneath == '.' ? '/' : '/$beneath';
 
     // Will contain all the files that are not ignored.
     final result = <String>{};
@@ -259,8 +257,8 @@ final class Ignore {
 
     // [index] points at the next '/' in the path.
     var index = -1;
-    while ((index = beneath.indexOf('/', index + 1)) != -1) {
-      final partial = beneath.substring(0, index + 1);
+    while ((index = rootedBeneath.indexOf('/', index + 1)) != -1) {
+      final partial = rootedBeneath.substring(0, index + 1);
       if (_matchesStack(ignoreStack, partial)) {
         // A directory on the way towards [beneath] was ignored. Empty result.
         return (<String>{}, <String>{});
@@ -275,7 +273,7 @@ final class Ignore {
     // Do a depth first tree-search starting at [beneath].
     // toVisit is a stack containing all items that are waiting to be processed.
     final toVisit = [
-      [beneath],
+      [rootedBeneath],
     ];
     while (toVisit.isNotEmpty) {
       final topOfStack = toVisit.last;
@@ -307,9 +305,7 @@ final class Ignore {
                 ),
         );
         // Put all entities in current on the stack to be processed.
-        toVisit.add(
-          listDir(normalizedCurrent).map((final x) => '/$x').toList(),
-        );
+        toVisit.add(listDir(normalizedCurrent).map((x) => '/$x').toList());
         if (includeDirs) {
           result.add(normalizedCurrent);
         }
@@ -366,17 +362,17 @@ final _lineBreakPattern = RegExp('\r?\n');
 /// [onInvalidPattern] can be used to handle parse failures. If
 /// [onInvalidPattern] is `null` invalid patterns are ignored.
 Iterable<_IgnoreRule> _parseIgnorePatterns(
-  final Iterable<String> patterns,
-  final bool ignoreCase, {
+  Iterable<String> patterns,
+  bool ignoreCase, {
   void Function(String pattern, FormatException exception)? onInvalidPattern,
 }) sync* {
   ArgumentError.checkNotNull(patterns, 'patterns');
   ArgumentError.checkNotNull(ignoreCase, 'ignoreCase');
-  onInvalidPattern ??= (final _, final _) {};
+  onInvalidPattern ??= (_, _) {};
 
   final parsedPatterns = patterns
-      .expand((final s) => s.split(_lineBreakPattern))
-      .map((final pattern) => _parseIgnorePattern(pattern, ignoreCase));
+      .expand((s) => s.split(_lineBreakPattern))
+      .map((pattern) => _parseIgnorePattern(pattern, ignoreCase));
 
   for (final r in parsedPatterns) {
     if (!r.valid) {
@@ -388,10 +384,7 @@ Iterable<_IgnoreRule> _parseIgnorePatterns(
   }
 }
 
-_IgnoreParseResult _parseIgnorePattern(
-  final String pattern,
-  final bool ignoreCase,
-) {
+_IgnoreParseResult _parseIgnorePattern(String pattern, bool ignoreCase) {
   // Check if patterns is a comment
   if (pattern.startsWith('#')) {
     return _IgnoreParseResult.empty(pattern);
@@ -573,7 +566,7 @@ class _IgnorePrefixPair {
 
   @override
   String toString() {
-    return '{${ignore._rules.map((final r) => r.original)} $prefix}';
+    return '{${ignore._rules.map((r) => r.original)} $prefix}';
   }
 }
 
@@ -583,7 +576,7 @@ class _IgnorePrefixPair {
 /// expects [path] to start with '/'
 ///
 /// If [path] should be matched as a directory, it should end with '/'.
-bool _matchesStack(final List<_IgnorePrefixPair?> ignores, final String path) {
+bool _matchesStack(List<_IgnorePrefixPair?> ignores, String path) {
   // This is optimized by trying the rules in reverse order.
   // If a rule matches, the result is true if the rule is not negative.
   for (final ignorePair in ignores.reversed) {

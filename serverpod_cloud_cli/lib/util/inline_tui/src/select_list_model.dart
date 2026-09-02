@@ -67,8 +67,8 @@ class SelectListModel<T> {
     this.multiSelect = false,
     this.minSelections = 0,
     this.maxSelections,
-    final int initialIndex = 0,
-    final Iterable<int> initiallySelected = const [],
+    int initialIndex = 0,
+    Iterable<int> initiallySelected = const [],
   }) {
     if (items.isNotEmpty) {
       final safeInitialIndex = initialIndex < 0
@@ -104,7 +104,7 @@ class SelectListModel<T> {
   SelectListStatus get status => _status;
 
   /// Whether the index [i] is currently selected.
-  bool isSelected(final int i) => _selectedIndices.contains(i);
+  bool isSelected(int i) => _selectedIndices.contains(i);
 
   /// Whether the current selection satisfies the configured constraints and may
   /// be submitted.
@@ -122,10 +122,10 @@ class SelectListModel<T> {
   /// For a single-select list with nothing explicitly toggled, this is the
   /// highlighted item once [status] is [SelectListStatus.submitted].
   List<T> get selectedValues =>
-      selectedIndices.map((final i) => items[i].value).toList();
+      selectedIndices.map((i) => items[i].value).toList();
 
   /// Processes a [key] press and returns the resulting status.
-  SelectListStatus handleKey(final TuiKey key) {
+  SelectListStatus handleKey(TuiKey key) {
     if (_status != SelectListStatus.active) return _status;
     if (items.isEmpty) {
       if (key.type == TuiKeyType.ctrlC) {
@@ -161,7 +161,7 @@ class SelectListModel<T> {
     return _status;
   }
 
-  void _handleCharacter(final String? character) {
+  void _handleCharacter(String? character) {
     switch (character) {
       case 'k':
       case 'w':
@@ -176,14 +176,14 @@ class SelectListModel<T> {
     }
   }
 
-  void _moveHighlight(final int direction) {
+  void _moveHighlight(int direction) {
     final next = _firstEnabledFrom(_highlightedIndex + direction, direction);
     if (next != null) {
       _highlightedIndex = next;
     }
   }
 
-  void _moveHighlightTo(final int? index) {
+  void _moveHighlightTo(int? index) {
     if (index != null) _highlightedIndex = index;
   }
 
@@ -223,13 +223,13 @@ class SelectListModel<T> {
     _status = SelectListStatus.submitted;
   }
 
-  bool _isCancel(final TuiKey key) =>
+  bool _isCancel(TuiKey key) =>
       key.type == TuiKeyType.escape ||
       (key.type == TuiKeyType.character && key.character == 'q');
 
   /// Returns the first enabled index starting at [from] moving by [step], or
   /// null when no enabled item exists in that direction.
-  int? _firstEnabledFrom(final int from, final int step) {
+  int? _firstEnabledFrom(int from, int step) {
     var index = from;
     while (index >= 0 && index < items.length) {
       if (items[index].enabled) return index;

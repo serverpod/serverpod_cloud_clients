@@ -36,7 +36,7 @@ class BottomRegionRenderer {
   /// Each entry should fit within a single terminal row so the in-place updates
   /// stay aligned; fitting the visible text to the terminal width is the
   /// responsibility of the caller (so that ANSI color codes are preserved).
-  void render(final List<String> lines) {
+  void render(List<String> lines) {
     final buffer = StringBuffer();
 
     if (_renderedLineCount > 0) {
@@ -59,7 +59,7 @@ class BottomRegionRenderer {
 
   /// Finishes rendering by optionally drawing a final set of [lines], then
   /// moving the cursor below the region and restoring the cursor visibility.
-  void finish({final List<String>? lines}) {
+  void finish({List<String>? lines}) {
     if (lines != null) {
       render(lines);
     }
@@ -77,7 +77,7 @@ class BottomRegionRenderer {
   /// Subsequent output therefore begins where those cleared lines started.
   /// Relies on the cursor being at the end of the last rendered line, which is
   /// the case right after a [render].
-  void finishClearingLastLine({final int lineCount = 1}) {
+  void finishClearingLastLine({int lineCount = 1}) {
     if (_renderedLineCount > 0 && lineCount > 0) {
       final clearCount = lineCount > _renderedLineCount
           ? _renderedLineCount

@@ -6,7 +6,7 @@ class AdminUserListTextUi extends OutputWidget {
   AdminUserListTextUi({required this.utc});
 
   @override
-  OutputWidget build(final OutputContext context) {
+  OutputWidget build(OutputContext context) {
     final timezoneName = utc ? 'UTC' : 'local';
     return FormattedTableWidget(
       formatter: TextTableOutputFormatter(

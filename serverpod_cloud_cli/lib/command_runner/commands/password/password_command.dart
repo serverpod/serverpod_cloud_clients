@@ -80,7 +80,7 @@ class CloudPasswordListCommand
 
   @override
   Future<void> runWithConfig(
-    final Configuration<PasswordListCommandConfig> commandConfig,
+    Configuration<PasswordListCommandConfig> commandConfig,
   ) async {
     final projectId = commandConfig.value(PasswordListCommandConfig.projectId);
     final format = commandConfig.value(PasswordListCommandConfig.format);
@@ -127,7 +127,7 @@ class CloudPasswordSetCommand
 
   @override
   Future<void> runWithConfig(
-    final Configuration<PasswordSetCommandConfig> commandConfig,
+    Configuration<PasswordSetCommandConfig> commandConfig,
   ) async {
     final projectId = commandConfig.value(PasswordSetCommandConfig.projectId);
     final name = commandConfig.value(PasswordSetCommandConfig.name);
@@ -145,7 +145,7 @@ class CloudPasswordSetCommand
         projectId: projectId,
         name: name,
         value: valueToSet,
-      ).then((final _) => {'name': name}),
+      ).then((_) => {'name': name}),
       textOutputUi: PasswordSetTextUi(baseCommand: baseCommand),
     );
   }
@@ -176,7 +176,7 @@ class CloudPasswordUnsetCommand
 
   @override
   Future<void> runWithConfig(
-    final Configuration<PasswordUnsetCommandConfig> commandConfig,
+    Configuration<PasswordUnsetCommandConfig> commandConfig,
   ) async {
     final projectId = commandConfig.value(PasswordUnsetCommandConfig.projectId);
     final name = commandConfig.value(PasswordUnsetCommandConfig.name);
@@ -196,7 +196,7 @@ class CloudPasswordUnsetCommand
         runner.serviceProvider.cloudApiClient,
         projectId: projectId,
         name: name,
-      ).then((final _) => {'name': name}),
+      ).then((_) => {'name': name}),
       textOutputUi: PasswordUnsetTextUi(baseCommand: baseCommand),
     );
   }

@@ -7,8 +7,8 @@ void main() {
   /// Builds a [GitCommandRunner] that answers from [responses], keyed by the
   /// git arguments joined with spaces. Unstubbed commands throw a
   /// [ProcessException], mimicking a missing `git` executable.
-  GitCommandRunner fakeRunner(final Map<String, ProcessResult> responses) {
-    return (final arguments, final workingDirectory) async {
+  GitCommandRunner fakeRunner(Map<String, ProcessResult> responses) {
+    return (arguments, workingDirectory) async {
       final result = responses[arguments.join(' ')];
       if (result == null) {
         throw ProcessException('git', arguments, 'unstubbed git command');
@@ -17,7 +17,7 @@ void main() {
     };
   }
 
-  ProcessResult success(final String stdout) => ProcessResult(0, 0, stdout, '');
+  ProcessResult success(String stdout) => ProcessResult(0, 0, stdout, '');
   ProcessResult failure() => ProcessResult(0, 128, '', 'fatal: error');
 
   group('Given a directory that is not inside a git repository', () {

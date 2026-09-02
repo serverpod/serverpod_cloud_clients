@@ -115,10 +115,7 @@ void main() {
   group('Given a table formatter for named elements', () {
     final formatter = TextTableOutputFormatter<_Named>(
       columns: [
-        TableColumnFormatter.forElement(
-          'Name',
-          getter: (final named) => named.name,
-        ),
+        TableColumnFormatter.forElement('Name', getter: (named) => named.name),
       ],
       utc: false,
     );
@@ -198,7 +195,7 @@ void main() {
         heading: 'Name',
       ).buildTree(context).renderTree(logger: logger);
 
-      final lines = logger.lineCalls.map((final call) => call.line).join('\n');
+      final lines = logger.lineCalls.map((call) => call.line).join('\n');
       expect(lines, contains('Name'));
       expect(lines, contains('alpha'));
       expect(lines, contains('beta'));

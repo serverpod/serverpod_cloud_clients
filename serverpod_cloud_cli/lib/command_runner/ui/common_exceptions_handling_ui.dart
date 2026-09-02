@@ -18,7 +18,7 @@ class CommonClientExceptionsWidget extends OutputWidget {
   });
 
   @override
-  OutputWidget build(final OutputContext context) {
+  OutputWidget build(OutputContext context) {
     final error = context.find<QualifiedException>();
     if (error?.exception case final Exception exc) {
       final e = _unwrapException(exc);
@@ -37,7 +37,7 @@ class CommonClientExceptionsWidget extends OutputWidget {
     return elseWidget ?? this;
   }
 
-  Exception _unwrapException(final Exception exc) {
+  Exception _unwrapException(Exception exc) {
     final exception = switch (exc) {
       FailureException(:final nestedException) when nestedException != null =>
         nestedException,
@@ -60,7 +60,7 @@ class ServerpodClientUnauthorizedWidget extends OutputWidget {
   });
 
   @override
-  OutputWidget build(final OutputContext context) {
+  OutputWidget build(OutputContext context) {
     return OutputWidgetList([
       TextErrorOutputWidget(message),
       CommandHintTextWidget(
@@ -80,7 +80,7 @@ class UnauthorizedExceptionWidget extends OutputWidget {
   const UnauthorizedExceptionWidget(this.exception);
 
   @override
-  OutputWidget build(final OutputContext context) {
+  OutputWidget build(OutputContext context) {
     return TextErrorOutputWidget(message);
   }
 }
@@ -93,7 +93,7 @@ class ProcurementDeniedExceptionWidget extends OutputWidget {
   const ProcurementDeniedExceptionWidget(this.exception);
 
   @override
-  OutputWidget build(final OutputContext context) {
+  OutputWidget build(OutputContext context) {
     final baseUrl = getConsoleBaseUrl();
     if (exception.message.contains('no valid payment method')) {
       final setupUrl = '$baseUrl/project/create';
@@ -136,7 +136,7 @@ class NotFoundExceptionWidget extends OutputWidget {
   const NotFoundExceptionWidget(this.exception);
 
   @override
-  OutputWidget build(final OutputContext context) {
+  OutputWidget build(OutputContext context) {
     return TextErrorOutputWidget(
       exception,
       message: NotFoundExceptionWidget.message,

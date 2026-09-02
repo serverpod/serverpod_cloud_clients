@@ -10,10 +10,7 @@ class StreamInterruptedException implements Exception {}
 ///
 /// [interrupt] must be a broadcast stream if the caller wraps more than one
 /// source with the same interrupt stream.
-Stream<T> cancelOnInterrupt<T>(
-  final Stream<T> source,
-  final Stream<void> interrupt,
-) {
+Stream<T> cancelOnInterrupt<T>(Stream<T> source, Stream<void> interrupt) {
   StreamSubscription<T>? sourceSubscription;
   StreamSubscription<void>? interruptSubscription;
   final controller = StreamController<T>();
@@ -53,10 +50,7 @@ Stream<T> cancelOnInterrupt<T>(
 
 /// Returns a stream that emits the events from the given stream,
 /// or the fallback element if the stream is empty.
-Stream<T> withFallback<T>(
-  final Stream<T> stream,
-  final T fallbackElement,
-) async* {
+Stream<T> withFallback<T>(Stream<T> stream, T fallbackElement) async* {
   var isEmpty = true;
   await for (final event in stream) {
     isEmpty = false;
@@ -76,17 +70,17 @@ class SplitStreams<K, E> {
   late final StreamSubscription<E> _sourceSubscription;
 
   SplitStreams(
-    final Stream<E> source,
-    final Iterable<K> keys,
-    final K Function(E) classify,
-    final bool Function(E) isLastInSubstream,
+    Stream<E> source,
+    Iterable<K> keys,
+    K Function(E) classify,
+    bool Function(E) isLastInSubstream,
   ) {
     for (final key in keys) {
       _controllers[key] = StreamController<E>();
     }
 
     _sourceSubscription = source.listen(
-      (final event) {
+      (event) {
         final key = classify(event);
         final ctrl = _controllers[key];
         if (ctrl == null) {
@@ -97,7 +91,7 @@ class SplitStreams<K, E> {
           ctrl.close();
         }
       },
-      onError: (final e, final st) {
+      onError: (e, st) {
         for (final ctrl in _controllers.values) {
           if (!ctrl.isClosed) ctrl.addError(e, st);
         }
@@ -112,7 +106,7 @@ class SplitStreams<K, E> {
 
   Future<void> cancel() => _sourceSubscription.cancel();
 
-  Stream<E> getStream(final K key) {
+  Stream<E> getStream(K key) {
     final ctrl = _controllers[key];
     if (ctrl == null) {
       throw StateError('No such key: $key');

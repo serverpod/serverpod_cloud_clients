@@ -10,7 +10,7 @@ final class PackageGraph {
   PackageGraph({required this.roots});
 
   /// Returns the names of all packages.
-  Set<String> allPackageNames([final bool includeDevDependencies = false]) {
+  Set<String> allPackageNames([bool includeDevDependencies = false]) {
     return {
       for (final package in _collectAllPackages(includeDevDependencies))
         package.name,
@@ -25,7 +25,7 @@ final class PackageGraph {
   /// Only follows [PgPackage.dependencies] (dev dependencies are ignored).
   /// Throws if any name in [packageNames] is not a root package in this graph.
   (Set<String> unreachable, Set<String> demotedToTransitive)
-  unreachablePackages(final Iterable<String> packageNames) {
+  unreachablePackages(Iterable<String> packageNames) {
     final rootsByName = {for (final root in roots) root.name: root};
 
     final startPackages = <PgPackage>[];
@@ -69,7 +69,7 @@ final class PackageGraph {
     );
   }
 
-  Set<PgPackage> _collectAllPackages(final bool includeDevDependencies) {
+  Set<PgPackage> _collectAllPackages(bool includeDevDependencies) {
     final visited = <PgPackage>{};
     final queue = List<PgPackage>.of(roots);
 
@@ -87,9 +87,7 @@ final class PackageGraph {
     return visited;
   }
 
-  static Set<String> _reachableViaDependencies(
-    final List<PgPackage> startPackages,
-  ) {
+  static Set<String> _reachableViaDependencies(List<PgPackage> startPackages) {
     final visited = <PgPackage>{};
     final queue = List<PgPackage>.of(startPackages);
 

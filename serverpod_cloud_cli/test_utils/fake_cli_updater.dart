@@ -31,10 +31,7 @@ class FakeCliUpdater implements CliUpdater {
   });
 
   @override
-  Future<void> install(
-    final Version version, {
-    required final CommandLogger logger,
-  }) async {
+  Future<void> install(Version version, {required CommandLogger logger}) async {
     installCalls.add(version);
 
     if (!installSucceeds) {
@@ -47,9 +44,9 @@ class FakeCliUpdater implements CliUpdater {
 
   @override
   Future<int> rerun(
-    final List<String> args, {
-    required final Version installedVersion,
-    required final CommandLogger logger,
+    List<String> args, {
+    required Version installedVersion,
+    required CommandLogger logger,
   }) async {
     rerunCalls.add((args: args, installedVersion: installedVersion));
 

@@ -54,7 +54,7 @@ class SentryErrorReporter {
     required this.dsn,
     required this.release,
     this.flushTimeout = const Duration(seconds: 3),
-    final SentryCapture? captureOverride,
+    SentryCapture? captureOverride,
   }) : _captureOverride = captureOverride;
 
   /// Creates the reporter for the running CLI, using [cliDsn]
@@ -75,7 +75,7 @@ class SentryErrorReporter {
   ///
   /// Defaults to false, so no reports are sent until consent is
   /// affirmatively resolved.
-  set analyticsConsent(final bool consented) {
+  set analyticsConsent(bool consented) {
     _analyticsConsent = consented;
   }
 
@@ -85,7 +85,7 @@ class SentryErrorReporter {
   /// Must contain command names only - no option values or positional
   /// arguments, since those can hold project ids and other user data.
   /// Attached to reported events as the transaction and a `command` tag.
-  set command(final String? command) {
+  set command(String? command) {
     _command = command;
   }
 
@@ -95,20 +95,20 @@ class SentryErrorReporter {
   /// Must contain flag and option names only - no values, since those can
   /// hold project ids and other user data.
   /// Attached to reported events as a space-separated `flags` tag.
-  set flags(final List<String> flags) {
+  set flags(List<String> flags) {
     _flags = flags;
   }
 
   /// Sets the API server URL the CLI talks to,
   /// which determines the reported [environment].
-  set apiServerUrl(final String url) {
+  set apiServerUrl(String url) {
     _environment = environmentFromApiServerUrl(url);
   }
 
   /// Sets the invocation path the CLI was run through.
   ///
   /// Attached to reported events as a `base_command` tag.
-  set baseCommand(final BaseCommandInvocation baseCommand) {
+  set baseCommand(BaseCommandInvocation baseCommand) {
     _baseCommand = baseCommand;
   }
 
@@ -116,7 +116,7 @@ class SentryErrorReporter {
   ///
   /// Attached to reported events as the Sentry user id when set.
   /// The anonymous analytics id is never sent to Sentry.
-  set cloudUserId(final String? cloudUserId) {
+  set cloudUserId(String? cloudUserId) {
     _cloudUserId = cloudUserId;
   }
 
@@ -125,7 +125,7 @@ class SentryErrorReporter {
   /// `prod` for the production API server, `preview` for PR preview
   /// environments (host name starting with `preview-`),
   /// and `dev` for everything else.
-  static String environmentFromApiServerUrl(final String apiServerUrl) {
+  static String environmentFromApiServerUrl(String apiServerUrl) {
     final host = Uri.tryParse(apiServerUrl)?.host ?? '';
     final prodHost = Uri.parse(HostConstants.serverpodCloudApi).host;
     if (host == prodHost) {
@@ -148,7 +148,7 @@ class SentryErrorReporter {
   /// command outcomes and are not reportable.
   /// Any other error has escaped normal command error handling and is
   /// reportable, with the same environment-problem exemption.
-  static bool isReportable(final Object error) {
+  static bool isReportable(Object error) {
     if (error is UnexpectedErrorExitException) {
       final nested = error.nestedException;
       if (nested == null) {
@@ -165,7 +165,7 @@ class SentryErrorReporter {
     return _isUnexpectedCause(error);
   }
 
-  static bool _isUnexpectedCause(final Object error) {
+  static bool _isUnexpectedCause(Object error) {
     if (error is SerializableException) {
       return false;
     }
@@ -188,7 +188,7 @@ class SentryErrorReporter {
   /// is reported when available.
   ///
   /// Completes within [flushTimeout] and never throws.
-  Future<void> report(final Object error, final StackTrace stackTrace) async {
+  Future<void> report(Object error, StackTrace stackTrace) async {
     if (!_analyticsConsent || dsn.isEmpty || !isReportable(error)) {
       return;
     }
@@ -206,10 +206,7 @@ class SentryErrorReporter {
     }
   }
 
-  (Object, StackTrace) _selectReported(
-    final Object error,
-    final StackTrace stackTrace,
-  ) {
+  (Object, StackTrace) _selectReported(Object error, StackTrace stackTrace) {
     if (error is UnexpectedErrorExitException) {
       final nested = error.nestedException;
       if (nested != null) {
@@ -219,10 +216,7 @@ class SentryErrorReporter {
     return (error, stackTrace);
   }
 
-  Future<void> _captureToSentry(
-    final Object error,
-    final StackTrace stackTrace,
-  ) async {
+  Future<void> _captureToSentry(Object error, StackTrace stackTrace) async {
     await Sentry.init(_configureOptions);
     try {
       await Sentry.captureException(
@@ -239,7 +233,7 @@ class SentryErrorReporter {
   /// the [dsn], the [environment], the [release], no default PII,
   /// no SDK debug output, and no isolate error integration since the
   /// CLI reports its own errors.
-  void _configureOptions(final SentryOptions options) {
+  void _configureOptions(SentryOptions options) {
     options.dsn = dsn;
     options.environment = _environment;
     options.release = release;
@@ -257,7 +251,7 @@ class SentryErrorReporter {
   /// a `command` tag, the flags as a `flags` tag, the invocation path as a
   /// `base_command` tag, an `is_ci` tag, and the cloud user id as the user
   /// when the user is logged in.
-  Future<void> _configureScope(final Scope scope) async {
+  Future<void> _configureScope(Scope scope) async {
     final command = _command;
     if (command != null) {
       scope.transaction = command;

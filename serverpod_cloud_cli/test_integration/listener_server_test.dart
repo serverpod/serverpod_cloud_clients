@@ -16,7 +16,7 @@ void main() async {
       callbackUrlFuture = Completer<Uri>();
       tokenFuture = ListenerServer.listenForAuthenticationToken(
         logger: CommandLogger(VoidLogger()),
-        onConnected: (final Uri callbackUrl) {
+        onConnected: (Uri callbackUrl) {
           callbackUrlFuture.complete(callbackUrl);
         },
       );
@@ -123,7 +123,7 @@ void main() async {
         callbackUrlFuture = Completer<Uri>();
         tokenFuture = ListenerServer.listenForAuthenticationToken(
           logger: CommandLogger(VoidLogger()),
-          onConnected: (final Uri callbackUrl) {
+          onConnected: (Uri callbackUrl) {
             callbackUrlFuture.complete(callbackUrl);
           },
           timeLimit: const Duration(milliseconds: 1),

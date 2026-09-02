@@ -41,7 +41,7 @@ abstract interface class InlineTerminal {
   Stream<void> get interruptSignals;
 
   /// Writes [text] to the terminal without adding a trailing newline.
-  void write(final String text);
+  void write(String text);
 
   /// Switches the terminal into raw mode, disabling line buffering and echo so
   /// individual key presses can be read immediately.
@@ -87,9 +87,9 @@ class StdioTerminal implements InlineTerminal {
   /// [inputOverride] replaces the input source (intended for tests); it must be
   /// a single-subscription stream, mirroring the behavior of [stdin].
   StdioTerminal({
-    final Stdin? stdinOverride,
-    final Stdout? stdoutOverride,
-    final Stream<List<int>>? inputOverride,
+    Stdin? stdinOverride,
+    Stdout? stdoutOverride,
+    Stream<List<int>>? inputOverride,
   }) : _stdin = stdinOverride ?? stdin,
        _stdout = stdoutOverride ?? stdout,
        _inputSource = inputOverride ?? stdinOverride ?? stdin;
@@ -133,7 +133,7 @@ class StdioTerminal implements InlineTerminal {
 
   @override
   Stream<void> get interruptSignals =>
-      _interruptSignals ??= ProcessSignal.sigint.watch().map((final _) {});
+      _interruptSignals ??= ProcessSignal.sigint.watch().map((_) {});
 
   /// Cancels the input subscription and releases resources.
   ///
@@ -152,7 +152,7 @@ class StdioTerminal implements InlineTerminal {
   }
 
   @override
-  void write(final String text) => _stdout.write(text);
+  void write(String text) => _stdout.write(text);
 
   @override
   void enableRawMode() {

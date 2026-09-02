@@ -40,7 +40,7 @@ class AdminListOrbPlansCommand
 
   @override
   Future<void> runWithConfig(
-    final Configuration<AdminListOrbPlansOption> commandConfig,
+    Configuration<AdminListOrbPlansOption> commandConfig,
   ) async {
     final format = commandConfig.value(AdminListOrbPlansOption.format);
 
@@ -85,7 +85,7 @@ class AdminUpdatePlanCommand extends CloudCliCommand<AdminUpdatePlanOption> {
 
   @override
   Future<void> runWithConfig(
-    final Configuration<AdminUpdatePlanOption> commandConfig,
+    Configuration<AdminUpdatePlanOption> commandConfig,
   ) async {
     final externalPlanId = commandConfig.value(
       AdminUpdatePlanOption.externalPlanId,

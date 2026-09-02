@@ -68,7 +68,7 @@ class DeployOutputOption extends FileOption {
         customValidator: _zipExtValidator,
       );
 
-  static void _zipExtValidator(final File value) {
+  static void _zipExtValidator(File value) {
     if (!value.path.endsWith('.zip')) {
       throw UsageException('The path must end with .zip', '');
     }
@@ -160,7 +160,7 @@ Examples
 
   @override
   Future<void> runWithConfig(
-    final Configuration<DeployCommandOption> commandConfig,
+    Configuration<DeployCommandOption> commandConfig,
   ) async {
     final projectId = commandConfig.value(DeployCommandOption.projectId);
     final concurrency = commandConfig.value(DeployCommandOption.concurrency);

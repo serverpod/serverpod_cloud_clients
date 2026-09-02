@@ -128,7 +128,7 @@ void main() {
 
       final archive = ZipDecoder().decodeBytes(zippedProject);
       expect(archive.length, 3);
-      final archiveNames = archive.map((final file) => file.name).toList();
+      final archiveNames = archive.map((file) => file.name).toList();
 
       expect(archiveNames, contains('file1.txt'));
       expect(archiveNames, contains('file2.txt'));
@@ -152,7 +152,7 @@ void main() {
       );
 
       final archive = ZipDecoder().decodeBytes(zippedProject);
-      final archiveNames = archive.map((final file) => file.name).toList();
+      final archiveNames = archive.map((file) => file.name).toList();
 
       expect(archiveNames, ['my_file.txt']);
     },
@@ -181,7 +181,7 @@ void main() {
       );
 
       final archive = ZipDecoder().decodeBytes(zippedProject);
-      final archiveNames = archive.map((final file) => file.name).toList();
+      final archiveNames = archive.map((file) => file.name).toList();
 
       expect(archiveNames, ['my_file.txt']);
     },
@@ -212,12 +212,12 @@ void main() {
       final zippedProject = await ProjectZipper.zipProject(
         rootDirectory: projectDirectory,
         logger: commandLogger,
-        excludeFile: (final relativePath) =>
+        excludeFile: (relativePath) =>
             p.basename(relativePath) == 'pubspec.lock',
       );
 
       final archive = ZipDecoder().decodeBytes(zippedProject);
-      final archiveNames = archive.map((final file) => file.name).toSet();
+      final archiveNames = archive.map((file) => file.name).toSet();
 
       expect(archiveNames, {'pubspec.yaml', 'pkg/pubspec.yaml'});
     },

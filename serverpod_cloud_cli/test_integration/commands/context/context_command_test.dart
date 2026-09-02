@@ -29,7 +29,7 @@ void main() {
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
   );
 
@@ -152,7 +152,7 @@ void main() {
             commandResult,
             throwsA(
               isA<UsageException>().having(
-                (final e) => e.message,
+                (e) => e.message,
                 'message',
                 equals('Option `project` is mandatory.'),
               ),
@@ -301,7 +301,7 @@ void main() {
             that: isTrue,
           ),
         ),
-      ).thenAnswer((final _) async => projects);
+      ).thenAnswer((_) async => projects);
     });
 
     tearDown(() {
@@ -347,7 +347,7 @@ void main() {
         await commandResult;
 
         expect(
-          logger.lineCalls.map((final call) => call.line),
+          logger.lineCalls.map((call) => call.line),
           isNot(contains(startsWith('projectId2'))),
         );
       });

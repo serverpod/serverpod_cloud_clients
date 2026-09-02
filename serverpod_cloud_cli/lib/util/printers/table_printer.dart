@@ -15,11 +15,11 @@ class TablePrinter {
   final String _headerDividerColumnSeparator;
 
   TablePrinter({
-    final Iterable<String?>? headers,
-    final Iterable<int?>? columnMinWidths,
-    final Iterable<List<String?>>? rows,
-    final String? columnSeparator,
-    final String? headerDividerColumnSeparator,
+    Iterable<String?>? headers,
+    Iterable<int?>? columnMinWidths,
+    Iterable<List<String?>>? rows,
+    String? columnSeparator,
+    String? headerDividerColumnSeparator,
   }) : _columnHeaders = List.from(headers ?? <String?>[]),
        _columnMinWidths = List.from(columnMinWidths ?? <int?>[]),
        _rows = List.from(rows ?? <List<String?>>[]),
@@ -30,19 +30,19 @@ class TablePrinter {
   /// Convenience constructor for creating a table with aligned columns
   /// and no header. By default the columns are separated by a single space.
   TablePrinter.columns({
-    required final Iterable<List<String?>> rows,
-    final String? columnSeparator,
+    required Iterable<List<String?>> rows,
+    String? columnSeparator,
   }) : this(rows: rows, columnSeparator: columnSeparator ?? ' ');
 
   /// Adds column headers to the table.
   /// Can be called multiple times.
-  void addHeaders(final Iterable<String?> headers) {
+  void addHeaders(Iterable<String?> headers) {
     _columnHeaders.addAll(headers);
   }
 
   /// Adds a row to the table.
   /// Can be called multiple times.
-  void addRow(final Iterable<String?> row) {
+  void addRow(Iterable<String?> row) {
     _rows.add(List.from(row));
   }
 
@@ -58,8 +58,8 @@ class TablePrinter {
   /// first in the stream and the column widths will be based on them.
   /// Subsequent rows might break the alignment if they have wider content.
   Stream<String> toStream(
-    final Stream<Iterable<String>>? rowStream, {
-    final int? limit,
+    Stream<Iterable<String>>? rowStream, {
+    int? limit,
   }) async* {
     final columnWidths = _getColumnWidths();
 
@@ -94,7 +94,7 @@ class TablePrinter {
 
   /// Puts the table content to the provided sink line by line.
   /// The line strings are not terminated with a newline.
-  void writeLines(final void Function(String) lineSink) {
+  void writeLines(void Function(String) lineSink) {
     final columnWidths = _getColumnWidths();
 
     if (_columnHeaders.isNotEmpty) {
@@ -110,16 +110,16 @@ class TablePrinter {
     }
   }
 
-  List<String> _formatHeader(final List<int> columnWidths) {
+  List<String> _formatHeader(List<int> columnWidths) {
     final headerNames = List.generate(
       columnWidths.length,
-      (final colIx) => (_columnHeaders.elementAtOrNull(colIx) ?? '').padRight(
+      (colIx) => (_columnHeaders.elementAtOrNull(colIx) ?? '').padRight(
         columnWidths[colIx],
       ),
     ).join(_columnSeparator);
 
     final headerDivider = columnWidths
-        .map((final width) {
+        .map((width) {
           return '-' * (width);
         })
         .join(_headerDividerColumnSeparator);
@@ -127,10 +127,10 @@ class TablePrinter {
     return [headerNames, headerDivider];
   }
 
-  String _formatLine(final List<int> columnWidths, final List<String?> row) {
+  String _formatLine(List<int> columnWidths, List<String?> row) {
     final line = List.generate(
       columnWidths.length,
-      (final colIx) =>
+      (colIx) =>
           (row.elementAtOrNull(colIx) ?? '').padRight(columnWidths[colIx]),
     ).join(_columnSeparator);
     return line;
@@ -138,15 +138,15 @@ class TablePrinter {
 
   List<int> _getColumnWidths() {
     final nofColumns = max(
-      [_columnMinWidths, _columnHeaders, ..._rows].map((final ls) => ls.length),
+      [_columnMinWidths, _columnHeaders, ..._rows].map((ls) => ls.length),
     );
 
     final columnWidths = List.generate(
       nofColumns,
-      (final colIx) => max([
+      (colIx) => max([
         _columnMinWidths.elementAtOrNull(colIx) ?? 0,
         _columnHeaders.elementAtOrNull(colIx)?.length ?? 0,
-        ..._rows.map((final row) => row.elementAtOrNull(colIx)?.length ?? 0),
+        ..._rows.map((row) => row.elementAtOrNull(colIx)?.length ?? 0),
       ]),
     );
     return columnWidths;

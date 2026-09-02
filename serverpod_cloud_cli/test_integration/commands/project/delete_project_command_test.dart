@@ -64,7 +64,7 @@ void main() {
           serverBuilder.withMethodResponse(
             'projects',
             'deleteProject',
-            (final _) =>
+            (_) =>
                 (200, ProjectBuilder().withCloudProjectId(projectId).build()),
           );
 
@@ -134,7 +134,7 @@ void main() {
           serverBuilder.withMethodResponse(
             'projects',
             'deleteProject',
-            (final _) =>
+            (_) =>
                 (200, ProjectBuilder().withCloudProjectId(projectId).build()),
           );
 
@@ -201,7 +201,7 @@ void main() {
           serverBuilder.withMethodResponse(
             'projects',
             'deleteProject',
-            (final _) => (
+            (_) => (
               400,
               NotFoundException(message: 'No such project: $projectId'),
             ),

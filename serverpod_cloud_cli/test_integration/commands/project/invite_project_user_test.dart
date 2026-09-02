@@ -22,7 +22,7 @@ void main() {
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
   );
 
@@ -56,7 +56,7 @@ void main() {
             email: any(named: 'email'),
             assignRoleNames: any(named: 'assignRoleNames'),
           ),
-        ).thenAnswer((final invocation) async => Future.value());
+        ).thenAnswer((invocation) async => Future.value());
 
         commandResult = cli.run([
           'project',
@@ -111,7 +111,7 @@ void main() {
       });
 
       test('then logs error', () async {
-        await commandResult.catchError((final _) {});
+        await commandResult.catchError((_) {});
 
         expect(logger.errorCalls, isNotEmpty);
         expect(
@@ -131,7 +131,7 @@ void main() {
             unassignRoleNames: any(named: 'unassignRoleNames'),
             unassignAllRoles: any(named: 'unassignAllRoles'),
           ),
-        ).thenAnswer((final invocation) async => Future.value(['admin']));
+        ).thenAnswer((invocation) async => Future.value(['admin']));
 
         commandResult = cli.run([
           'project',
@@ -171,7 +171,7 @@ void main() {
             unassignRoleNames: any(named: 'unassignRoleNames'),
             unassignAllRoles: any(named: 'unassignAllRoles'),
           ),
-        ).thenAnswer((final invocation) async => Future.value([]));
+        ).thenAnswer((invocation) async => Future.value([]));
 
         commandResult = cli.run([
           'project',

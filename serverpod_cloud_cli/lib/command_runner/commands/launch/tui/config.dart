@@ -101,7 +101,7 @@ class ProjectSelectionConfig
   @override
   final FormDescription? description = null;
 
-  ProjectSelectionConfig({required final List<String> existingProjectIds})
+  ProjectSelectionConfig({required List<String> existingProjectIds})
     : options = [
         for (final id in existingProjectIds)
           ProjectSelectionOption(label: id, projectId: id),
@@ -116,7 +116,7 @@ class ProjectSelectionConfig
 /// "Create new project" option is selected. When null, the input is always
 /// visible (no existing projects to choose from).
 class ProjectIdInputConfig implements FormInputConfig {
-  ProjectIdInputConfig(final ProjectSelectionConfig? selectionConfig)
+  ProjectIdInputConfig(ProjectSelectionConfig? selectionConfig)
     : requirements = [
         if (selectionConfig != null)
           FormRequirement(

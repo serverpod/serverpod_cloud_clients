@@ -4,7 +4,7 @@ class ProductListTextUi extends OutputWidget {
   const ProductListTextUi();
 
   @override
-  OutputWidget build(final OutputContext context) {
+  OutputWidget build(OutputContext context) {
     return FormattedTableWidget(
       formatter: TextTableOutputFormatter(
         columns: [

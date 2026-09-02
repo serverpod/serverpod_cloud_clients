@@ -4,13 +4,13 @@ import 'package:ground_control_client/ground_control_client.dart';
 
 abstract class LogsOperations {
   static Future<void> fetchContainerLog(
-    final Client cloudApiClient, {
-    required final void Function(String) writeln,
-    required final String projectId,
-    required final DateTime? before,
-    required final DateTime? after,
-    required final int limit,
-    required final bool inUtc,
+    Client cloudApiClient, {
+    required void Function(String) writeln,
+    required String projectId,
+    required DateTime? before,
+    required DateTime? after,
+    required int limit,
+    required bool inUtc,
   }) async {
     final timezoneName = inUtc
         ? 'UTC'
@@ -39,11 +39,11 @@ abstract class LogsOperations {
   }
 
   static Future<void> tailContainerLog(
-    final Client cloudApiClient, {
-    required final void Function(String) writeln,
-    required final String projectId,
-    required final int limit,
-    required final bool inUtc,
+    Client cloudApiClient, {
+    required void Function(String) writeln,
+    required String projectId,
+    required int limit,
+    required bool inUtc,
   }) async {
     final timezoneName = inUtc
         ? 'UTC'
@@ -63,11 +63,11 @@ abstract class LogsOperations {
   }
 
   static Future<void> fetchBuildLog(
-    final Client cloudApiClient, {
-    required final void Function(String) writeln,
-    required final String projectId,
-    required final UuidValue attemptId,
-    required final bool inUtc,
+    Client cloudApiClient, {
+    required void Function(String) writeln,
+    required String projectId,
+    required UuidValue attemptId,
+    required bool inUtc,
   }) async {
     final timezoneName = inUtc
         ? 'UTC'
@@ -84,15 +84,15 @@ abstract class LogsOperations {
   }
 
   static Future<void> _outputLogStream(
-    final void Function(String) writeln,
-    final Stream<LogRecord> recordStream, {
-    final int? limit,
-    required final bool inUtc,
+    void Function(String) writeln,
+    Stream<LogRecord> recordStream, {
+    int? limit,
+    required bool inUtc,
   }) async {
     var count = 0;
     final tablePrinter = _createLogTablePrinter();
     final tableStream = tablePrinter.toStream(
-      recordStream.map((final rec) {
+      recordStream.map((rec) {
         count++;
         return _toLogTableRow(rec, inUtc: inUtc);
       }),
@@ -120,10 +120,7 @@ abstract class LogsOperations {
     return tablePrinter;
   }
 
-  static List<String> _toLogTableRow(
-    final LogRecord rec, {
-    required final bool inUtc,
-  }) {
+  static List<String> _toLogTableRow(LogRecord rec, {required bool inUtc}) {
     return [rec.timestamp.toTzString(inUtc), rec.severity ?? '', rec.content];
   }
 }

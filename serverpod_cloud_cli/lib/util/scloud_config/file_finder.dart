@@ -47,18 +47,18 @@ class AmbiguousSearchException implements Exception {
 /// If a single matching file is found then its absolute path is returned,
 /// otherwise null.
 FileFinder<T> scloudFileFinder<T>({
-  required final String fileBaseName,
-  required final List<String> supportedExtensions,
-  final String? Function(T arg)? startingDirectory,
-  final int searchLevelsUp = 2,
-  final int searchLevelsDown = 3,
-  final FileContentCondition? fileContentCondition,
+  required String fileBaseName,
+  required List<String> supportedExtensions,
+  String? Function(T arg)? startingDirectory,
+  int searchLevelsUp = 2,
+  int searchLevelsDown = 3,
+  FileContentCondition? fileContentCondition,
 }) {
   final filenames = supportedExtensions
-      .map((final ext) => '$fileBaseName.$ext')
+      .map((ext) => '$fileBaseName.$ext')
       .toList();
 
-  return (final T arg) {
+  return (T arg) {
     final startDir = p.absolute(
       p.normalize(startingDirectory?.call(arg) ?? Directory.current.path),
     );
@@ -77,11 +77,11 @@ class _StatefulFileFinder {
   final Set<String> _searchedTrees = {};
 
   String? _findProjectFile(
-    final String startDir,
-    final List<String> filenames, {
-    required final int searchLevelsUp,
-    required final int searchLevelsDown,
-    final FileContentCondition? fileContentCondition,
+    String startDir,
+    List<String> filenames, {
+    required int searchLevelsUp,
+    required int searchLevelsDown,
+    FileContentCondition? fileContentCondition,
   }) {
     // Traverse the directory tree [searchLevelsUp] levels up.
     var current = startDir;
@@ -131,20 +131,20 @@ class _StatefulFileFinder {
 
   /// Returns true if [dir] contains a `pubspec.yaml` with a `workspace` field,
   /// i.e. it is the root of a Dart workspace.
-  static bool _isDartWorkspaceRoot(final String dir) {
+  static bool _isDartWorkspaceRoot(String dir) {
     return _parseWorkspacePubspec(dir)?.workspace != null;
   }
 
   /// Returns true if [dir] contains a `.git` directory or file,
   /// i.e. it is the root of a git repository (or worktree/submodule).
-  static bool _isGitRepoRoot(final String dir) {
+  static bool _isGitRepoRoot(String dir) {
     final gitPath = p.join(dir, '.git');
     return Directory(gitPath).existsSync() || File(gitPath).existsSync();
   }
 
   /// Returns the single match if exactly one is found, null if none is found,
   /// or throws [AmbiguousSearchException] if multiple are found.
-  static String? _findUnambiguousFile(final List<String> foundFiles) {
+  static String? _findUnambiguousFile(List<String> foundFiles) {
     if (foundFiles.length > 1) {
       throw AmbiguousSearchException(foundFiles);
     }
@@ -154,9 +154,9 @@ class _StatefulFileFinder {
   /// Searches the packages of the Dart workspace rooted at [workspaceRoot]
   /// for candidate files.
   List<String> _findFileInWorkspace(
-    final String workspaceRoot,
-    final List<String> filenames,
-    final FileContentCondition? fileContentCondition,
+    String workspaceRoot,
+    List<String> filenames,
+    FileContentCondition? fileContentCondition,
   ) {
     final packagePaths = _parseWorkspacePubspec(workspaceRoot)?.workspace ?? [];
     final foundFiles = <String>[];
@@ -167,7 +167,7 @@ class _StatefulFileFinder {
     return foundFiles;
   }
 
-  static Pubspec? _parseWorkspacePubspec(final String dir) {
+  static Pubspec? _parseWorkspacePubspec(String dir) {
     final pubspecFile = File(p.join(dir, 'pubspec.yaml'));
     if (!pubspecFile.existsSync()) {
       return null;
@@ -181,10 +181,10 @@ class _StatefulFileFinder {
 
   /// Searches for matching files in a directory tree.
   List<String> _findFileInTree(
-    final String dir,
-    final List<String> filenames,
-    final int subDirLevels,
-    final FileContentCondition? fileContentCondition,
+    String dir,
+    List<String> filenames,
+    int subDirLevels,
+    FileContentCondition? fileContentCondition,
   ) {
     if (_searchedTrees.contains(dir)) {
       return [];
@@ -218,9 +218,9 @@ class _StatefulFileFinder {
 
   /// Searches for matching files in a specific directory.
   List<String> _findFile(
-    final String dir,
-    final List<String> filenames,
-    final FileContentCondition? fileContentCondition,
+    String dir,
+    List<String> filenames,
+    FileContentCondition? fileContentCondition,
   ) {
     final foundFiles = <String>[];
     for (final filename in filenames) {

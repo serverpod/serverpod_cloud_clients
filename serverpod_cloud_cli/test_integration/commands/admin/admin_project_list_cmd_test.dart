@@ -22,7 +22,7 @@ void main() {
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
     adminUserMode: true,
   );
@@ -51,7 +51,7 @@ void main() {
             ),
           ),
         ).thenAnswer(
-          (final invocation) async => Future.value([
+          (invocation) async => Future.value([
             ProjectInfoBuilder()
                 .withProject(
                   ProjectBuilder()
@@ -92,7 +92,7 @@ void main() {
       });
 
       test('then command outputs user list', () async {
-        await commandResult.catchError((final _) {});
+        await commandResult.catchError((_) {});
 
         expect(
           logger.lineCalls,
@@ -130,7 +130,7 @@ void main() {
             ),
           ),
         ).thenAnswer(
-          (final invocation) async => Future.value([
+          (invocation) async => Future.value([
             ProjectInfoBuilder()
                 .withProject(
                   ProjectBuilder()
@@ -201,7 +201,7 @@ void main() {
             ),
           ),
         ).thenAnswer(
-          (final invocation) async => Future.value([
+          (invocation) async => Future.value([
             ProjectInfoBuilder()
                 .withProject(
                   ProjectBuilder()

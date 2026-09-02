@@ -6,14 +6,14 @@ import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
 abstract class DeploymentCommands {
   static Future<void> showDeployment(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String baseCommand,
-    required final String projectId,
-    required final bool wait,
-    required final bool overallStatus,
-    required final bool inUtc,
-    final String? deploymentArg,
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String baseCommand,
+    required String projectId,
+    required bool wait,
+    required bool overallStatus,
+    required bool inUtc,
+    String? deploymentArg,
   }) async {
     try {
       final attemptId = await _getDeployAttemptId(
@@ -49,9 +49,9 @@ abstract class DeploymentCommands {
   }
 
   static Future<List<Map<String, Object?>>> listDeployAttemptsOperation(
-    final Client cloudApiClient, {
-    required final String cloudCapsuleId,
-    required final int limit,
+    Client cloudApiClient, {
+    required String cloudCapsuleId,
+    required int limit,
   }) async {
     late List<DeployAttempt> statuses;
     try {
@@ -67,12 +67,12 @@ abstract class DeploymentCommands {
   }
 
   static Future<void> fetchBuildLog(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String baseCommand,
-    required final String projectId,
-    required final bool inUtc,
-    final String? deploymentArg,
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String baseCommand,
+    required String projectId,
+    required bool inUtc,
+    String? deploymentArg,
   }) async {
     try {
       final attemptId = await _getDeployAttemptId(
@@ -95,12 +95,12 @@ abstract class DeploymentCommands {
   }
 
   static Future<void> setBuildSecret(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String projectId,
-    required final String name,
-    required final String value,
-    required final BuildSecretType buildSecretType,
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String projectId,
+    required String name,
+    required String value,
+    required BuildSecretType buildSecretType,
   }) async {
     try {
       await cloudApiClient.secrets.upsertBuildSecret(
@@ -119,8 +119,8 @@ abstract class DeploymentCommands {
   }
 
   static Future<List<String>> listBuildSecretsOperation(
-    final Client cloudApiClient, {
-    required final String projectId,
+    Client cloudApiClient, {
+    required String projectId,
   }) async {
     try {
       return await cloudApiClient.secrets.listBuild(projectId);
@@ -130,10 +130,10 @@ abstract class DeploymentCommands {
   }
 
   static Future<void> unsetBuildSecret(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String projectId,
-    required final String name,
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String projectId,
+    required String name,
   }) async {
     final shouldUnset = await logger.confirm(
       'Are you sure you want to remove the build secret "$name"?',
@@ -157,16 +157,16 @@ abstract class DeploymentCommands {
   }
 
   static Future<UuidValue> _getDeployAttemptId(
-    final Client cloudApiClient,
-    final String baseCommand,
-    final String projectId,
+    Client cloudApiClient,
+    String baseCommand,
+    String projectId,
     String? deploymentArg,
   ) async {
-    deploymentArg ??= '0';
-    final attemptNumber = int.tryParse(deploymentArg);
+    final deployment = deploymentArg ?? '0';
+    final attemptNumber = int.tryParse(deployment);
     if (attemptNumber == null) {
       try {
-        return UuidValue.withValidation(deploymentArg);
+        return UuidValue.withValidation(deployment);
       } on FormatException catch (_) {
         throw FailureException(
           error: 'The requested resource did not exist.',
@@ -180,7 +180,7 @@ abstract class DeploymentCommands {
         attemptNumber: attemptNumber,
       );
     } on NotFoundException catch (_) {
-      if (deploymentArg == '0') {
+      if (deployment == '0') {
         throw FailureException(
           error: 'No deployment status found.',
           hint: 'Run this command to deploy: $baseCommand deploy',
@@ -196,9 +196,7 @@ abstract class DeploymentCommands {
   }
 }
 
-List<Map<String, Object?>> deploymentListRows(
-  final List<DeployAttempt> statuses,
-) {
+List<Map<String, Object?>> deploymentListRows(List<DeployAttempt> statuses) {
   return [
     for (final (index, attempt) in statuses.indexed)
       {

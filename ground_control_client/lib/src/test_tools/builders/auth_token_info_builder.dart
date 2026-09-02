@@ -18,33 +18,33 @@ class AuthTokenInfoBuilder {
       expireAfterUnusedFor = null,
       lastUsedAt = null;
 
-  AuthTokenInfoBuilder withTokenId(final String tokenId) {
+  AuthTokenInfoBuilder withTokenId(String tokenId) {
     _tokenId = tokenId;
     return this;
   }
 
-  AuthTokenInfoBuilder withIssuer(final String issuer) {
+  AuthTokenInfoBuilder withIssuer(String issuer) {
     _issuer = issuer;
     return this;
   }
 
-  AuthTokenInfoBuilder withMethod(final String method) {
+  AuthTokenInfoBuilder withMethod(String method) {
     _method = method;
     return this;
   }
 
-  AuthTokenInfoBuilder withCreatedAt(final DateTime createdAt) {
+  AuthTokenInfoBuilder withCreatedAt(DateTime createdAt) {
     _createdAt = createdAt;
     return this;
   }
 
-  AuthTokenInfoBuilder withExpiresAt(final DateTime? expiresAt) {
+  AuthTokenInfoBuilder withExpiresAt(DateTime? expiresAt) {
     _expiresAt = expiresAt;
     return this;
   }
 
   AuthTokenInfoBuilder withExpireAfterUnusedFor(
-    final Duration? expireAfterUnusedFor,
+    Duration? expireAfterUnusedFor,
   ) {
     this.expireAfterUnusedFor = expireAfterUnusedFor;
     return this;
@@ -68,7 +68,7 @@ class AuthTokenInfoBuilder {
     return this;
   }
 
-  AuthTokenInfoBuilder withLastUsedAt(final DateTime? lastUsedAt) {
+  AuthTokenInfoBuilder withLastUsedAt(DateTime? lastUsedAt) {
     this.lastUsedAt = lastUsedAt;
     return this;
   }

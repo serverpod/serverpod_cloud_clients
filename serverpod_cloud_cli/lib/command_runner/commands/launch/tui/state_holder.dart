@@ -17,12 +17,12 @@ class LaunchAppStateHolder extends TuiAppStateHolder<LaunchConfigState> {
   TuiAppState? get widgetState => _widgetState;
 
   @override
-  void attach(final ScloudLaunchAppState widgetState) {
+  void attach(ScloudLaunchAppState widgetState) {
     _widgetState = widgetState;
   }
 
   @override
-  void detach(final ScloudLaunchAppState widgetState) {
+  void detach(ScloudLaunchAppState widgetState) {
     if (_widgetState == widgetState) _widgetState = null;
   }
 }

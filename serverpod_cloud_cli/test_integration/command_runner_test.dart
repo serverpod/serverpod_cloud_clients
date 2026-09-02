@@ -43,10 +43,10 @@ void main() {
   tearDown(reportedErrors.clear);
 
   Future<CloudCliCommandRunner> createCli({
-    required final Version currentVersion,
-    required final Version latestVersion,
-    final FakeCliUpdater? updater,
-    final Version? attemptedUpdateVersion,
+    required Version currentVersion,
+    required Version latestVersion,
+    FakeCliUpdater? updater,
+    Version? attemptedUpdateVersion,
   }) async {
     await ResourceManager.storeLatestCliVersion(
       cliVersionData: PackageVersionData(
@@ -62,7 +62,7 @@ void main() {
       version: currentVersion,
       cliUpdater: updater ?? FakeCliUpdater(),
       attemptedUpdateVersion: attemptedUpdateVersion,
-      onErrorReport: (final error, final stackTrace) async {
+      onErrorReport: (error, stackTrace) async {
         reportedErrors.add(error);
       },
     );
@@ -243,11 +243,7 @@ void main() {
         await expectLater(
           commandResult,
           throwsA(
-            isA<ErrorExitException>().having(
-              (final e) => e.exitCode,
-              'exitCode',
-              3,
-            ),
+            isA<ErrorExitException>().having((e) => e.exitCode, 'exitCode', 3),
           ),
         );
       },
@@ -280,11 +276,7 @@ void main() {
         await expectLater(
           commandResult,
           throwsA(
-            isA<ErrorExitException>().having(
-              (final e) => e.exitCode,
-              'exitCode',
-              75,
-            ),
+            isA<ErrorExitException>().having((e) => e.exitCode, 'exitCode', 75),
           ),
         );
       });
@@ -327,11 +319,7 @@ void main() {
       await expectLater(
         commandResult,
         throwsA(
-          isA<ErrorExitException>().having(
-            (final e) => e.exitCode,
-            'exitCode',
-            69,
-          ),
+          isA<ErrorExitException>().having((e) => e.exitCode, 'exitCode', 69),
         ),
       );
     });
@@ -446,11 +434,7 @@ void main() {
       await expectLater(
         commandResult,
         throwsA(
-          isA<ErrorExitException>().having(
-            (final e) => e.exitCode,
-            'exitCode',
-            69,
-          ),
+          isA<ErrorExitException>().having((e) => e.exitCode, 'exitCode', 69),
         ),
       );
     });
@@ -501,11 +485,7 @@ void main() {
       await expectLater(
         commandResult,
         throwsA(
-          isA<ErrorExitException>().having(
-            (final e) => e.exitCode,
-            'exitCode',
-            69,
-          ),
+          isA<ErrorExitException>().having((e) => e.exitCode, 'exitCode', 69),
         ),
       );
     });

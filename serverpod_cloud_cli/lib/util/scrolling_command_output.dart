@@ -17,15 +17,15 @@ abstract class ScrollingCommandOutput {
   /// output is streamed directly instead, since the section's cursor movement
   /// would otherwise corrupt it.
   static Future<int> runCommand(
-    final String command, {
-    required final CommandLogger logger,
-    final String? heading,
-    final String? successMessage,
-    final String? failedMessage,
-    final int? scrollRows,
-    final String? workingDirectory,
-    final IOSink? stdoutOverride,
-    final IOSink? stderrOverride,
+    String command, {
+    required CommandLogger logger,
+    String? heading,
+    String? successMessage,
+    String? failedMessage,
+    int? scrollRows,
+    String? workingDirectory,
+    IOSink? stdoutOverride,
+    IOSink? stderrOverride,
   }) async {
     final workingDir = workingDirectory != null
         ? Directory(workingDirectory)
@@ -70,13 +70,13 @@ abstract class ScrollingCommandOutput {
   /// header behind; on failure the last output lines are kept so the user can
   /// see what went wrong.
   static Future<int> _runInScrollingSection(
-    final String command,
-    final InlineTerminal terminal, {
-    final String? heading,
-    final String? successMessage,
-    final String? failedMessage,
-    final int? scrollRows,
-    final Directory? workingDirectory,
+    String command,
+    InlineTerminal terminal, {
+    String? heading,
+    String? successMessage,
+    String? failedMessage,
+    int? scrollRows,
+    Directory? workingDirectory,
   }) async {
     final section = ScrollingSection(
       terminal: terminal,

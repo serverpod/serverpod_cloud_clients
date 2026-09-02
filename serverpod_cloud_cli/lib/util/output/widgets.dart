@@ -17,7 +17,7 @@ class FormatBranchingWidget extends OutputWidget {
   });
 
   @override
-  OutputWidget build(final OutputContext context) {
+  OutputWidget build(OutputContext context) {
     final format = context.format;
     return switch (format) {
       OutputFormat.text => textWidget,
@@ -39,7 +39,7 @@ class ExceptionHandlingWidget<E extends Exception> extends OutputWidget {
   });
 
   @override
-  OutputWidget build(final OutputContext context) {
+  OutputWidget build(OutputContext context) {
     final error = context.find<QualifiedException>();
     if (error?.exception case final E e) {
       return errorWidgetMaker(e);
@@ -55,7 +55,7 @@ class RawStringWidget extends OutputWidget {
   const RawStringWidget(this.content);
 
   @override
-  void render({required final CommandLogger logger}) {
+  void render({required CommandLogger logger}) {
     logger.raw(content);
   }
 }
@@ -68,7 +68,7 @@ class InfoTextWidget extends OutputWidget {
   const InfoTextWidget(this.message, {this.newParagraph});
 
   @override
-  void render({required final CommandLogger logger}) {
+  void render({required CommandLogger logger}) {
     logger.info(message, newParagraph: newParagraph ?? false);
   }
 }
@@ -81,7 +81,7 @@ class SuccessTextWidget extends OutputWidget {
   const SuccessTextWidget(this.message, {this.newParagraph});
 
   @override
-  void render({required final CommandLogger logger}) {
+  void render({required CommandLogger logger}) {
     logger.success(message, newParagraph: newParagraph ?? false);
   }
 }
@@ -102,7 +102,7 @@ class CommandHintTextWidget extends OutputWidget {
     : message = null;
 
   @override
-  void render({required final CommandLogger logger}) {
+  void render({required CommandLogger logger}) {
     logger.terminalCommand(
       command,
       message: message,
@@ -120,7 +120,7 @@ class FormattedStringWidget<O extends Object> extends OutputWidget {
   const FormattedStringWidget({required this.formatter});
 
   @override
-  OutputWidget build(final OutputContext context) {
+  OutputWidget build(OutputContext context) {
     final object = context.get<O>();
     final content = formatter.format(object);
     return RawStringWidget(content);
@@ -135,7 +135,7 @@ class TextErrorWidget extends ErrorWidget {
   const TextErrorWidget();
 
   @override
-  OutputWidget build(final OutputContext context) {
+  OutputWidget build(OutputContext context) {
     final error = context.get<QualifiedException>();
     return TextErrorOutputWidget(
       error,
@@ -150,7 +150,7 @@ class JsonErrorWidget extends ErrorWidget {
   const JsonErrorWidget();
 
   @override
-  OutputWidget build(final OutputContext context) {
+  OutputWidget build(OutputContext context) {
     final error = context.get<QualifiedException>();
     return JsonErrorOutputWidget(error);
   }
@@ -160,7 +160,7 @@ class YamlErrorWidget extends ErrorWidget {
   const YamlErrorWidget();
 
   @override
-  OutputWidget build(final OutputContext context) {
+  OutputWidget build(OutputContext context) {
     final error = context.get<QualifiedException>();
     return YamlErrorOutputWidget(error);
   }
@@ -189,7 +189,7 @@ class TextErrorOutputWidget extends ErrorOutputWidget {
   });
 
   @override
-  void render({required final CommandLogger logger}) {
+  void render({required CommandLogger logger}) {
     logger.error(
       message ?? error.toString(),
       hint: hint,
@@ -204,7 +204,7 @@ class JsonErrorOutputWidget extends ErrorOutputWidget {
   const JsonErrorOutputWidget(super.error);
 
   @override
-  void render({required final CommandLogger logger}) {
+  void render({required CommandLogger logger}) {
     final content = JsonOutputFormatter().format(error);
     logger.error(content);
   }
@@ -214,7 +214,7 @@ class YamlErrorOutputWidget extends ErrorOutputWidget {
   const YamlErrorOutputWidget(super.error);
 
   @override
-  void render({required final CommandLogger logger}) {
+  void render({required CommandLogger logger}) {
     final content = YamlOutputFormatter().format(error);
     logger.error(content);
   }

@@ -24,54 +24,54 @@ class ProjectBuilder {
 
   /// Creates a project with a user as owner and admin role.
   /// Calling this method resets the roles in the builder.
-  ProjectBuilder withUserOwner(final User user) {
+  ProjectBuilder withUserOwner(User user) {
     _owner = OwnerBuilder().withUser(user).build();
     _roles = [RoleBuilder.admin().withUser(user).build()];
     return this;
   }
 
-  ProjectBuilder withDeveloperUser(final User user) {
+  ProjectBuilder withDeveloperUser(User user) {
     _roles ??= [];
     _roles?.add(RoleBuilder().withName('Developer').withUser(user).build());
     return this;
   }
 
-  ProjectBuilder withId(final int id) {
+  ProjectBuilder withId(int id) {
     _id = id;
     return this;
   }
 
-  ProjectBuilder withCreatedAt(final DateTime createdAt) {
+  ProjectBuilder withCreatedAt(DateTime createdAt) {
     _createdAt = createdAt;
     return this;
   }
 
-  ProjectBuilder withUpdatedAt(final DateTime? updatedAt) {
+  ProjectBuilder withUpdatedAt(DateTime? updatedAt) {
     _updatedAt = updatedAt;
     return this;
   }
 
-  ProjectBuilder withArchivedAt(final DateTime? archivedAt) {
+  ProjectBuilder withArchivedAt(DateTime? archivedAt) {
     _archivedAt = archivedAt;
     return this;
   }
 
-  ProjectBuilder withCloudProjectId(final String cloudProjectId) {
+  ProjectBuilder withCloudProjectId(String cloudProjectId) {
     _cloudProjectId = cloudProjectId;
     return this;
   }
 
-  ProjectBuilder withOwner(final Owner? owner) {
+  ProjectBuilder withOwner(Owner? owner) {
     _owner = owner;
     return this;
   }
 
-  ProjectBuilder withRoles(final List<Role>? roles) {
+  ProjectBuilder withRoles(List<Role>? roles) {
     _roles = roles;
     return this;
   }
 
-  ProjectBuilder withCapsules(final List<Capsule>? capsules) {
+  ProjectBuilder withCapsules(List<Capsule>? capsules) {
     _capsules = capsules;
     return this;
   }

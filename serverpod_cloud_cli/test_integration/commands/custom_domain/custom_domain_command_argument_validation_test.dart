@@ -56,7 +56,7 @@ void main() {
           commandResult,
           throwsA(
             isA<UsageException>().having(
-              (final e) => e.message,
+              (e) => e.message,
               'message',
               contains(
                 'Invalid value for option `target`: "some-invalid-target" is not in api|insights|web',

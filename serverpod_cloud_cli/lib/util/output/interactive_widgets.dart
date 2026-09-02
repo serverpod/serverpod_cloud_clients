@@ -24,10 +24,10 @@ class ConfirmationWidget extends InteractiveWidget<bool> {
   ConfirmationWidget(this.message, {this.defaultValue});
 
   @override
-  void render({required final CommandLogger logger}) {
+  void render({required CommandLogger logger}) {
     logger
         .confirm(message, defaultValue: defaultValue)
-        .then((final response) => completer.complete(response))
-        .catchError((final error) => completer.completeError(error));
+        .then((response) => completer.complete(response))
+        .catchError((error) => completer.completeError(error));
   }
 }

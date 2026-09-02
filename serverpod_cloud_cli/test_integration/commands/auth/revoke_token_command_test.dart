@@ -28,7 +28,7 @@ void main() {
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
   );
 
@@ -71,7 +71,7 @@ void main() {
           () => client.authWithAuth.logoutDevice(
             authTokenId: any(named: 'authTokenId'),
           ),
-        ).thenAnswer((final _) async => false);
+        ).thenAnswer((_) async => false);
 
         commandResult = cli.run([
           'auth',
@@ -126,7 +126,7 @@ void main() {
           () => client.authWithAuth.logoutDevice(
             authTokenId: any(named: 'authTokenId'),
           ),
-        ).thenAnswer((final _) async => true);
+        ).thenAnswer((_) async => true);
 
         commandResult = cli.run([
           'auth',
@@ -208,7 +208,7 @@ void main() {
       });
 
       test('then logs error', () async {
-        await commandResult.catchError((final _) {});
+        await commandResult.catchError((_) {});
 
         expect(logger.errorCalls, isNotEmpty);
         expect(
@@ -218,7 +218,7 @@ void main() {
       });
 
       test('then the stored credentials are not removed', () async {
-        await commandResult.catchError((final _) {});
+        await commandResult.catchError((_) {});
 
         final cloudData = await ResourceManager.tryFetchServerpodCloudAuthData(
           localStoragePath: testConfigDirPath,
@@ -253,7 +253,7 @@ void main() {
       });
 
       test('then logs error', () async {
-        await commandResult.catchError((final _) {});
+        await commandResult.catchError((_) {});
 
         expect(logger.errorCalls, isNotEmpty);
         expect(

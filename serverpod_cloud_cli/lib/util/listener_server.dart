@@ -15,12 +15,12 @@ abstract final class ListenerServer {
   /// [successMessage] and [failureMessage] are shown in the browser when the
   /// callback is received with or without the [queryParameter] respectively.
   static Future<String?> listenForCallback({
-    required final String queryParameter,
-    required final CommandLogger logger,
-    final void Function(Uri callbackUrl)? onConnected,
-    final Duration timeLimit = const Duration(minutes: 2),
-    final String successMessage = 'Success, you may now close this window.',
-    final String failureMessage =
+    required String queryParameter,
+    required CommandLogger logger,
+    void Function(Uri callbackUrl)? onConnected,
+    Duration timeLimit = const Duration(minutes: 2),
+    String successMessage = 'Success, you may now close this window.',
+    String failureMessage =
         'Something went wrong, please try again or contact support.',
   }) async {
     const host = 'localhost';
@@ -55,9 +55,9 @@ abstract final class ListenerServer {
   /// Starts a local HTTP server that waits for the authentication callback and
   /// returns the authentication token from it.
   static Future<String?> listenForAuthenticationToken({
-    final void Function(Uri callbackUrl)? onConnected,
-    final Duration timeLimit = const Duration(minutes: 2),
-    required final CommandLogger logger,
+    void Function(Uri callbackUrl)? onConnected,
+    Duration timeLimit = const Duration(minutes: 2),
+    required CommandLogger logger,
   }) {
     return listenForCallback(
       queryParameter: 'token',
@@ -69,7 +69,7 @@ abstract final class ListenerServer {
     );
   }
 
-  static String _cliHtmlTemplate(final String message) =>
+  static String _cliHtmlTemplate(String message) =>
       '''
 <!DOCTYPE html>
 <html>
@@ -101,10 +101,10 @@ abstract final class ListenerServer {
 ''';
 
   static Future<String?> _handleCallbackRequest(
-    final HttpRequest request, {
-    required final String queryParameter,
-    required final String successMessage,
-    required final String failureMessage,
+    HttpRequest request, {
+    required String queryParameter,
+    required String successMessage,
+    required String failureMessage,
   }) async {
     final value = request.uri.queryParameters[queryParameter];
     request.response.statusCode = HttpStatus.ok;
@@ -120,7 +120,7 @@ abstract final class ListenerServer {
     return value;
   }
 
-  static Future<void> _handlePreflightRequest(final HttpRequest request) async {
+  static Future<void> _handlePreflightRequest(HttpRequest request) async {
     request.response.statusCode = HttpStatus.ok;
     request.response.headers
       ..add(HttpHeaders.accessControlAllowOriginHeader, '*')
@@ -129,11 +129,11 @@ abstract final class ListenerServer {
   }
 
   static Future<String?> _processRequests(
-    final HttpServer server,
-    final CommandLogger logger, {
-    required final String queryParameter,
-    required final String successMessage,
-    required final String failureMessage,
+    HttpServer server,
+    CommandLogger logger, {
+    required String queryParameter,
+    required String successMessage,
+    required String failureMessage,
   }) async {
     await for (var request in server) {
       logger.debug('Received request: ${request.method} ${request.uri}');

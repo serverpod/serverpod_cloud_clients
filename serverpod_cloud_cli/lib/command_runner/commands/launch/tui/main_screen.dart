@@ -20,7 +20,7 @@ class MainScreen extends StatelessComponent {
   final VoidCallback onQuit;
 
   @override
-  Component build(final BuildContext context) {
+  Component build(BuildContext context) {
     final state = holder.state;
 
     return Column(
@@ -41,7 +41,7 @@ class MainScreen extends StatelessComponent {
     );
   }
 
-  Component _buildHeader(final LaunchConfigState state) {
+  Component _buildHeader(LaunchConfigState state) {
     final title = switch (state.phase) {
       LaunchPhase.projectSelection => 'Select project',
       LaunchPhase.configuration => 'Configure project',
@@ -60,7 +60,7 @@ class MainScreen extends StatelessComponent {
     );
   }
 
-  Component _buildBody(final LaunchConfigState state) {
+  Component _buildBody(LaunchConfigState state) {
     return switch (state.phase) {
       LaunchPhase.projectSelection => _buildProjectSelectionForm(),
       LaunchPhase.configuration => _buildConfigurationForm(state),
@@ -80,7 +80,7 @@ class MainScreen extends StatelessComponent {
     );
   }
 
-  Component _buildConfigurationForm(final LaunchConfigState state) {
+  Component _buildConfigurationForm(LaunchConfigState state) {
     final formState = state.configurationFormState;
     if (formState == null) return const SizedBox.shrink();
 
@@ -91,7 +91,7 @@ class MainScreen extends StatelessComponent {
     );
   }
 
-  Component _buildButtonBar(final LaunchConfigState state) {
+  Component _buildButtonBar(LaunchConfigState state) {
     return switch (state.phase) {
       LaunchPhase.projectSelection => _buildProjectSelectionButtonBar(state),
       LaunchPhase.configuration ||
@@ -99,7 +99,7 @@ class MainScreen extends StatelessComponent {
     };
   }
 
-  Component _buildProjectSelectionButtonBar(final LaunchConfigState state) {
+  Component _buildProjectSelectionButtonBar(LaunchConfigState state) {
     final formState = state.projectSelectionFormState;
     return ButtonBar(
       buttons: [
@@ -141,7 +141,7 @@ class MainScreen extends StatelessComponent {
     );
   }
 
-  Component _buildConfigurationButtonBar(final LaunchConfigState state) {
+  Component _buildConfigurationButtonBar(LaunchConfigState state) {
     final enabled = state.phase != LaunchPhase.launching;
     final form = state.configurationFormState!;
     return ButtonBar(
@@ -197,9 +197,9 @@ class MainScreen extends StatelessComponent {
   }
 
   Component _buildNavigateButton({
-    required final FormState form,
-    required final bool enabled,
-    required final bool scrollOnUpDown,
+    required FormState form,
+    required bool enabled,
+    required bool scrollOnUpDown,
   }) {
     return Button(
       name: 'Navigate',
@@ -211,7 +211,7 @@ class MainScreen extends StatelessComponent {
         LogicalKey.arrowLeft,
         LogicalKey.arrowRight,
       ],
-      onActivate: (final key) {
+      onActivate: (key) {
         switch (key) {
           case LogicalKey.arrowLeft:
             form.updateFocusedConfigOption(-1);

@@ -23,7 +23,7 @@ void main() {
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
   );
 
@@ -46,7 +46,7 @@ void main() {
             cloudProjectId: any(named: 'cloudProjectId'),
           ),
         ).thenAnswer(
-          (final invocation) async => Future.value([
+          (invocation) async => Future.value([
             User(
               userAuthId: 'userAuthId',
               email: 'test@example.com',
@@ -75,7 +75,7 @@ void main() {
       });
 
       test('then command outputs user list', () async {
-        await commandResult.catchError((final _) {});
+        await commandResult.catchError((_) {});
 
         expect(
           logger.lineCalls,
@@ -102,7 +102,7 @@ void main() {
             cloudProjectId: any(named: 'cloudProjectId'),
           ),
         ).thenAnswer(
-          (final invocation) async => Future.value([
+          (invocation) async => Future.value([
             User(
               userAuthId: 'userAuthId',
               email: 'test@example.com',
@@ -147,7 +147,7 @@ void main() {
             cloudProjectId: any(named: 'cloudProjectId'),
           ),
         ).thenAnswer(
-          (final invocation) async => Future.value([
+          (invocation) async => Future.value([
             User(
               userAuthId: 'userAuthId',
               email: 'test@example.com',

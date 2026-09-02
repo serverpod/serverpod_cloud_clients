@@ -17,8 +17,8 @@ const settingsConfigDomainPrefix = 'settings';
 /// referenced via the `scloud:` configuration domain prefix
 /// and a JSON value pointer. E.g: `scloud:/project/projectId`
 ConfigurationBroker<T> scloudCliConfigBroker<T extends OptionDefinition>({
-  required final GlobalConfiguration globalConfig,
-  final CommandLogger? logger,
+  required GlobalConfiguration globalConfig,
+  CommandLogger? logger,
 }) {
   return MultiDomainConfigBroker<T>.prefix({
     scloudConfigDomainPrefix: _ScloudProjectConfigProvider<T>(
@@ -45,11 +45,11 @@ class _ScloudProjectConfigProvider<T extends OptionDefinition>
   _ScloudProjectConfigProvider({required this.globalConfig, this.logger});
 
   @override
-  ConfigurationSource getConfigSource(final Configuration<T> cfg) {
+  ConfigurationSource getConfigSource(Configuration<T> cfg) {
     return _configSource ??= _makeConfigSource(cfg);
   }
 
-  ConfigurationSource _makeConfigSource(final Configuration<T> cfg) {
+  ConfigurationSource _makeConfigSource(Configuration<T> cfg) {
     final configContent = globalConfig.projectConfigContent;
     if (configContent != null) {
       logger?.debug(
@@ -87,11 +87,11 @@ class _ScloudSettingsConfigProvider<T extends OptionDefinition>
   _ScloudSettingsConfigProvider({required this.globalConfig, this.logger});
 
   @override
-  ConfigurationSource getConfigSource(final Configuration<T> cfg) {
+  ConfigurationSource getConfigSource(Configuration<T> cfg) {
     return _configSource ??= _makeConfigSource(cfg);
   }
 
-  ConfigurationSource _makeConfigSource(final Configuration<T> cfg) {
+  ConfigurationSource _makeConfigSource(Configuration<T> cfg) {
     final settingsJson = ResourceManager.tryLoadRawSettingsSync(
       localStoragePath: globalConfig.scloudDir.path,
     );

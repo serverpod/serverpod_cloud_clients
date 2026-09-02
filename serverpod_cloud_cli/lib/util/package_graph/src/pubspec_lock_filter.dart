@@ -22,12 +22,12 @@ final class PubspecLockFilter {
   /// Returns package names that remain in the copy but are not listed in
   /// [expectedRemainingPackages].
   static Set<String> createFilteredCopy({
-    required final String projectPath,
-    required final String outputFilePath,
-    required final Set<String> packagesToRemove,
-    required final Set<String> packagesToDemote,
-    required final Set<String> expectedRemainingPackages,
-    required final String scriptName,
+    required String projectPath,
+    required String outputFilePath,
+    required Set<String> packagesToRemove,
+    required Set<String> packagesToDemote,
+    required Set<String> expectedRemainingPackages,
+    required String scriptName,
   }) {
     final lockFile = File(p.join(projectPath, _lockFileName));
     final String content;
@@ -67,11 +67,11 @@ final class PubspecLockFilter {
   /// packages - package names that remain in the copy but are not listed in
   /// [expectedRemainingPackages].
   static (String, Set<String>) filter({
-    required final String content,
-    required final Set<String> packagesToRemove,
-    required final Set<String> packagesToDemote,
-    required final Set<String> expectedRemainingPackages,
-    required final String scriptName,
+    required String content,
+    required Set<String> packagesToRemove,
+    required Set<String> packagesToDemote,
+    required Set<String> expectedRemainingPackages,
+    required String scriptName,
   }) {
     final keptPackages = <String>[];
     final outputLines = <String>[_generatedByScriptLine + scriptName];
@@ -136,20 +136,20 @@ final class PubspecLockFilter {
     return (output, unexpectedPackages);
   }
 
-  static bool _isPackagesSectionHeader(final String line) {
+  static bool _isPackagesSectionHeader(String line) {
     return line.trimRight() == 'packages:';
   }
 
-  static String? _packageNameFromHeader(final String line) {
+  static String? _packageNameFromHeader(String line) {
     final match = _packageHeaderPattern.firstMatch(line);
     return match?.group(1);
   }
 
-  static bool _isDependencyLine(final String line) {
+  static bool _isDependencyLine(String line) {
     return line.startsWith('    dependency:');
   }
 
-  static bool _isTopLevelKey(final String line) {
+  static bool _isTopLevelKey(String line) {
     if (line.isEmpty) {
       return false;
     }

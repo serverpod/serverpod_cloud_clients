@@ -32,7 +32,7 @@ class CommandThatRequiresLogin extends CloudCliCommand {
 
   @override
   Future<void> runWithConfig(
-    final Configuration<OptionDefinition> commandConfig,
+    Configuration<OptionDefinition> commandConfig,
   ) async {
     return;
   }
@@ -52,7 +52,7 @@ class CommandThatDoesNotRequiredLogin extends CloudCliCommand {
 
   @override
   Future<void> runWithConfig(
-    final Configuration<OptionDefinition> commandConfig,
+    Configuration<OptionDefinition> commandConfig,
   ) async {
     return;
   }

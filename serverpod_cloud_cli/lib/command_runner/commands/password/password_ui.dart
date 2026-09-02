@@ -6,7 +6,7 @@ class PasswordListTextUi extends OutputWidget {
   const PasswordListTextUi();
 
   @override
-  OutputWidget build(final OutputContext context) {
+  OutputWidget build(OutputContext context) {
     final passwords = context.get<List<Map<String, Object?>>>();
     if (passwords.isEmpty) {
       return const InfoTextWidget('No passwords available.');
@@ -45,7 +45,7 @@ class _SectionWidget extends OutputWidget {
   );
 
   @override
-  OutputWidget build(final OutputContext context) {
+  OutputWidget build(OutputContext context) {
     if (category != PasswordCategory.custom && passwords.isEmpty) {
       return const _WidgetList([]);
     }
@@ -66,7 +66,7 @@ class _WidgetList extends OutputWidget {
   const _WidgetList(this.children);
 
   @override
-  WidgetNode buildTree(final OutputContext context) {
+  WidgetNode buildTree(OutputContext context) {
     return WidgetNode(
       widget: this,
       children: [for (final child in children) child.buildTree(context)],
@@ -80,7 +80,7 @@ class _LineWidget extends OutputWidget {
   const _LineWidget([this.line = '']);
 
   @override
-  void render({required final CommandLogger logger}) {
+  void render({required CommandLogger logger}) {
     logger.line(line);
   }
 }
@@ -91,7 +91,7 @@ class PasswordSetTextUi extends OutputWidget {
   const PasswordSetTextUi({required this.baseCommand});
 
   @override
-  OutputWidget build(final OutputContext context) {
+  OutputWidget build(OutputContext context) {
     final result = context.get<Map<String, Object?>>();
     final name = result['name'];
     final success = name is! String
@@ -113,7 +113,7 @@ class PasswordUnsetTextUi extends OutputWidget {
   const PasswordUnsetTextUi({required this.baseCommand});
 
   @override
-  OutputWidget build(final OutputContext context) {
+  OutputWidget build(OutputContext context) {
     final result = context.get<Map<String, Object?>>();
     final name = result['name'];
     final success = name is! String

@@ -9,16 +9,16 @@ class OutputContext {
 
   final Map<Type, Object> _objects;
 
-  OutputContext(this.format, [final Object? object])
+  OutputContext(this.format, [Object? object])
     : _objects = {object.runtimeType: ?object};
 
   OutputContext.exception(
-    final OutputFormat format,
-    final Exception exception,
-    final StackTrace stackTrace,
+    OutputFormat format,
+    Exception exception,
+    StackTrace stackTrace,
   ) : this(format, (exception: exception, stackTrace: stackTrace));
 
-  void put<O extends Object>(final O object) {
+  void put<O extends Object>(O object) {
     _objects[O] = object;
   }
 

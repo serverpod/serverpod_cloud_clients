@@ -9,10 +9,10 @@ import 'package:serverpod_cloud_cli/shared/helpers/console_urls.dart';
 /// If this function returns normally, no action was taken and the caller
 /// needs to continue processing the exception.
 void processCommonClientExceptions(
-  final CommandLogger logger,
-  final String baseCommand,
-  final Exception e,
-  final StackTrace stackTrace,
+  CommandLogger logger,
+  String baseCommand,
+  Exception e,
+  StackTrace stackTrace,
 ) {
   final exitException = commonClientExceptionExit(e, stackTrace);
   if (exitException == null) return;
@@ -73,8 +73,8 @@ void processCommonClientExceptions(
 /// has already been displayed to the user, for instance by an error output
 /// widget, and only the process exit remains to be performed.
 ErrorExitException? commonClientExceptionExit(
-  final Exception e,
-  final StackTrace stackTrace,
+  Exception e,
+  StackTrace stackTrace,
 ) {
   return switch (e) {
     ServerpodClientUnauthorized() => ErrorExitException(

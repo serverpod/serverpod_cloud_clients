@@ -6,7 +6,7 @@ import 'package:test/test.dart';
 class BufferLogger {
   final List<String> lines = [];
 
-  void raw(final String content, {final AnsiStyle? style}) {
+  void raw(String content, {AnsiStyle? style}) {
     lines.add(content);
   }
 

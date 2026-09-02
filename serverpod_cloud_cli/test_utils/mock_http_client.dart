@@ -18,46 +18,41 @@ class MockOfflineHttpClient implements HttpClient {
 
   @override
   void addCredentials(
-    final Uri url,
-    final String realm,
-    final HttpClientCredentials credentials,
+    Uri url,
+    String realm,
+    HttpClientCredentials credentials,
   ) {}
 
   @override
   void addProxyCredentials(
-    final String host,
-    final int port,
-    final String realm,
-    final HttpClientCredentials credentials,
+    String host,
+    int port,
+    String realm,
+    HttpClientCredentials credentials,
   ) {}
 
   @override
   set authenticate(
-    final Future<bool> Function(Uri url, String scheme, String? realm)? f,
+    Future<bool> Function(Uri url, String scheme, String? realm)? f,
   ) {}
 
   @override
   set authenticateProxy(
-    final Future<bool> Function(
-      String host,
-      int port,
-      String scheme,
-      String? realm,
-    )?
+    Future<bool> Function(String host, int port, String scheme, String? realm)?
     f,
   ) {}
 
   @override
   set badCertificateCallback(
-    final bool Function(X509Certificate cert, String host, int port)? callback,
+    bool Function(X509Certificate cert, String host, int port)? callback,
   ) {}
 
   @override
-  void close({final bool force = false}) {}
+  void close({bool force = false}) {}
 
   @override
   set connectionFactory(
-    final Future<ConnectionTask<Socket>> Function(
+    Future<ConnectionTask<Socket>> Function(
       Uri url,
       String? proxyHost,
       int? proxyPort,
@@ -66,107 +61,83 @@ class MockOfflineHttpClient implements HttpClient {
   ) {}
 
   @override
-  Future<HttpClientRequest> delete(
-    final String host,
-    final int port,
-    final String path,
-  ) {
+  Future<HttpClientRequest> delete(String host, int port, String path) {
     throw SocketException('No internet connection');
   }
 
   @override
-  Future<HttpClientRequest> deleteUrl(final Uri url) {
+  Future<HttpClientRequest> deleteUrl(Uri url) {
     throw SocketException('No internet connection');
   }
 
   @override
-  set findProxy(final String Function(Uri url)? f) {}
+  set findProxy(String Function(Uri url)? f) {}
 
   @override
-  Future<HttpClientRequest> get(
-    final String host,
-    final int port,
-    final String path,
-  ) {
+  Future<HttpClientRequest> get(String host, int port, String path) {
     throw SocketException('No internet connection');
   }
 
   @override
-  Future<HttpClientRequest> getUrl(final Uri url) {
+  Future<HttpClientRequest> getUrl(Uri url) {
     throw SocketException('No internet connection');
   }
 
   @override
-  Future<HttpClientRequest> head(
-    final String host,
-    final int port,
-    final String path,
-  ) {
+  Future<HttpClientRequest> head(String host, int port, String path) {
     throw SocketException('No internet connection');
   }
 
   @override
-  Future<HttpClientRequest> headUrl(final Uri url) {
+  Future<HttpClientRequest> headUrl(Uri url) {
     throw SocketException('No internet connection');
   }
 
   @override
-  set keyLog(final Function(String line)? callback) {}
+  set keyLog(Function(String line)? callback) {}
 
   @override
   Future<HttpClientRequest> open(
-    final String method,
-    final String host,
-    final int port,
-    final String path,
+    String method,
+    String host,
+    int port,
+    String path,
   ) {
     throw SocketException('No internet connection');
   }
 
   @override
-  Future<HttpClientRequest> openUrl(final String method, final Uri url) {
+  Future<HttpClientRequest> openUrl(String method, Uri url) {
     throw SocketException('No internet connection');
   }
 
   @override
-  Future<HttpClientRequest> patch(
-    final String host,
-    final int port,
-    final String path,
-  ) {
+  Future<HttpClientRequest> patch(String host, int port, String path) {
     throw SocketException('No internet connection');
   }
 
   @override
-  Future<HttpClientRequest> patchUrl(final Uri url) {
+  Future<HttpClientRequest> patchUrl(Uri url) {
     throw SocketException('No internet connection');
   }
 
   @override
-  Future<HttpClientRequest> post(
-    final String host,
-    final int port,
-    final String path,
-  ) {
+  Future<HttpClientRequest> post(String host, int port, String path) {
     throw SocketException('No internet connection');
   }
 
   @override
-  Future<HttpClientRequest> postUrl(final Uri url) {
+  Future<HttpClientRequest> postUrl(Uri url) {
     throw SocketException('No internet connection');
   }
 
   @override
-  Future<HttpClientRequest> put(
-    final String host,
-    final int port,
-    final String path,
-  ) {
+  Future<HttpClientRequest> put(String host, int port, String path) {
     throw SocketException('No internet connection');
   }
 
   @override
-  Future<HttpClientRequest> putUrl(final Uri url) {
+  Future<HttpClientRequest> putUrl(Uri url) {
     throw SocketException('No internet connection');
   }
 }

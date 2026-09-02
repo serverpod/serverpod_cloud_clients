@@ -4,10 +4,10 @@ import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
 abstract class UserAdminCommands {
   static Future<List<Map<String, Object?>>> listUsersOperation(
-    final Client cloudApiClient, {
-    final String? projectId,
-    final UserAccountStatus? ofAccountStatus,
-    final bool includeArchived = false,
+    Client cloudApiClient, {
+    String? projectId,
+    UserAccountStatus? ofAccountStatus,
+    bool includeArchived = false,
   }) async {
     final users = await cloudApiClient.adminUsers.listUsers(
       cloudProjectId: projectId,
@@ -22,8 +22,8 @@ abstract class UserAdminCommands {
           final procuredProducts = await cloudApiClient.adminProcurement
               .listProcuredProducts(userEmail: user.email);
           final procuredPlans = procuredProducts
-              .where((final p) => p.$2 == 'PlanProduct')
-              .map((final p) => p.$1);
+              .where((p) => p.$2 == 'PlanProduct')
+              .map((p) => p.$1);
           userPlanMap[user.email] = procuredPlans.join(', ');
         case UserAccountStatus.invited:
           userPlanMap[user.email] = '';
@@ -46,9 +46,9 @@ abstract class UserAdminCommands {
   }
 
   static Future<void> inviteUser(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String email,
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String email,
   }) async {
     try {
       await cloudApiClient.adminUsers.inviteUser(email: email);

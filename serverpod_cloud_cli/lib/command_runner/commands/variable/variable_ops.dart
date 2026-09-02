@@ -11,13 +11,13 @@ abstract class VariableCommands {
   static const _maskedValue = '••••••••';
 
   static Future<void> setVariable(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String baseCommand,
-    required final String projectId,
-    required final String name,
-    required final String value,
-    final bool? secret,
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String baseCommand,
+    required String projectId,
+    required String name,
+    required String value,
+    bool? secret,
   }) async {
     _validateName(baseCommand, name);
 
@@ -103,11 +103,11 @@ abstract class VariableCommands {
   }
 
   static Future<void> unsetVariable(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String baseCommand,
-    required final String projectId,
-    required final String name,
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String baseCommand,
+    required String projectId,
+    required String name,
   }) async {
     _validateName(baseCommand, name);
 
@@ -167,8 +167,8 @@ abstract class VariableCommands {
   }
 
   static Future<List<Map<String, Object?>>> listVariablesOperation(
-    final Client cloudApiClient, {
-    required final String projectId,
+    Client cloudApiClient, {
+    required String projectId,
   }) async {
     final listed = await _fetch(cloudApiClient, projectId);
 
@@ -181,7 +181,7 @@ abstract class VariableCommands {
     ];
   }
 
-  static void _validateName(final String baseCommand, final String name) {
+  static void _validateName(String baseCommand, String name) {
     if (name.startsWith(PasswordDefinitions.prefix)) {
       throw FailureException(
         error: "Names can't start with '${PasswordDefinitions.prefix}'.",
@@ -201,7 +201,7 @@ abstract class VariableCommands {
   }
 
   static Future<({List<EnvironmentVariable> unmasked, List<String> secrets})>
-  _fetch(final Client client, final String projectId) async {
+  _fetch(Client client, String projectId) async {
     try {
       final unmasked = await client.environmentVariables.list(projectId);
       final secrets = await client.secrets.list(projectId);
@@ -216,14 +216,14 @@ abstract class VariableCommands {
   }
 
   static _VariableStore? _storeOf(
-    final String name, {
-    required final List<EnvironmentVariable> unmasked,
-    required final List<String> secrets,
+    String name, {
+    required List<EnvironmentVariable> unmasked,
+    required List<String> secrets,
   }) {
     if (secrets.contains(name)) {
       return _VariableStore.secret;
     }
-    if (unmasked.any((final variable) => variable.name == name)) {
+    if (unmasked.any((variable) => variable.name == name)) {
       return _VariableStore.unmasked;
     }
     return null;

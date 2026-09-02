@@ -6,7 +6,7 @@ class ScloudSettings {
 
   ServerpodCloudSettingsData? _cachedSettings;
 
-  ScloudSettings({required final String localStoragePath})
+  ScloudSettings({required String localStoragePath})
     : _localCloudStorageDirectory = localStoragePath;
 
   Future<ServerpodCloudSettingsData> _fetchSettings() async {
@@ -25,7 +25,7 @@ class ScloudSettings {
     return ServerpodCloudSettingsData();
   }
 
-  Future<void> _storeSettings(final ServerpodCloudSettingsData settings) async {
+  Future<void> _storeSettings(ServerpodCloudSettingsData settings) async {
     await ResourceManager.storeSettings(
       settings: settings,
       localStoragePath: _localCloudStorageDirectory,
@@ -40,7 +40,7 @@ class ScloudSettings {
   }
 
   /// Sets _enable analytics_.
-  Future<void> setEnableAnalytics(final bool enableAnalytics) async {
+  Future<void> setEnableAnalytics(bool enableAnalytics) async {
     final settings = await _fetchSettings();
     if (settings.enableAnalytics == enableAnalytics) {
       return;
@@ -58,7 +58,7 @@ class ScloudSettings {
 
   /// Sets the global _project context_.
   /// Pass `null` to clear it.
-  Future<void> setProjectContext(final String? projectId) async {
+  Future<void> setProjectContext(String? projectId) async {
     final settings = await _fetchSettings();
     if (settings.projectContext == projectId) {
       return;

@@ -6,13 +6,13 @@ import 'package:serverpod_cloud_cli/util/scrolling_command_output.dart';
 
 abstract class ScriptRunner {
   static Future<void> runScripts(
-    final List<String> commands,
-    final String workingDirectory,
-    final CommandLogger logger, {
-    required final String scriptType,
-    final int padHeadingRight = 0,
-    final IOSink? stdout,
-    final IOSink? stderr,
+    List<String> commands,
+    String workingDirectory,
+    CommandLogger logger, {
+    required String scriptType,
+    int padHeadingRight = 0,
+    IOSink? stdout,
+    IOSink? stderr,
   }) async {
     if (commands.isEmpty) {
       return;

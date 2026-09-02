@@ -44,7 +44,7 @@ class AdminListProcuredCommand
 
   @override
   Future<void> runWithConfig(
-    final Configuration<AdminListProcuredOption> commandConfig,
+    Configuration<AdminListProcuredOption> commandConfig,
   ) async {
     final userEmail = commandConfig.value(AdminListProcuredOption.user);
     final format = commandConfig.value(AdminListProcuredOption.format);
@@ -123,7 +123,7 @@ class AdminProcurePlanCommand extends CloudCliCommand<AdminProcurePlanOption> {
 
   @override
   Future<void> runWithConfig(
-    final Configuration<AdminProcurePlanOption> commandConfig,
+    Configuration<AdminProcurePlanOption> commandConfig,
   ) async {
     final userEmail = commandConfig.value(AdminProcurePlanOption.user);
     final productName = commandConfig.value(AdminProcurePlanOption.productName);
@@ -198,7 +198,7 @@ class AdminCancelPlanCommand extends CloudCliCommand<AdminCancelPlanOption> {
 
   @override
   Future<void> runWithConfig(
-    final Configuration<AdminCancelPlanOption> commandConfig,
+    Configuration<AdminCancelPlanOption> commandConfig,
   ) async {
     final userEmail = commandConfig.value(AdminCancelPlanOption.user);
     final subscriptionId = commandConfig.optionalValue(

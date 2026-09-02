@@ -16,7 +16,7 @@ void main() {
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
   );
 
@@ -58,7 +58,7 @@ void main() {
             afterTime: any(named: 'afterTime'),
             limit: any(named: 'limit'),
           ),
-        ).thenAnswer((final _) => Stream.fromIterable(mockRecords));
+        ).thenAnswer((_) => Stream.fromIterable(mockRecords));
 
         await cli.run([
           'log',
@@ -103,7 +103,7 @@ void main() {
             afterTime: any(named: 'afterTime'),
             limit: any(named: 'limit'),
           ),
-        ).thenAnswer((final _) => Stream.fromIterable(mockRecords));
+        ).thenAnswer((_) => Stream.fromIterable(mockRecords));
 
         await cli.run([
           'log',
@@ -148,7 +148,7 @@ void main() {
             afterTime: null,
             limit: any(named: 'limit'),
           ),
-        ).thenAnswer((final _) => Stream.fromIterable(mockRecords));
+        ).thenAnswer((_) => Stream.fromIterable(mockRecords));
 
         await cli.run([
           'log',
@@ -197,7 +197,7 @@ void main() {
             afterTime: DateTime.parse('2020-12-01T00:00:00Z'),
             limit: any(named: 'limit'),
           ),
-        ).thenAnswer((final _) => Stream.fromIterable(mockRecords));
+        ).thenAnswer((_) => Stream.fromIterable(mockRecords));
 
         await cli.run([
           'log',
@@ -246,7 +246,7 @@ void main() {
             afterTime: DateTime.parse('2020-12-01T00:00:00Z'),
             limit: any(named: 'limit'),
           ),
-        ).thenAnswer((final _) => Stream.fromIterable(mockRecords));
+        ).thenAnswer((_) => Stream.fromIterable(mockRecords));
 
         await cli.run([
           'log',
@@ -295,7 +295,7 @@ void main() {
             cloudCapsuleId: projectId,
             limit: any(named: 'limit'),
           ),
-        ).thenAnswer((final _) => Stream.fromIterable(mockRecords));
+        ).thenAnswer((_) => Stream.fromIterable(mockRecords));
 
         await cli.run(['log', '--utc', '--tail', '--project', projectId]);
       });

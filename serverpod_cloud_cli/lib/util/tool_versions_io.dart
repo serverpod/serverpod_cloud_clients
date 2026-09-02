@@ -11,7 +11,7 @@ abstract final class ToolVersionsIO {
   ///
   /// Returns `null` if no matching file or `dart` line is found.
   static String? readDartVersionFromToolVersions(
-    final Iterable<Directory> searchRoots,
+    Iterable<Directory> searchRoots,
   ) {
     for (final root in searchRoots) {
       final version = _dartVersionFromToolVersionsFileIn(root);
@@ -22,7 +22,7 @@ abstract final class ToolVersionsIO {
     return null;
   }
 
-  static String? _dartVersionFromToolVersionsFileIn(final Directory directory) {
+  static String? _dartVersionFromToolVersionsFileIn(Directory directory) {
     final file = File(p.join(directory.path, _fileName));
     if (!file.existsSync()) {
       return null;
@@ -53,10 +53,7 @@ abstract final class ToolVersionsIO {
   /// [version], preserving all other tool entries.
   ///
   /// Does nothing if the file does not exist.
-  static void writeDartVersion(
-    final Directory directory,
-    final String version,
-  ) {
+  static void writeDartVersion(Directory directory, String version) {
     final file = File(p.join(directory.path, _fileName));
     if (!file.existsSync()) return;
 
@@ -69,7 +66,7 @@ abstract final class ToolVersionsIO {
 
     final lines = content.split('\n');
     var found = false;
-    final updated = lines.map((final line) {
+    final updated = lines.map((line) {
       final trimmed = line.trim();
       if (trimmed.startsWith('#') || trimmed.isEmpty) return line;
       final parts = trimmed.split(RegExp(r'\s+'));

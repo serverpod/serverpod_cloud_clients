@@ -187,42 +187,42 @@ class PlanInfoBuilder {
     return this;
   }
 
-  PlanInfoBuilder withProductId(final String productId) {
+  PlanInfoBuilder withProductId(String productId) {
     _productId = productId;
     return this;
   }
 
-  PlanInfoBuilder withDisplayName(final String displayName) {
+  PlanInfoBuilder withDisplayName(String displayName) {
     _displayName = displayName;
     return this;
   }
 
-  PlanInfoBuilder withDescription(final String? description) {
+  PlanInfoBuilder withDescription(String? description) {
     _description = description;
     return this;
   }
 
-  PlanInfoBuilder withTrialLength(final int? trialLength) {
+  PlanInfoBuilder withTrialLength(int? trialLength) {
     _trialLength = trialLength;
     return this;
   }
 
-  PlanInfoBuilder withTrialEndDate(final DateTime? trialEndDate) {
+  PlanInfoBuilder withTrialEndDate(DateTime? trialEndDate) {
     _trialEndDate = trialEndDate;
     return this;
   }
 
-  PlanInfoBuilder withProjectsLimit(final int? projectsLimit) {
+  PlanInfoBuilder withProjectsLimit(int? projectsLimit) {
     _projectsLimit = projectsLimit;
     return this;
   }
 
-  PlanInfoBuilder withPlanType(final PlanType planType) {
+  PlanInfoBuilder withPlanType(PlanType planType) {
     _planType = planType;
     return this;
   }
 
-  PlanInfoBuilder withProjectProduct(final ProjectProductInfo projectProduct) {
+  PlanInfoBuilder withProjectProduct(ProjectProductInfo projectProduct) {
     _projectProduct = projectProduct;
     _projectProductInfo = [projectProduct];
     return this;

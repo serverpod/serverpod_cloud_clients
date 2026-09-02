@@ -19,9 +19,9 @@ class GoogleCloudStorageUploader implements FileUploaderClient {
   /// server. Optionally, you can pass a [Dio] instance to use for the upload to control
   /// the timeout and other settings.
   GoogleCloudStorageUploader(
-    final String uploadDescription, {
-    final Dio? dio,
-    final Duration? timeout,
+    String uploadDescription, {
+    Dio? dio,
+    Duration? timeout,
   }) {
     _dio =
         dio ??
@@ -38,7 +38,7 @@ class GoogleCloudStorageUploader implements FileUploaderClient {
   /// Uploads a file contained by a [ByteData] object, returns true if
   /// successful.
   @override
-  Future<bool> uploadByteData(final ByteData byteData) async {
+  Future<bool> uploadByteData(ByteData byteData) async {
     final stream = Stream.fromIterable([
       byteData.buffer.asUint8List(
         byteData.offsetInBytes,
@@ -50,7 +50,7 @@ class GoogleCloudStorageUploader implements FileUploaderClient {
 
   /// Uploads a file from a [Stream], returns true if successful.
   @override
-  Future<bool> upload(final Stream<List<int>> stream, final int length) async {
+  Future<bool> upload(Stream<List<int>> stream, int length) async {
     if (_attemptedUpload) {
       throw Exception(
         'Data has already been uploaded using this FileUploader.',
@@ -142,7 +142,7 @@ class _UploadDescription {
   Map<String, String> headers = {};
   Map<String, String> requestFields = {};
 
-  _UploadDescription(final String description) {
+  _UploadDescription(String description) {
     final data = jsonDecode(description);
     if (data is! Map<String, dynamic>) {
       throw const FormatException('Upload description must be a JSON object');

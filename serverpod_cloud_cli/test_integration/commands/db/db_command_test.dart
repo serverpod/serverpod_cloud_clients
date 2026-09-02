@@ -20,7 +20,7 @@ void main() {
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
   );
 
@@ -252,7 +252,7 @@ void main() {
           () => client.database.getConnectionDetails(
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
           ),
-        ).thenAnswer((final _) async => Future.value(connection));
+        ).thenAnswer((_) async => Future.value(connection));
       });
 
       tearDownAll(() {
@@ -304,7 +304,7 @@ void main() {
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
             username: 'wernher',
           ),
-        ).thenAnswer((final _) async => Future.value(password));
+        ).thenAnswer((_) async => Future.value(password));
       });
 
       tearDownAll(() {
@@ -346,7 +346,7 @@ $password''');
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
             username: 'wernher',
           ),
-        ).thenAnswer((final _) async => Future.value(password));
+        ).thenAnswer((_) async => Future.value(password));
       });
 
       tearDownAll(() {
@@ -385,7 +385,7 @@ $password''');
           () => client.database.wipeDatabase(
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
           ),
-        ).thenAnswer((final _) async => Future.value());
+        ).thenAnswer((_) async => Future.value());
       });
 
       tearDownAll(() {
@@ -441,7 +441,7 @@ $password''');
           () => client.database.wipeDatabase(
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
           ),
-        ).thenAnswer((final _) async => Future.value());
+        ).thenAnswer((_) async => Future.value());
       });
 
       tearDownAll(() {
@@ -518,7 +518,7 @@ $password''');
           expect(logger.infoCalls, isNotEmpty);
           expect(
             logger.infoCalls.any(
-              (final call) => call.message.contains('Database wipe cancelled.'),
+              (call) => call.message.contains('Database wipe cancelled.'),
             ),
             isTrue,
           );

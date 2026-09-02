@@ -21,7 +21,7 @@ void main() {
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
     adminUserMode: true,
   );
@@ -50,7 +50,7 @@ void main() {
       setUp(() async {
         when(
           () => client.adminUpdatePlan.listOrbPlans(),
-        ).thenAnswer((final invocation) async => ['plan-alpha', 'plan-beta']);
+        ).thenAnswer((invocation) async => ['plan-alpha', 'plan-beta']);
 
         commandResult = cli.run(['admin', 'plan', 'list']);
       });
@@ -60,7 +60,7 @@ void main() {
       });
 
       test('then command outputs plan table', () async {
-        await commandResult.catchError((final _) {});
+        await commandResult.catchError((_) {});
 
         expect(
           logger.lineCalls,
@@ -79,7 +79,7 @@ void main() {
       setUp(() async {
         when(
           () => client.adminUpdatePlan.listOrbPlans(),
-        ).thenAnswer((final invocation) async => ['plan-alpha', 'plan-beta']);
+        ).thenAnswer((invocation) async => ['plan-alpha', 'plan-beta']);
 
         commandResult = cli.run(['admin', 'plan', 'list', '--format', 'json']);
       });
@@ -100,7 +100,7 @@ void main() {
       setUp(() async {
         when(
           () => client.adminUpdatePlan.listOrbPlans(),
-        ).thenAnswer((final invocation) async => ['plan-alpha', 'plan-beta']);
+        ).thenAnswer((invocation) async => ['plan-alpha', 'plan-beta']);
 
         commandResult = cli.run(['admin', 'plan', 'list', '--format', 'yaml']);
       });
@@ -125,7 +125,7 @@ void main() {
               externalPlanId: any(named: 'externalPlanId'),
             ),
           ).thenAnswer(
-            (final invocation) async => {'appliedVersion': '2025-03-01-v2'},
+            (invocation) async => {'appliedVersion': '2025-03-01-v2'},
           );
 
           commandResult = cli.run(['admin', 'plan', 'update', 'plan-alpha']);
@@ -136,7 +136,7 @@ void main() {
         });
 
         test('then command logs success', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           expect(
             logger.successCalls,
@@ -159,7 +159,7 @@ void main() {
             () => client.adminUpdatePlan.updateOrbPlan(
               externalPlanId: any(named: 'externalPlanId'),
             ),
-          ).thenAnswer((final invocation) async => {'appliedVersion': ''});
+          ).thenAnswer((invocation) async => {'appliedVersion': ''});
 
           commandResult = cli.run(['admin', 'plan', 'update', 'plan-alpha']);
         });
@@ -169,7 +169,7 @@ void main() {
         });
 
         test('then command logs info', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           expect(
             logger.infoCalls,

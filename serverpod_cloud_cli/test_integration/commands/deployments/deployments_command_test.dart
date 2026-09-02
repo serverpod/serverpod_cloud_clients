@@ -27,7 +27,7 @@ void main() {
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
   );
 
@@ -238,21 +238,21 @@ void main() {
               cloudCapsuleId: projectId,
               attemptId: attemptStages.first.attemptId,
             ),
-          ).thenAnswer((final _) async => attemptStages);
+          ).thenAnswer((_) async => attemptStages);
 
           when(
             () => client.status.getDeployAttemptId(
               cloudCapsuleId: projectId,
               attemptNumber: 0,
             ),
-          ).thenAnswer((final _) async => attemptStages.first.attemptId);
+          ).thenAnswer((_) async => attemptStages.first.attemptId);
 
           when(
             () => client.status.tailDeployAttemptStatus(
               cloudCapsuleId: projectId,
               attemptId: attemptStages.first.attemptId,
             ),
-          ).thenAnswer((final _) => Stream.fromIterable(attemptStages));
+          ).thenAnswer((_) => Stream.fromIterable(attemptStages));
         });
 
         tearDownAll(() {
@@ -261,8 +261,8 @@ void main() {
 
         @isTestGroup
         void testCorrectGetRecentStatusCommand(
-          final String description,
-          final List<String> args,
+          String description,
+          List<String> args,
         ) {
           group('$description with args="${args.join(' ')}"', () {
             late Future commandResult;
@@ -278,12 +278,12 @@ void main() {
               await commandResult;
 
               expect(logger.lineCalls, isNotEmpty);
-              expect(logger.lineCalls.map((final l) => l.line).join('\n'), '''
+              expect(logger.lineCalls.map((l) => l.line).join('\n'), '''
 Tracking projectId deployment $attemptId
 (Press Ctrl+C to exit)
 ''');
               expect(
-                logger.progressCalls.map((final c) => c.message),
+                logger.progressCalls.map((c) => c.message),
                 containsAllInOrder([
                   contains('Upload awaiting'),
                   contains('Cloud build awaiting'),
@@ -360,8 +360,8 @@ Tracking projectId deployment $attemptId
 
           @isTestGroup
           void testGetStatusWithMissingDeployCommand(
-            final String description,
-            final List<String> args,
+            String description,
+            List<String> args,
           ) {
             group('$description with args="${args.join(' ')}"', () {
               late Future commandResult;
@@ -377,7 +377,7 @@ Tracking projectId deployment $attemptId
               });
 
               test('then outputs error message', () async {
-                await commandResult.onError((final e, final s) {});
+                await commandResult.onError((e, s) {});
 
                 expect(logger.errorCalls, isNotEmpty);
                 expect(
@@ -440,8 +440,8 @@ Tracking projectId deployment $attemptId
 
         @isTestGroup
         void testGetSpecificMissingStatusCommand(
-          final String description,
-          final List<String> args,
+          String description,
+          List<String> args,
         ) {
           group('$description with args="${args.join(' ')}"', () {
             late Future commandResult;
@@ -457,7 +457,7 @@ Tracking projectId deployment $attemptId
             });
 
             test('then outputs error message', () async {
-              await commandResult.onError((final e, final s) {});
+              await commandResult.onError((e, s) {});
 
               expect(logger.errorCalls, isNotEmpty);
               expect(
@@ -504,7 +504,7 @@ Tracking projectId deployment $attemptId
             });
 
             test('then outputs error message', () async {
-              await commandResult.onError((final e, final s) {});
+              await commandResult.onError((e, s) {});
 
               expect(logger.errorCalls, isNotEmpty);
               expect(
@@ -529,7 +529,7 @@ Tracking projectId deployment $attemptId
               'invalid-attempt-id',
             ]);
 
-            await commandResult.onError((final e, final s) {});
+            await commandResult.onError((e, s) {});
 
             expect(logger.errorCalls, isNotEmpty);
             expect(
@@ -594,21 +594,21 @@ Tracking projectId deployment $attemptId
             cloudCapsuleId: projectId,
             attemptId: attemptStages.first.attemptId,
           ),
-        ).thenAnswer((final _) async => attemptStages);
+        ).thenAnswer((_) async => attemptStages);
 
         when(
           () => client.status.getDeployAttemptId(
             cloudCapsuleId: projectId,
             attemptNumber: 0,
           ),
-        ).thenAnswer((final _) async => attemptStages.first.attemptId);
+        ).thenAnswer((_) async => attemptStages.first.attemptId);
 
         when(
           () => client.status.tailDeployAttemptStatus(
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
             attemptId: any(named: 'attemptId'),
           ),
-        ).thenAnswer((final _) => Stream.fromIterable(attemptStages));
+        ).thenAnswer((_) => Stream.fromIterable(attemptStages));
       });
 
       tearDownAll(() {
@@ -637,12 +637,12 @@ Tracking projectId deployment $attemptId
             await commandResult;
 
             expect(logger.lineCalls, isNotEmpty);
-            expect(logger.lineCalls.map((final l) => l.line).join('\n'), '''
+            expect(logger.lineCalls.map((l) => l.line).join('\n'), '''
 Tracking projectId deployment $attemptId
 (Press Ctrl+C to exit)
 ''');
             expect(
-              logger.progressCalls.map((final c) => c.message),
+              logger.progressCalls.map((c) => c.message),
               containsAllInOrder([
                 contains('Upload awaiting'),
                 contains('Cloud build awaiting'),
@@ -676,7 +676,7 @@ Tracking projectId deployment $attemptId
             await commandResult;
 
             expect(logger.lineCalls, isNotEmpty);
-            expect(logger.lineCalls.map((final l) => l.line).join('\n'), '''
+            expect(logger.lineCalls.map((l) => l.line).join('\n'), '''
 Status of projectId deployment $attemptId, started at 2021-12-31 10:20:30:
 
 Upload successful.
@@ -749,21 +749,21 @@ Rollout running...''');
             cloudCapsuleId: projectId,
             attemptId: attemptStages.first.attemptId,
           ),
-        ).thenAnswer((final _) async => attemptStages);
+        ).thenAnswer((_) async => attemptStages);
 
         when(
           () => client.status.getDeployAttemptId(
             cloudCapsuleId: projectId,
             attemptNumber: 0,
           ),
-        ).thenAnswer((final _) async => attemptStages.first.attemptId);
+        ).thenAnswer((_) async => attemptStages.first.attemptId);
 
         when(
           () => client.status.tailDeployAttemptStatus(
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
             attemptId: any(named: 'attemptId'),
           ),
-        ).thenAnswer((final _) => Stream.fromIterable(attemptStages));
+        ).thenAnswer((_) => Stream.fromIterable(attemptStages));
       });
 
       tearDownAll(() {
@@ -798,13 +798,11 @@ Rollout running...''');
             );
 
             expect(logger.lineCalls, isNotEmpty);
-            expect(logger.lineCalls.map((final l) => l.line).join('\n'), '''
+            expect(logger.lineCalls.map((l) => l.line).join('\n'), '''
 Tracking projectId deployment $attemptId
 (Press Ctrl+C to exit)
 ''');
-            final progressMessages = logger.progressCalls.map(
-              (final c) => c.message,
-            );
+            final progressMessages = logger.progressCalls.map((c) => c.message);
             expect(progressMessages.length, 4);
             expect(
               progressMessages,
@@ -859,7 +857,7 @@ Tracking projectId deployment $attemptId
             await commandResult;
 
             expect(logger.lineCalls, isNotEmpty);
-            expect(logger.lineCalls.map((final l) => l.line).join('\n'), '''
+            expect(logger.lineCalls.map((l) => l.line).join('\n'), '''
 Status of projectId deployment $attemptId, started at 2021-12-31 10:20:30:
 
 Upload successful.
@@ -925,7 +923,7 @@ Cloud build failed. 💥''');
               cloudCapsuleId: projectId,
               limit: any(named: 'limit'),
             ),
-          ).thenAnswer((final _) async => buildStatuses);
+          ).thenAnswer((_) async => buildStatuses);
         });
 
         tearDownAll(() async {
@@ -934,8 +932,8 @@ Cloud build failed. 💥''');
 
         @isTestGroup
         void testCorrectGetStatusesCommand(
-          final String description,
-          final List<String> args,
+          String description,
+          List<String> args,
         ) {
           group('$description with args="${args.join(' ')}"', () {
             late Future commandResult;
@@ -1095,13 +1093,13 @@ Cloud build failed. 💥''');
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
             attemptId: any(named: 'attemptId'),
           ),
-        ).thenAnswer((final _) => stageController.stream);
+        ).thenAnswer((_) => stageController.stream);
         when(
           () => client.logs.tailBuildLog(
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
             attemptId: any(named: 'attemptId'),
           ),
-        ).thenAnswer((final _) => const Stream<LogRecord>.empty());
+        ).thenAnswer((_) => const Stream<LogRecord>.empty());
       });
 
       tearDown(() async {
@@ -1162,7 +1160,7 @@ Cloud build failed. 💥''');
       late StreamController<DeployAttemptStage> stageController;
       final streamingAttemptId = Uuid().v4obj();
 
-      DeployAttemptStage buildStage(final DeployProgressStatus status) =>
+      DeployAttemptStage buildStage(DeployProgressStatus status) =>
           DeployAttemptStageBuilder()
               .withCloudCapsuleId(projectId)
               .withAttemptId(streamingAttemptId)
@@ -1170,13 +1168,12 @@ Cloud build failed. 💥''');
               .withStageStatus(status)
               .build();
 
-      LogRecord logRecord(final String recordId, final String content) =>
-          LogRecordBuilder()
-              .withCloudIds(projectId)
-              .withDeployAttemptId(streamingAttemptId)
-              .withRecordId(recordId)
-              .withContent(content)
-              .build();
+      LogRecord logRecord(String recordId, String content) => LogRecordBuilder()
+          .withCloudIds(projectId)
+          .withDeployAttemptId(streamingAttemptId)
+          .withRecordId(recordId)
+          .withContent(content)
+          .build();
 
       setUp(() {
         stageController = StreamController<DeployAttemptStage>();
@@ -1185,7 +1182,7 @@ Cloud build failed. 💥''');
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
             attemptId: any(named: 'attemptId'),
           ),
-        ).thenAnswer((final _) => stageController.stream);
+        ).thenAnswer((_) => stageController.stream);
       });
 
       tearDown(() async {
@@ -1207,8 +1204,7 @@ Cloud build failed. 💥''');
               attemptId: streamingAttemptId,
             ),
           ).thenAnswer(
-            (final _) =>
-                Stream.fromIterable([logRecord('1', 'Building image...')]),
+            (_) => Stream.fromIterable([logRecord('1', 'Building image...')]),
           );
 
           final tailFuture = StatusCommands.tailDeploymentStatus(
@@ -1240,8 +1236,7 @@ Cloud build failed. 💥''');
               attemptId: streamingAttemptId,
             ),
           ).thenAnswer(
-            (final _) =>
-                Stream.fromIterable([logRecord('1', 'Error: build failed')]),
+            (_) => Stream.fromIterable([logRecord('1', 'Error: build failed')]),
           );
 
           final tailFuture = StatusCommands.tailDeploymentStatus(
@@ -1309,8 +1304,7 @@ Cloud build failed. 💥''');
               attemptId: streamingAttemptId,
             ),
           ).thenAnswer(
-            (final _) =>
-                Stream.fromIterable([logRecord('1', 'Building image...')]),
+            (_) => Stream.fromIterable([logRecord('1', 'Building image...')]),
           );
 
           final tailFuture = StatusCommands.tailDeploymentStatus(
@@ -1397,14 +1391,14 @@ Cloud build failed. 💥''');
             cloudCapsuleId: projectId,
             attemptNumber: 0,
           ),
-        ).thenAnswer((final _) async => failedUploadAttemptId);
+        ).thenAnswer((_) async => failedUploadAttemptId);
 
         when(
           () => client.status.tailDeployAttemptStatus(
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
             attemptId: any(named: 'attemptId'),
           ),
-        ).thenAnswer((final _) => Stream.fromIterable(attemptStages));
+        ).thenAnswer((_) => Stream.fromIterable(attemptStages));
       });
 
       tearDownAll(() {

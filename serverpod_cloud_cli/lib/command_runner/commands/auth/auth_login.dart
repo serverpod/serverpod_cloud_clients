@@ -12,14 +12,14 @@ import 'package:serverpod_cloud_cli/util/listener_server.dart';
 
 abstract class AuthLoginCommands {
   static Future<void> login({
-    required final CommandLogger logger,
-    required final Directory scloudDir,
-    required final String consoleServer,
-    required final bool openBrowser,
-    required final Client cloudApiClient,
-    final Duration timeLimit = const Duration(seconds: 300),
-    required final bool persistent,
-    required final String signInPath,
+    required CommandLogger logger,
+    required Directory scloudDir,
+    required String consoleServer,
+    required bool openBrowser,
+    required Client cloudApiClient,
+    Duration timeLimit = const Duration(seconds: 300),
+    required bool persistent,
+    required String signInPath,
   }) async {
     final localStoragePath = scloudDir.path;
 
@@ -27,8 +27,7 @@ abstract class AuthLoginCommands {
 
     final callbackUrlFuture = Completer<Uri>();
     final tokenFuture = ListenerServer.listenForAuthenticationToken(
-      onConnected: (final Uri callbackUrl) =>
-          callbackUrlFuture.complete(callbackUrl),
+      onConnected: (Uri callbackUrl) => callbackUrlFuture.complete(callbackUrl),
       timeLimit: timeLimit,
       logger: logger,
     );
@@ -81,9 +80,9 @@ abstract class AuthLoginCommands {
   }
 
   static Future<void> fetchAndStoreServerpodCloudUserData({
-    required final Client cloudApiClient,
-    required final String localStoragePath,
-    required final CommandLogger logger,
+    required Client cloudApiClient,
+    required String localStoragePath,
+    required CommandLogger logger,
   }) async {
     try {
       final user = await cloudApiClient.users.readUser();

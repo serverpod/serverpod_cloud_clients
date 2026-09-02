@@ -13,6 +13,7 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
+
 import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/project_factory.dart';
 import '../../../test_utils/push_current_dir.dart';
@@ -26,7 +27,7 @@ void main() {
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
   );
 
@@ -49,7 +50,7 @@ void main() {
           underSubscriptionId: any(named: 'underSubscriptionId'),
         ),
       ).thenAnswer(
-        (final invocation) async => Future.value(
+        (invocation) async => Future.value(
           ProjectBuilder()
               .withCloudProjectId(invocation.namedArguments[#cloudProjectId])
               .build(),
@@ -61,36 +62,36 @@ void main() {
           cloudProjectId: any(named: 'cloudProjectId'),
         ),
       ).thenAnswer(
-        (final invocation) async => Future.value(
+        (invocation) async => Future.value(
           ProjectConfig(projectId: invocation.namedArguments[#cloudProjectId]),
         ),
       );
 
       when(
         () => client.plans.listSubscriptions(),
-      ).thenAnswer((final invocation) async => Future.value([]));
+      ).thenAnswer((invocation) async => Future.value([]));
 
       when(
         () => client.plans.procurePlan(
           planProductName: any(named: 'planProductName'),
         ),
-      ).thenAnswer((final invocation) async => Future.value(Uuid().v4obj()));
+      ).thenAnswer((invocation) async => Future.value(Uuid().v4obj()));
 
       when(() => client.billing.readOwner()).thenAnswer(
-        (final _) async => OwnerBuilder()
+        (_) async => OwnerBuilder()
             .withBillingInfo(BillingInfoBuilder().withPrivateUser().build())
             .build(),
       );
 
       when(
         () => client.billing.ownerIsInGoodStanding(),
-      ).thenAnswer((final _) async => true);
+      ).thenAnswer((_) async => true);
 
       when(
         () => client.database.enableDatabase(
           cloudCapsuleId: any(named: 'cloudCapsuleId'),
         ),
-      ).thenAnswer((final _) async {});
+      ).thenAnswer((_) async {});
     });
 
     group('and inside a serverpod directory', () {
@@ -124,7 +125,7 @@ void main() {
         });
 
         test('then logs confirmation question', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           expect(logger.confirmCalls, hasLength(1));
           expect(
@@ -158,7 +159,7 @@ void main() {
         });
 
         test('then logs confirmation question', () async {
-          await commandResult.catchError((final _) {});
+          await commandResult.catchError((_) {});
 
           expect(logger.confirmCalls, hasLength(1));
           expect(
@@ -230,7 +231,7 @@ project:
           logger.answerNextConfirmWith(true);
 
           when(() => client.plans.listSubscriptions()).thenAnswer(
-            (final _) async => [
+            (_) async => [
               SubscriptionInfoBuilder()
                   .withPlanProductId('early-access:0')
                   .withSubscriptionId(Uuid().v4obj())
@@ -274,7 +275,7 @@ project:
           logger.answerNextConfirmWith(true);
 
           when(() => client.plans.listSubscriptions()).thenAnswer(
-            (final _) async => [
+            (_) async => [
               SubscriptionInfoBuilder()
                   .withPlanProductId('growth:0')
                   .withSubscriptionId(Uuid().v4obj())
@@ -319,7 +320,7 @@ project:
 
           when(
             () => client.plans.listSubscriptions(),
-          ).thenAnswer((final _) async => []);
+          ).thenAnswer((_) async => []);
         });
 
         test('when calling create without specifying the plan'

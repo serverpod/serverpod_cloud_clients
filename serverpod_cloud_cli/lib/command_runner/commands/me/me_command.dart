@@ -32,7 +32,7 @@ class CloudMeCommand extends CloudCliCommand<MeCommandOption> {
 
   @override
   Future<void> runWithConfig(
-    final Configuration<MeCommandOption> commandConfig,
+    Configuration<MeCommandOption> commandConfig,
   ) async {
     final format = commandConfig.value(MeCommandOption.format);
 

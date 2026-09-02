@@ -5,11 +5,11 @@ import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
 abstract class Auth {
   static Future<void> createApiToken(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String baseCommand,
-    final DateTime? expiresAt,
-    final Duration? expiresAfter,
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String baseCommand,
+    DateTime? expiresAt,
+    Duration? expiresAfter,
   }) async {
     final authSuccess = await cloudApiClient.authWithAuth.createCliToken(
       expiresAt: expiresAt,
@@ -29,16 +29,16 @@ authenticate with this token in $baseCommand commands.''',
   }
 
   static Future<List<AuthTokenInfo>> listAuthSessionsOperation(
-    final Client cloudApiClient,
+    Client cloudApiClient,
   ) {
     return cloudApiClient.authWithAuth.listAuthSessions();
   }
 
   static Future<void> revokeToken(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String tokenId,
-    required final String localStoragePath,
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String tokenId,
+    required String localStoragePath,
   }) async {
     final bool currentSessionRevoked;
     try {

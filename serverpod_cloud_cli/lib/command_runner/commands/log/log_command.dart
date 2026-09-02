@@ -128,9 +128,7 @@ Examples
   CloudLogCommand({required super.logger}) : super(options: LogOption.values);
 
   @override
-  Future<void> runWithConfig(
-    final Configuration<LogOption> commandConfig,
-  ) async {
+  Future<void> runWithConfig(Configuration<LogOption> commandConfig) async {
     final projectId = commandConfig.value(LogOption.projectId);
     final limit = commandConfig.value(LogOption.limit);
     final inUtc = commandConfig.value(LogOption.utc);

@@ -63,24 +63,22 @@ class DeployAttemptStageBuilder {
     return this;
   }
 
-  DeployAttemptStageBuilder withCloudCapsuleId(final String cloudCapsuleId) {
+  DeployAttemptStageBuilder withCloudCapsuleId(String cloudCapsuleId) {
     _cloudCapsuleId = cloudCapsuleId;
     return this;
   }
 
-  DeployAttemptStageBuilder withAttemptId(final UuidValue attemptId) {
+  DeployAttemptStageBuilder withAttemptId(UuidValue attemptId) {
     _attemptId = attemptId;
     return this;
   }
 
-  DeployAttemptStageBuilder withStageType(final DeployStageType stageType) {
+  DeployAttemptStageBuilder withStageType(DeployStageType stageType) {
     _stageType = stageType;
     return this;
   }
 
-  DeployAttemptStageBuilder withStageStatus(
-    final DeployProgressStatus stageStatus,
-  ) {
+  DeployAttemptStageBuilder withStageStatus(DeployProgressStatus stageStatus) {
     _stageStatus = stageStatus;
     if (stageStatus == DeployProgressStatus.success ||
         stageStatus == DeployProgressStatus.failure) {
@@ -89,40 +87,40 @@ class DeployAttemptStageBuilder {
     return this;
   }
 
-  DeployAttemptStageBuilder withStageInfo(final String? stageInfo) {
+  DeployAttemptStageBuilder withStageInfo(String? stageInfo) {
     _stageInfo = stageInfo;
     return this;
   }
 
   DeployAttemptStageBuilder withServerpodVersionConstraint(
-    final String? serverpodVersionConstraint,
+    String? serverpodVersionConstraint,
   ) {
     _serverpodVersionConstraint = serverpodVersionConstraint;
     return this;
   }
 
-  DeployAttemptStageBuilder withBuildId(final String? buildId) {
+  DeployAttemptStageBuilder withBuildId(String? buildId) {
     _buildId = buildId;
     _externalId = buildId;
     return this;
   }
 
-  DeployAttemptStageBuilder withImageName(final String? imageName) {
+  DeployAttemptStageBuilder withImageName(String? imageName) {
     _imageName = imageName;
     return this;
   }
 
-  DeployAttemptStageBuilder withStatusInfo(final String? statusInfo) {
+  DeployAttemptStageBuilder withStatusInfo(String? statusInfo) {
     _statusInfo = statusInfo;
     return this;
   }
 
-  DeployAttemptStageBuilder withStartedAt(final DateTime? startedAt) {
+  DeployAttemptStageBuilder withStartedAt(DateTime? startedAt) {
     _startedAt = startedAt;
     return this;
   }
 
-  DeployAttemptStageBuilder withEndedAt(final DateTime? endedAt) {
+  DeployAttemptStageBuilder withEndedAt(DateTime? endedAt) {
     _endedAt = endedAt;
     return this;
   }

@@ -10,7 +10,7 @@ class _TreeNode {
   _TreeNode(this.part, this.isIgnored);
 
   @override
-  bool operator ==(final Object other) {
+  bool operator ==(Object other) {
     if (identical(this, other)) return true;
     return other is _TreeNode && part == other.part;
   }
@@ -28,13 +28,13 @@ abstract final class FileTreePrinter {
   static const int _maxLength = 80;
 
   static void writeFileTree({
-    required final Set<String> filePaths,
-    required final Set<String> ignoredPaths,
-    required final void Function(String, {AnsiStyle? style}) write,
+    required Set<String> filePaths,
+    required Set<String> ignoredPaths,
+    required void Function(String, {AnsiStyle? style}) write,
   }) {
     final List<_TreeNode> allFiles = [
-      ...filePaths.map((final path) => _TreeNode(path, false)),
-      ...ignoredPaths.map((final path) => _TreeNode(path, true)),
+      ...filePaths.map((path) => _TreeNode(path, false)),
+      ...ignoredPaths.map((path) => _TreeNode(path, true)),
     ];
 
     // Sort files by directory structure
@@ -45,7 +45,7 @@ abstract final class FileTreePrinter {
     // a/z/a.dart
     // z/a.dart
     // a.dart
-    allFiles.sort((final a, final b) {
+    allFiles.sort((a, b) {
       final aDirs = p.split(a.part);
       final bDirs = p.split(b.part);
 
@@ -72,20 +72,20 @@ abstract final class FileTreePrinter {
     _writeTree(tree, write, isParentIgnored: filePaths.isEmpty);
   }
 
-  static Map<_TreeNode, dynamic> _buildTree(final List<_TreeNode> files) {
+  static Map<_TreeNode, dynamic> _buildTree(List<_TreeNode> files) {
     final Map<_TreeNode, dynamic> root = {};
 
     for (final _TreeNode file in files) {
       final List<_TreeNode> parts = p
           .split(file.part)
-          .map((final part) => _TreeNode(part, file.isIgnored))
+          .map((part) => _TreeNode(part, file.isIgnored))
           .toList();
 
       Map<_TreeNode, dynamic> current = root;
 
       for (final part in parts) {
         if (!part.isIgnored && current.containsKey(part)) {
-          current.keys.firstWhere((final e) => e == part).isIgnored = false;
+          current.keys.firstWhere((e) => e == part).isIgnored = false;
         }
 
         current = current.putIfAbsent(part, () => <_TreeNode, dynamic>{});
@@ -96,10 +96,10 @@ abstract final class FileTreePrinter {
   }
 
   static void _writeTree(
-    final Map<_TreeNode, dynamic> tree,
-    final void Function(String, {AnsiStyle? style}) write, {
-    final List<(String, AnsiStyle?)> prefixes = const [],
-    final bool isParentIgnored = false,
+    Map<_TreeNode, dynamic> tree,
+    void Function(String, {AnsiStyle? style}) write, {
+    List<(String, AnsiStyle?)> prefixes = const [],
+    bool isParentIgnored = false,
   }) {
     final List<_TreeNode> nodes = tree.keys.toList();
 
@@ -135,16 +135,16 @@ abstract final class FileTreePrinter {
     }
   }
 
-  static AnsiStyle? _style(final bool isIgnored) {
+  static AnsiStyle? _style(bool isIgnored) {
     return isIgnored ? AnsiStyle.darkGray : null;
   }
 
   static void _writeNode({
-    required final _TreeNode node,
-    required final bool isLast,
-    required final bool isParentIgnored,
-    required final List<(String, AnsiStyle?)> prefixes,
-    required final void Function(String, {AnsiStyle? style}) write,
+    required _TreeNode node,
+    required bool isLast,
+    required bool isParentIgnored,
+    required List<(String, AnsiStyle?)> prefixes,
+    required void Function(String, {AnsiStyle? style}) write,
   }) {
     final AnsiStyle? style = _style(node.isIgnored);
     final AnsiStyle? parentStyle = _style(isParentIgnored);
@@ -161,7 +161,7 @@ abstract final class FileTreePrinter {
 
       final prefix = prefixes.fold(
         '',
-        (final fullPrefix, final prefixNode) => fullPrefix + prefixNode.$1,
+        (fullPrefix, prefixNode) => fullPrefix + prefixNode.$1,
       );
 
       final paddingLength =
@@ -182,7 +182,7 @@ abstract final class FileTreePrinter {
     write('\n', style: style);
   }
 
-  static String _connector(final bool isLast, final bool parentIgnored) {
+  static String _connector(bool isLast, bool parentIgnored) {
     if (parentIgnored) {
       return isLast ? '╰╌ ' : '┆╌ ';
     } else {
@@ -190,7 +190,7 @@ abstract final class FileTreePrinter {
     }
   }
 
-  static String _prefix(final bool isLast, final bool parentIgnored) {
+  static String _prefix(bool isLast, bool parentIgnored) {
     final l = parentIgnored ? '┆' : '│';
     return isLast ? '   ' : '$l  ';
   }

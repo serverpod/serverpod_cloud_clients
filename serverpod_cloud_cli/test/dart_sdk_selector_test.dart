@@ -54,7 +54,7 @@ void main() {
         ),
         throwsA(
           isA<FailureException>().having(
-            (final e) => e.hint,
+            (e) => e.hint,
             'hint',
             contains('not with your project'),
           ),
@@ -69,7 +69,7 @@ void main() {
             DartSdkSelector.selectDartSdkVersion(supportedSdkMinorVersions: []),
         throwsA(
           isA<FailureException>().having(
-            (final e) => e.hint,
+            (e) => e.hint,
             'hint',
             contains('not with your project'),
           ),
@@ -121,7 +121,7 @@ void main() {
         ),
         throwsA(
           isA<FailureException>().having(
-            (final e) => e.errors.join(),
+            (e) => e.errors.join(),
             'errors',
             allOf(
               contains('3.9 (from --dart-version flag)'),
@@ -163,7 +163,7 @@ void main() {
         ),
         throwsA(
           isA<FailureException>().having(
-            (final e) => e.errors.join(),
+            (e) => e.errors.join(),
             'errors',
             allOf(
               contains('3.20 (from --dart-version flag)'),
@@ -183,7 +183,7 @@ void main() {
         ),
         throwsA(
           isA<FailureException>().having(
-            (final e) => e.errors.join(),
+            (e) => e.errors.join(),
             'errors',
             contains('"not-a-version" (from scloud.yaml)'),
           ),
@@ -303,7 +303,7 @@ void main() {
         ),
         throwsA(
           isA<FailureException>().having(
-            (final e) => e.errors.join(),
+            (e) => e.errors.join(),
             'errors',
             allOf(
               contains('3.13 (from --dart-version flag)'),
@@ -324,7 +324,7 @@ void main() {
         ),
         throwsA(
           isA<FailureException>().having(
-            (final e) => e.errors.join(),
+            (e) => e.errors.join(),
             'errors',
             contains('"not-a-version" (from pubspec.lock)'),
           ),

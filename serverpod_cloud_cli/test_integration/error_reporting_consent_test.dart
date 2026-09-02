@@ -32,15 +32,15 @@ void main() {
   });
 
   CloudCliCommandRunner createCli({
-    final bool enableAnalyticsForAllEnvs = false,
-    final OnRunContextResolved? onRunContextResolved,
+    bool enableAnalyticsForAllEnvs = false,
+    OnRunContextResolved? onRunContextResolved,
   }) {
     return CloudCliCommandRunner.create(
       logger: logger,
       serviceProvider: CloudCliServiceProvider(
-        apiClientFactory: (final globalCfg) => client,
+        apiClientFactory: (globalCfg) => client,
       ),
-      onAnalyticsEvent: (final event, final properties) {},
+      onAnalyticsEvent: (event, properties) {},
       onRunContextResolved: onRunContextResolved ?? resolvedContexts.add,
       enableAnalyticsForAllEnvs: enableAnalyticsForAllEnvs,
     );
@@ -135,7 +135,7 @@ void main() {
 
     setUp(() {
       cli = createCli(
-        onRunContextResolved: (final context) =>
+        onRunContextResolved: (context) =>
             throw StateError('run context listener failure'),
       );
     });
@@ -145,7 +145,7 @@ void main() {
       await cli.run(['--config-dir', settingsDir, 'version']);
 
       expect(
-        logger.infoCalls.map((final call) => call.message),
+        logger.infoCalls.map((call) => call.message),
         contains(startsWith('Serverpod Cloud CLI version:')),
       );
     });
@@ -190,10 +190,10 @@ void main() {
         ' then the resolved command contains no flags', () async {
       when(
         () => client.environmentVariables.list(any()),
-      ).thenAnswer((final _) async => <EnvironmentVariable>[]);
+      ).thenAnswer((_) async => <EnvironmentVariable>[]);
       when(
         () => client.secrets.list(any()),
-      ).thenAnswer((final _) async => <String>[]);
+      ).thenAnswer((_) async => <String>[]);
 
       await cli.run([
         '--config-dir',
@@ -213,10 +213,10 @@ void main() {
       () async {
         when(
           () => client.environmentVariables.list(any()),
-        ).thenAnswer((final _) async => <EnvironmentVariable>[]);
+        ).thenAnswer((_) async => <EnvironmentVariable>[]);
         when(
           () => client.secrets.list(any()),
-        ).thenAnswer((final _) async => <String>[]);
+        ).thenAnswer((_) async => <String>[]);
 
         await cli.run([
           '--config-dir',

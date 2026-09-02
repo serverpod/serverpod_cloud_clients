@@ -50,7 +50,7 @@ abstract class ResourceManager {
   ///
   /// Throws [LocalDataStorageException] if the file cannot be deleted.
   static Future<void> removeServerpodCloudAuthData({
-    required final String localStoragePath,
+    required String localStoragePath,
   }) async {
     try {
       await LocalStorageManager.removeFile(
@@ -73,8 +73,8 @@ abstract class ResourceManager {
   ///
   /// Throws [LocalDataStorageException] if the file cannot be created, serialized, or written.
   static Future<void> storeServerpodCloudUserData({
-    required final ServerpodCloudUserData cloudUserData,
-    required final String localStoragePath,
+    required ServerpodCloudUserData cloudUserData,
+    required String localStoragePath,
   }) async {
     try {
       await LocalStorageManager.storeJsonFile(
@@ -101,7 +101,7 @@ abstract class ResourceManager {
   }
 
   static ServerpodCloudUserData? tryFetchServerpodCloudUserDataSync({
-    required final String localStoragePath,
+    required String localStoragePath,
   }) {
     try {
       final file = File(
@@ -125,8 +125,8 @@ abstract class ResourceManager {
   ///
   /// Throws [LocalDataStorageException] if the file cannot be created, serialized, or written.
   static Future<void> storeServerpodCloudAuthData({
-    required final ServerpodCloudAuthData authData,
-    required final String localStoragePath,
+    required ServerpodCloudAuthData authData,
+    required String localStoragePath,
   }) async {
     try {
       await LocalStorageManager.storeJsonFile(
@@ -153,8 +153,8 @@ abstract class ResourceManager {
   }
 
   static Future<ServerpodCloudAuthData?> tryFetchServerpodCloudAuthData({
-    required final String localStoragePath,
-    required final CommandLogger logger,
+    required String localStoragePath,
+    required CommandLogger logger,
   }) async {
     try {
       final authData = await LocalStorageManager.tryFetchAndDeserializeJsonFile(
@@ -184,7 +184,7 @@ abstract class ResourceManager {
   }
 
   static Future<ServerpodCloudAuthData?> _tryMigrateAuthData({
-    required final String localStoragePath,
+    required String localStoragePath,
   }) async {
     const oldServerpodCloudStorageDir = '.serverpod_cloud';
     const oldServerpodCloudDataFilePath = 'serverpod_cloud_data.yaml';
@@ -220,8 +220,8 @@ abstract class ResourceManager {
   }
 
   static Future<void> storeLatestCliVersion({
-    required final CommandLogger logger,
-    required final PackageVersionData cliVersionData,
+    required CommandLogger logger,
+    required PackageVersionData cliVersionData,
     String? localStoragePath,
   }) async {
     localStoragePath ??= localCloudStorageDirectory.path;
@@ -240,11 +240,11 @@ abstract class ResourceManager {
 
   static Future<PackageVersionData?> tryFetchLatestCliVersion({
     String? localStoragePath,
-    required final CommandLogger logger,
+    required CommandLogger logger,
   }) async {
     localStoragePath ??= localCloudStorageDirectory.path;
 
-    void deleteFile(final File file) {
+    void deleteFile(File file) {
       try {
         file.deleteSync();
       } catch (e) {
@@ -272,8 +272,8 @@ abstract class ResourceManager {
   ///
   /// Throws [FailureException] if the file cannot be written.
   static Future<void> storeSettings({
-    required final ServerpodCloudSettingsData settings,
-    required final String localStoragePath,
+    required ServerpodCloudSettingsData settings,
+    required String localStoragePath,
   }) async {
     try {
       await LocalStorageManager.storeJsonFile(
@@ -290,7 +290,7 @@ abstract class ResourceManager {
   ///
   /// Throws [FailureException] if the file cannot be read or deserialized.
   static Future<ServerpodCloudSettingsData?> tryLoadSettings({
-    required final String localStoragePath,
+    required String localStoragePath,
   }) async {
     try {
       return await LocalStorageManager.tryFetchAndDeserializeJsonFile(
@@ -307,7 +307,7 @@ abstract class ResourceManager {
   ///
   /// Returns `null` if the file does not exist or cannot be read.
   static ServerpodCloudSettingsData? tryLoadSettingsSync({
-    required final String localStoragePath,
+    required String localStoragePath,
   }) {
     try {
       final json = tryLoadRawSettingsSync(localStoragePath: localStoragePath);
@@ -325,9 +325,7 @@ abstract class ResourceManager {
   /// and returns the raw content as a string.
   ///
   /// Returns `null` if the file does not exist or cannot be read.
-  static String? tryLoadRawSettingsSync({
-    required final String localStoragePath,
-  }) {
+  static String? tryLoadRawSettingsSync({required String localStoragePath}) {
     try {
       final file = File(
         p.join(localStoragePath, ResourceManagerConstants.settingsFilePath),

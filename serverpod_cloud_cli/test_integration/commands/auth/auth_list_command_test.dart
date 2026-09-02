@@ -21,7 +21,7 @@ void main() {
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
   );
 
@@ -53,7 +53,7 @@ void main() {
 
       when(
         () => client.authWithAuth.listAuthSessions(),
-      ).thenAnswer((final _) async => sessions);
+      ).thenAnswer((_) async => sessions);
     });
 
     tearDownAll(() {
@@ -75,7 +75,7 @@ void main() {
 
         expect(logger.lineCalls, isNotEmpty);
         expect(
-          logger.lineCalls.map((final call) => call.line),
+          logger.lineCalls.map((call) => call.line),
           containsAllInOrder([
             'Token Id | Method    | Created              | Last Used            | Expires              | TTL on non-use',
             '---------+-----------+----------------------+----------------------+----------------------+---------------',

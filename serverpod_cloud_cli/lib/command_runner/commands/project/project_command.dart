@@ -66,7 +66,7 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
     : super(options: ProjectCreateOption.values);
 
   @override
-  Future<void> runWithConfig(final Configuration commandConfig) async {
+  Future<void> runWithConfig(Configuration commandConfig) async {
     final projectId = commandConfig.value(ProjectCreateOption.projectId);
     final plan = commandConfig.optionalValue(ProjectCreateOption.plan);
     final enableDb = commandConfig.value(ProjectCreateOption.enableDb);
@@ -101,7 +101,7 @@ class CloudProjectDeleteCommand extends CloudCliCommand {
     : super(options: ProjectDeleteOption.values);
 
   @override
-  Future<void> runWithConfig(final Configuration commandConfig) async {
+  Future<void> runWithConfig(Configuration commandConfig) async {
     final projectId = commandConfig.value(ProjectDeleteOption.projectId);
 
     await ProjectCommands.deleteProject(
@@ -145,7 +145,7 @@ class CloudProjectListCommand
 
   @override
   Future<void> runWithConfig(
-    final Configuration<ProjectListCommandOption> commandConfig,
+    Configuration<ProjectListCommandOption> commandConfig,
   ) async {
     final showArchived = commandConfig.value(ProjectListCommandOption.all);
     final format = commandConfig.value(ProjectListCommandOption.format);
@@ -199,7 +199,7 @@ class CloudProjectLinkCommand
 
   @override
   Future<void> runWithConfig(
-    final Configuration<ProjectLinkCommandOption> commandConfig,
+    Configuration<ProjectLinkCommandOption> commandConfig,
   ) async {
     final projectId = commandConfig.value(ProjectLinkCommandOption.projectId);
     final dartVersionOverride = commandConfig.optionalValue(

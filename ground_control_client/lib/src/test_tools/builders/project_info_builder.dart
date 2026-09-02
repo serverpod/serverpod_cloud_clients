@@ -9,7 +9,7 @@ class ProjectInfoBuilder {
   String _productId;
   Timestamp? _latestDeployAttemptTime;
 
-  ProjectInfoBuilder({final ProjectBuilder? projectBuilder})
+  ProjectInfoBuilder({ProjectBuilder? projectBuilder})
     : projectBuilder = projectBuilder ?? ProjectBuilder(),
       _productId = 'closed-beta-project:0',
       _latestDeployAttemptTime = null;

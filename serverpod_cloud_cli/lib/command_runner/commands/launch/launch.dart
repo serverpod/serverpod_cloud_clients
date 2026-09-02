@@ -38,23 +38,23 @@ abstract class Launch {
   static const _projectFactStyle = cli.AnsiStyle.cyan;
 
   static Future<void> launch(
-    final Client cloudApiClient,
-    final FileUploaderFactory fileUploaderFactory, {
-    required final CommandLogger logger,
-    required final String baseCommand,
-    required final Directory projectDirectory,
-    required final String? projectId,
-    required final bool includePreDeployScripts,
-    required final bool performDeploy,
-    required final bool tui,
-    required final String consoleServer,
-    required final bool openBrowser,
-    required final int deployConcurrency,
-    required final bool wetRun,
-    required final bool deployShowFiles,
-    final String? deployOutputPath,
-    final bool deploySkipTailingStatus = false,
-    final String? dartVersionOverride,
+    Client cloudApiClient,
+    FileUploaderFactory fileUploaderFactory, {
+    required CommandLogger logger,
+    required String baseCommand,
+    required Directory projectDirectory,
+    required String? projectId,
+    required bool includePreDeployScripts,
+    required bool performDeploy,
+    required bool tui,
+    required String consoleServer,
+    required bool openBrowser,
+    required int deployConcurrency,
+    required bool wetRun,
+    required bool deployShowFiles,
+    String? deployOutputPath,
+    bool deploySkipTailingStatus = false,
+    String? dartVersionOverride,
   }) async {
     logger.init('Launching a Serverpod Cloud project.\n');
 
@@ -109,18 +109,18 @@ abstract class Launch {
   }
 
   static Future<void> launchWithoutTui(
-    final Client cloudApiClient,
-    final FileUploaderFactory fileUploaderFactory, {
-    required final CommandLogger logger,
-    required final String baseCommand,
-    required final ProjectLaunch projectSetup,
-    required final String consoleServer,
-    required final bool openBrowser,
-    required final int deployConcurrency,
-    required final bool wetRun,
-    required final bool deployShowFiles,
-    final String? deployOutputPath,
-    final bool deploySkipTailingStatus = false,
+    Client cloudApiClient,
+    FileUploaderFactory fileUploaderFactory, {
+    required CommandLogger logger,
+    required String baseCommand,
+    required ProjectLaunch projectSetup,
+    required String consoleServer,
+    required bool openBrowser,
+    required int deployConcurrency,
+    required bool wetRun,
+    required bool deployShowFiles,
+    String? deployOutputPath,
+    bool deploySkipTailingStatus = false,
   }) async {
     await selectProjectId(cloudApiClient, logger, projectSetup);
 
@@ -162,18 +162,18 @@ abstract class Launch {
   }
 
   static Future<void> launchWithTui(
-    final Client cloudApiClient,
-    final FileUploaderFactory fileUploaderFactory, {
-    required final CommandLogger logger,
-    required final String baseCommand,
-    required final ProjectLaunch projectSetup,
-    required final String consoleServer,
-    required final bool openBrowser,
-    required final int deployConcurrency,
-    required final bool wetRun,
-    required final bool deployShowFiles,
-    final String? deployOutputPath,
-    final bool deploySkipTailingStatus = false,
+    Client cloudApiClient,
+    FileUploaderFactory fileUploaderFactory, {
+    required CommandLogger logger,
+    required String baseCommand,
+    required ProjectLaunch projectSetup,
+    required String consoleServer,
+    required bool openBrowser,
+    required int deployConcurrency,
+    required bool wetRun,
+    required bool deployShowFiles,
+    String? deployOutputPath,
+    bool deploySkipTailingStatus = false,
   }) async {
     final defaultProjectId = _getDefaultProjectId(projectSetup);
 
@@ -181,7 +181,7 @@ abstract class Launch {
       cloudApiClient,
     );
     final existingProjectIds = existingProjects
-        .map((final p) => p.cloudProjectId)
+        .map((p) => p.cloudProjectId)
         .toList();
 
     final state = LaunchConfigState(
@@ -250,8 +250,8 @@ abstract class Launch {
   /// Returns the [TenantProjectPubspec] if the project is valid,
   /// otherwise throws a [FailureException].
   static TenantProjectPubspec _validateProjectDir(
-    final CommandLogger logger,
-    final Directory projectDir,
+    CommandLogger logger,
+    Directory projectDir,
   ) {
     final pubspecValidator = TenantProjectPubspec.fromProjectDir(projectDir);
 
@@ -285,7 +285,7 @@ abstract class Launch {
     );
   }
 
-  static bool _usesDatabase(final Directory projectDir) {
+  static bool _usesDatabase(Directory projectDir) {
     const configFiles = [
       'development.yaml',
       'production.yaml',
@@ -307,9 +307,9 @@ abstract class Launch {
   }
 
   static Future<void> selectProjectId(
-    final Client cloudApiClient,
-    final CommandLogger logger,
-    final ProjectLaunch projectSetup,
+    Client cloudApiClient,
+    CommandLogger logger,
+    ProjectLaunch projectSetup,
   ) async {
     const invalidProjectIdMessage =
         'Invalid project ID. Must be 6-32 characters long '
@@ -322,7 +322,7 @@ abstract class Launch {
     final specifiedProjectId = projectSetup.projectId;
     if (specifiedProjectId != null) {
       final preexistingProject = existingProjects.firstWhereOrNull(
-        (final p) => p.project.cloudProjectId == specifiedProjectId,
+        (p) => p.project.cloudProjectId == specifiedProjectId,
       );
       if (preexistingProject != null) {
         projectSetup.preexistingProject = true;
@@ -355,7 +355,7 @@ abstract class Launch {
       projectSetup.projectId = selectedId;
       projectSetup.preexistingProject = true;
       final preexistingProject = existingProjects.firstWhereOrNull(
-        (final p) => p.project.cloudProjectId == selectedId,
+        (p) => p.project.cloudProjectId == selectedId,
       );
       projectSetup.preexistingProjectDeployed =
           preexistingProject?.latestDeployAttemptTime?.timestamp != null;
@@ -367,10 +367,10 @@ abstract class Launch {
   }
 
   static Future<void> selectCustomPasswords(
-    final Client cloudApiClient,
-    final CommandLogger logger,
-    final String baseCommand,
-    final ProjectLaunch projectSetup,
+    Client cloudApiClient,
+    CommandLogger logger,
+    String baseCommand,
+    ProjectLaunch projectSetup,
   ) async {
     const ignoredSecretNames = [
       'database',
@@ -391,37 +391,37 @@ abstract class Launch {
       alreadySetSecretNames = await PasswordOperations.fetchPasswords(
         cloudApiClient,
         projectId: projectId,
-      ).then((final passwords) => passwords.map((final p) => p.name).toList());
+      ).then((passwords) => passwords.map((p) => p.name).toList());
     } else {
       alreadySetSecretNames = [];
     }
 
     final filteredPasswords = allPasswords.where(
-      (final p) =>
+      (p) =>
           !ignoredSecretNames.contains(p.name) &&
           !alreadySetSecretNames.contains(p.name),
     );
     if (filteredPasswords.isEmpty) return;
 
     final sortedPasswords = filteredPasswords.toList()
-      ..sort((final a, final b) => a.section.index.compareTo(b.section.index));
+      ..sort((a, b) => a.section.index.compareTo(b.section.index));
 
     final longestPasswordNameLength = sortedPasswords
-        .map((final p) => p.name.length)
-        .reduce((final a, final b) => math.max(a, b));
-    String padAfterName(final String name) {
+        .map((p) => p.name.length)
+        .reduce((a, b) => math.max(a, b));
+    String padAfterName(String name) {
       return ''.padRight(longestPasswordNameLength - name.length);
     }
 
     final options = sortedPasswords
         .map(
-          (final p) =>
+          (p) =>
               '${p.name}: ${padAfterName(p.name)}${_hidePassword(p.value)}'
               '  (from section "${p.section.name}")',
         )
         .toList();
     final initiallySelected = options.where(
-      (final s) => s.endsWith('"production")') || s.endsWith('"shared")'),
+      (s) => s.endsWith('"production")') || s.endsWith('"shared")'),
     );
 
     final selected = await SelectList.chooseMultiple<String>(
@@ -440,17 +440,17 @@ abstract class Launch {
     }
 
     final selectedNames = selected
-        .map((final option) => option.split(':').first)
+        .map((option) => option.split(':').first)
         .toSet();
     final selectedPasswords = sortedPasswords.where(
-      (final p) => selectedNames.contains(p.name),
+      (p) => selectedNames.contains(p.name),
     );
     projectSetup.selectedPasswords = {
       for (final p in selectedPasswords) p.name: p.value,
     };
   }
 
-  static Set<_Password> _readAllPasswords(final Directory projectDir) {
+  static Set<_Password> _readAllPasswords(Directory projectDir) {
     final file = File(p.join(projectDir.path, 'config', 'passwords.yaml'));
     if (!file.existsSync()) return {};
 
@@ -475,8 +475,8 @@ abstract class Launch {
   }
 
   static Set<_Password> _readPasswords(
-    final Map<dynamic, dynamic> decoded,
-    final PasswordSection section,
+    Map<dynamic, dynamic> decoded,
+    PasswordSection section,
   ) {
     final passwords = <_Password>{};
     final sectionData = decoded[section.name];
@@ -496,9 +496,9 @@ abstract class Launch {
   }
 
   static Future<String?> _selectExistingProject(
-    final Client cloudApiClient,
-    final List<ProjectInfo> existingProjects,
-    final CommandLogger logger,
+    Client cloudApiClient,
+    List<ProjectInfo> existingProjects,
+    CommandLogger logger,
   ) async {
     if (existingProjects.isEmpty) {
       final confirm = await logger.confirm(
@@ -512,7 +512,7 @@ abstract class Launch {
       return null; // create a new project
     }
 
-    existingProjects.sort((final a, final b) {
+    existingProjects.sort((a, b) {
       // if both or neither are null, keep the order
       if ((a.latestDeployAttemptTime?.timestamp == null) ==
           (b.latestDeployAttemptTime?.timestamp == null)) {
@@ -522,7 +522,7 @@ abstract class Launch {
       return (a.latestDeployAttemptTime?.timestamp == null) ? -1 : 1;
     });
 
-    final projectLabels = existingProjects.map((final p) {
+    final projectLabels = existingProjects.map((p) {
       final lastDeployedTime = p.latestDeployAttemptTime?.timestamp;
       final lastDeployed = lastDeployedTime == null
           ? 'available for first deployment'
@@ -533,15 +533,13 @@ abstract class Launch {
       ...projectLabels,
       'Open the browser and create a new project',
     ];
-    final options = optionLabels
-        .mapIndexed((final i, final r) => (i, r))
-        .toList();
+    final options = optionLabels.mapIndexed((i, r) => (i, r)).toList();
 
     final selected = await SelectList.choose(
       prompt:
           'Select a Serverpod Cloud project to deploy to, or create a new project:',
       options: options,
-      label: (final o) => o.$2,
+      label: (o) => o.$2,
       terminal: logger.inlineTerminal,
       style: SelectListStyle(highlightStyle: _projectFactStyle.ansiCode),
     );
@@ -556,23 +554,23 @@ abstract class Launch {
   }
 
   static Future<List<Project>> _fetchExistingUndeployedProjects(
-    final Client cloudApiClient,
+    Client cloudApiClient,
   ) async {
     try {
       final projects = await cloudApiClient.projects.listProjectsInfo(
         includeLatestDeployAttemptTime: true,
       );
       return projects
-          .where((final p) => p.project.archivedAt == null)
-          .where((final p) => p.latestDeployAttemptTime?.timestamp == null)
-          .map((final p) => p.project)
+          .where((p) => p.project.archivedAt == null)
+          .where((p) => p.latestDeployAttemptTime?.timestamp == null)
+          .map((p) => p.project)
           .toList();
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Request to list projects failed');
     }
   }
 
-  static String? _getDefaultProjectId(final ProjectLaunch projectSetup) {
+  static String? _getDefaultProjectId(ProjectLaunch projectSetup) {
     final projectPubspec = projectSetup.projectPubspec;
     if (projectPubspec.isServerpodServer()) {
       var name = projectPubspec.pubspec.name.toLowerCase().replaceAll('_', '-');
@@ -590,8 +588,8 @@ abstract class Launch {
   }
 
   static Future<void> suggestFlutterBuildPreDeployHook(
-    final CommandLogger logger,
-    final ProjectLaunch projectSetup,
+    CommandLogger logger,
+    ProjectLaunch projectSetup,
   ) async {
     if (!projectSetup.includePreDeployScripts) return;
 
@@ -620,8 +618,8 @@ abstract class Launch {
   }
 
   static Future<void> suggestCodeGenerationPreDeployHook(
-    final CommandLogger logger,
-    final ProjectLaunch projectSetup,
+    CommandLogger logger,
+    ProjectLaunch projectSetup,
   ) async {
     if (!projectSetup.includePreDeployScripts) return;
 
@@ -645,20 +643,20 @@ abstract class Launch {
   }
 
   static Future<void> performLaunch(
-    final Client cloudApiClient,
-    final FileUploaderFactory fileUploaderFactory,
-    final CommandLogger logger,
-    final String baseCommand,
-    final ProjectLaunch projectSetup, {
-    required final String consoleServer,
-    required final bool openBrowser,
-    required final int deployConcurrency,
-    required final bool wetRun,
-    required final bool deployShowFiles,
-    final String? deployOutputPath,
-    final bool deploySkipTailingStatus = false,
-    final IOSink? stdout,
-    final IOSink? stderr,
+    Client cloudApiClient,
+    FileUploaderFactory fileUploaderFactory,
+    CommandLogger logger,
+    String baseCommand,
+    ProjectLaunch projectSetup, {
+    required String consoleServer,
+    required bool openBrowser,
+    required int deployConcurrency,
+    required bool wetRun,
+    required bool deployShowFiles,
+    String? deployOutputPath,
+    bool deploySkipTailingStatus = false,
+    IOSink? stdout,
+    IOSink? stderr,
   }) async {
     final projectId = projectSetup.projectId;
     if (projectId == null) {
@@ -728,8 +726,8 @@ abstract class Launch {
   }
 
   static void _displayProjectInfo({
-    required final CommandLogger logger,
-    required final String actualProjectId,
+    required CommandLogger logger,
+    required String actualProjectId,
   }) {
     final projectIdStr = logger.wrapStyle(actualProjectId, _projectFactStyle);
     logger.info(
@@ -765,12 +763,12 @@ abstract class Launch {
   /// for the console to redirect back to a local callback server with the id of
   /// the created project. Returns the created project id.
   static Future<String> createProject(
-    final CommandLogger logger, {
-    required final String consoleServer,
-    required final bool openBrowser,
-    required final String projectName,
-    required final bool usesDb,
-    final Duration timeLimit = const Duration(minutes: 5),
+    CommandLogger logger, {
+    required String consoleServer,
+    required bool openBrowser,
+    required String projectName,
+    required bool usesDb,
+    Duration timeLimit = const Duration(minutes: 5),
   }) async {
     final callbackUrlFuture = Completer<Uri>();
     final projectIdFuture = ListenerServer.listenForCallback(
@@ -831,10 +829,10 @@ abstract class Launch {
   }
 
   static Future<void> _populateCustomPasswords(
-    final Client cloudApiClient,
-    final CommandLogger logger, {
-    required final String projectId,
-    required final Map<String, String> passwords,
+    Client cloudApiClient,
+    CommandLogger logger, {
+    required String projectId,
+    required Map<String, String> passwords,
   }) async {
     if (passwords.isEmpty) return;
 
@@ -854,7 +852,7 @@ abstract class Launch {
   }
 }
 
-String _hidePassword(final String password) {
+String _hidePassword(String password) {
   final included = math.min(password.length, 4);
   return '${password.substring(0, included)}*****';
 }
@@ -876,7 +874,7 @@ class _Password {
   }
 
   @override
-  bool operator ==(final Object other) {
+  bool operator ==(Object other) {
     if (other is _Password) return name == other.name;
     return false;
   }
@@ -909,14 +907,14 @@ class ProjectLaunch {
     this.preexistingProject,
     this.preexistingProjectDeployed,
     this.performDeploy = true,
-    final List<String>? suggestedPreDeployScripts,
-    final Map<String, String>? selectedPasswords,
+    List<String>? suggestedPreDeployScripts,
+    Map<String, String>? selectedPasswords,
   }) : suggestedPreDeployScripts = suggestedPreDeployScripts ?? [],
        selectedPasswords = selectedPasswords ?? {} {
     configFilePath = _constructConfigFilePath(projectDir.path);
   }
 
-  String _constructConfigFilePath(final String projectDir) {
+  String _constructConfigFilePath(String projectDir) {
     return p.join(projectDir, ProjectConfigFileConstants.defaultFileName);
   }
 
@@ -934,7 +932,7 @@ class ProjectLaunch {
           [
             'Pre-deploy hooks',
             suggestedPreDeployScripts
-                .map((final hook) => "- '$hook'")
+                .map((hook) => "- '$hook'")
                 .join('\n                    '),
           ],
         ],

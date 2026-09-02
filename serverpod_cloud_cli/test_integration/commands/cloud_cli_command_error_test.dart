@@ -21,7 +21,7 @@ class _ThrowingCommand extends CloudCliCommand {
 
   _ThrowingCommand({
     required super.logger,
-    required final Object Function() throwError,
+    required Object Function() throwError,
   }) : _throwError = throwError;
 
   @override
@@ -32,7 +32,7 @@ class _ThrowingCommand extends CloudCliCommand {
 
   @override
   Future<void> runWithConfig(
-    final Configuration<OptionDefinition> commandConfig,
+    Configuration<OptionDefinition> commandConfig,
   ) async {
     throw _throwError();
   }
@@ -46,12 +46,12 @@ void main() {
 
   late String settingsDir;
 
-  CloudCliCommandRunner createCli(final Object Function() throwError) {
+  CloudCliCommandRunner createCli(Object Function() throwError) {
     final cli = CloudCliCommandRunner.create(
       logger: logger,
       version: Version(1, 0, 0),
       serviceProvider: CloudCliServiceProvider(
-        apiClientFactory: (final globalCfg) => client,
+        apiClientFactory: (globalCfg) => client,
       ),
     );
     cli.addCommand(_ThrowingCommand(logger: logger, throwError: throwError));
@@ -95,7 +95,7 @@ void main() {
         commandResult,
         throwsA(
           isA<UnexpectedErrorExitException>().having(
-            (final e) => e.nestedException,
+            (e) => e.nestedException,
             'nestedException',
             same(cause),
           ),
@@ -108,7 +108,7 @@ void main() {
         commandResult,
         throwsA(
           isA<UnexpectedErrorExitException>().having(
-            (final e) => e.nestedStackTrace,
+            (e) => e.nestedStackTrace,
             'nestedStackTrace',
             isNotNull,
           ),
@@ -162,7 +162,7 @@ void main() {
         commandResult,
         throwsA(
           isA<UnexpectedErrorExitException>().having(
-            (final e) => e.nestedException,
+            (e) => e.nestedException,
             'nestedException',
             same(cause),
           ),

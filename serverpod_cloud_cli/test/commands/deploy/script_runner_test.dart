@@ -78,7 +78,7 @@ void main() {
           ),
           throwsA(
             isA<ErrorExitException>().having(
-              (final e) => e.reason,
+              (e) => e.reason,
               'reason',
               contains('exit code 3'),
             ),

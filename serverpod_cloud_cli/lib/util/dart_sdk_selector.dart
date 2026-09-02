@@ -32,12 +32,12 @@ abstract final class DartSdkSelector {
   /// Throws [FailureException] if a value cannot be parsed, if
   /// [supportedSdkMinorVersions] is empty, or if no supported version satisfies both.
   static String selectDartSdkVersion({
-    required final List<String> supportedSdkMinorVersions,
-    final String? commandLineVersion,
-    final String? scloudVersion,
-    final String? toolVersionsVersion,
-    final String? pubspecVersionConstraint,
-    final String? lockVersionConstraint,
+    required List<String> supportedSdkMinorVersions,
+    String? commandLineVersion,
+    String? scloudVersion,
+    String? toolVersionsVersion,
+    String? pubspecVersionConstraint,
+    String? lockVersionConstraint,
   }) {
     final constraints = [
       ?_firstConstraint([
@@ -58,7 +58,7 @@ abstract final class DartSdkSelector {
         max: Version(minorVersion.major, minorVersion.minor + 1, 0),
       );
       final satisfiesAll = constraints.every(
-        (final constraint) => constraint.constraint.allowsAny(minorLine),
+        (constraint) => constraint.constraint.allowsAny(minorLine),
       );
       if (satisfiesAll) {
         return '${minorVersion.major}.${minorVersion.minor}';
@@ -69,7 +69,7 @@ abstract final class DartSdkSelector {
       error:
           'No Dart SDK version supported by Serverpod Cloud satisfies the '
           'Dart SDK version constraints of the project:\n'
-          '${constraints.map((final c) => '  ${c.value} (from ${c.source})').join('\n')}\n'
+          '${constraints.map((c) => '  ${c.value} (from ${c.source})').join('\n')}\n'
           'Available Dart SDK versions: ${supportedSdkMinorVersions.join(', ')}.',
       hint:
           'Change the requested Dart SDK version, or the Dart SDK constraints '
@@ -78,9 +78,7 @@ abstract final class DartSdkSelector {
   }
 
   /// The constraint of the first source that holds a value, or null if none do.
-  static _SourcedConstraint? _firstConstraint(
-    final List<(String?, String)> sources,
-  ) {
+  static _SourcedConstraint? _firstConstraint(List<(String?, String)> sources) {
     for (final (value, source) in sources) {
       final constraint = _constraint(value, source);
       if (constraint != null) {
@@ -96,10 +94,7 @@ abstract final class DartSdkSelector {
   /// minor line of `3.13` contains.
   ///
   /// Throws [FailureException] if [value] cannot be parsed.
-  static _SourcedConstraint? _constraint(
-    final String? value,
-    final String source,
-  ) {
+  static _SourcedConstraint? _constraint(String? value, String source) {
     final trimmed = value?.trim();
     if (trimmed == null || trimmed.isEmpty) {
       return null;
@@ -126,7 +121,7 @@ abstract final class DartSdkSelector {
   /// for `3.13`, ordered lowest to highest. Unparseable versions are left out.
   ///
   /// Throws [FailureException] if that leaves no versions to select from.
-  static List<Version> _minorVersionsOf(final List<String> minorVersions) {
+  static List<Version> _minorVersionsOf(List<String> minorVersions) {
     final versions = <Version>[
       for (final minorVersion in minorVersions)
         if (_minorVersionOf(minorVersion) case final Version version) version,
@@ -141,7 +136,7 @@ abstract final class DartSdkSelector {
     return versions;
   }
 
-  static Version? _minorVersionOf(final String minorVersion) {
+  static Version? _minorVersionOf(String minorVersion) {
     final parts = minorVersion.trim().split('.');
     if (parts.length < 2) {
       return null;

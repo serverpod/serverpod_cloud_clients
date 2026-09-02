@@ -7,30 +7,30 @@ class ProjectListTextUi extends OutputWidget {
 
   late final List<TableColumnFormatter<ProjectInfo>> _projectTableColumns;
 
-  ProjectListTextUi({required this.utc, required final bool showArchived}) {
+  ProjectListTextUi({required this.utc, required bool showArchived}) {
     _projectTableColumns = [
       TableColumnFormatter.forElement(
         'Project Id',
-        getter: (final project) => project.project.cloudProjectId,
+        getter: (project) => project.project.cloudProjectId,
       ),
       TableColumnFormatter.forElement(
         'Created At',
-        getter: (final project) => project.project.createdAt,
+        getter: (project) => project.project.createdAt,
       ),
       TableColumnFormatter.forElement(
         'Last Deploy Attempt',
-        getter: (final project) => project.latestDeployAttemptTime?.timestamp,
+        getter: (project) => project.latestDeployAttemptTime?.timestamp,
       ),
       if (showArchived)
         TableColumnFormatter.forElement(
           'Deleted At',
-          getter: (final project) => project.project.archivedAt,
+          getter: (project) => project.project.archivedAt,
         ),
     ];
   }
 
   @override
-  OutputWidget build(final OutputContext context) {
+  OutputWidget build(OutputContext context) {
     final object = context.get<List<ProjectInfo>>();
     if (object.isEmpty) {
       return InfoTextWidget('No projects available.');

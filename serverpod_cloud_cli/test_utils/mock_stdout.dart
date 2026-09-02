@@ -18,17 +18,17 @@ class MockStdout implements Stdout {
   String get output => _buffer.toString();
 
   @override
-  void add(final List<int> data) {
+  void add(List<int> data) {
     _buffer.write(utf8.decode(data));
   }
 
   @override
-  void addError(final Object error, [final StackTrace? stackTrace]) {
+  void addError(Object error, [StackTrace? stackTrace]) {
     throw UnimplementedError();
   }
 
   @override
-  Future addStream(final Stream<List<int>> stream) {
+  Future addStream(Stream<List<int>> stream) {
     throw UnimplementedError();
   }
 
@@ -58,22 +58,22 @@ class MockStdout implements Stdout {
   int get terminalLines => 24;
 
   @override
-  void write(final Object? object) {
+  void write(Object? object) {
     _buffer.write(object);
   }
 
   @override
-  void writeAll(final Iterable objects, [final String sep = ""]) {
+  void writeAll(Iterable objects, [String sep = ""]) {
     _buffer.writeAll(objects, sep);
   }
 
   @override
-  void writeCharCode(final int charCode) {
+  void writeCharCode(int charCode) {
     _buffer.writeCharCode(charCode);
   }
 
   @override
-  void writeln([final Object? object = ""]) {
+  void writeln([Object? object = ""]) {
     _buffer.writeln(object);
   }
 }

@@ -17,10 +17,10 @@ class ProjectFactory {
   /// Returns descriptor for a Serverpod server directory with a valid pubspec.yaml file.
   /// Use `descriptor.create()` to create the directory.
   static d.DirectoryDescriptor serverpodServerDir({
-    final String withDirectoryName = defaultDirectoryName,
-    final String withPackageName = defaultPackageName,
-    final String? withResolution,
-    final Iterable<d.Descriptor>? contents,
+    String withDirectoryName = defaultDirectoryName,
+    String withPackageName = defaultPackageName,
+    String? withResolution,
+    Iterable<d.Descriptor>? contents,
   }) {
     return d.dir(withDirectoryName, [
       serverpodServerPubspec(withPackageName: withPackageName),
@@ -31,8 +31,8 @@ class ProjectFactory {
   /// Returns descriptor for a valid Serverpod server pubspec.yaml file.
   /// Use `descriptor.create()` to create the file.
   static d.FileDescriptor serverpodServerPubspec({
-    final String withPackageName = defaultPackageName,
-    final String? withResolution,
+    String withPackageName = defaultPackageName,
+    String? withResolution,
   }) {
     final String resolutionString = withResolution != null
         ? 'resolution: $withResolution'
@@ -61,10 +61,10 @@ class DirectoryFactory {
   /// Creates a new directory factory.
   /// The directory name is a random UUID by default.
   DirectoryFactory({
-    final String? withDirectoryName,
-    final List<DirectoryFactory>? withSubDirectories,
-    final List<FileFactory>? withFiles,
-    final List<SymLinkFactory>? withSymLinks,
+    String? withDirectoryName,
+    List<DirectoryFactory>? withSubDirectories,
+    List<FileFactory>? withFiles,
+    List<SymLinkFactory>? withSymLinks,
   }) : _directoryName = withDirectoryName ?? const Uuid().v4(),
        _subDirectories = withSubDirectories ?? [],
        _files = withFiles ?? [],
@@ -74,7 +74,7 @@ class DirectoryFactory {
   /// Returns the created directory.
   ///
   /// The [path] is the path to where the directory should be created.
-  Directory construct(final String path) {
+  Directory construct(String path) {
     final directory = Directory(path);
     directory.createSync(recursive: true);
 
@@ -105,14 +105,14 @@ class FileFactory {
   ///
   /// The file name is a random UUID by default.
   /// The file contents are empty by default.
-  FileFactory({final String? withName, final String? withContents})
+  FileFactory({String? withName, String? withContents})
     : _contents = withContents ?? '',
       _name = withName ?? const Uuid().v4();
 
   /// Constructs the file and writes the contents.
   /// The [path] is the path to where the file should be created.
   /// The file is created synchronously and recursively.
-  File construct(final String path) {
+  File construct(String path) {
     final file = File(p.join(path, _name));
     file.createSync(recursive: true);
     file.writeAsStringSync(_contents);
@@ -131,13 +131,13 @@ class SymLinkFactory {
   /// The link target is a random UUID by default.
   ///
   /// The [withTarget] is a relative path to the target.
-  SymLinkFactory({final String? withName, final String? withTarget})
+  SymLinkFactory({String? withName, String? withTarget})
     : _target = withTarget ?? const Uuid().v4(),
       _name = withName ?? const Uuid().v4();
 
   /// Constructs the symbolic link.
   /// The [path] is the path to where the link should be created.
-  FileSystemEntity construct(final String path) {
+  FileSystemEntity construct(String path) {
     final file = Link(p.join(path, _name));
     file.createSync(_target);
     return file;

@@ -35,7 +35,7 @@ void main() {
       () => schema.validate(invalidData),
       throwsA(
         isA<SchemaValidationException>().having(
-          (final e) => e.message,
+          (e) => e.message,
           'error message',
           'Missing required key: "age"',
         ),
@@ -60,7 +60,7 @@ void main() {
         () => schema.validate(invalidData),
         throwsA(
           isA<SchemaValidationException>().having(
-            (final e) => e.message,
+            (e) => e.message,
             'error message',
             'Missing required key: "user.age"',
           ),
@@ -109,7 +109,7 @@ void main() {
         () => schema.validate(invalidData),
         throwsA(
           isA<SchemaValidationException>().having(
-            (final e) => e.message,
+            (e) => e.message,
             'error message',
             'At path "users[0].age": Expected type int, got String',
           ),
@@ -193,7 +193,7 @@ void main() {
         () => schema.validate(invalidData),
         throwsA(
           isA<SchemaValidationException>().having(
-            (final e) => e.message,
+            (e) => e.message,
             'error message',
             'At path "user": Expected YamlMap, got String',
           ),
@@ -219,7 +219,7 @@ void main() {
         () => schema.validate(invalidData),
         throwsA(
           isA<SchemaValidationException>().having(
-            (final e) => e.message,
+            (e) => e.message,
             'error message',
             'At path "items[1]": Expected type String, got int',
           ),

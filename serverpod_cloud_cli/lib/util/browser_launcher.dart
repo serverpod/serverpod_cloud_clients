@@ -1,7 +1,7 @@
 import 'dart:io';
 
 abstract final class BrowserLauncher {
-  static Future<ProcessResult> openUrl(final Uri url) async {
+  static Future<ProcessResult> openUrl(Uri url) async {
     return Process.run(_getPlatformBrowserCommand(), [
       url.toString(),
     ], runInShell: true);

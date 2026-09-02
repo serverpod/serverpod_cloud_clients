@@ -3,8 +3,7 @@ import 'package:args/command_runner.dart';
 class CloudCliUsageException extends UsageException {
   final String? hint;
 
-  CloudCliUsageException(final String message, {this.hint})
-    : super(message, '');
+  CloudCliUsageException(String message, {this.hint}) : super(message, '');
 
   @override
   String toString() {

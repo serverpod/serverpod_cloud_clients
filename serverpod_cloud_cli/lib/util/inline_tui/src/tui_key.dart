@@ -63,7 +63,7 @@ class TuiKey {
   const TuiKey(this.type, {this.character});
 
   @override
-  bool operator ==(final Object other) =>
+  bool operator ==(Object other) =>
       other is TuiKey && other.type == type && other.character == character;
 
   @override
@@ -90,7 +90,7 @@ abstract final class TuiKeyDecoder {
   /// Terminals deliver complete escape sequences within a single read in raw
   /// mode, so a lone escape byte at the end of a chunk is interpreted as the
   /// Escape key.
-  static List<TuiKey> decode(final List<int> data) {
+  static List<TuiKey> decode(List<int> data) {
     final keys = <TuiKey>[];
     var i = 0;
     while (i < data.length) {
@@ -138,9 +138,9 @@ abstract final class TuiKeyDecoder {
   }
 
   static int _decodeEscapeSequence(
-    final List<int> data,
-    final int start,
-    final List<TuiKey> keys,
+    List<int> data,
+    int start,
+    List<TuiKey> keys,
   ) {
     // CSI sequences: ESC [ ... and application mode: ESC O ...
     final next = start + 1 < data.length ? data[start + 1] : null;
@@ -166,7 +166,7 @@ abstract final class TuiKeyDecoder {
     return start + 1;
   }
 
-  static int _escapeSequenceEnd(final List<int> data, final int start) {
+  static int _escapeSequenceEnd(List<int> data, int start) {
     var i = start;
     while (i < data.length) {
       final byte = data[i];
@@ -176,7 +176,7 @@ abstract final class TuiKeyDecoder {
     return data.length;
   }
 
-  static TuiKey? _csiKey(final int? code) {
+  static TuiKey? _csiKey(int? code) {
     switch (code) {
       case 0x41: // 'A'
         return const TuiKey(TuiKeyType.arrowUp);
@@ -199,7 +199,7 @@ abstract final class TuiKeyDecoder {
     }
   }
 
-  static TuiKey? _windowsSpecialKey(final int code) {
+  static TuiKey? _windowsSpecialKey(int code) {
     switch (code) {
       case 0x48: // Up
         return const TuiKey(TuiKeyType.arrowUp);
@@ -222,7 +222,7 @@ abstract final class TuiKeyDecoder {
     }
   }
 
-  static TuiKey? _controlKey(final int byte) {
+  static TuiKey? _controlKey(int byte) {
     switch (byte) {
       case 0x0d: // CR
       case 0x0a: // LF
@@ -241,7 +241,7 @@ abstract final class TuiKeyDecoder {
     }
   }
 
-  static int _printableRunEnd(final List<int> data, final int start) {
+  static int _printableRunEnd(List<int> data, int start) {
     var end = start;
     while (end < data.length) {
       final byte = data[end];

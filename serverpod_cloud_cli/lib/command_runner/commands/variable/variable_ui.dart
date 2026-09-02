@@ -4,7 +4,7 @@ class VariableListTextUi extends OutputWidget {
   const VariableListTextUi();
 
   @override
-  OutputWidget build(final OutputContext context) {
+  OutputWidget build(OutputContext context) {
     return FormattedTableWidget(
       formatter: TextTableOutputFormatter<Map<String, Object?>>(
         columns: [

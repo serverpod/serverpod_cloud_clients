@@ -12,25 +12,25 @@ class UploadDescriptionBuilder {
       _httpMethod = 'PUT',
       _headers = const {'Content-Type': 'application/octet-stream'};
 
-  UploadDescriptionBuilder withType(final String type) {
+  UploadDescriptionBuilder withType(String type) {
     _type = type;
 
     return this;
   }
 
-  UploadDescriptionBuilder withUrl(final String url) {
+  UploadDescriptionBuilder withUrl(String url) {
     _url = url;
 
     return this;
   }
 
-  UploadDescriptionBuilder withHttpMethod(final String httpMethod) {
+  UploadDescriptionBuilder withHttpMethod(String httpMethod) {
     _httpMethod = httpMethod;
 
     return this;
   }
 
-  UploadDescriptionBuilder withHeaders(final Map<String, String> headers) {
+  UploadDescriptionBuilder withHeaders(Map<String, String> headers) {
     _headers = headers;
 
     return this;

@@ -13,19 +13,19 @@ class _RecordingWidget extends OutputWidget {
   const _RecordingWidget(this.name);
 
   @override
-  void render({required final CommandLogger logger}) {
+  void render({required CommandLogger logger}) {
     logger.info(name);
   }
 }
 
 class _NestedWidget extends OutputWidget {
   @override
-  OutputWidget build(final OutputContext context) {
+  OutputWidget build(OutputContext context) {
     return const _RecordingWidget('child');
   }
 
   @override
-  void render({required final CommandLogger logger}) {
+  void render({required CommandLogger logger}) {
     logger.info('parent');
   }
 }

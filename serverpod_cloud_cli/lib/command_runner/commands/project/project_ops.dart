@@ -34,14 +34,14 @@ abstract class ProjectCommands {
   /// Throws [ProcurementDeniedException] if there is no subscription and the
   /// plan cannot be procured.
   static Future<void> checkPlanAvailability(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final PlanProfile? plan,
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required PlanProfile? plan,
   }) async {
     final planNames = await cloudApiClient.plans.listProcuredPlanNames();
 
     if (plan == null &&
-        planNames.any((final name) => _legacyPlanNames.contains(name))) {
+        planNames.any((name) => _legacyPlanNames.contains(name))) {
       return;
     }
 
@@ -54,13 +54,13 @@ abstract class ProjectCommands {
 
   /// Subcommand to create a new tenant project.
   static Future<void> createProject(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String projectId,
-    required final PlanProfile? plan,
-    required final bool enableDb,
-    final bool skipConfirmation = false,
-    final bool suppressCommandMessages = false,
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String projectId,
+    required PlanProfile? plan,
+    required bool enableDb,
+    bool skipConfirmation = false,
+    bool suppressCommandMessages = false,
   }) async {
     if (!skipConfirmation) {
       await UserConfirmations.confirmNewProjectCostAcceptance(logger);
@@ -73,7 +73,7 @@ abstract class ProjectCommands {
       if (subscriptions.isNotEmpty) {
         final legacySubscription = subscriptions
             .where(
-              (final s) =>
+              (s) =>
                   _legacyPlanNames.contains(s.planProductId.split(':').first),
             )
             .firstOrNull;
@@ -149,9 +149,9 @@ abstract class ProjectCommands {
   }
 
   static Future<void> deleteProject(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String projectId,
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String projectId,
   }) async {
     final shouldDelete = await logger.confirm(
       'Are you sure you want to delete the project "$projectId"?',
@@ -176,8 +176,8 @@ abstract class ProjectCommands {
   }
 
   static Future<List<ProjectInfo>> listProjectsOperation(
-    final Client cloudApiClient, {
-    final bool showArchived = false,
+    Client cloudApiClient, {
+    bool showArchived = false,
   }) async {
     late List<ProjectInfo> projects;
     try {
@@ -190,20 +190,20 @@ abstract class ProjectCommands {
 
     final activeProjects = showArchived
         ? projects
-        : projects.where((final p) => p.project.archivedAt == null);
+        : projects.where((p) => p.project.archivedAt == null);
 
-    return activeProjects.sortedBy((final p) => p.project.createdAt).toList();
+    return activeProjects.sortedBy((p) => p.project.createdAt).toList();
   }
 
   static Future<String?> linkProject(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String projectId,
-    required final String projectDirectory,
-    required final String configFilePath,
-    final String? dartVersionOverride,
-    final List<String> preDeployScripts = const [],
-    final bool suppressCommandMessages = false,
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String projectId,
+    required String projectDirectory,
+    required String configFilePath,
+    String? dartVersionOverride,
+    List<String> preDeployScripts = const [],
+    bool suppressCommandMessages = false,
   }) async {
     final safeDartSdk = ProjectDartVersionHint.normalizeBareMajorMinorOverride(
       dartVersionOverride,
@@ -239,11 +239,11 @@ abstract class ProjectCommands {
   }
 
   static Future<void> inviteUser(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String projectId,
-    required final String email,
-    required final List<String> assignRoleNames,
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String projectId,
+    required String email,
+    required List<String> assignRoleNames,
   }) async {
     try {
       await cloudApiClient.projects.inviteUser(
@@ -264,12 +264,12 @@ abstract class ProjectCommands {
   }
 
   static Future<void> revokeUser(
-    final Client cloudApiClient, {
-    required final CommandLogger logger,
-    required final String projectId,
-    required final String email,
-    final List<String> unassignRoleNames = const [],
-    final bool unassignAllRoles = false,
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String projectId,
+    required String email,
+    List<String> unassignRoleNames = const [],
+    bool unassignAllRoles = false,
   }) async {
     final List<String> actuallyUnassigned;
     try {

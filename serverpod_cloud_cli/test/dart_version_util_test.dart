@@ -19,7 +19,7 @@ void main() {
         'when fetchSupportedDartSdkVersions is called '
         'then the supported versions are returned', () async {
       when(() => client.platform.getDartSdkVersionPolicy()).thenAnswer(
-        (final _) async => DartSdkVersionPolicyBuilder().withSupportedVersions([
+        (_) async => DartSdkVersionPolicyBuilder().withSupportedVersions([
           '3.8',
           '3.9',
         ]).build(),
@@ -51,7 +51,7 @@ void main() {
           fetchSupportedDartSdkVersions(client),
           throwsA(
             isA<FailureException>().having(
-              (final e) => e.hint,
+              (e) => e.hint,
               'hint',
               contains('not with your project'),
             ),

@@ -90,7 +90,7 @@ abstract final class WindowsConsole {
   }
 
   /// Restores the console [modes] captured by [enableRawVirtualTerminal].
-  static void restore(final WindowsConsoleModes modes) {
+  static void restore(WindowsConsoleModes modes) {
     if (!Platform.isWindows) return;
     try {
       _setConsoleMode(_getStdHandle(_stdInputHandle), modes.stdinMode);
@@ -100,7 +100,7 @@ abstract final class WindowsConsole {
     }
   }
 
-  static int? _getConsoleModeOrNull(final int handle) {
+  static int? _getConsoleModeOrNull(int handle) {
     final modePtr = calloc<Uint32>();
     try {
       if (_getConsoleMode(handle, modePtr) == 0) return null;

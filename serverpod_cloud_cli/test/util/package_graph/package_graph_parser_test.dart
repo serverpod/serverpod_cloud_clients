@@ -33,12 +33,12 @@ void main() {
       final app = graph.roots.single;
       expect(app.name, 'app');
       expect(app.version, '1.0.0');
-      expect(app.dependencies.map((final p) => p.name), ['foo']);
-      expect(app.devDependencies.map((final p) => p.name), ['test']);
+      expect(app.dependencies.map((p) => p.name), ['foo']);
+      expect(app.devDependencies.map((p) => p.name), ['test']);
 
       final foo = app.dependencies.single;
       expect(foo.version, '2.0.0');
-      expect(foo.dependencies.map((final p) => p.name), ['bar']);
+      expect(foo.dependencies.map((p) => p.name), ['bar']);
       expect(foo.devDependencies, isEmpty);
 
       final bar = foo.dependencies.single;
@@ -118,7 +118,7 @@ void main() {
         ],
       });
 
-      expect(graph.roots.map((final p) => p.name), ['pkg_b', 'pkg_a']);
+      expect(graph.roots.map((p) => p.name), ['pkg_b', 'pkg_a']);
     });
 
     test('Given omitted optional dependency lists '
@@ -150,7 +150,7 @@ void main() {
         }),
         throwsA(
           isA<FormatException>().having(
-            (final e) => e.message,
+            (e) => e.message,
             'message',
             contains('configVersion'),
           ),

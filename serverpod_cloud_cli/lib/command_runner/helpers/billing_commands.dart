@@ -4,8 +4,8 @@ import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 abstract class BillingCommands {
   /// Checks if the owner is in good standing and warns if not.
   static Future<void> warnIfOverdue({
-    required final CommandLogger logger,
-    required final EndpointBilling billing,
+    required CommandLogger logger,
+    required EndpointBilling billing,
   }) async {
     final bool isInGoodStanding;
     try {
@@ -29,8 +29,8 @@ abstract class BillingCommands {
   }
 
   static void _printOverdueWarning({
-    required final CommandLogger logger,
-    final Uri? billingPortalUrl,
+    required CommandLogger logger,
+    Uri? billingPortalUrl,
   }) {
     var message =
         'Payment Overdue\n'

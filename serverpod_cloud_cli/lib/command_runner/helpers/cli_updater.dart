@@ -26,7 +26,7 @@ const cliUpdateAttemptedEnvName = 'SERVERPOD_CLOUD_UPDATE_ATTEMPTED';
 /// which lets the update proceed.
 ///
 /// Defaults to the environment of the current process.
-Version? attemptedCliUpdateVersion([final Map<String, String>? environment]) {
+Version? attemptedCliUpdateVersion([Map<String, String>? environment]) {
   final env = environment ?? Platform.environment;
   final value = env[cliUpdateAttemptedEnvName];
   if (value == null || value.isEmpty) {
@@ -62,8 +62,8 @@ enum CliInstallation {
 /// native build. A `dart pub global activate` snapshot lives under
 /// [_pubGlobalPackagesDir]; any other script is a source checkout.
 CliInstallation resolveCliInstallation({
-  required final String resolvedExecutable,
-  required final String scriptPath,
+  required String resolvedExecutable,
+  required String scriptPath,
 }) {
   if (p.basenameWithoutExtension(resolvedExecutable) != _dartExecutable) {
     return CliInstallation.native;
@@ -80,8 +80,8 @@ CliInstallation resolveCliInstallation({
 ///
 /// Throws a [StateError] for [CliInstallation.source], which cannot be updated.
 List<String> installArguments(
-  final CliInstallation installation, {
-  required final Version version,
+  CliInstallation installation, {
+  required Version version,
 }) {
   switch (installation) {
     case CliInstallation.native:
@@ -99,11 +99,11 @@ List<String> installArguments(
 /// version installed now. Every other installation runs [scriptPath] on the
 /// Dart VM.
 ({String executable, List<String> args}) rerunInvocation(
-  final List<String> args, {
-  required final CliInstallation installation,
-  required final String invokedExecutable,
-  required final String resolvedExecutable,
-  required final String scriptPath,
+  List<String> args, {
+  required CliInstallation installation,
+  required String invokedExecutable,
+  required String resolvedExecutable,
+  required String scriptPath,
 }) {
   if (installation == CliInstallation.native) {
     return (executable: invokedExecutable, args: args);
@@ -139,19 +139,16 @@ abstract interface class CliUpdater {
   ///
   /// Throws a [CliUpdateFailedException] if the install could not be run or
   /// did not succeed.
-  Future<void> install(
-    final Version version, {
-    required final CommandLogger logger,
-  });
+  Future<void> install(Version version, {required CommandLogger logger});
 
   /// Reruns the current command with [args] in a new process.
   ///
   /// Returns the exit code of the new process.
   /// Throws a [ProcessException] if the new process could not be started.
   Future<int> rerun(
-    final List<String> args, {
-    required final Version installedVersion,
-    required final CommandLogger logger,
+    List<String> args, {
+    required Version installedVersion,
+    required CommandLogger logger,
   });
 }
 
@@ -173,10 +170,7 @@ class DartCliUpdater implements CliUpdater {
   bool get canSelfUpdate => installation != CliInstallation.source;
 
   @override
-  Future<void> install(
-    final Version version, {
-    required final CommandLogger logger,
-  }) async {
+  Future<void> install(Version version, {required CommandLogger logger}) async {
     final arguments = installArguments(installation, version: version);
     logger.debug('Installing $_cliPackageName $version: $arguments');
 
@@ -205,9 +199,9 @@ class DartCliUpdater implements CliUpdater {
 
   @override
   Future<int> rerun(
-    final List<String> args, {
-    required final Version installedVersion,
-    required final CommandLogger logger,
+    List<String> args, {
+    required Version installedVersion,
+    required CommandLogger logger,
   }) async {
     final invocation = rerunInvocation(
       args,

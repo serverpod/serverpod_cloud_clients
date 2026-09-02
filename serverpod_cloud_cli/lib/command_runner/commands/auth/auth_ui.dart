@@ -8,33 +8,33 @@ class AuthSessionListTextUi extends OutputWidget {
   AuthSessionListTextUi({required this.utc});
 
   @override
-  OutputWidget build(final OutputContext context) {
+  OutputWidget build(OutputContext context) {
     return FormattedTableWidget(
       formatter: TextTableOutputFormatter<AuthTokenInfo>(
         columns: [
           TableColumnFormatter.forElement(
             'Token Id',
-            getter: (final session) => session.tokenId,
+            getter: (session) => session.tokenId,
           ),
           TableColumnFormatter.forElement(
             'Method',
-            getter: (final session) => session.method,
+            getter: (session) => session.method,
           ),
           TableColumnFormatter.forElement(
             'Created',
-            getter: (final session) => session.createdAt,
+            getter: (session) => session.createdAt,
           ),
           TableColumnFormatter.forElement(
             'Last Used',
-            getter: (final session) => session.lastUsedAt,
+            getter: (session) => session.lastUsedAt,
           ),
           TableColumnFormatter.forElement(
             'Expires',
-            getter: (final session) => session.expiresAt,
+            getter: (session) => session.expiresAt,
           ),
           TableColumnFormatter.forElement(
             'TTL on non-use',
-            getter: (final session) => session.expireAfterUnusedFor,
+            getter: (session) => session.expireAfterUnusedFor,
           ),
         ],
         utc: utc,

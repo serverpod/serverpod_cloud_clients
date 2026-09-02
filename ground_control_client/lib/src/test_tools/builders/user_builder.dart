@@ -27,64 +27,64 @@ class UserBuilder {
     _ownerId = Uuid().v4obj();
   }
 
-  UserBuilder withId(final int? id) {
+  UserBuilder withId(int? id) {
     _id = id;
     return this;
   }
 
-  UserBuilder withCreatedAt(final DateTime createdAt) {
+  UserBuilder withCreatedAt(DateTime createdAt) {
     _createdAt = createdAt;
     return this;
   }
 
-  UserBuilder withUpdatedAt(final DateTime updatedAt) {
+  UserBuilder withUpdatedAt(DateTime updatedAt) {
     _updatedAt = updatedAt;
     return this;
   }
 
-  UserBuilder withArchivedAt(final DateTime? archivedAt) {
+  UserBuilder withArchivedAt(DateTime? archivedAt) {
     _archivedAt = archivedAt;
     return this;
   }
 
-  UserBuilder withAccountStatus(final UserAccountStatus accountStatus) {
+  UserBuilder withAccountStatus(UserAccountStatus accountStatus) {
     _accountStatus = accountStatus;
     return this;
   }
 
-  UserBuilder withUserAuthId(final String? userAuthId) {
+  UserBuilder withUserAuthId(String? userAuthId) {
     _userAuthId = userAuthId;
     return this;
   }
 
-  UserBuilder withEmail(final String email) {
+  UserBuilder withEmail(String email) {
     _email = email;
     return this;
   }
 
-  UserBuilder withName(final String? name) {
+  UserBuilder withName(String? name) {
     _name = name;
     return this;
   }
 
-  UserBuilder withMemberships(final List<UserRoleMembership>? memberships) {
+  UserBuilder withMemberships(List<UserRoleMembership>? memberships) {
     _memberships = memberships;
     return this;
   }
 
-  UserBuilder withOwnerId(final _i1.UuidValue? ownerId) {
+  UserBuilder withOwnerId(_i1.UuidValue? ownerId) {
     _ownerId = ownerId;
     return this;
   }
 
-  UserBuilder withOwner(final Owner? owner) {
+  UserBuilder withOwner(Owner? owner) {
     _owner = owner;
     return this;
   }
 
-  UserBuilder withLabels(final List<UserLabel> labels) {
+  UserBuilder withLabels(List<UserLabel> labels) {
     _labels = labels
-        .map((final label) => UserLabelMapping(userId: _id ?? 1, label: label))
+        .map((label) => UserLabelMapping(userId: _id ?? 1, label: label))
         .toList();
     return this;
   }

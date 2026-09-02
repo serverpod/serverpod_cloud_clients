@@ -19,7 +19,7 @@ void main() {
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     serviceProvider: CloudCliServiceProvider(
-      apiClientFactory: (final globalCfg) => client,
+      apiClientFactory: (globalCfg) => client,
     ),
   );
 
@@ -91,14 +91,14 @@ void main() {
     );
   }
 
-  void stubRuntimeStatus(final CapsuleRuntimeStatus runtime) {
+  void stubRuntimeStatus(CapsuleRuntimeStatus runtime) {
     when(
       () => client.status.getCapsuleRuntimeStatus(cloudCapsuleId: projectId),
-    ).thenAnswer((final _) async => runtime);
+    ).thenAnswer((_) async => runtime);
   }
 
   List<String> panelLines() {
-    return logger.lineCalls.map((final call) => call.line).toList();
+    return logger.lineCalls.map((call) => call.line).toList();
   }
 
   test('Given status command when instantiated then requires login', () {
@@ -724,11 +724,7 @@ void main() {
       await expectLater(
         commandResult,
         throwsA(
-          isA<ErrorExitException>().having(
-            (final e) => e.exitCode,
-            'exitCode',
-            1,
-          ),
+          isA<ErrorExitException>().having((e) => e.exitCode, 'exitCode', 1),
         ),
       );
     });
@@ -763,11 +759,7 @@ void main() {
       await expectLater(
         commandResult,
         throwsA(
-          isA<ErrorExitException>().having(
-            (final e) => e.exitCode,
-            'exitCode',
-            1,
-          ),
+          isA<ErrorExitException>().having((e) => e.exitCode, 'exitCode', 1),
         ),
       );
     });

@@ -15,27 +15,27 @@ class UserRoleMembershipBuilder {
       _user = UserBuilder().build(),
       _role = RoleBuilder().build();
 
-  UserRoleMembershipBuilder withCreatedAt(final DateTime createdAt) {
+  UserRoleMembershipBuilder withCreatedAt(DateTime createdAt) {
     _createdAt = createdAt;
     return this;
   }
 
-  UserRoleMembershipBuilder withUpdatedAt(final DateTime? updatedAt) {
+  UserRoleMembershipBuilder withUpdatedAt(DateTime? updatedAt) {
     _updatedAt = updatedAt;
     return this;
   }
 
-  UserRoleMembershipBuilder withArchivedAt(final DateTime? archivedAt) {
+  UserRoleMembershipBuilder withArchivedAt(DateTime? archivedAt) {
     _archivedAt = archivedAt;
     return this;
   }
 
-  UserRoleMembershipBuilder withUser(final User? user) {
+  UserRoleMembershipBuilder withUser(User? user) {
     _user = user;
     return this;
   }
 
-  UserRoleMembershipBuilder withRole(final Role? role) {
+  UserRoleMembershipBuilder withRole(Role? role) {
     _role = role;
     return this;
   }
