@@ -6,6 +6,7 @@ import 'dart:io';
 
 import 'package:config/config.dart';
 import 'package:path/path.dart' as p;
+import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:test/test.dart';
 import 'package:uuid/uuid.dart';
 
@@ -31,8 +32,9 @@ class CommandThatRequiresLogin extends CloudCliCommand {
   String get description => 'description';
 
   @override
-  Future<void> runWithConfig(
+  Future<void> runWithOutput(
     Configuration<OptionDefinition> commandConfig,
+    CommandOutput output,
   ) async {
     return;
   }

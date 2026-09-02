@@ -101,8 +101,9 @@ Examples
     : super(options: DeploymentsShowOption.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<DeploymentsShowOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<DeploymentsShowOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(DeploymentsShowOption.projectId);
     final inUtc = commandConfig.value(DeploymentsShowOption.utc);
@@ -141,8 +142,7 @@ abstract final class _DeploymentsListOptions {
 enum DeploymentsListOption<V> implements OptionDefinition<V> {
   projectId(_DeploymentsListOptions.projectId),
   limit(_DeploymentsListOptions.limit),
-  utc(_DeploymentsListOptions.utc),
-  format(FormatOption());
+  utc(_DeploymentsListOptions.utc);
 
   const DeploymentsListOption(this.option);
 
@@ -178,15 +178,14 @@ Examples
     : super(options: DeploymentsListOption.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<DeploymentsListOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<DeploymentsListOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(DeploymentsListOption.projectId);
     final limit = commandConfig.value(DeploymentsListOption.limit);
     final inUtc = commandConfig.value(DeploymentsListOption.utc);
-    final format = commandConfig.value(DeploymentsListOption.format);
 
-    final output = CommandOutput(format: format, logger: logger);
     await renderCommand(
       output,
       operation: () => DeploymentCommands.listDeployAttemptsOperation(
@@ -256,8 +255,9 @@ Examples
     : super(options: DeploymentsBuildLogOption.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<DeploymentsBuildLogOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<DeploymentsBuildLogOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(DeploymentsBuildLogOption.projectId);
     final inUtc = commandConfig.value(DeploymentsBuildLogOption.utc);
@@ -368,8 +368,9 @@ ${_buildSecretsExplanation(baseCommand)}""";
     : super(options: BuildSecretSetCommandConfig.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<BuildSecretSetCommandConfig> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<BuildSecretSetCommandConfig> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(
       BuildSecretSetCommandConfig.projectId,
@@ -396,8 +397,7 @@ ${_buildSecretsExplanation(baseCommand)}""";
 }
 
 enum BuildSecretsListCommandConfig<V> implements OptionDefinition<V> {
-  projectId(_BuildSecretCommandConfig.projectId),
-  format(FormatOption());
+  projectId(_BuildSecretCommandConfig.projectId);
 
   const BuildSecretsListCommandConfig(this.option);
 
@@ -419,15 +419,14 @@ ${_buildSecretsExplanation(baseCommand)}""";
     : super(options: BuildSecretsListCommandConfig.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<BuildSecretsListCommandConfig> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<BuildSecretsListCommandConfig> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(
       BuildSecretsListCommandConfig.projectId,
     );
-    final format = commandConfig.value(BuildSecretsListCommandConfig.format);
 
-    final output = CommandOutput(format: format, logger: logger);
     await renderCommand(
       output,
       operation: () => DeploymentCommands.listBuildSecretsOperation(
@@ -463,8 +462,9 @@ ${_buildSecretsExplanation(baseCommand)}""";
     : super(options: BuildSecretUnsetCommandConfig.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<BuildSecretUnsetCommandConfig> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<BuildSecretUnsetCommandConfig> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(
       BuildSecretUnsetCommandConfig.projectId,

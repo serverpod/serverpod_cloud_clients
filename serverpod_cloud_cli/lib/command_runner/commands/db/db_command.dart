@@ -1,6 +1,7 @@
 import 'package:config/config.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/db/db_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/db/db_backup_ops.dart';
@@ -62,8 +63,9 @@ class CloudDbConnectionDetailsCommand
     : super(options: DbConnectionDetailsOption.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<DbConnectionDetailsOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<DbConnectionDetailsOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(DbConnectionDetailsOption.projectId);
 
@@ -126,8 +128,9 @@ class CloudDbUserCreateCommand extends CloudCliCommand<DbUserCreateOption> {
     : super(options: DbUserCreateOption.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<DbUserCreateOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<DbUserCreateOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(DbUserCreateOption.projectId);
     final username = commandConfig.value(DbUserCreateOption.username);
@@ -182,8 +185,9 @@ class CloudDbUserResetPasswordCommand
     : super(options: DbUserResetPasswordOption.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<DbUserResetPasswordOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<DbUserResetPasswordOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(DbUserResetPasswordOption.projectId);
     final username = commandConfig.value(DbUserResetPasswordOption.username);
@@ -229,7 +233,10 @@ class CloudDbWipeCommand extends CloudCliCommand<DbWipeOption> {
     : super(options: DbWipeOption.values);
 
   @override
-  Future<void> runWithConfig(Configuration<DbWipeOption> commandConfig) async {
+  Future<void> runWithOutput(
+    final Configuration<DbWipeOption> commandConfig,
+    final CommandOutput output,
+  ) async {
     final projectId = commandConfig.value(DbWipeOption.projectId);
     final skipConfirmation = globalConfiguration.skipConfirmation;
 
@@ -324,8 +331,9 @@ class CloudDbBackupCreateCommand extends CloudCliCommand<DbBackupCreateOption> {
     : super(options: DbBackupCreateOption.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<DbBackupCreateOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<DbBackupCreateOption> commandConfig,
+    final CommandOutput output,
   ) async {
     await DbBackupCommands.createSnapshot(
       runner.serviceProvider.cloudApiClient,
@@ -359,8 +367,9 @@ class CloudDbBackupListCommand extends CloudCliCommand<DbBackupListOption> {
     : super(options: DbBackupListOption.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<DbBackupListOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<DbBackupListOption> commandConfig,
+    final CommandOutput output,
   ) async {
     await DbBackupCommands.listSnapshots(
       runner.serviceProvider.cloudApiClient,
@@ -396,8 +405,9 @@ class CloudDbBackupDeleteCommand extends CloudCliCommand<DbBackupDeleteOption> {
     : super(options: DbBackupDeleteOption.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<DbBackupDeleteOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<DbBackupDeleteOption> commandConfig,
+    final CommandOutput output,
   ) async {
     await DbBackupCommands.deleteSnapshot(
       runner.serviceProvider.cloudApiClient,
@@ -434,8 +444,9 @@ class CloudDbBackupRestoreCommand
     : super(options: DbBackupRestoreOption.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<DbBackupRestoreOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<DbBackupRestoreOption> commandConfig,
+    final CommandOutput output,
   ) async {
     await DbBackupCommands.restoreSnapshot(
       runner.serviceProvider.cloudApiClient,
@@ -503,8 +514,9 @@ class CloudDbScheduleSetCommand extends CloudCliCommand<DbScheduleSetOption> {
     : super(options: DbScheduleSetOption.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<DbScheduleSetOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<DbScheduleSetOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final frequency = commandConfig.value(DbScheduleSetOption.frequency);
     final day = commandConfig.optionalValue(DbScheduleSetOption.day);
@@ -549,8 +561,9 @@ class CloudDbScheduleShowCommand extends CloudCliCommand<DbScheduleShowOption> {
     : super(options: DbScheduleShowOption.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<DbScheduleShowOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<DbScheduleShowOption> commandConfig,
+    final CommandOutput output,
   ) async {
     await DbBackupCommands.showSchedule(
       runner.serviceProvider.cloudApiClient,
@@ -582,8 +595,9 @@ class CloudDbScheduleUnsetCommand
     : super(options: DbScheduleUnsetOption.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<DbScheduleUnsetOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<DbScheduleUnsetOption> commandConfig,
+    final CommandOutput output,
   ) async {
     await DbBackupCommands.disableSchedule(
       runner.serviceProvider.cloudApiClient,

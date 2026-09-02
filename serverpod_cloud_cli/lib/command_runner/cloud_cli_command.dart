@@ -69,7 +69,7 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
   /// Valid after the command runner has started running.
   GlobalConfiguration get globalConfiguration => runner.globalConfiguration;
 
-  /// Runs this command. Subclasses should instead override [runWithConfig].
+  /// Runs this command. Subclasses should instead override [runWithOutput].
   @override
   Future<void> run() async {
     final client = runner.serviceProvider.cloudApiClient;
@@ -164,11 +164,27 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
   }
 
   /// Runs this command with prepared configuration (options).
-  /// Subclasses should override this method.
+  ///
+  /// Creates a [CommandOutput] from the global `--format` option and
+  /// delegates to [runWithOutput]. Subclasses should override [runWithOutput].
   @override
   Future<void> runWithConfig(Configuration<O> commandConfig) async {
+    final output = CommandOutput(
+      format: globalConfiguration.format,
+      logger: logger,
+    );
+    await runWithOutput(commandConfig, output);
+  }
+
+  /// Runs this command with prepared configuration and output.
+  ///
+  /// Subclasses should override this method.
+  Future<void> runWithOutput(
+    Configuration<O> commandConfig,
+    CommandOutput output,
+  ) async {
     throw UnimplementedError(
-      'CLI command $name has not implemented runWithConfig.',
+      'CLI command $name has not implemented runWithOutput.',
     );
   }
 
@@ -187,7 +203,6 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
     }
 
     if (output.format.isStructured) {
-      // TODO: Add custom validation group to --yes and --format options when --format is made global
       throw CloudCliUsageException(
         'Interactive UI is not supported with structured format "${output.format.name}".',
         hint: 'Use "--yes" with "--format json|yaml" for interactive commands.',

@@ -2,10 +2,10 @@ import 'package:config/config.dart';
 import 'package:ground_control_client/ground_control_client.dart'
     show UserAccountStatus;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/users/user_admin_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/users/user_admin_ui.dart';
-import 'package:serverpod_cloud_cli/util/output/command_output.dart';
 
 enum AdminListUsersOption<V> implements OptionDefinition<V> {
   projectId(
@@ -29,8 +29,7 @@ enum AdminListUsersOption<V> implements OptionDefinition<V> {
       negatable: false,
     ),
   ),
-  utc(UtcOption()),
-  format(FormatOption());
+  utc(UtcOption());
 
   const AdminListUsersOption(this.option);
 
@@ -49,8 +48,9 @@ class AdminListUsersCommand extends CloudCliCommand<AdminListUsersOption> {
     : super(options: AdminListUsersOption.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<AdminListUsersOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<AdminListUsersOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final projectId = commandConfig.optionalValue(
       AdminListUsersOption.projectId,
@@ -62,9 +62,7 @@ class AdminListUsersCommand extends CloudCliCommand<AdminListUsersOption> {
       AdminListUsersOption.includeArchived,
     );
     final inUtc = commandConfig.value(AdminListUsersOption.utc);
-    final format = commandConfig.value(AdminListUsersOption.format);
 
-    final output = CommandOutput(format: format, logger: logger);
     await renderCommand(
       output,
       operation: () => UserAdminCommands.listUsersOperation(
@@ -98,8 +96,9 @@ class AdminInviteUserCommand extends CloudCliCommand<AdminInviteUserOption> {
     : super(options: AdminInviteUserOption.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<AdminInviteUserOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<AdminInviteUserOption> commandConfig,
+    final CommandOutput output,
   ) async {
     final email = commandConfig.value(AdminInviteUserOption.user);
 

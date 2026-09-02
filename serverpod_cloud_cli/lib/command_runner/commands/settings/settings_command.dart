@@ -1,5 +1,6 @@
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 
 enum CliUserSettingsOption<V> implements OptionDefinition<V> {
   analytics(
@@ -30,8 +31,9 @@ class CliUserSettingsCommand extends CloudCliCommand<CliUserSettingsOption> {
     : super(options: CliUserSettingsOption.values);
 
   @override
-  Future<void> runWithConfig(
-    Configuration<CliUserSettingsOption> commandConfig,
+  Future<void> runWithOutput(
+    final Configuration<CliUserSettingsOption> commandConfig,
+    final CommandOutput output,
   ) async {
     var settingSpecified = false;
 

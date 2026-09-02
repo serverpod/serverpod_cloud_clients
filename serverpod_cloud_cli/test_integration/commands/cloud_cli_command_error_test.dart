@@ -8,6 +8,7 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
@@ -31,8 +32,9 @@ class _ThrowingCommand extends CloudCliCommand {
   String get description => 'Test command that throws the configured error.';
 
   @override
-  Future<void> runWithConfig(
+  Future<void> runWithOutput(
     Configuration<OptionDefinition> commandConfig,
+    CommandOutput output,
   ) async {
     throw _throwError();
   }

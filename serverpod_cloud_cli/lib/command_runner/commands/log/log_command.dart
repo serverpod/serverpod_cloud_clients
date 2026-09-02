@@ -1,5 +1,6 @@
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart'
     show DateTimeOrDurationOption, ProjectIdOption, UtcOption;
@@ -128,7 +129,10 @@ Examples
   CloudLogCommand({required super.logger}) : super(options: LogOption.values);
 
   @override
-  Future<void> runWithConfig(Configuration<LogOption> commandConfig) async {
+  Future<void> runWithOutput(
+    final Configuration<LogOption> commandConfig,
+    final CommandOutput output,
+  ) async {
     final projectId = commandConfig.value(LogOption.projectId);
     final limit = commandConfig.value(LogOption.limit);
     final inUtc = commandConfig.value(LogOption.utc);
