@@ -33,77 +33,77 @@ import 'domains/capsules/models/capsule.dart' as _i19;
 import 'domains/capsules/models/capsule_resource_config.dart' as _i20;
 import 'domains/capsules/models/compute_info.dart' as _i21;
 import 'domains/capsules/models/compute_size_option.dart' as _i22;
+import 'domains/custom_domains/models/custom_domain_name.dart' as _i23;
+import 'domains/custom_domains/models/dns_record_type.dart' as _i24;
+import 'domains/custom_domains/models/domain_name_status.dart' as _i25;
+import 'domains/custom_domains/models/domain_name_target.dart' as _i26;
 import 'domains/databases/exceptions/database_snapshot_limit_exception.dart'
-    as _i23;
-import 'domains/databases/models/backup_frequency.dart' as _i24;
-import 'domains/databases/models/backup_schedule.dart' as _i25;
-import 'domains/databases/models/database_connection.dart' as _i26;
-import 'domains/databases/models/database_info.dart' as _i27;
-import 'domains/databases/models/database_provider.dart' as _i28;
-import 'domains/databases/models/database_quota.dart' as _i29;
-import 'domains/databases/models/database_resource.dart' as _i30;
-import 'domains/databases/models/database_scaling.dart' as _i31;
-import 'domains/databases/models/database_size.dart' as _i32;
-import 'domains/databases/models/database_snapshot.dart' as _i33;
-import 'domains/databases/models/database_user.dart' as _i34;
-import 'domains/environment_variables/models/variable.dart' as _i35;
-import 'domains/logs/models/log_record.dart' as _i36;
-import 'domains/metrics/models/capsule_network_series.dart' as _i37;
-import 'domains/metrics/models/database_metrics.dart' as _i38;
-import 'domains/metrics/models/database_metrics_status.dart' as _i39;
-import 'domains/metrics/models/metric_sample.dart' as _i40;
-import 'domains/metrics/models/metrics_range.dart' as _i41;
-import 'domains/metrics/models/pod_resource_series.dart' as _i42;
-import 'domains/metrics/models/response_class_series.dart' as _i43;
-import 'domains/products/models/compute_catalog_info.dart' as _i44;
-import 'domains/products/models/compute_product_info.dart' as _i45;
-import 'domains/products/models/compute_scaling_info.dart' as _i46;
+    as _i27;
+import 'domains/databases/models/backup_frequency.dart' as _i28;
+import 'domains/databases/models/backup_schedule.dart' as _i29;
+import 'domains/databases/models/database_connection.dart' as _i30;
+import 'domains/databases/models/database_info.dart' as _i31;
+import 'domains/databases/models/database_provider.dart' as _i32;
+import 'domains/databases/models/database_quota.dart' as _i33;
+import 'domains/databases/models/database_resource.dart' as _i34;
+import 'domains/databases/models/database_scaling.dart' as _i35;
+import 'domains/databases/models/database_size.dart' as _i36;
+import 'domains/databases/models/database_snapshot.dart' as _i37;
+import 'domains/databases/models/database_user.dart' as _i38;
+import 'domains/environment_variables/models/variable.dart' as _i39;
+import 'domains/logs/models/log_record.dart' as _i40;
+import 'domains/metrics/models/capsule_network_series.dart' as _i41;
+import 'domains/metrics/models/database_metrics.dart' as _i42;
+import 'domains/metrics/models/database_metrics_status.dart' as _i43;
+import 'domains/metrics/models/metric_sample.dart' as _i44;
+import 'domains/metrics/models/metrics_range.dart' as _i45;
+import 'domains/metrics/models/pod_resource_series.dart' as _i46;
+import 'domains/metrics/models/response_class_series.dart' as _i47;
+import 'domains/products/models/compute_catalog_info.dart' as _i48;
+import 'domains/products/models/compute_product_info.dart' as _i49;
+import 'domains/products/models/compute_scaling_info.dart' as _i50;
 import 'domains/products/models/concurrent_subscription_update_exception.dart'
-    as _i47;
-import 'domains/products/models/database_catalog_info.dart' as _i48;
-import 'domains/products/models/database_product_info.dart' as _i49;
-import 'domains/products/models/database_scaling_info.dart' as _i50;
-import 'domains/products/models/plan_info.dart' as _i51;
-import 'domains/products/models/plan_type.dart' as _i52;
-import 'domains/products/models/product_type.dart' as _i53;
-import 'domains/products/models/project_product_info.dart' as _i54;
-import 'domains/products/models/subscription_info.dart' as _i55;
-import 'domains/projects/models/project.dart' as _i56;
-import 'domains/projects/models/role.dart' as _i57;
-import 'domains/projects/models/user_role_membership.dart' as _i58;
-import 'domains/secrets/models/build_secret_type.dart' as _i59;
-import 'domains/secrets/models/secret_resource.dart' as _i60;
-import 'domains/secrets/models/secret_type.dart' as _i61;
-import 'domains/secrets/models/stored_secret_version.dart' as _i62;
-import 'domains/status/models/capsule_deployment_status.dart' as _i63;
-import 'domains/status/models/capsule_revision.dart' as _i64;
-import 'domains/status/models/capsule_state.dart' as _i65;
-import 'domains/status/models/capsule_status.dart' as _i66;
-import 'domains/status/models/deploy_attempt.dart' as _i67;
-import 'domains/status/models/deploy_attempt_stage.dart' as _i68;
-import 'domains/status/models/deploy_progress_status.dart' as _i69;
-import 'domains/status/models/deploy_stage_type.dart' as _i70;
-import 'domains/users/models/user.dart' as _i71;
-import 'domains/users/models/user_account_status.dart' as _i72;
-import 'domains/users/models/user_label.dart' as _i73;
-import 'domains/users/models/user_label_mapping.dart' as _i74;
-import 'features/auth/exceptions/email_method_blocked_exception.dart' as _i75;
+    as _i51;
+import 'domains/products/models/database_catalog_info.dart' as _i52;
+import 'domains/products/models/database_product_info.dart' as _i53;
+import 'domains/products/models/database_scaling_info.dart' as _i54;
+import 'domains/products/models/plan_info.dart' as _i55;
+import 'domains/products/models/plan_type.dart' as _i56;
+import 'domains/products/models/product_type.dart' as _i57;
+import 'domains/products/models/project_product_info.dart' as _i58;
+import 'domains/products/models/subscription_info.dart' as _i59;
+import 'domains/projects/models/project.dart' as _i60;
+import 'domains/projects/models/role.dart' as _i61;
+import 'domains/projects/models/user_role_membership.dart' as _i62;
+import 'domains/secrets/models/build_secret_type.dart' as _i63;
+import 'domains/secrets/models/secret_resource.dart' as _i64;
+import 'domains/secrets/models/secret_type.dart' as _i65;
+import 'domains/secrets/models/stored_secret_version.dart' as _i66;
+import 'domains/status/models/capsule_deployment_status.dart' as _i67;
+import 'domains/status/models/capsule_revision.dart' as _i68;
+import 'domains/status/models/capsule_state.dart' as _i69;
+import 'domains/status/models/capsule_status.dart' as _i70;
+import 'domains/status/models/deploy_attempt.dart' as _i71;
+import 'domains/status/models/deploy_attempt_stage.dart' as _i72;
+import 'domains/status/models/deploy_progress_status.dart' as _i73;
+import 'domains/status/models/deploy_stage_type.dart' as _i74;
+import 'domains/users/models/user.dart' as _i75;
+import 'domains/users/models/user_account_status.dart' as _i76;
+import 'domains/users/models/user_label.dart' as _i77;
+import 'domains/users/models/user_label_mapping.dart' as _i78;
+import 'features/auth/exceptions/email_method_blocked_exception.dart' as _i79;
 import 'features/auth/exceptions/user_account_registration_denied_exception.dart'
-    as _i76;
-import 'features/auth/models/accepted_terms.dart' as _i77;
-import 'features/auth/models/accepted_terms_dto.dart' as _i78;
-import 'features/auth/models/auth_token_info.dart' as _i79;
-import 'features/auth/models/required_terms.dart' as _i80;
-import 'features/auth/models/terms.dart' as _i81;
+    as _i80;
+import 'features/auth/models/accepted_terms.dart' as _i81;
+import 'features/auth/models/accepted_terms_dto.dart' as _i82;
+import 'features/auth/models/auth_token_info.dart' as _i83;
+import 'features/auth/models/required_terms.dart' as _i84;
+import 'features/auth/models/terms.dart' as _i85;
 import 'features/buckets/exceptions/bucket_storage_identity_unavailable_exception.dart'
-    as _i82;
+    as _i86;
 import 'features/custom_domains/exceptions/dns_verification_failed_exception.dart'
-    as _i83;
-import 'features/custom_domains/models/custom_domain_name.dart' as _i84;
-import 'features/custom_domains/models/custom_domain_name_list.dart' as _i85;
-import 'features/custom_domains/models/dns_record_type.dart' as _i86;
-import 'features/custom_domains/models/domain_name_status.dart' as _i87;
-import 'features/custom_domains/models/domain_name_target.dart' as _i88;
+    as _i87;
+import 'features/custom_domains/models/custom_domain_name_list.dart' as _i88;
 import 'features/custom_domains/models/view_models/custom_domain_name_with_default_domains.dart'
     as _i89;
 import 'features/insights/models/insights_connection_detail.dart' as _i90;
@@ -195,6 +195,10 @@ export 'domains/capsules/models/capsule.dart';
 export 'domains/capsules/models/capsule_resource_config.dart';
 export 'domains/capsules/models/compute_info.dart';
 export 'domains/capsules/models/compute_size_option.dart';
+export 'domains/custom_domains/models/custom_domain_name.dart';
+export 'domains/custom_domains/models/dns_record_type.dart';
+export 'domains/custom_domains/models/domain_name_status.dart';
+export 'domains/custom_domains/models/domain_name_target.dart';
 export 'domains/databases/exceptions/database_snapshot_limit_exception.dart';
 export 'domains/databases/models/backup_frequency.dart';
 export 'domains/databases/models/backup_schedule.dart';
@@ -256,11 +260,7 @@ export 'features/auth/models/required_terms.dart';
 export 'features/auth/models/terms.dart';
 export 'features/buckets/exceptions/bucket_storage_identity_unavailable_exception.dart';
 export 'features/custom_domains/exceptions/dns_verification_failed_exception.dart';
-export 'features/custom_domains/models/custom_domain_name.dart';
 export 'features/custom_domains/models/custom_domain_name_list.dart';
-export 'features/custom_domains/models/dns_record_type.dart';
-export 'features/custom_domains/models/domain_name_status.dart';
-export 'features/custom_domains/models/domain_name_target.dart';
 export 'features/custom_domains/models/view_models/custom_domain_name_with_default_domains.dart';
 export 'features/insights/models/insights_connection_detail.dart';
 export 'features/platform/models/dart_sdk_version.dart';
@@ -384,203 +384,203 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i22.ComputeSizeOption) {
       return _i22.ComputeSizeOption.fromJson(data) as T;
     }
-    if (t == _i23.DatabaseSnapshotLimitException) {
-      return _i23.DatabaseSnapshotLimitException.fromJson(data) as T;
+    if (t == _i23.CustomDomainName) {
+      return _i23.CustomDomainName.fromJson(data) as T;
     }
-    if (t == _i24.BackupFrequency) {
-      return _i24.BackupFrequency.fromJson(data) as T;
+    if (t == _i24.DnsRecordType) {
+      return _i24.DnsRecordType.fromJson(data) as T;
     }
-    if (t == _i25.BackupSchedule) {
-      return _i25.BackupSchedule.fromJson(data) as T;
+    if (t == _i25.DomainNameStatus) {
+      return _i25.DomainNameStatus.fromJson(data) as T;
     }
-    if (t == _i26.DatabaseConnection) {
-      return _i26.DatabaseConnection.fromJson(data) as T;
+    if (t == _i26.DomainNameTarget) {
+      return _i26.DomainNameTarget.fromJson(data) as T;
     }
-    if (t == _i27.DatabaseInfo) {
-      return _i27.DatabaseInfo.fromJson(data) as T;
+    if (t == _i27.DatabaseSnapshotLimitException) {
+      return _i27.DatabaseSnapshotLimitException.fromJson(data) as T;
     }
-    if (t == _i28.DatabaseProvider) {
-      return _i28.DatabaseProvider.fromJson(data) as T;
+    if (t == _i28.BackupFrequency) {
+      return _i28.BackupFrequency.fromJson(data) as T;
     }
-    if (t == _i29.DatabaseQuota) {
-      return _i29.DatabaseQuota.fromJson(data) as T;
+    if (t == _i29.BackupSchedule) {
+      return _i29.BackupSchedule.fromJson(data) as T;
     }
-    if (t == _i30.DatabaseResource) {
-      return _i30.DatabaseResource.fromJson(data) as T;
+    if (t == _i30.DatabaseConnection) {
+      return _i30.DatabaseConnection.fromJson(data) as T;
     }
-    if (t == _i31.DatabaseScaling) {
-      return _i31.DatabaseScaling.fromJson(data) as T;
+    if (t == _i31.DatabaseInfo) {
+      return _i31.DatabaseInfo.fromJson(data) as T;
     }
-    if (t == _i32.DatabaseSizeOption) {
-      return _i32.DatabaseSizeOption.fromJson(data) as T;
+    if (t == _i32.DatabaseProvider) {
+      return _i32.DatabaseProvider.fromJson(data) as T;
     }
-    if (t == _i33.DatabaseSnapshot) {
-      return _i33.DatabaseSnapshot.fromJson(data) as T;
+    if (t == _i33.DatabaseQuota) {
+      return _i33.DatabaseQuota.fromJson(data) as T;
     }
-    if (t == _i34.DatabaseUser) {
-      return _i34.DatabaseUser.fromJson(data) as T;
+    if (t == _i34.DatabaseResource) {
+      return _i34.DatabaseResource.fromJson(data) as T;
     }
-    if (t == _i35.EnvironmentVariable) {
-      return _i35.EnvironmentVariable.fromJson(data) as T;
+    if (t == _i35.DatabaseScaling) {
+      return _i35.DatabaseScaling.fromJson(data) as T;
     }
-    if (t == _i36.LogRecord) {
-      return _i36.LogRecord.fromJson(data) as T;
+    if (t == _i36.DatabaseSizeOption) {
+      return _i36.DatabaseSizeOption.fromJson(data) as T;
     }
-    if (t == _i37.CapsuleNetworkSeries) {
-      return _i37.CapsuleNetworkSeries.fromJson(data) as T;
+    if (t == _i37.DatabaseSnapshot) {
+      return _i37.DatabaseSnapshot.fromJson(data) as T;
     }
-    if (t == _i38.DatabaseMetrics) {
-      return _i38.DatabaseMetrics.fromJson(data) as T;
+    if (t == _i38.DatabaseUser) {
+      return _i38.DatabaseUser.fromJson(data) as T;
     }
-    if (t == _i39.DatabaseMetricsStatus) {
-      return _i39.DatabaseMetricsStatus.fromJson(data) as T;
+    if (t == _i39.EnvironmentVariable) {
+      return _i39.EnvironmentVariable.fromJson(data) as T;
     }
-    if (t == _i40.MetricSample) {
-      return _i40.MetricSample.fromJson(data) as T;
+    if (t == _i40.LogRecord) {
+      return _i40.LogRecord.fromJson(data) as T;
     }
-    if (t == _i41.MetricsRange) {
-      return _i41.MetricsRange.fromJson(data) as T;
+    if (t == _i41.CapsuleNetworkSeries) {
+      return _i41.CapsuleNetworkSeries.fromJson(data) as T;
     }
-    if (t == _i42.PodResourceSeries) {
-      return _i42.PodResourceSeries.fromJson(data) as T;
+    if (t == _i42.DatabaseMetrics) {
+      return _i42.DatabaseMetrics.fromJson(data) as T;
     }
-    if (t == _i43.ResponseClassSeries) {
-      return _i43.ResponseClassSeries.fromJson(data) as T;
+    if (t == _i43.DatabaseMetricsStatus) {
+      return _i43.DatabaseMetricsStatus.fromJson(data) as T;
     }
-    if (t == _i44.ComputeCatalogInfo) {
-      return _i44.ComputeCatalogInfo.fromJson(data) as T;
+    if (t == _i44.MetricSample) {
+      return _i44.MetricSample.fromJson(data) as T;
     }
-    if (t == _i45.ComputeProductInfo) {
-      return _i45.ComputeProductInfo.fromJson(data) as T;
+    if (t == _i45.MetricsRange) {
+      return _i45.MetricsRange.fromJson(data) as T;
     }
-    if (t == _i46.ComputeScalingInfo) {
-      return _i46.ComputeScalingInfo.fromJson(data) as T;
+    if (t == _i46.PodResourceSeries) {
+      return _i46.PodResourceSeries.fromJson(data) as T;
     }
-    if (t == _i47.ConcurrentSubscriptionUpdateException) {
-      return _i47.ConcurrentSubscriptionUpdateException.fromJson(data) as T;
+    if (t == _i47.ResponseClassSeries) {
+      return _i47.ResponseClassSeries.fromJson(data) as T;
     }
-    if (t == _i48.DatabaseCatalogInfo) {
-      return _i48.DatabaseCatalogInfo.fromJson(data) as T;
+    if (t == _i48.ComputeCatalogInfo) {
+      return _i48.ComputeCatalogInfo.fromJson(data) as T;
     }
-    if (t == _i49.DatabaseProductInfo) {
-      return _i49.DatabaseProductInfo.fromJson(data) as T;
+    if (t == _i49.ComputeProductInfo) {
+      return _i49.ComputeProductInfo.fromJson(data) as T;
     }
-    if (t == _i50.DatabaseScalingInfo) {
-      return _i50.DatabaseScalingInfo.fromJson(data) as T;
+    if (t == _i50.ComputeScalingInfo) {
+      return _i50.ComputeScalingInfo.fromJson(data) as T;
     }
-    if (t == _i51.PlanInfo) {
-      return _i51.PlanInfo.fromJson(data) as T;
+    if (t == _i51.ConcurrentSubscriptionUpdateException) {
+      return _i51.ConcurrentSubscriptionUpdateException.fromJson(data) as T;
     }
-    if (t == _i52.PlanType) {
-      return _i52.PlanType.fromJson(data) as T;
+    if (t == _i52.DatabaseCatalogInfo) {
+      return _i52.DatabaseCatalogInfo.fromJson(data) as T;
     }
-    if (t == _i53.ProductType) {
-      return _i53.ProductType.fromJson(data) as T;
+    if (t == _i53.DatabaseProductInfo) {
+      return _i53.DatabaseProductInfo.fromJson(data) as T;
     }
-    if (t == _i54.ProjectProductInfo) {
-      return _i54.ProjectProductInfo.fromJson(data) as T;
+    if (t == _i54.DatabaseScalingInfo) {
+      return _i54.DatabaseScalingInfo.fromJson(data) as T;
     }
-    if (t == _i55.SubscriptionInfo) {
-      return _i55.SubscriptionInfo.fromJson(data) as T;
+    if (t == _i55.PlanInfo) {
+      return _i55.PlanInfo.fromJson(data) as T;
     }
-    if (t == _i56.Project) {
-      return _i56.Project.fromJson(data) as T;
+    if (t == _i56.PlanType) {
+      return _i56.PlanType.fromJson(data) as T;
     }
-    if (t == _i57.Role) {
-      return _i57.Role.fromJson(data) as T;
+    if (t == _i57.ProductType) {
+      return _i57.ProductType.fromJson(data) as T;
     }
-    if (t == _i58.UserRoleMembership) {
-      return _i58.UserRoleMembership.fromJson(data) as T;
+    if (t == _i58.ProjectProductInfo) {
+      return _i58.ProjectProductInfo.fromJson(data) as T;
     }
-    if (t == _i59.BuildSecretType) {
-      return _i59.BuildSecretType.fromJson(data) as T;
+    if (t == _i59.SubscriptionInfo) {
+      return _i59.SubscriptionInfo.fromJson(data) as T;
     }
-    if (t == _i60.SecretResource) {
-      return _i60.SecretResource.fromJson(data) as T;
+    if (t == _i60.Project) {
+      return _i60.Project.fromJson(data) as T;
     }
-    if (t == _i61.SecretType) {
-      return _i61.SecretType.fromJson(data) as T;
+    if (t == _i61.Role) {
+      return _i61.Role.fromJson(data) as T;
     }
-    if (t == _i62.StoredSecretVersion) {
-      return _i62.StoredSecretVersion.fromJson(data) as T;
+    if (t == _i62.UserRoleMembership) {
+      return _i62.UserRoleMembership.fromJson(data) as T;
     }
-    if (t == _i63.CapsuleDeploymentStatus) {
-      return _i63.CapsuleDeploymentStatus.fromJson(data) as T;
+    if (t == _i63.BuildSecretType) {
+      return _i63.BuildSecretType.fromJson(data) as T;
     }
-    if (t == _i64.CapsuleRevision) {
-      return _i64.CapsuleRevision.fromJson(data) as T;
+    if (t == _i64.SecretResource) {
+      return _i64.SecretResource.fromJson(data) as T;
     }
-    if (t == _i65.CapsuleState) {
-      return _i65.CapsuleState.fromJson(data) as T;
+    if (t == _i65.SecretType) {
+      return _i65.SecretType.fromJson(data) as T;
     }
-    if (t == _i66.CapsuleStatus) {
-      return _i66.CapsuleStatus.fromJson(data) as T;
+    if (t == _i66.StoredSecretVersion) {
+      return _i66.StoredSecretVersion.fromJson(data) as T;
     }
-    if (t == _i67.DeployAttempt) {
-      return _i67.DeployAttempt.fromJson(data) as T;
+    if (t == _i67.CapsuleDeploymentStatus) {
+      return _i67.CapsuleDeploymentStatus.fromJson(data) as T;
     }
-    if (t == _i68.DeployAttemptStage) {
-      return _i68.DeployAttemptStage.fromJson(data) as T;
+    if (t == _i68.CapsuleRevision) {
+      return _i68.CapsuleRevision.fromJson(data) as T;
     }
-    if (t == _i69.DeployProgressStatus) {
-      return _i69.DeployProgressStatus.fromJson(data) as T;
+    if (t == _i69.CapsuleState) {
+      return _i69.CapsuleState.fromJson(data) as T;
     }
-    if (t == _i70.DeployStageType) {
-      return _i70.DeployStageType.fromJson(data) as T;
+    if (t == _i70.CapsuleStatus) {
+      return _i70.CapsuleStatus.fromJson(data) as T;
     }
-    if (t == _i71.User) {
-      return _i71.User.fromJson(data) as T;
+    if (t == _i71.DeployAttempt) {
+      return _i71.DeployAttempt.fromJson(data) as T;
     }
-    if (t == _i72.UserAccountStatus) {
-      return _i72.UserAccountStatus.fromJson(data) as T;
+    if (t == _i72.DeployAttemptStage) {
+      return _i72.DeployAttemptStage.fromJson(data) as T;
     }
-    if (t == _i73.UserLabel) {
-      return _i73.UserLabel.fromJson(data) as T;
+    if (t == _i73.DeployProgressStatus) {
+      return _i73.DeployProgressStatus.fromJson(data) as T;
     }
-    if (t == _i74.UserLabelMapping) {
-      return _i74.UserLabelMapping.fromJson(data) as T;
+    if (t == _i74.DeployStageType) {
+      return _i74.DeployStageType.fromJson(data) as T;
     }
-    if (t == _i75.EmailMethodBlockedException) {
-      return _i75.EmailMethodBlockedException.fromJson(data) as T;
+    if (t == _i75.User) {
+      return _i75.User.fromJson(data) as T;
     }
-    if (t == _i76.UserAccountRegistrationDeniedException) {
-      return _i76.UserAccountRegistrationDeniedException.fromJson(data) as T;
+    if (t == _i76.UserAccountStatus) {
+      return _i76.UserAccountStatus.fromJson(data) as T;
     }
-    if (t == _i77.AcceptedTerms) {
-      return _i77.AcceptedTerms.fromJson(data) as T;
+    if (t == _i77.UserLabel) {
+      return _i77.UserLabel.fromJson(data) as T;
     }
-    if (t == _i78.AcceptedTermsDTO) {
-      return _i78.AcceptedTermsDTO.fromJson(data) as T;
+    if (t == _i78.UserLabelMapping) {
+      return _i78.UserLabelMapping.fromJson(data) as T;
     }
-    if (t == _i79.AuthTokenInfo) {
-      return _i79.AuthTokenInfo.fromJson(data) as T;
+    if (t == _i79.EmailMethodBlockedException) {
+      return _i79.EmailMethodBlockedException.fromJson(data) as T;
     }
-    if (t == _i80.RequiredTerms) {
-      return _i80.RequiredTerms.fromJson(data) as T;
+    if (t == _i80.UserAccountRegistrationDeniedException) {
+      return _i80.UserAccountRegistrationDeniedException.fromJson(data) as T;
     }
-    if (t == _i81.Terms) {
-      return _i81.Terms.fromJson(data) as T;
+    if (t == _i81.AcceptedTerms) {
+      return _i81.AcceptedTerms.fromJson(data) as T;
     }
-    if (t == _i82.BucketStorageIdentityUnavailableException) {
-      return _i82.BucketStorageIdentityUnavailableException.fromJson(data) as T;
+    if (t == _i82.AcceptedTermsDTO) {
+      return _i82.AcceptedTermsDTO.fromJson(data) as T;
     }
-    if (t == _i83.DNSVerificationFailedException) {
-      return _i83.DNSVerificationFailedException.fromJson(data) as T;
+    if (t == _i83.AuthTokenInfo) {
+      return _i83.AuthTokenInfo.fromJson(data) as T;
     }
-    if (t == _i84.CustomDomainName) {
-      return _i84.CustomDomainName.fromJson(data) as T;
+    if (t == _i84.RequiredTerms) {
+      return _i84.RequiredTerms.fromJson(data) as T;
     }
-    if (t == _i85.CustomDomainNameList) {
-      return _i85.CustomDomainNameList.fromJson(data) as T;
+    if (t == _i85.Terms) {
+      return _i85.Terms.fromJson(data) as T;
     }
-    if (t == _i86.DnsRecordType) {
-      return _i86.DnsRecordType.fromJson(data) as T;
+    if (t == _i86.BucketStorageIdentityUnavailableException) {
+      return _i86.BucketStorageIdentityUnavailableException.fromJson(data) as T;
     }
-    if (t == _i87.DomainNameStatus) {
-      return _i87.DomainNameStatus.fromJson(data) as T;
+    if (t == _i87.DNSVerificationFailedException) {
+      return _i87.DNSVerificationFailedException.fromJson(data) as T;
     }
-    if (t == _i88.DomainNameTarget) {
-      return _i88.DomainNameTarget.fromJson(data) as T;
+    if (t == _i88.CustomDomainNameList) {
+      return _i88.CustomDomainNameList.fromJson(data) as T;
     }
     if (t == _i89.CustomDomainNameWithDefaultDomains) {
       return _i89.CustomDomainNameWithDefaultDomains.fromJson(data) as T;
@@ -737,240 +737,240 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i1.getType<_i22.ComputeSizeOption?>()) {
       return (data != null ? _i22.ComputeSizeOption.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i23.DatabaseSnapshotLimitException?>()) {
+    if (t == _i1.getType<_i23.CustomDomainName?>()) {
+      return (data != null ? _i23.CustomDomainName.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i24.DnsRecordType?>()) {
+      return (data != null ? _i24.DnsRecordType.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i25.DomainNameStatus?>()) {
+      return (data != null ? _i25.DomainNameStatus.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i26.DomainNameTarget?>()) {
+      return (data != null ? _i26.DomainNameTarget.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i27.DatabaseSnapshotLimitException?>()) {
       return (data != null
-              ? _i23.DatabaseSnapshotLimitException.fromJson(data)
+              ? _i27.DatabaseSnapshotLimitException.fromJson(data)
               : null)
           as T;
     }
-    if (t == _i1.getType<_i24.BackupFrequency?>()) {
-      return (data != null ? _i24.BackupFrequency.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i28.BackupFrequency?>()) {
+      return (data != null ? _i28.BackupFrequency.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i25.BackupSchedule?>()) {
-      return (data != null ? _i25.BackupSchedule.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i29.BackupSchedule?>()) {
+      return (data != null ? _i29.BackupSchedule.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i26.DatabaseConnection?>()) {
-      return (data != null ? _i26.DatabaseConnection.fromJson(data) : null)
+    if (t == _i1.getType<_i30.DatabaseConnection?>()) {
+      return (data != null ? _i30.DatabaseConnection.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i27.DatabaseInfo?>()) {
-      return (data != null ? _i27.DatabaseInfo.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i31.DatabaseInfo?>()) {
+      return (data != null ? _i31.DatabaseInfo.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i28.DatabaseProvider?>()) {
-      return (data != null ? _i28.DatabaseProvider.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i32.DatabaseProvider?>()) {
+      return (data != null ? _i32.DatabaseProvider.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i29.DatabaseQuota?>()) {
-      return (data != null ? _i29.DatabaseQuota.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i33.DatabaseQuota?>()) {
+      return (data != null ? _i33.DatabaseQuota.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i30.DatabaseResource?>()) {
-      return (data != null ? _i30.DatabaseResource.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i34.DatabaseResource?>()) {
+      return (data != null ? _i34.DatabaseResource.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i31.DatabaseScaling?>()) {
-      return (data != null ? _i31.DatabaseScaling.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i35.DatabaseScaling?>()) {
+      return (data != null ? _i35.DatabaseScaling.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i32.DatabaseSizeOption?>()) {
-      return (data != null ? _i32.DatabaseSizeOption.fromJson(data) : null)
+    if (t == _i1.getType<_i36.DatabaseSizeOption?>()) {
+      return (data != null ? _i36.DatabaseSizeOption.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i33.DatabaseSnapshot?>()) {
-      return (data != null ? _i33.DatabaseSnapshot.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i37.DatabaseSnapshot?>()) {
+      return (data != null ? _i37.DatabaseSnapshot.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i34.DatabaseUser?>()) {
-      return (data != null ? _i34.DatabaseUser.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i38.DatabaseUser?>()) {
+      return (data != null ? _i38.DatabaseUser.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i35.EnvironmentVariable?>()) {
-      return (data != null ? _i35.EnvironmentVariable.fromJson(data) : null)
+    if (t == _i1.getType<_i39.EnvironmentVariable?>()) {
+      return (data != null ? _i39.EnvironmentVariable.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i36.LogRecord?>()) {
-      return (data != null ? _i36.LogRecord.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i40.LogRecord?>()) {
+      return (data != null ? _i40.LogRecord.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i37.CapsuleNetworkSeries?>()) {
-      return (data != null ? _i37.CapsuleNetworkSeries.fromJson(data) : null)
+    if (t == _i1.getType<_i41.CapsuleNetworkSeries?>()) {
+      return (data != null ? _i41.CapsuleNetworkSeries.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i38.DatabaseMetrics?>()) {
-      return (data != null ? _i38.DatabaseMetrics.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i42.DatabaseMetrics?>()) {
+      return (data != null ? _i42.DatabaseMetrics.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i39.DatabaseMetricsStatus?>()) {
-      return (data != null ? _i39.DatabaseMetricsStatus.fromJson(data) : null)
+    if (t == _i1.getType<_i43.DatabaseMetricsStatus?>()) {
+      return (data != null ? _i43.DatabaseMetricsStatus.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i40.MetricSample?>()) {
-      return (data != null ? _i40.MetricSample.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i44.MetricSample?>()) {
+      return (data != null ? _i44.MetricSample.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i41.MetricsRange?>()) {
-      return (data != null ? _i41.MetricsRange.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i45.MetricsRange?>()) {
+      return (data != null ? _i45.MetricsRange.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i42.PodResourceSeries?>()) {
-      return (data != null ? _i42.PodResourceSeries.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i46.PodResourceSeries?>()) {
+      return (data != null ? _i46.PodResourceSeries.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i43.ResponseClassSeries?>()) {
-      return (data != null ? _i43.ResponseClassSeries.fromJson(data) : null)
+    if (t == _i1.getType<_i47.ResponseClassSeries?>()) {
+      return (data != null ? _i47.ResponseClassSeries.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i44.ComputeCatalogInfo?>()) {
-      return (data != null ? _i44.ComputeCatalogInfo.fromJson(data) : null)
+    if (t == _i1.getType<_i48.ComputeCatalogInfo?>()) {
+      return (data != null ? _i48.ComputeCatalogInfo.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i45.ComputeProductInfo?>()) {
-      return (data != null ? _i45.ComputeProductInfo.fromJson(data) : null)
+    if (t == _i1.getType<_i49.ComputeProductInfo?>()) {
+      return (data != null ? _i49.ComputeProductInfo.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i46.ComputeScalingInfo?>()) {
-      return (data != null ? _i46.ComputeScalingInfo.fromJson(data) : null)
+    if (t == _i1.getType<_i50.ComputeScalingInfo?>()) {
+      return (data != null ? _i50.ComputeScalingInfo.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i47.ConcurrentSubscriptionUpdateException?>()) {
+    if (t == _i1.getType<_i51.ConcurrentSubscriptionUpdateException?>()) {
       return (data != null
-              ? _i47.ConcurrentSubscriptionUpdateException.fromJson(data)
+              ? _i51.ConcurrentSubscriptionUpdateException.fromJson(data)
               : null)
           as T;
     }
-    if (t == _i1.getType<_i48.DatabaseCatalogInfo?>()) {
-      return (data != null ? _i48.DatabaseCatalogInfo.fromJson(data) : null)
+    if (t == _i1.getType<_i52.DatabaseCatalogInfo?>()) {
+      return (data != null ? _i52.DatabaseCatalogInfo.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i49.DatabaseProductInfo?>()) {
-      return (data != null ? _i49.DatabaseProductInfo.fromJson(data) : null)
+    if (t == _i1.getType<_i53.DatabaseProductInfo?>()) {
+      return (data != null ? _i53.DatabaseProductInfo.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i50.DatabaseScalingInfo?>()) {
-      return (data != null ? _i50.DatabaseScalingInfo.fromJson(data) : null)
+    if (t == _i1.getType<_i54.DatabaseScalingInfo?>()) {
+      return (data != null ? _i54.DatabaseScalingInfo.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i51.PlanInfo?>()) {
-      return (data != null ? _i51.PlanInfo.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i55.PlanInfo?>()) {
+      return (data != null ? _i55.PlanInfo.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i52.PlanType?>()) {
-      return (data != null ? _i52.PlanType.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i56.PlanType?>()) {
+      return (data != null ? _i56.PlanType.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i53.ProductType?>()) {
-      return (data != null ? _i53.ProductType.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i57.ProductType?>()) {
+      return (data != null ? _i57.ProductType.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i54.ProjectProductInfo?>()) {
-      return (data != null ? _i54.ProjectProductInfo.fromJson(data) : null)
+    if (t == _i1.getType<_i58.ProjectProductInfo?>()) {
+      return (data != null ? _i58.ProjectProductInfo.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i55.SubscriptionInfo?>()) {
-      return (data != null ? _i55.SubscriptionInfo.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i59.SubscriptionInfo?>()) {
+      return (data != null ? _i59.SubscriptionInfo.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i56.Project?>()) {
-      return (data != null ? _i56.Project.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i60.Project?>()) {
+      return (data != null ? _i60.Project.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i57.Role?>()) {
-      return (data != null ? _i57.Role.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i61.Role?>()) {
+      return (data != null ? _i61.Role.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i58.UserRoleMembership?>()) {
-      return (data != null ? _i58.UserRoleMembership.fromJson(data) : null)
+    if (t == _i1.getType<_i62.UserRoleMembership?>()) {
+      return (data != null ? _i62.UserRoleMembership.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i59.BuildSecretType?>()) {
-      return (data != null ? _i59.BuildSecretType.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i63.BuildSecretType?>()) {
+      return (data != null ? _i63.BuildSecretType.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i60.SecretResource?>()) {
-      return (data != null ? _i60.SecretResource.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i64.SecretResource?>()) {
+      return (data != null ? _i64.SecretResource.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i61.SecretType?>()) {
-      return (data != null ? _i61.SecretType.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i65.SecretType?>()) {
+      return (data != null ? _i65.SecretType.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i62.StoredSecretVersion?>()) {
-      return (data != null ? _i62.StoredSecretVersion.fromJson(data) : null)
+    if (t == _i1.getType<_i66.StoredSecretVersion?>()) {
+      return (data != null ? _i66.StoredSecretVersion.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i63.CapsuleDeploymentStatus?>()) {
-      return (data != null ? _i63.CapsuleDeploymentStatus.fromJson(data) : null)
+    if (t == _i1.getType<_i67.CapsuleDeploymentStatus?>()) {
+      return (data != null ? _i67.CapsuleDeploymentStatus.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i64.CapsuleRevision?>()) {
-      return (data != null ? _i64.CapsuleRevision.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i68.CapsuleRevision?>()) {
+      return (data != null ? _i68.CapsuleRevision.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i65.CapsuleState?>()) {
-      return (data != null ? _i65.CapsuleState.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i69.CapsuleState?>()) {
+      return (data != null ? _i69.CapsuleState.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i66.CapsuleStatus?>()) {
-      return (data != null ? _i66.CapsuleStatus.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i70.CapsuleStatus?>()) {
+      return (data != null ? _i70.CapsuleStatus.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i67.DeployAttempt?>()) {
-      return (data != null ? _i67.DeployAttempt.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i71.DeployAttempt?>()) {
+      return (data != null ? _i71.DeployAttempt.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i68.DeployAttemptStage?>()) {
-      return (data != null ? _i68.DeployAttemptStage.fromJson(data) : null)
+    if (t == _i1.getType<_i72.DeployAttemptStage?>()) {
+      return (data != null ? _i72.DeployAttemptStage.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i69.DeployProgressStatus?>()) {
-      return (data != null ? _i69.DeployProgressStatus.fromJson(data) : null)
+    if (t == _i1.getType<_i73.DeployProgressStatus?>()) {
+      return (data != null ? _i73.DeployProgressStatus.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i70.DeployStageType?>()) {
-      return (data != null ? _i70.DeployStageType.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i74.DeployStageType?>()) {
+      return (data != null ? _i74.DeployStageType.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i71.User?>()) {
-      return (data != null ? _i71.User.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i75.User?>()) {
+      return (data != null ? _i75.User.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i72.UserAccountStatus?>()) {
-      return (data != null ? _i72.UserAccountStatus.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i76.UserAccountStatus?>()) {
+      return (data != null ? _i76.UserAccountStatus.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i73.UserLabel?>()) {
-      return (data != null ? _i73.UserLabel.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i77.UserLabel?>()) {
+      return (data != null ? _i77.UserLabel.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i74.UserLabelMapping?>()) {
-      return (data != null ? _i74.UserLabelMapping.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i78.UserLabelMapping?>()) {
+      return (data != null ? _i78.UserLabelMapping.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i75.EmailMethodBlockedException?>()) {
+    if (t == _i1.getType<_i79.EmailMethodBlockedException?>()) {
       return (data != null
-              ? _i75.EmailMethodBlockedException.fromJson(data)
+              ? _i79.EmailMethodBlockedException.fromJson(data)
               : null)
           as T;
     }
-    if (t == _i1.getType<_i76.UserAccountRegistrationDeniedException?>()) {
+    if (t == _i1.getType<_i80.UserAccountRegistrationDeniedException?>()) {
       return (data != null
-              ? _i76.UserAccountRegistrationDeniedException.fromJson(data)
+              ? _i80.UserAccountRegistrationDeniedException.fromJson(data)
               : null)
           as T;
     }
-    if (t == _i1.getType<_i77.AcceptedTerms?>()) {
-      return (data != null ? _i77.AcceptedTerms.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i81.AcceptedTerms?>()) {
+      return (data != null ? _i81.AcceptedTerms.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i78.AcceptedTermsDTO?>()) {
-      return (data != null ? _i78.AcceptedTermsDTO.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i82.AcceptedTermsDTO?>()) {
+      return (data != null ? _i82.AcceptedTermsDTO.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i79.AuthTokenInfo?>()) {
-      return (data != null ? _i79.AuthTokenInfo.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i83.AuthTokenInfo?>()) {
+      return (data != null ? _i83.AuthTokenInfo.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i80.RequiredTerms?>()) {
-      return (data != null ? _i80.RequiredTerms.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i84.RequiredTerms?>()) {
+      return (data != null ? _i84.RequiredTerms.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i81.Terms?>()) {
-      return (data != null ? _i81.Terms.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i85.Terms?>()) {
+      return (data != null ? _i85.Terms.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i82.BucketStorageIdentityUnavailableException?>()) {
+    if (t == _i1.getType<_i86.BucketStorageIdentityUnavailableException?>()) {
       return (data != null
-              ? _i82.BucketStorageIdentityUnavailableException.fromJson(data)
+              ? _i86.BucketStorageIdentityUnavailableException.fromJson(data)
               : null)
           as T;
     }
-    if (t == _i1.getType<_i83.DNSVerificationFailedException?>()) {
+    if (t == _i1.getType<_i87.DNSVerificationFailedException?>()) {
       return (data != null
-              ? _i83.DNSVerificationFailedException.fromJson(data)
+              ? _i87.DNSVerificationFailedException.fromJson(data)
               : null)
           as T;
     }
-    if (t == _i1.getType<_i84.CustomDomainName?>()) {
-      return (data != null ? _i84.CustomDomainName.fromJson(data) : null) as T;
-    }
-    if (t == _i1.getType<_i85.CustomDomainNameList?>()) {
-      return (data != null ? _i85.CustomDomainNameList.fromJson(data) : null)
+    if (t == _i1.getType<_i88.CustomDomainNameList?>()) {
+      return (data != null ? _i88.CustomDomainNameList.fromJson(data) : null)
           as T;
-    }
-    if (t == _i1.getType<_i86.DnsRecordType?>()) {
-      return (data != null ? _i86.DnsRecordType.fromJson(data) : null) as T;
-    }
-    if (t == _i1.getType<_i87.DomainNameStatus?>()) {
-      return (data != null ? _i87.DomainNameStatus.fromJson(data) : null) as T;
-    }
-    if (t == _i1.getType<_i88.DomainNameTarget?>()) {
-      return (data != null ? _i88.DomainNameTarget.fromJson(data) : null) as T;
     }
     if (t == _i1.getType<_i89.CustomDomainNameWithDefaultDomains?>()) {
       return (data != null
@@ -1101,13 +1101,13 @@ class Protocol extends _i1.SerializationManager {
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
-    if (t == List<_i56.Project>) {
-      return (data as List).map((e) => deserialize<_i56.Project>(e)).toList()
+    if (t == List<_i60.Project>) {
+      return (data as List).map((e) => deserialize<_i60.Project>(e)).toList()
           as T;
     }
-    if (t == _i1.getType<List<_i56.Project>?>()) {
+    if (t == _i1.getType<List<_i60.Project>?>()) {
       return (data != null
-              ? (data as List).map((e) => deserialize<_i56.Project>(e)).toList()
+              ? (data as List).map((e) => deserialize<_i60.Project>(e)).toList()
               : null)
           as T;
     }
@@ -1115,81 +1115,81 @@ class Protocol extends _i1.SerializationManager {
       return (data as List).map((e) => deserialize<_i10.BucketFile>(e)).toList()
           as T;
     }
-    if (t == List<_i35.EnvironmentVariable>) {
+    if (t == List<_i39.EnvironmentVariable>) {
       return (data as List)
-              .map((e) => deserialize<_i35.EnvironmentVariable>(e))
+              .map((e) => deserialize<_i39.EnvironmentVariable>(e))
               .toList()
           as T;
     }
-    if (t == _i1.getType<List<_i35.EnvironmentVariable>?>()) {
+    if (t == _i1.getType<List<_i39.EnvironmentVariable>?>()) {
       return (data != null
               ? (data as List)
-                    .map((e) => deserialize<_i35.EnvironmentVariable>(e))
+                    .map((e) => deserialize<_i39.EnvironmentVariable>(e))
                     .toList()
               : null)
           as T;
     }
-    if (t == List<_i84.CustomDomainName>) {
+    if (t == List<_i23.CustomDomainName>) {
       return (data as List)
-              .map((e) => deserialize<_i84.CustomDomainName>(e))
+              .map((e) => deserialize<_i23.CustomDomainName>(e))
               .toList()
           as T;
     }
-    if (t == _i1.getType<List<_i84.CustomDomainName>?>()) {
+    if (t == _i1.getType<List<_i23.CustomDomainName>?>()) {
       return (data != null
               ? (data as List)
-                    .map((e) => deserialize<_i84.CustomDomainName>(e))
+                    .map((e) => deserialize<_i23.CustomDomainName>(e))
                     .toList()
               : null)
           as T;
     }
-    if (t == List<_i40.MetricSample>) {
+    if (t == List<_i44.MetricSample>) {
       return (data as List)
-              .map((e) => deserialize<_i40.MetricSample>(e))
+              .map((e) => deserialize<_i44.MetricSample>(e))
               .toList()
           as T;
     }
-    if (t == List<_i43.ResponseClassSeries>) {
+    if (t == List<_i47.ResponseClassSeries>) {
       return (data as List)
-              .map((e) => deserialize<_i43.ResponseClassSeries>(e))
+              .map((e) => deserialize<_i47.ResponseClassSeries>(e))
               .toList()
           as T;
     }
-    if (t == List<_i45.ComputeProductInfo>) {
+    if (t == List<_i49.ComputeProductInfo>) {
       return (data as List)
-              .map((e) => deserialize<_i45.ComputeProductInfo>(e))
+              .map((e) => deserialize<_i49.ComputeProductInfo>(e))
               .toList()
           as T;
     }
-    if (t == List<_i49.DatabaseProductInfo>) {
+    if (t == List<_i53.DatabaseProductInfo>) {
       return (data as List)
-              .map((e) => deserialize<_i49.DatabaseProductInfo>(e))
+              .map((e) => deserialize<_i53.DatabaseProductInfo>(e))
               .toList()
           as T;
     }
     if (t == List<double>) {
       return (data as List).map((e) => deserialize<double>(e)).toList() as T;
     }
-    if (t == List<_i54.ProjectProductInfo>) {
+    if (t == List<_i58.ProjectProductInfo>) {
       return (data as List)
-              .map((e) => deserialize<_i54.ProjectProductInfo>(e))
+              .map((e) => deserialize<_i58.ProjectProductInfo>(e))
               .toList()
           as T;
     }
-    if (t == _i1.getType<List<_i54.ProjectProductInfo>?>()) {
+    if (t == _i1.getType<List<_i58.ProjectProductInfo>?>()) {
       return (data != null
               ? (data as List)
-                    .map((e) => deserialize<_i54.ProjectProductInfo>(e))
+                    .map((e) => deserialize<_i58.ProjectProductInfo>(e))
                     .toList()
               : null)
           as T;
     }
-    if (t == List<_i57.Role>) {
-      return (data as List).map((e) => deserialize<_i57.Role>(e)).toList() as T;
+    if (t == List<_i61.Role>) {
+      return (data as List).map((e) => deserialize<_i61.Role>(e)).toList() as T;
     }
-    if (t == _i1.getType<List<_i57.Role>?>()) {
+    if (t == _i1.getType<List<_i61.Role>?>()) {
       return (data != null
-              ? (data as List).map((e) => deserialize<_i57.Role>(e)).toList()
+              ? (data as List).map((e) => deserialize<_i61.Role>(e)).toList()
               : null)
           as T;
     }
@@ -1203,30 +1203,30 @@ class Protocol extends _i1.SerializationManager {
               : null)
           as T;
     }
-    if (t == List<_i58.UserRoleMembership>) {
+    if (t == List<_i62.UserRoleMembership>) {
       return (data as List)
-              .map((e) => deserialize<_i58.UserRoleMembership>(e))
+              .map((e) => deserialize<_i62.UserRoleMembership>(e))
               .toList()
           as T;
     }
-    if (t == _i1.getType<List<_i58.UserRoleMembership>?>()) {
+    if (t == _i1.getType<List<_i62.UserRoleMembership>?>()) {
       return (data != null
               ? (data as List)
-                    .map((e) => deserialize<_i58.UserRoleMembership>(e))
+                    .map((e) => deserialize<_i62.UserRoleMembership>(e))
                     .toList()
               : null)
           as T;
     }
-    if (t == List<_i62.StoredSecretVersion>) {
+    if (t == List<_i66.StoredSecretVersion>) {
       return (data as List)
-              .map((e) => deserialize<_i62.StoredSecretVersion>(e))
+              .map((e) => deserialize<_i66.StoredSecretVersion>(e))
               .toList()
           as T;
     }
-    if (t == _i1.getType<List<_i62.StoredSecretVersion>?>()) {
+    if (t == _i1.getType<List<_i66.StoredSecretVersion>?>()) {
       return (data != null
               ? (data as List)
-                    .map((e) => deserialize<_i62.StoredSecretVersion>(e))
+                    .map((e) => deserialize<_i66.StoredSecretVersion>(e))
                     .toList()
               : null)
           as T;
@@ -1237,39 +1237,39 @@ class Protocol extends _i1.SerializationManager {
           )
           as T;
     }
-    if (t == List<_i68.DeployAttemptStage>) {
+    if (t == List<_i72.DeployAttemptStage>) {
       return (data as List)
-              .map((e) => deserialize<_i68.DeployAttemptStage>(e))
+              .map((e) => deserialize<_i72.DeployAttemptStage>(e))
               .toList()
           as T;
     }
-    if (t == _i1.getType<List<_i68.DeployAttemptStage>?>()) {
+    if (t == _i1.getType<List<_i72.DeployAttemptStage>?>()) {
       return (data != null
               ? (data as List)
-                    .map((e) => deserialize<_i68.DeployAttemptStage>(e))
+                    .map((e) => deserialize<_i72.DeployAttemptStage>(e))
                     .toList()
               : null)
           as T;
     }
-    if (t == List<_i74.UserLabelMapping>) {
+    if (t == List<_i78.UserLabelMapping>) {
       return (data as List)
-              .map((e) => deserialize<_i74.UserLabelMapping>(e))
+              .map((e) => deserialize<_i78.UserLabelMapping>(e))
               .toList()
           as T;
     }
-    if (t == _i1.getType<List<_i74.UserLabelMapping>?>()) {
+    if (t == _i1.getType<List<_i78.UserLabelMapping>?>()) {
       return (data != null
               ? (data as List)
-                    .map((e) => deserialize<_i74.UserLabelMapping>(e))
+                    .map((e) => deserialize<_i78.UserLabelMapping>(e))
                     .toList()
               : null)
           as T;
     }
-    if (t == Map<_i88.DomainNameTarget, String>) {
+    if (t == Map<_i26.DomainNameTarget, String>) {
       return Map.fromEntries(
             (data as List).map(
               (e) => MapEntry(
-                deserialize<_i88.DomainNameTarget>(e['k']),
+                deserialize<_i26.DomainNameTarget>(e['k']),
                 deserialize<String>(e['v']),
               ),
             ),
@@ -1451,75 +1451,75 @@ class Protocol extends _i1.SerializationManager {
       _i20.CapsuleResource => 'CapsuleResource',
       _i21.ComputeInfo => 'ComputeInfo',
       _i22.ComputeSizeOption => 'ComputeSizeOption',
-      _i23.DatabaseSnapshotLimitException => 'DatabaseSnapshotLimitException',
-      _i24.BackupFrequency => 'BackupFrequency',
-      _i25.BackupSchedule => 'BackupSchedule',
-      _i26.DatabaseConnection => 'DatabaseConnection',
-      _i27.DatabaseInfo => 'DatabaseInfo',
-      _i28.DatabaseProvider => 'DatabaseProvider',
-      _i29.DatabaseQuota => 'DatabaseQuota',
-      _i30.DatabaseResource => 'DatabaseResource',
-      _i31.DatabaseScaling => 'DatabaseScaling',
-      _i32.DatabaseSizeOption => 'DatabaseSizeOption',
-      _i33.DatabaseSnapshot => 'DatabaseSnapshot',
-      _i34.DatabaseUser => 'DatabaseUser',
-      _i35.EnvironmentVariable => 'EnvironmentVariable',
-      _i36.LogRecord => 'LogRecord',
-      _i37.CapsuleNetworkSeries => 'CapsuleNetworkSeries',
-      _i38.DatabaseMetrics => 'DatabaseMetrics',
-      _i39.DatabaseMetricsStatus => 'DatabaseMetricsStatus',
-      _i40.MetricSample => 'MetricSample',
-      _i41.MetricsRange => 'MetricsRange',
-      _i42.PodResourceSeries => 'PodResourceSeries',
-      _i43.ResponseClassSeries => 'ResponseClassSeries',
-      _i44.ComputeCatalogInfo => 'ComputeCatalogInfo',
-      _i45.ComputeProductInfo => 'ComputeProductInfo',
-      _i46.ComputeScalingInfo => 'ComputeScalingInfo',
-      _i47.ConcurrentSubscriptionUpdateException =>
+      _i23.CustomDomainName => 'CustomDomainName',
+      _i24.DnsRecordType => 'DnsRecordType',
+      _i25.DomainNameStatus => 'DomainNameStatus',
+      _i26.DomainNameTarget => 'DomainNameTarget',
+      _i27.DatabaseSnapshotLimitException => 'DatabaseSnapshotLimitException',
+      _i28.BackupFrequency => 'BackupFrequency',
+      _i29.BackupSchedule => 'BackupSchedule',
+      _i30.DatabaseConnection => 'DatabaseConnection',
+      _i31.DatabaseInfo => 'DatabaseInfo',
+      _i32.DatabaseProvider => 'DatabaseProvider',
+      _i33.DatabaseQuota => 'DatabaseQuota',
+      _i34.DatabaseResource => 'DatabaseResource',
+      _i35.DatabaseScaling => 'DatabaseScaling',
+      _i36.DatabaseSizeOption => 'DatabaseSizeOption',
+      _i37.DatabaseSnapshot => 'DatabaseSnapshot',
+      _i38.DatabaseUser => 'DatabaseUser',
+      _i39.EnvironmentVariable => 'EnvironmentVariable',
+      _i40.LogRecord => 'LogRecord',
+      _i41.CapsuleNetworkSeries => 'CapsuleNetworkSeries',
+      _i42.DatabaseMetrics => 'DatabaseMetrics',
+      _i43.DatabaseMetricsStatus => 'DatabaseMetricsStatus',
+      _i44.MetricSample => 'MetricSample',
+      _i45.MetricsRange => 'MetricsRange',
+      _i46.PodResourceSeries => 'PodResourceSeries',
+      _i47.ResponseClassSeries => 'ResponseClassSeries',
+      _i48.ComputeCatalogInfo => 'ComputeCatalogInfo',
+      _i49.ComputeProductInfo => 'ComputeProductInfo',
+      _i50.ComputeScalingInfo => 'ComputeScalingInfo',
+      _i51.ConcurrentSubscriptionUpdateException =>
         'ConcurrentSubscriptionUpdateException',
-      _i48.DatabaseCatalogInfo => 'DatabaseCatalogInfo',
-      _i49.DatabaseProductInfo => 'DatabaseProductInfo',
-      _i50.DatabaseScalingInfo => 'DatabaseScalingInfo',
-      _i51.PlanInfo => 'PlanInfo',
-      _i52.PlanType => 'PlanType',
-      _i53.ProductType => 'ProductType',
-      _i54.ProjectProductInfo => 'ProjectProductInfo',
-      _i55.SubscriptionInfo => 'SubscriptionInfo',
-      _i56.Project => 'Project',
-      _i57.Role => 'Role',
-      _i58.UserRoleMembership => 'UserRoleMembership',
-      _i59.BuildSecretType => 'BuildSecretType',
-      _i60.SecretResource => 'SecretResource',
-      _i61.SecretType => 'SecretType',
-      _i62.StoredSecretVersion => 'StoredSecretVersion',
-      _i63.CapsuleDeploymentStatus => 'CapsuleDeploymentStatus',
-      _i64.CapsuleRevision => 'CapsuleRevision',
-      _i65.CapsuleState => 'CapsuleState',
-      _i66.CapsuleStatus => 'CapsuleStatus',
-      _i67.DeployAttempt => 'DeployAttempt',
-      _i68.DeployAttemptStage => 'DeployAttemptStage',
-      _i69.DeployProgressStatus => 'DeployProgressStatus',
-      _i70.DeployStageType => 'DeployStageType',
-      _i71.User => 'User',
-      _i72.UserAccountStatus => 'UserAccountStatus',
-      _i73.UserLabel => 'UserLabel',
-      _i74.UserLabelMapping => 'UserLabelMapping',
-      _i75.EmailMethodBlockedException => 'EmailMethodBlockedException',
-      _i76.UserAccountRegistrationDeniedException =>
+      _i52.DatabaseCatalogInfo => 'DatabaseCatalogInfo',
+      _i53.DatabaseProductInfo => 'DatabaseProductInfo',
+      _i54.DatabaseScalingInfo => 'DatabaseScalingInfo',
+      _i55.PlanInfo => 'PlanInfo',
+      _i56.PlanType => 'PlanType',
+      _i57.ProductType => 'ProductType',
+      _i58.ProjectProductInfo => 'ProjectProductInfo',
+      _i59.SubscriptionInfo => 'SubscriptionInfo',
+      _i60.Project => 'Project',
+      _i61.Role => 'Role',
+      _i62.UserRoleMembership => 'UserRoleMembership',
+      _i63.BuildSecretType => 'BuildSecretType',
+      _i64.SecretResource => 'SecretResource',
+      _i65.SecretType => 'SecretType',
+      _i66.StoredSecretVersion => 'StoredSecretVersion',
+      _i67.CapsuleDeploymentStatus => 'CapsuleDeploymentStatus',
+      _i68.CapsuleRevision => 'CapsuleRevision',
+      _i69.CapsuleState => 'CapsuleState',
+      _i70.CapsuleStatus => 'CapsuleStatus',
+      _i71.DeployAttempt => 'DeployAttempt',
+      _i72.DeployAttemptStage => 'DeployAttemptStage',
+      _i73.DeployProgressStatus => 'DeployProgressStatus',
+      _i74.DeployStageType => 'DeployStageType',
+      _i75.User => 'User',
+      _i76.UserAccountStatus => 'UserAccountStatus',
+      _i77.UserLabel => 'UserLabel',
+      _i78.UserLabelMapping => 'UserLabelMapping',
+      _i79.EmailMethodBlockedException => 'EmailMethodBlockedException',
+      _i80.UserAccountRegistrationDeniedException =>
         'UserAccountRegistrationDeniedException',
-      _i77.AcceptedTerms => 'AcceptedTerms',
-      _i78.AcceptedTermsDTO => 'AcceptedTermsDTO',
-      _i79.AuthTokenInfo => 'AuthTokenInfo',
-      _i80.RequiredTerms => 'RequiredTerms',
-      _i81.Terms => 'Terms',
-      _i82.BucketStorageIdentityUnavailableException =>
+      _i81.AcceptedTerms => 'AcceptedTerms',
+      _i82.AcceptedTermsDTO => 'AcceptedTermsDTO',
+      _i83.AuthTokenInfo => 'AuthTokenInfo',
+      _i84.RequiredTerms => 'RequiredTerms',
+      _i85.Terms => 'Terms',
+      _i86.BucketStorageIdentityUnavailableException =>
         'BucketStorageIdentityUnavailableException',
-      _i83.DNSVerificationFailedException => 'DNSVerificationFailedException',
-      _i84.CustomDomainName => 'CustomDomainName',
-      _i85.CustomDomainNameList => 'CustomDomainNameList',
-      _i86.DnsRecordType => 'DnsRecordType',
-      _i87.DomainNameStatus => 'DomainNameStatus',
-      _i88.DomainNameTarget => 'DomainNameTarget',
+      _i87.DNSVerificationFailedException => 'DNSVerificationFailedException',
+      _i88.CustomDomainNameList => 'CustomDomainNameList',
       _i89.CustomDomainNameWithDefaultDomains =>
         'CustomDomainNameWithDefaultDomains',
       _i90.InsightsConnectionDetail => 'InsightsConnectionDetail',
@@ -1610,138 +1610,138 @@ class Protocol extends _i1.SerializationManager {
         return 'ComputeInfo';
       case _i22.ComputeSizeOption():
         return 'ComputeSizeOption';
-      case _i23.DatabaseSnapshotLimitException():
-        return 'DatabaseSnapshotLimitException';
-      case _i24.BackupFrequency():
-        return 'BackupFrequency';
-      case _i25.BackupSchedule():
-        return 'BackupSchedule';
-      case _i26.DatabaseConnection():
-        return 'DatabaseConnection';
-      case _i27.DatabaseInfo():
-        return 'DatabaseInfo';
-      case _i28.DatabaseProvider():
-        return 'DatabaseProvider';
-      case _i29.DatabaseQuota():
-        return 'DatabaseQuota';
-      case _i30.DatabaseResource():
-        return 'DatabaseResource';
-      case _i31.DatabaseScaling():
-        return 'DatabaseScaling';
-      case _i32.DatabaseSizeOption():
-        return 'DatabaseSizeOption';
-      case _i33.DatabaseSnapshot():
-        return 'DatabaseSnapshot';
-      case _i34.DatabaseUser():
-        return 'DatabaseUser';
-      case _i35.EnvironmentVariable():
-        return 'EnvironmentVariable';
-      case _i36.LogRecord():
-        return 'LogRecord';
-      case _i37.CapsuleNetworkSeries():
-        return 'CapsuleNetworkSeries';
-      case _i38.DatabaseMetrics():
-        return 'DatabaseMetrics';
-      case _i39.DatabaseMetricsStatus():
-        return 'DatabaseMetricsStatus';
-      case _i40.MetricSample():
-        return 'MetricSample';
-      case _i41.MetricsRange():
-        return 'MetricsRange';
-      case _i42.PodResourceSeries():
-        return 'PodResourceSeries';
-      case _i43.ResponseClassSeries():
-        return 'ResponseClassSeries';
-      case _i44.ComputeCatalogInfo():
-        return 'ComputeCatalogInfo';
-      case _i45.ComputeProductInfo():
-        return 'ComputeProductInfo';
-      case _i46.ComputeScalingInfo():
-        return 'ComputeScalingInfo';
-      case _i47.ConcurrentSubscriptionUpdateException():
-        return 'ConcurrentSubscriptionUpdateException';
-      case _i48.DatabaseCatalogInfo():
-        return 'DatabaseCatalogInfo';
-      case _i49.DatabaseProductInfo():
-        return 'DatabaseProductInfo';
-      case _i50.DatabaseScalingInfo():
-        return 'DatabaseScalingInfo';
-      case _i51.PlanInfo():
-        return 'PlanInfo';
-      case _i52.PlanType():
-        return 'PlanType';
-      case _i53.ProductType():
-        return 'ProductType';
-      case _i54.ProjectProductInfo():
-        return 'ProjectProductInfo';
-      case _i55.SubscriptionInfo():
-        return 'SubscriptionInfo';
-      case _i56.Project():
-        return 'Project';
-      case _i57.Role():
-        return 'Role';
-      case _i58.UserRoleMembership():
-        return 'UserRoleMembership';
-      case _i59.BuildSecretType():
-        return 'BuildSecretType';
-      case _i60.SecretResource():
-        return 'SecretResource';
-      case _i61.SecretType():
-        return 'SecretType';
-      case _i62.StoredSecretVersion():
-        return 'StoredSecretVersion';
-      case _i63.CapsuleDeploymentStatus():
-        return 'CapsuleDeploymentStatus';
-      case _i64.CapsuleRevision():
-        return 'CapsuleRevision';
-      case _i65.CapsuleState():
-        return 'CapsuleState';
-      case _i66.CapsuleStatus():
-        return 'CapsuleStatus';
-      case _i67.DeployAttempt():
-        return 'DeployAttempt';
-      case _i68.DeployAttemptStage():
-        return 'DeployAttemptStage';
-      case _i69.DeployProgressStatus():
-        return 'DeployProgressStatus';
-      case _i70.DeployStageType():
-        return 'DeployStageType';
-      case _i71.User():
-        return 'User';
-      case _i72.UserAccountStatus():
-        return 'UserAccountStatus';
-      case _i73.UserLabel():
-        return 'UserLabel';
-      case _i74.UserLabelMapping():
-        return 'UserLabelMapping';
-      case _i75.EmailMethodBlockedException():
-        return 'EmailMethodBlockedException';
-      case _i76.UserAccountRegistrationDeniedException():
-        return 'UserAccountRegistrationDeniedException';
-      case _i77.AcceptedTerms():
-        return 'AcceptedTerms';
-      case _i78.AcceptedTermsDTO():
-        return 'AcceptedTermsDTO';
-      case _i79.AuthTokenInfo():
-        return 'AuthTokenInfo';
-      case _i80.RequiredTerms():
-        return 'RequiredTerms';
-      case _i81.Terms():
-        return 'Terms';
-      case _i82.BucketStorageIdentityUnavailableException():
-        return 'BucketStorageIdentityUnavailableException';
-      case _i83.DNSVerificationFailedException():
-        return 'DNSVerificationFailedException';
-      case _i84.CustomDomainName():
+      case _i23.CustomDomainName():
         return 'CustomDomainName';
-      case _i85.CustomDomainNameList():
-        return 'CustomDomainNameList';
-      case _i86.DnsRecordType():
+      case _i24.DnsRecordType():
         return 'DnsRecordType';
-      case _i87.DomainNameStatus():
+      case _i25.DomainNameStatus():
         return 'DomainNameStatus';
-      case _i88.DomainNameTarget():
+      case _i26.DomainNameTarget():
         return 'DomainNameTarget';
+      case _i27.DatabaseSnapshotLimitException():
+        return 'DatabaseSnapshotLimitException';
+      case _i28.BackupFrequency():
+        return 'BackupFrequency';
+      case _i29.BackupSchedule():
+        return 'BackupSchedule';
+      case _i30.DatabaseConnection():
+        return 'DatabaseConnection';
+      case _i31.DatabaseInfo():
+        return 'DatabaseInfo';
+      case _i32.DatabaseProvider():
+        return 'DatabaseProvider';
+      case _i33.DatabaseQuota():
+        return 'DatabaseQuota';
+      case _i34.DatabaseResource():
+        return 'DatabaseResource';
+      case _i35.DatabaseScaling():
+        return 'DatabaseScaling';
+      case _i36.DatabaseSizeOption():
+        return 'DatabaseSizeOption';
+      case _i37.DatabaseSnapshot():
+        return 'DatabaseSnapshot';
+      case _i38.DatabaseUser():
+        return 'DatabaseUser';
+      case _i39.EnvironmentVariable():
+        return 'EnvironmentVariable';
+      case _i40.LogRecord():
+        return 'LogRecord';
+      case _i41.CapsuleNetworkSeries():
+        return 'CapsuleNetworkSeries';
+      case _i42.DatabaseMetrics():
+        return 'DatabaseMetrics';
+      case _i43.DatabaseMetricsStatus():
+        return 'DatabaseMetricsStatus';
+      case _i44.MetricSample():
+        return 'MetricSample';
+      case _i45.MetricsRange():
+        return 'MetricsRange';
+      case _i46.PodResourceSeries():
+        return 'PodResourceSeries';
+      case _i47.ResponseClassSeries():
+        return 'ResponseClassSeries';
+      case _i48.ComputeCatalogInfo():
+        return 'ComputeCatalogInfo';
+      case _i49.ComputeProductInfo():
+        return 'ComputeProductInfo';
+      case _i50.ComputeScalingInfo():
+        return 'ComputeScalingInfo';
+      case _i51.ConcurrentSubscriptionUpdateException():
+        return 'ConcurrentSubscriptionUpdateException';
+      case _i52.DatabaseCatalogInfo():
+        return 'DatabaseCatalogInfo';
+      case _i53.DatabaseProductInfo():
+        return 'DatabaseProductInfo';
+      case _i54.DatabaseScalingInfo():
+        return 'DatabaseScalingInfo';
+      case _i55.PlanInfo():
+        return 'PlanInfo';
+      case _i56.PlanType():
+        return 'PlanType';
+      case _i57.ProductType():
+        return 'ProductType';
+      case _i58.ProjectProductInfo():
+        return 'ProjectProductInfo';
+      case _i59.SubscriptionInfo():
+        return 'SubscriptionInfo';
+      case _i60.Project():
+        return 'Project';
+      case _i61.Role():
+        return 'Role';
+      case _i62.UserRoleMembership():
+        return 'UserRoleMembership';
+      case _i63.BuildSecretType():
+        return 'BuildSecretType';
+      case _i64.SecretResource():
+        return 'SecretResource';
+      case _i65.SecretType():
+        return 'SecretType';
+      case _i66.StoredSecretVersion():
+        return 'StoredSecretVersion';
+      case _i67.CapsuleDeploymentStatus():
+        return 'CapsuleDeploymentStatus';
+      case _i68.CapsuleRevision():
+        return 'CapsuleRevision';
+      case _i69.CapsuleState():
+        return 'CapsuleState';
+      case _i70.CapsuleStatus():
+        return 'CapsuleStatus';
+      case _i71.DeployAttempt():
+        return 'DeployAttempt';
+      case _i72.DeployAttemptStage():
+        return 'DeployAttemptStage';
+      case _i73.DeployProgressStatus():
+        return 'DeployProgressStatus';
+      case _i74.DeployStageType():
+        return 'DeployStageType';
+      case _i75.User():
+        return 'User';
+      case _i76.UserAccountStatus():
+        return 'UserAccountStatus';
+      case _i77.UserLabel():
+        return 'UserLabel';
+      case _i78.UserLabelMapping():
+        return 'UserLabelMapping';
+      case _i79.EmailMethodBlockedException():
+        return 'EmailMethodBlockedException';
+      case _i80.UserAccountRegistrationDeniedException():
+        return 'UserAccountRegistrationDeniedException';
+      case _i81.AcceptedTerms():
+        return 'AcceptedTerms';
+      case _i82.AcceptedTermsDTO():
+        return 'AcceptedTermsDTO';
+      case _i83.AuthTokenInfo():
+        return 'AuthTokenInfo';
+      case _i84.RequiredTerms():
+        return 'RequiredTerms';
+      case _i85.Terms():
+        return 'Terms';
+      case _i86.BucketStorageIdentityUnavailableException():
+        return 'BucketStorageIdentityUnavailableException';
+      case _i87.DNSVerificationFailedException():
+        return 'DNSVerificationFailedException';
+      case _i88.CustomDomainNameList():
+        return 'CustomDomainNameList';
       case _i89.CustomDomainNameWithDefaultDomains():
         return 'CustomDomainNameWithDefaultDomains';
       case _i90.InsightsConnectionDetail():
@@ -1881,209 +1881,209 @@ class Protocol extends _i1.SerializationManager {
     if (dataClassName == 'ComputeSizeOption') {
       return deserialize<_i22.ComputeSizeOption>(data['data']);
     }
+    if (dataClassName == 'CustomDomainName') {
+      return deserialize<_i23.CustomDomainName>(data['data']);
+    }
+    if (dataClassName == 'DnsRecordType') {
+      return deserialize<_i24.DnsRecordType>(data['data']);
+    }
+    if (dataClassName == 'DomainNameStatus') {
+      return deserialize<_i25.DomainNameStatus>(data['data']);
+    }
+    if (dataClassName == 'DomainNameTarget') {
+      return deserialize<_i26.DomainNameTarget>(data['data']);
+    }
     if (dataClassName == 'DatabaseSnapshotLimitException') {
-      return deserialize<_i23.DatabaseSnapshotLimitException>(data['data']);
+      return deserialize<_i27.DatabaseSnapshotLimitException>(data['data']);
     }
     if (dataClassName == 'BackupFrequency') {
-      return deserialize<_i24.BackupFrequency>(data['data']);
+      return deserialize<_i28.BackupFrequency>(data['data']);
     }
     if (dataClassName == 'BackupSchedule') {
-      return deserialize<_i25.BackupSchedule>(data['data']);
+      return deserialize<_i29.BackupSchedule>(data['data']);
     }
     if (dataClassName == 'DatabaseConnection') {
-      return deserialize<_i26.DatabaseConnection>(data['data']);
+      return deserialize<_i30.DatabaseConnection>(data['data']);
     }
     if (dataClassName == 'DatabaseInfo') {
-      return deserialize<_i27.DatabaseInfo>(data['data']);
+      return deserialize<_i31.DatabaseInfo>(data['data']);
     }
     if (dataClassName == 'DatabaseProvider') {
-      return deserialize<_i28.DatabaseProvider>(data['data']);
+      return deserialize<_i32.DatabaseProvider>(data['data']);
     }
     if (dataClassName == 'DatabaseQuota') {
-      return deserialize<_i29.DatabaseQuota>(data['data']);
+      return deserialize<_i33.DatabaseQuota>(data['data']);
     }
     if (dataClassName == 'DatabaseResource') {
-      return deserialize<_i30.DatabaseResource>(data['data']);
+      return deserialize<_i34.DatabaseResource>(data['data']);
     }
     if (dataClassName == 'DatabaseScaling') {
-      return deserialize<_i31.DatabaseScaling>(data['data']);
+      return deserialize<_i35.DatabaseScaling>(data['data']);
     }
     if (dataClassName == 'DatabaseSizeOption') {
-      return deserialize<_i32.DatabaseSizeOption>(data['data']);
+      return deserialize<_i36.DatabaseSizeOption>(data['data']);
     }
     if (dataClassName == 'DatabaseSnapshot') {
-      return deserialize<_i33.DatabaseSnapshot>(data['data']);
+      return deserialize<_i37.DatabaseSnapshot>(data['data']);
     }
     if (dataClassName == 'DatabaseUser') {
-      return deserialize<_i34.DatabaseUser>(data['data']);
+      return deserialize<_i38.DatabaseUser>(data['data']);
     }
     if (dataClassName == 'EnvironmentVariable') {
-      return deserialize<_i35.EnvironmentVariable>(data['data']);
+      return deserialize<_i39.EnvironmentVariable>(data['data']);
     }
     if (dataClassName == 'LogRecord') {
-      return deserialize<_i36.LogRecord>(data['data']);
+      return deserialize<_i40.LogRecord>(data['data']);
     }
     if (dataClassName == 'CapsuleNetworkSeries') {
-      return deserialize<_i37.CapsuleNetworkSeries>(data['data']);
+      return deserialize<_i41.CapsuleNetworkSeries>(data['data']);
     }
     if (dataClassName == 'DatabaseMetrics') {
-      return deserialize<_i38.DatabaseMetrics>(data['data']);
+      return deserialize<_i42.DatabaseMetrics>(data['data']);
     }
     if (dataClassName == 'DatabaseMetricsStatus') {
-      return deserialize<_i39.DatabaseMetricsStatus>(data['data']);
+      return deserialize<_i43.DatabaseMetricsStatus>(data['data']);
     }
     if (dataClassName == 'MetricSample') {
-      return deserialize<_i40.MetricSample>(data['data']);
+      return deserialize<_i44.MetricSample>(data['data']);
     }
     if (dataClassName == 'MetricsRange') {
-      return deserialize<_i41.MetricsRange>(data['data']);
+      return deserialize<_i45.MetricsRange>(data['data']);
     }
     if (dataClassName == 'PodResourceSeries') {
-      return deserialize<_i42.PodResourceSeries>(data['data']);
+      return deserialize<_i46.PodResourceSeries>(data['data']);
     }
     if (dataClassName == 'ResponseClassSeries') {
-      return deserialize<_i43.ResponseClassSeries>(data['data']);
+      return deserialize<_i47.ResponseClassSeries>(data['data']);
     }
     if (dataClassName == 'ComputeCatalogInfo') {
-      return deserialize<_i44.ComputeCatalogInfo>(data['data']);
+      return deserialize<_i48.ComputeCatalogInfo>(data['data']);
     }
     if (dataClassName == 'ComputeProductInfo') {
-      return deserialize<_i45.ComputeProductInfo>(data['data']);
+      return deserialize<_i49.ComputeProductInfo>(data['data']);
     }
     if (dataClassName == 'ComputeScalingInfo') {
-      return deserialize<_i46.ComputeScalingInfo>(data['data']);
+      return deserialize<_i50.ComputeScalingInfo>(data['data']);
     }
     if (dataClassName == 'ConcurrentSubscriptionUpdateException') {
-      return deserialize<_i47.ConcurrentSubscriptionUpdateException>(
+      return deserialize<_i51.ConcurrentSubscriptionUpdateException>(
         data['data'],
       );
     }
     if (dataClassName == 'DatabaseCatalogInfo') {
-      return deserialize<_i48.DatabaseCatalogInfo>(data['data']);
+      return deserialize<_i52.DatabaseCatalogInfo>(data['data']);
     }
     if (dataClassName == 'DatabaseProductInfo') {
-      return deserialize<_i49.DatabaseProductInfo>(data['data']);
+      return deserialize<_i53.DatabaseProductInfo>(data['data']);
     }
     if (dataClassName == 'DatabaseScalingInfo') {
-      return deserialize<_i50.DatabaseScalingInfo>(data['data']);
+      return deserialize<_i54.DatabaseScalingInfo>(data['data']);
     }
     if (dataClassName == 'PlanInfo') {
-      return deserialize<_i51.PlanInfo>(data['data']);
+      return deserialize<_i55.PlanInfo>(data['data']);
     }
     if (dataClassName == 'PlanType') {
-      return deserialize<_i52.PlanType>(data['data']);
+      return deserialize<_i56.PlanType>(data['data']);
     }
     if (dataClassName == 'ProductType') {
-      return deserialize<_i53.ProductType>(data['data']);
+      return deserialize<_i57.ProductType>(data['data']);
     }
     if (dataClassName == 'ProjectProductInfo') {
-      return deserialize<_i54.ProjectProductInfo>(data['data']);
+      return deserialize<_i58.ProjectProductInfo>(data['data']);
     }
     if (dataClassName == 'SubscriptionInfo') {
-      return deserialize<_i55.SubscriptionInfo>(data['data']);
+      return deserialize<_i59.SubscriptionInfo>(data['data']);
     }
     if (dataClassName == 'Project') {
-      return deserialize<_i56.Project>(data['data']);
+      return deserialize<_i60.Project>(data['data']);
     }
     if (dataClassName == 'Role') {
-      return deserialize<_i57.Role>(data['data']);
+      return deserialize<_i61.Role>(data['data']);
     }
     if (dataClassName == 'UserRoleMembership') {
-      return deserialize<_i58.UserRoleMembership>(data['data']);
+      return deserialize<_i62.UserRoleMembership>(data['data']);
     }
     if (dataClassName == 'BuildSecretType') {
-      return deserialize<_i59.BuildSecretType>(data['data']);
+      return deserialize<_i63.BuildSecretType>(data['data']);
     }
     if (dataClassName == 'SecretResource') {
-      return deserialize<_i60.SecretResource>(data['data']);
+      return deserialize<_i64.SecretResource>(data['data']);
     }
     if (dataClassName == 'SecretType') {
-      return deserialize<_i61.SecretType>(data['data']);
+      return deserialize<_i65.SecretType>(data['data']);
     }
     if (dataClassName == 'StoredSecretVersion') {
-      return deserialize<_i62.StoredSecretVersion>(data['data']);
+      return deserialize<_i66.StoredSecretVersion>(data['data']);
     }
     if (dataClassName == 'CapsuleDeploymentStatus') {
-      return deserialize<_i63.CapsuleDeploymentStatus>(data['data']);
+      return deserialize<_i67.CapsuleDeploymentStatus>(data['data']);
     }
     if (dataClassName == 'CapsuleRevision') {
-      return deserialize<_i64.CapsuleRevision>(data['data']);
+      return deserialize<_i68.CapsuleRevision>(data['data']);
     }
     if (dataClassName == 'CapsuleState') {
-      return deserialize<_i65.CapsuleState>(data['data']);
+      return deserialize<_i69.CapsuleState>(data['data']);
     }
     if (dataClassName == 'CapsuleStatus') {
-      return deserialize<_i66.CapsuleStatus>(data['data']);
+      return deserialize<_i70.CapsuleStatus>(data['data']);
     }
     if (dataClassName == 'DeployAttempt') {
-      return deserialize<_i67.DeployAttempt>(data['data']);
+      return deserialize<_i71.DeployAttempt>(data['data']);
     }
     if (dataClassName == 'DeployAttemptStage') {
-      return deserialize<_i68.DeployAttemptStage>(data['data']);
+      return deserialize<_i72.DeployAttemptStage>(data['data']);
     }
     if (dataClassName == 'DeployProgressStatus') {
-      return deserialize<_i69.DeployProgressStatus>(data['data']);
+      return deserialize<_i73.DeployProgressStatus>(data['data']);
     }
     if (dataClassName == 'DeployStageType') {
-      return deserialize<_i70.DeployStageType>(data['data']);
+      return deserialize<_i74.DeployStageType>(data['data']);
     }
     if (dataClassName == 'User') {
-      return deserialize<_i71.User>(data['data']);
+      return deserialize<_i75.User>(data['data']);
     }
     if (dataClassName == 'UserAccountStatus') {
-      return deserialize<_i72.UserAccountStatus>(data['data']);
+      return deserialize<_i76.UserAccountStatus>(data['data']);
     }
     if (dataClassName == 'UserLabel') {
-      return deserialize<_i73.UserLabel>(data['data']);
+      return deserialize<_i77.UserLabel>(data['data']);
     }
     if (dataClassName == 'UserLabelMapping') {
-      return deserialize<_i74.UserLabelMapping>(data['data']);
+      return deserialize<_i78.UserLabelMapping>(data['data']);
     }
     if (dataClassName == 'EmailMethodBlockedException') {
-      return deserialize<_i75.EmailMethodBlockedException>(data['data']);
+      return deserialize<_i79.EmailMethodBlockedException>(data['data']);
     }
     if (dataClassName == 'UserAccountRegistrationDeniedException') {
-      return deserialize<_i76.UserAccountRegistrationDeniedException>(
+      return deserialize<_i80.UserAccountRegistrationDeniedException>(
         data['data'],
       );
     }
     if (dataClassName == 'AcceptedTerms') {
-      return deserialize<_i77.AcceptedTerms>(data['data']);
+      return deserialize<_i81.AcceptedTerms>(data['data']);
     }
     if (dataClassName == 'AcceptedTermsDTO') {
-      return deserialize<_i78.AcceptedTermsDTO>(data['data']);
+      return deserialize<_i82.AcceptedTermsDTO>(data['data']);
     }
     if (dataClassName == 'AuthTokenInfo') {
-      return deserialize<_i79.AuthTokenInfo>(data['data']);
+      return deserialize<_i83.AuthTokenInfo>(data['data']);
     }
     if (dataClassName == 'RequiredTerms') {
-      return deserialize<_i80.RequiredTerms>(data['data']);
+      return deserialize<_i84.RequiredTerms>(data['data']);
     }
     if (dataClassName == 'Terms') {
-      return deserialize<_i81.Terms>(data['data']);
+      return deserialize<_i85.Terms>(data['data']);
     }
     if (dataClassName == 'BucketStorageIdentityUnavailableException') {
-      return deserialize<_i82.BucketStorageIdentityUnavailableException>(
+      return deserialize<_i86.BucketStorageIdentityUnavailableException>(
         data['data'],
       );
     }
     if (dataClassName == 'DNSVerificationFailedException') {
-      return deserialize<_i83.DNSVerificationFailedException>(data['data']);
-    }
-    if (dataClassName == 'CustomDomainName') {
-      return deserialize<_i84.CustomDomainName>(data['data']);
+      return deserialize<_i87.DNSVerificationFailedException>(data['data']);
     }
     if (dataClassName == 'CustomDomainNameList') {
-      return deserialize<_i85.CustomDomainNameList>(data['data']);
-    }
-    if (dataClassName == 'DnsRecordType') {
-      return deserialize<_i86.DnsRecordType>(data['data']);
-    }
-    if (dataClassName == 'DomainNameStatus') {
-      return deserialize<_i87.DomainNameStatus>(data['data']);
-    }
-    if (dataClassName == 'DomainNameTarget') {
-      return deserialize<_i88.DomainNameTarget>(data['data']);
+      return deserialize<_i88.CustomDomainNameList>(data['data']);
     }
     if (dataClassName == 'CustomDomainNameWithDefaultDomains') {
       return deserialize<_i89.CustomDomainNameWithDefaultDomains>(data['data']);

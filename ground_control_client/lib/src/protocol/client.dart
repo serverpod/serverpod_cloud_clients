@@ -55,11 +55,11 @@ import 'package:ground_control_client/src/protocol/domains/capsules/models/compu
     as _i22;
 import 'package:ground_control_client/src/protocol/features/custom_domains/models/view_models/custom_domain_name_with_default_domains.dart'
     as _i23;
-import 'package:ground_control_client/src/protocol/features/custom_domains/models/domain_name_target.dart'
+import 'package:ground_control_client/src/protocol/domains/custom_domains/models/domain_name_target.dart'
     as _i24;
 import 'package:ground_control_client/src/protocol/features/custom_domains/models/custom_domain_name_list.dart'
     as _i25;
-import 'package:ground_control_client/src/protocol/features/custom_domains/models/domain_name_status.dart'
+import 'package:ground_control_client/src/protocol/domains/custom_domains/models/domain_name_status.dart'
     as _i26;
 import 'package:ground_control_client/src/protocol/domains/databases/models/database_connection.dart'
     as _i27;
