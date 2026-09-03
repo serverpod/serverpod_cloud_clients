@@ -60,10 +60,20 @@ abstract class StatusCommands {
     bool inUtc = false,
     bool skipUploadStage = false,
     Stream<void>? processSignalStreamOverride,
+    int maxReconnectRetries = 3,
+    Duration reconnectDelay = const Duration(seconds: 2),
   }) async {
-    final stageStream = cloudApiClient.status.tailDeployAttemptStatus(
-      cloudCapsuleId: cloudCapsuleId,
-      attemptId: attemptId,
+    final stageStatuses = <DeployStageType, DeployProgressStatus>{};
+    final stageStream = reconnectStream<DeployAttemptStage>(
+      (final _) => _tailDeploymentStatusFrom(
+        cloudApiClient,
+        cloudCapsuleId: cloudCapsuleId,
+        attemptId: attemptId,
+        stageStatuses: stageStatuses,
+      ),
+      shouldRetry: isRetryableMethodStreamDisconnect,
+      maxRetries: maxReconnectRetries,
+      retryDelay: reconnectDelay,
     );
 
     final stageStreams = SplitStreams<DeployStageType, DeployAttemptStage>(
@@ -89,6 +99,8 @@ abstract class StatusCommands {
       attemptId: attemptId,
       stageStreams: stageStreams,
       processSignalStream: processSignalStream,
+      maxReconnectRetries: maxReconnectRetries,
+      reconnectDelay: reconnectDelay,
     );
     try {
       for (final stageType in [DeployStageType.upload, DeployStageType.build]) {
@@ -109,12 +121,48 @@ abstract class StatusCommands {
       }
 
       await stageStatusTailer._showRolloutProgress();
+    } on MethodStreamException catch (error, stackTrace) {
+      if (!isRetryableMethodStreamDisconnect(error)) {
+        rethrow;
+      }
+      _logDeployTailInterruptGuidance(logger, baseCommand);
+      throw FailureException.nested(
+        error,
+        stackTrace,
+        'Timed out while reconnecting to the deployment status stream.',
+      );
     } on StreamInterruptedException {
       _logDeployTailInterruptGuidance(logger, baseCommand);
       throw UserAbortException();
     } finally {
       await stageStreams.cancel();
     }
+  }
+
+  static Stream<DeployAttemptStage> _tailDeploymentStatusFrom(
+    final Client cloudApiClient, {
+    required final String cloudCapsuleId,
+    required final UuidValue attemptId,
+    required final Map<DeployStageType, DeployProgressStatus> stageStatuses,
+  }) {
+    final stream = cloudApiClient.status.tailDeployAttemptStatus(
+      cloudCapsuleId: cloudCapsuleId,
+      attemptId: attemptId,
+    );
+    return stream.where((final stage) {
+      final previousStatus = stageStatuses[stage.stageType];
+      final isRegression =
+          previousStatus == DeployProgressStatus.running &&
+          (stage.stageStatus == DeployProgressStatus.awaiting ||
+              stage.stageStatus == DeployProgressStatus.unknown);
+      if (previousStatus == stage.stageStatus ||
+          (previousStatus?.isFinal ?? false) ||
+          isRegression) {
+        return false;
+      }
+      stageStatuses[stage.stageType] = stage.stageStatus;
+      return true;
+    });
   }
 
   static void _logDeployTailInterruptGuidance(
@@ -271,6 +319,8 @@ class _StageStatusTailer {
   final UuidValue attemptId;
   final SplitStreams<DeployStageType, DeployAttemptStage> stageStreams;
   final Stream<void> processSignalStream;
+  final int maxReconnectRetries;
+  final Duration reconnectDelay;
 
   _StageStatusTailer({
     required this.logger,
@@ -279,6 +329,8 @@ class _StageStatusTailer {
     required this.attemptId,
     required this.stageStreams,
     required this.processSignalStream,
+    required this.maxReconnectRetries,
+    required this.reconnectDelay,
   });
 
   /// Shows the progress of a stage and returns the final stage status.
@@ -348,16 +400,20 @@ class _StageStatusTailer {
         );
         if (logSubscription == null &&
             stage.stageStatus == DeployProgressStatus.running) {
-          logSubscription = cloudApiClient.logs
-              .tailBuildLog(
-                cloudCapsuleId: cloudCapsuleId,
-                attemptId: attemptId,
-              )
-              .listen(
+          final emittedRecordIds = <String>{};
+          logSubscription =
+              reconnectStream<LogRecord>(
+                (_) => cloudApiClient.logs
+                    .tailBuildLog(
+                      cloudCapsuleId: cloudCapsuleId,
+                      attemptId: attemptId,
+                    )
+                    .where((record) => emittedRecordIds.add(record.recordId)),
+                shouldRetry: isRetryableMethodStreamDisconnect,
+                maxRetries: maxReconnectRetries,
+                retryDelay: reconnectDelay,
+              ).listen(
                 (record) => section.appendLine(record.content),
-                // Best-effort: a failure to fetch build-log lines should not
-                // derail the stage tailing that drives the heading and the
-                // final failure/success outcome.
                 onError: (_, _) {},
               );
         }
