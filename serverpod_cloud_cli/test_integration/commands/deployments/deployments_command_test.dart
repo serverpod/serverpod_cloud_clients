@@ -1126,6 +1126,7 @@ Cloud build failed. 💥''');
             cloudCapsuleId: projectId,
             attemptId: attemptId,
             skipUploadStage: true,
+            reconnectDelay: Duration.zero,
             processSignalStreamOverride: interruptController.stream,
           );
 
@@ -1154,6 +1155,303 @@ Cloud build failed. 💥''');
           );
         },
       );
+    });
+
+    test('Given a deployment status stream that closes after an event '
+        'when the reconnect succeeds '
+        'then tailing resumes without replaying the last stage', () async {
+      logger.inlineTerminal = FakeTerminal(hasTerminal: false);
+      var connectionCount = 0;
+      final successfulUpload = DeployAttemptStageBuilder()
+          .withCloudCapsuleId(projectId)
+          .withAttemptId(attemptId)
+          .withStageType(DeployStageType.upload)
+          .withStageStatus(DeployProgressStatus.success)
+          .build();
+      final runningBuild = DeployAttemptStageBuilder()
+          .withCloudCapsuleId(projectId)
+          .withAttemptId(attemptId)
+          .withStageType(DeployStageType.build)
+          .withStageStatus(DeployProgressStatus.running)
+          .build();
+      final successfulBuild = DeployAttemptStageBuilder()
+          .withCloudCapsuleId(projectId)
+          .withAttemptId(attemptId)
+          .withStageType(DeployStageType.build)
+          .withStageStatus(DeployProgressStatus.success)
+          .build();
+      final successfulDeploy = DeployAttemptStageBuilder()
+          .withCloudCapsuleId(projectId)
+          .withAttemptId(attemptId)
+          .withStageType(DeployStageType.deploy)
+          .withStageStatus(DeployProgressStatus.success)
+          .build();
+      final successfulService = DeployAttemptStageBuilder()
+          .withCloudCapsuleId(projectId)
+          .withAttemptId(attemptId)
+          .withStageType(DeployStageType.service)
+          .withStageStatus(DeployProgressStatus.success)
+          .build();
+
+      when(
+        () => client.status.tailDeployAttemptStatus(
+          cloudCapsuleId: projectId,
+          attemptId: attemptId,
+        ),
+      ).thenAnswer((final _) {
+        connectionCount++;
+        if (connectionCount == 1) {
+          return Stream<DeployAttemptStage>.multi((final controller) {
+            controller.add(runningBuild);
+            controller.addError(const WebSocketClosedException());
+            controller.close();
+          });
+        }
+        return Stream.fromIterable([
+          successfulUpload,
+          runningBuild,
+          successfulBuild,
+          successfulDeploy,
+          successfulService,
+        ]);
+      });
+      addTearDown(() => reset(client.status));
+
+      final tailFuture = StatusCommands.tailDeploymentStatus(
+        client,
+        logger: logger,
+        baseCommand: defaultBaseCommand,
+        cloudCapsuleId: projectId,
+        attemptId: attemptId,
+        skipUploadStage: true,
+        reconnectDelay: Duration.zero,
+      );
+
+      await expectLater(tailFuture, completes);
+      expect(connectionCount, 2);
+    });
+
+    test('Given a later stage emits while the build is running '
+        'when the deployment status stream reconnects '
+        'then the build can still progress to success', () async {
+      logger.inlineTerminal = FakeTerminal(hasTerminal: false);
+      var connectionCount = 0;
+      final successfulUpload = DeployAttemptStageBuilder()
+          .withCloudCapsuleId(projectId)
+          .withAttemptId(attemptId)
+          .withStageType(DeployStageType.upload)
+          .withStageStatus(DeployProgressStatus.success)
+          .build();
+      final runningBuild = DeployAttemptStageBuilder()
+          .withCloudCapsuleId(projectId)
+          .withAttemptId(attemptId)
+          .withStageType(DeployStageType.build)
+          .withStageStatus(DeployProgressStatus.running)
+          .build();
+      final successfulBuild = DeployAttemptStageBuilder()
+          .withCloudCapsuleId(projectId)
+          .withAttemptId(attemptId)
+          .withStageType(DeployStageType.build)
+          .withStageStatus(DeployProgressStatus.success)
+          .build();
+      final awaitingDeploy = DeployAttemptStageBuilder()
+          .withCloudCapsuleId(projectId)
+          .withAttemptId(attemptId)
+          .withStageType(DeployStageType.deploy)
+          .withStageStatus(DeployProgressStatus.awaiting)
+          .build();
+      final successfulDeploy = DeployAttemptStageBuilder()
+          .withCloudCapsuleId(projectId)
+          .withAttemptId(attemptId)
+          .withStageType(DeployStageType.deploy)
+          .withStageStatus(DeployProgressStatus.success)
+          .build();
+      final successfulService = DeployAttemptStageBuilder()
+          .withCloudCapsuleId(projectId)
+          .withAttemptId(attemptId)
+          .withStageType(DeployStageType.service)
+          .withStageStatus(DeployProgressStatus.success)
+          .build();
+
+      when(
+        () => client.status.tailDeployAttemptStatus(
+          cloudCapsuleId: projectId,
+          attemptId: attemptId,
+        ),
+      ).thenAnswer((final _) {
+        connectionCount++;
+        if (connectionCount == 1) {
+          return Stream<DeployAttemptStage>.multi((final controller) {
+            controller.add(runningBuild);
+            controller.add(awaitingDeploy);
+            controller.addError(const WebSocketClosedException());
+            controller.close();
+          });
+        }
+        return Stream.fromIterable([
+          successfulUpload,
+          runningBuild,
+          awaitingDeploy,
+          successfulBuild,
+          successfulDeploy,
+          successfulService,
+        ]);
+      });
+      addTearDown(() => reset(client.status));
+
+      final tailFuture = StatusCommands.tailDeploymentStatus(
+        client,
+        logger: logger,
+        baseCommand: defaultBaseCommand,
+        cloudCapsuleId: projectId,
+        attemptId: attemptId,
+        skipUploadStage: true,
+        reconnectDelay: Duration.zero,
+      );
+
+      await expectLater(tailFuture, completes);
+      expect(connectionCount, 2);
+      expect(
+        logger.progressCalls.map((final call) => call.message),
+        contains(contains('Cloud build successful.')),
+      );
+    });
+
+    test(
+      'Given consecutive deployment status stream closures '
+      'when reconnect retries are exhausted '
+      'then a timeout failure explains that the deployment continues',
+      () async {
+        logger.inlineTerminal = FakeTerminal(hasTerminal: false);
+        var connectionCount = 0;
+
+        when(
+          () => client.status.tailDeployAttemptStatus(
+            cloudCapsuleId: projectId,
+            attemptId: attemptId,
+          ),
+        ).thenAnswer((final _) {
+          connectionCount++;
+          return Stream.error(const WebSocketClosedException());
+        });
+        addTearDown(() => reset(client.status));
+
+        final tailFuture = StatusCommands.tailDeploymentStatus(
+          client,
+          logger: logger,
+          baseCommand: defaultBaseCommand,
+          cloudCapsuleId: projectId,
+          attemptId: attemptId,
+          skipUploadStage: true,
+          maxReconnectRetries: 2,
+          reconnectDelay: Duration.zero,
+        );
+
+        await expectLater(
+          tailFuture,
+          throwsA(
+            isA<FailureException>().having(
+              (final error) => error.errors,
+              'errors',
+              contains(
+                'Timed out while reconnecting to the deployment status stream.',
+              ),
+            ),
+          ),
+        );
+        expect(connectionCount, 3);
+        expect(
+          logger.infoCalls,
+          contains(
+            equalsInfoCall(
+              message: 'The deployment continues in Serverpod Cloud.',
+              newParagraph: true,
+            ),
+          ),
+        );
+      },
+    );
+
+    test('Given a deployment status stream that closes during rollout '
+        'when the reconnect sends a full stage snapshot '
+        'then earlier and unchanged stages are not replayed', () async {
+      logger.inlineTerminal = FakeTerminal(hasTerminal: false);
+      var connectionCount = 0;
+      final successfulUpload = DeployAttemptStageBuilder()
+          .withCloudCapsuleId(projectId)
+          .withAttemptId(attemptId)
+          .withStageType(DeployStageType.upload)
+          .withStageStatus(DeployProgressStatus.success)
+          .build();
+      final successfulBuild = DeployAttemptStageBuilder()
+          .withCloudCapsuleId(projectId)
+          .withAttemptId(attemptId)
+          .withStageType(DeployStageType.build)
+          .withStageStatus(DeployProgressStatus.success)
+          .build();
+      final runningDeploy = DeployAttemptStageBuilder()
+          .withCloudCapsuleId(projectId)
+          .withAttemptId(attemptId)
+          .withStageType(DeployStageType.deploy)
+          .withStageStatus(DeployProgressStatus.running)
+          .build();
+      final awaitingService = DeployAttemptStageBuilder()
+          .withCloudCapsuleId(projectId)
+          .withAttemptId(attemptId)
+          .withStageType(DeployStageType.service)
+          .withStageStatus(DeployProgressStatus.awaiting)
+          .build();
+      final successfulDeploy = DeployAttemptStageBuilder()
+          .withCloudCapsuleId(projectId)
+          .withAttemptId(attemptId)
+          .withStageType(DeployStageType.deploy)
+          .withStageStatus(DeployProgressStatus.success)
+          .build();
+      final successfulService = DeployAttemptStageBuilder()
+          .withCloudCapsuleId(projectId)
+          .withAttemptId(attemptId)
+          .withStageType(DeployStageType.service)
+          .withStageStatus(DeployProgressStatus.success)
+          .build();
+
+      when(
+        () => client.status.tailDeployAttemptStatus(
+          cloudCapsuleId: projectId,
+          attemptId: attemptId,
+        ),
+      ).thenAnswer((final _) {
+        connectionCount++;
+        if (connectionCount == 1) {
+          return Stream<DeployAttemptStage>.multi((final controller) {
+            controller.add(successfulBuild);
+            controller.add(runningDeploy);
+            controller.addError(const WebSocketClosedException());
+            controller.close();
+          });
+        }
+        return Stream.fromIterable([
+          successfulUpload,
+          successfulBuild,
+          runningDeploy,
+          awaitingService,
+          successfulDeploy,
+          successfulService,
+        ]);
+      });
+      addTearDown(() => reset(client.status));
+
+      final tailFuture = StatusCommands.tailDeploymentStatus(
+        client,
+        logger: logger,
+        baseCommand: defaultBaseCommand,
+        cloudCapsuleId: projectId,
+        attemptId: attemptId,
+        skipUploadStage: true,
+        reconnectDelay: Duration.zero,
+      );
+
+      await expectLater(tailFuture, completes);
+      expect(connectionCount, 2);
     });
 
     group('and the build stage streams its log,', () {
@@ -1246,6 +1544,7 @@ Cloud build failed. 💥''');
             cloudCapsuleId: projectId,
             attemptId: streamingAttemptId,
             skipUploadStage: true,
+            reconnectDelay: Duration.zero,
           );
 
           stageController.add(buildStage(DeployProgressStatus.running));
@@ -1265,6 +1564,95 @@ Cloud build failed. 💥''');
             ),
           );
           expect(terminal.output, endsWith('\n\x1b[?25h'));
+        });
+
+        test('and the build-log stream closes then log tailing reconnects '
+            'without repeating records', () async {
+          var connectionCount = 0;
+          final firstRecord = LogRecordBuilder()
+              .withCloudIds(projectId)
+              .withDeployAttemptId(streamingAttemptId)
+              .withRecordId('1')
+              .withContent('Building image...')
+              .build();
+          final secondRecord = LogRecordBuilder()
+              .withCloudIds(projectId)
+              .withDeployAttemptId(streamingAttemptId)
+              .withRecordId('2')
+              .withContent('Pushing image...')
+              .build();
+
+          when(
+            () => client.logs.tailBuildLog(
+              cloudCapsuleId: projectId,
+              attemptId: streamingAttemptId,
+            ),
+          ).thenAnswer((final _) {
+            connectionCount++;
+            if (connectionCount == 1) {
+              return Stream<LogRecord>.multi((final controller) {
+                controller.add(firstRecord);
+                controller.addError(const WebSocketClosedException());
+                controller.close();
+              });
+            }
+            return Stream.fromIterable([firstRecord, secondRecord]);
+          });
+
+          final tailFuture = StatusCommands.tailDeploymentStatus(
+            client,
+            logger: logger,
+            baseCommand: defaultBaseCommand,
+            cloudCapsuleId: projectId,
+            attemptId: streamingAttemptId,
+            skipUploadStage: true,
+            reconnectDelay: Duration.zero,
+          );
+
+          stageController.add(buildStage(DeployProgressStatus.running));
+          await pumpEventQueue();
+          stageController.add(buildStage(DeployProgressStatus.success));
+          await stageController.close();
+          await tailFuture;
+
+          final terminal = logger.inlineTerminal as FakeTerminal;
+          expect(terminal.output, contains('Building image...'));
+          expect(terminal.output, contains('Pushing image...'));
+          expect(connectionCount, 2);
+        });
+
+        test('Given build-log reconnect retries are exhausted '
+            'when the status stream succeeds '
+            'then deployment tailing completes', () async {
+          var connectionCount = 0;
+          when(
+            () => client.logs.tailBuildLog(
+              cloudCapsuleId: projectId,
+              attemptId: streamingAttemptId,
+            ),
+          ).thenAnswer((final _) {
+            connectionCount++;
+            return Stream<LogRecord>.error(const WebSocketClosedException());
+          });
+
+          final tailFuture = StatusCommands.tailDeploymentStatus(
+            client,
+            logger: logger,
+            baseCommand: defaultBaseCommand,
+            cloudCapsuleId: projectId,
+            attemptId: streamingAttemptId,
+            skipUploadStage: true,
+            maxReconnectRetries: 2,
+            reconnectDelay: Duration.zero,
+          );
+
+          stageController.add(buildStage(DeployProgressStatus.running));
+          await pumpEventQueue();
+          stageController.add(buildStage(DeployProgressStatus.success));
+          await stageController.close();
+
+          await expectLater(tailFuture, completes);
+          expect(connectionCount, 3);
         });
 
         test('and a build stage that is only awaiting then no build log '
@@ -1314,6 +1702,7 @@ Cloud build failed. 💥''');
             cloudCapsuleId: projectId,
             attemptId: streamingAttemptId,
             skipUploadStage: true,
+            reconnectDelay: Duration.zero,
             processSignalStreamOverride: interruptController.stream,
           );
 
