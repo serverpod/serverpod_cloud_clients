@@ -55,12 +55,9 @@ void main() {
   );
 
   test(
-    'Given deployments build-log command when instantiated then requires login',
+    'Given deployments log command when instantiated then requires login',
     () {
-      expect(
-        CloudDeploymentsBuildLogCommand(logger: logger).requireLogin,
-        isTrue,
-      );
+      expect(CloudDeploymentsLogCommand(logger: logger).requireLogin, isTrue);
     },
   );
 
@@ -92,6 +89,38 @@ void main() {
     group('when executing deployments show', () {
       late Future commandResult;
       setUp(() async {
+        commandResult = cli.run([
+          'status',
+          'deployment',
+          'show',
+          '--project',
+          projectId,
+        ]);
+      });
+
+      test('then throws exception', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then logs error', () async {
+        try {
+          await commandResult;
+        } catch (_) {}
+
+        expect(logger.errorCalls, isNotEmpty);
+        expect(
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message:
+                'The credentials for this session seem to no longer be valid.',
+          ),
+        );
+      });
+    });
+
+    group('when executing the hidden deployment show command', () {
+      late Future commandResult;
+      setUp(() async {
         commandResult = cli.run(['deployment', 'show', '--project', projectId]);
       });
 
@@ -115,7 +144,33 @@ void main() {
       });
     });
 
-    group('when executing deployments build-log', () {
+    group('when executing the hidden deployment list command', () {
+      late Future commandResult;
+      setUp(() async {
+        commandResult = cli.run(['deployment', 'list', '--project', projectId]);
+      });
+
+      test('then throws exception', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then logs error', () async {
+        try {
+          await commandResult;
+        } catch (_) {}
+
+        expect(logger.errorCalls, isNotEmpty);
+        expect(
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message:
+                'The credentials for this session seem to no longer be valid.',
+          ),
+        );
+      });
+    });
+
+    group('when executing the hidden deployment build-log command', () {
       late Future commandResult;
       setUp(() async {
         commandResult = cli.run([
@@ -146,10 +201,48 @@ void main() {
       });
     });
 
+    group('when executing deployments log', () {
+      late Future commandResult;
+      setUp(() async {
+        commandResult = cli.run([
+          'status',
+          'deployment',
+          'log',
+          '--project',
+          projectId,
+        ]);
+      });
+
+      test('then throws exception', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then logs error', () async {
+        try {
+          await commandResult;
+        } catch (_) {}
+
+        expect(logger.errorCalls, isNotEmpty);
+        expect(
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message:
+                'The credentials for this session seem to no longer be valid.',
+          ),
+        );
+      });
+    });
+
     group('when executing deployments list', () {
       late Future commandResult;
       setUp(() async {
-        commandResult = cli.run(['deployment', 'list', '--project', projectId]);
+        commandResult = cli.run([
+          'status',
+          'deployment',
+          'list',
+          '--project',
+          projectId,
+        ]);
       });
 
       test('then throws exception', () async {
@@ -267,7 +360,12 @@ void main() {
           group('$description with args="${args.join(' ')}"', () {
             late Future commandResult;
             setUp(() async {
-              commandResult = cli.run(['deployment', 'show', ...args]);
+              commandResult = cli.run([
+                'status',
+                'deployment',
+                'show',
+                ...args,
+              ]);
             });
 
             test('then completes successfully', () async {
@@ -314,6 +412,7 @@ Tracking projectId deployment $attemptId
 
           setUp(() async {
             commandResult = cli.run([
+              'status',
               'deployment',
               'show',
               '--project',
@@ -366,7 +465,12 @@ Tracking projectId deployment $attemptId
             group('$description with args="${args.join(' ')}"', () {
               late Future commandResult;
               setUp(() async {
-                commandResult = cli.run(['deployment', 'show', ...args]);
+                commandResult = cli.run([
+                  'status',
+                  'deployment',
+                  'show',
+                  ...args,
+                ]);
               });
 
               test('then throws ExitErrorException', () async {
@@ -446,7 +550,12 @@ Tracking projectId deployment $attemptId
           group('$description with args="${args.join(' ')}"', () {
             late Future commandResult;
             setUp(() async {
-              commandResult = cli.run(['deployment', 'show', ...args]);
+              commandResult = cli.run([
+                'status',
+                'deployment',
+                'show',
+                ...args,
+              ]);
             });
 
             test('then throws ExitErrorException', () async {
@@ -466,7 +575,7 @@ Tracking projectId deployment $attemptId
                   message: 'No such deployment status found.',
                   hint:
                       'Run this command to see recent deployments: '
-                      'scloud deployment list',
+                      'scloud status deployment list',
                 ),
               );
             });
@@ -476,6 +585,40 @@ Tracking projectId deployment $attemptId
         testGetSpecificMissingStatusCommand(
           'for named proj opt with non-existing deploy index',
           ['--project', projectId, '2'],
+        );
+
+        group(
+          'when executing the hidden deployment show command for a missing index',
+          () {
+            late Future commandResult;
+            setUp(() async {
+              commandResult = cli.run([
+                'deployment',
+                'show',
+                '--project',
+                projectId,
+                '2',
+              ]);
+            });
+
+            test(
+              'then the list hint uses the legacy deployment path',
+              () async {
+                await commandResult.onError((final e, final s) {});
+
+                expect(logger.errorCalls, isNotEmpty);
+                expect(
+                  logger.errorCalls.first,
+                  equalsErrorCall(
+                    message: 'No such deployment status found.',
+                    hint:
+                        'Run this command to see recent deployments: '
+                        'scloud deployment list',
+                  ),
+                );
+              },
+            );
+          },
         );
         testGetSpecificMissingStatusCommand(
           'for non-existing project with non-existing deploy index',
@@ -488,6 +631,7 @@ Tracking projectId deployment $attemptId
             late Future commandResult;
             setUp(() async {
               commandResult = cli.run([
+                'status',
                 'deployment',
                 'show',
                 '--project',
@@ -522,6 +666,7 @@ Tracking projectId deployment $attemptId
           'for an invalid deploy id then a descriptive error is logged',
           () async {
             final commandResult = cli.run([
+              'status',
               'deployment',
               'show',
               '--project',
@@ -622,6 +767,7 @@ Tracking projectId deployment $attemptId
 
           setUp(() async {
             commandResult = cli.run([
+              'status',
               'deployment',
               'show',
               '--project',
@@ -660,6 +806,7 @@ Tracking projectId deployment $attemptId
 
           setUp(() async {
             commandResult = cli.run([
+              'status',
               'deployment',
               'show',
               '--project',
@@ -693,6 +840,7 @@ Rollout running...''');
 
           setUp(() async {
             commandResult = cli.run([
+              'status',
               'deployment',
               'show',
               '--project',
@@ -777,6 +925,7 @@ Rollout running...''');
 
           setUp(() async {
             commandResult = cli.run([
+              'status',
               'deployment',
               'show',
               '--project',
@@ -825,12 +974,48 @@ Tracking projectId deployment $attemptId
             expect(
               logger.terminalCommandCalls.single,
               equalsTerminalCommandCall(
-                command: 'scloud deployment build-log',
+                command: 'scloud status deployment log',
                 message: 'To view the build log again, run this command:',
                 newParagraph: true,
               ),
             );
           });
+        },
+      );
+
+      group(
+        'when running the hidden deployment show command to get the deploy status',
+        () {
+          late Future commandResult;
+
+          setUp(() async {
+            commandResult = cli.run([
+              'deployment',
+              'show',
+              '--project',
+              projectId,
+            ]);
+          });
+
+          test(
+            'then the build log hint uses the legacy build-log path',
+            () async {
+              await expectLater(
+                commandResult,
+                throwsA(isA<ErrorExitException>()),
+              );
+
+              expect(logger.terminalCommandCalls, hasLength(1));
+              expect(
+                logger.terminalCommandCalls.single,
+                equalsTerminalCommandCall(
+                  command: 'scloud deployment build-log',
+                  message: 'To view the build log again, run this command:',
+                  newParagraph: true,
+                ),
+              );
+            },
+          );
         },
       );
 
@@ -841,6 +1026,7 @@ Tracking projectId deployment $attemptId
 
           setUp(() async {
             commandResult = cli.run([
+              'status',
               'deployment',
               'show',
               '--project',
@@ -873,6 +1059,7 @@ Cloud build failed. 💥''');
 
           setUp(() async {
             commandResult = cli.run([
+              'status',
               'deployment',
               'show',
               '--project',
@@ -939,7 +1126,12 @@ Cloud build failed. 💥''');
             late Future commandResult;
 
             setUp(() async {
-              commandResult = cli.run(['deployment', 'list', ...args]);
+              commandResult = cli.run([
+                'status',
+                'deployment',
+                'list',
+                ...args,
+              ]);
             });
 
             test('then completes successfully', () async {
@@ -984,6 +1176,7 @@ Cloud build failed. 💥''');
           late Future commandResult;
           setUp(() async {
             commandResult = cli.run([
+              'status',
               'deployment',
               'list',
               '--project',
@@ -1032,6 +1225,7 @@ Cloud build failed. 💥''');
           late Future commandResult;
           setUp(() async {
             commandResult = cli.run([
+              'status',
               'deployment',
               'list',
               '--project',
@@ -1149,7 +1343,7 @@ Cloud build failed. 💥''');
           expect(
             logger.terminalCommandCalls.single,
             equalsTerminalCommandCall(
-              command: 'scloud deployment show',
+              command: 'scloud status deployment show',
               message: 'To view the deployment status, run this command:',
             ),
           );
@@ -1801,6 +1995,7 @@ Cloud build failed. 💥''');
 
           setUp(() async {
             commandResult = cli.run([
+              'status',
               'deployment',
               'show',
               '--project',
@@ -1825,12 +2020,48 @@ Cloud build failed. 💥''');
             expect(
               logger.terminalCommandCalls.single,
               equalsTerminalCommandCall(
-                command: 'scloud deployment show',
+                command: 'scloud status deployment show',
                 message: 'To view the deployment status, run this command:',
                 newParagraph: true,
               ),
             );
           });
+        },
+      );
+
+      group(
+        'when running the hidden deployment show command to get the deploy status',
+        () {
+          late Future commandResult;
+
+          setUp(() async {
+            commandResult = cli.run([
+              'deployment',
+              'show',
+              '--project',
+              projectId,
+            ]);
+          });
+
+          test(
+            'then the show hint uses the legacy deployment show path',
+            () async {
+              await expectLater(
+                commandResult,
+                throwsA(isA<ErrorExitException>()),
+              );
+
+              expect(logger.terminalCommandCalls, hasLength(1));
+              expect(
+                logger.terminalCommandCalls.single,
+                equalsTerminalCommandCall(
+                  command: 'scloud deployment show',
+                  message: 'To view the deployment status, run this command:',
+                  newParagraph: true,
+                ),
+              );
+            },
+          );
         },
       );
     });

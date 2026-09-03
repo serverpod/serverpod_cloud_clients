@@ -1,12 +1,16 @@
+import 'dart:async';
+
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/status/status_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/test_command_logger.dart';
@@ -27,6 +31,21 @@ void main() {
     logger.clear();
     reset(client.status);
   });
+
+  Future<String> captureHelp(final List<String> args) async {
+    final printed = StringBuffer();
+    await runZoned(
+      () => cli.run(args),
+      zoneSpecification: ZoneSpecification(
+        print: (final self, final parent, final zone, final line) =>
+            printed.writeln(line),
+      ),
+    );
+    return [
+      printed.toString(),
+      ...logger.infoCalls.map((final call) => call.message),
+    ].join('\n');
+  }
 
   const projectId = 'my-project';
 
@@ -101,8 +120,8 @@ void main() {
     return logger.lineCalls.map((call) => call.line).toList();
   }
 
-  test('Given status command when instantiated then requires login', () {
-    expect(CloudStatusCommand(logger: logger).requireLogin, isTrue);
+  test('Given status live command when instantiated then requires login', () {
+    expect(CloudStatusLiveCommand(logger: logger).requireLogin, isTrue);
   });
 
   group('Given a running capsule when executing status', () {
@@ -123,7 +142,7 @@ void main() {
         ),
       );
 
-      await cli.run(['status', '--project', projectId]);
+      await cli.run(['status', 'live', '--project', projectId]);
     });
 
     test('then renders the running panel with the url footer', () {
@@ -169,7 +188,7 @@ void main() {
           ),
         );
 
-        await cli.run(['status', '--project', projectId, '--utc']);
+        await cli.run(['status', 'live', '--project', projectId, '--utc']);
       });
 
       test('then renders an absolute utc timestamp', () {
@@ -199,7 +218,7 @@ void main() {
         ),
       );
 
-      await cli.run(['status', '--project', projectId]);
+      await cli.run(['status', 'live', '--project', projectId]);
     });
 
     test('then renders the panel without deployment rows', () {
@@ -243,7 +262,7 @@ void main() {
           ),
         );
 
-        await cli.run(['status', '--project', projectId]);
+        await cli.run(['status', 'live', '--project', projectId]);
       });
 
       test('then renders the serving row without a commit line '
@@ -281,7 +300,7 @@ void main() {
         ),
       );
 
-      await cli.run(['status', '--project', projectId]);
+      await cli.run(['status', 'live', '--project', projectId]);
     });
 
     test('then renders the deploying panel with the incoming block', () {
@@ -295,7 +314,7 @@ void main() {
         '  Incoming  Started 5 minutes ago by Alice',
         '            9d4e7b2  Add push notifications',
         '',
-        '  Follow the rollout: scloud deployment show',
+        '  Follow the rollout: scloud status deployment show',
       ]);
     });
   });
@@ -311,7 +330,7 @@ void main() {
         ),
       );
 
-      await cli.run(['status', '--project', projectId]);
+      await cli.run(['status', 'live', '--project', projectId]);
     });
 
     test('then renders the building block with the build hint '
@@ -326,7 +345,7 @@ void main() {
         '  Building  Started 5 minutes ago by Alice',
         '            9d4e7b2  Add push notifications',
         '',
-        '  Follow the build: scloud deployment show',
+        '  Follow the build: scloud status deployment show',
       ]);
     });
   });
@@ -343,7 +362,7 @@ void main() {
         ),
       );
 
-      await cli.run(['status', '--project', projectId]);
+      await cli.run(['status', 'live', '--project', projectId]);
     });
 
     test('then renders the derived building state', () {
@@ -353,7 +372,7 @@ void main() {
         '  Building  Started 5 minutes ago by Alice',
         '            9d4e7b2  Add push notifications',
         '',
-        '  Follow the build: scloud deployment show',
+        '  Follow the build: scloud status deployment show',
       ]);
     });
   });
@@ -369,7 +388,7 @@ void main() {
         ),
       );
 
-      await cli.run(['status', '--project', projectId]);
+      await cli.run(['status', 'live', '--project', projectId]);
     });
 
     test('then renders the failed block with the diagnosis hint', () {
@@ -383,7 +402,7 @@ void main() {
         '  Failed    Deployment 20 minutes ago by Alice',
         '            9d4e7b2  Add push notifications',
         '',
-        '  See what went wrong: scloud deployment show',
+        '  See what went wrong: scloud status deployment show',
       ]);
     });
   });
@@ -400,7 +419,7 @@ void main() {
         ),
       );
 
-      await cli.run(['status', '--project', projectId]);
+      await cli.run(['status', 'live', '--project', projectId]);
     });
 
     test('then renders the not deployed state with the failed block', () {
@@ -410,7 +429,7 @@ void main() {
         '  Failed    Deployment 20 minutes ago by Alice',
         '            9d4e7b2  Add push notifications',
         '',
-        '  See what went wrong: scloud deployment show',
+        '  See what went wrong: scloud status deployment show',
       ]);
     });
   });
@@ -431,7 +450,7 @@ void main() {
         ),
       );
 
-      await cli.run(['status', '--project', projectId]);
+      await cli.run(['status', 'live', '--project', projectId]);
     });
 
     test('then renders the cancelled block', () {
@@ -456,7 +475,7 @@ void main() {
           ),
         );
 
-        await cli.run(['status', '--project', projectId]);
+        await cli.run(['status', 'live', '--project', projectId]);
       });
 
       test('then renders the quiet running panel with the url footer', () {
@@ -495,7 +514,7 @@ void main() {
         ),
       );
 
-      await cli.run(['status', '--project', projectId]);
+      await cli.run(['status', 'live', '--project', projectId]);
     });
 
     test('then the runtime hint outranks the failed deploy hint', () {
@@ -532,7 +551,7 @@ void main() {
         ),
       );
 
-      await cli.run(['status', '--project', projectId]);
+      await cli.run(['status', 'live', '--project', projectId]);
     });
 
     test('then renders the degraded panel with the diagnosis', () {
@@ -566,7 +585,7 @@ void main() {
         ),
       );
 
-      await cli.run(['status', '--project', projectId]);
+      await cli.run(['status', 'live', '--project', projectId]);
     });
 
     test('then renders the down panel with the deployed label', () {
@@ -600,7 +619,7 @@ void main() {
         ),
       );
 
-      await cli.run(['status', '--project', projectId]);
+      await cli.run(['status', 'live', '--project', projectId]);
     });
 
     test('then renders the suspended panel without a podlets row', () {
@@ -626,7 +645,7 @@ void main() {
         ),
       );
 
-      await cli.run(['status', '--project', projectId]);
+      await cli.run(['status', 'live', '--project', projectId]);
     });
 
     test('then renders the not deployed panel with the deploy hint', () {
@@ -657,7 +676,7 @@ void main() {
         ),
       );
 
-      await cli.run(['status', '--project', projectId]);
+      await cli.run(['status', 'live', '--project', projectId]);
     });
 
     test('then renders the unknown panel with the support hint', () {
@@ -685,7 +704,7 @@ void main() {
         ),
       );
 
-      commandResult = cli.run(['status', '--project', projectId]);
+      commandResult = cli.run(['status', 'live', '--project', projectId]);
     });
 
     test('then throws error exit exception', () async {
@@ -709,7 +728,7 @@ void main() {
     });
   });
 
-  group('Given the project does not exist when executing status', () {
+  group('Given the project does not exist when executing status live', () {
     late Future<void> commandResult;
 
     setUp(() {
@@ -717,7 +736,7 @@ void main() {
         () => client.status.getCapsuleRuntimeStatus(cloudCapsuleId: projectId),
       ).thenThrow(NotFoundException(message: 'Capsule $projectId not found'));
 
-      commandResult = cli.run(['status', '--project', projectId]);
+      commandResult = cli.run(['status', 'live', '--project', projectId]);
     });
 
     test('then throws error exit exception', () async {
@@ -740,38 +759,182 @@ void main() {
     });
   });
 
-  group('Given the project is not in the cluster when executing status', () {
-    late Future<void> commandResult;
-
-    setUp(() {
-      when(
-        () => client.status.getCapsuleRuntimeStatus(cloudCapsuleId: projectId),
-      ).thenThrow(
-        NotFoundException(
-          message: 'Capsule $projectId not found in the cluster',
-        ),
-      );
-
-      commandResult = cli.run(['status', '--project', projectId]);
+  group('Given the cli when printing the top-level help', () {
+    setUp(() async {
+      await cli.run(['help']);
     });
 
-    test('then throws error exit exception', () async {
-      await expectLater(
-        commandResult,
-        throwsA(
-          isA<ErrorExitException>().having((e) => e.exitCode, 'exitCode', 1),
-        ),
-      );
-    });
-
-    test('then logs a not-found error that names the project', () async {
-      await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
-
-      expect(logger.errorCalls, hasLength(1));
+    test('then lists the status command', () {
+      expect(logger.infoCalls, isNotEmpty);
       expect(
-        logger.errorCalls.first,
-        equalsErrorCall(message: 'Project "$projectId" was not found.'),
+        logger.infoCalls.first.message,
+        contains(RegExp(r'^\s+status\s+', multiLine: true)),
       );
+    });
+
+    test('then does not list deployment as a top-level command', () {
+      expect(logger.infoCalls, isNotEmpty);
+      expect(
+        logger.infoCalls.first.message,
+        isNot(contains(RegExp(r'^\s+deployment\s+', multiLine: true))),
+      );
+    });
+  });
+
+  group('Given the status command when printing its help', () {
+    setUp(() async {
+      await cli.run(['help', 'status']);
+    });
+
+    test('then lists the live and deployment subcommands', () {
+      expect(logger.infoCalls, isNotEmpty);
+      final help = logger.infoCalls.first.message;
+      expect(help, contains(RegExp(r'^\s+live\s+', multiLine: true)));
+      expect(help, contains(RegExp(r'^\s+deployment\s+', multiLine: true)));
+    });
+
+    test('then does not list the build-secret subcommand', () {
+      expect(logger.infoCalls, isNotEmpty);
+      expect(
+        logger.infoCalls.first.message,
+        isNot(contains(RegExp(r'^\s+build-secret\s+', multiLine: true))),
+      );
+    });
+  });
+
+  group('Given the hidden deployment command when printing its help', () {
+    setUp(() async {
+      await cli.run(['help', 'deployment']);
+    });
+
+    test(
+      'then lists the original show, list, build-log, and build-secret subcommands',
+      () {
+        expect(logger.infoCalls, isNotEmpty);
+        final help = logger.infoCalls.first.message;
+        expect(help, contains(RegExp(r'^\s+show\s+', multiLine: true)));
+        expect(help, contains(RegExp(r'^\s+list\s+', multiLine: true)));
+        expect(help, contains(RegExp(r'^\s+build-log\s+', multiLine: true)));
+        expect(help, contains(RegExp(r'^\s+build-secret\s+', multiLine: true)));
+      },
+    );
+  });
+
+  group('Given the hidden deployment show command when printing its help', () {
+    late String help;
+
+    setUp(() async {
+      help = await captureHelp(['help', 'deployment', 'show']);
+    });
+
+    test('then the examples use the legacy deployment show path', () {
+      expect(help, contains(r'$ scloud deployment show'));
+      expect(help, isNot(contains(r'$ scloud status deployment show')));
+    });
+  });
+
+  group('Given the hidden deployment list command when printing its help', () {
+    late String help;
+
+    setUp(() async {
+      help = await captureHelp(['help', 'deployment', 'list']);
+    });
+
+    test('then the examples use the legacy deployment list path', () {
+      expect(help, contains(r'$ scloud deployment list'));
+      expect(help, isNot(contains(r'$ scloud status deployment list')));
+    });
+  });
+
+  group(
+    'Given the hidden deployment build-log command when printing its help',
+    () {
+      late String help;
+
+      setUp(() async {
+        help = await captureHelp(['help', 'deployment', 'build-log']);
+      });
+
+      test('then the examples use the legacy deployment build-log path', () {
+        expect(help, contains(r'$ scloud deployment build-log'));
+        expect(help, isNot(contains(r'$ scloud status deployment log')));
+      });
+    },
+  );
+
+  group('Given the status deployment command when printing its help', () {
+    setUp(() async {
+      await cli.run(['help', 'status', 'deployment']);
+    });
+
+    test('then lists the show, list, and log subcommands', () {
+      expect(logger.infoCalls, isNotEmpty);
+      final help = logger.infoCalls.first.message;
+      expect(help, contains(RegExp(r'^\s+show\s+', multiLine: true)));
+      expect(help, contains(RegExp(r'^\s+list\s+', multiLine: true)));
+      expect(help, contains(RegExp(r'^\s+log\s+', multiLine: true)));
+    });
+  });
+
+  group('Given the status deployment show command when printing its help', () {
+    late String help;
+
+    setUp(() async {
+      help = await captureHelp(['help', 'status', 'deployment', 'show']);
+    });
+
+    test('then the examples use the public status deployment show path', () {
+      expect(help, contains(r'$ scloud status deployment show'));
+    });
+  });
+
+  group('Given the status deployment log command when printing its help', () {
+    late String help;
+
+    setUp(() async {
+      help = await captureHelp(['help', 'status', 'deployment', 'log']);
+    });
+
+    test('then the examples use the public status deployment log path', () {
+      expect(help, contains(r'$ scloud status deployment log'));
+      expect(help, isNot(contains(r'$ scloud status deployment build-log')));
+    });
+  });
+
+  group('Given the cli when generating carapace completions', () {
+    setUp(() async {
+      await cli.run([
+        'completion',
+        'generate',
+        '--tool',
+        'carapace',
+        '--file',
+        p.join(d.sandbox, 'spec.yaml'),
+      ]);
+    });
+
+    test('then emits status once as a top-level command', () async {
+      await d
+          .file(
+            'spec.yaml',
+            predicate<String>((final content) {
+              final names = RegExp(
+                r'^  - name: (\S+)$',
+                multiLine: true,
+              ).allMatches(content).map((final match) => match.group(1));
+              return names.where((final name) => name == 'status').length == 1;
+            }, 'has exactly one top-level status command'),
+          )
+          .validate();
+    });
+
+    test('then does not emit deployment as a top-level command', () async {
+      await d
+          .file(
+            'spec.yaml',
+            isNot(contains(RegExp(r'^  - name: deployment$', multiLine: true))),
+          )
+          .validate();
     });
   });
 }

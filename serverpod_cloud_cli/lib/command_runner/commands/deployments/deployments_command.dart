@@ -4,6 +4,7 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy/deploy_command.dart'
     show AwaitOption;
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployment_command_names.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployments_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployments_ui.dart';
 import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
@@ -15,16 +16,37 @@ class CloudDeploymentsCommand extends CloudCliCommand {
   final name = 'deployment';
 
   @override
-  final description = 'Manage deployments.';
+  final bool hidden;
 
   @override
-  String get category => CommandCategories.control;
+  String get description =>
+      hidden ? 'Manage deployments.' : 'Show deployment status.';
 
-  CloudDeploymentsCommand({required super.logger}) {
-    addSubcommand(CloudDeploymentsShowCommand(logger: logger));
-    addSubcommand(CloudDeploymentsListCommand(logger: logger));
-    addSubcommand(CloudDeploymentsBuildLogCommand(logger: logger));
-    addSubcommand(CloudDeploymentsBuildSecretCommand(logger: logger));
+  @override
+  String get category => hidden ? CommandCategories.control : super.category;
+
+  CloudDeploymentsCommand({
+    required super.logger,
+    final bool asOldAlias = false,
+  }) : hidden = asOldAlias {
+    addSubcommand(
+      CloudDeploymentsShowCommand(logger: logger, asOldAlias: asOldAlias),
+    );
+    addSubcommand(
+      CloudDeploymentsListCommand(logger: logger, asOldAlias: asOldAlias),
+    );
+    if (asOldAlias) {
+      addSubcommand(
+        CloudDeploymentsLogCommand(
+          logger: logger,
+          name: 'build-log',
+          asOldAlias: true,
+        ),
+      );
+      addSubcommand(CloudDeploymentsBuildSecretCommand(logger: logger));
+    } else {
+      addSubcommand(CloudDeploymentsLogCommand(logger: logger));
+    }
   }
 }
 
@@ -71,6 +93,8 @@ class CloudDeploymentsShowCommand
   @override
   String get description => 'Show the status of a deployment.';
 
+  final DeploymentCommandNames _commandNames;
+
   @override
   String get usageExamples =>
       '''\n
@@ -78,27 +102,28 @@ Examples
 
   Show the status of the latest deployment and wait for it to finish.
   
-    \$ $baseCommand deployment show
-
+    \$ $baseCommand ${_commandNames.show}
 
   Show the status of the latest deployment without waiting for it to finish.
   
-    \$ $baseCommand deployment show --no-await
-
+    \$ $baseCommand ${_commandNames.show} --no-await
 
   Show the status of a specific deployment by sequence number.
   
-    \$ $baseCommand deployment show 3
-
+    \$ $baseCommand ${_commandNames.show} 3
 
   Show the status of a specific deployment by UUID.
   
-    \$ $baseCommand deployment show 550e8400-e29b-41d4-a716-446655440000
-
+    \$ $baseCommand ${_commandNames.show} 550e8400-e29b-41d4-a716-446655440000
 ''';
 
-  CloudDeploymentsShowCommand({required super.logger})
-    : super(options: DeploymentsShowOption.values);
+  CloudDeploymentsShowCommand({
+    required super.logger,
+    final bool asOldAlias = false,
+  }) : _commandNames = asOldAlias
+           ? DeploymentCommandNames.legacy
+           : DeploymentCommandNames.public,
+       super(options: DeploymentsShowOption.values);
 
   @override
   Future<void> runWithOutput(
@@ -119,6 +144,7 @@ Examples
       runner.serviceProvider.cloudApiClient,
       logger: logger,
       baseCommand: baseCommand,
+      commandNames: _commandNames,
       projectId: projectId,
       wait: wait,
       overallStatus: overallStatus,
@@ -158,6 +184,8 @@ class CloudDeploymentsListCommand
   @override
   String get description => 'List recent deployments.';
 
+  final DeploymentCommandNames _commandNames;
+
   @override
   String get usageExamples =>
       '''\n
@@ -165,17 +193,20 @@ Examples
 
   List the 10 most recent deployments.
   
-    \$ $baseCommand deployment list
-
+    \$ $baseCommand ${_commandNames.list}
 
   List the 20 most recent deployments.
   
-    \$ $baseCommand deployment list --limit 20
-
+    \$ $baseCommand ${_commandNames.list} --limit 20
 ''';
 
-  CloudDeploymentsListCommand({required super.logger})
-    : super(options: DeploymentsListOption.values);
+  CloudDeploymentsListCommand({
+    required super.logger,
+    final bool asOldAlias = false,
+  }) : _commandNames = asOldAlias
+           ? DeploymentCommandNames.legacy
+           : DeploymentCommandNames.public,
+       super(options: DeploymentsListOption.values);
 
   @override
   Future<void> runWithOutput(
@@ -198,7 +229,7 @@ Examples
   }
 }
 
-abstract final class _DeploymentsBuildLogOptions {
+abstract final class _DeploymentsLogOptions {
   static const projectId = ProjectIdOption();
   static const utc = UtcOption();
   static const deploy = StringOption(
@@ -211,21 +242,22 @@ abstract final class _DeploymentsBuildLogOptions {
   );
 }
 
-enum DeploymentsBuildLogOption<V> implements OptionDefinition<V> {
-  projectId(_DeploymentsBuildLogOptions.projectId),
-  utc(_DeploymentsBuildLogOptions.utc),
-  deploy(_DeploymentsBuildLogOptions.deploy);
+enum DeploymentsLogOption<V> implements OptionDefinition<V> {
+  projectId(_DeploymentsLogOptions.projectId),
+  utc(_DeploymentsLogOptions.utc),
+  deploy(_DeploymentsLogOptions.deploy);
 
-  const DeploymentsBuildLogOption(this.option);
+  const DeploymentsLogOption(this.option);
 
   @override
   final ConfigOptionBase<V> option;
 }
 
-class CloudDeploymentsBuildLogCommand
-    extends CloudCliCommand<DeploymentsBuildLogOption> {
+class CloudDeploymentsLogCommand extends CloudCliCommand<DeploymentsLogOption> {
   @override
-  String get name => 'build-log';
+  final String name;
+
+  final DeploymentCommandNames _commandNames;
 
   @override
   String get description => "View a deployment's build log.";
@@ -237,38 +269,42 @@ Examples
 
   View the build log of the latest deployment.
   
-    \$ $baseCommand deployment build-log
-
+    \$ $baseCommand ${_commandNames.log}
 
   View the build log of a specific deployment by sequence number.
   
-    \$ $baseCommand deployment build-log 3
-
+    \$ $baseCommand ${_commandNames.log} 3
 
   View the build log of a specific deployment by UUID.
   
-    \$ $baseCommand deployment build-log 550e8400-e29b-41d4-a716-446655440000
-
+    \$ $baseCommand ${_commandNames.log} 550e8400-e29b-41d4-a716-446655440000
 ''';
 
-  CloudDeploymentsBuildLogCommand({required super.logger})
-    : super(options: DeploymentsBuildLogOption.values);
+  CloudDeploymentsLogCommand({
+    required super.logger,
+    this.name = 'log',
+    final bool asOldAlias = false,
+  }) : _commandNames = asOldAlias
+           ? DeploymentCommandNames.legacy
+           : DeploymentCommandNames.public,
+       super(options: DeploymentsLogOption.values);
 
   @override
   Future<void> runWithOutput(
-    final Configuration<DeploymentsBuildLogOption> commandConfig,
+    final Configuration<DeploymentsLogOption> commandConfig,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(DeploymentsBuildLogOption.projectId);
-    final inUtc = commandConfig.value(DeploymentsBuildLogOption.utc);
+    final projectId = commandConfig.value(DeploymentsLogOption.projectId);
+    final inUtc = commandConfig.value(DeploymentsLogOption.utc);
     final deploymentArg = commandConfig.optionalValue(
-      DeploymentsBuildLogOption.deploy,
+      DeploymentsLogOption.deploy,
     );
 
     await DeploymentCommands.fetchBuildLog(
       runner.serviceProvider.cloudApiClient,
       logger: logger,
       baseCommand: baseCommand,
+      commandNames: _commandNames,
       projectId: projectId,
       inUtc: inUtc,
       deploymentArg: deploymentArg,

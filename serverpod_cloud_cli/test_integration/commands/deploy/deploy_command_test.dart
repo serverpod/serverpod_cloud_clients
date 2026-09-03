@@ -1267,7 +1267,7 @@ project:
           expect(logger.terminalCommandCalls, hasLength(1));
           expect(
             logger.terminalCommandCalls.single.command,
-            equals('scloud deployment show'),
+            equals('scloud status deployment show'),
           );
         });
       });
@@ -1493,7 +1493,7 @@ project:
             logger.terminalCommandCalls,
             contains(
               equalsTerminalCommandCall(
-                command: 'scloud deployment build-log',
+                command: 'scloud status deployment log',
                 message: 'To view the build log again, run this command:',
                 newParagraph: true,
               ),

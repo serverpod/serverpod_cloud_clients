@@ -244,7 +244,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
       CloudCustomDomainCommand(logger: logger),
       CloudLogCommand(logger: logger),
       CloudStatusCommand(logger: logger),
-      CloudDeploymentsCommand(logger: logger),
+      CloudDeploymentsCommand(logger: logger, asOldAlias: true),
       CloudPasswordCommand(logger: logger),
       CloudDbCommand(logger: logger),
       CloudLaunchCommand(logger: logger),

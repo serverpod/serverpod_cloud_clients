@@ -346,7 +346,7 @@ void main() {
             logger.terminalCommandCalls,
             containsAllInOrder([
               equalsTerminalCommandCall(
-                command: 'scloud help deployment',
+                command: 'scloud help status',
                 message:
                     'To see how to view deployment statuses, run this command:',
                 newParagraph: true,
