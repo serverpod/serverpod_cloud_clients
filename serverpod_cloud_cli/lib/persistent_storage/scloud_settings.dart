@@ -40,7 +40,8 @@ class ScloudSettings {
   }
 
   /// Sets _enable analytics_.
-  Future<void> setEnableAnalytics(bool enableAnalytics) async {
+  /// Pass `null` to clear it.
+  Future<void> setEnableAnalytics(final bool? enableAnalytics) async {
     final settings = await _fetchSettings();
     if (settings.enableAnalytics == enableAnalytics) {
       return;

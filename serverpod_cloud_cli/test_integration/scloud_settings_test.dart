@@ -62,6 +62,18 @@ void main() {
         expect(result, isFalse);
       },
     );
+
+    test(
+      'when clearing enableAnalytics then no settings file is written',
+      () async {
+        final settings = ScloudSettings(localStoragePath: testFolderPath);
+
+        await settings.setEnableAnalytics(null);
+
+        final expected = d.nothing(ResourceManagerConstants.settingsFilePath);
+        await expectLater(expected.validate(testFolderPath), completes);
+      },
+    );
   });
 
   group('Given settings file exists with null enableAnalytics', () {
@@ -137,6 +149,20 @@ void main() {
         expect(file.lastModifiedSync(), equals(originalModifiedTime));
       },
     );
+
+    test('when clearing enableAnalytics then null is returned', () async {
+      final settings = ScloudSettings(localStoragePath: testFolderPath);
+
+      await settings.setEnableAnalytics(null);
+      final result = await settings.enableAnalytics;
+
+      expect(result, isNull);
+
+      final directLoad = await ResourceManager.tryLoadSettings(
+        localStoragePath: testFolderPath,
+      );
+      expect(directLoad?.enableAnalytics, isNull);
+    });
   });
 
   group('Given settings file exists with enableAnalytics set to false', () {

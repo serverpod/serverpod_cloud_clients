@@ -72,7 +72,14 @@ void main() {
 
     group('and having set analytics enabled', () {
       setUp(() async {
-        await cli.run(['--config-dir', settingsDir, 'settings', '--analytics']);
+        await cli.run([
+          '--config-dir',
+          settingsDir,
+          'settings',
+          'set',
+          'analytics',
+          'true',
+        ]);
       });
 
       test('when invoking command'
@@ -181,7 +188,9 @@ void main() {
               '--config-dir',
               settingsDir,
               'settings',
-              '--analytics',
+              'set',
+              'analytics',
+              'true',
             ]);
             logger.clear();
             analyticsEvents.clear();
@@ -249,7 +258,9 @@ void main() {
               '--config-dir',
               settingsDir,
               'settings',
-              '--no-analytics',
+              'set',
+              'analytics',
+              'false',
             ]);
             logger.clear();
             analyticsEvents.clear();

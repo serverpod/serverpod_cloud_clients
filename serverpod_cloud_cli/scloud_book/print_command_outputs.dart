@@ -41,8 +41,8 @@ class _Scenario {
 
 const _scenarios = [
   _Scenario('version', ['version']),
-  _Scenario('settings', ['settings']),
-  _Scenario('settings', ['settings', '--no-analytics']),
+  _Scenario('settings list', ['settings', 'list']),
+  _Scenario('settings set', ['settings', 'set', 'analytics', 'false']),
   _Scenario('context show', ['context', 'show']),
   _Scenario('context set', ['context', 'set', _projectId]),
   _Scenario('context list', ['context', 'list']),
