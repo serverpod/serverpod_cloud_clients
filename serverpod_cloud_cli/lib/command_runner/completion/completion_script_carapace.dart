@@ -390,11 +390,18 @@ commands:
         output: ["$files"]
 
   - name: settings
-    flags:
-      --analytics: "Toggles if analytics data is sent."
-      --no-analytics: "Toggles if analytics data is sent."
-    exclusiveFlags:
-      - [analytics, no-analytics]
+
+    commands:
+      - name: list
+
+      - name: set
+        flags:
+          --name=!: "The name of the setting. Can be passed as the first argument."
+          --value=: "The value of the setting. Can be passed as the second argument."
+
+      - name: unset
+        flags:
+          --name=!: "The name of the setting. Can be passed as the first argument."
 
 
 ''';

@@ -1,23 +1,21 @@
 import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 
-class SettingsShowTextUi extends OutputWidget {
-  const SettingsShowTextUi();
+class SettingsListUi extends OutputWidget {
+  const SettingsListUi();
 
   @override
   OutputWidget build(final OutputContext context) {
-    final settings = context.get<Map<String, Object?>>();
-    return ListTextWidget([
-      'Analytics = ${settings['analytics'] ?? 'not set'}',
-    ], title: 'Local settings');
-  }
-}
-
-class SettingsSetTextUi extends OutputWidget {
-  const SettingsSetTextUi();
-
-  @override
-  OutputWidget build(final OutputContext context) {
-    final settings = context.get<Map<String, Object?>>();
-    return InfoTextWidget('Analytics set to "${settings['analytics']}".');
+    return FormattedTableWidget(
+      formatter: TextTableOutputFormatter<Map<String, Object?>>(
+        columns: [
+          TableColumnFormatter.forKey('Name', key: 'name'),
+          TableColumnFormatter.forElement(
+            'Value',
+            getter: (final row) => row['value'] ?? 'not set',
+          ),
+        ],
+        utc: false,
+      ),
+    );
   }
 }
