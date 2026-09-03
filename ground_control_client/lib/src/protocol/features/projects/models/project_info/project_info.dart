@@ -15,7 +15,10 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../../domains/projects/models/project.dart' as _i2;
 import '../../../../features/projects/models/project_info/timestamp.dart'
     as _i3;
-import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
+import '../../../../domains/orders/models/order_tree.dart' as _i4;
+import '../../../../features/projects/models/project_profile_update.dart'
+    as _i5;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i6;
 
 /// Augments a project object with ancillary information.
 ///
@@ -28,25 +31,39 @@ abstract class ProjectInfo
     required this.project,
     required this.productId,
     this.latestDeployAttemptTime,
+    this.order,
+    this.profile,
   });
 
   factory ProjectInfo({
     required _i2.Project project,
     required String productId,
     _i3.Timestamp? latestDeployAttemptTime,
+    _i4.OrderTree? order,
+    _i5.ProjectProfileUpdate? profile,
   }) = _ProjectInfoImpl;
 
   factory ProjectInfo.fromJson(Map<String, dynamic> jsonSerialization) {
     return ProjectInfo(
-      project: _i4.Protocol().deserialize<_i2.Project>(
+      project: _i6.Protocol().deserialize<_i2.Project>(
         jsonSerialization['project'],
       ),
       productId: jsonSerialization['productId'] as String,
       latestDeployAttemptTime:
           jsonSerialization['latestDeployAttemptTime'] == null
           ? null
-          : _i4.Protocol().deserialize<_i3.Timestamp>(
+          : _i6.Protocol().deserialize<_i3.Timestamp>(
               jsonSerialization['latestDeployAttemptTime'],
+            ),
+      order: jsonSerialization['order'] == null
+          ? null
+          : _i6.Protocol().deserialize<_i4.OrderTree>(
+              jsonSerialization['order'],
+            ),
+      profile: jsonSerialization['profile'] == null
+          ? null
+          : _i6.Protocol().deserialize<_i5.ProjectProfileUpdate>(
+              jsonSerialization['profile'],
             ),
     );
   }
@@ -61,6 +78,13 @@ abstract class ProjectInfo
   /// `DeployAttempt` object.)
   _i3.Timestamp? latestDeployAttemptTime;
 
+  /// The live Project Order tree. Null if there is no live Order.
+  /// `order.fulfilled` is the current fulfillment status.
+  _i4.OrderTree? order;
+
+  /// The resolved Goal for the live Order. Null if there is no live Order.
+  _i5.ProjectProfileUpdate? profile;
+
   /// Returns a shallow copy of this [ProjectInfo]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
@@ -68,6 +92,8 @@ abstract class ProjectInfo
     _i2.Project? project,
     String? productId,
     _i3.Timestamp? latestDeployAttemptTime,
+    _i4.OrderTree? order,
+    _i5.ProjectProfileUpdate? profile,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -77,6 +103,8 @@ abstract class ProjectInfo
       'productId': productId,
       if (latestDeployAttemptTime != null)
         'latestDeployAttemptTime': latestDeployAttemptTime?.toJson(),
+      if (order != null) 'order': order?.toJson(),
+      if (profile != null) 'profile': profile?.toJson(),
     };
   }
 
@@ -88,6 +116,8 @@ abstract class ProjectInfo
       'productId': productId,
       if (latestDeployAttemptTime != null)
         'latestDeployAttemptTime': latestDeployAttemptTime?.toJsonForProtocol(),
+      if (order != null) 'order': order?.toJsonForProtocol(),
+      if (profile != null) 'profile': profile?.toJsonForProtocol(),
     };
   }
 
@@ -104,10 +134,14 @@ class _ProjectInfoImpl extends ProjectInfo {
     required _i2.Project project,
     required String productId,
     _i3.Timestamp? latestDeployAttemptTime,
+    _i4.OrderTree? order,
+    _i5.ProjectProfileUpdate? profile,
   }) : super._(
          project: project,
          productId: productId,
          latestDeployAttemptTime: latestDeployAttemptTime,
+         order: order,
+         profile: profile,
        );
 
   /// Returns a shallow copy of this [ProjectInfo]
@@ -118,6 +152,8 @@ class _ProjectInfoImpl extends ProjectInfo {
     _i2.Project? project,
     String? productId,
     Object? latestDeployAttemptTime = _Undefined,
+    Object? order = _Undefined,
+    Object? profile = _Undefined,
   }) {
     return ProjectInfo(
       project: project ?? this.project.copyWith(),
@@ -125,6 +161,10 @@ class _ProjectInfoImpl extends ProjectInfo {
       latestDeployAttemptTime: latestDeployAttemptTime is _i3.Timestamp?
           ? latestDeployAttemptTime
           : this.latestDeployAttemptTime?.copyWith(),
+      order: order is _i4.OrderTree? ? order : this.order?.copyWith(),
+      profile: profile is _i5.ProjectProfileUpdate?
+          ? profile
+          : this.profile?.copyWith(),
     );
   }
 }
