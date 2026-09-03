@@ -1042,6 +1042,8 @@ class EndpointBucketObjects extends _i1.EndpointRef {
   /// bucket.
   ///
   /// Throws [NotFoundException] if the bucket is not found.
+  /// Throws [BucketAccessRevokedException] if uploads are blocked because
+  /// customer access to the bucket is revoked.
   _i2.Future<String> createUploadDescription({
     required String cloudCapsuleId,
     required String storageId,
