@@ -122,7 +122,7 @@ void main() {
           expect(
             logger.successCalls.first,
             equalsSuccessCall(
-              message: 'Successfully logged out from Serverpod cloud.',
+              message: 'Successfully logged out from Serverpod Cloud.',
             ),
           );
         });
@@ -172,7 +172,7 @@ void main() {
           expect(
             logger.successCalls.first,
             equalsSuccessCall(
-              message: 'Successfully logged out from Serverpod cloud.',
+              message: 'Successfully logged out from Serverpod Cloud.',
             ),
           );
         });
@@ -238,7 +238,7 @@ void main() {
           expect(
             logger.successCalls.first,
             equalsSuccessCall(
-              message: 'Successfully logged out from Serverpod cloud.',
+              message: 'Successfully logged out from Serverpod Cloud.',
             ),
           );
         });
@@ -349,7 +349,7 @@ void main() {
           expect(
             logger.successCalls.first,
             equalsSuccessCall(
-              message: 'Successfully logged out from Serverpod cloud.',
+              message: 'Successfully logged out from Serverpod Cloud.',
             ),
           );
         });
@@ -415,7 +415,7 @@ void main() {
           expect(
             logger.successCalls.first,
             equalsSuccessCall(
-              message: 'Successfully logged out from Serverpod cloud.',
+              message: 'Successfully logged out from Serverpod Cloud.',
             ),
           );
         });

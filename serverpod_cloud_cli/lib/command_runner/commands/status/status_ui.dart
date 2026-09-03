@@ -1,66 +1,56 @@
 import 'package:cli_tools/logger.dart' as cli show AnsiStyle;
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
+import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/util/duration_formatter.dart';
 
-/// Runtime status command implementations.
-abstract class RuntimeStatusCommands {
-  /// Shows the live runtime status panel for a project's podlets.
-  static Future<void> showRuntimeStatus(
-    Client cloudApiClient, {
-    required CommandLogger logger,
-    required String baseCommand,
-    required String projectId,
-    bool inUtc = false,
-  }) async {
-    final runtime = await cloudApiClient.status.getCapsuleRuntimeStatus(
-      cloudCapsuleId: projectId,
-    );
+class RuntimeStatusTextUi extends OutputWidget {
+  final String baseCommand;
+  final bool utc;
 
-    _RuntimeStatusPanel(
-      logger: logger,
+  const RuntimeStatusTextUi({required this.baseCommand, required this.utc});
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    return _RuntimeStatusPanel(
+      runtime: context.get<CapsuleRuntimeStatus>(),
       baseCommand: baseCommand,
-      projectId: projectId,
-      runtime: runtime,
-      inUtc: inUtc,
-    ).write();
+      utc: utc,
+    );
   }
 }
 
 enum _LatestDeployPhase { building, failed, cancelled }
 
-class _RuntimeStatusPanel {
+class _RuntimeStatusPanel extends OutputWidget {
   static const _indent = '  ';
   static const _labelWidth = 10;
   static const _labelStyle = cli.AnsiStyle.darkGray;
   static const _dimStyle = cli.AnsiStyle.darkGray;
   static const _commandStyle = cli.AnsiStyle.cyan;
 
-  final CommandLogger logger;
   final String baseCommand;
-  final String projectId;
   final CapsuleRuntimeStatus runtime;
-  final bool inUtc;
+  final bool utc;
 
-  _RuntimeStatusPanel({
-    required this.logger,
-    required this.baseCommand,
-    required this.projectId,
+  const _RuntimeStatusPanel({
     required this.runtime,
-    required this.inUtc,
+    required this.baseCommand,
+    required this.utc,
   });
 
-  void write() {
+  @override
+  void render({required final CommandLogger logger}) {
     final state = runtime.status.status;
     final hint = _resolveHint(state);
 
     logger.line('');
-    _writeStatusRow(state);
-    _writePodletsRow(state);
-    _writeDeploymentRows(state);
-    _writeHint(hint);
-    _writeUrlFooter(state, hasHint: hint != null);
+    _writeStatusRow(logger, state);
+    _writePodletsRow(logger, state);
+    _writeDeploymentRows(logger, state);
+    _writeHint(logger, hint);
+    _writeUrlFooter(logger, state, hasHint: hint != null);
   }
 
   _LatestDeployPhase? get _latestPhase {
@@ -73,25 +63,26 @@ class _RuntimeStatusPanel {
     };
   }
 
-  void _writeStatusRow(CapsuleState state) {
+  void _writeStatusRow(final CommandLogger logger, final CapsuleState state) {
     if (state == CapsuleState.notProvisioned &&
         _latestPhase == _LatestDeployPhase.building) {
-      final stateWord = _style('◌ Building', cli.AnsiStyle.yellow);
-      final suffix = ' ${_style('— first deploy in progress', _dimStyle)}';
-      _writeRow('Status', '$stateWord$suffix');
+      final stateWord = _style(logger, '◌ Building', cli.AnsiStyle.yellow);
+      final suffix =
+          ' ${_style(logger, '— first deploy in progress', _dimStyle)}';
+      _writeRow(logger, 'Status', '$stateWord$suffix');
       return;
     }
 
     final look = _stateLook(state);
-    final stateWord = _style('${look.glyph} ${look.label}', look.style);
+    final stateWord = _style(logger, '${look.glyph} ${look.label}', look.style);
     final diagnosis = _diagnosis(state);
     final suffix = diagnosis != null
-        ? ' ${_style('— $diagnosis', _dimStyle)}'
+        ? ' ${_style(logger, '— $diagnosis', _dimStyle)}'
         : '';
-    _writeRow('Status', '$stateWord$suffix');
+    _writeRow(logger, 'Status', '$stateWord$suffix');
   }
 
-  void _writePodletsRow(CapsuleState state) {
+  void _writePodletsRow(final CommandLogger logger, final CapsuleState state) {
     final deployment = runtime.status.deployment;
     final desired = deployment?.desiredReplicas;
     final ready = deployment?.readyReplicas;
@@ -108,10 +99,17 @@ class _RuntimeStatusPanel {
         : ready > 0
         ? cli.AnsiStyle.yellow
         : cli.AnsiStyle.red;
-    _writeRow('Podlets', _style('$ready/$desired ready', style));
+    _writeRow(
+      logger,
+      'Podlets',
+      _style(logger, '$ready/$desired ready', style),
+    );
   }
 
-  void _writeDeploymentRows(CapsuleState state) {
+  void _writeDeploymentRows(
+    final CommandLogger logger,
+    final CapsuleState state,
+  ) {
     final servingLabel = switch (state) {
       CapsuleState.ready ||
       CapsuleState.progressing ||
@@ -122,6 +120,7 @@ class _RuntimeStatusPanel {
     final serving = runtime.serving;
     if (serving != null) {
       _writeAttemptRows(
+        logger,
         servingLabel,
         serving,
         prefix: 'Deployed',
@@ -142,6 +141,7 @@ class _RuntimeStatusPanel {
     if (incoming != null) {
       separateFromServing();
       _writeAttemptRows(
+        logger,
         'Incoming',
         incoming,
         prefix: 'Started',
@@ -149,10 +149,13 @@ class _RuntimeStatusPanel {
       );
     }
 
-    _writeLatestAttemptRows(separateFromServing);
+    _writeLatestAttemptRows(logger, separateFromServing);
   }
 
-  void _writeLatestAttemptRows(void Function() separateFromServing) {
+  void _writeLatestAttemptRows(
+    final CommandLogger logger,
+    final void Function() separateFromServing,
+  ) {
     final latest = runtime.latestAttempt;
     final phase = _latestPhase;
     if (latest == null || phase == null) {
@@ -164,6 +167,7 @@ class _RuntimeStatusPanel {
     switch (phase) {
       case _LatestDeployPhase.building:
         _writeAttemptRows(
+          logger,
           'Building',
           latest,
           prefix: 'Started',
@@ -171,6 +175,7 @@ class _RuntimeStatusPanel {
         );
       case _LatestDeployPhase.failed:
         _writeAttemptRows(
+          logger,
           'Failed',
           latest,
           prefix: 'Deployment',
@@ -179,6 +184,7 @@ class _RuntimeStatusPanel {
         );
       case _LatestDeployPhase.cancelled:
         _writeAttemptRows(
+          logger,
           'Cancelled',
           latest,
           when: latest.endedAt ?? latest.startedAt,
@@ -188,18 +194,19 @@ class _RuntimeStatusPanel {
   }
 
   void _writeAttemptRows(
-    String label,
-    DeployAttemptSummary summary, {
-    String? prefix,
-    required DateTime when,
-    cli.AnsiStyle labelStyle = _labelStyle,
+    final CommandLogger logger,
+    final String label,
+    final DeployAttemptSummary summary, {
+    final String? prefix,
+    required final DateTime when,
+    final cli.AnsiStyle labelStyle = _labelStyle,
   }) {
     final deployedBy = summary.deployedBy;
     final deployerName = deployedBy?.name ?? deployedBy?.email;
     final by = deployerName != null ? ' by $deployerName' : '';
-    final time = friendlyPastTimeFormat(when, inUtc: inUtc);
+    final time = friendlyPastTimeFormat(when, inUtc: utc);
     final lead = prefix != null ? '$prefix $time' : time;
-    _writeRow(label, '$lead$by', labelStyle: labelStyle);
+    _writeRow(logger, label, '$lead$by', labelStyle: labelStyle);
 
     final commitHash = summary.commitHash;
     final commitMessage = summary.commitMessage;
@@ -207,7 +214,9 @@ class _RuntimeStatusPanel {
       return;
     }
     final commitLine = [commitHash, commitMessage].nonNulls.join('  ');
-    logger.line('$_indent${' ' * _labelWidth}${_style(commitLine, _dimStyle)}');
+    logger.line(
+      '$_indent${' ' * _labelWidth}${_style(logger, commitLine, _dimStyle)}',
+    );
   }
 
   ({String message, String? command})? _resolveHint(CapsuleState state) {
@@ -259,46 +268,56 @@ class _RuntimeStatusPanel {
     };
   }
 
-  void _writeHint(({String message, String? command})? hint) {
+  void _writeHint(
+    final CommandLogger logger,
+    final ({String message, String? command})? hint,
+  ) {
     if (hint == null) {
       return;
     }
 
     final command = hint.command;
     final line = command != null
-        ? '${_style(hint.message, _dimStyle)} ${_style(command, _commandStyle)}'
-        : _style(hint.message, _dimStyle);
+        ? '${_style(logger, hint.message, _dimStyle)} ${_style(logger, command, _commandStyle)}'
+        : _style(logger, hint.message, _dimStyle);
     logger.line('');
     logger.line('$_indent$line');
   }
 
-  void _writeUrlFooter(CapsuleState state, {required bool hasHint}) {
+  void _writeUrlFooter(
+    final CommandLogger logger,
+    final CapsuleState state, {
+    required final bool hasHint,
+  }) {
     if (state != CapsuleState.ready || hasHint) {
       return;
     }
 
     logger.line('');
     for (final (label, host) in [
-      ('api', 'https://$projectId.api.${HostConstants.tenantDomain}/'),
+      ('api', 'https://$runtimeProjectId.api.${HostConstants.tenantDomain}/'),
       (
         'insights',
-        'https://$projectId.insights.${HostConstants.tenantDomain}/',
+        'https://$runtimeProjectId.insights.${HostConstants.tenantDomain}/',
       ),
-      ('web', 'https://$projectId.${HostConstants.tenantDomain}/'),
+      ('web', 'https://$runtimeProjectId.${HostConstants.tenantDomain}/'),
     ]) {
       logger.line(
-        '$_indent${_style('${label.padRight(_labelWidth)}$host', _dimStyle)}',
+        '$_indent${_style(logger, '${label.padRight(_labelWidth)}$host', _dimStyle)}',
       );
     }
   }
 
+  String get runtimeProjectId => runtime.status.cloudCapsuleId;
+
   void _writeRow(
-    String label,
-    String value, {
-    cli.AnsiStyle labelStyle = _labelStyle,
+    final CommandLogger logger,
+    final String label,
+    final String value, {
+    final cli.AnsiStyle labelStyle = _labelStyle,
   }) {
     logger.line(
-      '$_indent${_style(label.padRight(_labelWidth), labelStyle)}$value',
+      '$_indent${_style(logger, label.padRight(_labelWidth), labelStyle)}$value',
     );
   }
 
@@ -361,7 +380,11 @@ class _RuntimeStatusPanel {
     return '$notReady of $desired podlets $verb not ready';
   }
 
-  String _style(String text, cli.AnsiStyle? style) {
+  String _style(
+    final CommandLogger logger,
+    final String text,
+    final cli.AnsiStyle? style,
+  ) {
     if (style == null) {
       return text;
     }

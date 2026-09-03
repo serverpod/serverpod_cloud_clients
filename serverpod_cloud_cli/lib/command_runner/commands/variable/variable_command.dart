@@ -133,14 +133,17 @@ Examples
       SetVariableCommandConfig.secret,
     );
 
-    await VariableCommands.setVariable(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      baseCommand: baseCommand,
-      projectId: projectId,
-      name: variableName,
-      value: valueToSet,
-      secret: secretFlag,
+    await renderCommand(
+      output,
+      operation: () => VariableCommands.setVariable(
+        runner.serviceProvider.cloudApiClient,
+        baseCommand: baseCommand,
+        projectId: projectId,
+        name: variableName,
+        value: valueToSet,
+        secret: secretFlag,
+      ),
+      textOutputUi: VariableSetTextUi(baseCommand: baseCommand),
     );
   }
 }
@@ -176,12 +179,29 @@ Examples
       UnsetVariableCommandConfig.variableName,
     );
 
-    await VariableCommands.unsetVariable(
+    await VariableCommands.findVariable(
       runner.serviceProvider.cloudApiClient,
-      logger: logger,
       baseCommand: baseCommand,
       projectId: projectId,
       name: variableName,
+    );
+
+    await confirmToContinue(
+      output,
+      message:
+          'Are you sure you want to remove the environment variable "$variableName"?',
+      defaultValue: false,
+    );
+
+    await renderCommand(
+      output,
+      operation: () => VariableCommands.unsetVariable(
+        runner.serviceProvider.cloudApiClient,
+        baseCommand: baseCommand,
+        projectId: projectId,
+        name: variableName,
+      ),
+      textOutputUi: VariableUnsetTextUi(baseCommand: baseCommand),
     );
   }
 }

@@ -13,3 +13,8 @@ build/
 doc/api/
 
 pubspec_overrides.yaml
+
+# scloud output showcase files
+scloud-output-text.md
+scloud-output-json.md
+scloud-output-yaml.md

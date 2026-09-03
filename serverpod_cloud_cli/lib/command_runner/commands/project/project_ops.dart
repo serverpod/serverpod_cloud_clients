@@ -148,20 +148,10 @@ abstract class ProjectCommands {
     }
   }
 
-  static Future<void> deleteProject(
-    Client cloudApiClient, {
-    required CommandLogger logger,
-    required String projectId,
+  static Future<Map<String, Object?>> deleteProject(
+    final Client cloudApiClient, {
+    required final String projectId,
   }) async {
-    final shouldDelete = await logger.confirm(
-      'Are you sure you want to delete the project "$projectId"?',
-      defaultValue: false,
-    );
-
-    if (!shouldDelete) {
-      throw UserAbortException();
-    }
-
     try {
       await cloudApiClient.projects.deleteProject(cloudProjectId: projectId);
     } on Exception catch (e, s) {
@@ -172,7 +162,7 @@ abstract class ProjectCommands {
       );
     }
 
-    logger.success('Deleted the project "$projectId".', newParagraph: true);
+    return {'projectId': projectId};
   }
 
   static Future<List<ProjectInfo>> listProjectsOperation(
@@ -236,68 +226,5 @@ abstract class ProjectCommands {
     }
 
     return safeDartSdk;
-  }
-
-  static Future<void> inviteUser(
-    Client cloudApiClient, {
-    required CommandLogger logger,
-    required String projectId,
-    required String email,
-    required List<String> assignRoleNames,
-  }) async {
-    try {
-      await cloudApiClient.projects.inviteUser(
-        cloudProjectId: projectId,
-        email: email,
-        assignRoleNames: assignRoleNames,
-      );
-    } on NotFoundException catch (e) {
-      throw FailureException(error: e.message);
-    } on Exception catch (e, s) {
-      throw FailureException.nested(e, s, 'Failed to invite user to project');
-    }
-
-    logger.success(
-      'User invited to the project with roles: ${assignRoleNames.join(', ')}.',
-      newParagraph: true,
-    );
-  }
-
-  static Future<void> revokeUser(
-    Client cloudApiClient, {
-    required CommandLogger logger,
-    required String projectId,
-    required String email,
-    List<String> unassignRoleNames = const [],
-    bool unassignAllRoles = false,
-  }) async {
-    final List<String> actuallyUnassigned;
-    try {
-      actuallyUnassigned = await cloudApiClient.projects.revokeUser(
-        cloudProjectId: projectId,
-        email: email,
-        unassignRoleNames: unassignRoleNames,
-        unassignAllRoles: unassignAllRoles,
-      );
-    } on NotFoundException catch (e) {
-      throw FailureException(error: e.message);
-    } on Exception catch (e, s) {
-      throw FailureException.nested(e, s, 'Failed to revoke user from project');
-    }
-
-    if (actuallyUnassigned.isEmpty) {
-      logger.info(
-        unassignAllRoles
-            ? 'The user has no access roles to revoke on the project.'
-            : 'The user does not have any of the specified project roles.',
-      );
-    } else {
-      logger.success(
-        unassignAllRoles
-            ? 'Revoked all access roles of the user from the project: ${actuallyUnassigned.join(', ')}'
-            : 'Revoked access roles of the user from the project: ${actuallyUnassigned.join(', ')}',
-        newParagraph: true,
-      );
-    }
   }
 }

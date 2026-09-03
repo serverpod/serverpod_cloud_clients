@@ -1,14 +1,14 @@
 import 'package:config/config.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
-import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
-import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/db/db_ops.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/db/db_backup_ops.dart';
-import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
-import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
-
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/db/db_backup_ops.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/db/db_ops.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/db/db_ui.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
+import 'package:serverpod_cloud_cli/util/output/output.dart'
+    show CommandOutput, ConfirmationWidget;
 
 class CloudDbCommand extends CloudCliCommand {
   @override
@@ -69,34 +69,14 @@ class CloudDbConnectionDetailsCommand
   ) async {
     final projectId = commandConfig.value(DbConnectionDetailsOption.projectId);
 
-    final apiCloudClient = runner.serviceProvider.cloudApiClient;
-
-    try {
-      final connection = await apiCloudClient.database.getConnectionDetails(
-        cloudCapsuleId: projectId,
-      );
-
-      final portString = connection.port == 5432 ? '' : ':${connection.port}';
-      final connectionString =
-          'postgresql://${connection.host}$portString/${connection.name}'
-          '?sslmode=${connection.requiresSsl ? 'require' : 'disable'}';
-      logger.success(
-        '''
-Connection details:
-  Host: ${connection.host}
-  Port: ${connection.port}
-  Database: ${connection.name}''',
-        followUp: '''
-This psql command can be used to connect to the database (it will prompt for the password):
-  psql "$connectionString" --user <username>''',
-      );
-    } on Exception catch (e, stackTrace) {
-      throw FailureException.nested(
-        e,
-        stackTrace,
-        'Failed to get connection details',
-      );
-    }
+    await renderCommand(
+      output,
+      operation: () => DbOperations.getConnectionDetails(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+      ),
+      textOutputUi: const DbConnectionTextUi(),
+    );
   }
 }
 
@@ -135,24 +115,15 @@ class CloudDbUserCreateCommand extends CloudCliCommand<DbUserCreateOption> {
     final projectId = commandConfig.value(DbUserCreateOption.projectId);
     final username = commandConfig.value(DbUserCreateOption.username);
 
-    final apiCloudClient = runner.serviceProvider.cloudApiClient;
-
-    try {
-      final password = await apiCloudClient.database.createSuperUser(
-        cloudCapsuleId: projectId,
+    await renderCommand(
+      output,
+      operation: () => DbOperations.createSuperUser(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
         username: username,
-      );
-
-      logger.success('''
-DB superuser created. The password is only shown this once:
-$password''');
-    } on Exception catch (e, stackTrace) {
-      throw FailureException.nested(
-        e,
-        stackTrace,
-        'Failed to create superuser',
-      );
-    }
+      ),
+      textOutputUi: const DbUserCreateTextUi(),
+    );
   }
 }
 
@@ -192,20 +163,15 @@ class CloudDbUserResetPasswordCommand
     final projectId = commandConfig.value(DbUserResetPasswordOption.projectId);
     final username = commandConfig.value(DbUserResetPasswordOption.username);
 
-    final apiCloudClient = runner.serviceProvider.cloudApiClient;
-
-    try {
-      final password = await apiCloudClient.database.resetDatabasePassword(
-        cloudCapsuleId: projectId,
+    await renderCommand(
+      output,
+      operation: () => DbOperations.resetPassword(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
         username: username,
-      );
-
-      logger.success('''
-DB password is reset. The new password is only shown this once:
-$password''');
-    } on Exception catch (e, stackTrace) {
-      throw FailureException.nested(e, stackTrace, 'Failed to reset password');
-    }
+      ),
+      textOutputUi: const DbUserResetPasswordTextUi(),
+    );
   }
 }
 
@@ -238,14 +204,42 @@ class CloudDbWipeCommand extends CloudCliCommand<DbWipeOption> {
     final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(DbWipeOption.projectId);
-    final skipConfirmation = globalConfiguration.skipConfirmation;
 
-    await DbCommands.wipeDatabase(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      baseCommand: baseCommand,
-      projectId: projectId,
-      skipConfirmation: skipConfirmation,
+    if (!globalConfiguration.skipConfirmation) {
+      final confirmed = await output.renderInteractive(
+        ui: ConfirmationWidget('''
+WARNING: Deletes all tables and data in the database for project "$projectId".
+This is a NON-REVERSIBLE action.
+The server will error until a redeploy is performed.
+
+Do you want to proceed?''', defaultValue: false),
+      );
+      if (!confirmed) {
+        await renderCommand(
+          output,
+          operation: () async => const <String, Object?>{},
+          textOutputUi: const DbWipeCancelledTextUi(),
+        );
+        return;
+      }
+    }
+
+    await logger.progress(
+      'Wiping database for project "$projectId"...',
+      newParagraph: true,
+      () async {
+        await DbOperations.wipeDatabase(
+          runner.serviceProvider.cloudApiClient,
+          projectId: projectId,
+        );
+        return true;
+      },
+    );
+
+    await renderCommand(
+      output,
+      operation: () async => {'projectId': projectId},
+      textOutputUi: DbWipeTextUi(baseCommand: baseCommand),
     );
   }
 }
@@ -335,13 +329,28 @@ class CloudDbBackupCreateCommand extends CloudCliCommand<DbBackupCreateOption> {
     final Configuration<DbBackupCreateOption> commandConfig,
     final CommandOutput output,
   ) async {
-    await DbBackupCommands.createSnapshot(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      projectId: commandConfig.value(DbBackupCreateOption.projectId),
-      name: commandConfig.optionalValue(DbBackupCreateOption.name),
-      expireIn: commandConfig.optionalValue(DbBackupCreateOption.expireIn),
-      utc: commandConfig.value(DbBackupCreateOption.utc),
+    final utc = commandConfig.value(DbBackupCreateOption.utc);
+
+    late DatabaseSnapshot snapshot;
+    await logger.progress(
+      'Creating database snapshot for project "${commandConfig.value(DbBackupCreateOption.projectId)}"',
+      () async {
+        snapshot = await DbBackupOperations.createSnapshot(
+          runner.serviceProvider.cloudApiClient,
+          projectId: commandConfig.value(DbBackupCreateOption.projectId),
+          name: commandConfig.optionalValue(DbBackupCreateOption.name),
+          expireIn: commandConfig.optionalValue(DbBackupCreateOption.expireIn),
+        );
+        return true;
+      },
+      successMessage: 'Snapshot created.',
+      newParagraph: true,
+    );
+
+    await renderCommand(
+      output,
+      operation: () async => [snapshot],
+      textOutputUi: BackupSnapshotListTextUi(utc: utc),
     );
   }
 }
@@ -371,12 +380,20 @@ class CloudDbBackupListCommand extends CloudCliCommand<DbBackupListOption> {
     final Configuration<DbBackupListOption> commandConfig,
     final CommandOutput output,
   ) async {
-    await DbBackupCommands.listSnapshots(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      baseCommand: baseCommand,
-      projectId: commandConfig.value(DbBackupListOption.projectId),
-      utc: commandConfig.value(DbBackupListOption.utc),
+    final projectId = commandConfig.value(DbBackupListOption.projectId);
+    final utc = commandConfig.value(DbBackupListOption.utc);
+
+    await renderCommand(
+      output,
+      operation: () => DbBackupOperations.listSnapshots(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+      ),
+      textOutputUi: BackupSnapshotListTextUi(
+        utc: utc,
+        emptyProjectId: projectId,
+        baseCommand: baseCommand,
+      ),
     );
   }
 }
@@ -409,12 +426,25 @@ class CloudDbBackupDeleteCommand extends CloudCliCommand<DbBackupDeleteOption> {
     final Configuration<DbBackupDeleteOption> commandConfig,
     final CommandOutput output,
   ) async {
-    await DbBackupCommands.deleteSnapshot(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      projectId: commandConfig.value(DbBackupDeleteOption.projectId),
-      snapshotId: commandConfig.value(DbBackupDeleteOption.snapshotId),
-      skipConfirmation: globalConfiguration.skipConfirmation,
+    final projectId = commandConfig.value(DbBackupDeleteOption.projectId);
+    final snapshotId = commandConfig.value(DbBackupDeleteOption.snapshotId);
+
+    await confirmToContinue(
+      output,
+      message:
+          'Permanently delete snapshot "$snapshotId" for project "$projectId"? '
+          'This action cannot be undone.',
+      defaultValue: false,
+    );
+
+    await renderCommand(
+      output,
+      operation: () => DbBackupOperations.deleteSnapshot(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+        snapshotId: snapshotId,
+      ),
+      textOutputUi: const BackupSnapshotDeleteTextUi(),
     );
   }
 }
@@ -448,12 +478,33 @@ class CloudDbBackupRestoreCommand
     final Configuration<DbBackupRestoreOption> commandConfig,
     final CommandOutput output,
   ) async {
-    await DbBackupCommands.restoreSnapshot(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      projectId: commandConfig.value(DbBackupRestoreOption.projectId),
-      snapshotId: commandConfig.value(DbBackupRestoreOption.snapshotId),
-      skipConfirmation: globalConfiguration.skipConfirmation,
+    final projectId = commandConfig.value(DbBackupRestoreOption.projectId);
+    final snapshotId = commandConfig.value(DbBackupRestoreOption.snapshotId);
+
+    await confirmToContinue(
+      output,
+      message:
+          '''
+WARNING: Restores the database for project "$projectId" to snapshot "$snapshotId".
+The live database is replaced with the data from the snapshot.
+This action cannot be undone.
+
+Do you want to proceed?''',
+      defaultValue: false,
+    );
+
+    await logger.progress(
+      'Restoring database for project "$projectId"',
+      () async {
+        await DbBackupOperations.restoreSnapshot(
+          runner.serviceProvider.cloudApiClient,
+          projectId: projectId,
+          snapshotId: snapshotId,
+        );
+        return true;
+      },
+      successMessage: 'Database restored.',
+      newParagraph: true,
     );
   }
 }
@@ -529,14 +580,17 @@ class CloudDbScheduleSetCommand extends CloudCliCommand<DbScheduleSetOption> {
       );
     }
 
-    await DbBackupCommands.setSchedule(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      projectId: commandConfig.value(DbScheduleSetOption.projectId),
-      frequency: frequency,
-      day: day,
-      hour: commandConfig.optionalValue(DbScheduleSetOption.hour),
-      retention: commandConfig.optionalValue(DbScheduleSetOption.retention),
+    await renderCommand(
+      output,
+      operation: () => DbBackupOperations.setSchedule(
+        runner.serviceProvider.cloudApiClient,
+        projectId: commandConfig.value(DbScheduleSetOption.projectId),
+        frequency: frequency,
+        day: day,
+        hour: commandConfig.optionalValue(DbScheduleSetOption.hour),
+        retention: commandConfig.optionalValue(DbScheduleSetOption.retention),
+      ),
+      textOutputUi: const BackupScheduleSetTextUi(),
     );
   }
 }
@@ -565,11 +619,13 @@ class CloudDbScheduleShowCommand extends CloudCliCommand<DbScheduleShowOption> {
     final Configuration<DbScheduleShowOption> commandConfig,
     final CommandOutput output,
   ) async {
-    await DbBackupCommands.showSchedule(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      baseCommand: baseCommand,
-      projectId: commandConfig.value(DbScheduleShowOption.projectId),
+    await renderCommand(
+      output,
+      operation: () => DbBackupOperations.getSchedule(
+        runner.serviceProvider.cloudApiClient,
+        projectId: commandConfig.value(DbScheduleShowOption.projectId),
+      ),
+      textOutputUi: BackupScheduleShowTextUi(baseCommand: baseCommand),
     );
   }
 }
@@ -599,10 +655,13 @@ class CloudDbScheduleUnsetCommand
     final Configuration<DbScheduleUnsetOption> commandConfig,
     final CommandOutput output,
   ) async {
-    await DbBackupCommands.disableSchedule(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      projectId: commandConfig.value(DbScheduleUnsetOption.projectId),
+    await renderCommand(
+      output,
+      operation: () => DbBackupOperations.disableSchedule(
+        runner.serviceProvider.cloudApiClient,
+        projectId: commandConfig.value(DbScheduleUnsetOption.projectId),
+      ),
+      textOutputUi: const BackupScheduleUnsetTextUi(),
     );
   }
 }

@@ -1,5 +1,4 @@
 import 'package:config/config.dart';
-import 'package:ground_control_client/ground_control_client.dart' show Client;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
@@ -173,68 +172,24 @@ See also "$baseCommand auth list", to list the current authentication sessions.'
     );
 
     if (cloudData == null) {
-      logger.info('No stored Serverpod Cloud credentials found.');
+      await renderCommand(
+        output,
+        operation: () async => const {'hadCredentials': false},
+        textOutputUi: const AuthLogoutTextUi(),
+      );
       return;
     }
 
-    final cloudClient = runner.serviceProvider.cloudApiClient;
-
-    ErrorExitException? exitException;
-
-    final currentSessionLoggedOut = await _logout(cloudClient, tokenIds, all);
-
-    if (!currentSessionLoggedOut) {
-      logger.success('Successfully logged out the selected sessions.');
-      return;
-    }
-
-    try {
-      await ResourceManager.removeServerpodCloudAuthData(
+    await renderCommand(
+      output,
+      operation: () => Auth.logout(
+        runner.serviceProvider.cloudApiClient,
         localStoragePath: localStoragePath.path,
-      );
-    } on Exception catch (e) {
-      logger.error(
-        'Failed to remove stored credentials',
-        exception: e,
-        hint:
-            'Please remove these manually. '
-            'They should be located in $localStoragePath.',
-      );
-      exitException = ErrorExitException();
-    }
-
-    if (exitException != null) {
-      throw exitException;
-    }
-
-    logger.success('Successfully logged out from Serverpod cloud.');
-  }
-
-  Future<bool> _logout(
-    Client cloudClient,
-    List<String> tokenIds,
-    bool all,
-  ) async {
-    if (tokenIds.isNotEmpty) {
-      bool currentSessionLoggedOut = false;
-      for (final tokenId in tokenIds) {
-        currentSessionLoggedOut |= await cloudClient.authWithAuth.logoutDevice(
-          authTokenId: tokenId,
-        );
-      }
-      return currentSessionLoggedOut;
-    }
-
-    if (all) {
-      await cloudClient.authWithAuth.logoutAll();
-    } else {
-      try {
-        await cloudClient.authWithAuth.logoutDevice();
-      } on Exception catch (_) {
-        // continue even if server logout fails
-      }
-    }
-    return true;
+        tokenIds: tokenIds,
+        all: all,
+      ),
+      textOutputUi: const AuthLogoutTextUi(),
+    );
   }
 }
 
@@ -344,13 +299,14 @@ the --token option or the SERVERPOD_CLOUD_TOKEN environment variable.''';
       CreateTokenCommandOption.idleTtl,
     );
 
-    final cloudClient = runner.serviceProvider.cloudApiClient;
-    await Auth.createApiToken(
-      cloudClient,
-      logger: logger,
-      baseCommand: baseCommand,
-      expiresAt: expiresAt,
-      expiresAfter: noExpiresAfter ? null : expiresAfter,
+    await renderCommand(
+      output,
+      operation: () => Auth.createApiToken(
+        runner.serviceProvider.cloudApiClient,
+        expiresAt: expiresAt,
+        expiresAfter: noExpiresAfter ? null : expiresAfter,
+      ),
+      textOutputUi: AuthCreateTokenTextUi(baseCommand: baseCommand),
     );
   }
 }
@@ -404,11 +360,14 @@ Examples
   ) async {
     final tokenId = commandConfig.value(RevokeTokenCommandOption.tokenId);
 
-    await Auth.revokeToken(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      tokenId: tokenId,
-      localStoragePath: globalConfiguration.scloudDir.path,
+    await renderCommand(
+      output,
+      operation: () => Auth.revokeToken(
+        runner.serviceProvider.cloudApiClient,
+        tokenId: tokenId,
+        localStoragePath: globalConfiguration.scloudDir.path,
+      ),
+      textOutputUi: const AuthRevokeTokenTextUi(),
     );
   }
 }

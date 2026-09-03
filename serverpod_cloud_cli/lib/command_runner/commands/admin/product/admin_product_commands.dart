@@ -134,14 +134,17 @@ class AdminProcurePlanCommand extends CloudCliCommand<AdminProcurePlanOption> {
     );
     final override = commandConfig.value(AdminProcurePlanOption.overrideChecks);
 
-    await ProductAdminCommands.procurePlan(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      userEmail: userEmail,
-      planName: productName,
-      planVersion: ver,
-      trialPeriodOverride: trialPeriod,
-      overrideChecks: override,
+    await renderCommand(
+      output,
+      operation: () => ProductAdminCommands.procurePlan(
+        runner.serviceProvider.cloudApiClient,
+        userEmail: userEmail,
+        planName: productName,
+        planVersion: ver,
+        trialPeriodOverride: trialPeriod,
+        overrideChecks: override,
+      ),
+      textOutputUi: const ProductProcureTextUi(),
     );
   }
 }
@@ -215,13 +218,16 @@ class AdminCancelPlanCommand extends CloudCliCommand<AdminCancelPlanOption> {
         ? UuidValue.withValidation(subscriptionId)
         : null;
 
-    await ProductAdminCommands.cancelPlan(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      userEmail: userEmail,
-      subscriptionId: subscriptionUuid,
-      cloudProjectId: cloudProjectId,
-      terminateImmediately: terminateImmediately,
+    await renderCommand(
+      output,
+      operation: () => ProductAdminCommands.cancelPlan(
+        runner.serviceProvider.cloudApiClient,
+        userEmail: userEmail,
+        subscriptionId: subscriptionUuid,
+        cloudProjectId: cloudProjectId,
+        terminateImmediately: terminateImmediately,
+      ).then((final _) => const <String, Object?>{}),
+      textOutputUi: const ProductCancelTextUi(),
     );
   }
 }

@@ -31,3 +31,15 @@ class AdminUserListTextUi extends OutputWidget {
     );
   }
 }
+
+class AdminInviteUserTextUi extends OutputWidget {
+  const AdminInviteUserTextUi();
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    return const SuccessTextWidget(
+      'User invited to Serverpod Cloud.',
+      newParagraph: true,
+    );
+  }
+}

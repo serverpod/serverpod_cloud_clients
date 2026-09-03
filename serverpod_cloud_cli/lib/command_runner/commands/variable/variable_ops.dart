@@ -1,5 +1,4 @@
 import 'package:ground_control_client/ground_control_client.dart';
-import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/password/password_ops.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
@@ -10,14 +9,13 @@ abstract class VariableCommands {
   static final _namePattern = RegExp(r'^[a-zA-Z_][a-zA-Z0-9_]*$');
   static const _maskedValue = '••••••••';
 
-  static Future<void> setVariable(
-    Client cloudApiClient, {
-    required CommandLogger logger,
-    required String baseCommand,
-    required String projectId,
-    required String name,
-    required String value,
-    bool? secret,
+  static Future<Map<String, Object?>> setVariable(
+    final Client cloudApiClient, {
+    required final String baseCommand,
+    required final String projectId,
+    required final String name,
+    required final String value,
+    final bool? secret,
   }) async {
     _validateName(baseCommand, name);
 
@@ -90,24 +88,14 @@ abstract class VariableCommands {
       );
     }
 
-    logger.success(
-      store == _VariableStore.secret
-          ? 'Successfully set secret: $name.'
-          : 'Successfully set environment variable: $name.',
-    );
-    logger.terminalCommand(
-      '$baseCommand deploy',
-      message:
-          'The changes will not take effect until your server is re-deployed.',
-    );
+    return {'name': name, 'secret': store == _VariableStore.secret};
   }
 
-  static Future<void> unsetVariable(
-    Client cloudApiClient, {
-    required CommandLogger logger,
-    required String baseCommand,
-    required String projectId,
-    required String name,
+  static Future<Map<String, Object?>> findVariable(
+    final Client cloudApiClient, {
+    required final String baseCommand,
+    required final String projectId,
+    required final String name,
   }) async {
     _validateName(baseCommand, name);
 
@@ -124,27 +112,34 @@ abstract class VariableCommands {
       );
     }
 
-    final shouldUnset = await logger.confirm(
-      'Are you sure you want to remove the environment variable "$name"?',
-      defaultValue: false,
-    );
+    return {'name': name, 'secret': existingStore == _VariableStore.secret};
+  }
 
-    if (!shouldUnset) {
-      throw UserAbortException();
-    }
+  static Future<Map<String, Object?>> unsetVariable(
+    final Client cloudApiClient, {
+    required final String baseCommand,
+    required final String projectId,
+    required final String name,
+  }) async {
+    final existing = await findVariable(
+      cloudApiClient,
+      baseCommand: baseCommand,
+      projectId: projectId,
+      name: name,
+    );
+    final isSecret = existing['secret'] == true;
 
     try {
-      switch (existingStore) {
-        case _VariableStore.unmasked:
-          await cloudApiClient.environmentVariables.delete(
-            name: name,
-            cloudCapsuleId: projectId,
-          );
-        case _VariableStore.secret:
-          await cloudApiClient.secrets.delete(
-            key: name,
-            cloudCapsuleId: projectId,
-          );
+      if (isSecret) {
+        await cloudApiClient.secrets.delete(
+          key: name,
+          cloudCapsuleId: projectId,
+        );
+      } else {
+        await cloudApiClient.environmentVariables.delete(
+          name: name,
+          cloudCapsuleId: projectId,
+        );
       }
     } on Exception catch (e, s) {
       throw FailureException.nested(
@@ -154,16 +149,7 @@ abstract class VariableCommands {
       );
     }
 
-    logger.success(
-      existingStore == _VariableStore.secret
-          ? 'Successfully removed secret: $name.'
-          : 'Successfully removed environment variable: $name.',
-    );
-    logger.terminalCommand(
-      '$baseCommand deploy',
-      message:
-          'The changes will not take effect until your server is re-deployed.',
-    );
+    return existing;
   }
 
   static Future<List<Map<String, Object?>>> listVariablesOperation(

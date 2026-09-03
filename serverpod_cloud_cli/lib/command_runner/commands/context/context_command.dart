@@ -1,10 +1,12 @@
 import 'package:config/config.dart';
 
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
-import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
-import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/context/context_ops.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/context/context_ui.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/project/project_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/project/project_ui.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
+import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 
 class CloudContextCommand extends CloudCliCommand {
   @override
@@ -75,14 +77,13 @@ class CloudContextShowCommand extends CloudCliCommand {
     final Configuration commandConfig,
     final CommandOutput output,
   ) async {
-    final settings = runner.serviceProvider.scloudSettings;
-    final projectContext = await settings.projectContext;
-
-    if (projectContext == null) {
-      logger.info('No global project context is set.');
-    } else {
-      logger.info(projectContext);
-    }
+    await renderCommand(
+      output,
+      operation: () => ContextOperations.getProjectContext(
+        runner.serviceProvider.scloudSettings,
+      ),
+      textOutputUi: const ContextShowTextUi(),
+    );
   }
 }
 
@@ -115,10 +116,14 @@ class CloudContextSetCommand extends CloudCliCommand<ContextSetOption> {
   ) async {
     final projectId = commandConfig.value(ContextSetOption.projectId);
 
-    final settings = runner.serviceProvider.scloudSettings;
-    await settings.setProjectContext(projectId);
-
-    logger.success('Set the global project context to "$projectId".');
+    await renderCommand(
+      output,
+      operation: () => ContextOperations.setProjectContext(
+        runner.serviceProvider.scloudSettings,
+        projectId: projectId,
+      ),
+      textOutputUi: const ContextSetTextUi(),
+    );
   }
 }
 
@@ -142,9 +147,12 @@ class CloudContextUnsetCommand extends CloudCliCommand {
     final Configuration commandConfig,
     final CommandOutput output,
   ) async {
-    final settings = runner.serviceProvider.scloudSettings;
-    await settings.setProjectContext(null);
-
-    logger.success('Unset the global project context.');
+    await renderCommand(
+      output,
+      operation: () => ContextOperations.unsetProjectContext(
+        runner.serviceProvider.scloudSettings,
+      ).then((final _) => const <String, Object?>{}),
+      textOutputUi: const ContextUnsetTextUi(),
+    );
   }
 }

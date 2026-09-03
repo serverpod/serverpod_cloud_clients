@@ -76,13 +76,70 @@ class InfoTextWidget extends OutputWidget {
 /// Renders a success message.
 class SuccessTextWidget extends OutputWidget {
   final String message;
+  final String? followUp;
   final bool? newParagraph;
 
-  const SuccessTextWidget(this.message, {this.newParagraph});
+  const SuccessTextWidget(this.message, {this.followUp, this.newParagraph});
 
   @override
-  void render({required CommandLogger logger}) {
-    logger.success(message, newParagraph: newParagraph ?? false);
+  void render({required final CommandLogger logger}) {
+    logger.success(
+      message,
+      followUp: followUp,
+      newParagraph: newParagraph ?? false,
+    );
+  }
+}
+
+/// Renders a warning message.
+class WarningTextWidget extends OutputWidget {
+  final String message;
+  final bool? newParagraph;
+
+  const WarningTextWidget(this.message, {this.newParagraph});
+
+  @override
+  void render({required final CommandLogger logger}) {
+    logger.warning(message, newParagraph: newParagraph ?? false);
+  }
+}
+
+/// Renders a raw line via [CommandLogger.line].
+class LineTextWidget extends OutputWidget {
+  final String line;
+
+  const LineTextWidget([this.line = '']);
+
+  @override
+  void render({required final CommandLogger logger}) {
+    logger.line(line);
+  }
+}
+
+/// Renders a bullet list via [CommandLogger.list].
+class ListTextWidget extends OutputWidget {
+  final List<String> items;
+  final String? title;
+  final bool? newParagraph;
+
+  const ListTextWidget(this.items, {this.title, this.newParagraph});
+
+  @override
+  void render({required final CommandLogger logger}) {
+    logger.list(items, title: title, newParagraph: newParagraph ?? false);
+  }
+}
+
+/// Renders a boxed message via [CommandLogger.box].
+class BoxTextWidget extends OutputWidget {
+  final String message;
+  final bool? newParagraph;
+
+  const BoxTextWidget(this.message, {this.newParagraph});
+
+  @override
+  void render({required final CommandLogger logger}) {
+    logger.box(message, newParagraph: newParagraph ?? false);
   }
 }
 

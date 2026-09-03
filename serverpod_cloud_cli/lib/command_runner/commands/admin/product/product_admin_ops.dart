@@ -1,5 +1,4 @@
 import 'package:ground_control_client/ground_control_client.dart';
-import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 
 abstract class ProductAdminCommands {
   static Future<List<Map<String, Object?>>> listProcuredProductsOperation(
@@ -15,14 +14,13 @@ abstract class ProductAdminCommands {
     ];
   }
 
-  static Future<void> procurePlan(
-    Client cloudApiClient, {
-    required CommandLogger logger,
-    required String userEmail,
-    required String planName,
-    int? planVersion,
-    int? trialPeriodOverride,
-    bool? overrideChecks,
+  static Future<Map<String, Object?>> procurePlan(
+    final Client cloudApiClient, {
+    required final String userEmail,
+    required final String planName,
+    final int? planVersion,
+    final int? trialPeriodOverride,
+    final bool? overrideChecks,
   }) async {
     await cloudApiClient.adminProcurement.procurePlan(
       userEmail: userEmail,
@@ -32,19 +30,15 @@ abstract class ProductAdminCommands {
       overrideChecks: overrideChecks,
     );
 
-    logger.success(
-      'The plan $planName has been procured for the user.',
-      newParagraph: true,
-    );
+    return {'planName': planName};
   }
 
   static Future<void> cancelPlan(
-    Client cloudApiClient, {
-    required CommandLogger logger,
-    required String userEmail,
-    UuidValue? subscriptionId,
-    String? cloudProjectId,
-    bool? terminateImmediately,
+    final Client cloudApiClient, {
+    required final String userEmail,
+    final UuidValue? subscriptionId,
+    final String? cloudProjectId,
+    final bool? terminateImmediately,
   }) async {
     await cloudApiClient.adminProcurement.cancelPlan(
       userEmail: userEmail,
@@ -52,7 +46,5 @@ abstract class ProductAdminCommands {
       cloudProjectId: cloudProjectId,
       terminateImmediately: terminateImmediately,
     );
-
-    logger.success("The user's plan has been cancelled.", newParagraph: true);
   }
 }

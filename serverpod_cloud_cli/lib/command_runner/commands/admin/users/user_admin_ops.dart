@@ -1,5 +1,4 @@
 import 'package:ground_control_client/ground_control_client.dart';
-import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
 abstract class UserAdminCommands {
@@ -46,16 +45,13 @@ abstract class UserAdminCommands {
   }
 
   static Future<void> inviteUser(
-    Client cloudApiClient, {
-    required CommandLogger logger,
-    required String email,
+    final Client cloudApiClient, {
+    required final String email,
   }) async {
     try {
       await cloudApiClient.adminUsers.inviteUser(email: email);
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Failed to invite user');
     }
-
-    logger.success('User invited to Serverpod Cloud.', newParagraph: true);
   }
 }

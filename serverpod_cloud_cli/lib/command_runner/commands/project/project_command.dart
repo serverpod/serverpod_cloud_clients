@@ -6,7 +6,7 @@ import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/project/project_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/project/project_ui.dart'
-    show ProjectListTextUi;
+    show ProjectDeleteTextUi, ProjectListTextUi;
 import 'package:serverpod_cloud_cli/command_runner/commands/user/user_command.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 
@@ -110,10 +110,19 @@ class CloudProjectDeleteCommand extends CloudCliCommand {
   ) async {
     final projectId = commandConfig.value(ProjectDeleteOption.projectId);
 
-    await ProjectCommands.deleteProject(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      projectId: projectId,
+    await confirmToContinue(
+      output,
+      message: 'Are you sure you want to delete the project "$projectId"?',
+      defaultValue: false,
+    );
+
+    await renderCommand(
+      output,
+      operation: () => ProjectCommands.deleteProject(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+      ),
+      textOutputUi: const ProjectDeleteTextUi(),
     );
   }
 }

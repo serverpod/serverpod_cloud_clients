@@ -1,37 +1,33 @@
 import 'package:ground_control_client/ground_control_client.dart';
-import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
 abstract class PlanAdminCommands {
   static Future<List<String>> listOrbPlansOperation(Client cloudApiClient) {
     return cloudApiClient.adminUpdatePlan.listOrbPlans();
   }
 
-  static Future<void> updateOrbPlan(
-    Client cloudApiClient, {
-    required CommandLogger logger,
-    required String externalPlanId,
+  static Future<Map<String, Object?>> updateOrbPlan(
+    final Client cloudApiClient, {
+    required final String externalPlanId,
   }) async {
     final result = await cloudApiClient.adminUpdatePlan.updateOrbPlan(
       externalPlanId: externalPlanId,
     );
 
-    if (result['appliedVersion'] case final String appliedVersion) {
-      if (appliedVersion.isNotEmpty) {
-        logger.success(
-          'Orb plan "$externalPlanId" successfully updated to version $appliedVersion.',
-          newParagraph: true,
-        );
-      } else {
-        logger.info(
-          'Orb plan "$externalPlanId" already up to date.',
-          newParagraph: true,
-        );
-      }
-    } else {
-      logger.error(
-        'Error response from server, message: ${result['message']}',
-        newParagraph: true,
+    if (result['success'] != null && result['success'] != 'true') {
+      throw FailureException(
+        error: 'Error response from server, message: ${result['message']}',
       );
     }
+
+    final appliedVersion = result['appliedVersion'];
+    if (appliedVersion is String && appliedVersion.isNotEmpty) {
+      return {
+        'externalPlanId': externalPlanId,
+        'appliedVersion': appliedVersion,
+      };
+    }
+
+    return {'externalPlanId': externalPlanId};
   }
 }
