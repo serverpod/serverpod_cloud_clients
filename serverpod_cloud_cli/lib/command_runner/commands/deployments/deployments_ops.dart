@@ -6,16 +6,14 @@ import 'package:serverpod_cloud_cli/command_runner/commands/status/status_ops.da
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
 abstract class DeploymentCommands {
-  static Future<void> showDeployment(
-    Client cloudApiClient, {
-    required CommandLogger logger,
-    required String baseCommand,
-    required String projectId,
-    required bool wait,
-    required bool overallStatus,
-    required bool inUtc,
-    DeploymentCommandNames commandNames = DeploymentCommandNames.public,
-    String? deploymentArg,
+  static Future<void> tailDeployment(
+    final Client cloudApiClient, {
+    required final CommandLogger logger,
+    required final String baseCommand,
+    required final String projectId,
+    required final bool inUtc,
+    final DeploymentCommandNames commandNames = DeploymentCommandNames.public,
+    final String? deploymentArg,
   }) async {
     try {
       final attemptId = await _getDeployAttemptId(
@@ -26,27 +24,58 @@ abstract class DeploymentCommands {
         deploymentArg,
       );
 
-      if (wait && !overallStatus) {
-        await StatusCommands.tailDeploymentStatus(
-          cloudApiClient,
-          logger: logger,
-          baseCommand: baseCommand,
-          commandNames: commandNames,
-          cloudCapsuleId: projectId,
-          attemptId: attemptId,
-          inUtc: inUtc,
-        );
-        return;
-      }
-
-      await StatusCommands.showDeploymentStatus(
+      await StatusCommands.tailDeploymentStatus(
         cloudApiClient,
         logger: logger,
+        baseCommand: baseCommand,
+        commandNames: commandNames,
         cloudCapsuleId: projectId,
         attemptId: attemptId,
         inUtc: inUtc,
-        outputOverallStatus: overallStatus,
       );
+    } on UserAbortException {
+      rethrow;
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Failed to get deployment status');
+    }
+  }
+
+  static Future<
+    ({
+      String projectId,
+      UuidValue attemptId,
+      DateTime? startedAt,
+      List<DeployAttemptStage> stages,
+    })
+  >
+  fetchDeploymentStatus(
+    final Client cloudApiClient, {
+    required final String baseCommand,
+    required final String projectId,
+    final DeploymentCommandNames commandNames = DeploymentCommandNames.public,
+    final String? deploymentArg,
+  }) async {
+    try {
+      final attemptId = await _getDeployAttemptId(
+        cloudApiClient,
+        baseCommand,
+        commandNames,
+        projectId,
+        deploymentArg,
+      );
+      final snapshot = await StatusCommands.fetchDeployAttemptStatus(
+        cloudApiClient,
+        cloudCapsuleId: projectId,
+        attemptId: attemptId,
+      );
+      return (
+        projectId: projectId,
+        attemptId: attemptId,
+        startedAt: snapshot.startedAt,
+        stages: snapshot.stages,
+      );
+    } on FailureException {
+      rethrow;
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Failed to get deployment status');
     }
@@ -70,14 +99,13 @@ abstract class DeploymentCommands {
     return deploymentListRows(statuses);
   }
 
-  static Future<void> fetchBuildLog(
-    Client cloudApiClient, {
-    required CommandLogger logger,
-    required String baseCommand,
-    required String projectId,
-    required bool inUtc,
-    DeploymentCommandNames commandNames = DeploymentCommandNames.public,
-    String? deploymentArg,
+  static Future<({UuidValue attemptId, Stream<LogRecord> records})>
+  fetchBuildLog(
+    final Client cloudApiClient, {
+    required final String baseCommand,
+    required final DeploymentCommandNames commandNames,
+    required final String projectId,
+    final String? deploymentArg,
   }) async {
     try {
       final attemptId = await _getDeployAttemptId(
@@ -88,25 +116,25 @@ abstract class DeploymentCommands {
         deploymentArg,
       );
 
-      await LogsOperations.fetchBuildLog(
-        cloudApiClient,
-        writeln: logger.line,
-        projectId: projectId,
+      return (
         attemptId: attemptId,
-        inUtc: inUtc,
+        records: LogsOperations.fetchBuildLog(
+          cloudApiClient,
+          projectId: projectId,
+          attemptId: attemptId,
+        ),
       );
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Failed to get build log');
     }
   }
 
-  static Future<void> setBuildSecret(
-    Client cloudApiClient, {
-    required CommandLogger logger,
-    required String projectId,
-    required String name,
-    required String value,
-    required BuildSecretType buildSecretType,
+  static Future<Map<String, Object?>> setBuildSecret(
+    final Client cloudApiClient, {
+    required final String projectId,
+    required final String name,
+    required final String value,
+    required final BuildSecretType buildSecretType,
   }) async {
     try {
       await cloudApiClient.secrets.upsertBuildSecret(
@@ -121,7 +149,7 @@ abstract class DeploymentCommands {
       throw FailureException.nested(e, s, 'Failed to set build secret');
     }
 
-    logger.success('Successfully set build secret: $name.');
+    return {'name': name};
   }
 
   static Future<List<String>> listBuildSecretsOperation(
@@ -135,21 +163,11 @@ abstract class DeploymentCommands {
     }
   }
 
-  static Future<void> unsetBuildSecret(
-    Client cloudApiClient, {
-    required CommandLogger logger,
-    required String projectId,
-    required String name,
+  static Future<Map<String, Object?>> unsetBuildSecret(
+    final Client cloudApiClient, {
+    required final String projectId,
+    required final String name,
   }) async {
-    final shouldUnset = await logger.confirm(
-      'Are you sure you want to remove the build secret "$name"?',
-      defaultValue: false,
-    );
-
-    if (!shouldUnset) {
-      throw UserAbortException();
-    }
-
     try {
       await cloudApiClient.secrets.deleteBuild(
         cloudCapsuleId: projectId,
@@ -159,7 +177,7 @@ abstract class DeploymentCommands {
       throw FailureException.nested(e, s, 'Failed to remove the build secret');
     }
 
-    logger.success('Successfully removed build secret: $name.');
+    return {'name': name};
   }
 
   static Future<UuidValue> _getDeployAttemptId(

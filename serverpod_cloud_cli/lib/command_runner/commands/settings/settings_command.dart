@@ -1,5 +1,7 @@
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/settings/settings_ops.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/settings/settings_ui.dart';
 import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 
 enum CliUserSettingsOption<V> implements OptionDefinition<V> {
@@ -35,23 +37,25 @@ class CliUserSettingsCommand extends CloudCliCommand<CliUserSettingsOption> {
     final Configuration<CliUserSettingsOption> commandConfig,
     final CommandOutput output,
   ) async {
-    var settingSpecified = false;
+    final settings = runner.serviceProvider.scloudSettings;
+    final analytics = commandConfig.optionalValue(
+      CliUserSettingsOption.analytics,
+    );
 
-    if (commandConfig.optionalValue(CliUserSettingsOption.analytics)
-        case final bool analytics) {
-      final settings = runner.serviceProvider.scloudSettings;
-      await settings.setEnableAnalytics(analytics);
-      settingSpecified = true;
-      logger.info('Analytics set to "$analytics".');
+    if (analytics != null) {
+      await renderCommand(
+        output,
+        operation: () =>
+            SettingsOperations.setAnalytics(settings, analytics: analytics),
+        textOutputUi: const SettingsSetTextUi(),
+      );
+      return;
     }
 
-    if (!settingSpecified) {
-      // show current settings
-      final settings = runner.serviceProvider.scloudSettings;
-      final analytics = await settings.enableAnalytics;
-      logger.list(title: 'Local settings', [
-        'Analytics = ${analytics ?? 'not set'}',
-      ]);
-    }
+    await renderCommand(
+      output,
+      operation: () => SettingsOperations.getSettings(settings),
+      textOutputUi: const SettingsShowTextUi(),
+    );
   }
 }

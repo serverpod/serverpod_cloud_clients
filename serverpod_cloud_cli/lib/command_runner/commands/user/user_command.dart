@@ -4,7 +4,6 @@ import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/user/user_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/user/user_ui.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/project/project_ops.dart';
 
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
 
@@ -128,12 +127,15 @@ Examples
     final userEmail = commandConfig.value(ProjectUserInviteOption.user);
     final roles = commandConfig.value(ProjectUserInviteOption.roles);
 
-    await ProjectCommands.inviteUser(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      projectId: projectId,
-      email: userEmail,
-      assignRoleNames: roles,
+    await renderCommand(
+      output,
+      operation: () => UserCommands.inviteUser(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+        email: userEmail,
+        assignRoleNames: roles,
+      ),
+      textOutputUi: const ProjectUserInviteTextUi(),
     );
   }
 }
@@ -178,13 +180,16 @@ Examples
     final projectId = commandConfig.value(ProjectUserRevokeOption.projectId);
     final userEmail = commandConfig.value(ProjectUserRevokeOption.user);
 
-    await ProjectCommands.revokeUser(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      projectId: projectId,
-      email: userEmail,
-      unassignRoleNames: const [],
-      unassignAllRoles: true,
+    await renderCommand(
+      output,
+      operation: () => UserCommands.revokeUser(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+        email: userEmail,
+        unassignRoleNames: const [],
+        unassignAllRoles: true,
+      ),
+      textOutputUi: const ProjectUserRevokeTextUi(),
     );
   }
 }

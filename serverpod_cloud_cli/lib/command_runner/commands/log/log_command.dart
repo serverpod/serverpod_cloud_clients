@@ -1,13 +1,13 @@
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
-import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
-import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/log/log_ui.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/log/logs_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart'
     show DateTimeOrDurationOption, ProjectIdOption, UtcOption;
-import 'package:serverpod_cloud_cli/command_runner/commands/log/logs_ops.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
-
-import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 
 const _defaultLogLimit = 50;
 
@@ -141,7 +141,6 @@ Examples
     final tailOpt = commandConfig.optionalValue(LogOption.tail);
     final internalAllOpt = commandConfig.value(LogOption.all);
 
-    DateTime? defaultSince;
     final anyTimeSpanIsSet = until != null || since != null;
     if (internalAllOpt) {
       if (anyTimeSpanIsSet) {
@@ -157,39 +156,48 @@ Examples
           'The --tail option cannot be combined with --until or --since.',
         );
       }
-    } else if (until != null || since != null) {
-      if (until != null && since != null && until.isBefore(since)) {
-        throw CloudCliUsageException(
-          'The --until value must be after --since value.',
-        );
-      }
+    } else if (until != null && since != null && until.isBefore(since)) {
+      throw CloudCliUsageException(
+        'The --until value must be after --since value.',
+      );
     }
+
+    final client = runner.serviceProvider.cloudApiClient;
 
     if (tailOpt == true) {
       try {
-        await LogsOperations.tailContainerLog(
-          runner.serviceProvider.cloudApiClient,
+        logger.line(LogsUi.tailHeader(inUtc: inUtc));
+        await LogsUi.writeLogStream(
+          LogsOperations.tailContainerLog(
+            client,
+            projectId: projectId,
+            limit: limit,
+          ),
           writeln: logger.line,
-          projectId: projectId,
-          limit: limit,
           inUtc: inUtc,
+          limit: limit,
         );
       } on Exception catch (e, s) {
         throw FailureException.nested(e, s, 'Error while tailing log records');
       }
-
       return;
     }
 
     try {
-      await LogsOperations.fetchContainerLog(
-        runner.serviceProvider.cloudApiClient,
+      logger.line(
+        LogsUi.fetchHeader(after: since, before: until, inUtc: inUtc),
+      );
+      await LogsUi.writeLogStream(
+        LogsOperations.fetchContainerLog(
+          client,
+          projectId: projectId,
+          before: until,
+          after: since,
+          limit: limit,
+        ),
         writeln: logger.line,
-        projectId: projectId,
-        before: until,
-        after: since ?? defaultSince,
-        limit: limit,
         inUtc: inUtc,
+        limit: limit,
       );
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Error while fetching log records');

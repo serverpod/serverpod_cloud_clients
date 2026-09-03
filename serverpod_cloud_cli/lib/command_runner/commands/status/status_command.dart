@@ -1,15 +1,12 @@
 import 'package:config/config.dart';
-import 'package:ground_control_client/ground_control_client.dart'
-    show CapsuleStatusUnavailableException, NotFoundException;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
-import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
+import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployments_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/status/status_ops.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/status/status_ui.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart'
     show ProjectIdOption, UtcOption;
-import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployments_command.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/status/runtime_status.dart';
-import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
-
-import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
+import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 
 class CloudStatusCommand extends CloudCliCommand {
   @override
@@ -87,25 +84,13 @@ Examples
     final projectId = commandConfig.value(StatusLiveOption.projectId);
     final inUtc = commandConfig.value(StatusLiveOption.utc);
 
-    try {
-      await RuntimeStatusCommands.showRuntimeStatus(
+    await renderCommand(
+      output,
+      operation: () => StatusCommands.fetchRuntimeStatus(
         runner.serviceProvider.cloudApiClient,
-        logger: logger,
-        baseCommand: baseCommand,
         projectId: projectId,
-        inUtc: inUtc,
-      );
-    } on CapsuleStatusUnavailableException {
-      throw FailureException(
-        error: 'Could not retrieve the podlet status for project "$projectId".',
-        hint:
-            'The status service is temporarily unavailable — '
-            'try again shortly.',
-      );
-    } on NotFoundException {
-      throw FailureException(error: 'Project "$projectId" was not found.');
-    } on Exception catch (e, s) {
-      throw FailureException.nested(e, s, 'Failed to get the podlet status');
-    }
+      ),
+      textOutputUi: RuntimeStatusTextUi(baseCommand: baseCommand, utc: inUtc),
+    );
   }
 }

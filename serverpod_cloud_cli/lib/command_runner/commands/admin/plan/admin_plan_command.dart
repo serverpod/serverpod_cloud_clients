@@ -1,6 +1,7 @@
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/plan/plan_admin_ops.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/admin/plan/plan_admin_ui.dart';
 import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 
 class AdminPlanCommand extends CloudCliCommand {
@@ -77,10 +78,13 @@ class AdminUpdatePlanCommand extends CloudCliCommand<AdminUpdatePlanOption> {
       AdminUpdatePlanOption.externalPlanId,
     );
 
-    await PlanAdminCommands.updateOrbPlan(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      externalPlanId: externalPlanId,
+    await renderCommand(
+      output,
+      operation: () => PlanAdminCommands.updateOrbPlan(
+        runner.serviceProvider.cloudApiClient,
+        externalPlanId: externalPlanId,
+      ),
+      textOutputUi: const PlanUpdateTextUi(),
     );
   }
 }

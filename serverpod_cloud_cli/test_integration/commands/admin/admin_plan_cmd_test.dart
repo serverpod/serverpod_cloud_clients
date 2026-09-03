@@ -9,6 +9,7 @@ import 'package:yaml_codec/yaml_codec.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/plan/admin_plan_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
 import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/test_command_logger.dart';
@@ -177,6 +178,196 @@ void main() {
               equalsInfoCall(
                 message: 'Orb plan "plan-alpha" already up to date.',
                 newParagraph: true,
+              ),
+            ),
+          );
+        });
+      });
+
+      group('when the response has no appliedVersion', () {
+        late Future commandResult;
+        setUp(() async {
+          when(
+            () => client.adminUpdatePlan.updateOrbPlan(
+              externalPlanId: any(named: 'externalPlanId'),
+            ),
+          ).thenAnswer(
+            (invocation) async => {
+              'success': 'true',
+              'message': 'Orb plan update completed',
+            },
+          );
+
+          commandResult = cli.run(['admin', 'plan', 'update', 'plan-alpha']);
+        });
+
+        test('then command completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then command logs that the plan is already up to date', () async {
+          await commandResult;
+
+          expect(
+            logger.infoCalls,
+            contains(
+              equalsInfoCall(
+                message: 'Orb plan "plan-alpha" already up to date.',
+                newParagraph: true,
+              ),
+            ),
+          );
+        });
+      });
+
+      group('with applied version and --format json', () {
+        late Future commandResult;
+        setUp(() async {
+          when(
+            () => client.adminUpdatePlan.updateOrbPlan(
+              externalPlanId: any(named: 'externalPlanId'),
+            ),
+          ).thenAnswer(
+            (invocation) async => {'appliedVersion': '2025-03-01-v2'},
+          );
+
+          commandResult = cli.run([
+            'admin',
+            'plan',
+            'update',
+            'plan-alpha',
+            '--format',
+            'json',
+          ]);
+        });
+
+        test('then emits the applied version', () async {
+          await commandResult;
+
+          expect(jsonDecode(logger.rawCalls.single.content), {
+            'externalPlanId': 'plan-alpha',
+            'appliedVersion': '2025-03-01-v2',
+          });
+        });
+      });
+
+      group('when plan is already up to date with --format json', () {
+        late Future commandResult;
+        setUp(() async {
+          when(
+            () => client.adminUpdatePlan.updateOrbPlan(
+              externalPlanId: any(named: 'externalPlanId'),
+            ),
+          ).thenAnswer((invocation) async => {'appliedVersion': ''});
+
+          commandResult = cli.run([
+            'admin',
+            'plan',
+            'update',
+            'plan-alpha',
+            '--format',
+            'json',
+          ]);
+        });
+
+        test('then emits the plan id without an applied version', () async {
+          await commandResult;
+
+          expect(jsonDecode(logger.rawCalls.single.content), {
+            'externalPlanId': 'plan-alpha',
+          });
+        });
+      });
+
+      group('with applied version and --format yaml', () {
+        late Future commandResult;
+        setUp(() async {
+          when(
+            () => client.adminUpdatePlan.updateOrbPlan(
+              externalPlanId: any(named: 'externalPlanId'),
+            ),
+          ).thenAnswer(
+            (invocation) async => {'appliedVersion': '2025-03-01-v2'},
+          );
+
+          commandResult = cli.run([
+            'admin',
+            'plan',
+            'update',
+            'plan-alpha',
+            '--format',
+            'yaml',
+          ]);
+        });
+
+        test('then emits the applied version', () async {
+          await commandResult;
+
+          expect(yamlDecode(logger.rawCalls.single.content), {
+            'externalPlanId': 'plan-alpha',
+            'appliedVersion': '2025-03-01-v2',
+          });
+        });
+      });
+
+      group('when plan is already up to date with --format yaml', () {
+        late Future commandResult;
+        setUp(() async {
+          when(
+            () => client.adminUpdatePlan.updateOrbPlan(
+              externalPlanId: any(named: 'externalPlanId'),
+            ),
+          ).thenAnswer((invocation) async => {'appliedVersion': ''});
+
+          commandResult = cli.run([
+            'admin',
+            'plan',
+            'update',
+            'plan-alpha',
+            '--format',
+            'yaml',
+          ]);
+        });
+
+        test('then emits the plan id without an applied version', () async {
+          await commandResult;
+
+          expect(yamlDecode(logger.rawCalls.single.content), {
+            'externalPlanId': 'plan-alpha',
+          });
+        });
+      });
+
+      group('when the server reports a failed update', () {
+        late Future commandResult;
+        setUp(() async {
+          when(
+            () => client.adminUpdatePlan.updateOrbPlan(
+              externalPlanId: any(named: 'externalPlanId'),
+            ),
+          ).thenAnswer(
+            (invocation) async => {
+              'success': 'false',
+              'message': 'Orb rejected the plan',
+            },
+          );
+
+          commandResult = cli.run(['admin', 'plan', 'update', 'plan-alpha']);
+        });
+
+        test('then command exits with an error', () async {
+          await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+        });
+
+        test('then command logs the server error', () async {
+          await commandResult.catchError((_) {});
+
+          expect(
+            logger.errorCalls,
+            contains(
+              equalsErrorCall(
+                message:
+                    'Error response from server, message: Orb rejected the plan',
               ),
             ),
           );

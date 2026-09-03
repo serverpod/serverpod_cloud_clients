@@ -102,10 +102,13 @@ class AdminInviteUserCommand extends CloudCliCommand<AdminInviteUserOption> {
   ) async {
     final email = commandConfig.value(AdminInviteUserOption.user);
 
-    await UserAdminCommands.inviteUser(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      email: email,
+    await renderCommand(
+      output,
+      operation: () => UserAdminCommands.inviteUser(
+        runner.serviceProvider.cloudApiClient,
+        email: email,
+      ).then((final _) => const <String, Object?>{}),
+      textOutputUi: const AdminInviteUserTextUi(),
     );
   }
 }

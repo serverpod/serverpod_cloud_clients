@@ -1,4 +1,8 @@
+import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/version/version_ops.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/version/version_ui.dart';
+import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 
 class VersionCommand extends CloudCliCommand {
   static const usageDescription =
@@ -19,7 +23,15 @@ class VersionCommand extends CloudCliCommand {
   VersionCommand({required super.logger});
 
   @override
-  Future<void> run() async {
-    logger.info('Serverpod Cloud CLI version: ${runner.version}');
+  Future<void> runWithOutput(
+    final Configuration commandConfig,
+    final CommandOutput output,
+  ) async {
+    await renderCommand(
+      output,
+      operation: () async =>
+          VersionOperations.currentVersion(runner.version.toString()),
+      textOutputUi: const VersionTextUi(),
+    );
   }
 }

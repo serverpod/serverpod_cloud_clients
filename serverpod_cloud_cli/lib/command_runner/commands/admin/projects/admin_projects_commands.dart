@@ -4,8 +4,6 @@ import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/projects/project_admin_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/projects/project_admin_ui.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployments_ops.dart'
-    show deploymentListRows;
 import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployments_ui.dart';
 
 class AdminProjectCommand extends CloudCliCommand {
@@ -111,14 +109,11 @@ class AdminProjectStatusCommand
 
     await renderCommand(
       output,
-      operation: () async {
-        final statuses = await runner
-            .serviceProvider
-            .cloudApiClient
-            .adminProjects
-            .getDeployAttempts(cloudCapsuleId: projectId, limit: limit);
-        return deploymentListRows(statuses);
-      },
+      operation: () => ProjectAdminCommands.listDeployAttemptsOperation(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+        limit: limit,
+      ),
       textOutputUi: DeploymentListTextUi(utc: inUtc, baseCommand: baseCommand),
     );
   }
@@ -151,10 +146,19 @@ class AdminProjectDeleteCommand
   ) async {
     final projectId = commandConfig.value(AdminProjectDeleteOption.projectId);
 
-    await ProjectAdminCommands.deleteProject(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      projectId: projectId,
+    await confirmToContinue(
+      output,
+      message: 'Are you sure you want to delete the project "$projectId"?',
+      defaultValue: false,
+    );
+
+    await renderCommand(
+      output,
+      operation: () => ProjectAdminCommands.deleteProject(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+      ),
+      textOutputUi: const AdminProjectDeleteTextUi(),
     );
   }
 }

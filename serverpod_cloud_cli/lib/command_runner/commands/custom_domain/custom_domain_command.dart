@@ -1,14 +1,11 @@
-import 'package:basic_utils/basic_utils.dart';
 import 'package:config/config.dart';
-import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
-import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
-import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
-import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
-import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
-import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 import 'package:ground_control_client/ground_control_client.dart';
-
+import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/custom_domain/custom_domain_ops.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/custom_domain/custom_domain_ui.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
+import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 
 class CloudCustomDomainCommand extends CloudCliCommand {
   @override
@@ -106,114 +103,16 @@ The valid targets are:
     );
     final target = commandConfig.value(AttachCustomDomainCommandConfig.target);
 
-    final apiCloudClient = runner.serviceProvider.cloudApiClient;
-
-    late CustomDomainNameWithDefaultDomains customDomainNameWithDefaultDomains;
-
-    try {
-      customDomainNameWithDefaultDomains = await apiCloudClient.customDomainName
-          .add(
-            domainName: domainName,
-            target: target,
-            cloudCapsuleId: projectId,
-          );
-    } on Exception catch (e, stackTrace) {
-      throw FailureException.nested(
-        e,
-        stackTrace,
-        'Could not add the custom domain',
-      );
-    }
-
-    logger.success('Custom domain attached successfully!', newParagraph: true);
-
-    final targetDefaultDomain =
-        customDomainNameWithDefaultDomains.defaultDomainsByTarget[target];
-
-    if (targetDefaultDomain == null) {
-      throw FailureException(
-        error: 'Could not find the target domain for "$target".',
-      );
-    }
-
-    if (DomainUtils.isSubDomain(domainName)) {
-      _logDomainInstructions(
-        logger: logger,
-        domainName: domainName,
+    await renderCommand(
+      output,
+      operation: () => CustomDomainOperations.attachDomain(
+        runner.serviceProvider.cloudApiClient,
         projectId: projectId,
-        records: [
-          (type: 'CNAME', domain: domainName, value: targetDefaultDomain),
-        ],
-      );
-      return;
-    }
-
-    final wwwRedirectEnabled = target == DomainNameTarget.web;
-
-    final records = <({String type, String domain, String value})>[
-      (type: 'ANAME', domain: domainName, value: targetDefaultDomain),
-      (
-        type: 'TXT',
-        domain: domainName,
-        value: customDomainNameWithDefaultDomains
-            .customDomainName
-            .dnsRecordVerificationValue,
+        domainName: domainName,
+        target: target,
       ),
-      if (wwwRedirectEnabled)
-        (type: 'CNAME', domain: 'www.$domainName', value: targetDefaultDomain),
-    ];
-
-    _logDomainInstructions(
-      logger: logger,
-      domainName: domainName,
-      projectId: projectId,
-      records: records,
+      textOutputUi: CustomDomainAttachTextUi(baseCommand: baseCommand),
     );
-  }
-
-  void _logDomainInstructions({
-    required CommandLogger logger,
-    required String domainName,
-    required String projectId,
-    required List<({String type, String domain, String value})> records,
-  }) {
-    logger.info(
-      'Complete the setup by adding the following records to your DNS '
-      'configuration:',
-      newParagraph: true,
-    );
-
-    final tablePrinter = TablePrinter();
-
-    tablePrinter.addHeaders(['Record type', 'Domain name', 'Value']);
-    for (final record in records) {
-      tablePrinter.addRow([record.type, record.domain, record.value]);
-    }
-
-    logger.box(tablePrinter.toString(), newParagraph: true);
-
-    logger.info(
-      'Check the status of the setup by running the command:',
-      newParagraph: true,
-    );
-
-    logger.terminalCommand(
-      newParagraph: true,
-      '$baseCommand domain list --project $projectId',
-    );
-
-    logger.list(title: 'Additional context', [
-      'DNS propagation can take up to 24 hours to complete.',
-      'Serverpod Cloud will periodically verify the record(s).',
-      'To manually force a verification, run the command:',
-    ], newParagraph: true);
-
-    logger.terminalCommand(
-      newParagraph: true,
-      '$baseCommand domain verify $domainName --project $projectId',
-    );
-
-    logger.info(' ', newParagraph: true);
   }
 }
 
@@ -246,55 +145,14 @@ class CloudListCustomDomainCommand
       ListCustomDomainCommandConfig.projectId,
     );
 
-    final apiCloudClient = runner.serviceProvider.cloudApiClient;
-
-    late CustomDomainNameList domainNamesList;
-    try {
-      domainNamesList = await apiCloudClient.customDomainName.list(
-        cloudCapsuleId: projectId,
-      );
-    } on Exception catch (e, stackTrace) {
-      throw FailureException.nested(
-        e,
-        stackTrace,
-        'Failed to list custom domains',
-      );
-    }
-
-    final defaultDomainPrinter = TablePrinter();
-    defaultDomainPrinter.addHeaders(['Default domain name', 'Target']);
-
-    for (var domainName in domainNamesList.defaultDomainsByTarget.entries) {
-      defaultDomainPrinter.addRow([
-        domainName.value,
-        domainName.key.toString(),
-      ]);
-    }
-
-    final customDomainPrinter = TablePrinter();
-    customDomainPrinter.addHeaders(['Custom domain name', 'Target', 'Status']);
-    for (var domainName in domainNamesList.customDomainNames) {
-      customDomainPrinter.addRow([
-        domainName.name,
-        domainNamesList.defaultDomainsByTarget[domainName.target],
-        _getStatusLabel(domainName.status),
-      ]);
-    }
-
-    defaultDomainPrinter.writeLines(logger.line);
-    logger.line('');
-    customDomainPrinter.writeLines(logger.line);
-  }
-
-  String _getStatusLabel(DomainNameStatus status) {
-    switch (status) {
-      case DomainNameStatus.configured:
-        return 'Configured';
-      case DomainNameStatus.pending:
-        return 'Certificate creation pending';
-      case DomainNameStatus.needsSetup:
-        return 'Needs setup';
-    }
+    await renderCommand(
+      output,
+      operation: () => CustomDomainOperations.listDomains(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+      ),
+      textOutputUi: const CustomDomainListTextUi(),
+    );
   }
 }
 
@@ -331,31 +189,22 @@ class CloudDetachCustomDomainCommand
       DetachCustomDomainCommandConfig.domainName,
     );
 
-    final shouldDelete = await logger.confirm(
-      'Are you sure you want to delete the custom domain "$domainName"?',
+    await confirmToContinue(
+      output,
+      message:
+          'Are you sure you want to delete the custom domain "$domainName"?',
       defaultValue: false,
     );
 
-    if (!shouldDelete) {
-      throw UserAbortException();
-    }
-
-    final apiCloudClient = runner.serviceProvider.cloudApiClient;
-
-    try {
-      await apiCloudClient.customDomainName.remove(
-        cloudCapsuleId: projectId,
+    await renderCommand(
+      output,
+      operation: () => CustomDomainOperations.detachDomain(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
         domainName: domainName,
-      );
-    } on Exception catch (e, stackTrace) {
-      throw FailureException.nested(
-        e,
-        stackTrace,
-        'Failed to remove custom domain',
-      );
-    }
-
-    logger.success('Successfully detached custom domain: $domainName.');
+      ),
+      textOutputUi: const CustomDomainDetachTextUi(),
+    );
   }
 }
 
@@ -392,40 +241,14 @@ class CloudVerifyCustomDomainRecordCommand
       RefreshCustomDomainRecordCommandConfig.domainName,
     );
 
-    final apiCloudClient = runner.serviceProvider.cloudApiClient;
-
-    try {
-      final result = await apiCloudClient.customDomainName.refreshRecord(
-        cloudCapsuleId: projectId,
+    await renderCommand(
+      output,
+      operation: () => CustomDomainOperations.verifyDomain(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
         domainName: domainName,
-      );
-
-      switch (result) {
-        case DomainNameStatus.configured:
-          logger.success(
-            'Successfully verified the DNS record for the custom domain. It is now active.',
-          );
-        case DomainNameStatus.needsSetup:
-          logger.info('Failed to verify the DNS record for the custom domain.');
-        case DomainNameStatus.pending:
-          logger.info(
-            'The DNS record for the custom domain is verified but certificate creation is still pending. '
-            'Try again in a few minutes.',
-          );
-      }
-
-      return;
-    } on DNSVerificationFailedException catch (e) {
-      throw FailureException(
-        error:
-            'Failed to verify the DNS record for the custom domain: ${e.message}',
-      );
-    } on Exception catch (e, stackTrace) {
-      throw FailureException.nested(
-        e,
-        stackTrace,
-        'Failed to refresh custom domain record',
-      );
-    }
+      ),
+      textOutputUi: const CustomDomainVerifyTextUi(),
+    );
   }
 }

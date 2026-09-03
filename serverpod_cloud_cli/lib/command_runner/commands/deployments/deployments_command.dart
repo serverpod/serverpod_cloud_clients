@@ -7,6 +7,7 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart'
 import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployment_command_names.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployments_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployments_ui.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/log/log_ui.dart';
 import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
@@ -140,16 +141,32 @@ Examples
       DeploymentsShowOption.overallStatus,
     );
 
-    await DeploymentCommands.showDeployment(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      baseCommand: baseCommand,
-      commandNames: _commandNames,
-      projectId: projectId,
-      wait: wait,
-      overallStatus: overallStatus,
-      inUtc: inUtc,
-      deploymentArg: deploymentArg,
+    if (wait && !overallStatus) {
+      await DeploymentCommands.tailDeployment(
+        runner.serviceProvider.cloudApiClient,
+        logger: logger,
+        baseCommand: baseCommand,
+        commandNames: _commandNames,
+        projectId: projectId,
+        inUtc: inUtc,
+        deploymentArg: deploymentArg,
+      );
+      return;
+    }
+
+    await renderCommand(
+      output,
+      operation: () => DeploymentCommands.fetchDeploymentStatus(
+        runner.serviceProvider.cloudApiClient,
+        baseCommand: baseCommand,
+        commandNames: _commandNames,
+        projectId: projectId,
+        deploymentArg: deploymentArg,
+      ),
+      textOutputUi: DeploymentShowTextUi(
+        utc: inUtc,
+        overallStatus: overallStatus,
+      ),
     );
   }
 }
@@ -300,14 +317,20 @@ Examples
       DeploymentsLogOption.deploy,
     );
 
-    await DeploymentCommands.fetchBuildLog(
+    final buildLog = await DeploymentCommands.fetchBuildLog(
       runner.serviceProvider.cloudApiClient,
-      logger: logger,
       baseCommand: baseCommand,
       commandNames: _commandNames,
       projectId: projectId,
-      inUtc: inUtc,
       deploymentArg: deploymentArg,
+    );
+    logger.line(
+      LogsUi.buildLogHeader(attemptId: buildLog.attemptId, inUtc: inUtc),
+    );
+    await LogsUi.writeLogStream(
+      buildLog.records,
+      writeln: logger.line,
+      inUtc: inUtc,
     );
   }
 }
@@ -421,13 +444,16 @@ ${_buildSecretsExplanation(baseCommand)}""";
       valueFile: BuildSecretSetCommandConfig.valueFile,
     );
 
-    await DeploymentCommands.setBuildSecret(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      projectId: projectId,
-      name: name,
-      value: valueToSet,
-      buildSecretType: buildSecretType,
+    await renderCommand(
+      output,
+      operation: () => DeploymentCommands.setBuildSecret(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+        name: name,
+        value: valueToSet,
+        buildSecretType: buildSecretType,
+      ),
+      textOutputUi: const BuildSecretSetTextUi(),
     );
   }
 }
@@ -507,11 +533,20 @@ ${_buildSecretsExplanation(baseCommand)}""";
     );
     final name = commandConfig.value(BuildSecretUnsetCommandConfig.name);
 
-    await DeploymentCommands.unsetBuildSecret(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      projectId: projectId,
-      name: name,
+    await confirmToContinue(
+      output,
+      message: 'Are you sure you want to remove the build secret "$name"?',
+      defaultValue: false,
+    );
+
+    await renderCommand(
+      output,
+      operation: () => DeploymentCommands.unsetBuildSecret(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+        name: name,
+      ),
+      textOutputUi: const BuildSecretUnsetTextUi(),
     );
   }
 }

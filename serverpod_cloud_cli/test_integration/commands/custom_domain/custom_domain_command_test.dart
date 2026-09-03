@@ -735,12 +735,7 @@ void main() {
         expect(
           lines,
           contains(
-            predicate<String>(
-              (l) =>
-                  l.contains('api.domain.com') &&
-                  l.contains('my-magical-project.api.serverpod.space') &&
-                  l.contains('Configured'),
-            ),
+            stringContainsInOrder(['api.domain.com', 'api', 'Configured']),
           ),
         );
         expect(
