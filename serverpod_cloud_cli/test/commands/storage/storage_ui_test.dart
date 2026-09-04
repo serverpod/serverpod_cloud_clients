@@ -390,4 +390,36 @@ void main() {
       });
     });
   });
+
+  group('Given a StorageFileDownloadTextUi', () {
+    group('when rendered after a successful download', () {
+      late String stdout;
+      late String stderr;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const StorageFileDownloadTextUi(),
+          data: const {
+            'storageId': 'public',
+            'path': 'docs/report.pdf',
+            'file': 'report.pdf',
+            'sizeBytes': 9,
+          },
+        );
+        stdout = io.stdout;
+        stderr = io.stderr;
+      });
+
+      test('then stdout names the storage path and the local file', () {
+        expect(
+          stdout,
+          contains('Successfully downloaded "docs/report.pdf" to report.pdf.'),
+        );
+      });
+
+      test('then stderr is empty', () {
+        expect(stderr, isEmpty);
+      });
+    });
+  });
 }

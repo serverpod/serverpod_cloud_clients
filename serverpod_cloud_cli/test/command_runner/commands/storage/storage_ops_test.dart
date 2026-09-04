@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/commands/storage/storage_ops.dart';
 import 'package:test/test.dart';
 
@@ -125,6 +128,33 @@ void main() {
           'sub/u1.png',
         ),
         'avatars/sub/u1.png',
+      );
+    });
+  });
+
+  group('Given a file to download', () {
+    test('when no output is given then the file name is used', () {
+      expect(
+        StorageOperations.resolveDownloadPath(null, 'docs/report.pdf').path,
+        'report.pdf',
+      );
+    });
+
+    test('when the output is a file then it is used as is', () {
+      final output = File(p.join('out', 'q3.pdf'));
+
+      expect(
+        StorageOperations.resolveDownloadPath(output, 'docs/report.pdf').path,
+        output.path,
+      );
+    });
+
+    test('when the output is a directory then the file name is appended', () {
+      final output = Directory('downloads');
+
+      expect(
+        StorageOperations.resolveDownloadPath(output, 'docs/report.pdf').path,
+        p.join('downloads', 'report.pdf'),
       );
     });
   });

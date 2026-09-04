@@ -171,6 +171,19 @@ class StorageFileUploadTextUi extends OutputWidget {
   }
 }
 
+class StorageFileDownloadTextUi extends OutputWidget {
+  const StorageFileDownloadTextUi();
+
+  @override
+  OutputWidget build(OutputContext context) {
+    final result = context.get<Map<String, Object?>>();
+    final path = result['path'];
+    final file = result['file'];
+
+    return SuccessTextWidget('Successfully downloaded "$path" to $file.');
+  }
+}
+
 /// The user-facing label for the read access of a storage.
 String accessLabel(BucketVisibility visibility) {
   return switch (visibility) {
