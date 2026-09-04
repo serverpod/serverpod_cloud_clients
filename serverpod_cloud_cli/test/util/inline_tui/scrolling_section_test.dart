@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:serverpod_cloud_cli/util/inline_tui/inline_tui.dart';
 import 'package:test/test.dart';
 
@@ -90,28 +92,31 @@ void main() {
       expect(term.output, isNot(contains('\u2026')));
     });
 
-    test('when keep is called then it leaves output in place and shows the '
-        'cursor', () {
+    test('when finished with keepCurrent then it leaves output in place and '
+        'shows the cursor', () {
       final term = FakeTerminal();
       final section = ScrollingSection(terminal: term, rows: 3)
         ..appendLine('one')
         ..appendLine('two');
 
-      section.keep();
+      section.finish(
+        success: false,
+        overrideRetention: RetainSection.keepCurrent,
+      );
 
       expect(term.output, endsWith('\n\x1b[?25h'));
       expect(section.isFinished, isTrue);
     });
 
     test(
-      'when clear is called then it clears the region and shows the cursor',
+      'when finished with clear then it clears the region and shows the cursor',
       () {
         final term = FakeTerminal();
         final section = ScrollingSection(terminal: term, rows: 3)
           ..appendLine('one')
           ..appendLine('two');
 
-        section.clear();
+        section.finish(success: true);
 
         expect(term.output, endsWith('\x1b[0J\x1b[?25h'));
         expect(section.isFinished, isTrue);
@@ -122,7 +127,10 @@ void main() {
       final term = FakeTerminal();
       final section = ScrollingSection(terminal: term, rows: 3)
         ..appendLine('one');
-      section.keep();
+      section.finish(
+        success: false,
+        overrideRetention: RetainSection.keepCurrent,
+      );
 
       expect(() => section.appendLine('two'), throwsStateError);
     });
@@ -159,8 +167,8 @@ void main() {
       expect(section.capturedOutput, isEmpty);
     });
 
-    test('when kept with full then the complete captured output is rendered '
-        'untruncated', () {
+    test('when finished with keepFull then the complete captured output is '
+        'rendered untruncated', () {
       final term = FakeTerminal(columns: 10);
       final section = ScrollingSection(
         terminal: term,
@@ -174,7 +182,7 @@ void main() {
         ..appendLine('third')
         ..appendLine('fourth');
 
-      section.keep(full: true);
+      section.finish(success: false);
 
       // Lines that had scrolled out of the 2-row view are shown again, and the
       // long line is not truncated to the width.
@@ -184,26 +192,27 @@ void main() {
       expect(term.output, contains('fourth'));
     });
 
-    test(
-      'when kept without full then only the last visible lines are kept',
-      () {
-        final term = FakeTerminal();
-        final section = ScrollingSection(
-          terminal: term,
-          rows: 2,
-          captureOutput: true,
-        )..appendLine('finish: keep');
+    test('when finished with keepCurrent then only the last visible lines are '
+        'kept', () {
+      final term = FakeTerminal();
+      final section = ScrollingSection(
+        terminal: term,
+        rows: 2,
+        captureOutput: true,
+      )..appendLine('finish: keep');
 
-        section
-          ..appendLine('a')
-          ..appendLine('b')
-          ..appendLine('c');
+      section
+        ..appendLine('a')
+        ..appendLine('b')
+        ..appendLine('c');
 
-        section.keep();
+      section.finish(
+        success: false,
+        overrideRetention: RetainSection.keepCurrent,
+      );
 
-        expect(section.visibleLines, ['b', 'c']);
-      },
-    );
+      expect(section.visibleLines, ['b', 'c']);
+    });
 
     test(
       'when color is supported and dim is enabled then lines are dimmed',
@@ -250,27 +259,33 @@ void main() {
       expect(term.output, contains('\x1b[2mstep\x1b[0m'));
     });
 
-    test('when keep is called and a failedMessage is set then the heading is '
-        'replaced and the lines are kept', () {
-      final term = FakeTerminal();
-      final section = ScrollingSection(
-        terminal: term,
-        rows: 3,
-        heading: 'Building',
-        failedMessage: 'Build failed',
-        scheduleTicker: _noTicker,
-      )..appendLine('error output');
+    test(
+      'when finished as failed with keepCurrent and a failedMessage then the '
+      'heading is replaced and the lines are kept',
+      () {
+        final term = FakeTerminal();
+        final section = ScrollingSection(
+          terminal: term,
+          rows: 3,
+          heading: 'Building',
+          failedMessage: 'Build failed',
+          scheduleTicker: _noTicker,
+        )..appendLine('error output');
 
-      section.keep();
+        section.finish(
+          success: false,
+          overrideRetention: RetainSection.keepCurrent,
+        );
 
-      expect(term.output, contains('Build failed'));
-      expect(term.output, contains('error output'));
-      expect(term.output, endsWith('\n\x1b[?25h'));
-      expect(section.isFinished, isTrue);
-    });
+        expect(term.output, contains('Build failed'));
+        expect(term.output, contains('error output'));
+        expect(term.output, endsWith('\n\x1b[?25h'));
+        expect(section.isFinished, isTrue);
+      },
+    );
 
-    test('when clear is called and a successMessage is set then the heading is '
-        'replaced and the lines are removed', () {
+    test('when finished as succeeded with clear and a successMessage then the '
+        'heading is replaced and the lines are removed', () {
       final term = FakeTerminal();
       final section = ScrollingSection(
         terminal: term,
@@ -280,7 +295,7 @@ void main() {
         scheduleTicker: _noTicker,
       )..appendLine('noise');
 
-      section.clear();
+      section.finish(success: true);
 
       expect(term.output, contains('Build succeeded'));
       // The success message is left in place (cursor moved below it), rather
@@ -289,8 +304,8 @@ void main() {
       expect(section.isFinished, isTrue);
     });
 
-    test('when clear is called without a successMessage then the heading is '
-        'left in place', () {
+    test('when finished as succeeded with clear and no successMessage then the '
+        'heading is left in place', () {
       final term = FakeTerminal();
       final section = ScrollingSection(
         terminal: term,
@@ -300,7 +315,7 @@ void main() {
         scheduleTicker: _noTicker,
       )..appendLine('a');
 
-      section.clear();
+      section.finish(success: true);
 
       // The heading line is kept (with the success icon), not cleared.
       expect(term.output, contains('\u2713 H (0ms)'));
@@ -327,7 +342,7 @@ void main() {
       expect(rendered, isNot(contains('Old')));
     });
 
-    test('when updateHeading is called after keep then it has no effect', () {
+    test('when updateHeading is called after finish then it has no effect', () {
       final term = FakeTerminal();
       final section = ScrollingSection(
         terminal: term,
@@ -337,7 +352,10 @@ void main() {
         scheduleTicker: _noTicker,
       );
 
-      section.keep();
+      section.finish(
+        success: false,
+        overrideRetention: RetainSection.keepCurrent,
+      );
       final outputBeforeUpdate = term.output;
       section.updateHeading('New');
 
@@ -406,30 +424,36 @@ void main() {
       expect(term.output, contains('Building (50ms)'));
     });
 
-    test('when finished with keep then the spinner is cancelled and the final '
-        'elapsed time is kept with the failed message', () {
-      final term = FakeTerminal();
-      var cancelled = false;
-      final section = ScrollingSection(
-        terminal: term,
-        rows: 3,
-        heading: 'Building',
-        failedMessage: 'Build failed',
-        elapsed: () => const Duration(milliseconds: 500),
-        scheduleTicker: (period, onTick) =>
-            () => cancelled = true,
-      )..appendLine('boom');
+    test(
+      'when finished as failed with keepCurrent then the spinner is cancelled '
+      'and the final elapsed time is kept with the failed message',
+      () {
+        final term = FakeTerminal();
+        var cancelled = false;
+        final section = ScrollingSection(
+          terminal: term,
+          rows: 3,
+          heading: 'Building',
+          failedMessage: 'Build failed',
+          elapsed: () => const Duration(milliseconds: 500),
+          scheduleTicker: (period, onTick) =>
+              () => cancelled = true,
+        )..appendLine('boom');
 
-      section.keep();
+        section.finish(
+          success: false,
+          overrideRetention: RetainSection.keepCurrent,
+        );
 
-      expect(cancelled, isTrue);
-      expect(term.output, contains('Build failed (0.5s)'));
-      expect(term.output, contains('boom'));
-      expect(term.output, endsWith('\n\x1b[?25h'));
-    });
+        expect(cancelled, isTrue);
+        expect(term.output, contains('Build failed (0.5s)'));
+        expect(term.output, contains('boom'));
+        expect(term.output, endsWith('\n\x1b[?25h'));
+      },
+    );
 
-    test('when finished with clear then the success message keeps the final '
-        'elapsed time', () {
+    test('when finished as succeeded with clear then the success message keeps '
+        'the final elapsed time', () {
       final term = FakeTerminal();
       final section = ScrollingSection(
         terminal: term,
@@ -440,7 +464,7 @@ void main() {
         scheduleTicker: _noTicker,
       )..appendLine('noise');
 
-      section.clear();
+      section.finish(success: true);
 
       expect(term.output, contains('Build succeeded (2.0s)'));
       expect(term.output, endsWith('\n\x1b[?25h'));
@@ -473,12 +497,15 @@ void main() {
         scheduleTicker: _noTicker,
       )..appendLine('boom');
 
-      section.keep();
+      section.finish(
+        success: false,
+        overrideRetention: RetainSection.keepCurrent,
+      );
 
       expect(term.output, contains('Build failed \x1b[90m(0.5s)\x1b[0m'));
     });
 
-    test('when finished with keep then the spinner is replaced with a failure '
+    test('when finished as failed then the spinner is replaced with a failure '
         'icon', () {
       final term = FakeTerminal();
       final section = ScrollingSection(
@@ -490,27 +517,33 @@ void main() {
         scheduleTicker: _noTicker,
       );
 
-      section.keep();
+      section.finish(
+        success: false,
+        overrideRetention: RetainSection.keepCurrent,
+      );
 
       expect(term.output, contains('\u2717 Build failed (1.0s)'));
     });
 
-    test('when finished with clear then the spinner is replaced with a success '
-        'icon', () {
-      final term = FakeTerminal();
-      final section = ScrollingSection(
-        terminal: term,
-        rows: 3,
-        heading: 'Building',
-        successMessage: 'Build succeeded',
-        elapsed: () => const Duration(seconds: 1),
-        scheduleTicker: _noTicker,
-      );
+    test(
+      'when finished as succeeded then the spinner is replaced with a success '
+      'icon',
+      () {
+        final term = FakeTerminal();
+        final section = ScrollingSection(
+          terminal: term,
+          rows: 3,
+          heading: 'Building',
+          successMessage: 'Build succeeded',
+          elapsed: () => const Duration(seconds: 1),
+          scheduleTicker: _noTicker,
+        );
 
-      section.clear();
+        section.finish(success: true);
 
-      expect(term.output, contains('\u2713 Build succeeded (1.0s)'));
-    });
+        expect(term.output, contains('\u2713 Build succeeded (1.0s)'));
+      },
+    );
 
     test(
       'when finished with color then the icons are green for success and red '
@@ -523,7 +556,7 @@ void main() {
           heading: 'Building',
           elapsed: () => Duration.zero,
           scheduleTicker: _noTicker,
-        ).clear();
+        ).finish(success: true);
         expect(successTerm.output, contains('\x1b[92m\u2713\x1b[0m Building'));
 
         final failTerm = FakeTerminal(supportsColor: true);
@@ -533,7 +566,7 @@ void main() {
           heading: 'Building',
           elapsed: () => Duration.zero,
           scheduleTicker: _noTicker,
-        ).keep();
+        ).finish(success: false, overrideRetention: RetainSection.keepCurrent);
         expect(failTerm.output, contains('\x1b[91m\u2717\x1b[0m Building'));
       },
     );
@@ -552,6 +585,107 @@ void main() {
       expect(term.output, contains('Building'));
       expect(term.output, isNot(contains('\u280b')));
       expect(term.output, isNot(contains('(0ms)')));
+    });
+  });
+
+  group('Given ScrollingSection.runSpinner', () {
+    test('when the stream completes successfully then the success heading is '
+        'kept and the last event is returned', () async {
+      final term = FakeTerminal();
+
+      final result = await ScrollingSection.runSpinner<String>(
+        term,
+        heading: 'Writing files',
+        successMessage: 'Files written.',
+        stream: Stream.value('done'),
+        elapsed: () => Duration.zero,
+        scheduleTicker: _noTicker,
+      );
+
+      expect(result, 'done');
+      expect(term.output, contains('\u2713 Files written. (0ms)'));
+    });
+
+    test(
+      'when toMessage is provided then each event updates the heading',
+      () async {
+        final term = FakeTerminal();
+        final controller = StreamController<String>();
+
+        final future = ScrollingSection.runSpinner<String>(
+          term,
+          heading: 'Starting',
+          stream: controller.stream,
+          toMessage: (event) => event,
+          elapsed: () => Duration.zero,
+          scheduleTicker: _noTicker,
+        );
+
+        controller.add('Step one');
+        await Future<void>.delayed(Duration.zero);
+        expect(term.output, contains('Step one'));
+
+        controller.add('Step two');
+        await controller.close();
+        await future;
+
+        expect(term.output, contains('\u2713 Step two (0ms)'));
+      },
+    );
+
+    test(
+      'when isSuccess is false then the spinner finishes as a failure',
+      () async {
+        final term = FakeTerminal();
+
+        final result = await ScrollingSection.runSpinner<bool>(
+          term,
+          heading: 'Writing files',
+          stream: Stream.value(false),
+          isSuccess: (value) => value,
+          elapsed: () => Duration.zero,
+          scheduleTicker: _noTicker,
+        );
+
+        expect(result, isFalse);
+        expect(term.output, contains('\u2717 Writing files (0ms)'));
+      },
+    );
+
+    test('when the stream emits an error then the spinner finishes as a '
+        'failure and the error is rethrown', () async {
+      final term = FakeTerminal();
+
+      await expectLater(
+        ScrollingSection.runSpinner<String>(
+          term,
+          heading: 'Writing files',
+          stream: Stream<String>.error(FormatException('boom')),
+          elapsed: () => Duration.zero,
+          scheduleTicker: _noTicker,
+        ),
+        throwsA(isA<FormatException>()),
+      );
+
+      expect(term.output, contains('\u2717 Writing files (0ms)'));
+    });
+
+    test('when the stream is empty then a StateError is thrown and the '
+        'spinner finishes as a failure', () async {
+      final term = FakeTerminal();
+
+      await expectLater(
+        ScrollingSection.runSpinner<String>(
+          term,
+          heading: 'Writing files',
+          stream: const Stream.empty(),
+          elapsed: () => Duration.zero,
+          scheduleTicker: _noTicker,
+        ),
+        throwsA(isA<StateError>()),
+      );
+
+      expect(term.output, contains('\u2717 Writing files (0ms)'));
     });
   });
 }

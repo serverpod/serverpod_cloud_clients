@@ -90,6 +90,113 @@ void main() {
     });
   });
 
+  group('Given a ProjectCreateTextUi', () {
+    group('when rendered after creating a project', () {
+      late String stdout;
+      late String stderr;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const ProjectCreateTextUi(planDisplayName: 'starter'),
+          data: Stream.value(const {'projectId': 'my-project'}),
+        );
+        stdout = io.stdout;
+        stderr = io.stderr;
+      });
+
+      test('then stdout contains the plan name', () {
+        expect(stdout, contains('On plan: starter'));
+      });
+
+      test('then stdout contains the progress success heading', () {
+        expect(stdout, contains('Project registration successful.'));
+      });
+
+      test('then stdout contains the create success message', () {
+        expect(stdout, contains('Serverpod Cloud project created.'));
+      });
+
+      test('then stderr is empty', () {
+        expect(stderr, isEmpty);
+      });
+    });
+
+    group('when rendered before database creation', () {
+      late String stdout;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const ProjectCreateTextUi(
+            planDisplayName: 'starter',
+            includeSuccess: false,
+          ),
+          data: Stream.value(const {'projectId': 'my-project'}),
+        );
+        stdout = io.stdout;
+      });
+
+      test('then stdout does not contain the create success message', () {
+        expect(stdout, isNot(contains('Serverpod Cloud project created.')));
+      });
+    });
+  });
+
+  group('Given a ProjectCreateDatabaseTextUi', () {
+    group('when rendered after requesting database creation', () {
+      late String stdout;
+      late String stderr;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const ProjectCreateDatabaseTextUi(),
+          data: Stream.value(const {'projectId': 'my-project'}),
+        );
+        stdout = io.stdout;
+        stderr = io.stderr;
+      });
+
+      test('then stdout contains the database progress success heading', () {
+        expect(stdout, contains('Database creation request sent.'));
+      });
+
+      test('then stdout contains the create success message', () {
+        expect(stdout, contains('Serverpod Cloud project created.'));
+      });
+
+      test('then stderr is empty', () {
+        expect(stderr, isEmpty);
+      });
+    });
+  });
+
+  group('Given a ProjectLinkTextUi', () {
+    group('when rendered after linking a project', () {
+      late String stdout;
+      late String stderr;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const ProjectLinkTextUi(),
+          data: Stream.value(const {'projectId': 'my-project'}),
+        );
+        stdout = io.stdout;
+        stderr = io.stderr;
+      });
+
+      test('then stdout contains the progress success heading', () {
+        expect(stdout, contains('Configuration files written.'));
+      });
+
+      test('then stdout contains the link success message', () {
+        expect(stdout, contains('Linked Serverpod Cloud project.'));
+      });
+
+      test('then stderr is empty', () {
+        expect(stderr, isEmpty);
+      });
+    });
+  });
+
   group('Given a ProjectDeleteTextUi', () {
     group('when rendered after deleting a project', () {
       late String stdout;

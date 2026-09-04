@@ -70,11 +70,11 @@ void main() {
       '550e8400-e29b-41d4-a716-446655440000',
     );
     final startedAt = DateTime.utc(2021, 12, 31, 10, 20, 30);
-    final snapshot = (
-      projectId: 'my-project',
-      attemptId: attemptId,
-      startedAt: startedAt,
-      stages: [
+    final snapshot = {
+      'projectId': 'my-project',
+      'attemptId': attemptId,
+      'startedAt': startedAt,
+      'stages': [
         DeployAttemptStageBuilder()
             .withUploadStageSuccess()
             .withStartedAt(startedAt)
@@ -85,7 +85,7 @@ void main() {
             .withStageStatus(DeployProgressStatus.success)
             .build(),
       ],
-    );
+    };
 
     group('when rendered with a full status', () {
       late String stdout;

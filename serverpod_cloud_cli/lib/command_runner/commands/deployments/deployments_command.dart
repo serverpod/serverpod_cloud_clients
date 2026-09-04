@@ -7,7 +7,8 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart'
 import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployment_command_names.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployments_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployments_ui.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/log/log_ui.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/log/log_ui.dart'
+    show LogListTextUi;
 import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
@@ -317,20 +318,16 @@ Examples
       DeploymentsLogOption.deploy,
     );
 
-    final buildLog = await DeploymentCommands.fetchBuildLog(
-      runner.serviceProvider.cloudApiClient,
-      baseCommand: baseCommand,
-      commandNames: _commandNames,
-      projectId: projectId,
-      deploymentArg: deploymentArg,
-    );
-    logger.line(
-      LogsUi.buildLogHeader(attemptId: buildLog.attemptId, inUtc: inUtc),
-    );
-    await LogsUi.writeLogStream(
-      buildLog.records,
-      writeln: logger.line,
-      inUtc: inUtc,
+    await renderCommand(
+      output,
+      operation: () => DeploymentCommands.fetchBuildLog(
+        runner.serviceProvider.cloudApiClient,
+        baseCommand: baseCommand,
+        commandNames: _commandNames,
+        projectId: projectId,
+        deploymentArg: deploymentArg,
+      ),
+      textOutputUi: LogListTextUi(utc: inUtc),
     );
   }
 }

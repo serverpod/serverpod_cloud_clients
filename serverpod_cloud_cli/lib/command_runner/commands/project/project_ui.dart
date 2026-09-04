@@ -45,6 +45,69 @@ class ProjectListTextUi extends OutputWidget {
   }
 }
 
+class ProjectCreateTextUi extends OutputWidget {
+  final String planDisplayName;
+  final bool includeSuccess;
+
+  const ProjectCreateTextUi({
+    required this.planDisplayName,
+    this.includeSuccess = true,
+  });
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    return OutputWidgetList([
+      InfoTextWidget('On plan: $planDisplayName'),
+      ProgressStreamWidget<Map<String, Object?>>(
+        initialMessage: 'Registering Serverpod Cloud project',
+        successMessage: 'Project registration successful.',
+        newParagraph: true,
+      ),
+      if (includeSuccess)
+        const SuccessTextWidget(
+          'Serverpod Cloud project created.',
+          newParagraph: true,
+        ),
+    ]);
+  }
+}
+
+class ProjectCreateDatabaseTextUi extends OutputWidget {
+  const ProjectCreateDatabaseTextUi();
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    return OutputWidgetList([
+      ProgressStreamWidget<Map<String, Object?>>(
+        initialMessage: 'Requesting database creation',
+        successMessage: 'Database creation request sent.',
+      ),
+      const SuccessTextWidget(
+        'Serverpod Cloud project created.',
+        newParagraph: true,
+      ),
+    ]);
+  }
+}
+
+class ProjectLinkTextUi extends OutputWidget {
+  const ProjectLinkTextUi();
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    return OutputWidgetList([
+      ProgressStreamWidget<Map<String, Object?>>(
+        initialMessage: 'Writing cloud configuration files',
+        successMessage: 'Configuration files written.',
+      ),
+      const SuccessTextWidget(
+        'Linked Serverpod Cloud project.',
+        newParagraph: true,
+      ),
+    ]);
+  }
+}
+
 class ProjectDeleteTextUi extends OutputWidget {
   const ProjectDeleteTextUi();
 

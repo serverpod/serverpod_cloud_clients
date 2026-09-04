@@ -2,6 +2,7 @@
 library;
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
@@ -16,7 +17,9 @@ import 'package:serverpod_cloud_cli/util/scloud_config/yaml_schema.dart';
 import 'package:serverpod_cloud_cli/util/scloudignore.dart' show ScloudIgnore;
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
+import 'package:yaml_codec/yaml_codec.dart';
 
+import '../../../test/util/inline_tui/helpers/fake_terminal.dart';
 import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/project_factory.dart';
 import '../../../test_utils/push_current_dir.dart';
@@ -103,6 +106,16 @@ void main() {
           );
         });
 
+        test(
+          'then writes a progress success heading to the terminal',
+          () async {
+            await commandResult;
+
+            final term = logger.inlineTerminal as FakeTerminal;
+            expect(term.output, contains('Configuration files written.'));
+          },
+        );
+
         test('then writes scloud.yaml file', () async {
           await commandResult;
 
@@ -132,6 +145,61 @@ project:
           await expectLater(expected.validate(), completes);
         });
       });
+
+      group(
+        'and scloud.yaml does not already exist when executing link with --format json',
+        () {
+          late Future commandResult;
+          setUp(() async {
+            commandResult = cli.run([
+              'project',
+              'link',
+              '--project',
+              projectId,
+              '--project-dir',
+              testProjectDir,
+              '--format',
+              'json',
+            ]);
+          });
+
+          test('then emits a JSON object with the project id', () async {
+            await commandResult;
+
+            expect(logger.lineCalls, isEmpty);
+            expect(jsonDecode(logger.rawCalls.single.content), {
+              'projectId': projectId,
+            });
+          });
+        },
+      );
+
+      group(
+        'and scloud.yaml does not already exist when executing link with --format yaml',
+        () {
+          late Future commandResult;
+          setUp(() async {
+            commandResult = cli.run([
+              'project',
+              'link',
+              '--project',
+              projectId,
+              '--project-dir',
+              testProjectDir,
+              '--format',
+              'yaml',
+            ]);
+          });
+
+          test('then emits a YAML object with the project id', () async {
+            await commandResult;
+
+            expect(logger.lineCalls, isEmpty);
+            final payload = yamlDecode(logger.rawCalls.single.content) as Map;
+            expect(payload['projectId'], projectId);
+          });
+        },
+      );
 
       group('and scloud.yaml exists when executing link', () {
         late Future commandResult;

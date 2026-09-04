@@ -40,15 +40,7 @@ abstract class DeploymentCommands {
     }
   }
 
-  static Future<
-    ({
-      String projectId,
-      UuidValue attemptId,
-      DateTime? startedAt,
-      List<DeployAttemptStage> stages,
-    })
-  >
-  fetchDeploymentStatus(
+  static Future<Map<String, Object?>> fetchDeploymentStatus(
     final Client cloudApiClient, {
     required final String baseCommand,
     required final String projectId,
@@ -68,12 +60,12 @@ abstract class DeploymentCommands {
         cloudCapsuleId: projectId,
         attemptId: attemptId,
       );
-      return (
-        projectId: projectId,
-        attemptId: attemptId,
-        startedAt: snapshot.startedAt,
-        stages: snapshot.stages,
-      );
+      return {
+        'projectId': projectId,
+        'attemptId': attemptId,
+        'startedAt': snapshot.startedAt,
+        'stages': snapshot.stages,
+      };
     } on FailureException {
       rethrow;
     } on Exception catch (e, s) {
@@ -99,8 +91,7 @@ abstract class DeploymentCommands {
     return deploymentListRows(statuses);
   }
 
-  static Future<({UuidValue attemptId, Stream<LogRecord> records})>
-  fetchBuildLog(
+  static Future<List<LogRecord>> fetchBuildLog(
     final Client cloudApiClient, {
     required final String baseCommand,
     required final DeploymentCommandNames commandNames,
@@ -116,14 +107,13 @@ abstract class DeploymentCommands {
         deploymentArg,
       );
 
-      return (
+      return await LogsOperations.fetchBuildLog(
+        cloudApiClient,
+        projectId: projectId,
         attemptId: attemptId,
-        records: LogsOperations.fetchBuildLog(
-          cloudApiClient,
-          projectId: projectId,
-          attemptId: attemptId,
-        ),
       );
+    } on FailureException {
+      rethrow;
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Failed to get build log');
     }

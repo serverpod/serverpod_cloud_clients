@@ -12,6 +12,19 @@ import 'inline_terminal.dart';
 typedef SpinnerScheduler =
     void Function() Function(Duration period, void Function() onTick);
 
+/// What to do with the section body when [ScrollingSection.finish] is called.
+enum RetainSection {
+  /// Leave the currently visible lines in place.
+  keepCurrent,
+
+  /// Re-display the complete captured output (requires
+  /// [ScrollingSection.captureOutput]).
+  keepFull,
+
+  /// Remove the scrolling lines. The heading is kept when one is present.
+  clear,
+}
+
 /// A fixed-height scrolling output region anchored at the bottom of the
 /// terminal.
 ///
@@ -20,18 +33,17 @@ typedef SpinnerScheduler =
 /// The region renders in place and leaves any output above it untouched, so it
 /// is well suited for tailing the output of a long-running subprocess.
 ///
-/// When done, choose one of:
-/// * [keep] to leave the last visible lines in place (or, with `full: true` and
-///   [captureOutput] enabled, the complete output), or
-/// * [clear] to remove the section so the area can be overwritten.
+/// When done, call [finish] with a [success] flag. Body retention comes from
+/// [successRetention] / [failureRetention], or from [finish]'s
+/// [overrideRetention] when one is passed.
 ///
 /// An optional [heading] is rendered immediately above the scrolling lines,
 /// prefixed with an animated braille spinner and suffixed with an elapsed-time
 /// counter (e.g. `⠹ Building (1.2s)`). When the section is finished, the spinner
 /// is replaced with a success (`✓`) or failure (`✗`) icon and the heading is
-/// replaced with [successMessage] (on [clear]) or [failedMessage] (on [keep])
-/// when the relevant message is non-null; otherwise the heading is left in
-/// place. The final elapsed time is kept either way.
+/// replaced with [successMessage] or [failedMessage] when the relevant message
+/// is non-null; otherwise the heading is left in place. The final elapsed time
+/// is kept either way.
 class ScrollingSection {
   static const String _esc = '\x1b';
   static const String _dimStyle = '$_esc[2m';
@@ -69,13 +81,19 @@ class ScrollingSection {
   /// initial value.
   String? _heading;
 
-  /// The message that replaces the [heading] when the section is finished with
-  /// [clear] (i.e. on success). Ignored when null.
+  /// The message that replaces the [heading] when [finish] is called with
+  /// `success: true`. Ignored when null.
   final String? successMessage;
 
-  /// The message that replaces the [heading] when the section is finished with
-  /// [keep] (i.e. on failure). Ignored when null.
+  /// The message that replaces the [heading] when [finish] is called with
+  /// `success: false`. Ignored when null.
   final String? failedMessage;
+
+  /// What happens to the body when [finish] is called with `success: true`.
+  final RetainSection successRetention;
+
+  /// What happens to the body when [finish] is called with `success: false`.
+  final RetainSection failureRetention;
 
   /// Whether every appended line is retained (in addition to the [rows] visible
   /// ones) so the complete output can be re-displayed, e.g. on failure.
@@ -103,6 +121,9 @@ class ScrollingSection {
   ///
   /// [rows] is the fixed number of visual rows (must be at least 1, default 5).
   ///
+  /// [successRetention] and [failureRetention] choose what happens to the body
+  /// when [finish] is called, unless that call passes [overrideRetention].
+  ///
   /// [spinnerInterval] controls how often the spinner advances. [elapsed] and
   /// [scheduleTicker] are injection points for tests so the animation and
   /// elapsed time can be driven deterministically; production code should leave
@@ -114,12 +135,16 @@ class ScrollingSection {
     String? heading,
     this.successMessage,
     this.failedMessage,
+    final RetainSection? successRetention,
+    final RetainSection? failureRetention,
     this.captureOutput = false,
     Duration spinnerInterval = _defaultSpinnerInterval,
     Duration Function()? elapsed,
     SpinnerScheduler? scheduleTicker,
   }) : assert(rows >= 1, 'rows must be at least 1'),
        _heading = heading,
+       successRetention = successRetention ?? RetainSection.clear,
+       failureRetention = failureRetention ?? RetainSection.keepFull,
        _terminal = terminal,
        _renderer = BottomRegionRenderer(terminal),
        _spinnerInterval = spinnerInterval,
@@ -136,6 +161,61 @@ class ScrollingSection {
         _cancelTicker = _scheduleTicker(_spinnerInterval, _tick);
       }
       _render();
+    }
+  }
+
+  /// Runs a heading-only spinner (no scrolling output lines) while consuming
+  /// [stream].
+  ///
+  /// The heading starts as [heading] and is updated with [toMessage] for each
+  /// event. When the stream ends, the spinner is completed with [success]
+  /// from [isSuccess] of the last event, or a clean end if [isSuccess] is
+  /// omitted. A stream error or an empty stream finishes as a failure; the
+  /// error is rethrown, and an empty stream throws [StateError].
+  static Future<T> runSpinner<T>(
+    InlineTerminal terminal, {
+    required String heading,
+    required Stream<T> stream,
+    String Function(T)? toMessage,
+    bool Function(T)? isSuccess,
+    String? successMessage,
+    String? failedMessage,
+    Duration spinnerInterval = _defaultSpinnerInterval,
+    Duration Function()? elapsed,
+    SpinnerScheduler? scheduleTicker,
+  }) async {
+    final section = ScrollingSection(
+      terminal: terminal,
+      rows: 1,
+      heading: heading,
+      successMessage: successMessage,
+      failedMessage: failedMessage,
+      spinnerInterval: spinnerInterval,
+      elapsed: elapsed,
+      scheduleTicker: scheduleTicker,
+    );
+
+    T? lastEvent;
+    try {
+      await for (final event in stream) {
+        lastEvent = event;
+        final messageForEvent = toMessage;
+        if (messageForEvent != null) {
+          section.updateHeading(messageForEvent(event));
+        }
+      }
+      final event = lastEvent;
+      if (event == null) {
+        section.finish(success: false);
+        throw StateError('Stream was empty');
+      }
+      section.finish(success: isSuccess?.call(event) ?? true);
+      return event;
+    } on Object {
+      if (!section.isFinished) {
+        section.finish(success: false);
+      }
+      rethrow;
     }
   }
 
@@ -177,7 +257,7 @@ class ScrollingSection {
   /// Only populated when [captureOutput] is true; otherwise empty.
   List<String> get capturedOutput => List.unmodifiable(_captured);
 
-  /// Whether the section has been finished with [keep] or [clear].
+  /// Whether the section has been finished with [finish].
   bool get isFinished => _finished;
 
   /// Updates the heading text and re-renders.
@@ -217,44 +297,38 @@ class ScrollingSection {
     _render();
   }
 
-  /// Finishes the section, leaving the currently visible lines in place and
-  /// moving the cursor below them.
+  /// Finishes the section.
   ///
-  /// If [failedMessage] is non-null it replaces the heading above the kept
-  /// lines; otherwise the heading is left in place. The spinner is replaced with
-  /// a failure icon (`✗`).
+  /// [success] selects the completion icon (`✓` or `✗`) and which of
+  /// [successMessage] / [failedMessage] replaces the heading (when non-null).
   ///
-  /// When [full] is true and [captureOutput] was enabled, the complete captured
-  /// output is rendered (untruncated and undimmed) instead of only the last
-  /// visible lines, so the full output is visible after a failure.
-  void keep({bool full = false}) {
+  /// Body retention is [successRetention] or [failureRetention] unless
+  /// [overrideRetention] is passed:
+  /// * [RetainSection.keepCurrent] leaves the visible lines in place
+  /// * [RetainSection.keepFull] re-displays the complete captured output
+  ///   (when [captureOutput] was enabled)
+  /// * [RetainSection.clear] removes the scrolling lines; the heading is kept
+  ///   when one is present, otherwise the region is cleared entirely
+  void finish({required bool success, RetainSection? overrideRetention}) {
     if (_finished) return;
     _finished = true;
-    _success = false;
+    _success = success;
     _stopSpinner();
-    _finishMessage = failedMessage;
-    _renderer.finish(lines: _buildLines(full: full));
-  }
-
-  /// Finishes the section by clearing the scrolling lines so the area can be
-  /// overwritten.
-  ///
-  /// If [successMessage] is non-null it replaces the heading; otherwise the
-  /// heading is left in place. The spinner is replaced with a success icon
-  /// (`✓`). The (now sole) header line is kept in place and the cursor moved
-  /// below it. Only when there is no header at all is the region cleared
-  /// entirely.
-  void clear() {
-    if (_finished) return;
-    _finished = true;
-    _success = true;
-    _stopSpinner();
-    _finishMessage = successMessage;
-    final header = _buildHeaderLine(_terminal.columns);
-    if (header != null) {
-      _renderer.finish(lines: [header]);
-    } else {
-      _renderer.clear();
+    _finishMessage = success ? successMessage : failedMessage;
+    final retention =
+        overrideRetention ?? (success ? successRetention : failureRetention);
+    switch (retention) {
+      case RetainSection.clear:
+        final header = _buildHeaderLine(_terminal.columns);
+        if (header != null) {
+          _renderer.finish(lines: [header]);
+        } else {
+          _renderer.clear();
+        }
+      case RetainSection.keepCurrent:
+        _renderer.finish(lines: _buildLines());
+      case RetainSection.keepFull:
+        _renderer.finish(lines: _buildLines(full: true));
     }
   }
 

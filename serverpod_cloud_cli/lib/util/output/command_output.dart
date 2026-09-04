@@ -16,12 +16,24 @@ class CommandOutput {
 
   CommandOutput({required this.format, required this.logger});
 
+  /// Runs [operation] and renders [ui].
+  ///
+  /// Exceptions from the operation, or from consuming a stream result while
+  /// rendering, are captured and rendered through the error branch of [ui].
   Future<OutputContext> render<O extends Object>({
     required Operation<O> operation,
     required OutputWidget ui,
   }) async {
-    final context = await _doOperation(operation: operation);
-    ui.buildTree(context).renderTree(logger: logger);
+    var context = await _doOperation(operation: operation);
+    try {
+      await ui.buildTree(context).renderTree(logger: logger);
+    } on Exception catch (error, stackTrace) {
+      if (context.find<QualifiedException>() != null) {
+        rethrow;
+      }
+      context = OutputContext.exception(format, error, stackTrace);
+      await ui.buildTree(context).renderTree(logger: logger);
+    }
     return context;
   }
 
@@ -36,11 +48,19 @@ class CommandOutput {
     }
   }
 
+  Future<OutputContext> renderStatic<O extends Object>({
+    required OutputWidget ui,
+  }) async {
+    final context = OutputContext(format);
+    await ui.buildTree(context).renderTree(logger: logger);
+    return context;
+  }
+
   Future<T> renderInteractive<T extends Object?>({
     required InteractiveWidget<T> ui,
-  }) {
+  }) async {
     final context = OutputContext(format);
-    ui.buildTree(context).renderTree(logger: logger);
+    await ui.buildTree(context).renderTree(logger: logger);
     return ui.completer.future;
   }
 }

@@ -98,14 +98,10 @@ abstract class ScrollingCommandOutput {
       await outSink.close();
       await errSink.close();
 
-      if (exitCode == 0) {
-        section.clear();
-      } else {
-        section.keep(full: true);
-      }
+      section.finish(success: exitCode == 0);
       return exitCode;
     } on Object {
-      section.keep(full: true);
+      section.finish(success: false);
       rethrow;
     }
   }

@@ -131,39 +131,42 @@ void main() {
   });
 
   group('Given a formatted table widget', () {
-    test('when rendered then table headers and row values are written', () {
-      final createdAt = DateTime.utc(2024, 12, 31, 10, 20, 30);
-      final context = OutputContext(OutputFormat.text, <Map<String, Object?>>[
-        {
-          'id': 'alpha',
-          'createdAt': createdAt,
-          'tags': const ['a', 'b'],
-          'ttl': const Duration(hours: 2),
-        },
-      ]);
+    test(
+      'when rendered then table headers and row values are written',
+      () async {
+        final createdAt = DateTime.utc(2024, 12, 31, 10, 20, 30);
+        final context = OutputContext(OutputFormat.text, <Map<String, Object?>>[
+          {
+            'id': 'alpha',
+            'createdAt': createdAt,
+            'tags': const ['a', 'b'],
+            'ttl': const Duration(hours: 2),
+          },
+        ]);
 
-      FormattedTableWidget(
-        formatter: TextTableOutputFormatter(
-          columns: [
-            TableColumnFormatter.forKey('Id', key: 'id'),
-            TableColumnFormatter.forKey('Created At', key: 'createdAt'),
-            TableColumnFormatter.forKey('Tags', key: 'tags'),
-            TableColumnFormatter.forKey('TTL', key: 'ttl'),
-          ],
-          utc: true,
-        ),
-      ).buildTree(context).renderTree(logger: logger);
+        await FormattedTableWidget(
+          formatter: TextTableOutputFormatter(
+            columns: [
+              TableColumnFormatter.forKey('Id', key: 'id'),
+              TableColumnFormatter.forKey('Created At', key: 'createdAt'),
+              TableColumnFormatter.forKey('Tags', key: 'tags'),
+              TableColumnFormatter.forKey('TTL', key: 'ttl'),
+            ],
+            utc: true,
+          ),
+        ).buildTree(context).renderTree(logger: logger);
 
-      expect(logger.lineCalls.first.line, contains('Id'));
-      expect(logger.lineCalls.first.line, contains('Created At'));
-      expect(logger.lineCalls.first.line, contains('Tags'));
-      expect(logger.lineCalls.first.line, contains('TTL'));
-      expect(logger.lineCalls.last.line, contains('alpha'));
-      expect(logger.lineCalls.last.line, contains('2024-12-31 10:20:30z'));
-      expect(logger.lineCalls.last.line, contains('a, b'));
-      expect(logger.lineCalls.last.line, contains('2h'));
-      expect(logger.rawCalls, isEmpty);
-    });
+        expect(logger.lineCalls.first.line, contains('Id'));
+        expect(logger.lineCalls.first.line, contains('Created At'));
+        expect(logger.lineCalls.first.line, contains('Tags'));
+        expect(logger.lineCalls.first.line, contains('TTL'));
+        expect(logger.lineCalls.last.line, contains('alpha'));
+        expect(logger.lineCalls.last.line, contains('2024-12-31 10:20:30z'));
+        expect(logger.lineCalls.last.line, contains('a, b'));
+        expect(logger.lineCalls.last.line, contains('2h'));
+        expect(logger.rawCalls, isEmpty);
+      },
+    );
   });
 
   group('Given a text table widget', () {
@@ -184,14 +187,68 @@ void main() {
     });
   });
 
+  group('Given a formatted stream table widget', () {
+    test(
+      'when rendered then headers and rows are written as they arrive',
+      () async {
+        final createdAt = DateTime.utc(2024, 12, 31, 10, 20, 30);
+        final context = OutputContext(
+          OutputFormat.text,
+          Stream.fromIterable([
+            <String, Object?>{'id': 'alpha', 'createdAt': createdAt},
+          ]),
+        );
+
+        await FormattedStreamTableWidget(
+          formatter: TextTableOutputFormatter(
+            columns: [
+              TableColumnFormatter.forKey('Id', key: 'id'),
+              TableColumnFormatter.forKey('Created At', key: 'createdAt'),
+            ],
+            utc: true,
+          ),
+        ).buildTree(context).renderTree(logger: logger);
+
+        expect(logger.lineCalls.first.line, contains('Id'));
+        expect(logger.lineCalls.first.line, contains('Created At'));
+        expect(logger.lineCalls.last.line, contains('alpha'));
+        expect(logger.lineCalls.last.line, contains('2024-12-31 10:20:30z'));
+        expect(logger.rawCalls, isEmpty);
+      },
+    );
+
+    test(
+      'when rendered with a footer then the footer uses the row count',
+      () async {
+        final context = OutputContext(
+          OutputFormat.text,
+          Stream.fromIterable([
+            <String, Object?>{'id': 'alpha'},
+            <String, Object?>{'id': 'beta'},
+          ]),
+        );
+
+        await FormattedStreamTableWidget(
+          formatter: TextTableOutputFormatter(
+            columns: [TableColumnFormatter.forKey('Id', key: 'id')],
+            utc: false,
+          ),
+          footerLines: (count) => ['-- $count rows --'],
+        ).buildTree(context).renderTree(logger: logger);
+
+        expect(logger.lineCalls.last.line, '-- 2 rows --');
+      },
+    );
+  });
+
   group('Given a string-column list widget', () {
-    test('when rendered then the heading and values are written', () {
+    test('when rendered then the heading and values are written', () async {
       final context = OutputContext(OutputFormat.text, <String>[
         'alpha',
         'beta',
       ]);
 
-      const StringColumnListWidget(
+      await const StringColumnListWidget(
         heading: 'Name',
       ).buildTree(context).renderTree(logger: logger);
 

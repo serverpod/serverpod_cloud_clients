@@ -265,6 +265,36 @@ void main() {
     });
   });
 
+  group('Given json output and a stream that fails while rendering', () {
+    late CommandOutput output;
+    late OutputContext context;
+
+    setUp(() async {
+      output = CommandOutput(format: OutputFormat.json, logger: logger);
+      context = await output.render(
+        operation: () async => Stream<String>.error(FormatException('boom')),
+        ui: ExceptionHandlingWidget(
+          errorWidgetMaker: (e) => const JsonErrorWidget(),
+          elseWidget: FormattedStreamStringWidget(
+            formatter: JsonOutputFormatter<String>(),
+          ),
+        ),
+      );
+    });
+
+    test('when rendering then a JSON error document is written', () {
+      expect(logger.rawCalls, isEmpty);
+      expect(logger.errorCalls, hasLength(1));
+      expect(jsonDecode(logger.errorCalls.single.message), contains('boom'));
+    });
+
+    test('when rendering then the returned context contains the exception', () {
+      final error = context.get<QualifiedException>();
+      expect(error.exception, isA<FormatException>());
+      expect(error.exception.toString(), contains('boom'));
+    });
+  });
+
   group('Given an operation that throws an Error', () {
     late CommandOutput output;
 

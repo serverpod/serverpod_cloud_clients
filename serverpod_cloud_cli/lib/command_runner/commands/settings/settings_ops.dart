@@ -1,4 +1,3 @@
-import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/scloud_settings.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
@@ -16,9 +15,8 @@ abstract class SettingsOperations {
     ];
   }
 
-  static Future<void> setSetting(
+  static Future<Map<String, Object?>> setSetting(
     final ScloudSettings settings, {
-    required final CommandLogger logger,
     required final String name,
     required final String value,
   }) async {
@@ -32,19 +30,18 @@ abstract class SettingsOperations {
           );
         }
         await settings.setEnableAnalytics(parsed);
-        logger.success('Set analytics to "$parsed".');
+        return {'name': name, 'value': parsed};
     }
   }
 
-  static Future<void> unsetSetting(
+  static Future<Map<String, Object?>> unsetSetting(
     final ScloudSettings settings, {
-    required final CommandLogger logger,
     required final String name,
   }) async {
     switch (_parseName(name)) {
       case CliSetting.analytics:
         await settings.setEnableAnalytics(null);
-        logger.success('Unset analytics.');
+        return {'name': name};
     }
   }
 

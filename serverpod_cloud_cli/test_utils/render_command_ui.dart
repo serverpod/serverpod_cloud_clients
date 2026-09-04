@@ -27,8 +27,8 @@ Future<({String stdout, String stderr})> renderCommandUi(
   final OutputWidget ui, {
   final Object? data,
 }) {
-  return captureStdio(() {
-    ui
+  return captureStdio(() async {
+    await ui
         .buildTree(OutputContext(OutputFormat.text, data))
         .renderTree(logger: CommandLogger.create());
   });

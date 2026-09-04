@@ -23,7 +23,7 @@ void main() {
       // The version output was rendered into the section.
       expect(term.output, contains('Dart'));
 
-      result.clear();
+      result.finish(success: true);
       expect(result.section.isFinished, isTrue);
     });
 
@@ -42,7 +42,7 @@ void main() {
       expect(result.succeeded, isFalse);
       expect(term.output, isNotEmpty);
 
-      result.keep();
+      result.finish(success: false);
     });
   });
 }

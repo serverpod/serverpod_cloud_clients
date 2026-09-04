@@ -2,6 +2,7 @@
 library;
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
@@ -13,6 +14,8 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
+
+import 'package:yaml_codec/yaml_codec.dart';
 
 import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/project_factory.dart';
@@ -185,6 +188,244 @@ void main() {
           );
         });
       });
+
+      group(
+        'without scloud.yaml file when calling create with --format json',
+        () {
+          late Future commandResult;
+          setUp(() async {
+            commandResult = cli.run([
+              'project',
+              'create',
+              projectId,
+              '--no-enable-db',
+              '--yes',
+              '--format',
+              'json',
+            ]);
+          });
+
+          test('then emits a JSON object with the project id', () async {
+            await commandResult;
+
+            expect(logger.initCalls, isEmpty);
+            expect(logger.lineCalls, isEmpty);
+            expect(logger.rawCalls, hasLength(1));
+            expect(jsonDecode(logger.rawCalls.single.content), {
+              'projectId': projectId,
+            });
+          });
+        },
+      );
+
+      group(
+        'without scloud.yaml file when calling create with --format yaml',
+        () {
+          late Future commandResult;
+          setUp(() async {
+            commandResult = cli.run([
+              'project',
+              'create',
+              projectId,
+              '--no-enable-db',
+              '--yes',
+              '--format',
+              'yaml',
+            ]);
+          });
+
+          test('then emits a YAML object with the project id', () async {
+            await commandResult;
+
+            expect(logger.initCalls, isEmpty);
+            expect(logger.lineCalls, isEmpty);
+            expect(logger.rawCalls, hasLength(1));
+            final payload = yamlDecode(logger.rawCalls.single.content) as Map;
+            expect(payload['projectId'], projectId);
+          });
+        },
+      );
+
+      group(
+        'without scloud.yaml file when calling create with --enable-db and --format json',
+        () {
+          late Future commandResult;
+          setUp(() async {
+            commandResult = cli.run([
+              'project',
+              'create',
+              projectId,
+              '--enable-db',
+              '--yes',
+              '--format',
+              'json',
+            ]);
+          });
+
+          test('then emits a single JSON object with the project id', () async {
+            await commandResult;
+
+            expect(logger.initCalls, isEmpty);
+            expect(logger.lineCalls, isEmpty);
+            expect(logger.rawCalls, hasLength(1));
+            expect(jsonDecode(logger.rawCalls.single.content), {
+              'projectId': projectId,
+            });
+          });
+
+          test('then enableDatabase is invoked for the project', () async {
+            await commandResult;
+
+            verify(
+              () => client.database.enableDatabase(cloudCapsuleId: projectId),
+            ).called(1);
+          });
+        },
+      );
+
+      group(
+        'without scloud.yaml file when calling create with --enable-db and --format yaml',
+        () {
+          late Future commandResult;
+          setUp(() async {
+            commandResult = cli.run([
+              'project',
+              'create',
+              projectId,
+              '--enable-db',
+              '--yes',
+              '--format',
+              'yaml',
+            ]);
+          });
+
+          test('then emits a single YAML object with the project id', () async {
+            await commandResult;
+
+            expect(logger.initCalls, isEmpty);
+            expect(logger.lineCalls, isEmpty);
+            expect(logger.rawCalls, hasLength(1));
+            final payload = yamlDecode(logger.rawCalls.single.content) as Map;
+            expect(payload['projectId'], projectId);
+          });
+        },
+      );
+
+      group(
+        'and the project id is already taken when calling create with --yes and --format json',
+        () {
+          late Future commandResult;
+
+          setUp(() async {
+            when(
+              () => client.projects.createProject(
+                cloudProjectId: any(named: 'cloudProjectId'),
+                projectProductName: any(named: 'projectProductName'),
+                underSubscriptionId: any(named: 'underSubscriptionId'),
+              ),
+            ).thenThrow(
+              DuplicateEntryException(
+                message:
+                    'A project with the specified project id already exists.',
+              ),
+            );
+
+            commandResult = cli.run([
+              'project',
+              'create',
+              projectId,
+              '--no-enable-db',
+              '--yes',
+              '--format',
+              'json',
+            ]);
+          });
+
+          test('then throws exception', () async {
+            await expectLater(
+              commandResult,
+              throwsA(isA<ErrorExitException>()),
+            );
+          });
+
+          test('then emits a JSON error for the duplicate project', () async {
+            try {
+              await commandResult;
+            } catch (_) {}
+
+            expect(logger.lineCalls, isEmpty);
+            expect(logger.rawCalls, isEmpty);
+            expect(logger.errorCalls, isNotEmpty);
+            final payload = jsonDecode(logger.errorCalls.single.message);
+            expect(payload, contains('Request to create a new project failed'));
+            expect(
+              payload,
+              contains(
+                'A project with the specified project id already exists.',
+              ),
+            );
+          });
+        },
+      );
+
+      group(
+        'and the project id is already taken when calling create with --yes and --format yaml',
+        () {
+          late Future commandResult;
+
+          setUp(() async {
+            when(
+              () => client.projects.createProject(
+                cloudProjectId: any(named: 'cloudProjectId'),
+                projectProductName: any(named: 'projectProductName'),
+                underSubscriptionId: any(named: 'underSubscriptionId'),
+              ),
+            ).thenThrow(
+              DuplicateEntryException(
+                message:
+                    'A project with the specified project id already exists.',
+              ),
+            );
+
+            commandResult = cli.run([
+              'project',
+              'create',
+              projectId,
+              '--no-enable-db',
+              '--yes',
+              '--format',
+              'yaml',
+            ]);
+          });
+
+          test('then throws exception', () async {
+            await expectLater(
+              commandResult,
+              throwsA(isA<ErrorExitException>()),
+            );
+          });
+
+          test('then emits a YAML error for the duplicate project', () async {
+            try {
+              await commandResult;
+            } catch (_) {}
+
+            expect(logger.lineCalls, isEmpty);
+            expect(logger.rawCalls, isEmpty);
+            expect(logger.errorCalls, isNotEmpty);
+            expect(
+              logger.errorCalls.single.message,
+              contains('Request to create a new project failed'),
+            );
+            expect(
+              logger.errorCalls.single.message,
+              contains(
+                'A project with the specified project id already exists.',
+              ),
+            );
+          });
+        },
+      );
 
       group('with existing scloud.yaml file when calling create', () {
         late Future commandResult;

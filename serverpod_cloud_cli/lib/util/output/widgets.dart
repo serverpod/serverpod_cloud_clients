@@ -48,6 +48,16 @@ class ExceptionHandlingWidget<E extends Exception> extends OutputWidget {
   }
 }
 
+/// Renders nothing.
+class NilWidget extends OutputWidget {
+  const NilWidget();
+
+  @override
+  OutputWidget build(OutputContext context) {
+    return this;
+  }
+}
+
 /// Renders a raw string.
 class RawStringWidget extends OutputWidget {
   final String content;
@@ -70,6 +80,18 @@ class InfoTextWidget extends OutputWidget {
   @override
   void render({required CommandLogger logger}) {
     logger.info(message, newParagraph: newParagraph ?? false);
+  }
+}
+
+class InitTextWidget extends OutputWidget {
+  final String message;
+  final bool? newParagraph;
+
+  const InitTextWidget(this.message, {this.newParagraph});
+
+  @override
+  void render({required CommandLogger logger}) {
+    logger.init(message, newParagraph: newParagraph ?? false);
   }
 }
 
@@ -181,6 +203,37 @@ class FormattedStringWidget<O extends Object> extends OutputWidget {
     final object = context.get<O>();
     final content = formatter.format(object);
     return RawStringWidget(content);
+  }
+}
+
+/// Writes one formatted document per stream element as it arrives.
+///
+/// R is the stream element type.
+class FormattedStreamStringWidget<R extends Object> extends OutputWidget {
+  final OutputFormatter<R, String> formatter;
+
+  const FormattedStreamStringWidget({required this.formatter});
+
+  @override
+  OutputWidget build(OutputContext context) {
+    return _StreamStringWidget(
+      stream: context.get<Stream<R>>(),
+      formatter: formatter,
+    );
+  }
+}
+
+class _StreamStringWidget<R extends Object> extends OutputWidget {
+  final Stream<R> stream;
+  final OutputFormatter<R, String> formatter;
+
+  const _StreamStringWidget({required this.stream, required this.formatter});
+
+  @override
+  Future<void> renderAsync({required CommandLogger logger}) async {
+    await for (final element in stream) {
+      logger.raw(formatter.format(element));
+    }
   }
 }
 

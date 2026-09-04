@@ -201,6 +201,61 @@ void main() {
       });
     });
 
+    group('when executing settings set analytics true with --format json', () {
+      late Future commandResult;
+
+      setUp(() async {
+        commandResult = cli.run([
+          'settings',
+          'set',
+          'analytics',
+          'true',
+          '--config-dir',
+          testConfigDirPath,
+          '--format',
+          'json',
+        ]);
+      });
+
+      test('then emits a JSON object with the setting', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        expect(logger.successCalls, isEmpty);
+        expect(jsonDecode(logger.rawCalls.single.content), {
+          'name': 'analytics',
+          'value': true,
+        });
+      });
+    });
+
+    group('when executing settings set analytics false with --format yaml', () {
+      late Future commandResult;
+
+      setUp(() async {
+        commandResult = cli.run([
+          'settings',
+          'set',
+          'analytics',
+          'false',
+          '--config-dir',
+          testConfigDirPath,
+          '--format',
+          'yaml',
+        ]);
+      });
+
+      test('then emits a YAML object with the setting', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        expect(logger.successCalls, isEmpty);
+        final payload = yamlDecode(logger.rawCalls.single.content) as Map;
+        expect(payload['name'], 'analytics');
+        expect(payload['value'], isFalse);
+      });
+    });
+
     group('when executing settings set analytics with a non-boolean value', () {
       late Future commandResult;
 
@@ -399,6 +454,57 @@ void main() {
           localStoragePath: testConfigDirPath,
         );
         expect(settings?.enableAnalytics, isNull);
+      });
+    });
+
+    group('when executing settings unset analytics with --format json', () {
+      late Future commandResult;
+
+      setUp(() async {
+        commandResult = cli.run([
+          'settings',
+          'unset',
+          'analytics',
+          '--config-dir',
+          testConfigDirPath,
+          '--format',
+          'json',
+        ]);
+      });
+
+      test('then emits a JSON object with the setting name', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        expect(logger.successCalls, isEmpty);
+        expect(jsonDecode(logger.rawCalls.single.content), {
+          'name': 'analytics',
+        });
+      });
+    });
+
+    group('when executing settings unset analytics with --format yaml', () {
+      late Future commandResult;
+
+      setUp(() async {
+        commandResult = cli.run([
+          'settings',
+          'unset',
+          'analytics',
+          '--config-dir',
+          testConfigDirPath,
+          '--format',
+          'yaml',
+        ]);
+      });
+
+      test('then emits a YAML object with the setting name', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        expect(logger.successCalls, isEmpty);
+        final payload = yamlDecode(logger.rawCalls.single.content) as Map;
+        expect(payload['name'], 'analytics');
       });
     });
   });

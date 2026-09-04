@@ -2,11 +2,16 @@ import 'package:config/config.dart';
 import 'package:path/path.dart' as p;
 
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
-import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
+import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/project/project_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/project/project_ui.dart'
-    show ProjectDeleteTextUi, ProjectListTextUi;
+    show
+        ProjectCreateDatabaseTextUi,
+        ProjectCreateTextUi,
+        ProjectDeleteTextUi,
+        ProjectLinkTextUi,
+        ProjectListTextUi;
 import 'package:serverpod_cloud_cli/command_runner/commands/user/user_command.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 
@@ -74,13 +79,50 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
     final plan = commandConfig.optionalValue(ProjectCreateOption.plan);
     final enableDb = commandConfig.value(ProjectCreateOption.enableDb);
 
-    await ProjectCommands.createProject(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      projectId: projectId,
-      plan: plan,
-      enableDb: enableDb,
+    await confirmToContinue(
+      output,
+      message:
+          'Depending on your subscription, a new project may incur additional costs. Continue?',
+      defaultValue: true,
     );
+
+    final client = runner.serviceProvider.cloudApiClient;
+
+    final createdPlan = await ProjectCommands.createPlan(client, plan: plan);
+
+    if (!output.format.isStructured) {
+      await output.renderStatic(
+        ui: InitTextWidget('Creating Serverpod Cloud project "$projectId".'),
+      );
+    }
+
+    await renderCommand(
+      output,
+      operation: () async => Stream.fromFuture(
+        ProjectCommands.createProject(
+          client,
+          projectId: projectId,
+          subscriptionId: createdPlan.subscriptionId,
+          plan: plan,
+        ),
+      ),
+      textOutputUi: ProjectCreateTextUi(
+        planDisplayName: createdPlan.planDisplayName,
+        includeSuccess: !enableDb,
+      ),
+    );
+
+    if (enableDb) {
+      await renderCommand(
+        output,
+        operation: () async => Stream.fromFuture(
+          ProjectCommands.createDatabase(client, projectId: projectId),
+        ),
+        textOutputUi: const ProjectCreateDatabaseTextUi(),
+        jsonOutputUi: const NilWidget(),
+        yamlOutputUi: const NilWidget(),
+      );
+    }
   }
 }
 
@@ -228,13 +270,18 @@ class CloudProjectLinkCommand
 
     logger.debug('Project directory is: ${projectDirectory.path}');
 
-    await ProjectCommands.linkProject(
-      runner.serviceProvider.cloudApiClient,
-      logger: logger,
-      projectId: projectId,
-      projectDirectory: projectDirectory.path,
-      configFilePath: configFilePath,
-      dartVersionOverride: dartVersionOverride,
+    await renderCommand(
+      output,
+      operation: () async => Stream.fromFuture(
+        ProjectCommands.linkProject(
+          runner.serviceProvider.cloudApiClient,
+          projectId: projectId,
+          projectDirectory: projectDirectory.path,
+          configFilePath: configFilePath,
+          dartVersionOverride: dartVersionOverride,
+        ),
+      ),
+      textOutputUi: const ProjectLinkTextUi(),
     );
   }
 }

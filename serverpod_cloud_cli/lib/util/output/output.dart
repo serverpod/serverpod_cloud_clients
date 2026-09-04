@@ -8,5 +8,6 @@ export 'output_context.dart';
 export 'output_format.dart';
 export 'output_formatter.dart';
 export 'output_widget.dart';
+export 'progress_widget.dart';
 export 'text_table_widget.dart';
 export 'widgets.dart';

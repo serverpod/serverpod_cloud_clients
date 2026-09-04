@@ -51,6 +51,18 @@ class ErrorCall {
   }
 }
 
+class InitCall {
+  final String message;
+  final bool newParagraph;
+
+  InitCall({required this.message, this.newParagraph = false});
+
+  @override
+  String toString() {
+    return {'message': message, 'newParagraph': newParagraph}.toString();
+  }
+}
+
 class InfoCall {
   final String message;
   final bool newParagraph;
@@ -188,6 +200,7 @@ class TestCommandLogger extends CommandLogger {
   final List<BoxCall> boxCalls = [];
   final List<ErrorCall> errorCalls = [];
   var flushCallsCount = 0;
+  final List<InitCall> initCalls = [];
   final List<InfoCall> infoCalls = [];
   final List<LineCall> lineCalls = [];
   final List<ListCall> listCalls = [];
@@ -221,6 +234,7 @@ class TestCommandLogger extends CommandLogger {
   int get totalLogCalls =>
       boxCalls.length +
       errorCalls.length +
+      initCalls.length +
       infoCalls.length +
       lineCalls.length +
       listCalls.length +
@@ -250,6 +264,7 @@ class TestCommandLogger extends CommandLogger {
     _inlineTerminal = null;
     flushCallsCount = 0;
     errorCalls.clear();
+    initCalls.clear();
     infoCalls.clear();
     lineCalls.clear();
     listCalls.clear();
@@ -323,6 +338,23 @@ class TestCommandLogger extends CommandLogger {
   @override
   Future<void> flush() async {
     flushCallsCount++;
+  }
+
+  @override
+  void init(
+    String message, {
+    LogLevel level = LogLevel.info,
+    bool newParagraph = false,
+  }) {
+    if (printToStdout) {
+      print('log init: $message');
+    }
+
+    if (!_somethingLogged.isCompleted) {
+      _somethingLogged.complete();
+    }
+
+    initCalls.add(InitCall(message: message, newParagraph: newParagraph));
   }
 
   @override

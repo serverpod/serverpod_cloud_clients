@@ -109,11 +109,14 @@ Examples
       throw StateError('Expected the value option to be set.');
     }
 
-    await SettingsOperations.setSetting(
-      runner.serviceProvider.scloudSettings,
-      logger: logger,
-      name: name,
-      value: value,
+    await renderCommand(
+      output,
+      operation: () => SettingsOperations.setSetting(
+        runner.serviceProvider.scloudSettings,
+        name: name,
+        value: value,
+      ),
+      textOutputUi: const SettingsSetTextUi(),
     );
   }
 }
@@ -157,10 +160,13 @@ Examples
   ) async {
     final name = commandConfig.value(SettingsUnsetOption.name);
 
-    await SettingsOperations.unsetSetting(
-      runner.serviceProvider.scloudSettings,
-      logger: logger,
-      name: name,
+    await renderCommand(
+      output,
+      operation: () => SettingsOperations.unsetSetting(
+        runner.serviceProvider.scloudSettings,
+        name: name,
+      ),
+      textOutputUi: const SettingsUnsetTextUi(),
     );
   }
 }

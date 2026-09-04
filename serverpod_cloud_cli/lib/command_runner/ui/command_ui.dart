@@ -42,6 +42,27 @@ class CommandWidget extends OutputWidget {
        jsonErrorUi = jsonErrorUi ?? JsonErrorWidget(),
        yamlErrorUi = yamlErrorUi ?? YamlErrorWidget();
 
+  /// Like [CommandWidget.text], but json/yaml emit one document per stream
+  /// element instead of encoding the whole result.
+  /// This is also used for operations that conceptually return a single result,
+  /// but is awaited as a stream to allow for progress reporting.
+  CommandWidget.stream({
+    required this.textOutputUi,
+    OutputWidget? jsonOutputUi,
+    OutputWidget? yamlOutputUi,
+    OutputWidget? textErrorUi,
+    OutputWidget? jsonErrorUi,
+    OutputWidget? yamlErrorUi,
+  }) : jsonOutputUi =
+           jsonOutputUi ??
+           FormattedStreamStringWidget(formatter: JsonOutputFormatter()),
+       yamlOutputUi =
+           yamlOutputUi ??
+           FormattedStreamStringWidget(formatter: YamlOutputFormatter()),
+       textErrorUi = textErrorUi ?? TextErrorWidget(),
+       jsonErrorUi = jsonErrorUi ?? JsonErrorWidget(),
+       yamlErrorUi = yamlErrorUi ?? YamlErrorWidget();
+
   @override
   OutputWidget build(OutputContext context) {
     return FormatBranchingWidget(

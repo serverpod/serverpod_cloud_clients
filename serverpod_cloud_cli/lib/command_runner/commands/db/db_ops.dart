@@ -53,7 +53,7 @@ abstract class DbOperations {
     }
   }
 
-  static Future<void> wipeDatabase(
+  static Future<Map<String, Object?>> wipeDatabase(
     final Client cloudApiClient, {
     required final String projectId,
   }) async {
@@ -62,5 +62,7 @@ abstract class DbOperations {
     } on Exception catch (e, stackTrace) {
       throw FailureException.nested(e, stackTrace, 'Failed to wipe database');
     }
+
+    return {'projectId': projectId};
   }
 }
