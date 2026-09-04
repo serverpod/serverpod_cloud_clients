@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:config/config.dart';
 import 'package:ground_control_client/ground_control_client.dart'
     show BucketVisibility;
@@ -6,6 +8,8 @@ import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/storage/storage_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/storage/storage_ui.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
+import 'package:serverpod_cloud_cli/util/byte_size.dart';
+import 'package:serverpod_cloud_cli/util/file_dir_option.dart';
 import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_shared/serverpod_cloud_shared.dart'
     show StorageIdValidator;
@@ -59,6 +63,26 @@ abstract final class StorageCommandConfig {
         'Can be passed as the second argument.',
   );
   static const utc = UtcOption();
+  static const uploadSource = FileDirOption(
+    argName: 'file',
+    argAbbrev: 'f',
+    argPos: 1,
+    helpText:
+        'The local file or directory to upload. '
+        'A directory is uploaded with everything in it. '
+        'Can be passed as the second argument.',
+    mandatory: true,
+    mode: PathExistMode.mustExist,
+  );
+  static const uploadPath = StringOption(
+    argName: 'path',
+    argPos: 2,
+    helpText:
+        'The destination path inside the storage. '
+        'Defaults to the file or directory name. '
+        'End it with "/" to upload into a folder. '
+        'Can be passed as the third argument.',
+  );
 
   static void _validateStorageId(final String value) {
     final reason = StorageIdValidator.validate(value);
@@ -250,6 +274,7 @@ class CloudStorageFileCommand extends CloudCliCommand {
 
   CloudStorageFileCommand({required super.logger}) {
     addSubcommand(CloudStorageFileListCommand(logger: logger));
+    addSubcommand(CloudStorageFileUploadCommand(logger: logger));
   }
 }
 
@@ -333,4 +358,128 @@ Examples
       textOutputUi: StorageFileListTextUi(utc: utc, tree: tree),
     );
   }
+}
+
+enum StorageFileUploadCommandConfig<V> implements OptionDefinition<V> {
+  projectId(StorageCommandConfig.projectId),
+  storageId(StorageCommandConfig.storageId),
+  file(StorageCommandConfig.uploadSource),
+  path(StorageCommandConfig.uploadPath);
+
+  const StorageFileUploadCommandConfig(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class CloudStorageFileUploadCommand
+    extends CloudCliCommand<StorageFileUploadCommandConfig> {
+  @override
+  String get description => '''Upload a local file or directory to a storage.
+
+A directory is uploaded with everything in it, and the command asks for confirmation before it starts.
+Uploading to a path that already holds a file fails, so delete the file first to replace it.
+''';
+
+  @override
+  String get name => 'upload';
+
+  @override
+  String? get usageExamples =>
+      '''\n
+Examples
+
+  Upload avatar.png to the root of the storage "public".
+
+    \$ $baseCommand storage file upload public ./avatar.png
+
+  Upload it into the folder "avatars" under a new name.
+
+    \$ $baseCommand storage file upload public ./avatar.png avatars/u1.png
+
+  Upload it into the folder "avatars", keeping the file name.
+
+    \$ $baseCommand storage file upload public ./avatar.png avatars/
+
+  Upload a whole directory, keeping its name and structure.
+
+    \$ $baseCommand storage file upload public ./avatars
+
+  Upload the directory under another name.
+
+    \$ $baseCommand storage file upload public ./avatars images
+''';
+
+  CloudStorageFileUploadCommand({required super.logger})
+    : super(options: StorageFileUploadCommandConfig.values);
+
+  @override
+  Future<void> runWithOutput(
+    final Configuration<StorageFileUploadCommandConfig> commandConfig,
+    final CommandOutput output,
+  ) async {
+    final projectId = commandConfig.value(
+      StorageFileUploadCommandConfig.projectId,
+    );
+    final storageId = commandConfig.value(
+      StorageFileUploadCommandConfig.storageId,
+    );
+    final source = commandConfig.value(StorageFileUploadCommandConfig.file);
+    final path = commandConfig.optionalValue(
+      StorageFileUploadCommandConfig.path,
+    );
+
+    final items = await StorageOperations.collectUploadItems(
+      source: source,
+      path: path,
+    );
+
+    if (source is Directory) {
+      await confirmToContinue(
+        output,
+        message: _uploadPlanMessage(source, items, storageId),
+        defaultValue: true,
+      );
+    }
+
+    await renderCommand(
+      output,
+      operation: () => StorageOperations.uploadFiles(
+        runner.serviceProvider.cloudApiClient,
+        runner.serviceProvider.fileUploaderFactory,
+        logger,
+        projectId: projectId,
+        storageId: storageId,
+        items: items,
+        baseCommand: baseCommand,
+      ),
+      textOutputUi: const StorageFileUploadTextUi(),
+    );
+  }
+}
+
+const _maxListedUploadItems = 20;
+
+String _uploadPlanMessage(
+  final Directory source,
+  final List<UploadItem> items,
+  final String storageId,
+) {
+  final totalBytes = items.fold<int>(
+    0,
+    (final sum, final item) => sum + item.sizeBytes,
+  );
+  final listed = items.take(_maxListedUploadItems);
+  final remaining = items.length - listed.length;
+
+  return [
+    'The directory "${source.path}" contains ${items.length} '
+        '${items.length == 1 ? 'file' : 'files'} '
+        '(${formatByteSize(totalBytes)}):',
+    '',
+    for (final item in listed) '  ${item.remotePath}',
+    if (remaining > 0) '  ... and $remaining more',
+    '',
+    'Upload them to storage "$storageId"?',
+  ].join('\n');
 }

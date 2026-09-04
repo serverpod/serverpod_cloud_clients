@@ -48,4 +48,84 @@ void main() {
       expect(StorageOperations.normalizePrefix('  docs  '), 'docs/');
     });
   });
+
+  group('Given a single file to upload', () {
+    test('when no path is given then the file name is used', () {
+      expect(StorageOperations.resolveUploadPath(null, 'a.png'), 'a.png');
+    });
+
+    test('when the path is blank then the file name is used', () {
+      expect(StorageOperations.resolveUploadPath('  ', 'a.png'), 'a.png');
+    });
+
+    test('when the path ends with a slash then the file name is appended', () {
+      expect(
+        StorageOperations.resolveUploadPath('avatars/', 'a.png'),
+        'avatars/a.png',
+      );
+    });
+
+    test('when the path has a leading slash then it is stripped', () {
+      expect(
+        StorageOperations.resolveUploadPath('/avatars/', 'a.png'),
+        'avatars/a.png',
+      );
+    });
+
+    test('when the path is a plain path then it renames the file', () {
+      expect(
+        StorageOperations.resolveUploadPath('avatars/u1.png', 'a.png'),
+        'avatars/u1.png',
+      );
+    });
+  });
+
+  group('Given a directory to upload', () {
+    test('when no path is given then the directory name is kept', () {
+      expect(
+        StorageOperations.resolveFolderUploadPath(null, 'avatars', 'u1.png'),
+        'avatars/u1.png',
+      );
+    });
+
+    test('when the path ends with a slash then the name is nested', () {
+      expect(
+        StorageOperations.resolveFolderUploadPath('docs/', 'avatars', 'u1.png'),
+        'docs/avatars/u1.png',
+      );
+    });
+
+    test('when the path has a leading slash then it is stripped', () {
+      expect(
+        StorageOperations.resolveFolderUploadPath(
+          '/docs/',
+          'avatars',
+          'u1.png',
+        ),
+        'docs/avatars/u1.png',
+      );
+    });
+
+    test('when the path is a plain path then it renames the directory', () {
+      expect(
+        StorageOperations.resolveFolderUploadPath(
+          'images',
+          'avatars',
+          'u1.png',
+        ),
+        'images/u1.png',
+      );
+    });
+
+    test('when the file is nested then the structure is kept', () {
+      expect(
+        StorageOperations.resolveFolderUploadPath(
+          null,
+          'avatars',
+          'sub/u1.png',
+        ),
+        'avatars/sub/u1.png',
+      );
+    });
+  });
 }
