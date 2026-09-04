@@ -4,7 +4,12 @@ import 'package:ground_control_client/ground_control_client.dart'
         BucketResource,
         BucketStatus,
         BucketVisibility;
+import 'package:ground_control_client/ground_control_client.dart'
+    show BucketFile;
+import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
+import 'package:serverpod_cloud_cli/util/byte_size.dart';
+import 'package:serverpod_cloud_cli/util/printers/file_tree_printer.dart';
 
 class StorageListTextUi extends OutputWidget {
   final String baseCommand;
@@ -85,6 +90,58 @@ class StorageDeleteTextUi extends OutputWidget {
     return storageId is! String
         ? const SuccessTextWidget('Successfully deleted storage.')
         : SuccessTextWidget('Successfully deleted storage "$storageId".');
+  }
+}
+
+class StorageFileListTextUi extends OutputWidget {
+  final bool utc;
+  final bool tree;
+
+  const StorageFileListTextUi({required this.utc, required this.tree});
+
+  @override
+  OutputWidget build(OutputContext context) {
+    final files = context.get<List<BucketFile>>();
+    if (files.isEmpty) {
+      return const InfoTextWidget('This folder is empty.');
+    }
+
+    if (tree) {
+      return StorageFileTreeWidget([for (final file in files) file.name]);
+    }
+
+    return FormattedTableWidget(
+      formatter: TextTableOutputFormatter<BucketFile>(
+        columns: [
+          TableColumnFormatter.forElement('Name', getter: (file) => file.name),
+          TableColumnFormatter.forElement(
+            'Size',
+            getter: (file) => formatByteSize(file.sizeBytes),
+          ),
+          TableColumnFormatter.forElement(
+            'Last Modified',
+            getter: (file) => file.updated,
+          ),
+        ],
+        utc: utc,
+      ),
+    );
+  }
+}
+
+/// Renders file paths as a directory tree.
+class StorageFileTreeWidget extends OutputWidget {
+  final List<String> names;
+
+  const StorageFileTreeWidget(this.names);
+
+  @override
+  void render({required CommandLogger logger}) {
+    FileTreePrinter.writeFileTree(
+      filePaths: names.toSet(),
+      ignoredPaths: const {},
+      write: logger.raw,
+    );
   }
 }
 

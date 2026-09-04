@@ -28,6 +28,7 @@ Every project starts with a private storage "private" and a public storage "publ
     addSubcommand(CloudStorageListCommand(logger: logger));
     addSubcommand(CloudStorageCreateCommand(logger: logger));
     addSubcommand(CloudStorageDeleteCommand(logger: logger));
+    addSubcommand(CloudStorageFileCommand(logger: logger));
   }
 }
 
@@ -50,6 +51,14 @@ abstract final class StorageCommandConfig {
     mandatory: true,
     customValidator: _validateStorageId,
   );
+  static const optionalPath = StringOption(
+    argName: 'path',
+    argPos: 1,
+    helpText:
+        'A folder path inside the storage. '
+        'Can be passed as the second argument.',
+  );
+  static const utc = UtcOption();
 
   static void _validateStorageId(final String value) {
     final reason = StorageIdValidator.validate(value);
@@ -225,6 +234,103 @@ class CloudStorageDeleteCommand
         baseCommand: baseCommand,
       ).then((_) => {'storageId': storageId}),
       textOutputUi: const StorageDeleteTextUi(),
+    );
+  }
+}
+
+class CloudStorageFileCommand extends CloudCliCommand {
+  @override
+  final name = 'file';
+
+  @override
+  String get description => 'Manage the files in a storage.';
+
+  @override
+  String get category => CommandCategories.control;
+
+  CloudStorageFileCommand({required super.logger}) {
+    addSubcommand(CloudStorageFileListCommand(logger: logger));
+  }
+}
+
+enum StorageFileListCommandConfig<V> implements OptionDefinition<V> {
+  projectId(StorageCommandConfig.projectId),
+  storageId(StorageCommandConfig.storageId),
+  path(StorageCommandConfig.optionalPath),
+  tree(
+    FlagOption(
+      argName: 'tree',
+      argAbbrev: 't',
+      helpText: 'Show the files as a directory tree instead of a table.',
+      negatable: false,
+      defaultsTo: false,
+    ),
+  ),
+  utc(StorageCommandConfig.utc);
+
+  const StorageFileListCommandConfig(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class CloudStorageFileListCommand
+    extends CloudCliCommand<StorageFileListCommandConfig> {
+  @override
+  String get description => '''List the files in a storage.
+
+Listing is recursive. Pass a folder path to list only the files under it.
+''';
+
+  @override
+  String get name => 'list';
+
+  @override
+  String? get usageExamples =>
+      '''\n
+Examples
+
+  List every file in the storage "public".
+
+    \$ $baseCommand storage file list public
+
+  List the files under the folder "avatars".
+
+    \$ $baseCommand storage file list public avatars
+
+  Show the files as a directory tree.
+
+    \$ $baseCommand storage file list public --tree
+''';
+
+  CloudStorageFileListCommand({required super.logger})
+    : super(options: StorageFileListCommandConfig.values);
+
+  @override
+  Future<void> runWithOutput(
+    final Configuration<StorageFileListCommandConfig> commandConfig,
+    final CommandOutput output,
+  ) async {
+    final projectId = commandConfig.value(
+      StorageFileListCommandConfig.projectId,
+    );
+    final storageId = commandConfig.value(
+      StorageFileListCommandConfig.storageId,
+    );
+    final path = commandConfig.optionalValue(StorageFileListCommandConfig.path);
+    final tree = commandConfig.value(StorageFileListCommandConfig.tree);
+    final utc = commandConfig.value(StorageFileListCommandConfig.utc);
+
+    await renderCommand(
+      output,
+      operation: () => StorageOperations.listFiles(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+        storageId: storageId,
+        path: path,
+        baseCommand: baseCommand,
+      ),
+      textOutputUi: StorageFileListTextUi(utc: utc, tree: tree),
     );
   }
 }
