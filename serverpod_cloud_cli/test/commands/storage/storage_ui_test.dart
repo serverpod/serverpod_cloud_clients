@@ -334,4 +334,60 @@ void main() {
       expect(io.stdout, contains('b.txt'));
     });
   });
+
+  group('Given a StorageFileUploadTextUi', () {
+    group('when rendered for a single uploaded file', () {
+      late String stdout;
+      late String stderr;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const StorageFileUploadTextUi(),
+          data: const {
+            'storageId': 'public',
+            'fileCount': 1,
+            'sizeBytes': 11,
+            'files': [
+              {'path': 'avatar.png', 'sizeBytes': 11},
+            ],
+          },
+        );
+        stdout = io.stdout;
+        stderr = io.stderr;
+      });
+
+      test('then stdout names the uploaded file and the storage', () {
+        expect(
+          stdout,
+          contains('Successfully uploaded "avatar.png" to storage "public".'),
+        );
+      });
+
+      test('then stderr is empty', () {
+        expect(stderr, isEmpty);
+      });
+    });
+
+    group('when rendered for a multi-file upload', () {
+      test('then stdout reports the count and total size', () async {
+        final io = await renderCommandUi(
+          const StorageFileUploadTextUi(),
+          data: const {
+            'storageId': 'public',
+            'fileCount': 2,
+            'sizeBytes': 6,
+            'files': [
+              {'path': 'avatars/u1.png', 'sizeBytes': 3},
+              {'path': 'avatars/sub/u2.png', 'sizeBytes': 3},
+            ],
+          },
+        );
+
+        expect(
+          io.stdout,
+          contains('Successfully uploaded 2 files (6 B) to storage "public".'),
+        );
+      });
+    });
+  });
 }

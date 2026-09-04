@@ -145,6 +145,32 @@ class StorageFileTreeWidget extends OutputWidget {
   }
 }
 
+class StorageFileUploadTextUi extends OutputWidget {
+  const StorageFileUploadTextUi();
+
+  @override
+  OutputWidget build(OutputContext context) {
+    final result = context.get<Map<String, Object?>>();
+    final storageId = result['storageId'];
+    final files = result['files'];
+    final fileCount = files is List ? files.length : 0;
+
+    if (fileCount == 1 && files is List) {
+      final path = (files.single as Map<String, Object?>)['path'];
+      return SuccessTextWidget(
+        'Successfully uploaded "$path" to storage "$storageId".',
+      );
+    }
+
+    final sizeBytes = result['sizeBytes'];
+    final size = sizeBytes is int ? ' (${formatByteSize(sizeBytes)})' : '';
+
+    return SuccessTextWidget(
+      'Successfully uploaded $fileCount files$size to storage "$storageId".',
+    );
+  }
+}
+
 /// The user-facing label for the read access of a storage.
 String accessLabel(BucketVisibility visibility) {
   return switch (visibility) {
