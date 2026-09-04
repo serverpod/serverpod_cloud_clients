@@ -505,4 +505,36 @@ abstract final class StorageOperations {
       'sizeBytes': sizeBytes,
     };
   }
+
+  /// Deletes the file at [path] from the storage [storageId].
+  ///
+  /// The server is idempotent, so deleting a file that does not exist
+  /// completes.
+  ///
+  /// Throws [FailureException] if the storage is not found
+  /// or the request fails.
+  static Future<void> deleteFile(
+    Client cloudApiClient, {
+    required String projectId,
+    required String storageId,
+    required String path,
+    required String baseCommand,
+  }) async {
+    try {
+      await cloudApiClient.bucketObjects.deleteFile(
+        cloudCapsuleId: projectId,
+        storageId: storageId,
+        path: path,
+      );
+    } on NotFoundException {
+      throw FailureException(
+        error: 'Storage "$storageId" was not found in project "$projectId".',
+        hint:
+            'Run "$baseCommand storage list" to see the storages of '
+            'the project.',
+      );
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Failed to delete the file.');
+    }
+  }
 }

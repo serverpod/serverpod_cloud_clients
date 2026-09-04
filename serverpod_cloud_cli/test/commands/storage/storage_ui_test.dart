@@ -422,4 +422,34 @@ void main() {
       });
     });
   });
+
+  group('Given a StorageFileDeleteTextUi', () {
+    group('when rendered after deleting a file', () {
+      late String stdout;
+      late String stderr;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const StorageFileDeleteTextUi(),
+          data: const {'storageId': 'public', 'path': 'docs/report.pdf'},
+        );
+        stdout = io.stdout;
+        stderr = io.stderr;
+      });
+
+      test('then stdout names the file and the storage', () {
+        expect(
+          stdout,
+          contains(
+            'Successfully deleted file "docs/report.pdf" '
+            'from storage "public".',
+          ),
+        );
+      });
+
+      test('then stderr is empty', () {
+        expect(stderr, isEmpty);
+      });
+    });
+  });
 }
