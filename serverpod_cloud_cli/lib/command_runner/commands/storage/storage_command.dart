@@ -293,6 +293,7 @@ class CloudStorageFileCommand extends CloudCliCommand {
     addSubcommand(CloudStorageFileListCommand(logger: logger));
     addSubcommand(CloudStorageFileUploadCommand(logger: logger));
     addSubcommand(CloudStorageFileDownloadCommand(logger: logger));
+    addSubcommand(CloudStorageFileDeleteCommand(logger: logger));
   }
 }
 
@@ -585,6 +586,67 @@ Examples
         baseCommand: baseCommand,
       ),
       textOutputUi: const StorageFileDownloadTextUi(),
+    );
+  }
+}
+
+enum StorageFileDeleteCommandConfig<V> implements OptionDefinition<V> {
+  projectId(StorageCommandConfig.projectId),
+  storageId(StorageCommandConfig.storageId),
+  path(StorageCommandConfig.filePath);
+
+  const StorageFileDeleteCommandConfig(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class CloudStorageFileDeleteCommand
+    extends CloudCliCommand<StorageFileDeleteCommandConfig> {
+  @override
+  String get description => '''Delete a file from a storage.
+
+Deleting a file that does not exist succeeds.
+''';
+
+  @override
+  String get name => 'delete';
+
+  @override
+  String get category => CommandCategories.dangerZone;
+
+  CloudStorageFileDeleteCommand({required super.logger})
+    : super(options: StorageFileDeleteCommandConfig.values);
+
+  @override
+  Future<void> runWithOutput(
+    final Configuration<StorageFileDeleteCommandConfig> commandConfig,
+    final CommandOutput output,
+  ) async {
+    final projectId = commandConfig.value(
+      StorageFileDeleteCommandConfig.projectId,
+    );
+    final storageId = commandConfig.value(
+      StorageFileDeleteCommandConfig.storageId,
+    );
+    final path = commandConfig.value(StorageFileDeleteCommandConfig.path);
+
+    await confirmToContinue(
+      output,
+      message: 'Delete file "$path" from storage "$storageId"?',
+      defaultValue: false,
+    );
+
+    await renderCommand(
+      output,
+      operation: () => StorageOperations.deleteFile(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+        storageId: storageId,
+        path: path,
+        baseCommand: baseCommand,
+      ).then((_) => {'storageId': storageId, 'path': path}),
+      textOutputUi: const StorageFileDeleteTextUi(),
     );
   }
 }

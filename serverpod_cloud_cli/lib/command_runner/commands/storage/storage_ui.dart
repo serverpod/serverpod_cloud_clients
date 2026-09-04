@@ -184,6 +184,21 @@ class StorageFileDownloadTextUi extends OutputWidget {
   }
 }
 
+class StorageFileDeleteTextUi extends OutputWidget {
+  const StorageFileDeleteTextUi();
+
+  @override
+  OutputWidget build(OutputContext context) {
+    final result = context.get<Map<String, Object?>>();
+    final path = result['path'];
+    final storageId = result['storageId'];
+
+    return SuccessTextWidget(
+      'Successfully deleted file "$path" from storage "$storageId".',
+    );
+  }
+}
+
 /// The user-facing label for the read access of a storage.
 String accessLabel(BucketVisibility visibility) {
   return switch (visibility) {
