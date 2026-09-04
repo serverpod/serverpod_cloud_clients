@@ -8,6 +8,9 @@ class BucketResourceBuilder {
   String _bucketName;
   ServerpodRegion _region;
   BucketStatus _status;
+  int? _lastMeteredSizeBytes;
+  DateTime? _accessRevokedAt;
+  BucketAccessRevocationReason? _accessRevokedReason;
 
   BucketResourceBuilder()
     : _cloudCapsuleId = 'test-capsule',
@@ -60,6 +63,21 @@ class BucketResourceBuilder {
     return this;
   }
 
+  BucketResourceBuilder withLastMeteredSizeBytes(int? lastMeteredSizeBytes) {
+    _lastMeteredSizeBytes = lastMeteredSizeBytes;
+
+    return this;
+  }
+
+  BucketResourceBuilder withAccessRevoked({
+    BucketAccessRevocationReason? reason,
+  }) {
+    _accessRevokedAt = DateTime.utc(2026, 7, 20, 10);
+    _accessRevokedReason = reason;
+
+    return this;
+  }
+
   BucketResource build() {
     return BucketResource(
       cloudCapsuleId: _cloudCapsuleId,
@@ -69,6 +87,9 @@ class BucketResourceBuilder {
       bucketName: _bucketName,
       region: _region,
       status: _status,
+      lastMeteredSizeBytes: _lastMeteredSizeBytes,
+      accessRevokedAt: _accessRevokedAt,
+      accessRevokedReason: _accessRevokedReason,
     );
   }
 }

@@ -20,6 +20,7 @@ import 'package:serverpod_cloud_cli/command_runner/commands/me/me_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/password/password_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/project/project_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/status/status_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/storage/storage_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/variable/variable_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/version/version_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cli_run_context_resolver.dart';
@@ -249,6 +250,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
       CloudDbCommand(logger: logger),
       CloudLaunchCommand(logger: logger),
       CloudSettingsCommand(logger: logger),
+      if (adminUserMode) CloudStorageCommand(logger: logger),
       if (adminUserMode) CloudAdminCommand(logger: logger, hidden: false),
     ]);
 
