@@ -84,6 +84,23 @@ abstract final class StorageCommandConfig {
         'Can be passed as the third argument.',
   );
 
+  static const filePath = StringOption(
+    argName: 'path',
+    argPos: 1,
+    helpText:
+        'The path of the file inside the storage. '
+        'Can be passed as the second argument.',
+    mandatory: true,
+  );
+  static const downloadOutput = FileDirOption(
+    argName: 'output',
+    argAbbrev: 'o',
+    helpText:
+        'Where to save the file. '
+        'Defaults to the file name in the current directory. '
+        'An existing directory saves the file inside it.',
+  );
+
   static void _validateStorageId(final String value) {
     final reason = StorageIdValidator.validate(value);
     if (reason != null) {
@@ -275,6 +292,7 @@ class CloudStorageFileCommand extends CloudCliCommand {
   CloudStorageFileCommand({required super.logger}) {
     addSubcommand(CloudStorageFileListCommand(logger: logger));
     addSubcommand(CloudStorageFileUploadCommand(logger: logger));
+    addSubcommand(CloudStorageFileDownloadCommand(logger: logger));
   }
 }
 
@@ -482,4 +500,91 @@ String _uploadPlanMessage(
     '',
     'Upload them to storage "$storageId"?',
   ].join('\n');
+}
+
+enum StorageFileDownloadCommandConfig<V> implements OptionDefinition<V> {
+  projectId(StorageCommandConfig.projectId),
+  storageId(StorageCommandConfig.storageId),
+  path(StorageCommandConfig.filePath),
+  output(StorageCommandConfig.downloadOutput);
+
+  const StorageFileDownloadCommandConfig(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class CloudStorageFileDownloadCommand
+    extends CloudCliCommand<StorageFileDownloadCommandConfig> {
+  @override
+  String get description => '''Download a file from a storage.
+
+The file is saved under its own name in the current directory unless --output says otherwise.
+''';
+
+  @override
+  String get name => 'download';
+
+  @override
+  String? get usageExamples =>
+      '''\n
+Examples
+
+  Download report.pdf into the current directory.
+
+    \$ $baseCommand storage file download public docs/report.pdf
+
+  Save it under another name.
+
+    \$ $baseCommand storage file download public docs/report.pdf --output ./q3.pdf
+
+  Save it into an existing directory, keeping the file name.
+
+    \$ $baseCommand storage file download public docs/report.pdf --output ./downloads
+''';
+
+  CloudStorageFileDownloadCommand({required super.logger})
+    : super(options: StorageFileDownloadCommandConfig.values);
+
+  @override
+  Future<void> runWithOutput(
+    final Configuration<StorageFileDownloadCommandConfig> commandConfig,
+    final CommandOutput output,
+  ) async {
+    final projectId = commandConfig.value(
+      StorageFileDownloadCommandConfig.projectId,
+    );
+    final storageId = commandConfig.value(
+      StorageFileDownloadCommandConfig.storageId,
+    );
+    final path = commandConfig.value(StorageFileDownloadCommandConfig.path);
+    final outputFile = commandConfig.optionalValue(
+      StorageFileDownloadCommandConfig.output,
+    );
+
+    final destination = StorageOperations.resolveDownloadPath(outputFile, path);
+
+    if (destination.existsSync()) {
+      await confirmToContinue(
+        output,
+        message: 'Overwrite "${destination.path}"?',
+        defaultValue: false,
+      );
+    }
+
+    await renderCommand(
+      output,
+      operation: () => StorageOperations.downloadFile(
+        runner.serviceProvider.cloudApiClient,
+        runner.serviceProvider.fileDownloaderFactory,
+        logger,
+        projectId: projectId,
+        storageId: storageId,
+        path: path,
+        destination: destination,
+        baseCommand: baseCommand,
+      ),
+      textOutputUi: const StorageFileDownloadTextUi(),
+    );
+  }
 }

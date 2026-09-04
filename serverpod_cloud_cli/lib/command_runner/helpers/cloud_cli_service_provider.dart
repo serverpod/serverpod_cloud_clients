@@ -6,6 +6,7 @@ import 'package:serverpod_cloud_cli/util/cli_authentication_key_manager.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_shared/serverpod_cloud_shared.dart';
 
+import 'file_downloader.dart';
 import 'file_uploader_factory.dart';
 
 /// A service provider for the Serverpod Cloud CLI.
@@ -14,6 +15,7 @@ import 'file_uploader_factory.dart';
 class CloudCliServiceProvider {
   final Client Function(GlobalConfiguration globalCfg)? _apiClientFactory;
   late final FileUploaderFactory _fileUploaderFactory;
+  late final FileDownloaderFactory _fileDownloaderFactory;
 
   bool _initialized = false;
   late GlobalConfiguration _globalConfiguration;
@@ -25,8 +27,10 @@ class CloudCliServiceProvider {
   CloudCliServiceProvider({
     Client Function(GlobalConfiguration globalCfg)? apiClientFactory,
     FileUploaderFactory? fileUploaderFactory,
+    FileDownloaderFactory? fileDownloaderFactory,
   }) : _apiClientFactory = apiClientFactory {
     _fileUploaderFactory = fileUploaderFactory ?? _createGcsFileUploader;
+    _fileDownloaderFactory = fileDownloaderFactory ?? _createFileDownloader;
   }
 
   bool get initialized => _initialized;
@@ -89,9 +93,15 @@ class CloudCliServiceProvider {
 
   FileUploaderFactory get fileUploaderFactory => _fileUploaderFactory;
 
+  FileDownloaderFactory get fileDownloaderFactory => _fileDownloaderFactory;
+
   ScloudSettings get scloudSettings => _scloudSettings ??= ScloudSettings(
     localStoragePath: _globalConfiguration.scloudDir.path,
   );
+
+  FileDownloaderClient _createFileDownloader() {
+    return DioFileDownloader(timeout: _globalConfiguration.connectionTimeout);
+  }
 
   FileUploaderClient _createGcsFileUploader(String uploadDescription) {
     return GoogleCloudStorageUploader(

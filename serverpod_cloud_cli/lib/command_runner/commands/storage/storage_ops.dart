@@ -7,6 +7,7 @@ import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/status/status_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/dio_failure.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/file_downloader.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/file_uploader_factory.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
@@ -398,5 +399,110 @@ abstract final class StorageOperations {
         hint: 'Please try again.',
       );
     }
+  }
+
+  /// Resolves the local file a download of [remotePath] is written to.
+  ///
+  /// A null [output] saves the file under its own name in the current
+  /// directory, an [output] that is a directory saves it inside that
+  /// directory, and an [output] that is a file is the file itself.
+  static File resolveDownloadPath(
+    final FileSystemEntity? output,
+    final String remotePath,
+  ) {
+    final fileName = p.basename(remotePath);
+    if (output == null) {
+      return File(fileName);
+    }
+    if (output is Directory) {
+      return File(p.join(output.path, fileName));
+    }
+
+    return File(output.path);
+  }
+
+  /// Downloads [path] from the storage [storageId] into [destination].
+  ///
+  /// Throws [FailureException] if the destination directory is missing, the
+  /// storage or file is not found, or the transfer fails.
+  static Future<Map<String, Object?>> downloadFile(
+    Client cloudApiClient,
+    FileDownloaderFactory fileDownloaderFactory,
+    CommandLogger logger, {
+    required String projectId,
+    required String storageId,
+    required String path,
+    required File destination,
+    required String baseCommand,
+  }) async {
+    final directory = destination.parent;
+    if (!directory.existsSync()) {
+      throw FailureException(
+        error: 'The directory "${directory.path}" does not exist.',
+        hint:
+            'Create it, or pass --output with a path inside an existing '
+            'directory.',
+      );
+    }
+
+    final String url;
+    try {
+      url = await cloudApiClient.bucketObjects.getDownloadUrl(
+        cloudCapsuleId: projectId,
+        storageId: storageId,
+        path: path,
+      );
+    } on NotFoundException {
+      throw FailureException(
+        error: 'Storage "$storageId" was not found in project "$projectId".',
+        hint:
+            'Run "$baseCommand storage list" to see the storages of '
+            'the project.',
+      );
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Failed to prepare the download.');
+    }
+
+    var sizeBytes = 0;
+    final success = await logger.progress(
+      'Downloading "$path"',
+      successMessage: 'Download successful.',
+      padRight: StatusCommands.progressMessagePadLength,
+      () async {
+        try {
+          sizeBytes = await fileDownloaderFactory().download(
+            Uri.parse(url),
+            destination,
+          );
+          return true;
+        } on DioException catch (e) {
+          if (e.response?.statusCode == 404) {
+            throw FailureException(
+              error: 'File "$path" was not found in storage "$storageId".',
+              hint:
+                  'Run "$baseCommand storage file list $storageId" '
+                  'to see the files.',
+            );
+          }
+          throw failureFromDioException(e, action: 'download the file');
+        } on Exception catch (e, s) {
+          throw FailureException.nested(e, s, 'Failed to download the file.');
+        }
+      },
+    );
+
+    if (!success) {
+      throw FailureException(
+        error: 'Failed to download "$path".',
+        hint: 'Please try again.',
+      );
+    }
+
+    return {
+      'storageId': storageId,
+      'path': path,
+      'file': destination.path,
+      'sizeBytes': sizeBytes,
+    };
   }
 }
