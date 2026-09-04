@@ -215,4 +215,42 @@ void main() {
       });
     });
   });
+
+  group('Given a StorageDeleteTextUi', () {
+    group('when rendered after deleting a named storage', () {
+      late String stdout;
+      late String stderr;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const StorageDeleteTextUi(),
+          data: const {'storageId': 'user-uploads'},
+        );
+        stdout = io.stdout;
+        stderr = io.stderr;
+      });
+
+      test('then stdout contains the success message', () {
+        expect(
+          stdout,
+          contains('Successfully deleted storage "user-uploads".'),
+        );
+      });
+
+      test('then stderr is empty', () {
+        expect(stderr, isEmpty);
+      });
+    });
+
+    group('when rendered without a storage id', () {
+      test('then stdout contains a generic success message', () async {
+        final io = await renderCommandUi(
+          const StorageDeleteTextUi(),
+          data: const <String, Object?>{},
+        );
+
+        expect(io.stdout, contains('Successfully deleted storage.'));
+      });
+    });
+  });
 }

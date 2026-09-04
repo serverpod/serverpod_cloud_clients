@@ -80,4 +80,31 @@ abstract final class StorageOperations {
       throw FailureException.nested(e, s, 'Failed to create storage.');
     }
   }
+
+  /// Deletes the storage with id [storageId] and every file in it.
+  ///
+  /// Throws [FailureException] if the storage is not found
+  /// or the request fails.
+  static Future<void> deleteStorage(
+    Client cloudApiClient, {
+    required String projectId,
+    required String storageId,
+    required String baseCommand,
+  }) async {
+    try {
+      await cloudApiClient.bucket.deleteBucket(
+        cloudCapsuleId: projectId,
+        storageId: storageId,
+      );
+    } on NotFoundException {
+      throw FailureException(
+        error: 'Storage "$storageId" was not found in project "$projectId".',
+        hint:
+            'Run "$baseCommand storage list" to see the storages of '
+            'the project.',
+      );
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Failed to delete storage.');
+    }
+  }
 }

@@ -27,6 +27,7 @@ Every project starts with a private storage "private" and a public storage "publ
   CloudStorageCommand({required super.logger}) {
     addSubcommand(CloudStorageListCommand(logger: logger));
     addSubcommand(CloudStorageCreateCommand(logger: logger));
+    addSubcommand(CloudStorageDeleteCommand(logger: logger));
   }
 }
 
@@ -170,6 +171,60 @@ Examples
         baseCommand: baseCommand,
       ),
       textOutputUi: StorageCreateTextUi(baseCommand: baseCommand),
+    );
+  }
+}
+
+enum StorageDeleteCommandConfig<V> implements OptionDefinition<V> {
+  projectId(StorageCommandConfig.projectId),
+  storageId(StorageCommandConfig.storageId);
+
+  const StorageDeleteCommandConfig(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class CloudStorageDeleteCommand
+    extends CloudCliCommand<StorageDeleteCommandConfig> {
+  @override
+  String get description =>
+      'Delete a storage and every file in it. This cannot be undone.';
+
+  @override
+  String get name => 'delete';
+
+  @override
+  String get category => CommandCategories.dangerZone;
+
+  CloudStorageDeleteCommand({required super.logger})
+    : super(options: StorageDeleteCommandConfig.values);
+
+  @override
+  Future<void> runWithOutput(
+    final Configuration<StorageDeleteCommandConfig> commandConfig,
+    final CommandOutput output,
+  ) async {
+    final projectId = commandConfig.value(StorageDeleteCommandConfig.projectId);
+    final storageId = commandConfig.value(StorageDeleteCommandConfig.storageId);
+
+    await confirmToContinue(
+      output,
+      message:
+          'Delete storage "$storageId" and every file in it? '
+          'This cannot be undone.',
+      defaultValue: false,
+    );
+
+    await renderCommand(
+      output,
+      operation: () => StorageOperations.deleteStorage(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+        storageId: storageId,
+        baseCommand: baseCommand,
+      ).then((_) => {'storageId': storageId}),
+      textOutputUi: const StorageDeleteTextUi(),
     );
   }
 }

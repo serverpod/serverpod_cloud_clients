@@ -74,6 +74,20 @@ class StorageCreateTextUi extends OutputWidget {
   }
 }
 
+class StorageDeleteTextUi extends OutputWidget {
+  const StorageDeleteTextUi();
+
+  @override
+  OutputWidget build(OutputContext context) {
+    final result = context.get<Map<String, Object?>>();
+    final storageId = result['storageId'];
+
+    return storageId is! String
+        ? const SuccessTextWidget('Successfully deleted storage.')
+        : SuccessTextWidget('Successfully deleted storage "$storageId".');
+  }
+}
+
 /// The user-facing label for the read access of a storage.
 String accessLabel(BucketVisibility visibility) {
   return switch (visibility) {
