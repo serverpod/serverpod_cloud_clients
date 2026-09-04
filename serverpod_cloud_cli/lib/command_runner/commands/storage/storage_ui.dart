@@ -50,6 +50,30 @@ class StorageListTextUi extends OutputWidget {
   }
 }
 
+class StorageCreateTextUi extends OutputWidget {
+  final String baseCommand;
+
+  const StorageCreateTextUi({required this.baseCommand});
+
+  @override
+  OutputWidget build(OutputContext context) {
+    final storage = context.get<BucketResource>();
+
+    return OutputWidgetList([
+      if (storage.visibility == BucketVisibility.public)
+        const InfoTextWidget(
+          'Anyone with the URL can read every file in this storage. '
+          'Access cannot be changed later.',
+        ),
+      SuccessTextWidget('Successfully created storage "${storage.storageId}".'),
+      CommandHintTextWidget(
+        'The storage is being set up. Check its status with:',
+        command: '$baseCommand storage list',
+      ),
+    ]);
+  }
+}
+
 /// The user-facing label for the read access of a storage.
 String accessLabel(BucketVisibility visibility) {
   return switch (visibility) {

@@ -149,4 +149,70 @@ void main() {
       });
     });
   });
+
+  group('Given a StorageCreateTextUi', () {
+    group('when rendered for a private storage', () {
+      late String stdout;
+      late String stderr;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const StorageCreateTextUi(baseCommand: 'scloud'),
+          data: BucketResourceBuilder()
+              .withStorageId('user-uploads')
+              .withVisibility(BucketVisibility.private)
+              .build(),
+        );
+        stdout = io.stdout;
+        stderr = io.stderr;
+      });
+
+      test('then stdout contains the success message', () {
+        expect(
+          stdout,
+          contains('Successfully created storage "user-uploads".'),
+        );
+      });
+
+      test('then stdout hints at checking the storage status', () {
+        expect(
+          stdout,
+          contains('The storage is being set up. Check its status with:'),
+        );
+        expect(stdout, contains('scloud storage list'));
+      });
+
+      test('then stdout does not warn about public access', () {
+        expect(stdout, isNot(contains('Anyone with the URL')));
+      });
+
+      test('then stderr is empty', () {
+        expect(stderr, isEmpty);
+      });
+    });
+
+    group('when rendered for a public storage', () {
+      late String stdout;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const StorageCreateTextUi(baseCommand: 'scloud'),
+          data: BucketResourceBuilder()
+              .withStorageId('assets')
+              .withVisibility(BucketVisibility.public)
+              .build(),
+        );
+        stdout = io.stdout;
+      });
+
+      test('then stdout warns that anyone with the URL can read the files', () {
+        expect(stdout, contains('Anyone with the URL can read every file'));
+        expect(stdout, contains('Access cannot be'));
+      });
+
+      test('then stdout still contains the success message', () {
+        expect(stdout, contains('Successfully created storage "assets".'));
+      });
+    });
+  });
 }

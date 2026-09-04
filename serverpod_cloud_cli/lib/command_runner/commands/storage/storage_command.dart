@@ -1,10 +1,14 @@
 import 'package:config/config.dart';
+import 'package:ground_control_client/ground_control_client.dart'
+    show BucketVisibility;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/storage/storage_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/storage/storage_ui.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
+import 'package:serverpod_cloud_shared/serverpod_cloud_shared.dart'
+    show StorageIdValidator;
 
 class CloudStorageCommand extends CloudCliCommand {
   @override
@@ -22,6 +26,7 @@ Every project starts with a private storage "private" and a public storage "publ
 
   CloudStorageCommand({required super.logger}) {
     addSubcommand(CloudStorageListCommand(logger: logger));
+    addSubcommand(CloudStorageCreateCommand(logger: logger));
   }
 }
 
@@ -34,6 +39,23 @@ abstract final class StorageCommandConfig {
     helpText: 'The id of the storage. Can be passed as the first argument.',
     mandatory: true,
   );
+  static const newStorageId = StringOption(
+    argName: 'storage',
+    argAbbrev: 's',
+    argPos: 0,
+    helpText:
+        'The id of the new storage. Lowercase letters, digits and dashes. '
+        'Can be passed as the first argument.',
+    mandatory: true,
+    customValidator: _validateStorageId,
+  );
+
+  static void _validateStorageId(final String value) {
+    final reason = StorageIdValidator.validate(value);
+    if (reason != null) {
+      throw UsageException(reason, '');
+    }
+  }
 }
 
 enum StorageListCommandConfig<V> implements OptionDefinition<V> {
@@ -74,6 +96,80 @@ class CloudStorageListCommand
         baseCommand: baseCommand,
       ),
       textOutputUi: StorageListTextUi(baseCommand: baseCommand),
+    );
+  }
+}
+
+enum StorageCreateCommandConfig<V> implements OptionDefinition<V> {
+  projectId(StorageCommandConfig.projectId),
+  storageId(StorageCommandConfig.newStorageId),
+  access(
+    EnumOption<BucketVisibility>(
+      argName: 'access',
+      argAbbrev: 'a',
+      helpText:
+          'Who can read the files. '
+          '"private": only your project. "public": anyone with the URL. '
+          'Cannot be changed later.',
+      defaultsTo: BucketVisibility.private,
+      enumParser: EnumParser(BucketVisibility.values),
+    ),
+  );
+
+  const StorageCreateCommandConfig(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class CloudStorageCreateCommand
+    extends CloudCliCommand<StorageCreateCommandConfig> {
+  @override
+  String get description => '''Create a storage.
+
+The access of a storage decides who can read its files, and is fixed at creation.
+A private storage is only readable by your project, a public storage is readable by anyone with the URL.
+''';
+
+  @override
+  String get name => 'create';
+
+  @override
+  String? get usageExamples =>
+      '''\n
+Examples
+
+  Create a private storage called user-uploads.
+
+    \$ $baseCommand storage create user-uploads
+
+  Create a storage whose files anyone with the URL can read.
+
+    \$ $baseCommand storage create assets --access public
+''';
+
+  CloudStorageCreateCommand({required super.logger})
+    : super(options: StorageCreateCommandConfig.values);
+
+  @override
+  Future<void> runWithOutput(
+    final Configuration<StorageCreateCommandConfig> commandConfig,
+    final CommandOutput output,
+  ) async {
+    final projectId = commandConfig.value(StorageCreateCommandConfig.projectId);
+    final storageId = commandConfig.value(StorageCreateCommandConfig.storageId);
+    final access = commandConfig.value(StorageCreateCommandConfig.access);
+
+    await renderCommand(
+      output,
+      operation: () => StorageOperations.createStorage(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+        storageId: storageId,
+        access: access,
+        baseCommand: baseCommand,
+      ),
+      textOutputUi: StorageCreateTextUi(baseCommand: baseCommand),
     );
   }
 }
