@@ -451,7 +451,7 @@ void _stubAdmin(final ClientMock client, {required final String projectId}) {
   when(
     () => client.adminUpdatePlan.listOrbPlans(),
   ).thenAnswer((_) async => ['starter', 'growth']);
-  when(
-    () => client.adminProjects.redeployCapsule(any()),
-  ).thenAnswer((_) async {});
+  when(() => client.adminProjects.redeployCapsule(any())).thenAnswer(
+    (_) async => UuidValue.raw('00000000-0000-4000-8000-000000000000'),
+  );
 }

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
@@ -42,7 +43,10 @@ void main() {
       setUp(() async {
         when(
           () => client.adminProjects.redeployCapsule('test-project'),
-        ).thenAnswer((invocation) async => Future.value());
+        ).thenAnswer(
+          (invocation) async =>
+              UuidValue.raw('00000000-0000-4000-8000-000000000000'),
+        );
 
         commandResult = cli.run(['admin', 'redeploy', 'test-project']);
       });
@@ -71,7 +75,10 @@ void main() {
       setUp(() async {
         when(
           () => client.adminProjects.redeployCapsule('another-project'),
-        ).thenAnswer((invocation) async => Future.value());
+        ).thenAnswer(
+          (invocation) async =>
+              UuidValue.raw('00000000-0000-4000-8000-000000000000'),
+        );
 
         commandResult = cli.run(['admin', 'redeploy', 'another-project']);
       });

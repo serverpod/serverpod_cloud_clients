@@ -254,11 +254,16 @@ class EndpointAdminProjects extends _i1.EndpointRef {
   /// Redeploys a capsule using its current image.
   /// Triggers a deploymentUpdated event to redeploy the infrastructure.
   ///
+  /// Returns the deployment request id minted for this publish. It is stamped
+  /// as the `serverpod/request-id` pod label.
+  ///
   /// Throws a [NoPriorDeploymentException] if the capsule has no prior deployment.
-  _i2.Future<void> redeployCapsule(String cloudCapsuleId) =>
-      caller.callServerEndpoint<void>('adminProjects', 'redeployCapsule', {
-        'cloudCapsuleId': cloudCapsuleId,
-      });
+  _i2.Future<_i1.UuidValue> redeployCapsule(String cloudCapsuleId) =>
+      caller.callServerEndpoint<_i1.UuidValue>(
+        'adminProjects',
+        'redeployCapsule',
+        {'cloudCapsuleId': cloudCapsuleId},
+      );
 }
 
 /// Endpoint for global administrator secrets migration.
@@ -1079,9 +1084,12 @@ class EndpointCapsules extends _i1.EndpointRef {
   /// Redeploys a capsule using its current image.
   /// Triggers a deploymentUpdated event to redeploy the infrastructure.
   ///
+  /// Returns the deployment request id minted for this publish. It is stamped
+  /// as the `serverpod/request-id` pod label.
+  ///
   /// Throws a [NoPriorDeploymentException] if the capsule has no prior deployment.
-  _i2.Future<void> redeployCapsule({required String cloudCapsuleId}) =>
-      caller.callServerEndpoint<void>('capsules', 'redeployCapsule', {
+  _i2.Future<_i1.UuidValue> redeployCapsule({required String cloudCapsuleId}) =>
+      caller.callServerEndpoint<_i1.UuidValue>('capsules', 'redeployCapsule', {
         'cloudCapsuleId': cloudCapsuleId,
       });
 }
