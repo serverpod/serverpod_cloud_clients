@@ -253,4 +253,85 @@ void main() {
       });
     });
   });
+
+  group('Given a StorageFileListTextUi', () {
+    group('when rendered with no files', () {
+      late String stdout;
+      late String stderr;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const StorageFileListTextUi(utc: false, tree: false),
+          data: const <BucketFile>[],
+        );
+        stdout = io.stdout;
+        stderr = io.stderr;
+      });
+
+      test('then stdout reports the folder is empty', () {
+        expect(stdout, contains('This folder is empty.'));
+      });
+
+      test('then stderr is empty', () {
+        expect(stderr, isEmpty);
+      });
+    });
+
+    group('when rendered as a table', () {
+      late String stdout;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const StorageFileListTextUi(utc: false, tree: false),
+          data: [
+            BucketFileBuilder()
+                .withName('avatars/u1.png')
+                .withSizeBytes(34000)
+                .build(),
+          ],
+        );
+        stdout = io.stdout;
+      });
+
+      test('then stdout contains the table headings', () {
+        expect(stdout, contains('Name'));
+        expect(stdout, contains('Size'));
+        expect(stdout, contains('Last Modified'));
+      });
+
+      test('then stdout contains the file row with a formatted size', () {
+        expect(stdout, contains('avatars/u1.png'));
+        expect(stdout, contains('34.0 kB'));
+      });
+    });
+
+    group('when rendered as a tree', () {
+      test('then stdout contains the tree branches', () async {
+        final io = await renderCommandUi(
+          const StorageFileListTextUi(utc: false, tree: true),
+          data: [
+            BucketFileBuilder().withName('avatars/u1.png').build(),
+            BucketFileBuilder().withName('docs/report.pdf').build(),
+          ],
+        );
+
+        expect(io.stdout, contains('avatars'));
+        expect(io.stdout, contains('u1.png'));
+        expect(io.stdout, contains('docs'));
+        expect(io.stdout, contains('report.pdf'));
+      });
+    });
+  });
+
+  group('Given a StorageFileTreeWidget', () {
+    test('then stdout renders the given paths as a tree', () async {
+      final io = await renderCommandUi(
+        const StorageFileTreeWidget(['a.txt', 'sub/b.txt']),
+      );
+
+      expect(io.stdout, contains('a.txt'));
+      expect(io.stdout, contains('sub'));
+      expect(io.stdout, contains('b.txt'));
+    });
+  });
 }
