@@ -11,7 +11,7 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
 /// A single observed sample in a metric series, for a pod or a database alike.
 ///
@@ -19,7 +19,7 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 /// suspended database compute — are represented by the absence of a sample at
 /// a timestamp, never by an interpolated or fabricated value.
 abstract class MetricSample
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   MetricSample._({required this.timestamp, required this.value});
 
   factory MetricSample({required DateTime timestamp, required double value}) =
@@ -27,7 +27,7 @@ abstract class MetricSample
 
   factory MetricSample.fromJson(Map<String, dynamic> jsonSerialization) {
     return MetricSample(
-      timestamp: _i1.DateTimeJsonExtension.fromJson(
+      timestamp: _isc.DateTimeJsonExtension.fromJson(
         jsonSerialization['timestamp'],
       ),
       value: (jsonSerialization['value'] as num).toDouble(),
@@ -42,7 +42,7 @@ abstract class MetricSample
 
   /// Returns a shallow copy of this [MetricSample]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   MetricSample copyWith({DateTime? timestamp, double? value});
   @override
   Map<String, dynamic> toJson() {
@@ -64,7 +64,7 @@ abstract class MetricSample
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
@@ -74,7 +74,7 @@ class _MetricSampleImpl extends MetricSample {
 
   /// Returns a shallow copy of this [MetricSample]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   MetricSample copyWith({DateTime? timestamp, double? value}) {
     return MetricSample(

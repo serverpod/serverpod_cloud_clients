@@ -11,12 +11,12 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../domains/secrets/models/secret_resource.dart' as _i2;
-import 'package:ground_control_client/src/protocol/protocol.dart' as _i3;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../domains/secrets/models/secret_resource.dart' as _i75vpmhh;
 
 abstract class StoredSecretVersion
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   StoredSecretVersion._({
     this.id,
     this.createdAt,
@@ -30,7 +30,7 @@ abstract class StoredSecretVersion
     int? id,
     DateTime? createdAt,
     required int secretResourceId,
-    _i2.SecretResource? secretResource,
+    _i75vpmhh.SecretResource? secretResource,
     required String secretId,
     required Map<String, String> values,
   }) = _StoredSecretVersionImpl;
@@ -40,15 +40,15 @@ abstract class StoredSecretVersion
       id: jsonSerialization['id'] as int?,
       createdAt: jsonSerialization['createdAt'] == null
           ? null
-          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
       secretResourceId: jsonSerialization['secretResourceId'] as int,
       secretResource: jsonSerialization['secretResource'] == null
           ? null
-          : _i3.Protocol().deserialize<_i2.SecretResource>(
+          : _iod2a87h.Protocol().deserialize<_i75vpmhh.SecretResource>(
               jsonSerialization['secretResource'],
             ),
       secretId: jsonSerialization['secretId'] as String,
-      values: _i3.Protocol().deserialize<Map<String, String>>(
+      values: _iod2a87h.Protocol().deserialize<Map<String, String>>(
         jsonSerialization['values'],
       ),
     );
@@ -63,7 +63,7 @@ abstract class StoredSecretVersion
 
   int secretResourceId;
 
-  _i2.SecretResource? secretResource;
+  _i75vpmhh.SecretResource? secretResource;
 
   String secretId;
 
@@ -71,12 +71,12 @@ abstract class StoredSecretVersion
 
   /// Returns a shallow copy of this [StoredSecretVersion]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   StoredSecretVersion copyWith({
     int? id,
     DateTime? createdAt,
     int? secretResourceId,
-    _i2.SecretResource? secretResource,
+    _i75vpmhh.SecretResource? secretResource,
     String? secretId,
     Map<String, String>? values,
   });
@@ -109,7 +109,7 @@ abstract class StoredSecretVersion
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
@@ -120,7 +120,7 @@ class _StoredSecretVersionImpl extends StoredSecretVersion {
     int? id,
     DateTime? createdAt,
     required int secretResourceId,
-    _i2.SecretResource? secretResource,
+    _i75vpmhh.SecretResource? secretResource,
     required String secretId,
     required Map<String, String> values,
   }) : super._(
@@ -134,7 +134,7 @@ class _StoredSecretVersionImpl extends StoredSecretVersion {
 
   /// Returns a shallow copy of this [StoredSecretVersion]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   StoredSecretVersion copyWith({
     Object? id = _Undefined,
@@ -148,7 +148,7 @@ class _StoredSecretVersionImpl extends StoredSecretVersion {
       id: id is int? ? id : this.id,
       createdAt: createdAt is DateTime? ? createdAt : this.createdAt,
       secretResourceId: secretResourceId ?? this.secretResourceId,
-      secretResource: secretResource is _i2.SecretResource?
+      secretResource: secretResource is _i75vpmhh.SecretResource?
           ? secretResource
           : this.secretResource?.copyWith(),
       secretId: secretId ?? this.secretId,

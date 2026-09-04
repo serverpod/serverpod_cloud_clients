@@ -11,13 +11,13 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
 abstract class DNSVerificationFailedException
     implements
-        _i1.SerializableException,
-        _i1.SerializableModel,
-        _i1.ProtocolSerialization {
+        _isc.SerializableException,
+        _isc.SerializableModel,
+        _isc.ProtocolSerialization {
   DNSVerificationFailedException._({required this.message});
 
   factory DNSVerificationFailedException({required String message}) =
@@ -35,7 +35,7 @@ abstract class DNSVerificationFailedException
 
   /// Returns a shallow copy of this [DNSVerificationFailedException]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   DNSVerificationFailedException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
@@ -66,7 +66,7 @@ class _DNSVerificationFailedExceptionImpl
 
   /// Returns a shallow copy of this [DNSVerificationFailedException]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   DNSVerificationFailedException copyWith({String? message}) {
     return DNSVerificationFailedException(message: message ?? this.message);

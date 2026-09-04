@@ -11,9 +11,9 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
-enum Terms implements _i1.SerializableModel {
+enum Terms implements _isc.SerializableModel {
   termsOfService,
   privacyPolicy;
 

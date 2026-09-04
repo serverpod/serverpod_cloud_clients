@@ -11,7 +11,7 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
 /// The runtime state of a capsule or its deployment.
 ///
@@ -24,7 +24,7 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 /// - `notProvisioned` — the workload is not (or not correctly) in place.
 /// - `unknown` — the status service reported a state this server does not
 ///   recognize. Consumers must treat it as not ready.
-enum CapsuleState implements _i1.SerializableModel {
+enum CapsuleState implements _isc.SerializableModel {
   ready,
   progressing,
   degraded,

@@ -11,10 +11,10 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
 /// The reason a procurement was denied.
-enum ProcurementDeniedReason implements _i1.SerializableModel {
+enum ProcurementDeniedReason implements _isc.SerializableModel {
   paymentMethodRequired,
   goodStandingRequired,
   tooManyProjects,

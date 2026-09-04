@@ -11,10 +11,10 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
 /// The cap breach that caused customer access to a bucket to be revoked.
-enum BucketAccessRevocationReason implements _i1.SerializableModel {
+enum BucketAccessRevocationReason implements _isc.SerializableModel {
   /// The capsule's metered storage exceeded its plan's storage cap.
   storageOverage,
 

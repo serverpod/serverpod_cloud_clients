@@ -11,9 +11,9 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
-enum ProductType implements _i1.SerializableModel {
+enum ProductType implements _isc.SerializableModel {
   plan,
   project,
   capsule,

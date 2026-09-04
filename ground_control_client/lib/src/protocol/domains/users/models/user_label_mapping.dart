@@ -11,14 +11,14 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../domains/users/models/user.dart' as _i2;
-import '../../../domains/users/models/user_label.dart' as _i3;
-import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../domains/users/models/user.dart' as _ijl94k1v;
+import '../../../domains/users/models/user_label.dart' as _i5ur1pgv;
 
 /// Associates users (including invited, not yet registered) with user labels.
 abstract class UserLabelMapping
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   UserLabelMapping._({
     this.id,
     DateTime? createdAt,
@@ -31,8 +31,8 @@ abstract class UserLabelMapping
     int? id,
     DateTime? createdAt,
     required int userId,
-    _i2.User? user,
-    required _i3.UserLabel label,
+    _ijl94k1v.User? user,
+    required _i5ur1pgv.UserLabel label,
   }) = _UserLabelMappingImpl;
 
   factory UserLabelMapping.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -40,12 +40,16 @@ abstract class UserLabelMapping
       id: jsonSerialization['id'] as int?,
       createdAt: jsonSerialization['createdAt'] == null
           ? null
-          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
       userId: jsonSerialization['userId'] as int,
       user: jsonSerialization['user'] == null
           ? null
-          : _i4.Protocol().deserialize<_i2.User>(jsonSerialization['user']),
-      label: _i3.UserLabel.fromJson((jsonSerialization['label'] as String)),
+          : _iod2a87h.Protocol().deserialize<_ijl94k1v.User>(
+              jsonSerialization['user'],
+            ),
+      label: _i5ur1pgv.UserLabel.fromJson(
+        (jsonSerialization['label'] as String),
+      ),
     );
   }
 
@@ -59,20 +63,20 @@ abstract class UserLabelMapping
   int userId;
 
   /// The user that is associated with the label.
-  _i2.User? user;
+  _ijl94k1v.User? user;
 
   /// The label associated with the user.
-  _i3.UserLabel label;
+  _i5ur1pgv.UserLabel label;
 
   /// Returns a shallow copy of this [UserLabelMapping]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   UserLabelMapping copyWith({
     int? id,
     DateTime? createdAt,
     int? userId,
-    _i2.User? user,
-    _i3.UserLabel? label,
+    _ijl94k1v.User? user,
+    _i5ur1pgv.UserLabel? label,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -100,7 +104,7 @@ abstract class UserLabelMapping
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
@@ -111,8 +115,8 @@ class _UserLabelMappingImpl extends UserLabelMapping {
     int? id,
     DateTime? createdAt,
     required int userId,
-    _i2.User? user,
-    required _i3.UserLabel label,
+    _ijl94k1v.User? user,
+    required _i5ur1pgv.UserLabel label,
   }) : super._(
          id: id,
          createdAt: createdAt,
@@ -123,20 +127,20 @@ class _UserLabelMappingImpl extends UserLabelMapping {
 
   /// Returns a shallow copy of this [UserLabelMapping]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   UserLabelMapping copyWith({
     Object? id = _Undefined,
     DateTime? createdAt,
     int? userId,
     Object? user = _Undefined,
-    _i3.UserLabel? label,
+    _i5ur1pgv.UserLabel? label,
   }) {
     return UserLabelMapping(
       id: id is int? ? id : this.id,
       createdAt: createdAt ?? this.createdAt,
       userId: userId ?? this.userId,
-      user: user is _i2.User? ? user : this.user?.copyWith(),
+      user: user is _ijl94k1v.User? ? user : this.user?.copyWith(),
       label: label ?? this.label,
     );
   }

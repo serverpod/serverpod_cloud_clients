@@ -11,13 +11,13 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
 abstract class NotFoundException
     implements
-        _i1.SerializableException,
-        _i1.SerializableModel,
-        _i1.ProtocolSerialization {
+        _isc.SerializableException,
+        _isc.SerializableModel,
+        _isc.ProtocolSerialization {
   NotFoundException._({required this.message});
 
   factory NotFoundException({required String message}) = _NotFoundExceptionImpl;
@@ -30,7 +30,7 @@ abstract class NotFoundException
 
   /// Returns a shallow copy of this [NotFoundException]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   NotFoundException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
@@ -53,7 +53,7 @@ class _NotFoundExceptionImpl extends NotFoundException {
 
   /// Returns a shallow copy of this [NotFoundException]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   NotFoundException copyWith({String? message}) {
     return NotFoundException(message: message ?? this.message);

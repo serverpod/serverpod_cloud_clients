@@ -11,14 +11,14 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
 /// Exception thrown when a user / owner lacks a valid subscription.
 abstract class NoSubscriptionException
     implements
-        _i1.SerializableException,
-        _i1.SerializableModel,
-        _i1.ProtocolSerialization {
+        _isc.SerializableException,
+        _isc.SerializableModel,
+        _isc.ProtocolSerialization {
   NoSubscriptionException._({required this.message});
 
   factory NoSubscriptionException({required String message}) =
@@ -36,7 +36,7 @@ abstract class NoSubscriptionException
 
   /// Returns a shallow copy of this [NoSubscriptionException]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   NoSubscriptionException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
@@ -60,7 +60,7 @@ class _NoSubscriptionExceptionImpl extends NoSubscriptionException {
 
   /// Returns a shallow copy of this [NoSubscriptionException]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   NoSubscriptionException copyWith({String? message}) {
     return NoSubscriptionException(message: message ?? this.message);

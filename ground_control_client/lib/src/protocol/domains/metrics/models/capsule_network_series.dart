@@ -11,10 +11,11 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../domains/metrics/models/metric_sample.dart' as _i2;
-import '../../../domains/metrics/models/response_class_series.dart' as _i3;
-import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../domains/metrics/models/metric_sample.dart' as _ic8vhv48;
+import '../../../domains/metrics/models/response_class_series.dart'
+    as _itmrbcx4;
 
 /// Aggregate network signals for a capsule over a time range.
 ///
@@ -27,44 +28,46 @@ import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
 /// idle-but-deployed capsule still has its Envoy counters. The store
 /// disambiguates the two, so this model carries no status flag.
 abstract class CapsuleNetworkSeries
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   CapsuleNetworkSeries._({
     required this.requestsPerSecond,
     required this.responses,
   });
 
   factory CapsuleNetworkSeries({
-    required List<_i2.MetricSample> requestsPerSecond,
-    required List<_i3.ResponseClassSeries> responses,
+    required List<_ic8vhv48.MetricSample> requestsPerSecond,
+    required List<_itmrbcx4.ResponseClassSeries> responses,
   }) = _CapsuleNetworkSeriesImpl;
 
   factory CapsuleNetworkSeries.fromJson(
     Map<String, dynamic> jsonSerialization,
   ) {
     return CapsuleNetworkSeries(
-      requestsPerSecond: _i4.Protocol().deserialize<List<_i2.MetricSample>>(
-        jsonSerialization['requestsPerSecond'],
-      ),
-      responses: _i4.Protocol().deserialize<List<_i3.ResponseClassSeries>>(
-        jsonSerialization['responses'],
-      ),
+      requestsPerSecond: _iod2a87h.Protocol()
+          .deserialize<List<_ic8vhv48.MetricSample>>(
+            jsonSerialization['requestsPerSecond'],
+          ),
+      responses: _iod2a87h.Protocol()
+          .deserialize<List<_itmrbcx4.ResponseClassSeries>>(
+            jsonSerialization['responses'],
+          ),
     );
   }
 
   /// Request-rate samples, in requests per second.
-  List<_i2.MetricSample> requestsPerSecond;
+  List<_ic8vhv48.MetricSample> requestsPerSecond;
 
   /// Per-status-class response-rate series, in status-class order. A class
   /// absent from the result is absent from this list; a class with zero-rate
   /// samples is present.
-  List<_i3.ResponseClassSeries> responses;
+  List<_itmrbcx4.ResponseClassSeries> responses;
 
   /// Returns a shallow copy of this [CapsuleNetworkSeries]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   CapsuleNetworkSeries copyWith({
-    List<_i2.MetricSample>? requestsPerSecond,
-    List<_i3.ResponseClassSeries>? responses,
+    List<_ic8vhv48.MetricSample>? requestsPerSecond,
+    List<_itmrbcx4.ResponseClassSeries>? responses,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -90,23 +93,23 @@ abstract class CapsuleNetworkSeries
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
 class _CapsuleNetworkSeriesImpl extends CapsuleNetworkSeries {
   _CapsuleNetworkSeriesImpl({
-    required List<_i2.MetricSample> requestsPerSecond,
-    required List<_i3.ResponseClassSeries> responses,
+    required List<_ic8vhv48.MetricSample> requestsPerSecond,
+    required List<_itmrbcx4.ResponseClassSeries> responses,
   }) : super._(requestsPerSecond: requestsPerSecond, responses: responses);
 
   /// Returns a shallow copy of this [CapsuleNetworkSeries]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   CapsuleNetworkSeries copyWith({
-    List<_i2.MetricSample>? requestsPerSecond,
-    List<_i3.ResponseClassSeries>? responses,
+    List<_ic8vhv48.MetricSample>? requestsPerSecond,
+    List<_itmrbcx4.ResponseClassSeries>? responses,
   }) {
     return CapsuleNetworkSeries(
       requestsPerSecond:

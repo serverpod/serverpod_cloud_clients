@@ -11,9 +11,9 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import '../../../shared/exceptions/models/plan_change_denied_reason.dart'
-    as _i2;
+    as _i7j8a0cd;
 
 /// Exception thrown when a plan change is denied because a feature that is
 /// currently in use would be stranded by the new plan.
@@ -22,14 +22,14 @@ import '../../../shared/exceptions/models/plan_change_denied_reason.dart'
 /// backups still exist.
 abstract class PlanChangeDeniedException
     implements
-        _i1.SerializableException,
-        _i1.SerializableModel,
-        _i1.ProtocolSerialization {
+        _isc.SerializableException,
+        _isc.SerializableModel,
+        _isc.ProtocolSerialization {
   PlanChangeDeniedException._({required this.message, required this.reason});
 
   factory PlanChangeDeniedException({
     required String message,
-    required _i2.PlanChangeDeniedReason reason,
+    required _i7j8a0cd.PlanChangeDeniedReason reason,
   }) = _PlanChangeDeniedExceptionImpl;
 
   factory PlanChangeDeniedException.fromJson(
@@ -37,7 +37,7 @@ abstract class PlanChangeDeniedException
   ) {
     return PlanChangeDeniedException(
       message: jsonSerialization['message'] as String,
-      reason: _i2.PlanChangeDeniedReason.fromJson(
+      reason: _i7j8a0cd.PlanChangeDeniedReason.fromJson(
         (jsonSerialization['reason'] as String),
       ),
     );
@@ -45,14 +45,14 @@ abstract class PlanChangeDeniedException
 
   String message;
 
-  _i2.PlanChangeDeniedReason reason;
+  _i7j8a0cd.PlanChangeDeniedReason reason;
 
   /// Returns a shallow copy of this [PlanChangeDeniedException]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   PlanChangeDeniedException copyWith({
     String? message,
-    _i2.PlanChangeDeniedReason? reason,
+    _i7j8a0cd.PlanChangeDeniedReason? reason,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -81,16 +81,16 @@ abstract class PlanChangeDeniedException
 class _PlanChangeDeniedExceptionImpl extends PlanChangeDeniedException {
   _PlanChangeDeniedExceptionImpl({
     required String message,
-    required _i2.PlanChangeDeniedReason reason,
+    required _i7j8a0cd.PlanChangeDeniedReason reason,
   }) : super._(message: message, reason: reason);
 
   /// Returns a shallow copy of this [PlanChangeDeniedException]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   PlanChangeDeniedException copyWith({
     String? message,
-    _i2.PlanChangeDeniedReason? reason,
+    _i7j8a0cd.PlanChangeDeniedReason? reason,
   }) {
     return PlanChangeDeniedException(
       message: message ?? this.message,

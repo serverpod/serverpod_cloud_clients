@@ -11,16 +11,16 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../domains/billing/models/owner.dart' as _i2;
-import '../../../domains/projects/models/role.dart' as _i3;
-import '../../../domains/capsules/models/capsule.dart' as _i4;
-import 'package:ground_control_client/src/protocol/protocol.dart' as _i5;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../domains/billing/models/owner.dart' as _icig531b;
+import '../../../domains/capsules/models/capsule.dart' as _ictbn9k6;
+import '../../../domains/projects/models/role.dart' as _im7cbtgg;
 
 /// Represents a project of a tenant.
 /// Typically a serverpod project.
 abstract class Project
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   Project._({
     this.id,
     DateTime? createdAt,
@@ -40,10 +40,10 @@ abstract class Project
     DateTime? updatedAt,
     DateTime? archivedAt,
     required String cloudProjectId,
-    required _i1.UuidValue ownerId,
-    _i2.Owner? owner,
-    List<_i3.Role>? roles,
-    List<_i4.Capsule>? capsules,
+    required _isc.UuidValue ownerId,
+    _icig531b.Owner? owner,
+    List<_im7cbtgg.Role>? roles,
+    List<_ictbn9k6.Capsule>? capsules,
   }) = _ProjectImpl;
 
   factory Project.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -51,28 +51,32 @@ abstract class Project
       id: jsonSerialization['id'] as int?,
       createdAt: jsonSerialization['createdAt'] == null
           ? null
-          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
       updatedAt: jsonSerialization['updatedAt'] == null
           ? null
-          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
+          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
       archivedAt: jsonSerialization['archivedAt'] == null
           ? null
-          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['archivedAt']),
+          : _isc.DateTimeJsonExtension.fromJson(
+              jsonSerialization['archivedAt'],
+            ),
       cloudProjectId: jsonSerialization['cloudProjectId'] as String,
-      ownerId: _i1.UuidValueJsonExtension.fromJson(
+      ownerId: _isc.UuidValueJsonExtension.fromJson(
         jsonSerialization['ownerId'],
       ),
       owner: jsonSerialization['owner'] == null
           ? null
-          : _i5.Protocol().deserialize<_i2.Owner>(jsonSerialization['owner']),
+          : _iod2a87h.Protocol().deserialize<_icig531b.Owner>(
+              jsonSerialization['owner'],
+            ),
       roles: jsonSerialization['roles'] == null
           ? null
-          : _i5.Protocol().deserialize<List<_i3.Role>>(
+          : _iod2a87h.Protocol().deserialize<List<_im7cbtgg.Role>>(
               jsonSerialization['roles'],
             ),
       capsules: jsonSerialization['capsules'] == null
           ? null
-          : _i5.Protocol().deserialize<List<_i4.Capsule>>(
+          : _iod2a87h.Protocol().deserialize<List<_ictbn9k6.Capsule>>(
               jsonSerialization['capsules'],
             ),
     );
@@ -95,30 +99,30 @@ abstract class Project
   String cloudProjectId;
 
   /// The id of the owner of the project.
-  _i1.UuidValue ownerId;
+  _isc.UuidValue ownerId;
 
   /// The owner of the project.
-  _i2.Owner? owner;
+  _icig531b.Owner? owner;
 
   /// The roles for this project.
-  List<_i3.Role>? roles;
+  List<_im7cbtgg.Role>? roles;
 
   /// The capsules belonging to this project.
-  List<_i4.Capsule>? capsules;
+  List<_ictbn9k6.Capsule>? capsules;
 
   /// Returns a shallow copy of this [Project]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   Project copyWith({
     int? id,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? archivedAt,
     String? cloudProjectId,
-    _i1.UuidValue? ownerId,
-    _i2.Owner? owner,
-    List<_i3.Role>? roles,
-    List<_i4.Capsule>? capsules,
+    _isc.UuidValue? ownerId,
+    _icig531b.Owner? owner,
+    List<_im7cbtgg.Role>? roles,
+    List<_ictbn9k6.Capsule>? capsules,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -157,7 +161,7 @@ abstract class Project
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
@@ -170,10 +174,10 @@ class _ProjectImpl extends Project {
     DateTime? updatedAt,
     DateTime? archivedAt,
     required String cloudProjectId,
-    required _i1.UuidValue ownerId,
-    _i2.Owner? owner,
-    List<_i3.Role>? roles,
-    List<_i4.Capsule>? capsules,
+    required _isc.UuidValue ownerId,
+    _icig531b.Owner? owner,
+    List<_im7cbtgg.Role>? roles,
+    List<_ictbn9k6.Capsule>? capsules,
   }) : super._(
          id: id,
          createdAt: createdAt,
@@ -188,7 +192,7 @@ class _ProjectImpl extends Project {
 
   /// Returns a shallow copy of this [Project]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   Project copyWith({
     Object? id = _Undefined,
@@ -196,7 +200,7 @@ class _ProjectImpl extends Project {
     DateTime? updatedAt,
     Object? archivedAt = _Undefined,
     String? cloudProjectId,
-    _i1.UuidValue? ownerId,
+    _isc.UuidValue? ownerId,
     Object? owner = _Undefined,
     Object? roles = _Undefined,
     Object? capsules = _Undefined,
@@ -208,11 +212,11 @@ class _ProjectImpl extends Project {
       archivedAt: archivedAt is DateTime? ? archivedAt : this.archivedAt,
       cloudProjectId: cloudProjectId ?? this.cloudProjectId,
       ownerId: ownerId ?? this.ownerId,
-      owner: owner is _i2.Owner? ? owner : this.owner?.copyWith(),
-      roles: roles is List<_i3.Role>?
+      owner: owner is _icig531b.Owner? ? owner : this.owner?.copyWith(),
+      roles: roles is List<_im7cbtgg.Role>?
           ? roles
           : this.roles?.map((e0) => e0.copyWith()).toList(),
-      capsules: capsules is List<_i4.Capsule>?
+      capsules: capsules is List<_ictbn9k6.Capsule>?
           ? capsules
           : this.capsules?.map((e0) => e0.copyWith()).toList(),
     );

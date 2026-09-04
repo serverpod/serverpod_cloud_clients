@@ -11,16 +11,16 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../domains/buckets/models/bucket_provider.dart' as _i2;
-import '../../../domains/buckets/models/bucket_visibility.dart' as _i3;
-import '../../../shared/models/serverpod_region.dart' as _i4;
-import '../../../domains/buckets/models/bucket_status.dart' as _i5;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import '../../../domains/buckets/models/bucket_access_revocation_reason.dart'
-    as _i6;
+    as _iu6ymjy9;
+import '../../../domains/buckets/models/bucket_provider.dart' as _iyyeyvjc;
+import '../../../domains/buckets/models/bucket_status.dart' as _i7xoz7e1;
+import '../../../domains/buckets/models/bucket_visibility.dart' as _imvvswny;
+import '../../../shared/models/serverpod_region.dart' as _irrrfshl;
 
 abstract class BucketResource
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   BucketResource._({
     this.id,
     required this.cloudCapsuleId,
@@ -39,48 +39,48 @@ abstract class BucketResource
   factory BucketResource({
     int? id,
     required String cloudCapsuleId,
-    required _i2.BucketProvider provider,
+    required _iyyeyvjc.BucketProvider provider,
     required String storageId,
-    required _i3.BucketVisibility visibility,
+    required _imvvswny.BucketVisibility visibility,
     required String bucketName,
-    required _i4.ServerpodRegion region,
-    required _i5.BucketStatus status,
+    required _irrrfshl.ServerpodRegion region,
+    required _i7xoz7e1.BucketStatus status,
     int? lastMeteredSizeBytes,
     DateTime? meteredAt,
     DateTime? accessRevokedAt,
-    _i6.BucketAccessRevocationReason? accessRevokedReason,
+    _iu6ymjy9.BucketAccessRevocationReason? accessRevokedReason,
   }) = _BucketResourceImpl;
 
   factory BucketResource.fromJson(Map<String, dynamic> jsonSerialization) {
     return BucketResource(
       id: jsonSerialization['id'] as int?,
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
-      provider: _i2.BucketProvider.fromJson(
+      provider: _iyyeyvjc.BucketProvider.fromJson(
         (jsonSerialization['provider'] as String),
       ),
       storageId: jsonSerialization['storageId'] as String,
-      visibility: _i3.BucketVisibility.fromJson(
+      visibility: _imvvswny.BucketVisibility.fromJson(
         (jsonSerialization['visibility'] as String),
       ),
       bucketName: jsonSerialization['bucketName'] as String,
-      region: _i4.ServerpodRegion.fromJson(
+      region: _irrrfshl.ServerpodRegion.fromJson(
         (jsonSerialization['region'] as int),
       ),
-      status: _i5.BucketStatus.fromJson(
+      status: _i7xoz7e1.BucketStatus.fromJson(
         (jsonSerialization['status'] as String),
       ),
       lastMeteredSizeBytes: jsonSerialization['lastMeteredSizeBytes'] as int?,
       meteredAt: jsonSerialization['meteredAt'] == null
           ? null
-          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['meteredAt']),
+          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['meteredAt']),
       accessRevokedAt: jsonSerialization['accessRevokedAt'] == null
           ? null
-          : _i1.DateTimeJsonExtension.fromJson(
+          : _isc.DateTimeJsonExtension.fromJson(
               jsonSerialization['accessRevokedAt'],
             ),
       accessRevokedReason: jsonSerialization['accessRevokedReason'] == null
           ? null
-          : _i6.BucketAccessRevocationReason.fromJson(
+          : _iu6ymjy9.BucketAccessRevocationReason.fromJson(
               (jsonSerialization['accessRevokedReason'] as String),
             ),
     );
@@ -93,17 +93,17 @@ abstract class BucketResource
 
   String cloudCapsuleId;
 
-  _i2.BucketProvider provider;
+  _iyyeyvjc.BucketProvider provider;
 
   String storageId;
 
-  _i3.BucketVisibility visibility;
+  _imvvswny.BucketVisibility visibility;
 
   String bucketName;
 
-  _i4.ServerpodRegion region;
+  _irrrfshl.ServerpodRegion region;
 
-  _i5.BucketStatus status;
+  _i7xoz7e1.BucketStatus status;
 
   /// The bucket's average stored bytes over the most recently metered day,
   /// written by the consumption ingestion run.
@@ -120,24 +120,24 @@ abstract class BucketResource
 
   /// Which cap breach caused the revocation. Informational — restore always
   /// re-evaluates every cap.
-  _i6.BucketAccessRevocationReason? accessRevokedReason;
+  _iu6ymjy9.BucketAccessRevocationReason? accessRevokedReason;
 
   /// Returns a shallow copy of this [BucketResource]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   BucketResource copyWith({
     int? id,
     String? cloudCapsuleId,
-    _i2.BucketProvider? provider,
+    _iyyeyvjc.BucketProvider? provider,
     String? storageId,
-    _i3.BucketVisibility? visibility,
+    _imvvswny.BucketVisibility? visibility,
     String? bucketName,
-    _i4.ServerpodRegion? region,
-    _i5.BucketStatus? status,
+    _irrrfshl.ServerpodRegion? region,
+    _i7xoz7e1.BucketStatus? status,
     int? lastMeteredSizeBytes,
     DateTime? meteredAt,
     DateTime? accessRevokedAt,
-    _i6.BucketAccessRevocationReason? accessRevokedReason,
+    _iu6ymjy9.BucketAccessRevocationReason? accessRevokedReason,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -183,7 +183,7 @@ abstract class BucketResource
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
@@ -193,16 +193,16 @@ class _BucketResourceImpl extends BucketResource {
   _BucketResourceImpl({
     int? id,
     required String cloudCapsuleId,
-    required _i2.BucketProvider provider,
+    required _iyyeyvjc.BucketProvider provider,
     required String storageId,
-    required _i3.BucketVisibility visibility,
+    required _imvvswny.BucketVisibility visibility,
     required String bucketName,
-    required _i4.ServerpodRegion region,
-    required _i5.BucketStatus status,
+    required _irrrfshl.ServerpodRegion region,
+    required _i7xoz7e1.BucketStatus status,
     int? lastMeteredSizeBytes,
     DateTime? meteredAt,
     DateTime? accessRevokedAt,
-    _i6.BucketAccessRevocationReason? accessRevokedReason,
+    _iu6ymjy9.BucketAccessRevocationReason? accessRevokedReason,
   }) : super._(
          id: id,
          cloudCapsuleId: cloudCapsuleId,
@@ -220,17 +220,17 @@ class _BucketResourceImpl extends BucketResource {
 
   /// Returns a shallow copy of this [BucketResource]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   BucketResource copyWith({
     Object? id = _Undefined,
     String? cloudCapsuleId,
-    _i2.BucketProvider? provider,
+    _iyyeyvjc.BucketProvider? provider,
     String? storageId,
-    _i3.BucketVisibility? visibility,
+    _imvvswny.BucketVisibility? visibility,
     String? bucketName,
-    _i4.ServerpodRegion? region,
-    _i5.BucketStatus? status,
+    _irrrfshl.ServerpodRegion? region,
+    _i7xoz7e1.BucketStatus? status,
     Object? lastMeteredSizeBytes = _Undefined,
     Object? meteredAt = _Undefined,
     Object? accessRevokedAt = _Undefined,
@@ -253,7 +253,7 @@ class _BucketResourceImpl extends BucketResource {
           ? accessRevokedAt
           : this.accessRevokedAt,
       accessRevokedReason:
-          accessRevokedReason is _i6.BucketAccessRevocationReason?
+          accessRevokedReason is _iu6ymjy9.BucketAccessRevocationReason?
           ? accessRevokedReason
           : this.accessRevokedReason,
     );

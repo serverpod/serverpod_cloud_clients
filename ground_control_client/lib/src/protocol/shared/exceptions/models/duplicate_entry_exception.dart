@@ -11,13 +11,13 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
 abstract class DuplicateEntryException
     implements
-        _i1.SerializableException,
-        _i1.SerializableModel,
-        _i1.ProtocolSerialization {
+        _isc.SerializableException,
+        _isc.SerializableModel,
+        _isc.ProtocolSerialization {
   DuplicateEntryException._({required this.message});
 
   factory DuplicateEntryException({required String message}) =
@@ -35,7 +35,7 @@ abstract class DuplicateEntryException
 
   /// Returns a shallow copy of this [DuplicateEntryException]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   DuplicateEntryException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
@@ -59,7 +59,7 @@ class _DuplicateEntryExceptionImpl extends DuplicateEntryException {
 
   /// Returns a shallow copy of this [DuplicateEntryException]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   DuplicateEntryException copyWith({String? message}) {
     return DuplicateEntryException(message: message ?? this.message);

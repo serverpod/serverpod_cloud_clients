@@ -11,15 +11,15 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
 /// Thrown when a bucket cannot be created yet because the capsule's storage
 /// identity has not finished provisioning. The operation is safe to retry.
 abstract class BucketStorageIdentityUnavailableException
     implements
-        _i1.SerializableException,
-        _i1.SerializableModel,
-        _i1.ProtocolSerialization {
+        _isc.SerializableException,
+        _isc.SerializableModel,
+        _isc.ProtocolSerialization {
   BucketStorageIdentityUnavailableException._({required this.message});
 
   factory BucketStorageIdentityUnavailableException({required String message}) =
@@ -37,7 +37,7 @@ abstract class BucketStorageIdentityUnavailableException
 
   /// Returns a shallow copy of this [BucketStorageIdentityUnavailableException]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   BucketStorageIdentityUnavailableException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
@@ -68,7 +68,7 @@ class _BucketStorageIdentityUnavailableExceptionImpl
 
   /// Returns a shallow copy of this [BucketStorageIdentityUnavailableException]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   BucketStorageIdentityUnavailableException copyWith({String? message}) {
     return BucketStorageIdentityUnavailableException(

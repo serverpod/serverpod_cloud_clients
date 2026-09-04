@@ -11,12 +11,12 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../domains/billing/models/payment_method_card.dart' as _i2;
-import 'package:ground_control_client/src/protocol/protocol.dart' as _i3;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../domains/billing/models/payment_method_card.dart' as _idh4bejc;
 
 abstract class PaymentMethod
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   PaymentMethod._({
     required this.id,
     required this.type,
@@ -27,7 +27,7 @@ abstract class PaymentMethod
   factory PaymentMethod({
     required String id,
     required String type,
-    _i2.PaymentMethodCard? card,
+    _idh4bejc.PaymentMethodCard? card,
     required bool isDefault,
   }) = _PaymentMethodImpl;
 
@@ -37,10 +37,12 @@ abstract class PaymentMethod
       type: jsonSerialization['type'] as String,
       card: jsonSerialization['card'] == null
           ? null
-          : _i3.Protocol().deserialize<_i2.PaymentMethodCard>(
+          : _iod2a87h.Protocol().deserialize<_idh4bejc.PaymentMethodCard>(
               jsonSerialization['card'],
             ),
-      isDefault: _i1.BoolJsonExtension.fromJson(jsonSerialization['isDefault']),
+      isDefault: _isc.BoolJsonExtension.fromJson(
+        jsonSerialization['isDefault'],
+      ),
     );
   }
 
@@ -48,17 +50,17 @@ abstract class PaymentMethod
 
   String type;
 
-  _i2.PaymentMethodCard? card;
+  _idh4bejc.PaymentMethodCard? card;
 
   bool isDefault;
 
   /// Returns a shallow copy of this [PaymentMethod]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   PaymentMethod copyWith({
     String? id,
     String? type,
-    _i2.PaymentMethodCard? card,
+    _idh4bejc.PaymentMethodCard? card,
     bool? isDefault,
   });
   @override
@@ -85,7 +87,7 @@ abstract class PaymentMethod
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
@@ -95,13 +97,13 @@ class _PaymentMethodImpl extends PaymentMethod {
   _PaymentMethodImpl({
     required String id,
     required String type,
-    _i2.PaymentMethodCard? card,
+    _idh4bejc.PaymentMethodCard? card,
     required bool isDefault,
   }) : super._(id: id, type: type, card: card, isDefault: isDefault);
 
   /// Returns a shallow copy of this [PaymentMethod]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   PaymentMethod copyWith({
     String? id,
@@ -112,7 +114,7 @@ class _PaymentMethodImpl extends PaymentMethod {
     return PaymentMethod(
       id: id ?? this.id,
       type: type ?? this.type,
-      card: card is _i2.PaymentMethodCard? ? card : this.card?.copyWith(),
+      card: card is _idh4bejc.PaymentMethodCard? ? card : this.card?.copyWith(),
       isDefault: isDefault ?? this.isDefault,
     );
   }

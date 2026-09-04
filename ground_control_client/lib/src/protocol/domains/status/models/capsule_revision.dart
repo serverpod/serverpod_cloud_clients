@@ -11,37 +11,37 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
 /// The identity of one revision of a capsule deployment.
 abstract class CapsuleRevision
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   CapsuleRevision._({this.uploadId, this.buildId});
 
-  factory CapsuleRevision({_i1.UuidValue? uploadId, _i1.UuidValue? buildId}) =
+  factory CapsuleRevision({_isc.UuidValue? uploadId, _isc.UuidValue? buildId}) =
       _CapsuleRevisionImpl;
 
   factory CapsuleRevision.fromJson(Map<String, dynamic> jsonSerialization) {
     return CapsuleRevision(
       uploadId: jsonSerialization['uploadId'] == null
           ? null
-          : _i1.UuidValueJsonExtension.fromJson(jsonSerialization['uploadId']),
+          : _isc.UuidValueJsonExtension.fromJson(jsonSerialization['uploadId']),
       buildId: jsonSerialization['buildId'] == null
           ? null
-          : _i1.UuidValueJsonExtension.fromJson(jsonSerialization['buildId']),
+          : _isc.UuidValueJsonExtension.fromJson(jsonSerialization['buildId']),
     );
   }
 
   /// The upload this revision was built from.
-  _i1.UuidValue? uploadId;
+  _isc.UuidValue? uploadId;
 
   /// The build produced from that upload.
-  _i1.UuidValue? buildId;
+  _isc.UuidValue? buildId;
 
   /// Returns a shallow copy of this [CapsuleRevision]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
-  CapsuleRevision copyWith({_i1.UuidValue? uploadId, _i1.UuidValue? buildId});
+  @_isc.useResult
+  CapsuleRevision copyWith({_isc.UuidValue? uploadId, _isc.UuidValue? buildId});
   @override
   Map<String, dynamic> toJson() {
     return {
@@ -62,27 +62,27 @@ abstract class CapsuleRevision
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
 class _Undefined {}
 
 class _CapsuleRevisionImpl extends CapsuleRevision {
-  _CapsuleRevisionImpl({_i1.UuidValue? uploadId, _i1.UuidValue? buildId})
+  _CapsuleRevisionImpl({_isc.UuidValue? uploadId, _isc.UuidValue? buildId})
     : super._(uploadId: uploadId, buildId: buildId);
 
   /// Returns a shallow copy of this [CapsuleRevision]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   CapsuleRevision copyWith({
     Object? uploadId = _Undefined,
     Object? buildId = _Undefined,
   }) {
     return CapsuleRevision(
-      uploadId: uploadId is _i1.UuidValue? ? uploadId : this.uploadId,
-      buildId: buildId is _i1.UuidValue? ? buildId : this.buildId,
+      uploadId: uploadId is _isc.UuidValue? ? uploadId : this.uploadId,
+      buildId: buildId is _isc.UuidValue? ? buildId : this.buildId,
     );
   }
 }

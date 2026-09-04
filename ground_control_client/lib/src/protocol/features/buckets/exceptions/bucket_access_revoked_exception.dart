@@ -11,23 +11,23 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import '../../../domains/buckets/models/bucket_access_revocation_reason.dart'
-    as _i2;
+    as _iu6ymjy9;
 
 /// Thrown when an upload is attempted on a bucket whose customer access is
 /// revoked by cap enforcement. Reads and deletes remain available so usage
 /// can be reduced.
 abstract class BucketAccessRevokedException
     implements
-        _i1.SerializableException,
-        _i1.SerializableModel,
-        _i1.ProtocolSerialization {
+        _isc.SerializableException,
+        _isc.SerializableModel,
+        _isc.ProtocolSerialization {
   BucketAccessRevokedException._({required this.message, this.reason});
 
   factory BucketAccessRevokedException({
     required String message,
-    _i2.BucketAccessRevocationReason? reason,
+    _iu6ymjy9.BucketAccessRevocationReason? reason,
   }) = _BucketAccessRevokedExceptionImpl;
 
   factory BucketAccessRevokedException.fromJson(
@@ -37,7 +37,7 @@ abstract class BucketAccessRevokedException
       message: jsonSerialization['message'] as String,
       reason: jsonSerialization['reason'] == null
           ? null
-          : _i2.BucketAccessRevocationReason.fromJson(
+          : _iu6ymjy9.BucketAccessRevocationReason.fromJson(
               (jsonSerialization['reason'] as String),
             ),
     );
@@ -45,14 +45,14 @@ abstract class BucketAccessRevokedException
 
   String message;
 
-  _i2.BucketAccessRevocationReason? reason;
+  _iu6ymjy9.BucketAccessRevocationReason? reason;
 
   /// Returns a shallow copy of this [BucketAccessRevokedException]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   BucketAccessRevokedException copyWith({
     String? message,
-    _i2.BucketAccessRevocationReason? reason,
+    _iu6ymjy9.BucketAccessRevocationReason? reason,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -83,12 +83,12 @@ class _Undefined {}
 class _BucketAccessRevokedExceptionImpl extends BucketAccessRevokedException {
   _BucketAccessRevokedExceptionImpl({
     required String message,
-    _i2.BucketAccessRevocationReason? reason,
+    _iu6ymjy9.BucketAccessRevocationReason? reason,
   }) : super._(message: message, reason: reason);
 
   /// Returns a shallow copy of this [BucketAccessRevokedException]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   BucketAccessRevokedException copyWith({
     String? message,
@@ -96,7 +96,7 @@ class _BucketAccessRevokedExceptionImpl extends BucketAccessRevokedException {
   }) {
     return BucketAccessRevokedException(
       message: message ?? this.message,
-      reason: reason is _i2.BucketAccessRevocationReason?
+      reason: reason is _iu6ymjy9.BucketAccessRevocationReason?
           ? reason
           : this.reason,
     );

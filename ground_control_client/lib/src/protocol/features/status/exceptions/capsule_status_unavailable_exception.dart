@@ -11,16 +11,16 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
 /// Thrown when the live status of a capsule cannot currently be determined,
 /// due to a status service failure, network error, or timeout.
 /// The operation is safe to retry.
 abstract class CapsuleStatusUnavailableException
     implements
-        _i1.SerializableException,
-        _i1.SerializableModel,
-        _i1.ProtocolSerialization {
+        _isc.SerializableException,
+        _isc.SerializableModel,
+        _isc.ProtocolSerialization {
   CapsuleStatusUnavailableException._({required this.message});
 
   factory CapsuleStatusUnavailableException({required String message}) =
@@ -38,7 +38,7 @@ abstract class CapsuleStatusUnavailableException
 
   /// Returns a shallow copy of this [CapsuleStatusUnavailableException]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   CapsuleStatusUnavailableException copyWith({String? message});
   @override
   Map<String, dynamic> toJson() {
@@ -69,7 +69,7 @@ class _CapsuleStatusUnavailableExceptionImpl
 
   /// Returns a shallow copy of this [CapsuleStatusUnavailableException]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   CapsuleStatusUnavailableException copyWith({String? message}) {
     return CapsuleStatusUnavailableException(message: message ?? this.message);
