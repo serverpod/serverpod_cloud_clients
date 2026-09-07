@@ -14,8 +14,8 @@ void main() {
   group('Given a redeploy hint widget', () {
     test(
       'when rendered then the redeploy copy and deploy command are written',
-      () {
-        const RedeployHintWidget(baseCommand: 'scloud')
+      () async {
+        await const RedeployHintWidget(baseCommand: 'scloud')
             .buildTree(OutputContext(OutputFormat.text))
             .renderTree(logger: logger);
 
@@ -32,8 +32,8 @@ void main() {
 
     test(
       'when the base command is a wrapper then the hinted command uses it',
-      () {
-        const RedeployHintWidget(baseCommand: 'serverpod cloud')
+      () async {
+        await const RedeployHintWidget(baseCommand: 'serverpod cloud')
             .buildTree(OutputContext(OutputFormat.text))
             .renderTree(logger: logger);
 
