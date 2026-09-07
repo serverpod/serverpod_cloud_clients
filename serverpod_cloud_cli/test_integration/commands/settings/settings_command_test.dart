@@ -13,8 +13,8 @@ import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:yaml_codec/yaml_codec.dart';
 
-import '../../test_utils/command_logger_matchers.dart';
-import '../../test_utils/test_command_logger.dart';
+import '../../../test_utils/command_logger_matchers.dart';
+import '../../../test_utils/test_command_logger.dart';
 
 void main() {
   final logger = TestCommandLogger();
@@ -83,6 +83,15 @@ void main() {
           allOf(contains('analytics'), contains('not set')),
         );
       });
+
+      test('then outputs projectContext as not set', () async {
+        await commandResult;
+
+        expect(
+          logger.lineCalls.map((final call) => call.line).join('\n'),
+          allOf(contains('projectContext'), contains('not set')),
+        );
+      });
     });
 
     group('when executing settings list with --format json', () {
@@ -104,9 +113,17 @@ void main() {
 
         expect(logger.lineCalls, isEmpty);
         final payload = jsonDecode(logger.rawCalls.single.content) as List;
-        expect(payload, hasLength(1));
-        expect((payload.single as Map)['name'], 'analytics');
-        expect((payload.single as Map)['value'], isNull);
+        expect((payload.first as Map)['name'], 'analytics');
+        expect((payload.first as Map)['value'], isNull);
+      });
+
+      test('then emits projectContext with a null value', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        final payload = jsonDecode(logger.rawCalls.single.content) as List;
+        expect((payload.last as Map)['name'], 'projectContext');
+        expect((payload.last as Map)['value'], isNull);
       });
     });
 
@@ -129,9 +146,17 @@ void main() {
 
         expect(logger.lineCalls, isEmpty);
         final payload = yamlDecode(logger.rawCalls.single.content) as List;
-        expect(payload, hasLength(1));
-        expect((payload.single as Map)['name'], 'analytics');
-        expect((payload.single as Map)['value'], isNull);
+        expect((payload.first as Map)['name'], 'analytics');
+        expect((payload.first as Map)['value'], isNull);
+      });
+
+      test('then emits projectContext with a null value', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        final payload = yamlDecode(logger.rawCalls.single.content) as List;
+        expect((payload.last as Map)['name'], 'projectContext');
+        expect((payload.last as Map)['value'], isNull);
       });
     });
 
@@ -263,7 +288,7 @@ void main() {
           logger.errorCalls.first,
           equalsErrorCall(
             message: 'Unknown setting "unknown".',
-            hint: 'Available settings: analytics.',
+            hint: 'Available settings: analytics, projectContext.',
           ),
         );
       });
@@ -293,6 +318,72 @@ void main() {
         expect(
           logger.successCalls.first,
           equalsSuccessCall(message: 'Unset analytics.'),
+        );
+      });
+    });
+
+    group('when executing settings set projectContext', () {
+      late Future commandResult;
+
+      setUp(() async {
+        commandResult = cli.run([
+          'settings',
+          'set',
+          'projectContext',
+          'my-project',
+          '--config-dir',
+          testConfigDirPath,
+        ]);
+      });
+
+      test('then completes successfully', () async {
+        await expectLater(commandResult, completes);
+      });
+
+      test('then outputs a success message', () async {
+        await commandResult;
+
+        expect(logger.successCalls, isNotEmpty);
+        expect(
+          logger.successCalls.first,
+          equalsSuccessCall(message: 'Set projectContext to "my-project".'),
+        );
+      });
+
+      test('then the setting is persisted', () async {
+        await commandResult;
+
+        final settings = await ResourceManager.tryLoadSettings(
+          localStoragePath: testConfigDirPath,
+        );
+        expect(settings?.projectContext, equals('my-project'));
+      });
+    });
+
+    group('when executing settings unset projectContext', () {
+      late Future commandResult;
+
+      setUp(() async {
+        commandResult = cli.run([
+          'settings',
+          'unset',
+          'projectContext',
+          '--config-dir',
+          testConfigDirPath,
+        ]);
+      });
+
+      test('then completes successfully', () async {
+        await expectLater(commandResult, completes);
+      });
+
+      test('then outputs a success message', () async {
+        await commandResult;
+
+        expect(logger.successCalls, isNotEmpty);
+        expect(
+          logger.successCalls.first,
+          equalsSuccessCall(message: 'Unset projectContext.'),
         );
       });
     });
@@ -347,7 +438,7 @@ void main() {
 
         expect(logger.lineCalls, isEmpty);
         final payload = jsonDecode(logger.rawCalls.single.content) as List;
-        expect((payload.single as Map)['value'], isTrue);
+        expect((payload.first as Map)['value'], isTrue);
       });
     });
 
@@ -399,6 +490,108 @@ void main() {
           localStoragePath: testConfigDirPath,
         );
         expect(settings?.enableAnalytics, isNull);
+      });
+    });
+  });
+
+  group('Given a project context is set', () {
+    setUp(() async {
+      await ResourceManager.storeSettings(
+        settings: ServerpodCloudSettingsData()..projectContext = 'my-project',
+        localStoragePath: testConfigDirPath,
+      );
+    });
+
+    group('when executing settings list', () {
+      late Future commandResult;
+
+      setUp(() async {
+        commandResult = cli.run([
+          'settings',
+          'list',
+          '--config-dir',
+          testConfigDirPath,
+        ]);
+      });
+
+      test('then outputs the project context', () async {
+        await commandResult;
+
+        expect(
+          logger.lineCalls.map((final call) => call.line).join('\n'),
+          allOf(contains('projectContext'), contains('my-project')),
+        );
+      });
+    });
+
+    group('when executing settings list with --format json', () {
+      late Future commandResult;
+
+      setUp(() async {
+        commandResult = cli.run([
+          'settings',
+          'list',
+          '--config-dir',
+          testConfigDirPath,
+          '--format',
+          'json',
+        ]);
+      });
+
+      test('then emits the project context', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        final payload = jsonDecode(logger.rawCalls.single.content) as List;
+        expect((payload.last as Map)['name'], 'projectContext');
+        expect((payload.last as Map)['value'], equals('my-project'));
+      });
+    });
+
+    group('when executing settings set projectContext with another value', () {
+      late Future commandResult;
+
+      setUp(() async {
+        commandResult = cli.run([
+          'settings',
+          'set',
+          'projectContext',
+          'other-project',
+          '--config-dir',
+          testConfigDirPath,
+        ]);
+      });
+
+      test('then the setting is updated', () async {
+        await commandResult;
+
+        final settings = await ResourceManager.tryLoadSettings(
+          localStoragePath: testConfigDirPath,
+        );
+        expect(settings?.projectContext, equals('other-project'));
+      });
+    });
+
+    group('when executing settings unset projectContext', () {
+      late Future commandResult;
+
+      setUp(() async {
+        commandResult = cli.run([
+          'settings',
+          'unset',
+          'projectContext',
+          '--config-dir',
+          testConfigDirPath,
+        ]);
+      });
+
+      test('then the setting is unset', () async {
+        await commandResult;
+
+        final settings = await ResourceManager.tryLoadSettings(
+          localStoragePath: testConfigDirPath,
+        );
+        expect(settings?.projectContext, isNull);
       });
     });
   });

@@ -31,11 +31,11 @@ class ProjectIdOption extends StringOption {
             '\nCan be omitted for existing projects that are linked'
             ' (see the "project link" command)'
             '${excludeSettings ? '.' : ' or if a global project context is set'
-                      ' (see the "context set" command).'}',
+                      ' (see the "settings set projectContext" command).'}',
       );
 
   /// If [asFirstArg] is true, the project ID can be also passed as the first positional argument.
-  /// If [excludeSettings] is true, the user's context setting will not affect this value.
+  /// If [excludeSettings] is true, the user's projectContext setting will not affect this value.
   const ProjectIdOption._({
     bool asFirstArg = false,
     bool excludeSettings = false,
@@ -71,7 +71,7 @@ class ProjectIdOption extends StringOption {
   /// specified.
   ///
   /// If [asFirstArg] is true, the project ID can be also passed as the first positional argument.
-  /// If [excludeSettings] is true, the user's context setting will not affect this value.
+  /// If [excludeSettings] is true, the user's projectContext setting will not affect this value.
   const ProjectIdOption.nonMandatory({
     bool asFirstArg = false,
     bool excludeSettings = false,

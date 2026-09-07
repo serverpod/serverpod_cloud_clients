@@ -2,7 +2,7 @@ import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/scloud_settings.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
-enum CliSetting { analytics }
+enum CliSetting { analytics, projectContext }
 
 abstract class SettingsOperations {
   static Future<List<Map<String, Object?>>> listSettingsOperation(
@@ -12,6 +12,10 @@ abstract class SettingsOperations {
       {
         'name': CliSetting.analytics.name,
         'value': await settings.enableAnalytics,
+      },
+      {
+        'name': CliSetting.projectContext.name,
+        'value': await settings.projectContext,
       },
     ];
   }
@@ -33,6 +37,9 @@ abstract class SettingsOperations {
         }
         await settings.setEnableAnalytics(parsed);
         logger.success('Set analytics to "$parsed".');
+      case CliSetting.projectContext:
+        await settings.setProjectContext(value);
+        logger.success('Set projectContext to "$value".');
     }
   }
 
@@ -45,6 +52,9 @@ abstract class SettingsOperations {
       case CliSetting.analytics:
         await settings.setEnableAnalytics(null);
         logger.success('Unset analytics.');
+      case CliSetting.projectContext:
+        await settings.setProjectContext(null);
+        logger.success('Unset projectContext.');
     }
   }
 

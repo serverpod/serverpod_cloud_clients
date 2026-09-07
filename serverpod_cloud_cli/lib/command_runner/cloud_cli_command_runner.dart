@@ -9,7 +9,6 @@ import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/auth/auth_command.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/context/context_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/custom_domain/custom_domain_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/db/db_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy/deploy_command.dart';
@@ -239,7 +238,6 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
       CloudAuthCommand(logger: logger),
       CloudMeCommand(logger: logger),
       CloudProjectCommand(logger: logger),
-      CloudContextCommand(logger: logger),
       CloudDeployCommand(logger: logger),
       CloudVariableCommand(logger: logger),
       CloudCustomDomainCommand(logger: logger),

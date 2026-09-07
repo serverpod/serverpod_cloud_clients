@@ -99,11 +99,16 @@ void main() {
       });
     });
 
-    group('when running context set with a project id', () {
+    group('when running settings set projectContext with a project id', () {
       late ProcessResult result;
 
       setUpAll(() async {
-        result = await runScloud(['context', 'set', 'my-project']);
+        result = await runScloud([
+          'settings',
+          'set',
+          'projectContext',
+          'my-project',
+        ]);
       });
 
       test('then the process exits with code 0', () {
@@ -111,10 +116,7 @@ void main() {
       });
 
       test('then a success message is printed to stdout', () {
-        expect(
-          result.stdout,
-          contains('Set the global project context to "my-project".'),
-        );
+        expect(result.stdout, contains('Set projectContext to "my-project".'));
       });
 
       test('then stderr is empty', () {
@@ -198,11 +200,11 @@ void main() {
       });
     });
 
-    group('when running context set without a project id', () {
+    group('when running settings set projectContext without a value', () {
       late ProcessResult result;
 
       setUpAll(() async {
-        result = await runScloud(['context', 'set']);
+        result = await runScloud(['settings', 'set', 'projectContext']);
       });
 
       test('then the process exits with code 1', () {
@@ -211,7 +213,10 @@ void main() {
 
       test('then an error is printed to stderr for the missing option', () {
         expect(result.stderr, contains('ERROR:'));
-        expect(result.stderr, contains('Option `project` is mandatory.'));
+        expect(
+          result.stderr,
+          contains('Option group Value requires one of the options'),
+        );
       });
 
       test(

@@ -120,30 +120,17 @@ commands:
         commands:
           - name: list
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
 
           - name: invite
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
               -u, --user=!: "The user email address. Can be passed as the first argument."
 
           - name: revoke
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
               -u, --user=!: "The user email address. Can be passed as the first argument."
-
-  - name: context
-
-    commands:
-      - name: list
-
-      - name: show
-
-      - name: set
-        flags:
-          -p, --project=!: "The ID of the project. Can be passed as the first argument."
-
-      - name: unset
 
   - name: deploy
     flags:
@@ -167,11 +154,11 @@ commands:
     commands:
       - name: list
         flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
 
       - name: set
         flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
           --name=!: "The name of the environment variable. Can be passed as the first argument."
           --value=: "The value of the environment variable. Can be passed as the second argument."
           --from-file=: "The name of the file with the environment variable value."
@@ -185,7 +172,7 @@ commands:
 
       - name: unset
         flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
           --name=!: "The name of the environment variable. Can be passed as the first argument."
 
   - name: domain
@@ -193,7 +180,7 @@ commands:
     commands:
       - name: attach
         flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
           --name=!: "The custom domain name. Can be passed as the first argument."
           -t, --target=!: "The Serverpod server target of the custom domain, only one can be specified."
         completion:
@@ -202,21 +189,21 @@ commands:
 
       - name: list
         flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
 
       - name: detach
         flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
           --name=!: "The custom domain name. Can be passed as the first argument."
 
       - name: verify
         flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
           --name=!: "The custom domain name. Can be passed as the first argument."
 
   - name: log
     flags:
-      -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+      -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
       --limit=: "The maximum number of log records to fetch."
       -u, --utc: "Display timestamps in UTC timezone instead of local."
       --no-utc: "Display timestamps in UTC timezone instead of local."
@@ -231,7 +218,7 @@ commands:
     commands:
       - name: live
         flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
           -u, --utc: "Display timestamps in UTC timezone instead of local."
           --no-utc: "Display timestamps in UTC timezone instead of local."
         exclusiveFlags:
@@ -242,7 +229,7 @@ commands:
         commands:
           - name: show
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
               -u, --utc: "Display timestamps in UTC timezone instead of local."
               --no-utc: "Display timestamps in UTC timezone instead of local."
               --deploy=: "View a specific deployment, with uuid or sequence number, 0 for latest. Can be passed as the first argument."
@@ -255,7 +242,7 @@ commands:
 
           - name: list
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
               --limit=: "The maximum number of records to fetch."
               -u, --utc: "Display timestamps in UTC timezone instead of local."
               --no-utc: "Display timestamps in UTC timezone instead of local."
@@ -264,7 +251,7 @@ commands:
 
           - name: log
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
               -u, --utc: "Display timestamps in UTC timezone instead of local."
               --no-utc: "Display timestamps in UTC timezone instead of local."
               --deploy=: "View a specific deployment, with uuid or sequence number, 0 for latest. Can be passed as the first argument."
@@ -276,11 +263,11 @@ commands:
     commands:
       - name: list
         flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
 
       - name: set
         flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
           --name=!: "The name of the password (without SERVERPOD_PASSWORD_ prefix). Can be passed as the first argument."
           --value=: "The value of the password. Can be passed as the second argument."
           --from-file=: "The name of the file with the password value."
@@ -290,7 +277,7 @@ commands:
 
       - name: unset
         flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
           --name=!: "The name of the password (without SERVERPOD_PASSWORD_ prefix). Can be passed as the first argument."
 
   - name: db
@@ -298,19 +285,19 @@ commands:
     commands:
       - name: connection
         flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
 
       - name: user
 
         commands:
           - name: create
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
               --username=!: "The username of the DB user to create."
 
           - name: reset-password
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
               --username=!: "The username of the DB user whose password is reset."
 
       - name: backup
@@ -318,7 +305,7 @@ commands:
         commands:
           - name: create
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
               --name=: "An optional name for the snapshot."
               --expire-in=: "How long to keep the snapshot before it is automatically deleted (e.g. \"7d\", \"24h\"). Kept indefinitely if omitted."
               -u, --utc: "Display timestamps in UTC timezone instead of local."
@@ -328,7 +315,7 @@ commands:
 
           - name: list
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
               -u, --utc: "Display timestamps in UTC timezone instead of local."
               --no-utc: "Display timestamps in UTC timezone instead of local."
             exclusiveFlags:
@@ -336,12 +323,12 @@ commands:
 
           - name: delete
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
               --snapshot=!: "The ID of the snapshot."
 
           - name: restore
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
               --snapshot=!: "The ID of the snapshot."
 
       - name: schedule
@@ -349,7 +336,7 @@ commands:
         commands:
           - name: set
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
               -f, --frequency=!: "How often a snapshot is taken."
               --day=: "The day for a weekly (1-7) or monthly (1-31) schedule. Defaults to 1. Not applicable to a daily schedule."
               --hour=: "The hour of the day (0-23) to take the snapshot. Defaults to 0."
@@ -360,15 +347,15 @@ commands:
 
           - name: show
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
 
           - name: unset
             flags:
-              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
 
       - name: wipe
         flags:
-          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"context set\" command)."
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
 
   - name: launch
     flags:
