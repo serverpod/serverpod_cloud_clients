@@ -1,4 +1,3 @@
-import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/password/password_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 
@@ -21,8 +20,8 @@ class PasswordListTextUi extends OutputWidget {
       }
     }
 
-    return _WidgetList([
-      const _LineWidget(),
+    return OutputWidgetList([
+      const LineTextWidget(),
       for (final category in PasswordCategory.values)
         _SectionWidget(category, passwordsByCategory[category] ?? []),
     ]);
@@ -47,41 +46,16 @@ class _SectionWidget extends OutputWidget {
   @override
   OutputWidget build(OutputContext context) {
     if (category != PasswordCategory.custom && passwords.isEmpty) {
-      return const _WidgetList([]);
+      return const OutputWidgetList([]);
     }
 
-    return _WidgetList([
-      const _LineWidget(),
-      _LineWidget(category.displayName),
-      const _LineWidget(),
+    return OutputWidgetList([
+      const LineTextWidget(),
+      LineTextWidget(category.displayName),
+      const LineTextWidget(),
       TextTableWidget(_tableFormatter.format(passwords)),
-      const _LineWidget(),
+      const LineTextWidget(),
     ]);
-  }
-}
-
-class _WidgetList extends OutputWidget {
-  final List<OutputWidget> children;
-
-  const _WidgetList(this.children);
-
-  @override
-  WidgetNode buildTree(OutputContext context) {
-    return WidgetNode(
-      widget: this,
-      children: [for (final child in children) child.buildTree(context)],
-    );
-  }
-}
-
-class _LineWidget extends OutputWidget {
-  final String line;
-
-  const _LineWidget([this.line = '']);
-
-  @override
-  void render({required CommandLogger logger}) {
-    logger.line(line);
   }
 }
 
