@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.39.0] - 2026-09-07
+
+### Added
+
+- **Redeploy flag** - Added the `--redeploy` flag to `scloud deploy` to roll out configuration changes quickly without re-uploading your project.
+- **Global format option** - Promoted `--format` to a global CLI option, letting you output results as text, JSON, or YAML across commands.
+
+### Changed
+
+- **Deployment status commands** - Reorganized deployment tracking under `scloud status`, introducing `status live` and `status deployment`.
+- **Settings subcommands** - Updated `scloud settings` to use `list`, `set`, and `unset` subcommands instead of standalone flags.
+- **Context management** - Merged `scloud context` into `scloud settings` under the new `projectContext` key.
+- **Refreshed terminal UI** - Standardized output formatting, status messages, tables, and destructive action prompts across commands.
+
+### Fixed
+
+- **Deployment stream recovery** - Automatically reconnects the live status stream during `scloud deploy` if the connection drops.
+- **Duplicate error messages** - Fixed an issue where authentication failures and client errors were displayed twice.
+- **Redeployment reminders** - Added helpful hints to redeploy your application after updating variables or passwords.
+
 ## [0.38.0] - 2026-08-31
 
 ### Added
