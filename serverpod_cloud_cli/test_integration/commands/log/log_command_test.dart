@@ -40,6 +40,66 @@ void main() {
         .build(),
   ];
 
+  final jsonRecord = LogRecordBuilder()
+      .withCloudIds(projectId)
+      .withRecordId('3')
+      .withTimestamp(logTimestamp)
+      .withContent('{"message":"Boom","error":"StateError"}')
+      .withSeverity(null)
+      .build();
+
+  group('Given a record holding a Serverpod log entry', () {
+    setUp(() async {
+      client.authKeyProvider = InMemoryKeyManager.authenticated();
+      when(
+        () => client.logs.fetchRecords(
+          cloudCapsuleId: projectId,
+          beforeTime: null,
+          afterTime: any(named: 'afterTime'),
+          limit: any(named: 'limit'),
+        ),
+      ).thenAnswer((_) => Stream.fromIterable([jsonRecord]));
+    });
+
+    tearDown(() async {
+      client.authKeyProvider = InMemoryKeyManager.unauthenticated();
+      logger.clear();
+    });
+
+    group('when calling log', () {
+      setUp(() async {
+        await cli.run(['log', '--since', '1m', '--project', projectId]);
+      });
+
+      test('then the message and the error are shown as fields', () async {
+        expect(
+          logger.lineCalls.map((final call) => call.line),
+          contains(contains('Boom  error=StateError')),
+        );
+      });
+    });
+
+    group('when calling log with --raw', () {
+      setUp(() async {
+        await cli.run([
+          'log',
+          '--since',
+          '1m',
+          '--raw',
+          '--project',
+          projectId,
+        ]);
+      });
+
+      test('then the stored content is printed unchanged', () async {
+        expect(
+          logger.lineCalls.map((final call) => call.line),
+          contains(contains('{"message":"Boom","error":"StateError"}')),
+        );
+      });
+    });
+  });
+
   group('Given stored credentials', () {
     setUp(() async {
       client.authKeyProvider = InMemoryKeyManager.authenticated();

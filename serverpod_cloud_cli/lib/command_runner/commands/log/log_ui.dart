@@ -1,4 +1,5 @@
 import 'package:ground_control_client/ground_control_client.dart';
+import 'package:serverpod_cloud_shared/serverpod_cloud_shared.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 
@@ -29,6 +30,7 @@ abstract class LogsUi {
     final Stream<LogRecord> recordStream, {
     required final void Function(String) writeln,
     required final bool inUtc,
+    final bool raw = false,
     final int? limit,
   }) async {
     var count = 0;
@@ -42,7 +44,7 @@ abstract class LogsUi {
         return [
           rec.timestamp.toTzString(inUtc),
           rec.severity ?? '',
-          rec.content,
+          raw ? rec.content : summarizeLogContent(rec.content),
         ];
       }),
     );
@@ -59,6 +61,23 @@ abstract class LogsUi {
         writeln('   (Use the --limit option to increase the limit.)');
       }
     }
+  }
+
+  static String summarizeLogContent(final String content) {
+    final payload = LogPayload.parse(content);
+    if (!payload.isStructured) return content;
+
+    final parts = <String>[
+      if (payload.headline case final String headline) headline,
+      for (final field in payload.fields.entries)
+        '${field.key}=${_singleLine(LogPayload.formatValue(field.value))}',
+    ];
+
+    return parts.isEmpty ? content : parts.join('  ');
+  }
+
+  static String _singleLine(final String value) {
+    return value.replaceAll(RegExp(r'\s+'), ' ').trim();
   }
 
   static String _timezoneName(final bool inUtc) {
