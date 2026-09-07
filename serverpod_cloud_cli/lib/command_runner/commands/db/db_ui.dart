@@ -51,12 +51,17 @@ $password''');
 
 class DbWipeTextUi extends OutputWidget {
   final String baseCommand;
+  final String projectId;
 
-  const DbWipeTextUi({required this.baseCommand});
+  const DbWipeTextUi({required this.baseCommand, required this.projectId});
 
   @override
   OutputWidget build(final OutputContext context) {
     return OutputWidgetList([
+      ProgressStreamWidget<Map<String, Object?>>(
+        initialMessage: 'Wiping database for project "$projectId"',
+        newParagraph: true,
+      ),
       const SuccessTextWidget('Database wiped successfully.'),
       InfoTextWidget('Redeploy is needed, run: $baseCommand deploy'),
     ]);
@@ -69,6 +74,24 @@ class DbWipeCancelledTextUi extends OutputWidget {
   @override
   OutputWidget build(final OutputContext context) {
     return const InfoTextWidget('Database wipe cancelled.');
+  }
+}
+
+class BackupSnapshotCreateTextUi extends OutputWidget {
+  final bool utc;
+
+  const BackupSnapshotCreateTextUi({required this.utc});
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    final snapshot = context.get<DatabaseSnapshot>();
+    return OutputWidgetList([
+      SuccessTextWidget(
+        'Snapshot "${snapshot.id}" created.',
+        newParagraph: true,
+      ),
+      TextTableWidget(_backupSnapshotTableFormatter(utc).format([snapshot])),
+    ]);
   }
 }
 
@@ -101,38 +124,24 @@ class BackupSnapshotListTextUi extends OutputWidget {
       return const InfoTextWidget('No snapshots found.');
     }
 
-    return FormattedTableWidget(
-      formatter: TextTableOutputFormatter<DatabaseSnapshot>(
-        columns: [
-          TableColumnFormatter.forElement(
-            'ID',
-            getter: (final snapshot) => snapshot.id,
-          ),
-          TableColumnFormatter.forElement(
-            'Name',
-            getter: (final snapshot) => snapshot.name,
-          ),
-          TableColumnFormatter.forElement(
-            'Type',
-            getter: (final snapshot) =>
-                snapshot.manual ? 'manual' : 'scheduled',
-          ),
-          TableColumnFormatter.forElement(
-            'Created',
-            getter: (final snapshot) => snapshot.createdAt,
-          ),
-          TableColumnFormatter.forElement(
-            'Expires',
-            getter: (final snapshot) => snapshot.expiresAt ?? 'never',
-          ),
-          TableColumnFormatter.forElement(
-            'Size',
-            getter: (final snapshot) => _formatBytes(snapshot.fullSizeBytes),
-          ),
-        ],
-        utc: utc,
+    return FormattedTableWidget(formatter: _backupSnapshotTableFormatter(utc));
+  }
+}
+
+class BackupSnapshotRestoreTextUi extends OutputWidget {
+  final String projectId;
+
+  const BackupSnapshotRestoreTextUi({required this.projectId});
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    return OutputWidgetList([
+      ProgressStreamWidget<Map<String, Object?>>(
+        initialMessage: 'Restoring database for project "$projectId"',
+        newParagraph: true,
       ),
-    );
+      const SuccessTextWidget('Database restored.', newParagraph: true),
+    ]);
   }
 }
 
@@ -264,6 +273,40 @@ class _BackupScheduleTable extends OutputWidget {
       ).format(rows),
     );
   }
+}
+
+TextTableOutputFormatter<DatabaseSnapshot> _backupSnapshotTableFormatter(
+  final bool utc,
+) {
+  return TextTableOutputFormatter<DatabaseSnapshot>(
+    columns: [
+      TableColumnFormatter.forElement(
+        'ID',
+        getter: (final snapshot) => snapshot.id,
+      ),
+      TableColumnFormatter.forElement(
+        'Name',
+        getter: (final snapshot) => snapshot.name,
+      ),
+      TableColumnFormatter.forElement(
+        'Type',
+        getter: (final snapshot) => snapshot.manual ? 'manual' : 'scheduled',
+      ),
+      TableColumnFormatter.forElement(
+        'Created',
+        getter: (final snapshot) => snapshot.createdAt,
+      ),
+      TableColumnFormatter.forElement(
+        'Expires',
+        getter: (final snapshot) => snapshot.expiresAt ?? 'never',
+      ),
+      TableColumnFormatter.forElement(
+        'Size',
+        getter: (final snapshot) => _formatBytes(snapshot.fullSizeBytes),
+      ),
+    ],
+    utc: utc,
+  );
 }
 
 String _formatBytes(final int? bytes) {

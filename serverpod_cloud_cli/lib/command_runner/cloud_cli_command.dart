@@ -221,6 +221,8 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
     CommandOutput output, {
     required Operation<T> operation,
     required OutputWidget textOutputUi,
+    OutputWidget? jsonOutputUi,
+    OutputWidget? yamlOutputUi,
     OutputWidget? fallbackErrorUi,
   }) async {
     final exceptionHandlingUi = CommonClientExceptionsWidget(
@@ -231,10 +233,19 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
       ),
     );
 
-    final ui = CommandWidget.text(
-      textOutputUi: textOutputUi,
-      textErrorUi: exceptionHandlingUi,
-    );
+    final ui = <T>[] is List<Stream>
+        ? CommandWidget.stream(
+            textOutputUi: textOutputUi,
+            jsonOutputUi: jsonOutputUi,
+            yamlOutputUi: yamlOutputUi,
+            textErrorUi: exceptionHandlingUi,
+          )
+        : CommandWidget.text(
+            textOutputUi: textOutputUi,
+            jsonOutputUi: jsonOutputUi,
+            yamlOutputUi: yamlOutputUi,
+            textErrorUi: exceptionHandlingUi,
+          );
 
     final context = await output.render(operation: operation, ui: ui);
 

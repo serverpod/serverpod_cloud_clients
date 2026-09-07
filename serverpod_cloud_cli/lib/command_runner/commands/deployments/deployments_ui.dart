@@ -44,27 +44,21 @@ class DeploymentShowTextUi extends OutputWidget {
 
   @override
   OutputWidget build(final OutputContext context) {
-    final snapshot = context
-        .get<
-          ({
-            String projectId,
-            UuidValue attemptId,
-            DateTime? startedAt,
-            List<DeployAttemptStage> stages,
-          })
-        >();
+    final snapshot = context.get<Map<String, Object?>>();
+    final stages = snapshot['stages'] as List<DeployAttemptStage>;
+    final startedAt = snapshot['startedAt'] as DateTime?;
 
     if (overallStatus) {
-      return LineTextWidget(snapshot.stages.last.stageStatus.name);
+      return LineTextWidget(stages.last.stageStatus.name);
     }
 
     return OutputWidgetList([
       LineTextWidget(
-        'Status of ${snapshot.projectId} deployment ${snapshot.attemptId}'
-        ', started at ${snapshot.startedAt?.toTzString(utc, numTimeStampChars)}:',
+        'Status of ${snapshot['projectId']} deployment ${snapshot['attemptId']}'
+        ', started at ${startedAt?.toTzString(utc, numTimeStampChars)}:',
       ),
       const LineTextWidget(),
-      for (final stage in snapshot.stages)
+      for (final stage in stages)
         LineTextWidget(StatusCommands.statusLine(stage)),
     ]);
   }

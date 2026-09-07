@@ -8,8 +8,7 @@ import 'scrolling_section.dart';
 /// The outcome of running a process inside a [ScrollingSection].
 ///
 /// After awaiting the run, decide what to do with the section based on the
-/// [exitCode] (or any other criteria): call [keep] to leave the last output
-/// lines visible, or [clear] to remove the section and overwrite the area.
+/// [exitCode] (or any other criteria) by calling [finish].
 class ScrollingProcessResult {
   /// The exit code of the process.
   final int exitCode;
@@ -23,14 +22,9 @@ class ScrollingProcessResult {
   /// Whether the process exited successfully (exit code 0).
   bool get succeeded => exitCode == 0;
 
-  /// Keeps the last visible output lines in place.
-  ///
-  /// When [full] is true (and the section was created with capture enabled), the
-  /// complete output is rendered instead of only the last visible lines.
-  void keep({bool full = false}) => section.keep(full: full);
-
-  /// Clears the scrolling section so the area can be overwritten.
-  void clear() => section.clear();
+  /// Finishes the section with [success], optionally overriding retention.
+  void finish({required bool success, RetainSection? overrideRetention}) =>
+      section.finish(success: success, overrideRetention: overrideRetention);
 }
 
 /// Runs a subprocess and tails its combined stdout/stderr inside a
@@ -40,8 +34,8 @@ abstract final class ScrollingProcess {
   /// section of [rows] visual rows until the process completes.
   ///
   /// Returns once the process has exited and all of its output has been
-  /// rendered. The caller then decides whether to [ScrollingProcessResult.keep]
-  /// or [ScrollingProcessResult.clear] the section.
+  /// rendered. The caller then decides how to [ScrollingProcessResult.finish]
+  /// the section.
   ///
   /// [terminal] is supplied and owned by the caller; this method does not
   /// dispose it.
@@ -58,6 +52,8 @@ abstract final class ScrollingProcess {
     String? heading,
     String? successMessage,
     String? failedMessage,
+    RetainSection? successRetention,
+    RetainSection? failureRetention,
     bool captureOutput = false,
   }) async {
     final section = ScrollingSection(
@@ -67,6 +63,8 @@ abstract final class ScrollingProcess {
       heading: heading,
       successMessage: successMessage,
       failedMessage: failedMessage,
+      successRetention: successRetention,
+      failureRetention: failureRetention,
       captureOutput: captureOutput,
     );
 
@@ -91,7 +89,7 @@ abstract final class ScrollingProcess {
       return ScrollingProcessResult(exitCode: exitCode, section: section);
     } on Object {
       // Restore the cursor and keep whatever was rendered so far.
-      section.keep();
+      section.finish(success: false);
       rethrow;
     }
   }

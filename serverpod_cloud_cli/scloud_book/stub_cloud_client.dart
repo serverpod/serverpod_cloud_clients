@@ -14,8 +14,11 @@ void stubCloudClient(
   registerFallbackValue(Uuid().v4obj());
   registerFallbackValue(DomainNameTarget.api);
   registerFallbackValue(UserAccountStatus.registered);
+  registerFallbackValue(BuildSecretType.ssh);
+  registerFallbackValue(BackupFrequency.weekly);
   registerFallbackValue(<String, String>{});
   registerFallbackValue(<String>[]);
+  registerFallbackValue(BucketVisibility.private);
 
   when(() => client.close()).thenAnswer((final _) async {});
   when(
@@ -30,6 +33,7 @@ void stubCloudClient(
   _stubLogs(client, projectId: projectId);
   _stubStatusAndDeployments(client, projectId: projectId);
   _stubDatabase(client);
+  _stubStorage(client);
   _stubAdmin(client, projectId: projectId);
 }
 
@@ -88,7 +92,7 @@ void _stubAuth(final ClientMock client) {
     () => client.authWithAuth.logoutDevice(
       authTokenId: any(named: 'authTokenId'),
     ),
-  ).thenAnswer((_) async => true);
+  ).thenAnswer((_) async => false);
   when(() => client.authWithAuth.logoutAll()).thenAnswer((_) async {});
 }
 
@@ -121,12 +125,31 @@ void _stubProjects(final ClientMock client, {required final String projectId}) {
     ),
   ).thenAnswer((_) async => projects);
   when(
+    () => client.projects.createProject(
+      cloudProjectId: any(named: 'cloudProjectId'),
+      projectProductName: any(named: 'projectProductName'),
+      underSubscriptionId: any(named: 'underSubscriptionId'),
+    ),
+  ).thenAnswer(
+    (final invocation) async => ProjectBuilder()
+        .withCloudProjectId(
+          invocation.namedArguments[#cloudProjectId] as String,
+        )
+        .build(),
+  );
+  when(
     () => client.projects.deleteProject(
       cloudProjectId: any(named: 'cloudProjectId'),
     ),
   ).thenAnswer(
     (_) async => ProjectBuilder().withCloudProjectId(projectId).build(),
   );
+  when(() => client.plans.listSubscriptions()).thenAnswer((_) async => []);
+  when(
+    () => client.plans.procurePlan(
+      planProductName: any(named: 'planProductName'),
+    ),
+  ).thenAnswer((_) async => Uuid().v4obj());
   when(
     () => client.projects.inviteUser(
       cloudProjectId: any(named: 'cloudProjectId'),
@@ -134,6 +157,14 @@ void _stubProjects(final ClientMock client, {required final String projectId}) {
       assignRoleNames: any(named: 'assignRoleNames'),
     ),
   ).thenAnswer((_) async {});
+  when(
+    () => client.projects.revokeUser(
+      cloudProjectId: any(named: 'cloudProjectId'),
+      email: any(named: 'email'),
+      unassignRoleNames: any(named: 'unassignRoleNames'),
+      unassignAllRoles: any(named: 'unassignAllRoles'),
+    ),
+  ).thenAnswer((_) async => ['admin']);
 }
 
 void _stubVariablesAndSecrets(final ClientMock client) {
@@ -165,6 +196,18 @@ void _stubVariablesAndSecrets(final ClientMock client) {
       capsuleId: 0,
     ),
   );
+  when(
+    () => client.environmentVariables.delete(
+      name: any(named: 'name'),
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+    ),
+  ).thenAnswer(
+    (final invocation) async => EnvironmentVariable(
+      name: invocation.namedArguments[#name] as String,
+      value: 'placeholder',
+      capsuleId: 0,
+    ),
+  );
 
   when(() => client.secrets.list(any())).thenAnswer(
     (_) async => [
@@ -191,6 +234,26 @@ void _stubVariablesAndSecrets(final ClientMock client) {
   when(
     () => client.secrets.create(
       secrets: any(named: 'secrets'),
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+    ),
+  ).thenAnswer((_) async {});
+  when(
+    () => client.secrets.delete(
+      key: any(named: 'key'),
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+    ),
+  ).thenAnswer((_) async {});
+  when(
+    () => client.secrets.upsertBuildSecret(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+      secretKey: any(named: 'secretKey'),
+      secretValue: any(named: 'secretValue'),
+      buildSecretType: any(named: 'buildSecretType'),
+    ),
+  ).thenAnswer((_) async {});
+  when(
+    () => client.secrets.deleteBuild(
+      key: any(named: 'key'),
       cloudCapsuleId: any(named: 'cloudCapsuleId'),
     ),
   ).thenAnswer((_) async {});
@@ -243,6 +306,18 @@ void _stubDomains(final ClientMock client, {required final String projectId}) {
       },
     ),
   );
+  when(
+    () => client.customDomainName.remove(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+      domainName: any(named: 'domainName'),
+    ),
+  ).thenAnswer((_) async {});
+  when(
+    () => client.customDomainName.refreshRecord(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+      domainName: any(named: 'domainName'),
+    ),
+  ).thenAnswer((_) async => DomainNameStatus.configured);
 }
 
 void _stubLogs(final ClientMock client, {required final String projectId}) {
@@ -275,6 +350,18 @@ void _stubLogs(final ClientMock client, {required final String projectId}) {
       cloudCapsuleId: any(named: 'cloudCapsuleId'),
       beforeTime: any(named: 'beforeTime'),
       afterTime: any(named: 'afterTime'),
+      limit: any(named: 'limit'),
+    ),
+  ).thenAnswer((_) => Stream.fromIterable(records));
+  when(
+    () => client.logs.fetchBuildLog(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+      attemptId: any(named: 'attemptId'),
+    ),
+  ).thenAnswer((_) => Stream.fromIterable(records));
+  when(
+    () => client.logs.tailRecords(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
       limit: any(named: 'limit'),
     ),
   ).thenAnswer((_) => Stream.fromIterable(records));
@@ -349,6 +436,13 @@ void _stubStatusAndDeployments(
       attemptId: any(named: 'attemptId'),
     ),
   ).thenAnswer((_) async => stages);
+  when(
+    () => client.capsules.redeployCapsule(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+    ),
+  ).thenAnswer(
+    (_) async => UuidValue.raw('00000000-0000-4000-8000-000000000000'),
+  );
 }
 
 void _stubDatabase(final ClientMock client) {
@@ -399,6 +493,144 @@ void _stubDatabase(final ClientMock client) {
       retention: const Duration(days: 30),
     ),
   );
+  when(
+    () => client.database.createSuperUser(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+      username: any(named: 'username'),
+    ),
+  ).thenAnswer((_) async => 'generated-db-password');
+  when(
+    () => client.database.resetDatabasePassword(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+      username: any(named: 'username'),
+    ),
+  ).thenAnswer((_) async => 'reset-db-password');
+  when(
+    () => client.database.wipeDatabase(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+    ),
+  ).thenAnswer((_) async {});
+  when(
+    () => client.database.createSnapshot(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+      name: any(named: 'name'),
+      expiresAt: any(named: 'expiresAt'),
+    ),
+  ).thenAnswer(
+    (_) async => DatabaseSnapshot(
+      id: 'snap-3',
+      name: 'manual-2',
+      createdAt: DateTime.utc(2026, 1, 16, 9, 0),
+      manual: true,
+      fullSizeBytes: 5 * 1024 * 1024,
+    ),
+  );
+  when(
+    () => client.database.deleteSnapshot(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+      snapshotId: any(named: 'snapshotId'),
+    ),
+  ).thenAnswer((_) async {});
+  when(
+    () => client.database.setBackupSchedule(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+      frequency: any(named: 'frequency'),
+      day: any(named: 'day'),
+      hour: any(named: 'hour'),
+      retention: any(named: 'retention'),
+    ),
+  ).thenAnswer((_) async {});
+  when(
+    () => client.database.enableDatabase(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+    ),
+  ).thenAnswer((_) async {});
+  when(
+    () => client.database.restoreFromSnapshot(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+      snapshotId: any(named: 'snapshotId'),
+    ),
+  ).thenAnswer((_) async {});
+}
+
+void _stubStorage(final ClientMock client) {
+  when(
+    () =>
+        client.bucket.listBuckets(cloudCapsuleId: any(named: 'cloudCapsuleId')),
+  ).thenAnswer(
+    (_) async => [
+      BucketResourceBuilder()
+          .withStorageId('private')
+          .withVisibility(BucketVisibility.private)
+          .build(),
+      BucketResourceBuilder()
+          .withStorageId('public')
+          .withVisibility(BucketVisibility.public)
+          .build(),
+    ],
+  );
+  when(
+    () => client.bucket.createBucket(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+      storageId: any(named: 'storageId'),
+      visibility: any(named: 'visibility'),
+    ),
+  ).thenAnswer((final invocation) async {
+    return BucketResourceBuilder()
+        .withStorageId(invocation.namedArguments[#storageId] as String)
+        .withVisibility(
+          invocation.namedArguments[#visibility] as BucketVisibility,
+        )
+        .build();
+  });
+  when(
+    () => client.bucket.deleteBucket(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+      storageId: any(named: 'storageId'),
+    ),
+  ).thenAnswer((_) async {});
+  when(
+    () => client.bucketObjects.listFiles(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+      storageId: any(named: 'storageId'),
+      prefix: any(named: 'prefix'),
+      pageToken: any(named: 'pageToken'),
+    ),
+  ).thenAnswer(
+    (_) async => BucketFileListing(
+      files: [
+        BucketFileBuilder()
+            .withName('docs/report.pdf')
+            .withSizeBytes(1500000)
+            .build(),
+        BucketFileBuilder()
+            .withName('avatars/u1.png')
+            .withSizeBytes(34000)
+            .build(),
+      ],
+    ),
+  );
+  when(
+    () => client.bucketObjects.createUploadDescription(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+      storageId: any(named: 'storageId'),
+      path: any(named: 'path'),
+    ),
+  ).thenAnswer((_) async => UploadDescriptionBuilder().build());
+  when(
+    () => client.bucketObjects.getDownloadUrl(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+      storageId: any(named: 'storageId'),
+      path: any(named: 'path'),
+    ),
+  ).thenAnswer((_) async => 'https://signed.example/report.pdf');
+  when(
+    () => client.bucketObjects.deleteFile(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+      storageId: any(named: 'storageId'),
+      path: any(named: 'path'),
+    ),
+  ).thenAnswer((_) async {});
 }
 
 void _stubAdmin(final ClientMock client, {required final String projectId}) {
@@ -449,8 +681,55 @@ void _stubAdmin(final ClientMock client, {required final String projectId}) {
     ],
   );
   when(
+    () => client.adminUsers.inviteUser(email: any(named: 'email')),
+  ).thenAnswer((_) async {});
+  when(
+    () => client.adminProjects.getDeployAttempts(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+      limit: any(named: 'limit'),
+    ),
+  ).thenAnswer(
+    (_) async => [
+      DeployAttemptBuilder()
+          .withSuccessfulDeployment()
+          .withCloudCapsuleId(projectId)
+          .withStartedAt(DateTime.utc(2024, 12, 31, 10, 20, 30))
+          .withEndedAt(DateTime.utc(2024, 12, 31, 10, 20, 40))
+          .build(),
+    ],
+  );
+  when(
+    () => client.adminProjects.deleteProject(
+      cloudProjectId: any(named: 'cloudProjectId'),
+    ),
+  ).thenAnswer(
+    (_) async => ProjectBuilder().withCloudProjectId(projectId).build(),
+  );
+  when(
+    () => client.adminProcurement.procurePlan(
+      userEmail: any(named: 'userEmail'),
+      planProductName: any(named: 'planProductName'),
+      planProductVersion: any(named: 'planProductVersion'),
+      trialPeriodOverride: any(named: 'trialPeriodOverride'),
+      overrideChecks: any(named: 'overrideChecks'),
+    ),
+  ).thenAnswer((_) async => Uuid().v4obj());
+  when(
+    () => client.adminProcurement.cancelPlan(
+      userEmail: any(named: 'userEmail'),
+      subscriptionId: any(named: 'subscriptionId'),
+      cloudProjectId: any(named: 'cloudProjectId'),
+      terminateImmediately: any(named: 'terminateImmediately'),
+    ),
+  ).thenAnswer((_) async {});
+  when(
     () => client.adminUpdatePlan.listOrbPlans(),
   ).thenAnswer((_) async => ['starter', 'growth']);
+  when(
+    () => client.adminUpdatePlan.updateOrbPlan(
+      externalPlanId: any(named: 'externalPlanId'),
+    ),
+  ).thenAnswer((_) async => {'appliedVersion': '2025-03-01-v2'});
   when(() => client.adminProjects.redeployCapsule(any())).thenAnswer(
     (_) async => UuidValue.raw('00000000-0000-4000-8000-000000000000'),
   );

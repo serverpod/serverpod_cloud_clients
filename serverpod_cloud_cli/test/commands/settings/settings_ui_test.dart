@@ -4,6 +4,54 @@ import 'package:test/test.dart';
 import '../../../test_utils/render_command_ui.dart';
 
 void main() {
+  group('Given a SettingsSetTextUi', () {
+    group('when rendered after setting analytics', () {
+      late String stdout;
+      late String stderr;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const SettingsSetTextUi(),
+          data: const {'name': 'analytics', 'value': true},
+        );
+        stdout = io.stdout;
+        stderr = io.stderr;
+      });
+
+      test('then stdout contains the success message', () {
+        expect(stdout, contains('Set analytics to "true".'));
+      });
+
+      test('then stderr is empty', () {
+        expect(stderr, isEmpty);
+      });
+    });
+  });
+
+  group('Given a SettingsUnsetTextUi', () {
+    group('when rendered after unsetting analytics', () {
+      late String stdout;
+      late String stderr;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const SettingsUnsetTextUi(),
+          data: const {'name': 'analytics'},
+        );
+        stdout = io.stdout;
+        stderr = io.stderr;
+      });
+
+      test('then stdout contains the success message', () {
+        expect(stdout, contains('Unset analytics.'));
+      });
+
+      test('then stderr is empty', () {
+        expect(stderr, isEmpty);
+      });
+    });
+  });
+
   group('Given a SettingsListUi', () {
     group('when rendered with analytics enabled', () {
       late String stdout;

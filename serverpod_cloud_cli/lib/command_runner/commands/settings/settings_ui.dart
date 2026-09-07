@@ -1,5 +1,25 @@
 import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 
+class SettingsSetTextUi extends OutputWidget {
+  const SettingsSetTextUi();
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    final result = context.get<Map<String, Object?>>();
+    return SuccessTextWidget('Set ${result['name']} to "${result['value']}".');
+  }
+}
+
+class SettingsUnsetTextUi extends OutputWidget {
+  const SettingsUnsetTextUi();
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    final result = context.get<Map<String, Object?>>();
+    return SuccessTextWidget('Unset ${result['name']}.');
+  }
+}
+
 class SettingsListUi extends OutputWidget {
   const SettingsListUi();
 

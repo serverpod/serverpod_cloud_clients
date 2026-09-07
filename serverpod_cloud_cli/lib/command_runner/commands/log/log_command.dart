@@ -1,12 +1,12 @@
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/log/log_ui.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/log/log_ui.dart'
+    show LogListTextUi, LogTailTextUi;
 import 'package:serverpod_cloud_cli/command_runner/commands/log/logs_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart'
     show DateTimeOrDurationOption, ProjectIdOption, UtcOption;
 import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
-import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 
 const _defaultLogLimit = 50;
@@ -93,6 +93,10 @@ Examples
   
     \$ $baseCommand log --tail
 
+  Streaming logs in real-time with --format json emits JSONL.
+
+    \$ $baseCommand log --tail --format json
+
 
   View logs from the last hour using duration.
   
@@ -165,42 +169,28 @@ Examples
     final client = runner.serviceProvider.cloudApiClient;
 
     if (tailOpt == true) {
-      try {
-        logger.line(LogsUi.tailHeader(inUtc: inUtc));
-        await LogsUi.writeLogStream(
-          LogsOperations.tailContainerLog(
-            client,
-            projectId: projectId,
-            limit: limit,
-          ),
-          writeln: logger.line,
-          inUtc: inUtc,
+      await renderCommand(
+        output,
+        operation: () async => LogsOperations.tailContainerLog(
+          client,
+          projectId: projectId,
           limit: limit,
-        );
-      } on Exception catch (e, s) {
-        throw FailureException.nested(e, s, 'Error while tailing log records');
-      }
+        ),
+        textOutputUi: LogTailTextUi(utc: inUtc, limit: limit),
+      );
       return;
     }
 
-    try {
-      logger.line(
-        LogsUi.fetchHeader(after: since, before: until, inUtc: inUtc),
-      );
-      await LogsUi.writeLogStream(
-        LogsOperations.fetchContainerLog(
-          client,
-          projectId: projectId,
-          before: until,
-          after: since,
-          limit: limit,
-        ),
-        writeln: logger.line,
-        inUtc: inUtc,
+    await renderCommand(
+      output,
+      operation: () => LogsOperations.fetchContainerLog(
+        client,
+        projectId: projectId,
+        before: until,
+        after: since,
         limit: limit,
-      );
-    } on Exception catch (e, s) {
-      throw FailureException.nested(e, s, 'Error while fetching log records');
-    }
+      ),
+      textOutputUi: LogListTextUi(utc: inUtc),
+    );
   }
 }

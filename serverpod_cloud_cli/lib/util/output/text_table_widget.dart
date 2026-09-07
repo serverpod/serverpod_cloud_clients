@@ -111,12 +111,89 @@ class TextTableOutputFormatter<R extends Object>
 
   @override
   TextTableData format(List<R> objects) {
-    final headers = [for (final column in columns) column.heading];
+    return TextTableData(headings, [for (final obj in objects) formatRow(obj)]);
+  }
 
-    return TextTableData(headers, [
-      for (final obj in objects)
-        [for (final column in columns) column.formatter(obj, utc: utc)],
-    ]);
+  List<String> get headings => [for (final column in columns) column.heading];
+
+  List<String> formatRow(R object) {
+    return [for (final column in columns) column.formatter(object, utc: utc)];
+  }
+}
+
+/// Streams a text table: headers first, then one row as each element arrives.
+///
+/// R is the row object / stream element type.
+class FormattedStreamTableWidget<R extends Object> extends OutputWidget {
+  final TextTableOutputFormatter<R> formatter;
+  final List<int?>? columnMinWidths;
+  final String? columnSeparator;
+  final String? headerDividerColumnSeparator;
+  final Iterable<String> Function(int rowCount)? footerLines;
+
+  const FormattedStreamTableWidget({
+    required this.formatter,
+    this.columnMinWidths,
+    this.columnSeparator,
+    this.headerDividerColumnSeparator,
+    this.footerLines,
+  });
+
+  @override
+  OutputWidget build(OutputContext context) {
+    return _StreamTableWidget(
+      stream: context.get<Stream<R>>(),
+      formatter: formatter,
+      columnMinWidths: columnMinWidths,
+      columnSeparator: columnSeparator,
+      headerDividerColumnSeparator: headerDividerColumnSeparator,
+      footerLines: footerLines,
+    );
+  }
+}
+
+class _StreamTableWidget<R extends Object> extends OutputWidget {
+  final Stream<R> stream;
+  final TextTableOutputFormatter<R> formatter;
+  final List<int?>? columnMinWidths;
+  final String? columnSeparator;
+  final String? headerDividerColumnSeparator;
+  final Iterable<String> Function(int rowCount)? footerLines;
+
+  const _StreamTableWidget({
+    required this.stream,
+    required this.formatter,
+    this.columnMinWidths,
+    this.columnSeparator,
+    this.headerDividerColumnSeparator,
+    this.footerLines,
+  });
+
+  @override
+  Future<void> renderAsync({required CommandLogger logger}) async {
+    var count = 0;
+    final printer = TablePrinter(
+      headers: formatter.headings,
+      columnMinWidths: columnMinWidths,
+      columnSeparator: columnSeparator,
+      headerDividerColumnSeparator: headerDividerColumnSeparator,
+    );
+    final tableStream = printer.toStream(
+      stream.map((final row) {
+        count++;
+        return formatter.formatRow(row);
+      }),
+    );
+    await for (final line in tableStream) {
+      logger.line(line.trimRight());
+    }
+    final footer = footerLines;
+    if (footer == null) {
+      return;
+    }
+    for (final line in footer(count)) {
+      logger.line(line);
+    }
   }
 }
 

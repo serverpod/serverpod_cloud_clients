@@ -28,14 +28,22 @@ class JsonOutputFormatter<O extends Object> extends OutputFormatter<O, String> {
 }
 
 class YamlOutputFormatter<O extends Object> extends OutputFormatter<O, String> {
-  const YamlOutputFormatter({super.utc = false});
+  final bool _asDocument;
+
+  const YamlOutputFormatter({super.utc = false}) : _asDocument = false;
+
+  /// Prefixes each value with `---` so stream writes form distinct YAML documents.
+  const YamlOutputFormatter.document({super.utc = false}) : _asDocument = true;
 
   @override
   String format(O object) {
-    // decode via json to support the same value types
     final jsonEncoded = jsonEncode(object, toEncodable: _structuredValue);
     final tmp = jsonDecode(jsonEncoded);
-    return yamlEncode(tmp);
+    final encoded = yamlEncode(tmp);
+    if (!_asDocument) {
+      return encoded;
+    }
+    return '---\n$encoded';
   }
 }
 

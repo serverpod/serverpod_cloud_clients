@@ -667,15 +667,21 @@ abstract class Launch {
     final configFilePath = projectSetup.configFilePath;
     final performDeploy = projectSetup.performDeploy;
 
-    await ProjectCommands.linkProject(
-      cloudApiClient,
-      logger: logger,
-      projectId: projectId,
-      projectDirectory: projectDir.path,
-      configFilePath: configFilePath,
-      dartVersionOverride: projectSetup.dartVersionOverride,
-      preDeployScripts: projectSetup.suggestedPreDeployScripts,
-      suppressCommandMessages: true,
+    await logger.progress(
+      'Writing cloud configuration files',
+      successMessage: 'Configuration files written.',
+      padRight: StatusCommands.progressMessagePadLength,
+      () async {
+        await ProjectCommands.linkProject(
+          cloudApiClient,
+          projectId: projectId,
+          projectDirectory: projectDir.path,
+          configFilePath: configFilePath,
+          dartVersionOverride: projectSetup.dartVersionOverride,
+          preDeployScripts: projectSetup.suggestedPreDeployScripts,
+        );
+        return true;
+      },
     );
 
     await _populateCustomPasswords(

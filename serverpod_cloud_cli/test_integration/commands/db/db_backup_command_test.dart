@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cli_tools/cli_tools.dart';
 import 'package:config/config.dart' show UsageException;
 import 'package:ground_control_client/ground_control_client.dart';
@@ -7,7 +9,9 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart
 import 'package:serverpod_cloud_cli/command_runner/commands/db/db_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:test/test.dart';
+import 'package:yaml_codec/yaml_codec.dart';
 
+import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/test_command_logger.dart';
 
 void main() {
@@ -81,7 +85,52 @@ void main() {
       test('then succeeds and outputs the snapshot', () async {
         await cli.run(['db', 'backup', 'create', '--project', projectId]);
 
+        expect(
+          logger.successCalls.single,
+          equalsSuccessCall(
+            message: 'Snapshot "snap-1" created.',
+            newParagraph: true,
+          ),
+        );
         expect(logger.lineCalls.any((c) => c.line.contains('snap-1')), isTrue);
+      });
+
+      test('then emits a JSON object with the snapshot', () async {
+        await cli.run([
+          'db',
+          'backup',
+          'create',
+          '--project',
+          projectId,
+          '--format',
+          'json',
+        ]);
+
+        expect(logger.lineCalls, isEmpty);
+        expect(logger.rawCalls, hasLength(1));
+        final payload = jsonDecode(logger.rawCalls.single.content) as Map;
+        expect(payload['id'], 'snap-1');
+        expect(payload['name'], 'nightly');
+        expect(payload['manual'], isTrue);
+      });
+
+      test('then emits a YAML object with the snapshot', () async {
+        await cli.run([
+          'db',
+          'backup',
+          'create',
+          '--project',
+          projectId,
+          '--format',
+          'yaml',
+        ]);
+
+        expect(logger.lineCalls, isEmpty);
+        expect(logger.rawCalls, hasLength(1));
+        final payload = yamlDecode(logger.rawCalls.single.content) as Map;
+        expect(payload['id'], 'snap-1');
+        expect(payload['name'], 'nightly');
+        expect(payload['manual'], isTrue);
       });
 
       test('then calls createSnapshot without expiry by default', () async {
@@ -283,6 +332,49 @@ void main() {
             snapshotId: 'snap-1',
           ),
         ).called(1);
+        expect(
+          logger.successCalls.single,
+          equalsSuccessCall(message: 'Database restored.', newParagraph: true),
+        );
+      });
+
+      test('then emits a JSON object with the restore result', () async {
+        await cli.run([
+          'db',
+          'backup',
+          'restore',
+          'snap-1',
+          '--project',
+          projectId,
+          '--yes',
+          '--format',
+          'json',
+        ]);
+
+        expect(logger.lineCalls, isEmpty);
+        expect(jsonDecode(logger.rawCalls.single.content), {
+          'projectId': projectId,
+          'snapshotId': 'snap-1',
+        });
+      });
+
+      test('then emits a YAML object with the restore result', () async {
+        await cli.run([
+          'db',
+          'backup',
+          'restore',
+          'snap-1',
+          '--project',
+          projectId,
+          '--yes',
+          '--format',
+          'yaml',
+        ]);
+
+        expect(logger.lineCalls, isEmpty);
+        final payload = yamlDecode(logger.rawCalls.single.content) as Map;
+        expect(payload['projectId'], projectId);
+        expect(payload['snapshotId'], 'snap-1');
       });
 
       test('then does not restore when the user declines', () async {

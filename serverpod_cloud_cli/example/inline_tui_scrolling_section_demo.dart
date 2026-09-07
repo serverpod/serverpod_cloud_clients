@@ -25,11 +25,14 @@ Future<void> main() async {
     ], terminal: terminal);
     // On success, clear the scrolling output and show a summary instead.
     if (success.succeeded) {
-      success.clear();
+      success.finish(success: true);
       print('Build finished successfully.');
     } else {
       // On failure, keep the last output lines visible to aid debugging.
-      success.keep();
+      success.finish(
+        success: false,
+        overrideRetention: RetainSection.keepCurrent,
+      );
       print('Build failed with exit code ${success.exitCode}.');
     }
 
@@ -40,7 +43,10 @@ Future<void> main() async {
       rows: 5,
       terminal: terminal,
     );
-    result.keep();
+    result.finish(
+      success: result.succeeded,
+      overrideRetention: RetainSection.keepCurrent,
+    );
     print('Done.');
   } finally {
     await terminal.dispose();

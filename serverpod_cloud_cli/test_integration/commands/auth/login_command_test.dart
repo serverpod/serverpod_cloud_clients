@@ -81,7 +81,7 @@ void main() {
           logger.errorCalls.first,
           equalsErrorCall(
             message:
-                'Detected an existing login session for Serverpod cloud. '
+                'Detected an existing login session for Serverpod Cloud. '
                 'Log out first to log in again.',
           ),
         );

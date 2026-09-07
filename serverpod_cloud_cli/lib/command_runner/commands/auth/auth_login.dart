@@ -76,7 +76,7 @@ abstract class AuthLoginCommands {
       );
     }
 
-    logger.success('Successfully logged in to Serverpod cloud.');
+    logger.success('Successfully logged in to Serverpod Cloud.');
   }
 
   static Future<void> fetchAndStoreServerpodCloudUserData({
