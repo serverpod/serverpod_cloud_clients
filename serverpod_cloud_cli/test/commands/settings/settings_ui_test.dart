@@ -35,6 +35,25 @@ void main() {
       });
     });
 
+    group('when rendered with a project context', () {
+      late String stdout;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const SettingsListUi(),
+          data: [
+            {'name': 'projectContext', 'value': 'my-project'},
+          ],
+        );
+        stdout = io.stdout;
+      });
+
+      test('then stdout contains the project context value', () {
+        expect(stdout, contains('projectContext'));
+        expect(stdout, contains('my-project'));
+      });
+    });
+
     group('when rendered without an analytics value', () {
       late String stdout;
 

@@ -10,7 +10,13 @@ class CloudSettingsCommand extends CloudCliCommand {
   final name = 'settings';
 
   @override
-  final description = 'Manage local CLI user settings.';
+  final description =
+      'Manage local CLI user settings.\n'
+      '\n'
+      'The "projectContext" setting selects the project to use when it is not '
+      'specified by other means. Commands that act on a project use it as a '
+      'last resort, after command line arguments, environment variables, '
+      'and the scloud.yaml project configuration file.';
 
   CloudSettingsCommand({required super.logger}) {
     addSubcommand(CloudSettingsListCommand(logger: logger));
@@ -93,6 +99,10 @@ Examples
   Disable analytics.
 
     \$ $baseCommand settings set analytics false
+
+  Set the global project context.
+
+    \$ $baseCommand settings set projectContext my-project
 ''';
 
   CloudSettingsSetCommand({required super.logger})
@@ -145,6 +155,10 @@ Examples
   Unset analytics.
 
     \$ $baseCommand settings unset analytics
+
+  Unset the global project context.
+
+    \$ $baseCommand settings unset projectContext
 ''';
 
   CloudSettingsUnsetCommand({required super.logger})
