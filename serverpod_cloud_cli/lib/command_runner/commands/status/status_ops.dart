@@ -428,11 +428,9 @@ class _StageStatusTailer {
       }
     } finally {
       await logSubscription?.cancel();
-      if (lastStage.stageStatus == DeployProgressStatus.success) {
-        section.clear();
-      } else {
-        section.keep(full: true);
-      }
+      section.finish(
+        success: lastStage.stageStatus == DeployProgressStatus.success,
+      );
     }
     return lastStage;
   }

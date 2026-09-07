@@ -67,7 +67,7 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
   final name = 'login';
 
   @override
-  final description = 'Log in to Serverpod cloud.';
+  final description = 'Log in to Serverpod Cloud.';
 
   @override
   Future<void> runWithOutput(
@@ -88,7 +88,7 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
 
     if (storedCloudData != null) {
       logger.error(
-        'Detected an existing login session for Serverpod cloud. '
+        'Detected an existing login session for Serverpod Cloud. '
         'Log out first to log in again.',
       );
       logger.terminalCommand('$baseCommand auth logout');

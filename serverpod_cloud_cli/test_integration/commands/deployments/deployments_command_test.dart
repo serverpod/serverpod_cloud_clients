@@ -833,6 +833,72 @@ Rollout running...''');
         },
       );
 
+      group('when running deployments show --no-await with --format json', () {
+        late Future commandResult;
+
+        setUp(() async {
+          commandResult = cli.run([
+            'status',
+            'deployment',
+            'show',
+            '--project',
+            projectId,
+            '--no-await',
+            '--format',
+            'json',
+          ]);
+        });
+
+        test('then emits a JSON object with the deployment status', () async {
+          await commandResult;
+
+          expect(logger.lineCalls, isEmpty);
+          expect(logger.rawCalls, hasLength(1));
+          final payload = jsonDecode(logger.rawCalls.single.content) as Map;
+          expect(payload['projectId'], projectId);
+          expect(payload['attemptId'], attemptId.toString());
+          expect(
+            payload['startedAt'],
+            DateTime.parse('2021-12-31 10:20:30').toUtc().toIso8601String(),
+          );
+          expect(payload['stages'], isA<List<Object?>>());
+          expect((payload['stages'] as List), hasLength(3));
+        });
+      });
+
+      group('when running deployments show --no-await with --format yaml', () {
+        late Future commandResult;
+
+        setUp(() async {
+          commandResult = cli.run([
+            'status',
+            'deployment',
+            'show',
+            '--project',
+            projectId,
+            '--no-await',
+            '--format',
+            'yaml',
+          ]);
+        });
+
+        test('then emits a YAML object with the deployment status', () async {
+          await commandResult;
+
+          expect(logger.lineCalls, isEmpty);
+          expect(logger.rawCalls, hasLength(1));
+          final payload = yamlDecode(logger.rawCalls.single.content) as Map;
+          expect(payload['projectId'], projectId);
+          expect(payload['attemptId'], attemptId.toString());
+          expect(
+            payload['startedAt'],
+            DateTime.parse('2021-12-31 10:20:30').toUtc().toIso8601String(),
+          );
+          expect(payload['stages'], isA<List<Object?>>());
+          expect((payload['stages'] as List), hasLength(3));
+        });
+      });
+
       group(
         'when running deployments show command with --output-overall-status option',
         () {
@@ -1267,6 +1333,211 @@ Cloud build failed. 💥''');
                 'info': 'Some error',
               },
             ]);
+          });
+        });
+      });
+    });
+
+    group('when running deployments log command', () {
+      final logAttemptId = Uuid().v4obj();
+      final logTimestamp = DateTime.parse('2024-01-01T00:00:00Z');
+
+      setUp(() {
+        when(
+          () => client.status.getDeployAttemptId(
+            cloudCapsuleId: projectId,
+            attemptNumber: 0,
+          ),
+        ).thenAnswer((_) async => logAttemptId);
+      });
+
+      tearDown(() {
+        reset(client.status);
+        reset(client.logs);
+      });
+
+      group('with build log records', () {
+        setUp(() {
+          when(
+            () => client.logs.fetchBuildLog(
+              cloudCapsuleId: projectId,
+              attemptId: logAttemptId,
+            ),
+          ).thenAnswer(
+            (_) => Stream.fromIterable([
+              LogRecordBuilder()
+                  .withCloudIds(projectId)
+                  .withDeployAttemptId(logAttemptId)
+                  .withRecordId('1')
+                  .withTimestamp(logTimestamp)
+                  .withContent('Building image...')
+                  .withSeverity(null)
+                  .build(),
+              LogRecordBuilder()
+                  .withCloudIds(projectId)
+                  .withDeployAttemptId(logAttemptId)
+                  .withRecordId('2')
+                  .withTimestamp(logTimestamp)
+                  .withContent('Pushing image...')
+                  .withSeverity(null)
+                  .build(),
+            ]),
+          );
+        });
+
+        group('when fetching the latest build log', () {
+          late Future commandResult;
+
+          setUp(() {
+            commandResult = cli.run([
+              'status',
+              'deployment',
+              'log',
+              '--utc',
+              '--project',
+              projectId,
+            ]);
+          });
+
+          test('then completes successfully', () async {
+            await expectLater(commandResult, completes);
+          });
+
+          test('then outputs the log records as a table', () async {
+            await commandResult;
+
+            expect(
+              logger.lineCalls.map((call) => call.line),
+              containsAllInOrder([
+                contains('Timestamp'),
+                contains('Building image...'),
+                contains('Pushing image...'),
+              ]),
+            );
+            expect(
+              logger.lineCalls.map((call) => call.line),
+              contains(contains('2024-01-01 00:00:00z')),
+            );
+          });
+        });
+
+        group('when fetching the latest build log with --format json', () {
+          late Future commandResult;
+
+          setUp(() {
+            commandResult = cli.run([
+              'status',
+              'deployment',
+              'log',
+              '--format',
+              'json',
+              '--project',
+              projectId,
+            ]);
+          });
+
+          test('then emits a JSON array of log records', () async {
+            await commandResult;
+
+            expect(logger.lineCalls, isEmpty);
+            final payload = jsonDecode(logger.rawCalls.single.content) as List;
+            expect(payload, hasLength(2));
+            expect((payload[0] as Map)['content'], 'Building image...');
+            expect((payload[0] as Map)['recordId'], '1');
+            expect(
+              (payload[0] as Map)['timestamp'],
+              logTimestamp.toUtc().toIso8601String(),
+            );
+            expect((payload[1] as Map)['content'], 'Pushing image...');
+          });
+        });
+
+        group('when fetching the latest build log with --format yaml', () {
+          late Future commandResult;
+
+          setUp(() {
+            commandResult = cli.run([
+              'status',
+              'deployment',
+              'log',
+              '--format',
+              'yaml',
+              '--project',
+              projectId,
+            ]);
+          });
+
+          test('then emits YAML of the same log records', () async {
+            await commandResult;
+
+            expect(logger.lineCalls, isEmpty);
+            final payload = yamlDecode(logger.rawCalls.single.content) as List;
+            expect(payload, hasLength(2));
+            expect((payload[0] as Map)['content'], 'Building image...');
+            expect((payload[0] as Map)['recordId'], '1');
+            expect(
+              (payload[0] as Map)['timestamp'],
+              logTimestamp.toUtc().toIso8601String(),
+            );
+          });
+        });
+      });
+
+      group('with no build log records', () {
+        setUp(() {
+          when(
+            () => client.logs.fetchBuildLog(
+              cloudCapsuleId: projectId,
+              attemptId: logAttemptId,
+            ),
+          ).thenAnswer((_) => const Stream.empty());
+        });
+
+        group('when fetching the latest build log', () {
+          late Future commandResult;
+
+          setUp(() {
+            commandResult = cli.run([
+              'status',
+              'deployment',
+              'log',
+              '--project',
+              projectId,
+            ]);
+          });
+
+          test('then reports that no log records were found', () async {
+            await commandResult;
+
+            expect(
+              logger.infoCalls,
+              contains(equalsInfoCall(message: 'No log records found.')),
+            );
+            expect(logger.lineCalls, isEmpty);
+          });
+        });
+
+        group('when fetching the latest build log with --format json', () {
+          late Future commandResult;
+
+          setUp(() {
+            commandResult = cli.run([
+              'status',
+              'deployment',
+              'log',
+              '--format',
+              'json',
+              '--project',
+              projectId,
+            ]);
+          });
+
+          test('then emits an empty JSON array', () async {
+            await commandResult;
+
+            expect(logger.lineCalls, isEmpty);
+            expect(logger.infoCalls, isEmpty);
+            expect(jsonDecode(logger.rawCalls.single.content), <Object?>[]);
           });
         });
       });

@@ -180,10 +180,10 @@ void main() {
         stderr = io.stderr;
       });
 
-      test('then stdout reports logout from Serverpod cloud', () {
+      test('then stdout reports logout from Serverpod Cloud', () {
         expect(
           stdout,
-          contains('Successfully logged out from Serverpod cloud.'),
+          contains('Successfully logged out from Serverpod Cloud.'),
         );
       });
 

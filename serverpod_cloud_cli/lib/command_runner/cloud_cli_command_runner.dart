@@ -725,7 +725,7 @@ enum GlobalOption<V> implements OptionDefinition<V> {
     StringOption(
       argName: 'api-url',
       envName: 'SERVERPOD_CLOUD_API_SERVER_URL',
-      helpText: 'The URL to the Serverpod cloud api server.',
+      helpText: 'The URL to the Serverpod Cloud api server.',
       hide: true,
       defaultsTo: HostConstants.serverpodCloudApi,
     ),
@@ -774,7 +774,7 @@ enum GlobalOption<V> implements OptionDefinition<V> {
     StringOption(
       argName: 'console-url',
       envName: 'SERVERPOD_CLOUD_CONSOLE_SERVER_URL',
-      helpText: 'The URL to the Serverpod cloud console server.',
+      helpText: 'The URL to the Serverpod Cloud console server.',
       hide: true,
       defaultsTo: HostConstants.serverpodCloudConsole,
     ),

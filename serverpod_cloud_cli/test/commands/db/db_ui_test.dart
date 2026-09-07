@@ -124,11 +124,15 @@ void main() {
 
       setUp(() async {
         final io = await renderCommandUi(
-          const DbWipeTextUi(baseCommand: 'scloud'),
-          data: const <String, Object?>{},
+          const DbWipeTextUi(baseCommand: 'scloud', projectId: 'my-project'),
+          data: Stream.value(const {'projectId': 'my-project'}),
         );
         stdout = io.stdout;
         stderr = io.stderr;
+      });
+
+      test('then stdout contains the progress heading', () {
+        expect(stdout, contains('Wiping database for project "my-project"'));
       });
 
       test('then stdout contains the wipe success message', () {
@@ -159,6 +163,43 @@ void main() {
 
       test('then stdout reports that the wipe was cancelled', () {
         expect(stdout, contains('Database wipe cancelled.'));
+      });
+    });
+  });
+
+  group('Given a BackupSnapshotCreateTextUi', () {
+    group('when rendered after creating a snapshot', () {
+      late String stdout;
+      late String stderr;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const BackupSnapshotCreateTextUi(utc: true),
+          data: DatabaseSnapshot(
+            id: 'snap-1',
+            name: 'nightly',
+            createdAt: DateTime.utc(2026, 1, 15, 10, 30),
+            manual: true,
+            fullSizeBytes: 5 * 1024 * 1024,
+          ),
+        );
+        stdout = io.stdout;
+        stderr = io.stderr;
+      });
+
+      test('then stdout contains the create success message', () {
+        expect(stdout, contains('Snapshot "snap-1" created.'));
+      });
+
+      test('then stdout contains the snapshot row', () {
+        expect(stdout, contains('snap-1'));
+        expect(stdout, contains('nightly'));
+        expect(stdout, contains('manual'));
+        expect(stdout, contains('5.0 MB'));
+      });
+
+      test('then stderr is empty', () {
+        expect(stderr, isEmpty);
       });
     });
   });
@@ -230,6 +271,37 @@ void main() {
         expect(stdout, contains('nightly'));
         expect(stdout, contains('manual'));
         expect(stdout, contains('5.0 MB'));
+      });
+    });
+  });
+
+  group('Given a BackupSnapshotRestoreTextUi', () {
+    group('when rendered after restoring a snapshot', () {
+      late String stdout;
+      late String stderr;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const BackupSnapshotRestoreTextUi(projectId: 'my-project'),
+          data: Stream.value(const {
+            'projectId': 'my-project',
+            'snapshotId': 'snap-1',
+          }),
+        );
+        stdout = io.stdout;
+        stderr = io.stderr;
+      });
+
+      test('then stdout contains the progress heading', () {
+        expect(stdout, contains('Restoring database for project "my-project"'));
+      });
+
+      test('then stdout contains the restore success message', () {
+        expect(stdout, contains('Database restored.'));
+      });
+
+      test('then stderr is empty', () {
+        expect(stderr, isEmpty);
       });
     });
   });

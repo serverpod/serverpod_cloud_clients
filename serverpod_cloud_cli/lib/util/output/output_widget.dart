@@ -18,6 +18,14 @@ abstract class OutputWidget {
   /// It must never invoke the build or render methods of other widgets.
   void render({required CommandLogger logger}) {}
 
+  /// Renders this widget, awaiting stream or other async output.
+  ///
+  /// Sync widgets keep [render]; this default calls it and completes.
+  /// Stream widgets override this method instead.
+  Future<void> renderAsync({required CommandLogger logger}) async {
+    render(logger: logger);
+  }
+
   /// Builds the tree of widgets below this one.
   /// This is not usually to be overridden by subclasses.
   WidgetNode buildTree(OutputContext context) {
@@ -51,10 +59,10 @@ class WidgetNode {
 
   WidgetNode({required this.widget, required this.children});
 
-  void renderTree({required CommandLogger logger}) {
-    widget.render(logger: logger);
+  Future<void> renderTree({required CommandLogger logger}) async {
+    await widget.renderAsync(logger: logger);
     for (final child in children) {
-      child.renderTree(logger: logger);
+      await child.renderTree(logger: logger);
     }
   }
 }

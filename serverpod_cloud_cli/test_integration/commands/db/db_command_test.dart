@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:cli_tools/cli_tools.dart';
 import 'package:mocktail/mocktail.dart';
@@ -8,6 +9,7 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_pro
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:test/test.dart';
+import 'package:yaml_codec/yaml_codec.dart';
 
 import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/test_command_logger.dart';
@@ -432,6 +434,79 @@ $password''');
         verify(
           () => client.database.wipeDatabase(cloudCapsuleId: projectId),
         ).called(1);
+      });
+    });
+
+    group('when executing db wipe with --yes and --format json', () {
+      setUpAll(() {
+        when(
+          () => client.database.wipeDatabase(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenAnswer((_) async => Future.value());
+      });
+
+      tearDownAll(() {
+        reset(client.database);
+      });
+
+      late Future commandResult;
+      setUp(() {
+        commandResult = cli.run([
+          'db',
+          'wipe',
+          '--project',
+          projectId,
+          '--yes',
+          '--format',
+          'json',
+        ]);
+      });
+
+      test('then emits a JSON object with the project id', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        expect(logger.rawCalls, hasLength(1));
+        expect(jsonDecode(logger.rawCalls.single.content), {
+          'projectId': projectId,
+        });
+      });
+    });
+
+    group('when executing db wipe with --yes and --format yaml', () {
+      setUpAll(() {
+        when(
+          () => client.database.wipeDatabase(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenAnswer((_) async => Future.value());
+      });
+
+      tearDownAll(() {
+        reset(client.database);
+      });
+
+      late Future commandResult;
+      setUp(() {
+        commandResult = cli.run([
+          'db',
+          'wipe',
+          '--project',
+          projectId,
+          '--yes',
+          '--format',
+          'yaml',
+        ]);
+      });
+
+      test('then emits a YAML object with the project id', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        expect(logger.rawCalls, hasLength(1));
+        final payload = yamlDecode(logger.rawCalls.single.content) as Map;
+        expect(payload['projectId'], projectId);
       });
     });
 

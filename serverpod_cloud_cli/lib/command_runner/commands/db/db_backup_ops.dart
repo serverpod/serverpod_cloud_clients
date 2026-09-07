@@ -53,7 +53,7 @@ abstract class DbBackupOperations {
     return {'snapshotId': snapshotId};
   }
 
-  static Future<void> restoreSnapshot(
+  static Future<Map<String, Object?>> restoreSnapshot(
     final Client cloudApiClient, {
     required final String projectId,
     required final String snapshotId,
@@ -66,6 +66,8 @@ abstract class DbBackupOperations {
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Failed to restore snapshot');
     }
+
+    return {'projectId': projectId, 'snapshotId': snapshotId};
   }
 
   static Future<Map<String, Object?>> setSchedule(

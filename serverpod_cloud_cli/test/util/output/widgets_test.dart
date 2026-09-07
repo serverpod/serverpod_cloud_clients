@@ -1,11 +1,13 @@
 import 'dart:convert';
 
+import 'package:serverpod_cloud_cli/command_runner/ui/command_ui.dart';
 import 'package:serverpod_cloud_cli/util/output/output_context.dart';
 import 'package:serverpod_cloud_cli/util/output/output_format.dart';
 import 'package:serverpod_cloud_cli/util/output/output_formatter.dart';
 import 'package:serverpod_cloud_cli/util/output/output_widget.dart';
 import 'package:serverpod_cloud_cli/util/output/widgets.dart';
 import 'package:test/test.dart';
+import 'package:yaml/yaml.dart';
 import 'package:yaml_codec/yaml_codec.dart';
 
 import '../../../test_utils/command_logger_matchers.dart';
@@ -35,24 +37,24 @@ void main() {
       yamlWidget: InfoTextWidget('yaml'),
     );
 
-    test('when the format is text then the text widget is written', () {
-      widget
+    test('when the format is text then the text widget is written', () async {
+      await widget
           .buildTree(OutputContext(OutputFormat.text))
           .renderTree(logger: logger);
 
       expect(logger.infoCalls, [equalsInfoCall(message: 'text')]);
     });
 
-    test('when the format is json then the json widget is written', () {
-      widget
+    test('when the format is json then the json widget is written', () async {
+      await widget
           .buildTree(OutputContext(OutputFormat.json))
           .renderTree(logger: logger);
 
       expect(logger.infoCalls, [equalsInfoCall(message: 'json')]);
     });
 
-    test('when the format is yaml then the yaml widget is written', () {
-      widget
+    test('when the format is yaml then the yaml widget is written', () async {
+      await widget
           .buildTree(OutputContext(OutputFormat.yaml))
           .renderTree(logger: logger);
 
@@ -68,8 +70,8 @@ void main() {
 
     test(
       'when the context has no error then the success widget is written',
-      () {
-        widget
+      () async {
+        await widget
             .buildTree(OutputContext(OutputFormat.text, 'data'))
             .renderTree(logger: logger);
 
@@ -77,19 +79,22 @@ void main() {
       },
     );
 
-    test('when the context has an error then the error widget is written', () {
-      widget
-          .buildTree(
-            OutputContext.exception(
-              OutputFormat.text,
-              FormatException('boom'),
-              StackTrace.current,
-            ),
-          )
-          .renderTree(logger: logger);
+    test(
+      'when the context has an error then the error widget is written',
+      () async {
+        await widget
+            .buildTree(
+              OutputContext.exception(
+                OutputFormat.text,
+                FormatException('boom'),
+                StackTrace.current,
+              ),
+            )
+            .renderTree(logger: logger);
 
-      expect(logger.infoCalls, [equalsInfoCall(message: 'failed')]);
-    });
+        expect(logger.infoCalls, [equalsInfoCall(message: 'failed')]);
+      },
+    );
   });
 
   group('Given an exception-handling widget for a handled exception', () {
@@ -99,8 +104,8 @@ void main() {
 
     test(
       'when the context holds that exception then the error widget is written',
-      () {
-        widget
+      () async {
+        await widget
             .buildTree(
               OutputContext.exception(
                 OutputFormat.text,
@@ -116,8 +121,8 @@ void main() {
 
     test(
       'when the context holds a different exception then nothing is written',
-      () {
-        widget
+      () async {
+        await widget
             .buildTree(
               OutputContext.exception(
                 OutputFormat.text,
@@ -131,8 +136,8 @@ void main() {
       },
     );
 
-    test('when the context has no error then nothing is written', () {
-      widget
+    test('when the context has no error then nothing is written', () async {
+      await widget
           .buildTree(OutputContext(OutputFormat.text))
           .renderTree(logger: logger);
 
@@ -146,6 +151,52 @@ void main() {
 
       expect(logger.rawCalls.single.content, 'payload');
     });
+  });
+
+  group('Given a formatted stream string widget', () {
+    test('when rendered then each element is written as it arrives', () async {
+      final context = OutputContext(
+        OutputFormat.json,
+        Stream.fromIterable([
+          <String, Object?>{'id': 'alpha'},
+          <String, Object?>{'id': 'beta'},
+        ]),
+      );
+
+      await FormattedStreamStringWidget(
+        formatter: JsonOutputFormatter<Map<String, Object?>>(),
+      ).buildTree(context).renderTree(logger: logger);
+
+      expect(logger.rawCalls, hasLength(2));
+      expect(logger.rawCalls[0].content, contains('alpha'));
+      expect(logger.rawCalls[1].content, contains('beta'));
+      expect(logger.lineCalls, isEmpty);
+    });
+
+    test(
+      'when rendered as YAML then two maps parse as two documents',
+      () async {
+        final context = OutputContext(
+          OutputFormat.yaml,
+          Stream.fromIterable([
+            <String, Object?>{'id': 'alpha'},
+            <String, Object?>{'id': 'beta'},
+          ]),
+        );
+
+        await CommandWidget.stream(
+          textOutputUi: const NilWidget(),
+        ).buildTree(context).renderTree(logger: logger);
+
+        expect(logger.lineCalls, isEmpty);
+        final documents = loadYamlStream(
+          logger.rawCalls.map((call) => call.content).join(),
+        );
+        expect(documents, hasLength(2));
+        expect((documents[0] as Map)['id'], 'alpha');
+        expect((documents[1] as Map)['id'], 'beta');
+      },
+    );
   });
 
   group('Given an info text widget', () {
@@ -224,8 +275,8 @@ void main() {
   });
 
   group('Given a widget list', () {
-    test('when rendered then the children are written in order', () {
-      const OutputWidgetList([
+    test('when rendered then the children are written in order', () async {
+      await const OutputWidgetList([
         InfoTextWidget('first'),
         InfoTextWidget('second'),
       ]).buildTree(OutputContext(OutputFormat.text)).renderTree(logger: logger);
@@ -240,13 +291,13 @@ void main() {
   group('Given a formatted string widget', () {
     test(
       'when rendered then the formatted object is written as raw output',
-      () {
+      () async {
         final context = OutputContext(OutputFormat.json, {
           'id': 'alpha',
           'createdAt': DateTime.utc(2024, 12, 31, 10, 20, 30),
         });
 
-        FormattedStringWidget(
+        await FormattedStringWidget(
           formatter: JsonOutputFormatter<Map<String, Object?>>(),
         ).buildTree(context).renderTree(logger: logger);
 
@@ -270,8 +321,8 @@ void main() {
   group('Given a text error widget', () {
     test(
       'when the context holds an exception then it is written as an error',
-      () {
-        const TextErrorWidget()
+      () async {
+        await const TextErrorWidget()
             .buildTree(
               OutputContext.exception(
                 OutputFormat.text,
@@ -344,8 +395,8 @@ void main() {
   group('Given a json error widget', () {
     test(
       'when the context holds an exception then a JSON error is written',
-      () {
-        const JsonErrorWidget()
+      () async {
+        await const JsonErrorWidget()
             .buildTree(
               OutputContext.exception(
                 OutputFormat.json,
@@ -365,8 +416,8 @@ void main() {
   group('Given a yaml error widget', () {
     test(
       'when the context holds an exception then a YAML error is written',
-      () {
-        const YamlErrorWidget()
+      () async {
+        await const YamlErrorWidget()
             .buildTree(
               OutputContext.exception(
                 OutputFormat.yaml,

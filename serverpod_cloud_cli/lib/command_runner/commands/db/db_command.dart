@@ -224,22 +224,18 @@ Do you want to proceed?''', defaultValue: false),
       }
     }
 
-    await logger.progress(
-      'Wiping database for project "$projectId"...',
-      newParagraph: true,
-      () async {
-        await DbOperations.wipeDatabase(
-          runner.serviceProvider.cloudApiClient,
-          projectId: projectId,
-        );
-        return true;
-      },
-    );
-
     await renderCommand(
       output,
-      operation: () async => {'projectId': projectId},
-      textOutputUi: DbWipeTextUi(baseCommand: baseCommand),
+      operation: () async => Stream.fromFuture(
+        DbOperations.wipeDatabase(
+          runner.serviceProvider.cloudApiClient,
+          projectId: projectId,
+        ),
+      ),
+      textOutputUi: DbWipeTextUi(
+        baseCommand: baseCommand,
+        projectId: projectId,
+      ),
     );
   }
 }
@@ -329,28 +325,18 @@ class CloudDbBackupCreateCommand extends CloudCliCommand<DbBackupCreateOption> {
     final Configuration<DbBackupCreateOption> commandConfig,
     final CommandOutput output,
   ) async {
+    final projectId = commandConfig.value(DbBackupCreateOption.projectId);
     final utc = commandConfig.value(DbBackupCreateOption.utc);
-
-    late DatabaseSnapshot snapshot;
-    await logger.progress(
-      'Creating database snapshot for project "${commandConfig.value(DbBackupCreateOption.projectId)}"',
-      () async {
-        snapshot = await DbBackupOperations.createSnapshot(
-          runner.serviceProvider.cloudApiClient,
-          projectId: commandConfig.value(DbBackupCreateOption.projectId),
-          name: commandConfig.optionalValue(DbBackupCreateOption.name),
-          expireIn: commandConfig.optionalValue(DbBackupCreateOption.expireIn),
-        );
-        return true;
-      },
-      successMessage: 'Snapshot created.',
-      newParagraph: true,
-    );
 
     await renderCommand(
       output,
-      operation: () async => [snapshot],
-      textOutputUi: BackupSnapshotListTextUi(utc: utc),
+      operation: () => DbBackupOperations.createSnapshot(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+        name: commandConfig.optionalValue(DbBackupCreateOption.name),
+        expireIn: commandConfig.optionalValue(DbBackupCreateOption.expireIn),
+      ),
+      textOutputUi: BackupSnapshotCreateTextUi(utc: utc),
     );
   }
 }
@@ -493,18 +479,16 @@ Do you want to proceed?''',
       defaultValue: false,
     );
 
-    await logger.progress(
-      'Restoring database for project "$projectId"',
-      () async {
-        await DbBackupOperations.restoreSnapshot(
+    await renderCommand(
+      output,
+      operation: () async => Stream.fromFuture(
+        DbBackupOperations.restoreSnapshot(
           runner.serviceProvider.cloudApiClient,
           projectId: projectId,
           snapshotId: snapshotId,
-        );
-        return true;
-      },
-      successMessage: 'Database restored.',
-      newParagraph: true,
+        ),
+      ),
+      textOutputUi: BackupSnapshotRestoreTextUi(projectId: projectId),
     );
   }
 }

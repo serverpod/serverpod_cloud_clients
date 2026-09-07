@@ -1,11 +1,19 @@
 import 'package:collection/collection.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/status/status_ops.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
-import 'package:serverpod_cloud_cli/shared/user_interaction/user_confirmations.dart';
 import 'package:serverpod_cloud_cli/util/dart_version_util.dart';
 import 'package:serverpod_cloud_cli/util/project_files_writer.dart';
+
+class CreatedPlan {
+  final UuidValue subscriptionId;
+  final String planDisplayName;
+
+  const CreatedPlan({
+    required this.subscriptionId,
+    required this.planDisplayName,
+  });
+}
 
 enum PlanProfile {
   starter('starter', 'starter', 'starter-project'),
@@ -52,24 +60,18 @@ abstract class ProjectCommands {
     );
   }
 
-  /// Subcommand to create a new tenant project.
-  static Future<void> createProject(
+  /// Resolves or procures the subscription the new project will be created under.
+  static Future<CreatedPlan> createPlan(
     Client cloudApiClient, {
-    required CommandLogger logger,
-    required String projectId,
     required PlanProfile? plan,
-    required bool enableDb,
-    bool skipConfirmation = false,
-    bool suppressCommandMessages = false,
   }) async {
-    if (!skipConfirmation) {
-      await UserConfirmations.confirmNewProjectCostAcceptance(logger);
-    }
-
-    UuidValue? subscriptionId;
     if (plan == null) {
-      // If no plan is specified and user has a legacy plan, use that.
-      final subscriptions = await cloudApiClient.plans.listSubscriptions();
+      late final List<SubscriptionInfo> subscriptions;
+      try {
+        subscriptions = await cloudApiClient.plans.listSubscriptions();
+      } on Exception catch (e, s) {
+        throw FailureException.nested(e, s, 'Request to list plans failed');
+      }
       if (subscriptions.isNotEmpty) {
         final legacySubscription = subscriptions
             .where(
@@ -78,40 +80,40 @@ abstract class ProjectCommands {
             )
             .firstOrNull;
         if (legacySubscription != null) {
-          if (!suppressCommandMessages) {
-            logger.init('Creating Serverpod Cloud project "$projectId".');
-            logger.info('On plan: ${legacySubscription.planDisplayName}');
-          }
-          subscriptionId = legacySubscription.subscriptionId;
+          return CreatedPlan(
+            subscriptionId: legacySubscription.subscriptionId,
+            planDisplayName: legacySubscription.planDisplayName,
+          );
         }
       }
     }
 
-    if (subscriptionId == null) {
-      final planProductName = plan?.name ?? defaultPlan;
-      subscriptionId = await cloudApiClient.plans.procurePlan(
+    final planProductName = plan?.name ?? defaultPlan;
+    try {
+      final subscriptionId = await cloudApiClient.plans.procurePlan(
         planProductName: planProductName,
       );
-      if (!suppressCommandMessages) {
-        logger.init('Creating Serverpod Cloud project "$projectId".');
-        logger.info('On plan: $planProductName');
-      }
+      return CreatedPlan(
+        subscriptionId: subscriptionId,
+        planDisplayName: planProductName,
+      );
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Request to procure a plan failed');
     }
+  }
 
+  /// Registers a new tenant project under [subscriptionId].
+  static Future<Map<String, Object?>> createProject(
+    Client cloudApiClient, {
+    required String projectId,
+    required UuidValue subscriptionId,
+    required PlanProfile? plan,
+  }) async {
     try {
-      await logger.progress(
-        'Registering Serverpod Cloud project',
-        successMessage: 'Project registration successful.',
-        padRight: StatusCommands.progressMessagePadLength,
-        newParagraph: true,
-        () async {
-          await cloudApiClient.projects.createProject(
-            cloudProjectId: projectId,
-            projectProductName: plan?.projectProductName,
-            underSubscriptionId: subscriptionId,
-          );
-          return true;
-        },
+      await cloudApiClient.projects.createProject(
+        cloudProjectId: projectId,
+        projectProductName: plan?.projectProductName,
+        underSubscriptionId: subscriptionId,
       );
     } on Exception catch (e, s) {
       throw FailureException.nested(
@@ -121,31 +123,25 @@ abstract class ProjectCommands {
       );
     }
 
-    if (enableDb) {
-      await logger.progress(
-        'Requesting database creation',
-        successMessage: 'Database creation request sent.',
-        padRight: StatusCommands.progressMessagePadLength,
-        () async {
-          try {
-            await cloudApiClient.database.enableDatabase(
-              cloudCapsuleId: projectId,
-            );
-            return true;
-          } on Exception catch (e, s) {
-            throw FailureException.nested(
-              e,
-              s,
-              'Request to create a database for the new project failed',
-            );
-          }
-        },
+    return {'projectId': projectId};
+  }
+
+  /// Requests database creation for an existing project.
+  static Future<Map<String, Object?>> createDatabase(
+    Client cloudApiClient, {
+    required String projectId,
+  }) async {
+    try {
+      await cloudApiClient.database.enableDatabase(cloudCapsuleId: projectId);
+    } on Exception catch (e, s) {
+      throw FailureException.nested(
+        e,
+        s,
+        'Request to create a database for the new project failed',
       );
     }
 
-    if (!suppressCommandMessages) {
-      logger.success('Serverpod Cloud project created.', newParagraph: true);
-    }
+    return {'projectId': projectId};
   }
 
   static Future<Map<String, Object?>> deleteProject(
@@ -185,15 +181,13 @@ abstract class ProjectCommands {
     return activeProjects.sortedBy((p) => p.project.createdAt).toList();
   }
 
-  static Future<String?> linkProject(
+  static Future<Map<String, Object?>> linkProject(
     Client cloudApiClient, {
-    required CommandLogger logger,
     required String projectId,
     required String projectDirectory,
     required String configFilePath,
     String? dartVersionOverride,
     List<String> preDeployScripts = const [],
-    bool suppressCommandMessages = false,
   }) async {
     final safeDartSdk = ProjectDartVersionHint.normalizeBareMajorMinorOverride(
       dartVersionOverride,
@@ -205,26 +199,13 @@ abstract class ProjectCommands {
       );
     }
 
-    await logger.progress(
-      'Writing cloud configuration files',
-      successMessage: 'Configuration files written.',
-      padRight: StatusCommands.progressMessagePadLength,
-      () async {
-        ProjectFilesWriter.writeFiles(
-          projectId: projectId,
-          preDeployScripts: preDeployScripts,
-          configFilePath: configFilePath,
-          projectDirectory: projectDirectory,
-          dartSdk: safeDartSdk,
-        );
-        return true;
-      },
+    ProjectFilesWriter.writeFiles(
+      projectId: projectId,
+      preDeployScripts: preDeployScripts,
+      configFilePath: configFilePath,
+      projectDirectory: projectDirectory,
+      dartSdk: safeDartSdk,
     );
-
-    if (!suppressCommandMessages) {
-      logger.success('Linked Serverpod Cloud project.', newParagraph: true);
-    }
-
-    return safeDartSdk;
+    return {'projectId': projectId};
   }
 }

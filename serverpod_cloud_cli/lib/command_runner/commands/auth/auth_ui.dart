@@ -101,7 +101,7 @@ class AuthRevokeTokenTextUi extends OutputWidget {
       );
     }
     return const SuccessTextWidget(
-      'Successfully logged out from Serverpod cloud.',
+      'Successfully logged out from Serverpod Cloud.',
     );
   }
 }

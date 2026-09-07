@@ -38,8 +38,8 @@ void main() {
   });
 
   group('Given a leaf widget', () {
-    test('when rendered then the widget writes its output', () {
-      const _RecordingWidget(
+    test('when rendered then the widget writes its output', () async {
+      await const _RecordingWidget(
         'leaf',
       ).buildTree(OutputContext(OutputFormat.text)).renderTree(logger: logger);
 
@@ -48,8 +48,8 @@ void main() {
   });
 
   group('Given a widget that builds a child', () {
-    test('when rendered then the parent is written before the child', () {
-      _NestedWidget()
+    test('when rendered then the parent is written before the child', () async {
+      await _NestedWidget()
           .buildTree(OutputContext(OutputFormat.text))
           .renderTree(logger: logger);
 

@@ -110,7 +110,7 @@ class MockStdin implements Stdin {
   }
 
   @override
-  bool get hasTerminal => throw UnimplementedError();
+  bool get hasTerminal => false;
 
   @override
   bool get isBroadcast => throw UnimplementedError();
