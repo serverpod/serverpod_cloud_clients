@@ -73,10 +73,7 @@ class PasswordSetTextUi extends OutputWidget {
         : SuccessTextWidget('Successfully set password "$name".');
     return OutputWidgetList([
       success,
-      CommandHintTextWidget(
-        'The changes will not take effect until your server is re-deployed.',
-        command: '$baseCommand deploy',
-      ),
+      RedeployHintWidget(baseCommand: baseCommand),
     ]);
   }
 }
@@ -95,10 +92,7 @@ class PasswordUnsetTextUi extends OutputWidget {
         : SuccessTextWidget('Successfully unset password "$name".');
     return OutputWidgetList([
       success,
-      CommandHintTextWidget(
-        'The changes will not take effect until your server is re-deployed.',
-        command: '$baseCommand deploy',
-      ),
+      RedeployHintWidget(baseCommand: baseCommand),
     ]);
   }
 }

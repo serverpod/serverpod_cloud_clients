@@ -33,10 +33,7 @@ class VariableSetTextUi extends OutputWidget {
             ? 'Successfully set secret: $name.'
             : 'Successfully set environment variable: $name.',
       ),
-      CommandHintTextWidget(
-        'The changes will not take effect until your server is re-deployed.',
-        command: '$baseCommand deploy',
-      ),
+      RedeployHintWidget(baseCommand: baseCommand),
     ]);
   }
 }
@@ -57,10 +54,7 @@ class VariableUnsetTextUi extends OutputWidget {
             ? 'Successfully removed secret: $name.'
             : 'Successfully removed environment variable: $name.',
       ),
-      CommandHintTextWidget(
-        'The changes will not take effect until your server is re-deployed.',
-        command: '$baseCommand deploy',
-      ),
+      RedeployHintWidget(baseCommand: baseCommand),
     ]);
   }
 }
