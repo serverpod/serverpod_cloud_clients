@@ -38,7 +38,9 @@ class CloudDbUserCommand extends CloudCliCommand {
 
   CloudDbUserCommand({required super.logger}) {
     addSubcommand(CloudDbUserCreateCommand(logger: logger));
+    addSubcommand(CloudDbUserListCommand(logger: logger));
     addSubcommand(CloudDbUserResetPasswordCommand(logger: logger));
+    addSubcommand(CloudDbUserDeleteCommand(logger: logger));
   }
 }
 
@@ -171,6 +173,107 @@ class CloudDbUserResetPasswordCommand
         username: username,
       ),
       textOutputUi: const DbUserResetPasswordTextUi(),
+    );
+  }
+}
+
+enum DbUserListOption<V> implements OptionDefinition<V> {
+  projectId(ProjectIdOption()),
+  utc(UtcOption());
+
+  const DbUserListOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class CloudDbUserListCommand extends CloudCliCommand<DbUserListOption> {
+  @override
+  final name = 'list';
+
+  @override
+  final description = 'List the superusers in the Serverpod Cloud DB.';
+
+  CloudDbUserListCommand({required super.logger})
+    : super(options: DbUserListOption.values);
+
+  @override
+  Future<void> runWithOutput(
+    final Configuration<DbUserListOption> commandConfig,
+    final CommandOutput output,
+  ) async {
+    final projectId = commandConfig.value(DbUserListOption.projectId);
+    final utc = commandConfig.value(DbUserListOption.utc);
+
+    await renderCommand(
+      output,
+      operation: () => DbOperations.listDatabaseUsers(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+      ),
+      textOutputUi: DbUserListTextUi(
+        utc: utc,
+        projectId: projectId,
+        baseCommand: baseCommand,
+      ),
+    );
+  }
+}
+
+enum DbUserDeleteOption<V> implements OptionDefinition<V> {
+  projectId(ProjectIdOption()),
+  username(
+    StringOption(
+      argName: 'username',
+      argPos: 0,
+      helpText: 'The username of the DB user to delete.',
+      mandatory: true,
+    ),
+  );
+
+  const DbUserDeleteOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class CloudDbUserDeleteCommand extends CloudCliCommand<DbUserDeleteOption> {
+  @override
+  final name = 'delete';
+
+  @override
+  final description = 'Delete a superuser from the Serverpod Cloud DB.';
+
+  @override
+  String get category => CommandCategories.dangerZone;
+
+  CloudDbUserDeleteCommand({required super.logger})
+    : super(options: DbUserDeleteOption.values);
+
+  @override
+  Future<void> runWithOutput(
+    final Configuration<DbUserDeleteOption> commandConfig,
+    final CommandOutput output,
+  ) async {
+    final projectId = commandConfig.value(DbUserDeleteOption.projectId);
+    final username = commandConfig.value(DbUserDeleteOption.username);
+
+    await confirmToContinue(
+      output,
+      message:
+          'Permanently delete database user "$username" for project "$projectId"? '
+          'This action cannot be undone.',
+      defaultValue: false,
+    );
+
+    await renderCommand(
+      output,
+      operation: () => DbOperations.deleteDatabaseUser(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+        username: username,
+      ),
+      textOutputUi: const DbUserDeleteTextUi(),
     );
   }
 }

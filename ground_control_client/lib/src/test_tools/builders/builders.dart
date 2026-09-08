@@ -10,6 +10,7 @@ export 'capsule_builder.dart';
 export 'compute_info_builder.dart';
 export 'dart_sdk_version_policy_builder.dart';
 export 'database_info_builder.dart';
+export 'database_user_builder.dart';
 export 'deploy_attempt_builder.dart';
 export 'deploy_attempt_stage_builder.dart';
 export 'log_record_builder.dart';

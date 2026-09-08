@@ -506,6 +506,26 @@ void _stubDatabase(final ClientMock client) {
     ),
   ).thenAnswer((_) async => 'reset-db-password');
   when(
+    () => client.database.listDatabaseUsers(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+    ),
+  ).thenAnswer(
+    (_) async => [
+      DatabaseUserBuilder().withUsername('wernher').build(),
+      DatabaseUserBuilder()
+          .withUsername('valentina')
+          .withCreatedAt(DateTime.utc(2026, 1, 15, 10, 30))
+          .withPasswordReset()
+          .build(),
+    ],
+  );
+  when(
+    () => client.database.deleteDatabaseUser(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+      username: any(named: 'username'),
+    ),
+  ).thenAnswer((_) async {});
+  when(
     () => client.database.wipeDatabase(
       cloudCapsuleId: any(named: 'cloudCapsuleId'),
     ),

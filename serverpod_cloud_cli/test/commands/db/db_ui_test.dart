@@ -1,4 +1,5 @@
 import 'package:ground_control_client/ground_control_client.dart';
+import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/db/db_ui.dart';
 import 'package:test/test.dart';
 
@@ -495,6 +496,116 @@ void main() {
           stdout,
           contains('Backup schedule disabled for project "my-project".'),
         );
+      });
+    });
+  });
+
+  group('Given a DbUserListTextUi', () {
+    group('when rendered with users', () {
+      late String stdout;
+      late String stderr;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const DbUserListTextUi(
+            utc: true,
+            projectId: 'my-project',
+            baseCommand: 'scloud',
+          ),
+          data: [
+            DatabaseUserBuilder().withUsername('wernher').build(),
+            DatabaseUserBuilder()
+                .withUsername('valentina')
+                .withCreatedAt(DateTime.utc(2026, 1, 15))
+                .withPasswordReset()
+                .build(),
+          ],
+        );
+        stdout = io.stdout;
+        stderr = io.stderr;
+      });
+
+      test('then stdout contains the table headings', () {
+        expect(stdout, contains('User'));
+        expect(stdout, contains('Created'));
+        expect(stdout, contains('Last reset'));
+      });
+
+      test('then stdout contains the usernames', () {
+        expect(stdout, contains('wernher'));
+        expect(stdout, contains('valentina'));
+      });
+
+      test('then a user without a password reset shows never', () {
+        expect(
+          stdout.split('\n'),
+          contains(allOf(contains('wernher'), contains('never'))),
+        );
+      });
+
+      test('then a user with a password reset shows the reset time', () {
+        expect(
+          stdout.split('\n'),
+          contains(allOf(contains('valentina'), contains('2026-01-16'))),
+        );
+      });
+
+      test('then stderr is empty', () {
+        expect(stderr, isEmpty);
+      });
+    });
+
+    group('when rendered without users', () {
+      late String stdout;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const DbUserListTextUi(
+            utc: false,
+            projectId: 'my-project',
+            baseCommand: 'scloud',
+          ),
+          data: <DatabaseUser>[],
+        );
+        stdout = io.stdout;
+      });
+
+      test('then stdout informs that no users exist', () {
+        expect(
+          stdout,
+          contains('No database users found for project "my-project".'),
+        );
+      });
+
+      test('then stdout hints how to create a user', () {
+        expect(
+          stdout,
+          contains('scloud db user create <username> --project my-project'),
+        );
+      });
+    });
+  });
+
+  group('Given a DbUserDeleteTextUi', () {
+    group('when rendered after deleting a user', () {
+      late String stdout;
+      late String stderr;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const DbUserDeleteTextUi(),
+          data: const {'username': 'wernher'},
+        );
+        stdout = io.stdout;
+        stderr = io.stderr;
+      });
+
+      test('then stdout contains the success message', () {
+        expect(stdout, contains('Database user "wernher" deleted.'));
+      });
+
+      test('then stderr is empty', () {
+        expect(stderr, isEmpty);
       });
     });
   });
