@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:collection';
 
+import 'package:serverpod_cloud_shared/serverpod_cloud_shared.dart';
+
 import 'bottom_region_renderer.dart';
 import 'inline_terminal.dart';
 
@@ -103,7 +105,7 @@ class ScrollingSection {
   final bool captureOutput;
 
   final Duration _spinnerInterval;
-  final Duration Function()? _elapsedOverride;
+  final Duration? Function()? _elapsedOverride;
   final SpinnerScheduler _scheduleTicker;
   final Stopwatch _stopwatch = Stopwatch();
 
@@ -124,10 +126,15 @@ class ScrollingSection {
   /// [successRetention] and [failureRetention] choose what happens to the body
   /// when [finish] is called, unless that call passes [overrideRetention].
   ///
-  /// [spinnerInterval] controls how often the spinner advances. [elapsed] and
-  /// [scheduleTicker] are injection points for tests so the animation and
-  /// elapsed time can be driven deterministically; production code should leave
-  /// them unset.
+  /// [spinnerInterval] controls how often the spinner advances.
+  ///
+  /// [elapsed] supplies the elapsed time shown in the heading, for when the
+  /// duration is known from elsewhere (e.g. server-side timestamps). When it
+  /// is unset or returns null, the time since the section was created is
+  /// shown.
+  ///
+  /// [scheduleTicker] is an injection point for tests so the animation can be
+  /// driven deterministically; production code should leave it unset.
   ScrollingSection({
     required InlineTerminal terminal,
     this.rows = 5,
@@ -139,7 +146,7 @@ class ScrollingSection {
     final RetainSection? failureRetention,
     this.captureOutput = false,
     Duration spinnerInterval = _defaultSpinnerInterval,
-    Duration Function()? elapsed,
+    Duration? Function()? elapsed,
     SpinnerScheduler? scheduleTicker,
   }) : assert(rows >= 1, 'rows must be at least 1'),
        _heading = heading,
@@ -172,6 +179,9 @@ class ScrollingSection {
   /// from [isSuccess] of the last event, or a clean end if [isSuccess] is
   /// omitted. A stream error or an empty stream finishes as a failure; the
   /// error is rethrown, and an empty stream throws [StateError].
+  ///
+  /// [elapsed] supplies the elapsed time shown in the heading, as for the
+  /// constructor.
   static Future<T> runSpinner<T>(
     InlineTerminal terminal, {
     required String heading,
@@ -181,7 +191,7 @@ class ScrollingSection {
     String? successMessage,
     String? failedMessage,
     Duration spinnerInterval = _defaultSpinnerInterval,
-    Duration Function()? elapsed,
+    Duration? Function()? elapsed,
     SpinnerScheduler? scheduleTicker,
   }) async {
     final section = ScrollingSection(
@@ -231,11 +241,13 @@ class ScrollingSection {
   Duration get _elapsedTime => _elapsedOverride?.call() ?? _stopwatch.elapsed;
 
   /// Formats [duration] like the reference spinner: sub-100ms in milliseconds,
-  /// otherwise seconds with a single decimal.
+  /// under a minute in seconds with a single decimal, otherwise in minutes and
+  /// seconds.
   static String _formatElapsed(Duration duration) {
     final ms = duration.inMilliseconds;
     if (ms < 100) return '${ms}ms';
-    return '${(ms / 1000).toStringAsFixed(1)}s';
+    if (duration.inMinutes < 1) return '${(ms / 1000).toStringAsFixed(1)}s';
+    return DateTimeFormatter.duration(duration);
   }
 
   void _tick() {

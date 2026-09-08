@@ -2225,6 +2225,329 @@ Cloud build failed. 💥''');
       );
     });
 
+    group('and a finished deployment with server-side stage timestamps,', () {
+      final finishedAttemptId = Uuid().v4obj();
+
+      setUpAll(() async {
+        final attemptStages = [
+          DeployAttemptStageBuilder()
+              .withCloudCapsuleId(projectId)
+              .withAttemptId(finishedAttemptId)
+              .withStageType(DeployStageType.upload)
+              .withStageStatus(DeployProgressStatus.success)
+              .withStartedAt(DateTime.parse('2021-12-31 10:20:30'))
+              .withEndedAt(DateTime.parse('2021-12-31 10:20:40'))
+              .build(),
+          DeployAttemptStageBuilder()
+              .withCloudCapsuleId(projectId)
+              .withAttemptId(finishedAttemptId)
+              .withStageType(DeployStageType.build)
+              .withStageStatus(DeployProgressStatus.success)
+              .withStartedAt(DateTime.parse('2021-12-31 10:20:40'))
+              .withEndedAt(DateTime.parse('2021-12-31 10:22:15'))
+              .build(),
+          DeployAttemptStageBuilder()
+              .withCloudCapsuleId(projectId)
+              .withAttemptId(finishedAttemptId)
+              .withStageType(DeployStageType.deploy)
+              .withStageStatus(DeployProgressStatus.success)
+              .withStartedAt(DateTime.parse('2021-12-31 10:22:15'))
+              .withEndedAt(DateTime.parse('2021-12-31 10:22:25'))
+              .build(),
+          DeployAttemptStageBuilder()
+              .withCloudCapsuleId(projectId)
+              .withAttemptId(finishedAttemptId)
+              .withStageType(DeployStageType.service)
+              .withStageStatus(DeployProgressStatus.success)
+              .withStartedAt(DateTime.parse('2021-12-31 10:22:25'))
+              .withEndedAt(DateTime.parse('2021-12-31 10:22:35'))
+              .build(),
+        ];
+
+        when(
+          () => client.status.getDeployAttemptId(
+            cloudCapsuleId: projectId,
+            attemptNumber: 0,
+          ),
+        ).thenAnswer((_) async => finishedAttemptId);
+
+        when(
+          () => client.status.getDeployAttemptStatus(
+            cloudCapsuleId: projectId,
+            attemptId: finishedAttemptId,
+          ),
+        ).thenAnswer((_) async => attemptStages);
+
+        when(
+          () => client.status.tailDeployAttemptStatus(
+            cloudCapsuleId: projectId,
+            attemptId: finishedAttemptId,
+          ),
+        ).thenAnswer((_) => Stream.fromIterable(attemptStages));
+      });
+
+      tearDownAll(() {
+        reset(client.status);
+      });
+
+      group('when running deployment show on an interactive terminal', () {
+        late Future commandResult;
+
+        setUp(() async {
+          logger.inlineTerminal = FakeTerminal(hasTerminal: true);
+          commandResult = cli.run([
+            'status',
+            'deployment',
+            'show',
+            '--project',
+            projectId,
+          ]);
+        });
+
+        test('then completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then each stage shows the time it took on the server', () async {
+          await commandResult;
+
+          final terminal = logger.inlineTerminal as FakeTerminal;
+          expect(
+            terminal.output,
+            contains(
+              '${'Upload successful.'.padRight(StatusCommands.progressMessagePadLength)} (10.0s)',
+            ),
+          );
+          expect(
+            terminal.output,
+            contains(
+              '${'Cloud build successful.'.padRight(StatusCommands.progressMessagePadLength)} (1m 35s)',
+            ),
+          );
+          expect(
+            terminal.output,
+            contains(
+              '${'Rollout successful. 🚀'.padRight(StatusCommands.progressMessagePadLength)} (20.0s)',
+            ),
+          );
+        });
+      });
+
+      group('when running deployment show --no-await with --format json', () {
+        late Future commandResult;
+
+        setUp(() async {
+          commandResult = cli.run([
+            'status',
+            'deployment',
+            'show',
+            '--project',
+            projectId,
+            '--no-await',
+            '--format',
+            'json',
+          ]);
+        });
+
+        test(
+          'then the rollout stage spans the deploy and service stages',
+          () async {
+            await commandResult;
+
+            final payload = jsonDecode(logger.rawCalls.single.content) as Map;
+            final rollout = (payload['stages'] as List).last as Map;
+            expect(rollout['stageType'], 'service');
+            expect(
+              rollout['startedAt'],
+              DateTime.parse('2021-12-31 10:22:15').toUtc().toIso8601String(),
+            );
+            expect(
+              rollout['endedAt'],
+              DateTime.parse('2021-12-31 10:22:35').toUtc().toIso8601String(),
+            );
+          },
+        );
+      });
+    });
+
+    group('and a rollout whose service stage has not started,', () {
+      final rollingOutAttemptId = Uuid().v4obj();
+
+      setUpAll(() async {
+        final attemptStages = [
+          DeployAttemptStageBuilder()
+              .withCloudCapsuleId(projectId)
+              .withAttemptId(rollingOutAttemptId)
+              .withStageType(DeployStageType.upload)
+              .withStageStatus(DeployProgressStatus.success)
+              .withStartedAt(DateTime.parse('2021-12-31 10:20:30'))
+              .withEndedAt(DateTime.parse('2021-12-31 10:20:40'))
+              .build(),
+          DeployAttemptStageBuilder()
+              .withCloudCapsuleId(projectId)
+              .withAttemptId(rollingOutAttemptId)
+              .withStageType(DeployStageType.build)
+              .withStageStatus(DeployProgressStatus.success)
+              .withStartedAt(DateTime.parse('2021-12-31 10:20:40'))
+              .withEndedAt(DateTime.parse('2021-12-31 10:22:15'))
+              .build(),
+          DeployAttemptStageBuilder()
+              .withCloudCapsuleId(projectId)
+              .withAttemptId(rollingOutAttemptId)
+              .withStageType(DeployStageType.deploy)
+              .withStageStatus(DeployProgressStatus.success)
+              .withStartedAt(DateTime.parse('2021-12-31 10:22:15'))
+              .withEndedAt(DateTime.parse('2021-12-31 10:22:25'))
+              .build(),
+          DeployAttemptStageBuilder()
+              .withCloudCapsuleId(projectId)
+              .withAttemptId(rollingOutAttemptId)
+              .withStageType(DeployStageType.service)
+              .withStageStatus(DeployProgressStatus.awaiting)
+              .withStartedAt(null)
+              .withEndedAt(null)
+              .build(),
+        ];
+
+        when(
+          () => client.status.getDeployAttemptId(
+            cloudCapsuleId: projectId,
+            attemptNumber: 0,
+          ),
+        ).thenAnswer((_) async => rollingOutAttemptId);
+
+        when(
+          () => client.status.getDeployAttemptStatus(
+            cloudCapsuleId: projectId,
+            attemptId: rollingOutAttemptId,
+          ),
+        ).thenAnswer((_) async => attemptStages);
+      });
+
+      tearDownAll(() {
+        reset(client.status);
+      });
+
+      group('when running deployment show --no-await with --format json', () {
+        late Future commandResult;
+
+        setUp(() async {
+          commandResult = cli.run([
+            'status',
+            'deployment',
+            'show',
+            '--project',
+            projectId,
+            '--no-await',
+            '--format',
+            'json',
+          ]);
+        });
+
+        test('then the rollout stage is running without an end time', () async {
+          await commandResult;
+
+          final payload = jsonDecode(logger.rawCalls.single.content) as Map;
+          final rollout = (payload['stages'] as List).last as Map;
+          expect(rollout['stageStatus'], 'running');
+          expect(
+            rollout['startedAt'],
+            DateTime.parse('2021-12-31 10:22:15').toUtc().toIso8601String(),
+          );
+          expect(rollout['endedAt'], isNull);
+        });
+      });
+    });
+
+    group('and a failed rollout with server-side stage timestamps,', () {
+      final failedRolloutAttemptId = Uuid().v4obj();
+
+      setUpAll(() async {
+        final attemptStages = [
+          DeployAttemptStageBuilder()
+              .withCloudCapsuleId(projectId)
+              .withAttemptId(failedRolloutAttemptId)
+              .withStageType(DeployStageType.upload)
+              .withStageStatus(DeployProgressStatus.success)
+              .withStartedAt(DateTime.parse('2021-12-31 10:20:30'))
+              .withEndedAt(DateTime.parse('2021-12-31 10:20:40'))
+              .build(),
+          DeployAttemptStageBuilder()
+              .withCloudCapsuleId(projectId)
+              .withAttemptId(failedRolloutAttemptId)
+              .withStageType(DeployStageType.build)
+              .withStageStatus(DeployProgressStatus.success)
+              .withStartedAt(DateTime.parse('2021-12-31 10:20:40'))
+              .withEndedAt(DateTime.parse('2021-12-31 10:22:15'))
+              .build(),
+          DeployAttemptStageBuilder()
+              .withCloudCapsuleId(projectId)
+              .withAttemptId(failedRolloutAttemptId)
+              .withStageType(DeployStageType.deploy)
+              .withStageStatus(DeployProgressStatus.failure)
+              .withStartedAt(DateTime.parse('2021-12-31 10:22:15'))
+              .withEndedAt(DateTime.parse('2021-12-31 10:22:45'))
+              .build(),
+          DeployAttemptStageBuilder()
+              .withCloudCapsuleId(projectId)
+              .withAttemptId(failedRolloutAttemptId)
+              .withStageType(DeployStageType.service)
+              .withStageStatus(DeployProgressStatus.cancelled)
+              .withStartedAt(null)
+              .withEndedAt(null)
+              .build(),
+        ];
+
+        when(
+          () => client.status.getDeployAttemptId(
+            cloudCapsuleId: projectId,
+            attemptNumber: 0,
+          ),
+        ).thenAnswer((_) async => failedRolloutAttemptId);
+
+        when(
+          () => client.status.tailDeployAttemptStatus(
+            cloudCapsuleId: projectId,
+            attemptId: failedRolloutAttemptId,
+          ),
+        ).thenAnswer((_) => Stream.fromIterable(attemptStages));
+      });
+
+      tearDownAll(() {
+        reset(client.status);
+      });
+
+      group('when running deployment show on an interactive terminal', () {
+        late Future commandResult;
+
+        setUp(() async {
+          logger.inlineTerminal = FakeTerminal(hasTerminal: true);
+          commandResult = cli.run([
+            'status',
+            'deployment',
+            'show',
+            '--project',
+            projectId,
+          ]);
+        });
+
+        test(
+          'then the rollout failure shows the time it took on the server',
+          () async {
+            await commandResult;
+
+            final terminal = logger.inlineTerminal as FakeTerminal;
+            expect(
+              terminal.output,
+              contains(
+                '${'Rollout failed. 💥'.padRight(StatusCommands.progressMessagePadLength)} (30.0s)',
+              ),
+            );
+          },
+        );
+      });
+    });
+
     group('and a failed upload stage status,', () {
       final failedUploadAttemptId = Uuid().v4obj();
 

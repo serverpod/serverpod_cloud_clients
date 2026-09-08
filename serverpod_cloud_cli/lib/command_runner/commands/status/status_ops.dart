@@ -56,6 +56,22 @@ abstract class StatusCommands {
   static String statusLine(final DeployAttemptStage stage) =>
       _generateStatusLine(stage);
 
+  /// The time a stage has taken according to its server-side timestamps.
+  ///
+  /// A finished stage yields the time between its start and end. A stage that
+  /// has started but not ended yields the time since it started, relative to
+  /// [now]. Returns null when the stage has no start time.
+  static Duration? stageElapsed(
+    final DeployAttemptStage? stage, {
+    final DateTime? now,
+  }) {
+    final startedAt = stage?.startedAt;
+    if (startedAt == null) return null;
+    final endedAt = stage?.endedAt ?? now ?? DateTime.now();
+    final elapsed = endedAt.difference(startedAt);
+    return elapsed.isNegative ? Duration.zero : elapsed;
+  }
+
   static Future<void> tailDeploymentStatus(
     Client cloudApiClient, {
     required CommandLogger logger,
@@ -232,21 +248,52 @@ abstract class StatusCommands {
       return otherStages;
     }
 
-    final deployStatus = rolloutStages
-        .lastWhereOrNull((stage) => stage.stageType == DeployStageType.deploy)
-        ?.stageStatus;
-    final serviceStatus = rolloutStages
-        .lastWhereOrNull((stage) => stage.stageType == DeployStageType.service)
-        ?.stageStatus;
+    final deployStage = rolloutStages.lastWhereOrNull(
+      (stage) => stage.stageType == DeployStageType.deploy,
+    );
+    final serviceStage = rolloutStages.lastWhereOrNull(
+      (stage) => stage.stageType == DeployStageType.service,
+    );
+    final combinedStatus = _combinedRolloutStatus(
+      deployStage?.stageStatus ?? DeployProgressStatus.awaiting,
+      serviceStage?.stageStatus ?? DeployProgressStatus.awaiting,
+    );
+    final span = _rolloutSpan([
+      ?deployStage,
+      ?serviceStage,
+    ], hasEnded: combinedStatus.isFinal);
 
     final combinedStage = rolloutStages.last.copyWith(
       stageType: DeployStageType.service,
-      stageStatus: _combinedRolloutStatus(
-        deployStatus ?? DeployProgressStatus.awaiting,
-        serviceStatus ?? DeployProgressStatus.awaiting,
-      ),
+      stageStatus: combinedStatus,
+      startedAt: span.startedAt,
+      endedAt: span.endedAt,
     );
     return [...otherStages, combinedStage];
+  }
+
+  /// The time span covered by the rollout [stages]: from the earliest start
+  /// to the latest end. The end is null until the rollout [hasEnded], since
+  /// a stage that has not started yet has no timestamps of its own.
+  static ({DateTime? startedAt, DateTime? endedAt}) _rolloutSpan(
+    Iterable<DeployAttemptStage> stages, {
+    required bool hasEnded,
+  }) {
+    DateTime? startedAt;
+    DateTime? endedAt;
+    for (final stage in stages) {
+      final stageStartedAt = stage.startedAt;
+      final stageEndedAt = stage.endedAt;
+      if (stageStartedAt != null &&
+          (startedAt == null || stageStartedAt.isBefore(startedAt))) {
+        startedAt = stageStartedAt;
+      }
+      if (stageEndedAt != null &&
+          (endedAt == null || stageEndedAt.isAfter(endedAt))) {
+        endedAt = stageEndedAt;
+      }
+    }
+    return (startedAt: startedAt, endedAt: hasEnded ? endedAt : null);
   }
 
   /// Combines the statuses of the deploy and service stages into a single
@@ -351,14 +398,43 @@ class _StageStatusTailer {
       cancelOnInterrupt(stageStreams.getStream(stageType), processSignalStream),
       _fillerStage(stageType, DeployProgressStatus.unknown),
     );
-    return await logger.progressStream(
-      StatusCommands._generateStatusLine(
-        _fillerStage(stageType, DeployProgressStatus.awaiting),
+    return await _runStageSpinner(stageType, fallbackStream);
+  }
+
+  /// Runs a spinner for [stageType] over [stream] and returns the final stage.
+  ///
+  /// On an interactive terminal the elapsed time comes from the server-side
+  /// stage timestamps, so it reflects how long the stage actually took rather
+  /// than how long this command has been watching it. A non-interactive
+  /// terminal falls back to the plain progress output.
+  Future<DeployAttemptStage> _runStageSpinner(
+    DeployStageType stageType,
+    Stream<DeployAttemptStage> stream,
+  ) async {
+    final initialMessage = StatusCommands._generateStatusLine(
+      _fillerStage(stageType, DeployProgressStatus.awaiting),
+    ).padRight(StatusCommands.progressMessagePadLength);
+
+    if (!logger.inlineTerminal.hasTerminal) {
+      return await logger.progressStream(
+        initialMessage,
+        stream,
+        toMessage: StatusCommands._generateStatusLine,
+        padRight: StatusCommands.progressMessagePadLength,
+        isSuccess: (stage) => stage.stageStatus == DeployProgressStatus.success,
+      );
+    }
+
+    DeployAttemptStage? lastStage;
+    return await ScrollingSection.runSpinner(
+      logger.inlineTerminal,
+      heading: initialMessage,
+      stream: stream.map((stage) => lastStage = stage),
+      toMessage: (stage) => StatusCommands._generateStatusLine(
+        stage,
       ).padRight(StatusCommands.progressMessagePadLength),
-      fallbackStream,
-      toMessage: StatusCommands._generateStatusLine,
-      padRight: StatusCommands.progressMessagePadLength,
       isSuccess: (stage) => stage.stageStatus == DeployProgressStatus.success,
+      elapsed: () => StatusCommands.stageElapsed(lastStage),
     );
   }
 
@@ -382,6 +458,10 @@ class _StageStatusTailer {
       _fillerStage(DeployStageType.build, DeployProgressStatus.unknown),
     );
 
+    var lastStage = _fillerStage(
+      DeployStageType.build,
+      DeployProgressStatus.unknown,
+    );
     final section = ScrollingSection(
       terminal: logger.inlineTerminal,
       heading: StatusCommands._generateStatusLine(
@@ -391,13 +471,10 @@ class _StageStatusTailer {
         _fillerStage(DeployStageType.build, DeployProgressStatus.success),
       ).padRight(StatusCommands.progressMessagePadLength),
       captureOutput: true,
+      elapsed: () => StatusCommands.stageElapsed(lastStage),
     );
 
     StreamSubscription<LogRecord>? logSubscription;
-    var lastStage = _fillerStage(
-      DeployStageType.build,
-      DeployProgressStatus.unknown,
-    );
     try {
       await for (final stage in fallbackStream) {
         lastStage = stage;
@@ -445,23 +522,16 @@ class _StageStatusTailer {
       _combinedRolloutStream(),
       _fillerStage(DeployStageType.service, DeployProgressStatus.unknown),
     );
-    return await logger.progressStream(
-      StatusCommands._generateStatusLine(
-        _fillerStage(DeployStageType.service, DeployProgressStatus.awaiting),
-      ).padRight(StatusCommands.progressMessagePadLength),
-      fallbackStream,
-      toMessage: StatusCommands._generateStatusLine,
-      padRight: StatusCommands.progressMessagePadLength,
-      isSuccess: (stage) => stage.stageStatus == DeployProgressStatus.success,
-    );
+    return await _runStageSpinner(DeployStageType.service, fallbackStream);
   }
 
   /// Merges the deploy and service stage streams into a single stream of
-  /// synthetic stages carrying the combined rollout status. The stream ends
-  /// when the combined status is final or both source streams have closed.
+  /// synthetic stages carrying the combined rollout status and time span. The
+  /// stream ends when the combined status is final or both source streams
+  /// have closed.
   Stream<DeployAttemptStage> _combinedRolloutStream() async* {
-    var deployStatus = DeployProgressStatus.awaiting;
-    var serviceStatus = DeployProgressStatus.awaiting;
+    DeployAttemptStage? deployStage;
+    DeployAttemptStage? serviceStage;
 
     final merged = StreamGroup.merge([
       cancelOnInterrupt(
@@ -476,16 +546,25 @@ class _StageStatusTailer {
 
     await for (final stage in merged) {
       if (stage.stageType == DeployStageType.deploy) {
-        deployStatus = stage.stageStatus;
+        deployStage = stage;
       } else if (stage.stageType == DeployStageType.service) {
-        serviceStatus = stage.stageStatus;
+        serviceStage = stage;
       }
 
       final combinedStatus = StatusCommands._combinedRolloutStatus(
-        deployStatus,
-        serviceStatus,
+        deployStage?.stageStatus ?? DeployProgressStatus.awaiting,
+        serviceStage?.stageStatus ?? DeployProgressStatus.awaiting,
       );
-      yield _fillerStage(DeployStageType.service, combinedStatus);
+      final span = StatusCommands._rolloutSpan([
+        ?deployStage,
+        ?serviceStage,
+      ], hasEnded: combinedStatus.isFinal);
+      yield _fillerStage(
+        DeployStageType.service,
+        combinedStatus,
+        startedAt: span.startedAt,
+        endedAt: span.endedAt,
+      );
       if (combinedStatus.isFinal) {
         break;
       }
@@ -494,13 +573,17 @@ class _StageStatusTailer {
 
   DeployAttemptStage _fillerStage(
     DeployStageType stageType,
-    DeployProgressStatus status,
-  ) {
+    DeployProgressStatus status, {
+    DateTime? startedAt,
+    DateTime? endedAt,
+  }) {
     return DeployAttemptStage(
       cloudCapsuleId: cloudCapsuleId,
       attemptId: attemptId,
       stageType: stageType,
       stageStatus: status,
+      startedAt: startedAt,
+      endedAt: endedAt,
     );
   }
 }
