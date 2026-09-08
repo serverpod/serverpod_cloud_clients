@@ -5,7 +5,7 @@ import 'package:async/async.dart' show StreamGroup;
 import 'package:collection/collection.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployment_command_names.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/deployments/command_names.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/inline_tui/inline_tui.dart';
 import 'package:serverpod_cloud_cli/util/stream_util.dart';
@@ -78,7 +78,7 @@ abstract class StatusCommands {
     required String baseCommand,
     required String cloudCapsuleId,
     required UuidValue attemptId,
-    DeploymentCommandNames commandNames = DeploymentCommandNames.public,
+    CommandNames commandNames = CommandNames.public,
     bool inUtc = false,
     bool skipUploadStage = false,
     Stream<void>? processSignalStreamOverride,
@@ -190,14 +190,14 @@ abstract class StatusCommands {
   static void _logDeployTailInterruptGuidance(
     CommandLogger logger,
     String baseCommand,
-    DeploymentCommandNames commandNames,
+    CommandNames commandNames,
   ) {
     logger.info(
       'The deployment continues in Serverpod Cloud.',
       newParagraph: true,
     );
     logger.terminalCommand(
-      '$baseCommand ${commandNames.show}',
+      '$baseCommand ${commandNames.deploymentShow}',
       message: 'To view the deployment status, run this command:',
     );
   }
@@ -205,13 +205,13 @@ abstract class StatusCommands {
   static void _logStageFailureGuidance(
     CommandLogger logger,
     String baseCommand,
-    DeploymentCommandNames commandNames,
+    CommandNames commandNames,
     DeployAttemptStage stage,
   ) {
     if (stage.stageType == DeployStageType.build &&
         stage.stageStatus == DeployProgressStatus.failure) {
       logger.terminalCommand(
-        '$baseCommand ${commandNames.log}',
+        '$baseCommand ${commandNames.buildLog}',
         message: 'To view the build log again, run this command:',
         newParagraph: true,
       );
@@ -219,7 +219,7 @@ abstract class StatusCommands {
     }
 
     logger.terminalCommand(
-      '$baseCommand ${commandNames.show}',
+      '$baseCommand ${commandNames.deploymentShow}',
       message: 'To view the deployment status, run this command:',
       newParagraph: true,
     );

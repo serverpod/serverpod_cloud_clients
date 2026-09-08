@@ -897,7 +897,7 @@ void main() {
 
     test('then the examples use the public status deployment log path', () {
       expect(help, contains(r'$ scloud status deployment log'));
-      expect(help, isNot(contains(r'$ scloud status deployment build-log')));
+      expect(help, isNot(contains(r'$ scloud build log')));
     });
   });
 

@@ -258,6 +258,42 @@ commands:
             exclusiveFlags:
               - [utc, no-utc]
 
+  - name: build
+
+    commands:
+      - name: log
+        flags:
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
+          -u, --utc: "Display timestamps in UTC timezone instead of local."
+          --no-utc: "Display timestamps in UTC timezone instead of local."
+          --deploy=: "View a specific deployment, with uuid or sequence number, 0 for latest. Can be passed as the first argument."
+        exclusiveFlags:
+          - [utc, no-utc]
+
+      - name: secret
+
+        commands:
+          - name: set
+            flags:
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
+              --name=!: "The name of the build secret. Can be passed as the first argument."
+              --value=: "The value of the build secret. Can be passed as the second argument."
+              --from-file=: "The name of the file with the build secret value."
+              --type=: "The type of the build secret."
+            completion:
+              flag:
+                from-file: ["$files"]
+                type: ["ssh"]
+
+          - name: list
+            flags:
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
+
+          - name: unset
+            flags:
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
+              --name=!: "The name of the build secret. Can be passed as the first argument."
+
   - name: password
 
     commands:
