@@ -190,25 +190,26 @@ const _scenarios = [
     '--project',
     _projectId,
   ]),
-  _Scenario('deployment build-secret list', [
-    'deployment',
-    'build-secret',
+  _Scenario('build log', ['build', 'log', '--project', _projectId]),
+  _Scenario('build secret list', [
+    'build',
+    'secret',
     'list',
     '--project',
     _projectId,
   ]),
-  _Scenario('deployment build-secret set', [
-    'deployment',
-    'build-secret',
+  _Scenario('build secret set', [
+    'build',
+    'secret',
     'set',
     'SECRET_1',
     'secret-value',
     '--project',
     _projectId,
   ]),
-  _Scenario('deployment build-secret unset', [
-    'deployment',
-    'build-secret',
+  _Scenario('build secret unset', [
+    'build',
+    'secret',
     'unset',
     'SECRET_1',
     '--project',

@@ -1,8 +1,7 @@
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployment_command_names.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/log/logs_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/status/status_ops.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/deployments/command_names.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
 abstract class DeploymentCommands {
@@ -12,16 +11,16 @@ abstract class DeploymentCommands {
     required final String baseCommand,
     required final String projectId,
     required final bool inUtc,
-    final DeploymentCommandNames commandNames = DeploymentCommandNames.public,
+    final CommandNames commandNames = CommandNames.public,
     final String? deploymentArg,
   }) async {
     try {
-      final attemptId = await _getDeployAttemptId(
+      final attemptId = await getDeployAttemptId(
         cloudApiClient,
-        baseCommand,
-        commandNames,
-        projectId,
-        deploymentArg,
+        baseCommand: baseCommand,
+        commandNames: commandNames,
+        projectId: projectId,
+        deploymentArg: deploymentArg,
       );
 
       await StatusCommands.tailDeploymentStatus(
@@ -44,16 +43,16 @@ abstract class DeploymentCommands {
     final Client cloudApiClient, {
     required final String baseCommand,
     required final String projectId,
-    final DeploymentCommandNames commandNames = DeploymentCommandNames.public,
+    final CommandNames commandNames = CommandNames.public,
     final String? deploymentArg,
   }) async {
     try {
-      final attemptId = await _getDeployAttemptId(
+      final attemptId = await getDeployAttemptId(
         cloudApiClient,
-        baseCommand,
-        commandNames,
-        projectId,
-        deploymentArg,
+        baseCommand: baseCommand,
+        commandNames: commandNames,
+        projectId: projectId,
+        deploymentArg: deploymentArg,
       );
       final snapshot = await StatusCommands.fetchDeployAttemptStatus(
         cloudApiClient,
@@ -91,92 +90,17 @@ abstract class DeploymentCommands {
     return deploymentListRows(statuses);
   }
 
-  static Future<List<LogRecord>> fetchBuildLog(
+  /// Resolves [deploymentArg], a deployment uuid or sequence number where 0
+  /// means the latest, to a deploy attempt id.
+  ///
+  /// Throws [FailureException] if no such deployment exists.
+  static Future<UuidValue> getDeployAttemptId(
     final Client cloudApiClient, {
     required final String baseCommand,
-    required final DeploymentCommandNames commandNames,
+    required final CommandNames commandNames,
     required final String projectId,
     final String? deploymentArg,
   }) async {
-    try {
-      final attemptId = await _getDeployAttemptId(
-        cloudApiClient,
-        baseCommand,
-        commandNames,
-        projectId,
-        deploymentArg,
-      );
-
-      return await LogsOperations.fetchBuildLog(
-        cloudApiClient,
-        projectId: projectId,
-        attemptId: attemptId,
-      );
-    } on FailureException {
-      rethrow;
-    } on Exception catch (e, s) {
-      throw FailureException.nested(e, s, 'Failed to get build log');
-    }
-  }
-
-  static Future<Map<String, Object?>> setBuildSecret(
-    final Client cloudApiClient, {
-    required final String projectId,
-    required final String name,
-    required final String value,
-    required final BuildSecretType buildSecretType,
-  }) async {
-    try {
-      await cloudApiClient.secrets.upsertBuildSecret(
-        cloudCapsuleId: projectId,
-        secretKey: name,
-        secretValue: value,
-        buildSecretType: buildSecretType,
-      );
-    } on InvalidValueException catch (e) {
-      throw FailureException(error: e.message);
-    } on Exception catch (e, s) {
-      throw FailureException.nested(e, s, 'Failed to set build secret');
-    }
-
-    return {'name': name};
-  }
-
-  static Future<List<String>> listBuildSecretsOperation(
-    Client cloudApiClient, {
-    required String projectId,
-  }) async {
-    try {
-      return await cloudApiClient.secrets.listBuild(projectId);
-    } on Exception catch (e, s) {
-      throw FailureException.nested(e, s, 'Failed to list build secrets');
-    }
-  }
-
-  static Future<Map<String, Object?>> unsetBuildSecret(
-    final Client cloudApiClient, {
-    required final String projectId,
-    required final String name,
-  }) async {
-    try {
-      await cloudApiClient.secrets.deleteBuild(
-        cloudCapsuleId: projectId,
-        key: name,
-      );
-    } on Exception catch (e, s) {
-      throw FailureException.nested(e, s, 'Failed to remove the build secret');
-    }
-
-    return {'name': name};
-  }
-
-  static Future<UuidValue> _getDeployAttemptId(
-    Client cloudApiClient,
-    String baseCommand,
-    DeploymentCommandNames commandNames,
-    String projectId,
-    String? deploymentArg,
-  ) async {
     final deployment = deploymentArg ?? '0';
     final attemptNumber = int.tryParse(deployment);
     if (attemptNumber == null) {
@@ -205,7 +129,7 @@ abstract class DeploymentCommands {
         error: 'No such deployment status found.',
         hint:
             'Run this command to see recent deployments: '
-            '$baseCommand ${commandNames.list}',
+            '$baseCommand ${commandNames.deploymentList}',
       );
     }
   }

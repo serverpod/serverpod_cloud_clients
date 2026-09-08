@@ -1,17 +1,14 @@
 import 'package:config/config.dart';
-import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/builds/builds_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy/deploy_command.dart'
     show AwaitOption;
-import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployment_command_names.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployments_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployments_ui.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/log/log_ui.dart'
-    show LogListTextUi;
+import 'package:serverpod_cloud_cli/command_runner/commands/deployments/command_names.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
-
-import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
 
 class CloudDeploymentsCommand extends CloudCliCommand {
   @override
@@ -39,15 +36,23 @@ class CloudDeploymentsCommand extends CloudCliCommand {
     );
     if (asOldAlias) {
       addSubcommand(
-        CloudDeploymentsLogCommand(
+        CloudBuildLogCommand(
           logger: logger,
           name: 'build-log',
-          asOldAlias: true,
+          commandNames: CommandNames.legacy,
         ),
       );
-      addSubcommand(CloudDeploymentsBuildSecretCommand(logger: logger));
+      addSubcommand(
+        CloudBuildSecretCommand(
+          logger: logger,
+          name: 'build-secret',
+          commandNames: CommandNames.legacy,
+        ),
+      );
     } else {
-      addSubcommand(CloudDeploymentsLogCommand(logger: logger));
+      addSubcommand(
+        CloudBuildLogCommand(logger: logger, commandNames: CommandNames.public),
+      );
     }
   }
 }
@@ -95,7 +100,7 @@ class CloudDeploymentsShowCommand
   @override
   String get description => 'Show the status of a deployment.';
 
-  final DeploymentCommandNames _commandNames;
+  final CommandNames _commandNames;
 
   @override
   String get usageExamples =>
@@ -104,27 +109,25 @@ Examples
 
   Show the status of the latest deployment and wait for it to finish.
   
-    \$ $baseCommand ${_commandNames.show}
+    \$ $baseCommand ${_commandNames.deploymentShow}
 
   Show the status of the latest deployment without waiting for it to finish.
   
-    \$ $baseCommand ${_commandNames.show} --no-await
+    \$ $baseCommand ${_commandNames.deploymentShow} --no-await
 
   Show the status of a specific deployment by sequence number.
   
-    \$ $baseCommand ${_commandNames.show} 3
+    \$ $baseCommand ${_commandNames.deploymentShow} 3
 
   Show the status of a specific deployment by UUID.
   
-    \$ $baseCommand ${_commandNames.show} 550e8400-e29b-41d4-a716-446655440000
+    \$ $baseCommand ${_commandNames.deploymentShow} 550e8400-e29b-41d4-a716-446655440000
 ''';
 
   CloudDeploymentsShowCommand({
     required super.logger,
     final bool asOldAlias = false,
-  }) : _commandNames = asOldAlias
-           ? DeploymentCommandNames.legacy
-           : DeploymentCommandNames.public,
+  }) : _commandNames = asOldAlias ? CommandNames.legacy : CommandNames.public,
        super(options: DeploymentsShowOption.values);
 
   @override
@@ -202,7 +205,7 @@ class CloudDeploymentsListCommand
   @override
   String get description => 'List recent deployments.';
 
-  final DeploymentCommandNames _commandNames;
+  final CommandNames _commandNames;
 
   @override
   String get usageExamples =>
@@ -211,19 +214,17 @@ Examples
 
   List the 10 most recent deployments.
   
-    \$ $baseCommand ${_commandNames.list}
+    \$ $baseCommand ${_commandNames.deploymentList}
 
   List the 20 most recent deployments.
   
-    \$ $baseCommand ${_commandNames.list} --limit 20
+    \$ $baseCommand ${_commandNames.deploymentList} --limit 20
 ''';
 
   CloudDeploymentsListCommand({
     required super.logger,
     final bool asOldAlias = false,
-  }) : _commandNames = asOldAlias
-           ? DeploymentCommandNames.legacy
-           : DeploymentCommandNames.public,
+  }) : _commandNames = asOldAlias ? CommandNames.legacy : CommandNames.public,
        super(options: DeploymentsListOption.values);
 
   @override
@@ -243,307 +244,6 @@ Examples
         limit: limit,
       ),
       textOutputUi: DeploymentListTextUi(utc: inUtc, baseCommand: baseCommand),
-    );
-  }
-}
-
-abstract final class _DeploymentsLogOptions {
-  static const projectId = ProjectIdOption();
-  static const utc = UtcOption();
-  static const deploy = StringOption(
-    argName: 'deploy',
-    argPos: 0,
-    helpText:
-        'View a specific deployment, with uuid or sequence number, 0 for latest. Can be passed as the first argument.',
-    valueHelp: '<uuid|integer>',
-    defaultsTo: '0',
-  );
-}
-
-enum DeploymentsLogOption<V> implements OptionDefinition<V> {
-  projectId(_DeploymentsLogOptions.projectId),
-  utc(_DeploymentsLogOptions.utc),
-  deploy(_DeploymentsLogOptions.deploy);
-
-  const DeploymentsLogOption(this.option);
-
-  @override
-  final ConfigOptionBase<V> option;
-}
-
-class CloudDeploymentsLogCommand extends CloudCliCommand<DeploymentsLogOption> {
-  @override
-  final String name;
-
-  final DeploymentCommandNames _commandNames;
-
-  @override
-  String get description => "View a deployment's build log.";
-
-  @override
-  String get usageExamples =>
-      '''\n
-Examples
-
-  View the build log of the latest deployment.
-  
-    \$ $baseCommand ${_commandNames.log}
-
-  View the build log of a specific deployment by sequence number.
-  
-    \$ $baseCommand ${_commandNames.log} 3
-
-  View the build log of a specific deployment by UUID.
-  
-    \$ $baseCommand ${_commandNames.log} 550e8400-e29b-41d4-a716-446655440000
-''';
-
-  CloudDeploymentsLogCommand({
-    required super.logger,
-    this.name = 'log',
-    final bool asOldAlias = false,
-  }) : _commandNames = asOldAlias
-           ? DeploymentCommandNames.legacy
-           : DeploymentCommandNames.public,
-       super(options: DeploymentsLogOption.values);
-
-  @override
-  Future<void> runWithOutput(
-    final Configuration<DeploymentsLogOption> commandConfig,
-    final CommandOutput output,
-  ) async {
-    final projectId = commandConfig.value(DeploymentsLogOption.projectId);
-    final inUtc = commandConfig.value(DeploymentsLogOption.utc);
-    final deploymentArg = commandConfig.optionalValue(
-      DeploymentsLogOption.deploy,
-    );
-
-    await renderCommand(
-      output,
-      operation: () => DeploymentCommands.fetchBuildLog(
-        runner.serviceProvider.cloudApiClient,
-        baseCommand: baseCommand,
-        commandNames: _commandNames,
-        projectId: projectId,
-        deploymentArg: deploymentArg,
-      ),
-      textOutputUi: LogListTextUi(utc: inUtc),
-    );
-  }
-}
-
-String _buildSecretsExplanation(String baseCommand) => """
-Build secrets are used to securely store sensitive information that needs to be
-available when building your server, for example SSH keys.
-
-Build secrets are not available at runtime.
-(See `$baseCommand variable set --secret` for managing runtime secrets: ${CloudCliCommand.commandDocBaseUrl}variable)""";
-
-class CloudDeploymentsBuildSecretCommand extends CloudCliCommand {
-  @override
-  String get name => 'build-secret';
-
-  @override
-  String get description => """Manage build secrets.
-
-${_buildSecretsExplanation(baseCommand)}""";
-
-  @override
-  String get usageExamples =>
-      """
-
-Examples
-
-  List the current build secrets.
-
-    \$ $baseCommand deployment build-secret list
-
-  Add or modify a build secret.
-
-    \$ $baseCommand deployment build-secret set MY_SECRET_NAME "my-secret-value"
-""";
-
-  CloudDeploymentsBuildSecretCommand({required super.logger}) {
-    addSubcommand(BuildSecretSetCommand(logger: logger));
-    addSubcommand(BuildSecretsListCommand(logger: logger));
-    addSubcommand(BuildSecretUnsetCommand(logger: logger));
-  }
-}
-
-abstract final class _BuildSecretCommandConfig {
-  static const projectId = ProjectIdOption();
-
-  static const name = NameOption(
-    argPos: 0,
-    helpText:
-        'The name of the build secret. Can be passed as the first argument.',
-  );
-
-  static const value = ValueOption(
-    argPos: 1,
-    helpText:
-        'The value of the build secret. Can be passed as the second argument.',
-  );
-
-  static const valueFile = ValueFileOption(
-    helpText: 'The name of the file with the build secret value.',
-  );
-}
-
-enum BuildSecretSetCommandConfig<V> implements OptionDefinition<V> {
-  projectId(_BuildSecretCommandConfig.projectId),
-  name(_BuildSecretCommandConfig.name),
-  value(_BuildSecretCommandConfig.value),
-  valueFile(_BuildSecretCommandConfig.valueFile),
-  buildSecretType(
-    EnumOption<BuildSecretType>(
-      argName: 'type',
-      helpText: 'The type of the build secret.',
-      enumParser: EnumParser(BuildSecretType.values),
-      defaultsTo: BuildSecretType.ssh,
-    ),
-  );
-
-  const BuildSecretSetCommandConfig(this.option);
-
-  @override
-  final ConfigOptionBase<V> option;
-}
-
-class BuildSecretSetCommand
-    extends CloudCliCommand<BuildSecretSetCommandConfig> {
-  @override
-  String get description => """Set a build secret (create or update).
-  
-${_buildSecretsExplanation(baseCommand)}""";
-
-  @override
-  String get name => 'set';
-
-  BuildSecretSetCommand({required super.logger})
-    : super(options: BuildSecretSetCommandConfig.values);
-
-  @override
-  Future<void> runWithOutput(
-    final Configuration<BuildSecretSetCommandConfig> commandConfig,
-    final CommandOutput output,
-  ) async {
-    final projectId = commandConfig.value(
-      BuildSecretSetCommandConfig.projectId,
-    );
-    final name = commandConfig.value(BuildSecretSetCommandConfig.name);
-    final buildSecretType = commandConfig.value(
-      BuildSecretSetCommandConfig.buildSecretType,
-    );
-
-    final valueToSet = commandConfig.valueOrFileContent(
-      value: BuildSecretSetCommandConfig.value,
-      valueFile: BuildSecretSetCommandConfig.valueFile,
-    );
-
-    await renderCommand(
-      output,
-      operation: () => DeploymentCommands.setBuildSecret(
-        runner.serviceProvider.cloudApiClient,
-        projectId: projectId,
-        name: name,
-        value: valueToSet,
-        buildSecretType: buildSecretType,
-      ),
-      textOutputUi: const BuildSecretSetTextUi(),
-    );
-  }
-}
-
-enum BuildSecretsListCommandConfig<V> implements OptionDefinition<V> {
-  projectId(_BuildSecretCommandConfig.projectId);
-
-  const BuildSecretsListCommandConfig(this.option);
-
-  @override
-  final ConfigOptionBase<V> option;
-}
-
-class BuildSecretsListCommand
-    extends CloudCliCommand<BuildSecretsListCommandConfig> {
-  @override
-  String get description => """List all build secrets.
-  
-${_buildSecretsExplanation(baseCommand)}""";
-
-  @override
-  String get name => 'list';
-
-  BuildSecretsListCommand({required super.logger})
-    : super(options: BuildSecretsListCommandConfig.values);
-
-  @override
-  Future<void> runWithOutput(
-    final Configuration<BuildSecretsListCommandConfig> commandConfig,
-    final CommandOutput output,
-  ) async {
-    final projectId = commandConfig.value(
-      BuildSecretsListCommandConfig.projectId,
-    );
-
-    await renderCommand(
-      output,
-      operation: () => DeploymentCommands.listBuildSecretsOperation(
-        runner.serviceProvider.cloudApiClient,
-        projectId: projectId,
-      ),
-      textOutputUi: const StringColumnListWidget(heading: 'Secret name'),
-    );
-  }
-}
-
-enum BuildSecretUnsetCommandConfig<V> implements OptionDefinition<V> {
-  projectId(_BuildSecretCommandConfig.projectId),
-  name(_BuildSecretCommandConfig.name);
-
-  const BuildSecretUnsetCommandConfig(this.option);
-
-  @override
-  final ConfigOptionBase<V> option;
-}
-
-class BuildSecretUnsetCommand
-    extends CloudCliCommand<BuildSecretUnsetCommandConfig> {
-  @override
-  String get description => """Remove a build secret.
-
-${_buildSecretsExplanation(baseCommand)}""";
-
-  @override
-  String get name => 'unset';
-
-  BuildSecretUnsetCommand({required super.logger})
-    : super(options: BuildSecretUnsetCommandConfig.values);
-
-  @override
-  Future<void> runWithOutput(
-    final Configuration<BuildSecretUnsetCommandConfig> commandConfig,
-    final CommandOutput output,
-  ) async {
-    final projectId = commandConfig.value(
-      BuildSecretUnsetCommandConfig.projectId,
-    );
-    final name = commandConfig.value(BuildSecretUnsetCommandConfig.name);
-
-    await confirmToContinue(
-      output,
-      message: 'Are you sure you want to remove the build secret "$name"?',
-      defaultValue: false,
-    );
-
-    await renderCommand(
-      output,
-      operation: () => DeploymentCommands.unsetBuildSecret(
-        runner.serviceProvider.cloudApiClient,
-        projectId: projectId,
-        name: name,
-      ),
-      textOutputUi: const BuildSecretUnsetTextUi(),
     );
   }
 }

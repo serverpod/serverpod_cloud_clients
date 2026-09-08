@@ -11,7 +11,7 @@ import 'package:yaml_codec/yaml_codec.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployments_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/builds/builds_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
@@ -41,14 +41,11 @@ void main() {
   const projectId = 'projectId';
 
   test('Given build secrets command when instantiated then requires login', () {
-    expect(
-      CloudDeploymentsBuildSecretCommand(logger: logger).requireLogin,
-      isTrue,
-    );
+    expect(CloudBuildSecretCommand(logger: logger).requireLogin, isTrue);
   });
 
   group('Given unauthenticated', () {
-    group('when executing deployment build-secret set', () {
+    group('when executing build secret set', () {
       late Future commandResult;
 
       setUp(() async {
@@ -62,8 +59,8 @@ void main() {
         ).thenThrow(ServerpodClientUnauthorized());
 
         commandResult = cli.run([
-          'deployment',
-          'build-secret',
+          'build',
+          'secret',
           'set',
           'key',
           'value',
@@ -92,52 +89,49 @@ void main() {
       });
     });
 
-    group(
-      'when executing deployment build-secret unset and confirming prompt',
-      () {
-        late Future commandResult;
+    group('when executing build secret unset and confirming prompt', () {
+      late Future commandResult;
 
-        setUp(() async {
-          when(
-            () => client.secrets.deleteBuild(
-              key: any(named: 'key'),
-              cloudCapsuleId: any(named: 'cloudCapsuleId'),
-            ),
-          ).thenThrow(ServerpodClientUnauthorized());
+      setUp(() async {
+        when(
+          () => client.secrets.deleteBuild(
+            key: any(named: 'key'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenThrow(ServerpodClientUnauthorized());
 
-          logger.answerNextConfirmWith(true);
-          commandResult = cli.run([
-            'deployment',
-            'build-secret',
-            'unset',
-            'key',
-            '--project',
-            projectId,
-          ]);
-        });
+        logger.answerNextConfirmWith(true);
+        commandResult = cli.run([
+          'build',
+          'secret',
+          'unset',
+          'key',
+          '--project',
+          projectId,
+        ]);
+      });
 
-        test('then throws exception', () async {
-          await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
-        });
+      test('then throws exception', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
 
-        test('then logs error', () async {
-          try {
-            await commandResult;
-          } catch (_) {}
+      test('then logs error', () async {
+        try {
+          await commandResult;
+        } catch (_) {}
 
-          expect(logger.errorCalls, isNotEmpty);
-          expect(
-            logger.errorCalls.first,
-            equalsErrorCall(
-              message:
-                  'The credentials for this session seem to no longer be valid.',
-            ),
-          );
-        });
-      },
-    );
+        expect(logger.errorCalls, isNotEmpty);
+        expect(
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message:
+                'The credentials for this session seem to no longer be valid.',
+          ),
+        );
+      });
+    });
 
-    group('when executing deployment build-secret list', () {
+    group('when executing build secret list', () {
       late Future commandResult;
 
       setUp(() async {
@@ -146,8 +140,8 @@ void main() {
         ).thenThrow(ServerpodClientUnauthorized());
 
         commandResult = cli.run([
-          'deployment',
-          'build-secret',
+          'build',
+          'secret',
           'list',
           '--project',
           projectId,
@@ -176,7 +170,7 @@ void main() {
   });
 
   group('Given authenticated', () {
-    group('when executing deployment build-secret set', () {
+    group('when executing build secret set', () {
       setUp(() async {
         when(
           () => client.secrets.upsertBuildSecret(
@@ -193,8 +187,8 @@ void main() {
 
         setUp(() async {
           commandResult = cli.run([
-            'deployment',
-            'build-secret',
+            'build',
+            'secret',
             'set',
             'key',
             'value',
@@ -225,8 +219,8 @@ void main() {
           await d.file('value.txt', 'value').create();
 
           commandResult = cli.run([
-            'deployment',
-            'build-secret',
+            'build',
+            'secret',
             'set',
             'key',
             '--from-file',
@@ -258,8 +252,8 @@ void main() {
           await d.file('value.txt', 'value').create();
 
           commandResult = cli.run([
-            'deployment',
-            'build-secret',
+            'build',
+            'secret',
             'set',
             'key',
             'value',
@@ -291,8 +285,8 @@ void main() {
 
         setUp(() async {
           commandResult = cli.run([
-            'deployment',
-            'build-secret',
+            'build',
+            'secret',
             'set',
             'key',
             '--project',
@@ -334,8 +328,8 @@ void main() {
           );
 
           commandResult = cli.run([
-            'deployment',
-            'build-secret',
+            'build',
+            'secret',
             'set',
             'key',
             'value',
@@ -364,165 +358,152 @@ void main() {
       });
     });
 
-    group(
-      'when executing deployment build-secret set with multi-line value file arg',
-      () {
-        late Future commandResult;
+    group('when executing build secret set with multi-line value file arg', () {
+      late Future commandResult;
 
-        setUp(() async {
-          when(
-            () => client.secrets.upsertBuildSecret(
-              secretKey: any(named: 'secretKey', that: equals('key')),
-              secretValue: any(
-                named: 'secretValue',
-                that: equals('value1\nline2'),
-              ),
-              buildSecretType: any(named: 'buildSecretType'),
-              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+      setUp(() async {
+        when(
+          () => client.secrets.upsertBuildSecret(
+            secretKey: any(named: 'secretKey', that: equals('key')),
+            secretValue: any(
+              named: 'secretValue',
+              that: equals('value1\nline2'),
             ),
-          ).thenAnswer((_) async => Future.value());
+            buildSecretType: any(named: 'buildSecretType'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenAnswer((_) async => Future.value());
 
-          await d.file('value.txt', 'value1\nline2').create();
+        await d.file('value.txt', 'value1\nline2').create();
 
-          commandResult = cli.run([
-            'deployment',
-            'build-secret',
-            'set',
-            'key',
-            '--from-file',
-            p.join(d.sandbox, 'value.txt'),
-            '--project',
-            projectId,
-          ]);
-        });
+        commandResult = cli.run([
+          'build',
+          'secret',
+          'set',
+          'key',
+          '--from-file',
+          p.join(d.sandbox, 'value.txt'),
+          '--project',
+          projectId,
+        ]);
+      });
 
-        test('then command completes successfully', () async {
-          await expectLater(commandResult, completes);
-        });
+      test('then command completes successfully', () async {
+        await expectLater(commandResult, completes);
+      });
 
-        test('then logs success message', () async {
+      test('then logs success message', () async {
+        await commandResult;
+
+        expect(logger.successCalls, isNotEmpty);
+        expect(
+          logger.successCalls.first,
+          equalsSuccessCall(message: 'Successfully set build secret: key.'),
+        );
+      });
+    });
+
+    group('when executing build secret unset and confirming prompt', () {
+      late Future commandResult;
+
+      setUp(() async {
+        when(
+          () => client.secrets.deleteBuild(
+            key: any(named: 'key'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenAnswer((_) async => Future.value());
+
+        logger.answerNextConfirmWith(true);
+        commandResult = cli.run([
+          'build',
+          'secret',
+          'unset',
+          'key',
+          '--project',
+          projectId,
+        ]);
+      });
+
+      test('then logs confirm message', () async {
+        await commandResult;
+
+        expect(logger.confirmCalls, isNotEmpty);
+        expect(
+          logger.confirmCalls.first,
+          equalsConfirmCall(
+            message: 'Are you sure you want to remove the build secret "key"?',
+            defaultValue: false,
+          ),
+        );
+      });
+
+      test('then completes successfully', () async {
+        await expectLater(commandResult, completes);
+      });
+
+      test('then logs success message', () async {
+        await commandResult;
+
+        expect(logger.successCalls, isNotEmpty);
+        expect(
+          logger.successCalls.first,
+          equalsSuccessCall(message: 'Successfully removed build secret: key.'),
+        );
+      });
+    });
+
+    group('when executing build secret unset and rejecting prompt', () {
+      late Future commandResult;
+
+      setUp(() async {
+        when(
+          () => client.secrets.deleteBuild(
+            key: any(named: 'key'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenAnswer((_) async => Future.value());
+
+        logger.answerNextConfirmWith(false);
+        commandResult = cli.run([
+          'build',
+          'secret',
+          'unset',
+          'key',
+          '--project',
+          projectId,
+        ]);
+      });
+
+      test('then logs confirm message', () async {
+        try {
           await commandResult;
+        } catch (_) {}
 
-          expect(logger.successCalls, isNotEmpty);
-          expect(
-            logger.successCalls.first,
-            equalsSuccessCall(message: 'Successfully set build secret: key.'),
-          );
-        });
-      },
-    );
+        expect(logger.confirmCalls, isNotEmpty);
+        expect(
+          logger.confirmCalls.first,
+          equalsConfirmCall(
+            message: 'Are you sure you want to remove the build secret "key"?',
+            defaultValue: false,
+          ),
+        );
+      });
 
-    group(
-      'when executing deployment build-secret unset and confirming prompt',
-      () {
-        late Future commandResult;
+      test('then throws exit exception', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
 
-        setUp(() async {
-          when(
-            () => client.secrets.deleteBuild(
-              key: any(named: 'key'),
-              cloudCapsuleId: any(named: 'cloudCapsuleId'),
-            ),
-          ).thenAnswer((_) async => Future.value());
-
-          logger.answerNextConfirmWith(true);
-          commandResult = cli.run([
-            'deployment',
-            'build-secret',
-            'unset',
-            'key',
-            '--project',
-            projectId,
-          ]);
-        });
-
-        test('then logs confirm message', () async {
+      test('then logs no success message', () async {
+        try {
           await commandResult;
+        } catch (_) {}
 
-          expect(logger.confirmCalls, isNotEmpty);
-          expect(
-            logger.confirmCalls.first,
-            equalsConfirmCall(
-              message:
-                  'Are you sure you want to remove the build secret "key"?',
-              defaultValue: false,
-            ),
-          );
-        });
+        expect(logger.successCalls, isEmpty);
+      });
+    });
 
-        test('then completes successfully', () async {
-          await expectLater(commandResult, completes);
-        });
-
-        test('then logs success message', () async {
-          await commandResult;
-
-          expect(logger.successCalls, isNotEmpty);
-          expect(
-            logger.successCalls.first,
-            equalsSuccessCall(
-              message: 'Successfully removed build secret: key.',
-            ),
-          );
-        });
-      },
-    );
-
-    group(
-      'when executing deployment build-secret unset and rejecting prompt',
-      () {
-        late Future commandResult;
-
-        setUp(() async {
-          when(
-            () => client.secrets.deleteBuild(
-              key: any(named: 'key'),
-              cloudCapsuleId: any(named: 'cloudCapsuleId'),
-            ),
-          ).thenAnswer((_) async => Future.value());
-
-          logger.answerNextConfirmWith(false);
-          commandResult = cli.run([
-            'deployment',
-            'build-secret',
-            'unset',
-            'key',
-            '--project',
-            projectId,
-          ]);
-        });
-
-        test('then logs confirm message', () async {
-          try {
-            await commandResult;
-          } catch (_) {}
-
-          expect(logger.confirmCalls, isNotEmpty);
-          expect(
-            logger.confirmCalls.first,
-            equalsConfirmCall(
-              message:
-                  'Are you sure you want to remove the build secret "key"?',
-              defaultValue: false,
-            ),
-          );
-        });
-
-        test('then throws exit exception', () async {
-          await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
-        });
-
-        test('then logs no success message', () async {
-          try {
-            await commandResult;
-          } catch (_) {}
-
-          expect(logger.successCalls, isEmpty);
-        });
-      },
-    );
-
-    group('when executing deployment build-secret list', () {
+    group('when executing build secret list', () {
       late Future commandResult;
 
       setUp(() async {
@@ -531,8 +512,8 @@ void main() {
         );
 
         commandResult = cli.run([
-          'deployment',
-          'build-secret',
+          'build',
+          'secret',
           'list',
           '--project',
           projectId,
@@ -560,7 +541,7 @@ void main() {
       });
     });
 
-    group('when executing deployment build-secret list with --format json', () {
+    group('when executing build secret list with --format json', () {
       late Future commandResult;
 
       setUp(() async {
@@ -569,8 +550,8 @@ void main() {
         );
 
         commandResult = cli.run([
-          'deployment',
-          'build-secret',
+          'build',
+          'secret',
           'list',
           '--project',
           projectId,
@@ -591,7 +572,7 @@ void main() {
       });
     });
 
-    group('when executing deployment build-secret list with --format yaml', () {
+    group('when executing build secret list with --format yaml', () {
       late Future commandResult;
 
       setUp(() async {
@@ -600,8 +581,8 @@ void main() {
         );
 
         commandResult = cli.run([
-          'deployment',
-          'build-secret',
+          'build',
+          'secret',
           'list',
           '--project',
           projectId,
@@ -619,6 +600,71 @@ void main() {
           'SECRET_2',
           'SECRET_3',
         ]);
+      });
+    });
+    group('when executing the hidden deployment build-secret set', () {
+      late Future commandResult;
+
+      setUp(() async {
+        when(
+          () => client.secrets.upsertBuildSecret(
+            secretKey: any(named: 'secretKey'),
+            secretValue: any(named: 'secretValue'),
+            buildSecretType: any(named: 'buildSecretType'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenAnswer((final _) async => Future.value());
+
+        commandResult = cli.run([
+          'deployment',
+          'build-secret',
+          'set',
+          'key',
+          'value',
+          '--project',
+          projectId,
+        ]);
+      });
+
+      test('then logs success message', () async {
+        await commandResult;
+
+        expect(logger.successCalls, hasLength(1));
+        expect(
+          logger.successCalls.first,
+          equalsSuccessCall(message: 'Successfully set build secret: key.'),
+        );
+      });
+    });
+
+    group('when executing the hidden deployment build-secret list', () {
+      late Future commandResult;
+
+      setUp(() async {
+        when(
+          () => client.secrets.listBuild(any()),
+        ).thenAnswer((final _) async => Future.value(['SECRET_1']));
+
+        commandResult = cli.run([
+          'deployment',
+          'build-secret',
+          'list',
+          '--project',
+          projectId,
+        ]);
+      });
+
+      test('then logs table', () async {
+        await commandResult;
+
+        expect(
+          logger.lineCalls,
+          containsAllInOrder([
+            equalsLineCall(line: 'Secret name'),
+            equalsLineCall(line: '-----------'),
+            equalsLineCall(line: 'SECRET_1   '),
+          ]),
+        );
       });
     });
   });
