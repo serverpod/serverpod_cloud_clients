@@ -366,21 +366,18 @@ abstract class Launch {
     return;
   }
 
+  static const _templatePlaceholderPassword = 'mySharedPassword';
+
   static Future<void> selectCustomPasswords(
     Client cloudApiClient,
     CommandLogger logger,
     String baseCommand,
     ProjectLaunch projectSetup,
   ) async {
-    const ignoredSecretNames = [
-      'database',
-      'emailSecretHashPepper',
-      'jwtHmacSha512PrivateKey',
-      'jwtRefreshTokenHashPepper',
-      'serviceSecret',
-      'redis',
-      'mySharedPassword',
-    ];
+    final ignoredSecretNames = {
+      ...PasswordDefinitions.platformManagedNames,
+      _templatePlaceholderPassword,
+    };
 
     final allPasswords = _readAllPasswords(projectSetup.projectDir);
     if (allPasswords.isEmpty) return;

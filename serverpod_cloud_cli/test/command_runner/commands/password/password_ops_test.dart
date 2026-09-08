@@ -21,5 +21,25 @@ void main() {
         );
       });
     });
+
+    group('when getting the platform-managed names', () {
+      test('then it contains the platform-generated passwords', () {
+        expect(
+          PasswordDefinitions.platformManagedNames,
+          containsAll(['database', 'serviceSecret', 'scloudAuthEmailKey']),
+        );
+      });
+
+      test('then it excludes the user-supplied known passwords', () {
+        expect(
+          PasswordDefinitions.platformManagedNames,
+          isNot(contains('AWSAccessKeyId')),
+        );
+        expect(
+          PasswordDefinitions.platformManagedNames,
+          isNot(contains('serverpod_auth_googleClientSecret')),
+        );
+      });
+    });
   });
 }
