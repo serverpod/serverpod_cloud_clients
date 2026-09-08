@@ -14,11 +14,13 @@ enum PasswordCategory {
 class PasswordMetadata {
   final PasswordCategory category;
   final String notes;
+  final bool platformManaged;
   final String? Function(String value) isValidValue;
 
   const PasswordMetadata({
     required this.category,
     required this.notes,
+    required this.platformManaged,
     required this.isValidValue,
   });
 }
@@ -56,11 +58,13 @@ abstract final class PasswordDefinitions {
     'database': PasswordMetadata(
       category: PasswordCategory.services,
       notes: 'Database password',
+      platformManaged: true,
       isValidValue: (_) => null,
     ),
     'serviceSecret': PasswordMetadata(
       category: PasswordCategory.services,
       notes: 'Insights password',
+      platformManaged: true,
       isValidValue: (value) => value.length >= 20
           ? null
           : 'Password must be at least 20 characters long.',
@@ -68,36 +72,43 @@ abstract final class PasswordDefinitions {
     'redis': PasswordMetadata(
       category: PasswordCategory.services,
       notes: 'Redis password',
+      platformManaged: true,
       isValidValue: (_) => null,
     ),
     'HMACAccessKeyId': PasswordMetadata(
       category: PasswordCategory.services,
       notes: 'Access key ID for HMAC authentication (GCP)',
+      platformManaged: false,
       isValidValue: (_) => null,
     ),
     'HMACSecretKey': PasswordMetadata(
       category: PasswordCategory.services,
       notes: 'Secret key for HMAC authentication (GCP)',
+      platformManaged: false,
       isValidValue: (_) => null,
     ),
     'AWSAccessKeyId': PasswordMetadata(
       category: PasswordCategory.services,
       notes: 'Access key ID for AWS authentication (S3)',
+      platformManaged: false,
       isValidValue: (_) => null,
     ),
     'AWSSecretKey': PasswordMetadata(
       category: PasswordCategory.services,
       notes: 'Secret key for AWS authentication (S3)',
+      platformManaged: false,
       isValidValue: (_) => null,
     ),
     'emailSecretHashPepper': PasswordMetadata(
       category: PasswordCategory.auth,
       notes: 'Used by serverpod_auth_idp_server',
+      platformManaged: true,
       isValidValue: (_) => null,
     ),
     'jwtRefreshTokenHashPepper': PasswordMetadata(
       category: PasswordCategory.auth,
       notes: 'Used by serverpod_auth_idp_server',
+      platformManaged: true,
       isValidValue: (value) => value.length >= 10
           ? null
           : 'Password must be at least 10 characters long.',
@@ -105,23 +116,33 @@ abstract final class PasswordDefinitions {
     'jwtHmacSha512PrivateKey': PasswordMetadata(
       category: PasswordCategory.auth,
       notes: 'Used by serverpod_auth_idp_server',
+      platformManaged: true,
       isValidValue: (_) => null,
     ),
     'scloudAuthEmailKey': PasswordMetadata(
       category: PasswordCategory.auth,
       notes: 'Used by the Serverpod Cloud email service',
+      platformManaged: true,
       isValidValue: (_) => null,
     ),
     'serverpod_auth_googleClientSecret': PasswordMetadata(
       category: PasswordCategory.legacyAuth,
       notes: 'Client secret for Google authentication',
+      platformManaged: false,
       isValidValue: (_) => null,
     ),
     'serverpod_auth_firebaseServiceAccountKey': PasswordMetadata(
       category: PasswordCategory.legacyAuth,
       notes: 'Service account key for Firebase authentication',
+      platformManaged: false,
       isValidValue: (_) => null,
     ),
+  };
+
+  /// The names of the passwords the platform generates and manages.
+  static Set<String> get platformManagedNames => {
+    for (final MapEntry(key: name, value: metadata) in metadataMap.entries)
+      if (metadata.platformManaged) name,
   };
 
   static PasswordCategory getCategory(String name) {

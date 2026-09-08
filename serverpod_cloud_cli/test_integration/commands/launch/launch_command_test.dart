@@ -1642,6 +1642,79 @@ development:
           });
         });
 
+        group(
+          'when passwords.yaml contains a stale platform-generated password '
+          'and a user-supplied known password on a new project',
+          () {
+            late Future commandResult;
+
+            setUp(() async {
+              await ProjectFactory.serverpodServerDir(
+                withDirectoryName: 'known_passwords_server_dir',
+                contents: [
+                  d.dir('config', [
+                    d.file('development.yaml', _databaseConfigYaml),
+                    d.file('passwords.yaml', '''
+production:
+  scloudAuthEmailKey: 'stale-platform-token'
+  serverpod_auth_googleClientSecret: 'google-client-secret'
+  customPassword: 'custom-value'
+'''),
+                  ]),
+                ],
+              ).create();
+              final knownPasswordsProjectDir = p.join(
+                d.sandbox,
+                'known_passwords_server_dir',
+              );
+
+              logger.answerNextConfirmsWith([true]);
+              logger.inlineTerminal = FakeTerminal()
+                ..queueInput(FakeTerminal.enter);
+
+              simulateConsoleProjectCreation(logger, projectId: projectId);
+
+              commandResult = cli.run([
+                'launch',
+                '--project',
+                projectId,
+                '--project-dir',
+                knownPasswordsProjectDir,
+                '--no-pre-deploy-scripts',
+                '--no-deploy',
+                '--no-browser',
+              ]);
+
+              await expectLater(commandResult, completes);
+            });
+
+            test(
+              'then does not offer the platform-generated password',
+              () async {
+                final output = (logger.inlineTerminal as FakeTerminal).output;
+                expect(output, isNot(contains('scloudAuthEmailKey')));
+              },
+            );
+
+            test('then sets the user-supplied known password and the custom '
+                'password in cloud', () async {
+              final captured = verify(
+                () => client.secrets.upsert(
+                  secrets: captureAny(named: 'secrets'),
+                  cloudCapsuleId: projectId,
+                ),
+              ).captured.cast<Map<String, String>>();
+
+              final upserted = {for (final secrets in captured) ...secrets};
+              expect(upserted, {
+                'SERVERPOD_PASSWORD_serverpod_auth_googleClientSecret':
+                    'google-client-secret',
+                'SERVERPOD_PASSWORD_customPassword': 'custom-value',
+              });
+            });
+          },
+        );
+
         group('when passwords.yaml only contains development custom secrets '
             'and confirming with none selected', () {
           late Future commandResult;
