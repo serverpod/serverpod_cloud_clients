@@ -424,6 +424,43 @@ void main() {
       expect(term.output, contains('Building (50ms)'));
     });
 
+    test('when elapsed reaches a minute then it is shown in minutes and '
+        'seconds', () {
+      final term = FakeTerminal();
+      void Function()? tick;
+      ScrollingSection(
+        terminal: term,
+        rows: 3,
+        heading: 'Building',
+        elapsed: () => const Duration(minutes: 1, seconds: 35),
+        scheduleTicker: (period, onTick) {
+          tick = onTick;
+          return () {};
+        },
+      );
+
+      tick!();
+      expect(term.output, contains('Building (1m 35s)'));
+    });
+
+    test('when elapsed returns null then the time since creation is shown', () {
+      final term = FakeTerminal();
+      void Function()? tick;
+      ScrollingSection(
+        terminal: term,
+        rows: 3,
+        heading: 'Building',
+        elapsed: () => null,
+        scheduleTicker: (period, onTick) {
+          tick = onTick;
+          return () {};
+        },
+      );
+
+      tick!();
+      expect(term.output, contains(RegExp(r'Building \(\d+ms\)')));
+    });
+
     test(
       'when finished as failed with keepCurrent then the spinner is cancelled '
       'and the final elapsed time is kept with the failed message',
