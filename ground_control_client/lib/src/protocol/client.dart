@@ -1593,6 +1593,8 @@ class EndpointLogs extends _i1.EndpointRef {
     @Deprecated('Use cloudCapsuleId instead') String? cloudProjectId,
     String? cloudCapsuleId,
     required _i1.UuidValue attemptId,
+    DateTime? beforeTime,
+    DateTime? afterTime,
     int? limit,
   }) => caller
       .callStreamingServerEndpoint<_i2.Stream<_i37.LogRecord>, _i37.LogRecord>(
@@ -1602,6 +1604,8 @@ class EndpointLogs extends _i1.EndpointRef {
           'cloudProjectId': cloudProjectId,
           'cloudCapsuleId': cloudCapsuleId,
           'attemptId': attemptId,
+          'beforeTime': beforeTime,
+          'afterTime': afterTime,
           'limit': limit,
         },
         {},
