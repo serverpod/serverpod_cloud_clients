@@ -58,7 +58,7 @@ void main() {
         final io = await renderCommandUi(
           const ProjectUserInviteTextUi(),
           data: const {
-            'roles': ['admin'],
+            'roles': ['Admin'],
           },
         );
         stdout = io.stdout;
@@ -68,7 +68,7 @@ void main() {
       test('then stdout contains the invite success message', () {
         expect(
           stdout,
-          contains('User invited to the project with roles: admin.'),
+          contains('User invited to the project with roles: Admin.'),
         );
       });
 
