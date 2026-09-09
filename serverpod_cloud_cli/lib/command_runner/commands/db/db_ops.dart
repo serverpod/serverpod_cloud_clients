@@ -53,6 +53,50 @@ abstract class DbOperations {
     }
   }
 
+  static Future<List<DatabaseUser>> listDatabaseUsers(
+    final Client cloudApiClient, {
+    required final String projectId,
+  }) async {
+    try {
+      return await cloudApiClient.database.listDatabaseUsers(
+        cloudCapsuleId: projectId,
+      );
+    } on NotFoundException catch (e) {
+      throw FailureException(error: e.message);
+    } on Exception catch (e, stackTrace) {
+      throw FailureException.nested(
+        e,
+        stackTrace,
+        'Failed to list database users',
+      );
+    }
+  }
+
+  static Future<Map<String, Object?>> deleteDatabaseUser(
+    final Client cloudApiClient, {
+    required final String projectId,
+    required final String username,
+  }) async {
+    try {
+      await cloudApiClient.database.deleteDatabaseUser(
+        cloudCapsuleId: projectId,
+        username: username,
+      );
+    } on NotFoundException catch (e) {
+      throw FailureException(error: e.message);
+    } on InvalidValueException catch (e) {
+      throw FailureException(error: e.message);
+    } on Exception catch (e, stackTrace) {
+      throw FailureException.nested(
+        e,
+        stackTrace,
+        'Failed to delete database user',
+      );
+    }
+
+    return {'username': username};
+  }
+
   static Future<Map<String, Object?>> wipeDatabase(
     final Client cloudApiClient, {
     required final String projectId,

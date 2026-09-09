@@ -49,6 +49,68 @@ $password''');
   }
 }
 
+class DbUserListTextUi extends OutputWidget {
+  final bool utc;
+  final String projectId;
+  final String baseCommand;
+
+  const DbUserListTextUi({
+    required this.utc,
+    required this.projectId,
+    required this.baseCommand,
+  });
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    final users = context.get<List<DatabaseUser>>();
+    if (users.isEmpty) {
+      return OutputWidgetList([
+        InfoTextWidget('No database users found for project "$projectId".'),
+        CommandHintTextWidget(
+          'Create a database user with:',
+          command:
+              '$baseCommand db user create <username> --project $projectId',
+        ),
+      ]);
+    }
+
+    return FormattedTableWidget(
+      formatter: TextTableOutputFormatter<DatabaseUser>(
+        columns: [
+          TableColumnFormatter.forElement(
+            'User',
+            getter: (final user) => user.username,
+          ),
+          TableColumnFormatter.forElement(
+            'Created',
+            getter: (final user) => user.createdAt,
+          ),
+          TableColumnFormatter.forElement(
+            'Last reset',
+            getter: (final user) => user.updatedAt.isAfter(user.createdAt)
+                ? user.updatedAt
+                : 'never',
+          ),
+        ],
+        utc: utc,
+      ),
+    );
+  }
+}
+
+class DbUserDeleteTextUi extends OutputWidget {
+  const DbUserDeleteTextUi();
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    final result = context.get<Map<String, Object?>>();
+    return SuccessTextWidget(
+      'Database user "${result['username']}" deleted.',
+      newParagraph: true,
+    );
+  }
+}
+
 class DbWipeTextUi extends OutputWidget {
   final String baseCommand;
   final String projectId;
