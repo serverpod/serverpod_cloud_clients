@@ -154,11 +154,17 @@ class StorageFileUploadTextUi extends OutputWidget {
     final storageId = result['storageId'];
     final files = result['files'];
     final fileCount = files is List ? files.length : 0;
+    final skippedLinks = result['skippedLinks'];
+    final skippedCount = skippedLinks is List ? skippedLinks.length : 0;
+    final skipped = skippedCount == 0
+        ? ''
+        : ' $skippedCount symbolic '
+              '${skippedCount == 1 ? 'link was' : 'links were'} skipped.';
 
     if (fileCount == 1 && files is List) {
       final path = (files.single as Map<String, Object?>)['path'];
       return SuccessTextWidget(
-        'Successfully uploaded "$path" to storage "$storageId".',
+        'Successfully uploaded "$path" to storage "$storageId".$skipped',
       );
     }
 
@@ -166,7 +172,8 @@ class StorageFileUploadTextUi extends OutputWidget {
     final size = sizeBytes is int ? ' (${formatByteSize(sizeBytes)})' : '';
 
     return SuccessTextWidget(
-      'Successfully uploaded $fileCount files$size to storage "$storageId".',
+      'Successfully uploaded $fileCount files$size to '
+      'storage "$storageId".$skipped',
     );
   }
 }

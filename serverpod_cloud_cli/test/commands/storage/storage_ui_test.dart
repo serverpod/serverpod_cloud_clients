@@ -368,6 +368,26 @@ void main() {
       });
     });
 
+    group('when rendered for an upload that skipped symlinks', () {
+      test('then stdout reports the skipped links', () async {
+        final io = await renderCommandUi(
+          const StorageFileUploadTextUi(),
+          data: const {
+            'storageId': 'public',
+            'fileCount': 2,
+            'sizeBytes': 6,
+            'files': [
+              {'path': 'avatars/u1.png', 'sizeBytes': 3},
+              {'path': 'avatars/sub/u2.png', 'sizeBytes': 3},
+            ],
+            'skippedLinks': ['leak.txt', 'sub/linked'],
+          },
+        );
+
+        expect(io.stdout, contains('2 symbolic links'));
+      });
+    });
+
     group('when rendered for a multi-file upload', () {
       test('then stdout reports the count and total size', () async {
         final io = await renderCommandUi(
