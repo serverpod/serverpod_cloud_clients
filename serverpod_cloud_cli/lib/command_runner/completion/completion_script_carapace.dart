@@ -110,6 +110,14 @@ commands:
         flags:
           --all: "Include deleted projects."
 
+      - name: show
+        flags:
+          -p, --project=!: "The ID of the project. Can be passed as the first argument.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
+          -u, --utc: "Display timestamps in UTC timezone instead of local."
+          --no-utc: "Display timestamps in UTC timezone instead of local."
+        exclusiveFlags:
+          - [utc, no-utc]
+
       - name: link
         flags:
           -p, --project=!: "The ID of the project. Can be passed as the first argument."

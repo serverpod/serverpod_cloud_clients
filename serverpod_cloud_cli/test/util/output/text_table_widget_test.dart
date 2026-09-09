@@ -185,6 +185,22 @@ void main() {
       expect(logger.lineCalls.last.line, contains('alpha'));
       expect(logger.lineCalls.last.line, contains('one'));
     });
+
+    test('when rendered with an indent then every line is prefixed', () {
+      TextTableWidget(
+        TextTableData(const [], [
+          ['alpha', 'one'],
+          ['beta', 'two'],
+        ]),
+        indent: '  ',
+      ).render(logger: logger);
+
+      expect(
+        logger.lineCalls.map((final call) => call.line),
+        everyElement(startsWith('  ')),
+      );
+      expect(logger.lineCalls, hasLength(2));
+    });
   });
 
   group('Given a formatted stream table widget', () {

@@ -1,3 +1,5 @@
+import 'package:cli_tools/logger.dart' as cli show AnsiStyle;
+import 'package:collection/collection.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 
@@ -15,23 +17,51 @@ class TextTableWidget extends OutputWidget {
   final String? columnSeparator;
   final String? headerDividerColumnSeparator;
 
+  /// Prefixed to every printed line.
+  final String? indent;
+
+  /// The style to apply to each column's cells, by column index.
+  /// A null entry, or a column beyond the list, is left unstyled.
+  final List<cli.AnsiStyle?>? columnStyles;
+
   const TextTableWidget(
     this.content, {
     this.columnMinWidths,
     this.columnSeparator,
     this.headerDividerColumnSeparator,
+    this.indent,
+    this.columnStyles,
   });
 
   @override
   void render({required CommandLogger logger}) {
     final printer = TablePrinter(
       headers: content.headers,
-      rows: content.rows,
+      rows: [for (final row in content.rows) _styleRow(row, logger)],
       columnMinWidths: columnMinWidths,
       columnSeparator: columnSeparator,
       headerDividerColumnSeparator: headerDividerColumnSeparator,
     );
-    printer.writeLines(logger.line);
+    final linePrefix = indent;
+    printer.writeLines(
+      linePrefix == null
+          ? logger.line
+          : (final line) => logger.line('$linePrefix$line'),
+    );
+  }
+
+  List<String> _styleRow(final List<String> row, final CommandLogger logger) {
+    final styles = columnStyles;
+    if (styles == null) {
+      return row;
+    }
+    return [
+      for (final (colIx, cell) in row.indexed)
+        switch (styles.elementAtOrNull(colIx)) {
+          final style? when cell.isNotEmpty => logger.wrapStyle(cell, style),
+          _ => cell,
+        },
+    ];
   }
 }
 

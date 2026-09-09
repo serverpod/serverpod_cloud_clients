@@ -181,6 +181,146 @@ abstract class ProjectCommands {
     return activeProjects.sortedBy((p) => p.project.createdAt).toList();
   }
 
+  /// Collects the profile of a project: when it was created, where it runs,
+  /// its plan, and its compute and database capacity.
+  ///
+  /// The `plan`, `compute` and `database` entries are null when the project
+  /// has no such resource.
+  static Future<Map<String, Object?>> showProjectOperation(
+    Client cloudApiClient, {
+    required String projectId,
+  }) async {
+    final projectInfo = await _readProjectInfo(
+      cloudApiClient,
+      projectId: projectId,
+    );
+    final resources = await Future.wait<Object?>([
+      _readSubscription(cloudApiClient, projectId: projectId),
+      _readCompute(cloudApiClient, projectId: projectId),
+      _readDatabase(cloudApiClient, projectId: projectId),
+    ]);
+    final subscription = resources[0] as SubscriptionInfo?;
+    final compute = resources[1] as ComputeInfo?;
+    final database = resources[2] as DatabaseInfo?;
+
+    final project = projectInfo.project;
+    final capsule = project.capsules?.firstWhereOrNull(
+      (c) => c.cloudCapsuleId == projectId,
+    );
+
+    return {
+      'projectId': project.cloudProjectId,
+      'createdAt': project.createdAt,
+      'region': capsule?.region,
+      'latestDeployAttemptAt': projectInfo.latestDeployAttemptTime?.timestamp,
+      'plan': subscription == null
+          ? null
+          : {
+              'type': subscription.planType,
+              'displayName': subscription.planDisplayName,
+              'startedAt': subscription.startDate,
+              'trialEndsAt': subscription.trialEndDate,
+              'cancelled': subscription.cancelled,
+              'endsAt': subscription.endDate,
+            },
+      'compute': compute == null
+          ? null
+          : {
+              'size': compute.size,
+              'memoryMb': compute.memoryMb,
+              'minInstances': compute.minInstances,
+              'maxInstances': compute.maxInstances,
+            },
+      'database': database == null
+          ? null
+          : {
+              'size': database.size,
+              'memoryMb': database.memoryMb,
+              'minCu': database.minCu,
+              'maxCu': database.maxCu,
+              'storageLimitGb': database.storageLimitGB,
+              'computeHoursLimit': database.computeHoursLimit,
+            },
+    };
+  }
+
+  static Future<ProjectInfo> _readProjectInfo(
+    Client cloudApiClient, {
+    required String projectId,
+  }) async {
+    try {
+      return await cloudApiClient.projects.fetchProjectInfo(
+        cloudProjectId: projectId,
+        includeLatestDeployAttemptTime: true,
+      );
+    } on NotFoundException {
+      throw FailureException(error: 'Project "$projectId" was not found.');
+    } on Exception catch (e, s) {
+      throw FailureException.nested(
+        e,
+        s,
+        'Request to fetch the project failed',
+      );
+    }
+  }
+
+  static Future<SubscriptionInfo?> _readSubscription(
+    Client cloudApiClient, {
+    required String projectId,
+  }) async {
+    try {
+      return await cloudApiClient.plans.getSubscriptionInfoOfProject(
+        cloudProjectId: projectId,
+      );
+    } on NotFoundException {
+      return null;
+    } on Exception catch (e, s) {
+      throw FailureException.nested(
+        e,
+        s,
+        "Request to fetch the project's plan failed",
+      );
+    }
+  }
+
+  static Future<ComputeInfo?> _readCompute(
+    Client cloudApiClient, {
+    required String projectId,
+  }) async {
+    try {
+      return await cloudApiClient.compute.readCompute(
+        cloudCapsuleId: projectId,
+      );
+    } on NotFoundException {
+      return null;
+    } on Exception catch (e, s) {
+      throw FailureException.nested(
+        e,
+        s,
+        "Request to fetch the project's compute configuration failed",
+      );
+    }
+  }
+
+  static Future<DatabaseInfo?> _readDatabase(
+    Client cloudApiClient, {
+    required String projectId,
+  }) async {
+    try {
+      return await cloudApiClient.database.readDatabase(
+        cloudCapsuleId: projectId,
+      );
+    } on NotFoundException {
+      return null;
+    } on Exception catch (e, s) {
+      throw FailureException.nested(
+        e,
+        s,
+        "Request to fetch the project's database configuration failed",
+      );
+    }
+  }
+
   static Future<Map<String, Object?>> linkProject(
     Client cloudApiClient, {
     required String projectId,
