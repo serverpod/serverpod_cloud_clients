@@ -69,10 +69,20 @@ abstract final class StorageCommandConfig {
     argPos: 1,
     helpText:
         'The local file or directory to upload. '
-        'A directory is uploaded with everything in it. '
+        'A directory is uploaded with everything in it, '
+        'except symbolic links and .DS_Store files '
+        '(see --follow-symlinks). '
         'Can be passed as the second argument.',
     mandatory: true,
     mode: PathExistMode.mustExist,
+  );
+  static const followSymlinks = FlagOption(
+    argName: 'follow-symlinks',
+    helpText:
+        'Upload what symbolic links point to, including files outside '
+        'the uploaded directory.',
+    negatable: false,
+    defaultsTo: false,
   );
   static const uploadPath = StringOption(
     argName: 'path',
@@ -383,7 +393,8 @@ enum StorageFileUploadCommandConfig<V> implements OptionDefinition<V> {
   projectId(StorageCommandConfig.projectId),
   storageId(StorageCommandConfig.storageId),
   file(StorageCommandConfig.uploadSource),
-  path(StorageCommandConfig.uploadPath);
+  path(StorageCommandConfig.uploadPath),
+  followSymlinks(StorageCommandConfig.followSymlinks);
 
   const StorageFileUploadCommandConfig(this.option);
 
@@ -396,7 +407,8 @@ class CloudStorageFileUploadCommand
   @override
   String get description => '''Upload a local file or directory to a storage.
 
-A directory is uploaded with everything in it, and the command asks for confirmation before it starts.
+A directory is uploaded with everything in it except symbolic links and .DS_Store files, and the command asks for confirmation before it starts.
+Pass --follow-symlinks to upload what symbolic links point to.
 Uploading to a path that already holds a file fails, so delete the file first to replace it.
 ''';
 
@@ -447,16 +459,20 @@ Examples
     final path = commandConfig.optionalValue(
       StorageFileUploadCommandConfig.path,
     );
+    final followSymlinks = commandConfig.value(
+      StorageFileUploadCommandConfig.followSymlinks,
+    );
 
-    final items = await StorageOperations.collectUploadItems(
+    final plan = await StorageOperations.collectUploadItems(
       source: source,
       path: path,
+      followSymlinks: followSymlinks,
     );
 
     if (source is Directory) {
       await confirmToContinue(
         output,
-        message: _uploadPlanMessage(source, items, storageId),
+        message: _uploadPlanMessage(source, plan, storageId),
         defaultValue: true,
       );
     }
@@ -469,7 +485,8 @@ Examples
         logger,
         projectId: projectId,
         storageId: storageId,
-        items: items,
+        items: plan.items,
+        skippedLinks: plan.skippedLinks,
         baseCommand: baseCommand,
       ),
       textOutputUi: const StorageFileUploadTextUi(),
@@ -481,15 +498,19 @@ const _maxListedUploadItems = 20;
 
 String _uploadPlanMessage(
   final Directory source,
-  final List<UploadItem> items,
+  final UploadPlan plan,
   final String storageId,
 ) {
+  final items = plan.items;
   final totalBytes = items.fold<int>(
     0,
     (final sum, final item) => sum + item.sizeBytes,
   );
   final listed = items.take(_maxListedUploadItems);
   final remaining = items.length - listed.length;
+  final skippedLinks = plan.skippedLinks;
+  final listedLinks = skippedLinks.take(_maxListedUploadItems);
+  final remainingLinks = skippedLinks.length - listedLinks.length;
 
   return [
     'The directory "${source.path}" contains ${items.length} '
@@ -498,6 +519,15 @@ String _uploadPlanMessage(
     '',
     for (final item in listed) '  ${item.remotePath}',
     if (remaining > 0) '  ... and $remaining more',
+    if (skippedLinks.isNotEmpty) ...[
+      '',
+      'Skipping ${skippedLinks.length} symbolic '
+          '${skippedLinks.length == 1 ? 'link' : 'links'}, '
+          'listed relative to the directory:',
+      '',
+      for (final link in listedLinks) '  $link',
+      if (remainingLinks > 0) '  ... and $remainingLinks more',
+    ],
     '',
     'Upload them to storage "$storageId"?',
   ].join('\n');

@@ -24,6 +24,16 @@ class UploadItem {
   });
 }
 
+/// The files to upload, and the symbolic links skipped while collecting them.
+class UploadPlan {
+  final List<UploadItem> items;
+  final List<String> skippedLinks;
+
+  UploadPlan({required this.items, required this.skippedLinks});
+}
+
+const _ignoredFileNames = {'.DS_Store'};
+
 abstract final class StorageOperations {
   /// Lists the storages of the project, sorted by storage id.
   ///
@@ -225,23 +235,39 @@ abstract final class StorageOperations {
   }
 
   /// Collects the files to upload from [source] and the storage path each of
-  /// them gets under [path].
+  /// them gets under [path], with the symbolic links that were skipped.
   ///
   /// A directory [source] is collected recursively, sorted by storage path.
+  /// Symbolic links are skipped unless [followSymlinks] is set, and
+  /// `.DS_Store` files are always skipped.
   ///
-  /// Throws [FailureException] if a directory [source] holds no files.
-  static Future<List<UploadItem>> collectUploadItems({
+  /// Throws [FailureException] if a directory [source] holds no files, or if
+  /// [source] is a symbolic link and [followSymlinks] is not set.
+  static Future<UploadPlan> collectUploadItems({
     required FileSystemEntity source,
     required String? path,
+    required bool followSymlinks,
   }) async {
+    if (!followSymlinks && await FileSystemEntity.isLink(source.path)) {
+      throw FailureException(
+        error: '"${source.path}" is a symbolic link.',
+        hint:
+            'Symbolic links are not uploaded. Pass "--follow-symlinks" to '
+            'upload what it points to.',
+      );
+    }
+
     if (source is File) {
-      return [
-        UploadItem(
-          file: source,
-          remotePath: resolveUploadPath(path, p.basename(source.path)),
-          sizeBytes: await source.length(),
-        ),
-      ];
+      return UploadPlan(
+        items: [
+          UploadItem(
+            file: source,
+            remotePath: resolveUploadPath(path, p.basename(source.path)),
+            sizeBytes: await source.length(),
+          ),
+        ],
+        skippedLinks: const [],
+      );
     }
 
     if (source is! Directory) {
@@ -254,14 +280,25 @@ abstract final class StorageOperations {
       source.path.replaceAll(RegExp(r'[\\/]+$'), ''),
     );
     final items = <UploadItem>[];
-    await for (final entity in source.list(recursive: true)) {
-      if (entity is! File) {
-        continue;
-      }
+    final skippedLinks = <String>[];
+    await for (final entity in source.list(
+      recursive: true,
+      followLinks: followSymlinks,
+    )) {
       final relativePath = p
           .relative(entity.path, from: source.path)
           .split(p.separator)
           .join('/');
+      if (entity is Link) {
+        skippedLinks.add(relativePath);
+        continue;
+      }
+      if (entity is! File) {
+        continue;
+      }
+      if (_ignoredFileNames.contains(p.basename(entity.path))) {
+        continue;
+      }
       items.add(
         UploadItem(
           file: entity,
@@ -272,15 +309,28 @@ abstract final class StorageOperations {
     }
 
     if (items.isEmpty) {
+      final linkCount = skippedLinks.length;
       throw FailureException(
-        error: 'The directory "${source.path}" contains no files.',
+        error: linkCount == 0
+            ? 'The directory "${source.path}" contains no files.'
+            : 'The directory "${source.path}" contains no files to upload, '
+                  'only $linkCount symbolic '
+                  '${linkCount == 1 ? 'link' : 'links'}.',
+        hint: linkCount == 0
+            ? null
+            : 'Symbolic links are not uploaded. Pass "--follow-symlinks" to '
+                  'upload what they point to.',
       );
     }
 
-    return items.sorted((a, b) => a.remotePath.compareTo(b.remotePath));
+    return UploadPlan(
+      items: items.sorted((a, b) => a.remotePath.compareTo(b.remotePath)),
+      skippedLinks: skippedLinks.sorted((a, b) => a.compareTo(b)),
+    );
   }
 
-  /// Uploads every item in [items] to the storage [storageId].
+  /// Uploads every item in [items] to the storage [storageId],
+  /// reporting [skippedLinks] in the result.
   ///
   /// Throws [FailureException] if the storage is not found, a file already
   /// exists at its storage path, or a transfer fails. The upload stops at the
@@ -292,6 +342,7 @@ abstract final class StorageOperations {
     required String projectId,
     required String storageId,
     required List<UploadItem> items,
+    required List<String> skippedLinks,
     required String baseCommand,
   }) async {
     final uploaded = <UploadItem>[];
@@ -336,6 +387,7 @@ abstract final class StorageOperations {
         for (final item in uploaded)
           {'path': item.remotePath, 'sizeBytes': item.sizeBytes},
       ],
+      'skippedLinks': skippedLinks,
     };
   }
 
