@@ -72,8 +72,8 @@ Examples
   }
 }
 
-const _projectRoleNames = ['admin'];
-const _projectRoleHelp = {'admin': 'Admins have full access to the project.'};
+const _projectRoleNames = ['Admin'];
+const _projectRoleHelp = {'Admin': 'Admins have full access to the project.'};
 
 enum ProjectUserInviteOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption()),
@@ -85,7 +85,7 @@ enum ProjectUserInviteOption<V> implements OptionDefinition<V> {
       helpText: 'One or more project roles to assign.',
       allowedValues: _projectRoleNames,
       allowedHelp: _projectRoleHelp,
-      defaultsTo: ['admin'],
+      defaultsTo: ['Admin'],
       hide: true,
     ),
   );

@@ -77,7 +77,7 @@ void main() {
           expect(
             logger.successCalls.single,
             equalsSuccessCall(
-              message: 'User invited to the project with roles: admin.',
+              message: 'User invited to the project with roles: Admin.',
               newParagraph: true,
             ),
           );
