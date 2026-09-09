@@ -37,6 +37,12 @@ ProjectProductInfo _starterPlanBundledProjectProduct() {
 }
 
 ProjectProductInfo _growthPlanBundledProjectProducts() {
+  final computeSmall = ComputeProductInfo(
+    size: ComputeSizeOption.small,
+    productId: 'compute-growth:0',
+    name: 'Compute',
+    description: 'Compute for growth',
+  );
   final computeMedium = ComputeProductInfo(
     size: ComputeSizeOption.medium,
     productId: 'compute-growth:0',
@@ -62,6 +68,12 @@ ProjectProductInfo _growthPlanBundledProjectProducts() {
     description: 'Compute for growth',
   );
 
+  final databaseSmall = DatabaseProductInfo(
+    size: DatabaseSizeOption.small,
+    productId: 'database-growth:0',
+    name: 'Database',
+    description: 'Database for growth',
+  );
   final databaseMedium = DatabaseProductInfo(
     size: DatabaseSizeOption.medium,
     productId: 'database-growth:0',
@@ -87,7 +99,13 @@ ProjectProductInfo _growthPlanBundledProjectProducts() {
     ),
   );
   final computeCatalog = ComputeCatalogInfo(
-    computes: [computeMedium, computeLarge, computeXLarge, computeXxLarge],
+    computes: [
+      computeSmall,
+      computeMedium,
+      computeLarge,
+      computeXLarge,
+      computeXxLarge,
+    ],
     defaultCompute: computeMedium.size,
     scaling: ComputeScalingInfo(
       defaultMinReplicas: 2,
@@ -97,7 +115,12 @@ ProjectProductInfo _growthPlanBundledProjectProducts() {
     ),
   );
   final databaseCatalog = DatabaseCatalogInfo(
-    databases: [databaseMedium, databaseLarge, databaseLargePlus],
+    databases: [
+      databaseSmall,
+      databaseMedium,
+      databaseLarge,
+      databaseLargePlus,
+    ],
     defaultDatabase: databaseMedium.size,
   );
   return ProjectProductInfo(
