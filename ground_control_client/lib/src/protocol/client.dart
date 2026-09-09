@@ -120,6 +120,15 @@ class EndpointAdminMigration extends _i1.EndpointRef {
 
   @override
   String get name => 'adminMigration';
+
+  /// Sets the Orb usage filter on every applied plan subscription to the
+  /// project ids currently allocated under that subscription.
+  _i2.Future<Map<String, String>> backfillSubscriptionUsageFilters() =>
+      caller.callServerEndpoint<Map<String, String>>(
+        'adminMigration',
+        'backfillSubscriptionUsageFilters',
+        {},
+      );
 }
 
 /// Endpoint for global administrator to handle procurement for users.

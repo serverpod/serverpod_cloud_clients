@@ -45,6 +45,18 @@ void main() {
     },
   );
 
+  test(
+    'Given admin plan backfill-subscription-filters command when instantiated then requires login',
+    () {
+      expect(
+        AdminBackfillSubscriptionUsageFiltersCommand(
+          logger: logger,
+        ).requireLogin,
+        isTrue,
+      );
+    },
+  );
+
   group('Given authenticated', () {
     group('when executing admin plan list', () {
       late Future commandResult;
@@ -374,5 +386,102 @@ void main() {
         });
       });
     });
+
+    group('when executing admin plan backfill-subscription-filters', () {
+      late Future commandResult;
+      setUp(() async {
+        when(
+          () => client.adminMigration.backfillSubscriptionUsageFilters(),
+        ).thenAnswer(
+          (invocation) async => {'status': 'Migration task started'},
+        );
+
+        commandResult = cli.run([
+          'admin',
+          'plan',
+          'backfill-subscription-filters',
+        ]);
+      });
+
+      test('then command completes successfully', () async {
+        await expectLater(commandResult, completes);
+      });
+
+      test('then command logs the migration status', () async {
+        await commandResult;
+
+        expect(
+          logger.successCalls,
+          contains(
+            equalsSuccessCall(
+              message: 'Migration task started',
+              newParagraph: true,
+            ),
+          ),
+        );
+      });
+    });
+
+    group(
+      'when executing admin plan backfill-subscription-filters with --format json',
+      () {
+        late Future commandResult;
+        setUp(() async {
+          when(
+            () => client.adminMigration.backfillSubscriptionUsageFilters(),
+          ).thenAnswer(
+            (invocation) async => {'status': 'Migration task started'},
+          );
+
+          commandResult = cli.run([
+            'admin',
+            'plan',
+            'backfill-subscription-filters',
+            '--format',
+            'json',
+          ]);
+        });
+
+        test('then emits the migration status', () async {
+          await commandResult;
+
+          expect(logger.lineCalls, isEmpty);
+          expect(jsonDecode(logger.rawCalls.single.content), {
+            'status': 'Migration task started',
+          });
+        });
+      },
+    );
+
+    group(
+      'when executing admin plan backfill-subscription-filters with --format yaml',
+      () {
+        late Future commandResult;
+        setUp(() async {
+          when(
+            () => client.adminMigration.backfillSubscriptionUsageFilters(),
+          ).thenAnswer(
+            (invocation) async => {'status': 'Migration task started'},
+          );
+
+          commandResult = cli.run([
+            'admin',
+            'plan',
+            'backfill-subscription-filters',
+            '--format',
+            'yaml',
+          ]);
+        });
+
+        test('then emits the migration status', () async {
+          await commandResult;
+
+          expect(logger.lineCalls, isEmpty);
+          expect(yamlDecode(logger.rawCalls.single.content), {
+            'status': 'Migration task started',
+          });
+        });
+      },
+    );
   });
 }

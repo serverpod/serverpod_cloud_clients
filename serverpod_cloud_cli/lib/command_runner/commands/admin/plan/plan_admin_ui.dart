@@ -20,3 +20,13 @@ class PlanUpdateTextUi extends OutputWidget {
     );
   }
 }
+
+class BackfillSubscriptionUsageFiltersTextUi extends OutputWidget {
+  const BackfillSubscriptionUsageFiltersTextUi();
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    final result = context.get<Map<String, Object?>>();
+    return SuccessTextWidget('${result['status']}', newParagraph: true);
+  }
+}
