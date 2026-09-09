@@ -46,4 +46,28 @@ void main() {
       });
     });
   });
+
+  group('Given a BackfillSubscriptionUsageFiltersTextUi', () {
+    group('when rendered with a migration status', () {
+      late String stdout;
+      late String stderr;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const BackfillSubscriptionUsageFiltersTextUi(),
+          data: const {'status': 'Migration task started'},
+        );
+        stdout = io.stdout;
+        stderr = io.stderr;
+      });
+
+      test('then stdout contains the status', () {
+        expect(stdout, contains('Migration task started'));
+      });
+
+      test('then stderr is empty', () {
+        expect(stderr, isEmpty);
+      });
+    });
+  });
 }
