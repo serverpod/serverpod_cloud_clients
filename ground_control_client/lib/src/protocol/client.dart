@@ -2181,14 +2181,16 @@ class EndpointStatus extends _i1.EndpointRef {
       >('status', 'tailCapsuleStatus', {'cloudCapsuleId': cloudCapsuleId}, {});
 
   /// Gets deploy attempts of the specified capsule.
-  /// Gets the recent-most attempts, up till [limit] if specified.
+  /// Gets the recent-most attempts, up till [limit] if specified,
+  /// skipping the first [offset] attempts if specified.
   _i2.Future<List<_i5.DeployAttempt>> getDeployAttempts({
     required String cloudCapsuleId,
     int? limit,
+    int? offset,
   }) => caller.callServerEndpoint<List<_i5.DeployAttempt>>(
     'status',
     'getDeployAttempts',
-    {'cloudCapsuleId': cloudCapsuleId, 'limit': limit},
+    {'cloudCapsuleId': cloudCapsuleId, 'limit': limit, 'offset': offset},
   );
 
   /// Gets the specified deploy attempt status of the a capsule.
