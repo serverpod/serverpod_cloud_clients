@@ -370,7 +370,7 @@ void main() {
             now.subtract(const Duration(days: 7, seconds: 1)),
             now: now,
           ),
-          '2026-07-24 11:59:59',
+          '2026-07-24 11:59:59 (local)',
         );
       });
     });
@@ -379,7 +379,7 @@ void main() {
       test('then formats as a local timestamp', () {
         expect(
           friendlyPastTimeFormat(DateTime(2026, 7, 1, 9, 15, 5), now: now),
-          '2026-07-01 09:15:05',
+          '2026-07-01 09:15:05 (local)',
         );
       });
 
@@ -390,7 +390,7 @@ void main() {
             inUtc: true,
             now: now,
           ),
-          '2026-07-01 09:15:05z',
+          '2026-07-01 09:15:05 (UTC)',
         );
       });
     });

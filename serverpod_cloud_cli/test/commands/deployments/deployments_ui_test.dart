@@ -104,7 +104,7 @@ void main() {
         expect(
           stdout,
           contains(
-            'Status of my-project deployment $attemptId, started at 2021-12-31 10:20:30z:',
+            'Status of my-project deployment $attemptId, started at 2021-12-31 10:20:30 (UTC):',
           ),
         );
       });

@@ -118,7 +118,7 @@ class StorageFileListTextUi extends OutputWidget {
             'Size',
             getter: (file) => formatByteSize(file.sizeBytes),
           ),
-          TableColumnFormatter.forElement(
+          TableColumnFormatter.forTimestamp(
             'Last Modified',
             getter: (file) => file.updated,
           ),

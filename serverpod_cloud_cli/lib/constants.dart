@@ -47,3 +47,7 @@ abstract final class ProjectConfigFileConstants {
 
 /// The number of characters to display in user-friendly format for a timestamp.
 const numTimeStampChars = 19;
+
+/// The number of characters of a timestamp to display when seconds are
+/// not relevant.
+const numTimeStampMinuteChars = 16;

@@ -16,16 +16,16 @@ class ProjectListTextUi extends OutputWidget {
         'Project Id',
         getter: (project) => project.project.cloudProjectId,
       ),
-      TableColumnFormatter.forElement(
+      TableColumnFormatter.forTimestamp(
         'Created At',
         getter: (project) => project.project.createdAt,
       ),
-      TableColumnFormatter.forElement(
+      TableColumnFormatter.forTimestamp(
         'Last Deploy Attempt',
         getter: (project) => project.latestDeployAttemptTime?.timestamp,
       ),
       if (showArchived)
-        TableColumnFormatter.forElement(
+        TableColumnFormatter.forTimestamp(
           'Deleted At',
           getter: (project) => project.project.archivedAt,
         ),
@@ -221,7 +221,7 @@ class ProjectShowTextUi extends OutputWidget {
     if (value is! DateTime) {
       return null;
     }
-    return value.toTzString(utc, numTimeStampChars);
+    return value.toLabeledTzString(utc, numTimeStampChars);
   }
 
   String _sizeName(final Object? size) => size is Enum ? size.name : '$size';

@@ -754,7 +754,7 @@ Tracking projectId deployment $attemptId
 
             expect(logger.lineCalls, isNotEmpty);
             expect(logger.lineCalls.map((l) => l.line).join('\n'), '''
-Status of projectId deployment $attemptId, started at 2021-12-31 10:20:30:
+Status of projectId deployment $attemptId, started at 2021-12-31 10:20:30 (local):
 
 Upload successful.
 Cloud build successful.
@@ -1040,7 +1040,7 @@ Tracking projectId deployment $attemptId
 
             expect(logger.lineCalls, isNotEmpty);
             expect(logger.lineCalls.map((l) => l.line).join('\n'), '''
-Status of projectId deployment $attemptId, started at 2021-12-31 10:20:30:
+Status of projectId deployment $attemptId, started at 2021-12-31 10:20:30 (local):
 
 Upload successful.
 Cloud build failed. 💥''');
@@ -1143,7 +1143,7 @@ Cloud build failed. 💥''');
                 containsAllInOrder([
                   equalsLineCall(
                     line:
-                        '# | Project   | Deploy Id                            | Status  | Started             | Finished            | Info      ',
+                        '# | Project   | Deploy Id                            | Status  | Started (local)     | Finished (local)    | Info      ',
                   ),
                   equalsLineCall(
                     line:

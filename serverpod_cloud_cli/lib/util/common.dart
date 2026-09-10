@@ -8,13 +8,23 @@ T max<T extends Comparable>(Iterable<T> values) {
 extension TimezonedString on DateTime {
   /// Converts this date-time to a string in either local or UTC time zone.
   /// If [numChars] is provided, the string will be truncated to that length.
-  /// Note that is [inUtc] is true, 'z' will be appended to the string regardless of [numChars].
+  ///
+  /// The result carries no time zone marker - state the zone with
+  /// [timeZoneLabel] where the value is displayed.
   String toTzString(bool inUtc, [int? numChars]) {
     final s = inUtc ? toUtc().toString() : toLocal().toString();
-    final trunc = numChars == null ? s : s.substring(0, numChars);
-    return inUtc && !trunc.endsWith('Z') ? '${trunc}z' : trunc;
+    return numChars == null ? s : s.substring(0, numChars);
+  }
+
+  /// Converts this date-time to a string in either local or UTC time zone,
+  /// followed by the [timeZoneLabel] of that zone in parentheses.
+  String toLabeledTzString(bool inUtc, [int? numChars]) {
+    return '${toTzString(inUtc, numChars)} (${timeZoneLabel(inUtc)})';
   }
 }
+
+/// The user-facing name of the time zone that timestamps are displayed in.
+String timeZoneLabel(bool inUtc) => inUtc ? 'UTC' : 'local';
 
 void logProjectDirIsNotAServerpodServerDirectory(
   CommandLogger logger, [

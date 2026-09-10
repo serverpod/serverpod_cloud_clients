@@ -99,16 +99,20 @@ void main() {
           logger.lineCalls,
           containsAllInOrder([
             equalsLineCall(
-              line: 'Project Id | Created At          | Last Deploy Attempt',
+              line:
+                  'Project Id | Created At (local)  | Last Deploy Attempt (local)',
             ),
             equalsLineCall(
-              line: '-----------+---------------------+--------------------',
+              line:
+                  '-----------+---------------------+----------------------------',
             ),
             equalsLineCall(
-              line: 'projectId3 | 2024-12-30 10:20:30 |                    ',
+              line:
+                  'projectId3 | 2024-12-30 10:20:30 |                            ',
             ),
             equalsLineCall(
-              line: 'projectId  | 2024-12-31 10:20:30 | 2024-12-31 10:20:30',
+              line:
+                  'projectId  | 2024-12-31 10:20:30 | 2024-12-31 10:20:30        ',
             ),
           ]),
         );
@@ -144,26 +148,61 @@ void main() {
           containsAllInOrder([
             equalsLineCall(
               line:
-                  'Project Id | Created At          | Last Deploy Attempt | Deleted At         ',
+                  'Project Id | Created At (local)  | Last Deploy Attempt (local) | Deleted At (local) ',
             ),
             equalsLineCall(
               line:
-                  '-----------+---------------------+---------------------+--------------------',
+                  '-----------+---------------------+-----------------------------+--------------------',
             ),
             equalsLineCall(
               line:
-                  'projectId3 | 2024-12-30 10:20:30 |                     |                    ',
+                  'projectId3 | 2024-12-30 10:20:30 |                             |                    ',
             ),
             equalsLineCall(
               line:
-                  'projectId  | 2024-12-31 10:20:30 | 2024-12-31 10:20:30 |                    ',
+                  'projectId  | 2024-12-31 10:20:30 | 2024-12-31 10:20:30         |                    ',
             ),
             equalsLineCall(
               line:
-                  'projectId2 | 2024-12-31 12:20:30 | 2024-12-31 12:20:30 | 2025-01-01 14:20:30',
+                  'projectId2 | 2024-12-31 12:20:30 | 2024-12-31 12:20:30         | 2025-01-01 14:20:30',
             ),
           ]),
         );
+      });
+    });
+
+    group('when executing project list with --utc', () {
+      late Future commandResult;
+      setUp(() async {
+        commandResult = cli.run(['project', 'list', '--utc']);
+      });
+
+      test('then completes successfully', () async {
+        await expectLater(commandResult, completes);
+      });
+
+      test('then the timestamp headings state UTC', () async {
+        await commandResult;
+
+        expect(
+          logger.lineCalls.first.line,
+          allOf(
+            contains('Created At (UTC)'),
+            contains('Last Deploy Attempt (UTC)'),
+          ),
+        );
+      });
+
+      test('then the created timestamp is converted to UTC', () async {
+        await commandResult;
+
+        final createdAt = DateTime.parse('2024-12-31 10:20:30');
+        final row = logger.lineCalls
+            .map((final call) => call.line)
+            .firstWhere((final line) => line.startsWith('projectId '));
+
+        final utcCell = createdAt.toUtc().toString().substring(0, 19);
+        expect(row, contains('$utcCell |'));
       });
     });
 

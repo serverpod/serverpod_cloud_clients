@@ -79,7 +79,6 @@ abstract class StatusCommands {
     required String cloudCapsuleId,
     required UuidValue attemptId,
     CommandNames commandNames = CommandNames.public,
-    bool inUtc = false,
     bool skipUploadStage = false,
     Stream<void>? processSignalStreamOverride,
     int maxReconnectRetries = 3,

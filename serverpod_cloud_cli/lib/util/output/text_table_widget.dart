@@ -1,6 +1,7 @@
 import 'package:cli_tools/logger.dart' as cli show AnsiStyle;
 import 'package:collection/collection.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
+import 'package:serverpod_cloud_cli/util/common.dart' show timeZoneLabel;
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 
 import 'output_context.dart';
@@ -103,17 +104,36 @@ class TextTableData {
 
 /// Formatting of a column, its heading and its cell value formatter.
 ///
+/// A column that holds date-times is declared with [forTimestamp] or
+/// [forTimestampKey], which makes [TextTableOutputFormatter] state the
+/// display time zone in the heading.
+///
 /// R is the row object type.
 class TableColumnFormatter<R extends Object> {
   final String heading;
   final ValueFormatter<R> formatter;
 
-  const TableColumnFormatter(this.heading, {required this.formatter});
+  /// Whether the column holds date-times, and its heading therefore states
+  /// the display time zone.
+  final bool isTimestamp;
+
+  const TableColumnFormatter(
+    this.heading, {
+    required this.formatter,
+    this.isTimestamp = false,
+  });
 
   TableColumnFormatter.forElement(
     this.heading, {
     required ValueGetter<R> getter,
-  }) : formatter = objValueFormatter(getter: getter);
+  }) : formatter = objValueFormatter(getter: getter),
+       isTimestamp = false;
+
+  TableColumnFormatter.forTimestamp(
+    this.heading, {
+    required ValueGetter<R> getter,
+  }) : formatter = objValueFormatter(getter: getter),
+       isTimestamp = true;
 
   static TableColumnFormatter<Map<String, Object?>> forKey(
     String heading, {
@@ -122,6 +142,17 @@ class TableColumnFormatter<R extends Object> {
     return TableColumnFormatter<Map<String, Object?>>(
       heading,
       formatter: mapValueFormatter<Map<String, Object?>>(key: key),
+    );
+  }
+
+  static TableColumnFormatter<Map<String, Object?>> forTimestampKey(
+    String heading, {
+    required String key,
+  }) {
+    return TableColumnFormatter<Map<String, Object?>>(
+      heading,
+      formatter: mapValueFormatter<Map<String, Object?>>(key: key),
+      isTimestamp: true,
     );
   }
 }
@@ -144,7 +175,12 @@ class TextTableOutputFormatter<R extends Object>
     return TextTableData(headings, [for (final obj in objects) formatRow(obj)]);
   }
 
-  List<String> get headings => [for (final column in columns) column.heading];
+  List<String> get headings => [
+    for (final column in columns)
+      column.isTimestamp
+          ? '${column.heading} (${timeZoneLabel(utc)})'
+          : column.heading,
+  ];
 
   List<String> formatRow(R object) {
     return [for (final column in columns) column.formatter(object, utc: utc)];

@@ -77,10 +77,10 @@ void main() {
         expect(
           logger.lineCalls.map((call) => call.line),
           containsAllInOrder([
-            'Token Id | Method    | Created              | Last Used            | Expires              | TTL on non-use',
-            '---------+-----------+----------------------+----------------------+----------------------+---------------',
-            'tid-1    | email     | 2026-02-11 16:50:06z | 2026-02-12 16:50:06z |                      | 30d           ',
-            'tid-2    | CLI token | 2026-02-11 16:50:06z |                      | 2026-03-11 16:50:06z |               ',
+            'Token Id | Method    | Created (UTC)       | Last Used (UTC)     | Expires (UTC)       | TTL on non-use',
+            '---------+-----------+---------------------+---------------------+---------------------+---------------',
+            'tid-1    | email     | 2026-02-11 16:50:06 | 2026-02-12 16:50:06 |                     | 30d           ',
+            'tid-2    | CLI token | 2026-02-11 16:50:06 |                     | 2026-03-11 16:50:06 |               ',
           ]),
         );
       });
