@@ -1958,6 +1958,8 @@ class EndpointProjects extends _i1.EndpointRef {
   ///
   /// Throws [NotFoundException] if the project or any of the roles
   /// do not exist.
+  /// Throws [ProcurementDeniedException] if the project's plan does not
+  /// include user invites.
   _i2.Future<void> inviteUser({
     required String cloudProjectId,
     required String email,
