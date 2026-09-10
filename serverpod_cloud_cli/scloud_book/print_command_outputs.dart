@@ -56,6 +56,8 @@ const _scenarios = [
   _Scenario('auth logout', ['auth', 'logout']),
   _Scenario('project list', ['project', 'list']),
   _Scenario('project list', ['project', 'list', '--all']),
+  _Scenario('project show', ['project', 'show', _projectId]),
+  _Scenario('project show', ['project', 'show', _projectId, '--utc']),
   _Scenario('project create', ['project', 'create', _projectId, '--enable-db']),
   _Scenario('project link', ['project', 'link', _projectId]),
   _Scenario('project delete', ['project', 'delete', _projectId]),

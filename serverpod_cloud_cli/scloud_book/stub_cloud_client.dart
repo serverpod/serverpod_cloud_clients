@@ -102,7 +102,13 @@ void _stubProjects(final ClientMock client, {required final String projectId}) {
         .withProject(
           ProjectBuilder()
               .withCloudProjectId(projectId)
-              .withCreatedAt(DateTime.utc(2024, 12, 31, 10, 20, 30)),
+              .withCreatedAt(DateTime.utc(2024, 12, 31, 10, 20, 30))
+              .withCapsules([
+                CapsuleBuilder()
+                    .withCloudCapsuleId(projectId)
+                    .withRegion(ServerpodRegion.europe)
+                    .build(),
+              ]),
         )
         .withLatestDeployAttemptTime(DateTime.utc(2024, 12, 31, 10, 20, 30))
         .build(),
@@ -124,6 +130,52 @@ void _stubProjects(final ClientMock client, {required final String projectId}) {
       ),
     ),
   ).thenAnswer((_) async => projects);
+  when(
+    () => client.projects.fetchProjectInfo(
+      cloudProjectId: any(named: 'cloudProjectId'),
+      includeLatestDeployAttemptTime: any(
+        named: 'includeLatestDeployAttemptTime',
+      ),
+    ),
+  ).thenAnswer((_) async => projects.first);
+  when(
+    () => client.plans.getSubscriptionInfoOfProject(
+      cloudProjectId: any(named: 'cloudProjectId'),
+    ),
+  ).thenAnswer(
+    (_) async => SubscriptionInfoBuilder()
+        .withPlanType(PlanType.growth)
+        .withPlanDisplayName('Growth')
+        .withStartDate(DateTime.utc(2024, 12, 31, 10, 20, 30))
+        .withTrialEndDate(DateTime.utc(2025, 1, 14, 10, 20, 30))
+        .build(),
+  );
+  when(
+    () => client.compute.readCompute(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+    ),
+  ).thenAnswer(
+    (_) async => ComputeInfoBuilder()
+        .withSize(ComputeSizeOption.medium)
+        .withMemoryMb(1024)
+        .withMinInstances(1)
+        .withMaxInstances(3)
+        .build(),
+  );
+  when(
+    () => client.database.readDatabase(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+    ),
+  ).thenAnswer(
+    (_) async => DatabaseInfoBuilder()
+        .withSize(DatabaseSizeOption.small)
+        .withMemoryMb(2048)
+        .withMinCu(0.5)
+        .withMaxCu(2)
+        .withStorageLimitGB(10)
+        .withComputeHoursLimit(300)
+        .build(),
+  );
   when(
     () => client.projects.createProject(
       cloudProjectId: any(named: 'cloudProjectId'),

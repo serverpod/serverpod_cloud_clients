@@ -11,7 +11,8 @@ import 'package:serverpod_cloud_cli/command_runner/commands/project/project_ui.d
         ProjectCreateTextUi,
         ProjectDeleteTextUi,
         ProjectLinkTextUi,
-        ProjectListTextUi;
+        ProjectListTextUi,
+        ProjectShowTextUi;
 import 'package:serverpod_cloud_cli/command_runner/commands/user/user_command.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 
@@ -32,6 +33,7 @@ class CloudProjectCommand extends CloudCliCommand {
     addSubcommand(CloudProjectCreateCommand(logger: logger));
     addSubcommand(CloudProjectDeleteCommand(logger: logger));
     addSubcommand(CloudProjectListCommand(logger: logger));
+    addSubcommand(CloudProjectShowCommand(logger: logger));
     addSubcommand(CloudProjectLinkCommand(logger: logger));
     addSubcommand(CloudProjectUserCommand(logger: logger));
   }
@@ -221,6 +223,50 @@ class CloudProjectListCommand
         showArchived: showArchived,
       ),
       textOutputUi: ProjectListTextUi(utc: false, showArchived: showArchived),
+    );
+  }
+}
+
+enum ProjectShowCommandOption<V> implements OptionDefinition<V> {
+  projectId(ProjectIdOption(asFirstArg: true)),
+  utc(UtcOption());
+
+  const ProjectShowCommandOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class CloudProjectShowCommand
+    extends CloudCliCommand<ProjectShowCommandOption> {
+  @override
+  final name = 'show';
+
+  @override
+  final description =
+      'Show the profile of a Serverpod Cloud project.\n'
+      '\n'
+      'Shows when the project was created, the region it runs in, its plan, '
+      'and its compute and database capacity.';
+
+  CloudProjectShowCommand({required super.logger})
+    : super(options: ProjectShowCommandOption.values);
+
+  @override
+  Future<void> runWithOutput(
+    final Configuration<ProjectShowCommandOption> commandConfig,
+    final CommandOutput output,
+  ) async {
+    final projectId = commandConfig.value(ProjectShowCommandOption.projectId);
+    final utc = commandConfig.value(ProjectShowCommandOption.utc);
+
+    await renderCommand(
+      output,
+      operation: () => ProjectCommands.showProjectOperation(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+      ),
+      textOutputUi: ProjectShowTextUi(utc: utc),
     );
   }
 }

@@ -220,4 +220,105 @@ void main() {
       });
     });
   });
+
+  group('Given a ProjectShowTextUi', () {
+    group('when rendered with a single podlet and a fixed database size', () {
+      late String stdout;
+      late String stderr;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const ProjectShowTextUi(utc: true),
+          data: {
+            'projectId': 'my-project',
+            'createdAt': DateTime.utc(2024, 12, 31, 10, 20, 30),
+            'region': ServerpodRegion.asia,
+            'latestDeployAttemptAt': null,
+            'plan': {
+              'type': PlanType.starter,
+              'displayName': 'Starter',
+              'startedAt': DateTime.utc(2024, 12, 31, 10, 20, 30),
+              'trialEndsAt': null,
+              'cancelled': false,
+              'endsAt': null,
+            },
+            'compute': {
+              'size': ComputeSizeOption.small,
+              'memoryMb': 512,
+              'minInstances': 1,
+              'maxInstances': 1,
+            },
+            'database': {
+              'size': DatabaseSizeOption.small,
+              'memoryMb': 2048,
+              'minCu': 1.0,
+              'maxCu': 1.0,
+              'storageLimitGb': null,
+              'computeHoursLimit': null,
+            },
+          },
+        );
+        stdout = io.stdout;
+        stderr = io.stderr;
+      });
+
+      test('then stdout reports the region', () {
+        expect(stdout, contains('  Region    Asia'));
+      });
+
+      test('then stdout reports that the project is not deployed', () {
+        expect(stdout, contains('  Deployed  never'));
+      });
+
+      test('then stdout reports the podlet count in singular', () {
+        expect(stdout, contains('  Compute   small — 512 MB, 1 podlet'));
+      });
+
+      test('then stdout reports a single compute unit value', () {
+        expect(stdout, contains('  Database  small — 2048 MB, 1 CU'));
+      });
+
+      test('then stderr is empty', () {
+        expect(stderr, isEmpty);
+      });
+    });
+
+    group('when rendered for a cancelled plan', () {
+      late String stdout;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const ProjectShowTextUi(utc: true),
+          data: {
+            'projectId': 'my-project',
+            'createdAt': DateTime.utc(2024, 12, 31, 10, 20, 30),
+            'region': null,
+            'latestDeployAttemptAt': null,
+            'plan': {
+              'type': PlanType.growth,
+              'displayName': 'Growth',
+              'startedAt': DateTime.utc(2024, 12, 31, 10, 20, 30),
+              'trialEndsAt': null,
+              'cancelled': true,
+              'endsAt': DateTime.utc(2025, 2, 1, 0, 0, 0),
+            },
+            'compute': null,
+            'database': null,
+          },
+        );
+        stdout = io.stdout;
+      });
+
+      test('then stdout reports when the plan ends', () {
+        expect(
+          stdout,
+          contains('  Ending    cancelled, ends 2025-02-01 00:00:00z'),
+        );
+      });
+
+      test('then stdout omits the region row', () {
+        expect(stdout, isNot(contains('Region')));
+      });
+    });
+  });
 }

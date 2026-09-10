@@ -113,7 +113,8 @@ class TablePrinter {
   List<String> _formatHeader(List<int> columnWidths) {
     final headerNames = List.generate(
       columnWidths.length,
-      (colIx) => (_columnHeaders.elementAtOrNull(colIx) ?? '').padRight(
+      (colIx) => _padVisible(
+        _columnHeaders.elementAtOrNull(colIx) ?? '',
         columnWidths[colIx],
       ),
     ).join(_columnSeparator);
@@ -131,7 +132,7 @@ class TablePrinter {
     final line = List.generate(
       columnWidths.length,
       (colIx) =>
-          (row.elementAtOrNull(colIx) ?? '').padRight(columnWidths[colIx]),
+          _padVisible(row.elementAtOrNull(colIx) ?? '', columnWidths[colIx]),
     ).join(_columnSeparator);
     return line;
   }
@@ -145,10 +146,23 @@ class TablePrinter {
       nofColumns,
       (colIx) => max([
         _columnMinWidths.elementAtOrNull(colIx) ?? 0,
-        _columnHeaders.elementAtOrNull(colIx)?.length ?? 0,
-        ..._rows.map((row) => row.elementAtOrNull(colIx)?.length ?? 0),
+        _visibleLength(_columnHeaders.elementAtOrNull(colIx)),
+        ..._rows.map((row) => _visibleLength(row.elementAtOrNull(colIx))),
       ]),
     );
     return columnWidths;
   }
+
+  /// The width a cell occupies on screen, ignoring any ANSI style codes it
+  /// carries.
+  static int _visibleLength(String? text) =>
+      text == null ? 0 : text.replaceAll(_ansiStyleCode, '').length;
+
+  /// Pads [text] to occupy [width] columns on screen.
+  static String _padVisible(String text, int width) {
+    final padding = width - _visibleLength(text);
+    return padding > 0 ? '$text${' ' * padding}' : text;
+  }
 }
+
+final _ansiStyleCode = RegExp(r'\x1B\[[0-9;]*m');
