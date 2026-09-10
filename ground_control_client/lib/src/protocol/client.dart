@@ -114,6 +114,45 @@ import 'package:ground_control_client/src/protocol/domains/status/models/deploy_
 import 'package:http/http.dart' as _i52;
 import 'protocol.dart' as _i53;
 
+/// Endpoint for reconciling database compute scaling against Serverpod Cloud.
+/// {@category Endpoint}
+class EndpointAdminDatabaseScaling extends _i1.EndpointRef {
+  EndpointAdminDatabaseScaling(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'adminDatabaseScaling';
+
+  /// Starts a pass that compares the compute scaling of every database against
+  /// the scaling recorded for it in Serverpod Cloud, and pushes the recorded
+  /// values back to any database the provider reports differently.
+  ///
+  /// The recorded scaling is the source of truth. This heals databases whose
+  /// provider-side scaling was changed outside Serverpod Cloud, which the
+  /// regular code paths never notice.
+  ///
+  /// Returns as soon as the pass is started. The pass runs on its own session
+  /// and reports what it inspected, reset, and failed to the session log, so a
+  /// fleet-wide run is not bounded by the request timeout.
+  ///
+  /// Defaults to a dry run that logs the drift and changes nothing. Pass
+  /// [dryRun] as false to apply it, which restarts the compute endpoint of
+  /// every drifted database.
+  ///
+  /// Restricts the pass to [cloudCapsuleIds] when given, so the fleet can be
+  /// reconciled in batches.
+  ///
+  /// The pass is idempotent: a database already at its recorded scaling is
+  /// left alone, so it is safe to re-run.
+  _i2.Future<void> reconcileComputeScaling({
+    bool? dryRun,
+    List<String>? cloudCapsuleIds,
+  }) => caller.callServerEndpoint<void>(
+    'adminDatabaseScaling',
+    'reconcileComputeScaling',
+    {'dryRun': dryRun, 'cloudCapsuleIds': cloudCapsuleIds},
+  );
+}
+
 /// {@category Endpoint}
 class EndpointAdminMigration extends _i1.EndpointRef {
   EndpointAdminMigration(_i1.EndpointCaller caller) : super(caller);
@@ -2297,6 +2336,7 @@ class Client extends _i1.ServerpodClientShared {
              disconnectStreamsOnLostInternetConnection,
          httpClientOverride: httpClientOverride,
        ) {
+    adminDatabaseScaling = EndpointAdminDatabaseScaling(this);
     adminMigration = EndpointAdminMigration(this);
     adminProcurement = EndpointAdminProcurement(this);
     adminProjects = EndpointAdminProjects(this);
@@ -2332,6 +2372,8 @@ class Client extends _i1.ServerpodClientShared {
     users = EndpointUsers(this);
     modules = Modules(this);
   }
+
+  late final EndpointAdminDatabaseScaling adminDatabaseScaling;
 
   late final EndpointAdminMigration adminMigration;
 
@@ -2403,6 +2445,7 @@ class Client extends _i1.ServerpodClientShared {
 
   @override
   Map<String, _i1.EndpointRef> get endpointRefLookup => {
+    'adminDatabaseScaling': adminDatabaseScaling,
     'adminMigration': adminMigration,
     'adminProcurement': adminProcurement,
     'adminProjects': adminProjects,
