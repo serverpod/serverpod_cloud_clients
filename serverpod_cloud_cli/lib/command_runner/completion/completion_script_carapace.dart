@@ -414,6 +414,62 @@ commands:
         flags:
           -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
 
+  - name: storage
+
+    commands:
+      - name: list
+        flags:
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
+
+      - name: create
+        flags:
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
+          -s, --storage=!: "The id of the new storage. Lowercase letters, digits and dashes. Can be passed as the first argument."
+          -a, --access=: "Who can read the files. \"private\": only your project. \"public\": anyone with the URL. Cannot be changed later."
+        completion:
+          flag:
+            access: ["public", "private"]
+
+      - name: delete
+        flags:
+          -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
+          -s, --storage=!: "The id of the storage. Can be passed as the first argument."
+
+      - name: file
+
+        commands:
+          - name: list
+            flags:
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
+              -s, --storage=!: "The id of the storage. Can be passed as the first argument."
+              --path=: "A folder path inside the storage. Can be passed as the second argument."
+              -t, --tree: "Show the files as a directory tree instead of a table."
+              -u, --utc: "Display timestamps in UTC timezone instead of local."
+              --no-utc: "Display timestamps in UTC timezone instead of local."
+            exclusiveFlags:
+              - [utc, no-utc]
+
+          - name: upload
+            flags:
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
+              -s, --storage=!: "The id of the storage. Can be passed as the first argument."
+              -f, --file=!: "The local file or directory to upload. A directory is uploaded with everything in it, except symbolic links and .DS_Store files (see --follow-symlinks). Can be passed as the second argument."
+              --path=: "The destination path inside the storage. Defaults to the file or directory name. End it with \"/\" to upload into a folder. Can be passed as the third argument."
+              --follow-symlinks: "Upload what symbolic links point to, including files outside the uploaded directory."
+
+          - name: download
+            flags:
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
+              -s, --storage=!: "The id of the storage. Can be passed as the first argument."
+              --path=!: "The path of the file inside the storage. Can be passed as the second argument."
+              -o, --output=: "Where to save the file. Defaults to the file name in the current directory. An existing directory saves the file inside it."
+
+          - name: delete
+            flags:
+              -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
+              -s, --storage=!: "The id of the storage. Can be passed as the first argument."
+              --path=!: "The path of the file inside the storage. Can be passed as the second argument."
+
   - name: launch
     flags:
       -p, --project=: "The ID of the project."

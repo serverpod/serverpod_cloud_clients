@@ -248,9 +248,9 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
       CloudDeploymentsCommand(logger: logger, asOldAlias: true),
       CloudPasswordCommand(logger: logger),
       CloudDbCommand(logger: logger),
+      CloudStorageCommand(logger: logger),
       CloudLaunchCommand(logger: logger),
       CloudSettingsCommand(logger: logger),
-      if (adminUserMode) CloudStorageCommand(logger: logger),
       if (adminUserMode) CloudAdminCommand(logger: logger, hidden: false),
     ]);
 

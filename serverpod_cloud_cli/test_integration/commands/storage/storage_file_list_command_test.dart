@@ -25,7 +25,6 @@ void main() {
     serviceProvider: CloudCliServiceProvider(
       apiClientFactory: (globalCfg) => client,
     ),
-    adminUserMode: true,
   );
 
   tearDown(() async {

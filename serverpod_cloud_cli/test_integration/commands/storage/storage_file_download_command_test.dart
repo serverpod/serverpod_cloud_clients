@@ -34,7 +34,6 @@ void main() {
       apiClientFactory: (globalCfg) => client,
       fileDownloaderFactory: downloader.factory,
     ),
-    adminUserMode: true,
   );
 
   setUp(() {
