@@ -10,6 +10,8 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/dio_failure.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/file_downloader.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/file_uploader_factory.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:serverpod_cloud_shared/serverpod_cloud_shared.dart'
+    show RateLimitMessage;
 
 /// A local file queued for upload, with the path it gets inside the storage.
 class UploadItem {
@@ -158,8 +160,8 @@ abstract final class StorageOperations {
   ///
   /// Only files under the folder [path] are listed if it is given.
   ///
-  /// Throws [FailureException] if the storage is not found
-  /// or the request fails.
+  /// Throws [FailureException] if the storage is not found, its listing
+  /// rate limit is reached, or the request fails.
   static Future<List<BucketFile>> listFiles(
     Client cloudApiClient, {
     required String projectId,
@@ -188,6 +190,11 @@ abstract final class StorageOperations {
         hint:
             'Run "$baseCommand storage list" to see the storages of '
             'the project.',
+      );
+    } on BucketRateLimitExceededException catch (e) {
+      throw FailureException(
+        error: 'Listing limit reached for storage "$storageId".',
+        hint: RateLimitMessage.tryAgainIn(e.retryAfter),
       );
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Failed to list files.');
@@ -333,8 +340,8 @@ abstract final class StorageOperations {
   /// reporting [skippedLinks] in the result.
   ///
   /// Throws [FailureException] if the storage is not found, a file already
-  /// exists at its storage path, or a transfer fails. The upload stops at the
-  /// first failure.
+  /// exists at its storage path, the storage's upload rate limit is reached,
+  /// or a transfer fails. The upload stops at the first failure.
   static Future<Map<String, Object?>> uploadFiles(
     Client cloudApiClient,
     FileUploaderFactory fileUploaderFactory,
@@ -414,6 +421,11 @@ abstract final class StorageOperations {
             'Run "$baseCommand storage list" to see the storages of '
             'the project.',
       );
+    } on BucketRateLimitExceededException catch (e) {
+      throw FailureException(
+        error: 'Upload limit reached for storage "$storageId".',
+        hint: RateLimitMessage.tryAgainIn(e.retryAfter),
+      );
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Failed to prepare the upload.');
     }
@@ -476,7 +488,8 @@ abstract final class StorageOperations {
   /// Downloads [path] from the storage [storageId] into [destination].
   ///
   /// Throws [FailureException] if the destination directory is missing, the
-  /// storage or file is not found, or the transfer fails.
+  /// storage or file is not found, the storage's download rate limit is
+  /// reached, or the transfer fails.
   static Future<Map<String, Object?>> downloadFile(
     Client cloudApiClient,
     FileDownloaderFactory fileDownloaderFactory,
@@ -510,6 +523,11 @@ abstract final class StorageOperations {
         hint:
             'Run "$baseCommand storage list" to see the storages of '
             'the project.',
+      );
+    } on BucketRateLimitExceededException catch (e) {
+      throw FailureException(
+        error: 'Download limit reached for storage "$storageId".',
+        hint: RateLimitMessage.tryAgainIn(e.retryAfter),
       );
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Failed to prepare the download.');
@@ -563,8 +581,8 @@ abstract final class StorageOperations {
   /// The server is idempotent, so deleting a file that does not exist
   /// completes.
   ///
-  /// Throws [FailureException] if the storage is not found
-  /// or the request fails.
+  /// Throws [FailureException] if the storage is not found, its deletion
+  /// rate limit is reached, or the request fails.
   static Future<void> deleteFile(
     Client cloudApiClient, {
     required String projectId,
@@ -584,6 +602,11 @@ abstract final class StorageOperations {
         hint:
             'Run "$baseCommand storage list" to see the storages of '
             'the project.',
+      );
+    } on BucketRateLimitExceededException catch (e) {
+      throw FailureException(
+        error: 'Delete limit reached for storage "$storageId".',
+        hint: RateLimitMessage.tryAgainIn(e.retryAfter),
       );
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Failed to delete the file.');
