@@ -40,16 +40,6 @@ void processCommonClientExceptions(
           hint: 'To set up your account, visit: $setupUrl\n',
           newParagraph: true,
         );
-      } else if (e.reason == ProcurementDeniedReason.productNotAvailable &&
-          e.message.toLowerCase().contains('backup')) {
-        final projectsUrl = '$baseUrl/project';
-        logger.error(
-          e.message,
-          hint:
-              'Database backups are available on the Growth plan. '
-              'To upgrade the plan, visit: $projectsUrl\n',
-          newParagraph: true,
-        );
       } else {
         final projectsUrl = '$baseUrl/project';
         logger.error(

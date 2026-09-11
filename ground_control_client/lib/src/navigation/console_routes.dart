@@ -4,4 +4,8 @@
 abstract final class ConsoleRoutes {
   static const String login = '/cli/signin';
   static const String createProject = '/project/create';
+
+  /// The plan and settings page of the project with [projectId].
+  static String projectPlanAndSettings(String projectId) =>
+      '/project/${Uri.encodeComponent(projectId)}/plan-and-settings';
 }

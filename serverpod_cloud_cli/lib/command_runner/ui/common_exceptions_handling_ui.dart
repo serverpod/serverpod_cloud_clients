@@ -105,19 +105,6 @@ class ProcurementDeniedExceptionWidget extends OutputWidget {
       );
     }
 
-    if (exception.reason == ProcurementDeniedReason.productNotAvailable &&
-        exception.message.toLowerCase().contains('backup')) {
-      final projectsUrl = '$baseUrl/project';
-      return TextErrorOutputWidget(
-        exception,
-        message: exception.message,
-        hint:
-            'Database backups are available on the Growth plan. '
-            'To upgrade the plan, visit: $projectsUrl\n',
-        newParagraph: true,
-      );
-    }
-
     final projectsUrl = '$baseUrl/project';
     return TextErrorOutputWidget(
       exception,
