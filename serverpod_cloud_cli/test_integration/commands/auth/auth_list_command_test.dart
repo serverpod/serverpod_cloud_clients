@@ -45,7 +45,7 @@ void main() {
             .build(),
         AuthTokenInfoBuilder()
             .withTokenId('tid-2')
-            .withMethod('CLI token')
+            .withCliLoginSession()
             .withCreatedAt(createdAt)
             .withExpiresAt(DateTime.utc(2026, 3, 11, 16, 50, 06))
             .build(),
@@ -77,10 +77,10 @@ void main() {
         expect(
           logger.lineCalls.map((call) => call.line),
           containsAllInOrder([
-            'Token Id | Method    | Created (UTC)       | Last Used (UTC)     | Expires (UTC)       | TTL on non-use',
-            '---------+-----------+---------------------+---------------------+---------------------+---------------',
-            'tid-1    | email     | 2026-02-11 16:50:06 | 2026-02-12 16:50:06 |                     | 30d           ',
-            'tid-2    | CLI token | 2026-02-11 16:50:06 |                     | 2026-03-11 16:50:06 |               ',
+            'Token Id | Method | Created (UTC)       | Last Used (UTC)     | Expires (UTC)       | TTL on non-use',
+            '---------+--------+---------------------+---------------------+---------------------+---------------',
+            'tid-1    | email  | 2026-02-11 16:50:06 | 2026-02-12 16:50:06 |                     | 30d           ',
+            'tid-2    | cli    | 2026-02-11 16:50:06 |                     | 2026-03-11 16:50:06 |               ',
           ]),
         );
       });
@@ -103,7 +103,7 @@ void main() {
         expect((payload[0] as Map)['method'], 'email');
         expect((payload[0] as Map)['createdAt'], '2026-02-11T16:50:06.000Z');
         expect((payload[1] as Map)['tokenId'], 'tid-2');
-        expect((payload[1] as Map)['method'], 'CLI token');
+        expect((payload[1] as Map)['method'], 'cli');
         expect((payload[1] as Map)['expiresAt'], '2026-03-11T16:50:06.000Z');
       });
     });
@@ -124,7 +124,7 @@ void main() {
         expect((payload[0] as Map)['issuer'], 'test-auth-issuer');
         expect((payload[0] as Map)['method'], 'email');
         expect((payload[1] as Map)['tokenId'], 'tid-2');
-        expect((payload[1] as Map)['method'], 'CLI token');
+        expect((payload[1] as Map)['method'], 'cli');
       });
     });
   });
