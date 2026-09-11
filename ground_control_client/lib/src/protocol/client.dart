@@ -1928,23 +1928,18 @@ class EndpointProjects extends _i1.EndpointRef {
   /// Applies a project profile change together with compute scaling and optional
   /// database sizing in one call.
   ///
-  /// Intended to replace separate calls to [updateProjectProfile], compute
-  /// `updateCompute`, and database `updateDatabaseSize` when all are updated
-  /// together.
+  /// Intended to replace separate calls to compute `updateCompute`, and
+  /// database `updateDatabaseSize` when all are updated together.
   ///
   /// [cloudProjectId] identifies the project for authorization and matches the
   /// capsule identifier used for compute and database operations.
   ///
   /// When [resources.databaseSize] is null, database sizing is not changed.
   ///
-  /// Throws [NotFoundException] if the project is not found.
+  /// Returns immediately and updates the project profile in the background.
+  ///
   /// Throws [UnauthorizedException] if the user is not the owner of the
   /// project's subscription.
-  /// Throws [InvalidValueException] if the requested configuration violates the product constraints.
-  /// Throws [PlanChangeDeniedException] if the plan change would strand a feature
-  /// that is currently in use (e.g. removing backup support while backups exist).
-  /// Throws [ProcurementDeniedException] if the requested new products are not available.
-  /// Throws [ConcurrentSubscriptionUpdateException] if another update is in progress.
   _i2.Future<void> updateProjectProfile({
     required String cloudProjectId,
     required _i45.ProjectProfileUpdate resources,
