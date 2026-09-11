@@ -46,8 +46,8 @@ class TextTableWidget extends OutputWidget {
     final linePrefix = indent;
     printer.writeLines(
       linePrefix == null
-          ? logger.line
-          : (final line) => logger.line('$linePrefix$line'),
+          ? (final line) => logger.line(line.trimRight())
+          : (final line) => logger.line('$linePrefix${line.trimRight()}'),
     );
   }
 

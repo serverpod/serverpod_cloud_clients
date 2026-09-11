@@ -58,11 +58,7 @@ void main() {
         expect(logger.lineCalls, isNotEmpty);
         expect(
           logger.lineCalls.map((l) => l.line),
-          containsAllInOrder([
-            'Email           ',
-            '----------------',
-            contains('test@example.com'),
-          ]),
+          containsAllInOrder(['Email', '-----', contains('test@example.com')]),
         );
       });
     });
@@ -87,11 +83,7 @@ void main() {
         expect(logger.lineCalls, isNotEmpty);
         expect(
           logger.lineCalls.map((l) => l.line),
-          containsAllInOrder([
-            'Email           ',
-            '----------------',
-            'test@example.com',
-          ]),
+          containsAllInOrder(['Email', '-----', 'test@example.com']),
         );
       });
     });

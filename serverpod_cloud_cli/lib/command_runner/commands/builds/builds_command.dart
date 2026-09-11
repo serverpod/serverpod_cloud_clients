@@ -5,8 +5,10 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/builds/builds_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/builds/builds_ui.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployments_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/log/log_ui.dart'
-    show LogListTextUi;
+    show BuildLogListTextUi;
+import 'package:serverpod_cloud_cli/command_runner/commands/log/logs_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deployments/command_names.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
@@ -110,16 +112,23 @@ Examples
     final inUtc = commandConfig.value(BuildLogOption.utc);
     final deploymentArg = commandConfig.optionalValue(BuildLogOption.deploy);
 
+    final client = runner.serviceProvider.cloudApiClient;
+    final attemptId = await DeploymentCommands.getDeployAttemptId(
+      client,
+      baseCommand: baseCommand,
+      commandNames: _commandNames,
+      projectId: projectId,
+      deploymentArg: deploymentArg,
+    );
+
     await renderCommand(
       output,
-      operation: () => BuildsOperations.fetchBuildLog(
-        runner.serviceProvider.cloudApiClient,
-        baseCommand: baseCommand,
-        commandNames: _commandNames,
+      operation: () => LogsOperations.fetchBuildLog(
+        client,
         projectId: projectId,
-        deploymentArg: deploymentArg,
+        attemptId: attemptId,
       ),
-      textOutputUi: LogListTextUi(utc: inUtc),
+      textOutputUi: BuildLogListTextUi(utc: inUtc, attemptId: attemptId),
     );
   }
 }

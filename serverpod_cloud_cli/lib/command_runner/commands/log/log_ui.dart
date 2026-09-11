@@ -1,5 +1,6 @@
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
+import 'package:serverpod_cloud_cli/util/common.dart';
 
 final _logRecordTableColumns = [
   TableColumnFormatter<LogRecord>.forTimestamp(
@@ -15,6 +16,52 @@ final _logRecordTableColumns = [
     getter: (record) => record.content,
   ),
 ];
+
+final _buildLogRecordTableColumns = [
+  TableColumnFormatter<LogRecord>(
+    'Timestamp',
+    formatter: (record, {required bool? utc}) =>
+        record.timestamp.toTzString(utc ?? false),
+    isTimestamp: true,
+  ),
+  TableColumnFormatter<LogRecord>.forElement(
+    'Level',
+    getter: (record) => record.severity,
+  ),
+  TableColumnFormatter<LogRecord>.forElement(
+    'Content',
+    getter: (record) => record.content,
+  ),
+];
+
+class BuildLogListTextUi extends OutputWidget {
+  final bool utc;
+  final UuidValue attemptId;
+
+  const BuildLogListTextUi({required this.utc, required this.attemptId});
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    final records = context.get<List<LogRecord>>();
+    if (records.isEmpty) {
+      return const InfoTextWidget('No log records found.');
+    }
+    return OutputWidgetList([
+      LineTextWidget(
+        'Fetching build logs for deploy id $attemptId. '
+        'Display time zone: ${_timezoneName(utc)}.',
+      ),
+      FormattedTableWidget(
+        formatter: TextTableOutputFormatter<LogRecord>(
+          columns: _buildLogRecordTableColumns,
+          utc: utc,
+        ),
+        columnMinWidths: const [27, 7, 0],
+      ),
+      LineTextWidget('-- End of log stream -- ${records.length} records --'),
+    ]);
+  }
+}
 
 class LogListTextUi extends OutputWidget {
   final bool utc;

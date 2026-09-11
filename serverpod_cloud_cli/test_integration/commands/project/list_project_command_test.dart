@@ -106,13 +106,9 @@ void main() {
               line:
                   '-----------+---------------------+----------------------------',
             ),
+            equalsLineCall(line: 'projectId3 | 2024-12-30 10:20:30 |'),
             equalsLineCall(
-              line:
-                  'projectId3 | 2024-12-30 10:20:30 |                            ',
-            ),
-            equalsLineCall(
-              line:
-                  'projectId  | 2024-12-31 10:20:30 | 2024-12-31 10:20:30        ',
+              line: 'projectId  | 2024-12-31 10:20:30 | 2024-12-31 10:20:30',
             ),
           ]),
         );
@@ -148,19 +144,19 @@ void main() {
           containsAllInOrder([
             equalsLineCall(
               line:
-                  'Project Id | Created At (local)  | Last Deploy Attempt (local) | Deleted At (local) ',
+                  'Project Id | Created At (local)  | Last Deploy Attempt (local) | Deleted At (local)',
             ),
             equalsLineCall(
               line:
-                  '-----------+---------------------+-----------------------------+--------------------',
+                  '-----------+---------------------+-----------------------------+-------------------',
             ),
             equalsLineCall(
               line:
-                  'projectId3 | 2024-12-30 10:20:30 |                             |                    ',
+                  'projectId3 | 2024-12-30 10:20:30 |                             |',
             ),
             equalsLineCall(
               line:
-                  'projectId  | 2024-12-31 10:20:30 | 2024-12-31 10:20:30         |                    ',
+                  'projectId  | 2024-12-31 10:20:30 | 2024-12-31 10:20:30         |',
             ),
             equalsLineCall(
               line:

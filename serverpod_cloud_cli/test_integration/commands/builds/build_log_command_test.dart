@@ -147,14 +147,16 @@ void main() {
           expect(
             logger.lineCalls.map((final call) => call.line),
             containsAllInOrder([
+              contains('Fetching build logs for deploy id $attemptId'),
               contains('Timestamp'),
               contains('Building image...'),
               contains('Pushing image...'),
+              contains('-- End of log stream -- 2 records --'),
             ]),
           );
           expect(
             logger.lineCalls.map((final call) => call.line),
-            contains(startsWith('2024-01-01 00:00:00 ')),
+            anyElement(contains('2024-01-01 00:00:00.000Z')),
           );
         });
       });

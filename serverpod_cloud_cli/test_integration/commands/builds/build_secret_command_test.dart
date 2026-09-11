@@ -533,9 +533,9 @@ void main() {
           containsAllInOrder([
             equalsLineCall(line: 'Secret name'),
             equalsLineCall(line: '-----------'),
-            equalsLineCall(line: 'SECRET_1   '),
-            equalsLineCall(line: 'SECRET_2   '),
-            equalsLineCall(line: 'SECRET_3   '),
+            equalsLineCall(line: 'SECRET_1'),
+            equalsLineCall(line: 'SECRET_2'),
+            equalsLineCall(line: 'SECRET_3'),
           ]),
         );
       });
@@ -662,7 +662,7 @@ void main() {
           containsAllInOrder([
             equalsLineCall(line: 'Secret name'),
             equalsLineCall(line: '-----------'),
-            equalsLineCall(line: 'SECRET_1   '),
+            equalsLineCall(line: 'SECRET_1'),
           ]),
         );
       });

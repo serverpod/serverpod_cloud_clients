@@ -86,9 +86,7 @@ void main() {
             equalsLineCall(
               line: '-----------------+-----------+--------------',
             ),
-            equalsLineCall(
-              line: 'test@example.com | projectId | Admin        ',
-            ),
+            equalsLineCall(line: 'test@example.com | projectId | Admin'),
           ]),
         );
       });

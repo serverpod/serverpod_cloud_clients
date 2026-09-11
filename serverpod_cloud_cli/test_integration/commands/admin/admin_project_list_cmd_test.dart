@@ -99,15 +99,15 @@ void main() {
           containsAllInOrder([
             equalsLineCall(
               line:
-                  'Project Id | Created At (local)  | Archived At (local) | Last Deploy Attempt (local) | Owner            | Users                                              ',
+                  'Project Id | Created At (local)  | Archived At (local) | Last Deploy Attempt (local) | Owner            | Users',
             ),
             equalsLineCall(
               line:
-                  '-----------+---------------------+---------------------+-----------------------------+------------------+----------------------------------------------------',
+                  '-----------+---------------------+---------------------+-----------------------------+------------------+------',
             ),
             equalsLineCall(
               line:
-                  'projectId  | 2025-07-02 11:00:00 |                     |                             | test@example.com | Admin: test@example.com                            ',
+                  'projectId  | 2025-07-02 11:00:00 |                     |                             | test@example.com | Admin: test@example.com',
             ),
             equalsLineCall(
               line:
