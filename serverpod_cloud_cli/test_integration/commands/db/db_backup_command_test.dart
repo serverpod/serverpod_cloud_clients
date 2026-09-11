@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:cli_tools/cli_tools.dart';
 import 'package:config/config.dart' show UsageException;
 import 'package:ground_control_client/ground_control_client.dart';
+import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
@@ -30,6 +31,16 @@ void main() {
     logger.clear();
   });
   const projectId = 'projectId';
+
+  void stubPlanType(final PlanType planType) {
+    when(
+      () => client.plans.getSubscriptionInfoOfProject(
+        cloudProjectId: any(named: 'cloudProjectId'),
+      ),
+    ).thenAnswer(
+      (_) async => SubscriptionInfoBuilder().withPlanType(planType).build(),
+    );
+  }
 
   DatabaseSnapshot snapshot({
     String id = 'snap-1',
@@ -206,19 +217,55 @@ void main() {
             isTrue,
           );
         });
+
+        test('then --format json emits an array of the snapshots', () async {
+          await cli.run([
+            'db',
+            'backup',
+            'list',
+            '--project',
+            projectId,
+            '--format',
+            'json',
+          ]);
+
+          final decoded = jsonDecode(logger.rawCalls.single.content) as List;
+          expect(decoded, hasLength(2));
+          expect((decoded.first as Map)['id'], 'snap-1');
+          expect(logger.lineCalls, isEmpty);
+        });
+
+        test('then --format yaml emits an array of the snapshots', () async {
+          await cli.run([
+            'db',
+            'backup',
+            'list',
+            '--project',
+            projectId,
+            '--format',
+            'yaml',
+          ]);
+
+          final decoded = yamlDecode(logger.rawCalls.single.content) as List;
+          expect(decoded, hasLength(2));
+          expect((decoded.first as Map)['id'], 'snap-1');
+          expect(logger.lineCalls, isEmpty);
+        });
       });
 
-      group('and no snapshots exist', () {
+      group('and no snapshots exist on the growth plan', () {
         setUpAll(() {
           when(
             () => client.database.listSnapshots(
               cloudCapsuleId: any(named: 'cloudCapsuleId'),
             ),
           ).thenAnswer((_) async => []);
+          stubPlanType(PlanType.growth);
         });
 
         tearDownAll(() {
           reset(client.database);
+          reset(client.plans);
         });
 
         test('then informs the user and suggests creating one', () async {
@@ -235,6 +282,69 @@ void main() {
               (c) => c.command.contains('scloud db backup create'),
             ),
             isTrue,
+          );
+        });
+
+        test('then --format json emits an empty array', () async {
+          await cli.run([
+            'db',
+            'backup',
+            'list',
+            '--project',
+            projectId,
+            '--format',
+            'json',
+          ]);
+
+          expect(jsonDecode(logger.rawCalls.single.content), isEmpty);
+          expect(logger.infoCalls, isEmpty);
+        });
+      });
+
+      group('and no snapshots exist on the starter plan', () {
+        setUpAll(() {
+          when(
+            () => client.database.listSnapshots(
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            ),
+          ).thenAnswer((_) async => []);
+          stubPlanType(PlanType.starter);
+        });
+
+        tearDownAll(() {
+          reset(client.database);
+          reset(client.plans);
+        });
+
+        test('then points the user at the plan page instead', () async {
+          await cli.run(['db', 'backup', 'list', '--project', projectId]);
+
+          expect(
+            logger.infoCalls.any(
+              (c) => c.message.contains(
+                'Database backups are available on the Growth plan.',
+              ),
+            ),
+            isTrue,
+          );
+          expect(
+            logger.infoCalls.any(
+              (c) =>
+                  c.message.contains('/project/$projectId/plan-and-settings'),
+            ),
+            isTrue,
+          );
+          expect(logger.terminalCommandCalls, isEmpty);
+        });
+
+        test('then does not report that no snapshots were found', () async {
+          await cli.run(['db', 'backup', 'list', '--project', projectId]);
+
+          expect(
+            logger.infoCalls.any(
+              (c) => c.message.contains('No snapshots found'),
+            ),
+            isFalse,
           );
         });
       });
@@ -532,19 +642,58 @@ void main() {
             isTrue,
           );
         });
+
+        test('then --format json emits the project id and schedule', () async {
+          await cli.run([
+            'db',
+            'schedule',
+            'show',
+            '--project',
+            projectId,
+            '--format',
+            'json',
+          ]);
+
+          final decoded =
+              jsonDecode(logger.rawCalls.single.content)
+                  as Map<String, Object?>;
+          expect(decoded.keys, unorderedEquals(['projectId', 'schedule']));
+          expect(decoded['projectId'], projectId);
+          expect((decoded['schedule'] as Map)['frequency'], 'weekly');
+          expect(logger.lineCalls, isEmpty);
+        });
+
+        test('then --format yaml emits the project id and schedule', () async {
+          await cli.run([
+            'db',
+            'schedule',
+            'show',
+            '--project',
+            projectId,
+            '--format',
+            'yaml',
+          ]);
+
+          final decoded = yamlDecode(logger.rawCalls.single.content) as Map;
+          expect(decoded.keys, unorderedEquals(['projectId', 'schedule']));
+          expect(decoded['projectId'], projectId);
+          expect(logger.lineCalls, isEmpty);
+        });
       });
 
-      group('and no schedule exists', () {
+      group('and no schedule exists on the growth plan', () {
         setUpAll(() {
           when(
             () => client.database.getBackupSchedule(
               cloudCapsuleId: any(named: 'cloudCapsuleId'),
             ),
           ).thenAnswer((_) async => null);
+          stubPlanType(PlanType.growth);
         });
 
         tearDownAll(() {
           reset(client.database);
+          reset(client.plans);
         });
 
         test('then informs the user no schedule is configured', () async {
@@ -555,6 +704,79 @@ void main() {
               (c) => c.message.contains('No backup schedule'),
             ),
             isTrue,
+          );
+          expect(
+            logger.terminalCommandCalls.any(
+              (c) => c.command.contains('scloud db schedule set'),
+            ),
+            isTrue,
+          );
+        });
+
+        test('then --format json emits a null schedule', () async {
+          await cli.run([
+            'db',
+            'schedule',
+            'show',
+            '--project',
+            projectId,
+            '--format',
+            'json',
+          ]);
+
+          final decoded =
+              jsonDecode(logger.rawCalls.single.content)
+                  as Map<String, Object?>;
+          expect(decoded.keys, unorderedEquals(['projectId', 'schedule']));
+          expect(decoded['schedule'], isNull);
+          expect(logger.infoCalls, isEmpty);
+        });
+      });
+
+      group('and no schedule exists on the starter plan', () {
+        setUpAll(() {
+          when(
+            () => client.database.getBackupSchedule(
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            ),
+          ).thenAnswer((_) async => null);
+          stubPlanType(PlanType.starter);
+        });
+
+        tearDownAll(() {
+          reset(client.database);
+          reset(client.plans);
+        });
+
+        test('then points the user at the plan page instead', () async {
+          await cli.run(['db', 'schedule', 'show', '--project', projectId]);
+
+          expect(
+            logger.infoCalls.any(
+              (c) => c.message.contains(
+                'Database backups are available on the Growth plan.',
+              ),
+            ),
+            isTrue,
+          );
+          expect(
+            logger.infoCalls.any(
+              (c) =>
+                  c.message.contains('/project/$projectId/plan-and-settings'),
+            ),
+            isTrue,
+          );
+          expect(logger.terminalCommandCalls, isEmpty);
+        });
+
+        test('then does not report that no schedule is configured', () async {
+          await cli.run(['db', 'schedule', 'show', '--project', projectId]);
+
+          expect(
+            logger.infoCalls.any(
+              (c) => c.message.contains('No backup schedule'),
+            ),
+            isFalse,
           );
         });
       });
@@ -629,6 +851,22 @@ void main() {
         await expectLater(result, throwsA(isA<ExitException>()));
         expect(logger.errorCalls, isNotEmpty);
         expect(logger.errorCalls.last.hint, contains('Growth plan'));
+      });
+
+      test('then links to the project plan page', () async {
+        final result = cli.run([
+          'db',
+          'backup',
+          'create',
+          '--project',
+          projectId,
+        ]);
+
+        await expectLater(result, throwsA(isA<ExitException>()));
+        expect(
+          logger.errorCalls.last.hint,
+          contains('/project/$projectId/plan-and-settings'),
+        );
       });
     });
   });

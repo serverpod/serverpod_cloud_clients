@@ -8,7 +8,11 @@ import 'package:serverpod_cloud_cli/command_runner/commands/db/db_ui.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
 import 'package:serverpod_cloud_cli/util/output/output.dart'
-    show CommandOutput, ConfirmationWidget;
+    show
+        CommandOutput,
+        ConfirmationWidget,
+        JsonOutputFormatter,
+        YamlOutputFormatter;
 
 class CloudDbCommand extends CloudCliCommand {
   @override
@@ -483,6 +487,12 @@ class CloudDbBackupListCommand extends CloudCliCommand<DbBackupListOption> {
         emptyProjectId: projectId,
         baseCommand: baseCommand,
       ),
+      jsonOutputUi: const BackupSnapshotListStructuredUi(
+        formatter: JsonOutputFormatter(),
+      ),
+      yamlOutputUi: const BackupSnapshotListStructuredUi(
+        formatter: YamlOutputFormatter(),
+      ),
     );
   }
 }
@@ -713,6 +723,12 @@ class CloudDbScheduleShowCommand extends CloudCliCommand<DbScheduleShowOption> {
         projectId: commandConfig.value(DbScheduleShowOption.projectId),
       ),
       textOutputUi: BackupScheduleShowTextUi(baseCommand: baseCommand),
+      jsonOutputUi: const BackupScheduleShowStructuredUi(
+        formatter: JsonOutputFormatter(),
+      ),
+      yamlOutputUi: const BackupScheduleShowStructuredUi(
+        formatter: YamlOutputFormatter(),
+      ),
     );
   }
 }

@@ -195,7 +195,7 @@ abstract class ProjectCommands {
       projectId: projectId,
     );
     final resources = await Future.wait<Object?>([
-      _readSubscription(cloudApiClient, projectId: projectId),
+      readSubscription(cloudApiClient, projectId: projectId),
       _readCompute(cloudApiClient, projectId: projectId),
       _readDatabase(cloudApiClient, projectId: projectId),
     ]);
@@ -264,7 +264,9 @@ abstract class ProjectCommands {
     }
   }
 
-  static Future<SubscriptionInfo?> _readSubscription(
+  /// Reads the subscription the project is billed under,
+  /// or null if the project has no subscription.
+  static Future<SubscriptionInfo?> readSubscription(
     Client cloudApiClient, {
     required String projectId,
   }) async {

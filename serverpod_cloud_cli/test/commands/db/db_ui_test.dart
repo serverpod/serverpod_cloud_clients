@@ -217,7 +217,10 @@ void main() {
             emptyProjectId: 'my-project',
             baseCommand: 'scloud',
           ),
-          data: const <DatabaseSnapshot>[],
+          data: const (
+            snapshots: <DatabaseSnapshot>[],
+            planType: PlanType.growth,
+          ),
         );
         stdout = io.stdout;
         stderr = io.stderr;
@@ -242,21 +245,88 @@ void main() {
       });
     });
 
+    group('when rendered with no snapshots on the starter plan', () {
+      late String stdout;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const BackupSnapshotListTextUi(
+            utc: true,
+            emptyProjectId: 'my-project',
+            baseCommand: 'scloud',
+          ),
+          data: const (
+            snapshots: <DatabaseSnapshot>[],
+            planType: PlanType.starter,
+          ),
+        );
+        stdout = io.stdout;
+      });
+
+      test('then stdout says backups need the Growth plan', () {
+        expect(
+          stdout,
+          contains('Database backups are available on the Growth plan.'),
+        );
+      });
+
+      test('then stdout links to the project plan page', () {
+        expect(stdout, contains('/project/my-project/plan-and-settings'));
+      });
+
+      test('then stdout does not hint to create a snapshot', () {
+        expect(stdout, isNot(contains('scloud db backup create')));
+      });
+
+      test('then stdout does not report that no snapshots were found', () {
+        expect(stdout, isNot(contains('No snapshots found')));
+      });
+    });
+
+    group('when rendered with no snapshots on an unknown plan', () {
+      late String stdout;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const BackupSnapshotListTextUi(
+            utc: true,
+            emptyProjectId: 'my-project',
+            baseCommand: 'scloud',
+          ),
+          data: const (
+            snapshots: <DatabaseSnapshot>[],
+            planType: PlanType.unknown,
+          ),
+        );
+        stdout = io.stdout;
+      });
+
+      test('then stdout hints to create a snapshot', () {
+        expect(
+          stdout,
+          contains('scloud db backup create --project my-project'),
+        );
+      });
+    });
+
     group('when rendered with a snapshot', () {
       late String stdout;
 
       setUp(() async {
         final io = await renderCommandUi(
           const BackupSnapshotListTextUi(utc: true),
-          data: [
-            DatabaseSnapshot(
-              id: 'snap-1',
-              name: 'nightly',
-              createdAt: DateTime.utc(2026, 1, 15, 10, 30),
-              manual: true,
-              fullSizeBytes: 5 * 1024 * 1024,
-            ),
-          ],
+          data: (
+            snapshots: [
+              DatabaseSnapshot(
+                id: 'snap-1',
+                name: 'nightly',
+                createdAt: DateTime.utc(2026, 1, 15, 10, 30),
+                manual: true,
+                fullSizeBytes: 5 * 1024 * 1024,
+              ),
+            ],
+            planType: null,
+          ),
         );
         stdout = io.stdout;
       });
@@ -434,7 +504,11 @@ void main() {
       setUp(() async {
         final io = await renderCommandUi(
           const BackupScheduleShowTextUi(baseCommand: 'scloud'),
-          data: const {'projectId': 'my-project'},
+          data: const (
+            projectId: 'my-project',
+            schedule: null,
+            planType: PlanType.growth,
+          ),
         );
         stdout = io.stdout;
       });
@@ -453,20 +527,56 @@ void main() {
       });
     });
 
+    group('when rendered with no schedule on the starter plan', () {
+      late String stdout;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const BackupScheduleShowTextUi(baseCommand: 'scloud'),
+          data: const (
+            projectId: 'my-project',
+            schedule: null,
+            planType: PlanType.starter,
+          ),
+        );
+        stdout = io.stdout;
+      });
+
+      test('then stdout says backups need the Growth plan', () {
+        expect(
+          stdout,
+          contains('Database backups are available on the Growth plan.'),
+        );
+      });
+
+      test('then stdout links to the project plan page', () {
+        expect(stdout, contains('/project/my-project/plan-and-settings'));
+      });
+
+      test('then stdout does not hint to set a schedule', () {
+        expect(stdout, isNot(contains('scloud db schedule set')));
+      });
+
+      test('then stdout does not report that no schedule is configured', () {
+        expect(stdout, isNot(contains('No backup schedule')));
+      });
+    });
+
     group('when rendered with a daily schedule', () {
       late String stdout;
 
       setUp(() async {
         final io = await renderCommandUi(
           const BackupScheduleShowTextUi(baseCommand: 'scloud'),
-          data: {
-            'projectId': 'my-project',
-            'schedule': BackupSchedule(
+          data: (
+            projectId: 'my-project',
+            schedule: BackupSchedule(
               frequency: BackupFrequency.daily,
               hour: 4,
               retention: const Duration(days: 14),
             ),
-          },
+            planType: null,
+          ),
         );
         stdout = io.stdout;
       });

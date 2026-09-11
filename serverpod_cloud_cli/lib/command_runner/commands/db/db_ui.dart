@@ -1,5 +1,7 @@
 import 'package:ground_control_client/ground_control_client.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/db/db_backup_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
+import 'package:serverpod_cloud_cli/shared/helpers/console_urls.dart';
 
 class DbConnectionTextUi extends OutputWidget {
   const DbConnectionTextUi();
@@ -170,23 +172,43 @@ class BackupSnapshotListTextUi extends OutputWidget {
 
   @override
   OutputWidget build(final OutputContext context) {
-    final snapshots = context.get<List<DatabaseSnapshot>>();
-    if (snapshots.isEmpty) {
+    final listing = context.get<BackupSnapshotListing>();
+    if (listing.snapshots.isEmpty) {
       final projectId = emptyProjectId;
       final command = baseCommand;
-      if (projectId != null && command != null) {
-        return OutputWidgetList([
-          InfoTextWidget('No snapshots found for project "$projectId".'),
-          CommandHintTextWidget(
-            'Create a snapshot with:',
-            command: '$command db backup create --project $projectId',
-          ),
-        ]);
+      if (projectId == null || command == null) {
+        return const InfoTextWidget('No snapshots found.');
       }
-      return const InfoTextWidget('No snapshots found.');
+      if (listing.planType == PlanType.starter) {
+        return _BackupsNeedGrowthWidget(projectId: projectId);
+      }
+      return OutputWidgetList([
+        InfoTextWidget('No snapshots found for project "$projectId".'),
+        CommandHintTextWidget(
+          'Create a snapshot with:',
+          command: '$command db backup create --project $projectId',
+        ),
+      ]);
     }
 
-    return FormattedTableWidget(formatter: _backupSnapshotTableFormatter(utc));
+    return TextTableWidget(
+      _backupSnapshotTableFormatter(utc).format(listing.snapshots),
+    );
+  }
+}
+
+/// Emits the snapshot list as the structured document, leaving out the plan
+/// type that only the text UI needs.
+class BackupSnapshotListStructuredUi extends OutputWidget {
+  final OutputFormatter<List<DatabaseSnapshot>, String> formatter;
+
+  const BackupSnapshotListStructuredUi({required this.formatter});
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    return RawStringWidget(
+      formatter.format(context.get<BackupSnapshotListing>().snapshots),
+    );
   }
 }
 
@@ -250,18 +272,20 @@ class BackupScheduleShowTextUi extends OutputWidget {
 
   @override
   OutputWidget build(final OutputContext context) {
-    final result = context.get<Map<String, Object?>>();
-    final projectId = result['projectId'];
-    final schedule = result['schedule'];
-    if (schedule is! BackupSchedule) {
+    final view = context.get<BackupScheduleView>();
+    final schedule = view.schedule;
+    if (schedule == null) {
+      if (view.planType == PlanType.starter) {
+        return _BackupsNeedGrowthWidget(projectId: view.projectId);
+      }
       return OutputWidgetList([
         InfoTextWidget(
-          'No backup schedule is configured for project "$projectId".',
+          'No backup schedule is configured for project "${view.projectId}".',
         ),
         CommandHintTextWidget(
           'Set a schedule with:',
           command:
-              '$baseCommand db schedule set --project $projectId '
+              '$baseCommand db schedule set --project ${view.projectId} '
               '--frequency daily',
         ),
       ]);
@@ -272,6 +296,40 @@ class BackupScheduleShowTextUi extends OutputWidget {
       day: schedule.day,
       hour: schedule.hour,
       retention: schedule.retention,
+    );
+  }
+}
+
+/// Emits the schedule as the structured document, leaving out the plan type
+/// that only the text UI needs.
+class BackupScheduleShowStructuredUi extends OutputWidget {
+  final OutputFormatter<Map<String, Object?>, String> formatter;
+
+  const BackupScheduleShowStructuredUi({required this.formatter});
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    final view = context.get<BackupScheduleView>();
+    return RawStringWidget(
+      formatter.format({
+        'projectId': view.projectId,
+        'schedule': view.schedule,
+      }),
+    );
+  }
+}
+
+/// Points a project without the database backup feature at its plan page.
+class _BackupsNeedGrowthWidget extends OutputWidget {
+  final String projectId;
+
+  const _BackupsNeedGrowthWidget({required this.projectId});
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    return InfoTextWidget(
+      'Database backups are available on the Growth plan.\n'
+      'To upgrade, visit: ${getProjectPlanUrl(projectId)}',
     );
   }
 }
