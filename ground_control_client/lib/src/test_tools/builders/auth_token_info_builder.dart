@@ -56,6 +56,12 @@ class AuthTokenInfoBuilder {
     return this;
   }
 
+  AuthTokenInfoBuilder withCliLoginSession() {
+    _issuer = 'session';
+    _method = 'cli';
+    return this;
+  }
+
   AuthTokenInfoBuilder withServerSideSession() {
     _issuer = 'session';
     _method = 'email';

@@ -497,8 +497,8 @@ class EndpointAuthWithAuth extends _i1.EndpointRef {
   _i2.Future<void> logoutAll() =>
       caller.callServerEndpoint<void>('authWithAuth', 'logoutAll', {});
 
-  /// Creates a new authenticated session for the current user to use as
-  /// CLI token / personal access token.
+  /// Creates a personal access token for the current user, listed with the
+  /// method `PAT`.
   ///
   /// If [expiresAt] is provided, the token will expire at the specified time.
   /// If [expiresAfter] is provided, the token will expire after being unused
@@ -511,6 +511,15 @@ class EndpointAuthWithAuth extends _i1.EndpointRef {
     'createCliToken',
     {'expiresAt': expiresAt, 'expiresAfter': expiresAfter},
   );
+
+  /// Creates an interactive CLI login session for the current user, listed
+  /// with the method `cli`. The console calls this to complete a CLI login.
+  _i2.Future<_i10.AuthSuccess> createCliLoginSession() =>
+      caller.callServerEndpoint<_i10.AuthSuccess>(
+        'authWithAuth',
+        'createCliLoginSession',
+        {},
+      );
 
   _i2.Future<List<_i11.AuthTokenInfo>> listAuthSessions() =>
       caller.callServerEndpoint<List<_i11.AuthTokenInfo>>(

@@ -68,7 +68,7 @@ void _stubAuth(final ClientMock client) {
           .build(),
       AuthTokenInfoBuilder()
           .withTokenId('tid-2')
-          .withMethod('CLI token')
+          .withCliLoginSession()
           .withCreatedAt(createdAt)
           .withExpiresAt(DateTime.utc(2026, 3, 11, 16, 50, 06))
           .build(),
