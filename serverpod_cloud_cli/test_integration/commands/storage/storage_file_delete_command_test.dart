@@ -267,4 +267,52 @@ void main() {
       );
     });
   });
+
+  group('Given the delete rate limit is reached', () {
+    late Future commandResult;
+
+    setUp(() async {
+      when(
+        () => client.bucketObjects.deleteFile(
+          cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          storageId: any(named: 'storageId'),
+          path: any(named: 'path'),
+        ),
+      ).thenThrow(
+        BucketRateLimitExceededException(
+          message: 'limit reached',
+          retryAfter: const Duration(minutes: 42),
+        ),
+      );
+
+      commandResult = cli.run([
+        'storage',
+        'file',
+        'delete',
+        storageId,
+        path,
+        '-p',
+        projectId,
+        '--yes',
+      ]);
+    });
+
+    test('then throws exception', () async {
+      await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+    });
+
+    test('then logs the rate limit error with a retry hint', () async {
+      try {
+        await commandResult;
+      } catch (_) {}
+
+      expect(
+        logger.errorCalls.single,
+        equalsErrorCall(
+          message: 'Delete limit reached for storage "public".',
+          hint: 'Try again in ~42 min.',
+        ),
+      );
+    });
+  });
 }

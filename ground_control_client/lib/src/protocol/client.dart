@@ -1023,6 +1023,8 @@ class EndpointBucketObjects extends _i1.EndpointRef {
   /// [prefix] and continued from [pageToken].
   ///
   /// Throws [NotFoundException] if the bucket is not found.
+  /// Throws [BucketRateLimitExceededException] if the capsule has spent its
+  /// hourly budget for this operation.
   _i2.Future<_i20.BucketFileListing> listFiles({
     required String cloudCapsuleId,
     required String storageId,
@@ -1042,6 +1044,8 @@ class EndpointBucketObjects extends _i1.EndpointRef {
   /// Deletes the file at [path] from a capsule's bucket.
   ///
   /// Throws [NotFoundException] if the bucket is not found.
+  /// Throws [BucketRateLimitExceededException] if the capsule has spent its
+  /// hourly budget for this operation.
   _i2.Future<void> deleteFile({
     required String cloudCapsuleId,
     required String storageId,
@@ -1058,6 +1062,8 @@ class EndpointBucketObjects extends _i1.EndpointRef {
   /// Throws [NotFoundException] if the bucket is not found.
   /// Throws [BucketAccessRevokedException] if uploads are blocked because
   /// customer access to the bucket is revoked.
+  /// Throws [BucketRateLimitExceededException] if the capsule has spent its
+  /// hourly budget for this operation.
   _i2.Future<String> createUploadDescription({
     required String cloudCapsuleId,
     required String storageId,
@@ -1071,6 +1077,8 @@ class EndpointBucketObjects extends _i1.EndpointRef {
   /// Builds a signed download URL for [path] in a capsule's bucket.
   ///
   /// Throws [NotFoundException] if the bucket is not found.
+  /// Throws [BucketRateLimitExceededException] if the capsule has spent its
+  /// hourly budget for this operation.
   _i2.Future<String> getDownloadUrl({
     required String cloudCapsuleId,
     required String storageId,
