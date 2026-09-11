@@ -32,6 +32,18 @@ class UploadPlan {
   UploadPlan({required this.items, required this.skippedLinks});
 }
 
+/// The files a delete removes, and the storage path they were resolved from.
+///
+/// [path] is the file name for a single file, or the folder prefix ending
+/// with "/" when [isFolder] is set.
+class DeletePlan {
+  final String path;
+  final List<BucketFile> files;
+  final bool isFolder;
+
+  DeletePlan({required this.path, required this.files, required this.isFolder});
+}
+
 const _ignoredFileNames = {'.DS_Store'};
 
 abstract final class StorageOperations {
@@ -167,7 +179,24 @@ abstract final class StorageOperations {
     final String? path,
     required String baseCommand,
   }) async {
-    final prefix = normalizePrefix(path);
+    final files = await _listFiles(
+      cloudApiClient,
+      projectId: projectId,
+      storageId: storageId,
+      prefix: normalizePrefix(path),
+      baseCommand: baseCommand,
+    );
+
+    return files.sorted((a, b) => a.name.compareTo(b.name));
+  }
+
+  static Future<List<BucketFile>> _listFiles(
+    Client cloudApiClient, {
+    required String projectId,
+    required String storageId,
+    required String? prefix,
+    required String baseCommand,
+  }) async {
     final files = <BucketFile>[];
 
     try {
@@ -193,7 +222,46 @@ abstract final class StorageOperations {
       throw FailureException.nested(e, s, 'Failed to list files.');
     }
 
-    return files.sorted((a, b) => a.name.compareTo(b.name));
+    return files;
+  }
+
+  /// Splits a user-provided delete [path] into the storage name it targets
+  /// and whether a trailing slash restricts it to a folder.
+  static ({String name, bool folderOnly}) _deleteTarget(final String path) {
+    final trimmed = path.trim().replaceAll(RegExp(r'^/+'), '');
+
+    return (
+      name: trimmed.replaceAll(RegExp(r'/+$'), ''),
+      folderOnly: trimmed.endsWith('/'),
+    );
+  }
+
+  /// Picks the files a delete of [path] removes from [files].
+  ///
+  /// A [path] that ends with "/" names a folder. Otherwise a file with exactly
+  /// that name is the single match, and failing that the files under "[path]/"
+  /// are the folder contents, sorted by name.
+  ///
+  /// Returns a plan with no files when nothing matches.
+  static DeletePlan matchDeleteItems({
+    required String path,
+    required List<BucketFile> files,
+  }) {
+    final (:name, :folderOnly) = _deleteTarget(path);
+
+    if (!folderOnly) {
+      final file = files.firstWhereOrNull((f) => f.name == name);
+      if (file != null) {
+        return DeletePlan(path: name, files: [file], isFolder: false);
+      }
+    }
+
+    final folder = '$name/';
+    final contents = files
+        .where((f) => f.name.startsWith(folder))
+        .sorted((a, b) => a.name.compareTo(b.name));
+
+    return DeletePlan(path: folder, files: contents, isFolder: true);
   }
 
   /// Resolves the storage path a single uploaded file gets.
@@ -558,6 +626,108 @@ abstract final class StorageOperations {
     };
   }
 
+  /// Resolves the files a delete of [path] removes from the storage
+  /// [storageId], see [matchDeleteItems].
+  ///
+  /// Throws [FailureException] if [path] is blank, nothing matches it,
+  /// the storage is not found, or the request fails.
+  static Future<DeletePlan> collectDeleteItems(
+    Client cloudApiClient, {
+    required String projectId,
+    required String storageId,
+    required String path,
+    required String baseCommand,
+  }) async {
+    final (:name, folderOnly: _) = _deleteTarget(path);
+    if (name.isEmpty) {
+      throw FailureException(
+        error: 'The path must name a file or a folder in the storage.',
+        hint:
+            'Run "$baseCommand storage delete $storageId" to delete '
+            'the whole storage.',
+      );
+    }
+
+    final files = await _listFiles(
+      cloudApiClient,
+      projectId: projectId,
+      storageId: storageId,
+      prefix: name,
+      baseCommand: baseCommand,
+    );
+
+    final plan = matchDeleteItems(path: path, files: files);
+    if (plan.files.isEmpty) {
+      throw FailureException(
+        error:
+            'Nothing to delete: "${path.trim()}" was not found '
+            'in storage "$storageId".',
+        hint:
+            'Run "$baseCommand storage file list $storageId" '
+            'to see the files.',
+      );
+    }
+
+    return plan;
+  }
+
+  /// Deletes every file in [files] from the storage [storageId],
+  /// reporting [path] as the deleted path in the result.
+  ///
+  /// Throws [FailureException] if the storage is not found or a request
+  /// fails. The deletion stops at the first failure.
+  static Future<Map<String, Object?>> deleteFiles(
+    Client cloudApiClient, {
+    required String projectId,
+    required String storageId,
+    required String path,
+    required List<BucketFile> files,
+    required String baseCommand,
+  }) async {
+    final deleted = <BucketFile>[];
+    for (final file in files) {
+      try {
+        await deleteFile(
+          cloudApiClient,
+          projectId: projectId,
+          storageId: storageId,
+          path: file.name,
+          baseCommand: baseCommand,
+        );
+      } on FailureException catch (e) {
+        if (deleted.isEmpty) {
+          rethrow;
+        }
+        throw FailureException(
+          errors: [
+            ...e.errors,
+            '${deleted.length} of ${files.length} files were deleted '
+                'before the failure.',
+          ],
+          hint: e.hint,
+          reason: e.reason,
+          nestedException: e.nestedException,
+          nestedStackTrace: e.nestedStackTrace,
+        );
+      }
+      deleted.add(file);
+    }
+
+    return {
+      'storageId': storageId,
+      'path': path,
+      'fileCount': deleted.length,
+      'sizeBytes': deleted.fold<int>(
+        0,
+        (final sum, final f) => sum + (f.sizeBytes ?? 0),
+      ),
+      'files': [
+        for (final file in deleted)
+          {'path': file.name, 'sizeBytes': file.sizeBytes},
+      ],
+    };
+  }
+
   /// Deletes the file at [path] from the storage [storageId].
   ///
   /// The server is idempotent, so deleting a file that does not exist
@@ -586,7 +756,7 @@ abstract final class StorageOperations {
             'the project.',
       );
     } on Exception catch (e, s) {
-      throw FailureException.nested(e, s, 'Failed to delete the file.');
+      throw FailureException.nested(e, s, 'Failed to delete "$path".');
     }
   }
 }

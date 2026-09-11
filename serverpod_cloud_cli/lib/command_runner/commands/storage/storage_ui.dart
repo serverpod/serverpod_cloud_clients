@@ -199,9 +199,23 @@ class StorageFileDeleteTextUi extends OutputWidget {
     final result = context.get<Map<String, Object?>>();
     final path = result['path'];
     final storageId = result['storageId'];
+    final fileCount = result['fileCount'];
+    final files = result['files'];
+    final single = files is List && files.length == 1 ? files.single : null;
+
+    if (single is Map<String, Object?>) {
+      return SuccessTextWidget(
+        'Successfully deleted file "${single['path']}" '
+        'from storage "$storageId".',
+      );
+    }
+
+    final sizeBytes = result['sizeBytes'];
+    final size = sizeBytes is int ? ' (${formatByteSize(sizeBytes)})' : '';
 
     return SuccessTextWidget(
-      'Successfully deleted file "$path" from storage "$storageId".',
+      'Successfully deleted $fileCount files$size from folder "$path" '
+      'in storage "$storageId".',
     );
   }
 }

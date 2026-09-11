@@ -451,7 +451,15 @@ void main() {
       setUp(() async {
         final io = await renderCommandUi(
           const StorageFileDeleteTextUi(),
-          data: const {'storageId': 'public', 'path': 'docs/report.pdf'},
+          data: const {
+            'storageId': 'public',
+            'path': 'docs/report.pdf',
+            'fileCount': 1,
+            'sizeBytes': 1500,
+            'files': [
+              {'path': 'docs/report.pdf', 'sizeBytes': 1500},
+            ],
+          },
         );
         stdout = io.stdout;
         stderr = io.stderr;
@@ -469,6 +477,32 @@ void main() {
 
       test('then stderr is empty', () {
         expect(stderr, isEmpty);
+      });
+    });
+
+    group('when rendered after deleting a folder', () {
+      test('then stdout reports the file count and the folder', () async {
+        final io = await renderCommandUi(
+          const StorageFileDeleteTextUi(),
+          data: const {
+            'storageId': 'public',
+            'path': 'avatars/',
+            'fileCount': 2,
+            'sizeBytes': 10,
+            'files': [
+              {'path': 'avatars/sub/u2.png', 'sizeBytes': 6},
+              {'path': 'avatars/u1.png', 'sizeBytes': 4},
+            ],
+          },
+        );
+
+        expect(
+          io.stdout,
+          allOf(
+            contains('Successfully deleted 2 files (10 B) from folder'),
+            contains('"avatars/"'),
+          ),
+        );
       });
     });
   });
