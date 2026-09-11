@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/commands/storage/storage_ops.dart';
 import 'package:test/test.dart';
@@ -156,6 +157,91 @@ void main() {
         StorageOperations.resolveDownloadPath(output, 'docs/report.pdf').path,
         p.join('downloads', 'report.pdf'),
       );
+    });
+  });
+
+  group('Given files in a storage', () {
+    final files = [
+      BucketFileBuilder().withName('docs/report.pdf').build(),
+      BucketFileBuilder().withName('docs/report.pdf.bak').build(),
+      BucketFileBuilder().withName('avatars/u1.png').build(),
+      BucketFileBuilder().withName('avatars/sub/u2.png').build(),
+      BucketFileBuilder().withName('avatars.png').build(),
+    ];
+
+    test('when the path names a file then only that file matches', () {
+      final plan = StorageOperations.matchDeleteItems(
+        path: 'docs/report.pdf',
+        files: files,
+      );
+
+      expect(plan.isFolder, isFalse);
+      expect(plan.path, 'docs/report.pdf');
+      expect(plan.files.map((final f) => f.name), ['docs/report.pdf']);
+    });
+
+    test('when the path names a folder then the files under it match', () {
+      final plan = StorageOperations.matchDeleteItems(
+        path: 'avatars',
+        files: files,
+      );
+
+      expect(plan.isFolder, isTrue);
+      expect(plan.path, 'avatars/');
+      expect(plan.files.map((final f) => f.name), [
+        'avatars/sub/u2.png',
+        'avatars/u1.png',
+      ]);
+    });
+
+    test('when the path ends with a slash then it names the folder', () {
+      final plan = StorageOperations.matchDeleteItems(
+        path: 'avatars/',
+        files: files,
+      );
+
+      expect(plan.isFolder, isTrue);
+      expect(plan.path, 'avatars/');
+    });
+
+    test('when the path has a leading slash then it is stripped', () {
+      final plan = StorageOperations.matchDeleteItems(
+        path: '/docs/report.pdf',
+        files: files,
+      );
+
+      expect(plan.path, 'docs/report.pdf');
+      expect(plan.files, hasLength(1));
+    });
+
+    test('when the path matches nothing then the plan is empty', () {
+      final plan = StorageOperations.matchDeleteItems(
+        path: 'missing',
+        files: files,
+      );
+
+      expect(plan.files, isEmpty);
+    });
+  });
+
+  group('Given a file and a folder with the same name', () {
+    final files = [
+      BucketFileBuilder().withName('a').build(),
+      BucketFileBuilder().withName('a/b').build(),
+    ];
+
+    test('when the path has no trailing slash then the file wins', () {
+      final plan = StorageOperations.matchDeleteItems(path: 'a', files: files);
+
+      expect(plan.isFolder, isFalse);
+      expect(plan.files.map((final f) => f.name), ['a']);
+    });
+
+    test('when the path has a trailing slash then the folder matches', () {
+      final plan = StorageOperations.matchDeleteItems(path: 'a/', files: files);
+
+      expect(plan.isFolder, isTrue);
+      expect(plan.files.map((final f) => f.name), ['a/b']);
     });
   });
 }

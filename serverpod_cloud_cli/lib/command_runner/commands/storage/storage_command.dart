@@ -102,6 +102,14 @@ abstract final class StorageCommandConfig {
         'Can be passed as the second argument.',
     mandatory: true,
   );
+  static const deletePath = StringOption(
+    argName: 'path',
+    argPos: 1,
+    helpText:
+        'The path of the file or folder inside the storage. '
+        'Can be passed as the second argument.',
+    mandatory: true,
+  );
   static const downloadOutput = FileDirOption(
     argName: 'output',
     argAbbrev: 'o',
@@ -494,7 +502,7 @@ Examples
   }
 }
 
-const _maxListedUploadItems = 20;
+const _maxListedPlanItems = 20;
 
 String _uploadPlanMessage(
   final Directory source,
@@ -506,10 +514,10 @@ String _uploadPlanMessage(
     0,
     (final sum, final item) => sum + item.sizeBytes,
   );
-  final listed = items.take(_maxListedUploadItems);
+  final listed = items.take(_maxListedPlanItems);
   final remaining = items.length - listed.length;
   final skippedLinks = plan.skippedLinks;
-  final listedLinks = skippedLinks.take(_maxListedUploadItems);
+  final listedLinks = skippedLinks.take(_maxListedPlanItems);
   final remainingLinks = skippedLinks.length - listedLinks.length;
 
   return [
@@ -623,7 +631,7 @@ Examples
 enum StorageFileDeleteCommandConfig<V> implements OptionDefinition<V> {
   projectId(StorageCommandConfig.projectId),
   storageId(StorageCommandConfig.storageId),
-  path(StorageCommandConfig.filePath);
+  path(StorageCommandConfig.deletePath);
 
   const StorageFileDeleteCommandConfig(this.option);
 
@@ -634,9 +642,10 @@ enum StorageFileDeleteCommandConfig<V> implements OptionDefinition<V> {
 class CloudStorageFileDeleteCommand
     extends CloudCliCommand<StorageFileDeleteCommandConfig> {
   @override
-  String get description => '''Delete a file from a storage.
+  String get description => '''Delete a file or a folder from a storage.
 
-Deleting a file that does not exist succeeds.
+A folder is deleted with every file under it, and the command lists them and asks for confirmation before it starts.
+The command fails if the path names neither a file nor a folder.
 ''';
 
   @override
@@ -644,6 +653,20 @@ Deleting a file that does not exist succeeds.
 
   @override
   String get category => CommandCategories.dangerZone;
+
+  @override
+  String? get usageExamples =>
+      '''\n
+Examples
+
+  Delete report.pdf from the storage "public".
+
+    \$ $baseCommand storage file delete public docs/report.pdf
+
+  Delete the folder "avatars" and every file under it.
+
+    \$ $baseCommand storage file delete public avatars
+''';
 
   CloudStorageFileDeleteCommand({required super.logger})
     : super(options: StorageFileDeleteCommandConfig.values);
@@ -661,22 +684,54 @@ Deleting a file that does not exist succeeds.
     );
     final path = commandConfig.value(StorageFileDeleteCommandConfig.path);
 
+    final plan = await StorageOperations.collectDeleteItems(
+      runner.serviceProvider.cloudApiClient,
+      projectId: projectId,
+      storageId: storageId,
+      path: path,
+      baseCommand: baseCommand,
+    );
+
     await confirmToContinue(
       output,
-      message: 'Delete file "$path" from storage "$storageId"?',
+      message: plan.isFolder
+          ? _deletePlanMessage(plan, storageId)
+          : 'Delete file "${plan.path}" from storage "$storageId"?',
       defaultValue: false,
     );
 
     await renderCommand(
       output,
-      operation: () => StorageOperations.deleteFile(
+      operation: () => StorageOperations.deleteFiles(
         runner.serviceProvider.cloudApiClient,
         projectId: projectId,
         storageId: storageId,
-        path: path,
+        path: plan.path,
+        files: plan.files,
         baseCommand: baseCommand,
-      ).then((_) => {'storageId': storageId, 'path': path}),
+      ),
       textOutputUi: const StorageFileDeleteTextUi(),
     );
   }
+}
+
+String _deletePlanMessage(final DeletePlan plan, final String storageId) {
+  final files = plan.files;
+  final totalBytes = files.fold<int>(
+    0,
+    (final sum, final file) => sum + (file.sizeBytes ?? 0),
+  );
+  final listed = files.take(_maxListedPlanItems);
+  final remaining = files.length - listed.length;
+
+  return [
+    'The folder "${plan.path}" in storage "$storageId" contains '
+        '${files.length} ${files.length == 1 ? 'file' : 'files'} '
+        '(${formatByteSize(totalBytes)}):',
+    '',
+    for (final file in listed) '  ${file.name}',
+    if (remaining > 0) '  ... and $remaining more',
+    '',
+    'Delete them? This cannot be undone.',
+  ].join('\n');
 }
