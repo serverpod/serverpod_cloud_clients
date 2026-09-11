@@ -39,6 +39,7 @@ enum LaunchOption<V> implements OptionDefinition<V> {
       hide: true,
     ),
   ),
+  utc(UtcOption()),
 
   // Deploy-specific options
   concurrency(DeployConcurrencyOption(group: _deployGroup)),
@@ -103,6 +104,7 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
       LaunchOption.dartVersion,
     );
     final tui = commandConfig.value(LaunchOption.tui);
+    final inUtc = commandConfig.value(LaunchOption.utc);
 
     // Deploy-specific options
     final concurrency = commandConfig.value(LaunchOption.concurrency);
@@ -169,6 +171,7 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
       performDeploy: deploy,
       dartVersionOverride: dartVersionOverride,
       tui: tui,
+      inUtc: inUtc,
       consoleServer: consoleServer,
       openBrowser: openBrowser,
       deployConcurrency: concurrency,

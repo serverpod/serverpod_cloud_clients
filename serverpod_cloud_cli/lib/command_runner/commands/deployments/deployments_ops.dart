@@ -10,7 +10,6 @@ abstract class DeploymentCommands {
     required final CommandLogger logger,
     required final String baseCommand,
     required final String projectId,
-    required final bool inUtc,
     final CommandNames commandNames = CommandNames.public,
     final String? deploymentArg,
   }) async {
@@ -30,7 +29,6 @@ abstract class DeploymentCommands {
         commandNames: commandNames,
         cloudCapsuleId: projectId,
         attemptId: attemptId,
-        inUtc: inUtc,
       );
     } on UserAbortException {
       rethrow;

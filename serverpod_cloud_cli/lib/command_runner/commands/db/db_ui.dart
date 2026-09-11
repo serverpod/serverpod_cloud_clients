@@ -81,11 +81,11 @@ class DbUserListTextUi extends OutputWidget {
             'User',
             getter: (final user) => user.username,
           ),
-          TableColumnFormatter.forElement(
+          TableColumnFormatter.forTimestamp(
             'Created',
             getter: (final user) => user.createdAt,
           ),
-          TableColumnFormatter.forElement(
+          TableColumnFormatter.forTimestamp(
             'Last reset',
             getter: (final user) => user.updatedAt.isAfter(user.createdAt)
                 ? user.updatedAt
@@ -354,11 +354,11 @@ TextTableOutputFormatter<DatabaseSnapshot> _backupSnapshotTableFormatter(
         'Type',
         getter: (final snapshot) => snapshot.manual ? 'manual' : 'scheduled',
       ),
-      TableColumnFormatter.forElement(
+      TableColumnFormatter.forTimestamp(
         'Created',
         getter: (final snapshot) => snapshot.createdAt,
       ),
-      TableColumnFormatter.forElement(
+      TableColumnFormatter.forTimestamp(
         'Expires',
         getter: (final snapshot) => snapshot.expiresAt ?? 'never',
       ),

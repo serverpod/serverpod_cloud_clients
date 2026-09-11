@@ -167,12 +167,12 @@ void main() {
         expect(tableLines(), [
           '',
           '  Project   projectId',
-          '  Created   2024-12-31 10:20:30',
+          '  Created   2024-12-31 10:20:30 (local)',
           '  Region    US East',
-          '  Deployed  2025-01-02 08:00:00',
+          '  Deployed  2025-01-02 08:00:00 (local)',
           '',
           '  Plan      Growth',
-          '  Trial     ends 2025-01-14 10:20:30',
+          '  Trial     ends 2025-01-14 10:20:30 (local)',
           '',
           '  Compute   medium — 1024 MB, 1-3 podlets',
           '  Database  small — 2048 MB, 0.5-2 CU, 10 GB storage, 300 h compute',
@@ -190,7 +190,8 @@ void main() {
           tableLines(),
           contains(
             '  Created   '
-            '${DateTime.parse('2024-12-31 10:20:30').toUtc().toString().substring(0, 19)}z',
+            '${DateTime.parse('2024-12-31 10:20:30').toUtc().toString().substring(0, 19)}'
+            ' (UTC)',
           ),
         );
       });

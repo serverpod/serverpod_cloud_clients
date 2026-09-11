@@ -7,18 +7,14 @@ class AdminUserListTextUi extends OutputWidget {
 
   @override
   OutputWidget build(OutputContext context) {
-    final timezoneName = utc ? 'UTC' : 'local';
     return FormattedTableWidget(
       formatter: TextTableOutputFormatter(
         columns: [
           TableColumnFormatter.forKey('User', key: 'email'),
           TableColumnFormatter.forKey('Account status', key: 'accountStatus'),
-          TableColumnFormatter.forKey(
-            'Created at ($timezoneName)',
-            key: 'createdAt',
-          ),
-          TableColumnFormatter.forKey(
-            'Archived at ($timezoneName)',
+          TableColumnFormatter.forTimestampKey('Created at', key: 'createdAt'),
+          TableColumnFormatter.forTimestampKey(
+            'Archived at',
             key: 'archivedAt',
           ),
           TableColumnFormatter.forKey(

@@ -21,6 +21,7 @@ import 'package:serverpod_cloud_cli/command_runner/commands/status/status_ops.da
 import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/browser_launcher.dart';
+import 'package:serverpod_cloud_cli/util/common.dart' show TimezonedString;
 import 'package:serverpod_cloud_cli/util/inline_tui/inline_tui.dart'
     show SelectList, SelectListStyle;
 import 'package:serverpod_cloud_cli/util/listener_server.dart';
@@ -47,6 +48,7 @@ abstract class Launch {
     required bool includePreDeployScripts,
     required bool performDeploy,
     required bool tui,
+    required bool inUtc,
     required String consoleServer,
     required bool openBrowser,
     required int deployConcurrency,
@@ -104,6 +106,7 @@ abstract class Launch {
         deployShowFiles: deployShowFiles,
         deployOutputPath: deployOutputPath,
         deploySkipTailingStatus: deploySkipTailingStatus,
+        inUtc: inUtc,
       );
     }
   }
@@ -119,10 +122,11 @@ abstract class Launch {
     required int deployConcurrency,
     required bool wetRun,
     required bool deployShowFiles,
+    required bool inUtc,
     String? deployOutputPath,
     bool deploySkipTailingStatus = false,
   }) async {
-    await selectProjectId(cloudApiClient, logger, projectSetup);
+    await selectProjectId(cloudApiClient, logger, projectSetup, inUtc: inUtc);
 
     if (projectSetup.preexistingProject != true) {
       projectSetup.projectId = await createProject(
@@ -309,8 +313,9 @@ abstract class Launch {
   static Future<void> selectProjectId(
     Client cloudApiClient,
     CommandLogger logger,
-    ProjectLaunch projectSetup,
-  ) async {
+    ProjectLaunch projectSetup, {
+    required bool inUtc,
+  }) async {
     const invalidProjectIdMessage =
         'Invalid project ID. Must be 6-32 characters long '
         'and contain only lowercase letters, numbers, and hyphens.';
@@ -350,6 +355,7 @@ abstract class Launch {
       cloudApiClient,
       existingProjects,
       logger,
+      inUtc,
     );
     if (selectedId != null) {
       projectSetup.projectId = selectedId;
@@ -496,6 +502,7 @@ abstract class Launch {
     Client cloudApiClient,
     List<ProjectInfo> existingProjects,
     CommandLogger logger,
+    bool inUtc,
   ) async {
     if (existingProjects.isEmpty) {
       final confirm = await logger.confirm(
@@ -519,13 +526,9 @@ abstract class Launch {
       return (a.latestDeployAttemptTime?.timestamp == null) ? -1 : 1;
     });
 
-    final projectLabels = existingProjects.map((p) {
-      final lastDeployedTime = p.latestDeployAttemptTime?.timestamp;
-      final lastDeployed = lastDeployedTime == null
-          ? 'available for first deployment'
-          : 'available for redeploy (last deployed ${lastDeployedTime.toString().substring(0, 16)})';
-      return '${p.project.cloudProjectId.padRight(30)}$lastDeployed';
-    });
+    final projectLabels = existingProjects.map(
+      (final p) => projectSelectionLabel(p, inUtc: inUtc),
+    );
     final optionLabels = [
       ...projectLabels,
       'Open the browser and create a new project',
@@ -548,6 +551,20 @@ abstract class Launch {
       return null; // create a new project
     }
     return existingProjects[selected.$1].project.cloudProjectId;
+  }
+
+  /// The label of [project] in the project selection list, stating when it was
+  /// last deployed in either the local or the UTC time zone.
+  static String projectSelectionLabel(
+    final ProjectInfo project, {
+    required final bool inUtc,
+  }) {
+    final lastDeployedTime = project.latestDeployAttemptTime?.timestamp;
+    final lastDeployed = lastDeployedTime == null
+        ? 'available for first deployment'
+        : 'available for redeploy, last deployed '
+              '${lastDeployedTime.toLabeledTzString(inUtc, numTimeStampMinuteChars)}';
+    return '${project.project.cloudProjectId.padRight(30)}$lastDeployed';
   }
 
   static Future<List<Project>> _fetchExistingUndeployedProjects(

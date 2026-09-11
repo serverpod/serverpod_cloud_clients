@@ -187,7 +187,8 @@ enum ProjectListCommandOption<V> implements OptionDefinition<V> {
       defaultsTo: false,
       negatable: false,
     ),
-  );
+  ),
+  utc(UtcOption());
 
   const ProjectListCommandOption(this.option);
 
@@ -215,6 +216,7 @@ class CloudProjectListCommand
     final CommandOutput output,
   ) async {
     final showArchived = commandConfig.value(ProjectListCommandOption.all);
+    final inUtc = commandConfig.value(ProjectListCommandOption.utc);
 
     await renderCommand(
       output,
@@ -222,7 +224,7 @@ class CloudProjectListCommand
         runner.serviceProvider.cloudApiClient,
         showArchived: showArchived,
       ),
-      textOutputUi: ProjectListTextUi(utc: false, showArchived: showArchived),
+      textOutputUi: ProjectListTextUi(utc: inUtc, showArchived: showArchived),
     );
   }
 }

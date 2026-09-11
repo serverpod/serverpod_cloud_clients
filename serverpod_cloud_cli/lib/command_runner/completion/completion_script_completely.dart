@@ -1536,7 +1536,7 @@ _scloud_completions() {
       ;;
 
     'project list'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --token --project-dir -d --project-config-file --timeout --yes --format --all")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --token --project-dir -d --project-config-file --timeout --yes --format --all --utc --no-utc -u")" -- "$cur")
       ;;
 
     'project show'*)
@@ -1720,7 +1720,7 @@ _scloud_completions() {
       ;;
 
     'launch'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --token --project-dir -d --project-config-file --timeout --yes --format --project -p --pre-deploy-scripts --no-pre-deploy-scripts --dart-version --concurrency -c --wet-run --show-files --output -o --await --no-await")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --token --project-dir -d --project-config-file --timeout --yes --format --project -p --pre-deploy-scripts --no-pre-deploy-scripts --dart-version --utc --no-utc -u --concurrency -c --wet-run --show-files --output -o --await --no-await")" -- "$cur")
       ;;
 
     'domain'*)

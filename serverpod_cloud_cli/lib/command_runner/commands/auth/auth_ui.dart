@@ -20,15 +20,15 @@ class AuthSessionListTextUi extends OutputWidget {
             'Method',
             getter: (session) => session.method,
           ),
-          TableColumnFormatter.forElement(
+          TableColumnFormatter.forTimestamp(
             'Created',
             getter: (session) => session.createdAt,
           ),
-          TableColumnFormatter.forElement(
+          TableColumnFormatter.forTimestamp(
             'Last Used',
             getter: (session) => session.lastUsedAt,
           ),
-          TableColumnFormatter.forElement(
+          TableColumnFormatter.forTimestamp(
             'Expires',
             getter: (session) => session.expiresAt,
           ),

@@ -35,8 +35,8 @@ String friendlyFormatDuration(Duration value) {
 /// which defaults to the current time.
 ///
 /// Times more than 7 days in the past are formatted as an absolute
-/// timestamp instead, like "2026-07-23 09:15:05" — in the local time
-/// zone, or in UTC if [inUtc] is set.
+/// timestamp instead, like "2026-07-23 09:15:05 (local)" — in the local
+/// time zone, or in UTC if [inUtc] is set.
 String friendlyPastTimeFormat(
   DateTime time, {
   bool inUtc = false,
@@ -44,7 +44,7 @@ String friendlyPastTimeFormat(
 }) {
   final elapsed = (now ?? DateTime.now()).difference(time);
   if (elapsed > _relativeTimeLimit) {
-    return time.toTzString(inUtc, numTimeStampChars);
+    return time.toLabeledTzString(inUtc, numTimeStampChars);
   }
   return friendlyAgoFormat(elapsed);
 }

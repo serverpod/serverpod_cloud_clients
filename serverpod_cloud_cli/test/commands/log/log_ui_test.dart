@@ -61,7 +61,7 @@ void main() {
       });
 
       test('then stdout contains the UTC timestamp', () {
-        expect(stdout, contains('2024-11-26 16:38:44z'));
+        expect(stdout, contains('2024-11-26 16:38:44'));
       });
 
       test('then stderr is empty', () {

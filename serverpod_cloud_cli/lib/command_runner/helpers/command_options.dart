@@ -155,7 +155,10 @@ class UtcOption extends FlagOption {
     : super(
         argName: 'utc',
         argAbbrev: 'u',
-        helpText: 'Display timestamps in UTC timezone instead of local.',
+        helpText:
+            'Display timestamps in UTC timezone instead of local.'
+            ' Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default'
+            ' for all commands.',
         negatable: true,
         defaultsTo: false,
         envName: 'SERVERPOD_CLOUD_DISPLAY_UTC',

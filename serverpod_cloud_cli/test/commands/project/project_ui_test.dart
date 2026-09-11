@@ -63,6 +63,32 @@ void main() {
       test('then stdout does not contain the deleted column', () {
         expect(stdout, isNot(contains('Deleted At')));
       });
+
+      test('then the timestamp headings state the UTC time zone', () {
+        expect(stdout, contains('Created At (UTC)'));
+        expect(stdout, contains('Last Deploy Attempt (UTC)'));
+      });
+    });
+
+    group('when rendered with local timestamps', () {
+      late String stdout;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          ProjectListTextUi(utc: false, showArchived: false),
+          data: [
+            ProjectInfoBuilder()
+                .withProject(ProjectBuilder().withCloudProjectId('my-project'))
+                .build(),
+          ],
+        );
+        stdout = io.stdout;
+      });
+
+      test('then the timestamp headings state the local time zone', () {
+        expect(stdout, contains('Created At (local)'));
+        expect(stdout, contains('Last Deploy Attempt (local)'));
+      });
     });
 
     group('when rendered with archived projects included', () {
@@ -312,7 +338,7 @@ void main() {
       test('then stdout reports when the plan ends', () {
         expect(
           stdout,
-          contains('  Ending    cancelled, ends 2025-02-01 00:00:00z'),
+          contains('  Ending    cancelled, ends 2025-02-01 00:00:00 (UTC)'),
         );
       });
 

@@ -9,7 +9,6 @@ class AdminProjectListTextUi extends OutputWidget {
 
   @override
   OutputWidget build(OutputContext context) {
-    final timezoneName = utc ? 'UTC' : 'local';
     return FormattedTableWidget(
       formatter: TextTableOutputFormatter<ProjectInfo>(
         columns: [
@@ -17,15 +16,15 @@ class AdminProjectListTextUi extends OutputWidget {
             'Project Id',
             getter: (project) => project.project.cloudProjectId,
           ),
-          TableColumnFormatter.forElement(
-            'Created At ($timezoneName)',
+          TableColumnFormatter.forTimestamp(
+            'Created At',
             getter: (project) => project.project.createdAt,
           ),
-          TableColumnFormatter.forElement(
-            'Archived At ($timezoneName)',
+          TableColumnFormatter.forTimestamp(
+            'Archived At',
             getter: (project) => project.project.archivedAt,
           ),
-          TableColumnFormatter.forElement(
+          TableColumnFormatter.forTimestamp(
             'Last Deploy Attempt',
             getter: (project) => project.latestDeployAttemptTime?.timestamp,
           ),

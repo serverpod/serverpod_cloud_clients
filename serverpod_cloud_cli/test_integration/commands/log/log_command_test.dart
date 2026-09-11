@@ -93,7 +93,7 @@ void main() {
         );
         expect(
           logger.lineCalls.map((call) => call.line),
-          contains(contains('2024-01-01 00:00:00z')),
+          contains(startsWith('2024-01-01 00:00:00 ')),
         );
       });
     });
@@ -531,7 +531,7 @@ void main() {
         );
         expect(
           logger.lineCalls.map((call) => call.line),
-          contains(contains('2024-01-01 00:00:00z')),
+          contains(startsWith('2024-01-01 00:00:00 ')),
         );
       });
     });

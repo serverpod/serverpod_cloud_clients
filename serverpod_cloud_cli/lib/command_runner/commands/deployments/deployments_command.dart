@@ -152,7 +152,6 @@ Examples
         baseCommand: baseCommand,
         commandNames: _commandNames,
         projectId: projectId,
-        inUtc: inUtc,
         deploymentArg: deploymentArg,
       );
       return;

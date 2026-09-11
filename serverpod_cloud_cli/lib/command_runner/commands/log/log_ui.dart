@@ -2,7 +2,7 @@ import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 
 final _logRecordTableColumns = [
-  TableColumnFormatter<LogRecord>.forElement(
+  TableColumnFormatter<LogRecord>.forTimestamp(
     'Timestamp',
     getter: (record) => record.timestamp,
   ),

@@ -182,6 +182,20 @@ void main() {
     });
 
     group('when executing storage file list with --utc', () {
+      test('then the timestamp heading states UTC', () async {
+        await cli.run([
+          'storage',
+          'file',
+          'list',
+          storageId,
+          '-p',
+          projectId,
+          '--utc',
+        ]);
+
+        expect(logger.lineCalls.first.line, contains('Last Modified (UTC)'));
+      });
+
       test('then the timestamps are shown in UTC', () async {
         await cli.run([
           'storage',
@@ -197,7 +211,15 @@ void main() {
             .map((final call) => call.line)
             .where((final line) => line.contains('/'))
             .toList();
-        expect(rows.first.trimRight(), endsWith('z'));
+        expect(rows.first.trimRight(), endsWith('2026-07-20 10:00:00'));
+      });
+    });
+
+    group('when executing storage file list without --utc', () {
+      test('then the timestamp heading states the local zone', () async {
+        await cli.run(['storage', 'file', 'list', storageId, '-p', projectId]);
+
+        expect(logger.lineCalls.first.line, contains('Last Modified (local)'));
       });
     });
 

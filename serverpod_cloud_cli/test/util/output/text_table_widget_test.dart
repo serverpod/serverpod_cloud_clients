@@ -56,7 +56,7 @@ void main() {
       });
 
       test('then the Created At cell is the UTC timestamp', () {
-        expect(row['Created At'], '2024-12-31 10:20:30z');
+        expect(row['Created At'], '2024-12-31 10:20:30');
       });
 
       test('then the Tags cell joins the list values', () {
@@ -94,21 +94,80 @@ void main() {
     });
   });
 
-  group('Given a table formatter that uses local timestamps', () {
+  group('Given a table formatter with a timestamp column', () {
     final createdAt = DateTime.utc(2024, 12, 31, 10, 20, 30);
-    final formatter = TextTableOutputFormatter<Map<String, Object?>>(
-      columns: [TableColumnFormatter.forKey('Created At', key: 'createdAt')],
-      utc: false,
-    );
 
-    test('when formatting a DateTime then the cell has no UTC suffix', () {
-      final data = formatter.format([
-        {'createdAt': createdAt},
-      ]);
-      final row = Map.fromIterables(data.headers, data.rows.single);
+    TextTableOutputFormatter<Map<String, Object?>> formatterFor(
+      final bool utc,
+    ) {
+      return TextTableOutputFormatter<Map<String, Object?>>(
+        columns: [
+          TableColumnFormatter.forKey('Id', key: 'id'),
+          TableColumnFormatter.forTimestampKey('Created At', key: 'createdAt'),
+        ],
+        utc: utc,
+      );
+    }
 
-      expect(row['Created At'], isNot(endsWith('z')));
-      expect(row['Created At'], isNot(endsWith('Z')));
+    group('when formatting in local time', () {
+      test('then the timestamp heading states the local zone', () {
+        expect(formatterFor(false).headings, ['Id', 'Created At (local)']);
+      });
+    });
+
+    group('when formatting in UTC', () {
+      test('then the timestamp heading states UTC', () {
+        expect(formatterFor(true).headings, ['Id', 'Created At (UTC)']);
+      });
+
+      test('then the cell itself carries no zone marker', () {
+        final data = formatterFor(true).format([
+          {'id': 'alpha', 'createdAt': createdAt},
+        ]);
+
+        expect(data.rows.single.last, '2024-12-31 10:20:30');
+      });
+    });
+
+    group('when formatting an empty list', () {
+      test('then the timestamp heading is still labelled', () {
+        expect(
+          formatterFor(true).format([]).headers,
+          contains('Created At (UTC)'),
+        );
+      });
+    });
+  });
+
+  group('Given a table formatter with a timestamp column for elements', () {
+    test('when formatting in UTC then the heading states UTC', () {
+      final formatter = TextTableOutputFormatter<_Named>(
+        columns: [
+          TableColumnFormatter.forTimestamp(
+            'Name',
+            getter: (named) => named.name,
+          ),
+        ],
+        utc: true,
+      );
+
+      expect(formatter.headings, ['Name (UTC)']);
+    });
+  });
+
+  group('Given a table formatter without a timestamp column', () {
+    test('when formatting in UTC then the heading is not labelled', () {
+      final formatter = TextTableOutputFormatter<_Named>(
+        columns: [
+          TableColumnFormatter.forElement(
+            'Name',
+            getter: (named) => named.name,
+          ),
+        ],
+        utc: true,
+      );
+
+      expect(formatter.headings, ['Name']);
     });
   });
 
@@ -161,7 +220,7 @@ void main() {
         expect(logger.lineCalls.first.line, contains('Tags'));
         expect(logger.lineCalls.first.line, contains('TTL'));
         expect(logger.lineCalls.last.line, contains('alpha'));
-        expect(logger.lineCalls.last.line, contains('2024-12-31 10:20:30z'));
+        expect(logger.lineCalls.last.line, contains('2024-12-31 10:20:30'));
         expect(logger.lineCalls.last.line, contains('a, b'));
         expect(logger.lineCalls.last.line, contains('2h'));
         expect(logger.rawCalls, isEmpty);
@@ -228,7 +287,7 @@ void main() {
         expect(logger.lineCalls.first.line, contains('Id'));
         expect(logger.lineCalls.first.line, contains('Created At'));
         expect(logger.lineCalls.last.line, contains('alpha'));
-        expect(logger.lineCalls.last.line, contains('2024-12-31 10:20:30z'));
+        expect(logger.lineCalls.last.line, contains('2024-12-31 10:20:30'));
         expect(logger.rawCalls, isEmpty);
       },
     );

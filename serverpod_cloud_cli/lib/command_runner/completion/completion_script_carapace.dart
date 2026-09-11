@@ -70,8 +70,8 @@ commands:
 
       - name: list
         flags:
-          -u, --utc: "Display timestamps in UTC timezone instead of local."
-          --no-utc: "Display timestamps in UTC timezone instead of local."
+          -u, --utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
+          --no-utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
         exclusiveFlags:
           - [utc, no-utc]
 
@@ -109,12 +109,16 @@ commands:
       - name: list
         flags:
           --all: "Include deleted projects."
+          -u, --utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
+          --no-utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
+        exclusiveFlags:
+          - [utc, no-utc]
 
       - name: show
         flags:
           -p, --project=!: "The ID of the project. Can be passed as the first argument.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
-          -u, --utc: "Display timestamps in UTC timezone instead of local."
-          --no-utc: "Display timestamps in UTC timezone instead of local."
+          -u, --utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
+          --no-utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
         exclusiveFlags:
           - [utc, no-utc]
 
@@ -213,8 +217,8 @@ commands:
     flags:
       -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
       --limit=: "The maximum number of log records to fetch."
-      -u, --utc: "Display timestamps in UTC timezone instead of local."
-      --no-utc: "Display timestamps in UTC timezone instead of local."
+      -u, --utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
+      --no-utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
       --until=: "Fetch records from before this timestamp. Accepts ISO date (e.g. \"2024-01-15T10:30:00Z\") or relative from now (e.g. \"5m\", \"3h\", \"1d\")."
       --since=: "Fetch records from after this timestamp. Accepts ISO date (e.g. \"2024-01-15T10:30:00Z\") or relative from now (e.g. \"5m\", \"3h\", \"1d\"). Can also be specified as the first argument."
       --tail: "Tail the log and get real time updates."
@@ -227,8 +231,8 @@ commands:
       - name: live
         flags:
           -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
-          -u, --utc: "Display timestamps in UTC timezone instead of local."
-          --no-utc: "Display timestamps in UTC timezone instead of local."
+          -u, --utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
+          --no-utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
         exclusiveFlags:
           - [utc, no-utc]
 
@@ -238,8 +242,8 @@ commands:
           - name: show
             flags:
               -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
-              -u, --utc: "Display timestamps in UTC timezone instead of local."
-              --no-utc: "Display timestamps in UTC timezone instead of local."
+              -u, --utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
+              --no-utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
               --deploy=: "View a specific deployment, with uuid or sequence number, 0 for latest. Can be passed as the first argument."
               --output-overall-status: "View a deployment's overall status as a single word, one of: success, failure, awaiting, running, cancelled, unknown."
               --await: "Await the deployment to finish while showing status progression."
@@ -252,16 +256,16 @@ commands:
             flags:
               -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
               --limit=: "The maximum number of records to fetch."
-              -u, --utc: "Display timestamps in UTC timezone instead of local."
-              --no-utc: "Display timestamps in UTC timezone instead of local."
+              -u, --utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
+              --no-utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
             exclusiveFlags:
               - [utc, no-utc]
 
           - name: log
             flags:
               -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
-              -u, --utc: "Display timestamps in UTC timezone instead of local."
-              --no-utc: "Display timestamps in UTC timezone instead of local."
+              -u, --utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
+              --no-utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
               --deploy=: "View a specific deployment, with uuid or sequence number, 0 for latest. Can be passed as the first argument."
             exclusiveFlags:
               - [utc, no-utc]
@@ -272,8 +276,8 @@ commands:
       - name: log
         flags:
           -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
-          -u, --utc: "Display timestamps in UTC timezone instead of local."
-          --no-utc: "Display timestamps in UTC timezone instead of local."
+          -u, --utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
+          --no-utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
           --deploy=: "View a specific deployment, with uuid or sequence number, 0 for latest. Can be passed as the first argument."
         exclusiveFlags:
           - [utc, no-utc]
@@ -342,8 +346,8 @@ commands:
           - name: list
             flags:
               -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
-              -u, --utc: "Display timestamps in UTC timezone instead of local."
-              --no-utc: "Display timestamps in UTC timezone instead of local."
+              -u, --utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
+              --no-utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
             exclusiveFlags:
               - [utc, no-utc]
 
@@ -365,16 +369,16 @@ commands:
               -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
               --name=: "An optional name for the snapshot."
               --expire-in=: "How long to keep the snapshot before it is automatically deleted (e.g. \"7d\", \"24h\"). Kept indefinitely if omitted."
-              -u, --utc: "Display timestamps in UTC timezone instead of local."
-              --no-utc: "Display timestamps in UTC timezone instead of local."
+              -u, --utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
+              --no-utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
             exclusiveFlags:
               - [utc, no-utc]
 
           - name: list
             flags:
               -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
-              -u, --utc: "Display timestamps in UTC timezone instead of local."
-              --no-utc: "Display timestamps in UTC timezone instead of local."
+              -u, --utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
+              --no-utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
             exclusiveFlags:
               - [utc, no-utc]
 
@@ -420,6 +424,8 @@ commands:
       --pre-deploy-scripts: "Set up pre-deploy scripts."
       --no-pre-deploy-scripts: "Set up pre-deploy scripts."
       --dart-version=: "Overrides the Dart SDK version to use for building the project."
+      -u, --utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
+      --no-utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
       -c, --concurrency=: "Number of concurrent files processed when zipping the project."
       --wet-run: "Perform every step except the deployment, leaving the hosted application untouched. Local files and the cloud project setup may still be modified."
       --show-files: "Display the file tree that will be uploaded."
@@ -428,6 +434,7 @@ commands:
       --no-await: "Await the deployment to finish while showing status progression."
     exclusiveFlags:
       - [pre-deploy-scripts, no-pre-deploy-scripts]
+      - [utc, no-utc]
       - [await, no-await]
     completion:
       flag:

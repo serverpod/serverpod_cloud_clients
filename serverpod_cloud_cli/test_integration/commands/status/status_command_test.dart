@@ -194,7 +194,7 @@ void main() {
       test('then renders an absolute utc timestamp', () {
         expect(
           panelLines(),
-          contains('  Serving   Deployed 2026-06-01 10:30:00z by Alice'),
+          contains('  Serving   Deployed 2026-06-01 10:30:00 (UTC) by Alice'),
         );
       });
     },

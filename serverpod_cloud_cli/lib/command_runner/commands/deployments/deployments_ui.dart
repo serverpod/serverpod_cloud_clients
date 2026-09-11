@@ -26,8 +26,8 @@ class DeploymentListTextUi extends OutputWidget {
           TableColumnFormatter.forKey('Project', key: 'projectId'),
           TableColumnFormatter.forKey('Deploy Id', key: 'deployId'),
           TableColumnFormatter.forKey('Status', key: 'status'),
-          TableColumnFormatter.forKey('Started', key: 'startedAt'),
-          TableColumnFormatter.forKey('Finished', key: 'finishedAt'),
+          TableColumnFormatter.forTimestampKey('Started', key: 'startedAt'),
+          TableColumnFormatter.forTimestampKey('Finished', key: 'finishedAt'),
           TableColumnFormatter.forKey('Info', key: 'info'),
         ],
         utc: utc,
@@ -55,7 +55,7 @@ class DeploymentShowTextUi extends OutputWidget {
     return OutputWidgetList([
       LineTextWidget(
         'Status of ${snapshot['projectId']} deployment ${snapshot['attemptId']}'
-        ', started at ${startedAt?.toTzString(utc, numTimeStampChars)}:',
+        ', started at ${startedAt?.toLabeledTzString(utc, numTimeStampChars)}:',
       ),
       const LineTextWidget(),
       for (final stage in stages)
