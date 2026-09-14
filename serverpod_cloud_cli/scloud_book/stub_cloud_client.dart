@@ -125,6 +125,17 @@ void _stubProjects(final ClientMock client, {required final String projectId}) {
 
   when(
     () => client.projects.listProjectsInfo(
+      includeArchived: false,
+      includeLatestDeployAttemptTime: any(
+        named: 'includeLatestDeployAttemptTime',
+      ),
+    ),
+  ).thenAnswer(
+    (_) async => projects.where((p) => p.project.archivedAt == null).toList(),
+  );
+  when(
+    () => client.projects.listProjectsInfo(
+      includeArchived: true,
       includeLatestDeployAttemptTime: any(
         named: 'includeLatestDeployAttemptTime',
       ),
