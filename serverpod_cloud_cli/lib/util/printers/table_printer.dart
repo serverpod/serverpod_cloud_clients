@@ -129,11 +129,14 @@ class TablePrinter {
   }
 
   String _formatLine(List<int> columnWidths, List<String?> row) {
-    final line = List.generate(
-      columnWidths.length,
-      (colIx) =>
-          _padVisible(row.elementAtOrNull(colIx) ?? '', columnWidths[colIx]),
-    ).join(_columnSeparator);
+    final lastColIx = columnWidths.length - 1;
+    final line = List.generate(columnWidths.length, (colIx) {
+      final cell = row.elementAtOrNull(colIx) ?? '';
+      if (colIx == lastColIx) {
+        return cell;
+      }
+      return _padVisible(cell, columnWidths[colIx]);
+    }).join(_columnSeparator);
     return line;
   }
 
@@ -142,14 +145,19 @@ class TablePrinter {
       [_columnMinWidths, _columnHeaders, ..._rows].map((ls) => ls.length),
     );
 
-    final columnWidths = List.generate(
-      nofColumns,
-      (colIx) => max([
-        _columnMinWidths.elementAtOrNull(colIx) ?? 0,
-        _visibleLength(_columnHeaders.elementAtOrNull(colIx)),
+    final lastColIx = nofColumns - 1;
+    final columnWidths = List.generate(nofColumns, (colIx) {
+      final minWidth = _columnMinWidths.elementAtOrNull(colIx) ?? 0;
+      final headerWidth = _visibleLength(_columnHeaders.elementAtOrNull(colIx));
+      if (colIx == lastColIx) {
+        return max([minWidth, headerWidth]);
+      }
+      return max([
+        minWidth,
+        headerWidth,
         ..._rows.map((row) => _visibleLength(row.elementAtOrNull(colIx))),
-      ]),
-    );
+      ]);
+    });
     return columnWidths;
   }
 

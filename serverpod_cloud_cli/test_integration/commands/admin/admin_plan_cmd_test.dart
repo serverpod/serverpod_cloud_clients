@@ -80,8 +80,8 @@ void main() {
           containsAllInOrder([
             equalsLineCall(line: 'External Plan ID'),
             equalsLineCall(line: '----------------'),
-            equalsLineCall(line: 'plan-alpha      '),
-            equalsLineCall(line: 'plan-beta       '),
+            equalsLineCall(line: 'plan-alpha'),
+            equalsLineCall(line: 'plan-beta'),
           ]),
         );
       });

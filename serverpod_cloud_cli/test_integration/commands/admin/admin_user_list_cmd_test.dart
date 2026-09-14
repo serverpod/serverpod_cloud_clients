@@ -96,11 +96,11 @@ void main() {
             ),
             equalsLineCall(
               line:
-                  'test@example.com  | registered     | 2025-07-02 11:00:00 |                     | test-plan       ',
+                  'test@example.com  | registered     | 2025-07-02 11:00:00 |                     | test-plan',
             ),
             equalsLineCall(
               line:
-                  'test2@example.com | invited        | 2025-07-02 12:00:00 | 2025-07-02 12:10:00 |                 ',
+                  'test2@example.com | invited        | 2025-07-02 12:00:00 | 2025-07-02 12:10:00 |',
             ),
           ]),
         );

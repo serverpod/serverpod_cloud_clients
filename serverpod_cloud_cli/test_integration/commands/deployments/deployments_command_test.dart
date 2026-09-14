@@ -1143,15 +1143,15 @@ Cloud build failed. 💥''');
                 containsAllInOrder([
                   equalsLineCall(
                     line:
-                        '# | Project   | Deploy Id                            | Status  | Started (local)     | Finished (local)    | Info      ',
+                        '# | Project   | Deploy Id                            | Status  | Started (local)     | Finished (local)    | Info',
                   ),
                   equalsLineCall(
                     line:
-                        '--+-----------+--------------------------------------+---------+---------------------+---------------------+-----------',
+                        '--+-----------+--------------------------------------+---------+---------------------+---------------------+-----',
                   ),
                   equalsLineCall(
                     line:
-                        '0 | projectId | $attemptId1 | SUCCESS | 2021-12-31 10:20:30 | 2021-12-31 10:20:40 |           ',
+                        '0 | projectId | $attemptId1 | SUCCESS | 2021-12-31 10:20:30 | 2021-12-31 10:20:40 |',
                   ),
                   equalsLineCall(
                     line:
