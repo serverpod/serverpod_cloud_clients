@@ -179,7 +179,7 @@ class EndpointAdminProcurement extends _i1.EndpointRef {
   String get name => 'adminProcurement';
 
   /// Procures a plan for a user.
-  /// If [planProductVersion] is not provided, the latest version is used.
+  /// If [planProductVersion] is not provided, the default version is used.
   /// If [trialPeriodOverride] is provided, it will override the trial period (number of days)
   /// in billing. The owner's trial end is synced from the new subscription afterward.
   /// If [overrideChecks] is true, the product availability checks are overridden.
