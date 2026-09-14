@@ -5,11 +5,13 @@ import 'package:dio/dio.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/project/project_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/status/status_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/dio_failure.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/file_downloader.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/file_uploader_factory.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/shared/helpers/plan_features.dart';
 import 'package:serverpod_cloud_shared/serverpod_cloud_shared.dart'
     show RateLimitMessage;
 
@@ -103,14 +105,11 @@ abstract final class StorageOperations {
             'to see the existing storages.',
       );
     } on ProcurementDeniedException catch (e, s) {
-      if (e.reason != ProcurementDeniedReason.productNotAvailable) {
-        throw FailureException.nested(e, s, 'Failed to create storage.');
-      }
-      throw FailureException(
-        error: 'This project has no storage slots left on its plan.',
-        hint:
-            'Remove an existing storage, or upgrade the project plan in '
-            'the console.',
+      throw await _storageSlotsFailure(
+        cloudApiClient,
+        e,
+        s,
+        projectId: projectId,
       );
     } on BucketStorageIdentityUnavailableException {
       throw FailureException(
@@ -125,6 +124,44 @@ abstract final class StorageOperations {
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Failed to create storage.');
     }
+  }
+
+  /// Maps a denied storage procurement to the failure shown to the user.
+  static Future<FailureException> _storageSlotsFailure(
+    Client cloudApiClient,
+    ProcurementDeniedException e,
+    StackTrace s, {
+    required String projectId,
+  }) async {
+    if (e.reason != ProcurementDeniedReason.productNotAvailable) {
+      return FailureException.nested(e, s, 'Failed to create storage.');
+    }
+
+    const error = 'This project has no storage slots left on its plan.';
+    final planType = await ProjectCommands.readPlanType(
+      cloudApiClient,
+      projectId: projectId,
+    );
+    if (planType == PlanType.starter) {
+      return FailureException(
+        error: error,
+        hint: PlanFeature.additionalStorages.upgradeHint(projectId),
+      );
+    }
+
+    if (planType == PlanType.growth) {
+      return FailureException(
+        error: error,
+        hint: 'Remove an existing storage to free a slot.',
+      );
+    }
+
+    return FailureException(
+      error: error,
+      hint:
+          'Remove an existing storage, or upgrade the project plan in '
+          'the console.',
+    );
   }
 
   /// Deletes the storage with id [storageId] and every file in it.

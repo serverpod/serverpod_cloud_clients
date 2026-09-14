@@ -1,8 +1,22 @@
 import 'package:basic_utils/basic_utils.dart';
 import 'package:ground_control_client/ground_control_client.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/project/project_ops.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/shared/helpers/plan_features.dart';
+
+/// The domain names of a project, and the project's plan type when it has no
+/// custom domains and the plan therefore explains why.
+typedef CustomDomainListing = ({
+  String projectId,
+  CustomDomainNameList domains,
+  PlanType? planType,
+});
 
 abstract class CustomDomainOperations {
+  /// Attaches [domainName] to the [target] of the project.
+  ///
+  /// Throws [FailureException] if the project's plan does not include custom
+  /// domains, or if the request fails.
   static Future<Map<String, Object?>> attachDomain(
     final Client cloudApiClient, {
     required final String projectId,
@@ -15,6 +29,14 @@ abstract class CustomDomainOperations {
         domainName: domainName,
         target: target,
         cloudCapsuleId: projectId,
+      );
+    } on ProcurementDeniedException catch (e, stackTrace) {
+      throw planFeatureDeniedFailure(
+        e,
+        stackTrace,
+        feature: PlanFeature.customDomains,
+        projectId: projectId,
+        failureMessage: 'Could not add the custom domain',
       );
     } on Exception catch (e, stackTrace) {
       throw FailureException.nested(
@@ -43,12 +65,18 @@ abstract class CustomDomainOperations {
     };
   }
 
-  static Future<CustomDomainNameList> listDomains(
+  /// Lists the default and custom domain names of the project.
+  ///
+  /// When there are no custom domains, the project's plan type is read as
+  /// well, so that the caller can tell an empty listing apart from a plan
+  /// without custom domains. It is null if the plan could not be determined.
+  static Future<CustomDomainListing> listDomains(
     final Client cloudApiClient, {
     required final String projectId,
   }) async {
+    late final CustomDomainNameList domains;
     try {
-      return await cloudApiClient.customDomainName.list(
+      domains = await cloudApiClient.customDomainName.list(
         cloudCapsuleId: projectId,
       );
     } on Exception catch (e, stackTrace) {
@@ -58,6 +86,17 @@ abstract class CustomDomainOperations {
         'Failed to list custom domains',
       );
     }
+
+    return (
+      projectId: projectId,
+      domains: domains,
+      planType: domains.customDomainNames.isEmpty
+          ? await ProjectCommands.readPlanType(
+              cloudApiClient,
+              projectId: projectId,
+            )
+          : null,
+    );
   }
 
   static Future<Map<String, Object?>> detachDomain(

@@ -1,5 +1,6 @@
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/shared/helpers/plan_features.dart';
 
 abstract class UserCommands {
   static Future<List<User>> listUsersOperation(
@@ -9,6 +10,10 @@ abstract class UserCommands {
     return cloudApiClient.users.listUsersInProject(cloudProjectId: projectId);
   }
 
+  /// Invites the user with [email] to the project with [assignRoleNames].
+  ///
+  /// Throws [FailureException] if the user is not found, the project's plan
+  /// does not include inviting users, or the request fails.
   static Future<Map<String, Object?>> inviteUser(
     final Client cloudApiClient, {
     required final String projectId,
@@ -23,6 +28,14 @@ abstract class UserCommands {
       );
     } on NotFoundException catch (e) {
       throw FailureException(error: e.message);
+    } on ProcurementDeniedException catch (e, s) {
+      throw planFeatureDeniedFailure(
+        e,
+        s,
+        feature: PlanFeature.userInvites,
+        projectId: projectId,
+        failureMessage: 'Failed to invite user to project',
+      );
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Failed to invite user to project');
     }

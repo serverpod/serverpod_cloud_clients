@@ -5,7 +5,8 @@ import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/custom_domain/custom_domain_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/custom_domain/custom_domain_ui.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
-import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
+import 'package:serverpod_cloud_cli/util/output/output.dart'
+    show CommandOutput, JsonOutputFormatter, YamlOutputFormatter;
 
 class CloudCustomDomainCommand extends CloudCliCommand {
   @override
@@ -152,6 +153,12 @@ class CloudListCustomDomainCommand
         projectId: projectId,
       ),
       textOutputUi: const CustomDomainListTextUi(),
+      jsonOutputUi: const CustomDomainListStructuredUi(
+        formatter: JsonOutputFormatter(),
+      ),
+      yamlOutputUi: const CustomDomainListStructuredUi(
+        formatter: YamlOutputFormatter(),
+      ),
     );
   }
 }

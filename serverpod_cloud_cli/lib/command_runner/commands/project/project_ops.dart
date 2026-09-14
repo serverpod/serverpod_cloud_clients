@@ -285,6 +285,24 @@ abstract class ProjectCommands {
     }
   }
 
+  /// The plan type of [projectId], or null if it could not be determined.
+  ///
+  /// The plan only refines a hint, so a failed lookup is not an error.
+  static Future<PlanType?> readPlanType(
+    Client cloudApiClient, {
+    required String projectId,
+  }) async {
+    try {
+      final subscription = await readSubscription(
+        cloudApiClient,
+        projectId: projectId,
+      );
+      return subscription?.planType;
+    } on Exception {
+      return null;
+    }
+  }
+
   static Future<ComputeInfo?> _readCompute(
     Client cloudApiClient, {
     required String projectId,

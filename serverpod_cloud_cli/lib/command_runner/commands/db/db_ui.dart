@@ -1,7 +1,7 @@
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/db/db_backup_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
-import 'package:serverpod_cloud_cli/shared/helpers/console_urls.dart';
+import 'package:serverpod_cloud_cli/shared/helpers/plan_features.dart';
 
 class DbConnectionTextUi extends OutputWidget {
   const DbConnectionTextUi();
@@ -180,7 +180,10 @@ class BackupSnapshotListTextUi extends OutputWidget {
         return const InfoTextWidget('No snapshots found.');
       }
       if (listing.planType == PlanType.starter) {
-        return _BackupsNeedGrowthWidget(projectId: projectId);
+        return PlanUpgradeHintWidget(
+          feature: PlanFeature.databaseBackups,
+          projectId: projectId,
+        );
       }
       return OutputWidgetList([
         InfoTextWidget('No snapshots found for project "$projectId".'),
@@ -276,7 +279,10 @@ class BackupScheduleShowTextUi extends OutputWidget {
     final schedule = view.schedule;
     if (schedule == null) {
       if (view.planType == PlanType.starter) {
-        return _BackupsNeedGrowthWidget(projectId: view.projectId);
+        return PlanUpgradeHintWidget(
+          feature: PlanFeature.databaseBackups,
+          projectId: view.projectId,
+        );
       }
       return OutputWidgetList([
         InfoTextWidget(
@@ -315,21 +321,6 @@ class BackupScheduleShowStructuredUi extends OutputWidget {
         'projectId': view.projectId,
         'schedule': view.schedule,
       }),
-    );
-  }
-}
-
-/// Points a project without the database backup feature at its plan page.
-class _BackupsNeedGrowthWidget extends OutputWidget {
-  final String projectId;
-
-  const _BackupsNeedGrowthWidget({required this.projectId});
-
-  @override
-  OutputWidget build(final OutputContext context) {
-    return InfoTextWidget(
-      'Database backups are available on the Growth plan.\n'
-      'To upgrade, visit: ${getProjectPlanUrl(projectId)}',
     );
   }
 }
