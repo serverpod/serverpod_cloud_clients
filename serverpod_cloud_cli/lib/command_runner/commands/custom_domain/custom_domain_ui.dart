@@ -1,5 +1,7 @@
 import 'package:ground_control_client/ground_control_client.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/custom_domain/custom_domain_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
+import 'package:serverpod_cloud_cli/shared/helpers/plan_features.dart';
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 
 class CustomDomainAttachTextUi extends OutputWidget {
@@ -89,7 +91,8 @@ class CustomDomainListTextUi extends OutputWidget {
 
   @override
   OutputWidget build(final OutputContext context) {
-    final domainNamesList = context.get<CustomDomainNameList>();
+    final listing = context.get<CustomDomainListing>();
+    final domainNamesList = listing.domains;
 
     final defaultRows = [
       for (final entry in domainNamesList.defaultDomainsByTarget.entries)
@@ -107,8 +110,29 @@ class CustomDomainListTextUi extends OutputWidget {
     return OutputWidgetList([
       TextTableWidget(_defaultDomainFormatter.format(defaultRows)),
       const LineTextWidget(),
-      TextTableWidget(_customDomainFormatter.format(customRows)),
+      if (customRows.isEmpty && listing.planType == PlanType.starter)
+        PlanUpgradeHintWidget(
+          feature: PlanFeature.customDomains,
+          projectId: listing.projectId,
+        )
+      else
+        TextTableWidget(_customDomainFormatter.format(customRows)),
     ]);
+  }
+}
+
+/// Emits the domain names as the structured document, leaving out the plan
+/// type that only the text UI needs.
+class CustomDomainListStructuredUi extends OutputWidget {
+  final OutputFormatter<CustomDomainNameList, String> formatter;
+
+  const CustomDomainListStructuredUi({required this.formatter});
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    return RawStringWidget(
+      formatter.format(context.get<CustomDomainListing>().domains),
+    );
   }
 }
 

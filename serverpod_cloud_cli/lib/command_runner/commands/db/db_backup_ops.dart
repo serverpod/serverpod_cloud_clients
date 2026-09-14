@@ -1,7 +1,7 @@
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/project/project_ops.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
-import 'package:serverpod_cloud_cli/shared/helpers/console_urls.dart';
+import 'package:serverpod_cloud_cli/shared/helpers/plan_features.dart';
 
 /// The snapshots of a project, and the project's plan type when the listing is
 /// empty and the plan therefore explains why.
@@ -40,7 +40,7 @@ abstract class DbBackupOperations {
         expiresAt: expiresAt,
       );
     } on ProcurementDeniedException catch (e, s) {
-      throw _backupProcurementFailure(e, s, projectId: projectId);
+      throw _backupDeniedFailure(e, s, projectId: projectId);
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Failed to create snapshot');
     }
@@ -67,7 +67,10 @@ abstract class DbBackupOperations {
     return (
       snapshots: snapshots,
       planType: snapshots.isEmpty
-          ? await _readPlanType(cloudApiClient, projectId: projectId)
+          ? await ProjectCommands.readPlanType(
+              cloudApiClient,
+              projectId: projectId,
+            )
           : null,
     );
   }
@@ -104,7 +107,7 @@ abstract class DbBackupOperations {
         snapshotId: snapshotId,
       );
     } on ProcurementDeniedException catch (e, s) {
-      throw _backupProcurementFailure(e, s, projectId: projectId);
+      throw _backupDeniedFailure(e, s, projectId: projectId);
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Failed to restore snapshot');
     }
@@ -139,7 +142,7 @@ abstract class DbBackupOperations {
         retention: retention,
       );
     } on ProcurementDeniedException catch (e, s) {
-      throw _backupProcurementFailure(e, s, projectId: projectId);
+      throw _backupDeniedFailure(e, s, projectId: projectId);
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Failed to set backup schedule');
     }
@@ -178,7 +181,10 @@ abstract class DbBackupOperations {
       projectId: projectId,
       schedule: schedule,
       planType: schedule == null
-          ? await _readPlanType(cloudApiClient, projectId: projectId)
+          ? await ProjectCommands.readPlanType(
+              cloudApiClient,
+              projectId: projectId,
+            )
           : null,
     );
   }
@@ -199,38 +205,17 @@ abstract class DbBackupOperations {
     return {'projectId': projectId};
   }
 
-  /// The plan type of [projectId], or null if it could not be determined.
-  ///
-  /// The plan only refines a hint, so a failed lookup is not an error.
-  static Future<PlanType?> _readPlanType(
-    final Client cloudApiClient, {
-    required final String projectId,
-  }) async {
-    try {
-      final subscription = await ProjectCommands.readSubscription(
-        cloudApiClient,
-        projectId: projectId,
-      );
-      return subscription?.planType;
-    } on Exception {
-      return null;
-    }
-  }
-
-  static FailureException _backupProcurementFailure(
+  static FailureException _backupDeniedFailure(
     final ProcurementDeniedException e,
     final StackTrace s, {
     required final String projectId,
   }) {
-    if (e.reason != ProcurementDeniedReason.productNotAvailable) {
-      return FailureException.nested(e, s, 'Database backup request denied');
-    }
-
-    return FailureException(
-      error: e.message,
-      hint:
-          'Database backups are available on the Growth plan.\n'
-          'To upgrade, visit: ${getProjectPlanUrl(projectId)}',
+    return planFeatureDeniedFailure(
+      e,
+      s,
+      feature: PlanFeature.databaseBackups,
+      projectId: projectId,
+      failureMessage: 'Database backup request denied',
     );
   }
 }

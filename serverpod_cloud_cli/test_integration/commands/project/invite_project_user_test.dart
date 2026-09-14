@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:ground_control_client/ground_control_client.dart'
-    show NotFoundException;
+    show NotFoundException, ProcurementDeniedException, ProcurementDeniedReason;
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
@@ -118,6 +118,87 @@ void main() {
           logger.errorCalls.first,
           equalsErrorCall(message: 'User not found.'),
         );
+      });
+    });
+
+    group('when the plan does not include inviting users', () {
+      late Future commandResult;
+      setUp(() async {
+        when(
+          () => client.projects.inviteUser(
+            cloudProjectId: any(named: 'cloudProjectId'),
+            email: any(named: 'email'),
+            assignRoleNames: any(named: 'assignRoleNames'),
+          ),
+        ).thenThrow(
+          ProcurementDeniedException(
+            message: "Inviting users is not available for this project's plan.",
+            reason: ProcurementDeniedReason.productNotAvailable,
+          ),
+        );
+
+        commandResult = cli.run([
+          'project',
+          'user',
+          'invite',
+          'test@example.com',
+          '--project',
+          projectId,
+        ]);
+      });
+
+      test('then throws exception', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then logs the denial with the plan upgrade hint', () async {
+        await commandResult.catchError((_) {});
+
+        final error = logger.errorCalls.single;
+        expect(
+          error.message,
+          "Inviting users is not available for this project's plan.",
+        );
+        expect(
+          error.hint,
+          startsWith(
+            'Inviting users to a project is available on the Growth plan.\n',
+          ),
+        );
+        expect(error.hint, contains('/project/$projectId/plan-and-settings'));
+      });
+    });
+
+    group('when the account has no payment method', () {
+      late Future commandResult;
+      setUp(() async {
+        when(
+          () => client.projects.inviteUser(
+            cloudProjectId: any(named: 'cloudProjectId'),
+            email: any(named: 'email'),
+            assignRoleNames: any(named: 'assignRoleNames'),
+          ),
+        ).thenThrow(
+          ProcurementDeniedException(
+            message: 'The account has no valid payment method',
+            reason: ProcurementDeniedReason.paymentMethodRequired,
+          ),
+        );
+
+        commandResult = cli.run([
+          'project',
+          'user',
+          'invite',
+          'test@example.com',
+          '--project',
+          projectId,
+        ]);
+      });
+
+      test('then logs the common payment method error', () async {
+        await commandResult.catchError((_) {});
+
+        expect(logger.errorCalls.single.message, 'You need a payment method!');
       });
     });
 

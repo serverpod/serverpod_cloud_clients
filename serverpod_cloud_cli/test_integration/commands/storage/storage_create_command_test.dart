@@ -285,7 +285,17 @@ void main() {
       });
     });
 
-    group('when the plan has no storage slots left', () {
+    void stubPlanType(final PlanType planType) {
+      when(
+        () => client.plans.getSubscriptionInfoOfProject(
+          cloudProjectId: any(named: 'cloudProjectId'),
+        ),
+      ).thenAnswer(
+        (_) async => SubscriptionInfoBuilder().withPlanType(planType).build(),
+      );
+    }
+
+    group('when the starter plan has no storage slots left', () {
       late Future commandResult;
 
       setUp(() async {
@@ -295,6 +305,7 @@ void main() {
             reason: ProcurementDeniedReason.productNotAvailable,
           ),
         );
+        stubPlanType(PlanType.starter);
 
         commandResult = cli.run([
           'storage',
@@ -305,11 +316,102 @@ void main() {
         ]);
       });
 
+      tearDown(() {
+        reset(client.plans);
+      });
+
       test('then throws exception', () async {
         await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
       });
 
-      test('then logs the plan allowance error with a hint', () async {
+      test('then logs the slot error with the plan upgrade hint', () async {
+        try {
+          await commandResult;
+        } catch (_) {}
+
+        final error = logger.errorCalls.single;
+        expect(
+          error.message,
+          'This project has no storage slots left on its plan.',
+        );
+        expect(
+          error.hint,
+          startsWith('Additional storages are available on the Growth plan.\n'),
+        );
+        expect(error.hint, contains('/project/$projectId/plan-and-settings'));
+      });
+    });
+
+    group('when the growth plan has no storage slots left', () {
+      late Future commandResult;
+
+      setUp(() async {
+        stubCreateBucketThrows(
+          ProcurementDeniedException(
+            message: 'no allowance',
+            reason: ProcurementDeniedReason.productNotAvailable,
+          ),
+        );
+        stubPlanType(PlanType.growth);
+
+        commandResult = cli.run([
+          'storage',
+          'create',
+          'user-uploads',
+          '-p',
+          projectId,
+        ]);
+      });
+
+      tearDown(() {
+        reset(client.plans);
+      });
+
+      test('then logs the slot error with a hint to free a slot', () async {
+        try {
+          await commandResult;
+        } catch (_) {}
+
+        expect(
+          logger.errorCalls.single,
+          equalsErrorCall(
+            message: 'This project has no storage slots left on its plan.',
+            hint: 'Remove an existing storage to free a slot.',
+          ),
+        );
+      });
+    });
+
+    group('when the plan is unknown and there are no storage slots left', () {
+      late Future commandResult;
+
+      setUp(() async {
+        stubCreateBucketThrows(
+          ProcurementDeniedException(
+            message: 'no allowance',
+            reason: ProcurementDeniedReason.productNotAvailable,
+          ),
+        );
+        when(
+          () => client.plans.getSubscriptionInfoOfProject(
+            cloudProjectId: any(named: 'cloudProjectId'),
+          ),
+        ).thenThrow(NotFoundException(message: 'No subscription.'));
+
+        commandResult = cli.run([
+          'storage',
+          'create',
+          'user-uploads',
+          '-p',
+          projectId,
+        ]);
+      });
+
+      tearDown(() {
+        reset(client.plans);
+      });
+
+      test('then logs the slot error with both options as the hint', () async {
         try {
           await commandResult;
         } catch (_) {}

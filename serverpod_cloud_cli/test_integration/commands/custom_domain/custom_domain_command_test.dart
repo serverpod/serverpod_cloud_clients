@@ -4,10 +4,12 @@ import 'dart:io';
 
 import 'package:cli_tools/cli_tools.dart';
 import 'package:ground_control_client/ground_control_client.dart';
+import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
+import 'package:yaml_codec/yaml_codec.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/custom_domain/custom_domain_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
@@ -760,67 +762,6 @@ void main() {
         );
       });
     });
-
-    group('and custom domains does not exist when executing domain list', () {
-      late Uri localServerAddress;
-
-      late Future commandResult;
-
-      setUp(() async {
-        final serverBuilder = HttpServerBuilder();
-        serverBuilder.withSuccessfulResponse(
-          jsonEncode(
-            CustomDomainNameList(
-              customDomainNames: [],
-              defaultDomainsByTarget: {
-                DomainNameTarget.api: 'my-magical-project.api.serverpod.space',
-                DomainNameTarget.insights:
-                    'my-magical-project.insights.serverpod.space',
-                DomainNameTarget.web: 'my-magical-project.serverpod.space',
-              },
-            ),
-          ),
-        );
-
-        final (startedServer, serverAddress) = await serverBuilder.build();
-        localServerAddress = serverAddress;
-        server = startedServer;
-
-        commandResult = cli.run([
-          'domain',
-          'list',
-          '--project',
-          projectId,
-          '--api-url',
-          localServerAddress.toString(),
-          '--config-dir',
-          testCacheFolderPath,
-        ]);
-      });
-
-      test('then completes successfully', () async {
-        await expectLater(commandResult, completes);
-      });
-
-      test('then logs success message', () async {
-        await commandResult;
-
-        expect(logger.lineCalls, isNotEmpty);
-        final lines = logger.lineCalls.map((c) => c.line).toList();
-        expect(
-          lines,
-          contains(
-            predicate<String>(
-              (l) =>
-                  l.contains('Custom domain name') &&
-                  l.contains('Target') &&
-                  l.contains('Status'),
-            ),
-          ),
-        );
-        expect(lines, contains('<no rows data>'));
-      });
-    });
   });
 
   group('Given authenticated with a mocked cloud client', () {
@@ -893,6 +834,190 @@ void main() {
             ),
           ),
         );
+      });
+    });
+
+    void stubPlanType(final PlanType planType) {
+      when(
+        () => client.plans.getSubscriptionInfoOfProject(
+          cloudProjectId: any(named: 'cloudProjectId'),
+        ),
+      ).thenAnswer(
+        (_) async => SubscriptionInfoBuilder().withPlanType(planType).build(),
+      );
+    }
+
+    void stubEmptyDomainList() {
+      when(
+        () => client.customDomainName.list(cloudCapsuleId: projectId),
+      ).thenAnswer(
+        (_) async => CustomDomainNameList(
+          customDomainNames: [],
+          defaultDomainsByTarget: {
+            DomainNameTarget.api: '$projectId.api.serverpod.space',
+          },
+        ),
+      );
+    }
+
+    final domainListArgs = [
+      'domain',
+      'list',
+      '--project',
+      projectId,
+      '--no-warn-billing-overdue',
+      '--config-dir',
+      testCacheFolderPath,
+    ];
+
+    group('and the plan does not include custom domains', () {
+      late Future commandResult;
+      setUp(() async {
+        when(
+          () => client.customDomainName.add(
+            domainName: 'domain.com',
+            target: DomainNameTarget.web,
+            cloudCapsuleId: projectId,
+          ),
+        ).thenThrow(
+          ProcurementDeniedException(
+            message:
+                "Custom domains are not available for this project's plan.",
+            reason: ProcurementDeniedReason.productNotAvailable,
+          ),
+        );
+
+        commandResult = mockedCli.run([
+          'domain',
+          'attach',
+          'domain.com',
+          '--target',
+          'web',
+          '--project',
+          projectId,
+          '--no-warn-billing-overdue',
+          '--config-dir',
+          testCacheFolderPath,
+        ]);
+      });
+
+      tearDown(() {
+        reset(client.customDomainName);
+      });
+
+      test('then domain attach throws exception', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test(
+        'then domain attach logs the denial with the plan upgrade hint',
+        () async {
+          await commandResult.catchError((_) {});
+
+          final error = logger.errorCalls.single;
+          expect(
+            error.message,
+            "Custom domains are not available for this project's plan.",
+          );
+          expect(
+            error.hint,
+            startsWith('Custom domains are available on the Growth plan.\n'),
+          );
+          expect(error.hint, contains('/project/$projectId/plan-and-settings'));
+        },
+      );
+    });
+
+    group('and no custom domains exist on the starter plan', () {
+      setUp(() {
+        stubEmptyDomainList();
+        stubPlanType(PlanType.starter);
+      });
+
+      tearDown(() {
+        reset(client.customDomainName);
+        reset(client.plans);
+      });
+
+      test('then domain list still shows the default domains', () async {
+        await mockedCli.run(domainListArgs);
+
+        expect(
+          logger.lineCalls.map((c) => c.line),
+          contains(contains('$projectId.api.serverpod.space')),
+        );
+      });
+
+      test('then domain list points at the plan page instead of an empty '
+          'table', () async {
+        await mockedCli.run(domainListArgs);
+
+        expect(
+          logger.infoCalls.map((c) => c.message),
+          contains(
+            stringContainsInOrder([
+              'Custom domains are available on the Growth plan.',
+              '/project/$projectId/plan-and-settings',
+            ]),
+          ),
+        );
+        expect(
+          logger.lineCalls.map((c) => c.line),
+          isNot(contains('<no rows data>')),
+        );
+      });
+
+      test(
+        'then --format json emits the domain list without the hint',
+        () async {
+          await mockedCli.run([...domainListArgs, '--format', 'json']);
+
+          final decoded = jsonDecode(logger.rawCalls.single.content) as Map;
+          expect(decoded['customDomainNames'], isEmpty);
+          expect(decoded['defaultDomainsByTarget'], isNotEmpty);
+          expect(logger.infoCalls, isEmpty);
+          expect(logger.lineCalls, isEmpty);
+        },
+      );
+
+      test(
+        'then --format yaml emits the domain list without the hint',
+        () async {
+          await mockedCli.run([...domainListArgs, '--format', 'yaml']);
+
+          final decoded = yamlDecode(logger.rawCalls.single.content) as Map;
+          expect(decoded['customDomainNames'], isEmpty);
+          expect(logger.infoCalls, isEmpty);
+          expect(logger.lineCalls, isEmpty);
+        },
+      );
+    });
+
+    group('and no custom domains exist on the growth plan', () {
+      setUp(() {
+        stubEmptyDomainList();
+        stubPlanType(PlanType.growth);
+      });
+
+      tearDown(() {
+        reset(client.customDomainName);
+        reset(client.plans);
+      });
+
+      test('then domain list shows an empty custom domain table', () async {
+        await mockedCli.run(domainListArgs);
+
+        final lines = logger.lineCalls.map((c) => c.line);
+        expect(
+          lines,
+          contains(
+            predicate<String>(
+              (l) => l.contains('Custom domain name') && l.contains('Status'),
+            ),
+          ),
+        );
+        expect(lines, contains('<no rows data>'));
+        expect(logger.infoCalls, isEmpty);
       });
     });
 

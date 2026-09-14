@@ -62,20 +62,24 @@ void main() {
       setUp(() async {
         final io = await renderCommandUi(
           const CustomDomainListTextUi(),
-          data: CustomDomainNameList(
-            customDomainNames: [
-              CustomDomainName(
-                capsuleId: 1,
-                name: 'api.example.com',
-                status: DomainNameStatus.configured,
-                target: DomainNameTarget.api,
-                dnsRecordVerificationValue: 'my-project.api.serverpod.space',
-                dnsRecordType: DnsRecordType.cname,
-              ),
-            ],
-            defaultDomainsByTarget: {
-              DomainNameTarget.api: 'my-project.api.serverpod.space',
-            },
+          data: (
+            projectId: 'my-project',
+            domains: CustomDomainNameList(
+              customDomainNames: [
+                CustomDomainName(
+                  capsuleId: 1,
+                  name: 'api.example.com',
+                  status: DomainNameStatus.configured,
+                  target: DomainNameTarget.api,
+                  dnsRecordVerificationValue: 'my-project.api.serverpod.space',
+                  dnsRecordType: DnsRecordType.cname,
+                ),
+              ],
+              defaultDomainsByTarget: {
+                DomainNameTarget.api: 'my-project.api.serverpod.space',
+              },
+            ),
+            planType: null,
           ),
         );
         stdout = io.stdout;
@@ -103,6 +107,76 @@ void main() {
 
       test('then stderr is empty', () {
         expect(stderr, isEmpty);
+      });
+    });
+
+    group('when rendered with no custom domains on the starter plan', () {
+      late String stdout;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const CustomDomainListTextUi(),
+          data: (
+            projectId: 'my-project',
+            domains: CustomDomainNameList(
+              customDomainNames: [],
+              defaultDomainsByTarget: {
+                DomainNameTarget.api: 'my-project.api.serverpod.space',
+              },
+            ),
+            planType: PlanType.starter,
+          ),
+        );
+        stdout = io.stdout;
+      });
+
+      test('then stdout contains the default domain', () {
+        expect(stdout, contains('my-project.api.serverpod.space'));
+      });
+
+      test('then stdout says custom domains need the Growth plan', () {
+        expect(
+          stdout,
+          contains('Custom domains are available on the Growth plan.'),
+        );
+      });
+
+      test('then stdout links to the project plan page', () {
+        expect(stdout, contains('/project/my-project/plan-and-settings'));
+      });
+
+      test('then stdout does not contain the custom domain table', () {
+        expect(stdout, isNot(contains('Custom domain name')));
+      });
+    });
+
+    group('when rendered with no custom domains on the growth plan', () {
+      late String stdout;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const CustomDomainListTextUi(),
+          data: (
+            projectId: 'my-project',
+            domains: CustomDomainNameList(
+              customDomainNames: [],
+              defaultDomainsByTarget: {
+                DomainNameTarget.api: 'my-project.api.serverpod.space',
+              },
+            ),
+            planType: PlanType.growth,
+          ),
+        );
+        stdout = io.stdout;
+      });
+
+      test('then stdout contains the empty custom domain table', () {
+        expect(stdout, contains('Custom domain name'));
+        expect(stdout, contains('<no rows data>'));
+      });
+
+      test('then stdout does not mention the Growth plan', () {
+        expect(stdout, isNot(contains('Growth plan')));
       });
     });
   });
