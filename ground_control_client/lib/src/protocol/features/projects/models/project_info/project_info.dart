@@ -15,7 +15,8 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import '../../../../domains/projects/models/project.dart' as _i2;
 import '../../../../features/projects/models/project_info/timestamp.dart'
     as _i3;
-import 'package:ground_control_client/src/protocol/protocol.dart' as _i4;
+import '../../../../domains/products/models/plan_type.dart' as _i4;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _i5;
 
 /// Augments a project object with ancillary information.
 ///
@@ -28,26 +29,31 @@ abstract class ProjectInfo
     required this.project,
     required this.productId,
     this.latestDeployAttemptTime,
+    this.planType,
   });
 
   factory ProjectInfo({
     required _i2.Project project,
     required String productId,
     _i3.Timestamp? latestDeployAttemptTime,
+    _i4.PlanType? planType,
   }) = _ProjectInfoImpl;
 
   factory ProjectInfo.fromJson(Map<String, dynamic> jsonSerialization) {
     return ProjectInfo(
-      project: _i4.Protocol().deserialize<_i2.Project>(
+      project: _i5.Protocol().deserialize<_i2.Project>(
         jsonSerialization['project'],
       ),
       productId: jsonSerialization['productId'] as String,
       latestDeployAttemptTime:
           jsonSerialization['latestDeployAttemptTime'] == null
           ? null
-          : _i4.Protocol().deserialize<_i3.Timestamp>(
+          : _i5.Protocol().deserialize<_i3.Timestamp>(
               jsonSerialization['latestDeployAttemptTime'],
             ),
+      planType: jsonSerialization['planType'] == null
+          ? null
+          : _i4.PlanType.fromJson((jsonSerialization['planType'] as String)),
     );
   }
 
@@ -61,6 +67,10 @@ abstract class ProjectInfo
   /// `DeployAttempt` object.)
   _i3.Timestamp? latestDeployAttemptTime;
 
+  /// The public plan type the project belongs to, derived from its project
+  /// product. [PlanType.unknown] for projects under internal plans.
+  _i4.PlanType? planType;
+
   /// Returns a shallow copy of this [ProjectInfo]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
@@ -68,6 +78,7 @@ abstract class ProjectInfo
     _i2.Project? project,
     String? productId,
     _i3.Timestamp? latestDeployAttemptTime,
+    _i4.PlanType? planType,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -77,6 +88,7 @@ abstract class ProjectInfo
       'productId': productId,
       if (latestDeployAttemptTime != null)
         'latestDeployAttemptTime': latestDeployAttemptTime?.toJson(),
+      if (planType != null) 'planType': planType?.toJson(),
     };
   }
 
@@ -88,6 +100,7 @@ abstract class ProjectInfo
       'productId': productId,
       if (latestDeployAttemptTime != null)
         'latestDeployAttemptTime': latestDeployAttemptTime?.toJsonForProtocol(),
+      if (planType != null) 'planType': planType?.toJson(),
     };
   }
 
@@ -104,10 +117,12 @@ class _ProjectInfoImpl extends ProjectInfo {
     required _i2.Project project,
     required String productId,
     _i3.Timestamp? latestDeployAttemptTime,
+    _i4.PlanType? planType,
   }) : super._(
          project: project,
          productId: productId,
          latestDeployAttemptTime: latestDeployAttemptTime,
+         planType: planType,
        );
 
   /// Returns a shallow copy of this [ProjectInfo]
@@ -118,6 +133,7 @@ class _ProjectInfoImpl extends ProjectInfo {
     _i2.Project? project,
     String? productId,
     Object? latestDeployAttemptTime = _Undefined,
+    Object? planType = _Undefined,
   }) {
     return ProjectInfo(
       project: project ?? this.project.copyWith(),
@@ -125,6 +141,7 @@ class _ProjectInfoImpl extends ProjectInfo {
       latestDeployAttemptTime: latestDeployAttemptTime is _i3.Timestamp?
           ? latestDeployAttemptTime
           : this.latestDeployAttemptTime?.copyWith(),
+      planType: planType is _i4.PlanType? ? planType : this.planType,
     );
   }
 }
