@@ -27,7 +27,7 @@ void main() {
         ),
       );
 
-      expect(lines, ['Project   my-project', 'Database  small     ']);
+      expect(lines, ['Project   my-project', 'Database  small']);
     });
   });
 
@@ -47,15 +47,30 @@ void main() {
     });
 
     test('then the columns are padded to their visible width', () {
-      expect(lines.map(visible), [
-        'Project   my-project',
-        'Database  small     ',
-      ]);
+      expect(lines.map(visible), ['Project   my-project', 'Database  small']);
     });
 
     test('then the style codes are preserved', () {
       expect(lines.first, startsWith(_gray));
       expect(lines.first, contains(_reset));
+    });
+  });
+
+  group('Given a table whose last column contains one very long cell', () {
+    test('when rendered then short rows are not padded in the last column', () {
+      final longContent = 'RUN --mount=type=secret,${'x' * 500}';
+      final lines = renderLines(
+        TablePrinter(
+          rows: [
+            ['2024-01-01 00:00:00', 'INFO', 'short line'],
+            ['2024-01-01 00:00:01', 'INFO', longContent],
+          ],
+        ),
+      );
+
+      expect(lines[0], '2024-01-01 00:00:00 | INFO | short line');
+      expect(lines[1], endsWith(longContent));
+      expect(lines[0].length, lessThan(100));
     });
   });
 
@@ -70,8 +85,8 @@ void main() {
         ),
       );
 
-      expect(visible(lines[0]), 'Name ');
-      expect(lines[1], '-----');
+      expect(visible(lines[0]), 'Name');
+      expect(lines[1], '----');
     });
   });
 }

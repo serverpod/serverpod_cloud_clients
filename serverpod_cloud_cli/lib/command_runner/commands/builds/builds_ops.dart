@@ -1,38 +1,7 @@
 import 'package:ground_control_client/ground_control_client.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployments_ops.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/log/logs_ops.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/deployments/command_names.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
 abstract class BuildsOperations {
-  static Future<List<LogRecord>> fetchBuildLog(
-    final Client cloudApiClient, {
-    required final String baseCommand,
-    required final CommandNames commandNames,
-    required final String projectId,
-    final String? deploymentArg,
-  }) async {
-    try {
-      final attemptId = await DeploymentCommands.getDeployAttemptId(
-        cloudApiClient,
-        baseCommand: baseCommand,
-        commandNames: commandNames,
-        projectId: projectId,
-        deploymentArg: deploymentArg,
-      );
-
-      return await LogsOperations.fetchBuildLog(
-        cloudApiClient,
-        projectId: projectId,
-        attemptId: attemptId,
-      );
-    } on FailureException {
-      rethrow;
-    } on Exception catch (e, s) {
-      throw FailureException.nested(e, s, 'Failed to get build log');
-    }
-  }
-
   static Future<Map<String, Object?>> setBuildSecret(
     final Client cloudApiClient, {
     required final String projectId,

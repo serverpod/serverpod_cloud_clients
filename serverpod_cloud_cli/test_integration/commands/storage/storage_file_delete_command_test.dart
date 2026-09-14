@@ -712,6 +712,10 @@ void main() {
     late Future commandResult;
 
     setUp(() async {
+      stubListFiles([
+        BucketFileBuilder().withName(path).withSizeBytes(1500).build(),
+      ]);
+
       when(
         () => client.bucketObjects.deleteFile(
           cloudCapsuleId: any(named: 'cloudCapsuleId'),
