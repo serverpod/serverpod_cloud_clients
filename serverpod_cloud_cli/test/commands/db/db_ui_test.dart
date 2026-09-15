@@ -448,9 +448,8 @@ void main() {
         stdout = io.stdout;
       });
 
-      test('then stdout shows the platform default retention', () {
-        expect(stdout, contains('platform default'));
-        expect(stdout, isNot(contains('kept indefinitely')));
+      test('then stdout shows the default retention', () {
+        expect(stdout, contains('35 days (default)'));
       });
     });
 

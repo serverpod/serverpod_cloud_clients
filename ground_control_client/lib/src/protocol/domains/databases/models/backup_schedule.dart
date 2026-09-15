@@ -47,14 +47,14 @@ abstract class BackupSchedule
   /// How often a snapshot is taken.
   _i2.BackupFrequency frequency;
 
-  /// The hour of the day (0-23) to take the snapshot, if applicable.
+  /// The hour of the day (0-23, UTC) to take the snapshot, if applicable.
   int? hour;
 
   /// The day of the week or month (1-31) to take the snapshot, if applicable.
   int? day;
 
   /// How long a snapshot is retained before it is automatically deleted.
-  /// Null keeps snapshots indefinitely.
+  /// Null applies the default of 35 days, which is also the maximum.
   Duration? retention;
 
   /// Returns a shallow copy of this [BackupSchedule]

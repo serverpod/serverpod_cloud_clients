@@ -370,7 +370,7 @@ class _BackupScheduleTable extends OutputWidget {
         'setting': 'Retention',
         'value': retentionDuration != null
             ? _formatDuration(retentionDuration)
-            : 'platform default',
+            : '35 days (default)',
       },
     ];
 
