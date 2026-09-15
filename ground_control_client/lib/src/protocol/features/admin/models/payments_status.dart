@@ -10,11 +10,10 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
 abstract class PaymentsStatus
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   PaymentsStatus._({
     required this.invoiceId,
     required this.dueDate,
@@ -32,7 +31,9 @@ abstract class PaymentsStatus
   factory PaymentsStatus.fromJson(Map<String, dynamic> jsonSerialization) {
     return PaymentsStatus(
       invoiceId: jsonSerialization['invoiceId'] as String,
-      dueDate: _i1.DateTimeJsonExtension.fromJson(jsonSerialization['dueDate']),
+      dueDate: _isc.DateTimeJsonExtension.fromJson(
+        jsonSerialization['dueDate'],
+      ),
       dueAmount: jsonSerialization['dueAmount'] as String,
       outstandingAmount: jsonSerialization['outstandingAmount'] as String,
     );
@@ -48,7 +49,7 @@ abstract class PaymentsStatus
 
   /// Returns a shallow copy of this [PaymentsStatus]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   PaymentsStatus copyWith({
     String? invoiceId,
     DateTime? dueDate,
@@ -79,7 +80,7 @@ abstract class PaymentsStatus
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
@@ -98,7 +99,7 @@ class _PaymentsStatusImpl extends PaymentsStatus {
 
   /// Returns a shallow copy of this [PaymentsStatus]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   PaymentsStatus copyWith({
     String? invoiceId,
