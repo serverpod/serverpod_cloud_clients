@@ -2263,13 +2263,23 @@ class EndpointStatus extends _i1.EndpointRef {
 
   /// Gets deploy attempts of the specified capsule.
   /// Gets the recent-most attempts, up till [limit] if specified.
+  /// When [afterAttemptId] is set, gets the attempts that come after that
+  /// attempt, for fetching the next page.
+  ///
+  /// Throws [NotFoundException] if [afterAttemptId] does not name an attempt
+  /// of the capsule.
   _i2.Future<List<_i6.DeployAttempt>> getDeployAttempts({
     required String cloudCapsuleId,
     int? limit,
+    _i1.UuidValue? afterAttemptId,
   }) => caller.callServerEndpoint<List<_i6.DeployAttempt>>(
     'status',
     'getDeployAttempts',
-    {'cloudCapsuleId': cloudCapsuleId, 'limit': limit},
+    {
+      'cloudCapsuleId': cloudCapsuleId,
+      'limit': limit,
+      'afterAttemptId': afterAttemptId,
+    },
   );
 
   /// Gets the specified deploy attempt status of the a capsule.
