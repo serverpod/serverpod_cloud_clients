@@ -106,10 +106,10 @@ ProjectProductInfo _growthPlanBundledProjectProducts() {
       computeXLarge,
       computeXxLarge,
     ],
-    defaultCompute: computeMedium.size,
+    defaultCompute: computeSmall.size,
     scaling: ComputeScalingInfo(
-      defaultMinReplicas: 2,
-      defaultMaxReplicas: 2,
+      defaultMinReplicas: 1,
+      defaultMaxReplicas: 1,
       allowedReplicasMin: 1,
       allowedReplicasMax: 20,
     ),
@@ -121,7 +121,7 @@ ProjectProductInfo _growthPlanBundledProjectProducts() {
       databaseLarge,
       databaseLargePlus,
     ],
-    defaultDatabase: databaseMedium.size,
+    defaultDatabase: databaseSmall.size,
   );
   return ProjectProductInfo(
     productId: 'growth:0',
