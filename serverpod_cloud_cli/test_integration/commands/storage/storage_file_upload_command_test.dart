@@ -36,7 +36,6 @@ void main() {
       apiClientFactory: (globalCfg) => client,
       fileUploaderFactory: uploader.factory,
     ),
-    adminUserMode: true,
   );
 
   setUp(() {
