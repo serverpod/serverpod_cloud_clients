@@ -21,6 +21,14 @@ class AdminProjectCommand extends CloudCliCommand {
 }
 
 enum AdminListProjectsOption<V> implements OptionDefinition<V> {
+  includePaymentsStatus(
+    FlagOption(
+      argName: 'include-payments',
+      helpText: 'Include payments status for each project.',
+      defaultsTo: false,
+      negatable: false,
+    ),
+  ),
   includeArchived(
     FlagOption(
       argName: 'include-archived',
@@ -56,15 +64,23 @@ class AdminListProjectsCommand
     final includeArchived = commandConfig.value(
       AdminListProjectsOption.includeArchived,
     );
+    final includePaymentsStatus = commandConfig.value(
+      AdminListProjectsOption.includePaymentsStatus,
+    );
     final inUtc = commandConfig.value(AdminListProjectsOption.utc);
 
     await renderCommand(
       output,
-      operation: () => ProjectAdminCommands.listProjectsOperation(
+      operation: () async => ProjectAdminCommands.listProjectsOperation(
         runner.serviceProvider.cloudApiClient,
         includeArchived: includeArchived,
+        includePaymentsStatus: includePaymentsStatus,
       ),
-      textOutputUi: AdminProjectListTextUi(utc: inUtc),
+      textOutputUi: AdminProjectListTextUi(
+        utc: inUtc,
+        includeArchived: includeArchived,
+        includePaymentsStatus: includePaymentsStatus,
+      ),
     );
   }
 }

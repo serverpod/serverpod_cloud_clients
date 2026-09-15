@@ -732,15 +732,16 @@ void _stubAdmin(final ClientMock client, {required final String projectId}) {
     ),
   ).thenAnswer((_) async => [('starter', 'PlanProduct')]);
   when(
-    () => client.adminProjects.listProjectsInfo(
+    () => client.adminProjects.listAdminProjectsInfo(
       includeArchived: any(named: 'includeArchived'),
       includeLatestDeployAttemptTime: any(
         named: 'includeLatestDeployAttemptTime',
       ),
+      includePaymentsStatus: any(named: 'includePaymentsStatus'),
     ),
   ).thenAnswer(
-    (_) async => [
-      ProjectInfoBuilder()
+    (_) => Stream.fromIterable([
+      AdminProjectInfoBuilder()
           .withProject(
             ProjectBuilder()
                 .withCreatedAt(DateTime.utc(2025, 7, 2, 11))
@@ -749,8 +750,9 @@ void _stubAdmin(final ClientMock client, {required final String projectId}) {
                   UserBuilder().withEmail('test@example.com').build(),
                 ),
           )
+          .withSubscriptionId('orb_sub_book')
           .build(),
-    ],
+    ]),
   );
   when(
     () => client.adminUsers.inviteUser(email: any(named: 'email')),

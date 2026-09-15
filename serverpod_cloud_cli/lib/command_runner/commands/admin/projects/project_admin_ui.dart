@@ -1,44 +1,87 @@
-import 'package:ground_control_client/ground_control_client.dart'
-    show Project, ProjectInfo;
+import 'package:ground_control_client/ground_control_client.dart' show Project;
+import 'package:serverpod_cloud_cli/command_runner/commands/admin/projects/admin_project_list_row.dart';
 import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 
 class AdminProjectListTextUi extends OutputWidget {
   final bool utc;
+  final bool includeArchived;
+  final bool includePaymentsStatus;
 
-  AdminProjectListTextUi({required this.utc});
+  AdminProjectListTextUi({
+    required this.utc,
+    required this.includeArchived,
+    required this.includePaymentsStatus,
+  });
 
   @override
   OutputWidget build(OutputContext context) {
-    return FormattedTableWidget(
-      formatter: TextTableOutputFormatter<ProjectInfo>(
+    return FormattedStreamTableWidget(
+      formatter: TextTableOutputFormatter<AdminProjectListRow>(
         columns: [
           TableColumnFormatter.forElement(
             'Project Id',
-            getter: (project) => project.project.cloudProjectId,
+            getter: (row) => row.projectInfo.project.cloudProjectId,
           ),
           TableColumnFormatter.forTimestamp(
             'Created At',
-            getter: (project) => project.project.createdAt,
+            getter: (row) => row.projectInfo.project.createdAt,
           ),
+          if (includeArchived)
+            TableColumnFormatter.forTimestamp(
+              'Archived At',
+              getter: (row) => row.projectInfo.project.archivedAt,
+            ),
           TableColumnFormatter.forTimestamp(
-            'Archived At',
-            getter: (project) => project.project.archivedAt,
-          ),
-          TableColumnFormatter.forTimestamp(
-            'Last Deploy Attempt',
-            getter: (project) => project.latestDeployAttemptTime?.timestamp,
+            'Last Deploy',
+            getter: (row) => row.projectInfo.latestDeployAttemptTime?.timestamp,
           ),
           TableColumnFormatter.forElement(
+            'Orb Subscription Id',
+            getter: (row) => row.subscriptionId,
+          ),
+          if (includePaymentsStatus) ...[
+            TableColumnFormatter.forElement(
+              'Oldest Overdue',
+              getter: (row) => row.oldestOverdueUnpaidAmount,
+            ),
+            TableColumnFormatter.forElement(
+              'Oldest Overdue Date',
+              getter: (row) => dueDateOnly(row.oldestOverdueUnpaidDueDate),
+            ),
+            TableColumnFormatter.forElement(
+              'Newest Overdue',
+              getter: (row) => row.newestOverdueUnpaidAmount,
+            ),
+            TableColumnFormatter.forElement(
+              'Newest Overdue Date',
+              getter: (row) => dueDateOnly(row.newestOverdueUnpaidDueDate),
+            ),
+            TableColumnFormatter.forElement(
+              'Total Overdue',
+              getter: (row) => row.totalAmountOverdue,
+            ),
+          ],
+          TableColumnFormatter.forElement(
             'Owner',
-            getter: (project) => project.project.owner?.user?.email,
+            getter: (row) => row.projectInfo.project.owner?.user?.email,
           ),
           TableColumnFormatter.forElement(
             'Users',
-            getter: (project) => _formatProjectUsers(project.project),
+            getter: (row) => _formatProjectUsers(row.projectInfo.project),
           ),
         ],
         utc: utc,
       ),
+      columnMinWidths: [
+        32,
+        19,
+        if (includeArchived) 19,
+        19,
+        19,
+        if (includePaymentsStatus) ...[8, 10, 8, 10, 8],
+        33,
+        33,
+      ],
     );
   }
 }
