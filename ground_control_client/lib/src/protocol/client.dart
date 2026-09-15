@@ -1645,10 +1645,15 @@ class EndpointLogs extends _i1.EndpointRef {
       );
 
   /// Fetches the build log records for the specified deploy attempt.
+  ///
+  /// [afterTime] and [beforeTime] bound the records by timestamp. Both bounds
+  /// are inclusive, so a record at exactly a bound is returned.
   _i2.Stream<_i37.LogRecord> fetchBuildLog({
     @Deprecated('Use cloudCapsuleId instead') String? cloudProjectId,
     String? cloudCapsuleId,
     required _i1.UuidValue attemptId,
+    DateTime? beforeTime,
+    DateTime? afterTime,
     int? limit,
   }) => caller
       .callStreamingServerEndpoint<_i2.Stream<_i37.LogRecord>, _i37.LogRecord>(
@@ -1658,6 +1663,8 @@ class EndpointLogs extends _i1.EndpointRef {
           'cloudProjectId': cloudProjectId,
           'cloudCapsuleId': cloudCapsuleId,
           'attemptId': attemptId,
+          'beforeTime': beforeTime,
+          'afterTime': afterTime,
           'limit': limit,
         },
         {},
