@@ -168,17 +168,14 @@ abstract class ProjectCommands {
     late List<ProjectInfo> projects;
     try {
       projects = await cloudApiClient.projects.listProjectsInfo(
+        includeArchived: showArchived,
         includeLatestDeployAttemptTime: true,
       );
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Request to list projects failed');
     }
 
-    final activeProjects = showArchived
-        ? projects
-        : projects.where((p) => p.project.archivedAt == null);
-
-    return activeProjects.sortedBy((p) => p.project.createdAt).toList();
+    return projects.sortedBy((p) => p.project.createdAt).toList();
   }
 
   /// Collects the profile of a project: when it was created, where it runs,

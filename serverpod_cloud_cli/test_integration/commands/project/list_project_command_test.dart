@@ -39,7 +39,7 @@ void main() {
 
   group('Given authenticated', () {
     setUpAll(() async {
-      final projects = [
+      final activeProjects = [
         ProjectInfoBuilder()
             .withProject(
               ProjectBuilder()
@@ -51,30 +51,40 @@ void main() {
         ProjectInfoBuilder()
             .withProject(
               ProjectBuilder()
-                  .withCloudProjectId('projectId2')
-                  .withCreatedAt(DateTime.parse("2024-12-31 12:20:30"))
-                  .withArchivedAt(DateTime.parse("2025-01-01 14:20:30")),
-            )
-            .withLatestDeployAttemptTime(DateTime.parse("2024-12-31 12:20:30"))
-            .build(),
-        ProjectInfoBuilder()
-            .withProject(
-              ProjectBuilder()
                   .withCloudProjectId('projectId3')
                   .withCreatedAt(DateTime.parse("2024-12-30 10:20:30")),
             )
             .withLatestDeployAttemptTime(null)
             .build(),
       ];
+      final archivedProject = ProjectInfoBuilder()
+          .withProject(
+            ProjectBuilder()
+                .withCloudProjectId('projectId2')
+                .withCreatedAt(DateTime.parse("2024-12-31 12:20:30"))
+                .withArchivedAt(DateTime.parse("2025-01-01 14:20:30")),
+          )
+          .withLatestDeployAttemptTime(DateTime.parse("2024-12-31 12:20:30"))
+          .build();
 
       when(
         () => client.projects.listProjectsInfo(
+          includeArchived: any(named: 'includeArchived', that: isFalse),
           includeLatestDeployAttemptTime: any(
             named: 'includeLatestDeployAttemptTime',
             that: isTrue,
           ),
         ),
-      ).thenAnswer((_) async => projects);
+      ).thenAnswer((_) async => activeProjects);
+      when(
+        () => client.projects.listProjectsInfo(
+          includeArchived: any(named: 'includeArchived', that: isTrue),
+          includeLatestDeployAttemptTime: any(
+            named: 'includeLatestDeployAttemptTime',
+            that: isTrue,
+          ),
+        ),
+      ).thenAnswer((_) async => [...activeProjects, archivedProject]);
     });
 
     tearDownAll(() {
@@ -114,14 +124,10 @@ void main() {
         );
       });
 
-      test('then outputs list of projects exluding those archived', () async {
+      test('then outputs no Deleted At column', () async {
         await commandResult;
 
-        expect(logger.lineCalls, isNotEmpty);
-        expect(
-          logger.lineCalls.map((call) => call.line),
-          isNot(contains('projectId2')),
-        );
+        expect(logger.lineCalls.first.line, isNot(contains('Deleted At')));
       });
     });
 
@@ -163,6 +169,33 @@ void main() {
                   'projectId2 | 2024-12-31 12:20:30 | 2024-12-31 12:20:30         | 2025-01-01 14:20:30',
             ),
           ]),
+        );
+      });
+    });
+
+    group('when executing project list with --all --format json', () {
+      late Future commandResult;
+      setUp(() async {
+        commandResult = cli.run([
+          'project',
+          'list',
+          '--all',
+          '--format',
+          'json',
+        ]);
+      });
+
+      test('then emits the deleted project with its archivedAt', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        final payload = jsonDecode(logger.rawCalls.single.content) as List;
+        expect(payload, hasLength(3));
+        final deleted = (payload[2] as Map)['project'] as Map;
+        expect(deleted['cloudProjectId'], 'projectId2');
+        expect(
+          deleted['archivedAt'],
+          DateTime.parse('2025-01-01 14:20:30').toUtc().toIso8601String(),
         );
       });
     });
@@ -269,6 +302,7 @@ void main() {
     setUpAll(() async {
       when(
         () => client.projects.listProjectsInfo(
+          includeArchived: any(named: 'includeArchived'),
           includeLatestDeployAttemptTime: any(
             named: 'includeLatestDeployAttemptTime',
             that: isTrue,

@@ -1970,14 +1970,18 @@ class EndpointProjects extends _i1.EndpointRef {
       .callServerEndpoint<List<_i3.Project>>('projects', 'listProjects', {});
 
   /// Fetches the list of projects the current user has access to.
-  /// If requested, the result includes the latest deploy attempt time
-  /// (or null if undeployed).
+  /// If requested, the result includes archived projects and
+  /// the latest deploy attempt time (or null if undeployed).
   _i2.Future<List<_i4.ProjectInfo>> listProjectsInfo({
+    bool? includeArchived,
     bool? includeLatestDeployAttemptTime,
   }) => caller.callServerEndpoint<List<_i4.ProjectInfo>>(
     'projects',
     'listProjectsInfo',
-    {'includeLatestDeployAttemptTime': includeLatestDeployAttemptTime},
+    {
+      'includeArchived': includeArchived,
+      'includeLatestDeployAttemptTime': includeLatestDeployAttemptTime,
+    },
   );
 
   /// Archives a project and its capsule and permanently deletes its infrastructure.
