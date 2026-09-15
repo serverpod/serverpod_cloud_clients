@@ -211,4 +211,55 @@ void main() {
       });
     });
   });
+
+  group('Given a structured log record with a multiline message', () {
+    test('when summarized then the message stays on one line', () {
+      final summary = summarizeLogContent(
+        '{"sessionLogId":1,"serverId":"a","time":"2026-01-01T00:00:00Z",'
+        '"logLevel":"info","message":"first line\\n  second line",'
+        '"order":0,"error":"StateError"}',
+      );
+
+      expect(summary, 'session=1  first line second line  error=StateError');
+    });
+  });
+
+  group('Given a Serverpod log entry without a record severity', () {
+    test('when its level is read then the entry log level is used', () {
+      final record = LogRecordBuilder()
+          .withSeverity(null)
+          .withContent(
+            '{"sessionLogId":1,"serverId":"a","time":"2026-01-01T00:00:00Z",'
+            '"logLevel":2,"message":"Careful","order":0}',
+          )
+          .build();
+
+      expect(logLevelOf(record), 'WARNING');
+    });
+  });
+
+  group('Given a log record with a severity', () {
+    test('when its level is read then the record severity is used', () {
+      final record = LogRecordBuilder()
+          .withSeverity('ERROR')
+          .withContent(
+            '{"sessionLogId":1,"serverId":"a","time":"2026-01-01T00:00:00Z",'
+            '"logLevel":1,"message":"Hi","order":0}',
+          )
+          .build();
+
+      expect(logLevelOf(record), 'ERROR');
+    });
+  });
+
+  group('Given a Serverpod log entry', () {
+    test('when summarized then its session id leads the line', () {
+      final summary = summarizeLogContent(
+        '{"sessionLogId":42,"serverId":"a","time":"2026-01-01T00:00:00Z",'
+        '"logLevel":1,"message":"Hi","order":0}',
+      );
+
+      expect(summary, startsWith('session=42  Hi'));
+    });
+  });
 }

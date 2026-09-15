@@ -56,6 +56,14 @@ enum LogOption<V> implements OptionDefinition<V> {
       defaultsTo: false,
       negatable: false,
     ),
+  ),
+  raw(
+    FlagOption(
+      argName: 'raw',
+      helpText: 'Print the log content exactly as stored, without parsing.',
+      defaultsTo: false,
+      negatable: false,
+    ),
   );
 
   const LogOption(this.option);
@@ -144,6 +152,7 @@ Examples
     var since = commandConfig.optionalValue(LogOption.since);
     final tailOpt = commandConfig.optionalValue(LogOption.tail);
     final internalAllOpt = commandConfig.value(LogOption.all);
+    final raw = commandConfig.value(LogOption.raw);
 
     final anyTimeSpanIsSet = until != null || since != null;
     if (internalAllOpt) {
@@ -176,7 +185,7 @@ Examples
           projectId: projectId,
           limit: limit,
         ),
-        textOutputUi: LogTailTextUi(utc: inUtc, limit: limit),
+        textOutputUi: LogTailTextUi(utc: inUtc, raw: raw, limit: limit),
       );
       return;
     }
@@ -190,7 +199,7 @@ Examples
         after: since,
         limit: limit,
       ),
-      textOutputUi: LogListTextUi(utc: inUtc),
+      textOutputUi: LogListTextUi(utc: inUtc, raw: raw),
     );
   }
 }
