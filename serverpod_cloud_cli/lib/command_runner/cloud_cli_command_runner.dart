@@ -486,6 +486,10 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
       return analyticsEnabled;
     }
 
+    if (globalConfiguration.nonInteractive) {
+      return false;
+    }
+
     final confirm = await logger.confirm(
       'Do you agree to sending command usage analytics to Serverpod?',
       defaultValue: true,
@@ -697,9 +701,18 @@ enum GlobalOption<V> implements OptionDefinition<V> {
   skipConfirmation(
     FlagOption(
       argName: 'yes',
+      helpText: 'Automatically accept confirmation prompts.',
+      negatable: false,
+      defaultsTo: false,
+    ),
+  ),
+  nonInteractive(
+    FlagOption(
+      argName: 'non-interactive',
       helpText:
-          'Automatically accept confirmation prompts.'
-          ' For use in non-interactive environments.',
+          'Never wait for user input, fail with an error instead.'
+          ' For use in non-interactive environments such as CI.'
+          ' Combine with --yes to accept confirmation prompts.',
       negatable: false,
       defaultsTo: false,
     ),
@@ -844,6 +857,8 @@ class GlobalConfiguration extends Configuration<GlobalOption> {
   String get signInPath => value(GlobalOption.signInPath);
 
   bool get skipConfirmation => value(GlobalOption.skipConfirmation);
+
+  bool get nonInteractive => value(GlobalOption.nonInteractive);
 
   OutputFormat get format => value(GlobalOption.format);
 

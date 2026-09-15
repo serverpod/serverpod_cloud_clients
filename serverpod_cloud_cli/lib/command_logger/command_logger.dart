@@ -3,7 +3,9 @@ import 'dart:io';
 import 'package:cli_tools/logger.dart' as cli;
 import 'package:cli_tools/prompts.dart' as prompts;
 import 'package:collection/collection.dart';
+import 'package:meta/meta.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/non_interactive_exceptions.dart';
 import 'package:serverpod_cloud_cli/shared/helpers/exception_user_message.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
 import 'package:serverpod_cloud_cli/util/inline_tui/inline_tui.dart';
@@ -531,12 +533,27 @@ class CommandLogger {
   /// ```bash
   /// <message prompt> [y/n]:
   /// ```
+  ///
+  /// Throws [UserInputRequiredException] in `--non-interactive` mode, unless
+  /// `--yes` answers the prompt.
   Future<bool> confirm(String message, {bool? defaultValue}) async {
     if (configuration?.skipConfirmation == true) {
       info('$message: y');
       return true;
     }
 
+    if (configuration?.nonInteractive == true) {
+      throw UserInputRequiredException.confirmation(message);
+    }
+
+    return promptConfirm(message, defaultValue: defaultValue);
+  }
+
+  /// Prompts the user for a `y/n` confirmation on the terminal.
+  ///
+  /// Subclasses override this to answer without a terminal.
+  @protected
+  Future<bool> promptConfirm(String message, {bool? defaultValue}) {
     return prompts.confirm(
       message,
       defaultValue: defaultValue,
@@ -554,7 +571,21 @@ class CommandLogger {
   /// ```bash
   /// <message prompt>:
   /// ```
+  ///
+  /// Throws [UserInputRequiredException] in `--non-interactive` mode.
   Future<String> input(String message, {String? defaultValue}) async {
+    if (configuration?.nonInteractive == true) {
+      throw UserInputRequiredException.input(message);
+    }
+
+    return promptInput(message, defaultValue: defaultValue);
+  }
+
+  /// Prompts the user for a string on the terminal.
+  ///
+  /// Subclasses override this to answer without a terminal.
+  @protected
+  Future<String> promptInput(String message, {String? defaultValue}) {
     return prompts.input(message, defaultValue: defaultValue, logger: _logger);
   }
 }

@@ -982,6 +982,64 @@ $password''');
       });
     });
 
+    group('when executing db wipe with --non-interactive and without --yes', () {
+      setUpAll(() {
+        when(
+          () => client.database.wipeDatabase(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenAnswer((_) async => Future.value());
+      });
+
+      tearDownAll(() {
+        reset(client.database);
+      });
+
+      late Future commandResult;
+      setUp(() {
+        commandResult = cli.run([
+          'db',
+          'wipe',
+          '--project',
+          projectId,
+          '--non-interactive',
+        ]);
+      });
+
+      tearDown(() {
+        clearInteractions(client.database);
+      });
+
+      test('then throws exit exception', () async {
+        await expectLater(commandResult, throwsA(isA<ExitException>()));
+      });
+
+      test('then logs error message with hint', () async {
+        await commandResult.catchError((_) {});
+
+        expect(logger.errorCalls, hasLength(1));
+        expect(
+          logger.errorCalls.single.message,
+          'A confirmation is required, but --non-interactive prevents waiting for it.',
+        );
+        expect(
+          logger.errorCalls.single.hint,
+          'Pass --yes to accept confirmation prompts, '
+          'or drop --non-interactive to answer interactively.',
+        );
+      });
+
+      test('then does not call wipeDatabase on client', () async {
+        await commandResult.catchError((_) {});
+
+        verifyNever(
+          () => client.database.wipeDatabase(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        );
+      });
+    });
+
     group('when executing db wipe without --yes', () {
       setUpAll(() {
         when(

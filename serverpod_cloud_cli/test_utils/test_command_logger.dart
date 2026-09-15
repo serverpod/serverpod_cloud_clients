@@ -548,7 +548,7 @@ class TestCommandLogger extends CommandLogger {
   }
 
   @override
-  Future<bool> confirm(String message, {bool? defaultValue}) async {
+  Future<bool> promptConfirm(String message, {bool? defaultValue}) async {
     if (printToStdout) {
       print('log confirm: $message');
     }
@@ -567,7 +567,7 @@ class TestCommandLogger extends CommandLogger {
   }
 
   @override
-  Future<String> input(String message, {String? defaultValue}) async {
+  Future<String> promptInput(String message, {String? defaultValue}) async {
     if (printToStdout) {
       print('log input: $message');
     }
