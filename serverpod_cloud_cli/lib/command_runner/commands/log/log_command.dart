@@ -52,7 +52,9 @@ enum LogOption<V> implements OptionDefinition<V> {
   tail(
     FlagOption(
       argName: 'tail',
-      helpText: 'Tail the log and get real time updates.',
+      helpText:
+          'Tail the log and get real time updates. '
+          'Cannot be combined with --since or --until.',
       defaultsTo: false,
       negatable: false,
     ),
@@ -156,8 +158,8 @@ Examples
       }
     } else if (tailOpt == true) {
       if (anyTimeSpanIsSet) {
-        logger.warning(
-          'The --tail option cannot be combined with --until or --since.',
+        throw CloudCliUsageException(
+          'The --tail option cannot be combined with --since or --until.',
         );
       }
     } else if (until != null && since != null && until.isBefore(since)) {
