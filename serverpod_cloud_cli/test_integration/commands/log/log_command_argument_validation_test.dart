@@ -2,6 +2,7 @@ import 'package:args/command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
 import '../../../test_utils/command_logger_matchers.dart';
@@ -283,94 +284,38 @@ void main() {
       () {
         late Future result;
         setUp(() async {
-          try {
-            result = cli.run([
-              'log',
-              '--tail',
-              '--until',
-              '2024-01-01T00:00:00Z',
-              '--project',
-              projectId,
-            ]);
-          } catch (_) {}
+          result = cli.run([
+            'log',
+            '--tail',
+            '--until',
+            '2024-01-01T00:00:00Z',
+            '--project',
+            projectId,
+          ]);
         });
 
-        test('then logs warning', () async {
-          try {
-            await result;
-          } catch (_) {}
-
-          expect(
-            logger.warningCalls.last,
-            equalsWarningCall(
-              message:
-                  'The --tail option cannot be combined with --until or --since.',
+        test('then throws UsageException', () async {
+          await expectLater(
+            result,
+            throwsA(
+              isA<UsageException>().having(
+                (e) => e.message,
+                'message',
+                contains(
+                  'The --tail option cannot be combined with --since or --until.',
+                ),
+              ),
             ),
           );
         });
-      },
-    );
 
-    group(
-      'when running log command with the hidden --all value together with --since flag',
-      () {
-        late Future result;
-        setUp(() async {
-          try {
-            result = cli.run([
-              'log',
-              '--all',
-              '--since',
-              '2024-01-01T00:00:00Z',
-              '--project',
-              projectId,
-            ]);
-          } catch (_) {}
-        });
+        test('then does not tail the log', () async {
+          await expectLater(result, throwsA(isA<UsageException>()));
 
-        test('then logs warning', () async {
-          try {
-            await result;
-          } catch (_) {}
-
-          expect(
-            logger.warningCalls.last,
-            equalsWarningCall(
-              message:
-                  'The --all option cannot be combined with --until or --since.',
-            ),
-          );
-        });
-      },
-    );
-
-    group(
-      'when running log command with --tail flag together with --until flag',
-      () {
-        late Future result;
-        setUp(() async {
-          try {
-            result = cli.run([
-              'log',
-              '--tail',
-              '--until',
-              '2024-01-01T00:00:00Z',
-              '--project',
-              projectId,
-            ]);
-          } catch (_) {}
-        });
-
-        test('then logs warning', () async {
-          try {
-            await result;
-          } catch (_) {}
-
-          expect(
-            logger.warningCalls.last,
-            equalsWarningCall(
-              message:
-                  'The --tail option cannot be combined with --until or --since.',
+          verifyNever(
+            () => client.logs.tailRecords(
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+              limit: any(named: 'limit'),
             ),
           );
         });
@@ -382,28 +327,52 @@ void main() {
       () {
         late Future result;
         setUp(() async {
-          try {
-            result = cli.run([
-              'log',
-              '--tail',
-              '--since',
-              '2024-01-01T00:00:00Z',
-              '--project',
-              projectId,
-            ]);
-          } catch (_) {}
+          result = cli.run([
+            'log',
+            '--tail',
+            '--since',
+            '2024-01-01T00:00:00Z',
+            '--project',
+            projectId,
+          ]);
         });
 
-        test('then logs warning', () async {
-          try {
-            await result;
-          } catch (_) {}
+        test('then throws UsageException', () async {
+          await expectLater(
+            result,
+            throwsA(
+              isA<UsageException>().having(
+                (e) => e.message,
+                'message',
+                contains(
+                  'The --tail option cannot be combined with --since or --until.',
+                ),
+              ),
+            ),
+          );
+        });
+      },
+    );
 
-          expect(
-            logger.warningCalls.last,
-            equalsWarningCall(
-              message:
-                  'The --tail option cannot be combined with --until or --since.',
+    group(
+      'when running log command with --tail flag together with a positional since value',
+      () {
+        late Future result;
+        setUp(() async {
+          result = cli.run(['log', '1h', '--tail', '--project', projectId]);
+        });
+
+        test('then throws UsageException', () async {
+          await expectLater(
+            result,
+            throwsA(
+              isA<UsageException>().having(
+                (e) => e.message,
+                'message',
+                contains(
+                  'The --tail option cannot be combined with --since or --until.',
+                ),
+              ),
             ),
           );
         });
