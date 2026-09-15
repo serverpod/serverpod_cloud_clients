@@ -403,8 +403,8 @@ commands:
               -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
               -f, --frequency=!: "How often a snapshot is taken."
               --day=: "The day for a weekly (1-7) or monthly (1-31) schedule. Defaults to 1. Not applicable to a daily schedule."
-              --hour=: "The hour of the day (0-23) to take the snapshot. Defaults to 0."
-              --retention=: "How long scheduled snapshots are kept before being automatically deleted (e.g. \"30d\"). Uses the platform default if omitted."
+              --hour=: "The hour of the day (0-23, UTC) to take the snapshot. Defaults to 0."
+              --retention=: "How long scheduled snapshots are kept before being automatically deleted (e.g. \"30d\"). Defaults to 35 days, which is also the maximum."
             completion:
               flag:
                 frequency: ["daily", "weekly", "monthly"]
