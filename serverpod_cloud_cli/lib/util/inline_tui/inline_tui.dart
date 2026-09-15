@@ -6,6 +6,8 @@
 library;
 
 export 'src/ansi_style.dart';
+export 'src/ansi_text.dart' show fitAnsiToColumns;
+export 'src/bottom_region_renderer.dart';
 export 'src/inline_terminal.dart';
 export 'src/scrolling_process.dart';
 export 'src/scrolling_section.dart';

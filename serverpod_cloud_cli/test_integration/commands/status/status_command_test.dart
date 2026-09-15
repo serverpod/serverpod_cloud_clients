@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
@@ -11,7 +12,9 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_pro
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
+import 'package:yaml_codec/yaml_codec.dart';
 
+import '../../../test/util/inline_tui/helpers/fake_terminal.dart';
 import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/test_command_logger.dart';
 
@@ -758,6 +761,245 @@ void main() {
       );
     });
   });
+
+  group('Given a running capsule when executing status live --watch', () {
+    late FakeTerminal terminal;
+    late Future<void> commandResult;
+
+    setUp(() {
+      terminal = FakeTerminal();
+      logger.inlineTerminal = terminal;
+      when(
+        () => client.status.getCapsuleRuntimeStatus(cloudCapsuleId: projectId),
+      ).thenAnswer((_) async {
+        Timer.run(terminal.sendInterrupt);
+        return CapsuleRuntimeStatusBuilder()
+            .withCloudCapsuleId(projectId)
+            .build();
+      });
+
+      commandResult = cli.run([
+        'status',
+        'live',
+        '--project',
+        projectId,
+        '--watch',
+      ]);
+    });
+
+    test('then completes without error when interrupted', () async {
+      await expectLater(commandResult, completes);
+    });
+
+    test('then draws the panel with the refresh footer', () async {
+      await commandResult;
+
+      expect(terminal.output, contains('● Running'));
+      expect(
+        terminal.output,
+        contains('Refreshing every 5s. Press Ctrl+C to stop.'),
+      );
+    });
+  });
+
+  group('Given the status changes while executing status live --watch', () {
+    late FakeTerminal terminal;
+
+    setUp(() async {
+      terminal = FakeTerminal();
+      logger.inlineTerminal = terminal;
+      final answers = [
+        CapsuleRuntimeStatusBuilder().withCloudCapsuleId(projectId).build(),
+        CapsuleRuntimeStatusBuilder()
+            .withCloudCapsuleId(projectId)
+            .withDegradedPodlets()
+            .build(),
+      ];
+      when(
+        () => client.status.getCapsuleRuntimeStatus(cloudCapsuleId: projectId),
+      ).thenAnswer((_) async {
+        final runtime = answers.removeAt(0);
+        if (answers.isEmpty) {
+          Timer.run(terminal.sendInterrupt);
+        }
+        return runtime;
+      });
+
+      await cli.run([
+        'status',
+        'live',
+        '--project',
+        projectId,
+        '--watch',
+        '--interval',
+        '1s',
+      ]);
+    });
+
+    test('then redraws the panel in place with the new status', () {
+      expect(
+        terminal.output,
+        stringContainsInOrder(['● Running', '\x1b[0J', '◑ Degraded']),
+      );
+    });
+  });
+
+  group('Given no terminal when executing status live --watch', () {
+    setUp(() async {
+      final terminal = FakeTerminal(hasTerminal: false);
+      logger.inlineTerminal = terminal;
+      when(
+        () => client.status.getCapsuleRuntimeStatus(cloudCapsuleId: projectId),
+      ).thenAnswer((_) async {
+        Timer.run(terminal.sendInterrupt);
+        return CapsuleRuntimeStatusBuilder()
+            .withCloudCapsuleId(projectId)
+            .build();
+      });
+
+      await cli.run(['status', 'live', '--project', projectId, '--watch']);
+    });
+
+    test('then prints the panel headed by the time it arrived', () {
+      expect(
+        panelLines(),
+        containsAllInOrder([startsWith('Status at '), '  Status    ● Running']),
+      );
+    });
+  });
+
+  group(
+    'Given a running capsule when executing status live --watch --format json',
+    () {
+      setUp(() async {
+        final terminal = FakeTerminal();
+        logger.inlineTerminal = terminal;
+        when(
+          () =>
+              client.status.getCapsuleRuntimeStatus(cloudCapsuleId: projectId),
+        ).thenAnswer((_) async {
+          Timer.run(terminal.sendInterrupt);
+          return CapsuleRuntimeStatusBuilder()
+              .withCloudCapsuleId(projectId)
+              .build();
+        });
+
+        await cli.run([
+          'status',
+          'live',
+          '--project',
+          projectId,
+          '--watch',
+          '--format',
+          'json',
+        ]);
+      });
+
+      test('then emits one json document for the status', () {
+        expect(logger.lineCalls, isEmpty);
+        final payload = jsonDecode(logger.rawCalls.single.content) as Map;
+        expect((payload['status'] as Map)['cloudCapsuleId'], projectId);
+      });
+    },
+  );
+
+  group(
+    'Given a running capsule when executing status live --watch --format yaml',
+    () {
+      setUp(() async {
+        final terminal = FakeTerminal();
+        logger.inlineTerminal = terminal;
+        when(
+          () =>
+              client.status.getCapsuleRuntimeStatus(cloudCapsuleId: projectId),
+        ).thenAnswer((_) async {
+          Timer.run(terminal.sendInterrupt);
+          return CapsuleRuntimeStatusBuilder()
+              .withCloudCapsuleId(projectId)
+              .build();
+        });
+
+        await cli.run([
+          'status',
+          'live',
+          '--project',
+          projectId,
+          '--watch',
+          '--format',
+          'yaml',
+        ]);
+      });
+
+      test('then emits one yaml document for the status', () {
+        expect(logger.lineCalls, isEmpty);
+        final payload = yamlDecode(logger.rawCalls.single.content) as Map;
+        expect((payload['status'] as Map)['cloudCapsuleId'], projectId);
+      });
+    },
+  );
+
+  group(
+    'Given the project does not exist when executing status live --watch',
+    () {
+      late Future<void> commandResult;
+
+      setUp(() {
+        logger.inlineTerminal = FakeTerminal();
+        when(
+          () =>
+              client.status.getCapsuleRuntimeStatus(cloudCapsuleId: projectId),
+        ).thenThrow(NotFoundException(message: 'Capsule $projectId not found'));
+
+        commandResult = cli.run([
+          'status',
+          'live',
+          '--project',
+          projectId,
+          '--watch',
+        ]);
+      });
+
+      test('then throws error exit exception', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then logs a not-found error that names the project', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+
+        expect(
+          logger.errorCalls.single,
+          equalsErrorCall(message: 'Project "$projectId" was not found.'),
+        );
+      });
+    },
+  );
+
+  group(
+    'Given a running capsule when executing status live with --interval but without --watch',
+    () {
+      setUp(() async {
+        stubRuntimeStatus(
+          CapsuleRuntimeStatusBuilder().withCloudCapsuleId(projectId).build(),
+        );
+
+        await cli.run([
+          'status',
+          'live',
+          '--project',
+          projectId,
+          '--interval',
+          '10s',
+        ]);
+      });
+
+      test('then warns that --interval has no effect', () {
+        expect(
+          logger.warningCalls.single.message,
+          'The --interval option has no effect without --watch.',
+        );
+      });
+    },
+  );
 
   group('Given the cli when printing the top-level help', () {
     setUp(() async {

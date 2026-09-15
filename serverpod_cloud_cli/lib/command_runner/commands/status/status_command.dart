@@ -42,7 +42,23 @@ Examples
 
 enum StatusLiveOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption()),
-  utc(UtcOption());
+  utc(UtcOption()),
+  watch(
+    FlagOption(
+      argName: 'watch',
+      helpText: 'Refresh the status until Ctrl+C is pressed.',
+      defaultsTo: false,
+      negatable: false,
+    ),
+  ),
+  interval(
+    DurationOption(
+      argName: 'interval',
+      helpText: 'How often --watch refreshes the status.',
+      defaultsTo: Duration(seconds: 5),
+      min: Duration(seconds: 1),
+    ),
+  );
 
   const StatusLiveOption(this.option);
 
@@ -71,6 +87,16 @@ Examples
 
     \$ $baseCommand status live --project my-project
 
+
+  Refresh the live status every 5 seconds until Ctrl+C is pressed.
+
+    \$ $baseCommand status live --watch
+
+
+  Refresh the live status every 30 seconds.
+
+    \$ $baseCommand status live --watch --interval 30s
+
 ''';
 
   CloudStatusLiveCommand({required super.logger})
@@ -83,13 +109,37 @@ Examples
   ) async {
     final projectId = commandConfig.value(StatusLiveOption.projectId);
     final inUtc = commandConfig.value(StatusLiveOption.utc);
+    final watch = commandConfig.value(StatusLiveOption.watch);
+    final interval = commandConfig.value(StatusLiveOption.interval);
+    final client = runner.serviceProvider.cloudApiClient;
+
+    if (watch) {
+      await renderCommand(
+        output,
+        operation: () async => StatusCommands.watchRuntimeStatus(
+          client,
+          projectId: projectId,
+          interval: interval,
+          stop: logger.inlineTerminal.interruptSignals,
+        ),
+        textOutputUi: RuntimeStatusWatchTextUi(
+          baseCommand: baseCommand,
+          utc: inUtc,
+          interval: interval,
+        ),
+      );
+      return;
+    }
+
+    if (commandConfig.valueSourceType(StatusLiveOption.interval) ==
+        ValueSourceType.arg) {
+      logger.warning('The --interval option has no effect without --watch.');
+    }
 
     await renderCommand(
       output,
-      operation: () => StatusCommands.fetchRuntimeStatus(
-        runner.serviceProvider.cloudApiClient,
-        projectId: projectId,
-      ),
+      operation: () =>
+          StatusCommands.fetchRuntimeStatus(client, projectId: projectId),
       textOutputUi: RuntimeStatusTextUi(baseCommand: baseCommand, utc: inUtc),
     );
   }
