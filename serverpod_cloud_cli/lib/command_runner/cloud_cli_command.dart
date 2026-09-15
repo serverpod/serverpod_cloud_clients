@@ -9,6 +9,7 @@ import 'package:serverpod_cloud_cli/command_runner/commands/auth/auth_login.dart
 import 'package:serverpod_cloud_cli/command_runner/helpers/billing_commands.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/non_interactive_exceptions.dart';
 import 'package:serverpod_cloud_cli/shared/helpers/common_exceptions_handler.dart'
     show commonClientExceptionExit, processCommonClientExceptions;
 import 'package:serverpod_cloud_cli/util/cli_authentication_key_manager.dart';
@@ -28,6 +29,15 @@ abstract class CloudCliCommand<O extends OptionDefinition>
   /// Whether to warn the user if their account is not in good standing.
   /// The default is true, subclasses can override to false.
   final bool warnIfBillingOverdue = true;
+
+  /// Whether the command is interactive by design and cannot run in
+  /// `--non-interactive` mode. The default is false, subclasses can override
+  /// to true.
+  bool get interactiveOnly => false;
+
+  /// The non-interactive alternative shown when an [interactiveOnly] command
+  /// is refused in `--non-interactive` mode.
+  String? get nonInteractiveHint => null;
 
   CloudCliCommand({required this.logger, super.options = const []})
     : super(wrapTextColumn: logger.wrapTextColumn);
@@ -70,37 +80,11 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
   GlobalConfiguration get globalConfiguration => runner.globalConfiguration;
 
   /// Runs this command. Subclasses should instead override [runWithOutput].
+  ///
+  /// The command options are resolved before the login is required, so a
+  /// usage error is reported without starting a login.
   @override
   Future<void> run() async {
-    final client = runner.serviceProvider.cloudApiClient;
-    final isAuthenticated =
-        await client.authKeyProvider?.isAuthenticated == true;
-
-    if (requireLogin && !isAuthenticated) {
-      await AuthLoginCommands.login(
-        logger: logger,
-        scloudDir: globalConfiguration.scloudDir,
-        consoleServer: globalConfiguration.consoleServer,
-        openBrowser: globalConfiguration.browser,
-        cloudApiClient: client,
-        persistent: true,
-        signInPath: globalConfiguration.signInPath,
-      );
-    }
-
-    if (isAuthenticated &&
-        warnIfBillingOverdue &&
-        globalConfiguration.warnBillingOverdue) {
-      await BillingCommands.warnIfOverdue(
-        logger: logger,
-        billing: runner.serviceProvider.cloudApiClient.billing,
-      );
-    }
-
-    await _runCommand();
-  }
-
-  Future<void> _runCommand() async {
     try {
       await super.run();
     } on FailureException catch (e, stackTrace) {
@@ -165,15 +149,66 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
 
   /// Runs this command with prepared configuration (options).
   ///
-  /// Creates a [CommandOutput] from the global `--format` option and
-  /// delegates to [runWithOutput]. Subclasses should override [runWithOutput].
+  /// Refuses an [interactiveOnly] command in `--non-interactive` mode,
+  /// requires the login if [requireLogin] is set, then creates a
+  /// [CommandOutput] from the global `--format` option and delegates to
+  /// [runWithOutput].
+  /// Subclasses should override [runWithOutput].
+  ///
+  /// Throws [CloudCliUsageException] if the command is [interactiveOnly] and
+  /// `--non-interactive` is set.
   @override
   Future<void> runWithConfig(Configuration<O> commandConfig) async {
+    if (interactiveOnly && globalConfiguration.nonInteractive) {
+      throw CloudCliUsageException(
+        'The $name command is interactive and cannot run with --non-interactive.',
+        hint: nonInteractiveHint,
+      );
+    }
+
+    await _requireLogin();
+
     final output = CommandOutput(
       format: globalConfiguration.format,
       logger: logger,
     );
     await runWithOutput(commandConfig, output);
+  }
+
+  /// Logs in if the command requires it and there is no active session,
+  /// and warns if the billing is overdue.
+  ///
+  /// Throws [NotLoggedInException] in `--non-interactive` mode instead of
+  /// starting the interactive login.
+  Future<void> _requireLogin() async {
+    final client = runner.serviceProvider.cloudApiClient;
+    final isAuthenticated =
+        await client.authKeyProvider?.isAuthenticated == true;
+
+    if (requireLogin && !isAuthenticated) {
+      if (globalConfiguration.nonInteractive) {
+        throw NotLoggedInException(baseCommand: baseCommand);
+      }
+
+      await AuthLoginCommands.login(
+        logger: logger,
+        scloudDir: globalConfiguration.scloudDir,
+        consoleServer: globalConfiguration.consoleServer,
+        openBrowser: globalConfiguration.browser,
+        cloudApiClient: client,
+        persistent: true,
+        signInPath: globalConfiguration.signInPath,
+      );
+    }
+
+    if (isAuthenticated &&
+        warnIfBillingOverdue &&
+        globalConfiguration.warnBillingOverdue) {
+      await BillingCommands.warnIfOverdue(
+        logger: logger,
+        billing: client.billing,
+      );
+    }
   }
 
   /// Runs this command with prepared configuration and output.

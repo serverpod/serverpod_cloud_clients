@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:config/config.dart' show UsageException;
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:mocktail/mocktail.dart';
@@ -89,6 +90,32 @@ void main() {
         expect(
           logger.terminalCommandCalls.first,
           equalsTerminalCommandCall(command: 'scloud auth logout'),
+        );
+      },
+    );
+  });
+
+  group('Given no stored credentials', () {
+    test(
+      'when logging in with --non-interactive then throws UsageException',
+      () async {
+        final result = cli.run([
+          'auth',
+          'login',
+          '--non-interactive',
+          '--config-dir',
+          testCacheFolderPath,
+        ]);
+
+        await expectLater(
+          result,
+          throwsA(
+            isA<UsageException>().having(
+              (e) => e.message,
+              'message',
+              'The login command is interactive and cannot run with --non-interactive.',
+            ),
+          ),
         );
       },
     );

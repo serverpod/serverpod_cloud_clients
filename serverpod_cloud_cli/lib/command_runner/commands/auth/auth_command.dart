@@ -64,6 +64,14 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
   bool get warnIfBillingOverdue => false;
 
   @override
+  bool get interactiveOnly => true;
+
+  @override
+  String get nonInteractiveHint =>
+      'Set the SERVERPOD_CLOUD_TOKEN environment variable, '
+      'or pass --token, to authenticate in a non-interactive environment.';
+
+  @override
   final name = 'login';
 
   @override

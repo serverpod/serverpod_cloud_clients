@@ -89,6 +89,14 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
     : super(options: LaunchOption.values);
 
   @override
+  bool get interactiveOnly => true;
+
+  @override
+  String get nonInteractiveHint =>
+      'Use `$baseCommand project create` and `$baseCommand deploy` '
+      'in a non-interactive environment.';
+
+  @override
   Future<void> runWithOutput(
     final Configuration commandConfig,
     final CommandOutput output,

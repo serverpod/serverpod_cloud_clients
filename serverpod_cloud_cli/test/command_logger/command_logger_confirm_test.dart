@@ -1,5 +1,6 @@
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/non_interactive_exceptions.dart';
 import 'package:test/test.dart';
 
 import '../../test_utils/test_command_logger.dart';
@@ -195,5 +196,57 @@ void main() {
 
     expect(stdout.output, 'Are you sure?: y\n');
     expect(result, isTrue);
+  });
+
+  test('Given --non-interactive option set '
+      'when calling confirm '
+      'then throws UserInputRequiredException', () async {
+    commandLogger.configuration = GlobalConfiguration.resolve(
+      args: ['--non-interactive'],
+    );
+
+    await expectLater(
+      commandLogger.confirm('Are you sure?'),
+      throwsA(
+        isA<UserInputRequiredException>().having((e) => e.errors, 'errors', [
+          'A confirmation is required, but --non-interactive prevents waiting for it.',
+        ]),
+      ),
+    );
+  });
+
+  test('Given --non-interactive and --yes options set '
+      'when calling confirm '
+      'then should immediately return true', () async {
+    commandLogger.configuration = GlobalConfiguration.resolve(
+      args: ['--non-interactive', '--yes'],
+    );
+
+    late final bool result;
+
+    await collectOutput(() async {
+      result = await commandLogger.confirm('Are you sure?');
+    });
+
+    expect(result, isTrue);
+  });
+
+  test('Given --non-interactive option set '
+      'when calling input '
+      'then throws UserInputRequiredException', () async {
+    commandLogger.configuration = GlobalConfiguration.resolve(
+      args: ['--non-interactive'],
+    );
+
+    await expectLater(
+      commandLogger.input('Name?'),
+      throwsA(
+        isA<UserInputRequiredException>().having(
+          (e) => e.hint,
+          'hint',
+          'Drop --non-interactive to answer interactively.',
+        ),
+      ),
+    );
   });
 }

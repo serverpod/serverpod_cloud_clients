@@ -118,6 +118,30 @@ void main() {
     });
 
     group('and no previous invocation', () {
+      test('when invoking command with --non-interactive'
+          ' then does not ask user for consent', () async {
+        await cli.run([
+          '--config-dir',
+          settingsDir,
+          '--non-interactive',
+          'version',
+        ]);
+
+        expect(logger.confirmCalls, isEmpty);
+      });
+
+      test('when invoking command with --non-interactive'
+          ' then does not send analytics event', () async {
+        await cli.run([
+          '--config-dir',
+          settingsDir,
+          '--non-interactive',
+          'version',
+        ]);
+
+        expect(analyticsEvents, isEmpty);
+      });
+
       test('when invoking command'
           ' then asks user for consent', () async {
         logger.answerNextConfirmsWith([false]);

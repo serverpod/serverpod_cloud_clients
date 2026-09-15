@@ -16,7 +16,8 @@ persistentFlags:
   -d, --project-dir=: "The path to the Serverpod Cloud project server directory."
   --project-config-file=: "The path to the Serverpod Cloud project configuration file (defaults to <server-package>/scloud.yaml)"
   --timeout=: "The timeout for the connection to the Serverpod Cloud API."
-  --yes: "Automatically accept confirmation prompts. For use in non-interactive environments."
+  --yes: "Automatically accept confirmation prompts."
+  --non-interactive: "Never wait for user input, fail with an error instead. For use in non-interactive environments such as CI. Combine with --yes to accept confirmation prompts."
   --format=: "Selects the command output format."
 exclusiveFlags:
   - [analytics, no-analytics]

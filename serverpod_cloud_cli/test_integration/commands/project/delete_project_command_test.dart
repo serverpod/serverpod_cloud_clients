@@ -52,6 +52,106 @@ void main() {
     });
 
     group(
+      'and existing project when deleting the project with --non-interactive and --yes',
+      () {
+        late HttpServer server;
+        late Future commandResult;
+
+        setUp(() async {
+          final serverBuilder = HttpServerBuilder();
+
+          serverBuilder.withMethodResponse(
+            'projects',
+            'deleteProject',
+            (_) =>
+                (200, ProjectBuilder().withCloudProjectId(projectId).build()),
+          );
+
+          final (startedServer, serverAddress) = await serverBuilder.build();
+          server = startedServer;
+
+          commandResult = cli.run([
+            'project',
+            'delete',
+            projectId,
+            '--non-interactive',
+            '--yes',
+            '--api-url',
+            serverAddress.toString(),
+            '--config-dir',
+            testCacheFolderPath,
+          ]);
+        });
+
+        tearDown(() async {
+          await server.close(force: true);
+        });
+
+        test('then command completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then logs no confirm message', () async {
+          await commandResult;
+
+          expect(logger.confirmCalls, isEmpty);
+        });
+      },
+    );
+
+    group('and existing project when deleting the project with --non-interactive '
+        'and without --yes', () {
+      late HttpServer server;
+      late Future commandResult;
+
+      setUp(() async {
+        final (startedServer, serverAddress) = await HttpServerBuilder()
+            .build();
+        server = startedServer;
+
+        commandResult = cli.run([
+          'project',
+          'delete',
+          projectId,
+          '--non-interactive',
+          '--api-url',
+          serverAddress.toString(),
+          '--config-dir',
+          testCacheFolderPath,
+        ]);
+      });
+
+      tearDown(() async {
+        await server.close(force: true);
+      });
+
+      test('then command throws exit exception', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then logs error message with hint', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          logger.errorCalls.single,
+          equalsErrorCall(
+            message:
+                'A confirmation is required, but --non-interactive prevents waiting for it.',
+            hint:
+                'Pass --yes to accept confirmation prompts, '
+                'or drop --non-interactive to answer interactively.',
+          ),
+        );
+      });
+
+      test('then logs no confirm message', () async {
+        await commandResult.catchError((_) {});
+
+        expect(logger.confirmCalls, isEmpty);
+      });
+    });
+
+    group(
       'and existing project when deleting the project and accepting the prompt',
       () {
         late Uri localServerAddress;
