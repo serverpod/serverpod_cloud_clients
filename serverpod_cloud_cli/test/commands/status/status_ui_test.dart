@@ -130,4 +130,36 @@ void main() {
       });
     });
   });
+
+  group('Given a RuntimeStatusWatchTextUi without a terminal', () {
+    group('when rendered for two statuses', () {
+      late String stdout;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const RuntimeStatusWatchTextUi(
+            baseCommand: 'scloud',
+            utc: true,
+            interval: Duration(seconds: 5),
+          ),
+          data: Stream.fromIterable([
+            CapsuleRuntimeStatusBuilder().build(),
+            CapsuleRuntimeStatusBuilder().withDegradedPodlets().build(),
+          ]),
+        );
+        stdout = io.stdout;
+      });
+
+      test('then stdout contains a panel for each status in order', () {
+        expect(stdout, stringContainsInOrder(['Running', 'Degraded']));
+      });
+
+      test('then each panel is headed by the time it arrived', () {
+        expect(
+          RegExp(r'Status at .* \(UTC\)').allMatches(stdout),
+          hasLength(2),
+        );
+      });
+    });
+  });
 }

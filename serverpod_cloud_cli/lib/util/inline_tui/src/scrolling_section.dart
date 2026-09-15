@@ -3,6 +3,7 @@ import 'dart:collection';
 
 import 'package:serverpod_cloud_shared/serverpod_cloud_shared.dart';
 
+import 'ansi_text.dart';
 import 'bottom_region_renderer.dart';
 import 'inline_terminal.dart';
 
@@ -408,7 +409,7 @@ class ScrollingSection {
     int width,
   ) {
     final plain = '$marker $text $elapsed';
-    final fitted = _fit(plain, width);
+    final fitted = fitAnsiToColumns(plain, width);
     if (!_terminal.supportsColor || fitted != plain) {
       return fitted.contains(_esc) ? '$fitted$_reset' : fitted;
     }
@@ -416,55 +417,12 @@ class ScrollingSection {
   }
 
   String _format(String line, int width, {required bool dimmed}) {
-    final text = _fit(line, width);
+    final text = fitAnsiToColumns(line, width);
     if (!_terminal.supportsColor) return text;
     // A trailing reset prevents any color codes in the subprocess output (or
     // the dim style) from bleeding into following rows or later output.
     final needsReset = dimmed || text.contains(_esc);
     if (!needsReset) return text;
     return '${dimmed ? _dimStyle : ''}$text$_reset';
-  }
-
-  /// Matches a single ANSI escape (CSI) sequence, e.g. `\x1b[2m` or `\x1b[0m`.
-  static final RegExp _ansiEscape = RegExp('$_esc\\[[0-9;?]*[a-zA-Z]');
-
-  /// The number of visible columns in [text], ignoring ANSI escape sequences.
-  static int _visibleLength(String text) =>
-      text.replaceAll(_ansiEscape, '').length;
-
-  /// Truncates [text] to at most [columns] - 1 visible columns, appending an
-  /// ellipsis when it is clipped.
-  ///
-  /// ANSI escape sequences are not counted as visible columns and are never cut
-  /// mid-sequence, so colored subprocess output stays well-formed even when it
-  /// exceeds the terminal width.
-  static String _fit(String text, int columns) {
-    final maxWidth = columns - 1;
-    if (maxWidth <= 0 || _visibleLength(text) <= maxWidth) return text;
-    if (maxWidth <= 1) return _takeVisibleColumns(text, maxWidth);
-    return '${_takeVisibleColumns(text, maxWidth - 1)}\u2026';
-  }
-
-  /// Returns the prefix of [text] holding its first [maxVisible] visible
-  /// columns, copying any ANSI escape sequences verbatim (they do not count
-  /// towards the visible width). Escape sequences immediately following the cut
-  /// point (e.g. a trailing reset) are kept so colors stay balanced.
-  static String _takeVisibleColumns(String text, int maxVisible) {
-    final buffer = StringBuffer();
-    var visible = 0;
-    var i = 0;
-    while (i < text.length) {
-      final escape = _ansiEscape.matchAsPrefix(text, i);
-      if (escape != null) {
-        buffer.write(text.substring(i, escape.end));
-        i = escape.end;
-        continue;
-      }
-      if (visible >= maxVisible) break;
-      buffer.writeCharCode(text.codeUnitAt(i));
-      visible++;
-      i++;
-    }
-    return buffer.toString();
   }
 }

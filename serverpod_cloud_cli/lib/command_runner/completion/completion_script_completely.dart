@@ -1582,7 +1582,7 @@ _scloud_completions() {
       ;;
 
     'status live'*)
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --token --project-dir -d --project-config-file --timeout --yes --format --project -p --utc --no-utc -u")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "--quiet -q --verbose -v --analytics --no-analytics -a --version --token --project-dir -d --project-config-file --timeout --yes --format --project -p --utc --no-utc -u --watch --interval")" -- "$cur")
       ;;
 
     'settings'*'-d')

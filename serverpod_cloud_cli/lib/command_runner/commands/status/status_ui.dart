@@ -1,9 +1,14 @@
+import 'dart:async';
+
 import 'package:cli_tools/logger.dart' as cli show AnsiStyle;
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
+import 'package:serverpod_cloud_cli/util/common.dart';
 import 'package:serverpod_cloud_cli/util/duration_formatter.dart';
+import 'package:serverpod_cloud_cli/util/inline_tui/inline_tui.dart'
+    show BottomRegionRenderer, fitAnsiToColumns;
 
 class RuntimeStatusTextUi extends OutputWidget {
   final String baseCommand;
@@ -21,17 +26,35 @@ class RuntimeStatusTextUi extends OutputWidget {
   }
 }
 
-enum _LatestDeployPhase { building, failed, cancelled }
+/// Renders each status of a watched project.
+///
+/// On an interactive terminal the panel is redrawn in place on every status,
+/// and again every [interval] so relative times stay current.
+class RuntimeStatusWatchTextUi extends OutputWidget {
+  final String baseCommand;
+  final bool utc;
+  final Duration interval;
+
+  const RuntimeStatusWatchTextUi({
+    required this.baseCommand,
+    required this.utc,
+    required this.interval,
+  });
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    return _RuntimeStatusWatch(
+      statuses: context.get<Stream<CapsuleRuntimeStatus>>(),
+      baseCommand: baseCommand,
+      utc: utc,
+      interval: interval,
+    );
+  }
+}
 
 class _RuntimeStatusPanel extends OutputWidget {
-  static const _indent = '  ';
-  static const _labelWidth = 10;
-  static const _labelStyle = cli.AnsiStyle.darkGray;
-  static const _dimStyle = cli.AnsiStyle.darkGray;
-  static const _commandStyle = cli.AnsiStyle.cyan;
-
-  final String baseCommand;
   final CapsuleRuntimeStatus runtime;
+  final String baseCommand;
   final bool utc;
 
   const _RuntimeStatusPanel({
@@ -42,15 +65,140 @@ class _RuntimeStatusPanel extends OutputWidget {
 
   @override
   void render({required final CommandLogger logger}) {
+    final lines = _RuntimeStatusLines(
+      logger: logger,
+      runtime: runtime,
+      baseCommand: baseCommand,
+      utc: utc,
+    ).build();
+    for (final line in lines) {
+      logger.line(line);
+    }
+  }
+}
+
+class _RuntimeStatusWatch extends OutputWidget {
+  final Stream<CapsuleRuntimeStatus> statuses;
+  final String baseCommand;
+  final bool utc;
+  final Duration interval;
+
+  const _RuntimeStatusWatch({
+    required this.statuses,
+    required this.baseCommand,
+    required this.utc,
+    required this.interval,
+  });
+
+  @override
+  Future<void> renderAsync({required final CommandLogger logger}) async {
+    if (logger.inlineTerminal.hasTerminal) {
+      await _redrawInPlace(logger);
+    } else {
+      await _printEachStatus(logger);
+    }
+  }
+
+  Future<void> _redrawInPlace(final CommandLogger logger) async {
+    final terminal = logger.inlineTerminal;
+    final renderer = BottomRegionRenderer(terminal);
+    final footer = logger.wrapStyle(
+      'Refreshing every ${friendlyFormatDuration(interval)}. '
+      'Press Ctrl+C to stop.',
+      cli.AnsiStyle.darkGray,
+    );
+    CapsuleRuntimeStatus? latest;
+
+    void draw() {
+      final runtime = latest;
+      if (runtime == null) {
+        return;
+      }
+      final lines = [..._linesFor(logger, runtime), '', '  $footer'];
+      renderer.render([
+        for (final line in lines)
+          fitAnsiToColumns(line, terminal.columns, closeStyles: true),
+      ]);
+    }
+
+    final redrawTimer = Timer.periodic(interval, (_) => draw());
+    renderer.hideCursor();
+    try {
+      await for (final runtime in statuses) {
+        latest = runtime;
+        draw();
+      }
+    } finally {
+      redrawTimer.cancel();
+      renderer.finish();
+    }
+  }
+
+  Future<void> _printEachStatus(final CommandLogger logger) async {
+    var isFirst = true;
+    await for (final runtime in statuses) {
+      if (!isFirst) {
+        logger.line('');
+      }
+      isFirst = false;
+      final receivedAt = DateTime.now().toLabeledTzString(
+        utc,
+        numTimeStampChars,
+      );
+      logger.line('Status at $receivedAt');
+      for (final line in _linesFor(logger, runtime)) {
+        logger.line(line);
+      }
+    }
+  }
+
+  List<String> _linesFor(
+    final CommandLogger logger,
+    final CapsuleRuntimeStatus runtime,
+  ) {
+    return _RuntimeStatusLines(
+      logger: logger,
+      runtime: runtime,
+      baseCommand: baseCommand,
+      utc: utc,
+    ).build();
+  }
+}
+
+enum _LatestDeployPhase { building, failed, cancelled }
+
+class _RuntimeStatusLines {
+  static const _indent = '  ';
+  static const _labelWidth = 10;
+  static const _labelStyle = cli.AnsiStyle.darkGray;
+  static const _dimStyle = cli.AnsiStyle.darkGray;
+  static const _commandStyle = cli.AnsiStyle.cyan;
+
+  final CommandLogger logger;
+  final String baseCommand;
+  final CapsuleRuntimeStatus runtime;
+  final bool utc;
+  final List<String> _lines = [];
+
+  _RuntimeStatusLines({
+    required this.logger,
+    required this.runtime,
+    required this.baseCommand,
+    required this.utc,
+  });
+
+  List<String> build() {
     final state = runtime.status.status;
     final hint = _resolveHint(state);
 
-    logger.line('');
-    _writeStatusRow(logger, state);
-    _writePodletsRow(logger, state);
-    _writeDeploymentRows(logger, state);
-    _writeHint(logger, hint);
-    _writeUrlFooter(logger, state, hasHint: hint != null);
+    _lines.clear();
+    _lines.add('');
+    _writeStatusRow(state);
+    _writePodletsRow(state);
+    _writeDeploymentRows(state);
+    _writeHint(hint);
+    _writeUrlFooter(state, hasHint: hint != null);
+    return _lines;
   }
 
   _LatestDeployPhase? get _latestPhase {
@@ -63,26 +211,25 @@ class _RuntimeStatusPanel extends OutputWidget {
     };
   }
 
-  void _writeStatusRow(final CommandLogger logger, final CapsuleState state) {
+  void _writeStatusRow(final CapsuleState state) {
     if (state == CapsuleState.notProvisioned &&
         _latestPhase == _LatestDeployPhase.building) {
-      final stateWord = _style(logger, '◌ Building', cli.AnsiStyle.yellow);
-      final suffix =
-          ' ${_style(logger, '— first deploy in progress', _dimStyle)}';
-      _writeRow(logger, 'Status', '$stateWord$suffix');
+      final stateWord = _style('◌ Building', cli.AnsiStyle.yellow);
+      final suffix = ' ${_style('— first deploy in progress', _dimStyle)}';
+      _writeRow('Status', '$stateWord$suffix');
       return;
     }
 
     final look = _stateLook(state);
-    final stateWord = _style(logger, '${look.glyph} ${look.label}', look.style);
+    final stateWord = _style('${look.glyph} ${look.label}', look.style);
     final diagnosis = _diagnosis(state);
     final suffix = diagnosis != null
-        ? ' ${_style(logger, '— $diagnosis', _dimStyle)}'
+        ? ' ${_style('— $diagnosis', _dimStyle)}'
         : '';
-    _writeRow(logger, 'Status', '$stateWord$suffix');
+    _writeRow('Status', '$stateWord$suffix');
   }
 
-  void _writePodletsRow(final CommandLogger logger, final CapsuleState state) {
+  void _writePodletsRow(final CapsuleState state) {
     final deployment = runtime.status.deployment;
     final desired = deployment?.desiredReplicas;
     final ready = deployment?.readyReplicas;
@@ -99,17 +246,10 @@ class _RuntimeStatusPanel extends OutputWidget {
         : ready > 0
         ? cli.AnsiStyle.yellow
         : cli.AnsiStyle.red;
-    _writeRow(
-      logger,
-      'Podlets',
-      _style(logger, '$ready/$desired ready', style),
-    );
+    _writeRow('Podlets', _style('$ready/$desired ready', style));
   }
 
-  void _writeDeploymentRows(
-    final CommandLogger logger,
-    final CapsuleState state,
-  ) {
+  void _writeDeploymentRows(final CapsuleState state) {
     final servingLabel = switch (state) {
       CapsuleState.ready ||
       CapsuleState.progressing ||
@@ -120,7 +260,6 @@ class _RuntimeStatusPanel extends OutputWidget {
     final serving = runtime.serving;
     if (serving != null) {
       _writeAttemptRows(
-        logger,
         servingLabel,
         serving,
         prefix: 'Deployed',
@@ -133,7 +272,7 @@ class _RuntimeStatusPanel extends OutputWidget {
       if (!pendingSeparator) {
         return;
       }
-      logger.line('');
+      _lines.add('');
       pendingSeparator = false;
     }
 
@@ -141,7 +280,6 @@ class _RuntimeStatusPanel extends OutputWidget {
     if (incoming != null) {
       separateFromServing();
       _writeAttemptRows(
-        logger,
         'Incoming',
         incoming,
         prefix: 'Started',
@@ -149,13 +287,10 @@ class _RuntimeStatusPanel extends OutputWidget {
       );
     }
 
-    _writeLatestAttemptRows(logger, separateFromServing);
+    _writeLatestAttemptRows(separateFromServing);
   }
 
-  void _writeLatestAttemptRows(
-    final CommandLogger logger,
-    final void Function() separateFromServing,
-  ) {
+  void _writeLatestAttemptRows(final void Function() separateFromServing) {
     final latest = runtime.latestAttempt;
     final phase = _latestPhase;
     if (latest == null || phase == null) {
@@ -167,7 +302,6 @@ class _RuntimeStatusPanel extends OutputWidget {
     switch (phase) {
       case _LatestDeployPhase.building:
         _writeAttemptRows(
-          logger,
           'Building',
           latest,
           prefix: 'Started',
@@ -175,7 +309,6 @@ class _RuntimeStatusPanel extends OutputWidget {
         );
       case _LatestDeployPhase.failed:
         _writeAttemptRows(
-          logger,
           'Failed',
           latest,
           prefix: 'Deployment',
@@ -184,7 +317,6 @@ class _RuntimeStatusPanel extends OutputWidget {
         );
       case _LatestDeployPhase.cancelled:
         _writeAttemptRows(
-          logger,
           'Cancelled',
           latest,
           when: latest.endedAt ?? latest.startedAt,
@@ -194,7 +326,6 @@ class _RuntimeStatusPanel extends OutputWidget {
   }
 
   void _writeAttemptRows(
-    final CommandLogger logger,
     final String label,
     final DeployAttemptSummary summary, {
     final String? prefix,
@@ -206,7 +337,7 @@ class _RuntimeStatusPanel extends OutputWidget {
     final by = deployerName != null ? ' by $deployerName' : '';
     final time = friendlyPastTimeFormat(when, inUtc: utc);
     final lead = prefix != null ? '$prefix $time' : time;
-    _writeRow(logger, label, '$lead$by', labelStyle: labelStyle);
+    _writeRow(label, '$lead$by', labelStyle: labelStyle);
 
     final commitHash = summary.commitHash;
     final commitMessage = summary.commitMessage;
@@ -214,9 +345,7 @@ class _RuntimeStatusPanel extends OutputWidget {
       return;
     }
     final commitLine = [commitHash, commitMessage].nonNulls.join('  ');
-    logger.line(
-      '$_indent${' ' * _labelWidth}${_style(logger, commitLine, _dimStyle)}',
-    );
+    _lines.add('$_indent${' ' * _labelWidth}${_style(commitLine, _dimStyle)}');
   }
 
   ({String message, String? command})? _resolveHint(CapsuleState state) {
@@ -268,24 +397,20 @@ class _RuntimeStatusPanel extends OutputWidget {
     };
   }
 
-  void _writeHint(
-    final CommandLogger logger,
-    final ({String message, String? command})? hint,
-  ) {
+  void _writeHint(final ({String message, String? command})? hint) {
     if (hint == null) {
       return;
     }
 
     final command = hint.command;
     final line = command != null
-        ? '${_style(logger, hint.message, _dimStyle)} ${_style(logger, command, _commandStyle)}'
-        : _style(logger, hint.message, _dimStyle);
-    logger.line('');
-    logger.line('$_indent$line');
+        ? '${_style(hint.message, _dimStyle)} ${_style(command, _commandStyle)}'
+        : _style(hint.message, _dimStyle);
+    _lines.add('');
+    _lines.add('$_indent$line');
   }
 
   void _writeUrlFooter(
-    final CommandLogger logger,
     final CapsuleState state, {
     required final bool hasHint,
   }) {
@@ -293,7 +418,7 @@ class _RuntimeStatusPanel extends OutputWidget {
       return;
     }
 
-    logger.line('');
+    _lines.add('');
     for (final (label, host) in [
       ('api', 'https://$runtimeProjectId.api.${HostConstants.tenantDomain}/'),
       (
@@ -302,8 +427,8 @@ class _RuntimeStatusPanel extends OutputWidget {
       ),
       ('web', 'https://$runtimeProjectId.${HostConstants.tenantDomain}/'),
     ]) {
-      logger.line(
-        '$_indent${_style(logger, '${label.padRight(_labelWidth)}$host', _dimStyle)}',
+      _lines.add(
+        '$_indent${_style('${label.padRight(_labelWidth)}$host', _dimStyle)}',
       );
     }
   }
@@ -311,13 +436,12 @@ class _RuntimeStatusPanel extends OutputWidget {
   String get runtimeProjectId => runtime.status.cloudCapsuleId;
 
   void _writeRow(
-    final CommandLogger logger,
     final String label,
     final String value, {
     final cli.AnsiStyle labelStyle = _labelStyle,
   }) {
-    logger.line(
-      '$_indent${_style(logger, label.padRight(_labelWidth), labelStyle)}$value',
+    _lines.add(
+      '$_indent${_style(label.padRight(_labelWidth), labelStyle)}$value',
     );
   }
 
@@ -380,11 +504,7 @@ class _RuntimeStatusPanel extends OutputWidget {
     return '$notReady of $desired podlets $verb not ready';
   }
 
-  String _style(
-    final CommandLogger logger,
-    final String text,
-    final cli.AnsiStyle? style,
-  ) {
+  String _style(final String text, final cli.AnsiStyle? style) {
     if (style == null) {
       return text;
     }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:async/async.dart' show StreamGroup;
@@ -23,17 +24,99 @@ abstract class StatusCommands {
         cloudCapsuleId: projectId,
       );
     } on CapsuleStatusUnavailableException {
-      throw FailureException(
-        error: 'Could not retrieve the podlet status for project "$projectId".',
-        hint:
-            'The status service is temporarily unavailable — '
-            'try again shortly.',
-      );
+      throw _statusUnavailableFailure(projectId);
     } on NotFoundException {
-      throw FailureException(error: 'Project "$projectId" was not found.');
+      throw _projectNotFoundFailure(projectId);
     } on Exception catch (e, s) {
       throw FailureException.nested(e, s, 'Failed to get the podlet status');
     }
+  }
+
+  /// Polls the runtime status of [projectId] every [interval] until [stop]
+  /// emits, then closes.
+  ///
+  /// Emits the first status, then each status that differs from the previous
+  /// one. A [CapsuleStatusUnavailableException] after the first status skips
+  /// that poll. Any other failure ends the stream with a [FailureException].
+  static Stream<CapsuleRuntimeStatus> watchRuntimeStatus(
+    final Client cloudApiClient, {
+    required final String projectId,
+    required final Duration interval,
+    required final Stream<void> stop,
+  }) {
+    late final StreamController<CapsuleRuntimeStatus> controller;
+    StreamSubscription<void>? stopSubscription;
+    Timer? pollTimer;
+    String? lastStatusJson;
+    var watching = true;
+
+    Future<void> release() async {
+      watching = false;
+      pollTimer?.cancel();
+      await stopSubscription?.cancel();
+    }
+
+    Future<void> poll() async {
+      final FailureException failure;
+      try {
+        final status = await cloudApiClient.status.getCapsuleRuntimeStatus(
+          cloudCapsuleId: projectId,
+        );
+        if (!watching) return;
+        final statusJson = jsonEncode(status.toJson());
+        if (statusJson != lastStatusJson) {
+          lastStatusJson = statusJson;
+          controller.add(status);
+        }
+        pollTimer = Timer(interval, () => unawaited(poll()));
+        return;
+      } on CapsuleStatusUnavailableException {
+        if (lastStatusJson != null) {
+          if (watching) {
+            pollTimer = Timer(interval, () => unawaited(poll()));
+          }
+          return;
+        }
+        failure = _statusUnavailableFailure(projectId);
+      } on NotFoundException {
+        failure = _projectNotFoundFailure(projectId);
+      } on Exception catch (e, s) {
+        failure = FailureException.nested(
+          e,
+          s,
+          'Failed to get the podlet status',
+        );
+      }
+      if (!watching) return;
+      controller.addError(failure);
+      await release();
+      unawaited(controller.close());
+    }
+
+    controller = StreamController<CapsuleRuntimeStatus>(
+      onListen: () {
+        stopSubscription = stop.listen((_) async {
+          await release();
+          unawaited(controller.close());
+        });
+        unawaited(poll());
+      },
+      onCancel: release,
+    );
+    return controller.stream;
+  }
+
+  static FailureException _statusUnavailableFailure(final String projectId) {
+    return FailureException(
+      error: 'Could not retrieve the podlet status for project "$projectId".',
+      hint:
+          'The status service is temporarily unavailable — '
+          'try again shortly.',
+    );
+  }
+
+  static FailureException _projectNotFoundFailure(final String projectId) {
+    return FailureException(error: 'Project "$projectId" was not found.');
   }
 
   static Future<({DateTime? startedAt, List<DeployAttemptStage> stages})>
