@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.0.0 - 2026-09-15
+
+### Fixed
+
+- **Default snapshot retention** - Scheduled snapshots without an explicitly configured retention now default to 35 days instead of silently expiring after 24 hours.
+
+### Changed
+
+- **CLI schedule clarity** - Updated `scloud db schedule set` to explicitly display the 35-day default retention and indicate that hours are set in UTC.
+
+### Removed
+
+- **Indefinite snapshot retention** - Removed the option to keep scheduled snapshots indefinitely in the console to align with platform limits.
+
 ## [1.0.0-rc.1] - 2026-09-15
 
 ### Added
