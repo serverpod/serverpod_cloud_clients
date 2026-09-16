@@ -47,6 +47,69 @@ String _singleLine(final String value) {
   return value.replaceAll(RegExp(r'\s+'), ' ').trim();
 }
 
+/// Returns the record as a map for structured output.
+/// A JSON object or list in [LogRecord.content] is emitted as a value,
+/// not as a string, unless [raw] is set.
+Map<String, Object?> structuredLogRecord(
+  final LogRecord record, {
+  required final bool raw,
+}) {
+  final json = record.toJson();
+  if (raw) return json;
+
+  final decoded = LogPayload.decode(record.content);
+  if (decoded is Map || decoded is List) {
+    json['content'] = decoded;
+  }
+  return json;
+}
+
+class _StructuredLogRecordFormatter extends OutputFormatter<LogRecord, String> {
+  final OutputFormatter<Object, String> formatter;
+  final bool raw;
+
+  const _StructuredLogRecordFormatter({
+    required this.formatter,
+    required this.raw,
+  }) : super(utc: true);
+
+  @override
+  String format(final LogRecord record) {
+    return formatter.format(structuredLogRecord(record, raw: raw));
+  }
+}
+
+class LogListStructuredUi extends OutputWidget {
+  final OutputFormatter<Object, String> formatter;
+  final bool raw;
+
+  const LogListStructuredUi({required this.formatter, this.raw = false});
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    final records = context.get<List<LogRecord>>();
+    return RawStringWidget(
+      formatter.format([
+        for (final record in records) structuredLogRecord(record, raw: raw),
+      ]),
+    );
+  }
+}
+
+class LogTailStructuredUi extends OutputWidget {
+  final OutputFormatter<Object, String> formatter;
+  final bool raw;
+
+  const LogTailStructuredUi({required this.formatter, this.raw = false});
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    return FormattedStreamStringWidget<LogRecord>(
+      formatter: _StructuredLogRecordFormatter(formatter: formatter, raw: raw),
+    );
+  }
+}
+
 final _buildLogRecordTableColumns = [
   TableColumnFormatter<LogRecord>(
     'Timestamp',
