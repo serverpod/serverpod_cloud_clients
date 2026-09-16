@@ -2,12 +2,13 @@ import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/log/log_ui.dart'
-    show LogListTextUi, LogTailTextUi;
+    show LogListStructuredUi, LogListTextUi, LogTailStructuredUi, LogTailTextUi;
 import 'package:serverpod_cloud_cli/command_runner/commands/log/logs_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart'
     show DateTimeOrDurationOption, ProjectIdOption, UtcOption;
 import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
-import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
+import 'package:serverpod_cloud_cli/util/output/output.dart'
+    show CommandOutput, JsonOutputFormatter, YamlOutputFormatter;
 
 const _defaultLogLimit = 50;
 
@@ -188,6 +189,14 @@ Examples
           limit: limit,
         ),
         textOutputUi: LogTailTextUi(utc: inUtc, raw: raw, limit: limit),
+        jsonOutputUi: LogTailStructuredUi(
+          formatter: const JsonOutputFormatter(),
+          raw: raw,
+        ),
+        yamlOutputUi: LogTailStructuredUi(
+          formatter: const YamlOutputFormatter.document(),
+          raw: raw,
+        ),
       );
       return;
     }
@@ -202,6 +211,14 @@ Examples
         limit: limit,
       ),
       textOutputUi: LogListTextUi(utc: inUtc, raw: raw),
+      jsonOutputUi: LogListStructuredUi(
+        formatter: const JsonOutputFormatter(),
+        raw: raw,
+      ),
+      yamlOutputUi: LogListStructuredUi(
+        formatter: const YamlOutputFormatter(),
+        raw: raw,
+      ),
     );
   }
 }

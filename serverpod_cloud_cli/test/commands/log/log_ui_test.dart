@@ -252,6 +252,47 @@ void main() {
     });
   });
 
+  group('Given a log record holding a JSON object', () {
+    final record = LogRecordBuilder()
+        .withContent('{"message":"Hi","error":"StateError"}')
+        .build();
+
+    test('when projected for structured output then content is a map', () {
+      final json = structuredLogRecord(record, raw: false);
+
+      expect(json['content'], {'message': 'Hi', 'error': 'StateError'});
+    });
+
+    test('when projected with raw then content stays the stored string', () {
+      final json = structuredLogRecord(record, raw: true);
+
+      expect(json['content'], '{"message":"Hi","error":"StateError"}');
+    });
+  });
+
+  group('Given a log record holding plain text', () {
+    test('when projected for structured output then content is the text', () {
+      final record = LogRecordBuilder().withContent('Server started').build();
+
+      final json = structuredLogRecord(record, raw: false);
+
+      expect(json['content'], 'Server started');
+    });
+  });
+
+  group('Given a log record holding a JSON scalar', () {
+    test(
+      'when projected for structured output then content stays a string',
+      () {
+        final record = LogRecordBuilder().withContent('42').build();
+
+        final json = structuredLogRecord(record, raw: false);
+
+        expect(json['content'], '42');
+      },
+    );
+  });
+
   group('Given a Serverpod log entry', () {
     test('when summarized then its session id leads the line', () {
       final summary = summarizeLogContent(

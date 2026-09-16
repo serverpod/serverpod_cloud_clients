@@ -50,7 +50,7 @@ class LogPayload {
   bool get isStructured => fields.isNotEmpty || headline != raw;
 
   static LogPayload parse(String content) {
-    final Object? decoded = _decode(content);
+    final Object? decoded = decode(content);
     if (decoded is! Map<String, Object?>) {
       return LogPayload(raw: content, headline: content);
     }
@@ -122,7 +122,9 @@ class LogPayload {
     return '$value';
   }
 
-  static Object? _decode(String content) {
+  /// Decodes [content] as JSON, unwrapping string-encoded JSON.
+  /// Returns null when the content is empty or not valid JSON.
+  static Object? decode(String content) {
     final String trimmed = content.trim();
     if (trimmed.isEmpty) return null;
 

@@ -400,6 +400,18 @@ void _stubLogs(final ClientMock client, {required final String projectId}) {
         .withContent('Ready to accept connections')
         .withSeverity(null)
         .build(),
+    LogRecordBuilder()
+        .withCloudIds(projectId)
+        .withRecordId('3')
+        .withTimestamp(timestamp)
+        .withContent(
+          '{"sessionLogId":42,"serverId":"server-instance-1",'
+          '"time":"2024-01-01T00:00:00Z","logLevel":"error",'
+          '"message":"Failed to connect to database","order":0,'
+          '"error":"SocketException"}',
+        )
+        .withSeverity('ERROR')
+        .build(),
   ];
 
   when(

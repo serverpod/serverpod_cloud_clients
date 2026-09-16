@@ -97,6 +97,95 @@ void main() {
         );
       });
     });
+
+    group('when calling log with --format json', () {
+      setUp(() async {
+        await cli.run([
+          'log',
+          '--since',
+          '1m',
+          '--format',
+          'json',
+          '--project',
+          projectId,
+        ]);
+      });
+
+      test('then the content is emitted as a JSON object', () async {
+        expect(logger.lineCalls, isEmpty);
+        final payload = jsonDecode(logger.rawCalls.single.content) as List;
+        final content = (payload.single as Map)['content'] as Map;
+        expect(content['message'], 'Boom');
+        expect(content['error'], 'StateError');
+      });
+    });
+
+    group('when calling log with --format yaml', () {
+      setUp(() async {
+        await cli.run([
+          'log',
+          '--since',
+          '1m',
+          '--format',
+          'yaml',
+          '--project',
+          projectId,
+        ]);
+      });
+
+      test('then the content is emitted as a YAML map', () async {
+        expect(logger.lineCalls, isEmpty);
+        final payload = yamlDecode(logger.rawCalls.single.content) as List;
+        final content = (payload.single as Map)['content'] as Map;
+        expect(content['message'], 'Boom');
+      });
+    });
+
+    group('when calling log with --raw and --format json', () {
+      setUp(() async {
+        await cli.run([
+          'log',
+          '--since',
+          '1m',
+          '--raw',
+          '--format',
+          'json',
+          '--project',
+          projectId,
+        ]);
+      });
+
+      test('then the content is emitted as the stored string', () async {
+        final payload = jsonDecode(logger.rawCalls.single.content) as List;
+        expect((payload.single as Map)['content'], jsonContent);
+      });
+    });
+
+    group('when tailing log with --format json', () {
+      setUp(() async {
+        when(
+          () => client.logs.tailRecords(
+            cloudCapsuleId: projectId,
+            limit: any(named: 'limit'),
+          ),
+        ).thenAnswer((_) => Stream.fromIterable([jsonRecord]));
+
+        await cli.run([
+          'log',
+          '--tail',
+          '--format',
+          'json',
+          '--project',
+          projectId,
+        ]);
+      });
+
+      test('then each document holds the content as a JSON object', () async {
+        expect(logger.lineCalls, isEmpty);
+        final document = jsonDecode(logger.rawCalls.single.content) as Map;
+        expect((document['content'] as Map)['message'], 'Boom');
+      });
+    });
   });
 
   group('Given stored credentials', () {
