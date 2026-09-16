@@ -12,7 +12,7 @@ import 'select_list_style.dart';
 ///
 /// When [highlightBySelection] is true, selected rows use the highlight style
 /// and the navigation pointer is omitted; otherwise the cursor row is
-/// highlighted.
+/// highlighted. A select-all row, when the model has one, is rendered first.
 List<String> buildSelectListLines<T>(
   SelectListModel<T> model, {
   required SelectListStyle style,
@@ -25,11 +25,31 @@ List<String> buildSelectListLines<T>(
   final lines = <String>[];
   if (header != null) lines.add(_fit(header, columns));
 
+  final selectAllLabel = model.selectAllLabel;
+  if (selectAllLabel != null && model.hasSelectAll) {
+    final highlighted = highlightBySelection
+        ? model.allSelected
+        : model.selectAllHighlighted;
+    final pointer = highlighted && !highlightBySelection
+        ? style.pointer
+        : style.noPointer;
+    final marker = model.allSelected ? style.checkedBox : style.uncheckedBox;
+    lines.add(
+      _decorate(
+        _fit('$pointer $marker $selectAllLabel', columns),
+        highlighted: highlighted,
+        enabled: true,
+        style: style,
+        useAnsiStyles: useAnsiStyles,
+      ),
+    );
+  }
+
   for (var i = 0; i < model.items.length; i++) {
     final item = model.items[i];
     final highlighted = highlightBySelection
         ? model.isSelected(i)
-        : i == model.highlightedIndex;
+        : !model.selectAllHighlighted && i == model.highlightedIndex;
     final pointer = highlightBySelection
         ? style.noPointer
         : (highlighted ? style.pointer : style.noPointer);

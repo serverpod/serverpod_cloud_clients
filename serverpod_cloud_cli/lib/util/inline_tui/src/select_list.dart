@@ -98,6 +98,10 @@ abstract final class SelectList {
   /// [minSelections] and [maxSelections] constrain how many items may be
   /// selected. Enter only confirms once at least [minSelections] are selected.
   ///
+  /// [selectAllLabel] adds a first row that toggles every enabled option and
+  /// starts highlighted. Throws an [ArgumentError] when combined with
+  /// [maxSelections].
+  ///
   /// [isEnabled] returns whether an option can be selected (defaults to true).
   ///
   /// [style] customizes glyphs and ANSI colors (defaults to [SelectListStyle]).
@@ -110,6 +114,7 @@ abstract final class SelectList {
     Iterable<T> initiallySelected = const [],
     int minSelections = 0,
     int? maxSelections,
+    String? selectAllLabel,
     bool Function(T option)? isEnabled,
     SelectListStyle? style,
   }) async {
@@ -122,6 +127,7 @@ abstract final class SelectList {
       multiSelect: true,
       minSelections: minSelections,
       maxSelections: maxSelections,
+      selectAllLabel: selectAllLabel,
       initiallySelected: initialIndices,
     );
 

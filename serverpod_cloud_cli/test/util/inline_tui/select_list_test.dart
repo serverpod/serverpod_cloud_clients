@@ -291,6 +291,26 @@ void main() {
     });
 
     test(
+      'when toggling the select-all row then it returns every option',
+      () async {
+        final term = FakeTerminal();
+        final future = SelectList.chooseMultiple<String>(
+          options: ['Apple', 'Banana', 'Cherry'],
+          selectAllLabel: 'Select all',
+          terminal: term,
+        );
+
+        await pumpEventQueue();
+        expect(term.output, contains('> [ ] Select all'));
+        term.sendBytes(_space);
+        await pumpEventQueue();
+        term.sendBytes(_enter);
+
+        expect(await future, ['Apple', 'Banana', 'Cherry']);
+      },
+    );
+
+    test(
       'when nothing is selected and min is 1 then Enter is ignored',
       () async {
         final term = FakeTerminal();

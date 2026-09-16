@@ -434,6 +434,7 @@ abstract class Launch {
           '${logger.wrapStyle('Set them later with `$baseCommand password set`.', cli.AnsiStyle.darkGray)}',
       options: options,
       initiallySelected: initiallySelected,
+      selectAllLabel: 'Select all',
       terminal: logger.inlineTerminal,
       style: SelectListStyle(highlightStyle: _projectFactStyle.ansiCode),
     );

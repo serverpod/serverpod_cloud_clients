@@ -7,6 +7,8 @@ SelectListModel<String> _model(
   bool multiSelect = false,
   int minSelections = 0,
   int? maxSelections,
+  String? selectAllLabel,
+  Iterable<int> initiallySelected = const [],
   Set<int> disabled = const {},
 }) {
   return SelectListModel<String>(
@@ -21,6 +23,8 @@ SelectListModel<String> _model(
     multiSelect: multiSelect,
     minSelections: minSelections,
     maxSelections: maxSelections,
+    selectAllLabel: selectAllLabel,
+    initiallySelected: initiallySelected,
   );
 }
 
@@ -133,6 +137,176 @@ void main() {
       model.handleKey(const TuiKey(TuiKeyType.space)); // b ignored
 
       expect(model.selectedValues, ['a']);
+    });
+  });
+
+  group('Given a multi-select model with a select-all row', () {
+    test('when created then the select-all row is highlighted and '
+        'highlightedItem is null', () {
+      final model = _model(
+        ['a', 'b', 'c'],
+        multiSelect: true,
+        selectAllLabel: 'All',
+      );
+      expect(model.selectAllHighlighted, isTrue);
+      expect(model.highlightedItem, isNull);
+      expect(model.allSelected, isFalse);
+    });
+
+    test('when pressing Space on the row then every item is selected', () {
+      final model = _model(
+        ['a', 'b', 'c'],
+        multiSelect: true,
+        selectAllLabel: 'All',
+      );
+      model.handleKey(const TuiKey(TuiKeyType.space));
+      expect(model.selectedValues, ['a', 'b', 'c']);
+      expect(model.allSelected, isTrue);
+    });
+
+    test(
+      'when pressing Space twice on the row then the selection is cleared',
+      () {
+        final model = _model(
+          ['a', 'b', 'c'],
+          multiSelect: true,
+          selectAllLabel: 'All',
+        );
+        model.handleKey(const TuiKey(TuiKeyType.space));
+        model.handleKey(const TuiKey(TuiKeyType.space));
+        expect(model.selectedValues, isEmpty);
+      },
+    );
+
+    test(
+      'when some items are selected then Space on the row selects the rest',
+      () {
+        final model = _model(
+          ['a', 'b', 'c'],
+          multiSelect: true,
+          selectAllLabel: 'All',
+        );
+        model.handleKey(const TuiKey(TuiKeyType.arrowDown));
+        model.handleKey(const TuiKey(TuiKeyType.space)); // a
+        model.handleKey(const TuiKey(TuiKeyType.arrowUp));
+        model.handleKey(const TuiKey(TuiKeyType.space));
+        expect(model.selectedValues, ['a', 'b', 'c']);
+      },
+    );
+
+    test(
+      'when pressing Space on the row then disabled items stay unselected',
+      () {
+        final model = _model(
+          ['a', 'b', 'c'],
+          multiSelect: true,
+          selectAllLabel: 'All',
+          disabled: {1},
+        );
+        model.handleKey(const TuiKey(TuiKeyType.space));
+        expect(model.selectedValues, ['a', 'c']);
+        expect(model.allSelected, isTrue);
+      },
+    );
+
+    test('when every item starts selected then the row is checked and Space '
+        'clears the selection', () {
+      final model = _model(
+        ['a', 'b', 'c'],
+        multiSelect: true,
+        selectAllLabel: 'All',
+        initiallySelected: const [0, 1, 2],
+      );
+      expect(model.allSelected, isTrue);
+
+      model.handleKey(const TuiKey(TuiKeyType.space));
+      expect(model.selectedValues, isEmpty);
+    });
+
+    test('when navigating down then the first item is highlighted', () {
+      final model = _model(
+        ['a', 'b', 'c'],
+        multiSelect: true,
+        selectAllLabel: 'All',
+      );
+      model.handleKey(const TuiKey(TuiKeyType.arrowDown));
+      expect(model.selectAllHighlighted, isFalse);
+      expect(model.highlightedIndex, 0);
+    });
+
+    test(
+      'when navigating up from the first item then the row is highlighted',
+      () {
+        final model = _model(
+          ['a', 'b', 'c'],
+          multiSelect: true,
+          selectAllLabel: 'All',
+        );
+        model.handleKey(const TuiKey(TuiKeyType.arrowDown));
+        model.handleKey(const TuiKey(TuiKeyType.arrowUp));
+        expect(model.selectAllHighlighted, isTrue);
+      },
+    );
+
+    test('when pressing End and Home then highlight jumps to last item and '
+        'back to the row', () {
+      final model = _model(
+        ['a', 'b', 'c'],
+        multiSelect: true,
+        selectAllLabel: 'All',
+      );
+      model.handleKey(const TuiKey(TuiKeyType.end));
+      expect(model.selectAllHighlighted, isFalse);
+      expect(model.highlightedIndex, 2);
+      model.handleKey(const TuiKey(TuiKeyType.home));
+      expect(model.selectAllHighlighted, isTrue);
+    });
+
+    test(
+      'when pressing Enter on the row then the current set is submitted',
+      () {
+        final model = _model(
+          ['a', 'b', 'c'],
+          multiSelect: true,
+          selectAllLabel: 'All',
+        );
+        final status = model.handleKey(const TuiKey(TuiKeyType.enter));
+        expect(status, SelectListStatus.submitted);
+        expect(model.selectedValues, isEmpty);
+      },
+    );
+
+    test(
+      'when no item is enabled then the row is absent and not highlighted',
+      () {
+        final model = _model(
+          ['a', 'b'],
+          multiSelect: true,
+          selectAllLabel: 'All',
+          disabled: {0, 1},
+        );
+        expect(model.hasSelectAll, isFalse);
+        expect(model.selectAllHighlighted, isFalse);
+      },
+    );
+
+    test('when combined with single-select then it throws ArgumentError', () {
+      expect(
+        () => _model(['a'], selectAllLabel: 'All'),
+        throwsA(isA<ArgumentError>()),
+      );
+    });
+
+    test('when combined with maxSelections then it throws ArgumentError', () {
+      expect(
+        () => _model(
+          ['a'],
+          multiSelect: true,
+          maxSelections: 1,
+          selectAllLabel: 'All',
+        ),
+        throwsA(isA<ArgumentError>()),
+      );
     });
   });
 

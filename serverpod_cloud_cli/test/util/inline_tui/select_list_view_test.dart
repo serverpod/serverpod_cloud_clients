@@ -10,10 +10,12 @@ import 'helpers/fake_terminal.dart';
 SelectListModel<String> _model(
   List<String> labels, {
   bool multiSelect = false,
+  String? selectAllLabel,
 }) {
   return SelectListModel<String>(
     items: [for (final l in labels) SelectListItem(value: l, label: l)],
     multiSelect: multiSelect,
+    selectAllLabel: selectAllLabel,
   );
 }
 
@@ -47,6 +49,62 @@ void main() {
 
       expect(lines[0], '> [x] Apple');
       expect(lines[1], '  [ ] Banana');
+    });
+
+    test('when a select-all row is present then it is rendered first with the '
+        'pointer', () {
+      final model = _model(
+        ['Apple', 'Banana'],
+        multiSelect: true,
+        selectAllLabel: 'Select all',
+      );
+      final lines = buildSelectListLines(
+        model,
+        style: style,
+        useAnsiStyles: useAnsiStyles,
+        columns: 80,
+      );
+
+      expect(lines[0], '> [ ] Select all');
+      expect(lines[1], '  [ ] Apple');
+      expect(lines[2], '  [ ] Banana');
+    });
+
+    test('when no item is enabled then the select-all row is not rendered', () {
+      final model = SelectListModel<String>(
+        items: const [
+          SelectListItem(value: 'Apple', label: 'Apple', enabled: false),
+        ],
+        multiSelect: true,
+        selectAllLabel: 'Select all',
+      );
+      final lines = buildSelectListLines(
+        model,
+        style: style,
+        useAnsiStyles: useAnsiStyles,
+        columns: 80,
+      );
+
+      expect(lines, ['> [ ] Apple']);
+    });
+
+    test('when all items are selected then the select-all row is checked', () {
+      final model = _model(
+        ['Apple', 'Banana'],
+        multiSelect: true,
+        selectAllLabel: 'Select all',
+      );
+      model.handleKey(const TuiKey(TuiKeyType.space));
+      final lines = buildSelectListLines(
+        model,
+        style: style,
+        useAnsiStyles: useAnsiStyles,
+        columns: 80,
+      );
+
+      expect(lines[0], '> [x] Select all');
+      expect(lines[1], '  [x] Apple');
+      expect(lines[2], '  [x] Banana');
     });
 
     test('when a header and footer are given then they bracket the rows', () {
@@ -122,6 +180,49 @@ void main() {
       expect(lines[1], contains('[ ] Banana'));
       expect(lines[2], startsWith(highlight));
       expect(lines[2], contains('[x] Cherry'));
+    });
+
+    test('when highlightBySelection is true and only some items are selected '
+        'then the select-all row is not highlighted', () {
+      final model = _model(
+        ['Apple', 'Banana'],
+        multiSelect: true,
+        selectAllLabel: 'Select all',
+      );
+      model.handleKey(const TuiKey(TuiKeyType.arrowDown));
+      model.handleKey(const TuiKey(TuiKeyType.space));
+
+      final lines = buildSelectListLines(
+        model,
+        style: style,
+        useAnsiStyles: useAnsiStyles,
+        columns: 80,
+        highlightBySelection: true,
+      );
+
+      expect(lines[0], '  [ ] Select all');
+    });
+
+    test('when highlightBySelection is true and all items are selected then '
+        'the select-all row is highlighted', () {
+      final model = _model(
+        ['Apple', 'Banana'],
+        multiSelect: true,
+        selectAllLabel: 'Select all',
+      );
+      model.handleKey(const TuiKey(TuiKeyType.space));
+
+      final lines = buildSelectListLines(
+        model,
+        style: style,
+        useAnsiStyles: useAnsiStyles,
+        columns: 80,
+        highlightBySelection: true,
+      );
+
+      final highlight = SelectListStyle.defaultHighlightStyle.ansiCode;
+      expect(lines[0], startsWith(highlight));
+      expect(lines[0], contains('  [x] Select all'));
     });
   });
 

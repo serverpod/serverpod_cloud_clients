@@ -53,8 +53,13 @@ class SelectListModel<T> {
   /// Only relevant when [multiSelect] is true.
   final int? maxSelections;
 
+  /// The label of a select-all row shown above the items, or null for none.
+  /// Only allowed when [multiSelect] is true and [maxSelections] is null.
+  final String? selectAllLabel;
+
   final Set<int> _selectedIndices = <int>{};
   int _highlightedIndex = 0;
+  bool _selectAllHighlighted = false;
   SelectListStatus _status = SelectListStatus.active;
 
   /// Creates a model for [items].
@@ -62,14 +67,36 @@ class SelectListModel<T> {
   /// When [multiSelect] is false the list behaves as a single-choice list where
   /// Enter confirms the highlighted item. When true, Space toggles the
   /// highlighted item and Enter confirms the current set.
+  ///
+  /// When [selectAllLabel] is given and at least one item is enabled, a
+  /// select-all row is shown first and starts highlighted. Space on it selects
+  /// every enabled item, or clears the selection when all are already selected.
   SelectListModel({
     required this.items,
     this.multiSelect = false,
     this.minSelections = 0,
     this.maxSelections,
+    this.selectAllLabel,
     int initialIndex = 0,
     Iterable<int> initiallySelected = const [],
   }) {
+    if (selectAllLabel != null) {
+      if (!multiSelect) {
+        throw ArgumentError.value(
+          selectAllLabel,
+          'selectAllLabel',
+          'requires multiSelect',
+        );
+      }
+      if (maxSelections != null) {
+        throw ArgumentError.value(
+          selectAllLabel,
+          'selectAllLabel',
+          'cannot be combined with maxSelections',
+        );
+      }
+      _selectAllHighlighted = hasSelectAll;
+    }
     if (items.isNotEmpty) {
       final safeInitialIndex = initialIndex < 0
           ? 0
@@ -91,14 +118,36 @@ class SelectListModel<T> {
   }
 
   /// The index of the currently highlighted item.
+  ///
+  /// Not meaningful while [selectAllHighlighted] is true.
   int get highlightedIndex => _highlightedIndex;
+
+  /// Whether a select-all row is shown. Requires [selectAllLabel] and at
+  /// least one enabled item.
+  bool get hasSelectAll =>
+      selectAllLabel != null && items.any((item) => item.enabled);
+
+  /// Whether the select-all row is currently highlighted.
+  bool get selectAllHighlighted => _selectAllHighlighted;
+
+  /// Whether every enabled item is selected (and at least one exists).
+  bool get allSelected {
+    final enabled = _enabledIndices;
+    return enabled.isNotEmpty && enabled.every(_selectedIndices.contains);
+  }
+
+  Iterable<int> get _enabledIndices => [
+    for (var i = 0; i < items.length; i++)
+      if (items[i].enabled) i,
+  ];
 
   /// The indices of the currently selected items, in ascending order.
   List<int> get selectedIndices => _selectedIndices.toList()..sort();
 
-  /// The currently highlighted item, or null when the list is empty.
+  /// The currently highlighted item, or null when the list is empty or the
+  /// select-all row is highlighted.
   SelectListItem<T>? get highlightedItem =>
-      items.isEmpty ? null : items[_highlightedIndex];
+      items.isEmpty || _selectAllHighlighted ? null : items[_highlightedIndex];
 
   /// The current status of the interaction.
   SelectListStatus get status => _status;
@@ -142,11 +191,19 @@ class SelectListModel<T> {
       case TuiKeyType.arrowDown:
         _moveHighlight(1);
       case TuiKeyType.home:
-        _moveHighlightTo(_firstEnabledFrom(0, 1));
+        if (hasSelectAll) {
+          _selectAllHighlighted = true;
+        } else {
+          _moveHighlightTo(_firstEnabledFrom(0, 1));
+        }
       case TuiKeyType.end:
         _moveHighlightTo(_firstEnabledFrom(items.length - 1, -1));
       case TuiKeyType.space:
-        _toggleHighlighted();
+        if (_selectAllHighlighted) {
+          _toggleAll();
+        } else {
+          _toggleHighlighted();
+        }
       case TuiKeyType.enter:
         _submit();
       case TuiKeyType.ctrlC:
@@ -177,14 +234,30 @@ class SelectListModel<T> {
   }
 
   void _moveHighlight(int direction) {
+    if (_selectAllHighlighted) {
+      if (direction > 0) _moveHighlightTo(_firstEnabledFrom(0, 1));
+      return;
+    }
     final next = _firstEnabledFrom(_highlightedIndex + direction, direction);
     if (next != null) {
       _highlightedIndex = next;
+    } else if (direction < 0 && hasSelectAll) {
+      _selectAllHighlighted = true;
     }
   }
 
   void _moveHighlightTo(int? index) {
-    if (index != null) _highlightedIndex = index;
+    if (index == null) return;
+    _highlightedIndex = index;
+    _selectAllHighlighted = false;
+  }
+
+  void _toggleAll() {
+    if (allSelected) {
+      _selectedIndices.clear();
+    } else {
+      _selectedIndices.addAll(_enabledIndices);
+    }
   }
 
   void _toggleHighlighted() {
