@@ -4,6 +4,17 @@ import 'package:test/test.dart';
 
 void main() {
   group('Given an admin project with payments omitted', () {
+    test('when mapped to a list row then the plan product id is included', () {
+      final row = AdminProjectListRow.fromAdminProjectInfo(
+        AdminProjectInfoBuilder()
+            .withPlanProductId('growth-private:0')
+            .withSubscriptionId('orb_sub_1')
+            .build(),
+      );
+
+      expect(row.planProductId, 'growth-private:0');
+    });
+
     test('when mapped to a list row then overdue fields are absent', () {
       final row = AdminProjectListRow.fromAdminProjectInfo(
         AdminProjectInfoBuilder()
@@ -28,6 +39,7 @@ void main() {
         AdminProjectInfoBuilder().withSubscriptionId('orb_sub_1').build(),
       );
 
+      expect(row.toJson()['planProductId'], 'closed-beta:0');
       expect(row.toJson().containsKey('oldestOverdueUnpaidAmount'), isFalse);
       expect(row.toJson().containsKey('oldestOverdueUnpaidDueDate'), isFalse);
       expect(row.toJson().containsKey('newestOverdueUnpaidAmount'), isFalse);

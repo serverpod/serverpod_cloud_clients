@@ -125,6 +125,14 @@ void main() {
         expect(lines, contains(contains('Developer: dev@example.com')));
       });
 
+      test('then command outputs plan product ids', () async {
+        await commandResult.catchError((_) {});
+
+        final lines = logger.lineCalls.map((call) => call.line);
+        expect(lines, contains(contains('Plan Product Id')));
+        expect(lines, contains(contains('closed-beta:0')));
+      });
+
       test('then command outputs orb subscription ids', () async {
         await commandResult.catchError((_) {});
 
@@ -336,6 +344,7 @@ void main() {
         expect(logger.rawCalls, hasLength(2));
         final first = jsonDecode(logger.rawCalls[0].content) as Map;
         expect((first['project'] as Map)['cloudProjectId'], 'projectId');
+        expect(first['planProductId'], 'closed-beta:0');
         expect(first['subscriptionId'], 'orb_sub_1');
         expect(first.containsKey('oldestOverdueUnpaidAmount'), isFalse);
         expect(first.containsKey('totalAmountOverdue'), isFalse);
@@ -479,6 +488,7 @@ void main() {
         expect(logger.rawCalls, hasLength(2));
         final first = yamlDecode(logger.rawCalls[0].content) as Map;
         expect((first['project'] as Map)['cloudProjectId'], 'projectId');
+        expect(first['planProductId'], 'closed-beta:0');
         expect(first['subscriptionId'], 'orb_sub_1');
         expect(first.containsKey('totalAmountOverdue'), isFalse);
         final second = yamlDecode(logger.rawCalls[1].content) as Map;

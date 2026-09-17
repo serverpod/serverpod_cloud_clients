@@ -31,6 +31,7 @@ void main() {
                         .withUserOwner(owner),
                   )
                   .build(),
+              planProductId: 'closed-beta:0',
               subscriptionId: 'orb_sub_1',
             ),
           ]),
@@ -44,6 +45,7 @@ void main() {
         expect(stdout, contains('Created At (UTC)'));
         expect(stdout, contains('Owner'));
         expect(stdout, contains('Users'));
+        expect(stdout, contains('Plan Product Id'));
         expect(stdout, contains('Orb Subscription Id'));
       });
 
@@ -63,6 +65,10 @@ void main() {
 
       test('then stdout contains the owner email', () {
         expect(stdout, contains('owner@example.com'));
+      });
+
+      test('then stdout contains the plan product id', () {
+        expect(stdout, contains('closed-beta:0'));
       });
 
       test('then stdout contains the orb subscription id', () {
@@ -93,6 +99,7 @@ void main() {
                         .withArchivedAt(DateTime.utc(2025, 1, 2, 3, 4, 5)),
                   )
                   .build(),
+              planProductId: 'closed-beta:0',
               subscriptionId: 'orb_sub_1',
             ),
           ]),
@@ -122,6 +129,7 @@ void main() {
                     ProjectBuilder().withCloudProjectId('my-project'),
                   )
                   .build(),
+              planProductId: 'closed-beta:0',
               subscriptionId: 'orb_sub_1',
               includePaymentsStatus: true,
               oldestOverdueUnpaidAmount: '10.00',

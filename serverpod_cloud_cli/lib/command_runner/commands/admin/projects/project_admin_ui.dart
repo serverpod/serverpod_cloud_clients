@@ -36,6 +36,10 @@ class AdminProjectListTextUi extends OutputWidget {
             getter: (row) => row.projectInfo.latestDeployAttemptTime?.timestamp,
           ),
           TableColumnFormatter.forElement(
+            'Plan Product Id',
+            getter: (row) => row.planProductId,
+          ),
+          TableColumnFormatter.forElement(
             'Orb Subscription Id',
             getter: (row) => row.subscriptionId,
           ),
@@ -77,6 +81,7 @@ class AdminProjectListTextUi extends OutputWidget {
         19,
         if (includeArchived) 19,
         19,
+        20,
         19,
         if (includePaymentsStatus) ...[8, 10, 8, 10, 8],
         33,

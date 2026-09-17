@@ -3,6 +3,7 @@ import 'package:ground_control_client/ground_control_client.dart';
 class AdminProjectListRow implements SerializableModel {
   const AdminProjectListRow({
     required this.projectInfo,
+    required this.planProductId,
     required this.subscriptionId,
     this.includePaymentsStatus = false,
     this.oldestOverdueUnpaidAmount,
@@ -19,6 +20,7 @@ class AdminProjectListRow implements SerializableModel {
     if (!includePaymentsStatus) {
       return AdminProjectListRow(
         projectInfo: info.projectInfo,
+        planProductId: info.planProductId,
         subscriptionId: info.subscriptionId,
       );
     }
@@ -35,6 +37,7 @@ class AdminProjectListRow implements SerializableModel {
 
     return AdminProjectListRow(
       projectInfo: info.projectInfo,
+      planProductId: info.planProductId,
       subscriptionId: info.subscriptionId,
       includePaymentsStatus: true,
       oldestOverdueUnpaidAmount: oldest?.outstandingAmount,
@@ -46,6 +49,7 @@ class AdminProjectListRow implements SerializableModel {
   }
 
   final ProjectInfo projectInfo;
+  final String planProductId;
   final String subscriptionId;
   final bool includePaymentsStatus;
   final String? oldestOverdueUnpaidAmount;
@@ -58,6 +62,7 @@ class AdminProjectListRow implements SerializableModel {
   Map<String, Object?> toJson() {
     return {
       ...projectInfo.toJson(),
+      'planProductId': planProductId,
       'subscriptionId': subscriptionId,
       if (includePaymentsStatus) ...{
         'oldestOverdueUnpaidAmount': oldestOverdueUnpaidAmount,

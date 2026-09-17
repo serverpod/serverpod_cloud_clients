@@ -21,12 +21,14 @@ abstract class AdminProjectInfo
     implements _i1.SerializableModel, _i1.ProtocolSerialization {
   AdminProjectInfo._({
     required this.projectInfo,
+    required this.planProductId,
     required this.subscriptionId,
     required this.overduePaymentsStatuses,
   });
 
   factory AdminProjectInfo({
     required _i2.ProjectInfo projectInfo,
+    required String planProductId,
     required String subscriptionId,
     required List<_i3.PaymentsStatus> overduePaymentsStatuses,
   }) = _AdminProjectInfoImpl;
@@ -36,6 +38,7 @@ abstract class AdminProjectInfo
       projectInfo: _i4.Protocol().deserialize<_i2.ProjectInfo>(
         jsonSerialization['projectInfo'],
       ),
+      planProductId: jsonSerialization['planProductId'] as String,
       subscriptionId: jsonSerialization['subscriptionId'] as String,
       overduePaymentsStatuses: _i4.Protocol()
           .deserialize<List<_i3.PaymentsStatus>>(
@@ -45,6 +48,9 @@ abstract class AdminProjectInfo
   }
 
   _i2.ProjectInfo projectInfo;
+
+  /// The product id of the plan for the project.
+  String planProductId;
 
   /// The Orb subscription id for the project.
   String subscriptionId;
@@ -59,6 +65,7 @@ abstract class AdminProjectInfo
   @_i1.useResult
   AdminProjectInfo copyWith({
     _i2.ProjectInfo? projectInfo,
+    String? planProductId,
     String? subscriptionId,
     List<_i3.PaymentsStatus>? overduePaymentsStatuses,
   });
@@ -67,6 +74,7 @@ abstract class AdminProjectInfo
     return {
       '__className__': 'AdminProjectInfo',
       'projectInfo': projectInfo.toJson(),
+      'planProductId': planProductId,
       'subscriptionId': subscriptionId,
       'overduePaymentsStatuses': overduePaymentsStatuses.toJson(
         valueToJson: (v) => v.toJson(),
@@ -79,6 +87,7 @@ abstract class AdminProjectInfo
     return {
       '__className__': 'AdminProjectInfo',
       'projectInfo': projectInfo.toJsonForProtocol(),
+      'planProductId': planProductId,
       'subscriptionId': subscriptionId,
       'overduePaymentsStatuses': overduePaymentsStatuses.toJson(
         valueToJson: (v) => v.toJsonForProtocol(),
@@ -95,10 +104,12 @@ abstract class AdminProjectInfo
 class _AdminProjectInfoImpl extends AdminProjectInfo {
   _AdminProjectInfoImpl({
     required _i2.ProjectInfo projectInfo,
+    required String planProductId,
     required String subscriptionId,
     required List<_i3.PaymentsStatus> overduePaymentsStatuses,
   }) : super._(
          projectInfo: projectInfo,
+         planProductId: planProductId,
          subscriptionId: subscriptionId,
          overduePaymentsStatuses: overduePaymentsStatuses,
        );
@@ -109,11 +120,13 @@ class _AdminProjectInfoImpl extends AdminProjectInfo {
   @override
   AdminProjectInfo copyWith({
     _i2.ProjectInfo? projectInfo,
+    String? planProductId,
     String? subscriptionId,
     List<_i3.PaymentsStatus>? overduePaymentsStatuses,
   }) {
     return AdminProjectInfo(
       projectInfo: projectInfo ?? this.projectInfo.copyWith(),
+      planProductId: planProductId ?? this.planProductId,
       subscriptionId: subscriptionId ?? this.subscriptionId,
       overduePaymentsStatuses:
           overduePaymentsStatuses ??
