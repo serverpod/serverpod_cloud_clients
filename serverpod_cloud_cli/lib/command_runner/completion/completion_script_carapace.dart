@@ -25,7 +25,7 @@ completion:
   flag:
     project-dir: ["$directories"]
     project-config-file: ["$files"]
-    format: ["text", "json", "yaml"]
+    format: ["text", "csv", "json", "yaml"]
 
 commands:
   - name: completion

@@ -1,5 +1,5 @@
 /// Command output facility that builds declarative UIs using widgets
-/// and supports different output formats (text, json, yaml).
+/// and supports different output formats (text, csv, json, yaml).
 library;
 
 export 'command_output.dart';

@@ -10,11 +10,16 @@ enum _Kind { alpha }
 
 class _SerializableItem implements SerializableModel {
   final String id;
+  final _SerializableItem? child;
 
-  const _SerializableItem(this.id);
+  const _SerializableItem(this.id, {this.child});
 
   @override
-  Map<String, dynamic> toJson() => {'id': id};
+  Map<String, dynamic> toJson() => {
+    '__className__': 'Item',
+    'id': id,
+    if (child != null) 'child': child!.toJson(),
+  };
 
   @override
   String toString() => 'Item($id)';
@@ -68,6 +73,39 @@ void main() {
         );
 
         expect(encoded, {'id': 'alpha'});
+      },
+    );
+
+    test(
+      'when formatting a serializable model then class name keys are omitted',
+      () {
+        final encoded =
+            jsonDecode(formatter.format(const _SerializableItem('alpha')))
+                as Map;
+
+        expect(encoded.containsKey('__className__'), isFalse);
+      },
+    );
+
+    test(
+      'when formatting a nested serializable model then nested class name keys '
+      'are omitted',
+      () {
+        final encoded =
+            jsonDecode(
+                  formatter.format(
+                    const _SerializableItem(
+                      'alpha',
+                      child: _SerializableItem('beta'),
+                    ),
+                  ),
+                )
+                as Map;
+
+        expect(encoded, {
+          'id': 'alpha',
+          'child': {'id': 'beta'},
+        });
       },
     );
 

@@ -229,30 +229,35 @@ void main() {
   });
 
   group('Given a text table widget', () {
-    test('when rendered then the supplied headers and rows are written', () {
-      TextTableWidget(
-        TextTableData(
-          ['Name', 'Value'],
-          [
-            ['alpha', 'one'],
-          ],
-        ),
-      ).render(logger: logger);
+    test(
+      'when rendered then the supplied headers and rows are written',
+      () async {
+        await TextTableWidget(
+              TextTableData(
+                ['Name', 'Value'],
+                [
+                  ['alpha', 'one'],
+                ],
+              ),
+            )
+            .buildTree(OutputContext(OutputFormat.text))
+            .renderTree(logger: logger);
 
-      expect(logger.lineCalls.first.line, contains('Name'));
-      expect(logger.lineCalls.first.line, contains('Value'));
-      expect(logger.lineCalls.last.line, contains('alpha'));
-      expect(logger.lineCalls.last.line, contains('one'));
-    });
+        expect(logger.lineCalls.first.line, contains('Name'));
+        expect(logger.lineCalls.first.line, contains('Value'));
+        expect(logger.lineCalls.last.line, contains('alpha'));
+        expect(logger.lineCalls.last.line, contains('one'));
+      },
+    );
 
-    test('when rendered with an indent then every line is prefixed', () {
-      TextTableWidget(
+    test('when rendered with an indent then every line is prefixed', () async {
+      await TextTableWidget(
         TextTableData(const [], [
           ['alpha', 'one'],
           ['beta', 'two'],
         ]),
         indent: '  ',
-      ).render(logger: logger);
+      ).buildTree(OutputContext(OutputFormat.text)).renderTree(logger: logger);
 
       expect(
         logger.lineCalls.map((final call) => call.line),
@@ -260,6 +265,135 @@ void main() {
       );
       expect(logger.lineCalls, hasLength(2));
     });
+  });
+
+  group('Given a formatted table widget with csv output', () {
+    test('when rendered then headers and rows are comma-separated', () async {
+      final context = OutputContext(OutputFormat.csv, <Map<String, Object?>>[
+        {
+          'id': 'alpha',
+          'createdAt': DateTime.utc(2024, 12, 31, 10, 20, 30),
+          'tags': const ['a', 'b'],
+          'ttl': const Duration(hours: 2),
+        },
+      ]);
+
+      await FormattedTableWidget(
+        formatter: TextTableOutputFormatter(
+          columns: [
+            TableColumnFormatter.forKey('Id', key: 'id'),
+            TableColumnFormatter.forKey('Created At', key: 'createdAt'),
+            TableColumnFormatter.forKey('Tags', key: 'tags'),
+            TableColumnFormatter.forKey('TTL', key: 'ttl'),
+          ],
+          utc: true,
+        ),
+      ).buildTree(context).renderTree(logger: logger);
+
+      expect(logger.lineCalls.map((final call) => call.line), [
+        'Id,Created At,Tags,TTL',
+        'alpha,2024-12-31 10:20:30,"a, b",2h',
+      ]);
+      expect(logger.rawCalls, isEmpty);
+    });
+
+    test('when a cell contains a quote then the field is escaped', () async {
+      final context = OutputContext(OutputFormat.csv, <Map<String, Object?>>[
+        {'name': 'he said "hi"'},
+      ]);
+
+      await FormattedTableWidget(
+        formatter: TextTableOutputFormatter(
+          columns: [TableColumnFormatter.forKey('Name', key: 'name')],
+          utc: false,
+        ),
+      ).buildTree(context).renderTree(logger: logger);
+
+      expect(logger.lineCalls.map((final call) => call.line), [
+        'Name',
+        '"he said ""hi"""',
+      ]);
+    });
+
+    test(
+      'when the list is empty then only the header row is written',
+      () async {
+        final context = OutputContext(
+          OutputFormat.csv,
+          <Map<String, Object?>>[],
+        );
+
+        await FormattedTableWidget(
+          formatter: TextTableOutputFormatter(
+            columns: [TableColumnFormatter.forKey('Id', key: 'id')],
+            utc: false,
+          ),
+        ).buildTree(context).renderTree(logger: logger);
+
+        expect(logger.lineCalls.map((final call) => call.line), ['Id']);
+      },
+    );
+  });
+
+  group('Given a formatted stream table widget with csv output', () {
+    test(
+      'when rendered then headers and rows are comma-separated as they arrive',
+      () async {
+        final context = OutputContext(
+          OutputFormat.csv,
+          Stream.fromIterable([
+            <String, Object?>{
+              'id': 'alpha',
+              'createdAt': DateTime.utc(2024, 12, 31, 10, 20, 30),
+            },
+          ]),
+        );
+
+        await FormattedStreamTableWidget(
+          formatter: TextTableOutputFormatter(
+            columns: [
+              TableColumnFormatter.forKey('Id', key: 'id'),
+              TableColumnFormatter.forKey('Created At', key: 'createdAt'),
+            ],
+            utc: true,
+          ),
+        ).buildTree(context).renderTree(logger: logger);
+
+        expect(logger.lineCalls.map((final call) => call.line), [
+          'Id,Created At',
+          'alpha,2024-12-31 10:20:30',
+        ]);
+        expect(logger.rawCalls, isEmpty);
+      },
+    );
+
+    test(
+      'when rendered with a footer then the footer follows the csv rows',
+      () async {
+        final context = OutputContext(
+          OutputFormat.csv,
+          Stream.fromIterable([
+            <String, Object?>{'id': 'alpha'},
+            <String, Object?>{'id': 'beta'},
+          ]),
+        );
+
+        await FormattedStreamTableWidget(
+          formatter: TextTableOutputFormatter(
+            columns: [TableColumnFormatter.forKey('Id', key: 'id')],
+            utc: false,
+          ),
+          footerLines: (count) => ['-- $count rows --'],
+        ).buildTree(context).renderTree(logger: logger);
+
+        expect(logger.lineCalls.map((final call) => call.line), [
+          'Id',
+          'alpha',
+          'beta',
+          '-- 2 rows --',
+        ]);
+      },
+    );
   });
 
   group('Given a formatted stream table widget', () {

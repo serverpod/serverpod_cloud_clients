@@ -11,6 +11,7 @@
 /// dart run scloud_book/print_command_outputs.dart
 /// dart run scloud_book/print_command_outputs.dart --format json
 /// dart run scloud_book/print_command_outputs.dart --format yaml
+/// dart run scloud_book/print_command_outputs.dart --format csv
 /// ```
 library;
 
