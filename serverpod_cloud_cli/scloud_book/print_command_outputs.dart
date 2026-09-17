@@ -391,6 +391,20 @@ const _scenarios = [
   _Scenario('admin project list', ['admin', 'project', 'list']),
   _Scenario('admin project status', ['admin', 'project', 'status', _projectId]),
   _Scenario('admin project delete', ['admin', 'project', 'delete', _projectId]),
+  _Scenario('admin project change-owner', [
+    'admin',
+    'project',
+    'change-owner',
+    _projectId,
+    'user@example.com',
+  ]),
+  _Scenario('admin project update-plan', [
+    'admin',
+    'project',
+    'update-plan',
+    _projectId,
+    'growth',
+  ]),
   _Scenario('admin product list-procured', [
     'admin',
     'product',

@@ -181,4 +181,64 @@ void main() {
       });
     });
   });
+
+  group('Given an AdminProjectChangeOwnerTextUi', () {
+    group('when rendered after changing a project owner', () {
+      late String stdout;
+      late String stderr;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const AdminProjectChangeOwnerTextUi(),
+          data: const {
+            'projectId': 'my-project',
+            'ownerEmail': 'new-owner@example.com',
+          },
+        );
+        stdout = io.stdout;
+        stderr = io.stderr;
+      });
+
+      test('then stdout contains the change-owner success message', () {
+        expect(
+          stdout,
+          contains(
+            'Changed the owner of project "my-project" '
+            'to "new-owner@example.com".',
+          ),
+        );
+      });
+
+      test('then stderr is empty', () {
+        expect(stderr, isEmpty);
+      });
+    });
+  });
+
+  group('Given an AdminProjectUpdatePlanTextUi', () {
+    group('when rendered after updating a project plan', () {
+      late String stdout;
+      late String stderr;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const AdminProjectUpdatePlanTextUi(),
+          data: const {'projectId': 'my-project', 'planType': 'growth'},
+        );
+        stdout = io.stdout;
+        stderr = io.stderr;
+      });
+
+      test('then stdout contains the update-plan success message', () {
+        expect(
+          stdout,
+          contains('Updated the plan of project "my-project" to "growth".'),
+        );
+      });
+
+      test('then stderr is empty', () {
+        expect(stderr, isEmpty);
+      });
+    });
+  });
 }

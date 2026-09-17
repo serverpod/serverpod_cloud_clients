@@ -21,85 +21,85 @@ import 'package:ground_control_client/src/protocol/features/admin/models/admin_p
     as _i5;
 import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt.dart'
     as _i6;
-import 'package:ground_control_client/src/protocol/domains/users/models/user.dart'
-    as _i7;
-import 'package:ground_control_client/src/protocol/domains/users/models/user_account_status.dart'
-    as _i8;
-import 'package:ground_control_client/src/protocol/features/auth/models/required_terms.dart'
-    as _i9;
-import 'package:ground_control_client/src/protocol/features/auth/models/accepted_terms_dto.dart'
-    as _i10;
-import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
-    as _i11;
-import 'package:ground_control_client/src/protocol/features/auth/models/auth_token_info.dart'
-    as _i12;
-import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
-    as _i13;
-import 'package:ground_control_client/src/protocol/domains/billing/models/owner.dart'
-    as _i14;
-import 'package:ground_control_client/src/protocol/domains/billing/models/billing_info.dart'
-    as _i15;
-import 'package:ground_control_client/src/protocol/domains/billing/models/billing_customer_type.dart'
-    as _i16;
-import 'package:ground_control_client/src/protocol/domains/billing/models/payment_setup_intent.dart'
-    as _i17;
-import 'package:ground_control_client/src/protocol/domains/billing/models/payment_method.dart'
-    as _i18;
-import 'package:ground_control_client/src/protocol/domains/buckets/models/bucket_resource.dart'
-    as _i19;
-import 'package:ground_control_client/src/protocol/domains/buckets/models/bucket_visibility.dart'
-    as _i20;
-import 'package:ground_control_client/src/protocol/domains/buckets/models/bucket_file_listing.dart'
-    as _i21;
-import 'package:ground_control_client/src/protocol/domains/capsules/models/compute_info.dart'
-    as _i22;
-import 'package:ground_control_client/src/protocol/domains/capsules/models/compute_size_option.dart'
-    as _i23;
-import 'package:ground_control_client/src/protocol/features/custom_domains/models/view_models/custom_domain_name_with_default_domains.dart'
-    as _i24;
-import 'package:ground_control_client/src/protocol/domains/custom_domains/models/domain_name_target.dart'
-    as _i25;
-import 'package:ground_control_client/src/protocol/features/custom_domains/models/custom_domain_name_list.dart'
-    as _i26;
-import 'package:ground_control_client/src/protocol/domains/custom_domains/models/domain_name_status.dart'
-    as _i27;
-import 'package:ground_control_client/src/protocol/domains/databases/models/database_connection.dart'
-    as _i28;
-import 'package:ground_control_client/src/protocol/domains/databases/models/database_info.dart'
-    as _i29;
-import 'package:ground_control_client/src/protocol/domains/databases/models/database_user.dart'
-    as _i30;
-import 'package:ground_control_client/src/protocol/domains/databases/models/database_resource.dart'
-    as _i31;
-import 'package:ground_control_client/src/protocol/domains/databases/models/database_size.dart'
-    as _i32;
-import 'package:ground_control_client/src/protocol/domains/databases/models/database_snapshot.dart'
-    as _i33;
-import 'package:ground_control_client/src/protocol/domains/databases/models/backup_schedule.dart'
-    as _i34;
-import 'package:ground_control_client/src/protocol/domains/databases/models/backup_frequency.dart'
-    as _i35;
-import 'package:ground_control_client/src/protocol/domains/environment_variables/models/variable.dart'
-    as _i36;
-import 'package:ground_control_client/src/protocol/features/insights/models/insights_connection_detail.dart'
-    as _i37;
-import 'package:ground_control_client/src/protocol/domains/logs/models/log_record.dart'
-    as _i38;
-import 'package:ground_control_client/src/protocol/domains/metrics/models/pod_resource_series.dart'
-    as _i39;
-import 'package:ground_control_client/src/protocol/domains/metrics/models/metrics_range.dart'
-    as _i40;
-import 'package:ground_control_client/src/protocol/domains/metrics/models/capsule_network_series.dart'
-    as _i41;
-import 'package:ground_control_client/src/protocol/domains/metrics/models/database_metrics.dart'
-    as _i42;
-import 'package:ground_control_client/src/protocol/features/platform/models/dart_sdk_version_policy.dart'
-    as _i43;
-import 'package:ground_control_client/src/protocol/domains/products/models/subscription_info.dart'
-    as _i44;
-import 'package:ground_control_client/src/protocol/domains/products/models/plan_info.dart'
-    as _i45;
 import 'package:ground_control_client/src/protocol/features/projects/models/project_profile_update.dart'
+    as _i7;
+import 'package:ground_control_client/src/protocol/domains/users/models/user.dart'
+    as _i8;
+import 'package:ground_control_client/src/protocol/domains/users/models/user_account_status.dart'
+    as _i9;
+import 'package:ground_control_client/src/protocol/features/auth/models/required_terms.dart'
+    as _i10;
+import 'package:ground_control_client/src/protocol/features/auth/models/accepted_terms_dto.dart'
+    as _i11;
+import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
+    as _i12;
+import 'package:ground_control_client/src/protocol/features/auth/models/auth_token_info.dart'
+    as _i13;
+import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
+    as _i14;
+import 'package:ground_control_client/src/protocol/domains/billing/models/owner.dart'
+    as _i15;
+import 'package:ground_control_client/src/protocol/domains/billing/models/billing_info.dart'
+    as _i16;
+import 'package:ground_control_client/src/protocol/domains/billing/models/billing_customer_type.dart'
+    as _i17;
+import 'package:ground_control_client/src/protocol/domains/billing/models/payment_setup_intent.dart'
+    as _i18;
+import 'package:ground_control_client/src/protocol/domains/billing/models/payment_method.dart'
+    as _i19;
+import 'package:ground_control_client/src/protocol/domains/buckets/models/bucket_resource.dart'
+    as _i20;
+import 'package:ground_control_client/src/protocol/domains/buckets/models/bucket_visibility.dart'
+    as _i21;
+import 'package:ground_control_client/src/protocol/domains/buckets/models/bucket_file_listing.dart'
+    as _i22;
+import 'package:ground_control_client/src/protocol/domains/capsules/models/compute_info.dart'
+    as _i23;
+import 'package:ground_control_client/src/protocol/domains/capsules/models/compute_size_option.dart'
+    as _i24;
+import 'package:ground_control_client/src/protocol/features/custom_domains/models/view_models/custom_domain_name_with_default_domains.dart'
+    as _i25;
+import 'package:ground_control_client/src/protocol/domains/custom_domains/models/domain_name_target.dart'
+    as _i26;
+import 'package:ground_control_client/src/protocol/features/custom_domains/models/custom_domain_name_list.dart'
+    as _i27;
+import 'package:ground_control_client/src/protocol/domains/custom_domains/models/domain_name_status.dart'
+    as _i28;
+import 'package:ground_control_client/src/protocol/domains/databases/models/database_connection.dart'
+    as _i29;
+import 'package:ground_control_client/src/protocol/domains/databases/models/database_info.dart'
+    as _i30;
+import 'package:ground_control_client/src/protocol/domains/databases/models/database_user.dart'
+    as _i31;
+import 'package:ground_control_client/src/protocol/domains/databases/models/database_resource.dart'
+    as _i32;
+import 'package:ground_control_client/src/protocol/domains/databases/models/database_size.dart'
+    as _i33;
+import 'package:ground_control_client/src/protocol/domains/databases/models/database_snapshot.dart'
+    as _i34;
+import 'package:ground_control_client/src/protocol/domains/databases/models/backup_schedule.dart'
+    as _i35;
+import 'package:ground_control_client/src/protocol/domains/databases/models/backup_frequency.dart'
+    as _i36;
+import 'package:ground_control_client/src/protocol/domains/environment_variables/models/variable.dart'
+    as _i37;
+import 'package:ground_control_client/src/protocol/features/insights/models/insights_connection_detail.dart'
+    as _i38;
+import 'package:ground_control_client/src/protocol/domains/logs/models/log_record.dart'
+    as _i39;
+import 'package:ground_control_client/src/protocol/domains/metrics/models/pod_resource_series.dart'
+    as _i40;
+import 'package:ground_control_client/src/protocol/domains/metrics/models/metrics_range.dart'
+    as _i41;
+import 'package:ground_control_client/src/protocol/domains/metrics/models/capsule_network_series.dart'
+    as _i42;
+import 'package:ground_control_client/src/protocol/domains/metrics/models/database_metrics.dart'
+    as _i43;
+import 'package:ground_control_client/src/protocol/features/platform/models/dart_sdk_version_policy.dart'
+    as _i44;
+import 'package:ground_control_client/src/protocol/domains/products/models/subscription_info.dart'
+    as _i45;
+import 'package:ground_control_client/src/protocol/domains/products/models/plan_info.dart'
     as _i46;
 import 'package:ground_control_client/src/protocol/features/projects/models/project_config.dart'
     as _i47;
@@ -318,6 +318,53 @@ class EndpointAdminProjects extends _i1.EndpointRef {
         'keepEmptySubscription': keepEmptySubscription,
       });
 
+  /// Moves a project to a new subscription under a new owner, with the same
+  /// plan type as previously and to the private/business type of the new owner.
+  ///
+  /// Completes after the project and related resources have been moved.
+  ///
+  /// Throws [NotFoundException] if the project is not found.
+  /// Throws [InvalidValueException] if the new owner is the same as the current owner.
+  /// Throws [PlanChangeDeniedException] if the plan change would strand a feature
+  /// that is currently in use (e.g. removing backup support while backups exist).
+  /// Throws [ProcurementDeniedException] if the products are not available on the new plan.
+  /// Throws [ConcurrentSubscriptionUpdateException] if another update is in progress.
+  _i2.Future<void> changeProjectOwner({
+    required String cloudProjectId,
+    required _i1.UuidValue newOwnerId,
+  }) => caller.callServerEndpoint<void>('adminProjects', 'changeProjectOwner', {
+    'cloudProjectId': cloudProjectId,
+    'newOwnerId': newOwnerId,
+  });
+
+  /// Applies a project profile change together with compute scaling and optional
+  /// database sizing in one call.
+  ///
+  /// Intended to replace separate calls to compute `updateCompute`, and
+  /// database `updateDatabaseSize` when all are updated together.
+  ///
+  /// [cloudProjectId] identifies the project for authorization and matches the
+  /// capsule identifier used for compute and database operations.
+  ///
+  /// When [profile.databaseSize] is null, database sizing is not changed.
+  ///
+  /// Completes after the project profile and related resources are updated.
+  ///
+  /// Throws [NotFoundException] if the project is not found.
+  /// Throws [InvalidValueException] if the requested configuration violates the product constraints.
+  /// Throws [PlanChangeDeniedException] if the plan change would strand a feature
+  /// that is currently in use (e.g. removing backup support while backups exist).
+  /// Throws [ProcurementDeniedException] if the requested new products are not available.
+  /// Throws [ConcurrentSubscriptionUpdateException] if another update is in progress.
+  _i2.Future<void> updateProjectProfile({
+    required String cloudProjectId,
+    required _i7.ProjectProfileUpdate profile,
+  }) => caller.callServerEndpoint<void>(
+    'adminProjects',
+    'updateProjectProfile',
+    {'cloudProjectId': cloudProjectId, 'profile': profile},
+  );
+
   /// Redeploys a capsule using its current image.
   /// Triggers a deploymentUpdated event to redeploy the infrastructure.
   ///
@@ -401,13 +448,24 @@ class EndpointAdminUsers extends _i1.EndpointRef {
   String get name => 'adminUsers';
 
   /// Lists all users that match the specified criteria.
-  _i2.Future<List<_i7.User>> listUsers({
+  _i2.Future<List<_i8.User>> listUsers({
     String? cloudProjectId,
-    _i8.UserAccountStatus? ofAccountStatus,
+    _i9.UserAccountStatus? ofAccountStatus,
     bool? includeArchived,
-  }) => caller.callServerEndpoint<List<_i7.User>>('adminUsers', 'listUsers', {
+  }) => caller.callServerEndpoint<List<_i8.User>>('adminUsers', 'listUsers', {
     'cloudProjectId': cloudProjectId,
     'ofAccountStatus': ofAccountStatus,
+    'includeArchived': includeArchived,
+  });
+
+  /// Reads the user with the specified email.
+  ///
+  /// Throws a [NotFoundException] if the user is not found.
+  _i2.Future<_i8.User> getUser({
+    required String email,
+    bool? includeArchived,
+  }) => caller.callServerEndpoint<_i8.User>('adminUsers', 'getUser', {
+    'email': email,
     'includeArchived': includeArchived,
   });
 
@@ -425,8 +483,8 @@ class EndpointAuth extends _i1.EndpointRef {
   @override
   String get name => 'auth';
 
-  _i2.Future<List<_i9.RequiredTerms>> readRequiredTerms() =>
-      caller.callServerEndpoint<List<_i9.RequiredTerms>>(
+  _i2.Future<List<_i10.RequiredTerms>> readRequiredTerms() =>
+      caller.callServerEndpoint<List<_i10.RequiredTerms>>(
         'auth',
         'readRequiredTerms',
         {},
@@ -445,7 +503,7 @@ class EndpointAuth extends _i1.EndpointRef {
   _i2.Future<void> startEmailAccountRegistration({
     required String email,
     String? name,
-    required List<_i10.AcceptedTermsDTO> acceptedTerms,
+    required List<_i11.AcceptedTermsDTO> acceptedTerms,
   }) => caller.callServerEndpoint<void>(
     'auth',
     'startEmailAccountRegistration',
@@ -474,10 +532,10 @@ class EndpointAuth extends _i1.EndpointRef {
   ///   does not comply with the password policy.
   /// - [EmailAccountRequestExceptionReason.invalid] if the [finishRegistrationToken]
   ///   is invalid.
-  _i2.Future<_i11.AuthSuccess> finishEmailAccountRegistration({
+  _i2.Future<_i12.AuthSuccess> finishEmailAccountRegistration({
     required String finishRegistrationToken,
     required String password,
-  }) => caller.callServerEndpoint<_i11.AuthSuccess>(
+  }) => caller.callServerEndpoint<_i12.AuthSuccess>(
     'auth',
     'finishEmailAccountRegistration',
     {'finishRegistrationToken': finishRegistrationToken, 'password': password},
@@ -487,10 +545,10 @@ class EndpointAuth extends _i1.EndpointRef {
   ///
   /// In case an expected error occurs, this throws a
   /// `EmailAccountLoginException`.
-  _i2.Future<_i11.AuthSuccess> login({
+  _i2.Future<_i12.AuthSuccess> login({
     required String email,
     required String password,
-  }) => caller.callServerEndpoint<_i11.AuthSuccess>('auth', 'login', {
+  }) => caller.callServerEndpoint<_i12.AuthSuccess>('auth', 'login', {
     'email': email,
     'password': password,
   });
@@ -519,12 +577,12 @@ class EndpointAuth extends _i1.EndpointRef {
   ///
   /// Destroys all the user's current sessions, and creates a new authenticated
   /// session for the user.
-  _i2.Future<_i11.AuthSuccess> finishPasswordReset({
+  _i2.Future<_i12.AuthSuccess> finishPasswordReset({
     required _i1.UuidValue passwordResetRequestId,
     required String verificationCode,
     required String newPassword,
   }) => caller
-      .callServerEndpoint<_i11.AuthSuccess>('auth', 'finishPasswordReset', {
+      .callServerEndpoint<_i12.AuthSuccess>('auth', 'finishPasswordReset', {
         'passwordResetRequestId': passwordResetRequestId,
         'verificationCode': verificationCode,
         'newPassword': newPassword,
@@ -561,10 +619,10 @@ class EndpointAuthWithAuth extends _i1.EndpointRef {
   /// If [expiresAt] is provided, the token will expire at the specified time.
   /// If [expiresAfter] is provided, the token will expire after being unused
   /// for the specified duration.
-  _i2.Future<_i11.AuthSuccess> createCliToken({
+  _i2.Future<_i12.AuthSuccess> createCliToken({
     DateTime? expiresAt,
     Duration? expiresAfter,
-  }) => caller.callServerEndpoint<_i11.AuthSuccess>(
+  }) => caller.callServerEndpoint<_i12.AuthSuccess>(
     'authWithAuth',
     'createCliToken',
     {'expiresAt': expiresAt, 'expiresAfter': expiresAfter},
@@ -572,15 +630,15 @@ class EndpointAuthWithAuth extends _i1.EndpointRef {
 
   /// Creates an interactive CLI login session for the current user, listed
   /// with the method `cli`. The console calls this to complete a CLI login.
-  _i2.Future<_i11.AuthSuccess> createCliLoginSession() =>
-      caller.callServerEndpoint<_i11.AuthSuccess>(
+  _i2.Future<_i12.AuthSuccess> createCliLoginSession() =>
+      caller.callServerEndpoint<_i12.AuthSuccess>(
         'authWithAuth',
         'createCliLoginSession',
         {},
       );
 
-  _i2.Future<List<_i12.AuthTokenInfo>> listAuthSessions() =>
-      caller.callServerEndpoint<List<_i12.AuthTokenInfo>>(
+  _i2.Future<List<_i13.AuthTokenInfo>> listAuthSessions() =>
+      caller.callServerEndpoint<List<_i13.AuthTokenInfo>>(
         'authWithAuth',
         'listAuthSessions',
         {},
@@ -591,15 +649,15 @@ class EndpointAuthWithAuth extends _i1.EndpointRef {
 }
 
 /// {@category Endpoint}
-class EndpointEmailIdp extends _i13.EndpointEmailIdpBase {
+class EndpointEmailIdp extends _i14.EndpointEmailIdpBase {
   EndpointEmailIdp(_i1.EndpointCaller caller) : super(caller);
 
   @override
   String get name => 'emailIdp';
 
   /// Returns the list of terms that the user must accept when registering.
-  _i2.Future<List<_i9.RequiredTerms>> readRequiredTerms() =>
-      caller.callServerEndpoint<List<_i9.RequiredTerms>>(
+  _i2.Future<List<_i10.RequiredTerms>> readRequiredTerms() =>
+      caller.callServerEndpoint<List<_i10.RequiredTerms>>(
         'emailIdp',
         'readRequiredTerms',
         {},
@@ -621,7 +679,7 @@ class EndpointEmailIdp extends _i13.EndpointEmailIdpBase {
   _i2.Future<_i1.UuidValue> startRegistration({
     required String email,
     String? name,
-    List<_i10.AcceptedTermsDTO>? acceptedTerms,
+    List<_i11.AcceptedTermsDTO>? acceptedTerms,
   }) => caller.callServerEndpoint<_i1.UuidValue>(
     'emailIdp',
     'startRegistration',
@@ -634,10 +692,10 @@ class EndpointEmailIdp extends _i13.EndpointEmailIdpBase {
   /// [EmailAccountLoginException]. If the user registered via a different
   /// identity provider, throws [EmailMethodBlockedException].
   @override
-  _i2.Future<_i11.AuthSuccess> login({
+  _i2.Future<_i12.AuthSuccess> login({
     required String email,
     required String password,
-  }) => caller.callServerEndpoint<_i11.AuthSuccess>('emailIdp', 'login', {
+  }) => caller.callServerEndpoint<_i12.AuthSuccess>('emailIdp', 'login', {
     'email': email,
     'password': password,
   });
@@ -655,12 +713,12 @@ class EndpointEmailIdp extends _i13.EndpointEmailIdpBase {
   ///
   /// Destroys all the user's current sessions, and creates a new authenticated
   /// session for the user.
-  _i2.Future<_i11.AuthSuccess> resetPassword({
+  _i2.Future<_i12.AuthSuccess> resetPassword({
     required _i1.UuidValue passwordResetRequestId,
     required String verificationCode,
     required String newPassword,
   }) =>
-      caller.callServerEndpoint<_i11.AuthSuccess>('emailIdp', 'resetPassword', {
+      caller.callServerEndpoint<_i12.AuthSuccess>('emailIdp', 'resetPassword', {
         'passwordResetRequestId': passwordResetRequestId,
         'verificationCode': verificationCode,
         'newPassword': newPassword,
@@ -701,10 +759,10 @@ class EndpointEmailIdp extends _i13.EndpointEmailIdpBase {
   ///
   /// Returns a session for the newly created user.
   @override
-  _i2.Future<_i11.AuthSuccess> finishRegistration({
+  _i2.Future<_i12.AuthSuccess> finishRegistration({
     required String registrationToken,
     required String password,
-  }) => caller.callServerEndpoint<_i11.AuthSuccess>(
+  }) => caller.callServerEndpoint<_i12.AuthSuccess>(
     'emailIdp',
     'finishRegistration',
     {'registrationToken': registrationToken, 'password': password},
@@ -784,18 +842,18 @@ class EndpointEmailIdp extends _i13.EndpointEmailIdpBase {
 }
 
 /// {@category Endpoint}
-class EndpointGitHubIdp extends _i13.EndpointGitHubIdpBase {
+class EndpointGitHubIdp extends _i14.EndpointGitHubIdpBase {
   EndpointGitHubIdp(_i1.EndpointCaller caller) : super(caller);
 
   @override
   String get name => 'gitHubIdp';
 
   @override
-  _i2.Future<_i11.AuthSuccess> login({
+  _i2.Future<_i12.AuthSuccess> login({
     required String code,
     required String codeVerifier,
     required String redirectUri,
-  }) => caller.callServerEndpoint<_i11.AuthSuccess>('gitHubIdp', 'login', {
+  }) => caller.callServerEndpoint<_i12.AuthSuccess>('gitHubIdp', 'login', {
     'code': code,
     'codeVerifier': codeVerifier,
     'redirectUri': redirectUri,
@@ -807,18 +865,18 @@ class EndpointGitHubIdp extends _i13.EndpointGitHubIdpBase {
 }
 
 /// {@category Endpoint}
-class EndpointGoogleIdp extends _i13.EndpointGoogleIdpBase {
+class EndpointGoogleIdp extends _i14.EndpointGoogleIdpBase {
   EndpointGoogleIdp(_i1.EndpointCaller caller) : super(caller);
 
   @override
   String get name => 'googleIdp';
 
   @override
-  _i2.Future<_i11.AuthSuccess> loginWithCode({
+  _i2.Future<_i12.AuthSuccess> loginWithCode({
     required String code,
     required String codeVerifier,
     required String redirectUri,
-  }) => caller.callServerEndpoint<_i11.AuthSuccess>(
+  }) => caller.callServerEndpoint<_i12.AuthSuccess>(
     'googleIdp',
     'loginWithCode',
     {'code': code, 'codeVerifier': codeVerifier, 'redirectUri': redirectUri},
@@ -829,10 +887,10 @@ class EndpointGoogleIdp extends _i13.EndpointGoogleIdpBase {
   ///
   /// If a new user is created an associated [UserProfile] is also created.
   @override
-  _i2.Future<_i11.AuthSuccess> login({
+  _i2.Future<_i12.AuthSuccess> login({
     required String idToken,
     required String? accessToken,
-  }) => caller.callServerEndpoint<_i11.AuthSuccess>('googleIdp', 'login', {
+  }) => caller.callServerEndpoint<_i12.AuthSuccess>('googleIdp', 'login', {
     'idToken': idToken,
     'accessToken': accessToken,
   });
@@ -845,7 +903,7 @@ class EndpointGoogleIdp extends _i13.EndpointGoogleIdpBase {
 /// By extending [RefreshJwtTokensEndpoint], the JWT token refresh endpoint
 /// is made available on the server and enables automatic token refresh on the client.
 /// {@category Endpoint}
-class EndpointJwtRefresh extends _i11.EndpointRefreshJwtTokens {
+class EndpointJwtRefresh extends _i12.EndpointRefreshJwtTokens {
   EndpointJwtRefresh(_i1.EndpointCaller caller) : super(caller);
 
   @override
@@ -870,9 +928,9 @@ class EndpointJwtRefresh extends _i11.EndpointRefreshJwtTokens {
   /// This endpoint is unauthenticated, meaning the client won't include any
   /// authentication information with the call.
   @override
-  _i2.Future<_i11.AuthSuccess> refreshAccessToken({
+  _i2.Future<_i12.AuthSuccess> refreshAccessToken({
     required String refreshToken,
-  }) => caller.callServerEndpoint<_i11.AuthSuccess>(
+  }) => caller.callServerEndpoint<_i12.AuthSuccess>(
     'jwtRefresh',
     'refreshAccessToken',
     {'refreshToken': refreshToken},
@@ -894,8 +952,8 @@ class EndpointBilling extends _i1.EndpointRef {
   /// (including the billing address and email addresses).
   ///
   /// Throws a [NotFoundException] if the owner is not found.
-  _i2.Future<_i14.Owner> readOwner() =>
-      caller.callServerEndpoint<_i14.Owner>('billing', 'readOwner', {});
+  _i2.Future<_i15.Owner> readOwner() =>
+      caller.callServerEndpoint<_i15.Owner>('billing', 'readOwner', {});
 
   /// Updates the owner's billing information.
   ///
@@ -912,10 +970,10 @@ class EndpointBilling extends _i1.EndpointRef {
   ///
   /// Throws [InvalidValueException] if required business billing fields are
   /// missing or invalid.
-  _i2.Future<_i14.Owner> updateOwnerBilling({
+  _i2.Future<_i15.Owner> updateOwnerBilling({
     required List<String> billingEmails,
-    required _i15.BillingInfo billingInfo,
-  }) => caller.callServerEndpoint<_i14.Owner>('billing', 'updateOwnerBilling', {
+    required _i16.BillingInfo billingInfo,
+  }) => caller.callServerEndpoint<_i15.Owner>('billing', 'updateOwnerBilling', {
     'billingEmails': billingEmails,
     'billingInfo': billingInfo,
   });
@@ -927,9 +985,9 @@ class EndpointBilling extends _i1.EndpointRef {
   ///
   /// Throws [InvalidValueException] if the owner already has a different
   /// customer type set.
-  _i2.Future<_i14.Owner> setOwnerCustomerType({
-    required _i16.BillingCustomerType customerType,
-  }) => caller.callServerEndpoint<_i14.Owner>(
+  _i2.Future<_i15.Owner> setOwnerCustomerType({
+    required _i17.BillingCustomerType customerType,
+  }) => caller.callServerEndpoint<_i15.Owner>(
     'billing',
     'setOwnerCustomerType',
     {'customerType': customerType},
@@ -953,8 +1011,8 @@ class EndpointBilling extends _i1.EndpointRef {
   /// - [status]: Current status of the setup intent
   ///
   /// Throws [NotFoundException] if the user is not found or has no payment customer.
-  _i2.Future<_i17.PaymentSetupIntent> createSetupIntent() =>
-      caller.callServerEndpoint<_i17.PaymentSetupIntent>(
+  _i2.Future<_i18.PaymentSetupIntent> createSetupIntent() =>
+      caller.callServerEndpoint<_i18.PaymentSetupIntent>(
         'billing',
         'createSetupIntent',
         {},
@@ -970,8 +1028,8 @@ class EndpointBilling extends _i1.EndpointRef {
   /// methods have been set up.
   ///
   /// Throws [NotFoundException] if the user is not found or has no payment customer.
-  _i2.Future<List<_i18.PaymentMethod>> listPaymentMethods() =>
-      caller.callServerEndpoint<List<_i18.PaymentMethod>>(
+  _i2.Future<List<_i19.PaymentMethod>> listPaymentMethods() =>
+      caller.callServerEndpoint<List<_i19.PaymentMethod>>(
         'billing',
         'listPaymentMethods',
         {},
@@ -1046,12 +1104,12 @@ class EndpointBucket extends _i1.EndpointRef {
   /// allowance.
   /// Throws [BucketStorageIdentityUnavailableException] if the storage identity
   /// is not ready yet (safe to retry).
-  _i2.Future<_i19.BucketResource> createBucket({
+  _i2.Future<_i20.BucketResource> createBucket({
     required String cloudCapsuleId,
     required String storageId,
-    required _i20.BucketVisibility visibility,
+    required _i21.BucketVisibility visibility,
   }) =>
-      caller.callServerEndpoint<_i19.BucketResource>('bucket', 'createBucket', {
+      caller.callServerEndpoint<_i20.BucketResource>('bucket', 'createBucket', {
         'cloudCapsuleId': cloudCapsuleId,
         'storageId': storageId,
         'visibility': visibility,
@@ -1069,9 +1127,9 @@ class EndpointBucket extends _i1.EndpointRef {
   });
 
   /// Lists the buckets for a capsule.
-  _i2.Future<List<_i19.BucketResource>> listBuckets({
+  _i2.Future<List<_i20.BucketResource>> listBuckets({
     required String cloudCapsuleId,
-  }) => caller.callServerEndpoint<List<_i19.BucketResource>>(
+  }) => caller.callServerEndpoint<List<_i20.BucketResource>>(
     'bucket',
     'listBuckets',
     {'cloudCapsuleId': cloudCapsuleId},
@@ -1092,12 +1150,12 @@ class EndpointBucketObjects extends _i1.EndpointRef {
   /// Throws [NotFoundException] if the bucket is not found.
   /// Throws [BucketRateLimitExceededException] if the capsule has spent its
   /// hourly budget for this operation.
-  _i2.Future<_i21.BucketFileListing> listFiles({
+  _i2.Future<_i22.BucketFileListing> listFiles({
     required String cloudCapsuleId,
     required String storageId,
     String? prefix,
     String? pageToken,
-  }) => caller.callServerEndpoint<_i21.BucketFileListing>(
+  }) => caller.callServerEndpoint<_i22.BucketFileListing>(
     'bucketObjects',
     'listFiles',
     {
@@ -1187,8 +1245,8 @@ class EndpointCompute extends _i1.EndpointRef {
   String get name => 'compute';
 
   /// Reads the compute for a capsule.
-  _i2.Future<_i22.ComputeInfo> readCompute({required String cloudCapsuleId}) =>
-      caller.callServerEndpoint<_i22.ComputeInfo>('compute', 'readCompute', {
+  _i2.Future<_i23.ComputeInfo> readCompute({required String cloudCapsuleId}) =>
+      caller.callServerEndpoint<_i23.ComputeInfo>('compute', 'readCompute', {
         'cloudCapsuleId': cloudCapsuleId,
       });
 
@@ -1197,13 +1255,13 @@ class EndpointCompute extends _i1.EndpointRef {
   /// Validates the requested size and replica counts against the capsule's
   /// product constraints, persists the new configuration, and triggers an
   /// infrastructure update for any existing deployment.
-  _i2.Future<_i22.ComputeInfo> updateCompute({
+  _i2.Future<_i23.ComputeInfo> updateCompute({
     required String cloudCapsuleId,
-    required _i23.ComputeSizeOption size,
+    required _i24.ComputeSizeOption size,
     required int minInstances,
     required int maxInstances,
   }) =>
-      caller.callServerEndpoint<_i22.ComputeInfo>('compute', 'updateCompute', {
+      caller.callServerEndpoint<_i23.ComputeInfo>('compute', 'updateCompute', {
         'cloudCapsuleId': cloudCapsuleId,
         'size': size,
         'minInstances': minInstances,
@@ -1218,11 +1276,11 @@ class EndpointCustomDomainName extends _i1.EndpointRef {
   @override
   String get name => 'customDomainName';
 
-  _i2.Future<_i24.CustomDomainNameWithDefaultDomains> add({
+  _i2.Future<_i25.CustomDomainNameWithDefaultDomains> add({
     required String domainName,
-    required _i25.DomainNameTarget target,
+    required _i26.DomainNameTarget target,
     required String cloudCapsuleId,
-  }) => caller.callServerEndpoint<_i24.CustomDomainNameWithDefaultDomains>(
+  }) => caller.callServerEndpoint<_i25.CustomDomainNameWithDefaultDomains>(
     'customDomainName',
     'add',
     {
@@ -1240,18 +1298,18 @@ class EndpointCustomDomainName extends _i1.EndpointRef {
     'cloudCapsuleId': cloudCapsuleId,
   });
 
-  _i2.Future<_i26.CustomDomainNameList> list({
+  _i2.Future<_i27.CustomDomainNameList> list({
     required String cloudCapsuleId,
-  }) => caller.callServerEndpoint<_i26.CustomDomainNameList>(
+  }) => caller.callServerEndpoint<_i27.CustomDomainNameList>(
     'customDomainName',
     'list',
     {'cloudCapsuleId': cloudCapsuleId},
   );
 
-  _i2.Future<_i27.DomainNameStatus> refreshRecord({
+  _i2.Future<_i28.DomainNameStatus> refreshRecord({
     required String domainName,
     required String cloudCapsuleId,
-  }) => caller.callServerEndpoint<_i27.DomainNameStatus>(
+  }) => caller.callServerEndpoint<_i28.DomainNameStatus>(
     'customDomainName',
     'refreshRecord',
     {'domainName': domainName, 'cloudCapsuleId': cloudCapsuleId},
@@ -1278,9 +1336,9 @@ class EndpointDatabase extends _i1.EndpointRef {
 
   /// Returns the connection details for a database resource.
   /// Throws [NotFoundException] if the database is not found.
-  _i2.Future<_i28.DatabaseConnection> getConnectionDetails({
+  _i2.Future<_i29.DatabaseConnection> getConnectionDetails({
     required String cloudCapsuleId,
-  }) => caller.callServerEndpoint<_i28.DatabaseConnection>(
+  }) => caller.callServerEndpoint<_i29.DatabaseConnection>(
     'database',
     'getConnectionDetails',
     {'cloudCapsuleId': cloudCapsuleId},
@@ -1289,9 +1347,9 @@ class EndpointDatabase extends _i1.EndpointRef {
   /// Returns persisted database capacity and quota for [cloudCapsuleId].
   ///
   /// Throws [NotFoundException] if the database is not found.
-  _i2.Future<_i29.DatabaseInfo> readDatabase({
+  _i2.Future<_i30.DatabaseInfo> readDatabase({
     required String cloudCapsuleId,
-  }) => caller.callServerEndpoint<_i29.DatabaseInfo>(
+  }) => caller.callServerEndpoint<_i30.DatabaseInfo>(
     'database',
     'readDatabase',
     {'cloudCapsuleId': cloudCapsuleId},
@@ -1326,9 +1384,9 @@ class EndpointDatabase extends _i1.EndpointRef {
   /// Lists the user-created superusers of the database.
   ///
   /// Throws [NotFoundException] if the database is not found.
-  _i2.Future<List<_i30.DatabaseUser>> listDatabaseUsers({
+  _i2.Future<List<_i31.DatabaseUser>> listDatabaseUsers({
     required String cloudCapsuleId,
-  }) => caller.callServerEndpoint<List<_i30.DatabaseUser>>(
+  }) => caller.callServerEndpoint<List<_i31.DatabaseUser>>(
     'database',
     'listDatabaseUsers',
     {'cloudCapsuleId': cloudCapsuleId},
@@ -1366,12 +1424,12 @@ class EndpointDatabase extends _i1.EndpointRef {
   /// Throws [ProcurementDeniedException] if the size is not available for the capsule.
   /// Throws [InvalidValueException] if the size, minCu, and maxCu combination is invalid.
   /// Throws [NotFoundException] if no database is found for the capsule.
-  _i2.Future<_i31.DatabaseResource> updateDatabaseSize({
+  _i2.Future<_i32.DatabaseResource> updateDatabaseSize({
     required String cloudCapsuleId,
-    required _i32.DatabaseSizeOption size,
+    required _i33.DatabaseSizeOption size,
     double? minCu,
     double? maxCu,
-  }) => caller.callServerEndpoint<_i31.DatabaseResource>(
+  }) => caller.callServerEndpoint<_i32.DatabaseResource>(
     'database',
     'updateDatabaseSize',
     {
@@ -1389,11 +1447,11 @@ class EndpointDatabase extends _i1.EndpointRef {
   /// Throws [NotFoundException] if the database is not found.
   /// Throws [DatabaseSnapshotLimitException] if the per-project snapshot limit
   /// has been reached.
-  _i2.Future<_i33.DatabaseSnapshot> createSnapshot({
+  _i2.Future<_i34.DatabaseSnapshot> createSnapshot({
     required String cloudCapsuleId,
     String? name,
     DateTime? expiresAt,
-  }) => caller.callServerEndpoint<_i33.DatabaseSnapshot>(
+  }) => caller.callServerEndpoint<_i34.DatabaseSnapshot>(
     'database',
     'createSnapshot',
     {'cloudCapsuleId': cloudCapsuleId, 'name': name, 'expiresAt': expiresAt},
@@ -1402,9 +1460,9 @@ class EndpointDatabase extends _i1.EndpointRef {
   /// Lists the snapshots of the capsule's database.
   ///
   /// Throws [NotFoundException] if the database is not found.
-  _i2.Future<List<_i33.DatabaseSnapshot>> listSnapshots({
+  _i2.Future<List<_i34.DatabaseSnapshot>> listSnapshots({
     required String cloudCapsuleId,
-  }) => caller.callServerEndpoint<List<_i33.DatabaseSnapshot>>(
+  }) => caller.callServerEndpoint<List<_i34.DatabaseSnapshot>>(
     'database',
     'listSnapshots',
     {'cloudCapsuleId': cloudCapsuleId},
@@ -1425,9 +1483,9 @@ class EndpointDatabase extends _i1.EndpointRef {
   /// if none is configured.
   ///
   /// Throws [NotFoundException] if the database is not found.
-  _i2.Future<_i34.BackupSchedule?> getBackupSchedule({
+  _i2.Future<_i35.BackupSchedule?> getBackupSchedule({
     required String cloudCapsuleId,
-  }) => caller.callServerEndpoint<_i34.BackupSchedule?>(
+  }) => caller.callServerEndpoint<_i35.BackupSchedule?>(
     'database',
     'getBackupSchedule',
     {'cloudCapsuleId': cloudCapsuleId},
@@ -1446,7 +1504,7 @@ class EndpointDatabase extends _i1.EndpointRef {
   /// retention period that exceeds the maximum allowed.
   _i2.Future<void> setBackupSchedule({
     required String cloudCapsuleId,
-    _i35.BackupFrequency? frequency,
+    _i36.BackupFrequency? frequency,
     int? day,
     int? hour,
     Duration? retention,
@@ -1524,11 +1582,11 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
 
   /// Creates a new [EnvironmentVariable] with the specified [name] and [value].
   /// Throws a [DuplicateEntryException] if an environment variable with the same name already exists.
-  _i2.Future<_i36.EnvironmentVariable> create(
+  _i2.Future<_i37.EnvironmentVariable> create(
     String name,
     String value,
     String cloudCapsuleId,
-  ) => caller.callServerEndpoint<_i36.EnvironmentVariable>(
+  ) => caller.callServerEndpoint<_i37.EnvironmentVariable>(
     'environmentVariables',
     'create',
     {'name': name, 'value': value, 'cloudCapsuleId': cloudCapsuleId},
@@ -1536,18 +1594,18 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
 
   /// Fetches the specified environment variable.
   /// Throws a [NotFoundException] if the environment variable is not found.
-  _i2.Future<_i36.EnvironmentVariable> read({
+  _i2.Future<_i37.EnvironmentVariable> read({
     required String name,
     required String cloudCapsuleId,
-  }) => caller.callServerEndpoint<_i36.EnvironmentVariable>(
+  }) => caller.callServerEndpoint<_i37.EnvironmentVariable>(
     'environmentVariables',
     'read',
     {'name': name, 'cloudCapsuleId': cloudCapsuleId},
   );
 
   /// Gets the list of environment variables for the given [cloudCapsuleId].
-  _i2.Future<List<_i36.EnvironmentVariable>> list(String cloudCapsuleId) =>
-      caller.callServerEndpoint<List<_i36.EnvironmentVariable>>(
+  _i2.Future<List<_i37.EnvironmentVariable>> list(String cloudCapsuleId) =>
+      caller.callServerEndpoint<List<_i37.EnvironmentVariable>>(
         'environmentVariables',
         'list',
         {'cloudCapsuleId': cloudCapsuleId},
@@ -1555,11 +1613,11 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
 
   /// Creates a new [EnvironmentVariable] with the specified [name] and [value].
   /// Throws a [NotFoundException] if the environment variable is not found.
-  _i2.Future<_i36.EnvironmentVariable> update({
+  _i2.Future<_i37.EnvironmentVariable> update({
     required String name,
     required String value,
     required String cloudCapsuleId,
-  }) => caller.callServerEndpoint<_i36.EnvironmentVariable>(
+  }) => caller.callServerEndpoint<_i37.EnvironmentVariable>(
     'environmentVariables',
     'update',
     {'name': name, 'value': value, 'cloudCapsuleId': cloudCapsuleId},
@@ -1567,10 +1625,10 @@ class EndpointEnvironmentVariables extends _i1.EndpointRef {
 
   /// Permanently deletes an environment variable.
   /// Throws a [NotFoundException] if the environment variable is not found.
-  _i2.Future<_i36.EnvironmentVariable> delete({
+  _i2.Future<_i37.EnvironmentVariable> delete({
     required String cloudCapsuleId,
     required String name,
-  }) => caller.callServerEndpoint<_i36.EnvironmentVariable>(
+  }) => caller.callServerEndpoint<_i37.EnvironmentVariable>(
     'environmentVariables',
     'delete',
     {'cloudCapsuleId': cloudCapsuleId, 'name': name},
@@ -1590,9 +1648,9 @@ class EndpointInsights extends _i1.EndpointRef {
   ///
   /// Throws [UnauthorizedException] if the user is not authorized.
   /// Throws [NotFoundException] if insights service secret is not found.
-  _i2.Future<_i37.InsightsConnectionDetail> getConnectionDetails({
+  _i2.Future<_i38.InsightsConnectionDetail> getConnectionDetails({
     required String cloudProjectId,
-  }) => caller.callServerEndpoint<_i37.InsightsConnectionDetail>(
+  }) => caller.callServerEndpoint<_i38.InsightsConnectionDetail>(
     'insights',
     'getConnectionDetails',
     {'cloudProjectId': cloudProjectId},
@@ -1608,14 +1666,14 @@ class EndpointLogs extends _i1.EndpointRef {
   String get name => 'logs';
 
   /// Fetches log records from the specified capsule.
-  _i2.Stream<_i38.LogRecord> fetchRecords({
+  _i2.Stream<_i39.LogRecord> fetchRecords({
     @Deprecated('Use cloudCapsuleId instead') String? cloudProjectId,
     String? cloudCapsuleId,
     DateTime? beforeTime,
     DateTime? afterTime,
     int? limit,
   }) => caller
-      .callStreamingServerEndpoint<_i2.Stream<_i38.LogRecord>, _i38.LogRecord>(
+      .callStreamingServerEndpoint<_i2.Stream<_i39.LogRecord>, _i39.LogRecord>(
         'logs',
         'fetchRecords',
         {
@@ -1633,11 +1691,11 @@ class EndpointLogs extends _i1.EndpointRef {
   /// Records are returned in ascending time order.
   ///
   /// This call will hold until all the records are fetched in order to sort them.
-  _i2.Stream<_i38.LogRecord> fetchRecentRecords({
+  _i2.Stream<_i39.LogRecord> fetchRecentRecords({
     required String cloudCapsuleId,
     int? limit,
   }) => caller
-      .callStreamingServerEndpoint<_i2.Stream<_i38.LogRecord>, _i38.LogRecord>(
+      .callStreamingServerEndpoint<_i2.Stream<_i39.LogRecord>, _i39.LogRecord>(
         'logs',
         'fetchRecentRecords',
         {'cloudCapsuleId': cloudCapsuleId, 'limit': limit},
@@ -1647,12 +1705,12 @@ class EndpointLogs extends _i1.EndpointRef {
   /// Tails log records from the specified capsule.
   /// Continues until the client unsubscribes, [limit] is reached,
   /// or the internal max limit is reached.
-  _i2.Stream<_i38.LogRecord> tailRecords({
+  _i2.Stream<_i39.LogRecord> tailRecords({
     @Deprecated('Use cloudCapsuleId instead') String? cloudProjectId,
     String? cloudCapsuleId,
     int? limit,
   }) => caller
-      .callStreamingServerEndpoint<_i2.Stream<_i38.LogRecord>, _i38.LogRecord>(
+      .callStreamingServerEndpoint<_i2.Stream<_i39.LogRecord>, _i39.LogRecord>(
         'logs',
         'tailRecords',
         {
@@ -1664,13 +1722,13 @@ class EndpointLogs extends _i1.EndpointRef {
       );
 
   /// Fetches the build log records for the specified deploy attempt.
-  _i2.Stream<_i38.LogRecord> fetchBuildLog({
+  _i2.Stream<_i39.LogRecord> fetchBuildLog({
     @Deprecated('Use cloudCapsuleId instead') String? cloudProjectId,
     String? cloudCapsuleId,
     required _i1.UuidValue attemptId,
     int? limit,
   }) => caller
-      .callStreamingServerEndpoint<_i2.Stream<_i38.LogRecord>, _i38.LogRecord>(
+      .callStreamingServerEndpoint<_i2.Stream<_i39.LogRecord>, _i39.LogRecord>(
         'logs',
         'fetchBuildLog',
         {
@@ -1684,11 +1742,11 @@ class EndpointLogs extends _i1.EndpointRef {
 
   /// Tails the build log records for the specified deploy attempt.
   /// Continues until the client unsubscribes or the build stage is final.
-  _i2.Stream<_i38.LogRecord> tailBuildLog({
+  _i2.Stream<_i39.LogRecord> tailBuildLog({
     required String cloudCapsuleId,
     required _i1.UuidValue attemptId,
   }) => caller
-      .callStreamingServerEndpoint<_i2.Stream<_i38.LogRecord>, _i38.LogRecord>(
+      .callStreamingServerEndpoint<_i2.Stream<_i39.LogRecord>, _i39.LogRecord>(
         'logs',
         'tailBuildLog',
         {'cloudCapsuleId': cloudCapsuleId, 'attemptId': attemptId},
@@ -1709,11 +1767,11 @@ class EndpointMetrics extends _i1.EndpointRef {
   ///
   /// Series are sparse: gaps are represented by absent samples, never
   /// interpolated, so a client can distinguish "no data" from a real zero.
-  _i2.Future<List<_i39.PodResourceSeries>> fetchPodResourceMetrics({
+  _i2.Future<List<_i40.PodResourceSeries>> fetchPodResourceMetrics({
     required String cloudCapsuleId,
-    required _i40.MetricsRange range,
+    required _i41.MetricsRange range,
     DateTime? until,
-  }) => caller.callServerEndpoint<List<_i39.PodResourceSeries>>(
+  }) => caller.callServerEndpoint<List<_i40.PodResourceSeries>>(
     'metrics',
     'fetchPodResourceMetrics',
     {'cloudCapsuleId': cloudCapsuleId, 'range': range, 'until': until},
@@ -1725,11 +1783,11 @@ class EndpointMetrics extends _i1.EndpointRef {
   /// Series are sparse: a namespace with no series over the window returns an
   /// empty result, which reads as "no data"; an idle-but-deployed capsule
   /// carries its own zeros, so a zero-rate sample is a real reading.
-  _i2.Future<_i41.CapsuleNetworkSeries> fetchNetworkMetrics({
+  _i2.Future<_i42.CapsuleNetworkSeries> fetchNetworkMetrics({
     required String cloudCapsuleId,
-    required _i40.MetricsRange range,
+    required _i41.MetricsRange range,
     DateTime? until,
-  }) => caller.callServerEndpoint<_i41.CapsuleNetworkSeries>(
+  }) => caller.callServerEndpoint<_i42.CapsuleNetworkSeries>(
     'metrics',
     'fetchNetworkMetrics',
     {'cloudCapsuleId': cloudCapsuleId, 'range': range, 'until': until},
@@ -1742,11 +1800,11 @@ class EndpointMetrics extends _i1.EndpointRef {
   /// the same capsule. An empty result is not an error: a suspended database
   /// exports nothing, and the returned status says whether the database was
   /// idle or does not have metrics export enabled.
-  _i2.Future<_i42.DatabaseMetrics> fetchDatabaseMetrics({
+  _i2.Future<_i43.DatabaseMetrics> fetchDatabaseMetrics({
     required String cloudCapsuleId,
-    required _i40.MetricsRange range,
+    required _i41.MetricsRange range,
     DateTime? until,
-  }) => caller.callServerEndpoint<_i42.DatabaseMetrics>(
+  }) => caller.callServerEndpoint<_i43.DatabaseMetrics>(
     'metrics',
     'fetchDatabaseMetrics',
     {'cloudCapsuleId': cloudCapsuleId, 'range': range, 'until': until},
@@ -1764,8 +1822,8 @@ class EndpointPlatform extends _i1.EndpointRef {
   /// Gets the Dart SDK version policy for projects deployed to Serverpod Cloud.
   ///
   /// This method requires no authentication.
-  _i2.Future<_i43.DartSdkVersionPolicy> getDartSdkVersionPolicy() =>
-      caller.callServerEndpoint<_i43.DartSdkVersionPolicy>(
+  _i2.Future<_i44.DartSdkVersionPolicy> getDartSdkVersionPolicy() =>
+      caller.callServerEndpoint<_i44.DartSdkVersionPolicy>(
         'platform',
         'getDartSdkVersionPolicy',
         {},
@@ -1814,8 +1872,8 @@ class EndpointPlans extends _i1.EndpointRef {
       .callServerEndpoint<List<String>>('plans', 'listProcuredPlanNames', {});
 
   /// Lists the subscriptions owned by the user.
-  _i2.Future<List<_i44.SubscriptionInfo>> listSubscriptions() =>
-      caller.callServerEndpoint<List<_i44.SubscriptionInfo>>(
+  _i2.Future<List<_i45.SubscriptionInfo>> listSubscriptions() =>
+      caller.callServerEndpoint<List<_i45.SubscriptionInfo>>(
         'plans',
         'listSubscriptions',
         {},
@@ -1824,9 +1882,9 @@ class EndpointPlans extends _i1.EndpointRef {
   /// Gets the subscription info for the subscription of the given project id.
   ///
   /// Throws [NotFoundException] if the project's subscription is not found.
-  _i2.Future<_i44.SubscriptionInfo> getSubscriptionInfoOfProject({
+  _i2.Future<_i45.SubscriptionInfo> getSubscriptionInfoOfProject({
     required String cloudProjectId,
-  }) => caller.callServerEndpoint<_i44.SubscriptionInfo>(
+  }) => caller.callServerEndpoint<_i45.SubscriptionInfo>(
     'plans',
     'getSubscriptionInfoOfProject',
     {'cloudProjectId': cloudProjectId},
@@ -1835,9 +1893,9 @@ class EndpointPlans extends _i1.EndpointRef {
   /// Gets a subscription info of a subscription owned by the user.
   ///
   /// Throws [NotFoundException] if the subscription is not found.
-  _i2.Future<_i44.SubscriptionInfo> getSubscriptionInfo({
+  _i2.Future<_i45.SubscriptionInfo> getSubscriptionInfo({
     required _i1.UuidValue subscriptionId,
-  }) => caller.callServerEndpoint<_i44.SubscriptionInfo>(
+  }) => caller.callServerEndpoint<_i45.SubscriptionInfo>(
     'plans',
     'getSubscriptionInfo',
     {'subscriptionId': subscriptionId},
@@ -1858,8 +1916,8 @@ class EndpointPlans extends _i1.EndpointRef {
   /// Lists the public plans (`starter`, `growth`) for the private customer
   /// billing type. Each [PlanInfo] carries its bundled
   /// [PlanInfo.projectProduct].
-  _i2.Future<List<_i45.PlanInfo>> listPlans() =>
-      caller.callServerEndpoint<List<_i45.PlanInfo>>('plans', 'listPlans', {});
+  _i2.Future<List<_i46.PlanInfo>> listPlans() =>
+      caller.callServerEndpoint<List<_i46.PlanInfo>>('plans', 'listPlans', {});
 
   /// Gets the plan info for the named plan product.
   ///
@@ -1869,8 +1927,8 @@ class EndpointPlans extends _i1.EndpointRef {
   /// is set.
   ///
   /// Throws [NotFoundException] if the plan is not found.
-  _i2.Future<_i45.PlanInfo> getPlanInfo({required String planProductName}) =>
-      caller.callServerEndpoint<_i45.PlanInfo>('plans', 'getPlanInfo', {
+  _i2.Future<_i46.PlanInfo> getPlanInfo({required String planProductName}) =>
+      caller.callServerEndpoint<_i46.PlanInfo>('plans', 'getPlanInfo', {
         'planProductName': planProductName,
       });
 
@@ -1938,7 +1996,7 @@ class EndpointProjects extends _i1.EndpointRef {
   /// Throws [ProcurementDeniedException] if a procurement fails.
   _i2.Future<_i1.UuidValue> createPlanProject({
     required String cloudProjectId,
-    required _i46.ProjectProfileUpdate profile,
+    required _i7.ProjectProfileUpdate profile,
   }) => caller.callServerEndpoint<_i1.UuidValue>(
     'projects',
     'createPlanProject',
@@ -2013,7 +2071,7 @@ class EndpointProjects extends _i1.EndpointRef {
   /// project's subscription.
   _i2.Future<void> updateProjectProfile({
     required String cloudProjectId,
-    required _i46.ProjectProfileUpdate resources,
+    required _i7.ProjectProfileUpdate resources,
   }) => caller.callServerEndpoint<void>('projects', 'updateProjectProfile', {
     'cloudProjectId': cloudProjectId,
     'resources': resources,
@@ -2331,17 +2389,17 @@ class EndpointUsers extends _i1.EndpointRef {
   String get name => 'users';
 
   /// Reads the current user's information.
-  _i2.Future<_i7.User> readUser() =>
-      caller.callServerEndpoint<_i7.User>('users', 'readUser', {});
+  _i2.Future<_i8.User> readUser() =>
+      caller.callServerEndpoint<_i8.User>('users', 'readUser', {});
 
   /// Updates current user's [name].
-  _i2.Future<_i7.User> updateUserName(String name) => caller
-      .callServerEndpoint<_i7.User>('users', 'updateUserName', {'name': name});
+  _i2.Future<_i8.User> updateUserName(String name) => caller
+      .callServerEndpoint<_i8.User>('users', 'updateUserName', {'name': name});
 
   /// Reads all users that have a role in the specified project.
-  _i2.Future<List<_i7.User>> listUsersInProject({
+  _i2.Future<List<_i8.User>> listUsersInProject({
     required String cloudProjectId,
-  }) => caller.callServerEndpoint<List<_i7.User>>(
+  }) => caller.callServerEndpoint<List<_i8.User>>(
     'users',
     'listUsersInProject',
     {'cloudProjectId': cloudProjectId},
@@ -2350,13 +2408,13 @@ class EndpointUsers extends _i1.EndpointRef {
 
 class Modules {
   Modules(Client client) {
-    serverpod_auth_idp = _i13.Caller(client);
-    serverpod_auth_core = _i11.Caller(client);
+    serverpod_auth_idp = _i14.Caller(client);
+    serverpod_auth_core = _i12.Caller(client);
   }
 
-  late final _i13.Caller serverpod_auth_idp;
+  late final _i14.Caller serverpod_auth_idp;
 
-  late final _i11.Caller serverpod_auth_core;
+  late final _i12.Caller serverpod_auth_core;
 }
 
 class Client extends _i1.ServerpodClientShared {

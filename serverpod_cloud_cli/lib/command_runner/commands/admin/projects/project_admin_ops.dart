@@ -77,4 +77,46 @@ abstract class ProjectAdminCommands {
 
     return {'projectId': projectId};
   }
+
+  static Future<Map<String, Object?>> changeProjectOwner(
+    final Client cloudApiClient, {
+    required final String projectId,
+    required final String ownerEmail,
+  }) async {
+    try {
+      final user = await cloudApiClient.adminUsers.getUser(email: ownerEmail);
+      final newOwnerId = user.ownerId;
+      if (newOwnerId == null) {
+        throw FailureException(
+          error: 'User "$ownerEmail" has no owner (not fully registered).',
+        );
+      }
+
+      await cloudApiClient.adminProjects.changeProjectOwner(
+        cloudProjectId: projectId,
+        newOwnerId: newOwnerId,
+      );
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Failed to change the project owner');
+    }
+
+    return {'projectId': projectId, 'ownerEmail': ownerEmail};
+  }
+
+  static Future<Map<String, Object?>> updateProjectPlan(
+    final Client cloudApiClient, {
+    required final String projectId,
+    required final PlanType planType,
+  }) async {
+    try {
+      await cloudApiClient.adminProjects.updateProjectProfile(
+        cloudProjectId: projectId,
+        profile: ProjectProfileUpdate(planType: planType),
+      );
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Failed to update the project plan');
+    }
+
+    return {'projectId': projectId, 'planType': planType.name};
+  }
 }
