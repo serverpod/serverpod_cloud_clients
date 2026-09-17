@@ -223,6 +223,7 @@ commands:
       --until=: "Fetch records from before this timestamp. Accepts ISO date (e.g. \"2024-01-15T10:30:00Z\") or relative from now (e.g. \"5m\", \"3h\", \"1d\")."
       --since=: "Fetch records from after this timestamp. Accepts ISO date (e.g. \"2024-01-15T10:30:00Z\") or relative from now (e.g. \"5m\", \"3h\", \"1d\"). Can also be specified as the first argument."
       --tail: "Tail the log and get real time updates. Cannot be combined with --since or --until."
+      --raw: "Print the log content exactly as stored, without parsing."
     exclusiveFlags:
       - [utc, no-utc]
 

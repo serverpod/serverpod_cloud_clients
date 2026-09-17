@@ -1,4 +1,5 @@
 import 'package:config/config.dart';
+import 'package:ground_control_client/ground_control_client.dart' show PlanType;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
@@ -17,6 +18,8 @@ class AdminProjectCommand extends CloudCliCommand {
     addSubcommand(AdminListProjectsCommand(logger: logger));
     addSubcommand(AdminProjectStatusCommand(logger: logger));
     addSubcommand(AdminProjectDeleteCommand(logger: logger));
+    addSubcommand(AdminProjectChangeOwnerCommand(logger: logger));
+    addSubcommand(AdminProjectUpdatePlanCommand(logger: logger));
   }
 }
 
@@ -175,6 +178,116 @@ class AdminProjectDeleteCommand
         projectId: projectId,
       ),
       textOutputUi: const AdminProjectDeleteTextUi(),
+    );
+  }
+}
+
+enum AdminProjectChangeOwnerOption<V> implements OptionDefinition<V> {
+  projectId(ProjectIdOption.argsOnly(asFirstArg: true)),
+  user(UserEmailOption(argPos: 1, mandatory: true));
+
+  const AdminProjectChangeOwnerOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class AdminProjectChangeOwnerCommand
+    extends CloudCliCommand<AdminProjectChangeOwnerOption> {
+  @override
+  final name = 'change-owner';
+
+  @override
+  final description = 'Change the owner of a Serverpod Cloud project.';
+
+  AdminProjectChangeOwnerCommand({required super.logger})
+    : super(options: AdminProjectChangeOwnerOption.values);
+
+  @override
+  Future<void> runWithOutput(
+    final Configuration<AdminProjectChangeOwnerOption> commandConfig,
+    final CommandOutput output,
+  ) async {
+    final projectId = commandConfig.value(
+      AdminProjectChangeOwnerOption.projectId,
+    );
+    final ownerEmail = commandConfig.value(AdminProjectChangeOwnerOption.user);
+
+    await confirmToContinue(
+      output,
+      message:
+          'Are you sure you want to change the owner of project '
+          '"$projectId" to "$ownerEmail"?',
+      defaultValue: false,
+    );
+
+    await renderCommand(
+      output,
+      operation: () => ProjectAdminCommands.changeProjectOwner(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+        ownerEmail: ownerEmail,
+      ),
+      textOutputUi: const AdminProjectChangeOwnerTextUi(),
+    );
+  }
+}
+
+enum AdminProjectUpdatePlanOption<V> implements OptionDefinition<V> {
+  projectId(ProjectIdOption.argsOnly(asFirstArg: true)),
+  planType(
+    EnumOption(
+      enumParser: EnumParser([PlanType.starter, PlanType.growth]),
+      argName: 'plan',
+      argPos: 1,
+      mandatory: true,
+      helpText: 'The plan type. Can be passed as the second argument.',
+    ),
+  );
+
+  const AdminProjectUpdatePlanOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class AdminProjectUpdatePlanCommand
+    extends CloudCliCommand<AdminProjectUpdatePlanOption> {
+  @override
+  final name = 'update-plan';
+
+  @override
+  final description = 'Update the plan of a Serverpod Cloud project.';
+
+  AdminProjectUpdatePlanCommand({required super.logger})
+    : super(options: AdminProjectUpdatePlanOption.values);
+
+  @override
+  Future<void> runWithOutput(
+    final Configuration<AdminProjectUpdatePlanOption> commandConfig,
+    final CommandOutput output,
+  ) async {
+    final projectId = commandConfig.value(
+      AdminProjectUpdatePlanOption.projectId,
+    );
+    final planType = commandConfig.value(AdminProjectUpdatePlanOption.planType);
+
+    await confirmToContinue(
+      output,
+      message:
+          'Are you sure you want to update the plan of project '
+          '"$projectId" to "$planType"?',
+      defaultValue: false,
+    );
+
+    await renderCommand(
+      output,
+      operation: () => ProjectAdminCommands.updateProjectPlan(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+        planType: planType,
+      ),
+      textOutputUi: const AdminProjectUpdatePlanTextUi(),
     );
   }
 }

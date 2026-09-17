@@ -18,6 +18,7 @@ void stubCloudClient(
   registerFallbackValue(BackupFrequency.weekly);
   registerFallbackValue(<String, String>{});
   registerFallbackValue(<String>[]);
+  registerFallbackValue(ProjectProfileUpdate());
   registerFallbackValue(BucketVisibility.private);
 
   when(() => client.close()).thenAnswer((final _) async {});
@@ -781,6 +782,18 @@ void _stubAdmin(final ClientMock client, {required final String projectId}) {
     () => client.adminUsers.inviteUser(email: any(named: 'email')),
   ).thenAnswer((_) async {});
   when(
+    () => client.adminUsers.getUser(
+      email: any(named: 'email'),
+      includeArchived: any(named: 'includeArchived'),
+    ),
+  ).thenAnswer(
+    (_) async => UserBuilder()
+        .withEmail('test@example.com')
+        .withCreatedAt(DateTime.utc(2025, 7, 2, 11))
+        .withAccountStatus(UserAccountStatus.registered)
+        .build(),
+  );
+  when(
     () => client.adminProjects.getDeployAttempts(
       cloudCapsuleId: any(named: 'cloudCapsuleId'),
       limit: any(named: 'limit'),
@@ -802,6 +815,18 @@ void _stubAdmin(final ClientMock client, {required final String projectId}) {
   ).thenAnswer(
     (_) async => ProjectBuilder().withCloudProjectId(projectId).build(),
   );
+  when(
+    () => client.adminProjects.changeProjectOwner(
+      cloudProjectId: any(named: 'cloudProjectId'),
+      newOwnerId: any(named: 'newOwnerId'),
+    ),
+  ).thenAnswer((_) async {});
+  when(
+    () => client.adminProjects.updateProjectProfile(
+      cloudProjectId: any(named: 'cloudProjectId'),
+      profile: any(named: 'profile'),
+    ),
+  ).thenAnswer((_) async {});
   when(
     () => client.adminProcurement.procurePlan(
       userEmail: any(named: 'userEmail'),

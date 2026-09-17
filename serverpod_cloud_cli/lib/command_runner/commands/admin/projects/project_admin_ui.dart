@@ -115,3 +115,31 @@ class AdminProjectDeleteTextUi extends OutputWidget {
     );
   }
 }
+
+class AdminProjectChangeOwnerTextUi extends OutputWidget {
+  const AdminProjectChangeOwnerTextUi();
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    final result = context.get<Map<String, Object?>>();
+    return SuccessTextWidget(
+      'Changed the owner of project "${result['projectId']}" '
+      'to "${result['ownerEmail']}".',
+      newParagraph: true,
+    );
+  }
+}
+
+class AdminProjectUpdatePlanTextUi extends OutputWidget {
+  const AdminProjectUpdatePlanTextUi();
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    final result = context.get<Map<String, Object?>>();
+    return SuccessTextWidget(
+      'Updated the plan of project "${result['projectId']}" '
+      'to "${result['planType']}".',
+      newParagraph: true,
+    );
+  }
+}
