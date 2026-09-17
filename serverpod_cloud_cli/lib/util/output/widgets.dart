@@ -20,7 +20,7 @@ class FormatBranchingWidget extends OutputWidget {
   OutputWidget build(OutputContext context) {
     final format = context.format;
     return switch (format) {
-      OutputFormat.text => textWidget,
+      OutputFormat.text || OutputFormat.csv => textWidget,
       OutputFormat.json => jsonWidget,
       OutputFormat.yaml => yamlWidget,
     };

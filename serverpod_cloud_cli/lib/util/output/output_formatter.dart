@@ -76,6 +76,8 @@ ValueFormatter<O> mapValueFormatter<O extends Map<String, Object?>>({
   return objValueFormatter(getter: (object) => object[key]);
 }
 
+const _classNameKey = '__className__';
+
 Object? _structuredValue(Object? value) {
   if (value == null) {
     return null;
@@ -95,11 +97,12 @@ Object? _structuredValue(Object? value) {
   if (value is Map) {
     return {
       for (final entry in value.entries)
-        entry.key.toString(): _structuredValue(entry.value),
+        if (entry.key.toString() != _classNameKey)
+          entry.key.toString(): _structuredValue(entry.value),
     };
   }
   if (value is SerializableModel) {
-    return value.toJson();
+    return _structuredValue(value.toJson());
   }
   if (value is num || value is bool || value is String) {
     return value;

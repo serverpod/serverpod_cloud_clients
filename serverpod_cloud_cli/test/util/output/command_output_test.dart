@@ -72,6 +72,27 @@ void main() {
     });
   });
 
+  group('Given csv output and a format-branching widget', () {
+    late CommandOutput output;
+
+    setUp(() {
+      output = CommandOutput(format: OutputFormat.csv, logger: logger);
+    });
+
+    test('when rendering then the text branch is written', () async {
+      await output.render(
+        operation: () async => 'unused',
+        ui: const FormatBranchingWidget(
+          textWidget: InfoTextWidget('text'),
+          jsonWidget: InfoTextWidget('json'),
+          yamlWidget: InfoTextWidget('yaml'),
+        ),
+      );
+
+      expect(logger.infoCalls, [equalsInfoCall(message: 'text')]);
+    });
+  });
+
   group('Given json output', () {
     late CommandOutput output;
 

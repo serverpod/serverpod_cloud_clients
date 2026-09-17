@@ -345,7 +345,7 @@ _scloud_completions() {
       ;;
 
     'status deployment show'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'db backup'*'--project-config-file')
@@ -353,7 +353,7 @@ _scloud_completions() {
       ;;
 
     'status deployment list'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'db backup restore'*'--project-dir')
@@ -361,7 +361,7 @@ _scloud_completions() {
       ;;
 
     'db user reset-password'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'build log'*'--project-config-file')
@@ -397,7 +397,7 @@ _scloud_completions() {
       ;;
 
     'status deployment log'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'build secret set'*'--project-dir')
@@ -417,7 +417,7 @@ _scloud_completions() {
       ;;
 
     'storage file download'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'db schedule show'*'--project-dir')
@@ -461,7 +461,7 @@ _scloud_completions() {
       ;;
 
     'storage file upload'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'password unset'*'--project-dir')
@@ -489,7 +489,7 @@ _scloud_completions() {
       ;;
 
     'project user revoke'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'launch'*'--project-config-file')
@@ -497,11 +497,11 @@ _scloud_completions() {
       ;;
 
     'project user invite'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'storage file delete'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'variable unset'*'--project-dir')
@@ -533,7 +533,7 @@ _scloud_completions() {
       ;;
 
     'completion generate'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'project create'*'--project-dir')
@@ -565,11 +565,11 @@ _scloud_completions() {
       ;;
 
     'build secret unset'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'completion install'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'db connection'*'--project-dir')
@@ -589,7 +589,7 @@ _scloud_completions() {
       ;;
 
     'storage file list'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'auth'*'--project-config-file')
@@ -617,15 +617,15 @@ _scloud_completions() {
       ;;
 
     'build secret list'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'db backup restore'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'project user list'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'completion generate'*'--tool')
@@ -645,7 +645,7 @@ _scloud_completions() {
       ;;
 
     'auth revoke-token'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'variable set'*'--project-dir')
@@ -653,7 +653,7 @@ _scloud_completions() {
       ;;
 
     'db schedule unset'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'password set'*'--project-dir')
@@ -665,11 +665,11 @@ _scloud_completions() {
       ;;
 
     'status deployment'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'auth create-token'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'domain list'*'--project-dir')
@@ -689,7 +689,7 @@ _scloud_completions() {
       ;;
 
     'db backup create'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'status live'*'--project-dir')
@@ -697,7 +697,7 @@ _scloud_completions() {
       ;;
 
     'db backup delete'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'db schedule'*'--project-dir')
@@ -709,7 +709,7 @@ _scloud_completions() {
       ;;
 
     'db schedule show'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'auth logout'*'--project-dir')
@@ -721,7 +721,7 @@ _scloud_completions() {
       ;;
 
     'build secret set'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'completion'*'--project-dir')
@@ -749,7 +749,7 @@ _scloud_completions() {
       ;;
 
     'db schedule set'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'storage file download'*'-d')
@@ -761,7 +761,7 @@ _scloud_completions() {
       ;;
 
     'settings unset'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'build log'*'--project-dir')
@@ -773,7 +773,7 @@ _scloud_completions() {
       ;;
 
     'storage delete'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'storage create'*'--access')
@@ -781,19 +781,19 @@ _scloud_completions() {
       ;;
 
     'storage create'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'password unset'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'db user create'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'db user delete'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'db backup'*'--project-dir')
@@ -801,15 +801,15 @@ _scloud_completions() {
       ;;
 
     'db backup list'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'project delete'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'project create'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'auth list'*'--project-dir')
@@ -817,7 +817,7 @@ _scloud_completions() {
       ;;
 
     'variable unset'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'domain attach'*'--target')
@@ -825,7 +825,7 @@ _scloud_completions() {
       ;;
 
     'domain attach'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'project user invite'*'-d')
@@ -841,7 +841,7 @@ _scloud_completions() {
       ;;
 
     'domain detach'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'storage file upload'*'-d')
@@ -849,19 +849,19 @@ _scloud_completions() {
       ;;
 
     'domain verify'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'db connection'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'password list'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'settings list'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'settings'*'--project-dir')
@@ -869,7 +869,7 @@ _scloud_completions() {
       ;;
 
     'variable list'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'completion generate'*'-d')
@@ -909,7 +909,7 @@ _scloud_completions() {
       ;;
 
     'db user list'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'build secret unset'*'-d')
@@ -917,35 +917,35 @@ _scloud_completions() {
       ;;
 
     'project user'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'project link'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'project show'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'password set'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'variable set'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'project list'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'build secret'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'settings set'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'project create'*'--plan')
@@ -981,7 +981,7 @@ _scloud_completions() {
       ;;
 
     'storage list'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'version'*'--project-dir')
@@ -993,7 +993,7 @@ _scloud_completions() {
       ;;
 
     'storage file'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'launch'*'--project-dir')
@@ -1009,7 +1009,7 @@ _scloud_completions() {
       ;;
 
     'auth logout'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'auth create-token'*'-d')
@@ -1029,7 +1029,7 @@ _scloud_completions() {
       ;;
 
     'db schedule'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'db backup restore'*'-d')
@@ -1049,11 +1049,11 @@ _scloud_completions() {
       ;;
 
     'status live'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'domain list'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'build secret list'*'-d')
@@ -1081,7 +1081,7 @@ _scloud_completions() {
       ;;
 
     'auth login'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'build secret set'*'-d')
@@ -1089,7 +1089,7 @@ _scloud_completions() {
       ;;
 
     'completion'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'project user invite'*)
@@ -1113,7 +1113,7 @@ _scloud_completions() {
       ;;
 
     'db backup'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'build secret unset'*)
@@ -1121,7 +1121,7 @@ _scloud_completions() {
       ;;
 
     'build log'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'db schedule set'*'-d')
@@ -1137,7 +1137,7 @@ _scloud_completions() {
       ;;
 
     'auth list'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'db user delete'*'-d')
@@ -1209,11 +1209,11 @@ _scloud_completions() {
       ;;
 
     'variable'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'settings'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'password unset'*'-d')
@@ -1221,7 +1221,7 @@ _scloud_completions() {
       ;;
 
     'password'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'settings unset'*'-d')
@@ -1237,7 +1237,7 @@ _scloud_completions() {
       ;;
 
     'project'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'domain attach'*'-t')
@@ -1285,7 +1285,7 @@ _scloud_completions() {
       ;;
 
     'version'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'domain verify'*'-d')
@@ -1293,7 +1293,7 @@ _scloud_completions() {
       ;;
 
     'db user'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'password list'*'-d')
@@ -1301,11 +1301,11 @@ _scloud_completions() {
       ;;
 
     'db wipe'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'storage'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'settings set'*'-d')
@@ -1337,15 +1337,15 @@ _scloud_completions() {
       ;;
 
     'status'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'domain'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'deploy'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'project user'*'-d')
@@ -1353,7 +1353,7 @@ _scloud_completions() {
       ;;
 
     'launch'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'project link'*'-d')
@@ -1385,7 +1385,7 @@ _scloud_completions() {
       ;;
 
     'build'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'storage create'*)
@@ -1441,7 +1441,7 @@ _scloud_completions() {
       ;;
 
     'auth'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     *'--project-dir')
@@ -1489,7 +1489,7 @@ _scloud_completions() {
       ;;
 
     'log'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'storage file'*)
@@ -1557,7 +1557,7 @@ _scloud_completions() {
       ;;
 
     'me'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'auth logout'*)
@@ -1577,7 +1577,7 @@ _scloud_completions() {
       ;;
 
     'db'*'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'completion'*)
@@ -1657,7 +1657,7 @@ _scloud_completions() {
       ;;
 
     *'--format')
-      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text json yaml")" -- "$cur")
+      while read -r; do COMPREPLY+=("$REPLY"); done < <(compgen -W "$(_scloud_completions_filter "text csv json yaml")" -- "$cur")
       ;;
 
     'password'*)

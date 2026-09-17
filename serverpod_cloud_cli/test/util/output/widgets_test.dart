@@ -60,6 +60,14 @@ void main() {
 
       expect(logger.infoCalls, [equalsInfoCall(message: 'yaml')]);
     });
+
+    test('when the format is csv then the text widget is written', () async {
+      await widget
+          .buildTree(OutputContext(OutputFormat.csv))
+          .renderTree(logger: logger);
+
+      expect(logger.infoCalls, [equalsInfoCall(message: 'text')]);
+    });
   });
 
   group('Given an error-branching widget', () {

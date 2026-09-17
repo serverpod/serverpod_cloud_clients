@@ -1,7 +1,7 @@
 import 'package:serverpod_cloud_cli/util/output/output.dart';
 
 /// A top-level command output widget that composes output widgets for different
-/// output formats (text, json, yaml).
+/// output formats (text, csv, json, yaml).
 ///
 /// textOutputUi, jsonOutputUi, yamlOutputUi: Rendered on success.
 ///

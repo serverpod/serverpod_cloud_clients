@@ -5,6 +5,7 @@ import 'package:serverpod_cloud_cli/util/common.dart' show timeZoneLabel;
 import 'package:serverpod_cloud_cli/util/printers/table_printer.dart';
 
 import 'output_context.dart';
+import 'output_format.dart';
 import 'output_formatter.dart';
 import 'output_widget.dart';
 
@@ -26,6 +27,39 @@ class TextTableWidget extends OutputWidget {
   final List<cli.AnsiStyle?>? columnStyles;
 
   const TextTableWidget(
+    this.content, {
+    this.columnMinWidths,
+    this.columnSeparator,
+    this.headerDividerColumnSeparator,
+    this.indent,
+    this.columnStyles,
+  });
+
+  @override
+  OutputWidget build(OutputContext context) {
+    if (context.format == OutputFormat.csv) {
+      return _CsvTableWidget(content);
+    }
+    return _AlignedTableWidget(
+      content,
+      columnMinWidths: columnMinWidths,
+      columnSeparator: columnSeparator,
+      headerDividerColumnSeparator: headerDividerColumnSeparator,
+      indent: indent,
+      columnStyles: columnStyles,
+    );
+  }
+}
+
+class _AlignedTableWidget extends OutputWidget {
+  final TextTableData content;
+  final List<int?>? columnMinWidths;
+  final String? columnSeparator;
+  final String? headerDividerColumnSeparator;
+  final String? indent;
+  final List<cli.AnsiStyle?>? columnStyles;
+
+  const _AlignedTableWidget(
     this.content, {
     this.columnMinWidths,
     this.columnSeparator,
@@ -63,6 +97,22 @@ class TextTableWidget extends OutputWidget {
           _ => cell,
         },
     ];
+  }
+}
+
+class _CsvTableWidget extends OutputWidget {
+  final TextTableData content;
+
+  const _CsvTableWidget(this.content);
+
+  @override
+  void render({required CommandLogger logger}) {
+    if (content.headers.isNotEmpty) {
+      logger.line(_csvRow(content.headers));
+    }
+    for (final row in content.rows) {
+      logger.line(_csvRow(row));
+    }
   }
 }
 
@@ -207,6 +257,13 @@ class FormattedStreamTableWidget<R extends Object> extends OutputWidget {
 
   @override
   OutputWidget build(OutputContext context) {
+    if (context.format == OutputFormat.csv) {
+      return _CsvStreamTableWidget(
+        stream: context.get<Stream<R>>(),
+        formatter: formatter,
+        footerLines: footerLines,
+      );
+    }
     return _StreamTableWidget(
       stream: context.get<Stream<R>>(),
       formatter: formatter,
@@ -253,13 +310,46 @@ class _StreamTableWidget<R extends Object> extends OutputWidget {
     await for (final line in tableStream) {
       logger.line(line.trimRight());
     }
-    final footer = footerLines;
-    if (footer == null) {
-      return;
+    _writeFooter(logger, footerLines, count);
+  }
+}
+
+class _CsvStreamTableWidget<R extends Object> extends OutputWidget {
+  final Stream<R> stream;
+  final TextTableOutputFormatter<R> formatter;
+  final Iterable<String> Function(int rowCount)? footerLines;
+
+  const _CsvStreamTableWidget({
+    required this.stream,
+    required this.formatter,
+    this.footerLines,
+  });
+
+  @override
+  Future<void> renderAsync({required CommandLogger logger}) async {
+    var count = 0;
+    if (formatter.headings.isNotEmpty) {
+      logger.line(_csvRow(formatter.headings));
     }
-    for (final line in footer(count)) {
-      logger.line(line);
+    await for (final row in stream) {
+      count++;
+      logger.line(_csvRow(formatter.formatRow(row)));
     }
+    _writeFooter(logger, footerLines, count);
+  }
+}
+
+void _writeFooter(
+  final CommandLogger logger,
+  final Iterable<String> Function(int rowCount)? footerLines,
+  final int count,
+) {
+  final footer = footerLines;
+  if (footer == null) {
+    return;
+  }
+  for (final line in footer(count)) {
+    logger.line(line);
   }
 }
 
@@ -283,3 +373,16 @@ class StringColumnListWidget extends OutputWidget {
     );
   }
 }
+
+String _csvRow(final Iterable<String> fields) {
+  return fields.map(_csvField).join(',');
+}
+
+String _csvField(final String value) {
+  if (value.contains(_csvSpecialChars)) {
+    return '"${value.replaceAll('"', '""')}"';
+  }
+  return value;
+}
+
+final _csvSpecialChars = RegExp(r'[,"\r\n]');

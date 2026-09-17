@@ -8,6 +8,12 @@ void main() {
     });
   });
 
+  group('Given the csv output format', () {
+    test('when checking if it is structured then it is not', () {
+      expect(OutputFormat.csv.isStructured, isFalse);
+    });
+  });
+
   group('Given the json output format', () {
     test('when checking if it is structured then it is', () {
       expect(OutputFormat.json.isStructured, isTrue);
