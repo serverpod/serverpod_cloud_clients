@@ -6,6 +6,7 @@ enum _VariableStore { unmasked, secret }
 
 abstract class VariableCommands {
   static const _nameMaxLength = 255;
+  static const _reservedNames = {'SERVERPOD_FUTURE_CALL_EXECUTION_ENABLED'};
   static final _namePattern = RegExp(r'^[a-zA-Z_][a-zA-Z0-9_]*$');
   static const _maskedValue = '••••••••';
 
@@ -18,6 +19,7 @@ abstract class VariableCommands {
     final bool? secret,
   }) async {
     _validateName(baseCommand, name);
+    _validateNotReserved(name);
 
     final listed = await _fetch(cloudApiClient, projectId);
     final existingStore = _storeOf(
@@ -182,6 +184,15 @@ abstract class VariableCommands {
         error:
             'Use letters, digits and underscores, starting with a letter or '
             'an underscore.',
+      );
+    }
+  }
+
+  static void _validateNotReserved(String name) {
+    if (_reservedNames.contains(name)) {
+      throw FailureException(
+        error: "The name '$name' is reserved by Serverpod Cloud.",
+        hint: 'Future call execution is set by your project plan.',
       );
     }
   }
