@@ -249,4 +249,36 @@ void main() {
       });
     });
   });
+
+  group('Given an AdminProjectReprocureTextUi', () {
+    group('when rendered after re-procuring a project', () {
+      late String stdout;
+      late String stderr;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const AdminProjectReprocureTextUi(),
+          data: const {
+            'projectId': 'my-project',
+            'planType': 'starter',
+            'subscriptionId': '11111111-1111-4111-8111-111111111111',
+          },
+        );
+        stdout = io.stdout;
+        stderr = io.stderr;
+      });
+
+      test('then stdout contains the reprocure success message', () {
+        expect(
+          stdout,
+          contains('Re-procured project "my-project" on plan "starter"'),
+        );
+        expect(stdout, contains('11111111-1111-4111-8111-111111111111'));
+      });
+
+      test('then stderr is empty', () {
+        expect(stderr, isEmpty);
+      });
+    });
+  });
 }

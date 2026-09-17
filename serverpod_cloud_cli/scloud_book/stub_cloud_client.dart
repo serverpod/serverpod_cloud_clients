@@ -828,6 +828,14 @@ void _stubAdmin(final ClientMock client, {required final String projectId}) {
     ),
   ).thenAnswer((_) async {});
   when(
+    () => client.adminProjects.reprocureExistingProject(
+      cloudProjectId: any(named: 'cloudProjectId'),
+      profile: any(named: 'profile'),
+    ),
+  ).thenAnswer(
+    (_) async => UuidValue.fromString('11111111-1111-4111-8111-111111111111'),
+  );
+  when(
     () => client.adminProcurement.procurePlan(
       userEmail: any(named: 'userEmail'),
       planProductName: any(named: 'planProductName'),

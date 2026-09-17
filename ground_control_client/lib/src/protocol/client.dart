@@ -365,6 +365,31 @@ class EndpointAdminProjects extends _i1.EndpointRef {
     {'cloudProjectId': cloudProjectId, 'profile': profile},
   );
 
+  /// Re-procures a plan subscription and the products of an existing project
+  /// whose previous product allocations are missing or have been archived.
+  ///
+  /// The project and its resources must already exist. A new subscription is
+  /// registered and new product allocations are attached to those resources.
+  /// Infrastructure is not created or modified.
+  ///
+  /// [profile] must specify a plan type. Compute and database products follow
+  /// [profile] when those fields are set, otherwise the live resource
+  /// configuration.
+  ///
+  /// Returns the new subscription ID.
+  ///
+  /// Throws [NotFoundException] if the project or capsule is not found.
+  /// Throws [InvalidValueException] if the profile does not specify a plan type.
+  /// Throws [ProcurementDeniedException] if a procurement fails.
+  _i2.Future<_i1.UuidValue> reprocureExistingProject({
+    required String cloudProjectId,
+    required _i7.ProjectProfileUpdate profile,
+  }) => caller.callServerEndpoint<_i1.UuidValue>(
+    'adminProjects',
+    'reprocureExistingProject',
+    {'cloudProjectId': cloudProjectId, 'profile': profile},
+  );
+
   /// Redeploys a capsule using its current image.
   /// Triggers a deploymentUpdated event to redeploy the infrastructure.
   ///

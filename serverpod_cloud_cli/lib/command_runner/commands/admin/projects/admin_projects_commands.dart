@@ -20,6 +20,7 @@ class AdminProjectCommand extends CloudCliCommand {
     addSubcommand(AdminProjectDeleteCommand(logger: logger));
     addSubcommand(AdminProjectChangeOwnerCommand(logger: logger));
     addSubcommand(AdminProjectUpdatePlanCommand(logger: logger));
+    addSubcommand(AdminProjectReprocureCommand(logger: logger));
   }
 }
 
@@ -288,6 +289,68 @@ class AdminProjectUpdatePlanCommand
         planType: planType,
       ),
       textOutputUi: const AdminProjectUpdatePlanTextUi(),
+    );
+  }
+}
+
+enum AdminProjectReprocureOption<V> implements OptionDefinition<V> {
+  projectId(ProjectIdOption.argsOnly(asFirstArg: true)),
+  planType(
+    EnumOption(
+      enumParser: EnumParser([PlanType.starter, PlanType.growth]),
+      argName: 'plan',
+      argPos: 1,
+      mandatory: true,
+      helpText: 'The plan type. Can be passed as the second argument.',
+    ),
+  );
+
+  const AdminProjectReprocureOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class AdminProjectReprocureCommand
+    extends CloudCliCommand<AdminProjectReprocureOption> {
+  @override
+  final name = 'reprocure-subscription';
+
+  @override
+  final description =
+      'Re-procure the subscription and products of an existing project. '
+      'This should only be done for projects missing product allocations and a '
+      'billing system subscription.';
+
+  AdminProjectReprocureCommand({required super.logger})
+    : super(options: AdminProjectReprocureOption.values);
+
+  @override
+  Future<void> runWithOutput(
+    final Configuration<AdminProjectReprocureOption> commandConfig,
+    final CommandOutput output,
+  ) async {
+    final projectId = commandConfig.value(
+      AdminProjectReprocureOption.projectId,
+    );
+    final planType = commandConfig.value(AdminProjectReprocureOption.planType);
+
+    await confirmToContinue(
+      output,
+      message:
+          'Are you sure you want to re-procure a new subscription for project '
+          '"$projectId" on plan "$planType"?',
+      defaultValue: false,
+    );
+
+    await renderCommand(
+      output,
+      operation: () => ProjectAdminCommands.reprocureExistingProject(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+        planType: planType,
+      ),
+      textOutputUi: const AdminProjectReprocureTextUi(),
     );
   }
 }
