@@ -10,13 +10,12 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../../domains/projects/models/project.dart' as _i2;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../../domains/products/models/plan_type.dart' as _i36x9kwn;
+import '../../../../domains/projects/models/project.dart' as _iwujrmz5;
 import '../../../../features/projects/models/project_info/timestamp.dart'
-    as _i3;
-import '../../../../domains/products/models/plan_type.dart' as _i4;
-import 'package:ground_control_client/src/protocol/protocol.dart' as _i5;
+    as _iv6ntt36;
 
 /// Augments a project object with ancillary information.
 ///
@@ -24,7 +23,7 @@ import 'package:ground_control_client/src/protocol/protocol.dart' as _i5;
 /// in which case they are non-null.
 /// In other words, null ancillary fields correspond to `undefined`.
 abstract class ProjectInfo
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   ProjectInfo._({
     required this.project,
     required this.productId,
@@ -33,31 +32,33 @@ abstract class ProjectInfo
   });
 
   factory ProjectInfo({
-    required _i2.Project project,
+    required _iwujrmz5.Project project,
     required String productId,
-    _i3.Timestamp? latestDeployAttemptTime,
-    _i4.PlanType? planType,
+    _iv6ntt36.Timestamp? latestDeployAttemptTime,
+    _i36x9kwn.PlanType? planType,
   }) = _ProjectInfoImpl;
 
   factory ProjectInfo.fromJson(Map<String, dynamic> jsonSerialization) {
     return ProjectInfo(
-      project: _i5.Protocol().deserialize<_i2.Project>(
+      project: _iod2a87h.Protocol().deserialize<_iwujrmz5.Project>(
         jsonSerialization['project'],
       ),
       productId: jsonSerialization['productId'] as String,
       latestDeployAttemptTime:
           jsonSerialization['latestDeployAttemptTime'] == null
           ? null
-          : _i5.Protocol().deserialize<_i3.Timestamp>(
+          : _iod2a87h.Protocol().deserialize<_iv6ntt36.Timestamp>(
               jsonSerialization['latestDeployAttemptTime'],
             ),
       planType: jsonSerialization['planType'] == null
           ? null
-          : _i4.PlanType.fromJson((jsonSerialization['planType'] as String)),
+          : _i36x9kwn.PlanType.fromJson(
+              (jsonSerialization['planType'] as String),
+            ),
     );
   }
 
-  _i2.Project project;
+  _iwujrmz5.Project project;
 
   /// The procured product id for the project product type.
   String productId;
@@ -65,20 +66,20 @@ abstract class ProjectInfo
   /// The timestamp of the latest deploy attempt, or null if never deployed.
   /// (When deploy status is overhauled, this will likely be replaced by a
   /// `DeployAttempt` object.)
-  _i3.Timestamp? latestDeployAttemptTime;
+  _iv6ntt36.Timestamp? latestDeployAttemptTime;
 
   /// The public plan type the project belongs to, derived from its project
   /// product. [PlanType.unknown] for projects under internal plans.
-  _i4.PlanType? planType;
+  _i36x9kwn.PlanType? planType;
 
   /// Returns a shallow copy of this [ProjectInfo]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   ProjectInfo copyWith({
-    _i2.Project? project,
+    _iwujrmz5.Project? project,
     String? productId,
-    _i3.Timestamp? latestDeployAttemptTime,
-    _i4.PlanType? planType,
+    _iv6ntt36.Timestamp? latestDeployAttemptTime,
+    _i36x9kwn.PlanType? planType,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -106,7 +107,7 @@ abstract class ProjectInfo
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
@@ -114,10 +115,10 @@ class _Undefined {}
 
 class _ProjectInfoImpl extends ProjectInfo {
   _ProjectInfoImpl({
-    required _i2.Project project,
+    required _iwujrmz5.Project project,
     required String productId,
-    _i3.Timestamp? latestDeployAttemptTime,
-    _i4.PlanType? planType,
+    _iv6ntt36.Timestamp? latestDeployAttemptTime,
+    _i36x9kwn.PlanType? planType,
   }) : super._(
          project: project,
          productId: productId,
@@ -127,10 +128,10 @@ class _ProjectInfoImpl extends ProjectInfo {
 
   /// Returns a shallow copy of this [ProjectInfo]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   ProjectInfo copyWith({
-    _i2.Project? project,
+    _iwujrmz5.Project? project,
     String? productId,
     Object? latestDeployAttemptTime = _Undefined,
     Object? planType = _Undefined,
@@ -138,10 +139,10 @@ class _ProjectInfoImpl extends ProjectInfo {
     return ProjectInfo(
       project: project ?? this.project.copyWith(),
       productId: productId ?? this.productId,
-      latestDeployAttemptTime: latestDeployAttemptTime is _i3.Timestamp?
+      latestDeployAttemptTime: latestDeployAttemptTime is _iv6ntt36.Timestamp?
           ? latestDeployAttemptTime
           : this.latestDeployAttemptTime?.copyWith(),
-      planType: planType is _i4.PlanType? ? planType : this.planType,
+      planType: planType is _i36x9kwn.PlanType? ? planType : this.planType,
     );
   }
 }
