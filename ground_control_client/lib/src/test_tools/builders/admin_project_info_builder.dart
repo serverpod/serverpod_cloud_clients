@@ -5,11 +5,13 @@ import 'project_info_builder.dart';
 
 class AdminProjectInfoBuilder {
   ProjectInfoBuilder projectInfoBuilder;
+  String _planProductId;
   String _subscriptionId;
   List<PaymentsStatus> _overduePaymentsStatuses;
 
   AdminProjectInfoBuilder({final ProjectInfoBuilder? projectInfoBuilder})
     : projectInfoBuilder = projectInfoBuilder ?? ProjectInfoBuilder(),
+      _planProductId = 'closed-beta:0',
       _subscriptionId = 'orb_sub_test',
       _overduePaymentsStatuses = const [];
 
@@ -22,6 +24,12 @@ class AdminProjectInfoBuilder {
     final ProjectInfoBuilder projectInfoBuilder,
   ) {
     this.projectInfoBuilder = projectInfoBuilder;
+    return this;
+  }
+
+  AdminProjectInfoBuilder withPlanProductId(final String planProductId) {
+    assert(planProductId.contains(':'), 'Plan product ID must contain a colon');
+    _planProductId = planProductId;
     return this;
   }
 
@@ -40,6 +48,7 @@ class AdminProjectInfoBuilder {
   AdminProjectInfo build() {
     return AdminProjectInfo(
       projectInfo: projectInfoBuilder.build(),
+      planProductId: _planProductId,
       subscriptionId: _subscriptionId,
       overduePaymentsStatuses: _overduePaymentsStatuses,
     );
