@@ -119,4 +119,25 @@ abstract class ProjectAdminCommands {
 
     return {'projectId': projectId, 'planType': planType.name};
   }
+
+  static Future<Map<String, Object?>> reprocureExistingProject(
+    final Client cloudApiClient, {
+    required final String projectId,
+    required final PlanType planType,
+  }) async {
+    try {
+      final subscriptionId = await cloudApiClient.adminProjects
+          .reprocureExistingProject(
+            cloudProjectId: projectId,
+            profile: ProjectProfileUpdate(planType: planType),
+          );
+      return {
+        'projectId': projectId,
+        'planType': planType.name,
+        'subscriptionId': subscriptionId.uuid,
+      };
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Failed to re-procure the project');
+    }
+  }
 }

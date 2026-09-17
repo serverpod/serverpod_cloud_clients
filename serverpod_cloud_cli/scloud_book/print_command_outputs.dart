@@ -406,6 +406,13 @@ const _scenarios = [
     _projectId,
     'growth',
   ]),
+  _Scenario('admin project reprocure-subscription', [
+    'admin',
+    'project',
+    'reprocure-subscription',
+    _projectId,
+    'starter',
+  ]),
   _Scenario('admin product list-procured', [
     'admin',
     'product',

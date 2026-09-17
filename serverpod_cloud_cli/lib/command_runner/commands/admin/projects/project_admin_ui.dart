@@ -148,3 +148,17 @@ class AdminProjectUpdatePlanTextUi extends OutputWidget {
     );
   }
 }
+
+class AdminProjectReprocureTextUi extends OutputWidget {
+  const AdminProjectReprocureTextUi();
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    final result = context.get<Map<String, Object?>>();
+    return SuccessTextWidget(
+      'Re-procured project "${result['projectId']}" on plan '
+      '"${result['planType']}" with subscription ${result['subscriptionId']}.',
+      newParagraph: true,
+    );
+  }
+}
