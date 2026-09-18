@@ -1,3 +1,5 @@
+import 'package:ground_control_client/ground_control_client.dart'
+    show ProjectRole;
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/user/user_ui.dart';
 import 'package:test/test.dart';
@@ -58,7 +60,7 @@ void main() {
         final io = await renderCommandUi(
           const ProjectUserInviteTextUi(),
           data: const {
-            'roles': ['Admin'],
+            'roles': [ProjectRole.admin],
           },
         );
         stdout = io.stdout;
@@ -68,7 +70,7 @@ void main() {
       test('then stdout contains the invite success message', () {
         expect(
           stdout,
-          contains('User invited to the project with roles: Admin.'),
+          contains('User invited to the project with roles: admin.'),
         );
       });
 
@@ -86,7 +88,7 @@ void main() {
         final io = await renderCommandUi(
           const ProjectUserRevokeTextUi(),
           data: const {
-            'unassigned': ['admin'],
+            'unassigned': <String>['admin'],
             'unassignAllRoles': true,
           },
         );

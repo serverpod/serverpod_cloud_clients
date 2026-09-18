@@ -18,6 +18,8 @@ void stubCloudClient(
   registerFallbackValue(BackupFrequency.weekly);
   registerFallbackValue(<String, String>{});
   registerFallbackValue(<String>[]);
+  registerFallbackValue(<ProjectRole>[]);
+  registerFallbackValue(ProjectRole.admin);
   registerFallbackValue(ProjectProfileUpdate());
   registerFallbackValue(BucketVisibility.private);
 
@@ -218,17 +220,17 @@ void _stubProjects(final ClientMock client, {required final String projectId}) {
     () => client.projects.inviteUser(
       cloudProjectId: any(named: 'cloudProjectId'),
       email: any(named: 'email'),
-      assignRoleNames: any(named: 'assignRoleNames'),
+      assignRoles: any(named: 'assignRoles'),
     ),
   ).thenAnswer((_) async {});
   when(
     () => client.projects.revokeUser(
       cloudProjectId: any(named: 'cloudProjectId'),
       email: any(named: 'email'),
-      unassignRoleNames: any(named: 'unassignRoleNames'),
+      unassignRoles: any(named: 'unassignRoles'),
       unassignAllRoles: any(named: 'unassignAllRoles'),
     ),
-  ).thenAnswer((_) async => ['admin']);
+  ).thenAnswer((_) async => [ProjectRole.admin.name]);
 }
 
 void _stubVariablesAndSecrets(final ClientMock client) {

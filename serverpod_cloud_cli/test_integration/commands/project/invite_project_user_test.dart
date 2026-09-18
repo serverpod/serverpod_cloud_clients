@@ -1,7 +1,11 @@
 import 'dart:async';
 
 import 'package:ground_control_client/ground_control_client.dart'
-    show NotFoundException, ProcurementDeniedException, ProcurementDeniedReason;
+    show
+        NotFoundException,
+        ProcurementDeniedException,
+        ProcurementDeniedReason,
+        ProjectRole;
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
@@ -15,6 +19,11 @@ import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/test_command_logger.dart';
 
 void main() {
+  setUpAll(() {
+    registerFallbackValue(<ProjectRole>[]);
+    registerFallbackValue(ProjectRole.admin);
+  });
+
   final logger = TestCommandLogger();
   final client = ClientMock(
     authKeyProvider: InMemoryKeyManager.authenticated(),
@@ -54,7 +63,7 @@ void main() {
           () => client.projects.inviteUser(
             cloudProjectId: any(named: 'cloudProjectId'),
             email: any(named: 'email'),
-            assignRoleNames: any(named: 'assignRoleNames'),
+            assignRoles: any(named: 'assignRoles'),
           ),
         ).thenAnswer((invocation) async => Future.value());
 
@@ -77,7 +86,7 @@ void main() {
           expect(
             logger.successCalls.single,
             equalsSuccessCall(
-              message: 'User invited to the project with roles: Admin.',
+              message: 'User invited to the project with roles: admin.',
               newParagraph: true,
             ),
           );
@@ -92,7 +101,7 @@ void main() {
           () => client.projects.inviteUser(
             cloudProjectId: any(named: 'cloudProjectId'),
             email: any(named: 'email'),
-            assignRoleNames: any(named: 'assignRoleNames'),
+            assignRoles: any(named: 'assignRoles'),
           ),
         ).thenThrow(NotFoundException(message: 'User not found.'));
 
@@ -128,7 +137,7 @@ void main() {
           () => client.projects.inviteUser(
             cloudProjectId: any(named: 'cloudProjectId'),
             email: any(named: 'email'),
-            assignRoleNames: any(named: 'assignRoleNames'),
+            assignRoles: any(named: 'assignRoles'),
           ),
         ).thenThrow(
           ProcurementDeniedException(
@@ -176,7 +185,7 @@ void main() {
           () => client.projects.inviteUser(
             cloudProjectId: any(named: 'cloudProjectId'),
             email: any(named: 'email'),
-            assignRoleNames: any(named: 'assignRoleNames'),
+            assignRoles: any(named: 'assignRoles'),
           ),
         ).thenThrow(
           ProcurementDeniedException(
@@ -209,10 +218,12 @@ void main() {
           () => client.projects.revokeUser(
             cloudProjectId: any(named: 'cloudProjectId'),
             email: any(named: 'email'),
-            unassignRoleNames: any(named: 'unassignRoleNames'),
+            unassignRoles: any(named: 'unassignRoles'),
             unassignAllRoles: any(named: 'unassignAllRoles'),
           ),
-        ).thenAnswer((invocation) async => Future.value(['admin']));
+        ).thenAnswer(
+          (invocation) async => Future.value([ProjectRole.admin.name]),
+        );
 
         commandResult = cli.run([
           'project',
@@ -249,7 +260,7 @@ void main() {
           () => client.projects.revokeUser(
             cloudProjectId: any(named: 'cloudProjectId'),
             email: any(named: 'email'),
-            unassignRoleNames: any(named: 'unassignRoleNames'),
+            unassignRoles: any(named: 'unassignRoles'),
             unassignAllRoles: any(named: 'unassignAllRoles'),
           ),
         ).thenAnswer((invocation) async => Future.value([]));

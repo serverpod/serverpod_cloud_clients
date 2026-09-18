@@ -9,6 +9,7 @@ class RoleBuilder {
   int _projectId;
   Project? _project;
   String _name;
+  ProjectRole _roleName;
   List<String> _projectScopes;
   List<UserRoleMembership>? _memberships;
 
@@ -20,6 +21,7 @@ class RoleBuilder {
       _projectId = 1,
       _project = null,
       _name = 'Admin',
+      _roleName = ProjectRole.admin,
       _projectScopes = ['P0-all'],
       _memberships = [];
 
@@ -31,6 +33,7 @@ class RoleBuilder {
       _projectId = 1,
       _project = null,
       _name = 'Admin',
+      _roleName = ProjectRole.admin,
       _projectScopes = ['P0-all'],
       _memberships = [];
 
@@ -72,6 +75,11 @@ class RoleBuilder {
     return this;
   }
 
+  RoleBuilder withRoleName(ProjectRole roleName) {
+    _roleName = roleName;
+    return this;
+  }
+
   RoleBuilder withProjectScopes(List<String> projectScopes) {
     _projectScopes = projectScopes;
     return this;
@@ -108,6 +116,7 @@ class RoleBuilder {
       projectId: _projectId,
       project: _project,
       name: _name,
+      roleName: _roleName,
       projectScopes: _projectScopes,
       memberships: _memberships,
     );

@@ -10,7 +10,7 @@ abstract class UserCommands {
     return cloudApiClient.users.listUsersInProject(cloudProjectId: projectId);
   }
 
-  /// Invites the user with [email] to the project with [assignRoleNames].
+  /// Invites the user with [email] to the project with [assignRoles].
   ///
   /// Throws [FailureException] if the user is not found, the project's plan
   /// does not include inviting users, or the request fails.
@@ -18,13 +18,13 @@ abstract class UserCommands {
     final Client cloudApiClient, {
     required final String projectId,
     required final String email,
-    required final List<String> assignRoleNames,
+    required final List<ProjectRole> assignRoles,
   }) async {
     try {
       await cloudApiClient.projects.inviteUser(
         cloudProjectId: projectId,
         email: email,
-        assignRoleNames: assignRoleNames,
+        assignRoles: assignRoles,
       );
     } on NotFoundException catch (e) {
       throw FailureException(error: e.message);
@@ -40,14 +40,14 @@ abstract class UserCommands {
       throw FailureException.nested(e, s, 'Failed to invite user to project');
     }
 
-    return {'roles': assignRoleNames};
+    return {'roles': assignRoles};
   }
 
   static Future<Map<String, Object?>> revokeUser(
     final Client cloudApiClient, {
     required final String projectId,
     required final String email,
-    final List<String> unassignRoleNames = const [],
+    final List<ProjectRole> unassignRoles = const [],
     final bool unassignAllRoles = false,
   }) async {
     final List<String> actuallyUnassigned;
@@ -55,7 +55,7 @@ abstract class UserCommands {
       actuallyUnassigned = await cloudApiClient.projects.revokeUser(
         cloudProjectId: projectId,
         email: email,
-        unassignRoleNames: unassignRoleNames,
+        unassignRoles: unassignRoles,
         unassignAllRoles: unassignAllRoles,
       );
     } on NotFoundException catch (e) {

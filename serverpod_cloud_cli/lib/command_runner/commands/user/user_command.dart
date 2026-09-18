@@ -1,4 +1,6 @@
 import 'package:config/config.dart';
+import 'package:ground_control_client/ground_control_client.dart'
+    show ProjectRole;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
@@ -72,20 +74,19 @@ Examples
   }
 }
 
-const _projectRoleNames = ['Admin'];
-const _projectRoleHelp = {'Admin': 'Admins have full access to the project.'};
+const _projectRoleHelp = {'admin': 'Admins have full access to the project.'};
 
 enum ProjectUserInviteOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption()),
   user(UserEmailOption(argPos: 0, mandatory: true)),
   roles(
-    MultiStringOption(
+    MultiOption<ProjectRole>(
+      multiParser: MultiParser(EnumParser(ProjectRole.values)),
       argName: 'role',
       argAbbrev: 'r',
       helpText: 'One or more project roles to assign.',
-      allowedValues: _projectRoleNames,
       allowedHelp: _projectRoleHelp,
-      defaultsTo: ['Admin'],
+      defaultsTo: [ProjectRole.admin],
       hide: true,
     ),
   );
@@ -133,7 +134,7 @@ Examples
         runner.serviceProvider.cloudApiClient,
         projectId: projectId,
         email: userEmail,
-        assignRoleNames: roles,
+        assignRoles: roles,
       ),
       textOutputUi: const ProjectUserInviteTextUi(),
     );
@@ -186,7 +187,7 @@ Examples
         runner.serviceProvider.cloudApiClient,
         projectId: projectId,
         email: userEmail,
-        unassignRoleNames: const [],
+        unassignRoles: const [],
         unassignAllRoles: true,
       ),
       textOutputUi: const ProjectUserRevokeTextUi(),
