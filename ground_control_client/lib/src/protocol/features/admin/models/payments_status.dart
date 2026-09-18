@@ -12,6 +12,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import '../../../features/admin/models/payments_invoice_status.dart' as _i2;
 
 abstract class PaymentsStatus
     implements _i1.SerializableModel, _i1.ProtocolSerialization {
@@ -20,6 +21,7 @@ abstract class PaymentsStatus
     required this.dueDate,
     required this.dueAmount,
     required this.outstandingAmount,
+    required this.status,
   });
 
   factory PaymentsStatus({
@@ -27,6 +29,7 @@ abstract class PaymentsStatus
     required DateTime dueDate,
     required String dueAmount,
     required String outstandingAmount,
+    required _i2.PaymentsInvoiceStatus status,
   }) = _PaymentsStatusImpl;
 
   factory PaymentsStatus.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -35,6 +38,9 @@ abstract class PaymentsStatus
       dueDate: _i1.DateTimeJsonExtension.fromJson(jsonSerialization['dueDate']),
       dueAmount: jsonSerialization['dueAmount'] as String,
       outstandingAmount: jsonSerialization['outstandingAmount'] as String,
+      status: _i2.PaymentsInvoiceStatus.fromJson(
+        (jsonSerialization['status'] as String),
+      ),
     );
   }
 
@@ -46,6 +52,9 @@ abstract class PaymentsStatus
 
   String outstandingAmount;
 
+  /// Whether the invoice is issued or still needs action in Orb.
+  _i2.PaymentsInvoiceStatus status;
+
   /// Returns a shallow copy of this [PaymentsStatus]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
@@ -54,6 +63,7 @@ abstract class PaymentsStatus
     DateTime? dueDate,
     String? dueAmount,
     String? outstandingAmount,
+    _i2.PaymentsInvoiceStatus? status,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -63,6 +73,7 @@ abstract class PaymentsStatus
       'dueDate': dueDate.toJson(),
       'dueAmount': dueAmount,
       'outstandingAmount': outstandingAmount,
+      'status': status.toJson(),
     };
   }
 
@@ -74,6 +85,7 @@ abstract class PaymentsStatus
       'dueDate': dueDate.toJson(),
       'dueAmount': dueAmount,
       'outstandingAmount': outstandingAmount,
+      'status': status.toJson(),
     };
   }
 
@@ -89,11 +101,13 @@ class _PaymentsStatusImpl extends PaymentsStatus {
     required DateTime dueDate,
     required String dueAmount,
     required String outstandingAmount,
+    required _i2.PaymentsInvoiceStatus status,
   }) : super._(
          invoiceId: invoiceId,
          dueDate: dueDate,
          dueAmount: dueAmount,
          outstandingAmount: outstandingAmount,
+         status: status,
        );
 
   /// Returns a shallow copy of this [PaymentsStatus]
@@ -105,12 +119,14 @@ class _PaymentsStatusImpl extends PaymentsStatus {
     DateTime? dueDate,
     String? dueAmount,
     String? outstandingAmount,
+    _i2.PaymentsInvoiceStatus? status,
   }) {
     return PaymentsStatus(
       invoiceId: invoiceId ?? this.invoiceId,
       dueDate: dueDate ?? this.dueDate,
       dueAmount: dueAmount ?? this.dueAmount,
       outstandingAmount: outstandingAmount ?? this.outstandingAmount,
+      status: status ?? this.status,
     );
   }
 }
