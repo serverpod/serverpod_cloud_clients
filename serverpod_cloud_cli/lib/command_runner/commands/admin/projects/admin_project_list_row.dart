@@ -10,7 +10,8 @@ class AdminProjectListRow implements SerializableModel {
     this.oldestOverdueUnpaidDueDate,
     this.newestOverdueUnpaidAmount,
     this.newestOverdueUnpaidDueDate,
-    this.totalAmountOverdue,
+    this.invoicedAmountOverdue,
+    this.uninvoicedAmountOverdue,
   });
 
   factory AdminProjectListRow.fromAdminProjectInfo(
@@ -30,9 +31,16 @@ class AdminProjectListRow implements SerializableModel {
 
     final oldest = overdue.firstOrNull;
     final newest = overdue.lastOrNull;
-    var totalCents = 0;
-    for (final status in overdue) {
-      totalCents += _centsFromDecimalString(status.outstandingAmount);
+    var invoicedCents = 0;
+    var uninvoicedCents = 0;
+    for (final payment in overdue) {
+      final cents = _centsFromDecimalString(payment.outstandingAmount);
+      switch (payment.status) {
+        case PaymentsInvoiceStatus.issued:
+          invoicedCents += cents;
+        case PaymentsInvoiceStatus.actionNeeded:
+          uninvoicedCents += cents;
+      }
     }
 
     return AdminProjectListRow(
@@ -44,7 +52,8 @@ class AdminProjectListRow implements SerializableModel {
       oldestOverdueUnpaidDueDate: oldest?.dueDate,
       newestOverdueUnpaidAmount: newest?.outstandingAmount,
       newestOverdueUnpaidDueDate: newest?.dueDate,
-      totalAmountOverdue: _decimalStringFromCents(totalCents),
+      invoicedAmountOverdue: _decimalStringFromCents(invoicedCents),
+      uninvoicedAmountOverdue: _decimalStringFromCents(uninvoicedCents),
     );
   }
 
@@ -56,7 +65,8 @@ class AdminProjectListRow implements SerializableModel {
   final DateTime? oldestOverdueUnpaidDueDate;
   final String? newestOverdueUnpaidAmount;
   final DateTime? newestOverdueUnpaidDueDate;
-  final String? totalAmountOverdue;
+  final String? invoicedAmountOverdue;
+  final String? uninvoicedAmountOverdue;
 
   @override
   Map<String, Object?> toJson() {
@@ -69,7 +79,8 @@ class AdminProjectListRow implements SerializableModel {
         'oldestOverdueUnpaidDueDate': dueDateOnly(oldestOverdueUnpaidDueDate),
         'newestOverdueUnpaidAmount': newestOverdueUnpaidAmount,
         'newestOverdueUnpaidDueDate': dueDateOnly(newestOverdueUnpaidDueDate),
-        'totalAmountOverdue': totalAmountOverdue,
+        'invoicedAmountOverdue': invoicedAmountOverdue,
+        'uninvoicedAmountOverdue': uninvoicedAmountOverdue,
       },
     };
   }

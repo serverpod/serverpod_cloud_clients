@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:mocktail/mocktail.dart';
@@ -148,7 +149,8 @@ void main() {
         final output = logger.lineCalls.map((call) => call.line).join('\n');
         expect(output, isNot(contains('Oldest Overdue')));
         expect(output, isNot(contains('Newest Overdue')));
-        expect(output, isNot(contains('Total Overdue')));
+        expect(output, isNot(contains('Invoiced Overdue')));
+        expect(output, isNot(contains('Uninvoiced Overdue')));
       });
     });
 
@@ -183,11 +185,13 @@ void main() {
                       .withInvoiceId('inv-new')
                       .withOutstandingAmount('5.50')
                       .withDueDate(DateTime.utc(2024, 6, 1))
+                      .withStatus(PaymentsInvoiceStatus.actionNeeded)
                       .build(),
                   PaymentsStatusBuilder()
                       .withInvoiceId('inv-old')
                       .withOutstandingAmount('10.00')
                       .withDueDate(DateTime.utc(2024, 1, 1))
+                      .withStatus(PaymentsInvoiceStatus.issued)
                       .build(),
                 ])
                 .build(),
@@ -218,10 +222,10 @@ void main() {
         final lines = logger.lineCalls.map((call) => call.line);
         expect(lines, contains(contains('Oldest Overdue')));
         expect(lines, contains(contains('Newest Overdue')));
-        expect(lines, contains(contains('Total Overdue')));
+        expect(lines, contains(contains('Invoiced Overdue')));
+        expect(lines, contains(contains('Uninvoiced Overdue')));
         expect(lines, contains(contains('10.00')));
         expect(lines, contains(contains('5.50')));
-        expect(lines, contains(contains('15.50')));
         expect(lines, contains(contains('0.00')));
       });
     });
@@ -347,12 +351,14 @@ void main() {
         expect(first['planProductId'], 'closed-beta:0');
         expect(first['subscriptionId'], 'orb_sub_1');
         expect(first.containsKey('oldestOverdueUnpaidAmount'), isFalse);
-        expect(first.containsKey('totalAmountOverdue'), isFalse);
+        expect(first.containsKey('invoicedAmountOverdue'), isFalse);
+        expect(first.containsKey('uninvoicedAmountOverdue'), isFalse);
         final second = jsonDecode(logger.rawCalls[1].content) as Map;
         expect((second['project'] as Map)['cloudProjectId'], 'projectId2');
         expect((second['project'] as Map)['archivedAt'], isNotNull);
         expect(second['subscriptionId'], 'orb_sub_2');
-        expect(second.containsKey('totalAmountOverdue'), isFalse);
+        expect(second.containsKey('invoicedAmountOverdue'), isFalse);
+        expect(second.containsKey('uninvoicedAmountOverdue'), isFalse);
       });
     });
 
@@ -390,11 +396,13 @@ void main() {
                         .withInvoiceId('inv-new')
                         .withOutstandingAmount('5.50')
                         .withDueDate(DateTime.utc(2024, 6, 1))
+                        .withStatus(PaymentsInvoiceStatus.actionNeeded)
                         .build(),
                     PaymentsStatusBuilder()
                         .withInvoiceId('inv-old')
                         .withOutstandingAmount('10.00')
                         .withDueDate(DateTime.utc(2024, 1, 1))
+                        .withStatus(PaymentsInvoiceStatus.issued)
                         .build(),
                   ])
                   .build(),
@@ -420,7 +428,8 @@ void main() {
           expect(first['oldestOverdueUnpaidDueDate'], '2024-01-01');
           expect(first['newestOverdueUnpaidAmount'], '5.50');
           expect(first['newestOverdueUnpaidDueDate'], '2024-06-01');
-          expect(first['totalAmountOverdue'], '15.50');
+          expect(first['invoicedAmountOverdue'], '10.00');
+          expect(first['uninvoicedAmountOverdue'], '5.50');
         });
       },
     );
@@ -490,7 +499,8 @@ void main() {
         expect((first['project'] as Map)['cloudProjectId'], 'projectId');
         expect(first['planProductId'], 'closed-beta:0');
         expect(first['subscriptionId'], 'orb_sub_1');
-        expect(first.containsKey('totalAmountOverdue'), isFalse);
+        expect(first.containsKey('invoicedAmountOverdue'), isFalse);
+        expect(first.containsKey('uninvoicedAmountOverdue'), isFalse);
         final second = yamlDecode(logger.rawCalls[1].content) as Map;
         expect((second['project'] as Map)['cloudProjectId'], 'projectId2');
         expect(second['subscriptionId'], 'orb_sub_2');

@@ -61,8 +61,12 @@ class AdminProjectListTextUi extends OutputWidget {
               getter: (row) => dueDateOnly(row.newestOverdueUnpaidDueDate),
             ),
             TableColumnFormatter.forElement(
-              'Total Overdue',
-              getter: (row) => row.totalAmountOverdue,
+              'Invoiced Overdue',
+              getter: (row) => row.invoicedAmountOverdue,
+            ),
+            TableColumnFormatter.forElement(
+              'Uninvoiced Overdue',
+              getter: (row) => row.uninvoicedAmountOverdue,
             ),
           ],
           TableColumnFormatter.forElement(
@@ -83,7 +87,7 @@ class AdminProjectListTextUi extends OutputWidget {
         19,
         20,
         19,
-        if (includePaymentsStatus) ...[8, 10, 8, 10, 8],
+        if (includePaymentsStatus) ...[8, 10, 8, 10, 16, 18],
         33,
         33,
       ],

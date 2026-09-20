@@ -5,12 +5,14 @@ class PaymentsStatusBuilder {
   DateTime _dueDate;
   String _dueAmount;
   String _outstandingAmount;
+  PaymentsInvoiceStatus _status;
 
   PaymentsStatusBuilder()
     : _invoiceId = 'inv-1',
       _dueDate = DateTime.utc(2024, 1, 1),
       _dueAmount = '10.00',
-      _outstandingAmount = '10.00';
+      _outstandingAmount = '10.00',
+      _status = PaymentsInvoiceStatus.issued;
 
   PaymentsStatusBuilder withInvoiceId(final String invoiceId) {
     _invoiceId = invoiceId;
@@ -32,12 +34,18 @@ class PaymentsStatusBuilder {
     return this;
   }
 
+  PaymentsStatusBuilder withStatus(final PaymentsInvoiceStatus status) {
+    _status = status;
+    return this;
+  }
+
   PaymentsStatus build() {
     return PaymentsStatus(
       invoiceId: _invoiceId,
       dueDate: _dueDate,
       dueAmount: _dueAmount,
       outstandingAmount: _outstandingAmount,
+      status: _status,
     );
   }
 }

@@ -56,7 +56,8 @@ void main() {
       test('then stdout does not contain overdue payment columns', () {
         expect(stdout, isNot(contains('Oldest Overdue')));
         expect(stdout, isNot(contains('Newest Overdue')));
-        expect(stdout, isNot(contains('Total Overdue')));
+        expect(stdout, isNot(contains('Invoiced Overdue')));
+        expect(stdout, isNot(contains('Uninvoiced Overdue')));
       });
 
       test('then stdout contains the project id', () {
@@ -136,7 +137,8 @@ void main() {
               oldestOverdueUnpaidDueDate: DateTime.utc(2024, 1, 1),
               newestOverdueUnpaidAmount: '5.50',
               newestOverdueUnpaidDueDate: DateTime.utc(2024, 6, 1),
-              totalAmountOverdue: '15.50',
+              invoicedAmountOverdue: '10.00',
+              uninvoicedAmountOverdue: '5.50',
             ),
           ]),
         );
@@ -148,13 +150,13 @@ void main() {
         expect(stdout, contains('Oldest Overdue Date'));
         expect(stdout, contains('Newest Overdue'));
         expect(stdout, contains('Newest Overdue Date'));
-        expect(stdout, contains('Total Overdue'));
+        expect(stdout, contains('Invoiced Overdue'));
+        expect(stdout, contains('Uninvoiced Overdue'));
       });
 
       test('then stdout contains the overdue amounts', () {
         expect(stdout, contains('10.00'));
         expect(stdout, contains('5.50'));
-        expect(stdout, contains('15.50'));
       });
 
       test('then stdout contains due dates without a time of day', () {
