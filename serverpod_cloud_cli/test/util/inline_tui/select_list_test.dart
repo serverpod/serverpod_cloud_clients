@@ -11,6 +11,7 @@ const _enter = [0x0d];
 const _space = [0x20];
 const _escape = [0x1b];
 const _ctrlC = [0x03];
+const _keyA = [0x61];
 
 void main() {
   group('Given a single-select SelectList', () {
@@ -288,6 +289,77 @@ void main() {
 
       // Hint + one footer line = 2 lines cleared: move up 1, then clear.
       expect(term.output, endsWith('\r\x1b[1A\x1b[0J\x1b[?25h'));
+    });
+
+    test(
+      'when pressing a and confirming then it returns every option',
+      () async {
+        final term = FakeTerminal();
+        final future = SelectList.chooseMultiple<String>(
+          options: ['Apple', 'Banana', 'Cherry'],
+          terminal: term,
+        );
+
+        await pumpEventQueue();
+        term.sendBytes(_keyA);
+        await pumpEventQueue();
+        term.sendBytes(_enter);
+
+        expect(await future, ['Apple', 'Banana', 'Cherry']);
+      },
+    );
+
+    test('when shown then the key hint states the select-all key', () async {
+      final term = FakeTerminal();
+      final future = SelectList.chooseMultiple<String>(
+        options: ['Apple', 'Banana'],
+        terminal: term,
+      );
+
+      await pumpEventQueue();
+      expect(
+        term.output,
+        contains(
+          'up/down move, space select, a select all, enter confirm, '
+          'esc cancel',
+        ),
+      );
+
+      term.sendBytes(_escape);
+      await future;
+    });
+
+    test('when every option is selected then the key hint states the '
+        'deselect-all key', () async {
+      final term = FakeTerminal();
+      final future = SelectList.chooseMultiple<String>(
+        options: ['Apple', 'Banana'],
+        terminal: term,
+      );
+
+      await pumpEventQueue();
+      term.sendBytes(_keyA);
+      await pumpEventQueue();
+      expect(term.output, contains('a deselect all'));
+
+      term.sendBytes(_escape);
+      await future;
+    });
+
+    test('when maxSelections is set then the key hint omits the select-all '
+        'key', () async {
+      final term = FakeTerminal();
+      final future = SelectList.chooseMultiple<String>(
+        options: ['Apple', 'Banana'],
+        maxSelections: 1,
+        terminal: term,
+      );
+
+      await pumpEventQueue();
+      expect(term.output, isNot(contains('select all')));
+
+      term.sendBytes(_escape);
+      await future;
     });
 
     test(

@@ -7,6 +7,7 @@ SelectListModel<String> _model(
   bool multiSelect = false,
   int minSelections = 0,
   int? maxSelections,
+  Iterable<int> initiallySelected = const [],
   Set<int> disabled = const {},
 }) {
   return SelectListModel<String>(
@@ -21,6 +22,7 @@ SelectListModel<String> _model(
     multiSelect: multiSelect,
     minSelections: minSelections,
     maxSelections: maxSelections,
+    initiallySelected: initiallySelected,
   );
 }
 
@@ -92,6 +94,17 @@ void main() {
       final model = _model(['a', 'b', 'c'], disabled: {0});
       expect(model.highlightedIndex, 1);
     });
+
+    test('when pressing a then nothing is selected', () {
+      final model = _model(['x', 'y']);
+      final status = model.handleKey(
+        const TuiKey(TuiKeyType.character, character: 'a'),
+      );
+
+      expect(status, SelectListStatus.active);
+      expect(model.canSelectAll, isFalse);
+      expect(model.selectedValues, isEmpty);
+    });
   });
 
   group('Given a multi-select model', () {
@@ -133,6 +146,73 @@ void main() {
       model.handleKey(const TuiKey(TuiKeyType.space)); // b ignored
 
       expect(model.selectedValues, ['a']);
+    });
+  });
+
+  group('Given a multi-select model and the select-all key', () {
+    const selectAllKey = TuiKey(TuiKeyType.character, character: 'a');
+
+    test('when pressing a then every item is selected', () {
+      final model = _model(['x', 'y', 'z'], multiSelect: true);
+      model.handleKey(selectAllKey);
+
+      expect(model.selectedValues, ['x', 'y', 'z']);
+      expect(model.allSelected, isTrue);
+    });
+
+    test('when some items are selected then pressing a selects the rest', () {
+      final model = _model(
+        ['x', 'y', 'z'],
+        multiSelect: true,
+        initiallySelected: [1],
+      );
+      model.handleKey(selectAllKey);
+
+      expect(model.selectedValues, ['x', 'y', 'z']);
+    });
+
+    test(
+      'when every item is selected then pressing a clears the selection',
+      () {
+        final model = _model(
+          ['x', 'y', 'z'],
+          multiSelect: true,
+          initiallySelected: [0, 1, 2],
+        );
+        model.handleKey(selectAllKey);
+
+        expect(model.selectedValues, isEmpty);
+      },
+    );
+
+    test('when pressing a then disabled items stay unselected', () {
+      final model = _model(['x', 'y', 'z'], multiSelect: true, disabled: {1});
+      model.handleKey(selectAllKey);
+
+      expect(model.selectedValues, ['x', 'z']);
+      expect(model.allSelected, isTrue);
+    });
+
+    test('when pressing a then the highlight does not move', () {
+      final model = _model(['x', 'y', 'z'], multiSelect: true);
+      model.handleKey(const TuiKey(TuiKeyType.arrowDown));
+      model.handleKey(selectAllKey);
+
+      expect(model.highlightedIndex, 1);
+    });
+
+    test('when maxSelections is set then pressing a is ignored', () {
+      final model = _model(['x', 'y'], multiSelect: true, maxSelections: 1);
+      model.handleKey(selectAllKey);
+
+      expect(model.canSelectAll, isFalse);
+      expect(model.selectedValues, isEmpty);
+    });
+
+    test('when no item is enabled then select all is unavailable', () {
+      final model = _model(['x', 'y'], multiSelect: true, disabled: {0, 1});
+
+      expect(model.canSelectAll, isFalse);
     });
   });
 

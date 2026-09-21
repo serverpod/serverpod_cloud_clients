@@ -98,6 +98,9 @@ abstract final class SelectList {
   /// [minSelections] and [maxSelections] constrain how many items may be
   /// selected. Enter only confirms once at least [minSelections] are selected.
   ///
+  /// The `a` key selects every enabled option, or clears the selection when
+  /// all are already selected. It is inactive when [maxSelections] is set.
+  ///
   /// [isEnabled] returns whether an option can be selected (defaults to true).
   ///
   /// [style] customizes glyphs and ANSI colors (defaults to [SelectListStyle]).
@@ -293,12 +296,14 @@ class SelectListRunner<T> {
 
   /// Hint row plus optional additional [footerText], preceded by a blank line.
   String _footer() {
-    const navigate = 'up/down move';
-    final select = _model.multiSelect
-        ? 'space select, enter confirm'
-        : 'enter select';
-    const cancel = 'esc cancel';
-    final hint = '$navigate, $select, $cancel';
+    final hint = [
+      'up/down move',
+      if (_model.multiSelect) 'space select',
+      if (_model.canSelectAll)
+        _model.allSelected ? 'a deselect all' : 'a select all',
+      _model.multiSelect ? 'enter confirm' : 'enter select',
+      'esc cancel',
+    ].join(', ');
     final footerText = _footerText;
     if (footerText == null) return '\n$hint';
     return '\n$hint\n$footerText';

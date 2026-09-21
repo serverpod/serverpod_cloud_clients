@@ -61,7 +61,8 @@ class SelectListModel<T> {
   ///
   /// When [multiSelect] is false the list behaves as a single-choice list where
   /// Enter confirms the highlighted item. When true, Space toggles the
-  /// highlighted item and Enter confirms the current set.
+  /// highlighted item, `a` toggles all enabled items (see [canSelectAll]) and
+  /// Enter confirms the current set.
   SelectListModel({
     required this.items,
     this.multiSelect = false,
@@ -105,6 +106,22 @@ class SelectListModel<T> {
 
   /// Whether the index [i] is currently selected.
   bool isSelected(int i) => _selectedIndices.contains(i);
+
+  /// Whether the `a` key can toggle all items: a multi-select list without
+  /// [maxSelections] and with at least one enabled item.
+  bool get canSelectAll =>
+      multiSelect && maxSelections == null && _enabledIndices.isNotEmpty;
+
+  /// Whether every enabled item is selected (and at least one exists).
+  bool get allSelected {
+    final enabled = _enabledIndices;
+    return enabled.isNotEmpty && enabled.every(_selectedIndices.contains);
+  }
+
+  List<int> get _enabledIndices => [
+    for (var i = 0; i < items.length; i++)
+      if (items[i].enabled) i,
+  ];
 
   /// Whether the current selection satisfies the configured constraints and may
   /// be submitted.
@@ -169,10 +186,21 @@ class SelectListModel<T> {
       case 'j':
       case 's':
         _moveHighlight(1);
+      case 'a':
+        _toggleAll();
       case 'q':
         _status = SelectListStatus.cancelled;
       default:
         break;
+    }
+  }
+
+  void _toggleAll() {
+    if (!canSelectAll) return;
+    if (allSelected) {
+      _selectedIndices.clear();
+    } else {
+      _selectedIndices.addAll(_enabledIndices);
     }
   }
 
