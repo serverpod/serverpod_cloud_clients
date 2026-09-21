@@ -152,29 +152,29 @@ import 'package:ground_control_client/src/protocol/domains/status/models/deploy_
     as _i124;
 import 'package:ground_control_client/src/protocol/domains/users/models/user.dart'
     as _i125;
-import 'package:ground_control_client/src/protocol/features/auth/models/required_terms.dart'
-    as _i126;
-import 'package:ground_control_client/src/protocol/features/auth/models/accepted_terms_dto.dart'
-    as _i127;
-import 'package:ground_control_client/src/protocol/features/auth/models/auth_token_info.dart'
-    as _i128;
-import 'package:ground_control_client/src/protocol/domains/billing/models/payment_method.dart'
-    as _i129;
-import 'package:ground_control_client/src/protocol/domains/buckets/models/bucket_resource.dart'
-    as _i130;
-import 'package:ground_control_client/src/protocol/domains/databases/models/database_user.dart'
-    as _i131;
-import 'package:ground_control_client/src/protocol/domains/databases/models/database_snapshot.dart'
-    as _i132;
-import 'package:ground_control_client/src/protocol/domains/environment_variables/models/variable.dart'
-    as _i133;
-import 'package:ground_control_client/src/protocol/domains/metrics/models/pod_resource_series.dart'
-    as _i134;
-import 'package:ground_control_client/src/protocol/domains/products/models/subscription_info.dart'
-    as _i135;
-import 'package:ground_control_client/src/protocol/domains/products/models/plan_info.dart'
-    as _i136;
 import 'package:ground_control_client/src/protocol/domains/projects/models/project_role.dart'
+    as _i126;
+import 'package:ground_control_client/src/protocol/features/auth/models/required_terms.dart'
+    as _i127;
+import 'package:ground_control_client/src/protocol/features/auth/models/accepted_terms_dto.dart'
+    as _i128;
+import 'package:ground_control_client/src/protocol/features/auth/models/auth_token_info.dart'
+    as _i129;
+import 'package:ground_control_client/src/protocol/domains/billing/models/payment_method.dart'
+    as _i130;
+import 'package:ground_control_client/src/protocol/domains/buckets/models/bucket_resource.dart'
+    as _i131;
+import 'package:ground_control_client/src/protocol/domains/databases/models/database_user.dart'
+    as _i132;
+import 'package:ground_control_client/src/protocol/domains/databases/models/database_snapshot.dart'
+    as _i133;
+import 'package:ground_control_client/src/protocol/domains/environment_variables/models/variable.dart'
+    as _i134;
+import 'package:ground_control_client/src/protocol/domains/metrics/models/pod_resource_series.dart'
+    as _i135;
+import 'package:ground_control_client/src/protocol/domains/products/models/subscription_info.dart'
+    as _i136;
+import 'package:ground_control_client/src/protocol/domains/products/models/plan_info.dart'
     as _i137;
 import 'package:ground_control_client/src/protocol/domains/projects/models/role.dart'
     as _i138;
@@ -1388,90 +1388,90 @@ class Protocol extends _i1.SerializationManager {
       return (data as List).map((e) => deserialize<_i125.User>(e)).toList()
           as T;
     }
-    if (t == List<_i126.RequiredTerms>) {
+    if (t == List<_i126.ProjectRole>) {
       return (data as List)
-              .map((e) => deserialize<_i126.RequiredTerms>(e))
+              .map((e) => deserialize<_i126.ProjectRole>(e))
               .toList()
           as T;
     }
-    if (t == List<_i127.AcceptedTermsDTO>) {
-      return (data as List)
-              .map((e) => deserialize<_i127.AcceptedTermsDTO>(e))
-              .toList()
-          as T;
-    }
-    if (t == List<_i128.AuthTokenInfo>) {
-      return (data as List)
-              .map((e) => deserialize<_i128.AuthTokenInfo>(e))
-              .toList()
-          as T;
-    }
-    if (t == _i1.getType<List<_i127.AcceptedTermsDTO>?>()) {
+    if (t == _i1.getType<List<_i126.ProjectRole>?>()) {
       return (data != null
               ? (data as List)
-                    .map((e) => deserialize<_i127.AcceptedTermsDTO>(e))
+                    .map((e) => deserialize<_i126.ProjectRole>(e))
                     .toList()
               : null)
           as T;
     }
-    if (t == List<_i129.PaymentMethod>) {
+    if (t == List<_i127.RequiredTerms>) {
       return (data as List)
-              .map((e) => deserialize<_i129.PaymentMethod>(e))
+              .map((e) => deserialize<_i127.RequiredTerms>(e))
               .toList()
           as T;
     }
-    if (t == List<_i130.BucketResource>) {
+    if (t == List<_i128.AcceptedTermsDTO>) {
       return (data as List)
-              .map((e) => deserialize<_i130.BucketResource>(e))
+              .map((e) => deserialize<_i128.AcceptedTermsDTO>(e))
               .toList()
           as T;
     }
-    if (t == List<_i131.DatabaseUser>) {
+    if (t == List<_i129.AuthTokenInfo>) {
       return (data as List)
-              .map((e) => deserialize<_i131.DatabaseUser>(e))
+              .map((e) => deserialize<_i129.AuthTokenInfo>(e))
               .toList()
           as T;
     }
-    if (t == List<_i132.DatabaseSnapshot>) {
-      return (data as List)
-              .map((e) => deserialize<_i132.DatabaseSnapshot>(e))
-              .toList()
-          as T;
-    }
-    if (t == List<_i133.EnvironmentVariable>) {
-      return (data as List)
-              .map((e) => deserialize<_i133.EnvironmentVariable>(e))
-              .toList()
-          as T;
-    }
-    if (t == List<_i134.PodResourceSeries>) {
-      return (data as List)
-              .map((e) => deserialize<_i134.PodResourceSeries>(e))
-              .toList()
-          as T;
-    }
-    if (t == List<_i135.SubscriptionInfo>) {
-      return (data as List)
-              .map((e) => deserialize<_i135.SubscriptionInfo>(e))
-              .toList()
-          as T;
-    }
-    if (t == List<_i136.PlanInfo>) {
-      return (data as List).map((e) => deserialize<_i136.PlanInfo>(e)).toList()
-          as T;
-    }
-    if (t == List<_i137.ProjectRole>) {
-      return (data as List)
-              .map((e) => deserialize<_i137.ProjectRole>(e))
-              .toList()
-          as T;
-    }
-    if (t == _i1.getType<List<_i137.ProjectRole>?>()) {
+    if (t == _i1.getType<List<_i128.AcceptedTermsDTO>?>()) {
       return (data != null
               ? (data as List)
-                    .map((e) => deserialize<_i137.ProjectRole>(e))
+                    .map((e) => deserialize<_i128.AcceptedTermsDTO>(e))
                     .toList()
               : null)
+          as T;
+    }
+    if (t == List<_i130.PaymentMethod>) {
+      return (data as List)
+              .map((e) => deserialize<_i130.PaymentMethod>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_i131.BucketResource>) {
+      return (data as List)
+              .map((e) => deserialize<_i131.BucketResource>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_i132.DatabaseUser>) {
+      return (data as List)
+              .map((e) => deserialize<_i132.DatabaseUser>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_i133.DatabaseSnapshot>) {
+      return (data as List)
+              .map((e) => deserialize<_i133.DatabaseSnapshot>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_i134.EnvironmentVariable>) {
+      return (data as List)
+              .map((e) => deserialize<_i134.EnvironmentVariable>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_i135.PodResourceSeries>) {
+      return (data as List)
+              .map((e) => deserialize<_i135.PodResourceSeries>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_i136.SubscriptionInfo>) {
+      return (data as List)
+              .map((e) => deserialize<_i136.SubscriptionInfo>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_i137.PlanInfo>) {
+      return (data as List).map((e) => deserialize<_i137.PlanInfo>(e)).toList()
           as T;
     }
     if (t == List<_i138.Role>) {

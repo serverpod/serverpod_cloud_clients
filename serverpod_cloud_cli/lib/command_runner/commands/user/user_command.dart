@@ -1,6 +1,4 @@
 import 'package:config/config.dart';
-import 'package:ground_control_client/ground_control_client.dart'
-    show ProjectRole;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
@@ -74,22 +72,10 @@ Examples
   }
 }
 
-const _projectRoleHelp = {'admin': 'Admins have full access to the project.'};
-
 enum ProjectUserInviteOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption()),
   user(UserEmailOption(argPos: 0, mandatory: true)),
-  roles(
-    MultiOption<ProjectRole>(
-      multiParser: MultiParser(EnumParser(ProjectRole.values)),
-      argName: 'role',
-      argAbbrev: 'r',
-      helpText: 'One or more project roles to assign.',
-      allowedHelp: _projectRoleHelp,
-      defaultsTo: [ProjectRole.admin],
-      hide: true,
-    ),
-  );
+  roles(ProjectRoleOptions.inviteRoles);
 
   const ProjectUserInviteOption(this.option);
 

@@ -1,9 +1,50 @@
 import 'dart:io';
 
 import 'package:config/config.dart';
+import 'package:ground_control_client/ground_control_client.dart'
+    show ProjectRole;
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
 
 import 'email_validator.dart';
+
+abstract final class ProjectRoleOptions {
+  static const assignableRoles = [ProjectRole.admin];
+
+  static const allowedHelp = {
+    'admin': 'Admins have full access to the project.',
+  };
+
+  static const assignableRoleParser = EnumParser(assignableRoles);
+
+  static const inviteRoles = MultiOption<ProjectRole>(
+    multiParser: MultiParser(assignableRoleParser),
+    argName: 'role',
+    argAbbrev: 'r',
+    helpText: 'One or more project roles to assign.',
+    allowedHelp: allowedHelp,
+    defaultsTo: [ProjectRole.admin],
+    hide: true,
+  );
+
+  static const attachRoleAsThirdArg = EnumOption(
+    enumParser: assignableRoleParser,
+    argName: 'role',
+    argPos: 2,
+    helpText: 'Project role to assign. Can be passed as the third argument.',
+    allowedHelp: allowedHelp,
+    defaultsTo: ProjectRole.admin,
+  );
+
+  static const detachRoleAsThirdArg = EnumOption(
+    enumParser: assignableRoleParser,
+    argName: 'role',
+    argPos: 2,
+    helpText:
+        'Project role to remove. Can be passed as the third argument.'
+        ' If omitted, all project roles are removed.',
+    allowedHelp: allowedHelp,
+  );
+}
 
 abstract final class CommandConfigConstants {
   static const listOptionAbbrev = 'l';
