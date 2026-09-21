@@ -89,7 +89,7 @@ void main() {
       Stream<int> connect(int? _) {
         connectionCount++;
         return Stream.error(
-          const OpenMethodStreamException(
+          OpenMethodStreamException(
             OpenMethodStreamResponseType.authenticationFailed,
           ),
         );

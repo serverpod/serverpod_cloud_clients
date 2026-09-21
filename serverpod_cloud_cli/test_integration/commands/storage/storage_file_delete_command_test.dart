@@ -480,7 +480,7 @@ void main() {
             storageId: any(named: 'storageId'),
             path: 'avatars/u1.png',
           ),
-        ).thenThrow(ServerpodClientException('boom', 500));
+        ).thenThrow(ServerpodClientUnknownHttpException('boom', 500));
 
         commandResult = cli.run([
           'storage',
