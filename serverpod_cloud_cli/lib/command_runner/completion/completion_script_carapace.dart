@@ -19,8 +19,11 @@ persistentFlags:
   --yes: "Automatically accept confirmation prompts."
   --non-interactive: "Never wait for user input, fail with an error instead. For use in non-interactive environments such as CI. Combine with --yes to accept confirmation prompts."
   --format=: "Selects the command output format."
+  --auto-cli-upgrade: "Automatically update the CLI when a newer version is available."
+  --no-auto-cli-upgrade: "Automatically update the CLI when a newer version is available."
 exclusiveFlags:
   - [analytics, no-analytics]
+  - [auto-cli-upgrade, no-auto-cli-upgrade]
 completion:
   flag:
     project-dir: ["$directories"]

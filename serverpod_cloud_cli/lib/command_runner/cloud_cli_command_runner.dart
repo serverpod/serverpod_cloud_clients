@@ -274,7 +274,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
       final latestVersion = await _fetchLatestCliVersion();
 
       if (latestVersion != null && version < latestVersion) {
-        if (_isRequiredUpdate(latestVersion) &&
+        if (globalConfiguration.autoCliUpgrade &&
             _attemptedUpdateVersion != latestVersion) {
           final didRerun = await _updateAndRerunCommand(
             latestVersion: latestVersion,
@@ -726,6 +726,15 @@ enum GlobalOption<V> implements OptionDefinition<V> {
       helpText: 'Selects the command output format.',
     ),
   ),
+  autoCliUpgrade(
+    FlagOption(
+      argName: 'auto-cli-upgrade',
+      helpText:
+          'Automatically update the CLI when a newer version is available.',
+      defaultsTo: true,
+      negatable: true,
+    ),
+  ),
 
   // Developer options and flags
   projectConfigContent(
@@ -863,6 +872,8 @@ class GlobalConfiguration extends Configuration<GlobalOption> {
   OutputFormat get format => value(GlobalOption.format);
 
   bool get warnBillingOverdue => value(GlobalOption.warnBillingOverdue);
+
+  bool get autoCliUpgrade => value(GlobalOption.autoCliUpgrade);
 
   bool get breakingVersionCheck => value(GlobalOption.breakingVersionCheck);
 

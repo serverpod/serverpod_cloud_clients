@@ -122,31 +122,22 @@ void main() {
       await expectLater(commandResult, completes);
     });
 
-    test('then should not install anything', () async {
+    test('then should install the latest version', () async {
       await commandResult;
 
-      expect(updater.installCalls, isEmpty);
+      expect(updater.installCalls, [Version(1, 1, 0)]);
     });
 
-    test('then should not rerun the command', () async {
+    test('then should rerun the command', () async {
       await commandResult;
 
-      expect(updater.rerunCalls, isEmpty);
+      expect(updater.rerunCalls, hasLength(1));
     });
 
-    test('then should alert about the update', () async {
+    test('then should not alert about the update', () async {
       await commandResult;
 
-      expect(logger.boxCalls.first, equalsBoxCall(message: _nonBreakingAlert));
-    });
-
-    test('then should run the command on the current version', () async {
-      await commandResult;
-
-      expect(
-        logger.infoCalls.first,
-        equalsInfoCall(message: 'Serverpod Cloud CLI version: 1.0.0'),
-      );
+      expect(logger.boxCalls, isEmpty);
     });
   });
 
@@ -354,15 +345,59 @@ void main() {
     });
   });
 
-  group('Given a newer breaking version and a failing install when calling '
-      'the cli with --no-breaking-version-check', () {
+  group('Given a newer non-breaking version and a failing install '
+      'when calling the cli', () {
+    late FakeCliUpdater updater;
     late Future commandResult;
 
     setUp(() async {
+      updater = FakeCliUpdater(installSucceeds: false);
+      final cli = await createCli(
+        currentVersion: Version(1, 0, 0),
+        latestVersion: Version(1, 1, 0),
+        updater: updater,
+      );
+
+      commandResult = cli.run(['version', '--config-dir', testCacheFolderPath]);
+    });
+
+    test('then should complete', () async {
+      await expectLater(commandResult, completes);
+    });
+
+    test('then should alert about the update', () async {
+      await commandResult;
+
+      expect(logger.boxCalls.first, equalsBoxCall(message: _nonBreakingAlert));
+    });
+
+    test('then should run the command on the current version', () async {
+      await commandResult;
+
+      expect(
+        logger.infoCalls.first,
+        equalsInfoCall(message: 'Serverpod Cloud CLI version: 1.0.0'),
+      );
+    });
+
+    test('then should not rerun the command', () async {
+      await commandResult;
+
+      expect(updater.rerunCalls, isEmpty);
+    });
+  });
+
+  group('Given a newer breaking version and a failing install when calling '
+      'the cli with --no-breaking-version-check', () {
+    late FakeCliUpdater updater;
+    late Future commandResult;
+
+    setUp(() async {
+      updater = FakeCliUpdater(installSucceeds: false);
       final cli = await createCli(
         currentVersion: Version(1, 0, 0),
         latestVersion: Version(2, 0, 0),
-        updater: FakeCliUpdater(installSucceeds: false),
+        updater: updater,
       );
 
       commandResult = cli.run([
@@ -377,6 +412,12 @@ void main() {
       await expectLater(commandResult, completes);
     });
 
+    test('then should install the latest version', () async {
+      await commandResult;
+
+      expect(updater.installCalls, [Version(2, 0, 0)]);
+    });
+
     test('then should alert about the update', () async {
       await commandResult;
 
@@ -389,6 +430,105 @@ void main() {
       expect(
         logger.infoCalls.first,
         equalsInfoCall(message: 'Serverpod Cloud CLI version: 1.0.0'),
+      );
+    });
+  });
+
+  group('Given a newer non-breaking version when calling the cli '
+      'with --no-auto-cli-upgrade', () {
+    late FakeCliUpdater updater;
+    late Future commandResult;
+
+    setUp(() async {
+      updater = FakeCliUpdater();
+      final cli = await createCli(
+        currentVersion: Version(1, 0, 0),
+        latestVersion: Version(1, 1, 0),
+        updater: updater,
+      );
+
+      commandResult = cli.run([
+        'version',
+        '--config-dir',
+        testCacheFolderPath,
+        '--no-auto-cli-upgrade',
+      ]);
+    });
+
+    test('then should complete', () async {
+      await expectLater(commandResult, completes);
+    });
+
+    test('then should not install anything', () async {
+      await commandResult;
+
+      expect(updater.installCalls, isEmpty);
+    });
+
+    test('then should alert about the update', () async {
+      await commandResult;
+
+      expect(logger.boxCalls.first, equalsBoxCall(message: _nonBreakingAlert));
+    });
+
+    test('then should run the command on the current version', () async {
+      await commandResult;
+
+      expect(
+        logger.infoCalls.first,
+        equalsInfoCall(message: 'Serverpod Cloud CLI version: 1.0.0'),
+      );
+    });
+  });
+
+  group('Given a newer breaking version when calling the cli '
+      'with --no-auto-cli-upgrade', () {
+    late FakeCliUpdater updater;
+    late Future commandResult;
+
+    setUp(() async {
+      updater = FakeCliUpdater();
+      final cli = await createCli(
+        currentVersion: Version(1, 0, 0),
+        latestVersion: Version(2, 0, 0),
+        updater: updater,
+      );
+
+      commandResult = cli.run([
+        'version',
+        '--config-dir',
+        testCacheFolderPath,
+        '--no-auto-cli-upgrade',
+      ]);
+    });
+
+    test('then should not install anything', () async {
+      try {
+        await commandResult;
+      } catch (_) {}
+
+      expect(updater.installCalls, isEmpty);
+    });
+
+    test('then should alert that the update is required', () async {
+      try {
+        await commandResult;
+      } catch (_) {}
+
+      expect(
+        logger.boxCalls.first,
+        equalsBoxCall(
+          message: '$_updateAlert You need to update the CLI to continue.',
+        ),
+      );
+    });
+
+    test('then should throw ErrorExitException with exit code 69', () async {
+      await expectLater(
+        commandResult,
+        throwsA(
+          isA<ErrorExitException>().having((e) => e.exitCode, 'exitCode', 69),
+        ),
       );
     });
   });
