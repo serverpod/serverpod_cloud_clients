@@ -69,4 +69,92 @@ void main() {
       });
     });
   });
+
+  group('Given an AdminUserAttachTextUi', () {
+    group('when rendered with assigned roles', () {
+      late String stdout;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const AdminUserAttachTextUi(),
+          data: const {
+            'roles': ['admin'],
+          },
+        );
+        stdout = io.stdout;
+      });
+
+      test('then stdout contains the attach success message', () {
+        expect(
+          stdout,
+          contains('User attached to the project with roles: admin.'),
+        );
+      });
+    });
+  });
+
+  group('Given an AdminUserDetachTextUi', () {
+    group('when rendered after detaching all roles', () {
+      late String stdout;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const AdminUserDetachTextUi(unassignAllRoles: true),
+          data: const {
+            'unassigned': ['admin'],
+          },
+        );
+        stdout = io.stdout;
+      });
+
+      test('then stdout contains the detach-all success message', () {
+        expect(
+          stdout,
+          contains(
+            'Detached all access roles of the user from the project: admin',
+          ),
+        );
+      });
+    });
+
+    group('when rendered with no roles to detach from all roles', () {
+      late String stdout;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const AdminUserDetachTextUi(unassignAllRoles: true),
+          data: const {'unassigned': <String>[]},
+        );
+        stdout = io.stdout;
+      });
+
+      test('then stdout contains the empty detach-all message', () {
+        expect(
+          stdout,
+          contains('The user has no access roles to detach from the project.'),
+        );
+      });
+    });
+
+    group('when rendered with no matching role to detach', () {
+      late String stdout;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const AdminUserDetachTextUi(unassignAllRoles: false),
+          data: const {'unassigned': <String>[]},
+        );
+        stdout = io.stdout;
+      });
+
+      test('then stdout contains the empty specific-role message', () {
+        expect(
+          stdout,
+          contains(
+            'The user does not have any of the specified project roles.',
+          ),
+        );
+      });
+    });
+  });
 }

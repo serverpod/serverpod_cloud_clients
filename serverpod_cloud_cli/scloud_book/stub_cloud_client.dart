@@ -792,6 +792,21 @@ void _stubAdmin(final ClientMock client, {required final String projectId}) {
     () => client.adminUsers.inviteUser(email: any(named: 'email')),
   ).thenAnswer((_) async {});
   when(
+    () => client.adminUsers.attachUser(
+      cloudProjectId: any(named: 'cloudProjectId'),
+      email: any(named: 'email'),
+      assignRoles: any(named: 'assignRoles'),
+    ),
+  ).thenAnswer((_) async {});
+  when(
+    () => client.adminUsers.detachUser(
+      cloudProjectId: any(named: 'cloudProjectId'),
+      email: any(named: 'email'),
+      unassignRoles: any(named: 'unassignRoles'),
+      unassignAllRoles: any(named: 'unassignAllRoles'),
+    ),
+  ).thenAnswer((_) async => ['admin']);
+  when(
     () => client.adminUsers.getUser(
       email: any(named: 'email'),
       includeArchived: any(named: 'includeArchived'),
