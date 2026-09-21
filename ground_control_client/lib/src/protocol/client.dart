@@ -103,18 +103,20 @@ import 'package:ground_control_client/src/protocol/domains/products/models/plan_
     as _i46;
 import 'package:ground_control_client/src/protocol/features/projects/models/project_config.dart'
     as _i47;
-import 'package:ground_control_client/src/protocol/domains/projects/models/role.dart'
+import 'package:ground_control_client/src/protocol/domains/projects/models/project_role.dart'
     as _i48;
-import 'package:ground_control_client/src/protocol/domains/secrets/models/build_secret_type.dart'
+import 'package:ground_control_client/src/protocol/domains/projects/models/role.dart'
     as _i49;
-import 'package:ground_control_client/src/protocol/domains/status/models/capsule_status.dart'
+import 'package:ground_control_client/src/protocol/domains/secrets/models/build_secret_type.dart'
     as _i50;
-import 'package:ground_control_client/src/protocol/features/status/models/capsule_runtime_status.dart'
+import 'package:ground_control_client/src/protocol/domains/status/models/capsule_status.dart'
     as _i51;
-import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
+import 'package:ground_control_client/src/protocol/features/status/models/capsule_runtime_status.dart'
     as _i52;
-import 'package:http/http.dart' as _i53;
-import 'protocol.dart' as _i54;
+import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
+    as _i53;
+import 'package:http/http.dart' as _i54;
+import 'protocol.dart' as _i55;
 
 /// Endpoint for reconciling database compute scaling against Serverpod Cloud.
 /// {@category Endpoint}
@@ -2120,10 +2122,12 @@ class EndpointProjects extends _i1.EndpointRef {
   _i2.Future<void> inviteUser({
     required String cloudProjectId,
     required String email,
-    required List<String> assignRoleNames,
+    List<_i48.ProjectRole>? assignRoles,
+    @Deprecated('Use assignRoles instead') List<String>? assignRoleNames,
   }) => caller.callServerEndpoint<void>('projects', 'inviteUser', {
     'cloudProjectId': cloudProjectId,
     'email': email,
+    'assignRoles': assignRoles,
     'assignRoleNames': assignRoleNames,
   });
 
@@ -2147,17 +2151,19 @@ class EndpointProjects extends _i1.EndpointRef {
   /// If [unassignAllRoles] is true, all roles on the project are unassigned
   /// from the user.
   ///
-  /// Returns the list of role names that were actually unassigned.
+  /// Returns the list of roles that were actually unassigned.
   /// Throws [NotFoundException] if the project does not exist.
   _i2.Future<List<String>> revokeUser({
     required String cloudProjectId,
     required String email,
-    List<String>? unassignRoleNames,
+    @Deprecated('Use unassignRoles instead') List<String>? unassignRoleNames,
+    List<_i48.ProjectRole>? unassignRoles,
     bool? unassignAllRoles,
   }) => caller.callServerEndpoint<List<String>>('projects', 'revokeUser', {
     'cloudProjectId': cloudProjectId,
     'email': email,
     'unassignRoleNames': unassignRoleNames,
+    'unassignRoles': unassignRoles,
     'unassignAllRoles': unassignAllRoles,
   });
 }
@@ -2171,9 +2177,9 @@ class EndpointRoles extends _i1.EndpointRef {
   String get name => 'roles';
 
   /// Fetches the user roles for a project.
-  _i2.Future<List<_i48.Role>> fetchRolesForProject({
+  _i2.Future<List<_i49.Role>> fetchRolesForProject({
     required String cloudProjectId,
-  }) => caller.callServerEndpoint<List<_i48.Role>>(
+  }) => caller.callServerEndpoint<List<_i49.Role>>(
     'roles',
     'fetchRolesForProject',
     {'cloudProjectId': cloudProjectId},
@@ -2230,7 +2236,7 @@ class EndpointSecrets extends _i1.EndpointRef {
   _i2.Future<void> upsertBuildSecret({
     required String secretKey,
     required String secretValue,
-    required _i49.BuildSecretType buildSecretType,
+    required _i50.BuildSecretType buildSecretType,
     required String cloudCapsuleId,
   }) => caller.callServerEndpoint<void>('secrets', 'upsertBuildSecret', {
     'secretKey': secretKey,
@@ -2317,9 +2323,9 @@ class EndpointStatus extends _i1.EndpointRef {
 
   /// Gets the live runtime status of the specified capsule.
   /// An unhealthy capsule is still a successful result — the status is data.
-  _i2.Future<_i50.CapsuleStatus> getCapsuleStatus({
+  _i2.Future<_i51.CapsuleStatus> getCapsuleStatus({
     required String cloudCapsuleId,
-  }) => caller.callServerEndpoint<_i50.CapsuleStatus>(
+  }) => caller.callServerEndpoint<_i51.CapsuleStatus>(
     'status',
     'getCapsuleStatus',
     {'cloudCapsuleId': cloudCapsuleId},
@@ -2329,9 +2335,9 @@ class EndpointStatus extends _i1.EndpointRef {
   /// summaries of the deploy attempts behind the serving and incoming
   /// revisions.
   /// An unhealthy capsule is still a successful result — the status is data.
-  _i2.Future<_i51.CapsuleRuntimeStatus> getCapsuleRuntimeStatus({
+  _i2.Future<_i52.CapsuleRuntimeStatus> getCapsuleRuntimeStatus({
     required String cloudCapsuleId,
-  }) => caller.callServerEndpoint<_i51.CapsuleRuntimeStatus>(
+  }) => caller.callServerEndpoint<_i52.CapsuleRuntimeStatus>(
     'status',
     'getCapsuleRuntimeStatus',
     {'cloudCapsuleId': cloudCapsuleId},
@@ -2340,12 +2346,12 @@ class EndpointStatus extends _i1.EndpointRef {
   /// Tails the live runtime status of the specified capsule.
   /// Emits the current status immediately, then an update whenever it
   /// changes. Continues until the client unsubscribes.
-  _i2.Stream<_i50.CapsuleStatus> tailCapsuleStatus({
+  _i2.Stream<_i51.CapsuleStatus> tailCapsuleStatus({
     required String cloudCapsuleId,
   }) =>
       caller.callStreamingServerEndpoint<
-        _i2.Stream<_i50.CapsuleStatus>,
-        _i50.CapsuleStatus
+        _i2.Stream<_i51.CapsuleStatus>,
+        _i51.CapsuleStatus
       >('status', 'tailCapsuleStatus', {'cloudCapsuleId': cloudCapsuleId}, {});
 
   /// Gets deploy attempts of the specified capsule.
@@ -2370,10 +2376,10 @@ class EndpointStatus extends _i1.EndpointRef {
   );
 
   /// Gets the specified deploy attempt status of the a capsule.
-  _i2.Future<List<_i52.DeployAttemptStage>> getDeployAttemptStatus({
+  _i2.Future<List<_i53.DeployAttemptStage>> getDeployAttemptStatus({
     required String cloudCapsuleId,
     required _i1.UuidValue attemptId,
-  }) => caller.callServerEndpoint<List<_i52.DeployAttemptStage>>(
+  }) => caller.callServerEndpoint<List<_i53.DeployAttemptStage>>(
     'status',
     'getDeployAttemptStatus',
     {'cloudCapsuleId': cloudCapsuleId, 'attemptId': attemptId},
@@ -2392,13 +2398,13 @@ class EndpointStatus extends _i1.EndpointRef {
 
   /// Tails the status updates for a deploy attempt.
   /// Continues until the client unsubscribes or the status if final.
-  _i2.Stream<_i52.DeployAttemptStage> tailDeployAttemptStatus({
+  _i2.Stream<_i53.DeployAttemptStage> tailDeployAttemptStatus({
     required String cloudCapsuleId,
     required _i1.UuidValue attemptId,
   }) =>
       caller.callStreamingServerEndpoint<
-        _i2.Stream<_i52.DeployAttemptStage>,
-        _i52.DeployAttemptStage
+        _i2.Stream<_i53.DeployAttemptStage>,
+        _i53.DeployAttemptStage
       >('status', 'tailDeployAttemptStatus', {
         'cloudCapsuleId': cloudCapsuleId,
         'attemptId': attemptId,
@@ -2451,10 +2457,10 @@ class Client extends _i1.ServerpodClientShared {
     Function(_i1.MethodCallContext, Object, StackTrace)? onFailedCall,
     Function(_i1.MethodCallContext)? onSucceededCall,
     bool? disconnectStreamsOnLostInternetConnection,
-    _i53.Client? httpClientOverride,
+    _i54.Client? httpClientOverride,
   }) : super(
          host,
-         _i54.Protocol(),
+         _i55.Protocol(),
          securityContext: securityContext,
          streamingConnectionTimeout: streamingConnectionTimeout,
          connectionTimeout: connectionTimeout,
