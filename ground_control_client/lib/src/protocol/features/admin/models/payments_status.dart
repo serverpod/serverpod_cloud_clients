@@ -10,12 +10,12 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../features/admin/models/payments_invoice_status.dart' as _i2;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../features/admin/models/payments_invoice_status.dart'
+    as _iyngfkii;
 
 abstract class PaymentsStatus
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   PaymentsStatus._({
     required this.invoiceId,
     required this.dueDate,
@@ -29,16 +29,18 @@ abstract class PaymentsStatus
     required DateTime dueDate,
     required String dueAmount,
     required String outstandingAmount,
-    required _i2.PaymentsInvoiceStatus status,
+    required _iyngfkii.PaymentsInvoiceStatus status,
   }) = _PaymentsStatusImpl;
 
   factory PaymentsStatus.fromJson(Map<String, dynamic> jsonSerialization) {
     return PaymentsStatus(
       invoiceId: jsonSerialization['invoiceId'] as String,
-      dueDate: _i1.DateTimeJsonExtension.fromJson(jsonSerialization['dueDate']),
+      dueDate: _isc.DateTimeJsonExtension.fromJson(
+        jsonSerialization['dueDate'],
+      ),
       dueAmount: jsonSerialization['dueAmount'] as String,
       outstandingAmount: jsonSerialization['outstandingAmount'] as String,
-      status: _i2.PaymentsInvoiceStatus.fromJson(
+      status: _iyngfkii.PaymentsInvoiceStatus.fromJson(
         (jsonSerialization['status'] as String),
       ),
     );
@@ -53,17 +55,17 @@ abstract class PaymentsStatus
   String outstandingAmount;
 
   /// Whether the invoice is issued or still needs action in Orb.
-  _i2.PaymentsInvoiceStatus status;
+  _iyngfkii.PaymentsInvoiceStatus status;
 
   /// Returns a shallow copy of this [PaymentsStatus]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   PaymentsStatus copyWith({
     String? invoiceId,
     DateTime? dueDate,
     String? dueAmount,
     String? outstandingAmount,
-    _i2.PaymentsInvoiceStatus? status,
+    _iyngfkii.PaymentsInvoiceStatus? status,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -91,7 +93,7 @@ abstract class PaymentsStatus
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
@@ -101,7 +103,7 @@ class _PaymentsStatusImpl extends PaymentsStatus {
     required DateTime dueDate,
     required String dueAmount,
     required String outstandingAmount,
-    required _i2.PaymentsInvoiceStatus status,
+    required _iyngfkii.PaymentsInvoiceStatus status,
   }) : super._(
          invoiceId: invoiceId,
          dueDate: dueDate,
@@ -112,14 +114,14 @@ class _PaymentsStatusImpl extends PaymentsStatus {
 
   /// Returns a shallow copy of this [PaymentsStatus]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   PaymentsStatus copyWith({
     String? invoiceId,
     DateTime? dueDate,
     String? dueAmount,
     String? outstandingAmount,
-    _i2.PaymentsInvoiceStatus? status,
+    _iyngfkii.PaymentsInvoiceStatus? status,
   }) {
     return PaymentsStatus(
       invoiceId: invoiceId ?? this.invoiceId,

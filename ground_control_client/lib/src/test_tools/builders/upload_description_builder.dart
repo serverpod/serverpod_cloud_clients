@@ -3,13 +3,13 @@ import 'dart:convert';
 class UploadDescriptionBuilder {
   String _type;
   String _url;
-  String _httpMethod;
+  String _method;
   Map<String, String> _headers;
 
   UploadDescriptionBuilder()
     : _type = 'binary',
       _url = 'https://signed.example/file',
-      _httpMethod = 'PUT',
+      _method = 'PUT',
       _headers = const {'Content-Type': 'application/octet-stream'};
 
   UploadDescriptionBuilder withType(String type) {
@@ -24,8 +24,8 @@ class UploadDescriptionBuilder {
     return this;
   }
 
-  UploadDescriptionBuilder withHttpMethod(String httpMethod) {
-    _httpMethod = httpMethod;
+  UploadDescriptionBuilder withMethod(String method) {
+    _method = method;
 
     return this;
   }
@@ -40,7 +40,7 @@ class UploadDescriptionBuilder {
     return jsonEncode({
       'type': _type,
       'url': _url,
-      'httpMethod': _httpMethod,
+      'method': _method,
       'headers': _headers,
     });
   }

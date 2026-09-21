@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/build_token_provider.dart';
@@ -104,9 +106,23 @@ class CloudCliServiceProvider {
   }
 
   FileUploaderClient _createGcsFileUploader(String uploadDescription) {
-    return GoogleCloudStorageUploader(
-      uploadDescription,
-      timeout: _globalConfiguration.connectionTimeout,
-    );
+    return _ServerpodFileUploader(uploadDescription);
+  }
+}
+
+final class _ServerpodFileUploader implements FileUploaderClient {
+  _ServerpodFileUploader(String uploadDescription)
+    : _uploader = FileUploader(uploadDescription);
+
+  final FileUploader _uploader;
+
+  @override
+  Future<bool> uploadByteData(ByteData byteData) {
+    return _uploader.uploadByteData(byteData);
+  }
+
+  @override
+  Future<bool> upload(Stream<List<int>> stream, int length) {
+    return _uploader.upload(stream, length);
   }
 }

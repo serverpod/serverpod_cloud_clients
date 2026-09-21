@@ -10,11 +10,10 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-
-import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
 abstract class EnvironmentVariable
-    implements _i1.SerializableModel, _i1.ProtocolSerialization {
+    implements _isc.SerializableModel, _isc.ProtocolSerialization {
   EnvironmentVariable._({
     this.id,
     DateTime? createdAt,
@@ -39,10 +38,10 @@ abstract class EnvironmentVariable
       id: jsonSerialization['id'] as int?,
       createdAt: jsonSerialization['createdAt'] == null
           ? null
-          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
       updatedAt: jsonSerialization['updatedAt'] == null
           ? null
-          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
+          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
       name: jsonSerialization['name'] as String,
       value: jsonSerialization['value'] as String,
@@ -70,7 +69,7 @@ abstract class EnvironmentVariable
 
   /// Returns a shallow copy of this [EnvironmentVariable]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   EnvironmentVariable copyWith({
     int? id,
     DateTime? createdAt,
@@ -107,7 +106,7 @@ abstract class EnvironmentVariable
 
   @override
   String toString() {
-    return _i1.SerializationManager.encode(this);
+    return _isc.SerializationManager.encode(this);
   }
 }
 
@@ -132,7 +131,7 @@ class _EnvironmentVariableImpl extends EnvironmentVariable {
 
   /// Returns a shallow copy of this [EnvironmentVariable]
   /// with some or all fields replaced by the given arguments.
-  @_i1.useResult
+  @_isc.useResult
   @override
   EnvironmentVariable copyWith({
     Object? id = _Undefined,
