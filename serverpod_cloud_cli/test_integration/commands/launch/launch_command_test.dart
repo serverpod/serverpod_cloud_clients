@@ -1387,6 +1387,7 @@ project:
                   'Custom passwords were found in config/passwords.yaml.',
                 ),
               );
+              expect(output, contains('a select all'));
               expect(
                 output,
                 contains(
@@ -1466,6 +1467,49 @@ project:
               logger.progressCalls,
               contains(equalsProgressCall(message: 'Setting custom passwords')),
             );
+          });
+        });
+
+        group('when executing launch for a new project '
+            'and selecting all passwords with the a key', () {
+          late Future commandResult;
+
+          setUp(() async {
+            logger.answerNextConfirmsWith([true]);
+            logger.inlineTerminal = FakeTerminal()
+              ..queueInput([...'a'.codeUnits, ...FakeTerminal.enter]);
+
+            simulateConsoleProjectCreation(logger, projectId: projectId);
+
+            commandResult = cli.run([
+              'launch',
+              '--project',
+              projectId,
+              '--project-dir',
+              passwordsProjectDir,
+              '--no-pre-deploy-scripts',
+              '--no-deploy',
+              '--no-browser',
+            ]);
+
+            await expectLater(commandResult, completes);
+          });
+
+          test('then sets every offered password in cloud', () async {
+            final captured = verify(
+              () => client.secrets.upsert(
+                secrets: captureAny(named: 'secrets'),
+                cloudCapsuleId: projectId,
+              ),
+            ).captured.cast<Map<String, String>>();
+
+            final upserted = {for (final secrets in captured) ...secrets};
+            expect(upserted, {
+              'SERVERPOD_PASSWORD_aSharedPassword': 'shared-secret',
+              'SERVERPOD_PASSWORD_apiKey': 'prod-api-key',
+              'SERVERPOD_PASSWORD_customPassword': 'custom-value',
+              'SERVERPOD_PASSWORD_localOnlyPassword': 'local-secret',
+            });
           });
         });
 
