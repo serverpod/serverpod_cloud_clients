@@ -23,6 +23,7 @@ abstract class EnvironmentVariable
     DateTime? updatedAt,
     required this.capsuleId,
     this.capsule,
+    this.cloudCapsuleId,
     required this.name,
     required this.value,
   }) : createdAt = createdAt ?? DateTime.now(),
@@ -34,6 +35,7 @@ abstract class EnvironmentVariable
     DateTime? updatedAt,
     required int capsuleId,
     _i2.Capsule? capsule,
+    String? cloudCapsuleId,
     required String name,
     required String value,
   }) = _EnvironmentVariableImpl;
@@ -53,6 +55,7 @@ abstract class EnvironmentVariable
           : _i3.Protocol().deserialize<_i2.Capsule>(
               jsonSerialization['capsule'],
             ),
+      cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String?,
       name: jsonSerialization['name'] as String,
       value: jsonSerialization['value'] as String,
     );
@@ -72,6 +75,10 @@ abstract class EnvironmentVariable
   /// An environment variable belongs to a capsule. Cannot be changed.
   _i2.Capsule? capsule;
 
+  /// Globally unique identifier of the capsule this variable belongs to.
+  /// Cannot be changed. Nullable while old replicas still write only capsuleId.
+  String? cloudCapsuleId;
+
   /// The name of the environment variable, e.g. 'HOST'. Can be changed.
   String name;
 
@@ -87,6 +94,7 @@ abstract class EnvironmentVariable
     DateTime? updatedAt,
     int? capsuleId,
     _i2.Capsule? capsule,
+    String? cloudCapsuleId,
     String? name,
     String? value,
   });
@@ -99,6 +107,7 @@ abstract class EnvironmentVariable
       'updatedAt': updatedAt.toJson(),
       'capsuleId': capsuleId,
       if (capsule != null) 'capsule': capsule?.toJson(),
+      if (cloudCapsuleId != null) 'cloudCapsuleId': cloudCapsuleId,
       'name': name,
       'value': value,
     };
@@ -113,6 +122,7 @@ abstract class EnvironmentVariable
       'updatedAt': updatedAt.toJson(),
       'capsuleId': capsuleId,
       if (capsule != null) 'capsule': capsule?.toJsonForProtocol(),
+      if (cloudCapsuleId != null) 'cloudCapsuleId': cloudCapsuleId,
       'name': name,
       'value': value,
     };
@@ -133,6 +143,7 @@ class _EnvironmentVariableImpl extends EnvironmentVariable {
     DateTime? updatedAt,
     required int capsuleId,
     _i2.Capsule? capsule,
+    String? cloudCapsuleId,
     required String name,
     required String value,
   }) : super._(
@@ -141,6 +152,7 @@ class _EnvironmentVariableImpl extends EnvironmentVariable {
          updatedAt: updatedAt,
          capsuleId: capsuleId,
          capsule: capsule,
+         cloudCapsuleId: cloudCapsuleId,
          name: name,
          value: value,
        );
@@ -155,6 +167,7 @@ class _EnvironmentVariableImpl extends EnvironmentVariable {
     DateTime? updatedAt,
     int? capsuleId,
     Object? capsule = _Undefined,
+    Object? cloudCapsuleId = _Undefined,
     String? name,
     String? value,
   }) {
@@ -164,6 +177,9 @@ class _EnvironmentVariableImpl extends EnvironmentVariable {
       updatedAt: updatedAt ?? this.updatedAt,
       capsuleId: capsuleId ?? this.capsuleId,
       capsule: capsule is _i2.Capsule? ? capsule : this.capsule?.copyWith(),
+      cloudCapsuleId: cloudCapsuleId is String?
+          ? cloudCapsuleId
+          : this.cloudCapsuleId,
       name: name ?? this.name,
       value: value ?? this.value,
     );
