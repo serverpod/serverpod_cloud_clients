@@ -1174,20 +1174,6 @@ class Protocol extends _i1.SerializationManager {
       return (data as List).map((e) => deserialize<_i10.BucketFile>(e)).toList()
           as T;
     }
-    if (t == List<_i39.EnvironmentVariable>) {
-      return (data as List)
-              .map((e) => deserialize<_i39.EnvironmentVariable>(e))
-              .toList()
-          as T;
-    }
-    if (t == _i1.getType<List<_i39.EnvironmentVariable>?>()) {
-      return (data != null
-              ? (data as List)
-                    .map((e) => deserialize<_i39.EnvironmentVariable>(e))
-                    .toList()
-              : null)
-          as T;
-    }
     if (t == List<_i23.CustomDomainName>) {
       return (data as List)
               .map((e) => deserialize<_i23.CustomDomainName>(e))

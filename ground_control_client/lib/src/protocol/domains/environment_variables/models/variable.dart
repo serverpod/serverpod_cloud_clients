@@ -12,8 +12,6 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import '../../../domains/capsules/models/capsule.dart' as _i2;
-import 'package:ground_control_client/src/protocol/protocol.dart' as _i3;
 
 abstract class EnvironmentVariable
     implements _i1.SerializableModel, _i1.ProtocolSerialization {
@@ -21,8 +19,6 @@ abstract class EnvironmentVariable
     this.id,
     DateTime? createdAt,
     DateTime? updatedAt,
-    this.capsuleId,
-    this.capsule,
     required this.cloudCapsuleId,
     required this.name,
     required this.value,
@@ -33,8 +29,6 @@ abstract class EnvironmentVariable
     int? id,
     DateTime? createdAt,
     DateTime? updatedAt,
-    int? capsuleId,
-    _i2.Capsule? capsule,
     required String cloudCapsuleId,
     required String name,
     required String value,
@@ -49,12 +43,6 @@ abstract class EnvironmentVariable
       updatedAt: jsonSerialization['updatedAt'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
-      capsuleId: jsonSerialization['capsuleId'] as int?,
-      capsule: jsonSerialization['capsule'] == null
-          ? null
-          : _i3.Protocol().deserialize<_i2.Capsule>(
-              jsonSerialization['capsule'],
-            ),
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
       name: jsonSerialization['name'] as String,
       value: jsonSerialization['value'] as String,
@@ -69,12 +57,6 @@ abstract class EnvironmentVariable
   DateTime createdAt;
 
   DateTime updatedAt;
-
-  int? capsuleId;
-
-  /// An environment variable belongs to a capsule. Cannot be changed.
-  /// Optional while old replicas still write capsuleId.
-  _i2.Capsule? capsule;
 
   /// Globally unique identifier of the capsule this variable belongs to.
   /// Cannot be changed.
@@ -93,8 +75,6 @@ abstract class EnvironmentVariable
     int? id,
     DateTime? createdAt,
     DateTime? updatedAt,
-    int? capsuleId,
-    _i2.Capsule? capsule,
     String? cloudCapsuleId,
     String? name,
     String? value,
@@ -106,8 +86,6 @@ abstract class EnvironmentVariable
       if (id != null) 'id': id,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
-      if (capsuleId != null) 'capsuleId': capsuleId,
-      if (capsule != null) 'capsule': capsule?.toJson(),
       'cloudCapsuleId': cloudCapsuleId,
       'name': name,
       'value': value,
@@ -121,8 +99,6 @@ abstract class EnvironmentVariable
       if (id != null) 'id': id,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
-      if (capsuleId != null) 'capsuleId': capsuleId,
-      if (capsule != null) 'capsule': capsule?.toJsonForProtocol(),
       'cloudCapsuleId': cloudCapsuleId,
       'name': name,
       'value': value,
@@ -142,8 +118,6 @@ class _EnvironmentVariableImpl extends EnvironmentVariable {
     int? id,
     DateTime? createdAt,
     DateTime? updatedAt,
-    int? capsuleId,
-    _i2.Capsule? capsule,
     required String cloudCapsuleId,
     required String name,
     required String value,
@@ -151,8 +125,6 @@ class _EnvironmentVariableImpl extends EnvironmentVariable {
          id: id,
          createdAt: createdAt,
          updatedAt: updatedAt,
-         capsuleId: capsuleId,
-         capsule: capsule,
          cloudCapsuleId: cloudCapsuleId,
          name: name,
          value: value,
@@ -166,8 +138,6 @@ class _EnvironmentVariableImpl extends EnvironmentVariable {
     Object? id = _Undefined,
     DateTime? createdAt,
     DateTime? updatedAt,
-    Object? capsuleId = _Undefined,
-    Object? capsule = _Undefined,
     String? cloudCapsuleId,
     String? name,
     String? value,
@@ -176,8 +146,6 @@ class _EnvironmentVariableImpl extends EnvironmentVariable {
       id: id is int? ? id : this.id,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      capsuleId: capsuleId is int? ? capsuleId : this.capsuleId,
-      capsule: capsule is _i2.Capsule? ? capsule : this.capsule?.copyWith(),
       cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
       name: name ?? this.name,
       value: value ?? this.value,
