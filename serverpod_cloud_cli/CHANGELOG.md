@@ -1,6 +1,21 @@
 
 # Changelog
 
+## [1.0.1] - 2026-09-21
+
+### Added
+
+- **Automatic CLI upgrades** - The CLI now automatically updates to newer versions by default, which can be disabled using the `--no-auto-cli-upgrade` flag.
+- **CSV output format** - Commands supporting formatted table output can now export data directly as CSV.
+
+### Changed
+
+- **Structured log output** - JSON and YAML outputs for `scloud log` now format log content as nested objects instead of escaped strings, with a `--raw` flag available to keep the original string format.
+
+### Fixed
+
+- **Database snapshot retention** - Scheduled database backups now default to 35 days instead of 24 hours, with schedule times explicitly indicated in UTC.
+
 ## 1.0.0 - 2026-09-15
 
 ### Fixed
