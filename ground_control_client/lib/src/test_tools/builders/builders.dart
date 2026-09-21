@@ -15,6 +15,7 @@ export 'database_info_builder.dart';
 export 'database_user_builder.dart';
 export 'deploy_attempt_builder.dart';
 export 'deploy_attempt_stage_builder.dart';
+export 'environment_variable_builder.dart';
 export 'log_record_builder.dart';
 export 'payments_status_builder.dart';
 export 'role_builder.dart';

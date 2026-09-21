@@ -7,7 +7,6 @@ class CapsuleBuilder {
   ServerpodRegion _region;
   int _projectId;
   Project? _project;
-  List<EnvironmentVariable>? _environmentVariables;
   List<CustomDomainName>? _domainNames;
   CapsuleResource? _resourceConfig;
 
@@ -18,7 +17,6 @@ class CapsuleBuilder {
       _region = ServerpodRegion.europe,
       _projectId = 1,
       _project = null,
-      _environmentVariables = [],
       _domainNames = [],
       _resourceConfig = null;
 
@@ -55,13 +53,6 @@ class CapsuleBuilder {
     return this;
   }
 
-  CapsuleBuilder withEnvironmentVariables(
-    List<EnvironmentVariable>? environmentVariables,
-  ) {
-    _environmentVariables = environmentVariables;
-    return this;
-  }
-
   CapsuleBuilder withDomainNames(List<CustomDomainName>? domainNames) {
     _domainNames = domainNames;
     return this;
@@ -80,7 +71,6 @@ class CapsuleBuilder {
       region: _region,
       projectId: _projectId,
       project: _project,
-      environmentVariables: _environmentVariables,
       domainNames: _domainNames,
       resourceConfig: _resourceConfig,
     );
