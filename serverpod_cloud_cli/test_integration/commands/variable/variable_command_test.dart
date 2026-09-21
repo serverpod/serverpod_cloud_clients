@@ -84,7 +84,11 @@ void main() {
       setUp(() async {
         when(() => client.environmentVariables.list(any())).thenAnswer(
           (_) async => [
-            EnvironmentVariable(name: 'key', value: 'old', capsuleId: 0),
+            EnvironmentVariable(
+              name: 'key',
+              value: 'old',
+              cloudCapsuleId: 'test-capsule',
+            ),
           ],
         );
         when(
@@ -221,7 +225,7 @@ void main() {
             EnvironmentVariable(
               name: invocation.positionalArguments[0],
               value: invocation.positionalArguments[1],
-              capsuleId: 0,
+              cloudCapsuleId: 'test-capsule',
             ),
           ),
         );
@@ -389,7 +393,7 @@ void main() {
             EnvironmentVariable(
               name: invocation.positionalArguments[0],
               value: invocation.positionalArguments[1],
-              capsuleId: 0,
+              cloudCapsuleId: 'test-capsule',
             ),
           ),
         );
@@ -467,7 +471,11 @@ void main() {
         setUp(() async {
           when(() => client.environmentVariables.list(any())).thenAnswer(
             (_) async => [
-              EnvironmentVariable(name: 'key', value: 'old', capsuleId: 0),
+              EnvironmentVariable(
+                name: 'key',
+                value: 'old',
+                cloudCapsuleId: 'test-capsule',
+              ),
             ],
           );
           when(
@@ -484,7 +492,7 @@ void main() {
               EnvironmentVariable(
                 name: invocation.namedArguments[#name],
                 value: invocation.namedArguments[#value],
-                capsuleId: 0,
+                cloudCapsuleId: 'test-capsule',
               ),
             ),
           );
@@ -888,7 +896,11 @@ void main() {
       setUp(() async {
         when(() => client.environmentVariables.list(any())).thenAnswer(
           (_) async => [
-            EnvironmentVariable(name: 'key', value: 'value', capsuleId: 0),
+            EnvironmentVariable(
+              name: 'key',
+              value: 'value',
+              cloudCapsuleId: 'test-capsule',
+            ),
           ],
         );
         when(
@@ -904,7 +916,7 @@ void main() {
             EnvironmentVariable(
               name: invocation.namedArguments[#name],
               value: 'placeholder',
-              capsuleId: 0,
+              cloudCapsuleId: 'test-capsule',
             ),
           ),
         );
@@ -1056,7 +1068,11 @@ void main() {
       setUp(() async {
         when(() => client.environmentVariables.list(any())).thenAnswer(
           (_) async => [
-            EnvironmentVariable(name: 'key', value: 'value', capsuleId: 0),
+            EnvironmentVariable(
+              name: 'key',
+              value: 'value',
+              cloudCapsuleId: 'test-capsule',
+            ),
           ],
         );
         when(
@@ -1108,8 +1124,16 @@ void main() {
       setUp(() async {
         when(() => client.environmentVariables.list(any())).thenAnswer(
           (_) async => [
-            EnvironmentVariable(name: 'zebra', value: 'one', capsuleId: 0),
-            EnvironmentVariable(name: 'alpha', value: 'two', capsuleId: 0),
+            EnvironmentVariable(
+              name: 'zebra',
+              value: 'one',
+              cloudCapsuleId: 'test-capsule',
+            ),
+            EnvironmentVariable(
+              name: 'alpha',
+              value: 'two',
+              cloudCapsuleId: 'test-capsule',
+            ),
           ],
         );
         when(() => client.secrets.list(any())).thenAnswer(
@@ -1155,8 +1179,16 @@ void main() {
       setUp(() async {
         when(() => client.environmentVariables.list(any())).thenAnswer(
           (_) async => [
-            EnvironmentVariable(name: 'zebra', value: 'one', capsuleId: 0),
-            EnvironmentVariable(name: 'alpha', value: 'two', capsuleId: 0),
+            EnvironmentVariable(
+              name: 'zebra',
+              value: 'one',
+              cloudCapsuleId: 'test-capsule',
+            ),
+            EnvironmentVariable(
+              name: 'alpha',
+              value: 'two',
+              cloudCapsuleId: 'test-capsule',
+            ),
           ],
         );
         when(() => client.secrets.list(any())).thenAnswer(
@@ -1192,8 +1224,16 @@ void main() {
       setUp(() async {
         when(() => client.environmentVariables.list(any())).thenAnswer(
           (_) async => [
-            EnvironmentVariable(name: 'zebra', value: 'one', capsuleId: 0),
-            EnvironmentVariable(name: 'alpha', value: 'two', capsuleId: 0),
+            EnvironmentVariable(
+              name: 'zebra',
+              value: 'one',
+              cloudCapsuleId: 'test-capsule',
+            ),
+            EnvironmentVariable(
+              name: 'alpha',
+              value: 'two',
+              cloudCapsuleId: 'test-capsule',
+            ),
           ],
         );
         when(() => client.secrets.list(any())).thenAnswer(

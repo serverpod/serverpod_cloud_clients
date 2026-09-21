@@ -131,7 +131,7 @@ void main() {
             EnvironmentVariable(
               name: 'BUCKET',
               value: 'scloud-artifacts',
-              capsuleId: 0,
+              cloudCapsuleId: 'test-capsule',
             ),
           ],
         );

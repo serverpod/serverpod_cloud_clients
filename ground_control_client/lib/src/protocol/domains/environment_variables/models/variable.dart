@@ -21,9 +21,9 @@ abstract class EnvironmentVariable
     this.id,
     DateTime? createdAt,
     DateTime? updatedAt,
-    required this.capsuleId,
+    this.capsuleId,
     this.capsule,
-    this.cloudCapsuleId,
+    required this.cloudCapsuleId,
     required this.name,
     required this.value,
   }) : createdAt = createdAt ?? DateTime.now(),
@@ -33,9 +33,9 @@ abstract class EnvironmentVariable
     int? id,
     DateTime? createdAt,
     DateTime? updatedAt,
-    required int capsuleId,
+    int? capsuleId,
     _i2.Capsule? capsule,
-    String? cloudCapsuleId,
+    required String cloudCapsuleId,
     required String name,
     required String value,
   }) = _EnvironmentVariableImpl;
@@ -49,13 +49,13 @@ abstract class EnvironmentVariable
       updatedAt: jsonSerialization['updatedAt'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
-      capsuleId: jsonSerialization['capsuleId'] as int,
+      capsuleId: jsonSerialization['capsuleId'] as int?,
       capsule: jsonSerialization['capsule'] == null
           ? null
           : _i3.Protocol().deserialize<_i2.Capsule>(
               jsonSerialization['capsule'],
             ),
-      cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String?,
+      cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
       name: jsonSerialization['name'] as String,
       value: jsonSerialization['value'] as String,
     );
@@ -70,14 +70,15 @@ abstract class EnvironmentVariable
 
   DateTime updatedAt;
 
-  int capsuleId;
+  int? capsuleId;
 
   /// An environment variable belongs to a capsule. Cannot be changed.
+  /// Optional while old replicas still write capsuleId.
   _i2.Capsule? capsule;
 
   /// Globally unique identifier of the capsule this variable belongs to.
-  /// Cannot be changed. Nullable while old replicas still write only capsuleId.
-  String? cloudCapsuleId;
+  /// Cannot be changed.
+  String cloudCapsuleId;
 
   /// The name of the environment variable, e.g. 'HOST'. Can be changed.
   String name;
@@ -105,9 +106,9 @@ abstract class EnvironmentVariable
       if (id != null) 'id': id,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
-      'capsuleId': capsuleId,
+      if (capsuleId != null) 'capsuleId': capsuleId,
       if (capsule != null) 'capsule': capsule?.toJson(),
-      if (cloudCapsuleId != null) 'cloudCapsuleId': cloudCapsuleId,
+      'cloudCapsuleId': cloudCapsuleId,
       'name': name,
       'value': value,
     };
@@ -120,9 +121,9 @@ abstract class EnvironmentVariable
       if (id != null) 'id': id,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
-      'capsuleId': capsuleId,
+      if (capsuleId != null) 'capsuleId': capsuleId,
       if (capsule != null) 'capsule': capsule?.toJsonForProtocol(),
-      if (cloudCapsuleId != null) 'cloudCapsuleId': cloudCapsuleId,
+      'cloudCapsuleId': cloudCapsuleId,
       'name': name,
       'value': value,
     };
@@ -141,9 +142,9 @@ class _EnvironmentVariableImpl extends EnvironmentVariable {
     int? id,
     DateTime? createdAt,
     DateTime? updatedAt,
-    required int capsuleId,
+    int? capsuleId,
     _i2.Capsule? capsule,
-    String? cloudCapsuleId,
+    required String cloudCapsuleId,
     required String name,
     required String value,
   }) : super._(
@@ -165,9 +166,9 @@ class _EnvironmentVariableImpl extends EnvironmentVariable {
     Object? id = _Undefined,
     DateTime? createdAt,
     DateTime? updatedAt,
-    int? capsuleId,
+    Object? capsuleId = _Undefined,
     Object? capsule = _Undefined,
-    Object? cloudCapsuleId = _Undefined,
+    String? cloudCapsuleId,
     String? name,
     String? value,
   }) {
@@ -175,11 +176,9 @@ class _EnvironmentVariableImpl extends EnvironmentVariable {
       id: id is int? ? id : this.id,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      capsuleId: capsuleId ?? this.capsuleId,
+      capsuleId: capsuleId is int? ? capsuleId : this.capsuleId,
       capsule: capsule is _i2.Capsule? ? capsule : this.capsule?.copyWith(),
-      cloudCapsuleId: cloudCapsuleId is String?
-          ? cloudCapsuleId
-          : this.cloudCapsuleId,
+      cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
       name: name ?? this.name,
       value: value ?? this.value,
     );

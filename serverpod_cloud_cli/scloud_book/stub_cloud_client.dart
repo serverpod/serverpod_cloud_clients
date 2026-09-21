@@ -236,8 +236,16 @@ void _stubProjects(final ClientMock client, {required final String projectId}) {
 void _stubVariablesAndSecrets(final ClientMock client) {
   when(() => client.environmentVariables.list(any())).thenAnswer(
     (_) async => [
-      EnvironmentVariable(name: 'LOG_LEVEL', value: 'info', capsuleId: 0),
-      EnvironmentVariable(name: 'REGION', value: 'eu-north-1', capsuleId: 0),
+      EnvironmentVariable(
+        name: 'LOG_LEVEL',
+        value: 'info',
+        cloudCapsuleId: 'test-capsule',
+      ),
+      EnvironmentVariable(
+        name: 'REGION',
+        value: 'eu-north-1',
+        cloudCapsuleId: 'test-capsule',
+      ),
     ],
   );
   when(
@@ -246,7 +254,7 @@ void _stubVariablesAndSecrets(final ClientMock client) {
     (final invocation) async => EnvironmentVariable(
       name: invocation.positionalArguments[0] as String,
       value: invocation.positionalArguments[1] as String,
-      capsuleId: 0,
+      cloudCapsuleId: 'test-capsule',
     ),
   );
   when(
@@ -259,7 +267,7 @@ void _stubVariablesAndSecrets(final ClientMock client) {
     (final invocation) async => EnvironmentVariable(
       name: invocation.namedArguments[#name] as String,
       value: invocation.namedArguments[#value] as String,
-      capsuleId: 0,
+      cloudCapsuleId: 'test-capsule',
     ),
   );
   when(
@@ -271,7 +279,7 @@ void _stubVariablesAndSecrets(final ClientMock client) {
     (final invocation) async => EnvironmentVariable(
       name: invocation.namedArguments[#name] as String,
       value: 'placeholder',
-      capsuleId: 0,
+      cloudCapsuleId: 'test-capsule',
     ),
   );
 
