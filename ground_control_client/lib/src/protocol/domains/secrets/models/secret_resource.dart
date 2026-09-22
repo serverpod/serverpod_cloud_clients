@@ -25,6 +25,7 @@ abstract class SecretResource
     required this.secretType,
     this.latestVersionId,
     this.activeVersionId,
+    this.deployingVersionId,
     this.createdAt,
     this.storedSecretVersions,
   });
@@ -36,6 +37,7 @@ abstract class SecretResource
     required _iufgioqt.SecretType secretType,
     String? latestVersionId,
     String? activeVersionId,
+    String? deployingVersionId,
     DateTime? createdAt,
     List<_idoslex6.StoredSecretVersion>? storedSecretVersions,
   }) = _SecretResourceImpl;
@@ -50,6 +52,7 @@ abstract class SecretResource
       ),
       latestVersionId: jsonSerialization['latestVersionId'] as String?,
       activeVersionId: jsonSerialization['activeVersionId'] as String?,
+      deployingVersionId: jsonSerialization['deployingVersionId'] as String?,
       createdAt: jsonSerialization['createdAt'] == null
           ? null
           : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
@@ -73,9 +76,14 @@ abstract class SecretResource
 
   _iufgioqt.SecretType secretType;
 
+  /// The version stored for the next deployment.
   String? latestVersionId;
 
+  /// The version the capsule is running, set when a rollout succeeds.
   String? activeVersionId;
+
+  /// The version the running rollout is deploying, set when it is triggered.
+  String? deployingVersionId;
 
   DateTime? createdAt;
 
@@ -92,6 +100,7 @@ abstract class SecretResource
     _iufgioqt.SecretType? secretType,
     String? latestVersionId,
     String? activeVersionId,
+    String? deployingVersionId,
     DateTime? createdAt,
     List<_idoslex6.StoredSecretVersion>? storedSecretVersions,
   });
@@ -105,6 +114,7 @@ abstract class SecretResource
       'secretType': secretType.toJson(),
       if (latestVersionId != null) 'latestVersionId': latestVersionId,
       if (activeVersionId != null) 'activeVersionId': activeVersionId,
+      if (deployingVersionId != null) 'deployingVersionId': deployingVersionId,
       if (createdAt != null) 'createdAt': createdAt?.toJson(),
       if (storedSecretVersions != null)
         'storedSecretVersions': storedSecretVersions?.toJson(
@@ -123,6 +133,7 @@ abstract class SecretResource
       'secretType': secretType.toJson(),
       if (latestVersionId != null) 'latestVersionId': latestVersionId,
       if (activeVersionId != null) 'activeVersionId': activeVersionId,
+      if (deployingVersionId != null) 'deployingVersionId': deployingVersionId,
       if (createdAt != null) 'createdAt': createdAt?.toJson(),
       if (storedSecretVersions != null)
         'storedSecretVersions': storedSecretVersions?.toJson(
@@ -147,6 +158,7 @@ class _SecretResourceImpl extends SecretResource {
     required _iufgioqt.SecretType secretType,
     String? latestVersionId,
     String? activeVersionId,
+    String? deployingVersionId,
     DateTime? createdAt,
     List<_idoslex6.StoredSecretVersion>? storedSecretVersions,
   }) : super._(
@@ -156,6 +168,7 @@ class _SecretResourceImpl extends SecretResource {
          secretType: secretType,
          latestVersionId: latestVersionId,
          activeVersionId: activeVersionId,
+         deployingVersionId: deployingVersionId,
          createdAt: createdAt,
          storedSecretVersions: storedSecretVersions,
        );
@@ -171,6 +184,7 @@ class _SecretResourceImpl extends SecretResource {
     _iufgioqt.SecretType? secretType,
     Object? latestVersionId = _Undefined,
     Object? activeVersionId = _Undefined,
+    Object? deployingVersionId = _Undefined,
     Object? createdAt = _Undefined,
     Object? storedSecretVersions = _Undefined,
   }) {
@@ -185,6 +199,9 @@ class _SecretResourceImpl extends SecretResource {
       activeVersionId: activeVersionId is String?
           ? activeVersionId
           : this.activeVersionId,
+      deployingVersionId: deployingVersionId is String?
+          ? deployingVersionId
+          : this.deployingVersionId,
       createdAt: createdAt is DateTime? ? createdAt : this.createdAt,
       storedSecretVersions:
           storedSecretVersions is List<_idoslex6.StoredSecretVersion>?
