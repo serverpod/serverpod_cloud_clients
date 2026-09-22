@@ -75,6 +75,8 @@ import 'package:ground_control_client/src/protocol/domains/projects/models/role.
     as _iavafiww;
 import 'package:ground_control_client/src/protocol/domains/secrets/models/build_secret_type.dart'
     as _ifyrekdh;
+import 'package:ground_control_client/src/protocol/domains/secrets/models/secret_type.dart'
+    as _i1obmpyw;
 import 'package:ground_control_client/src/protocol/domains/status/models/capsule_status.dart'
     as _i0c2pd3m;
 import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt.dart'
@@ -109,6 +111,8 @@ import 'package:ground_control_client/src/protocol/features/projects/models/proj
     as _iag8nc5u;
 import 'package:ground_control_client/src/protocol/features/status/models/capsule_runtime_status.dart'
     as _iw0bb95d;
+import 'package:ground_control_client/src/protocol/shared/models/pending_change.dart'
+    as _ifrto32z;
 import 'package:http/http.dart' as _i85jenna;
 import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
     as _iacc;
@@ -1684,6 +1688,19 @@ class EndpointEnvironmentVariables extends _isc.EndpointRef {
     {'cloudCapsuleId': cloudCapsuleId},
   );
 
+  /// Gets the variable changes that the next deployment of [cloudCapsuleId]
+  /// will apply, compared to the variables it is running.
+  ///
+  /// Empty when the capsule runs what is stored, and empty as well when it has
+  /// never been deployed.
+  _ida.Future<List<_ifrto32z.PendingChange>> listPendingChanges(
+    String cloudCapsuleId,
+  ) => caller.callServerEndpoint<List<_ifrto32z.PendingChange>>(
+    'environmentVariables',
+    'listPendingChanges',
+    {'cloudCapsuleId': cloudCapsuleId},
+  );
+
   /// Creates a new [EnvironmentVariable] with the specified [name] and [value].
   /// Throws a [NotFoundException] if the environment variable is not found.
   _ida.Future<_i82frs35.EnvironmentVariable> update({
@@ -2340,6 +2357,22 @@ class EndpointSecrets extends _isc.EndpointRef {
       caller.callServerEndpoint<List<String>>('secrets', 'list', {
         'cloudCapsuleId': cloudCapsuleId,
       });
+
+  /// Lists the secret keys of [type] that the next deployment of
+  /// [cloudCapsuleId] will apply, compared to the secrets it is running.
+  ///
+  /// Returns only the keys (no values). Empty when the capsule runs what is
+  /// stored, and empty as well when no version has been deployed yet.
+  ///
+  /// Throws [NotFoundException] if the capsule is not found.
+  _ida.Future<List<_ifrto32z.PendingChange>> listPendingChanges(
+    String cloudCapsuleId, {
+    required _i1obmpyw.SecretType type,
+  }) => caller.callServerEndpoint<List<_ifrto32z.PendingChange>>(
+    'secrets',
+    'listPendingChanges',
+    {'cloudCapsuleId': cloudCapsuleId, 'type': type},
+  );
 
   /// Lists platform-managed secret keys for a cloud capsule.
   ///

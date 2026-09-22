@@ -47,6 +47,8 @@ import 'package:ground_control_client/src/protocol/features/auth/models/required
     as _iu79vy7r;
 import 'package:ground_control_client/src/protocol/features/projects/models/project_info/project_info.dart'
     as _ixukenxa;
+import 'package:ground_control_client/src/protocol/shared/models/pending_change.dart'
+    as _ifrto32z;
 import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
     as _iacc;
 import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
@@ -92,6 +94,8 @@ import 'domains/databases/models/database_scaling.dart' as _i6xy85up;
 import 'domains/databases/models/database_size.dart' as _ifxd5ia6;
 import 'domains/databases/models/database_snapshot.dart' as _i1q8jyc7;
 import 'domains/databases/models/database_user.dart' as _iiqkhpys;
+import 'domains/environment_variables/models/deployed_variables.dart'
+    as _iz15cfyg;
 import 'domains/environment_variables/models/variable.dart' as _i7s8kwes;
 import 'domains/logs/models/log_record.dart' as _iwt7hqgw;
 import 'domains/metrics/models/capsule_network_series.dart' as _izgm68si;
@@ -188,6 +192,8 @@ import 'shared/exceptions/models/procurement_denied_reason.dart' as _iibx2ckv;
 import 'shared/exceptions/models/unauthenticated_exception.dart' as _i8itwzl1;
 import 'shared/exceptions/models/unauthorized_exception.dart' as _is3nd795;
 import 'shared/models/http_response_class.dart' as _is21hzeq;
+import 'shared/models/pending_change.dart' as _if94jkyh;
+import 'shared/models/pending_change_state.dart' as _iygc9a3m;
 import 'shared/models/serverpod_region.dart' as _i3qziuyp;
 import 'shared/pubsub/registry/pubsub_entry.dart' as _i1i04ivn;
 export 'domains/billing/models/billing_customer_type.dart';
@@ -227,6 +233,7 @@ export 'domains/databases/models/database_scaling.dart';
 export 'domains/databases/models/database_size.dart';
 export 'domains/databases/models/database_snapshot.dart';
 export 'domains/databases/models/database_user.dart';
+export 'domains/environment_variables/models/deployed_variables.dart';
 export 'domains/environment_variables/models/variable.dart';
 export 'domains/logs/models/log_record.dart';
 export 'domains/metrics/models/capsule_network_series.dart';
@@ -308,6 +315,8 @@ export 'shared/exceptions/models/procurement_denied_reason.dart';
 export 'shared/exceptions/models/unauthenticated_exception.dart';
 export 'shared/exceptions/models/unauthorized_exception.dart';
 export 'shared/models/http_response_class.dart';
+export 'shared/models/pending_change.dart';
+export 'shared/models/pending_change_state.dart';
 export 'shared/models/serverpod_region.dart';
 export 'shared/pubsub/registry/pubsub_entry.dart';
 export 'client.dart';
@@ -453,6 +462,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _iiqkhpys.DatabaseUser) {
       return _iiqkhpys.DatabaseUser.fromJson(data) as T;
+    }
+    if (t == _iz15cfyg.DeployedVariables) {
+      return _iz15cfyg.DeployedVariables.fromJson(data) as T;
     }
     if (t == _i7s8kwes.EnvironmentVariable) {
       return _i7s8kwes.EnvironmentVariable.fromJson(data) as T;
@@ -701,6 +713,12 @@ class Protocol extends _isc.SerializationManager {
     if (t == _is21hzeq.HttpResponseClass) {
       return _is21hzeq.HttpResponseClass.fromJson(data) as T;
     }
+    if (t == _if94jkyh.PendingChange) {
+      return _if94jkyh.PendingChange.fromJson(data) as T;
+    }
+    if (t == _iygc9a3m.PendingChangeState) {
+      return _iygc9a3m.PendingChangeState.fromJson(data) as T;
+    }
     if (t == _i3qziuyp.ServerpodRegion) {
       return _i3qziuyp.ServerpodRegion.fromJson(data) as T;
     }
@@ -858,6 +876,10 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_iiqkhpys.DatabaseUser?>()) {
       return (data != null ? _iiqkhpys.DatabaseUser.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_iz15cfyg.DeployedVariables?>()) {
+      return (data != null ? _iz15cfyg.DeployedVariables.fromJson(data) : null)
+          as T;
     }
     if (t == _isc.getType<_i7s8kwes.EnvironmentVariable?>()) {
       return (data != null
@@ -1247,6 +1269,14 @@ class Protocol extends _isc.SerializationManager {
       return (data != null ? _is21hzeq.HttpResponseClass.fromJson(data) : null)
           as T;
     }
+    if (t == _isc.getType<_if94jkyh.PendingChange?>()) {
+      return (data != null ? _if94jkyh.PendingChange.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_iygc9a3m.PendingChangeState?>()) {
+      return (data != null ? _iygc9a3m.PendingChangeState.fromJson(data) : null)
+          as T;
+    }
     if (t == _isc.getType<_i3qziuyp.ServerpodRegion?>()) {
       return (data != null ? _i3qziuyp.ServerpodRegion.fromJson(data) : null)
           as T;
@@ -1289,6 +1319,12 @@ class Protocol extends _isc.SerializationManager {
                     .map((e) => deserialize<_iheq245y.CustomDomainName>(e))
                     .toList()
               : null)
+          as T;
+    }
+    if (t == Map<String, String>) {
+      return (data as Map).map(
+            (k, v) => MapEntry(deserialize<String>(k), deserialize<String>(v)),
+          )
           as T;
     }
     if (t == List<_ixjvnalq.MetricSample>) {
@@ -1384,12 +1420,6 @@ class Protocol extends _isc.SerializationManager {
                     .map((e) => deserialize<_i7kzg109.StoredSecretVersion>(e))
                     .toList()
               : null)
-          as T;
-    }
-    if (t == Map<String, String>) {
-      return (data as Map).map(
-            (k, v) => MapEntry(deserialize<String>(k), deserialize<String>(v)),
-          )
           as T;
     }
     if (t == List<_iwfg38ma.DeployAttemptStage>) {
@@ -1570,6 +1600,12 @@ class Protocol extends _isc.SerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_ifrto32z.PendingChange>) {
+      return (data as List)
+              .map((e) => deserialize<_ifrto32z.PendingChange>(e))
+              .toList()
+          as T;
+    }
     if (t == List<_ie2iiqds.PodResourceSeries>) {
       return (data as List)
               .map((e) => deserialize<_ie2iiqds.PodResourceSeries>(e))
@@ -1647,6 +1683,7 @@ class Protocol extends _isc.SerializationManager {
       _ifxd5ia6.DatabaseSizeOption => 'DatabaseSizeOption',
       _i1q8jyc7.DatabaseSnapshot => 'DatabaseSnapshot',
       _iiqkhpys.DatabaseUser => 'DatabaseUser',
+      _iz15cfyg.DeployedVariables => 'DeployedVariables',
       _i7s8kwes.EnvironmentVariable => 'EnvironmentVariable',
       _iwt7hqgw.LogRecord => 'LogRecord',
       _izgm68si.CapsuleNetworkSeries => 'CapsuleNetworkSeries',
@@ -1738,6 +1775,8 @@ class Protocol extends _isc.SerializationManager {
       _i8itwzl1.UnauthenticatedException => 'UnauthenticatedException',
       _is3nd795.UnauthorizedException => 'UnauthorizedException',
       _is21hzeq.HttpResponseClass => 'HttpResponseClass',
+      _if94jkyh.PendingChange => 'PendingChange',
+      _iygc9a3m.PendingChangeState => 'PendingChangeState',
       _i3qziuyp.ServerpodRegion => 'ServerpodRegion',
       _i1i04ivn.PubsubEntry => 'PubsubEntry',
       _ => null,
@@ -1831,6 +1870,8 @@ class Protocol extends _isc.SerializationManager {
         return 'DatabaseSnapshot';
       case _iiqkhpys.DatabaseUser():
         return 'DatabaseUser';
+      case _iz15cfyg.DeployedVariables():
+        return 'DeployedVariables';
       case _i7s8kwes.EnvironmentVariable():
         return 'EnvironmentVariable';
       case _iwt7hqgw.LogRecord():
@@ -1993,6 +2034,10 @@ class Protocol extends _isc.SerializationManager {
         return 'UnauthorizedException';
       case _is21hzeq.HttpResponseClass():
         return 'HttpResponseClass';
+      case _if94jkyh.PendingChange():
+        return 'PendingChange';
+      case _iygc9a3m.PendingChangeState():
+        return 'PendingChangeState';
       case _i3qziuyp.ServerpodRegion():
         return 'ServerpodRegion';
       case _i1i04ivn.PubsubEntry():
@@ -2131,6 +2176,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'DatabaseUser') {
       return deserialize<_iiqkhpys.DatabaseUser>(data['data']);
+    }
+    if (dataClassName == 'DeployedVariables') {
+      return deserialize<_iz15cfyg.DeployedVariables>(data['data']);
     }
     if (dataClassName == 'EnvironmentVariable') {
       return deserialize<_i7s8kwes.EnvironmentVariable>(data['data']);
@@ -2394,6 +2442,12 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'HttpResponseClass') {
       return deserialize<_is21hzeq.HttpResponseClass>(data['data']);
+    }
+    if (dataClassName == 'PendingChange') {
+      return deserialize<_if94jkyh.PendingChange>(data['data']);
+    }
+    if (dataClassName == 'PendingChangeState') {
+      return deserialize<_iygc9a3m.PendingChangeState>(data['data']);
     }
     if (dataClassName == 'ServerpodRegion') {
       return deserialize<_i3qziuyp.ServerpodRegion>(data['data']);
