@@ -93,6 +93,7 @@ import 'domains/databases/models/database_size.dart' as _ifxd5ia6;
 import 'domains/databases/models/database_snapshot.dart' as _i1q8jyc7;
 import 'domains/databases/models/database_user.dart' as _iiqkhpys;
 import 'domains/environment_variables/models/variable.dart' as _i7s8kwes;
+import 'domains/events/models/internal_event_metadata.dart' as _iluqokqv;
 import 'domains/logs/models/log_record.dart' as _iwt7hqgw;
 import 'domains/metrics/models/capsule_network_series.dart' as _izgm68si;
 import 'domains/metrics/models/database_metrics.dart' as _ifq3txzx;
@@ -115,6 +116,7 @@ import 'domains/products/models/product_type.dart' as _is6epy3v;
 import 'domains/products/models/project_product_info.dart' as _iwmabm4s;
 import 'domains/products/models/subscription_info.dart' as _iera5yzg;
 import 'domains/projects/models/project.dart' as _immj5l46;
+import 'domains/projects/models/project_lifecycle_cause.dart' as _iw7cdie6;
 import 'domains/projects/models/project_role.dart' as _i58d5zzr;
 import 'domains/projects/models/role.dart' as _iw41fb37;
 import 'domains/projects/models/user_role_membership.dart' as _icd2sct1;
@@ -228,6 +230,7 @@ export 'domains/databases/models/database_size.dart';
 export 'domains/databases/models/database_snapshot.dart';
 export 'domains/databases/models/database_user.dart';
 export 'domains/environment_variables/models/variable.dart';
+export 'domains/events/models/internal_event_metadata.dart';
 export 'domains/logs/models/log_record.dart';
 export 'domains/metrics/models/capsule_network_series.dart';
 export 'domains/metrics/models/database_metrics.dart';
@@ -249,6 +252,7 @@ export 'domains/products/models/product_type.dart';
 export 'domains/products/models/project_product_info.dart';
 export 'domains/products/models/subscription_info.dart';
 export 'domains/projects/models/project.dart';
+export 'domains/projects/models/project_lifecycle_cause.dart';
 export 'domains/projects/models/project_role.dart';
 export 'domains/projects/models/role.dart';
 export 'domains/projects/models/user_role_membership.dart';
@@ -457,6 +461,9 @@ class Protocol extends _isc.SerializationManager {
     if (t == _i7s8kwes.EnvironmentVariable) {
       return _i7s8kwes.EnvironmentVariable.fromJson(data) as T;
     }
+    if (t == _iluqokqv.InternalEventMetadata) {
+      return _iluqokqv.InternalEventMetadata.fromJson(data) as T;
+    }
     if (t == _iwt7hqgw.LogRecord) {
       return _iwt7hqgw.LogRecord.fromJson(data) as T;
     }
@@ -520,6 +527,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _immj5l46.Project) {
       return _immj5l46.Project.fromJson(data) as T;
+    }
+    if (t == _iw7cdie6.ProjectLifecycleCause) {
+      return _iw7cdie6.ProjectLifecycleCause.fromJson(data) as T;
     }
     if (t == _i58d5zzr.ProjectRole) {
       return _i58d5zzr.ProjectRole.fromJson(data) as T;
@@ -865,6 +875,12 @@ class Protocol extends _isc.SerializationManager {
               : null)
           as T;
     }
+    if (t == _isc.getType<_iluqokqv.InternalEventMetadata?>()) {
+      return (data != null
+              ? _iluqokqv.InternalEventMetadata.fromJson(data)
+              : null)
+          as T;
+    }
     if (t == _isc.getType<_iwt7hqgw.LogRecord?>()) {
       return (data != null ? _iwt7hqgw.LogRecord.fromJson(data) : null) as T;
     }
@@ -955,6 +971,12 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_immj5l46.Project?>()) {
       return (data != null ? _immj5l46.Project.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_iw7cdie6.ProjectLifecycleCause?>()) {
+      return (data != null
+              ? _iw7cdie6.ProjectLifecycleCause.fromJson(data)
+              : null)
+          as T;
     }
     if (t == _isc.getType<_i58d5zzr.ProjectRole?>()) {
       return (data != null ? _i58d5zzr.ProjectRole.fromJson(data) : null) as T;
@@ -1648,6 +1670,7 @@ class Protocol extends _isc.SerializationManager {
       _i1q8jyc7.DatabaseSnapshot => 'DatabaseSnapshot',
       _iiqkhpys.DatabaseUser => 'DatabaseUser',
       _i7s8kwes.EnvironmentVariable => 'EnvironmentVariable',
+      _iluqokqv.InternalEventMetadata => 'InternalEventMetadata',
       _iwt7hqgw.LogRecord => 'LogRecord',
       _izgm68si.CapsuleNetworkSeries => 'CapsuleNetworkSeries',
       _ifq3txzx.DatabaseMetrics => 'DatabaseMetrics',
@@ -1670,6 +1693,7 @@ class Protocol extends _isc.SerializationManager {
       _iwmabm4s.ProjectProductInfo => 'ProjectProductInfo',
       _iera5yzg.SubscriptionInfo => 'SubscriptionInfo',
       _immj5l46.Project => 'Project',
+      _iw7cdie6.ProjectLifecycleCause => 'ProjectLifecycleCause',
       _i58d5zzr.ProjectRole => 'ProjectRole',
       _iw41fb37.Role => 'Role',
       _icd2sct1.UserRoleMembership => 'UserRoleMembership',
@@ -1833,6 +1857,8 @@ class Protocol extends _isc.SerializationManager {
         return 'DatabaseUser';
       case _i7s8kwes.EnvironmentVariable():
         return 'EnvironmentVariable';
+      case _iluqokqv.InternalEventMetadata():
+        return 'InternalEventMetadata';
       case _iwt7hqgw.LogRecord():
         return 'LogRecord';
       case _izgm68si.CapsuleNetworkSeries():
@@ -1875,6 +1901,8 @@ class Protocol extends _isc.SerializationManager {
         return 'SubscriptionInfo';
       case _immj5l46.Project():
         return 'Project';
+      case _iw7cdie6.ProjectLifecycleCause():
+        return 'ProjectLifecycleCause';
       case _i58d5zzr.ProjectRole():
         return 'ProjectRole';
       case _iw41fb37.Role():
@@ -2135,6 +2163,9 @@ class Protocol extends _isc.SerializationManager {
     if (dataClassName == 'EnvironmentVariable') {
       return deserialize<_i7s8kwes.EnvironmentVariable>(data['data']);
     }
+    if (dataClassName == 'InternalEventMetadata') {
+      return deserialize<_iluqokqv.InternalEventMetadata>(data['data']);
+    }
     if (dataClassName == 'LogRecord') {
       return deserialize<_iwt7hqgw.LogRecord>(data['data']);
     }
@@ -2199,6 +2230,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'Project') {
       return deserialize<_immj5l46.Project>(data['data']);
+    }
+    if (dataClassName == 'ProjectLifecycleCause') {
+      return deserialize<_iw7cdie6.ProjectLifecycleCause>(data['data']);
     }
     if (dataClassName == 'ProjectRole') {
       return deserialize<_i58d5zzr.ProjectRole>(data['data']);
