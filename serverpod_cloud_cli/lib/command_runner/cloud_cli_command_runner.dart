@@ -695,7 +695,9 @@ enum GlobalOption<V> implements OptionDefinition<V> {
       argName: 'timeout',
       envName: 'SERVERPOD_CLOUD_CONNECTION_TIMEOUT',
       defaultsTo: Duration(seconds: 60),
-      helpText: 'The timeout for the connection to the Serverpod Cloud API.',
+      helpText:
+          'The timeout for connections to the Serverpod Cloud API, '
+          'and for an upload that makes no progress.',
     ),
   ),
   skipConfirmation(

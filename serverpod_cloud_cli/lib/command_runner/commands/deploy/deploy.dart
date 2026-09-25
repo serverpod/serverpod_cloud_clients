@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -7,10 +8,12 @@ import 'package:ground_control_client/ground_control_client.dart'
         Client,
         DartSdkUnsupportedConstraintException,
         InvalidValueException,
+        UploadTooLargeException,
         NoPriorDeploymentException,
         NotFoundException,
         ServerpodClientException;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/dio_failure.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/file_uploader_factory.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy/script_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/status/status_ops.dart';
@@ -29,6 +32,8 @@ import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_io.dart';
 import 'package:serverpod_cloud_cli/util/scrolling_command_output.dart';
 import 'package:serverpod_cloud_cli/util/tool_versions_io.dart';
 import 'package:serverpod_cloud_cli/util/upload_description_metadata.dart';
+import 'package:serverpod_cloud_shared/serverpod_cloud_shared.dart'
+    show ByteSizeFormatter, UploadProgressCallback;
 
 import 'prepare_project_files.dart';
 
@@ -317,6 +322,8 @@ abstract class Deploy {
       pubspecValidator.serverpodVersion,
       '$dartVersion.0',
       gitMetadata,
+      archiveSize: projectZip.length,
+      baseCommand: baseCommand,
     );
 
     await _uploadProject(
@@ -420,8 +427,10 @@ abstract class Deploy {
     String projectId,
     String? serverpodVersion,
     String dartVersion,
-    GitMetadata? gitMetadata,
-  ) async {
+    GitMetadata? gitMetadata, {
+    required int archiveSize,
+    required String baseCommand,
+  }) async {
     try {
       final uploadDescription = await cloudApiClient.deploy
           .createUploadDescription(
@@ -431,6 +440,8 @@ abstract class Deploy {
             commitHash: gitMetadata?.commitHash,
             commitMessage: gitMetadata?.commitMessage,
             branch: gitMetadata?.branch,
+            resumable: true,
+            archiveSize: archiveSize,
           );
       final resolvedTag = resolveDartImageTagFromUploadDescription(
         uploadDescription,
@@ -446,6 +457,14 @@ abstract class Deploy {
       );
     } on InvalidValueException catch (e) {
       throw FailureException(error: e.message);
+    } on UploadTooLargeException catch (e) {
+      throw FailureException(
+        error: e.message,
+        hint:
+            'Exclude files from the deployment with a .scloudignore file. '
+            'Run "$baseCommand deploy --wet-run --show-files" to see what '
+            'is included.',
+      );
     } on ServerpodClientException catch (e) {
       if (e.message.toLowerCase().contains('connection timed out')) {
         throw FailureException(
@@ -475,69 +494,90 @@ abstract class Deploy {
     String uploadDescription,
     List<int> projectZip,
   ) async {
-    final success = await logger.progress(
-      'Uploading project',
-      padRight: StatusCommands.progressMessagePadLength,
-      successMessage: 'Upload successful.',
-      () async {
-        try {
-          final fileUploader = fileUploaderFactory(uploadDescription);
-          final ret = await fileUploader.upload(
-            Stream.fromIterable([projectZip]),
-            projectZip.length,
-          );
-          if (!ret) {
-            logger.error('Failed to upload project, please try again.');
-          }
-          return ret;
-        } on DioException catch (e) {
-          _uploadDioException(e);
-        } on Exception catch (e, stackTrace) {
-          throw FailureException.nested(
-            e,
-            stackTrace,
-            'Failed to upload project.',
-          );
-        }
-      },
+    final total = projectZip.length;
+    final events = StreamController<_UploadProgress>();
+    var lastPercent = -1;
+
+    void onProgress(final int sent, final int _) {
+      final percent = total == 0 ? 100 : sent * 100 ~/ total;
+      if (percent == lastPercent) return;
+      lastPercent = percent;
+      events.add(_UploadProgress.sending(sent, total));
+    }
+
+    unawaited(
+      _runUpload(
+        fileUploaderFactory,
+        uploadDescription,
+        projectZip,
+        events,
+        onProgress,
+      ),
     );
 
-    if (!success) {
+    final _UploadProgress result;
+    try {
+      result = await logger.progressStream(
+        'Uploading project...',
+        events.stream,
+        toMessage: (final p) => p.message,
+        isSuccess: (final p) => p.succeeded,
+        padRight: StatusCommands.progressMessagePadLength,
+      );
+    } on DioException catch (e) {
+      throw failureFromDioException(e, action: 'upload the project');
+    } on Exception catch (e, stackTrace) {
+      throw FailureException.nested(e, stackTrace, 'Failed to upload project.');
+    }
+
+    if (!result.succeeded) {
+      logger.error('Failed to upload project, please try again.');
       throw ErrorExitException('Failed to upload project.');
     }
   }
 
-  static Never _uploadDioException(DioException e) {
-    switch (e.type) {
-      case DioExceptionType.connectionTimeout:
-        throw FailureException(
-          error:
-              'Connection Timeout. Please check your internet connection and try again.',
-          hint: 'Try increasing the timeout with the --timeout option.',
-        );
-      case DioExceptionType.sendTimeout:
-        throw FailureException(
-          error:
-              'Send Timeout. Please check your internet connection and try again.',
-          hint: 'Try increasing the timeout with the --timeout option.',
-        );
-      case DioExceptionType.receiveTimeout:
-        throw FailureException(
-          error:
-              'Receive Timeout. Please check your internet connection and try again.',
-          hint: 'Try increasing the timeout with the --timeout option.',
-        );
-      case DioExceptionType.connectionError:
-        throw FailureException(
-          error:
-              'Connection Error. Please check your internet connection and try again.',
-          hint: 'Try increasing the timeout with the --timeout option.',
-        );
-      default:
-        throw FailureException(
-          error: 'Failed to upload project.',
-          nestedException: e,
-        );
+  static Future<void> _runUpload(
+    FileUploaderFactory fileUploaderFactory,
+    String uploadDescription,
+    List<int> projectZip,
+    StreamController<_UploadProgress> events,
+    UploadProgressCallback onProgress,
+  ) async {
+    try {
+      final fileUploader = fileUploaderFactory(uploadDescription);
+      final success = await fileUploader.upload(
+        Stream.value(projectZip),
+        projectZip.length,
+        onProgress: onProgress,
+      );
+      events.add(_UploadProgress.finished(success));
+    } on Exception catch (e, stackTrace) {
+      events.addError(e, stackTrace);
+    } finally {
+      await events.close();
     }
+  }
+}
+
+/// One update of the project upload spinner.
+class _UploadProgress {
+  final String message;
+  final bool succeeded;
+
+  const _UploadProgress._(this.message, {required this.succeeded});
+
+  factory _UploadProgress.sending(final int sent, final int total) {
+    return _UploadProgress._(
+      'Uploading project ${ByteSizeFormatter.format(sent)} '
+      'of ${ByteSizeFormatter.format(total)}...',
+      succeeded: false,
+    );
+  }
+
+  factory _UploadProgress.finished(final bool success) {
+    return _UploadProgress._(
+      success ? 'Upload successful.' : 'Upload failed.',
+      succeeded: success,
+    );
   }
 }

@@ -1627,6 +1627,14 @@ class EndpointDeploy extends _isc.EndpointRef {
   @override
   String get name => 'deploy';
 
+  /// Starts a deploy attempt and returns the upload description: a resumable
+  /// session (`type: resumable`) for exactly [archiveSize] bytes when
+  /// [resumable] is set, otherwise a single signed `PUT` (`type: binary`).
+  ///
+  /// Throws [InvalidValueException] if [resumable] is set without a positive
+  /// [archiveSize]. Throws [UploadTooLargeException] if a resumable upload's
+  /// [archiveSize] exceeds the upload limit. Without [resumable],
+  /// [archiveSize] is ignored and the signed `PUT` carries the limit.
   _ida.Future<String> createUploadDescription(
     String cloudProjectId, {
     String? serverpodVersion,
@@ -1634,6 +1642,8 @@ class EndpointDeploy extends _isc.EndpointRef {
     String? commitHash,
     String? commitMessage,
     String? branch,
+    bool? resumable,
+    int? archiveSize,
   }) => caller.callServerEndpoint<String>('deploy', 'createUploadDescription', {
     'cloudProjectId': cloudProjectId,
     'serverpodVersion': serverpodVersion,
@@ -1641,6 +1651,8 @@ class EndpointDeploy extends _isc.EndpointRef {
     'commitHash': commitHash,
     'commitMessage': commitMessage,
     'branch': branch,
+    'resumable': resumable,
+    'archiveSize': archiveSize,
   });
 }
 

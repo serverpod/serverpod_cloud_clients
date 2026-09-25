@@ -13,32 +13,56 @@ class MockFileUploader implements FileUploaderClient {
   /// The data that was uploaded.
   List<int> uploadedData;
 
+  /// Thrown by [upload] instead of returning [uploadResponse].
+  Exception? uploadError;
+
   /// Creates a new [MockFileUploader].
-  MockFileUploader({this.uploadResponse = true, this.uploadedData = const []});
+  MockFileUploader({
+    this.uploadResponse = true,
+    this.uploadedData = const [],
+    this.uploadError,
+  });
 
   /// Initializes the [MockFileUploader].
-  void init({bool uploadResponse = true, List<int> uploadedData = const []}) {
+  void init({
+    bool uploadResponse = true,
+    List<int> uploadedData = const [],
+    Exception? uploadError,
+  }) {
     this.uploadResponse = uploadResponse;
     this.uploadedData = uploadedData;
+    this.uploadError = uploadError;
   }
 
   /// Uploads a file contained by a [ByteData] object,
   /// returns true if successful.
   @override
-  Future<bool> uploadByteData(ByteData byteData) async {
+  Future<bool> uploadByteData(
+    ByteData byteData, {
+    UploadProgressCallback? onProgress,
+  }) async {
     final stream = http.ByteStream.fromBytes(
       byteData.buffer.asUint8List(
         byteData.offsetInBytes,
         byteData.lengthInBytes,
       ),
     );
-    return upload(stream, byteData.lengthInBytes);
+    return upload(stream, byteData.lengthInBytes, onProgress: onProgress);
   }
 
   /// Uploads a file from a [Stream], returns true if successful.
   @override
-  Future<bool> upload(Stream<List<int>> stream, int length) async {
+  Future<bool> upload(
+    Stream<List<int>> stream,
+    int length, {
+    UploadProgressCallback? onProgress,
+  }) async {
     uploadedData = await _readStreamData(stream);
+    final error = uploadError;
+    if (error != null) {
+      throw error;
+    }
+    onProgress?.call(uploadedData.length, length);
     return uploadResponse;
   }
 

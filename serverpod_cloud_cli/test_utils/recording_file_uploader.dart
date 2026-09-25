@@ -44,7 +44,10 @@ class RecordingFileUploader implements FileUploaderClient {
   }
 
   @override
-  Future<bool> uploadByteData(final ByteData byteData) {
+  Future<bool> uploadByteData(
+    final ByteData byteData, {
+    final UploadProgressCallback? onProgress,
+  }) {
     return upload(
       Stream.value(
         byteData.buffer.asUint8List(
@@ -53,11 +56,16 @@ class RecordingFileUploader implements FileUploaderClient {
         ),
       ),
       byteData.lengthInBytes,
+      onProgress: onProgress,
     );
   }
 
   @override
-  Future<bool> upload(final Stream<List<int>> stream, final int length) async {
+  Future<bool> upload(
+    final Stream<List<int>> stream,
+    final int length, {
+    final UploadProgressCallback? onProgress,
+  }) async {
     final data = <int>[];
     await for (final segment in stream) {
       data.addAll(segment);

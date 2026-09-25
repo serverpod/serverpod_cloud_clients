@@ -7,6 +7,7 @@ import 'dart:io';
 
 import 'package:archive/archive.dart';
 import 'package:args/command_runner.dart';
+import 'package:dio/dio.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
@@ -106,6 +107,8 @@ project:
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
             branch: any(named: 'branch'),
+            resumable: any(named: 'resumable'),
+            archiveSize: any(named: 'archiveSize'),
           ),
         ).thenThrow(ServerpodClientUnauthorized());
       });
@@ -197,6 +200,8 @@ project:
               commitHash: any(named: 'commitHash'),
               commitMessage: any(named: 'commitMessage'),
               branch: any(named: 'branch'),
+              resumable: any(named: 'resumable'),
+              archiveSize: any(named: 'archiveSize'),
             ),
           );
         });
@@ -392,6 +397,8 @@ project:
               commitHash: any(named: 'commitHash'),
               commitMessage: any(named: 'commitMessage'),
               branch: any(named: 'branch'),
+              resumable: any(named: 'resumable'),
+              archiveSize: any(named: 'archiveSize'),
             ),
           ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
 
@@ -465,6 +472,8 @@ project:
               commitHash: any(named: 'commitHash'),
               commitMessage: any(named: 'commitMessage'),
               branch: any(named: 'branch'),
+              resumable: any(named: 'resumable'),
+              archiveSize: any(named: 'archiveSize'),
             ),
           ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
           readComputeMaxInstancesForTest = 2;
@@ -922,6 +931,8 @@ project:
               commitHash: any(named: 'commitHash'),
               commitMessage: any(named: 'commitMessage'),
               branch: any(named: 'branch'),
+              resumable: any(named: 'resumable'),
+              archiveSize: any(named: 'archiveSize'),
             ),
           ).thenThrow(ServerpodClientForbidden());
         });
@@ -973,6 +984,8 @@ project:
                 commitHash: any(named: 'commitHash'),
                 commitMessage: any(named: 'commitMessage'),
                 branch: any(named: 'branch'),
+                resumable: any(named: 'resumable'),
+                archiveSize: any(named: 'archiveSize'),
               ),
             ).thenAnswer(
               (_) async => BucketUploadDescription.uploadDescription,
@@ -1048,6 +1061,8 @@ project:
                 commitHash: any(named: 'commitHash'),
                 commitMessage: any(named: 'commitMessage'),
                 branch: any(named: 'branch'),
+                resumable: any(named: 'resumable'),
+                archiveSize: any(named: 'archiveSize'),
               ),
             ).thenAnswer(
               (_) async => BucketUploadDescription.uploadDescription,
@@ -1099,6 +1114,205 @@ project:
         onPlatform: {'windows': Skip('Symlinks are not supported on Windows')},
       );
 
+      group('and a resumable upload description response', () {
+        setUp(() async {
+          reset(client.status);
+          when(
+            () => client.deploy.createUploadDescription(
+              any(),
+              serverpodVersion: any(named: 'serverpodVersion'),
+              dartVersion: any(named: 'dartVersion'),
+              commitHash: any(named: 'commitHash'),
+              commitMessage: any(named: 'commitMessage'),
+              branch: any(named: 'branch'),
+              resumable: any(named: 'resumable'),
+              archiveSize: any(named: 'archiveSize'),
+            ),
+          ).thenAnswer(
+            (_) async => BucketUploadDescription.resumableUploadDescription,
+          );
+          when(
+            () => client.status.tailDeployAttemptStatus(
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+              attemptId: any(named: 'attemptId'),
+            ),
+          ).thenAnswer(
+            (_) => Stream.value(DeployAttemptStageBuilder().build()),
+          );
+        });
+
+        group('when deploying through CLI and awaiting the status', () {
+          late Future cliCommandFuture;
+          setUp(() async {
+            cliCommandFuture = cli.run([
+              'deploy',
+              '--project',
+              BucketUploadDescription.projectId,
+              '--project-dir',
+              testProjectDir,
+            ]);
+          });
+
+          test('then the attempt id is read from the description '
+              'and the status is tailed.', () async {
+            await expectLater(cliCommandFuture, completes);
+
+            verify(
+              () => client.status.tailDeployAttemptStatus(
+                cloudCapsuleId: BucketUploadDescription.projectId,
+                attemptId: UuidValue.fromString(
+                  BucketUploadDescription.projectUuid,
+                ),
+              ),
+            ).called(1);
+            expect(logger.errorCalls, isEmpty);
+          });
+        });
+      });
+
+      group('and the server rejects the archive size', () {
+        setUp(() async {
+          when(
+            () => client.deploy.createUploadDescription(
+              any(),
+              serverpodVersion: any(named: 'serverpodVersion'),
+              dartVersion: any(named: 'dartVersion'),
+              commitHash: any(named: 'commitHash'),
+              commitMessage: any(named: 'commitMessage'),
+              branch: any(named: 'branch'),
+              resumable: any(named: 'resumable'),
+              archiveSize: any(named: 'archiveSize'),
+            ),
+          ).thenThrow(
+            UploadTooLargeException(
+              message:
+                  'The project archive is 600 MB, which exceeds the '
+                  'upload limit of 537 MB.',
+              sizeBytes: 600000000,
+              maxSizeBytes: 536870912,
+            ),
+          );
+        });
+
+        group('when deploying through CLI', () {
+          late Future cliCommandFuture;
+          setUp(() async {
+            cliCommandFuture = cli.run([
+              'deploy',
+              '--project',
+              BucketUploadDescription.projectId,
+              '--project-dir',
+              testProjectDir,
+            ]);
+          });
+
+          test('then the server message is shown with an ignore hint '
+              'and nothing is uploaded.', () async {
+            await cliCommandFuture.catchError((_) {});
+            expect(logger.errorCalls, isNotEmpty);
+            expect(
+              logger.errorCalls.first.message,
+              contains('exceeds the upload limit of 537 MB'),
+            );
+            expect(logger.errorCalls.first.hint, contains('.scloudignore'));
+            expect(mockFileUploader.uploadedData, isEmpty);
+          });
+        });
+      });
+
+      group('and the upload times out', () {
+        setUp(() async {
+          when(
+            () => client.deploy.createUploadDescription(
+              any(),
+              serverpodVersion: any(named: 'serverpodVersion'),
+              dartVersion: any(named: 'dartVersion'),
+              commitHash: any(named: 'commitHash'),
+              commitMessage: any(named: 'commitMessage'),
+              branch: any(named: 'branch'),
+              resumable: any(named: 'resumable'),
+              archiveSize: any(named: 'archiveSize'),
+            ),
+          ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
+
+          mockFileUploader.init(
+            uploadError: DioException.sendTimeout(
+              timeout: const Duration(seconds: 1),
+              requestOptions: RequestOptions(),
+            ),
+          );
+        });
+
+        group('when deploying through CLI', () {
+          late Future cliCommandFuture;
+          setUp(() async {
+            cliCommandFuture = cli.run([
+              'deploy',
+              '--project',
+              BucketUploadDescription.projectId,
+              '--project-dir',
+              testProjectDir,
+            ]);
+          });
+
+          test('then ExitErrorException is thrown.', () async {
+            await expectLater(
+              cliCommandFuture,
+              throwsA(isA<ErrorExitException>()),
+            );
+          });
+
+          test('then the error names the send timeout '
+              'and hints at the timeout option.', () async {
+            await cliCommandFuture.catchError((_) {});
+            expect(logger.errorCalls, isNotEmpty);
+            expect(logger.errorCalls.first.message, startsWith('Send Timeout'));
+            expect(logger.errorCalls.first.hint, contains('--timeout'));
+          });
+        });
+      });
+
+      group('and the upload throws an unexpected exception', () {
+        setUp(() async {
+          when(
+            () => client.deploy.createUploadDescription(
+              any(),
+              serverpodVersion: any(named: 'serverpodVersion'),
+              dartVersion: any(named: 'dartVersion'),
+              commitHash: any(named: 'commitHash'),
+              commitMessage: any(named: 'commitMessage'),
+              branch: any(named: 'branch'),
+              resumable: any(named: 'resumable'),
+              archiveSize: any(named: 'archiveSize'),
+            ),
+          ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
+
+          mockFileUploader.init(uploadError: Exception('boom'));
+        });
+
+        group('when deploying through CLI', () {
+          late Future cliCommandFuture;
+          setUp(() async {
+            cliCommandFuture = cli.run([
+              'deploy',
+              '--project',
+              BucketUploadDescription.projectId,
+              '--project-dir',
+              testProjectDir,
+            ]);
+          });
+
+          test('then the failed to upload error message is logged.', () async {
+            await cliCommandFuture.catchError((_) {});
+            expect(logger.errorCalls, isNotEmpty);
+            expect(
+              logger.errorCalls.first.message,
+              startsWith('Failed to upload project'),
+            );
+          });
+        });
+      });
+
       group('and upload description response but with invalid url', () {
         const projectId = 'my-project-id';
         const projectUuid = '586a138e-66f3-4dcb-b2e6-bb2d38ab4a4a';
@@ -1128,6 +1342,8 @@ project:
               commitHash: any(named: 'commitHash'),
               commitMessage: any(named: 'commitMessage'),
               branch: any(named: 'branch'),
+              resumable: any(named: 'resumable'),
+              archiveSize: any(named: 'archiveSize'),
             ),
           ).thenAnswer((_) async => jsonEncode(descriptionContent));
 
@@ -1179,6 +1395,8 @@ project:
               commitHash: any(named: 'commitHash'),
               commitMessage: any(named: 'commitMessage'),
               branch: any(named: 'branch'),
+              resumable: any(named: 'resumable'),
+              archiveSize: any(named: 'archiveSize'),
             ),
           ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
         });
@@ -1199,6 +1417,37 @@ project:
             await cliCommandFuture;
 
             expect(mockFileUploader.uploadedData, isNotEmpty);
+          });
+        });
+
+        group('when deploying through CLI without awaiting the status', () {
+          late Future cliCommandFuture;
+          setUp(() async {
+            cliCommandFuture = cli.run([
+              'deploy',
+              '--project',
+              BucketUploadDescription.projectId,
+              '--project-dir',
+              testProjectDir,
+              '--no-await',
+            ]);
+          });
+
+          test('then a resumable upload description is requested.', () async {
+            await cliCommandFuture;
+
+            verify(
+              () => client.deploy.createUploadDescription(
+                BucketUploadDescription.projectId,
+                serverpodVersion: any(named: 'serverpodVersion'),
+                dartVersion: any(named: 'dartVersion'),
+                commitHash: any(named: 'commitHash'),
+                commitMessage: any(named: 'commitMessage'),
+                branch: any(named: 'branch'),
+                resumable: true,
+                archiveSize: any(named: 'archiveSize'),
+              ),
+            );
           });
         });
       });
@@ -1226,6 +1475,8 @@ project:
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
             branch: any(named: 'branch'),
+            resumable: any(named: 'resumable'),
+            archiveSize: any(named: 'archiveSize'),
           ),
         ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
       });
@@ -1252,7 +1503,7 @@ project:
           expect(logger.progressCalls, isNotEmpty);
           expect(
             logger.progressCalls.map((call) => call.message),
-            containsAllInOrder(['Zipping project', 'Uploading project']),
+            containsAllInOrder(['Zipping project', 'Uploading project...']),
           );
         });
 
@@ -1533,6 +1784,8 @@ project:
               commitHash: any(named: 'commitHash'),
               commitMessage: any(named: 'commitMessage'),
               branch: any(named: 'branch'),
+              resumable: any(named: 'resumable'),
+              archiveSize: any(named: 'archiveSize'),
             ),
           ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
         });
@@ -1589,6 +1842,8 @@ project:
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
             branch: any(named: 'branch'),
+            resumable: any(named: 'resumable'),
+            archiveSize: any(named: 'archiveSize'),
           ),
         ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
       });
@@ -1675,6 +1930,8 @@ project:
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
             branch: any(named: 'branch'),
+            resumable: any(named: 'resumable'),
+            archiveSize: any(named: 'archiveSize'),
           ),
         ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
       });
@@ -1839,6 +2096,8 @@ project:
               commitHash: any(named: 'commitHash'),
               commitMessage: any(named: 'commitMessage'),
               branch: any(named: 'branch'),
+              resumable: any(named: 'resumable'),
+              archiveSize: any(named: 'archiveSize'),
             ),
           ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
         });
@@ -1962,6 +2221,8 @@ project:
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
             branch: any(named: 'branch'),
+            resumable: any(named: 'resumable'),
+            archiveSize: any(named: 'archiveSize'),
           ),
         ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
       });
@@ -2096,6 +2357,8 @@ project:
               commitHash: any(named: 'commitHash'),
               commitMessage: any(named: 'commitMessage'),
               branch: any(named: 'branch'),
+              resumable: any(named: 'resumable'),
+              archiveSize: any(named: 'archiveSize'),
             ),
           ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
         });
@@ -2253,6 +2516,8 @@ project:
               commitHash: any(named: 'commitHash'),
               commitMessage: any(named: 'commitMessage'),
               branch: any(named: 'branch'),
+              resumable: any(named: 'resumable'),
+              archiveSize: any(named: 'archiveSize'),
             ),
           ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
         });
@@ -2384,6 +2649,8 @@ project:
               commitHash: any(named: 'commitHash'),
               commitMessage: any(named: 'commitMessage'),
               branch: any(named: 'branch'),
+              resumable: any(named: 'resumable'),
+              archiveSize: any(named: 'archiveSize'),
             ),
           ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
         });
@@ -2460,6 +2727,8 @@ project:
           commitHash: any(named: 'commitHash'),
           commitMessage: any(named: 'commitMessage'),
           branch: any(named: 'branch'),
+          resumable: any(named: 'resumable'),
+          archiveSize: any(named: 'archiveSize'),
         ),
       ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
 
@@ -2524,6 +2793,8 @@ project:
           commitHash: any(named: 'commitHash'),
           commitMessage: any(named: 'commitMessage'),
           branch: any(named: 'branch'),
+          resumable: any(named: 'resumable'),
+          archiveSize: any(named: 'archiveSize'),
         ),
       ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
     });
@@ -2799,7 +3070,7 @@ project:
               .toList();
           expect(
             progressMessages,
-            containsAllInOrder(['Zipping project', 'Uploading project']),
+            containsAllInOrder(['Zipping project', 'Uploading project...']),
           );
         });
       });
@@ -2839,7 +3110,7 @@ project:
                 .toList();
             expect(
               progressMessages,
-              containsAllInOrder(['Zipping project', 'Uploading project']),
+              containsAllInOrder(['Zipping project', 'Uploading project...']),
             );
 
             expect(mockFileUploader.uploadedData, isNotEmpty);
@@ -2876,6 +3147,8 @@ dependencies:
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
             branch: any(named: 'branch'),
+            resumable: any(named: 'resumable'),
+            archiveSize: any(named: 'archiveSize'),
           ),
         ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
       });
@@ -3174,6 +3447,8 @@ project:
                 commitHash: any(named: 'commitHash'),
                 commitMessage: any(named: 'commitMessage'),
                 branch: any(named: 'branch'),
+                resumable: any(named: 'resumable'),
+                archiveSize: any(named: 'archiveSize'),
               ),
             ).called(1);
 
@@ -3226,6 +3501,8 @@ project:
                 commitHash: any(named: 'commitHash'),
                 commitMessage: any(named: 'commitMessage'),
                 branch: any(named: 'branch'),
+                resumable: any(named: 'resumable'),
+                archiveSize: any(named: 'archiveSize'),
               ),
             ).called(1);
           },
@@ -3272,6 +3549,8 @@ dependencies:
           commitHash: any(named: 'commitHash'),
           commitMessage: any(named: 'commitMessage'),
           branch: any(named: 'branch'),
+          resumable: any(named: 'resumable'),
+          archiveSize: any(named: 'archiveSize'),
         ),
       ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
     });
@@ -3291,6 +3570,8 @@ dependencies:
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
             branch: any(named: 'branch'),
+            resumable: any(named: 'resumable'),
+            archiveSize: any(named: 'archiveSize'),
           ),
         ).called(1);
       });
@@ -3317,6 +3598,8 @@ dependencies:
                 commitHash: any(named: 'commitHash'),
                 commitMessage: any(named: 'commitMessage'),
                 branch: any(named: 'branch'),
+                resumable: any(named: 'resumable'),
+                archiveSize: any(named: 'archiveSize'),
               ),
             ).called(1);
           },
@@ -3350,6 +3633,8 @@ project:
                   commitHash: any(named: 'commitHash'),
                   commitMessage: any(named: 'commitMessage'),
                   branch: any(named: 'branch'),
+                  resumable: any(named: 'resumable'),
+                  archiveSize: any(named: 'archiveSize'),
                 ),
               ).called(1);
             },
@@ -3370,6 +3655,8 @@ project:
                 commitHash: any(named: 'commitHash'),
                 commitMessage: any(named: 'commitMessage'),
                 branch: any(named: 'branch'),
+                resumable: any(named: 'resumable'),
+                archiveSize: any(named: 'archiveSize'),
               ),
             ).called(1);
           });
@@ -3447,6 +3734,8 @@ dependencies:
           commitHash: any(named: 'commitHash'),
           commitMessage: any(named: 'commitMessage'),
           branch: any(named: 'branch'),
+          resumable: any(named: 'resumable'),
+          archiveSize: any(named: 'archiveSize'),
         ),
       ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
     });
@@ -3465,6 +3754,8 @@ dependencies:
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
             branch: any(named: 'branch'),
+            resumable: any(named: 'resumable'),
+            archiveSize: any(named: 'archiveSize'),
           ),
         ).called(1);
       });
@@ -3491,6 +3782,8 @@ dependencies:
                 commitHash: any(named: 'commitHash'),
                 commitMessage: any(named: 'commitMessage'),
                 branch: any(named: 'branch'),
+                resumable: any(named: 'resumable'),
+                archiveSize: any(named: 'archiveSize'),
               ),
             ).called(1);
           },
@@ -3564,6 +3857,8 @@ project:
           commitHash: any(named: 'commitHash'),
           commitMessage: any(named: 'commitMessage'),
           branch: any(named: 'branch'),
+          resumable: any(named: 'resumable'),
+          archiveSize: any(named: 'archiveSize'),
         ),
       );
     });
@@ -3593,6 +3888,8 @@ project:
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
             branch: any(named: 'branch'),
+            resumable: any(named: 'resumable'),
+            archiveSize: any(named: 'archiveSize'),
           ),
         ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
 
@@ -3633,6 +3930,8 @@ project:
                 dartVersion: any(named: 'dartVersion'),
                 commitHash: any(named: 'commitHash', that: isNotNull),
                 commitMessage: 'Initial commit',
+                resumable: true,
+                archiveSize: any(named: 'archiveSize'),
                 branch: 'main',
               ),
             ).called(1);
@@ -3689,6 +3988,8 @@ project:
               dartVersion: any(named: 'dartVersion'),
               commitHash: any(named: 'commitHash', that: isNotNull),
               commitMessage: 'Initial commit',
+              resumable: true,
+              archiveSize: any(named: 'archiveSize'),
               branch: 'main',
             ),
           ).called(1);
