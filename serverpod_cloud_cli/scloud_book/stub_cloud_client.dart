@@ -342,7 +342,7 @@ void _stubDomains(final ClientMock client, {required final String projectId}) {
     (_) async => CustomDomainNameList(
       customDomainNames: [
         CustomDomainName(
-          capsuleId: 1,
+          cloudCapsuleId: projectId,
           name: 'api.example.com',
           status: DomainNameStatus.configured,
           target: DomainNameTarget.api,
@@ -369,7 +369,7 @@ void _stubDomains(final ClientMock client, {required final String projectId}) {
         name: 'example.com',
         status: DomainNameStatus.needsSetup,
         target: DomainNameTarget.api,
-        capsuleId: 1,
+        cloudCapsuleId: projectId,
         dnsRecordVerificationValue: '$projectId.api.serverpod.space',
         dnsRecordType: DnsRecordType.cname,
       ),

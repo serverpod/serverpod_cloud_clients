@@ -7,7 +7,6 @@ class CapsuleBuilder {
   ServerpodRegion _region;
   int _projectId;
   Project? _project;
-  List<CustomDomainName>? _domainNames;
   CapsuleResource? _resourceConfig;
 
   CapsuleBuilder()
@@ -17,7 +16,6 @@ class CapsuleBuilder {
       _region = ServerpodRegion.europe,
       _projectId = 1,
       _project = null,
-      _domainNames = [],
       _resourceConfig = null;
 
   CapsuleBuilder withId(int? id) {
@@ -53,11 +51,6 @@ class CapsuleBuilder {
     return this;
   }
 
-  CapsuleBuilder withDomainNames(List<CustomDomainName>? domainNames) {
-    _domainNames = domainNames;
-    return this;
-  }
-
   CapsuleBuilder withResourceConfig(CapsuleResource? resourceConfig) {
     _resourceConfig = resourceConfig;
     return this;
@@ -71,7 +64,6 @@ class CapsuleBuilder {
       region: _region,
       projectId: _projectId,
       project: _project,
-      domainNames: _domainNames,
       resourceConfig: _resourceConfig,
     );
   }

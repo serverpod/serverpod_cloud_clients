@@ -1299,20 +1299,6 @@ class Protocol extends _isc.SerializationManager {
               .toList()
           as T;
     }
-    if (t == List<_iheq245y.CustomDomainName>) {
-      return (data as List)
-              .map((e) => deserialize<_iheq245y.CustomDomainName>(e))
-              .toList()
-          as T;
-    }
-    if (t == _isc.getType<List<_iheq245y.CustomDomainName>?>()) {
-      return (data != null
-              ? (data as List)
-                    .map((e) => deserialize<_iheq245y.CustomDomainName>(e))
-                    .toList()
-              : null)
-          as T;
-    }
     if (t == List<_ixjvnalq.MetricSample>) {
       return (data as List)
               .map((e) => deserialize<_ixjvnalq.MetricSample>(e))
@@ -1445,6 +1431,12 @@ class Protocol extends _isc.SerializationManager {
     if (t == List<_iw02lteh.PaymentsStatus>) {
       return (data as List)
               .map((e) => deserialize<_iw02lteh.PaymentsStatus>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_iheq245y.CustomDomainName>) {
+      return (data as List)
+              .map((e) => deserialize<_iheq245y.CustomDomainName>(e))
               .toList()
           as T;
     }
