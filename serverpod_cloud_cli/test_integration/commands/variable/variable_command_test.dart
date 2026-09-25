@@ -856,6 +856,40 @@ void main() {
       });
     });
 
+    group('when executing variable set with a platform-reserved name', () {
+      late Future commandResult;
+
+      setUp(() async {
+        commandResult = cli.run([
+          'variable',
+          'set',
+          'SERVERPOD_FUTURE_CALL_ENABLED',
+          'true',
+          '--project',
+          projectId,
+        ]);
+      });
+
+      test('then throws exception', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then logs reserved name error', () async {
+        try {
+          await commandResult;
+        } catch (_) {}
+
+        expect(
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message:
+                "'SERVERPOD_FUTURE_CALL_ENABLED' is managed by your "
+                "project plan and can't be set.",
+          ),
+        );
+      });
+    });
+
     group('when executing variable set with a password-prefixed name', () {
       late Future commandResult;
 
@@ -887,6 +921,58 @@ void main() {
             hint: 'Use `scloud password set` to manage passwords.',
           ),
         );
+      });
+    });
+
+    group('when executing variable unset for a platform-reserved name '
+        'and confirming prompt', () {
+      late Future commandResult;
+
+      setUp(() async {
+        when(() => client.environmentVariables.list(any())).thenAnswer(
+          (_) async => [
+            EnvironmentVariable(
+              name: 'SERVERPOD_FUTURE_CALL_ENABLED',
+              value: 'false',
+              cloudCapsuleId: 'test-capsule',
+            ),
+          ],
+        );
+        when(
+          () => client.secrets.list(any()),
+        ).thenAnswer((_) async => <String>[]);
+        when(
+          () => client.environmentVariables.delete(
+            name: any(named: 'name'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenAnswer(
+          (invocation) async => EnvironmentVariable(
+            name: invocation.namedArguments[#name],
+            value: 'false',
+            cloudCapsuleId: 'test-capsule',
+          ),
+        );
+
+        logger.answerNextConfirmWith(true);
+        commandResult = cli.run([
+          'variable',
+          'unset',
+          'SERVERPOD_FUTURE_CALL_ENABLED',
+          '--project',
+          projectId,
+        ]);
+      });
+
+      test('then the variable is removed', () async {
+        await expectLater(commandResult, completes);
+
+        verify(
+          () => client.environmentVariables.delete(
+            name: 'SERVERPOD_FUTURE_CALL_ENABLED',
+            cloudCapsuleId: projectId,
+          ),
+        ).called(1);
       });
     });
 
