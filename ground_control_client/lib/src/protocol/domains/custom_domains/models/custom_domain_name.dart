@@ -26,7 +26,8 @@ abstract class CustomDomainName
     required this.status,
     required this.target,
     DateTime? createdAt,
-    required this.capsuleId,
+    this.capsuleId,
+    this.cloudCapsuleId,
     required this.dnsRecordVerificationValue,
     required this.dnsRecordType,
   }) : createdAt = createdAt ?? DateTime.now();
@@ -37,7 +38,8 @@ abstract class CustomDomainName
     required _ivm7u5lm.DomainNameStatus status,
     required _i425okov.DomainNameTarget target,
     DateTime? createdAt,
-    required int capsuleId,
+    int? capsuleId,
+    String? cloudCapsuleId,
     required String dnsRecordVerificationValue,
     required _iun9asme.DnsRecordType dnsRecordType,
   }) = _CustomDomainNameImpl;
@@ -55,7 +57,8 @@ abstract class CustomDomainName
       createdAt: jsonSerialization['createdAt'] == null
           ? null
           : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
-      capsuleId: jsonSerialization['capsuleId'] as int,
+      capsuleId: jsonSerialization['capsuleId'] as int?,
+      cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String?,
       dnsRecordVerificationValue:
           jsonSerialization['dnsRecordVerificationValue'] as String,
       dnsRecordType: _iun9asme.DnsRecordType.fromJson(
@@ -77,7 +80,13 @@ abstract class CustomDomainName
 
   DateTime? createdAt;
 
-  int capsuleId;
+  /// The capsule this domain belongs to.
+  /// Nullable so a later deploy can stop writing it while the column still exists.
+  int? capsuleId;
+
+  /// Globally unique identifier of the capsule this domain belongs to.
+  /// Nullable while old replicas still write only capsuleId.
+  String? cloudCapsuleId;
 
   String dnsRecordVerificationValue;
 
@@ -93,6 +102,7 @@ abstract class CustomDomainName
     _i425okov.DomainNameTarget? target,
     DateTime? createdAt,
     int? capsuleId,
+    String? cloudCapsuleId,
     String? dnsRecordVerificationValue,
     _iun9asme.DnsRecordType? dnsRecordType,
   });
@@ -105,7 +115,8 @@ abstract class CustomDomainName
       'status': status.toJson(),
       'target': target.toJson(),
       if (createdAt != null) 'createdAt': createdAt?.toJson(),
-      'capsuleId': capsuleId,
+      if (capsuleId != null) 'capsuleId': capsuleId,
+      if (cloudCapsuleId != null) 'cloudCapsuleId': cloudCapsuleId,
       'dnsRecordVerificationValue': dnsRecordVerificationValue,
       'dnsRecordType': dnsRecordType.toJson(),
     };
@@ -120,7 +131,8 @@ abstract class CustomDomainName
       'status': status.toJson(),
       'target': target.toJson(),
       if (createdAt != null) 'createdAt': createdAt?.toJson(),
-      'capsuleId': capsuleId,
+      if (capsuleId != null) 'capsuleId': capsuleId,
+      if (cloudCapsuleId != null) 'cloudCapsuleId': cloudCapsuleId,
       'dnsRecordVerificationValue': dnsRecordVerificationValue,
       'dnsRecordType': dnsRecordType.toJson(),
     };
@@ -141,7 +153,8 @@ class _CustomDomainNameImpl extends CustomDomainName {
     required _ivm7u5lm.DomainNameStatus status,
     required _i425okov.DomainNameTarget target,
     DateTime? createdAt,
-    required int capsuleId,
+    int? capsuleId,
+    String? cloudCapsuleId,
     required String dnsRecordVerificationValue,
     required _iun9asme.DnsRecordType dnsRecordType,
   }) : super._(
@@ -151,6 +164,7 @@ class _CustomDomainNameImpl extends CustomDomainName {
          target: target,
          createdAt: createdAt,
          capsuleId: capsuleId,
+         cloudCapsuleId: cloudCapsuleId,
          dnsRecordVerificationValue: dnsRecordVerificationValue,
          dnsRecordType: dnsRecordType,
        );
@@ -165,7 +179,8 @@ class _CustomDomainNameImpl extends CustomDomainName {
     _ivm7u5lm.DomainNameStatus? status,
     _i425okov.DomainNameTarget? target,
     Object? createdAt = _Undefined,
-    int? capsuleId,
+    Object? capsuleId = _Undefined,
+    Object? cloudCapsuleId = _Undefined,
     String? dnsRecordVerificationValue,
     _iun9asme.DnsRecordType? dnsRecordType,
   }) {
@@ -175,7 +190,10 @@ class _CustomDomainNameImpl extends CustomDomainName {
       status: status ?? this.status,
       target: target ?? this.target,
       createdAt: createdAt is DateTime? ? createdAt : this.createdAt,
-      capsuleId: capsuleId ?? this.capsuleId,
+      capsuleId: capsuleId is int? ? capsuleId : this.capsuleId,
+      cloudCapsuleId: cloudCapsuleId is String?
+          ? cloudCapsuleId
+          : this.cloudCapsuleId,
       dnsRecordVerificationValue:
           dnsRecordVerificationValue ?? this.dnsRecordVerificationValue,
       dnsRecordType: dnsRecordType ?? this.dnsRecordType,
