@@ -67,7 +67,7 @@ void main() {
             domains: CustomDomainNameList(
               customDomainNames: [
                 CustomDomainName(
-                  capsuleId: 1,
+                  cloudCapsuleId: 'my-capsule',
                   name: 'api.example.com',
                   status: DomainNameStatus.configured,
                   target: DomainNameTarget.api,

@@ -14,8 +14,6 @@ import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import '../../../domains/capsules/models/capsule_resource_config.dart'
     as _iy6c9ccr;
-import '../../../domains/custom_domains/models/custom_domain_name.dart'
-    as _i2gn4yxi;
 import '../../../domains/projects/models/project.dart' as _i2isqmwh;
 import '../../../shared/models/serverpod_region.dart' as _irrrfshl;
 
@@ -32,7 +30,6 @@ abstract class Capsule
     required this.region,
     required this.projectId,
     this.project,
-    this.domainNames,
     this.resourceConfig,
   }) : createdAt = createdAt ?? DateTime.now(),
        updatedAt = updatedAt ?? DateTime.now();
@@ -47,7 +44,6 @@ abstract class Capsule
     required _irrrfshl.ServerpodRegion region,
     required int projectId,
     _i2isqmwh.Project? project,
-    List<_i2gn4yxi.CustomDomainName>? domainNames,
     _iy6c9ccr.CapsuleResource? resourceConfig,
   }) = _CapsuleImpl;
 
@@ -75,11 +71,6 @@ abstract class Capsule
           ? null
           : _iod2a87h.Protocol().deserialize<_i2isqmwh.Project>(
               jsonSerialization['project'],
-            ),
-      domainNames: jsonSerialization['domainNames'] == null
-          ? null
-          : _iod2a87h.Protocol().deserialize<List<_i2gn4yxi.CustomDomainName>>(
-              jsonSerialization['domainNames'],
             ),
       resourceConfig: jsonSerialization['resourceConfig'] == null
           ? null
@@ -117,9 +108,6 @@ abstract class Capsule
   /// The project this capsule belongs to. Cannot be changed.
   _i2isqmwh.Project? project;
 
-  /// The domain names for this capsule.
-  List<_i2gn4yxi.CustomDomainName>? domainNames;
-
   /// The resource config for the capsule.
   _iy6c9ccr.CapsuleResource? resourceConfig;
 
@@ -136,7 +124,6 @@ abstract class Capsule
     _irrrfshl.ServerpodRegion? region,
     int? projectId,
     _i2isqmwh.Project? project,
-    List<_i2gn4yxi.CustomDomainName>? domainNames,
     _iy6c9ccr.CapsuleResource? resourceConfig,
   });
   @override
@@ -152,8 +139,6 @@ abstract class Capsule
       'region': region.toJson(),
       'projectId': projectId,
       if (project != null) 'project': project?.toJson(),
-      if (domainNames != null)
-        'domainNames': domainNames?.toJson(valueToJson: (v) => v.toJson()),
       if (resourceConfig != null) 'resourceConfig': resourceConfig?.toJson(),
     };
   }
@@ -171,10 +156,6 @@ abstract class Capsule
       'region': region.toJson(),
       'projectId': projectId,
       if (project != null) 'project': project?.toJsonForProtocol(),
-      if (domainNames != null)
-        'domainNames': domainNames?.toJson(
-          valueToJson: (v) => v.toJsonForProtocol(),
-        ),
       if (resourceConfig != null)
         'resourceConfig': resourceConfig?.toJsonForProtocol(),
     };
@@ -199,7 +180,6 @@ class _CapsuleImpl extends Capsule {
     required _irrrfshl.ServerpodRegion region,
     required int projectId,
     _i2isqmwh.Project? project,
-    List<_i2gn4yxi.CustomDomainName>? domainNames,
     _iy6c9ccr.CapsuleResource? resourceConfig,
   }) : super._(
          id: id,
@@ -211,7 +191,6 @@ class _CapsuleImpl extends Capsule {
          region: region,
          projectId: projectId,
          project: project,
-         domainNames: domainNames,
          resourceConfig: resourceConfig,
        );
 
@@ -229,7 +208,6 @@ class _CapsuleImpl extends Capsule {
     _irrrfshl.ServerpodRegion? region,
     int? projectId,
     Object? project = _Undefined,
-    Object? domainNames = _Undefined,
     Object? resourceConfig = _Undefined,
   }) {
     return Capsule(
@@ -244,9 +222,6 @@ class _CapsuleImpl extends Capsule {
       project: project is _i2isqmwh.Project?
           ? project
           : this.project?.copyWith(),
-      domainNames: domainNames is List<_i2gn4yxi.CustomDomainName>?
-          ? domainNames
-          : this.domainNames?.map((e0) => e0.copyWith()).toList(),
       resourceConfig: resourceConfig is _iy6c9ccr.CapsuleResource?
           ? resourceConfig
           : this.resourceConfig?.copyWith(),

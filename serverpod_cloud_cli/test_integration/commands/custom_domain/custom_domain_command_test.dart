@@ -268,7 +268,7 @@ void main() {
                 name: 'www.domain.com',
                 status: DomainNameStatus.needsSetup,
                 target: DomainNameTarget.api,
-                capsuleId: 1,
+                cloudCapsuleId: 'my-capsule',
                 dnsRecordVerificationValue: 'projectId.api.serverpod.space',
                 dnsRecordType: DnsRecordType.cname,
               ),
@@ -662,7 +662,7 @@ void main() {
             CustomDomainNameList(
               customDomainNames: [
                 CustomDomainName(
-                  capsuleId: 1,
+                  cloudCapsuleId: 'my-capsule',
                   name: 'api.domain.com',
                   status: DomainNameStatus.configured,
                   target: DomainNameTarget.api,
@@ -670,7 +670,7 @@ void main() {
                   dnsRecordType: DnsRecordType.cname,
                 ),
                 CustomDomainName(
-                  capsuleId: 1,
+                  cloudCapsuleId: 'my-capsule',
                   name: 'domain.com',
                   status: DomainNameStatus.pending,
                   target: DomainNameTarget.web,
@@ -678,7 +678,7 @@ void main() {
                   dnsRecordType: DnsRecordType.cname,
                 ),
                 CustomDomainName(
-                  capsuleId: 1,
+                  cloudCapsuleId: 'my-capsule',
                   name: 'insights.domain.com',
                   status: DomainNameStatus.needsSetup,
                   target: DomainNameTarget.insights,
@@ -791,7 +791,7 @@ void main() {
               name: 'domain.com',
               status: DomainNameStatus.needsSetup,
               target: DomainNameTarget.web,
-              capsuleId: 1,
+              cloudCapsuleId: 'my-capsule',
               dnsRecordVerificationValue: 'scloud-verify=abc123',
               dnsRecordType: DnsRecordType.txt,
             ),
@@ -1036,7 +1036,7 @@ void main() {
               name: 'domain.com',
               status: DomainNameStatus.needsSetup,
               target: DomainNameTarget.api,
-              capsuleId: 1,
+              cloudCapsuleId: 'my-capsule',
               dnsRecordVerificationValue: 'scloud-verify=abc123',
               dnsRecordType: DnsRecordType.txt,
             ),
