@@ -1,4 +1,5 @@
 import 'package:ground_control_client/ground_control_client.dart';
+import 'package:serverpod_cloud_shared/serverpod_cloud_shared.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/password/password_ops.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
@@ -18,6 +19,7 @@ abstract class VariableCommands {
     final bool? secret,
   }) async {
     _validateName(baseCommand, name);
+    _validateNotReserved(name);
 
     final listed = await _fetch(cloudApiClient, projectId);
     final existingStore = _storeOf(
@@ -183,6 +185,13 @@ abstract class VariableCommands {
             'Use letters, digits and underscores, starting with a letter or '
             'an underscore.',
       );
+    }
+  }
+
+  static void _validateNotReserved(String name) {
+    final reservedReason = PlatformVariables.isReservedWithReason(name);
+    if (reservedReason != null) {
+      throw FailureException(error: reservedReason);
     }
   }
 
