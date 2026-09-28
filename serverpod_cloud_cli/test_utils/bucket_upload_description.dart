@@ -34,4 +34,17 @@ abstract final class BucketUploadDescription {
   /// The upload description for the bucket compatible with the bucket
   /// mock server, launched by docker compose up in ground control.
   static String get uploadDescription => jsonEncode(_descriptionContent);
+
+  /// A resumable upload session description for the same archive.
+  static String get resumableUploadDescription => jsonEncode({
+    'type': 'resumable',
+    'url':
+        'http://$bucketName.localhost:8000/upload/storage/v1/b/$bucketName/o'
+        '?uploadType=resumable&name=$projectId%2F$projectUuid.zip'
+        '&upload_id=test-session',
+    'metadata': {
+      'tenant-project-id': projectId,
+      'upload-id': 'upload-$projectUuid',
+    },
+  });
 }

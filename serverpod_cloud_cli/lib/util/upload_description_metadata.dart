@@ -2,22 +2,26 @@ import 'dart:convert';
 
 import 'package:uuid/uuid_value.dart';
 
-/// Reads a header value from a Ground Control direct-upload JSON description.
-/// Returns null if the header is not found or in an invalid format.
-String? resolveHeaderValueFromUploadDescription(
+/// Reads the object metadata [key] from a Ground Control upload JSON
+/// description: the `metadata` map of a resumable description, or the
+/// `x-goog-meta-` header of a binary one.
+/// Returns null if the value is not found or not a non-empty string.
+String? resolveMetadataFromUploadDescription(
   String uploadDescription,
-  String headerName,
+  String key,
 ) {
   try {
     final decoded = jsonDecode(uploadDescription);
     if (decoded is! Map<String, dynamic>) {
       return null;
     }
+    final metadata = decoded['metadata'];
     final headers = decoded['headers'];
-    if (headers is! Map) {
-      return null;
-    }
-    final value = headers[headerName];
+    final value = metadata is Map
+        ? metadata[key]
+        : headers is Map
+        ? headers['x-goog-meta-$key']
+        : null;
     if (value is! String) {
       return null;
     }
@@ -31,23 +35,23 @@ String? resolveHeaderValueFromUploadDescription(
   }
 }
 
-/// Reads `x-goog-meta-dart-version` from a Ground Control direct-upload JSON
+/// Reads the `dart-version` metadata from a Ground Control upload JSON
 /// description.
 /// Returns null if the Dart image is not found.
 String? resolveDartImageTagFromUploadDescription(String uploadDescription) {
-  return resolveHeaderValueFromUploadDescription(
+  return resolveMetadataFromUploadDescription(
     uploadDescription,
-    'x-goog-meta-dart-version',
+    'dart-version',
   );
 }
 
-/// Reads `x-goog-meta-upload-id` from a Ground Control direct-upload JSON
+/// Reads the `upload-id` metadata from a Ground Control upload JSON
 /// description and converts it to the proper UuidValue.
 /// Returns null if the upload ID is not found or in an invalid format.
 UuidValue? resolveUploadIdFromUploadDescription(String uploadDescription) {
-  final uploadIdString = resolveHeaderValueFromUploadDescription(
+  final uploadIdString = resolveMetadataFromUploadDescription(
     uploadDescription,
-    'x-goog-meta-upload-id',
+    'upload-id',
   );
   if (uploadIdString == null) {
     return null;

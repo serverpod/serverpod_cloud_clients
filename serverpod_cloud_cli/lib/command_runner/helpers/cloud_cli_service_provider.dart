@@ -10,6 +10,7 @@ import 'package:serverpod_cloud_shared/serverpod_cloud_shared.dart';
 
 import 'file_downloader.dart';
 import 'file_uploader_factory.dart';
+import 'gcs_resumable_file_uploader.dart';
 
 /// A service provider for the Serverpod Cloud CLI.
 /// [initialize] should be called before first use.
@@ -31,7 +32,7 @@ class CloudCliServiceProvider {
     FileUploaderFactory? fileUploaderFactory,
     FileDownloaderFactory? fileDownloaderFactory,
   }) : _apiClientFactory = apiClientFactory {
-    _fileUploaderFactory = fileUploaderFactory ?? _createGcsFileUploader;
+    _fileUploaderFactory = fileUploaderFactory ?? _createFileUploader;
     _fileDownloaderFactory = fileDownloaderFactory ?? _createFileDownloader;
   }
 
@@ -105,7 +106,13 @@ class CloudCliServiceProvider {
     return DioFileDownloader(timeout: _globalConfiguration.connectionTimeout);
   }
 
-  FileUploaderClient _createGcsFileUploader(String uploadDescription) {
+  FileUploaderClient _createFileUploader(String uploadDescription) {
+    if (ResumableUploadDescription.isResumable(uploadDescription)) {
+      return GcsResumableFileUploader(
+        uploadDescription,
+        timeout: _globalConfiguration.connectionTimeout,
+      );
+    }
     return _ServerpodFileUploader(uploadDescription);
   }
 }
@@ -117,12 +124,27 @@ final class _ServerpodFileUploader implements FileUploaderClient {
   final FileUploader _uploader;
 
   @override
-  Future<bool> uploadByteData(ByteData byteData) {
-    return _uploader.uploadByteData(byteData);
+  Future<bool> uploadByteData(
+    ByteData byteData, {
+    UploadProgressCallback? onProgress,
+  }) async {
+    final success = await _uploader.uploadByteData(byteData);
+    if (success) {
+      onProgress?.call(byteData.lengthInBytes, byteData.lengthInBytes);
+    }
+    return success;
   }
 
   @override
-  Future<bool> upload(Stream<List<int>> stream, int length) {
-    return _uploader.upload(stream, length);
+  Future<bool> upload(
+    Stream<List<int>> stream,
+    int length, {
+    UploadProgressCallback? onProgress,
+  }) async {
+    final success = await _uploader.upload(stream, length);
+    if (success) {
+      onProgress?.call(length, length);
+    }
+    return success;
   }
 }

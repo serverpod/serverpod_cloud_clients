@@ -160,6 +160,8 @@ import 'features/custom_domains/models/custom_domain_name_list.dart'
     as _iw8cnhxy;
 import 'features/custom_domains/models/view_models/custom_domain_name_with_default_domains.dart'
     as _ivf1sqm0;
+import 'features/deploy/exceptions/upload_too_large_exception.dart'
+    as _ihvk6o6z;
 import 'features/insights/models/insights_connection_detail.dart' as _irxldgjy;
 import 'features/platform/models/dart_sdk_version.dart' as _ixr2s32y;
 import 'features/platform/models/dart_sdk_version_policy.dart' as _iv0kay60;
@@ -288,6 +290,7 @@ export 'features/buckets/exceptions/bucket_storage_identity_unavailable_exceptio
 export 'features/custom_domains/exceptions/dns_verification_failed_exception.dart';
 export 'features/custom_domains/models/custom_domain_name_list.dart';
 export 'features/custom_domains/models/view_models/custom_domain_name_with_default_domains.dart';
+export 'features/deploy/exceptions/upload_too_large_exception.dart';
 export 'features/insights/models/insights_connection_detail.dart';
 export 'features/platform/models/dart_sdk_version.dart';
 export 'features/platform/models/dart_sdk_version_policy.dart';
@@ -637,6 +640,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _ivf1sqm0.CustomDomainNameWithDefaultDomains) {
       return _ivf1sqm0.CustomDomainNameWithDefaultDomains.fromJson(data) as T;
+    }
+    if (t == _ihvk6o6z.UploadTooLargeException) {
+      return _ihvk6o6z.UploadTooLargeException.fromJson(data) as T;
     }
     if (t == _irxldgjy.InsightsConnectionDetail) {
       return _irxldgjy.InsightsConnectionDetail.fromJson(data) as T;
@@ -1136,6 +1142,12 @@ class Protocol extends _isc.SerializationManager {
     if (t == _isc.getType<_ivf1sqm0.CustomDomainNameWithDefaultDomains?>()) {
       return (data != null
               ? _ivf1sqm0.CustomDomainNameWithDefaultDomains.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_ihvk6o6z.UploadTooLargeException?>()) {
+      return (data != null
+              ? _ihvk6o6z.UploadTooLargeException.fromJson(data)
               : null)
           as T;
     }
@@ -1726,6 +1738,7 @@ class Protocol extends _isc.SerializationManager {
       _iw8cnhxy.CustomDomainNameList => 'CustomDomainNameList',
       _ivf1sqm0.CustomDomainNameWithDefaultDomains =>
         'CustomDomainNameWithDefaultDomains',
+      _ihvk6o6z.UploadTooLargeException => 'UploadTooLargeException',
       _irxldgjy.InsightsConnectionDetail => 'InsightsConnectionDetail',
       _ixr2s32y.DartSdkVersion => 'DartSdkVersion',
       _iv0kay60.DartSdkVersionPolicy => 'DartSdkVersionPolicy',
@@ -1965,6 +1978,8 @@ class Protocol extends _isc.SerializationManager {
         return 'CustomDomainNameList';
       case _ivf1sqm0.CustomDomainNameWithDefaultDomains():
         return 'CustomDomainNameWithDefaultDomains';
+      case _ihvk6o6z.UploadTooLargeException():
+        return 'UploadTooLargeException';
       case _irxldgjy.InsightsConnectionDetail():
         return 'InsightsConnectionDetail';
       case _ixr2s32y.DartSdkVersion():
@@ -2340,6 +2355,9 @@ class Protocol extends _isc.SerializationManager {
       return deserialize<_ivf1sqm0.CustomDomainNameWithDefaultDomains>(
         data['data'],
       );
+    }
+    if (dataClassName == 'UploadTooLargeException') {
+      return deserialize<_ihvk6o6z.UploadTooLargeException>(data['data']);
     }
     if (dataClassName == 'InsightsConnectionDetail') {
       return deserialize<_irxldgjy.InsightsConnectionDetail>(data['data']);

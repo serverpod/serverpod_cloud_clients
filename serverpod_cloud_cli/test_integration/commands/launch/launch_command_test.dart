@@ -189,6 +189,8 @@ void main() {
           commitHash: any(named: 'commitHash'),
           commitMessage: any(named: 'commitMessage'),
           branch: any(named: 'branch'),
+          resumable: any(named: 'resumable'),
+          archiveSize: any(named: 'archiveSize'),
         ),
       ).thenAnswer((_) async => jsonEncode(descriptionContent));
 
@@ -893,7 +895,7 @@ project:
 
           expect(
             logger.progressCalls.map((call) => call.message),
-            containsAllInOrder(['Zipping project', 'Uploading project']),
+            containsAllInOrder(['Zipping project', 'Uploading project...']),
           );
           expect(mockFileUploader.uploadedData, isNotEmpty);
         });

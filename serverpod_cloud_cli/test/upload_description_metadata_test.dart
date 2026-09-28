@@ -26,6 +26,42 @@ void main() {
     });
   });
 
+  group(
+    'resolvedDartImageTagFromUploadDescription with a resumable description',
+    () {
+      test('Given a resumable upload JSON with dart-version metadata '
+          'when resolvedDartImageTagFromUploadDescription is called '
+          'then the tag is returned', () {
+        const json = '''
+{"type":"resumable","url":"https://example.com/session","metadata":{"dart-version":"3.10"}}''';
+        expect(resolveDartImageTagFromUploadDescription(json), '3.10');
+      });
+    },
+  );
+
+  group(
+    'resolvedUploadIdFromUploadDescription with a resumable description',
+    () {
+      test('Given a resumable upload JSON with upload-id metadata '
+          'when resolvedUploadIdFromUploadDescription is called '
+          'then the upload ID is returned', () {
+        const json = '''
+{"type":"resumable","url":"https://example.com/session","metadata":{"upload-id":"upload-00000008-0000-4000-8000-000000000000"}}''';
+        expect(
+          resolveUploadIdFromUploadDescription(json),
+          UuidValue.raw('00000008-0000-4000-8000-000000000000'),
+        );
+      });
+
+      test('Given a resumable upload JSON without metadata '
+          'when resolvedUploadIdFromUploadDescription is called '
+          'then null is returned', () {
+        const json = '{"type":"resumable","url":"https://example.com/session"}';
+        expect(resolveUploadIdFromUploadDescription(json), isNull);
+      });
+    },
+  );
+
   group('resolvedUploadIdFromUploadDescription', () {
     test('Given a binary upload JSON with x-goog-meta-upload-id '
         'when resolvedUploadIdFromUploadDescription is called '
