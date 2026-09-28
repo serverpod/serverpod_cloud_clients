@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.1.0] - 2026-09-28
+
+### Added
+
+- **Select all passwords** - Added a "Select all" option to the password selection prompt during CLI project launch.
+
+### Changed
+
+- **Custom domain handling** - Updated custom domain management to tie directly to cloud capsule IDs, improving lookup consistency across projects.
+
+### Fixed
+
+- **Billing email validation** - Added input validation to prevent submission errors when entering blank or invalid billing emails in the console.
+
 ## [1.0.1] - 2026-09-21
 
 ### Added
