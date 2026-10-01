@@ -55,11 +55,12 @@ import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'domains/billing/models/billing_customer_type.dart' as _i4m2a6uw;
 import 'domains/billing/models/billing_info.dart' as _i7vhubyw;
 import 'domains/billing/models/billing_mapping_type.dart' as _i0j2fm74;
+import 'domains/billing/models/events/invoice_cause.dart' as _izs8n7t0;
+import 'domains/billing/models/events/trial_lifecycle_cause.dart' as _iq96jbxn;
 import 'domains/billing/models/owner.dart' as _i7df4v4i;
 import 'domains/billing/models/payment_method.dart' as _ikeafg5a;
 import 'domains/billing/models/payment_method_card.dart' as _i4cauyzh;
 import 'domains/billing/models/payment_setup_intent.dart' as _iq0xsybs;
-import 'domains/billing/models/trial_lifecycle_cause.dart' as _ic9vuejf;
 import 'domains/buckets/models/bucket_access_revocation_reason.dart'
     as _i2gsen8i;
 import 'domains/buckets/models/bucket_file.dart' as _i8dv9s28;
@@ -198,11 +199,12 @@ import 'shared/pubsub/registry/pubsub_entry.dart' as _i1i04ivn;
 export 'domains/billing/models/billing_customer_type.dart';
 export 'domains/billing/models/billing_info.dart';
 export 'domains/billing/models/billing_mapping_type.dart';
+export 'domains/billing/models/events/invoice_cause.dart';
+export 'domains/billing/models/events/trial_lifecycle_cause.dart';
 export 'domains/billing/models/owner.dart';
 export 'domains/billing/models/payment_method.dart';
 export 'domains/billing/models/payment_method_card.dart';
 export 'domains/billing/models/payment_setup_intent.dart';
-export 'domains/billing/models/trial_lifecycle_cause.dart';
 export 'domains/buckets/models/bucket_access_revocation_reason.dart';
 export 'domains/buckets/models/bucket_file.dart';
 export 'domains/buckets/models/bucket_file_listing.dart';
@@ -361,6 +363,12 @@ class Protocol extends _isc.SerializationManager {
     if (t == _i0j2fm74.BillingMappingType) {
       return _i0j2fm74.BillingMappingType.fromJson(data) as T;
     }
+    if (t == _izs8n7t0.InvoiceCause) {
+      return _izs8n7t0.InvoiceCause.fromJson(data) as T;
+    }
+    if (t == _iq96jbxn.TrialLifecycleCause) {
+      return _iq96jbxn.TrialLifecycleCause.fromJson(data) as T;
+    }
     if (t == _i7df4v4i.Owner) {
       return _i7df4v4i.Owner.fromJson(data) as T;
     }
@@ -372,9 +380,6 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _iq0xsybs.PaymentSetupIntent) {
       return _iq0xsybs.PaymentSetupIntent.fromJson(data) as T;
-    }
-    if (t == _ic9vuejf.TrialLifecycleCause) {
-      return _ic9vuejf.TrialLifecycleCause.fromJson(data) as T;
     }
     if (t == _i2gsen8i.BucketAccessRevocationReason) {
       return _i2gsen8i.BucketAccessRevocationReason.fromJson(data) as T;
@@ -741,6 +746,15 @@ class Protocol extends _isc.SerializationManager {
       return (data != null ? _i0j2fm74.BillingMappingType.fromJson(data) : null)
           as T;
     }
+    if (t == _isc.getType<_izs8n7t0.InvoiceCause?>()) {
+      return (data != null ? _izs8n7t0.InvoiceCause.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_iq96jbxn.TrialLifecycleCause?>()) {
+      return (data != null
+              ? _iq96jbxn.TrialLifecycleCause.fromJson(data)
+              : null)
+          as T;
+    }
     if (t == _isc.getType<_i7df4v4i.Owner?>()) {
       return (data != null ? _i7df4v4i.Owner.fromJson(data) : null) as T;
     }
@@ -754,12 +768,6 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_iq0xsybs.PaymentSetupIntent?>()) {
       return (data != null ? _iq0xsybs.PaymentSetupIntent.fromJson(data) : null)
-          as T;
-    }
-    if (t == _isc.getType<_ic9vuejf.TrialLifecycleCause?>()) {
-      return (data != null
-              ? _ic9vuejf.TrialLifecycleCause.fromJson(data)
-              : null)
           as T;
     }
     if (t == _isc.getType<_i2gsen8i.BucketAccessRevocationReason?>()) {
@@ -1649,11 +1657,12 @@ class Protocol extends _isc.SerializationManager {
       _i4m2a6uw.BillingCustomerType => 'BillingCustomerType',
       _i7vhubyw.BillingInfo => 'BillingInfo',
       _i0j2fm74.BillingMappingType => 'BillingMappingType',
+      _izs8n7t0.InvoiceCause => 'InvoiceCause',
+      _iq96jbxn.TrialLifecycleCause => 'TrialLifecycleCause',
       _i7df4v4i.Owner => 'Owner',
       _ikeafg5a.PaymentMethod => 'PaymentMethod',
       _i4cauyzh.PaymentMethodCard => 'PaymentMethodCard',
       _iq0xsybs.PaymentSetupIntent => 'PaymentSetupIntent',
-      _ic9vuejf.TrialLifecycleCause => 'TrialLifecycleCause',
       _i2gsen8i.BucketAccessRevocationReason => 'BucketAccessRevocationReason',
       _i8dv9s28.BucketFile => 'BucketFile',
       _ixt62bhu.BucketFileListing => 'BucketFileListing',
@@ -1804,6 +1813,10 @@ class Protocol extends _isc.SerializationManager {
         return 'BillingInfo';
       case _i0j2fm74.BillingMappingType():
         return 'BillingMappingType';
+      case _izs8n7t0.InvoiceCause():
+        return 'InvoiceCause';
+      case _iq96jbxn.TrialLifecycleCause():
+        return 'TrialLifecycleCause';
       case _i7df4v4i.Owner():
         return 'Owner';
       case _ikeafg5a.PaymentMethod():
@@ -1812,8 +1825,6 @@ class Protocol extends _isc.SerializationManager {
         return 'PaymentMethodCard';
       case _iq0xsybs.PaymentSetupIntent():
         return 'PaymentSetupIntent';
-      case _ic9vuejf.TrialLifecycleCause():
-        return 'TrialLifecycleCause';
       case _i2gsen8i.BucketAccessRevocationReason():
         return 'BucketAccessRevocationReason';
       case _i8dv9s28.BucketFile():
@@ -2077,6 +2088,12 @@ class Protocol extends _isc.SerializationManager {
     if (dataClassName == 'BillingMappingType') {
       return deserialize<_i0j2fm74.BillingMappingType>(data['data']);
     }
+    if (dataClassName == 'InvoiceCause') {
+      return deserialize<_izs8n7t0.InvoiceCause>(data['data']);
+    }
+    if (dataClassName == 'TrialLifecycleCause') {
+      return deserialize<_iq96jbxn.TrialLifecycleCause>(data['data']);
+    }
     if (dataClassName == 'Owner') {
       return deserialize<_i7df4v4i.Owner>(data['data']);
     }
@@ -2088,9 +2105,6 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'PaymentSetupIntent') {
       return deserialize<_iq0xsybs.PaymentSetupIntent>(data['data']);
-    }
-    if (dataClassName == 'TrialLifecycleCause') {
-      return deserialize<_ic9vuejf.TrialLifecycleCause>(data['data']);
     }
     if (dataClassName == 'BucketAccessRevocationReason') {
       return deserialize<_i2gsen8i.BucketAccessRevocationReason>(data['data']);
