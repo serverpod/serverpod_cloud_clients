@@ -1,6 +1,7 @@
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 
 import 'database_scaling/admin_database_scaling_command.dart';
+import 'notification/admin_test_push_command.dart';
 import 'plan/admin_plan_command.dart';
 import 'product/admin_product_commands.dart';
 import 'projects/admin_projects_commands.dart';
@@ -29,5 +30,6 @@ class CloudAdminCommand extends CloudCliCommand {
     addSubcommand(AdminProductCommand(logger: logger));
     addSubcommand(AdminPlanCommand(logger: logger));
     addSubcommand(AdminReconcileDatabaseScalingCommand(logger: logger));
+    addSubcommand(AdminTestPushCommand(logger: logger));
   }
 }

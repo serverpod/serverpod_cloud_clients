@@ -888,4 +888,5 @@ void _stubAdmin(final ClientMock client, {required final String projectId}) {
   when(() => client.adminProjects.redeployCapsule(any())).thenAnswer(
     (_) async => UuidValue.raw('00000000-0000-4000-8000-000000000000'),
   );
+  when(() => client.adminTest.pushNotification(any())).thenAnswer((_) async {});
 }
