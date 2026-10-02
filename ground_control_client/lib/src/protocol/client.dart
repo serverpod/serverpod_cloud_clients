@@ -444,6 +444,27 @@ class EndpointAdminStorageIdentity extends _isc.EndpointRef {
       );
 }
 
+/// Admin tools for exercising push notifications.
+/// {@category Endpoint}
+class EndpointAdminTest extends _isc.EndpointRef {
+  EndpointAdminTest(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'adminTest';
+
+  /// Pushes an example notification of [notificationType].
+  ///
+  /// [notificationType] is the name of a push notification type:
+  /// `test` or `invoice-failed`.
+  ///
+  /// Throws [InvalidValueException] when [notificationType] is not a
+  /// push notification type.
+  _ida.Future<void> pushNotification(String notificationType) =>
+      caller.callServerEndpoint<void>('adminTest', 'pushNotification', {
+        'notificationType': notificationType,
+      });
+}
+
 /// {@category Endpoint}
 class EndpointAdminUpdatePlan extends _isc.EndpointRef {
   EndpointAdminUpdatePlan(_isc.EndpointCaller caller) : super(caller);
@@ -2547,6 +2568,7 @@ class Client extends _isc.ServerpodClientShared {
     adminProjects = EndpointAdminProjects(this);
     adminSecrets = EndpointAdminSecrets(this);
     adminStorageIdentity = EndpointAdminStorageIdentity(this);
+    adminTest = EndpointAdminTest(this);
     adminUpdatePlan = EndpointAdminUpdatePlan(this);
     adminUsers = EndpointAdminUsers(this);
     auth = EndpointAuth(this);
@@ -2589,6 +2611,8 @@ class Client extends _isc.ServerpodClientShared {
   late final EndpointAdminSecrets adminSecrets;
 
   late final EndpointAdminStorageIdentity adminStorageIdentity;
+
+  late final EndpointAdminTest adminTest;
 
   late final EndpointAdminUpdatePlan adminUpdatePlan;
 
@@ -2656,6 +2680,7 @@ class Client extends _isc.ServerpodClientShared {
     'adminProjects': adminProjects,
     'adminSecrets': adminSecrets,
     'adminStorageIdentity': adminStorageIdentity,
+    'adminTest': adminTest,
     'adminUpdatePlan': adminUpdatePlan,
     'adminUsers': adminUsers,
     'auth': auth,
