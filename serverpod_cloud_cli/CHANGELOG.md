@@ -1,6 +1,21 @@
 
 # Changelog
 
+## [1.1.0] - 2026-10-05
+
+### Added
+
+- **Resumable project uploads** - Deployments with `scloud deploy` now stream in chunks with live progress updates, automatic retries on interrupted connections, and pre-upload checks for oversized archives.
+- **Select all passwords** - Added a "Select all" option to quickly select or deselect all detected custom passwords during `scloud launch`.
+
+### Changed
+
+- **Starter tier future calls** - Disabled Serverpod future calls for new capsules deployed on the Starter plan.
+
+### Fixed
+
+- **Billing email validation** - Fixed console errors by trimming and validating billing email addresses before submitting billing updates.
+
 ## [1.0.1] - 2026-09-21
 
 ### Added
