@@ -511,6 +511,46 @@ apiServer:
       });
 
       group('when executing launch with --wet-run'
+          ', with --use-project-serverpod-cli'
+          ' without a serverpod_cli dependency'
+          ', and approving confirmation,', () {
+        late Future commandResult;
+        setUp(() async {
+          logger.answerNextConfirmsWith([true]);
+
+          simulateConsoleProjectCreation(logger, projectId: projectId);
+
+          commandResult = cli.run([
+            'launch',
+            '--project',
+            projectId,
+            '--project-dir',
+            testProjectDir,
+            '--no-pre-deploy-scripts',
+            '--no-browser',
+            '--wet-run',
+            '--use-project-serverpod-cli',
+          ]);
+        });
+
+        test('then command fails', () async {
+          await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+        });
+
+        test(
+          'then a missing serverpod_cli dependency error is logged',
+          () async {
+            await commandResult.catchError((_) {});
+
+            expect(
+              logger.errorCalls.map((call) => call.message),
+              contains(contains('serverpod_cli')),
+            );
+          },
+        );
+      });
+
+      group('when executing launch with --wet-run'
           ', with --no-pre-deploy-scripts'
           ', and approving confirmation,', () {
         late Future commandResult;
@@ -937,6 +977,45 @@ project:
           );
           expect(mockFileUploader.uploadedData, isEmpty);
         });
+      });
+
+      group('when an scloud.yaml exists with a matching project id'
+          ' and --use-project-serverpod-cli is specified'
+          ' without a serverpod_cli dependency', () {
+        late Future commandResult;
+
+        setUp(() async {
+          await d.file(p.join(testProjectDir, 'scloud.yaml'), '''
+project:
+  projectId: "$projectId"
+''').create();
+
+          commandResult = cli.run([
+            'launch',
+            '--project',
+            projectId,
+            '--project-dir',
+            testProjectDir,
+            '--wet-run',
+            '--use-project-serverpod-cli',
+          ]);
+        });
+
+        test('then command fails', () async {
+          await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+        });
+
+        test(
+          'then a missing serverpod_cli dependency error is logged',
+          () async {
+            await commandResult.catchError((_) {});
+
+            expect(
+              logger.errorCalls.map((call) => call.message),
+              contains(contains('serverpod_cli')),
+            );
+          },
+        );
       });
 
       group('when an scloud.yaml exists with a matching project id'

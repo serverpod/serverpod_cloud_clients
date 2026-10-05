@@ -76,6 +76,19 @@ class DeployOutputOption extends FileOption {
   }
 }
 
+class DeployUseProjectServerpodCliOption extends FlagOption {
+  const DeployUseProjectServerpodCliOption({super.group})
+    : super(
+        argName: 'use-project-serverpod-cli',
+        helpText:
+            'Run "serverpod" in the pre-deploy and post-deploy scripts with '
+            'the serverpod_cli version that the project depends on, instead '
+            'of the globally installed one.',
+        defaultsTo: false,
+        negatable: false,
+      );
+}
+
 class AwaitOption extends FlagOption {
   const AwaitOption({super.group})
     : super(
@@ -95,6 +108,7 @@ enum DeployCommandOption<V> implements OptionDefinition<V> {
   output(DeployOutputOption()),
   wait(AwaitOption()),
   dartVersion(DartSdkVersionOption()),
+  useProjectServerpodCli(DeployUseProjectServerpodCliOption()),
 
   // developer options:
   skipDartPubGet(
@@ -150,6 +164,10 @@ Examples
 
     \$ $baseCommand deploy --output deployment.zip
 
+  Run "serverpod" in scripts with the serverpod_cli version that the project depends on
+
+    \$ $baseCommand deploy --use-project-serverpod-cli
+
   Redeploy the currently running build with the latest variables and secrets
 
     \$ scloud deploy --redeploy
@@ -177,15 +195,20 @@ Examples
     final skipDartPubGet = commandConfig.value(
       DeployCommandOption.skipDartPubGet,
     );
+    final useProjectServerpodCli = commandConfig.value(
+      DeployCommandOption.useProjectServerpodCli,
+    );
 
     if (redeploy) {
       if (wetRun ||
           showFiles ||
           outputPath != null ||
-          dartVersionOverride != null) {
+          dartVersionOverride != null ||
+          useProjectServerpodCli) {
         throw CloudCliUsageException(
           'The --redeploy option cannot be combined with '
-          '--wet-run, --show-files, --output, or --dart-version.',
+          '--wet-run, --show-files, --output, --dart-version, '
+          'or --use-project-serverpod-cli.',
         );
       }
 
@@ -218,6 +241,7 @@ Examples
       wetRun: wetRun,
       showFiles: showFiles,
       skipDartPubGet: skipDartPubGet,
+      useProjectServerpodCli: useProjectServerpodCli,
       skipTailingStatus: !wait,
       outputPath: outputPath?.path,
       dartVersionOverride: dartVersionOverride,

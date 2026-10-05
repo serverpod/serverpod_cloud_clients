@@ -5,12 +5,16 @@ import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/scrolling_command_output.dart';
 
 abstract class ScriptRunner {
+  /// Runs [commands] in order and stops at the first one that fails.
+  ///
+  /// The [environment] is added to the environment of every command.
   static Future<void> runScripts(
     List<String> commands,
     String workingDirectory,
     CommandLogger logger, {
     required String scriptType,
     int padHeadingRight = 0,
+    Map<String, String>? environment,
     IOSink? stdout,
     IOSink? stderr,
   }) async {
@@ -30,6 +34,7 @@ abstract class ScriptRunner {
             padHeadingRight,
           ),
           workingDirectory: workingDirectory,
+          environment: environment,
           logger: logger,
           stdoutOverride: stdout,
           stderrOverride: stderr,

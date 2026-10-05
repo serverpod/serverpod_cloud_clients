@@ -56,6 +56,7 @@ abstract class Launch {
     required bool deployShowFiles,
     String? deployOutputPath,
     bool deploySkipTailingStatus = false,
+    bool deployUseProjectServerpodCli = false,
     String? dartVersionOverride,
   }) async {
     logger.init('Launching a Serverpod Cloud project.\n');
@@ -75,6 +76,7 @@ abstract class Launch {
       projectId: projectId,
       dartVersionOverride: dartVersionOverride,
       performDeploy: performDeploy,
+      useProjectServerpodCli: deployUseProjectServerpodCli,
     );
 
     if (tui) {
@@ -730,6 +732,7 @@ abstract class Launch {
       skipTailingStatus: deploySkipTailingStatus,
       suppressCommandMessages: true,
       dartVersionOverride: projectSetup.dartVersionOverride,
+      useProjectServerpodCli: projectSetup.useProjectServerpodCli,
       stdout: stdout,
       stderr: stderr,
     );
@@ -913,6 +916,7 @@ class ProjectLaunch {
   bool? preexistingProject;
   bool? preexistingProjectDeployed;
   final bool performDeploy;
+  final bool useProjectServerpodCli;
   final bool includePreDeployScripts;
   final List<String> suggestedPreDeployScripts;
   Map<String, String> selectedPasswords;
@@ -927,6 +931,7 @@ class ProjectLaunch {
     this.preexistingProject,
     this.preexistingProjectDeployed,
     this.performDeploy = true,
+    this.useProjectServerpodCli = false,
     List<String>? suggestedPreDeployScripts,
     Map<String, String>? selectedPasswords,
   }) : suggestedPreDeployScripts = suggestedPreDeployScripts ?? [],

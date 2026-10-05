@@ -94,6 +94,13 @@ class TenantProjectPubspec {
         pubspec.dependencies['serverpod'] != null;
   }
 
+  /// Returns true if the pubspec.yaml declares [packageName] under
+  /// `dependencies` or `dev_dependencies`.
+  bool hasDependency(String packageName) {
+    return pubspec.dependencies.containsKey(packageName) ||
+        pubspec.devDependencies.containsKey(packageName);
+  }
+
   /// Returns the Serverpod framework version constraint string,
   /// or null if no Serverpod hosted dependency is found.
   String? get serverpodVersion {

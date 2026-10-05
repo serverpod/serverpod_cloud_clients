@@ -337,6 +337,54 @@ dependencies:
     },
   );
 
+  test(
+    'Given a pubspec with serverpod_cli under dev_dependencies, when hasDependency is called, then the result is true',
+    () {
+      final pubspec = TenantProjectPubspec(
+        Pubspec.parse('''
+name: my_project
+dev_dependencies:
+  serverpod_cli: ${ProjectFactory.validServerpodVersion}
+'''),
+      );
+
+      final result = pubspec.hasDependency('serverpod_cli');
+      expect(result, isTrue);
+    },
+  );
+
+  test(
+    'Given a pubspec with serverpod_cli under dependencies, when hasDependency is called, then the result is true',
+    () {
+      final pubspec = TenantProjectPubspec(
+        Pubspec.parse('''
+name: my_project
+dependencies:
+  serverpod_cli: ${ProjectFactory.validServerpodVersion}
+'''),
+      );
+
+      final result = pubspec.hasDependency('serverpod_cli');
+      expect(result, isTrue);
+    },
+  );
+
+  test(
+    'Given a pubspec without serverpod_cli, when hasDependency is called, then the result is false',
+    () {
+      final pubspec = TenantProjectPubspec(
+        Pubspec.parse('''
+name: my_project
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+'''),
+      );
+
+      final result = pubspec.hasDependency('serverpod_cli');
+      expect(result, isFalse);
+    },
+  );
+
   group('TenantProjectPubspec.readLockfileDartSdk issues', () {
     test(
       'Given no pubspec.lock file, when readLockfileDartSdk is called, then the result is empty',

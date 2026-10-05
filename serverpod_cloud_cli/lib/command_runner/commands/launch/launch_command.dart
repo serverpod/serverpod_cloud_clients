@@ -58,7 +58,10 @@ enum LaunchOption<V> implements OptionDefinition<V> {
   ),
   showFiles(DeployShowFilesOption(group: _deployGroup)),
   output(DeployOutputOption(group: _deployGroup)),
-  wait(AwaitOption(group: _deployGroup));
+  wait(AwaitOption(group: _deployGroup)),
+  useProjectServerpodCli(
+    DeployUseProjectServerpodCliOption(group: _deployGroup),
+  );
 
   const LaunchOption(this.option);
 
@@ -120,6 +123,9 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
     final showFiles = commandConfig.value(LaunchOption.showFiles);
     final outputPath = commandConfig.optionalValue(LaunchOption.output);
     final wait = commandConfig.value(LaunchOption.wait);
+    final useProjectServerpodCli = commandConfig.value(
+      LaunchOption.useProjectServerpodCli,
+    );
 
     final projectDirectory = runner.verifiedProjectDirectory();
     final relativeProjectDir = p.relative(projectDirectory.path, from: '.');
@@ -163,6 +169,7 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
         skipTailingStatus: !wait,
         outputPath: outputPath?.path,
         dartVersionOverride: dartVersionOverride,
+        useProjectServerpodCli: useProjectServerpodCli,
       );
 
       return;
@@ -187,6 +194,7 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
       deployShowFiles: showFiles,
       deployOutputPath: outputPath?.path,
       deploySkipTailingStatus: !wait,
+      deployUseProjectServerpodCli: useProjectServerpodCli,
     );
   }
 }

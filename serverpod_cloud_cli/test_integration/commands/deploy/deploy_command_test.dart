@@ -16,6 +16,7 @@ import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy/deploy_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/deploy/project_serverpod_cli.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/constants.dart' show VersionConstants;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
@@ -29,6 +30,10 @@ import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/project_factory.dart';
 import '../../../test_utils/push_current_dir.dart';
 import '../../../test_utils/test_command_logger.dart';
+
+final _resolveServerpodCommand = Platform.isWindows
+    ? 'where serverpod'
+    : 'command -v serverpod';
 
 void main() {
   final logger = TestCommandLogger();
@@ -227,6 +232,33 @@ project:
           expect(
             logger.terminalCommandCalls.single.command,
             equals('scloud status'),
+          );
+        });
+      });
+
+      group('when running deploy with --redeploy and '
+          '--use-project-serverpod-cli', () {
+        late Future cliCommandFuture;
+        setUp(() {
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--redeploy',
+            '--use-project-serverpod-cli',
+            '--project',
+            '123',
+          ]);
+        });
+
+        test('then UsageException is thrown.', () async {
+          await expectLater(
+            cliCommandFuture,
+            throwsA(
+              isA<UsageException>().having(
+                (final e) => e.message,
+                'message',
+                contains('--use-project-serverpod-cli'),
+              ),
+            ),
           );
         });
       });
@@ -3036,6 +3068,278 @@ project:
       });
     });
 
+    group('and serverpod_cli is a dev dependency '
+        'and scloud.yaml with scripts that resolve serverpod', () {
+      setUp(() async {
+        await d
+            .file('pubspec.yaml', '''
+name: ${ProjectFactory.defaultPackageName}
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+dev_dependencies:
+  serverpod_cli: ${ProjectFactory.validServerpodVersion}
+''')
+            .create(testProjectDir);
+        await d
+            .file('scloud.yaml', '''
+project:
+  projectId: ${BucketUploadDescription.projectId}
+  scripts:
+    pre_deploy: $_resolveServerpodCommand > pre_deploy_serverpod.txt || exit 0
+    post_deploy: $_resolveServerpodCommand > post_deploy_serverpod.txt || exit 0
+''')
+            .create(testProjectDir);
+      });
+
+      group('when deploying through CLI with --use-project-serverpod-cli', () {
+        late Future cliCommandFuture;
+        setUp(() async {
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--use-project-serverpod-cli',
+            '--skip-dart-pub-get',
+            '--no-await',
+            '--project',
+            BucketUploadDescription.projectId,
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        test('then command completes successfully.', () async {
+          await expectLater(cliCommandFuture, completes);
+        });
+
+        test(
+          'then pre-deploy scripts resolve serverpod to the project wrapper.',
+          () async {
+            await cliCommandFuture;
+
+            expect(
+              _readResolvedServerpod(
+                testProjectDir,
+                'pre_deploy_serverpod.txt',
+              ),
+              contains(ProjectServerpodCli.directoryPrefix),
+            );
+          },
+        );
+
+        test(
+          'then post-deploy scripts resolve serverpod to the project wrapper.',
+          () async {
+            await cliCommandFuture;
+
+            expect(
+              _readResolvedServerpod(
+                testProjectDir,
+                'post_deploy_serverpod.txt',
+              ),
+              contains(ProjectServerpodCli.directoryPrefix),
+            );
+          },
+        );
+
+        test('then the project wrapper is deleted afterwards.', () async {
+          await cliCommandFuture;
+
+          final wrapperPath = _readResolvedServerpod(
+            testProjectDir,
+            'pre_deploy_serverpod.txt',
+          );
+          expect(File(wrapperPath).existsSync(), isFalse);
+        });
+      });
+
+      group('when deploying through CLI with --use-project-serverpod-cli '
+          'and --wet-run', () {
+        late Future cliCommandFuture;
+        setUp(() async {
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--use-project-serverpod-cli',
+            '--wet-run',
+            '--skip-dart-pub-get',
+            '--project',
+            BucketUploadDescription.projectId,
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        test(
+          'then post-deploy scripts resolve serverpod to the project wrapper.',
+          () async {
+            await cliCommandFuture;
+
+            expect(
+              _readResolvedServerpod(
+                testProjectDir,
+                'post_deploy_serverpod.txt',
+              ),
+              contains(ProjectServerpodCli.directoryPrefix),
+            );
+          },
+        );
+      });
+
+      group('when deploying through CLI without --use-project-serverpod-cli', () {
+        late Future cliCommandFuture;
+        setUp(() async {
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--skip-dart-pub-get',
+            '--no-await',
+            '--project',
+            BucketUploadDescription.projectId,
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        test(
+          'then pre-deploy scripts do not resolve serverpod to a project wrapper.',
+          () async {
+            await cliCommandFuture;
+
+            expect(
+              _readResolvedServerpod(
+                testProjectDir,
+                'pre_deploy_serverpod.txt',
+              ),
+              isNot(contains(ProjectServerpodCli.directoryPrefix)),
+            );
+          },
+        );
+      });
+    });
+
+    group('and a workspace with serverpod_cli as a dev dependency '
+        'of the workspace root', () {
+      late String workspaceServerDir;
+
+      setUp(() async {
+        await d.dir('monorepo', [
+          d.file('pubspec.yaml', '''
+name: monorepo
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+workspace:
+  - project_server
+dev_dependencies:
+  serverpod_cli: ${ProjectFactory.validServerpodVersion}
+'''),
+          d.file('pubspec.lock', '''
+packages:
+  project_server:
+    dependency: "direct main"
+    description:
+      name: project_server
+      version: 1.0.0
+    source: path
+    version: 1.0.0
+sdks:
+  dart: ${ProjectFactory.validSdkVersion}
+'''),
+          d.dir('.dart_tool', [
+            d.file('package_graph.json', '''
+{
+  "roots": ["project_server"],
+  "packages": [
+    {"name": "project_server", "version": "0.0.0", "dependencies": []}
+  ],
+  "configVersion": 1
+}
+'''),
+          ]),
+          d.dir('project_server', [
+            d.file('pubspec.yaml', '''
+name: project_server
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+resolution: workspace
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+'''),
+            d.file('scloud.yaml', '''
+project:
+  projectId: "${BucketUploadDescription.projectId}"
+'''),
+          ]),
+        ]).create();
+        workspaceServerDir = p.join(d.sandbox, 'monorepo', 'project_server');
+      });
+
+      group('when deploying through CLI with --use-project-serverpod-cli '
+          'and --wet-run', () {
+        late Future cliCommandFuture;
+        setUp(() async {
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--use-project-serverpod-cli',
+            '--wet-run',
+            '--skip-dart-pub-get',
+            '--project',
+            BucketUploadDescription.projectId,
+            '--project-dir',
+            workspaceServerDir,
+          ]);
+        });
+
+        test('then command completes successfully.', () async {
+          await expectLater(cliCommandFuture, completes);
+        });
+      });
+    });
+
+    group('and serverpod_cli is not a dependency', () {
+      group('when deploying through CLI with --use-project-serverpod-cli', () {
+        late Future cliCommandFuture;
+        setUp(() async {
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--use-project-serverpod-cli',
+            '--skip-dart-pub-get',
+            '--project',
+            BucketUploadDescription.projectId,
+            '--project-dir',
+            testProjectDir,
+          ]);
+        });
+
+        test('then command fails.', () async {
+          await expectLater(
+            cliCommandFuture,
+            throwsA(isA<ErrorExitException>()),
+          );
+        });
+
+        test('then a missing dependency error is logged.', () async {
+          await cliCommandFuture.catchError((_) {});
+
+          expect(logger.errorCalls, hasLength(1));
+          expect(logger.errorCalls.single.message, contains('serverpod_cli'));
+        });
+
+        test(
+          'then the hint adds the serverpod_cli version matching serverpod.',
+          () async {
+            await cliCommandFuture.catchError((_) {});
+
+            expect(
+              logger.errorCalls.single.hint,
+              contains(
+                'dart pub add --dev "serverpod_cli:'
+                '^${VersionConstants.minSupportedServerpodVersion}"',
+              ),
+            );
+          },
+        );
+      });
+    });
+
     group('and scloud.yaml without scripts', () {
       setUp(() async {
         await d
@@ -4044,4 +4348,9 @@ Future<void> _runGit(List<String> arguments, String workingDirectory) async {
       '${result.stderr}',
     );
   }
+}
+
+String _readResolvedServerpod(String projectDir, String fileName) {
+  final output = File(p.join(projectDir, fileName)).readAsStringSync();
+  return LineSplitter.split(output).firstOrNull?.trim() ?? '';
 }

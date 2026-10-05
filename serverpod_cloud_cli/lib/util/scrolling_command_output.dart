@@ -1,14 +1,16 @@
 import 'dart:io' show stdout, stderr, Directory, IOSink;
 
-import 'package:cli_tools/execute.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/util/inline_tui/inline_tui.dart';
+import 'package:serverpod_cloud_cli/util/shell_command.dart';
 
 abstract class ScrollingCommandOutput {
   /// The number of visual rows the scrolling output section occupies.
   static const int defaultScrollRows = 5;
 
   /// Runs a single [command], returning its exit code.
+  ///
+  /// The [environment] is added to the environment of the command's process.
   ///
   /// The output is rendered in a scrolling section only when it is destined for
   /// the interactive terminal: when the caller redirects output to its own
@@ -24,6 +26,7 @@ abstract class ScrollingCommandOutput {
     String? failedMessage,
     int? scrollRows,
     String? workingDirectory,
+    Map<String, String>? environment,
     IOSink? stdoutOverride,
     IOSink? stderrOverride,
   }) async {
@@ -45,6 +48,7 @@ abstract class ScrollingCommandOutput {
           failedMessage: failedMessage,
           scrollRows: scrollRows,
           workingDirectory: workingDir,
+          environment: environment,
         );
       }
     }
@@ -56,11 +60,12 @@ abstract class ScrollingCommandOutput {
         logger.info(heading);
       }
     }
-    return execute(
+    return executeShellCommand(
       command,
       stdout: stdoutOverride ?? stdout,
       stderr: stderrOverride ?? stderr,
       workingDirectory: workingDir,
+      environment: environment,
     );
   }
 
@@ -77,6 +82,7 @@ abstract class ScrollingCommandOutput {
     String? failedMessage,
     int? scrollRows,
     Directory? workingDirectory,
+    Map<String, String>? environment,
   }) async {
     final section = ScrollingSection(
       terminal: terminal,
@@ -89,11 +95,12 @@ abstract class ScrollingCommandOutput {
     final outSink = ScrollingSink(section);
     final errSink = ScrollingSink(section);
     try {
-      final exitCode = await execute(
+      final exitCode = await executeShellCommand(
         command,
         stdout: outSink.sink,
         stderr: errSink.sink,
         workingDirectory: workingDirectory,
+        environment: environment,
       );
       await outSink.close();
       await errSink.close();

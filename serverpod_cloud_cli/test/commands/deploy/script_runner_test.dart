@@ -140,6 +140,30 @@ void main() {
     });
   });
 
+  group('Given an environment', () {
+    test('when a script runs then it can read the environment', () async {
+      final out = _CapturingSink();
+      final err = _CapturingSink();
+      final printVariable = Platform.isWindows
+          ? 'echo %SCLOUD_TEST_VARIABLE%'
+          : r'echo $SCLOUD_TEST_VARIABLE';
+
+      await ScriptRunner.runScripts(
+        [printVariable],
+        workingDirectory,
+        logger,
+        scriptType: 'test',
+        environment: {'SCLOUD_TEST_VARIABLE': 'from-environment'},
+        stdout: out.sink,
+        stderr: err.sink,
+      );
+      await out.close();
+      await err.close();
+
+      expect(out.text, contains('from-environment'));
+    });
+  });
+
   group('Given no commands', () {
     test('when running scripts then nothing is logged', () async {
       final term = FakeTerminal(hasTerminal: true);

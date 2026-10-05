@@ -36,6 +36,7 @@ import 'package:serverpod_cloud_shared/serverpod_cloud_shared.dart'
     show ByteSizeFormatter, UploadProgressCallback;
 
 import 'prepare_project_files.dart';
+import 'project_serverpod_cli.dart';
 
 abstract class Deploy {
   static Future<void> redeploy(
@@ -97,6 +98,7 @@ abstract class Deploy {
     required bool wetRun,
     required bool showFiles,
     bool skipDartPubGet = false,
+    bool useProjectServerpodCli = false,
     bool skipTailingStatus = false,
     bool suppressCommandMessages = false,
     String? outputPath,
@@ -128,6 +130,10 @@ abstract class Deploy {
       isWorkspaceResolved: pubspecValidator.isWorkspaceResolved(),
     );
 
+    if (useProjectServerpodCli) {
+      _verifyProjectServerpodCliDependency(pubspecValidator, lockfileDirectory);
+    }
+
     final config = ScloudConfigIO.readFromFile(projectConfigFilePath);
 
     await _runDartPubGetIfNeeded(logger, skipDartPubGet, lockfileDirectory);
@@ -155,13 +161,13 @@ abstract class Deploy {
     );
     logger.debug('Selected Dart SDK $dartVersion.');
 
-    if (config != null && config.scripts.preDeploy.isNotEmpty) {
-      await ScriptRunner.runScripts(
+    if (config != null) {
+      await _runScripts(
         config.scripts.preDeploy,
         projectDir,
         logger,
         scriptType: 'pre-deploy',
-        padHeadingRight: StatusCommands.progressMessagePadLength,
+        useProjectServerpodCli: useProjectServerpodCli,
         stdout: stdout,
         stderr: stderr,
       );
@@ -295,13 +301,13 @@ abstract class Deploy {
         },
       );
 
-      if (config != null && config.scripts.postDeploy.isNotEmpty) {
-        await ScriptRunner.runScripts(
+      if (config != null) {
+        await _runScripts(
           config.scripts.postDeploy,
           projectDir,
           logger,
           scriptType: 'post-deploy',
-          padHeadingRight: StatusCommands.progressMessagePadLength,
+          useProjectServerpodCli: useProjectServerpodCli,
           stdout: stdout,
           stderr: stderr,
         );
@@ -333,13 +339,13 @@ abstract class Deploy {
       projectZip,
     );
 
-    if (config != null && config.scripts.postDeploy.isNotEmpty) {
-      await ScriptRunner.runScripts(
+    if (config != null) {
+      await _runScripts(
         config.scripts.postDeploy,
         projectDir,
         logger,
         scriptType: 'post-deploy',
-        padHeadingRight: StatusCommands.progressMessagePadLength,
+        useProjectServerpodCli: useProjectServerpodCli,
         stdout: stdout,
         stderr: stderr,
       );
@@ -372,6 +378,64 @@ abstract class Deploy {
       attemptId: attemptId,
       skipUploadStage: true,
     );
+  }
+
+  static void _verifyProjectServerpodCliDependency(
+    TenantProjectPubspec pubspec,
+    Directory lockfileDirectory,
+  ) {
+    const packageName = ProjectServerpodCli.packageName;
+    if (pubspec.hasDependency(packageName)) return;
+
+    if (pubspec.isWorkspaceResolved()) {
+      final workspaceRootPubspec = TenantProjectPubspec.fromProjectDir(
+        lockfileDirectory,
+      );
+      if (workspaceRootPubspec.hasDependency(packageName)) return;
+    }
+
+    var package = packageName;
+    final serverpodVersion = pubspec.serverpodVersion;
+    if (serverpodVersion != null) {
+      package = '$packageName:$serverpodVersion';
+    }
+    throw FailureException(
+      error: 'No $packageName dependency found in pubspec.yaml.',
+      hint:
+          'Add the version that matches serverpod with: '
+          'dart pub add --dev "$package"',
+    );
+  }
+
+  static Future<void> _runScripts(
+    List<String> scripts,
+    String projectDir,
+    CommandLogger logger, {
+    required String scriptType,
+    required bool useProjectServerpodCli,
+    IOSink? stdout,
+    IOSink? stderr,
+  }) async {
+    if (scripts.isEmpty) return;
+
+    ProjectServerpodCli? serverpodCli;
+    if (useProjectServerpodCli) {
+      serverpodCli = await ProjectServerpodCli.create();
+    }
+    try {
+      await ScriptRunner.runScripts(
+        scripts,
+        projectDir,
+        logger,
+        scriptType: scriptType,
+        padHeadingRight: StatusCommands.progressMessagePadLength,
+        environment: serverpodCli?.environment,
+        stdout: stdout,
+        stderr: stderr,
+      );
+    } finally {
+      await serverpodCli?.delete();
+    }
   }
 
   static Future<void> _runDartPubGetIfNeeded(
