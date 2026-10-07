@@ -14,6 +14,10 @@ import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import '../../../domains/billing/models/owner.dart' as _icig531b;
 import '../../../domains/capsules/models/capsule.dart' as _ictbn9k6;
+import '../../../domains/projects/models/project_lifecycle_status.dart'
+    as _ie2v77w9;
+import '../../../domains/projects/models/project_suspension_reason.dart'
+    as _ixae5ksq;
 import '../../../domains/projects/models/role.dart' as _im7cbtgg;
 
 /// Represents a project of a tenant.
@@ -25,19 +29,26 @@ abstract class Project
     DateTime? createdAt,
     DateTime? updatedAt,
     this.archivedAt,
+    _ie2v77w9.ProjectLifecycleStatus? status,
+    this.suspendedAt,
+    this.suspensionReason,
     required this.cloudProjectId,
     required this.ownerId,
     this.owner,
     this.roles,
     this.capsules,
   }) : createdAt = createdAt ?? DateTime.now(),
-       updatedAt = updatedAt ?? DateTime.now();
+       updatedAt = updatedAt ?? DateTime.now(),
+       status = status ?? _ie2v77w9.ProjectLifecycleStatus.active;
 
   factory Project({
     int? id,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? archivedAt,
+    _ie2v77w9.ProjectLifecycleStatus? status,
+    DateTime? suspendedAt,
+    _ixae5ksq.ProjectSuspensionReason? suspensionReason,
     required String cloudProjectId,
     required _isc.UuidValue ownerId,
     _icig531b.Owner? owner,
@@ -58,6 +69,21 @@ abstract class Project
           ? null
           : _isc.DateTimeJsonExtension.fromJson(
               jsonSerialization['archivedAt'],
+            ),
+      status: jsonSerialization['status'] == null
+          ? null
+          : _ie2v77w9.ProjectLifecycleStatus.fromJson(
+              (jsonSerialization['status'] as String),
+            ),
+      suspendedAt: jsonSerialization['suspendedAt'] == null
+          ? null
+          : _isc.DateTimeJsonExtension.fromJson(
+              jsonSerialization['suspendedAt'],
+            ),
+      suspensionReason: jsonSerialization['suspensionReason'] == null
+          ? null
+          : _ixae5ksq.ProjectSuspensionReason.fromJson(
+              (jsonSerialization['suspensionReason'] as String),
             ),
       cloudProjectId: jsonSerialization['cloudProjectId'] as String,
       ownerId: _isc.UuidValueJsonExtension.fromJson(
@@ -92,6 +118,15 @@ abstract class Project
 
   DateTime? archivedAt;
 
+  /// The lifecycle status of the project.
+  _ie2v77w9.ProjectLifecycleStatus status;
+
+  /// When the project was last suspended. Kept on archive.
+  DateTime? suspendedAt;
+
+  /// Why the project was last suspended. Kept on archive.
+  _ixae5ksq.ProjectSuspensionReason? suspensionReason;
+
   /// The id of the project, which is also its name.
   /// This must be globally unique.
   /// This is the default production name of the project.
@@ -117,6 +152,9 @@ abstract class Project
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? archivedAt,
+    _ie2v77w9.ProjectLifecycleStatus? status,
+    DateTime? suspendedAt,
+    _ixae5ksq.ProjectSuspensionReason? suspensionReason,
     String? cloudProjectId,
     _isc.UuidValue? ownerId,
     _icig531b.Owner? owner,
@@ -131,6 +169,10 @@ abstract class Project
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
       if (archivedAt != null) 'archivedAt': archivedAt?.toJson(),
+      'status': status.toJson(),
+      if (suspendedAt != null) 'suspendedAt': suspendedAt?.toJson(),
+      if (suspensionReason != null)
+        'suspensionReason': suspensionReason?.toJson(),
       'cloudProjectId': cloudProjectId,
       'ownerId': ownerId.toJson(),
       if (owner != null) 'owner': owner?.toJson(),
@@ -148,6 +190,10 @@ abstract class Project
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
       if (archivedAt != null) 'archivedAt': archivedAt?.toJson(),
+      'status': status.toJson(),
+      if (suspendedAt != null) 'suspendedAt': suspendedAt?.toJson(),
+      if (suspensionReason != null)
+        'suspensionReason': suspensionReason?.toJson(),
       'cloudProjectId': cloudProjectId,
       'ownerId': ownerId.toJson(),
       if (owner != null) 'owner': owner?.toJsonForProtocol(),
@@ -172,6 +218,9 @@ class _ProjectImpl extends Project {
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? archivedAt,
+    _ie2v77w9.ProjectLifecycleStatus? status,
+    DateTime? suspendedAt,
+    _ixae5ksq.ProjectSuspensionReason? suspensionReason,
     required String cloudProjectId,
     required _isc.UuidValue ownerId,
     _icig531b.Owner? owner,
@@ -182,6 +231,9 @@ class _ProjectImpl extends Project {
          createdAt: createdAt,
          updatedAt: updatedAt,
          archivedAt: archivedAt,
+         status: status,
+         suspendedAt: suspendedAt,
+         suspensionReason: suspensionReason,
          cloudProjectId: cloudProjectId,
          ownerId: ownerId,
          owner: owner,
@@ -198,6 +250,9 @@ class _ProjectImpl extends Project {
     DateTime? createdAt,
     DateTime? updatedAt,
     Object? archivedAt = _Undefined,
+    _ie2v77w9.ProjectLifecycleStatus? status,
+    Object? suspendedAt = _Undefined,
+    Object? suspensionReason = _Undefined,
     String? cloudProjectId,
     _isc.UuidValue? ownerId,
     Object? owner = _Undefined,
@@ -209,6 +264,11 @@ class _ProjectImpl extends Project {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       archivedAt: archivedAt is DateTime? ? archivedAt : this.archivedAt,
+      status: status ?? this.status,
+      suspendedAt: suspendedAt is DateTime? ? suspendedAt : this.suspendedAt,
+      suspensionReason: suspensionReason is _ixae5ksq.ProjectSuspensionReason?
+          ? suspensionReason
+          : this.suspensionReason,
       cloudProjectId: cloudProjectId ?? this.cloudProjectId,
       ownerId: ownerId ?? this.ownerId,
       owner: owner is _icig531b.Owner? ? owner : this.owner?.copyWith(),

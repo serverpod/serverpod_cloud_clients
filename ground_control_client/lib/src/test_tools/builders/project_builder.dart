@@ -6,6 +6,9 @@ class ProjectBuilder {
   DateTime _createdAt;
   DateTime? _updatedAt;
   DateTime? _archivedAt;
+  ProjectLifecycleStatus _status;
+  DateTime? _suspendedAt;
+  ProjectSuspensionReason? _suspensionReason;
   String _cloudProjectId;
   Owner? _owner;
   List<Role>? _roles;
@@ -16,6 +19,9 @@ class ProjectBuilder {
       _createdAt = DateTime.now(),
       _updatedAt = DateTime.now(),
       _archivedAt = null,
+      _status = ProjectLifecycleStatus.active,
+      _suspendedAt = null,
+      _suspensionReason = null,
       _cloudProjectId = 'test-project',
       _roles = [],
       _capsules = [] {
@@ -56,6 +62,21 @@ class ProjectBuilder {
     return this;
   }
 
+  /// A project suspended for an overdue payment.
+  ProjectBuilder withSuspended() {
+    _status = ProjectLifecycleStatus.suspended;
+    _suspendedAt = DateTime.now();
+    _suspensionReason = ProjectSuspensionReason.paymentOverdue;
+    return this;
+  }
+
+  /// An archived (deleted) project.
+  ProjectBuilder withArchived() {
+    _status = ProjectLifecycleStatus.archived;
+    _archivedAt = DateTime.now();
+    return this;
+  }
+
   ProjectBuilder withCloudProjectId(String cloudProjectId) {
     _cloudProjectId = cloudProjectId;
     return this;
@@ -82,6 +103,9 @@ class ProjectBuilder {
       createdAt: _createdAt,
       updatedAt: _updatedAt,
       archivedAt: _archivedAt,
+      status: _status,
+      suspendedAt: _suspendedAt,
+      suspensionReason: _suspensionReason,
       cloudProjectId: _cloudProjectId,
       owner: _owner,
       ownerId: _owner?.id ?? Uuid().v4obj(),

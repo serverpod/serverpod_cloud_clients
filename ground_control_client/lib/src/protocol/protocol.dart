@@ -119,7 +119,9 @@ import 'domains/products/models/project_product_info.dart' as _iwmabm4s;
 import 'domains/products/models/subscription_info.dart' as _iera5yzg;
 import 'domains/projects/models/project.dart' as _immj5l46;
 import 'domains/projects/models/project_lifecycle_cause.dart' as _iw7cdie6;
+import 'domains/projects/models/project_lifecycle_status.dart' as _isxdwq0u;
 import 'domains/projects/models/project_role.dart' as _i58d5zzr;
+import 'domains/projects/models/project_suspension_reason.dart' as _iyeoiytn;
 import 'domains/projects/models/role.dart' as _iw41fb37;
 import 'domains/projects/models/user_role_membership.dart' as _icd2sct1;
 import 'domains/secrets/models/build_secret_type.dart' as _ikwy8e1b;
@@ -259,7 +261,9 @@ export 'domains/products/models/project_product_info.dart';
 export 'domains/products/models/subscription_info.dart';
 export 'domains/projects/models/project.dart';
 export 'domains/projects/models/project_lifecycle_cause.dart';
+export 'domains/projects/models/project_lifecycle_status.dart';
 export 'domains/projects/models/project_role.dart';
+export 'domains/projects/models/project_suspension_reason.dart';
 export 'domains/projects/models/role.dart';
 export 'domains/projects/models/user_role_membership.dart';
 export 'domains/secrets/models/build_secret_type.dart';
@@ -544,8 +548,14 @@ class Protocol extends _isc.SerializationManager {
     if (t == _iw7cdie6.ProjectLifecycleCause) {
       return _iw7cdie6.ProjectLifecycleCause.fromJson(data) as T;
     }
+    if (t == _isxdwq0u.ProjectLifecycleStatus) {
+      return _isxdwq0u.ProjectLifecycleStatus.fromJson(data) as T;
+    }
     if (t == _i58d5zzr.ProjectRole) {
       return _i58d5zzr.ProjectRole.fromJson(data) as T;
+    }
+    if (t == _iyeoiytn.ProjectSuspensionReason) {
+      return _iyeoiytn.ProjectSuspensionReason.fromJson(data) as T;
     }
     if (t == _iw41fb37.Role) {
       return _iw41fb37.Role.fromJson(data) as T;
@@ -1003,8 +1013,20 @@ class Protocol extends _isc.SerializationManager {
               : null)
           as T;
     }
+    if (t == _isc.getType<_isxdwq0u.ProjectLifecycleStatus?>()) {
+      return (data != null
+              ? _isxdwq0u.ProjectLifecycleStatus.fromJson(data)
+              : null)
+          as T;
+    }
     if (t == _isc.getType<_i58d5zzr.ProjectRole?>()) {
       return (data != null ? _i58d5zzr.ProjectRole.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_iyeoiytn.ProjectSuspensionReason?>()) {
+      return (data != null
+              ? _iyeoiytn.ProjectSuspensionReason.fromJson(data)
+              : null)
+          as T;
     }
     if (t == _isc.getType<_iw41fb37.Role?>()) {
       return (data != null ? _iw41fb37.Role.fromJson(data) : null) as T;
@@ -1719,7 +1741,9 @@ class Protocol extends _isc.SerializationManager {
       _iera5yzg.SubscriptionInfo => 'SubscriptionInfo',
       _immj5l46.Project => 'Project',
       _iw7cdie6.ProjectLifecycleCause => 'ProjectLifecycleCause',
+      _isxdwq0u.ProjectLifecycleStatus => 'ProjectLifecycleStatus',
       _i58d5zzr.ProjectRole => 'ProjectRole',
+      _iyeoiytn.ProjectSuspensionReason => 'ProjectSuspensionReason',
       _iw41fb37.Role => 'Role',
       _icd2sct1.UserRoleMembership => 'UserRoleMembership',
       _ikwy8e1b.BuildSecretType => 'BuildSecretType',
@@ -1933,8 +1957,12 @@ class Protocol extends _isc.SerializationManager {
         return 'Project';
       case _iw7cdie6.ProjectLifecycleCause():
         return 'ProjectLifecycleCause';
+      case _isxdwq0u.ProjectLifecycleStatus():
+        return 'ProjectLifecycleStatus';
       case _i58d5zzr.ProjectRole():
         return 'ProjectRole';
+      case _iyeoiytn.ProjectSuspensionReason():
+        return 'ProjectSuspensionReason';
       case _iw41fb37.Role():
         return 'Role';
       case _icd2sct1.UserRoleMembership():
@@ -2272,8 +2300,14 @@ class Protocol extends _isc.SerializationManager {
     if (dataClassName == 'ProjectLifecycleCause') {
       return deserialize<_iw7cdie6.ProjectLifecycleCause>(data['data']);
     }
+    if (dataClassName == 'ProjectLifecycleStatus') {
+      return deserialize<_isxdwq0u.ProjectLifecycleStatus>(data['data']);
+    }
     if (dataClassName == 'ProjectRole') {
       return deserialize<_i58d5zzr.ProjectRole>(data['data']);
+    }
+    if (dataClassName == 'ProjectSuspensionReason') {
+      return deserialize<_iyeoiytn.ProjectSuspensionReason>(data['data']);
     }
     if (dataClassName == 'Role') {
       return deserialize<_iw41fb37.Role>(data['data']);
