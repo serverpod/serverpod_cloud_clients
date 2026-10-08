@@ -1191,6 +1191,7 @@ class EndpointBucket extends _isc.EndpointRef {
   /// allowance.
   /// Throws [BucketStorageIdentityUnavailableException] if the storage identity
   /// is not ready yet (safe to retry).
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<_itj7xmug.BucketResource> createBucket({
     required String cloudCapsuleId,
     required String storageId,
@@ -1205,6 +1206,7 @@ class EndpointBucket extends _isc.EndpointRef {
   /// Deletes the bucket for a capsule under [storageId].
   ///
   /// Throws [NotFoundException] if the bucket is not found.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<void> deleteBucket({
     required String cloudCapsuleId,
     required String storageId,
@@ -1258,6 +1260,7 @@ class EndpointBucketObjects extends _isc.EndpointRef {
   /// Throws [NotFoundException] if the bucket is not found.
   /// Throws [BucketRateLimitExceededException] if the capsule has spent its
   /// hourly budget for this operation.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<void> deleteFile({
     required String cloudCapsuleId,
     required String storageId,
@@ -1276,6 +1279,7 @@ class EndpointBucketObjects extends _isc.EndpointRef {
   /// customer access to the bucket is revoked.
   /// Throws [BucketRateLimitExceededException] if the capsule has spent its
   /// hourly budget for this operation.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<String> createUploadDescription({
     required String cloudCapsuleId,
     required String storageId,
@@ -1317,6 +1321,7 @@ class EndpointCapsules extends _isc.EndpointRef {
   /// as the `serverpod/request-id` pod label.
   ///
   /// Throws a [NoPriorDeploymentException] if the capsule has no prior deployment.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<_isc.UuidValue> redeployCapsule({
     required String cloudCapsuleId,
   }) => caller.callServerEndpoint<_isc.UuidValue>(
@@ -1348,6 +1353,7 @@ class EndpointCompute extends _isc.EndpointRef {
   /// Validates the requested size and replica counts against the capsule's
   /// product constraints, persists the new configuration, and triggers an
   /// infrastructure update for any existing deployment.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<_i9c8bf6t.ComputeInfo> updateCompute({
     required String cloudCapsuleId,
     required _ip9fvkzb.ComputeSizeOption size,
@@ -1369,6 +1375,7 @@ class EndpointCustomDomainName extends _isc.EndpointRef {
   @override
   String get name => 'customDomainName';
 
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<_i8g96tte.CustomDomainNameWithDefaultDomains> add({
     required String domainName,
     required _ig8gewxx.DomainNameTarget target,
@@ -1383,6 +1390,7 @@ class EndpointCustomDomainName extends _isc.EndpointRef {
     },
   );
 
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<void> remove({
     required String domainName,
     required String cloudCapsuleId,
@@ -1399,6 +1407,7 @@ class EndpointCustomDomainName extends _isc.EndpointRef {
     {'cloudCapsuleId': cloudCapsuleId},
   );
 
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<_i19g777e.DomainNameStatus> refreshRecord({
     required String domainName,
     required String cloudCapsuleId,
@@ -1422,6 +1431,7 @@ class EndpointDatabase extends _isc.EndpointRef {
   /// Throws [NotFoundException] if the capsule is not found.
   /// Throws [ProcurementDeniedException] if the database product is not available for the capsule.
   /// Throws [DatabaseResourceCreationFailed] if the database resource creation fails.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<void> enableDatabase({required String cloudCapsuleId}) =>
       caller.callServerEndpoint<void>('database', 'enableDatabase', {
         'cloudCapsuleId': cloudCapsuleId,
@@ -1453,6 +1463,7 @@ class EndpointDatabase extends _isc.EndpointRef {
   ///
   /// Throws [NotFoundException] if the database is not found.
   /// Throws [DuplicateEntryException] if the [username] already exists.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<String> createSuperUser({
     required String cloudCapsuleId,
     required String username,
@@ -1466,6 +1477,7 @@ class EndpointDatabase extends _isc.EndpointRef {
   ///
   /// Throws [NotFoundException] if the database is not found.
   /// Throws [InvalidValueException] if the [username] is the owner user.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<String> resetDatabasePassword({
     required String cloudCapsuleId,
     required String username,
@@ -1489,6 +1501,7 @@ class EndpointDatabase extends _isc.EndpointRef {
   ///
   /// Throws [NotFoundException] if the database is not found.
   /// Throws [InvalidValueException] if the [username] is the owner user.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<void> deleteDatabaseUser({
     required String cloudCapsuleId,
     required String username,
@@ -1502,6 +1515,7 @@ class EndpointDatabase extends _isc.EndpointRef {
   /// The deployment will error until a redeploy is performed.
   ///
   /// Throws [NotFoundException] if the database is not found.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<void> wipeDatabase({required String cloudCapsuleId}) =>
       caller.callServerEndpoint<void>('database', 'wipeDatabase', {
         'cloudCapsuleId': cloudCapsuleId,
@@ -1517,6 +1531,7 @@ class EndpointDatabase extends _isc.EndpointRef {
   /// Throws [ProcurementDeniedException] if the size is not available for the capsule.
   /// Throws [InvalidValueException] if the size, minCu, and maxCu combination is invalid.
   /// Throws [NotFoundException] if no database is found for the capsule.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<_ipowkh5v.DatabaseResource> updateDatabaseSize({
     required String cloudCapsuleId,
     required _iamz36cc.DatabaseSizeOption size,
@@ -1540,6 +1555,7 @@ class EndpointDatabase extends _isc.EndpointRef {
   /// Throws [NotFoundException] if the database is not found.
   /// Throws [DatabaseSnapshotLimitException] if the per-project snapshot limit
   /// has been reached.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<_ia6js50c.DatabaseSnapshot> createSnapshot({
     required String cloudCapsuleId,
     String? name,
@@ -1564,6 +1580,7 @@ class EndpointDatabase extends _isc.EndpointRef {
   /// Deletes a snapshot of the capsule's database.
   ///
   /// Throws [NotFoundException] if the database is not found.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<void> deleteSnapshot({
     required String cloudCapsuleId,
     required String snapshotId,
@@ -1595,6 +1612,7 @@ class EndpointDatabase extends _isc.EndpointRef {
   /// the given [frequency] (e.g. a weekly/monthly schedule without a day, or a
   /// schedule without an hour), or if the provider rejects a value such as a
   /// retention period that exceeds the maximum allowed.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<void> setBackupSchedule({
     required String cloudCapsuleId,
     _igzjl4y6.BackupFrequency? frequency,
@@ -1616,6 +1634,7 @@ class EndpointDatabase extends _isc.EndpointRef {
   /// Throws [ProcurementDeniedException] if the capsule's plan does not include
   /// the backup feature.
   /// Throws [NotFoundException] if the database is not found.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<void> restoreFromSnapshot({
     required String cloudCapsuleId,
     required String snapshotId,
@@ -1634,6 +1653,7 @@ class EndpointInfraResources extends _isc.EndpointRef {
   String get name => 'infraResources';
 
   /// Enables the database for a project.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   @Deprecated('Use DatabaseEndpoint.enableDatabase instead')
   _ida.Future<void> enableDatabase({required String cloudCapsuleId}) =>
       caller.callServerEndpoint<void>('infraResources', 'enableDatabase', {
@@ -1656,6 +1676,7 @@ class EndpointDeploy extends _isc.EndpointRef {
   /// [archiveSize]. Throws [UploadTooLargeException] if a resumable upload's
   /// [archiveSize] exceeds the upload limit. Without [resumable],
   /// [archiveSize] is ignored and the signed `PUT` carries the limit.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<String> createUploadDescription(
     String cloudProjectId, {
     String? serverpodVersion,
@@ -1687,6 +1708,7 @@ class EndpointEnvironmentVariables extends _isc.EndpointRef {
 
   /// Creates a new [EnvironmentVariable] with the specified [name] and [value].
   /// Throws a [DuplicateEntryException] if an environment variable with the same name already exists.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<_i82frs35.EnvironmentVariable> create(
     String name,
     String value,
@@ -1719,6 +1741,7 @@ class EndpointEnvironmentVariables extends _isc.EndpointRef {
 
   /// Creates a new [EnvironmentVariable] with the specified [name] and [value].
   /// Throws a [NotFoundException] if the environment variable is not found.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<_i82frs35.EnvironmentVariable> update({
     required String name,
     required String value,
@@ -1731,6 +1754,7 @@ class EndpointEnvironmentVariables extends _isc.EndpointRef {
 
   /// Permanently deletes an environment variable.
   /// Throws a [NotFoundException] if the environment variable is not found.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<_i82frs35.EnvironmentVariable> delete({
     required String cloudCapsuleId,
     required String name,
@@ -2186,6 +2210,7 @@ class EndpointProjects extends _isc.EndpointRef {
   ///
   /// Throws [UnauthorizedException] if the user is not the owner of the
   /// project's subscription.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<void> updateProjectProfile({
     required String cloudProjectId,
     required _iag8nc5u.ProjectProfileUpdate resources,
@@ -2289,6 +2314,7 @@ class EndpointSecrets extends _isc.EndpointRef {
   ///
   /// Throws [NotFoundException] if the capsule is not found.
   /// Throws [InvalidValueException] if secret names are invalid.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<void> create({
     required Map<String, String> secrets,
     required String cloudCapsuleId,
@@ -2306,6 +2332,7 @@ class EndpointSecrets extends _isc.EndpointRef {
   ///
   /// Throws [NotFoundException] if the capsule is not found.
   /// Throws [InvalidValueException] if secret names are invalid.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<void> upsert({
     required Map<String, String> secrets,
     required String cloudCapsuleId,
@@ -2323,6 +2350,7 @@ class EndpointSecrets extends _isc.EndpointRef {
   /// Throws [NotFoundException] if the capsule is not found.
   /// Throws [InvalidValueException] if secret names are invalid or the secret
   /// value exceeds the build-secret encryption size limit.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<void> upsertBuildSecret({
     required String secretKey,
     required String secretValue,
@@ -2340,6 +2368,7 @@ class EndpointSecrets extends _isc.EndpointRef {
   /// Secret value changes are applied at the next successful deployment.
   ///
   /// Throws [NotFoundException] if the capsule or the secret is not found.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<void> delete({
     required String key,
     required String cloudCapsuleId,
@@ -2353,6 +2382,7 @@ class EndpointSecrets extends _isc.EndpointRef {
   /// Secret value changes are applied at the next deployment.
   ///
   /// Throws [NotFoundException] if the capsule or the secret is not found.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<void> deleteBuild({
     required String cloudCapsuleId,
     required String key,

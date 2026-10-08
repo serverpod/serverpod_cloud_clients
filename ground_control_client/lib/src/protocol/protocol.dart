@@ -193,6 +193,7 @@ import 'shared/exceptions/models/procurement_cancellation_exception.dart'
 import 'shared/exceptions/models/procurement_denied_exception.dart'
     as _iw0gwwvc;
 import 'shared/exceptions/models/procurement_denied_reason.dart' as _iibx2ckv;
+import 'shared/exceptions/models/project_suspended_exception.dart' as _iz0vc58a;
 import 'shared/exceptions/models/unauthenticated_exception.dart' as _i8itwzl1;
 import 'shared/exceptions/models/unauthorized_exception.dart' as _is3nd795;
 import 'shared/models/http_response_class.dart' as _is21hzeq;
@@ -320,6 +321,7 @@ export 'shared/exceptions/models/plan_change_denied_reason.dart';
 export 'shared/exceptions/models/procurement_cancellation_exception.dart';
 export 'shared/exceptions/models/procurement_denied_exception.dart';
 export 'shared/exceptions/models/procurement_denied_reason.dart';
+export 'shared/exceptions/models/project_suspended_exception.dart';
 export 'shared/exceptions/models/unauthenticated_exception.dart';
 export 'shared/exceptions/models/unauthorized_exception.dart';
 export 'shared/models/http_response_class.dart';
@@ -727,6 +729,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _iibx2ckv.ProcurementDeniedReason) {
       return _iibx2ckv.ProcurementDeniedReason.fromJson(data) as T;
+    }
+    if (t == _iz0vc58a.ProjectSuspendedException) {
+      return _iz0vc58a.ProjectSuspendedException.fromJson(data) as T;
     }
     if (t == _i8itwzl1.UnauthenticatedException) {
       return _i8itwzl1.UnauthenticatedException.fromJson(data) as T;
@@ -1306,6 +1311,12 @@ class Protocol extends _isc.SerializationManager {
               : null)
           as T;
     }
+    if (t == _isc.getType<_iz0vc58a.ProjectSuspendedException?>()) {
+      return (data != null
+              ? _iz0vc58a.ProjectSuspendedException.fromJson(data)
+              : null)
+          as T;
+    }
     if (t == _isc.getType<_i8itwzl1.UnauthenticatedException?>()) {
       return (data != null
               ? _i8itwzl1.UnauthenticatedException.fromJson(data)
@@ -1809,6 +1820,7 @@ class Protocol extends _isc.SerializationManager {
         'ProcurementCancellationException',
       _iw0gwwvc.ProcurementDeniedException => 'ProcurementDeniedException',
       _iibx2ckv.ProcurementDeniedReason => 'ProcurementDeniedReason',
+      _iz0vc58a.ProjectSuspendedException => 'ProjectSuspendedException',
       _i8itwzl1.UnauthenticatedException => 'UnauthenticatedException',
       _is3nd795.UnauthorizedException => 'UnauthorizedException',
       _is21hzeq.HttpResponseClass => 'HttpResponseClass',
@@ -2075,6 +2087,8 @@ class Protocol extends _isc.SerializationManager {
         return 'ProcurementDeniedException';
       case _iibx2ckv.ProcurementDeniedReason():
         return 'ProcurementDeniedReason';
+      case _iz0vc58a.ProjectSuspendedException():
+        return 'ProjectSuspendedException';
       case _i8itwzl1.UnauthenticatedException():
         return 'UnauthenticatedException';
       case _is3nd795.UnauthorizedException():
@@ -2494,6 +2508,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'ProcurementDeniedReason') {
       return deserialize<_iibx2ckv.ProcurementDeniedReason>(data['data']);
+    }
+    if (dataClassName == 'ProjectSuspendedException') {
+      return deserialize<_iz0vc58a.ProjectSuspendedException>(data['data']);
     }
     if (dataClassName == 'UnauthenticatedException') {
       return deserialize<_i8itwzl1.UnauthenticatedException>(data['data']);

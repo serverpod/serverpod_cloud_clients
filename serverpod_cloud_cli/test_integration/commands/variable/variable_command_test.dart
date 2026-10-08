@@ -206,6 +206,49 @@ void main() {
       client.authKeyProvider = InMemoryKeyManager.authenticated();
     });
 
+    group('when executing variable set on a suspended project', () {
+      late Future commandResult;
+
+      setUp(() async {
+        when(
+          () => client.environmentVariables.list(any()),
+        ).thenAnswer((_) async => <EnvironmentVariable>[]);
+        when(
+          () => client.secrets.list(any()),
+        ).thenAnswer((_) async => <String>[]);
+        when(
+          () => client.environmentVariables.create(any(), any(), any()),
+        ).thenThrow(
+          ProjectSuspendedException(
+            message: 'Project $projectId is suspended.',
+            reason: ProjectSuspensionReason.paymentOverdue,
+          ),
+        );
+
+        commandResult = cli.run([
+          'variable',
+          'set',
+          'key',
+          'value',
+          '--project',
+          projectId,
+        ]);
+      });
+
+      test('then throws ErrorExitException', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then logs the suspension with the account hint', () async {
+        await commandResult.catchError((_) {});
+
+        final error = logger.errorCalls.single;
+        expect(error.message, 'Project $projectId is suspended.');
+        expect(error.hint, startsWith('Payment is overdue. '));
+        expect(error.hint, contains('/project'));
+      });
+    });
+
     group('when executing variable set', () {
       setUp(() async {
         when(

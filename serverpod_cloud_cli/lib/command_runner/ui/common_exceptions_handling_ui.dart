@@ -2,6 +2,7 @@ import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart'
     show FailureException;
 import 'package:serverpod_cloud_cli/shared/helpers/console_urls.dart';
+import 'package:serverpod_cloud_cli/shared/helpers/project_suspension_hint.dart';
 import 'package:serverpod_cloud_cli/util/output/output_context.dart';
 import 'package:serverpod_cloud_cli/util/output/output_widget.dart';
 import 'package:serverpod_cloud_cli/util/output/widgets.dart';
@@ -31,6 +32,7 @@ class CommonClientExceptionsWidget extends OutputWidget {
         UnauthorizedException() => UnauthorizedExceptionWidget(e),
         ProcurementDeniedException() => ProcurementDeniedExceptionWidget(e),
         NotFoundException() => NotFoundExceptionWidget(e),
+        ProjectSuspendedException() => ProjectSuspendedExceptionWidget(e),
         _ => elseWidget ?? this,
       };
     }
@@ -128,6 +130,23 @@ class NotFoundExceptionWidget extends OutputWidget {
       exception,
       message: NotFoundExceptionWidget.message,
       hint: exception.message,
+    );
+  }
+}
+
+/// Displays the suspension error for [ProjectSuspendedException].
+class ProjectSuspendedExceptionWidget extends OutputWidget {
+  final ProjectSuspendedException exception;
+
+  const ProjectSuspendedExceptionWidget(this.exception);
+
+  @override
+  OutputWidget build(OutputContext context) {
+    return TextErrorOutputWidget(
+      exception,
+      message: exception.message,
+      hint: projectSuspendedHint(exception),
+      newParagraph: true,
     );
   }
 }
