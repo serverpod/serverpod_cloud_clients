@@ -1,0 +1,103 @@
+/* AUTOMATICALLY GENERATED CODE DO NOT MODIFY */
+/*   To generate run: "serverpod generate"    */
+
+// ignore_for_file: implementation_imports
+// ignore_for_file: library_private_types_in_public_api
+// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: public_member_api_docs
+// ignore_for_file: type_literal_in_constant_pattern
+// ignore_for_file: use_super_parameters
+// ignore_for_file: invalid_use_of_internal_member
+
+// ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../domains/projects/models/project_suspension_reason.dart'
+    as _ixae5ksq;
+
+/// Thrown when an action that changes a project's infrastructure or
+/// configuration is attempted while the project is suspended.
+/// Reads remain available until the project is reactivated.
+abstract class ProjectSuspendedException
+    implements
+        _isc.SerializableException,
+        _isc.SerializableModel,
+        _isc.ProtocolSerialization {
+  ProjectSuspendedException._({required this.message, this.reason});
+
+  factory ProjectSuspendedException({
+    required String message,
+    _ixae5ksq.ProjectSuspensionReason? reason,
+  }) = _ProjectSuspendedExceptionImpl;
+
+  factory ProjectSuspendedException.fromJson(
+    Map<String, dynamic> jsonSerialization,
+  ) {
+    return ProjectSuspendedException(
+      message: jsonSerialization['message'] as String,
+      reason: jsonSerialization['reason'] == null
+          ? null
+          : _ixae5ksq.ProjectSuspensionReason.fromJson(
+              (jsonSerialization['reason'] as String),
+            ),
+    );
+  }
+
+  String message;
+
+  _ixae5ksq.ProjectSuspensionReason? reason;
+
+  /// Returns a shallow copy of this [ProjectSuspendedException]
+  /// with some or all fields replaced by the given arguments.
+  @_isc.useResult
+  ProjectSuspendedException copyWith({
+    String? message,
+    _ixae5ksq.ProjectSuspensionReason? reason,
+  });
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'ProjectSuspendedException',
+      'message': message,
+      if (reason != null) 'reason': reason?.toJson(),
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
+    return {
+      '__className__': 'ProjectSuspendedException',
+      'message': message,
+      if (reason != null) 'reason': reason?.toJson(),
+    };
+  }
+
+  @override
+  String toString() {
+    return 'ProjectSuspendedException(message: $message, reason: $reason)';
+  }
+}
+
+class _Undefined {}
+
+class _ProjectSuspendedExceptionImpl extends ProjectSuspendedException {
+  _ProjectSuspendedExceptionImpl({
+    required String message,
+    _ixae5ksq.ProjectSuspensionReason? reason,
+  }) : super._(message: message, reason: reason);
+
+  /// Returns a shallow copy of this [ProjectSuspendedException]
+  /// with some or all fields replaced by the given arguments.
+  @_isc.useResult
+  @override
+  ProjectSuspendedException copyWith({
+    String? message,
+    Object? reason = _Undefined,
+  }) {
+    return ProjectSuspendedException(
+      message: message ?? this.message,
+      reason: reason is _ixae5ksq.ProjectSuspensionReason?
+          ? reason
+          : this.reason,
+    );
+  }
+}

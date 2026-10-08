@@ -117,6 +117,58 @@ void main() {
     );
   });
 
+  test('Given a ProjectSuspendedException with a reason '
+      'when calling processCommonClientExceptions '
+      'then should throw ExitErrorException and log the reason and hint', () {
+    expect(
+      () => processCommonClientExceptions(
+        logger,
+        defaultBaseCommand,
+        ProjectSuspendedException(
+          message: 'Project my-project is suspended.',
+          reason: ProjectSuspensionReason.paymentOverdue,
+        ),
+        StackTrace.current,
+      ),
+      throwsA(isA<ErrorExitException>()),
+    );
+
+    expect(
+      logger.errorCalls.last,
+      equalsErrorCall(
+        message: 'Project my-project is suspended.',
+        hint:
+            'Payment is overdue. '
+            'To manage your account, visit: https://console.serverpod.dev/project\n',
+        newParagraph: true,
+      ),
+    );
+  });
+
+  test('Given a ProjectSuspendedException without a reason '
+      'when calling processCommonClientExceptions '
+      'then should throw ExitErrorException and log the hint', () {
+    expect(
+      () => processCommonClientExceptions(
+        logger,
+        defaultBaseCommand,
+        ProjectSuspendedException(message: 'Project my-project is suspended.'),
+        StackTrace.current,
+      ),
+      throwsA(isA<ErrorExitException>()),
+    );
+
+    expect(
+      logger.errorCalls.last,
+      equalsErrorCall(
+        message: 'Project my-project is suspended.',
+        hint:
+            'To manage your account, visit: https://console.serverpod.dev/project\n',
+        newParagraph: true,
+      ),
+    );
+  });
+
   test('Given an exception that is not commonly handled '
       'when calling processCommonClientExceptions '
       'then should not throw an exception', () {

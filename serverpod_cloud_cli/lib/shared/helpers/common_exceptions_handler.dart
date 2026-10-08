@@ -2,6 +2,7 @@ import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/shared/helpers/console_urls.dart';
+import 'package:serverpod_cloud_cli/shared/helpers/project_suspension_hint.dart';
 
 /// If the exception is a common client exception, process it by displaying
 /// relevant messages to the user and throwing an [ErrorExitException].
@@ -51,6 +52,13 @@ void processCommonClientExceptions(
 
     case NotFoundException():
       logger.error('The requested resource did not exist.', hint: e.message);
+
+    case ProjectSuspendedException():
+      logger.error(
+        e.message,
+        hint: projectSuspendedHint(e),
+        newParagraph: true,
+      );
   }
 
   throw exitException;
@@ -82,6 +90,11 @@ ErrorExitException? commonClientExceptionExit(
     ),
     NotFoundException() => ErrorExitException(
       'The requested resource did not exist.',
+      e,
+      stackTrace,
+    ),
+    ProjectSuspendedException() => ErrorExitException(
+      'The project is suspended.',
       e,
       stackTrace,
     ),
