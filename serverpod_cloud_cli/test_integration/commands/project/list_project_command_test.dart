@@ -62,6 +62,7 @@ void main() {
             ProjectBuilder()
                 .withCloudProjectId('projectId2')
                 .withCreatedAt(DateTime.parse("2024-12-31 12:20:30"))
+                .withArchived()
                 .withArchivedAt(DateTime.parse("2025-01-01 14:20:30")),
           )
           .withLatestDeployAttemptTime(DateTime.parse("2024-12-31 12:20:30"))
@@ -110,15 +111,16 @@ void main() {
           containsAllInOrder([
             equalsLineCall(
               line:
-                  'Project Id | Created At (local)  | Last Deploy Attempt (local)',
+                  'Project Id | Status | Created At (local)  | Last Deploy Attempt (local)',
             ),
             equalsLineCall(
               line:
-                  '-----------+---------------------+----------------------------',
+                  '-----------+--------+---------------------+----------------------------',
             ),
-            equalsLineCall(line: 'projectId3 | 2024-12-30 10:20:30 |'),
+            equalsLineCall(line: 'projectId3 | active | 2024-12-30 10:20:30 |'),
             equalsLineCall(
-              line: 'projectId  | 2024-12-31 10:20:30 | 2024-12-31 10:20:30',
+              line:
+                  'projectId  | active | 2024-12-31 10:20:30 | 2024-12-31 10:20:30',
             ),
           ]),
         );
@@ -150,23 +152,23 @@ void main() {
           containsAllInOrder([
             equalsLineCall(
               line:
-                  'Project Id | Created At (local)  | Last Deploy Attempt (local) | Deleted At (local)',
+                  'Project Id | Status   | Created At (local)  | Last Deploy Attempt (local) | Deleted At (local)',
             ),
             equalsLineCall(
               line:
-                  '-----------+---------------------+-----------------------------+-------------------',
+                  '-----------+----------+---------------------+-----------------------------+-------------------',
             ),
             equalsLineCall(
               line:
-                  'projectId3 | 2024-12-30 10:20:30 |                             |',
+                  'projectId3 | active   | 2024-12-30 10:20:30 |                             |',
             ),
             equalsLineCall(
               line:
-                  'projectId  | 2024-12-31 10:20:30 | 2024-12-31 10:20:30         |',
+                  'projectId  | active   | 2024-12-31 10:20:30 | 2024-12-31 10:20:30         |',
             ),
             equalsLineCall(
               line:
-                  'projectId2 | 2024-12-31 12:20:30 | 2024-12-31 12:20:30         | 2025-01-01 14:20:30',
+                  'projectId2 | archived | 2024-12-31 12:20:30 | 2024-12-31 12:20:30         | 2025-01-01 14:20:30',
             ),
           ]),
         );
@@ -327,6 +329,65 @@ void main() {
         expect(logger.lineCalls, isEmpty);
         expect(logger.infoCalls, isEmpty);
         expect(jsonDecode(logger.rawCalls.single.content), <Object?>[]);
+      });
+    });
+  });
+
+  group('Given a suspended project', () {
+    setUpAll(() {
+      when(
+        () => client.projects.listProjectsInfo(
+          includeArchived: any(named: 'includeArchived'),
+          includeLatestDeployAttemptTime: any(
+            named: 'includeLatestDeployAttemptTime',
+          ),
+        ),
+      ).thenAnswer(
+        (_) async => [
+          ProjectInfoBuilder()
+              .withProject(
+                ProjectBuilder()
+                    .withCloudProjectId('suspendedId')
+                    .withSuspended(),
+              )
+              .build(),
+        ],
+      );
+    });
+
+    tearDownAll(() {
+      reset(client.projects);
+    });
+
+    group('when executing project list', () {
+      late Future commandResult;
+      setUp(() async {
+        commandResult = cli.run(['project', 'list']);
+      });
+
+      test('then the status column reads suspended', () async {
+        await commandResult;
+
+        expect(
+          logger.lineCalls.map((final call) => call.line),
+          contains(startsWith('suspendedId | suspended |')),
+        );
+      });
+    });
+
+    group('when executing project list with --format json', () {
+      late Future commandResult;
+      setUp(() async {
+        commandResult = cli.run(['project', 'list', '--format', 'json']);
+      });
+
+      test('then the project carries its status and reason', () async {
+        await commandResult;
+
+        final payload = jsonDecode(logger.rawCalls.single.content) as List;
+        final project = (payload.single as Map)['project'] as Map;
+        expect(project['status'], 'suspended');
+        expect(project['suspensionReason'], 'paymentOverdue');
       });
     });
   });

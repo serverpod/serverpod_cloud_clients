@@ -207,6 +207,9 @@ abstract class ProjectCommands {
 
     return {
       'projectId': project.cloudProjectId,
+      'status': project.status,
+      'suspendedAt': project.suspendedAt,
+      'suspensionReason': project.suspensionReason,
       'createdAt': project.createdAt,
       'region': capsule?.region,
       'latestDeployAttemptAt': projectInfo.latestDeployAttemptTime?.timestamp,
