@@ -62,11 +62,14 @@ class ProjectBuilder {
     return this;
   }
 
-  /// A project suspended for an overdue payment.
-  ProjectBuilder withSuspended() {
+  /// A suspended project, for an overdue payment unless [reason] says
+  /// otherwise.
+  ProjectBuilder withSuspended([
+    ProjectSuspensionReason reason = ProjectSuspensionReason.paymentOverdue,
+  ]) {
     _status = ProjectLifecycleStatus.suspended;
     _suspendedAt = DateTime.now();
-    _suspensionReason = ProjectSuspensionReason.paymentOverdue;
+    _suspensionReason = reason;
     return this;
   }
 

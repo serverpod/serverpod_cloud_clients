@@ -1,6 +1,10 @@
 import 'package:cli_tools/logger.dart' as cli show AnsiStyle;
 import 'package:ground_control_client/ground_control_client.dart'
-    show ProjectInfo, ServerpodRegion;
+    show
+        ProjectInfo,
+        ProjectLifecycleStatus,
+        ProjectSuspensionReason,
+        ServerpodRegion;
 import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
@@ -15,6 +19,10 @@ class ProjectListTextUi extends OutputWidget {
       TableColumnFormatter.forElement(
         'Project Id',
         getter: (project) => project.project.cloudProjectId,
+      ),
+      TableColumnFormatter.forElement(
+        'Status',
+        getter: (project) => project.project.status.name,
       ),
       TableColumnFormatter.forTimestamp(
         'Created At',
@@ -152,6 +160,7 @@ class ProjectShowTextUi extends OutputWidget {
 
     return [
       ['Project', '${profile['projectId']}'],
+      ['Status', _status(profile)],
       ['Created', _timestamp(profile['createdAt']) ?? '-'],
       if (region is ServerpodRegion) ['Region', _regionName(region)],
       ['Deployed', _timestamp(profile['latestDeployAttemptAt']) ?? 'never'],
@@ -215,6 +224,23 @@ class ProjectShowTextUi extends OutputWidget {
     ];
 
     return '${_sizeName(database['size'])} — ${details.join(', ')}';
+  }
+
+  String _status(final Map<String, Object?> profile) {
+    final status = profile['status'];
+    final name = status is ProjectLifecycleStatus ? status.name : '-';
+    final reason = profile['suspensionReason'];
+    if (status != ProjectLifecycleStatus.suspended ||
+        reason is! ProjectSuspensionReason) {
+      return name;
+    }
+    final cause = switch (reason) {
+      ProjectSuspensionReason.subscriptionEnded => 'subscription ended',
+      ProjectSuspensionReason.paymentOverdue => 'payment overdue',
+      ProjectSuspensionReason.usageCapExceeded => 'usage cap exceeded',
+      ProjectSuspensionReason.manual => 'by support',
+    };
+    return '$name ($cause)';
   }
 
   String? _timestamp(final Object? value) {

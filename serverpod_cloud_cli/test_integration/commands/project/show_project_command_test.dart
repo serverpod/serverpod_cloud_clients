@@ -167,6 +167,7 @@ void main() {
         expect(tableLines(), [
           '',
           '  Project   projectId',
+          '  Status    active',
           '  Created   2024-12-31 10:20:30 (local)',
           '  Region    US East',
           '  Deployed  2025-01-02 08:00:00 (local)',
@@ -207,6 +208,9 @@ void main() {
 
         final payload = jsonDecode(logger.rawCalls.single.content) as Map;
         expect(payload['projectId'], projectId);
+        expect(payload['status'], 'active');
+        expect(payload['suspendedAt'], isNull);
+        expect(payload['suspensionReason'], isNull);
         expect(
           payload['createdAt'],
           DateTime.parse('2024-12-31 10:20:30').toUtc().toIso8601String(),
@@ -298,6 +302,123 @@ void main() {
         expect(payload['plan'], isNull);
         expect(payload['compute'], isNull);
         expect(payload['database'], isNull);
+      });
+    });
+  });
+
+  group('Given a suspended project without a plan, compute or database', () {
+    setUpAll(() {
+      when(
+        () => client.projects.fetchProjectInfo(
+          cloudProjectId: projectId,
+          includeLatestDeployAttemptTime: any(
+            named: 'includeLatestDeployAttemptTime',
+          ),
+        ),
+      ).thenAnswer(
+        (_) async => ProjectInfoBuilder()
+            .withProject(
+              ProjectBuilder()
+                  .withCloudProjectId(projectId)
+                  .withSuspended(ProjectSuspensionReason.usageCapExceeded),
+            )
+            .build(),
+      );
+      when(
+        () => client.plans.getSubscriptionInfoOfProject(
+          cloudProjectId: projectId,
+        ),
+      ).thenThrow(NotFoundException(message: 'Subscription not found'));
+      when(
+        () => client.compute.readCompute(cloudCapsuleId: projectId),
+      ).thenThrow(NotFoundException(message: 'Resource config not found'));
+      when(
+        () => client.database.readDatabase(cloudCapsuleId: projectId),
+      ).thenThrow(NotFoundException(message: 'Database not found'));
+    });
+
+    tearDownAll(() {
+      reset(client.projects);
+      reset(client.plans);
+      reset(client.compute);
+      reset(client.database);
+    });
+
+    group('when executing project show', () {
+      setUp(() async {
+        await cli.run(['project', 'show', projectId]);
+      });
+
+      test('then the status row names the suspension reason', () {
+        expect(
+          tableLines(),
+          contains('  Status    suspended (usage cap exceeded)'),
+        );
+      });
+    });
+
+    group('when executing project show with --format json', () {
+      setUp(() async {
+        await cli.run(['project', 'show', projectId, '--format', 'json']);
+      });
+
+      test('then emits the status, reason and suspension time', () {
+        final payload = jsonDecode(logger.rawCalls.single.content) as Map;
+        expect(payload['status'], 'suspended');
+        expect(payload['suspensionReason'], 'usageCapExceeded');
+        final suspendedAt = payload['suspendedAt'] as String;
+        expect(DateTime.tryParse(suspendedAt), isNotNull);
+        expect(suspendedAt, endsWith('Z'));
+      });
+    });
+  });
+
+  group('Given an archived project that was suspended before', () {
+    setUpAll(() {
+      when(
+        () => client.projects.fetchProjectInfo(
+          cloudProjectId: projectId,
+          includeLatestDeployAttemptTime: any(
+            named: 'includeLatestDeployAttemptTime',
+          ),
+        ),
+      ).thenAnswer(
+        (_) async => ProjectInfoBuilder()
+            .withProject(
+              ProjectBuilder()
+                  .withCloudProjectId(projectId)
+                  .withSuspended()
+                  .withArchived(),
+            )
+            .build(),
+      );
+      when(
+        () => client.plans.getSubscriptionInfoOfProject(
+          cloudProjectId: projectId,
+        ),
+      ).thenThrow(NotFoundException(message: 'Subscription not found'));
+      when(
+        () => client.compute.readCompute(cloudCapsuleId: projectId),
+      ).thenThrow(NotFoundException(message: 'Resource config not found'));
+      when(
+        () => client.database.readDatabase(cloudCapsuleId: projectId),
+      ).thenThrow(NotFoundException(message: 'Database not found'));
+    });
+
+    tearDownAll(() {
+      reset(client.projects);
+      reset(client.plans);
+      reset(client.compute);
+      reset(client.database);
+    });
+
+    group('when executing project show', () {
+      setUp(() async {
+        await cli.run(['project', 'show', projectId]);
+      });
+
+      test('then the status row shows archived without a reason', () {
+        expect(tableLines(), contains('  Status    archived'));
       });
     });
   });
