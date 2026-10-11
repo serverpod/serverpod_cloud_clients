@@ -36,8 +36,8 @@ class AmbiguousSearchException implements Exception {
 ///   1. If the directory is a candidate, it is used.
 ///   2. If the directory is a Dart workspace root, search its workspace packages.
 ///      If exactly one candidate is found it is used, otherwise the search ends.
-///   3. Search [searchLevelsDown] levels down. If exactly one candidate is found
-///      it is used.
+///   3. Unless the directory is the filesystem root, search [searchLevelsDown]
+///      levels down. If exactly one candidate is found it is used.
 ///   4. If the directory is a git repository root, or the filesystem root,
 ///      stop the search.
 ///
@@ -101,24 +101,27 @@ class _StatefulFileFinder {
         );
       }
 
+      final parent = p.dirname(current);
+      final atFilesystemRoot = parent == current;
+
       // 3. Search directory tree [searchLevelsDown] levels down.
-      final downFromStart = _findUnambiguousFile(
-        _findFileInTree(
-          current,
-          filenames,
-          searchLevelsDown,
-          fileContentCondition,
-        ),
-      );
-      if (downFromStart != null) {
-        return downFromStart;
+      if (!atFilesystemRoot) {
+        final downFromStart = _findUnambiguousFile(
+          _findFileInTree(
+            current,
+            filenames,
+            searchLevelsDown,
+            fileContentCondition,
+          ),
+        );
+        if (downFromStart != null) {
+          return downFromStart;
+        }
       }
 
-      if (_isGitRepoRoot(current)) {
-        // The directory is a git repository root, stop the search.
+      if (atFilesystemRoot || _isGitRepoRoot(current)) {
         break;
       }
-      final parent = p.dirname(current);
       final grandParent = p.dirname(parent);
       if (grandParent == parent) {
         // The directory is the root or one level below it, stop the search.

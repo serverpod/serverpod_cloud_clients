@@ -41,6 +41,22 @@ void main() {
       },
     );
 
+    group(
+      'and an scloud.yaml file in the sandbox within searchLevelsDown of the root directory '
+      'when calling finder from the root directory',
+      () {
+        setUp(() async {
+          await d.file('scloud.yaml').create();
+        });
+
+        test('then null is returned', () {
+          final root = p.rootPrefix(p.absolute(d.sandbox));
+          final sandboxDepth = p.split(p.absolute(d.sandbox)).length - 1;
+          expect(finder(root, searchLevelsDown: sandboxDepth), isNull);
+        });
+      },
+    );
+
     group('and an scloud.yaml file in the starting directory '
         'when calling finder', () {
       setUp(() async {
