@@ -15,7 +15,7 @@ persistentFlags:
   --token=: "The authentication token to use for the current command."
   -d, --project-dir=: "The path to the Serverpod Cloud project server directory."
   --project-config-file=: "The path to the Serverpod Cloud project configuration file (defaults to <server-package>/scloud.yaml)"
-  --timeout=: "The timeout for the connection to the Serverpod Cloud API."
+  --timeout=: "The timeout for connections to the Serverpod Cloud API, and for an upload that makes no progress."
   --yes: "Automatically accept confirmation prompts."
   --non-interactive: "Never wait for user input, fail with an error instead. For use in non-interactive environments such as CI. Combine with --yes to accept confirmation prompts."
   --format=: "Selects the command output format."
@@ -276,6 +276,15 @@ commands:
               --deploy=: "View a specific deployment, with uuid or sequence number, 0 for latest. Can be passed as the first argument."
             exclusiveFlags:
               - [utc, no-utc]
+
+  - name: top
+    flags:
+      -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
+      -u, --utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
+      --no-utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
+      --interval=: "How often the status and deployments refresh."
+    exclusiveFlags:
+      - [utc, no-utc]
 
   - name: build
 

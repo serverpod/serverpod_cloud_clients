@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cli_tools/logger.dart' as cli show AnsiStyle;
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/status/capsule_state_look.dart';
 import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
@@ -448,39 +449,18 @@ class _RuntimeStatusLines {
   ({String glyph, String label, cli.AnsiStyle? style}) _stateLook(
     CapsuleState state,
   ) {
-    return switch (state) {
-      CapsuleState.ready => (
-        glyph: '●',
-        label: 'Running',
-        style: cli.AnsiStyle.lightGreen,
-      ),
-      CapsuleState.progressing => (
-        glyph: '◐',
-        label: 'Deploying',
-        style: cli.AnsiStyle.yellow,
-      ),
-      CapsuleState.degraded => (
-        glyph: '◑',
-        label: 'Degraded',
-        style: cli.AnsiStyle.yellow,
-      ),
-      CapsuleState.unavailable => (
-        glyph: '✖',
-        label: 'Down',
-        style: cli.AnsiStyle.red,
-      ),
-      CapsuleState.suspended => (glyph: '⏸', label: 'Suspended', style: null),
-      CapsuleState.notProvisioned => (
-        glyph: '○',
-        label: 'Not deployed',
-        style: null,
-      ),
-      CapsuleState.unknown => (
-        glyph: '?',
-        label: 'Unknown',
-        style: cli.AnsiStyle.yellow,
-      ),
-    };
+    final StatusLook look = capsuleStateLook(state);
+
+    return (
+      glyph: look.glyph,
+      label: look.label,
+      style: switch (look.tone) {
+        StatusTone.good => cli.AnsiStyle.lightGreen,
+        StatusTone.warning => cli.AnsiStyle.yellow,
+        StatusTone.bad => cli.AnsiStyle.red,
+        StatusTone.neutral => null,
+      },
+    );
   }
 
   String? _diagnosis(CapsuleState state) {
