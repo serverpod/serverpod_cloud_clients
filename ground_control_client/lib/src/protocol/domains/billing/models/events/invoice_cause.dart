@@ -13,12 +13,15 @@
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
 enum InvoiceCause implements _isc.SerializableModel {
-  issueFailed;
+  issueFailed,
+  paymentFailed;
 
   static InvoiceCause fromJson(String name) {
     switch (name) {
       case 'issueFailed':
         return InvoiceCause.issueFailed;
+      case 'paymentFailed':
+        return InvoiceCause.paymentFailed;
       default:
         throw ArgumentError(
           'Value "$name" cannot be converted to "InvoiceCause"',
