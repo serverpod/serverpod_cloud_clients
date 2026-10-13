@@ -120,6 +120,32 @@ abstract class ProjectAdminCommands {
     return {'projectId': projectId, 'planType': planType.name};
   }
 
+  /// Sets [grant] on [projectId] to [amount].
+  ///
+  /// The project id is used as the capsule id.
+  static Future<Map<String, Object?>> setGrant(
+    final Client cloudApiClient, {
+    required final String projectId,
+    required final String grant,
+    required final int amount,
+  }) async {
+    try {
+      await cloudApiClient.adminGrants.setCapsuleGrant(
+        cloudCapsuleId: projectId,
+        grant: grant,
+        amount: amount,
+      );
+    } on NotFoundException catch (e) {
+      throw FailureException(error: e.message);
+    } on InvalidValueException catch (e) {
+      throw FailureException(error: e.message);
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Failed to set the project grant');
+    }
+
+    return {'projectId': projectId, 'grant': grant, 'amount': amount};
+  }
+
   static Future<Map<String, Object?>> reprocureExistingProject(
     final Client cloudApiClient, {
     required final String projectId,

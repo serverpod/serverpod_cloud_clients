@@ -427,6 +427,15 @@ const _scenarios = [
     _projectId,
     'starter',
   ]),
+  _Scenario('admin project set-grant', [
+    'admin',
+    'project',
+    'set-grant',
+    _projectId,
+    'databaseBackups',
+    '--amount',
+    '1',
+  ]),
   _Scenario('admin product list-procured', [
     'admin',
     'product',
