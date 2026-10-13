@@ -1926,6 +1926,8 @@ class EndpointMetrics extends _isc.EndpointRef {
   /// the same capsule. An empty result is not an error: a suspended database
   /// exports nothing, and the returned status says whether the database was
   /// idle or does not have metrics export enabled.
+  ///
+  /// Throws [NotFoundException] when the capsule has no database.
   _ida.Future<_ii9nkdyl.DatabaseMetrics> fetchDatabaseMetrics({
     required String cloudCapsuleId,
     required _ioikgkhk.MetricsRange range,
