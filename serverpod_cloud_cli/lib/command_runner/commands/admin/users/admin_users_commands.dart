@@ -15,8 +15,54 @@ class AdminUserCommand extends CloudCliCommand {
   final description = 'Manage Serverpod Cloud project user memberships.';
 
   AdminUserCommand({required super.logger}) {
+    addSubcommand(AdminUserStatusCommand(logger: logger));
     addSubcommand(AdminUserAttachCommand(logger: logger));
     addSubcommand(AdminUserDetachCommand(logger: logger));
+  }
+}
+
+enum AdminUserStatusOption<V> implements OptionDefinition<V> {
+  identifier(
+    StringOption(
+      argPos: 0,
+      mandatory: true,
+      helpText: 'User email or owner id.',
+    ),
+  ),
+  utc(UtcOption());
+
+  const AdminUserStatusOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class AdminUserStatusCommand extends CloudCliCommand<AdminUserStatusOption> {
+  @override
+  final name = 'status';
+
+  @override
+  final description = 'Show owner billing status and project memberships.';
+
+  AdminUserStatusCommand({required super.logger})
+    : super(options: AdminUserStatusOption.values);
+
+  @override
+  Future<void> runWithOutput(
+    final Configuration<AdminUserStatusOption> commandConfig,
+    final CommandOutput output,
+  ) async {
+    final identifier = commandConfig.value(AdminUserStatusOption.identifier);
+    final inUtc = commandConfig.value(AdminUserStatusOption.utc);
+
+    await renderCommand(
+      output,
+      operation: () => UserAdminCommands.getUserStatusOperation(
+        runner.serviceProvider.cloudApiClient,
+        identifier: identifier,
+      ),
+      textOutputUi: AdminUserStatusTextUi(utc: inUtc),
+    );
   }
 }
 

@@ -2,6 +2,41 @@ import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
 abstract class UserAdminCommands {
+  static Future<AdminUserStatus> getUserStatusOperation(
+    Client cloudApiClient, {
+    required String identifier,
+  }) async {
+    final lookup = _parseUserLookupIdentifier(identifier);
+    try {
+      return await cloudApiClient.adminUsers.getUserStatus(
+        email: lookup.email,
+        ownerId: lookup.ownerId,
+      );
+    } on InvalidValueException catch (e) {
+      throw FailureException(error: e.message);
+    } on NotFoundException catch (e) {
+      throw FailureException(error: e.message);
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Failed to read user status');
+    }
+  }
+
+  static ({String? email, UuidValue? ownerId}) _parseUserLookupIdentifier(
+    String identifier,
+  ) {
+    final trimmed = identifier.trim();
+    if (trimmed.contains('@')) {
+      return (email: trimmed, ownerId: null);
+    }
+    try {
+      return (email: null, ownerId: UuidValue.withValidation(trimmed));
+    } on FormatException {
+      throw FailureException(
+        error: 'Identifier must be a user email or owner UUID.',
+      );
+    }
+  }
+
   static Future<List<Map<String, Object?>>> listUsersOperation(
     Client cloudApiClient, {
     String? projectId,

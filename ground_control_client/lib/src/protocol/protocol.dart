@@ -142,6 +142,9 @@ import 'domains/users/models/user_account_status.dart' as _iu2mqg52;
 import 'domains/users/models/user_label.dart' as _iptirt7i;
 import 'domains/users/models/user_label_mapping.dart' as _im281b2u;
 import 'features/admin/models/admin_project_info.dart' as _io29g54w;
+import 'features/admin/models/admin_user_owner_status.dart' as _ijuf7cd8;
+import 'features/admin/models/admin_user_project_membership.dart' as _inhawksa;
+import 'features/admin/models/admin_user_status.dart' as _iebexyj8;
 import 'features/admin/models/payments_invoice_status.dart' as _iu1ze8tv;
 import 'features/admin/models/payments_status.dart' as _iw02lteh;
 import 'features/auth/exceptions/email_method_blocked_exception.dart'
@@ -286,6 +289,9 @@ export 'domains/users/models/user_account_status.dart';
 export 'domains/users/models/user_label.dart';
 export 'domains/users/models/user_label_mapping.dart';
 export 'features/admin/models/admin_project_info.dart';
+export 'features/admin/models/admin_user_owner_status.dart';
+export 'features/admin/models/admin_user_project_membership.dart';
+export 'features/admin/models/admin_user_status.dart';
 export 'features/admin/models/payments_invoice_status.dart';
 export 'features/admin/models/payments_status.dart';
 export 'features/auth/exceptions/email_method_blocked_exception.dart';
@@ -620,6 +626,15 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _io29g54w.AdminProjectInfo) {
       return _io29g54w.AdminProjectInfo.fromJson(data) as T;
+    }
+    if (t == _ijuf7cd8.AdminUserOwnerStatus) {
+      return _ijuf7cd8.AdminUserOwnerStatus.fromJson(data) as T;
+    }
+    if (t == _inhawksa.AdminUserProjectMembership) {
+      return _inhawksa.AdminUserProjectMembership.fromJson(data) as T;
+    }
+    if (t == _iebexyj8.AdminUserStatus) {
+      return _iebexyj8.AdminUserStatus.fromJson(data) as T;
     }
     if (t == _iu1ze8tv.PaymentsInvoiceStatus) {
       return _iu1ze8tv.PaymentsInvoiceStatus.fromJson(data) as T;
@@ -1118,6 +1133,22 @@ class Protocol extends _isc.SerializationManager {
       return (data != null ? _io29g54w.AdminProjectInfo.fromJson(data) : null)
           as T;
     }
+    if (t == _isc.getType<_ijuf7cd8.AdminUserOwnerStatus?>()) {
+      return (data != null
+              ? _ijuf7cd8.AdminUserOwnerStatus.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_inhawksa.AdminUserProjectMembership?>()) {
+      return (data != null
+              ? _inhawksa.AdminUserProjectMembership.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_iebexyj8.AdminUserStatus?>()) {
+      return (data != null ? _iebexyj8.AdminUserStatus.fromJson(data) : null)
+          as T;
+    }
     if (t == _isc.getType<_iu1ze8tv.PaymentsInvoiceStatus?>()) {
       return (data != null
               ? _iu1ze8tv.PaymentsInvoiceStatus.fromJson(data)
@@ -1506,6 +1537,18 @@ class Protocol extends _isc.SerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_i58d5zzr.ProjectRole>) {
+      return (data as List)
+              .map((e) => deserialize<_i58d5zzr.ProjectRole>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_inhawksa.AdminUserProjectMembership>) {
+      return (data as List)
+              .map((e) => deserialize<_inhawksa.AdminUserProjectMembership>(e))
+              .toList()
+          as T;
+    }
     if (t == List<_iheq245y.CustomDomainName>) {
       return (data as List)
               .map((e) => deserialize<_iheq245y.CustomDomainName>(e))
@@ -1783,6 +1826,9 @@ class Protocol extends _isc.SerializationManager {
       _iptirt7i.UserLabel => 'UserLabel',
       _im281b2u.UserLabelMapping => 'UserLabelMapping',
       _io29g54w.AdminProjectInfo => 'AdminProjectInfo',
+      _ijuf7cd8.AdminUserOwnerStatus => 'AdminUserOwnerStatus',
+      _inhawksa.AdminUserProjectMembership => 'AdminUserProjectMembership',
+      _iebexyj8.AdminUserStatus => 'AdminUserStatus',
       _iu1ze8tv.PaymentsInvoiceStatus => 'PaymentsInvoiceStatus',
       _iw02lteh.PaymentsStatus => 'PaymentsStatus',
       _ihqdfodo.EmailMethodBlockedException => 'EmailMethodBlockedException',
@@ -2024,6 +2070,12 @@ class Protocol extends _isc.SerializationManager {
         return 'UserLabelMapping';
       case _io29g54w.AdminProjectInfo():
         return 'AdminProjectInfo';
+      case _ijuf7cd8.AdminUserOwnerStatus():
+        return 'AdminUserOwnerStatus';
+      case _inhawksa.AdminUserProjectMembership():
+        return 'AdminUserProjectMembership';
+      case _iebexyj8.AdminUserStatus():
+        return 'AdminUserStatus';
       case _iu1ze8tv.PaymentsInvoiceStatus():
         return 'PaymentsInvoiceStatus';
       case _iw02lteh.PaymentsStatus():
@@ -2393,6 +2445,15 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'AdminProjectInfo') {
       return deserialize<_io29g54w.AdminProjectInfo>(data['data']);
+    }
+    if (dataClassName == 'AdminUserOwnerStatus') {
+      return deserialize<_ijuf7cd8.AdminUserOwnerStatus>(data['data']);
+    }
+    if (dataClassName == 'AdminUserProjectMembership') {
+      return deserialize<_inhawksa.AdminUserProjectMembership>(data['data']);
+    }
+    if (dataClassName == 'AdminUserStatus') {
+      return deserialize<_iebexyj8.AdminUserStatus>(data['data']);
     }
     if (dataClassName == 'PaymentsInvoiceStatus') {
       return deserialize<_iu1ze8tv.PaymentsInvoiceStatus>(data['data']);
