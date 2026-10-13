@@ -30,3 +30,13 @@ class BackfillSubscriptionUsageFiltersTextUi extends OutputWidget {
     return SuccessTextWidget('${result['status']}', newParagraph: true);
   }
 }
+
+class BackfillSubscriptionCloudProjectIdsMetadataTextUi extends OutputWidget {
+  const BackfillSubscriptionCloudProjectIdsMetadataTextUi();
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    final result = context.get<Map<String, Object?>>();
+    return SuccessTextWidget('${result['status']}', newParagraph: true);
+  }
+}

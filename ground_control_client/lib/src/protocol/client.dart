@@ -201,6 +201,15 @@ class EndpointAdminMigration extends _isc.EndpointRef {
         'backfillSubscriptionUsageFilters',
         {},
       );
+
+  /// Adds every procured project id to Orb subscription metadata.
+  _ida.Future<Map<String, String>>
+  backfillSubscriptionCloudProjectIdsMetadata() =>
+      caller.callServerEndpoint<Map<String, String>>(
+        'adminMigration',
+        'backfillSubscriptionCloudProjectIdsMetadata',
+        {},
+      );
 }
 
 /// Endpoint for global administrator to handle procurement for users.

@@ -57,6 +57,16 @@ void main() {
     },
   );
 
+  test('Given admin plan backfill-subscription-cloud-project-ids command when '
+      'instantiated then requires login', () {
+    expect(
+      AdminBackfillSubscriptionCloudProjectIdsMetadataCommand(
+        logger: logger,
+      ).requireLogin,
+      isTrue,
+    );
+  });
+
   group('Given authenticated', () {
     group('when executing admin plan list', () {
       late Future commandResult;
@@ -449,6 +459,45 @@ void main() {
           expect(jsonDecode(logger.rawCalls.single.content), {
             'status': 'Migration task started',
           });
+        });
+      },
+    );
+
+    group(
+      'when executing admin plan backfill-subscription-cloud-project-ids',
+      () {
+        late Future commandResult;
+        setUp(() async {
+          when(
+            () => client.adminMigration
+                .backfillSubscriptionCloudProjectIdsMetadata(),
+          ).thenAnswer(
+            (invocation) async => {'status': 'Migration task started'},
+          );
+
+          commandResult = cli.run([
+            'admin',
+            'plan',
+            'backfill-subscription-cloud-project-ids',
+          ]);
+        });
+
+        test('then command completes successfully', () async {
+          await expectLater(commandResult, completes);
+        });
+
+        test('then command logs the migration status', () async {
+          await commandResult;
+
+          expect(
+            logger.successCalls,
+            contains(
+              equalsSuccessCall(
+                message: 'Migration task started',
+                newParagraph: true,
+              ),
+            ),
+          );
         });
       },
     );
