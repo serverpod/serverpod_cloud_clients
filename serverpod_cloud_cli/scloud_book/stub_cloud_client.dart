@@ -853,6 +853,13 @@ void _stubAdmin(final ClientMock client, {required final String projectId}) {
     ),
   ).thenAnswer((_) async {});
   when(
+    () => client.adminGrants.setCapsuleGrant(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+      grant: any(named: 'grant'),
+      amount: any(named: 'amount'),
+    ),
+  ).thenAnswer((_) async {});
+  when(
     () => client.adminProjects.reprocureExistingProject(
       cloudProjectId: any(named: 'cloudProjectId'),
       profile: any(named: 'profile'),

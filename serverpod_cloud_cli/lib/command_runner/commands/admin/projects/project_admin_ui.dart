@@ -153,6 +153,20 @@ class AdminProjectUpdatePlanTextUi extends OutputWidget {
   }
 }
 
+class AdminProjectSetGrantTextUi extends OutputWidget {
+  const AdminProjectSetGrantTextUi();
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    final result = context.get<Map<String, Object?>>();
+    return SuccessTextWidget(
+      'Set ${result['grant']} to ${result['amount']} '
+      'for project "${result['projectId']}".',
+      newParagraph: true,
+    );
+  }
+}
+
 class AdminProjectReprocureTextUi extends OutputWidget {
   const AdminProjectReprocureTextUi();
 

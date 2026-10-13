@@ -21,6 +21,7 @@ class AdminProjectCommand extends CloudCliCommand {
     addSubcommand(AdminProjectChangeOwnerCommand(logger: logger));
     addSubcommand(AdminProjectUpdatePlanCommand(logger: logger));
     addSubcommand(AdminProjectReprocureCommand(logger: logger));
+    addSubcommand(AdminProjectSetGrantCommand(logger: logger));
   }
 }
 
@@ -351,6 +352,77 @@ class AdminProjectReprocureCommand
         planType: planType,
       ),
       textOutputUi: const AdminProjectReprocureTextUi(),
+    );
+  }
+}
+
+enum AdminProjectSetGrantOption<V> implements OptionDefinition<V> {
+  projectId(ProjectIdOption.argsOnly(asFirstArg: true)),
+  grant(
+    StringOption(
+      argName: 'grant',
+      argPos: 1,
+      helpText: 'The grant to set. Can be passed as the second argument.',
+      valueHelp:
+          'databaseBackups|futureCalls|bucketStorageBytes|'
+          'bucketEgressBytesPerMonth|bucketOpsPerMonth',
+      mandatory: true,
+    ),
+  ),
+  amount(
+    IntOption(
+      argName: 'amount',
+      helpText:
+          'The allowance amount. For binary grants, '
+          '1 enables the grant and 0 disables it.',
+      mandatory: true,
+      min: 0,
+    ),
+  );
+
+  const AdminProjectSetGrantOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class AdminProjectSetGrantCommand
+    extends CloudCliCommand<AdminProjectSetGrantOption> {
+  @override
+  final name = 'set-grant';
+
+  @override
+  final description = 'Set a grant amount on a project/capsule.';
+
+  AdminProjectSetGrantCommand({required super.logger})
+    : super(options: AdminProjectSetGrantOption.values);
+
+  @override
+  Future<void> runWithOutput(
+    final Configuration<AdminProjectSetGrantOption> commandConfig,
+    final CommandOutput output,
+  ) async {
+    final projectId = commandConfig.value(AdminProjectSetGrantOption.projectId);
+    final grant = commandConfig.value(AdminProjectSetGrantOption.grant);
+    final amount = commandConfig.value(AdminProjectSetGrantOption.amount);
+
+    await confirmToContinue(
+      output,
+      message:
+          'Are you sure you want to set $grant to $amount '
+          'for project "$projectId"?',
+      defaultValue: false,
+    );
+
+    await renderCommand(
+      output,
+      operation: () => ProjectAdminCommands.setGrant(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+        grant: grant,
+        amount: amount,
+      ),
+      textOutputUi: const AdminProjectSetGrantTextUi(),
     );
   }
 }

@@ -156,6 +156,36 @@ class EndpointAdminDatabaseScaling extends _isc.EndpointRef {
   );
 }
 
+/// Admin tools for setting capsule grant allowances.
+/// {@category Endpoint}
+class EndpointAdminGrants extends _isc.EndpointRef {
+  EndpointAdminGrants(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'adminGrants';
+
+  /// Sets the amount [cloudCapsuleId] is entitled to for grant [grant].
+  ///
+  /// For binary grants, an allowance of 1 represents enabled, and 0 disabled.
+  ///
+  /// An active allowance scoped to the capsule is updated. Otherwise one is
+  /// inserted on the capsule's product allocation.
+  ///
+  /// Throws [NotFoundException] when the capsule does not exist, or has no
+  /// product allocation.
+  /// Throws [InvalidValueException] when [grant] is not a capsule grant, or
+  /// when [amount] is negative.
+  _ida.Future<void> setCapsuleGrant({
+    required String cloudCapsuleId,
+    required String grant,
+    required int amount,
+  }) => caller.callServerEndpoint<void>('adminGrants', 'setCapsuleGrant', {
+    'cloudCapsuleId': cloudCapsuleId,
+    'grant': grant,
+    'amount': amount,
+  });
+}
+
 /// {@category Endpoint}
 class EndpointAdminMigration extends _isc.EndpointRef {
   EndpointAdminMigration(_isc.EndpointCaller caller) : super(caller);
@@ -2593,6 +2623,7 @@ class Client extends _isc.ServerpodClientShared {
          httpClientOverride: httpClientOverride,
        ) {
     adminDatabaseScaling = EndpointAdminDatabaseScaling(this);
+    adminGrants = EndpointAdminGrants(this);
     adminMigration = EndpointAdminMigration(this);
     adminProcurement = EndpointAdminProcurement(this);
     adminProjects = EndpointAdminProjects(this);
@@ -2631,6 +2662,8 @@ class Client extends _isc.ServerpodClientShared {
   }
 
   late final EndpointAdminDatabaseScaling adminDatabaseScaling;
+
+  late final EndpointAdminGrants adminGrants;
 
   late final EndpointAdminMigration adminMigration;
 
@@ -2705,6 +2738,7 @@ class Client extends _isc.ServerpodClientShared {
   @override
   Map<String, _isc.EndpointRef> get endpointRefLookup => {
     'adminDatabaseScaling': adminDatabaseScaling,
+    'adminGrants': adminGrants,
     'adminMigration': adminMigration,
     'adminProcurement': adminProcurement,
     'adminProjects': adminProjects,
