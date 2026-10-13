@@ -15,8 +15,6 @@ import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dar
 import 'package:serverpod_cloud_cli/util/ignore.dart';
 
 abstract final class ProjectFiles {
-  static final _windowsSlashDrivePattern = RegExp(r'^/[a-zA-Z]:[/\\]');
-
   /// Collects all files in the project directory that are not ignored by any
   /// ignore rules files in the project directory.
   ///
@@ -32,13 +30,7 @@ abstract final class ProjectFiles {
     required Directory rootDirectory,
     String beneath = '.',
   }) {
-    final uri = p.toUri(p.normalize(rootDirectory.path));
-
-    var root = uri.path;
-    // On Windows, uri.path causes absolute paths on a drive to be prefixed with a slash, remove it.
-    if (_windowsSlashDrivePattern.hasMatch(root)) {
-      root = root.substring(1);
-    }
+    final root = p.normalize(rootDirectory.path);
 
     final (collectedFiles, ignoredFiles) = Ignore.listFiles(
       beneath: beneath,
@@ -142,7 +134,7 @@ abstract final class ProjectFiles {
     required Directory fromDir,
     required String path,
   }) {
-    final root = p.toUri(p.normalize(fromDir.path)).path;
+    final root = p.normalize(fromDir.path);
     return _resolve(from: root, path: path);
   }
 
