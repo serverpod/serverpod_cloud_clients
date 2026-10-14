@@ -238,6 +238,8 @@ class ProjectShowTextUi extends OutputWidget {
       ProjectSuspensionReason.subscriptionEnded => 'subscription ended',
       ProjectSuspensionReason.paymentOverdue => 'payment overdue',
       ProjectSuspensionReason.usageCapExceeded => 'usage cap exceeded',
+      ProjectSuspensionReason.billingSetupIncomplete =>
+        'billing setup incomplete',
       ProjectSuspensionReason.manual => 'by support',
     };
     return '$name ($cause)';

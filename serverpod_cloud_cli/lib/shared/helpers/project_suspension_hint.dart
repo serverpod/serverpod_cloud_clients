@@ -10,6 +10,9 @@ String projectSuspendedHint(ProjectSuspendedException exception) {
     ProjectSuspensionReason.paymentOverdue => 'Payment is overdue.',
     ProjectSuspensionReason.usageCapExceeded =>
       'The usage cap for the current billing period has been exceeded.',
+    ProjectSuspensionReason.billingSetupIncomplete =>
+      'The first invoice could not be issued because the billing details '
+          'are incomplete.',
     ProjectSuspensionReason.manual =>
       'It was suspended by Serverpod Cloud support.',
     null => null,
