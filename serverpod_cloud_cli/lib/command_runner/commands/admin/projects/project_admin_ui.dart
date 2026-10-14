@@ -125,6 +125,32 @@ class AdminProjectDeleteTextUi extends OutputWidget {
   }
 }
 
+class AdminProjectSuspendTextUi extends OutputWidget {
+  const AdminProjectSuspendTextUi();
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    final result = context.get<Map<String, Object?>>();
+    return SuccessTextWidget(
+      'Suspended the project "${result['projectId']}".',
+      newParagraph: true,
+    );
+  }
+}
+
+class AdminProjectReactivateTextUi extends OutputWidget {
+  const AdminProjectReactivateTextUi();
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    final result = context.get<Map<String, Object?>>();
+    return SuccessTextWidget(
+      'Reactivated the project "${result['projectId']}".',
+      newParagraph: true,
+    );
+  }
+}
+
 class AdminProjectChangeOwnerTextUi extends OutputWidget {
   const AdminProjectChangeOwnerTextUi();
 

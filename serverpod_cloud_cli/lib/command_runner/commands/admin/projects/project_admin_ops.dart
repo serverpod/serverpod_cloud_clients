@@ -78,6 +78,42 @@ abstract class ProjectAdminCommands {
     return {'projectId': projectId};
   }
 
+  static Future<Map<String, Object?>> suspendProject(
+    final Client cloudApiClient, {
+    required final String projectId,
+  }) async {
+    try {
+      final project = await cloudApiClient.adminProjects.suspendProject(
+        cloudProjectId: projectId,
+      );
+      return {'projectId': projectId, 'status': project.status.name};
+    } on Exception catch (e, s) {
+      throw FailureException.nested(
+        e,
+        s,
+        'Request to suspend the project failed',
+      );
+    }
+  }
+
+  static Future<Map<String, Object?>> reactivateProject(
+    final Client cloudApiClient, {
+    required final String projectId,
+  }) async {
+    try {
+      final project = await cloudApiClient.adminProjects.reactivateProject(
+        cloudProjectId: projectId,
+      );
+      return {'projectId': projectId, 'status': project.status.name};
+    } on Exception catch (e, s) {
+      throw FailureException.nested(
+        e,
+        s,
+        'Request to reactivate the project failed',
+      );
+    }
+  }
+
   static Future<Map<String, Object?>> changeProjectOwner(
     final Client cloudApiClient, {
     required final String projectId,

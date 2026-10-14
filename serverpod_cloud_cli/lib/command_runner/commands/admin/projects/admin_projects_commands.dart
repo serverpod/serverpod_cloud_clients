@@ -18,6 +18,8 @@ class AdminProjectCommand extends CloudCliCommand {
     addSubcommand(AdminListProjectsCommand(logger: logger));
     addSubcommand(AdminProjectStatusCommand(logger: logger));
     addSubcommand(AdminProjectDeleteCommand(logger: logger));
+    addSubcommand(AdminProjectSuspendCommand(logger: logger));
+    addSubcommand(AdminProjectReactivateCommand(logger: logger));
     addSubcommand(AdminProjectChangeOwnerCommand(logger: logger));
     addSubcommand(AdminProjectUpdatePlanCommand(logger: logger));
     addSubcommand(AdminProjectReprocureCommand(logger: logger));
@@ -180,6 +182,99 @@ class AdminProjectDeleteCommand
         projectId: projectId,
       ),
       textOutputUi: const AdminProjectDeleteTextUi(),
+    );
+  }
+}
+
+enum AdminProjectSuspendOption<V> implements OptionDefinition<V> {
+  projectId(ProjectIdOption.argsOnly(asFirstArg: true));
+
+  const AdminProjectSuspendOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class AdminProjectSuspendCommand
+    extends CloudCliCommand<AdminProjectSuspendOption> {
+  @override
+  final name = 'suspend';
+
+  @override
+  final description =
+      'Suspend a Serverpod Cloud project. This pauses its deployment.';
+
+  AdminProjectSuspendCommand({required super.logger})
+    : super(options: AdminProjectSuspendOption.values);
+
+  @override
+  Future<void> runWithOutput(
+    final Configuration<AdminProjectSuspendOption> commandConfig,
+    final CommandOutput output,
+  ) async {
+    final projectId = commandConfig.value(AdminProjectSuspendOption.projectId);
+
+    await confirmToContinue(
+      output,
+      message: 'Are you sure you want to suspend the project "$projectId"?',
+      defaultValue: false,
+    );
+
+    await renderCommand(
+      output,
+      operation: () => ProjectAdminCommands.suspendProject(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+      ),
+      textOutputUi: const AdminProjectSuspendTextUi(),
+    );
+  }
+}
+
+enum AdminProjectReactivateOption<V> implements OptionDefinition<V> {
+  projectId(ProjectIdOption.argsOnly(asFirstArg: true));
+
+  const AdminProjectReactivateOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class AdminProjectReactivateCommand
+    extends CloudCliCommand<AdminProjectReactivateOption> {
+  @override
+  final name = 'reactivate';
+
+  @override
+  final description =
+      'Reactivate a suspended Serverpod Cloud project. '
+      'This resumes its last successful deployment, if any.';
+
+  AdminProjectReactivateCommand({required super.logger})
+    : super(options: AdminProjectReactivateOption.values);
+
+  @override
+  Future<void> runWithOutput(
+    final Configuration<AdminProjectReactivateOption> commandConfig,
+    final CommandOutput output,
+  ) async {
+    final projectId = commandConfig.value(
+      AdminProjectReactivateOption.projectId,
+    );
+
+    await confirmToContinue(
+      output,
+      message: 'Are you sure you want to reactivate the project "$projectId"?',
+      defaultValue: false,
+    );
+
+    await renderCommand(
+      output,
+      operation: () => ProjectAdminCommands.reactivateProject(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+      ),
+      textOutputUi: const AdminProjectReactivateTextUi(),
     );
   }
 }

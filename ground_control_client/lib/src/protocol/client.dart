@@ -360,6 +360,30 @@ class EndpointAdminProjects extends _isc.EndpointRef {
         'keepEmptySubscription': keepEmptySubscription,
       });
 
+  /// Suspends a project manually, pausing its capsule.
+  /// An already suspended project is returned unchanged.
+  ///
+  /// Throws [NotFoundException] if the project is not found or is archived.
+  _ida.Future<_iavjecni.Project> suspendProject({
+    required String cloudProjectId,
+  }) => caller.callServerEndpoint<_iavjecni.Project>(
+    'adminProjects',
+    'suspendProject',
+    {'cloudProjectId': cloudProjectId},
+  );
+
+  /// Reactivates a suspended project, resuming its capsule if it has a
+  /// successful deployment. An already active project is returned unchanged.
+  ///
+  /// Throws [NotFoundException] if the project is not found or is archived.
+  _ida.Future<_iavjecni.Project> reactivateProject({
+    required String cloudProjectId,
+  }) => caller.callServerEndpoint<_iavjecni.Project>(
+    'adminProjects',
+    'reactivateProject',
+    {'cloudProjectId': cloudProjectId},
+  );
+
   /// Moves a project to a new subscription under a new owner, with the same
   /// plan type as previously and to the private/business type of the new owner.
   ///

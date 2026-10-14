@@ -847,6 +847,23 @@ void _stubAdmin(final ClientMock client, {required final String projectId}) {
     (_) async => ProjectBuilder().withCloudProjectId(projectId).build(),
   );
   when(
+    () => client.adminProjects.suspendProject(
+      cloudProjectId: any(named: 'cloudProjectId'),
+    ),
+  ).thenAnswer(
+    (_) async => ProjectBuilder()
+        .withCloudProjectId(projectId)
+        .withSuspended(ProjectSuspensionReason.manual)
+        .build(),
+  );
+  when(
+    () => client.adminProjects.reactivateProject(
+      cloudProjectId: any(named: 'cloudProjectId'),
+    ),
+  ).thenAnswer(
+    (_) async => ProjectBuilder().withCloudProjectId(projectId).build(),
+  );
+  when(
     () => client.adminProjects.changeProjectOwner(
       cloudProjectId: any(named: 'cloudProjectId'),
       newOwnerId: any(named: 'newOwnerId'),
