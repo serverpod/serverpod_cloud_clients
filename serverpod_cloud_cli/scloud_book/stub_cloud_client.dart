@@ -825,20 +825,10 @@ void _stubAdmin(final ClientMock client, {required final String projectId}) {
     ),
   ).thenAnswer((_) async => AdminUserStatusBuilder().build());
   when(
-    () => client.adminProjects.getDeployAttempts(
-      cloudCapsuleId: any(named: 'cloudCapsuleId'),
-      limit: any(named: 'limit'),
+    () => client.adminProjects.getProjectStatus(
+      cloudProjectId: any(named: 'cloudProjectId'),
     ),
-  ).thenAnswer(
-    (_) async => [
-      DeployAttemptBuilder()
-          .withSuccessfulDeployment()
-          .withCloudCapsuleId(projectId)
-          .withStartedAt(DateTime.utc(2024, 12, 31, 10, 20, 30))
-          .withEndedAt(DateTime.utc(2024, 12, 31, 10, 20, 40))
-          .build(),
-    ],
-  );
+  ).thenAnswer((_) async => AdminProjectInfoBuilder().build());
   when(
     () => client.adminProjects.deleteProject(
       cloudProjectId: any(named: 'cloudProjectId'),

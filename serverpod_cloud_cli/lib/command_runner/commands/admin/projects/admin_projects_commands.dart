@@ -5,7 +5,7 @@ import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/projects/project_admin_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/projects/project_admin_ui.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployments_ui.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/admin/projects/project_admin_status_ui.dart';
 
 class AdminProjectCommand extends CloudCliCommand {
   @override
@@ -92,14 +92,6 @@ class AdminListProjectsCommand
 
 enum AdminProjectStatusOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption.argsOnly(asFirstArg: true)),
-  limit(
-    IntOption(
-      argName: 'limit',
-      helpText: 'The maximum number of records to fetch.',
-      defaultsTo: 10,
-      min: 1,
-    ),
-  ),
   utc(UtcOption());
 
   const AdminProjectStatusOption(this.option);
@@ -114,7 +106,7 @@ class AdminProjectStatusCommand
   final name = 'status';
 
   @override
-  final description = 'Show the status of a project.';
+  final description = 'Show project overview status.';
 
   AdminProjectStatusCommand({required super.logger})
     : super(options: AdminProjectStatusOption.values);
@@ -125,17 +117,15 @@ class AdminProjectStatusCommand
     final CommandOutput output,
   ) async {
     final projectId = commandConfig.value(AdminProjectStatusOption.projectId);
-    final limit = commandConfig.value(AdminProjectStatusOption.limit);
     final inUtc = commandConfig.value(AdminProjectStatusOption.utc);
 
     await renderCommand(
       output,
-      operation: () => ProjectAdminCommands.listDeployAttemptsOperation(
+      operation: () => ProjectAdminCommands.getProjectStatusOperation(
         runner.serviceProvider.cloudApiClient,
         projectId: projectId,
-        limit: limit,
       ),
-      textOutputUi: DeploymentListTextUi(utc: inUtc, baseCommand: baseCommand),
+      textOutputUi: AdminProjectStatusTextUi(utc: inUtc),
     );
   }
 }

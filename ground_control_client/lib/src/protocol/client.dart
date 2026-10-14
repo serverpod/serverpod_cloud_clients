@@ -333,6 +333,17 @@ class EndpointAdminProjects extends _isc.EndpointRef {
         'includePaymentsStatus': includePaymentsStatus,
       }, {});
 
+  /// Reads overview status for a project.
+  ///
+  /// Throws [NotFoundException] if the project is not found.
+  _ida.Future<_ie7ffsfx.AdminProjectInfo> getProjectStatus({
+    required String cloudProjectId,
+  }) => caller.callServerEndpoint<_ie7ffsfx.AdminProjectInfo>(
+    'adminProjects',
+    'getProjectStatus',
+    {'cloudProjectId': cloudProjectId},
+  );
+
   /// Gets deploy attempts of the specified capsule.
   /// Gets the recent-most attempts, up till [limit] if specified.
   _ida.Future<List<_i51mvi6s.DeployAttempt>> getDeployAttempts({

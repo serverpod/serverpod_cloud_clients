@@ -12,6 +12,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../domains/status/models/deploy_attempt.dart' as _inqbrt2s;
 import '../../../features/admin/models/payments_status.dart' as _iyxx8r3m;
 import '../../../features/projects/models/project_info/project_info.dart'
     as _igjtmryi;
@@ -23,6 +24,8 @@ abstract class AdminProjectInfo
     required this.planProductId,
     required this.subscriptionId,
     required this.overduePaymentsStatuses,
+    this.billingPlanId,
+    this.latestDeployAttempt,
   });
 
   factory AdminProjectInfo({
@@ -30,6 +33,8 @@ abstract class AdminProjectInfo
     required String planProductId,
     required String subscriptionId,
     required List<_iyxx8r3m.PaymentsStatus> overduePaymentsStatuses,
+    String? billingPlanId,
+    _inqbrt2s.DeployAttempt? latestDeployAttempt,
   }) = _AdminProjectInfoImpl;
 
   factory AdminProjectInfo.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -43,6 +48,12 @@ abstract class AdminProjectInfo
           .deserialize<List<_iyxx8r3m.PaymentsStatus>>(
             jsonSerialization['overduePaymentsStatuses'],
           ),
+      billingPlanId: jsonSerialization['billingPlanId'] as String?,
+      latestDeployAttempt: jsonSerialization['latestDeployAttempt'] == null
+          ? null
+          : _iod2a87h.Protocol().deserialize<_inqbrt2s.DeployAttempt>(
+              jsonSerialization['latestDeployAttempt'],
+            ),
     );
   }
 
@@ -59,6 +70,12 @@ abstract class AdminProjectInfo
   /// just this project.
   List<_iyxx8r3m.PaymentsStatus> overduePaymentsStatuses;
 
+  /// Orb billing system plan id and version (e.g. starter-private:2).
+  String? billingPlanId;
+
+  /// The most recent deploy attempt for the project, when any exist.
+  _inqbrt2s.DeployAttempt? latestDeployAttempt;
+
   /// Returns a shallow copy of this [AdminProjectInfo]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
@@ -67,6 +84,8 @@ abstract class AdminProjectInfo
     String? planProductId,
     String? subscriptionId,
     List<_iyxx8r3m.PaymentsStatus>? overduePaymentsStatuses,
+    String? billingPlanId,
+    _inqbrt2s.DeployAttempt? latestDeployAttempt,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -78,6 +97,9 @@ abstract class AdminProjectInfo
       'overduePaymentsStatuses': overduePaymentsStatuses.toJson(
         valueToJson: (v) => v.toJson(),
       ),
+      if (billingPlanId != null) 'billingPlanId': billingPlanId,
+      if (latestDeployAttempt != null)
+        'latestDeployAttempt': latestDeployAttempt?.toJson(),
     };
   }
 
@@ -91,6 +113,9 @@ abstract class AdminProjectInfo
       'overduePaymentsStatuses': overduePaymentsStatuses.toJson(
         valueToJson: (v) => v.toJsonForProtocol(),
       ),
+      if (billingPlanId != null) 'billingPlanId': billingPlanId,
+      if (latestDeployAttempt != null)
+        'latestDeployAttempt': latestDeployAttempt?.toJsonForProtocol(),
     };
   }
 
@@ -100,17 +125,23 @@ abstract class AdminProjectInfo
   }
 }
 
+class _Undefined {}
+
 class _AdminProjectInfoImpl extends AdminProjectInfo {
   _AdminProjectInfoImpl({
     required _igjtmryi.ProjectInfo projectInfo,
     required String planProductId,
     required String subscriptionId,
     required List<_iyxx8r3m.PaymentsStatus> overduePaymentsStatuses,
+    String? billingPlanId,
+    _inqbrt2s.DeployAttempt? latestDeployAttempt,
   }) : super._(
          projectInfo: projectInfo,
          planProductId: planProductId,
          subscriptionId: subscriptionId,
          overduePaymentsStatuses: overduePaymentsStatuses,
+         billingPlanId: billingPlanId,
+         latestDeployAttempt: latestDeployAttempt,
        );
 
   /// Returns a shallow copy of this [AdminProjectInfo]
@@ -122,6 +153,8 @@ class _AdminProjectInfoImpl extends AdminProjectInfo {
     String? planProductId,
     String? subscriptionId,
     List<_iyxx8r3m.PaymentsStatus>? overduePaymentsStatuses,
+    Object? billingPlanId = _Undefined,
+    Object? latestDeployAttempt = _Undefined,
   }) {
     return AdminProjectInfo(
       projectInfo: projectInfo ?? this.projectInfo.copyWith(),
@@ -130,6 +163,12 @@ class _AdminProjectInfoImpl extends AdminProjectInfo {
       overduePaymentsStatuses:
           overduePaymentsStatuses ??
           this.overduePaymentsStatuses.map((e0) => e0.copyWith()).toList(),
+      billingPlanId: billingPlanId is String?
+          ? billingPlanId
+          : this.billingPlanId,
+      latestDeployAttempt: latestDeployAttempt is _inqbrt2s.DeployAttempt?
+          ? latestDeployAttempt
+          : this.latestDeployAttempt?.copyWith(),
     );
   }
 }

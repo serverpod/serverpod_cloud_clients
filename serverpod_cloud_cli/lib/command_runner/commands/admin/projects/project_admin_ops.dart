@@ -1,7 +1,12 @@
-import 'package:ground_control_client/ground_control_client.dart';
+import 'package:ground_control_client/ground_control_client.dart'
+    show
+        AdminProjectInfo,
+        Client,
+        InvalidValueException,
+        NotFoundException,
+        PlanType,
+        ProjectProfileUpdate;
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/projects/admin_project_list_row.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/deployments/deployments_ops.dart'
-    show deploymentListRows;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
 abstract class ProjectAdminCommands {
@@ -34,16 +39,19 @@ abstract class ProjectAdminCommands {
         });
   }
 
-  static Future<List<Map<String, Object?>>> listDeployAttemptsOperation(
+  static Future<AdminProjectInfo> getProjectStatusOperation(
     final Client cloudApiClient, {
     required final String projectId,
-    required final int limit,
   }) async {
-    final statuses = await cloudApiClient.adminProjects.getDeployAttempts(
-      cloudCapsuleId: projectId,
-      limit: limit,
-    );
-    return deploymentListRows(statuses);
+    try {
+      return await cloudApiClient.adminProjects.getProjectStatus(
+        cloudProjectId: projectId,
+      );
+    } on NotFoundException catch (e) {
+      throw FailureException(error: e.message);
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Failed to read project status');
+    }
   }
 
   static Future<Map<String, Object?>> redeployProject(
