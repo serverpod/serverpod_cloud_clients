@@ -1156,13 +1156,9 @@ class EndpointBilling extends _isc.EndpointRef {
     {'billingEmails': billingEmails, 'billingInfo': billingInfo},
   );
 
-  /// Sets the owner's customer type (private or business) as a stop-gap until
-  /// B2C/B2B migration is supported.
+  /// Sets or updates the owner's customer type (private or business).
   ///
-  /// Idempotent: calling this with the same value as already stored is a no-op.
-  ///
-  /// Throws [InvalidValueException] if the owner already has a different
-  /// customer type set.
+  /// Idempotent when [customerType] matches the stored value.
   _ida.Future<_ijvsyu4l.Owner> setOwnerCustomerType({
     required _iqua0tdt.BillingCustomerType customerType,
   }) => caller.callServerEndpoint<_ijvsyu4l.Owner>(
@@ -2310,6 +2306,22 @@ class EndpointProjects extends _isc.EndpointRef {
     'cloudProjectId': cloudProjectId,
     'resources': resources,
   });
+
+  /// Reconciles every non-archived project owned by the authenticated user
+  /// after a private/business customer-type change.
+  ///
+  /// Each eligible project is moved to a subscription under the same plan type
+  /// and the owner's current customer billing type when the procured plan
+  /// product no longer matches. Suspended projects and internal plan types are
+  /// skipped.
+  ///
+  /// Returns immediately and updates projects in the background.
+  _ida.Future<void> convertOwnerProjectsBetweenPrivateAndBusiness() =>
+      caller.callServerEndpoint<void>(
+        'projects',
+        'convertOwnerProjectsBetweenPrivateAndBusiness',
+        {},
+      );
 
   _ida.Future<_i93ixjag.ProjectConfig> fetchProjectConfig({
     required String cloudProjectId,
