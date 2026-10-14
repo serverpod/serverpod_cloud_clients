@@ -1,10 +1,8 @@
 import 'package:cli_tools/logger.dart' as cli show AnsiStyle;
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/admin/admin_overview_line_writer.dart';
 import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
-import 'package:serverpod_cloud_cli/constants.dart';
-import 'package:serverpod_cloud_cli/util/common.dart';
-import 'package:serverpod_cloud_cli/util/duration_formatter.dart';
 
 class AdminUserStatusTextUi extends OutputWidget {
   final bool utc;
@@ -43,10 +41,6 @@ class _AdminUserStatusLines {
   static const _labelWidth = 10;
   static const _labelStyle = cli.AnsiStyle.darkGray;
   static const _dimStyle = cli.AnsiStyle.darkGray;
-  static const _orbSubscriptionsBase = 'https://app.withorb.com/subscriptions/';
-  static const _oscHyperlinkStart = '\x1b]8;;';
-  static const _oscHyperlinkEnd = '\x1b]8;;\x07';
-  static const _bell = '\x07';
 
   final CommandLogger logger;
   final AdminUserStatus status;
@@ -120,96 +114,18 @@ class _AdminUserStatusLines {
     final roles = project.userRoles.map((role) => role.name).join(', ');
     _writeRow('Roles', roles.isEmpty ? '—' : roles, nested: true);
 
-    final planType = project.planType?.name;
-    final planProductId = project.planProductId;
-    final planValue = switch ((planType, planProductId)) {
-      (null, null) => _style('unknown', _dimStyle),
-      (final String type, null) => type,
-      (null, final String id) => id,
-      (final String type, final String id) => '$type · $id',
-    };
-    _writeRow('Plan', planValue, nested: true);
-
-    final billingPlanId = project.billingPlanId;
-    final subscriptionId = project.billingSubscriptionId;
-    final billingValue = switch ((billingPlanId, subscriptionId)) {
-      (null, null) => _style('none', _dimStyle),
-      (final String plan, null) => plan,
-      (null, final String sub) => _orbSubscriptionLink(sub),
-      (final String plan, final String sub) =>
-        '$plan · ${_orbSubscriptionLink(sub)}',
-    };
-    _writeRow('Billing', billingValue, nested: true);
-
-    _writeRow(
-      'Created',
-      project.projectCreatedAt.toLabeledTzString(utc, numTimeStampChars),
-      nested: true,
+    final overview = AdminOverviewLineWriter(logger: logger, utc: utc);
+    overview.writePlan(
+      planType: project.planType,
+      planProductId: project.planProductId,
     );
-
-    _writeLastDeploy(project.latestDeployAttempt);
-  }
-
-  void _writeLastDeploy(DeployAttempt? attempt) {
-    if (attempt == null) {
-      _writeRow('Deploy', _style('none', _dimStyle), nested: true);
-      return;
-    }
-
-    final startedAt = attempt.startedAt;
-    final endedAt = attempt.endedAt;
-    final when = endedAt ?? startedAt;
-    if (when == null) {
-      return;
-    }
-
-    final status = attempt.status;
-    final (
-      String label,
-      String prefix,
-      cli.AnsiStyle? labelStyle,
-    ) = switch (status) {
-      DeployProgressStatus.success => (
-        'Deployed',
-        'Deployed',
-        cli.AnsiStyle.lightGreen,
-      ),
-      DeployProgressStatus.failure => (
-        'Failed',
-        'Deployment',
-        cli.AnsiStyle.red,
-      ),
-      DeployProgressStatus.awaiting || DeployProgressStatus.running => (
-        'Building',
-        'Started',
-        cli.AnsiStyle.yellow,
-      ),
-      DeployProgressStatus.cancelled => (
-        'Cancelled',
-        'Deployment',
-        cli.AnsiStyle.red,
-      ),
-      _ => ('Deploy', 'Started', null),
-    };
-
-    final deployedBy = attempt.deployedBy;
-    final deployerName = deployedBy?.email ?? deployedBy?.name;
-    final by = deployerName != null ? ' by $deployerName' : '';
-    final time = friendlyPastTimeFormat(when, inUtc: utc);
-    _writeRow(
-      label,
-      '$prefix $time$by',
-      nested: true,
-      labelStyle: labelStyle ?? _labelStyle,
+    overview.writeBilling(
+      billingPlanId: project.billingPlanId,
+      subscriptionId: project.billingSubscriptionId,
     );
-
-    final commitHash = attempt.commitHash;
-    final commitMessage = attempt.commitMessage;
-    if (commitHash == null && commitMessage == null) {
-      return;
-    }
-    final commitLine = [commitHash, commitMessage].nonNulls.join('  ');
-    _lines.add('$_indent${' ' * _labelWidth}${_style(commitLine, _dimStyle)}');
+    overview.writeCreated(project.projectCreatedAt);
+    overview.writeLastDeploy(project.latestDeployAttempt);
+    _lines.addAll(overview.lines);
   }
 
   void _writeRow(
@@ -229,19 +145,6 @@ class _AdminUserStatusLines {
       return text;
     }
     return logger.wrapStyle(text, style);
-  }
-
-  String _orbSubscriptionUrl(String subscriptionId) {
-    return '$_orbSubscriptionsBase$subscriptionId';
-  }
-
-  String _orbSubscriptionLink(String subscriptionId) {
-    final url = _orbSubscriptionUrl(subscriptionId);
-    if (!logger.inlineTerminal.hasTerminal) {
-      return url;
-    }
-    final label = _style(subscriptionId, cli.AnsiStyle.cyan);
-    return '$_oscHyperlinkStart$url$_bell$label$_oscHyperlinkEnd';
   }
 }
 
