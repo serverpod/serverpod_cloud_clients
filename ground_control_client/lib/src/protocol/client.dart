@@ -87,6 +87,8 @@ import 'package:ground_control_client/src/protocol/domains/users/models/user_acc
     as _ivvwo8y6;
 import 'package:ground_control_client/src/protocol/features/admin/models/admin_project_info.dart'
     as _ie7ffsfx;
+import 'package:ground_control_client/src/protocol/features/admin/models/admin_user_status.dart'
+    as _iwex31es;
 import 'package:ground_control_client/src/protocol/features/auth/models/accepted_terms_dto.dart'
     as _irrma5ts;
 import 'package:ground_control_client/src/protocol/features/auth/models/auth_token_info.dart'
@@ -544,6 +546,22 @@ class EndpointAdminUsers extends _isc.EndpointRef {
         'ofAccountStatus': ofAccountStatus,
         'includeArchived': includeArchived,
       });
+
+  /// Reads owner and project membership status for a user.
+  ///
+  /// Exactly one of [email] or [ownerId] must be provided.
+  ///
+  /// Throws [InvalidValueException] if neither or both identifiers are given,
+  /// or if the user has no owner (not fully registered).
+  /// Throws [NotFoundException] if the user or owner is not found.
+  _ida.Future<_iwex31es.AdminUserStatus> getUserStatus({
+    String? email,
+    _isc.UuidValue? ownerId,
+  }) => caller.callServerEndpoint<_iwex31es.AdminUserStatus>(
+    'adminUsers',
+    'getUserStatus',
+    {'email': email, 'ownerId': ownerId},
+  );
 
   /// Reads the user with the specified email.
   ///

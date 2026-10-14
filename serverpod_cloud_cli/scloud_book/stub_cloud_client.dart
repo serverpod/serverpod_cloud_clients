@@ -819,6 +819,12 @@ void _stubAdmin(final ClientMock client, {required final String projectId}) {
         .build(),
   );
   when(
+    () => client.adminUsers.getUserStatus(
+      email: any(named: 'email'),
+      ownerId: any(named: 'ownerId'),
+    ),
+  ).thenAnswer((_) async => AdminUserStatusBuilder().build());
+  when(
     () => client.adminProjects.getDeployAttempts(
       cloudCapsuleId: any(named: 'cloudCapsuleId'),
       limit: any(named: 'limit'),

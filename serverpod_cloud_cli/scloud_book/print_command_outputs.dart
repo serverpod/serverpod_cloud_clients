@@ -403,6 +403,12 @@ const _scenarios = [
     'my-project',
     'user@example.com',
   ]),
+  _Scenario('admin user status', [
+    'admin',
+    'user',
+    'status',
+    'user@example.com',
+  ]),
   _Scenario('admin project list', ['admin', 'project', 'list']),
   _Scenario('admin project status', ['admin', 'project', 'status', _projectId]),
   _Scenario('admin project delete', ['admin', 'project', 'delete', _projectId]),

@@ -1,10 +1,109 @@
 import 'package:ground_control_client/ground_control_client.dart';
+import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/users/user_admin_ui.dart';
 import 'package:test/test.dart';
 
 import '../../../test_utils/render_command_ui.dart';
 
 void main() {
+  group('Given an AdminUserStatusTextUi', () {
+    group('when rendered with owner and project rows', () {
+      late String stdout;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          AdminUserStatusTextUi(utc: true),
+          data: AdminUserStatusBuilder()
+              .withOwner(
+                AdminUserOwnerStatusBuilder()
+                    .withUserEmail('ada@example.com')
+                    .withBillingInfoRegistered(true)
+                    .withPaymentMethodRegistered(true),
+              )
+              .withProjects([
+                AdminUserProjectMembershipBuilder().withLatestDeployAttempt(
+                  DeployAttemptBuilder()
+                      .withSuccessfulDeployment()
+                      .withCommitHash('7915fd821')
+                      .withCommitMessage('fix(gc): example commit')
+                      .build(),
+                ),
+              ])
+              .build(),
+        );
+        stdout = io.stdout;
+      });
+
+      test('then stdout contains structured owner fields', () {
+        expect(stdout, contains('User'));
+        expect(stdout, contains('ada@example.com'));
+        expect(stdout, contains('Owner id'));
+        expect(stdout, contains('billing info registered'));
+        expect(stdout, contains('in good standing'));
+      });
+
+      test('then stdout contains structured project fields', () {
+        expect(stdout, contains('Project'));
+        expect(stdout, contains('my-project'));
+        expect(stdout, contains('Roles'));
+        expect(stdout, contains('Plan'));
+        expect(stdout, contains('Billing'));
+        expect(
+          stdout,
+          contains('https://app.withorb.com/subscriptions/orb_sub_test'),
+        );
+        expect(stdout, contains('Deployed'));
+        expect(stdout, contains('7915fd821'));
+        expect(stdout, contains('fix(gc): example commit'));
+      });
+
+      test('then stdout does not use wide tables', () {
+        expect(stdout, isNot(contains('| Owner id')));
+      });
+    });
+
+    group('when rendered with a failed last deploy', () {
+      late String stdout;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          AdminUserStatusTextUi(utc: false),
+          data: AdminUserStatusBuilder().withProjects([
+            AdminUserProjectMembershipBuilder().withLatestDeployAttempt(
+              DeployAttemptBuilder()
+                  .withFailedDeployment()
+                  .withCommitHash('c2239a46b')
+                  .build(),
+            ),
+          ]).build(),
+        );
+        stdout = io.stdout;
+      });
+
+      test('then stdout labels the deploy as failed', () {
+        expect(stdout, contains('Failed'));
+        expect(stdout, contains('c2239a46b'));
+      });
+    });
+
+    group('when rendered with no projects', () {
+      late String stdout;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          AdminUserStatusTextUi(utc: false),
+          data: AdminUserStatusBuilder().withNoProjects().build(),
+        );
+        stdout = io.stdout;
+      });
+
+      test('then stdout contains the empty projects message', () {
+        expect(stdout, contains('Projects'));
+        expect(stdout, contains('none'));
+      });
+    });
+  });
+
   group('Given an AdminUserListTextUi', () {
     group('when rendered with a user row', () {
       late String stdout;
