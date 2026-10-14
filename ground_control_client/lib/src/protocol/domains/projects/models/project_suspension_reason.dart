@@ -23,6 +23,10 @@ enum ProjectSuspensionReason implements _isc.SerializableModel {
   /// The usage cap of the current billing period is exceeded.
   usageCapExceeded,
 
+  /// The first invoice after the trial could not be issued because the
+  /// billing setup is incomplete.
+  billingSetupIncomplete,
+
   /// Suspended by an administrator.
   manual;
 
@@ -34,6 +38,8 @@ enum ProjectSuspensionReason implements _isc.SerializableModel {
         return ProjectSuspensionReason.paymentOverdue;
       case 'usageCapExceeded':
         return ProjectSuspensionReason.usageCapExceeded;
+      case 'billingSetupIncomplete':
+        return ProjectSuspensionReason.billingSetupIncomplete;
       case 'manual':
         return ProjectSuspensionReason.manual;
       default:
