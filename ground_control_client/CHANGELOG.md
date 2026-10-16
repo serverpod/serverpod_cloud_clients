@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.1.0 - 2026-10-16
+
+### Added
+
+- **Resumable deployments** - `scloud deploy` now uploads project archives in chunks with live progress tracking and automatic retries for dropped connections.
+- **Suspension status visibility** - Suspended projects now show clear status indicators, reasons, and next steps in both the web console and CLI.
+- **Select all passwords** - Added a "Select all" option to the password selection prompt during `scloud launch`.
+
+### Fixed
+
+- **Billing email validation** - Fixed an issue where blank or invalid billing emails in the console could trigger submission errors.
+
 ## [1.0.1] - 2026-09-21
 
 ### Added
