@@ -1159,6 +1159,7 @@ class EndpointBilling extends _isc.EndpointRef {
   /// Sets or updates the owner's customer type (private or business).
   ///
   /// Idempotent when [customerType] matches the stored value.
+  @Deprecated('Use ProjectsEndpoint.changeCustomerType instead')
   _ida.Future<_ijvsyu4l.Owner> setOwnerCustomerType({
     required _iqua0tdt.BillingCustomerType customerType,
   }) => caller.callServerEndpoint<_ijvsyu4l.Owner>(
@@ -2307,6 +2308,33 @@ class EndpointProjects extends _isc.EndpointRef {
     'resources': resources,
   });
 
+  /// Changes the authenticated owner's customer type between private and
+  /// business, together with the business details that go with it.
+  ///
+  /// Changing to [BillingCustomerType.business] stores [companyName],
+  /// [vatNumber] and [vatType], keeping the stored value of any that is
+  /// null. Changing to [BillingCustomerType.private] clears them.
+  ///
+  /// Returns the updated [Owner]. Every non-archived project is then moved to
+  /// the same plan type under the new customer type in the background.
+  /// Suspended projects and internal plan types are skipped.
+  ///
+  /// Throws [InvalidValueException] if the owner has no billing info, or if a
+  /// business customer lacks a company name, or has an empty VAT number or an
+  /// invalid VAT type.
+  _ida.Future<_ijvsyu4l.Owner> changeCustomerType({
+    required _iqua0tdt.BillingCustomerType customerType,
+    String? companyName,
+    String? vatNumber,
+    String? vatType,
+  }) => caller
+      .callServerEndpoint<_ijvsyu4l.Owner>('projects', 'changeCustomerType', {
+        'customerType': customerType,
+        'companyName': companyName,
+        'vatNumber': vatNumber,
+        'vatType': vatType,
+      });
+
   /// Reconciles every non-archived project owned by the authenticated user
   /// after a private/business customer-type change.
   ///
@@ -2316,6 +2344,7 @@ class EndpointProjects extends _isc.EndpointRef {
   /// skipped.
   ///
   /// Returns immediately and updates projects in the background.
+  @Deprecated('Use changeCustomerType instead')
   _ida.Future<void> convertOwnerProjectsBetweenPrivateAndBusiness() =>
       caller.callServerEndpoint<void>(
         'projects',
