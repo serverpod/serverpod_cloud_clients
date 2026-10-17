@@ -65,6 +65,8 @@ void main() {
         final output = logger.lineCalls.join('\n');
         expect(output, contains('Project'));
         expect(output, contains(projectId));
+        expect(output, contains('Phase'));
+        expect(output, contains('active'));
         expect(output, contains('Roles'));
         expect(output, contains('Plan'));
         expect(output, contains('Billing'));
@@ -116,6 +118,9 @@ void main() {
         final projectInfo = decoded['projectInfo'] as Map<String, dynamic>;
         final project = projectInfo['project'] as Map<String, dynamic>;
         expect(project['cloudProjectId'], projectId);
+        expect(decoded['status'], 'active');
+        expect(decoded.containsKey('suspendedAt'), isFalse);
+        expect(decoded.containsKey('suspensionReason'), isFalse);
       });
     });
 

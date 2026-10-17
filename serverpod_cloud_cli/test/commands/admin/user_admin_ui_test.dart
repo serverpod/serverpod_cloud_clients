@@ -45,6 +45,8 @@ void main() {
       test('then stdout contains structured project fields', () {
         expect(stdout, contains('Project'));
         expect(stdout, contains('my-project'));
+        expect(stdout, contains('Phase'));
+        expect(stdout, contains('active'));
         expect(stdout, contains('Roles'));
         expect(stdout, contains('Plan'));
         expect(stdout, contains('Billing'));
@@ -59,6 +61,30 @@ void main() {
 
       test('then stdout does not use wide tables', () {
         expect(stdout, isNot(contains('| Owner id')));
+      });
+    });
+
+    group('when rendered for a suspended project', () {
+      late String stdout;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          AdminUserStatusTextUi(utc: true),
+          data: AdminUserStatusBuilder().withProjects([
+            AdminUserProjectMembershipBuilder()
+                .withSuspended(ProjectSuspensionReason.paymentOverdue)
+                .withSuspendedAt(DateTime.utc(2024, 3, 4, 5, 6, 7)),
+          ]).build(),
+        );
+        stdout = io.stdout;
+      });
+
+      test('then stdout shows when and why the project was suspended', () {
+        expect(stdout, contains('suspended'));
+        expect(stdout, contains('Suspended'));
+        expect(stdout, contains('2024-03-04 05:06:07 (UTC)'));
+        expect(stdout, contains('Reason'));
+        expect(stdout, contains('paymentOverdue'));
       });
     });
 

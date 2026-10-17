@@ -13,7 +13,11 @@
 import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import '../../../domains/products/models/plan_type.dart' as _iic46wsa;
+import '../../../domains/projects/models/project_lifecycle_status.dart'
+    as _ie2v77w9;
 import '../../../domains/projects/models/project_role.dart' as _isypcm2i;
+import '../../../domains/projects/models/project_suspension_reason.dart'
+    as _ixae5ksq;
 import '../../../domains/status/models/deploy_attempt.dart' as _inqbrt2s;
 
 /// Project membership and procurement details for an admin user status view.
@@ -21,6 +25,9 @@ abstract class AdminUserProjectMembership
     implements _isc.SerializableModel, _isc.ProtocolSerialization {
   AdminUserProjectMembership._({
     required this.cloudProjectId,
+    required this.status,
+    this.suspendedAt,
+    this.suspensionReason,
     required this.userRoles,
     this.planType,
     this.planProductId,
@@ -32,6 +39,9 @@ abstract class AdminUserProjectMembership
 
   factory AdminUserProjectMembership({
     required String cloudProjectId,
+    required _ie2v77w9.ProjectLifecycleStatus status,
+    DateTime? suspendedAt,
+    _ixae5ksq.ProjectSuspensionReason? suspensionReason,
     required List<_isypcm2i.ProjectRole> userRoles,
     _iic46wsa.PlanType? planType,
     String? planProductId,
@@ -46,6 +56,19 @@ abstract class AdminUserProjectMembership
   ) {
     return AdminUserProjectMembership(
       cloudProjectId: jsonSerialization['cloudProjectId'] as String,
+      status: _ie2v77w9.ProjectLifecycleStatus.fromJson(
+        (jsonSerialization['status'] as String),
+      ),
+      suspendedAt: jsonSerialization['suspendedAt'] == null
+          ? null
+          : _isc.DateTimeJsonExtension.fromJson(
+              jsonSerialization['suspendedAt'],
+            ),
+      suspensionReason: jsonSerialization['suspensionReason'] == null
+          ? null
+          : _ixae5ksq.ProjectSuspensionReason.fromJson(
+              (jsonSerialization['suspensionReason'] as String),
+            ),
       userRoles: _iod2a87h.Protocol().deserialize<List<_isypcm2i.ProjectRole>>(
         jsonSerialization['userRoles'],
       ),
@@ -71,6 +94,15 @@ abstract class AdminUserProjectMembership
 
   /// The cloud project id of the membership.
   String cloudProjectId;
+
+  /// The lifecycle status of the project.
+  _ie2v77w9.ProjectLifecycleStatus status;
+
+  /// When the project was last suspended, when set.
+  DateTime? suspendedAt;
+
+  /// Why the project was last suspended, when set.
+  _ixae5ksq.ProjectSuspensionReason? suspensionReason;
 
   /// Roles the user holds on the project.
   List<_isypcm2i.ProjectRole> userRoles;
@@ -98,6 +130,9 @@ abstract class AdminUserProjectMembership
   @_isc.useResult
   AdminUserProjectMembership copyWith({
     String? cloudProjectId,
+    _ie2v77w9.ProjectLifecycleStatus? status,
+    DateTime? suspendedAt,
+    _ixae5ksq.ProjectSuspensionReason? suspensionReason,
     List<_isypcm2i.ProjectRole>? userRoles,
     _iic46wsa.PlanType? planType,
     String? planProductId,
@@ -111,6 +146,10 @@ abstract class AdminUserProjectMembership
     return {
       '__className__': 'AdminUserProjectMembership',
       'cloudProjectId': cloudProjectId,
+      'status': status.toJson(),
+      if (suspendedAt != null) 'suspendedAt': suspendedAt?.toJson(),
+      if (suspensionReason != null)
+        'suspensionReason': suspensionReason?.toJson(),
       'userRoles': userRoles.toJson(valueToJson: (v) => v.toJson()),
       if (planType != null) 'planType': planType?.toJson(),
       if (planProductId != null) 'planProductId': planProductId,
@@ -128,6 +167,10 @@ abstract class AdminUserProjectMembership
     return {
       '__className__': 'AdminUserProjectMembership',
       'cloudProjectId': cloudProjectId,
+      'status': status.toJson(),
+      if (suspendedAt != null) 'suspendedAt': suspendedAt?.toJson(),
+      if (suspensionReason != null)
+        'suspensionReason': suspensionReason?.toJson(),
       'userRoles': userRoles.toJson(valueToJson: (v) => v.toJson()),
       if (planType != null) 'planType': planType?.toJson(),
       if (planProductId != null) 'planProductId': planProductId,
@@ -151,6 +194,9 @@ class _Undefined {}
 class _AdminUserProjectMembershipImpl extends AdminUserProjectMembership {
   _AdminUserProjectMembershipImpl({
     required String cloudProjectId,
+    required _ie2v77w9.ProjectLifecycleStatus status,
+    DateTime? suspendedAt,
+    _ixae5ksq.ProjectSuspensionReason? suspensionReason,
     required List<_isypcm2i.ProjectRole> userRoles,
     _iic46wsa.PlanType? planType,
     String? planProductId,
@@ -160,6 +206,9 @@ class _AdminUserProjectMembershipImpl extends AdminUserProjectMembership {
     _inqbrt2s.DeployAttempt? latestDeployAttempt,
   }) : super._(
          cloudProjectId: cloudProjectId,
+         status: status,
+         suspendedAt: suspendedAt,
+         suspensionReason: suspensionReason,
          userRoles: userRoles,
          planType: planType,
          planProductId: planProductId,
@@ -175,6 +224,9 @@ class _AdminUserProjectMembershipImpl extends AdminUserProjectMembership {
   @override
   AdminUserProjectMembership copyWith({
     String? cloudProjectId,
+    _ie2v77w9.ProjectLifecycleStatus? status,
+    Object? suspendedAt = _Undefined,
+    Object? suspensionReason = _Undefined,
     List<_isypcm2i.ProjectRole>? userRoles,
     Object? planType = _Undefined,
     Object? planProductId = _Undefined,
@@ -185,6 +237,11 @@ class _AdminUserProjectMembershipImpl extends AdminUserProjectMembership {
   }) {
     return AdminUserProjectMembership(
       cloudProjectId: cloudProjectId ?? this.cloudProjectId,
+      status: status ?? this.status,
+      suspendedAt: suspendedAt is DateTime? ? suspendedAt : this.suspendedAt,
+      suspensionReason: suspensionReason is _ixae5ksq.ProjectSuspensionReason?
+          ? suspensionReason
+          : this.suspensionReason,
       userRoles: userRoles ?? this.userRoles.map((e0) => e0).toList(),
       planType: planType is _iic46wsa.PlanType? ? planType : this.planType,
       planProductId: planProductId is String?

@@ -348,6 +348,9 @@ void main() {
         expect(logger.rawCalls, hasLength(2));
         final first = jsonDecode(logger.rawCalls[0].content) as Map;
         expect((first['project'] as Map)['cloudProjectId'], 'projectId');
+        expect(first['status'], 'active');
+        expect(first.containsKey('suspendedAt'), isFalse);
+        expect(first.containsKey('suspensionReason'), isFalse);
         expect(first['planProductId'], 'closed-beta:0');
         expect(first['subscriptionId'], 'orb_sub_1');
         expect(first.containsKey('oldestOverdueUnpaidAmount'), isFalse);
