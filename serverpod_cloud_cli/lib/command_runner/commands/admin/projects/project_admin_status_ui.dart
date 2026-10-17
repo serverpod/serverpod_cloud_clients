@@ -58,6 +58,11 @@ class _AdminProjectStatusLines {
     final project = projectInfo.project;
     final overview = AdminOverviewLineWriter(logger: logger, utc: utc);
     overview.writeRow('Project', project.cloudProjectId);
+    overview.writeLifecycle(
+      status: info.status,
+      suspendedAt: info.suspendedAt,
+      suspensionReason: info.suspensionReason,
+    );
     _writeRoleMemberships(overview, project);
     overview.writePlan(
       planType: projectInfo.planType,

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/projects/admin_project_list_row.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/projects/project_admin_ui.dart';
@@ -31,6 +32,7 @@ void main() {
                         .withUserOwner(owner),
                   )
                   .build(),
+              status: ProjectLifecycleStatus.active,
               planProductId: 'closed-beta:0',
               subscriptionId: 'orb_sub_1',
             ),
@@ -42,6 +44,9 @@ void main() {
 
       test('then stdout contains the table headings', () {
         expect(stdout, contains('Project Id'));
+        expect(stdout, contains('Status'));
+        expect(stdout, contains('Suspended At (UTC)'));
+        expect(stdout, contains('Suspension Reason'));
         expect(stdout, contains('Created At (UTC)'));
         expect(stdout, contains('Owner'));
         expect(stdout, contains('Users'));
@@ -64,6 +69,10 @@ void main() {
         expect(stdout, contains('my-project'));
       });
 
+      test('then stdout contains the active status', () {
+        expect(stdout, contains('active'));
+      });
+
       test('then stdout contains the owner email', () {
         expect(stdout, contains('owner@example.com'));
       });
@@ -78,6 +87,42 @@ void main() {
 
       test('then stderr is empty', () {
         expect(stderr, isEmpty);
+      });
+    });
+
+    group('when rendered with a suspended project', () {
+      late String stdout;
+
+      setUp(() async {
+        final suspendedAt = DateTime.utc(2024, 3, 4, 5, 6, 7);
+        final io = await renderCommandUi(
+          AdminProjectListTextUi(
+            utc: true,
+            includeArchived: false,
+            includePaymentsStatus: false,
+          ),
+          data: Stream.fromIterable([
+            AdminProjectListRow(
+              projectInfo: ProjectInfoBuilder()
+                  .withProject(
+                    ProjectBuilder().withCloudProjectId('paused-project'),
+                  )
+                  .build(),
+              status: ProjectLifecycleStatus.suspended,
+              suspendedAt: suspendedAt,
+              suspensionReason: ProjectSuspensionReason.paymentOverdue,
+              planProductId: 'closed-beta:0',
+              subscriptionId: 'orb_sub_1',
+            ),
+          ]),
+        );
+        stdout = io.stdout;
+      });
+
+      test('then stdout contains the suspension status and reason', () {
+        expect(stdout, contains('suspended'));
+        expect(stdout, contains('paymentOverdue'));
+        expect(stdout, contains('2024-03-04 05:06:07'));
       });
     });
 
@@ -100,6 +145,7 @@ void main() {
                         .withArchivedAt(DateTime.utc(2025, 1, 2, 3, 4, 5)),
                   )
                   .build(),
+              status: ProjectLifecycleStatus.archived,
               planProductId: 'closed-beta:0',
               subscriptionId: 'orb_sub_1',
             ),
@@ -130,6 +176,7 @@ void main() {
                     ProjectBuilder().withCloudProjectId('my-project'),
                   )
                   .build(),
+              status: ProjectLifecycleStatus.active,
               planProductId: 'closed-beta:0',
               subscriptionId: 'orb_sub_1',
               includePaymentsStatus: true,

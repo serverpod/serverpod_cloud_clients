@@ -3,6 +3,9 @@ import 'package:ground_control_client/ground_control_client_test_tools.dart';
 
 class AdminUserProjectMembershipBuilder {
   String _cloudProjectId;
+  ProjectLifecycleStatus _status;
+  DateTime? _suspendedAt;
+  ProjectSuspensionReason? _suspensionReason;
   List<ProjectRole> _userRoles;
   PlanType? _planType;
   String? _planProductId;
@@ -13,6 +16,9 @@ class AdminUserProjectMembershipBuilder {
 
   AdminUserProjectMembershipBuilder()
     : _cloudProjectId = 'my-project',
+      _status = ProjectLifecycleStatus.active,
+      _suspendedAt = null,
+      _suspensionReason = null,
       _userRoles = const [ProjectRole.admin],
       _planType = PlanType.starter,
       _planProductId = 'starter:1',
@@ -28,6 +34,34 @@ class AdminUserProjectMembershipBuilder {
 
   AdminUserProjectMembershipBuilder withCloudProjectId(String cloudProjectId) {
     _cloudProjectId = cloudProjectId;
+    return this;
+  }
+
+  AdminUserProjectMembershipBuilder withStatus(ProjectLifecycleStatus status) {
+    _status = status;
+    return this;
+  }
+
+  AdminUserProjectMembershipBuilder withSuspendedAt(DateTime? suspendedAt) {
+    _suspendedAt = suspendedAt;
+    return this;
+  }
+
+  AdminUserProjectMembershipBuilder withSuspensionReason(
+    ProjectSuspensionReason? suspensionReason,
+  ) {
+    _suspensionReason = suspensionReason;
+    return this;
+  }
+
+  /// A suspended project, for an overdue payment unless [reason] says
+  /// otherwise.
+  AdminUserProjectMembershipBuilder withSuspended([
+    ProjectSuspensionReason reason = ProjectSuspensionReason.paymentOverdue,
+  ]) {
+    _status = ProjectLifecycleStatus.suspended;
+    _suspendedAt = DateTime.now();
+    _suspensionReason = reason;
     return this;
   }
 
@@ -75,6 +109,9 @@ class AdminUserProjectMembershipBuilder {
   AdminUserProjectMembership build() {
     return AdminUserProjectMembership(
       cloudProjectId: _cloudProjectId,
+      status: _status,
+      suspendedAt: _suspendedAt,
+      suspensionReason: _suspensionReason,
       userRoles: _userRoles,
       planType: _planType,
       planProductId: _planProductId,

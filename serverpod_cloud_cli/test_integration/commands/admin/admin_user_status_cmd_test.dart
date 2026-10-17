@@ -61,6 +61,8 @@ void main() {
         expect(output, contains('Owner id'));
         expect(output, contains('Project'));
         expect(output, contains('my-project'));
+        expect(output, contains('Phase'));
+        expect(output, contains('active'));
       });
     });
 
@@ -127,6 +129,11 @@ void main() {
             jsonDecode(logger.rawCalls.single.content) as Map<String, dynamic>;
         final owner = decoded['owner'] as Map<String, dynamic>;
         expect(owner['userEmail'], userEmail);
+        final projects = decoded['projects'] as List<dynamic>;
+        final project = projects.single as Map<String, dynamic>;
+        expect(project['status'], 'active');
+        expect(project.containsKey('suspendedAt'), isFalse);
+        expect(project.containsKey('suspensionReason'), isFalse);
       });
     });
 

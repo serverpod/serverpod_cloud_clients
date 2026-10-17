@@ -21,6 +21,36 @@ class AdminOverviewLineWriter {
 
   AdminOverviewLineWriter({required this.logger, required this.utc});
 
+  void writeLifecycle({
+    required ProjectLifecycleStatus status,
+    DateTime? suspendedAt,
+    ProjectSuspensionReason? suspensionReason,
+  }) {
+    final (cli.AnsiStyle color, String label) = switch (status) {
+      ProjectLifecycleStatus.active => (cli.AnsiStyle.lightGreen, 'active'),
+      ProjectLifecycleStatus.suspended => (cli.AnsiStyle.yellow, 'suspended'),
+      ProjectLifecycleStatus.archived => (cli.AnsiStyle.darkGray, 'archived'),
+    };
+    writeRow(
+      'Phase',
+      style(label, color),
+      nested: true,
+      labelStyleValue: color,
+    );
+
+    if (suspendedAt != null) {
+      writeRow(
+        'Suspended',
+        suspendedAt.toLabeledTzString(utc, numTimeStampChars),
+        nested: true,
+      );
+    }
+
+    if (suspensionReason != null) {
+      writeRow('Reason', suspensionReason.name, nested: true);
+    }
+  }
+
   void writePlan({
     required PlanType? planType,
     required String? planProductId,

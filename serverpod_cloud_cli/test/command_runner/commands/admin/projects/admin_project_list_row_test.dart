@@ -4,6 +4,39 @@ import 'package:serverpod_cloud_cli/command_runner/commands/admin/projects/admin
 import 'package:test/test.dart';
 
 void main() {
+  group('Given an active admin project', () {
+    test('when mapped to a list row then suspension fields are omitted', () {
+      final row = AdminProjectListRow.fromAdminProjectInfo(
+        AdminProjectInfoBuilder()
+            .withStatus(ProjectLifecycleStatus.active)
+            .build(),
+      );
+
+      expect(row.status, ProjectLifecycleStatus.active);
+      expect(row.toJson()['status'], 'active');
+      expect(row.toJson().containsKey('suspendedAt'), isFalse);
+      expect(row.toJson().containsKey('suspensionReason'), isFalse);
+    });
+  });
+
+  group('Given a suspended admin project', () {
+    test('when mapped to a list row then suspension fields are included', () {
+      final suspendedAt = DateTime.utc(2024, 3, 4, 5, 6, 7);
+      final row = AdminProjectListRow.fromAdminProjectInfo(
+        AdminProjectInfoBuilder()
+            .withSuspended(ProjectSuspensionReason.manual)
+            .withSuspendedAt(suspendedAt)
+            .build(),
+      );
+
+      expect(row.status, ProjectLifecycleStatus.suspended);
+      expect(row.suspensionReason, ProjectSuspensionReason.manual);
+      expect(row.toJson()['status'], 'suspended');
+      expect(row.toJson()['suspendedAt'], suspendedAt.toIso8601String());
+      expect(row.toJson()['suspensionReason'], 'manual');
+    });
+  });
+
   group('Given an admin project with payments omitted', () {
     test('when mapped to a list row then the plan product id is included', () {
       final row = AdminProjectListRow.fromAdminProjectInfo(

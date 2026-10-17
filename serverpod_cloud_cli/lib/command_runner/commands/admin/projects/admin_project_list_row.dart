@@ -3,6 +3,9 @@ import 'package:ground_control_client/ground_control_client.dart';
 class AdminProjectListRow implements SerializableModel {
   const AdminProjectListRow({
     required this.projectInfo,
+    required this.status,
+    this.suspendedAt,
+    this.suspensionReason,
     required this.planProductId,
     required this.subscriptionId,
     this.includePaymentsStatus = false,
@@ -21,6 +24,9 @@ class AdminProjectListRow implements SerializableModel {
     if (!includePaymentsStatus) {
       return AdminProjectListRow(
         projectInfo: info.projectInfo,
+        status: info.status,
+        suspendedAt: info.suspendedAt,
+        suspensionReason: info.suspensionReason,
         planProductId: info.planProductId,
         subscriptionId: info.subscriptionId,
       );
@@ -45,6 +51,9 @@ class AdminProjectListRow implements SerializableModel {
 
     return AdminProjectListRow(
       projectInfo: info.projectInfo,
+      status: info.status,
+      suspendedAt: info.suspendedAt,
+      suspensionReason: info.suspensionReason,
       planProductId: info.planProductId,
       subscriptionId: info.subscriptionId,
       includePaymentsStatus: true,
@@ -58,6 +67,9 @@ class AdminProjectListRow implements SerializableModel {
   }
 
   final ProjectInfo projectInfo;
+  final ProjectLifecycleStatus status;
+  final DateTime? suspendedAt;
+  final ProjectSuspensionReason? suspensionReason;
   final String planProductId;
   final String subscriptionId;
   final bool includePaymentsStatus;
@@ -70,8 +82,15 @@ class AdminProjectListRow implements SerializableModel {
 
   @override
   Map<String, Object?> toJson() {
+    final suspendedAtValue = suspendedAt;
+    final suspensionReasonValue = suspensionReason;
     return {
       ...projectInfo.toJson(),
+      'status': status.toJson(),
+      if (suspendedAtValue != null)
+        'suspendedAt': suspendedAtValue.toUtc().toIso8601String(),
+      if (suspensionReasonValue != null)
+        'suspensionReason': suspensionReasonValue.toJson(),
       'planProductId': planProductId,
       'subscriptionId': subscriptionId,
       if (includePaymentsStatus) ...{

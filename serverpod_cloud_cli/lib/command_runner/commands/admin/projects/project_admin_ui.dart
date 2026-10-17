@@ -22,6 +22,18 @@ class AdminProjectListTextUi extends OutputWidget {
             'Project Id',
             getter: (row) => row.projectInfo.project.cloudProjectId,
           ),
+          TableColumnFormatter.forElement(
+            'Status',
+            getter: (row) => row.status.name,
+          ),
+          TableColumnFormatter.forTimestamp(
+            'Suspended At',
+            getter: (row) => row.suspendedAt,
+          ),
+          TableColumnFormatter.forElement(
+            'Suspension Reason',
+            getter: (row) => row.suspensionReason?.name,
+          ),
           TableColumnFormatter.forTimestamp(
             'Created At',
             getter: (row) => row.projectInfo.project.createdAt,
@@ -82,6 +94,9 @@ class AdminProjectListTextUi extends OutputWidget {
       ),
       columnMinWidths: [
         32,
+        9,
+        19,
+        23,
         19,
         if (includeArchived) 19,
         19,

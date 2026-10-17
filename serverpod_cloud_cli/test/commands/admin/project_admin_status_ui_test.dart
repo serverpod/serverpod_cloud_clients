@@ -104,6 +104,43 @@ void main() {
       });
     });
 
+    group('when rendered for an active project', () {
+      test(
+        'then stdout shows the status and omits suspension details',
+        () async {
+          final io = await renderCommandUi(
+            AdminProjectStatusTextUi(utc: true),
+            data: AdminProjectInfoBuilder()
+                .withStatus(ProjectLifecycleStatus.active)
+                .build(),
+          );
+
+          expect(io.stdout, contains('Phase'));
+          expect(io.stdout, contains('active'));
+          expect(io.stdout, isNot(contains('Suspended')));
+          expect(io.stdout, isNot(contains('Reason')));
+        },
+      );
+    });
+
+    group('when rendered for a suspended project', () {
+      test('then stdout shows when and why it was suspended', () async {
+        final io = await renderCommandUi(
+          AdminProjectStatusTextUi(utc: true),
+          data: AdminProjectInfoBuilder()
+              .withSuspended(ProjectSuspensionReason.paymentOverdue)
+              .withSuspendedAt(DateTime.utc(2024, 3, 4, 5, 6, 7))
+              .build(),
+        );
+
+        expect(io.stdout, contains('suspended'));
+        expect(io.stdout, contains('Suspended'));
+        expect(io.stdout, contains('2024-03-04 05:06:07 (UTC)'));
+        expect(io.stdout, contains('Reason'));
+        expect(io.stdout, contains('paymentOverdue'));
+      });
+    });
+
     group('when rendered with a role that has no members', () {
       test('then the role is listed with a dash', () async {
         final io = await renderCommandUi(

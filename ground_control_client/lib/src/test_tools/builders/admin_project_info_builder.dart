@@ -5,6 +5,9 @@ import 'project_info_builder.dart';
 
 class AdminProjectInfoBuilder {
   ProjectInfoBuilder projectInfoBuilder;
+  ProjectLifecycleStatus _status;
+  DateTime? _suspendedAt;
+  ProjectSuspensionReason? _suspensionReason;
   String _planProductId;
   String _subscriptionId;
   List<PaymentsStatus> _overduePaymentsStatuses;
@@ -13,6 +16,9 @@ class AdminProjectInfoBuilder {
 
   AdminProjectInfoBuilder({final ProjectInfoBuilder? projectInfoBuilder})
     : projectInfoBuilder = projectInfoBuilder ?? ProjectInfoBuilder(),
+      _status = ProjectLifecycleStatus.active,
+      _suspendedAt = null,
+      _suspensionReason = null,
       _planProductId = 'closed-beta:0',
       _subscriptionId = 'orb_sub_test',
       _overduePaymentsStatuses = const [],
@@ -28,6 +34,34 @@ class AdminProjectInfoBuilder {
     final ProjectInfoBuilder projectInfoBuilder,
   ) {
     this.projectInfoBuilder = projectInfoBuilder;
+    return this;
+  }
+
+  AdminProjectInfoBuilder withStatus(final ProjectLifecycleStatus status) {
+    _status = status;
+    return this;
+  }
+
+  AdminProjectInfoBuilder withSuspendedAt(final DateTime? suspendedAt) {
+    _suspendedAt = suspendedAt;
+    return this;
+  }
+
+  AdminProjectInfoBuilder withSuspensionReason(
+    final ProjectSuspensionReason? suspensionReason,
+  ) {
+    _suspensionReason = suspensionReason;
+    return this;
+  }
+
+  /// A suspended project, for an overdue payment unless [reason] says
+  /// otherwise.
+  AdminProjectInfoBuilder withSuspended([
+    ProjectSuspensionReason reason = ProjectSuspensionReason.paymentOverdue,
+  ]) {
+    _status = ProjectLifecycleStatus.suspended;
+    _suspendedAt = DateTime.now();
+    _suspensionReason = reason;
     return this;
   }
 
@@ -69,6 +103,9 @@ class AdminProjectInfoBuilder {
   AdminProjectInfo build() {
     return AdminProjectInfo(
       projectInfo: projectInfoBuilder.build(),
+      status: _status,
+      suspendedAt: _suspendedAt,
+      suspensionReason: _suspensionReason,
       planProductId: _planProductId,
       subscriptionId: _subscriptionId,
       overduePaymentsStatuses: _overduePaymentsStatuses,

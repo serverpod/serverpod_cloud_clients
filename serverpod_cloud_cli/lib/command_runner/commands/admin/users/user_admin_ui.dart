@@ -109,12 +109,16 @@ class _AdminUserStatusLines {
   }
 
   void _writeProject(AdminUserProjectMembership project) {
-    _writeRow('Project', project.cloudProjectId);
+    final overview = AdminOverviewLineWriter(logger: logger, utc: utc);
+    overview.writeRow('Project', project.cloudProjectId);
+    overview.writeLifecycle(
+      status: project.status,
+      suspendedAt: project.suspendedAt,
+      suspensionReason: project.suspensionReason,
+    );
 
     final roles = project.userRoles.map((role) => role.name).join(', ');
-    _writeRow('Roles', roles.isEmpty ? '—' : roles, nested: true);
-
-    final overview = AdminOverviewLineWriter(logger: logger, utc: utc);
+    overview.writeRow('Roles', roles.isEmpty ? '—' : roles, nested: true);
     overview.writePlan(
       planType: project.planType,
       planProductId: project.planProductId,
