@@ -21,6 +21,27 @@ extension TimezonedString on DateTime {
   String toLabeledTzString(bool inUtc, [int? numChars]) {
     return '${toTzString(inUtc, numChars)} (${timeZoneLabel(inUtc)})';
   }
+
+  /// Converts the time of day of this date-time to an `HH:mm:ss` string in
+  /// either local or UTC time zone.
+  ///
+  /// The result carries no time zone marker - state the zone with
+  /// [timeZoneLabel] where the value is displayed.
+  String toTzTimeOfDayString(bool inUtc) {
+    final time = inUtc ? toUtc() : toLocal();
+    return [
+      time.hour,
+      time.minute,
+      time.second,
+    ].map((part) => part.toString().padLeft(2, '0')).join(':');
+  }
+
+  /// Converts the time of day of this date-time to an `HH:mm:ss` string in
+  /// either local or UTC time zone, followed by the [timeZoneLabel] of that
+  /// zone in parentheses.
+  String toLabeledTzTimeOfDayString(bool inUtc) {
+    return '${toTzTimeOfDayString(inUtc)} (${timeZoneLabel(inUtc)})';
+  }
 }
 
 /// The user-facing name of the time zone that timestamps are displayed in.
