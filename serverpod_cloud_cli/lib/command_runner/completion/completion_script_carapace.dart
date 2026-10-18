@@ -277,6 +277,15 @@ commands:
             exclusiveFlags:
               - [utc, no-utc]
 
+  - name: top
+    flags:
+      -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command) or if a global project context is set (see the \"settings set projectContext\" command)."
+      -u, --utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
+      --no-utc: "Display timestamps in UTC timezone instead of local. Set SERVERPOD_CLOUD_DISPLAY_UTC=true to make UTC the default for all commands."
+      --interval=: "How often the status and deployments refresh."
+    exclusiveFlags:
+      - [utc, no-utc]
+
   - name: build
 
     commands:
