@@ -789,16 +789,22 @@ class EndpointAuthWithAuth extends _isc.EndpointRef {
   /// Creates a personal access token for the current user, listed with the
   /// method `PAT`.
   ///
+  /// If [name] is provided, the token is created with that name, and
+  /// [listAuthSessions] returns it.
   /// If [expiresAt] is provided, the token will expire at the specified time.
   /// If [expiresAfter] is provided, the token will expire after being unused
   /// for the specified duration.
+  ///
+  /// Throws an [InvalidValueException] if [name] is blank or longer than
+  /// 100 characters.
   _ida.Future<_iacc.AuthSuccess> createCliToken({
+    String? name,
     DateTime? expiresAt,
     Duration? expiresAfter,
   }) => caller.callServerEndpoint<_iacc.AuthSuccess>(
     'authWithAuth',
     'createCliToken',
-    {'expiresAt': expiresAt, 'expiresAfter': expiresAfter},
+    {'name': name, 'expiresAt': expiresAt, 'expiresAfter': expiresAfter},
   );
 
   /// Creates an interactive CLI login session for the current user, listed
