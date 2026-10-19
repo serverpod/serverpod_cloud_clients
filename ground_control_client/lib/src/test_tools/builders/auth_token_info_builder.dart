@@ -8,6 +8,7 @@ class AuthTokenInfoBuilder {
   DateTime? _expiresAt;
   Duration? expireAfterUnusedFor;
   DateTime? lastUsedAt;
+  String? _name;
 
   AuthTokenInfoBuilder()
     : _tokenId = 'test-token-id',
@@ -16,7 +17,8 @@ class AuthTokenInfoBuilder {
       _createdAt = DateTime.now(),
       _expiresAt = null,
       expireAfterUnusedFor = null,
-      lastUsedAt = null;
+      lastUsedAt = null,
+      _name = null;
 
   AuthTokenInfoBuilder withTokenId(String tokenId) {
     _tokenId = tokenId;
@@ -79,6 +81,11 @@ class AuthTokenInfoBuilder {
     return this;
   }
 
+  AuthTokenInfoBuilder withName(String? name) {
+    _name = name;
+    return this;
+  }
+
   AuthTokenInfo build() {
     return AuthTokenInfo(
       tokenId: _tokenId,
@@ -88,6 +95,7 @@ class AuthTokenInfoBuilder {
       expiresAt: _expiresAt,
       expireAfterUnusedFor: expireAfterUnusedFor,
       lastUsedAt: lastUsedAt,
+      name: _name,
     );
   }
 }
