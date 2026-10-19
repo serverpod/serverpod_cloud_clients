@@ -12,16 +12,19 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
-enum SubscriptionArrearsCause implements _isc.SerializableModel {
+enum SubscriptionCause implements _isc.SerializableModel {
+  overdue,
   settled;
 
-  static SubscriptionArrearsCause fromJson(String name) {
+  static SubscriptionCause fromJson(String name) {
     switch (name) {
+      case 'overdue':
+        return SubscriptionCause.overdue;
       case 'settled':
-        return SubscriptionArrearsCause.settled;
+        return SubscriptionCause.settled;
       default:
         throw ArgumentError(
-          'Value "$name" cannot be converted to "SubscriptionArrearsCause"',
+          'Value "$name" cannot be converted to "SubscriptionCause"',
         );
     }
   }
