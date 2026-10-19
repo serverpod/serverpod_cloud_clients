@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper.dart';
 import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dart';
 import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:uuid/uuid.dart';
 
 import '../../test_utils/project_factory.dart';
@@ -184,6 +185,28 @@ void main() {
       final archiveNames = archive.map((file) => file.name).toList();
 
       expect(archiveNames, ['my_file.txt']);
+    },
+  );
+
+  test(
+    'Given a project directory beneath a parent path containing spaces when zipping then files are included in the zip file.',
+    () async {
+      await d.dir('Serverpod projects', [
+        d.dir('my_project', [d.file('file1.txt', 'file1')]),
+      ]).create();
+      final projectDirectory = Directory(
+        p.join(d.sandbox, 'Serverpod projects', 'my_project'),
+      );
+
+      final zippedProject = await ProjectZipper.zipProject(
+        rootDirectory: projectDirectory,
+        logger: commandLogger,
+      );
+
+      final archive = ZipDecoder().decodeBytes(zippedProject);
+      final archiveNames = archive.map((file) => file.name).toSet();
+
+      expect(archiveNames, {'file1.txt'});
     },
   );
 
