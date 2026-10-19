@@ -57,6 +57,8 @@ import 'domains/billing/models/billing_info.dart' as _i7vhubyw;
 import 'domains/billing/models/billing_mapping_type.dart' as _i0j2fm74;
 import 'domains/billing/models/events/invoice_cause.dart' as _izs8n7t0;
 import 'domains/billing/models/events/owner_cause.dart' as _iry9161d;
+import 'domains/billing/models/events/subscription_arrears_cause.dart'
+    as _i0n5i4dl;
 import 'domains/billing/models/events/trial_lifecycle_cause.dart' as _iq96jbxn;
 import 'domains/billing/models/owner.dart' as _i7df4v4i;
 import 'domains/billing/models/payment_method.dart' as _ikeafg5a;
@@ -208,6 +210,7 @@ export 'domains/billing/models/billing_info.dart';
 export 'domains/billing/models/billing_mapping_type.dart';
 export 'domains/billing/models/events/invoice_cause.dart';
 export 'domains/billing/models/events/owner_cause.dart';
+export 'domains/billing/models/events/subscription_arrears_cause.dart';
 export 'domains/billing/models/events/trial_lifecycle_cause.dart';
 export 'domains/billing/models/owner.dart';
 export 'domains/billing/models/payment_method.dart';
@@ -382,6 +385,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _iry9161d.OwnerCause) {
       return _iry9161d.OwnerCause.fromJson(data) as T;
+    }
+    if (t == _i0n5i4dl.SubscriptionArrearsCause) {
+      return _i0n5i4dl.SubscriptionArrearsCause.fromJson(data) as T;
     }
     if (t == _iq96jbxn.TrialLifecycleCause) {
       return _iq96jbxn.TrialLifecycleCause.fromJson(data) as T;
@@ -786,6 +792,12 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_iry9161d.OwnerCause?>()) {
       return (data != null ? _iry9161d.OwnerCause.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_i0n5i4dl.SubscriptionArrearsCause?>()) {
+      return (data != null
+              ? _i0n5i4dl.SubscriptionArrearsCause.fromJson(data)
+              : null)
+          as T;
     }
     if (t == _isc.getType<_iq96jbxn.TrialLifecycleCause?>()) {
       return (data != null
@@ -1743,6 +1755,7 @@ class Protocol extends _isc.SerializationManager {
       _i0j2fm74.BillingMappingType => 'BillingMappingType',
       _izs8n7t0.InvoiceCause => 'InvoiceCause',
       _iry9161d.OwnerCause => 'OwnerCause',
+      _i0n5i4dl.SubscriptionArrearsCause => 'SubscriptionArrearsCause',
       _iq96jbxn.TrialLifecycleCause => 'TrialLifecycleCause',
       _i7df4v4i.Owner => 'Owner',
       _ikeafg5a.PaymentMethod => 'PaymentMethod',
@@ -1908,6 +1921,8 @@ class Protocol extends _isc.SerializationManager {
         return 'InvoiceCause';
       case _iry9161d.OwnerCause():
         return 'OwnerCause';
+      case _i0n5i4dl.SubscriptionArrearsCause():
+        return 'SubscriptionArrearsCause';
       case _iq96jbxn.TrialLifecycleCause():
         return 'TrialLifecycleCause';
       case _i7df4v4i.Owner():
@@ -2198,6 +2213,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'OwnerCause') {
       return deserialize<_iry9161d.OwnerCause>(data['data']);
+    }
+    if (dataClassName == 'SubscriptionArrearsCause') {
+      return deserialize<_i0n5i4dl.SubscriptionArrearsCause>(data['data']);
     }
     if (dataClassName == 'TrialLifecycleCause') {
       return deserialize<_iq96jbxn.TrialLifecycleCause>(data['data']);
