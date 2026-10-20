@@ -816,8 +816,6 @@ class EndpointAuthWithAuth extends _isc.EndpointRef {
         {},
       );
 
-  /// Lists the sessions and tokens of the current user. The one this request
-  /// was made with is marked as [AuthTokenInfo.current].
   _ida.Future<List<_i9cx54ed.AuthTokenInfo>> listAuthSessions() =>
       caller.callServerEndpoint<List<_i9cx54ed.AuthTokenInfo>>(
         'authWithAuth',
