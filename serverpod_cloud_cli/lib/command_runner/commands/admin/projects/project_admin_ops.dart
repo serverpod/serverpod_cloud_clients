@@ -5,6 +5,7 @@ import 'package:ground_control_client/ground_control_client.dart'
         InvalidValueException,
         NotFoundException,
         PlanType,
+        ProjectListFilter,
         ProjectProfileUpdate;
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/projects/admin_project_list_row.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
@@ -14,12 +15,14 @@ abstract class ProjectAdminCommands {
     Client cloudApiClient, {
     bool includePaymentsStatus = false,
     bool includeArchived = false,
+    ProjectListFilter? filter,
   }) {
     return cloudApiClient.adminProjects
         .listAdminProjectsInfo(
           includeArchived: includeArchived,
           includePaymentsStatus: includePaymentsStatus,
           includeLatestDeployAttemptTime: true,
+          filter: filter,
         )
         .map(
           (final info) => AdminProjectListRow.fromAdminProjectInfo(

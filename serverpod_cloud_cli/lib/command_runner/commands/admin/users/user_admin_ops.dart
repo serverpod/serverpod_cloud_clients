@@ -5,12 +5,14 @@ abstract class UserAdminCommands {
   static Future<AdminUserStatus> getUserStatusOperation(
     Client cloudApiClient, {
     required String identifier,
+    bool includeArchived = false,
   }) async {
     final lookup = _parseUserLookupIdentifier(identifier);
     try {
       return await cloudApiClient.adminUsers.getUserStatus(
         email: lookup.email,
         ownerId: lookup.ownerId,
+        includeArchived: includeArchived,
       );
     } on InvalidValueException catch (e) {
       throw FailureException(error: e.message);

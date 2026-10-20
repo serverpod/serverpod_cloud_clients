@@ -47,8 +47,11 @@ void main() {
     group('when executing admin user status by email', () {
       setUp(() async {
         when(
-          () =>
-              client.adminUsers.getUserStatus(email: userEmail, ownerId: null),
+          () => client.adminUsers.getUserStatus(
+            email: userEmail,
+            ownerId: null,
+            includeArchived: any(named: 'includeArchived'),
+          ),
         ).thenAnswer((_) async => AdminUserStatusBuilder().build());
 
         await cli.run(['admin', 'user', 'status', userEmail]);
@@ -69,7 +72,11 @@ void main() {
     group('when executing admin user status by owner id', () {
       setUp(() async {
         when(
-          () => client.adminUsers.getUserStatus(email: null, ownerId: ownerId),
+          () => client.adminUsers.getUserStatus(
+            email: null,
+            ownerId: ownerId,
+            includeArchived: any(named: 'includeArchived'),
+          ),
         ).thenAnswer(
           (_) async => AdminUserStatusBuilder()
               .withOwner(AdminUserOwnerStatusBuilder().withOwnerId(ownerId))
@@ -96,8 +103,11 @@ void main() {
     group('when the API returns NotFoundException', () {
       test('then the command fails with the server message', () async {
         when(
-          () =>
-              client.adminUsers.getUserStatus(email: userEmail, ownerId: null),
+          () => client.adminUsers.getUserStatus(
+            email: userEmail,
+            ownerId: null,
+            includeArchived: any(named: 'includeArchived'),
+          ),
         ).thenThrow(NotFoundException(message: 'User not found'));
 
         await expectLater(
@@ -110,8 +120,11 @@ void main() {
     group('when executing admin user status with --format json', () {
       setUp(() async {
         when(
-          () =>
-              client.adminUsers.getUserStatus(email: userEmail, ownerId: null),
+          () => client.adminUsers.getUserStatus(
+            email: userEmail,
+            ownerId: null,
+            includeArchived: any(named: 'includeArchived'),
+          ),
         ).thenAnswer((_) async => AdminUserStatusBuilder().build());
 
         await cli.run([
@@ -140,8 +153,11 @@ void main() {
     group('when executing admin user status with --format yaml', () {
       setUp(() async {
         when(
-          () =>
-              client.adminUsers.getUserStatus(email: userEmail, ownerId: null),
+          () => client.adminUsers.getUserStatus(
+            email: userEmail,
+            ownerId: null,
+            includeArchived: any(named: 'includeArchived'),
+          ),
         ).thenAnswer(
           (_) async => AdminUserStatusBuilder().withNoProjects().build(),
         );
@@ -160,6 +176,32 @@ void main() {
         final decoded =
             yamlDecode(logger.rawCalls.single.content) as Map<Object?, Object?>;
         expect(decoded['projects'], isEmpty);
+      });
+    });
+
+    group('when executing admin user status with --include-archived', () {
+      setUp(() async {
+        when(
+          () => client.adminUsers.getUserStatus(
+            email: userEmail,
+            ownerId: null,
+            includeArchived: any(named: 'includeArchived', that: isTrue),
+          ),
+        ).thenAnswer(
+          (_) async => AdminUserStatusBuilder().withNoProjects().build(),
+        );
+
+        await cli.run([
+          'admin',
+          'user',
+          'status',
+          userEmail,
+          '--include-archived',
+        ]);
+      });
+
+      test('then the status request includes archived projects', () {
+        expect(logger.lineCalls.join('\n'), contains('Projects'));
       });
     });
   });

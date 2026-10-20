@@ -29,6 +29,7 @@ enum AdminUserStatusOption<V> implements OptionDefinition<V> {
       helpText: 'User email or owner id.',
     ),
   ),
+  includeArchived(IncludeArchivedProjectsOption()),
   utc(UtcOption());
 
   const AdminUserStatusOption(this.option);
@@ -53,6 +54,9 @@ class AdminUserStatusCommand extends CloudCliCommand<AdminUserStatusOption> {
     final CommandOutput output,
   ) async {
     final identifier = commandConfig.value(AdminUserStatusOption.identifier);
+    final includeArchived = commandConfig.value(
+      AdminUserStatusOption.includeArchived,
+    );
     final inUtc = commandConfig.value(AdminUserStatusOption.utc);
 
     await renderCommand(
@@ -60,6 +64,7 @@ class AdminUserStatusCommand extends CloudCliCommand<AdminUserStatusOption> {
       operation: () => UserAdminCommands.getUserStatusOperation(
         runner.serviceProvider.cloudApiClient,
         identifier: identifier,
+        includeArchived: includeArchived,
       ),
       textOutputUi: AdminUserStatusTextUi(utc: inUtc),
     );

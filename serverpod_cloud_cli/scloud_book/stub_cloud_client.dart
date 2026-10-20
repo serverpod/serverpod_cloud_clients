@@ -772,6 +772,7 @@ void _stubAdmin(final ClientMock client, {required final String projectId}) {
         named: 'includeLatestDeployAttemptTime',
       ),
       includePaymentsStatus: any(named: 'includePaymentsStatus'),
+      filter: any(named: 'filter'),
     ),
   ).thenAnswer(
     (_) => Stream.fromIterable([
@@ -822,6 +823,7 @@ void _stubAdmin(final ClientMock client, {required final String projectId}) {
     () => client.adminUsers.getUserStatus(
       email: any(named: 'email'),
       ownerId: any(named: 'ownerId'),
+      includeArchived: any(named: 'includeArchived'),
     ),
   ).thenAnswer((_) async => AdminUserStatusBuilder().build());
   when(

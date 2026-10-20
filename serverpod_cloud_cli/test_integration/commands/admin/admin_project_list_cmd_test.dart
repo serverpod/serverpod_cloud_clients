@@ -53,6 +53,7 @@ void main() {
               named: 'includePaymentsStatus',
               that: isFalse,
             ),
+            filter: any(named: 'filter'),
           ),
         ).thenAnswer(
           (invocation) => Stream.fromIterable([
@@ -168,6 +169,7 @@ void main() {
               named: 'includePaymentsStatus',
               that: isTrue,
             ),
+            filter: any(named: 'filter'),
           ),
         ).thenAnswer(
           (invocation) => Stream.fromIterable([
@@ -244,6 +246,7 @@ void main() {
               named: 'includePaymentsStatus',
               that: isFalse,
             ),
+            filter: any(named: 'filter'),
           ),
         ).thenAnswer(
           (invocation) => Stream.fromIterable([
@@ -287,6 +290,7 @@ void main() {
               named: 'includePaymentsStatus',
               that: isFalse,
             ),
+            filter: any(named: 'filter'),
           ),
         ).thenAnswer(
           (invocation) => Stream.fromIterable([
@@ -381,6 +385,7 @@ void main() {
                 named: 'includePaymentsStatus',
                 that: isTrue,
               ),
+              filter: any(named: 'filter'),
             ),
           ).thenAnswer(
             (invocation) => Stream.fromIterable([
@@ -451,6 +456,7 @@ void main() {
               named: 'includePaymentsStatus',
               that: isFalse,
             ),
+            filter: any(named: 'filter'),
           ),
         ).thenAnswer(
           (invocation) => Stream.fromIterable([
@@ -509,5 +515,141 @@ void main() {
         expect(second['subscriptionId'], 'orb_sub_2');
       });
     });
+
+    group('when executing admin project list with phase and time filters', () {
+      late Future commandResult;
+      final createdSince = DateTime.parse('2024-01-15T10:30:00Z');
+      final suspendedUntil = DateTime.parse('2024-06-01T00:00:00Z');
+
+      setUp(() async {
+        when(
+          () => client.adminProjects.listAdminProjectsInfo(
+            includeArchived: any(named: 'includeArchived', that: isFalse),
+            includeLatestDeployAttemptTime: any(
+              named: 'includeLatestDeployAttemptTime',
+              that: isTrue,
+            ),
+            includePaymentsStatus: any(
+              named: 'includePaymentsStatus',
+              that: isFalse,
+            ),
+            filter: any(
+              named: 'filter',
+              that: isA<ProjectListFilter>()
+                  .having(
+                    (filter) => filter.phase,
+                    'phase',
+                    ProjectLifecycleStatus.suspended,
+                  )
+                  .having(
+                    (filter) => filter.createdSince,
+                    'createdSince',
+                    createdSince,
+                  )
+                  .having(
+                    (filter) => filter.createdUntil,
+                    'createdUntil',
+                    isNull,
+                  )
+                  .having(
+                    (filter) => filter.suspendedSince,
+                    'suspendedSince',
+                    isNull,
+                  )
+                  .having(
+                    (filter) => filter.suspendedUntil,
+                    'suspendedUntil',
+                    suspendedUntil,
+                  )
+                  .having(
+                    (filter) => filter.archivedSince,
+                    'archivedSince',
+                    isNull,
+                  )
+                  .having(
+                    (filter) => filter.archivedUntil,
+                    'archivedUntil',
+                    isNull,
+                  ),
+            ),
+          ),
+        ).thenAnswer((_) => const Stream.empty());
+
+        commandResult = cli.run([
+          'admin',
+          'project',
+          'list',
+          '--phase',
+          'suspended',
+          '--created-since',
+          '2024-01-15T10:30:00Z',
+          '--suspended-until',
+          '2024-06-01T00:00:00Z',
+        ]);
+      });
+
+      test('then the list request uses those filters', () async {
+        await expectLater(commandResult, completes);
+        expect(
+          logger.lineCalls.map((call) => call.line).join('\n'),
+          contains('Project Id'),
+        );
+      });
+    });
+
+    group(
+      'when executing admin project list with an archived time filter and without --include-archived',
+      () {
+        late Future commandResult;
+        final archivedSince = DateTime.parse('2023-12-01T00:00:00Z');
+
+        setUp(() async {
+          when(
+            () => client.adminProjects.listAdminProjectsInfo(
+              includeArchived: any(named: 'includeArchived', that: isFalse),
+              includeLatestDeployAttemptTime: any(
+                named: 'includeLatestDeployAttemptTime',
+                that: isTrue,
+              ),
+              includePaymentsStatus: any(
+                named: 'includePaymentsStatus',
+                that: isFalse,
+              ),
+              filter: any(
+                named: 'filter',
+                that: isA<ProjectListFilter>()
+                    .having((filter) => filter.phase, 'phase', isNull)
+                    .having(
+                      (filter) => filter.archivedSince,
+                      'archivedSince',
+                      archivedSince,
+                    )
+                    .having(
+                      (filter) => filter.archivedUntil,
+                      'archivedUntil',
+                      isNull,
+                    ),
+              ),
+            ),
+          ).thenAnswer((_) => const Stream.empty());
+
+          commandResult = cli.run([
+            'admin',
+            'project',
+            'list',
+            '--archived-since',
+            '2023-12-01T00:00:00Z',
+          ]);
+        });
+
+        test('then the text table shows Archived At', () async {
+          await expectLater(commandResult, completes);
+          expect(
+            logger.lineCalls.map((call) => call.line).join('\n'),
+            contains('Archived At'),
+          );
+        });
+      },
+    );
   });
 }

@@ -69,6 +69,8 @@ import 'package:ground_control_client/src/protocol/domains/products/models/subsc
     as _i2pv1k63;
 import 'package:ground_control_client/src/protocol/domains/projects/models/project.dart'
     as _iavjecni;
+import 'package:ground_control_client/src/protocol/domains/projects/models/project_list_filter.dart'
+    as _if13w5nk;
 import 'package:ground_control_client/src/protocol/domains/projects/models/project_role.dart'
     as _io9j0but;
 import 'package:ground_control_client/src/protocol/domains/projects/models/role.dart'
@@ -319,10 +321,16 @@ class EndpointAdminProjects extends _isc.EndpointRef {
   /// Fetches administrative information for the list of all projects.
   /// The result includes the owners for each project
   /// and the latest deploy attempt time (or null if undeployed).
+  ///
+  /// [filter] keeps projects in that lifecycle phase and time window.
+  /// Archived projects are included when [includeArchived] is true, when
+  /// the phase is archived, or when an archived-time bound is set.
+  /// Time bounds are inclusive.
   _ida.Stream<_ie7ffsfx.AdminProjectInfo> listAdminProjectsInfo({
     bool? includeArchived,
     bool? includeLatestDeployAttemptTime,
     bool? includePaymentsStatus,
+    _if13w5nk.ProjectListFilter? filter,
   }) =>
       caller.callStreamingServerEndpoint<
         _ida.Stream<_ie7ffsfx.AdminProjectInfo>,
@@ -331,6 +339,7 @@ class EndpointAdminProjects extends _isc.EndpointRef {
         'includeArchived': includeArchived,
         'includeLatestDeployAttemptTime': includeLatestDeployAttemptTime,
         'includePaymentsStatus': includePaymentsStatus,
+        'filter': filter,
       }, {});
 
   /// Reads overview status for a project.
@@ -589,13 +598,17 @@ class EndpointAdminUsers extends _isc.EndpointRef {
   /// Throws [InvalidValueException] if neither or both identifiers are given,
   /// or if the user has no owner (not fully registered).
   /// Throws [NotFoundException] if the user or owner is not found.
+  ///
+  /// Project memberships omit archived projects unless [includeArchived] is
+  /// true.
   _ida.Future<_iwex31es.AdminUserStatus> getUserStatus({
     String? email,
     _isc.UuidValue? ownerId,
+    bool? includeArchived,
   }) => caller.callServerEndpoint<_iwex31es.AdminUserStatus>(
     'adminUsers',
     'getUserStatus',
-    {'email': email, 'ownerId': ownerId},
+    {'email': email, 'ownerId': ownerId, 'includeArchived': includeArchived},
   );
 
   /// Reads the user with the specified email.
