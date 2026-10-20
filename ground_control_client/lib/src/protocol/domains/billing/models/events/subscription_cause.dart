@@ -13,15 +13,27 @@
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
 enum SubscriptionCause implements _isc.SerializableModel {
-  overdue,
-  settled;
+  trialStarted,
+  trialEnded,
+  paymentFailed,
+  arrearsPastGracePeriod,
+  settled,
+  ended;
 
   static SubscriptionCause fromJson(String name) {
     switch (name) {
-      case 'overdue':
-        return SubscriptionCause.overdue;
+      case 'trialStarted':
+        return SubscriptionCause.trialStarted;
+      case 'trialEnded':
+        return SubscriptionCause.trialEnded;
+      case 'paymentFailed':
+        return SubscriptionCause.paymentFailed;
+      case 'arrearsPastGracePeriod':
+        return SubscriptionCause.arrearsPastGracePeriod;
       case 'settled':
         return SubscriptionCause.settled;
+      case 'ended':
+        return SubscriptionCause.ended;
       default:
         throw ArgumentError(
           'Value "$name" cannot be converted to "SubscriptionCause"',
