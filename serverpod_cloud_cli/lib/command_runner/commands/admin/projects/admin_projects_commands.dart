@@ -1,5 +1,6 @@
 import 'package:config/config.dart';
-import 'package:ground_control_client/ground_control_client.dart' show PlanType;
+import 'package:ground_control_client/ground_control_client.dart'
+    show PlanType, ProjectLifecycleStatus, ProjectListFilter;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
@@ -36,14 +37,14 @@ enum AdminListProjectsOption<V> implements OptionDefinition<V> {
       negatable: false,
     ),
   ),
-  includeArchived(
-    FlagOption(
-      argName: 'include-archived',
-      helpText: 'Include archived projects.',
-      defaultsTo: false,
-      negatable: false,
-    ),
-  ),
+  includeArchived(IncludeArchivedProjectsOption()),
+  phase(ProjectPhaseOptions.option),
+  createdSince(ProjectCreatedSinceOption()),
+  createdUntil(ProjectCreatedUntilOption()),
+  suspendedSince(ProjectSuspendedSinceOption()),
+  suspendedUntil(ProjectSuspendedUntilOption()),
+  archivedSince(ProjectArchivedSinceOption()),
+  archivedUntil(ProjectArchivedUntilOption()),
   utc(UtcOption());
 
   const AdminListProjectsOption(this.option);
@@ -74,7 +75,40 @@ class AdminListProjectsCommand
     final includePaymentsStatus = commandConfig.value(
       AdminListProjectsOption.includePaymentsStatus,
     );
+    final phase = commandConfig.optionalValue(AdminListProjectsOption.phase);
+    final createdSince = commandConfig.optionalValue(
+      AdminListProjectsOption.createdSince,
+    );
+    final createdUntil = commandConfig.optionalValue(
+      AdminListProjectsOption.createdUntil,
+    );
+    final suspendedSince = commandConfig.optionalValue(
+      AdminListProjectsOption.suspendedSince,
+    );
+    final suspendedUntil = commandConfig.optionalValue(
+      AdminListProjectsOption.suspendedUntil,
+    );
+    final archivedSince = commandConfig.optionalValue(
+      AdminListProjectsOption.archivedSince,
+    );
+    final archivedUntil = commandConfig.optionalValue(
+      AdminListProjectsOption.archivedUntil,
+    );
     final inUtc = commandConfig.value(AdminListProjectsOption.utc);
+    final filter = ProjectListFilter(
+      phase: phase,
+      createdSince: createdSince,
+      createdUntil: createdUntil,
+      suspendedSince: suspendedSince,
+      suspendedUntil: suspendedUntil,
+      archivedSince: archivedSince,
+      archivedUntil: archivedUntil,
+    );
+    final showArchivedAt =
+        includeArchived ||
+        phase == ProjectLifecycleStatus.archived ||
+        archivedSince != null ||
+        archivedUntil != null;
 
     await renderCommand(
       output,
@@ -82,10 +116,11 @@ class AdminListProjectsCommand
         runner.serviceProvider.cloudApiClient,
         includeArchived: includeArchived,
         includePaymentsStatus: includePaymentsStatus,
+        filter: filter,
       ),
       textOutputUi: AdminProjectListTextUi(
         utc: inUtc,
-        includeArchived: includeArchived,
+        showArchivedAt: showArchivedAt,
         includePaymentsStatus: includePaymentsStatus,
       ),
     );

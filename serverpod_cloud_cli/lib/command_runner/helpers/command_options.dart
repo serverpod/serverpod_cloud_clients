@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:config/config.dart';
 import 'package:ground_control_client/ground_control_client.dart'
-    show ProjectRole;
+    show ProjectLifecycleStatus, ProjectRole;
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
 
 import 'email_validator.dart';
@@ -267,6 +267,99 @@ class DateTimeOrDurationParser extends ValueParser<DateTime> {
       return null;
     }
   }
+}
+
+const _timestampHelp =
+    'Accepts an ISO date (e.g. "2024-01-15T10:30:00Z") '
+    'or a duration before now (e.g. "5m", "3h", "1d").';
+
+class IncludeArchivedProjectsOption extends FlagOption {
+  const IncludeArchivedProjectsOption()
+    : super(
+        argName: 'include-archived',
+        helpText: 'Include archived projects.',
+        defaultsTo: false,
+        negatable: false,
+      );
+}
+
+abstract final class ProjectPhaseOptions {
+  static const phases = [
+    ProjectLifecycleStatus.active,
+    ProjectLifecycleStatus.suspended,
+    ProjectLifecycleStatus.archived,
+  ];
+
+  static const parser = EnumParser(phases);
+
+  static const option = EnumOption<ProjectLifecycleStatus>(
+    enumParser: parser,
+    argName: 'phase',
+    helpText:
+        'Only projects in this lifecycle phase '
+        '(active, suspended, or archived). '
+        'Archived projects are included when the phase is archived.',
+  );
+}
+
+class ProjectCreatedSinceOption extends DateTimeOrDurationOption {
+  const ProjectCreatedSinceOption()
+    : super(
+        argName: 'created-since',
+        helpText:
+            'Only projects created at or after this timestamp. '
+            '$_timestampHelp',
+      );
+}
+
+class ProjectCreatedUntilOption extends DateTimeOrDurationOption {
+  const ProjectCreatedUntilOption()
+    : super(
+        argName: 'created-until',
+        helpText:
+            'Only projects created at or before this timestamp. '
+            '$_timestampHelp',
+      );
+}
+
+class ProjectSuspendedSinceOption extends DateTimeOrDurationOption {
+  const ProjectSuspendedSinceOption()
+    : super(
+        argName: 'suspended-since',
+        helpText:
+            'Only projects suspended at or after this timestamp. '
+            '$_timestampHelp',
+      );
+}
+
+class ProjectSuspendedUntilOption extends DateTimeOrDurationOption {
+  const ProjectSuspendedUntilOption()
+    : super(
+        argName: 'suspended-until',
+        helpText:
+            'Only projects suspended at or before this timestamp. '
+            '$_timestampHelp',
+      );
+}
+
+class ProjectArchivedSinceOption extends DateTimeOrDurationOption {
+  const ProjectArchivedSinceOption()
+    : super(
+        argName: 'archived-since',
+        helpText:
+            'Only projects archived at or after this timestamp. '
+            'Includes archived projects. $_timestampHelp',
+      );
+}
+
+class ProjectArchivedUntilOption extends DateTimeOrDurationOption {
+  const ProjectArchivedUntilOption()
+    : super(
+        argName: 'archived-until',
+        helpText:
+            'Only projects archived at or before this timestamp. '
+            'Includes archived projects. $_timestampHelp',
+      );
 }
 
 class DateTimeOrDurationOption extends ComparableValueOption<DateTime> {

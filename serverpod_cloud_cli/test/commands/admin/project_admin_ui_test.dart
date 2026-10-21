@@ -19,7 +19,7 @@ void main() {
         final io = await renderCommandUi(
           AdminProjectListTextUi(
             utc: true,
-            includeArchived: false,
+            showArchivedAt: false,
             includePaymentsStatus: false,
           ),
           data: Stream.fromIterable([
@@ -98,7 +98,7 @@ void main() {
         final io = await renderCommandUi(
           AdminProjectListTextUi(
             utc: true,
-            includeArchived: false,
+            showArchivedAt: false,
             includePaymentsStatus: false,
           ),
           data: Stream.fromIterable([
@@ -133,7 +133,7 @@ void main() {
         final io = await renderCommandUi(
           AdminProjectListTextUi(
             utc: true,
-            includeArchived: true,
+            showArchivedAt: true,
             includePaymentsStatus: false,
           ),
           data: Stream.fromIterable([
@@ -166,7 +166,7 @@ void main() {
         final io = await renderCommandUi(
           AdminProjectListTextUi(
             utc: true,
-            includeArchived: false,
+            showArchivedAt: false,
             includePaymentsStatus: true,
           ),
           data: Stream.fromIterable([

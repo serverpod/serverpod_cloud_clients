@@ -4,12 +4,12 @@ import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 
 class AdminProjectListTextUi extends OutputWidget {
   final bool utc;
-  final bool includeArchived;
+  final bool showArchivedAt;
   final bool includePaymentsStatus;
 
   AdminProjectListTextUi({
     required this.utc,
-    required this.includeArchived,
+    required this.showArchivedAt,
     required this.includePaymentsStatus,
   });
 
@@ -38,7 +38,7 @@ class AdminProjectListTextUi extends OutputWidget {
             'Created At',
             getter: (row) => row.projectInfo.project.createdAt,
           ),
-          if (includeArchived)
+          if (showArchivedAt)
             TableColumnFormatter.forTimestamp(
               'Archived At',
               getter: (row) => row.projectInfo.project.archivedAt,
@@ -98,7 +98,7 @@ class AdminProjectListTextUi extends OutputWidget {
         19,
         23,
         19,
-        if (includeArchived) 19,
+        if (showArchivedAt) 19,
         19,
         20,
         19,
