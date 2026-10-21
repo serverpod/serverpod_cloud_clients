@@ -1,6 +1,13 @@
 
 # Changelog
 
+## [1.2.0] - 2026-10-19
+
+### Added
+
+- **Interactive top command** - Introduced `scloud top` to monitor live project status, deployment history, resource metrics, and streaming logs in real time.
+- **Lifecycle status details** - Project views and tables now display lifecycle information, including suspension dates and reasons where applicable.
+
 ## 1.1.0 - 2026-10-16
 
 ### Added
