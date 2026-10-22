@@ -2,6 +2,9 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy/prepare_project_files.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart'
+    show FailureException;
+import 'package:serverpod_cloud_cli/util/flutter_platform.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test/test.dart';
@@ -767,6 +770,349 @@ dependencies:
               'Ensure the project is part of a valid Dart workspace.',
             ]),
           ),
+        ),
+      );
+    });
+  });
+
+  group('Given a workspace with a Serverpod server, client, and Flutter app '
+      'when preparing the app for deployment', () {
+    late ProjectFilePreparer projectFilePreparer;
+
+    setUp(() async {
+      await ProjectFactory.serverpodAppWorkspace().create();
+      projectFilePreparer = TenantProject.prepareApp(
+        Directory(p.join(d.sandbox, 'monorepo', 'project_flutter')),
+      );
+    });
+
+    test('then the workspace root directory is the root', () {
+      expect(
+        projectFilePreparer.rootDirectory.path,
+        equals(p.join(d.sandbox, 'monorepo')),
+      );
+    });
+
+    test('then the app and the client are the included packages', () {
+      expect(
+        projectFilePreparer.includedPackagePaths,
+        unorderedEquals(['project_flutter', 'project_client']),
+      );
+    });
+
+    test('then the included subpaths include the workspace root files', () {
+      expect(
+        projectFilePreparer.includedSubPaths,
+        containsAll(['pubspec.yaml', 'pubspec.lock', '.scloud']),
+      );
+    });
+
+    test('then .scloud/scloud_app_dir file is created', () async {
+      final descriptor = d.dir('.scloud', [
+        d.file('scloud_app_dir', 'project_flutter'),
+      ]);
+
+      await expectLater(
+        descriptor.validate(p.join(d.sandbox, 'monorepo')),
+        completes,
+      );
+    });
+
+    test('then filterPubspecYaml lists only the included packages '
+        'in the root workspace', () async {
+      final filtered =
+          yamlDecode(
+                projectFilePreparer.filterPubspecYaml(
+                  ProjectFactory.serverpodAppWorkspaceRootPubspec(),
+                ),
+              )
+              as Map;
+
+      expect(
+        filtered['workspace'],
+        unorderedEquals(['project_flutter', 'project_client']),
+      );
+    });
+
+    test('then filterPubspecYaml keeps the root Flutter SDK constraint', () {
+      final filtered =
+          yamlDecode(
+                projectFilePreparer.filterPubspecYaml(
+                  ProjectFactory.serverpodAppWorkspaceRootPubspec(),
+                ),
+              )
+              as Map;
+
+      expect((filtered['environment'] as Map)['flutter'], '3.29.0');
+    });
+
+    test('then filterPubspecYaml strips the app dev_dependencies', () {
+      final filtered =
+          yamlDecode(
+                projectFilePreparer.filterPubspecYaml(
+                  ProjectFactory.serverpodFlutterAppPubspec(),
+                ),
+              )
+              as Map;
+
+      expect(filtered.containsKey('dev_dependencies'), isFalse);
+      expect(filtered['dependencies'], contains('serverpod_flutter'));
+    });
+
+    test('then filterPubspecLock omits packages only reachable '
+        'from the server', () async {
+      final packages =
+          (yamlDecode(
+                    projectFilePreparer.filterPubspecLock(
+                      ProjectFactory.serverpodAppWorkspaceLock,
+                    ),
+                  )
+                  as Map)['packages']
+              as Map;
+
+      expect(packages.keys, isNot(contains('serverpod')));
+      expect(
+        packages.keys,
+        containsAll(['flutter', 'serverpod_client', 'serverpod_flutter']),
+      );
+    });
+  });
+
+  group('Given a workspace with a Serverpod Flutter app with Android, iOS, '
+      'and Windows code', () {
+    late Directory appDirectory;
+
+    setUp(() async {
+      await ProjectFactory.serverpodAppWorkspace().create();
+      await d.dir('monorepo', [
+        d.dir('project_flutter', [
+          d.dir('android', [d.file('build.gradle.kts', '')]),
+          d.dir('ios', [d.file('Podfile', '')]),
+          d.dir('windows', [d.file('CMakeLists.txt', '')]),
+        ]),
+      ]).create();
+      appDirectory = Directory(
+        p.join(d.sandbox, 'monorepo', 'project_flutter'),
+      );
+    });
+
+    test('when preparing the app without platforms '
+        'then no paths are excluded', () {
+      final preparer = TenantProject.prepareApp(appDirectory);
+
+      expect(preparer.excludedSubPaths, isEmpty);
+    });
+
+    group('when preparing the app for Android and iOS', () {
+      late ProjectFilePreparer preparer;
+
+      setUp(() {
+        preparer = TenantProject.prepareApp(
+          appDirectory,
+          platforms: {FlutterPlatform.android, FlutterPlatform.ios},
+        );
+      });
+
+      test('then the Windows code is excluded', () {
+        expect(preparer.excludedSubPaths, [
+          p.join('project_flutter', 'windows'),
+        ]);
+      });
+
+      test('then files in the Windows directory are excluded', () {
+        expect(
+          preparer.isExcluded(
+            p.join('project_flutter', 'windows', 'CMakeLists.txt'),
+          ),
+          isTrue,
+        );
+      });
+
+      test('then files of the given platforms are not excluded', () {
+        expect(
+          preparer.isExcluded(p.join('project_flutter', 'ios', 'Podfile')),
+          isFalse,
+        );
+      });
+
+      test(
+        'then a sibling path that only shares the prefix is not excluded',
+        () {
+          expect(
+            preparer.isExcluded(
+              p.join('project_flutter', 'windows_tools', 'a.dart'),
+            ),
+            isFalse,
+          );
+        },
+      );
+    });
+
+    test('when preparing the app for a platform without code '
+        'then a FailureException names the missing platforms', () {
+      expect(
+        () => TenantProject.prepareApp(
+          appDirectory,
+          platforms: {
+            FlutterPlatform.android,
+            FlutterPlatform.linux,
+            FlutterPlatform.macos,
+          },
+        ),
+        throwsA(
+          isA<FailureException>().having((e) => e.errors, 'errors', [
+            'The app has no code for the platforms: linux, macos.',
+          ]),
+        ),
+      );
+    });
+  });
+
+  group('Given a workspace with a Serverpod server and Flutter app', () {
+    setUp(() async {
+      await ProjectFactory.serverpodAppWorkspace().create();
+    });
+
+    test('when finding the app directory from the server directory '
+        'then the Flutter app directory is returned', () {
+      final appDirectory = TenantProject.findAppDirectory(
+        Directory(p.join(d.sandbox, 'monorepo', 'project_server')),
+      );
+
+      expect(
+        appDirectory.path,
+        p.join(d.sandbox, 'monorepo', 'project_flutter'),
+      );
+    });
+
+    test('when preparing the server directory as the app '
+        'then a WorkspaceException is thrown', () {
+      expect(
+        () => TenantProject.prepareApp(
+          Directory(p.join(d.sandbox, 'monorepo', 'project_server')),
+        ),
+        throwsA(isA<WorkspaceException>()),
+      );
+    });
+  });
+
+  group('Given a workspace with two Serverpod Flutter apps', () {
+    setUp(() async {
+      await ProjectFactory.serverpodAppWorkspace(
+        extraWorkspacePackages: ['project_admin'],
+        extraContents: [
+          d.dir('project_admin', [
+            d.file(
+              'pubspec.yaml',
+              ProjectFactory.serverpodFlutterAppPubspec(
+                withPackageName: 'project_admin',
+              ),
+            ),
+          ]),
+        ],
+      ).create();
+    });
+
+    test('when finding the app directory from the server directory '
+        'then a WorkspaceException lists both apps', () {
+      expect(
+        () => TenantProject.findAppDirectory(
+          Directory(p.join(d.sandbox, 'monorepo', 'project_server')),
+        ),
+        throwsA(
+          isA<WorkspaceException>().having(
+            (e) => e.errors,
+            'errors',
+            containsAll(['project_flutter', 'project_admin']),
+          ),
+        ),
+      );
+    });
+  });
+
+  group('Given a workspace without a Serverpod Flutter app', () {
+    setUp(() async {
+      await d.dir('monorepo', [
+        d.file('pubspec.yaml', '''
+name: monorepo
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+workspace:
+  - project_server
+'''),
+        d.dir('project_server', [
+          d.file('pubspec.yaml', '''
+name: project_server
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+resolution: workspace
+dependencies:
+  serverpod: ${ProjectFactory.validServerpodVersion}
+'''),
+        ]),
+      ]).create();
+    });
+
+    test('when finding the app directory from the server directory '
+        'then a WorkspaceException is thrown', () {
+      expect(
+        () => TenantProject.findAppDirectory(
+          Directory(p.join(d.sandbox, 'monorepo', 'project_server')),
+        ),
+        throwsA(
+          isA<WorkspaceException>().having((e) => e.errors, 'errors', [
+            'No Serverpod Flutter app found in the workspace.',
+          ]),
+        ),
+      );
+    });
+  });
+
+  group('Given a non-workspace server project', () {
+    setUp(() async {
+      await ProjectFactory.serverpodServerDir().create();
+    });
+
+    test('when finding the app directory from the server directory '
+        'then a WorkspaceException is thrown', () {
+      expect(
+        () => TenantProject.findAppDirectory(
+          Directory(p.join(d.sandbox, ProjectFactory.defaultDirectoryName)),
+        ),
+        throwsA(
+          isA<WorkspaceException>().having((e) => e.errors, 'errors', [
+            'Releasing the app requires a Dart workspace project.',
+          ]),
+        ),
+      );
+    });
+  });
+
+  group('Given a non-workspace Serverpod Flutter app', () {
+    setUp(() async {
+      await d.dir('project_flutter', [
+        d.file('pubspec.yaml', '''
+name: project_flutter
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+dependencies:
+  flutter:
+    sdk: flutter
+  serverpod_flutter: ${ProjectFactory.validServerpodVersion}
+'''),
+      ]).create();
+    });
+
+    test('when preparing the app for deployment '
+        'then a WorkspaceException is thrown', () {
+      expect(
+        () => TenantProject.prepareApp(
+          Directory(p.join(d.sandbox, 'project_flutter')),
+        ),
+        throwsA(
+          isA<WorkspaceException>().having((e) => e.errors, 'errors', [
+            'Releasing the app requires a Dart workspace project.',
+          ]),
         ),
       );
     });

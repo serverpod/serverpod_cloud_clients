@@ -94,6 +94,15 @@ class TenantProjectPubspec {
         pubspec.dependencies['serverpod'] != null;
   }
 
+  /// Returns true if the pubspec.yaml appears to represent a Serverpod
+  /// Flutter app: it is not a workspace root, and it depends on the Flutter
+  /// SDK and on serverpod_flutter.
+  bool isServerpodFlutterApp() {
+    return pubspec.workspace == null &&
+        pubspec.dependencies['flutter'] is SdkDependency &&
+        pubspec.dependencies['serverpod_flutter'] != null;
+  }
+
   /// Returns the Serverpod framework version constraint string,
   /// or null if no Serverpod hosted dependency is found.
   String? get serverpodVersion {
@@ -128,6 +137,18 @@ class TenantProjectPubspec {
     );
 
     return [?sdkError, ?serverpodError];
+  }
+
+  /// Validates the pubspec.yaml of a package of a customer's Flutter app
+  /// in order to be deployed to Serverpod Cloud.
+  ///
+  /// If the package is not valid, the returned list will contain the error
+  /// messages. If it is valid, the list will be empty.
+  List<String> appDependencyIssues() {
+    if (pubspec.environment['sdk'] == null) {
+      return ['No sdk constraint found in package ${pubspec.name}'];
+    }
+    return const [];
   }
 
   /// The environment constraints are handled differently than other dependencies.

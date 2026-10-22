@@ -25,6 +25,13 @@ abstract final class ProjectFiles {
   /// [rootDirectory] to collect files from.
   /// The default value is `'.'`, which means that all files in the
   /// [rootDirectory] will be collected.
+  ///
+  /// Symlinks are not followed. Only collected symlinks are checked, so an
+  /// ignored directory may contain symlinks of any kind.
+  ///
+  /// Throws [DirectorySymLinkException] if a collected path is a symlink to
+  /// a directory, and [NonResolvingSymlinkException] if a collected symlink
+  /// does not resolve.
   static (Set<String> collectedFiles, Set<String> ignoredFiles) collectFiles({
     required CommandLogger logger,
     required Directory rootDirectory,
@@ -37,18 +44,8 @@ abstract final class ProjectFiles {
       listDir: (dir) {
         final contents = Directory(
           _resolve(from: root, path: dir),
-        ).listSync(recursive: true);
+        ).listSync(followLinks: false);
         return contents.map((entity) {
-          final path = entity.path;
-          if (_linkExists(path)) {
-            final target = Link(path).targetSync();
-            if (_dirExists(path)) {
-              throw DirectorySymLinkException(path);
-            }
-            if (!_fileExists(entity.path)) {
-              throw NonResolvingSymlinkException(path, target);
-            }
-          }
           final relative = p.relative(entity.path, from: root);
           if (Platform.isWindows) {
             return p.posix.joinAll(p.split(relative));
@@ -116,12 +113,17 @@ abstract final class ProjectFiles {
           ignoreCase: Platform.isMacOS || Platform.isWindows,
         );
       },
-      isDir: (dir) => _dirExists(_resolve(from: root, path: dir)),
+      isDir: (dir) {
+        final path = _resolve(from: root, path: dir);
+        if (dir != beneath && _linkExists(path)) return false;
+        return _dirExists(path);
+      },
     );
 
     final collected = collectedFiles
         .map((file) => _resolve(from: root, path: file))
         .toSet();
+    _verifySymlinks(collected);
 
     final ignored = ignoredFiles
         .map((file) => _resolve(from: root, path: file))
@@ -143,6 +145,21 @@ abstract final class ProjectFiles {
       return p.joinAll([from, ...p.posix.split(path)]);
     }
     return p.join(from, path);
+  }
+
+  /// Throws [DirectorySymLinkException] for a symlink in [paths] to a
+  /// directory, and [NonResolvingSymlinkException] for one that does not
+  /// resolve.
+  static void _verifySymlinks(Iterable<String> paths) {
+    for (final path in paths) {
+      if (!_linkExists(path)) continue;
+      if (_dirExists(path)) {
+        throw DirectorySymLinkException(path);
+      }
+      if (!_fileExists(path)) {
+        throw NonResolvingSymlinkException(path, Link(path).targetSync());
+      }
+    }
   }
 
   static bool _linkExists(String link) => Link(link).existsSync();

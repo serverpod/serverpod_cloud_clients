@@ -147,4 +147,69 @@ void main() {
       );
     },
   );
+
+  test(
+    'Given a file ignored by a subdirectory .gitignore when zipping project then the file is not included',
+    () async {
+      final projectDirectory = DirectoryFactory(
+        withSubDirectories: [
+          DirectoryFactory(
+            withDirectoryName: 'sub',
+            withFiles: [
+              FileFactory(withName: '.gitignore', withContents: 'secret.txt'),
+              FileFactory(withName: 'secret.txt', withContents: 'secret'),
+              FileFactory(withName: 'keep.txt', withContents: 'keep'),
+            ],
+          ),
+        ],
+      ).construct(testProjectPath);
+
+      final zippedProject = await ProjectZipper.zipProject(
+        rootDirectory: projectDirectory,
+        logger: commandLogger,
+      );
+
+      final archiveNames = ZipDecoder()
+          .decodeBytes(zippedProject)
+          .map((file) => file.name)
+          .toList();
+      expect(archiveNames, ['sub/keep.txt']);
+    },
+  );
+
+  test(
+    'Given a directory ignored by a subdirectory .gitignore when zipping project then its files are not included',
+    () async {
+      final projectDirectory = DirectoryFactory(
+        withFiles: [FileFactory(withName: 'keep.txt', withContents: 'keep')],
+        withSubDirectories: [
+          DirectoryFactory(
+            withDirectoryName: 'sub',
+            withFiles: [
+              FileFactory(withName: '.gitignore', withContents: 'generated/'),
+            ],
+            withSubDirectories: [
+              DirectoryFactory(
+                withDirectoryName: 'generated',
+                withFiles: [
+                  FileFactory(withName: 'output.txt', withContents: 'out'),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ).construct(testProjectPath);
+
+      final zippedProject = await ProjectZipper.zipProject(
+        rootDirectory: projectDirectory,
+        logger: commandLogger,
+      );
+
+      final archiveNames = ZipDecoder()
+          .decodeBytes(zippedProject)
+          .map((file) => file.name)
+          .toList();
+      expect(archiveNames, ['keep.txt']);
+    },
+  );
 }

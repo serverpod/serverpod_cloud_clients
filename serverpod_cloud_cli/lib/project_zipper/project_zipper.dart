@@ -21,6 +21,9 @@ import 'package:path/path.dart' as p;
 ///
 /// The [zipProject] method is the main entry point for this class.
 abstract final class ProjectZipper {
+  /// The number of files [zipProject] processes concurrently by default.
+  static const defaultFileReadPoolSize = 5;
+
   static String stripRoot(String rootPath, String fullPath) {
     return p.relative(p.normalize(fullPath), from: rootPath);
   }
@@ -65,7 +68,7 @@ abstract final class ProjectZipper {
     required CommandLogger logger,
     required Directory rootDirectory,
     Iterable<String> beneath = const ['.'],
-    int fileReadPoolSize = 5,
+    int fileReadPoolSize = defaultFileReadPoolSize,
     bool showFiles = false,
     Future<String?> Function(
       String relativePath,

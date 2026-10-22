@@ -1806,6 +1806,21 @@ class EndpointDeploy extends _isc.EndpointRef {
     'resumable': resumable,
     'archiveSize': archiveSize,
   });
+
+  /// Returns the upload description for the app code of a project: a
+  /// resumable session (`type: resumable`) for exactly [archiveSize] bytes.
+  ///
+  /// Throws [InvalidValueException] if [archiveSize] is not positive.
+  /// Throws [UploadTooLargeException] if [archiveSize] exceeds the upload
+  /// limit. Throws [ProjectSuspendedException] if the project is suspended.
+  _ida.Future<String> createAppUploadDescription(
+    String cloudProjectId, {
+    required int archiveSize,
+  }) => caller.callServerEndpoint<String>(
+    'deploy',
+    'createAppUploadDescription',
+    {'cloudProjectId': cloudProjectId, 'archiveSize': archiveSize},
+  );
 }
 
 /// Endpoint for managing environment variables.
