@@ -11,6 +11,12 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
+import 'package:ground_control_client/src/protocol/domains/app_builds/models/app_credential_kind.dart'
+    as _iswgedmj;
+import 'package:ground_control_client/src/protocol/domains/app_builds/models/app_platform.dart'
+    as _id4pe5bk;
+import 'package:ground_control_client/src/protocol/domains/app_builds/models/reported_app_identifier.dart'
+    as _io6uzwl0;
 import 'package:ground_control_client/src/protocol/domains/billing/models/billing_customer_type.dart'
     as _iqua0tdt;
 import 'package:ground_control_client/src/protocol/domains/billing/models/billing_info.dart'
@@ -91,6 +97,22 @@ import 'package:ground_control_client/src/protocol/features/admin/models/admin_p
     as _ie7ffsfx;
 import 'package:ground_control_client/src/protocol/features/admin/models/admin_user_status.dart'
     as _iwex31es;
+import 'package:ground_control_client/src/protocol/features/app_builds/models/android_upload_keystore.dart'
+    as _ihlf6vfv;
+import 'package:ground_control_client/src/protocol/features/app_builds/models/app_build_detail.dart'
+    as _ilkz45dh;
+import 'package:ground_control_client/src/protocol/features/app_builds/models/app_build_summary.dart'
+    as _iy6jkon8;
+import 'package:ground_control_client/src/protocol/features/app_builds/models/app_build_upload.dart'
+    as _ios6v2zi;
+import 'package:ground_control_client/src/protocol/features/app_builds/models/app_platform_info.dart'
+    as _ixmn6b27;
+import 'package:ground_control_client/src/protocol/features/app_builds/models/app_publishing_info.dart'
+    as _i8g74csy;
+import 'package:ground_control_client/src/protocol/features/app_builds/models/app_store_connect_api_key.dart'
+    as _isbvh3ms;
+import 'package:ground_control_client/src/protocol/features/app_builds/models/play_service_account_key.dart'
+    as _izra9n3k;
 import 'package:ground_control_client/src/protocol/features/auth/models/accepted_terms_dto.dart'
     as _irrma5ts;
 import 'package:ground_control_client/src/protocol/features/auth/models/auth_token_info.dart'
@@ -659,6 +681,231 @@ class EndpointAdminUsers extends _isc.EndpointRef {
     'unassignRoles': unassignRoles,
     'unassignAllRoles': unassignAllRoles,
   });
+}
+
+/// Endpoint for requesting, following and listing app builds.
+///
+/// Every method throws [AppPublishingDisabledException] while app
+/// publishing is off in this environment.
+/// {@category Endpoint}
+class EndpointAppBuilds extends _isc.EndpointRef {
+  EndpointAppBuilds(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'appBuilds';
+
+  /// Queues a build and returns where to upload the app archive: the
+  /// Flutter app at [flutterAppDir] with the packages it depends on.
+  /// [resumable] and [archiveSize] work as for a server deploy upload: a
+  /// resumable session for exactly [archiveSize] bytes when [resumable] is
+  /// set, otherwise a single signed `PUT`.
+  ///
+  /// Throws [InvalidValueException] if [resumable] is set without a positive
+  /// [archiveSize]. Throws [AppPlatformNotReadyException] if the platform is
+  /// turned off or its checklist is not complete; the exception carries the
+  /// checklist. Throws [ProjectSuspendedException] if the project is
+  /// suspended.
+  _ida.Future<_ios6v2zi.AppBuildUpload> createBuild({
+    required String cloudCapsuleId,
+    required _id4pe5bk.AppPlatform platform,
+    required String flutterAppDir,
+    String? versionName,
+    String? commitHash,
+    String? commitMessage,
+    String? branch,
+    _isc.UuidValue? deployAttemptId,
+    bool? resumable,
+    int? archiveSize,
+  }) => caller.callServerEndpoint<_ios6v2zi.AppBuildUpload>(
+    'appBuilds',
+    'createBuild',
+    {
+      'cloudCapsuleId': cloudCapsuleId,
+      'platform': platform,
+      'flutterAppDir': flutterAppDir,
+      'versionName': versionName,
+      'commitHash': commitHash,
+      'commitMessage': commitMessage,
+      'branch': branch,
+      'deployAttemptId': deployAttemptId,
+      'resumable': resumable,
+      'archiveSize': archiveSize,
+    },
+  );
+
+  /// Lists the capsule's builds newest first, up to [limit] if set, and
+  /// only for [platform] if set. When [afterBuildId] is set, lists the
+  /// builds that come after it, for fetching the next page.
+  ///
+  /// Throws [NotFoundException] if [afterBuildId] does not name a build of
+  /// the capsule.
+  _ida.Future<List<_iy6jkon8.AppBuildSummary>> listBuilds({
+    required String cloudCapsuleId,
+    _id4pe5bk.AppPlatform? platform,
+    int? limit,
+    _isc.UuidValue? afterBuildId,
+  }) => caller.callServerEndpoint<List<_iy6jkon8.AppBuildSummary>>(
+    'appBuilds',
+    'listBuilds',
+    {
+      'cloudCapsuleId': cloudCapsuleId,
+      'platform': platform,
+      'limit': limit,
+      'afterBuildId': afterBuildId,
+    },
+  );
+
+  /// Gets a build with its steps. Step logs are fetched with [getStepLog].
+  ///
+  /// Throws [NotFoundException] if no build with [buildId] belongs to the
+  /// capsule.
+  _ida.Future<_ilkz45dh.AppBuildDetail> getBuild({
+    required String cloudCapsuleId,
+    required _isc.UuidValue buildId,
+  }) => caller.callServerEndpoint<_ilkz45dh.AppBuildDetail>(
+    'appBuilds',
+    'getBuild',
+    {'cloudCapsuleId': cloudCapsuleId, 'buildId': buildId},
+  );
+
+  /// Gets the log of one step. Empty until the step has ended; null once
+  /// the build service has discarded it. Each call reaches the build
+  /// service, so do not poll it.
+  ///
+  /// Throws [NotFoundException] if no build with [buildId] belongs to the
+  /// capsule or the build has no step [stepIndex].
+  _ida.Future<String?> getStepLog({
+    required String cloudCapsuleId,
+    required _isc.UuidValue buildId,
+    required int stepIndex,
+  }) => caller.callServerEndpoint<String?>('appBuilds', 'getStepLog', {
+    'cloudCapsuleId': cloudCapsuleId,
+    'buildId': buildId,
+    'stepIndex': stepIndex,
+  });
+
+  /// Follows a build. Emits the build with its steps immediately, then
+  /// again whenever either changes, and closes once the build is final.
+  ///
+  /// Emits a [NotFoundException] error if no build with [buildId] belongs
+  /// to the capsule.
+  _ida.Stream<_ilkz45dh.AppBuildDetail> tailBuild({
+    required String cloudCapsuleId,
+    required _isc.UuidValue buildId,
+  }) =>
+      caller.callStreamingServerEndpoint<
+        _ida.Stream<_ilkz45dh.AppBuildDetail>,
+        _ilkz45dh.AppBuildDetail
+      >('appBuilds', 'tailBuild', {
+        'cloudCapsuleId': cloudCapsuleId,
+        'buildId': buildId,
+      }, {});
+
+  /// Cancels a build, whether it is still queued or already running.
+  /// Idempotent: cancelling a finished build completes without error.
+  ///
+  /// Throws [NotFoundException] if no build with [buildId] belongs to the
+  /// capsule.
+  _ida.Future<void> cancelBuild({
+    required String cloudCapsuleId,
+    required _isc.UuidValue buildId,
+  }) => caller.callServerEndpoint<void>('appBuilds', 'cancelBuild', {
+    'cloudCapsuleId': cloudCapsuleId,
+    'buildId': buildId,
+  });
+}
+
+/// Endpoint for setting up app publishing per platform: identifiers,
+/// credentials and the readiness checklist.
+///
+/// Every method throws [AppPublishingDisabledException] while app
+/// publishing is off in this environment.
+/// {@category Endpoint}
+class EndpointAppPublishing extends _isc.EndpointRef {
+  EndpointAppPublishing(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'appPublishing';
+
+  /// Gets the publishing setup of every platform, with its readiness
+  /// checklist and latest build. Never returns credential values.
+  _ida.Future<_i8g74csy.AppPublishingInfo> getPublishingInfo({
+    required String cloudCapsuleId,
+  }) => caller.callServerEndpoint<_i8g74csy.AppPublishingInfo>(
+    'appPublishing',
+    'getPublishingInfo',
+    {'cloudCapsuleId': cloudCapsuleId},
+  );
+
+  /// Stores the app identifiers the CLI read from the project, replacing
+  /// any reported before.
+  ///
+  /// Throws [InvalidValueException] if an identifier is empty or Flutter's
+  /// `com.example` placeholder; nothing is stored then.
+  _ida.Future<_i8g74csy.AppPublishingInfo> reportAppIdentifiers({
+    required String cloudCapsuleId,
+    required List<_io6uzwl0.ReportedAppIdentifier> identifiers,
+  }) => caller.callServerEndpoint<_i8g74csy.AppPublishingInfo>(
+    'appPublishing',
+    'reportAppIdentifiers',
+    {'cloudCapsuleId': cloudCapsuleId, 'identifiers': identifiers},
+  );
+
+  /// Turns publishing on or off for a platform. Turning it off keeps the
+  /// credentials.
+  _ida.Future<_ixmn6b27.AppPlatformInfo> setPlatformEnabled({
+    required String cloudCapsuleId,
+    required _id4pe5bk.AppPlatform platform,
+    required bool enabled,
+  }) => caller.callServerEndpoint<_ixmn6b27.AppPlatformInfo>(
+    'appPublishing',
+    'setPlatformEnabled',
+    {
+      'cloudCapsuleId': cloudCapsuleId,
+      'platform': platform,
+      'enabled': enabled,
+    },
+  );
+
+  /// Sets or replaces the App Store Connect API key for iOS.
+  _ida.Future<_ixmn6b27.AppPlatformInfo> setAppStoreConnectApiKey({
+    required String cloudCapsuleId,
+    required _isbvh3ms.AppStoreConnectApiKey key,
+  }) => caller.callServerEndpoint<_ixmn6b27.AppPlatformInfo>(
+    'appPublishing',
+    'setAppStoreConnectApiKey',
+    {'cloudCapsuleId': cloudCapsuleId, 'key': key},
+  );
+
+  /// Sets or replaces the Google Play service account key for Android.
+  _ida.Future<_ixmn6b27.AppPlatformInfo> setPlayServiceAccountKey({
+    required String cloudCapsuleId,
+    required _izra9n3k.PlayServiceAccountKey key,
+  }) => caller.callServerEndpoint<_ixmn6b27.AppPlatformInfo>(
+    'appPublishing',
+    'setPlayServiceAccountKey',
+    {'cloudCapsuleId': cloudCapsuleId, 'key': key},
+  );
+
+  /// Sets or replaces the upload keystore for Android.
+  _ida.Future<_ixmn6b27.AppPlatformInfo> setAndroidUploadKeystore({
+    required String cloudCapsuleId,
+    required _ihlf6vfv.AndroidUploadKeystore keystore,
+  }) => caller.callServerEndpoint<_ixmn6b27.AppPlatformInfo>(
+    'appPublishing',
+    'setAndroidUploadKeystore',
+    {'cloudCapsuleId': cloudCapsuleId, 'keystore': keystore},
+  );
+
+  /// Removes a credential. Idempotent.
+  _ida.Future<_ixmn6b27.AppPlatformInfo> removeCredential({
+    required String cloudCapsuleId,
+    required _iswgedmj.AppCredentialKind kind,
+  }) => caller.callServerEndpoint<_ixmn6b27.AppPlatformInfo>(
+    'appPublishing',
+    'removeCredential',
+    {'cloudCapsuleId': cloudCapsuleId, 'kind': kind},
+  );
 }
 
 /// Endpoint for authentication.
@@ -2756,6 +3003,8 @@ class Client extends _isc.ServerpodClientShared {
     adminTest = EndpointAdminTest(this);
     adminUpdatePlan = EndpointAdminUpdatePlan(this);
     adminUsers = EndpointAdminUsers(this);
+    appBuilds = EndpointAppBuilds(this);
+    appPublishing = EndpointAppPublishing(this);
     auth = EndpointAuth(this);
     authWithAuth = EndpointAuthWithAuth(this);
     emailIdp = EndpointEmailIdp(this);
@@ -2804,6 +3053,10 @@ class Client extends _isc.ServerpodClientShared {
   late final EndpointAdminUpdatePlan adminUpdatePlan;
 
   late final EndpointAdminUsers adminUsers;
+
+  late final EndpointAppBuilds appBuilds;
+
+  late final EndpointAppPublishing appPublishing;
 
   late final EndpointAuth auth;
 
@@ -2871,6 +3124,8 @@ class Client extends _isc.ServerpodClientShared {
     'adminTest': adminTest,
     'adminUpdatePlan': adminUpdatePlan,
     'adminUsers': adminUsers,
+    'appBuilds': appBuilds,
+    'appPublishing': appPublishing,
     'auth': auth,
     'authWithAuth': authWithAuth,
     'emailIdp': emailIdp,
