@@ -16,8 +16,7 @@ void main() {
       );
     });
 
-    test('when the company name and VAT number are blank '
-        'then nothing is missing', () {
+    test('when the company name is blank then nothing is missing', () {
       expect(
         BillingInfoValidator.isComplete(
           addressLine1: '123 Main St',
@@ -26,7 +25,6 @@ void main() {
           country: 'US',
           isBusiness: false,
           companyName: null,
-          vatNumber: '',
         ),
         isTrue,
       );
@@ -54,8 +52,7 @@ void main() {
   });
 
   group('Given a business customer with a full address', () {
-    test('when the company name and VAT number are set '
-        'then nothing is missing', () {
+    test('when the company name is set then nothing is missing', () {
       expect(
         BillingInfoValidator.missingFields(
           addressLine1: '123 Main St',
@@ -64,14 +61,12 @@ void main() {
           country: 'US',
           isBusiness: true,
           companyName: 'Acme Inc',
-          vatNumber: '12-34567890',
         ),
         isEmpty,
       );
     });
 
-    test('when the company name and VAT number are blank '
-        'then both are missing', () {
+    test('when the company name is blank then it is missing', () {
       expect(
         BillingInfoValidator.missingFields(
           addressLine1: '123 Main St',
@@ -80,9 +75,8 @@ void main() {
           country: 'US',
           isBusiness: true,
           companyName: ' ',
-          vatNumber: null,
         ),
-        [BillingInfoField.companyName, BillingInfoField.vatNumber],
+        [BillingInfoField.companyName],
       );
     });
   });
