@@ -9,5 +9,6 @@ export 'src/storage/file_uploader_client.dart';
 export 'src/storage/rate_limit_message.dart';
 export 'src/storage/resumable_upload_description.dart';
 export 'src/storage/storage_id_validator.dart';
+export 'src/validation/billing_info_validator.dart';
 export 'src/validation/email_validator.dart';
 export 'src/variables/platform_variables.dart';
