@@ -1166,8 +1166,9 @@ class EndpointBilling extends _isc.EndpointRef {
   ///
   /// Returns the updated [Owner] object.
   ///
-  /// Throws [InvalidValueException] if required business billing fields are
-  /// missing or invalid.
+  /// Throws [BillingInfoIncompleteException] if a required billing field is
+  /// blank, naming the fields, and [InvalidValueException] if a value is
+  /// invalid.
   _ida.Future<_ijvsyu4l.Owner> updateOwnerBilling({
     required List<String> billingEmails,
     required _iup39bna.BillingInfo billingInfo,
@@ -2340,9 +2341,10 @@ class EndpointProjects extends _isc.EndpointRef {
   /// the same plan type under the new customer type in the background.
   /// Suspended projects and internal plan types are skipped.
   ///
-  /// Throws [InvalidValueException] if the owner has no billing info, or if a
-  /// business customer lacks a company name, or has an empty VAT number or an
-  /// invalid VAT type.
+  /// Throws [InvalidValueException] if the owner has no billing info or a
+  /// business customer has an invalid VAT type, and
+  /// [BillingInfoIncompleteException] if the billing info lacks a required
+  /// field for the new customer type, naming the fields.
   _ida.Future<_ijvsyu4l.Owner> changeCustomerType({
     required _iqua0tdt.BillingCustomerType customerType,
     String? companyName,

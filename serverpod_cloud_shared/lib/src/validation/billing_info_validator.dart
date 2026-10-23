@@ -1,19 +1,13 @@
 /// A field of a customer's billing info that Serverpod Cloud requires before
 /// it can invoice the customer.
-enum BillingInfoField {
-  addressLine1,
-  postalCode,
-  city,
-  country,
-  companyName,
-  vatNumber,
-}
+enum BillingInfoField { addressLine1, postalCode, city, country, companyName }
 
 /// Validation of billing info for Serverpod Cloud clients and APIs: the one
 /// rule for whether a customer's billing info is complete.
 abstract final class BillingInfoValidator {
   /// The required fields that are blank: the address fields for every
-  /// customer, plus the company name and VAT number for a business.
+  /// customer, plus the company name for a business. A VAT number is not
+  /// required.
   ///
   /// A field is blank when it is null or only whitespace. The list is empty
   /// when the billing info is complete.
@@ -24,7 +18,6 @@ abstract final class BillingInfoValidator {
     required String? country,
     required bool isBusiness,
     String? companyName,
-    String? vatNumber,
   }) {
     return [
       if (isBlank(addressLine1)) BillingInfoField.addressLine1,
@@ -32,7 +25,6 @@ abstract final class BillingInfoValidator {
       if (isBlank(city)) BillingInfoField.city,
       if (isBlank(country)) BillingInfoField.country,
       if (isBusiness && isBlank(companyName)) BillingInfoField.companyName,
-      if (isBusiness && isBlank(vatNumber)) BillingInfoField.vatNumber,
     ];
   }
 
@@ -44,7 +36,6 @@ abstract final class BillingInfoValidator {
     required String? country,
     required bool isBusiness,
     String? companyName,
-    String? vatNumber,
   }) {
     return missingFields(
       addressLine1: addressLine1,
@@ -53,7 +44,6 @@ abstract final class BillingInfoValidator {
       country: country,
       isBusiness: isBusiness,
       companyName: companyName,
-      vatNumber: vatNumber,
     ).isEmpty;
   }
 

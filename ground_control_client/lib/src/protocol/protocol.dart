@@ -182,6 +182,8 @@ import 'features/status/exceptions/capsule_status_unavailable_exception.dart'
     as _iglg9o3u;
 import 'features/status/models/capsule_runtime_status.dart' as _ivmk5dq6;
 import 'features/status/models/deploy_attempt_summary.dart' as _iewvz7zd;
+import 'shared/exceptions/models/billing_info_incomplete_exception.dart'
+    as _iftewfwx;
 import 'shared/exceptions/models/dart_sdk_unsupported_constraint_exception.dart'
     as _iv8o207k;
 import 'shared/exceptions/models/duplicate_entry_exception.dart' as _inn0ooo2;
@@ -320,6 +322,7 @@ export 'features/projects/models/project_profile_update.dart';
 export 'features/status/exceptions/capsule_status_unavailable_exception.dart';
 export 'features/status/models/capsule_runtime_status.dart';
 export 'features/status/models/deploy_attempt_summary.dart';
+export 'shared/exceptions/models/billing_info_incomplete_exception.dart';
 export 'shared/exceptions/models/dart_sdk_unsupported_constraint_exception.dart';
 export 'shared/exceptions/models/duplicate_entry_exception.dart';
 export 'shared/exceptions/models/invalid_value_exception.dart';
@@ -720,6 +723,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _iewvz7zd.DeployAttemptSummary) {
       return _iewvz7zd.DeployAttemptSummary.fromJson(data) as T;
+    }
+    if (t == _iftewfwx.BillingInfoIncompleteException) {
+      return _iftewfwx.BillingInfoIncompleteException.fromJson(data) as T;
     }
     if (t == _iv8o207k.DartSdkUnsupportedConstraintException) {
       return _iv8o207k.DartSdkUnsupportedConstraintException.fromJson(data)
@@ -1290,6 +1296,12 @@ class Protocol extends _isc.SerializationManager {
     if (t == _isc.getType<_iewvz7zd.DeployAttemptSummary?>()) {
       return (data != null
               ? _iewvz7zd.DeployAttemptSummary.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_iftewfwx.BillingInfoIncompleteException?>()) {
+      return (data != null
+              ? _iftewfwx.BillingInfoIncompleteException.fromJson(data)
               : null)
           as T;
     }
@@ -1869,6 +1881,8 @@ class Protocol extends _isc.SerializationManager {
         'CapsuleStatusUnavailableException',
       _ivmk5dq6.CapsuleRuntimeStatus => 'CapsuleRuntimeStatus',
       _iewvz7zd.DeployAttemptSummary => 'DeployAttemptSummary',
+      _iftewfwx.BillingInfoIncompleteException =>
+        'BillingInfoIncompleteException',
       _iv8o207k.DartSdkUnsupportedConstraintException =>
         'DartSdkUnsupportedConstraintException',
       _inn0ooo2.DuplicateEntryException => 'DuplicateEntryException',
@@ -2138,6 +2152,8 @@ class Protocol extends _isc.SerializationManager {
         return 'CapsuleRuntimeStatus';
       case _iewvz7zd.DeployAttemptSummary():
         return 'DeployAttemptSummary';
+      case _iftewfwx.BillingInfoIncompleteException():
+        return 'BillingInfoIncompleteException';
       case _iv8o207k.DartSdkUnsupportedConstraintException():
         return 'DartSdkUnsupportedConstraintException';
       case _inn0ooo2.DuplicateEntryException():
@@ -2557,6 +2573,11 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'DeployAttemptSummary') {
       return deserialize<_iewvz7zd.DeployAttemptSummary>(data['data']);
+    }
+    if (dataClassName == 'BillingInfoIncompleteException') {
+      return deserialize<_iftewfwx.BillingInfoIncompleteException>(
+        data['data'],
+      );
     }
     if (dataClassName == 'DartSdkUnsupportedConstraintException') {
       return deserialize<_iv8o207k.DartSdkUnsupportedConstraintException>(
