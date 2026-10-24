@@ -12,12 +12,33 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
+/// What happened to a subscription, as published on the `subscription`
+/// topic by billing. Each event carries the facts of its cause.
 enum SubscriptionCause implements _isc.SerializableModel {
+  /// The subscription's trial began. The trial ends at `trialEndingAt`.
   trialStarted,
+
+  /// The subscription's trial ran out at `trialEndingAt`.
   trialEnded,
+
+  /// An attempt to collect a later invoice failed. Its projects are due for
+  /// suspension at `suspendAt` unless the invoice is paid before then.
   paymentFailed,
+
+  /// The subscription is in arrears past its grace period and its projects
+  /// are due for suspension now. The grace period is zero for a first-day
+  /// invoice, which could not be collected or issued, and the overdue
+  /// payment grace period for a later invoice.
   arrearsPastGracePeriod,
+
+  /// The subscription has no issued invoice unpaid past due, after a
+  /// payment (`paidAt` set) or after the issue of a first-day invoice
+  /// (`paidAt` null). Published on every such payment or issue, also when
+  /// the subscription was never in arrears, so listeners must be idempotent.
   settled,
+
+  /// The subscription ended in the billing system and its projects were
+  /// suspended for it.
   ended;
 
   static SubscriptionCause fromJson(String name) {
