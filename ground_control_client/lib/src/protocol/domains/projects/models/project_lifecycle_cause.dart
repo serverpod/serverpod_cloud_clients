@@ -12,10 +12,23 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
+/// What happened to a project, as published on the `project-lifecycle`
+/// topic.
 enum ProjectLifecycleCause implements _isc.SerializableModel {
+  /// The project exists and is active.
   created,
+
+  /// The project is suspended for `suspensionReason` and its capsule paused.
   suspended,
+
+  /// The project is still suspended, now for `suspensionReason`; its capsule
+  /// stays paused.
+  suspensionReasonChanged,
+
+  /// The project is active again and its capsule resumed.
   resumed,
+
+  /// The project is deleted.
   deleted;
 
   static ProjectLifecycleCause fromJson(String name) {
@@ -24,6 +37,8 @@ enum ProjectLifecycleCause implements _isc.SerializableModel {
         return ProjectLifecycleCause.created;
       case 'suspended':
         return ProjectLifecycleCause.suspended;
+      case 'suspensionReasonChanged':
+        return ProjectLifecycleCause.suspensionReasonChanged;
       case 'resumed':
         return ProjectLifecycleCause.resumed;
       case 'deleted':
