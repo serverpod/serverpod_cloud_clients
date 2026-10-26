@@ -12,10 +12,20 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
+/// What happened to an invoice in the billing system, as published on the
+/// `invoice` topic.
 enum InvoiceCause implements _isc.SerializableModel {
+  /// The billing system could not issue the invoice; `reason` says why.
   issueFailed,
+
+  /// An attempt to collect the invoice failed, at `paymentFailedAt`.
   paymentFailed,
-  paymentSucceeded;
+
+  /// The invoice was paid, at `paidAt`.
+  paymentSucceeded,
+
+  /// The invoice was issued, at `issuedAt`.
+  issued;
 
   static InvoiceCause fromJson(String name) {
     switch (name) {
@@ -25,6 +35,8 @@ enum InvoiceCause implements _isc.SerializableModel {
         return InvoiceCause.paymentFailed;
       case 'paymentSucceeded':
         return InvoiceCause.paymentSucceeded;
+      case 'issued':
+        return InvoiceCause.issued;
       default:
         throw ArgumentError(
           'Value "$name" cannot be converted to "InvoiceCause"',
