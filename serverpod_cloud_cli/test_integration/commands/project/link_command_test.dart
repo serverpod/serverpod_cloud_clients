@@ -472,6 +472,49 @@ project:
         });
       });
 
+      group(
+        'and an existing scloud.yaml has an appDir when executing link',
+        () {
+          late String appDirProjectDir;
+          late Future commandResult;
+
+          setUp(() async {
+            await ProjectFactory.serverpodServerDir(
+              withDirectoryName: 'app_dir_server_dir',
+              contents: [
+                d.file('scloud.yaml', '''
+project:
+  projectId: "$projectId"
+  appDir: "../my_project_flutter"
+'''),
+              ],
+            ).create();
+            appDirProjectDir = p.join(d.sandbox, 'app_dir_server_dir');
+
+            commandResult = cli.run([
+              'project',
+              'link',
+              '--project',
+              projectId,
+              '--project-dir',
+              appDirProjectDir,
+            ]);
+          });
+
+          test('then the existing appDir in scloud.yaml is kept', () async {
+            await commandResult;
+
+            final expected = d.dir(appDirProjectDir, [
+              d.file(
+                'scloud.yaml',
+                contains('appDir: "../my_project_flutter"'),
+              ),
+            ]);
+            await expectLater(expected.validate(), completes);
+          });
+        },
+      );
+
       group('and .tool-versions file with dart entry when executing link', () {
         late Future commandResult;
 

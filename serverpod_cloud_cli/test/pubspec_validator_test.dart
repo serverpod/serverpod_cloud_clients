@@ -43,6 +43,57 @@ environment:
   );
 
   test(
+    'Given a Flutter app pubspec without Serverpod dependencies, when the isFlutterApp method is called, then the result is true',
+    () {
+      final pubspec = TenantProjectPubspec(
+        Pubspec.parse(ProjectFactory.flutterAppPubspec()),
+      );
+
+      final result = pubspec.isFlutterApp();
+      expect(result, isTrue);
+    },
+  );
+
+  test(
+    'Given a workspace root pubspec with a Flutter dependency, when the isFlutterApp method is called, then the result is false',
+    () {
+      final pubspec = TenantProjectPubspec(
+        Pubspec.parse('''
+name: monorepo
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+workspace:
+  - my_project_flutter
+dependencies:
+  flutter:
+    sdk: flutter
+'''),
+      );
+
+      final result = pubspec.isFlutterApp();
+      expect(result, isFalse);
+    },
+  );
+
+  test(
+    'Given a pubspec without a Flutter SDK dependency, when the isFlutterApp method is called, then the result is false',
+    () {
+      final pubspec = TenantProjectPubspec(
+        Pubspec.parse('''
+name: my_project_client
+environment:
+  sdk: ${ProjectFactory.validSdkVersion}
+dependencies:
+  serverpod_client: ${ProjectFactory.validServerpodVersion}
+'''),
+      );
+
+      final result = pubspec.isFlutterApp();
+      expect(result, isFalse);
+    },
+  );
+
+  test(
     'Given a pubspec without a sdk constraint, when the projectDependencyIssues method is called, then the result contains the sdk error',
     () {
       final pubspec = TenantProjectPubspec(
