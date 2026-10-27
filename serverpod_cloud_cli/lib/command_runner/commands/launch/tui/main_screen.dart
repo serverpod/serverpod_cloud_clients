@@ -143,7 +143,9 @@ class MainScreen extends StatelessComponent {
 
   Component _buildConfigurationButtonBar(LaunchConfigState state) {
     final enabled = state.phase != LaunchPhase.launching;
-    final form = state.configurationFormState!;
+    final form = state.configurationFormState;
+    if (form == null) return const SizedBox.shrink();
+
     return ButtonBar(
       buttons: [
         Button(
