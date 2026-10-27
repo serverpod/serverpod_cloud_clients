@@ -375,11 +375,13 @@ Iterable<_IgnoreRule> _parseIgnorePatterns(
       .map((pattern) => _parseIgnorePattern(pattern, ignoreCase));
 
   for (final r in parsedPatterns) {
-    if (!r.valid) {
-      onInvalidPattern(r.pattern, r.exception!);
+    final exception = r.exception;
+    if (exception != null) {
+      onInvalidPattern(r.pattern, exception);
     }
-    if (!r.empty) {
-      yield r.rule!;
+    final rule = r.rule;
+    if (rule != null) {
+      yield rule;
     }
   }
 }
