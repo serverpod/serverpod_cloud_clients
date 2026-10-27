@@ -11,6 +11,8 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
+import 'package:ground_control_client/src/protocol/domains/app_builds/models/app_platform.dart'
+    as _id4pe5bk;
 import 'package:ground_control_client/src/protocol/domains/billing/models/billing_customer_type.dart'
     as _iqua0tdt;
 import 'package:ground_control_client/src/protocol/domains/billing/models/billing_info.dart'
@@ -91,6 +93,8 @@ import 'package:ground_control_client/src/protocol/features/admin/models/admin_p
     as _ie7ffsfx;
 import 'package:ground_control_client/src/protocol/features/admin/models/admin_user_status.dart'
     as _iwex31es;
+import 'package:ground_control_client/src/protocol/features/app_builds/models/app_build_upload.dart'
+    as _ios6v2zi;
 import 'package:ground_control_client/src/protocol/features/auth/models/accepted_terms_dto.dart'
     as _irrma5ts;
 import 'package:ground_control_client/src/protocol/features/auth/models/auth_token_info.dart'
@@ -659,6 +663,47 @@ class EndpointAdminUsers extends _isc.EndpointRef {
     'unassignRoles': unassignRoles,
     'unassignAllRoles': unassignAllRoles,
   });
+}
+
+/// {@category Endpoint}
+class EndpointAppBuilds extends _isc.EndpointRef {
+  EndpointAppBuilds(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'appBuilds';
+
+  /// Requests a build of the Flutter app in [flutterAppDir] of the uploaded
+  /// archive, for [platform], and returns the build id with the upload
+  /// description for an archive of [archiveSize] bytes.
+  ///
+  /// Throws [InvalidValueException] if [archiveSize] is not positive.
+  /// Throws [UploadTooLargeException] if [archiveSize] exceeds the upload
+  /// limit. Throws [ProjectSuspendedException] if the project is suspended.
+  /// Throws [AppPublishingDisabledException] while app publishing is off in
+  /// this environment.
+  _ida.Future<_ios6v2zi.AppBuildUpload> createBuild({
+    required String cloudCapsuleId,
+    required _id4pe5bk.AppPlatform platform,
+    required String flutterAppDir,
+    required int archiveSize,
+    String? versionName,
+    String? commitHash,
+    String? commitMessage,
+    String? branch,
+  }) => caller.callServerEndpoint<_ios6v2zi.AppBuildUpload>(
+    'appBuilds',
+    'createBuild',
+    {
+      'cloudCapsuleId': cloudCapsuleId,
+      'platform': platform,
+      'flutterAppDir': flutterAppDir,
+      'archiveSize': archiveSize,
+      'versionName': versionName,
+      'commitHash': commitHash,
+      'commitMessage': commitMessage,
+      'branch': branch,
+    },
+  );
 }
 
 /// Endpoint for authentication.
@@ -2758,6 +2803,7 @@ class Client extends _isc.ServerpodClientShared {
     adminTest = EndpointAdminTest(this);
     adminUpdatePlan = EndpointAdminUpdatePlan(this);
     adminUsers = EndpointAdminUsers(this);
+    appBuilds = EndpointAppBuilds(this);
     auth = EndpointAuth(this);
     authWithAuth = EndpointAuthWithAuth(this);
     emailIdp = EndpointEmailIdp(this);
@@ -2806,6 +2852,8 @@ class Client extends _isc.ServerpodClientShared {
   late final EndpointAdminUpdatePlan adminUpdatePlan;
 
   late final EndpointAdminUsers adminUsers;
+
+  late final EndpointAppBuilds appBuilds;
 
   late final EndpointAuth auth;
 
@@ -2873,6 +2921,7 @@ class Client extends _isc.ServerpodClientShared {
     'adminTest': adminTest,
     'adminUpdatePlan': adminUpdatePlan,
     'adminUsers': adminUsers,
+    'appBuilds': appBuilds,
     'auth': auth,
     'authWithAuth': authWithAuth,
     'emailIdp': emailIdp,

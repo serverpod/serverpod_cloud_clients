@@ -52,6 +52,9 @@ import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
 import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
     as _iaic;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import 'domains/app_builds/models/app_build_status.dart' as _i8s6tf8y;
+import 'domains/app_builds/models/app_build_step_status.dart' as _iy5t3gwf;
+import 'domains/app_builds/models/app_platform.dart' as _ij8v08n4;
 import 'domains/billing/models/billing_customer_type.dart' as _i4m2a6uw;
 import 'domains/billing/models/billing_info.dart' as _i7vhubyw;
 import 'domains/billing/models/billing_mapping_type.dart' as _i0j2fm74;
@@ -148,6 +151,9 @@ import 'features/admin/models/admin_user_project_membership.dart' as _inhawksa;
 import 'features/admin/models/admin_user_status.dart' as _iebexyj8;
 import 'features/admin/models/payments_invoice_status.dart' as _iu1ze8tv;
 import 'features/admin/models/payments_status.dart' as _iw02lteh;
+import 'features/app_builds/exceptions/app_publishing_disabled_exception.dart'
+    as _ijed0rq9;
+import 'features/app_builds/models/app_build_upload.dart' as _i20hf74f;
 import 'features/auth/exceptions/email_method_blocked_exception.dart'
     as _ihqdfodo;
 import 'features/auth/exceptions/user_account_registration_denied_exception.dart'
@@ -206,6 +212,9 @@ import 'shared/exceptions/models/unauthorized_exception.dart' as _is3nd795;
 import 'shared/models/http_response_class.dart' as _is21hzeq;
 import 'shared/models/serverpod_region.dart' as _i3qziuyp;
 import 'shared/pubsub/registry/pubsub_entry.dart' as _i1i04ivn;
+export 'domains/app_builds/models/app_build_status.dart';
+export 'domains/app_builds/models/app_build_step_status.dart';
+export 'domains/app_builds/models/app_platform.dart';
 export 'domains/billing/models/billing_customer_type.dart';
 export 'domains/billing/models/billing_info.dart';
 export 'domains/billing/models/billing_mapping_type.dart';
@@ -298,6 +307,8 @@ export 'features/admin/models/admin_user_project_membership.dart';
 export 'features/admin/models/admin_user_status.dart';
 export 'features/admin/models/payments_invoice_status.dart';
 export 'features/admin/models/payments_status.dart';
+export 'features/app_builds/exceptions/app_publishing_disabled_exception.dart';
+export 'features/app_builds/models/app_build_upload.dart';
 export 'features/auth/exceptions/email_method_blocked_exception.dart';
 export 'features/auth/exceptions/user_account_registration_denied_exception.dart';
 export 'features/auth/models/accepted_terms.dart';
@@ -373,6 +384,15 @@ class Protocol extends _isc.SerializationManager {
       }
     }
 
+    if (t == _i8s6tf8y.AppBuildStatus) {
+      return _i8s6tf8y.AppBuildStatus.fromJson(data) as T;
+    }
+    if (t == _iy5t3gwf.AppBuildStepStatus) {
+      return _iy5t3gwf.AppBuildStepStatus.fromJson(data) as T;
+    }
+    if (t == _ij8v08n4.AppPlatform) {
+      return _ij8v08n4.AppPlatform.fromJson(data) as T;
+    }
     if (t == _i4m2a6uw.BillingCustomerType) {
       return _i4m2a6uw.BillingCustomerType.fromJson(data) as T;
     }
@@ -650,6 +670,12 @@ class Protocol extends _isc.SerializationManager {
     if (t == _iw02lteh.PaymentsStatus) {
       return _iw02lteh.PaymentsStatus.fromJson(data) as T;
     }
+    if (t == _ijed0rq9.AppPublishingDisabledException) {
+      return _ijed0rq9.AppPublishingDisabledException.fromJson(data) as T;
+    }
+    if (t == _i20hf74f.AppBuildUpload) {
+      return _i20hf74f.AppBuildUpload.fromJson(data) as T;
+    }
     if (t == _ihqdfodo.EmailMethodBlockedException) {
       return _ihqdfodo.EmailMethodBlockedException.fromJson(data) as T;
     }
@@ -778,6 +804,17 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _i1i04ivn.PubsubEntry) {
       return _i1i04ivn.PubsubEntry.fromJson(data) as T;
+    }
+    if (t == _isc.getType<_i8s6tf8y.AppBuildStatus?>()) {
+      return (data != null ? _i8s6tf8y.AppBuildStatus.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_iy5t3gwf.AppBuildStepStatus?>()) {
+      return (data != null ? _iy5t3gwf.AppBuildStepStatus.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_ij8v08n4.AppPlatform?>()) {
+      return (data != null ? _ij8v08n4.AppPlatform.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_i4m2a6uw.BillingCustomerType?>()) {
       return (data != null
@@ -1170,6 +1207,16 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_iw02lteh.PaymentsStatus?>()) {
       return (data != null ? _iw02lteh.PaymentsStatus.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_ijed0rq9.AppPublishingDisabledException?>()) {
+      return (data != null
+              ? _ijed0rq9.AppPublishingDisabledException.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_i20hf74f.AppBuildUpload?>()) {
+      return (data != null ? _i20hf74f.AppBuildUpload.fromJson(data) : null)
           as T;
     }
     if (t == _isc.getType<_ihqdfodo.EmailMethodBlockedException?>()) {
@@ -1757,6 +1804,9 @@ class Protocol extends _isc.SerializationManager {
 
   static String? getClassNameForType(Type type) {
     return switch (type) {
+      _i8s6tf8y.AppBuildStatus => 'AppBuildStatus',
+      _iy5t3gwf.AppBuildStepStatus => 'AppBuildStepStatus',
+      _ij8v08n4.AppPlatform => 'AppPlatform',
       _i4m2a6uw.BillingCustomerType => 'BillingCustomerType',
       _i7vhubyw.BillingInfo => 'BillingInfo',
       _i0j2fm74.BillingMappingType => 'BillingMappingType',
@@ -1851,6 +1901,9 @@ class Protocol extends _isc.SerializationManager {
       _iebexyj8.AdminUserStatus => 'AdminUserStatus',
       _iu1ze8tv.PaymentsInvoiceStatus => 'PaymentsInvoiceStatus',
       _iw02lteh.PaymentsStatus => 'PaymentsStatus',
+      _ijed0rq9.AppPublishingDisabledException =>
+        'AppPublishingDisabledException',
+      _i20hf74f.AppBuildUpload => 'AppBuildUpload',
       _ihqdfodo.EmailMethodBlockedException => 'EmailMethodBlockedException',
       _ilk02hh2.UserAccountRegistrationDeniedException =>
         'UserAccountRegistrationDeniedException',
@@ -1920,6 +1973,12 @@ class Protocol extends _isc.SerializationManager {
     }
 
     switch (data) {
+      case _i8s6tf8y.AppBuildStatus():
+        return 'AppBuildStatus';
+      case _iy5t3gwf.AppBuildStepStatus():
+        return 'AppBuildStepStatus';
+      case _ij8v08n4.AppPlatform():
+        return 'AppPlatform';
       case _i4m2a6uw.BillingCustomerType():
         return 'BillingCustomerType';
       case _i7vhubyw.BillingInfo():
@@ -2104,6 +2163,10 @@ class Protocol extends _isc.SerializationManager {
         return 'PaymentsInvoiceStatus';
       case _iw02lteh.PaymentsStatus():
         return 'PaymentsStatus';
+      case _ijed0rq9.AppPublishingDisabledException():
+        return 'AppPublishingDisabledException';
+      case _i20hf74f.AppBuildUpload():
+        return 'AppBuildUpload';
       case _ihqdfodo.EmailMethodBlockedException():
         return 'EmailMethodBlockedException';
       case _ilk02hh2.UserAccountRegistrationDeniedException():
@@ -2209,6 +2272,15 @@ class Protocol extends _isc.SerializationManager {
     var dataClassName = data['className'];
     if (dataClassName is! String) {
       return super.deserializeByClassName(data);
+    }
+    if (dataClassName == 'AppBuildStatus') {
+      return deserialize<_i8s6tf8y.AppBuildStatus>(data['data']);
+    }
+    if (dataClassName == 'AppBuildStepStatus') {
+      return deserialize<_iy5t3gwf.AppBuildStepStatus>(data['data']);
+    }
+    if (dataClassName == 'AppPlatform') {
+      return deserialize<_ij8v08n4.AppPlatform>(data['data']);
     }
     if (dataClassName == 'BillingCustomerType') {
       return deserialize<_i4m2a6uw.BillingCustomerType>(data['data']);
@@ -2489,6 +2561,14 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'PaymentsStatus') {
       return deserialize<_iw02lteh.PaymentsStatus>(data['data']);
+    }
+    if (dataClassName == 'AppPublishingDisabledException') {
+      return deserialize<_ijed0rq9.AppPublishingDisabledException>(
+        data['data'],
+      );
+    }
+    if (dataClassName == 'AppBuildUpload') {
+      return deserialize<_i20hf74f.AppBuildUpload>(data['data']);
     }
     if (dataClassName == 'EmailMethodBlockedException') {
       return deserialize<_ihqdfodo.EmailMethodBlockedException>(data['data']);
