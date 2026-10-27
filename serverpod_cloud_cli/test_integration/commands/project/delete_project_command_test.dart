@@ -15,6 +15,7 @@ import 'package:test/test.dart';
 
 import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/http_server_builder.dart';
+import '../../../test_utils/push_current_dir.dart';
 import '../../../test_utils/test_command_logger.dart';
 
 void main() {
@@ -22,17 +23,12 @@ void main() {
   final cli = CloudCliCommandRunner.create(logger: logger);
 
   final testCacheFolderPath = p.join('test_integration', const Uuid().v4());
-  late Directory originalDirectory;
-
   setUp(() {
     Directory(testCacheFolderPath).createSync(recursive: true);
-    originalDirectory = Directory.current;
-    Directory.current = testCacheFolderPath;
+    pushCurrentDirectory(testCacheFolderPath);
   });
 
   tearDown(() {
-    Directory.current = originalDirectory;
-
     final directory = Directory(testCacheFolderPath);
     if (directory.existsSync()) {
       directory.deleteSync(recursive: true);

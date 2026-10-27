@@ -18,6 +18,7 @@ import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
 import '../../test_utils/command_logger_matchers.dart';
+import '../../test_utils/push_current_dir.dart';
 import '../../test_utils/test_command_logger.dart';
 import '../../test_utils/wait_for_callback_info.dart';
 
@@ -132,17 +133,12 @@ void main() {
   runner.addCommand(interactiveOnlyCommand);
 
   final testCacheFolderPath = p.join('test_integration', const Uuid().v4());
-  late Directory originalDirectory;
-
   setUp(() {
     Directory(testCacheFolderPath).createSync(recursive: true);
-    originalDirectory = Directory.current;
-    Directory.current = testCacheFolderPath;
+    pushCurrentDirectory(testCacheFolderPath);
   });
 
   tearDown(() {
-    Directory.current = originalDirectory;
-
     final directory = Directory(testCacheFolderPath);
     if (directory.existsSync()) {
       directory.deleteSync(recursive: true);
