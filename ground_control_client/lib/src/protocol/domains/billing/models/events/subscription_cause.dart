@@ -21,7 +21,13 @@ enum SubscriptionCause implements _isc.SerializableModel {
   /// The subscription's trial ended at `trialEndingAt`.
   trialEnded,
 
-  /// A later invoice of the subscription could not be collected. Its
+  /// A non-first-day invoice of the subscription could not be issued because the
+  /// owner's billing info is missing. Its projects are suspended at
+  /// `suspendAt` unless the invoice is issued before then. A first-day
+  /// invoice that cannot be issued is `arrearsPastGracePeriod` at once.
+  issueFailed,
+
+  /// A non-first-day invoice of the subscription could not be collected. Its
   /// projects are suspended at `suspendAt` unless the invoice is paid
   /// before then. A first-day invoice that cannot be collected is
   /// `arrearsPastGracePeriod` at once.
@@ -48,6 +54,8 @@ enum SubscriptionCause implements _isc.SerializableModel {
         return SubscriptionCause.trialStarted;
       case 'trialEnded':
         return SubscriptionCause.trialEnded;
+      case 'issueFailed':
+        return SubscriptionCause.issueFailed;
       case 'paymentFailed':
         return SubscriptionCause.paymentFailed;
       case 'arrearsPastGracePeriod':
