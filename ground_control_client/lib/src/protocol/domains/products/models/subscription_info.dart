@@ -22,6 +22,7 @@ abstract class SubscriptionInfo
     required this.startDate,
     this.trialEndDate,
     this.endDate,
+    this.currentPeriodEndDate,
     required this.cancelled,
     required this.subscriptionId,
     required this.planProductId,
@@ -37,6 +38,7 @@ abstract class SubscriptionInfo
     required DateTime startDate,
     DateTime? trialEndDate,
     DateTime? endDate,
+    DateTime? currentPeriodEndDate,
     required bool cancelled,
     required _isc.UuidValue subscriptionId,
     required String planProductId,
@@ -63,6 +65,11 @@ abstract class SubscriptionInfo
       endDate: jsonSerialization['endDate'] == null
           ? null
           : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['endDate']),
+      currentPeriodEndDate: jsonSerialization['currentPeriodEndDate'] == null
+          ? null
+          : _isc.DateTimeJsonExtension.fromJson(
+              jsonSerialization['currentPeriodEndDate'],
+            ),
       cancelled: _isc.BoolJsonExtension.fromJson(
         jsonSerialization['cancelled'],
       ),
@@ -91,6 +98,11 @@ abstract class SubscriptionInfo
 
   /// The date the subscription ended / will end, if cancelled or otherwise terminated.
   DateTime? endDate;
+
+  /// The end of the current billing period, when the subscription next
+  /// renews. Null if the subscription is not currently active, for example
+  /// during a trial.
+  DateTime? currentPeriodEndDate;
 
   /// Whether this subscription has been cancelled.
   bool cancelled;
@@ -127,6 +139,7 @@ abstract class SubscriptionInfo
     DateTime? startDate,
     DateTime? trialEndDate,
     DateTime? endDate,
+    DateTime? currentPeriodEndDate,
     bool? cancelled,
     _isc.UuidValue? subscriptionId,
     String? planProductId,
@@ -144,6 +157,8 @@ abstract class SubscriptionInfo
       'startDate': startDate.toJson(),
       if (trialEndDate != null) 'trialEndDate': trialEndDate?.toJson(),
       if (endDate != null) 'endDate': endDate?.toJson(),
+      if (currentPeriodEndDate != null)
+        'currentPeriodEndDate': currentPeriodEndDate?.toJson(),
       'cancelled': cancelled,
       'subscriptionId': subscriptionId.toJson(),
       'planProductId': planProductId,
@@ -163,6 +178,8 @@ abstract class SubscriptionInfo
       'startDate': startDate.toJson(),
       if (trialEndDate != null) 'trialEndDate': trialEndDate?.toJson(),
       if (endDate != null) 'endDate': endDate?.toJson(),
+      if (currentPeriodEndDate != null)
+        'currentPeriodEndDate': currentPeriodEndDate?.toJson(),
       'cancelled': cancelled,
       'subscriptionId': subscriptionId.toJson(),
       'planProductId': planProductId,
@@ -188,6 +205,7 @@ class _SubscriptionInfoImpl extends SubscriptionInfo {
     required DateTime startDate,
     DateTime? trialEndDate,
     DateTime? endDate,
+    DateTime? currentPeriodEndDate,
     required bool cancelled,
     required _isc.UuidValue subscriptionId,
     required String planProductId,
@@ -201,6 +219,7 @@ class _SubscriptionInfoImpl extends SubscriptionInfo {
          startDate: startDate,
          trialEndDate: trialEndDate,
          endDate: endDate,
+         currentPeriodEndDate: currentPeriodEndDate,
          cancelled: cancelled,
          subscriptionId: subscriptionId,
          planProductId: planProductId,
@@ -220,6 +239,7 @@ class _SubscriptionInfoImpl extends SubscriptionInfo {
     DateTime? startDate,
     Object? trialEndDate = _Undefined,
     Object? endDate = _Undefined,
+    Object? currentPeriodEndDate = _Undefined,
     bool? cancelled,
     _isc.UuidValue? subscriptionId,
     String? planProductId,
@@ -236,6 +256,9 @@ class _SubscriptionInfoImpl extends SubscriptionInfo {
           ? trialEndDate
           : this.trialEndDate,
       endDate: endDate is DateTime? ? endDate : this.endDate,
+      currentPeriodEndDate: currentPeriodEndDate is DateTime?
+          ? currentPeriodEndDate
+          : this.currentPeriodEndDate,
       cancelled: cancelled ?? this.cancelled,
       subscriptionId: subscriptionId ?? this.subscriptionId,
       planProductId: planProductId ?? this.planProductId,
