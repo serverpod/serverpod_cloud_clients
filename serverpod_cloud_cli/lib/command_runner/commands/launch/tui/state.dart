@@ -81,10 +81,11 @@ class LaunchConfigState extends TuiState {
     final selectionConfig = _existingProjectIds.isNotEmpty
         ? ProjectSelectionConfig(existingProjectIds: _existingProjectIds)
         : null;
+    final inputConfig = ProjectIdInputConfig(selectionConfig);
     _projectSelectionConfig = selectionConfig;
-    _projectIdInputConfig = ProjectIdInputConfig(selectionConfig);
+    _projectIdInputConfig = inputConfig;
 
-    final configs = <FormConfig>[?selectionConfig, _projectIdInputConfig!];
+    final configs = <FormConfig>[?selectionConfig, inputConfig];
     _projectSelectionFormState = FormState(configs);
 
     // Select the first existing project by default.
@@ -98,7 +99,7 @@ class LaunchConfigState extends TuiState {
     // Pre-fill the default project ID for new projects.
     final defaultId = defaultProjectId;
     if (defaultId != null) {
-      _projectSelectionFormState.updateInput(_projectIdInputConfig!, defaultId);
+      _projectSelectionFormState.updateInput(inputConfig, defaultId);
     }
 
     _setProjectIdValidator();
