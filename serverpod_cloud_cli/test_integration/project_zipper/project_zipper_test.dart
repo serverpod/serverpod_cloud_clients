@@ -112,6 +112,151 @@ void main() {
   );
 
   test(
+    'Given a directory symlink inside a directory ignored by a subdirectory .gitignore when zipping then the project is zipped without the ignored directory.',
+    () async {
+      final projectDirectory = DirectoryFactory(
+        withFiles: [FileFactory(withName: 'keep.txt', withContents: 'keep')],
+        withSubDirectories: [
+          DirectoryFactory(
+            withDirectoryName: 'macos',
+            withFiles: [
+              FileFactory(
+                withName: '.gitignore',
+                withContents: '**/Flutter/ephemeral/',
+              ),
+              FileFactory(withName: 'AppDelegate.swift', withContents: 'app'),
+            ],
+            withSubDirectories: [
+              DirectoryFactory(
+                withDirectoryName: 'Flutter',
+                withSubDirectories: [
+                  DirectoryFactory(
+                    withDirectoryName: 'ephemeral',
+                    withSymLinks: [
+                      SymLinkFactory(withName: 'Packages', withTarget: '..'),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ).construct(testProjectPath);
+
+      final zippedProject = await ProjectZipper.zipProject(
+        rootDirectory: projectDirectory,
+        logger: commandLogger,
+      );
+
+      final archiveNames = ZipDecoder()
+          .decodeBytes(zippedProject)
+          .map((file) => file.name)
+          .toList();
+      expect(
+        archiveNames,
+        unorderedEquals(['keep.txt', 'macos/AppDelegate.swift']),
+      );
+    },
+    onPlatform: {'windows': Skip('Symlinks are not supported on Windows')},
+  );
+
+  test(
+    'Given an ignored symlink to a directory when zipping then the project is zipped without the symlink.',
+    () async {
+      final projectDirectory = DirectoryFactory(
+        withFiles: [
+          FileFactory(withName: '.gitignore', withContents: 'linked_directory'),
+        ],
+        withSubDirectories: [
+          DirectoryFactory(
+            withDirectoryName: 'real_directory',
+            withFiles: [
+              FileFactory(withName: 'file1.txt', withContents: 'file1'),
+            ],
+          ),
+        ],
+        withSymLinks: [
+          SymLinkFactory(
+            withName: 'linked_directory',
+            withTarget: 'real_directory',
+          ),
+        ],
+      ).construct(testProjectPath);
+
+      final zippedProject = await ProjectZipper.zipProject(
+        rootDirectory: projectDirectory,
+        logger: commandLogger,
+      );
+
+      final archiveNames = ZipDecoder()
+          .decodeBytes(zippedProject)
+          .map((file) => file.name)
+          .toList();
+      expect(archiveNames, ['real_directory/file1.txt']);
+    },
+    onPlatform: {'windows': Skip('Symlinks are not supported on Windows')},
+  );
+
+  test(
+    'Given a non-resolving symlink inside an ignored directory when zipping then the project is zipped without it.',
+    () async {
+      final projectDirectory = DirectoryFactory(
+        withFiles: [
+          FileFactory(withName: '.gitignore', withContents: 'build/'),
+          FileFactory(withName: 'file1.txt', withContents: 'file1'),
+        ],
+        withSubDirectories: [
+          DirectoryFactory(
+            withDirectoryName: 'build',
+            withSymLinks: [
+              SymLinkFactory(
+                withName: 'non-resolving-symlink',
+                withTarget: 'non-existing-file',
+              ),
+            ],
+          ),
+        ],
+      ).construct(testProjectPath);
+
+      final zippedProject = await ProjectZipper.zipProject(
+        rootDirectory: projectDirectory,
+        logger: commandLogger,
+      );
+
+      final archiveNames = ZipDecoder()
+          .decodeBytes(zippedProject)
+          .map((file) => file.name)
+          .toList();
+      expect(archiveNames, ['file1.txt']);
+    },
+    onPlatform: {'windows': Skip('Symlinks are not supported on Windows')},
+  );
+
+  test(
+    'Given a symlink to a file when zipping then the file content is included under the symlink name.',
+    () async {
+      final projectDirectory = DirectoryFactory(
+        withFiles: [FileFactory(withName: 'file1.txt', withContents: 'file1')],
+        withSymLinks: [
+          SymLinkFactory(withName: 'link1.txt', withTarget: 'file1.txt'),
+        ],
+      ).construct(testProjectPath);
+
+      final zippedProject = await ProjectZipper.zipProject(
+        rootDirectory: projectDirectory,
+        logger: commandLogger,
+      );
+
+      final linkEntry = ZipDecoder()
+          .decodeBytes(zippedProject)
+          .findFile('link1.txt');
+      expect(linkEntry, isNotNull);
+      expect(String.fromCharCodes(linkEntry!.content), 'file1');
+    },
+    onPlatform: {'windows': Skip('Symlinks are not supported on Windows')},
+  );
+
+  test(
     'Given a project directory with files when zipping then files are included in the root of the zip file.',
     () async {
       final projectDirectory = DirectoryFactory(

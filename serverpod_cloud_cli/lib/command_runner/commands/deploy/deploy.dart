@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:dio/dio.dart';
 import 'package:path/path.dart' as p;
 import 'package:ground_control_client/ground_control_client.dart'
     show
@@ -13,12 +12,9 @@ import 'package:ground_control_client/ground_control_client.dart'
         NotFoundException,
         ServerpodClientException;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
-import 'package:serverpod_cloud_cli/command_runner/helpers/dio_failure.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/file_uploader_factory.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy/script_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/status/status_ops.dart';
-import 'package:serverpod_cloud_cli/project_zipper/project_zipper.dart';
-import 'package:serverpod_cloud_cli/project_zipper/project_zipper_exceptions.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/dart_sdk_selector.dart'
     show DartSdkSelector;
@@ -32,9 +28,8 @@ import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_io.dart';
 import 'package:serverpod_cloud_cli/util/scrolling_command_output.dart';
 import 'package:serverpod_cloud_cli/util/tool_versions_io.dart';
 import 'package:serverpod_cloud_cli/util/upload_description_metadata.dart';
-import 'package:serverpod_cloud_shared/serverpod_cloud_shared.dart'
-    show ByteSizeFormatter, UploadProgressCallback;
 
+import 'deploy_archive.dart';
 import 'prepare_project_files.dart';
 
 abstract class Deploy {
@@ -200,88 +195,18 @@ abstract class Deploy {
       );
     }
 
-    late final List<int> projectZip;
-    final isZipped = await logger.progress(
-      'Zipping project',
-      successMessage: 'Zipping successful.',
-      padRight: StatusCommands.progressMessagePadLength,
-      newParagraph: true,
-      () async {
-        try {
-          projectZip = await ProjectZipper.zipProject(
-            logger: logger,
-            rootDirectory: projectFilePreparer.rootDirectory,
-            beneath: projectFilePreparer.includedSubPaths,
-            fileReadPoolSize: concurrency,
-            showFiles: showFiles,
-            fileContentModifier: (relativePath, contentReader) async {
-              final pathSegments = p.split(relativePath);
-              if (pathSegments.contains('.scloud')) return null;
-              if (pathSegments.last == 'pubspec.yaml') {
-                final content = await contentReader();
-                return projectFilePreparer.filterPubspecYaml(content);
-              }
-              if (pathSegments.last == 'pubspec.lock') {
-                final content = await contentReader();
-                return projectFilePreparer.filterPubspecLock(content);
-              }
-              return null;
-            },
-          );
-          return true;
-        } on ProjectZipperExceptions catch (e) {
-          switch (e) {
-            case ProjectDirectoryDoesNotExistException():
-              logger.error('Project directory does not exist: ${e.path}');
-              break;
-            case EmptyProjectException():
-              logger.error(
-                'No files to upload.',
-                hint:
-                    'Ensure that the correct project directory is selected (either through the --project-dir flag or the current directory) and check '
-                    'that `.gitignore` and `.scloudignore` does not filter out all project files.',
-              );
-              break;
-            case DirectorySymLinkException():
-              logger.error(
-                'Serverpod Cloud does not support directory symlinks: `${e.path}`',
-              );
-              break;
-            case NonResolvingSymlinkException():
-              logger.error(
-                'Serverpod Cloud does not support non-resolving symlinks: `${e.path}` => `${e.target}`',
-              );
-              break;
-            case NullZipException():
-              logger.error(
-                'Unknown error occurred while zipping project, please try again.',
-              );
-              break;
-          }
-          return false;
-        }
-      },
+    final projectZip = await DeployArchive.zip(
+      logger: logger,
+      projectFilePreparer: projectFilePreparer,
+      concurrency: concurrency,
+      showFiles: showFiles,
     );
 
-    if (!isZipped) throw ErrorExitException('Failed to zip project.');
-
     if (outputPath != null) {
-      await logger.progress(
-        'Writing zip file to $outputPath',
-        padRight: StatusCommands.progressMessagePadLength,
-        () async {
-          try {
-            final file = File(outputPath);
-            await file.writeAsBytes(projectZip);
-            return true;
-          } on Exception catch (e, stackTrace) {
-            throw FailureException.nested(
-              e,
-              stackTrace,
-              'Failed to write zip file to $outputPath',
-            );
-          }
-        },
+      await DeployArchive.writeZipFile(
+        logger: logger,
+        outputPath: outputPath,
+        projectZip: projectZip,
       );
     }
 
@@ -326,11 +251,11 @@ abstract class Deploy {
       baseCommand: baseCommand,
     );
 
-    await _uploadProject(
-      logger,
-      fileUploaderFactory,
-      uploadDescription,
-      projectZip,
+    await DeployArchive.upload(
+      logger: logger,
+      fileUploaderFactory: fileUploaderFactory,
+      uploadDescription: uploadDescription,
+      projectZip: projectZip,
     );
 
     if (config != null && config.scripts.postDeploy.isNotEmpty) {
@@ -486,98 +411,5 @@ abstract class Deploy {
         'Failed to fetch upload description.',
       );
     }
-  }
-
-  static Future<void> _uploadProject(
-    CommandLogger logger,
-    FileUploaderFactory fileUploaderFactory,
-    String uploadDescription,
-    List<int> projectZip,
-  ) async {
-    final total = projectZip.length;
-    final events = StreamController<_UploadProgress>();
-    var lastPercent = -1;
-
-    void onProgress(final int sent, final int _) {
-      final percent = total == 0 ? 100 : sent * 100 ~/ total;
-      if (percent == lastPercent) return;
-      lastPercent = percent;
-      events.add(_UploadProgress.sending(sent, total));
-    }
-
-    unawaited(
-      _runUpload(
-        fileUploaderFactory,
-        uploadDescription,
-        projectZip,
-        events,
-        onProgress,
-      ),
-    );
-
-    final _UploadProgress result;
-    try {
-      result = await logger.progressStream(
-        'Uploading project...',
-        events.stream,
-        toMessage: (final p) => p.message,
-        isSuccess: (final p) => p.succeeded,
-        padRight: StatusCommands.progressMessagePadLength,
-      );
-    } on DioException catch (e) {
-      throw failureFromDioException(e, action: 'upload the project');
-    } on Exception catch (e, stackTrace) {
-      throw FailureException.nested(e, stackTrace, 'Failed to upload project.');
-    }
-
-    if (!result.succeeded) {
-      logger.error('Failed to upload project, please try again.');
-      throw ErrorExitException('Failed to upload project.');
-    }
-  }
-
-  static Future<void> _runUpload(
-    FileUploaderFactory fileUploaderFactory,
-    String uploadDescription,
-    List<int> projectZip,
-    StreamController<_UploadProgress> events,
-    UploadProgressCallback onProgress,
-  ) async {
-    try {
-      final fileUploader = fileUploaderFactory(uploadDescription);
-      final success = await fileUploader.upload(
-        Stream.value(projectZip),
-        projectZip.length,
-        onProgress: onProgress,
-      );
-      events.add(_UploadProgress.finished(success));
-    } on Exception catch (e, stackTrace) {
-      events.addError(e, stackTrace);
-    } finally {
-      await events.close();
-    }
-  }
-}
-
-/// One update of the project upload spinner.
-class _UploadProgress {
-  final String message;
-  final bool succeeded;
-
-  const _UploadProgress._(this.message, {required this.succeeded});
-
-  factory _UploadProgress.sending(final int sent, final int total) {
-    return _UploadProgress._(
-      'Uploading project ${ByteSizeFormatter.format(sent)} '
-      'of ${ByteSizeFormatter.format(total)}...',
-      succeeded: false,
-    );
-  }
-
-  factory _UploadProgress.finished(final bool success) {
-    return _UploadProgress._(
-      success ? 'Upload successful.' : 'Upload failed.',
-      succeeded: success,
-    );
   }
 }

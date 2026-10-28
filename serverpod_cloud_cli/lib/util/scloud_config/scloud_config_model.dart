@@ -1,11 +1,16 @@
 class ScloudConfig {
   final String projectId;
   final String? dartSdk;
+
+  /// The path to the Flutter app directory, relative to the directory of
+  /// the configuration file.
+  final String? appDir;
   final ScloudScripts scripts;
 
   const ScloudConfig({
     required this.projectId,
     this.dartSdk,
+    this.appDir,
     required this.scripts,
   });
 
@@ -15,6 +20,7 @@ class ScloudConfig {
     return ScloudConfig(
       projectId: project['projectId'] as String? ?? '',
       dartSdk: project['dartSdk'] as String?,
+      appDir: project['appDir'] as String?,
       scripts: ScloudScripts.fromMap(project['scripts'] ?? {}),
     );
   }
@@ -24,6 +30,7 @@ class ScloudConfig {
       'project': {
         'projectId': projectId,
         if (dartSdk != null) 'dartSdk': dartSdk,
+        if (appDir != null) 'appDir': appDir,
         'scripts': scripts.toMap(),
       },
     };
@@ -32,11 +39,13 @@ class ScloudConfig {
   ScloudConfig copyWith({
     String? projectId,
     String? dartSdk,
+    String? appDir,
     ScloudScripts? scripts,
   }) {
     return ScloudConfig(
       projectId: projectId ?? this.projectId,
       dartSdk: dartSdk ?? this.dartSdk,
+      appDir: appDir ?? this.appDir,
       scripts: scripts ?? this.scripts,
     );
   }

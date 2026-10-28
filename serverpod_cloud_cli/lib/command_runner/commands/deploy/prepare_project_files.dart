@@ -7,7 +7,9 @@ import 'package:yaml_codec/yaml_codec.dart';
 
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart'
     show FailureException;
+import 'package:serverpod_cloud_cli/util/flutter_platform.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
+import 'package:serverpod_cloud_cli/util/scloud_config/file_finder.dart';
 import 'package:serverpod_cloud_cli/util/scloudignore.dart';
 
 class WorkspaceException extends FailureException {
@@ -41,6 +43,14 @@ class ProjectFilePreparer {
   final List<String> includedSubPaths;
   final List<String> includedPackagePaths;
   final String projectPackageName;
+
+  /// Whether the filtered workspace root pubspec keeps its Flutter SDK
+  /// constraint.
+  final bool keepFlutterEnvironment;
+
+  /// Paths below the included sub paths, relative to [rootDirectory], whose
+  /// files are left out.
+  final List<String> excludedSubPaths;
   PackageGraph? _packageGraph;
 
   ProjectFilePreparer({
@@ -50,8 +60,20 @@ class ProjectFilePreparer {
     required this.includedSubPaths,
     required this.includedPackagePaths,
     required this.projectPackageName,
+    this.keepFlutterEnvironment = false,
+    this.excludedSubPaths = const [],
     PackageGraph? packageGraph,
   }) : _packageGraph = packageGraph;
+
+  /// Whether the file at [relativePath], relative to [rootDirectory],
+  /// is left out by [excludedSubPaths].
+  bool isExcluded(String relativePath) {
+    return excludedSubPaths.any(
+      (excluded) =>
+          p.equals(excluded, relativePath) ||
+          p.isWithin(excluded, relativePath),
+    );
+  }
 
   /// The package dependency graph for lockfile filtering.
   ///
@@ -73,6 +95,7 @@ class ProjectFilePreparer {
       return WorkspaceProjectLogic.makeScloudRootPubspecContent(
         content,
         includedPackagePaths,
+        keepFlutterEnvironment: keepFlutterEnvironment,
       );
     }
 
@@ -104,6 +127,10 @@ class ProjectFilePreparer {
 abstract class TenantProject {
   static const _scloudRootPubspecFilename = 'scloud_ws_pubspec.yaml';
   static const _scloudServerDirFilename = 'scloud_server_dir';
+  static const _scloudAppDirFilename = 'scloud_app_dir';
+  static const _selectAppDirectoryHint =
+      'Select the Flutter app directory with the --app-dir option, '
+      'or with project.appDir in scloud.yaml.';
 
   /// Analyzes the tenant project structure, creates bespoke deployment files,
   /// and compiles the list of paths whose contents are to be included.
@@ -132,6 +159,206 @@ abstract class TenantProject {
       );
     }
 
+    return _prepareWorkspace(
+      projectDirectory,
+      projectPackageName: projectPackageName,
+      projectDirFilename: _scloudServerDirFilename,
+      validateIncludedPackages: WorkspaceProjectLogic.validateIncludedPackages,
+      pubGetCommand: 'dart pub get',
+      keepFlutterEnvironment: false,
+      scloudDirPath: scloudDirPath,
+    );
+  }
+
+  /// Analyzes the Flutter app in [appDirectory] and compiles the list of
+  /// paths whose contents are to be included.
+  ///
+  /// For an app resolved in a Dart workspace, bespoke deployment files are
+  /// created, and the app, the workspace packages it depends on, and the
+  /// workspace root files are included. Otherwise only the app directory is
+  /// included.
+  ///
+  /// When [platforms] is given, the code of the other platforms is left out.
+  ///
+  /// Specify [scloudDirPath] to override the default scloud directory path.
+  ///
+  /// Returns a [ProjectFilePreparer] object to be used to filter project files.
+  ///
+  /// Throws [WorkspaceException] if [appDirectory] is not a Flutter app,
+  /// if its package graph is missing, or if the preparation fails.
+  /// Throws [FailureException] if the app has no code for one of [platforms].
+  static ProjectFilePreparer prepareApp(
+    Directory appDirectory, {
+    Set<FlutterPlatform>? platforms,
+    String? scloudDirPath,
+  }) {
+    final appPubspec = TenantProjectPubspec.fromProjectDir(appDirectory);
+    if (!appPubspec.isFlutterApp()) {
+      _throwWorkspaceException(
+        message: 'The directory ${appDirectory.path} is not a Flutter app.',
+        hint: 'A Flutter app depends on the Flutter SDK.',
+      );
+    }
+
+    final excludedPlatformPaths = platforms == null
+        ? const <String>[]
+        : _excludedPlatformPaths(appDirectory, platforms);
+
+    if (!appPubspec.isWorkspaceResolved()) {
+      WorkspaceProjectLogic.validateIncludedAppPackages([appPubspec.pubspec]);
+
+      return ProjectFilePreparer(
+        isWorkspace: false,
+        rootDirectory: appDirectory,
+        scloudDir: Directory(scloudDirPath ?? ScloudIgnore.scloudDirName),
+        includedSubPaths: const ['.'],
+        includedPackagePaths: [],
+        projectPackageName: appPubspec.pubspec.name,
+        keepFlutterEnvironment: true,
+        excludedSubPaths: excludedPlatformPaths,
+        packageGraph: _loadAppPackageGraph(appDirectory),
+      );
+    }
+
+    return _prepareWorkspace(
+      appDirectory,
+      projectPackageName: appPubspec.pubspec.name,
+      excludedProjectSubPaths: excludedPlatformPaths,
+      projectDirFilename: _scloudAppDirFilename,
+      validateIncludedPackages:
+          WorkspaceProjectLogic.validateIncludedAppPackages,
+      pubGetCommand: 'flutter pub get',
+      keepFlutterEnvironment: true,
+      scloudDirPath: scloudDirPath,
+    );
+  }
+
+  /// Loads the package graph of the non-workspace app in [appDirectory].
+  ///
+  /// Throws [WorkspaceException] if the package graph is missing.
+  static PackageGraph _loadAppPackageGraph(Directory appDirectory) {
+    try {
+      return PackageGraphParser.fromProjectDirectory(appDirectory);
+    } on PackageGraphFileNotFoundException {
+      _throwWorkspaceException(
+        message: 'The package graph of the app was not found.',
+        hint: 'Run "flutter pub get" in the app directory.',
+      );
+    }
+  }
+
+  /// Finds the Flutter app of the Serverpod project in [serverDirectory].
+  ///
+  /// For a server resolved in a Dart workspace, the app is looked for among
+  /// the packages of the workspace. Otherwise it is looked for in the server
+  /// directory and in the directory above it, a few levels down.
+  ///
+  /// Throws [WorkspaceException] if no or several Flutter apps are found.
+  static Directory findAppDirectory(Directory serverDirectory) {
+    final serverPubspec = TenantProjectPubspec.fromProjectDir(serverDirectory);
+    final isWorkspace = serverPubspec.isWorkspaceResolved();
+
+    final Directory searchRootDir;
+    if (isWorkspace) {
+      final (workspaceRootDir, _) = findWorkspaceRoot(serverDirectory);
+      searchRootDir = workspaceRootDir;
+    } else {
+      searchRootDir = Directory(
+        p.normalize(serverDirectory.absolute.path),
+      ).parent;
+    }
+
+    final findAppPubspec = scloudFileFinder<void>(
+      fileBaseName: 'pubspec',
+      supportedExtensions: ['yaml'],
+      startingDirectory: (_) =>
+          isWorkspace ? searchRootDir.path : serverDirectory.path,
+      searchLevelsUp: isWorkspace ? 0 : 1,
+      fileContentCondition: (filePath) =>
+          _isFlutterApp(Directory(p.dirname(filePath))),
+    );
+
+    final String? appPubspecPath;
+    try {
+      appPubspecPath = findAppPubspec(null);
+    } on AmbiguousSearchException catch (e) {
+      final appPaths =
+          e.matches
+              .map(
+                (match) =>
+                    p.relative(p.dirname(match), from: searchRootDir.path),
+              )
+              .toList()
+            ..sort();
+      _throwWorkspaceException(
+        messages: ['Found several Flutter apps:', ...appPaths],
+        hint: _selectAppDirectoryHint,
+      );
+    }
+
+    if (appPubspecPath == null) {
+      _throwWorkspaceException(
+        message: 'No Flutter app found.',
+        hint: _selectAppDirectoryHint,
+      );
+    }
+    return Directory(p.dirname(appPubspecPath));
+  }
+
+  static bool _isFlutterApp(Directory directory) {
+    try {
+      return TenantProjectPubspec.fromProjectDir(directory).isFlutterApp();
+    } on Exception {
+      return false;
+    }
+  }
+
+  /// Returns the platform directories of the app in [appDirectory] that do
+  /// not belong to [platforms], relative to the app.
+  ///
+  /// Throws [FailureException] if the app has no code for one of [platforms].
+  static List<String> _excludedPlatformPaths(
+    Directory appDirectory,
+    Set<FlutterPlatform> platforms,
+  ) {
+    final presentPlatforms = {
+      for (final platform in FlutterPlatform.values)
+        if (Directory(
+          p.join(appDirectory.path, platform.directoryName),
+        ).existsSync())
+          platform,
+    };
+
+    final missingPlatforms = FlutterPlatform.values.where(
+      (platform) =>
+          platforms.contains(platform) && !presentPlatforms.contains(platform),
+    );
+    if (missingPlatforms.isNotEmpty) {
+      final names = missingPlatforms.map((platform) => platform.name);
+      throw FailureException(
+        error: 'The app has no code for the platforms: ${names.join(', ')}.',
+        hint:
+            'Add them with "flutter create --platforms=${names.join(',')} ." '
+            'in the app directory, or leave them out of --platforms.',
+      );
+    }
+
+    return [
+      for (final platform in presentPlatforms.difference(platforms))
+        platform.directoryName,
+    ];
+  }
+
+  static ProjectFilePreparer _prepareWorkspace(
+    Directory projectDirectory, {
+    required String projectPackageName,
+    List<String> excludedProjectSubPaths = const [],
+    required String projectDirFilename,
+    required void Function(Iterable<Pubspec>) validateIncludedPackages,
+    required String pubGetCommand,
+    required bool keepFlutterEnvironment,
+    String? scloudDirPath,
+  }) {
     // Find workspace root directory by traversing up until we find a pubspec.yaml with workspace field
     final (workspaceRootDir, workspacePubspec) = findWorkspaceRoot(
       projectDirectory,
@@ -165,7 +392,7 @@ abstract class TenantProject {
       included: <String, WorkspacePackage>{projectPackageName: projectPackage},
     );
 
-    WorkspaceProjectLogic.validateIncludedPackages(
+    validateIncludedPackages(
       includedPackages.values.map((package) => package.pubspec),
     );
 
@@ -180,7 +407,12 @@ abstract class TenantProject {
     scloudDir.createSync(recursive: true);
 
     try {
-      _writeSCloudFiles(workspaceRootDir, scloudDir, projectPackage);
+      _writeSCloudFiles(
+        workspaceRootDir,
+        scloudDir,
+        projectPackage,
+        projectDirFilename: projectDirFilename,
+      );
 
       final includedPaths = [
         ...includedPackagePaths,
@@ -200,6 +432,11 @@ abstract class TenantProject {
         includedSubPaths: includedPaths,
         includedPackagePaths: includedPackagePaths,
         projectPackageName: projectPackageName,
+        keepFlutterEnvironment: keepFlutterEnvironment,
+        excludedSubPaths: [
+          for (final subPath in excludedProjectSubPaths)
+            p.join(projectPackage.dir.path, subPath),
+        ],
         packageGraph: packageGraph,
       );
     } on PackageGraphFileNotFoundException catch (e) {
@@ -208,7 +445,7 @@ abstract class TenantProject {
         message: '$tailPath not found.',
         nestedException: null,
         nestedStackTrace: null,
-        hint: 'Run "dart pub get"',
+        hint: 'Run "$pubGetCommand"',
       );
     }
   }
@@ -218,11 +455,12 @@ abstract class TenantProject {
   static void _writeSCloudFiles(
     Directory workspaceRootDir,
     Directory scloudDir,
-    WorkspacePackage projectPackage,
-  ) {
+    WorkspacePackage projectPackage, {
+    required String projectDirFilename,
+  }) {
     _deleteOldScloudRootPubspec(scloudDir);
 
-    _writeProjectServerDirFile(scloudDir, projectPackage.dir);
+    _writeProjectDirFile(scloudDir, projectPackage.dir, projectDirFilename);
 
     ScloudIgnore.writeTemplateIfNotExists(rootFolder: workspaceRootDir.path);
   }
@@ -248,18 +486,17 @@ abstract class TenantProject {
     }
   }
 
-  /// Writes the project server dir file to the workspace root directory
-  /// and returns its path relative to the workspace root.
-  static String _writeProjectServerDirFile(
+  /// Writes the file [filename] holding the project package directory to
+  /// the scloud directory and returns its path relative to the workspace root.
+  static String _writeProjectDirFile(
     Directory scloudDir,
     Directory projectDir,
+    String filename,
   ) {
-    final scloudServerDirFile = File(
-      p.join(scloudDir.path, _scloudServerDirFilename),
-    );
-    scloudServerDirFile.writeAsStringSync(projectDir.path);
+    final projectDirFile = File(p.join(scloudDir.path, filename));
+    projectDirFile.writeAsStringSync(projectDir.path);
 
-    return p.join(ScloudIgnore.scloudDirName, _scloudServerDirFilename);
+    return p.join(ScloudIgnore.scloudDirName, filename);
   }
 
   /// Finds the workspace root directory above the project directory.
@@ -392,12 +629,32 @@ abstract class WorkspaceProjectLogic {
     }
   }
 
+  /// Validates that the included packages of a Flutter app are compatible
+  /// with Serverpod Cloud.
+  ///
+  /// Throws [WorkspaceException] if any issues are found.
+  static void validateIncludedAppPackages(
+    Iterable<Pubspec> includedPackagePubspecs,
+  ) {
+    final issues = [
+      for (final pubspec in includedPackagePubspecs)
+        ...TenantProjectPubspec(pubspec).appDependencyIssues(),
+    ];
+    if (issues.isNotEmpty) {
+      TenantProject._throwWorkspaceException(messages: issues);
+    }
+  }
+
   /// Creates the scloud root pubspec content based on
   /// the source root pubspec content.
+  ///
+  /// The Flutter SDK constraint is removed unless [keepFlutterEnvironment]
+  /// is set.
   static String makeScloudRootPubspecContent(
     String rootPubspecContent,
-    Iterable<String> includedPackagePaths,
-  ) {
+    Iterable<String> includedPackagePaths, {
+    bool keepFlutterEnvironment = false,
+  }) {
     final rootPubspecYaml = yamlDecode(rootPubspecContent);
     if (rootPubspecYaml is! Map) {
       TenantProject._throwWorkspaceException(
@@ -421,7 +678,7 @@ abstract class WorkspaceProjectLogic {
     scloudRootPubspec.remove('dependencies');
     scloudRootPubspec.remove('dev_dependencies');
     final environment = scloudRootPubspec['environment'];
-    if (environment is Map) {
+    if (!keepFlutterEnvironment && environment is Map) {
       final newEnvironment = Map.from(environment);
       newEnvironment.remove('flutter');
       scloudRootPubspec['environment'] = newEnvironment;

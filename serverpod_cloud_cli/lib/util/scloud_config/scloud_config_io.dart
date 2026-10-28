@@ -11,6 +11,7 @@ final _schema = YamlMap.wrap({
   'project': YamlMap.wrap({
     'projectId': String,
     'dartSdk': YamlOptional(String),
+    'appDir': YamlOptional(String),
     'scripts': YamlOptional(
       YamlMap.wrap({
         'pre_deploy': YamlOptional(
@@ -109,6 +110,7 @@ abstract final class ScloudConfigIO {
           .copyWith(
             projectId: config.projectId,
             dartSdk: config.dartSdk ?? scloudConfig.dartSdk,
+            appDir: config.appDir ?? scloudConfig.appDir,
             scripts: config.scripts,
           )
           .toMap(),
