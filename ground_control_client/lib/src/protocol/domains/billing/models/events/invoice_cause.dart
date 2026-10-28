@@ -25,7 +25,18 @@ enum InvoiceCause implements _isc.SerializableModel {
   paymentSucceeded,
 
   /// The invoice was issued, at `issuedAt`.
-  issued;
+  issued,
+
+  /// An admin voided the invoice, so nothing is owed on it.
+  voided,
+
+  /// An admin marked the invoice paid, at `paidAt`, for a payment made
+  /// outside the billing system.
+  markedPaid,
+
+  /// A credit note was issued against the invoice, covering part or all
+  /// of what is owed on it.
+  credited;
 
   static InvoiceCause fromJson(String name) {
     switch (name) {
@@ -37,6 +48,12 @@ enum InvoiceCause implements _isc.SerializableModel {
         return InvoiceCause.paymentSucceeded;
       case 'issued':
         return InvoiceCause.issued;
+      case 'voided':
+        return InvoiceCause.voided;
+      case 'markedPaid':
+        return InvoiceCause.markedPaid;
+      case 'credited':
+        return InvoiceCause.credited;
       default:
         throw ArgumentError(
           'Value "$name" cannot be converted to "InvoiceCause"',
