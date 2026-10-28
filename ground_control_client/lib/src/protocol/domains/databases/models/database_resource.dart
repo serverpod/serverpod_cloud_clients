@@ -22,6 +22,9 @@ abstract class DatabaseResource
     implements _isc.SerializableModel, _isc.ProtocolSerialization {
   DatabaseResource._({
     this.id,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    this.archivedAt,
     required this.cloudCapsuleId,
     required this.providerId,
     required this.provider,
@@ -30,10 +33,14 @@ abstract class DatabaseResource
     required this.quota,
     this.metricsExportEndpoint,
     this.metricsExportSecretFingerprint,
-  });
+  }) : createdAt = createdAt ?? DateTime.now(),
+       updatedAt = updatedAt ?? DateTime.now();
 
   factory DatabaseResource({
     int? id,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    DateTime? archivedAt,
     required String cloudCapsuleId,
     required String providerId,
     required _ikd8hsk5.DatabaseProvider provider,
@@ -47,6 +54,17 @@ abstract class DatabaseResource
   factory DatabaseResource.fromJson(Map<String, dynamic> jsonSerialization) {
     return DatabaseResource(
       id: jsonSerialization['id'] as int?,
+      createdAt: jsonSerialization['createdAt'] == null
+          ? null
+          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+      updatedAt: jsonSerialization['updatedAt'] == null
+          ? null
+          : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
+      archivedAt: jsonSerialization['archivedAt'] == null
+          ? null
+          : _isc.DateTimeJsonExtension.fromJson(
+              jsonSerialization['archivedAt'],
+            ),
       cloudCapsuleId: jsonSerialization['cloudCapsuleId'] as String,
       providerId: jsonSerialization['providerId'] as String,
       provider: _ikd8hsk5.DatabaseProvider.fromJson(
@@ -74,6 +92,12 @@ abstract class DatabaseResource
   /// the id will be null.
   int? id;
 
+  DateTime createdAt;
+
+  DateTime updatedAt;
+
+  DateTime? archivedAt;
+
   String cloudCapsuleId;
 
   String providerId;
@@ -95,6 +119,9 @@ abstract class DatabaseResource
   @_isc.useResult
   DatabaseResource copyWith({
     int? id,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    DateTime? archivedAt,
     String? cloudCapsuleId,
     String? providerId,
     _ikd8hsk5.DatabaseProvider? provider,
@@ -109,6 +136,9 @@ abstract class DatabaseResource
     return {
       '__className__': 'DatabaseResource',
       if (id != null) 'id': id,
+      'createdAt': createdAt.toJson(),
+      'updatedAt': updatedAt.toJson(),
+      if (archivedAt != null) 'archivedAt': archivedAt?.toJson(),
       'cloudCapsuleId': cloudCapsuleId,
       'providerId': providerId,
       'provider': provider.toJson(),
@@ -127,6 +157,9 @@ abstract class DatabaseResource
     return {
       '__className__': 'DatabaseResource',
       if (id != null) 'id': id,
+      'createdAt': createdAt.toJson(),
+      'updatedAt': updatedAt.toJson(),
+      if (archivedAt != null) 'archivedAt': archivedAt?.toJson(),
       'cloudCapsuleId': cloudCapsuleId,
       'providerId': providerId,
       'provider': provider.toJson(),
@@ -151,6 +184,9 @@ class _Undefined {}
 class _DatabaseResourceImpl extends DatabaseResource {
   _DatabaseResourceImpl({
     int? id,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    DateTime? archivedAt,
     required String cloudCapsuleId,
     required String providerId,
     required _ikd8hsk5.DatabaseProvider provider,
@@ -161,6 +197,9 @@ class _DatabaseResourceImpl extends DatabaseResource {
     String? metricsExportSecretFingerprint,
   }) : super._(
          id: id,
+         createdAt: createdAt,
+         updatedAt: updatedAt,
+         archivedAt: archivedAt,
          cloudCapsuleId: cloudCapsuleId,
          providerId: providerId,
          provider: provider,
@@ -177,6 +216,9 @@ class _DatabaseResourceImpl extends DatabaseResource {
   @override
   DatabaseResource copyWith({
     Object? id = _Undefined,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Object? archivedAt = _Undefined,
     String? cloudCapsuleId,
     String? providerId,
     _ikd8hsk5.DatabaseProvider? provider,
@@ -188,6 +230,9 @@ class _DatabaseResourceImpl extends DatabaseResource {
   }) {
     return DatabaseResource(
       id: id is int? ? id : this.id,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      archivedAt: archivedAt is DateTime? ? archivedAt : this.archivedAt,
       cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
       providerId: providerId ?? this.providerId,
       provider: provider ?? this.provider,
