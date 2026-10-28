@@ -11,51 +11,55 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../domains/app_builds/models/app_platform.dart' as _ibmlgwb0;
 
-/// A newly requested app build and where to upload its source.
-abstract class AppBuildUpload
+/// One of the builds requested for an upload.
+abstract class AppBuildRef
     implements _isc.SerializableModel, _isc.ProtocolSerialization {
-  AppBuildUpload._({required this.buildId, required this.uploadDescription});
+  AppBuildRef._({required this.buildId, required this.platform});
 
-  factory AppBuildUpload({
+  factory AppBuildRef({
     required _isc.UuidValue buildId,
-    required String uploadDescription,
-  }) = _AppBuildUploadImpl;
+    required _ibmlgwb0.AppPlatform platform,
+  }) = _AppBuildRefImpl;
 
-  factory AppBuildUpload.fromJson(Map<String, dynamic> jsonSerialization) {
-    return AppBuildUpload(
+  factory AppBuildRef.fromJson(Map<String, dynamic> jsonSerialization) {
+    return AppBuildRef(
       buildId: _isc.UuidValueJsonExtension.fromJson(
         jsonSerialization['buildId'],
       ),
-      uploadDescription: jsonSerialization['uploadDescription'] as String,
+      platform: _ibmlgwb0.AppPlatform.fromJson(
+        (jsonSerialization['platform'] as String),
+      ),
     );
   }
 
   _isc.UuidValue buildId;
 
-  /// Describes how to upload the app archive, in the same format as a
-  /// server deploy's upload description.
-  String uploadDescription;
+  _ibmlgwb0.AppPlatform platform;
 
-  /// Returns a shallow copy of this [AppBuildUpload]
+  /// Returns a shallow copy of this [AppBuildRef]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
-  AppBuildUpload copyWith({_isc.UuidValue? buildId, String? uploadDescription});
+  AppBuildRef copyWith({
+    _isc.UuidValue? buildId,
+    _ibmlgwb0.AppPlatform? platform,
+  });
   @override
   Map<String, dynamic> toJson() {
     return {
-      '__className__': 'AppBuildUpload',
+      '__className__': 'AppBuildRef',
       'buildId': buildId.toJson(),
-      'uploadDescription': uploadDescription,
+      'platform': platform.toJson(),
     };
   }
 
   @override
   Map<String, dynamic> toJsonForProtocol() {
     return {
-      '__className__': 'AppBuildUpload',
+      '__className__': 'AppBuildRef',
       'buildId': buildId.toJson(),
-      'uploadDescription': uploadDescription,
+      'platform': platform.toJson(),
     };
   }
 
@@ -65,23 +69,23 @@ abstract class AppBuildUpload
   }
 }
 
-class _AppBuildUploadImpl extends AppBuildUpload {
-  _AppBuildUploadImpl({
+class _AppBuildRefImpl extends AppBuildRef {
+  _AppBuildRefImpl({
     required _isc.UuidValue buildId,
-    required String uploadDescription,
-  }) : super._(buildId: buildId, uploadDescription: uploadDescription);
+    required _ibmlgwb0.AppPlatform platform,
+  }) : super._(buildId: buildId, platform: platform);
 
-  /// Returns a shallow copy of this [AppBuildUpload]
+  /// Returns a shallow copy of this [AppBuildRef]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
   @override
-  AppBuildUpload copyWith({
+  AppBuildRef copyWith({
     _isc.UuidValue? buildId,
-    String? uploadDescription,
+    _ibmlgwb0.AppPlatform? platform,
   }) {
-    return AppBuildUpload(
+    return AppBuildRef(
       buildId: buildId ?? this.buildId,
-      uploadDescription: uploadDescription ?? this.uploadDescription,
+      platform: platform ?? this.platform,
     );
   }
 }
