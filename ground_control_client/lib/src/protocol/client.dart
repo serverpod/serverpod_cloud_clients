@@ -93,8 +93,8 @@ import 'package:ground_control_client/src/protocol/features/admin/models/admin_p
     as _ie7ffsfx;
 import 'package:ground_control_client/src/protocol/features/admin/models/admin_user_status.dart'
     as _iwex31es;
-import 'package:ground_control_client/src/protocol/features/app_builds/models/app_build_upload.dart'
-    as _ios6v2zi;
+import 'package:ground_control_client/src/protocol/features/app_builds/models/app_builds_upload.dart'
+    as _iqiq2vfs;
 import 'package:ground_control_client/src/protocol/features/auth/models/accepted_terms_dto.dart'
     as _irrma5ts;
 import 'package:ground_control_client/src/protocol/features/auth/models/auth_token_info.dart'
@@ -673,29 +673,30 @@ class EndpointAppBuilds extends _isc.EndpointRef {
   String get name => 'appBuilds';
 
   /// Requests a build of the Flutter app in [flutterAppDir] of the uploaded
-  /// archive, for [platform], and returns the build id with the upload
-  /// description for an archive of [archiveSize] bytes.
+  /// archive for each of [platforms], and returns the build ids with the
+  /// upload description for an archive of [archiveSize] bytes.
   ///
-  /// Throws [InvalidValueException] if [archiveSize] is not positive.
+  /// Throws [InvalidValueException] if [archiveSize] is not positive, or
+  /// [platforms] is empty or repeats a platform.
   /// Throws [UploadTooLargeException] if [archiveSize] exceeds the upload
   /// limit. Throws [ProjectSuspendedException] if the project is suspended.
   /// Throws [AppPublishingDisabledException] while app publishing is off in
   /// this environment.
-  _ida.Future<_ios6v2zi.AppBuildUpload> createBuild({
+  _ida.Future<_iqiq2vfs.AppBuildsUpload> createBuilds({
     required String cloudCapsuleId,
-    required _id4pe5bk.AppPlatform platform,
+    required List<_id4pe5bk.AppPlatform> platforms,
     required String flutterAppDir,
     required int archiveSize,
     String? versionName,
     String? commitHash,
     String? commitMessage,
     String? branch,
-  }) => caller.callServerEndpoint<_ios6v2zi.AppBuildUpload>(
+  }) => caller.callServerEndpoint<_iqiq2vfs.AppBuildsUpload>(
     'appBuilds',
-    'createBuild',
+    'createBuilds',
     {
       'cloudCapsuleId': cloudCapsuleId,
-      'platform': platform,
+      'platforms': platforms,
       'flutterAppDir': flutterAppDir,
       'archiveSize': archiveSize,
       'versionName': versionName,

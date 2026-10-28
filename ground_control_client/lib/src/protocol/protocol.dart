@@ -11,6 +11,8 @@
 // ignore_for_file: dead_code, unnecessary_type_check
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:ground_control_client/src/protocol/domains/app_builds/models/app_platform.dart'
+    as _id4pe5bk;
 import 'package:ground_control_client/src/protocol/domains/billing/models/payment_method.dart'
     as _itisjjd4;
 import 'package:ground_control_client/src/protocol/domains/buckets/models/bucket_resource.dart'
@@ -153,7 +155,8 @@ import 'features/admin/models/payments_invoice_status.dart' as _iu1ze8tv;
 import 'features/admin/models/payments_status.dart' as _iw02lteh;
 import 'features/app_builds/exceptions/app_publishing_disabled_exception.dart'
     as _ijed0rq9;
-import 'features/app_builds/models/app_build_upload.dart' as _i20hf74f;
+import 'features/app_builds/models/app_build_ref.dart' as _i8bymbss;
+import 'features/app_builds/models/app_builds_upload.dart' as _ig1623xk;
 import 'features/auth/exceptions/email_method_blocked_exception.dart'
     as _ihqdfodo;
 import 'features/auth/exceptions/user_account_registration_denied_exception.dart'
@@ -308,7 +311,8 @@ export 'features/admin/models/admin_user_status.dart';
 export 'features/admin/models/payments_invoice_status.dart';
 export 'features/admin/models/payments_status.dart';
 export 'features/app_builds/exceptions/app_publishing_disabled_exception.dart';
-export 'features/app_builds/models/app_build_upload.dart';
+export 'features/app_builds/models/app_build_ref.dart';
+export 'features/app_builds/models/app_builds_upload.dart';
 export 'features/auth/exceptions/email_method_blocked_exception.dart';
 export 'features/auth/exceptions/user_account_registration_denied_exception.dart';
 export 'features/auth/models/accepted_terms.dart';
@@ -673,8 +677,11 @@ class Protocol extends _isc.SerializationManager {
     if (t == _ijed0rq9.AppPublishingDisabledException) {
       return _ijed0rq9.AppPublishingDisabledException.fromJson(data) as T;
     }
-    if (t == _i20hf74f.AppBuildUpload) {
-      return _i20hf74f.AppBuildUpload.fromJson(data) as T;
+    if (t == _i8bymbss.AppBuildRef) {
+      return _i8bymbss.AppBuildRef.fromJson(data) as T;
+    }
+    if (t == _ig1623xk.AppBuildsUpload) {
+      return _ig1623xk.AppBuildsUpload.fromJson(data) as T;
     }
     if (t == _ihqdfodo.EmailMethodBlockedException) {
       return _ihqdfodo.EmailMethodBlockedException.fromJson(data) as T;
@@ -1215,8 +1222,11 @@ class Protocol extends _isc.SerializationManager {
               : null)
           as T;
     }
-    if (t == _isc.getType<_i20hf74f.AppBuildUpload?>()) {
-      return (data != null ? _i20hf74f.AppBuildUpload.fromJson(data) : null)
+    if (t == _isc.getType<_i8bymbss.AppBuildRef?>()) {
+      return (data != null ? _i8bymbss.AppBuildRef.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_ig1623xk.AppBuildsUpload?>()) {
+      return (data != null ? _ig1623xk.AppBuildsUpload.fromJson(data) : null)
           as T;
     }
     if (t == _isc.getType<_ihqdfodo.EmailMethodBlockedException?>()) {
@@ -1615,6 +1625,12 @@ class Protocol extends _isc.SerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_i8bymbss.AppBuildRef>) {
+      return (data as List)
+              .map((e) => deserialize<_i8bymbss.AppBuildRef>(e))
+              .toList()
+          as T;
+    }
     if (t == List<_iheq245y.CustomDomainName>) {
       return (data as List)
               .map((e) => deserialize<_iheq245y.CustomDomainName>(e))
@@ -1707,6 +1723,12 @@ class Protocol extends _isc.SerializationManager {
                     .map((e) => deserialize<_io9j0but.ProjectRole>(e))
                     .toList()
               : null)
+          as T;
+    }
+    if (t == List<_id4pe5bk.AppPlatform>) {
+      return (data as List)
+              .map((e) => deserialize<_id4pe5bk.AppPlatform>(e))
+              .toList()
           as T;
     }
     if (t == List<_iu79vy7r.RequiredTerms>) {
@@ -1903,7 +1925,8 @@ class Protocol extends _isc.SerializationManager {
       _iw02lteh.PaymentsStatus => 'PaymentsStatus',
       _ijed0rq9.AppPublishingDisabledException =>
         'AppPublishingDisabledException',
-      _i20hf74f.AppBuildUpload => 'AppBuildUpload',
+      _i8bymbss.AppBuildRef => 'AppBuildRef',
+      _ig1623xk.AppBuildsUpload => 'AppBuildsUpload',
       _ihqdfodo.EmailMethodBlockedException => 'EmailMethodBlockedException',
       _ilk02hh2.UserAccountRegistrationDeniedException =>
         'UserAccountRegistrationDeniedException',
@@ -2165,8 +2188,10 @@ class Protocol extends _isc.SerializationManager {
         return 'PaymentsStatus';
       case _ijed0rq9.AppPublishingDisabledException():
         return 'AppPublishingDisabledException';
-      case _i20hf74f.AppBuildUpload():
-        return 'AppBuildUpload';
+      case _i8bymbss.AppBuildRef():
+        return 'AppBuildRef';
+      case _ig1623xk.AppBuildsUpload():
+        return 'AppBuildsUpload';
       case _ihqdfodo.EmailMethodBlockedException():
         return 'EmailMethodBlockedException';
       case _ilk02hh2.UserAccountRegistrationDeniedException():
@@ -2567,8 +2592,11 @@ class Protocol extends _isc.SerializationManager {
         data['data'],
       );
     }
-    if (dataClassName == 'AppBuildUpload') {
-      return deserialize<_i20hf74f.AppBuildUpload>(data['data']);
+    if (dataClassName == 'AppBuildRef') {
+      return deserialize<_i8bymbss.AppBuildRef>(data['data']);
+    }
+    if (dataClassName == 'AppBuildsUpload') {
+      return deserialize<_ig1623xk.AppBuildsUpload>(data['data']);
     }
     if (dataClassName == 'EmailMethodBlockedException') {
       return deserialize<_ihqdfodo.EmailMethodBlockedException>(data['data']);
