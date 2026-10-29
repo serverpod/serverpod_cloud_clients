@@ -44,8 +44,8 @@ class ReleasePlatformsOption extends MultiOption<FlutterPlatform> {
         valueHelp: 'android,ios',
         helpText:
             'The platforms to release, separated by commas. '
-            'Only the code of these platforms is included. '
-            'Defaults to the whole app. '
+            'The code of the other platforms is left out of the upload. '
+            'Defaults to the supported platforms the app has code for. '
             'Supported platforms: android, ios.',
         customValidator: _supportedPlatformsValidator,
       );
@@ -102,8 +102,8 @@ class CloudReleaseAppCommand extends CloudCliCommand<ReleaseAppCommandOption> {
 
   @override
   final description =
-      'Zip the Flutter app for release. '
-      'An app in a Dart workspace is zipped with its workspace dependencies.';
+      'Upload the Flutter app to be built for release. '
+      'An app in a Dart workspace is uploaded with its workspace dependencies.';
 
   @override
   String get usageExamples =>
@@ -114,9 +114,9 @@ Examples
 
     \$ $baseCommand release app
 
-  Release only the Android and iOS code of the app
+  Release only the Android app
 
-    \$ $baseCommand release app --platforms android,ios
+    \$ $baseCommand release app --platforms android
 
   Release a Flutter app in a specific directory
 
@@ -142,9 +142,12 @@ Examples
     logger.debug('App directory is: ${appDirectory.path}');
 
     await ReleaseApp.release(
+      runner.serviceProvider.cloudApiClient,
+      runner.serviceProvider.fileUploaderFactory,
       logger: logger,
       projectId: projectId,
       appDirectory: appDirectory,
+      defaultPlatforms: ReleasePlatformsOption.supportedPlatforms,
       platforms: platforms?.toSet(),
     );
   }

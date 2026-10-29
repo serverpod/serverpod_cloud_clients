@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:pub_semver/pub_semver.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:serverpod_cloud_cli/util/package_graph/package_graph.dart';
 import 'package:yaml_codec/yaml_codec.dart';
@@ -44,6 +45,12 @@ class ProjectFilePreparer {
   final List<String> includedPackagePaths;
   final String projectPackageName;
 
+  /// The path of the project package, relative to [rootDirectory].
+  final String projectSubPath;
+
+  /// The version in the pubspec of the project package, if it has one.
+  final Version? projectVersion;
+
   /// Whether the filtered workspace root pubspec keeps its Flutter SDK
   /// constraint.
   final bool keepFlutterEnvironment;
@@ -60,6 +67,8 @@ class ProjectFilePreparer {
     required this.includedSubPaths,
     required this.includedPackagePaths,
     required this.projectPackageName,
+    this.projectSubPath = '.',
+    this.projectVersion,
     this.keepFlutterEnvironment = false,
     this.excludedSubPaths = const [],
     PackageGraph? packageGraph,
@@ -214,6 +223,7 @@ abstract class TenantProject {
         includedSubPaths: const ['.'],
         includedPackagePaths: [],
         projectPackageName: appPubspec.pubspec.name,
+        projectVersion: appPubspec.pubspec.version,
         keepFlutterEnvironment: true,
         excludedSubPaths: excludedPlatformPaths,
         packageGraph: _loadAppPackageGraph(appDirectory),
@@ -313,6 +323,17 @@ abstract class TenantProject {
     }
   }
 
+  /// Returns the platforms the app in [appDirectory] has code for.
+  static Set<FlutterPlatform> presentPlatforms(Directory appDirectory) {
+    return {
+      for (final platform in FlutterPlatform.values)
+        if (Directory(
+          p.join(appDirectory.path, platform.directoryName),
+        ).existsSync())
+          platform,
+    };
+  }
+
   /// Returns the platform directories of the app in [appDirectory] that do
   /// not belong to [platforms], relative to the app.
   ///
@@ -321,13 +342,7 @@ abstract class TenantProject {
     Directory appDirectory,
     Set<FlutterPlatform> platforms,
   ) {
-    final presentPlatforms = {
-      for (final platform in FlutterPlatform.values)
-        if (Directory(
-          p.join(appDirectory.path, platform.directoryName),
-        ).existsSync())
-          platform,
-    };
+    final presentPlatforms = TenantProject.presentPlatforms(appDirectory);
 
     final missingPlatforms = FlutterPlatform.values.where(
       (platform) =>
@@ -432,6 +447,8 @@ abstract class TenantProject {
         includedSubPaths: includedPaths,
         includedPackagePaths: includedPackagePaths,
         projectPackageName: projectPackageName,
+        projectSubPath: projectPackage.dir.path,
+        projectVersion: projectPackage.pubspec.version,
         keepFlutterEnvironment: keepFlutterEnvironment,
         excludedSubPaths: [
           for (final subPath in excludedProjectSubPaths)

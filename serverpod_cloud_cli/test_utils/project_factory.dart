@@ -106,12 +106,14 @@ dependencies:
   }
 
   /// Returns the pubspec.yaml content of a Serverpod Flutter app package
-  /// in the [serverpodAppWorkspace].
+  /// in the [serverpodAppWorkspace], with [withVersion] as its version.
   static String serverpodFlutterAppPubspec({
     String withPackageName = 'project_flutter',
+    String? withVersion,
   }) {
     return '''
 name: $withPackageName
+${withVersion == null ? '' : 'version: $withVersion'}
 environment:
   sdk: $validSdkVersion
   flutter: 3.29.0
