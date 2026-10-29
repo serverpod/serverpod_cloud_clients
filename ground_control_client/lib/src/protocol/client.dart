@@ -794,6 +794,25 @@ class EndpointAppBuilds extends _isc.EndpointRef {
     'cloudCapsuleId': cloudCapsuleId,
     'buildId': buildId,
   });
+
+  /// The log of the step at [stepIndex] of a build. Empty until the step
+  /// has ended, null once the build service has discarded it. Each call
+  /// reaches the build service, so fetch a log once [tailBuild] shows the
+  /// step ended.
+  ///
+  /// Throws [NotFoundException] if no build with [buildId] belongs to the
+  /// capsule or the build has no step [stepIndex]. Throws
+  /// [AppPublishingDisabledException] while app publishing is off in this
+  /// environment.
+  _ida.Future<String?> getStepLog({
+    required String cloudCapsuleId,
+    required _isc.UuidValue buildId,
+    required int stepIndex,
+  }) => caller.callServerEndpoint<String?>('appBuilds', 'getStepLog', {
+    'cloudCapsuleId': cloudCapsuleId,
+    'buildId': buildId,
+    'stepIndex': stepIndex,
+  });
 }
 
 /// Endpoint for authentication.
