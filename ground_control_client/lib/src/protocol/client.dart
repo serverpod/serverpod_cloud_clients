@@ -779,6 +779,21 @@ class EndpointAppBuilds extends _isc.EndpointRef {
         'cloudCapsuleId': cloudCapsuleId,
         'buildId': buildId,
       }, {});
+
+  /// Cancels a build. One at the build service keeps its status until the
+  /// service confirms, which [tailBuild] shows; a build that already ended
+  /// is left as it is.
+  ///
+  /// Throws [NotFoundException] if no build with [buildId] belongs to the
+  /// capsule. Throws [AppPublishingDisabledException] while app publishing
+  /// is off in this environment.
+  _ida.Future<void> cancelBuild({
+    required String cloudCapsuleId,
+    required _isc.UuidValue buildId,
+  }) => caller.callServerEndpoint<void>('appBuilds', 'cancelBuild', {
+    'cloudCapsuleId': cloudCapsuleId,
+    'buildId': buildId,
+  });
 }
 
 /// Endpoint for authentication.
