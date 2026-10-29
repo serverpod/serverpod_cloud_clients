@@ -93,6 +93,10 @@ import 'package:ground_control_client/src/protocol/features/admin/models/admin_p
     as _ie7ffsfx;
 import 'package:ground_control_client/src/protocol/features/admin/models/admin_user_status.dart'
     as _iwex31es;
+import 'package:ground_control_client/src/protocol/features/app_builds/models/app_build_detail.dart'
+    as _ilkz45dh;
+import 'package:ground_control_client/src/protocol/features/app_builds/models/app_build_summary.dart'
+    as _iy6jkon8;
 import 'package:ground_control_client/src/protocol/features/app_builds/models/app_builds_upload.dart'
     as _iqiq2vfs;
 import 'package:ground_control_client/src/protocol/features/auth/models/accepted_terms_dto.dart'
@@ -705,6 +709,76 @@ class EndpointAppBuilds extends _isc.EndpointRef {
       'branch': branch,
     },
   );
+
+  /// Gets a build with its steps.
+  ///
+  /// Throws [NotFoundException] if no build with [buildId] belongs to the
+  /// capsule. Throws [AppPublishingDisabledException] while app publishing
+  /// is off in this environment.
+  _ida.Future<_ilkz45dh.AppBuildDetail> getBuild({
+    required String cloudCapsuleId,
+    required _isc.UuidValue buildId,
+  }) => caller.callServerEndpoint<_ilkz45dh.AppBuildDetail>(
+    'appBuilds',
+    'getBuild',
+    {'cloudCapsuleId': cloudCapsuleId, 'buildId': buildId},
+  );
+
+  /// Lists the capsule's builds newest first, up to [limit] builds (50 when
+  /// unset, at most 100), and only for [platform] if set. When
+  /// [afterBuildId] is set, lists the builds that come after it, for
+  /// fetching the next page.
+  ///
+  /// Throws [InvalidValueException] if [limit] is negative.
+  /// Throws [NotFoundException] if [afterBuildId] does not name a build of
+  /// the capsule. Throws [AppPublishingDisabledException] while app
+  /// publishing is off in this environment.
+  _ida.Future<List<_iy6jkon8.AppBuildSummary>> listBuilds({
+    required String cloudCapsuleId,
+    _id4pe5bk.AppPlatform? platform,
+    int? limit,
+    _isc.UuidValue? afterBuildId,
+  }) => caller.callServerEndpoint<List<_iy6jkon8.AppBuildSummary>>(
+    'appBuilds',
+    'listBuilds',
+    {
+      'cloudCapsuleId': cloudCapsuleId,
+      'platform': platform,
+      'limit': limit,
+      'afterBuildId': afterBuildId,
+    },
+  );
+
+  /// Gets the capsule's most recent build per platform, in [AppPlatform]
+  /// order. Platforms without a build are left out.
+  ///
+  /// Throws [AppPublishingDisabledException] while app publishing is off in
+  /// this environment.
+  _ida.Future<List<_iy6jkon8.AppBuildSummary>> getLatestBuilds({
+    required String cloudCapsuleId,
+  }) => caller.callServerEndpoint<List<_iy6jkon8.AppBuildSummary>>(
+    'appBuilds',
+    'getLatestBuilds',
+    {'cloudCapsuleId': cloudCapsuleId},
+  );
+
+  /// Follows a build. Emits the build with its steps immediately, then
+  /// again whenever either changes, and closes once the build is final.
+  ///
+  /// Emits a [NotFoundException] error if no build with [buildId] belongs
+  /// to the capsule, or an [AppPublishingDisabledException] error while app
+  /// publishing is off in this environment.
+  _ida.Stream<_ilkz45dh.AppBuildDetail> tailBuild({
+    required String cloudCapsuleId,
+    required _isc.UuidValue buildId,
+  }) =>
+      caller.callStreamingServerEndpoint<
+        _ida.Stream<_ilkz45dh.AppBuildDetail>,
+        _ilkz45dh.AppBuildDetail
+      >('appBuilds', 'tailBuild', {
+        'cloudCapsuleId': cloudCapsuleId,
+        'buildId': buildId,
+      }, {});
 }
 
 /// Endpoint for authentication.
