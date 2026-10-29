@@ -41,6 +41,8 @@ import 'package:ground_control_client/src/protocol/domains/status/models/deploy_
     as _iy77socp;
 import 'package:ground_control_client/src/protocol/domains/users/models/user.dart'
     as _ibu0ogga;
+import 'package:ground_control_client/src/protocol/features/app_builds/models/app_build_summary.dart'
+    as _iy6jkon8;
 import 'package:ground_control_client/src/protocol/features/auth/models/accepted_terms_dto.dart'
     as _irrma5ts;
 import 'package:ground_control_client/src/protocol/features/auth/models/auth_token_info.dart'
@@ -155,7 +157,10 @@ import 'features/admin/models/payments_invoice_status.dart' as _iu1ze8tv;
 import 'features/admin/models/payments_status.dart' as _iw02lteh;
 import 'features/app_builds/exceptions/app_publishing_disabled_exception.dart'
     as _ijed0rq9;
+import 'features/app_builds/models/app_build_detail.dart' as _iyqovlj1;
 import 'features/app_builds/models/app_build_ref.dart' as _i8bymbss;
+import 'features/app_builds/models/app_build_step_info.dart' as _izrhxmsy;
+import 'features/app_builds/models/app_build_summary.dart' as _iyi5usgc;
 import 'features/app_builds/models/app_builds_upload.dart' as _ig1623xk;
 import 'features/auth/exceptions/email_method_blocked_exception.dart'
     as _ihqdfodo;
@@ -311,7 +316,10 @@ export 'features/admin/models/admin_user_status.dart';
 export 'features/admin/models/payments_invoice_status.dart';
 export 'features/admin/models/payments_status.dart';
 export 'features/app_builds/exceptions/app_publishing_disabled_exception.dart';
+export 'features/app_builds/models/app_build_detail.dart';
 export 'features/app_builds/models/app_build_ref.dart';
+export 'features/app_builds/models/app_build_step_info.dart';
+export 'features/app_builds/models/app_build_summary.dart';
 export 'features/app_builds/models/app_builds_upload.dart';
 export 'features/auth/exceptions/email_method_blocked_exception.dart';
 export 'features/auth/exceptions/user_account_registration_denied_exception.dart';
@@ -677,8 +685,17 @@ class Protocol extends _isc.SerializationManager {
     if (t == _ijed0rq9.AppPublishingDisabledException) {
       return _ijed0rq9.AppPublishingDisabledException.fromJson(data) as T;
     }
+    if (t == _iyqovlj1.AppBuildDetail) {
+      return _iyqovlj1.AppBuildDetail.fromJson(data) as T;
+    }
     if (t == _i8bymbss.AppBuildRef) {
       return _i8bymbss.AppBuildRef.fromJson(data) as T;
+    }
+    if (t == _izrhxmsy.AppBuildStepInfo) {
+      return _izrhxmsy.AppBuildStepInfo.fromJson(data) as T;
+    }
+    if (t == _iyi5usgc.AppBuildSummary) {
+      return _iyi5usgc.AppBuildSummary.fromJson(data) as T;
     }
     if (t == _ig1623xk.AppBuildsUpload) {
       return _ig1623xk.AppBuildsUpload.fromJson(data) as T;
@@ -1222,8 +1239,20 @@ class Protocol extends _isc.SerializationManager {
               : null)
           as T;
     }
+    if (t == _isc.getType<_iyqovlj1.AppBuildDetail?>()) {
+      return (data != null ? _iyqovlj1.AppBuildDetail.fromJson(data) : null)
+          as T;
+    }
     if (t == _isc.getType<_i8bymbss.AppBuildRef?>()) {
       return (data != null ? _i8bymbss.AppBuildRef.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_izrhxmsy.AppBuildStepInfo?>()) {
+      return (data != null ? _izrhxmsy.AppBuildStepInfo.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_iyi5usgc.AppBuildSummary?>()) {
+      return (data != null ? _iyi5usgc.AppBuildSummary.fromJson(data) : null)
+          as T;
     }
     if (t == _isc.getType<_ig1623xk.AppBuildsUpload?>()) {
       return (data != null ? _ig1623xk.AppBuildsUpload.fromJson(data) : null)
@@ -1625,6 +1654,12 @@ class Protocol extends _isc.SerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_izrhxmsy.AppBuildStepInfo>) {
+      return (data as List)
+              .map((e) => deserialize<_izrhxmsy.AppBuildStepInfo>(e))
+              .toList()
+          as T;
+    }
     if (t == List<_i8bymbss.AppBuildRef>) {
       return (data as List)
               .map((e) => deserialize<_i8bymbss.AppBuildRef>(e))
@@ -1728,6 +1763,12 @@ class Protocol extends _isc.SerializationManager {
     if (t == List<_id4pe5bk.AppPlatform>) {
       return (data as List)
               .map((e) => deserialize<_id4pe5bk.AppPlatform>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_iy6jkon8.AppBuildSummary>) {
+      return (data as List)
+              .map((e) => deserialize<_iy6jkon8.AppBuildSummary>(e))
               .toList()
           as T;
     }
@@ -1925,7 +1966,10 @@ class Protocol extends _isc.SerializationManager {
       _iw02lteh.PaymentsStatus => 'PaymentsStatus',
       _ijed0rq9.AppPublishingDisabledException =>
         'AppPublishingDisabledException',
+      _iyqovlj1.AppBuildDetail => 'AppBuildDetail',
       _i8bymbss.AppBuildRef => 'AppBuildRef',
+      _izrhxmsy.AppBuildStepInfo => 'AppBuildStepInfo',
+      _iyi5usgc.AppBuildSummary => 'AppBuildSummary',
       _ig1623xk.AppBuildsUpload => 'AppBuildsUpload',
       _ihqdfodo.EmailMethodBlockedException => 'EmailMethodBlockedException',
       _ilk02hh2.UserAccountRegistrationDeniedException =>
@@ -2188,8 +2232,14 @@ class Protocol extends _isc.SerializationManager {
         return 'PaymentsStatus';
       case _ijed0rq9.AppPublishingDisabledException():
         return 'AppPublishingDisabledException';
+      case _iyqovlj1.AppBuildDetail():
+        return 'AppBuildDetail';
       case _i8bymbss.AppBuildRef():
         return 'AppBuildRef';
+      case _izrhxmsy.AppBuildStepInfo():
+        return 'AppBuildStepInfo';
+      case _iyi5usgc.AppBuildSummary():
+        return 'AppBuildSummary';
       case _ig1623xk.AppBuildsUpload():
         return 'AppBuildsUpload';
       case _ihqdfodo.EmailMethodBlockedException():
@@ -2592,8 +2642,17 @@ class Protocol extends _isc.SerializationManager {
         data['data'],
       );
     }
+    if (dataClassName == 'AppBuildDetail') {
+      return deserialize<_iyqovlj1.AppBuildDetail>(data['data']);
+    }
     if (dataClassName == 'AppBuildRef') {
       return deserialize<_i8bymbss.AppBuildRef>(data['data']);
+    }
+    if (dataClassName == 'AppBuildStepInfo') {
+      return deserialize<_izrhxmsy.AppBuildStepInfo>(data['data']);
+    }
+    if (dataClassName == 'AppBuildSummary') {
+      return deserialize<_iyi5usgc.AppBuildSummary>(data['data']);
     }
     if (dataClassName == 'AppBuildsUpload') {
       return deserialize<_ig1623xk.AppBuildsUpload>(data['data']);
