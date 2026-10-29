@@ -1,4 +1,6 @@
-include: package:serverpod_cloud_lints/lints.yaml
+include:
+  - package:serverpod_cloud_lints/lints.yaml
+  - ../../analysis_options.yaml
 
 # Consider making changes in the common lints package instead of here,
 # unless it is specifically a local need.
