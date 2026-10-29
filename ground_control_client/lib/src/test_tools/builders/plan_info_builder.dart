@@ -110,7 +110,7 @@ ProjectProductInfo _growthPlanBundledProjectProducts() {
     scaling: ComputeScalingInfo(
       defaultMinReplicas: 1,
       defaultMaxReplicas: 1,
-      allowedReplicasMin: 1,
+      allowedReplicasMin: 0,
       allowedReplicasMax: 20,
     ),
   );

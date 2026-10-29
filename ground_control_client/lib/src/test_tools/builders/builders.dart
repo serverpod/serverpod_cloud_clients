@@ -15,6 +15,7 @@ export 'capsule_builder.dart';
 export 'capsule_network_series_builder.dart';
 export 'capsule_runtime_status_builder.dart';
 export 'compute_info_builder.dart';
+export 'compute_scaling_info_builder.dart';
 export 'dart_sdk_version_policy_builder.dart';
 export 'database_info_builder.dart';
 export 'database_metrics_builder.dart';
