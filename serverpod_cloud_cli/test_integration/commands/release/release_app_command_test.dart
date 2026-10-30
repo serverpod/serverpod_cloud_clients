@@ -41,6 +41,7 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(<AppPlatform>[]);
+    registerFallbackValue(const Uuid().v4obj());
   });
 
   setUp(() {
@@ -191,6 +192,129 @@ void main() {
           ),
         );
       });
+    });
+
+    group('and an upload that fails when releasing the app', () {
+      final upload = AppBuildsUploadBuilder().withPlatforms([
+        AppPlatform.android,
+      ]).build();
+      late Future<void> commandResult;
+
+      setUp(() {
+        when(
+          () => client.appBuilds.createBuilds(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            platforms: any(named: 'platforms'),
+            flutterAppDir: any(named: 'flutterAppDir'),
+            archiveSize: any(named: 'archiveSize'),
+            versionName: any(named: 'versionName'),
+            commitHash: any(named: 'commitHash'),
+            commitMessage: any(named: 'commitMessage'),
+            branch: any(named: 'branch'),
+          ),
+        ).thenAnswer((_) async => upload);
+        when(
+          () => client.appBuilds.cancelBuild(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            buildId: any(named: 'buildId'),
+          ),
+        ).thenAnswer((_) async {});
+        fileUploader.uploadResponse = false;
+
+        commandResult = cli.run([
+          'release',
+          'app',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+        ]);
+      });
+
+      test('then the command throws ErrorExitException', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then the build is cancelled', () async {
+        await commandResult.catchError((_) {});
+
+        verify(
+          () => client.appBuilds.cancelBuild(
+            cloudCapsuleId: _projectId,
+            buildId: upload.builds.single.buildId,
+          ),
+        ).called(1);
+      });
+
+      test('then the upload is not reported as successful', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          logger.successCalls.map((call) => call.message),
+          isNot(contains(startsWith('The app was uploaded for the builds: '))),
+        );
+      });
+    });
+
+    group('and an upload that fails and a build that cannot be cancelled '
+        'when releasing the app', () {
+      final upload = AppBuildsUploadBuilder().withPlatforms([
+        AppPlatform.android,
+      ]).build();
+      late Future<void> commandResult;
+
+      setUp(() {
+        when(
+          () => client.appBuilds.createBuilds(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            platforms: any(named: 'platforms'),
+            flutterAppDir: any(named: 'flutterAppDir'),
+            archiveSize: any(named: 'archiveSize'),
+            versionName: any(named: 'versionName'),
+            commitHash: any(named: 'commitHash'),
+            commitMessage: any(named: 'commitMessage'),
+            branch: any(named: 'branch'),
+          ),
+        ).thenAnswer((_) async => upload);
+        when(
+          () => client.appBuilds.cancelBuild(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            buildId: any(named: 'buildId'),
+          ),
+        ).thenThrow(Exception('Connection refused'));
+        fileUploader.uploadResponse = false;
+
+        commandResult = cli.run([
+          'release',
+          'app',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+        ]);
+      });
+
+      test('then the command throws ErrorExitException', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test(
+        'then the build that was not cancelled is logged as a warning',
+        () async {
+          await commandResult.catchError((_) {});
+
+          expect(
+            logger.warningCalls,
+            contains(
+              equalsWarningCall(
+                message:
+                    'Failed to cancel the app build '
+                    '${upload.builds.single.buildId}.',
+              ),
+            ),
+          );
+        },
+      );
     });
 
     test('and a version with a build number in the app pubspec '

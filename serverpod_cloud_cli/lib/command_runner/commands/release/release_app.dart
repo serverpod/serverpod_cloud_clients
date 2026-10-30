@@ -1,6 +1,7 @@
 import 'dart:io';
 
-import 'package:ground_control_client/ground_control_client.dart' show Client;
+import 'package:ground_control_client/ground_control_client.dart'
+    show AppBuildRef, Client;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy/deploy_archive.dart';
@@ -27,6 +28,7 @@ abstract class ReleaseApp {
   /// Throws [FailureException] if the app has no code for a platform to
   /// release, or if the builds cannot be requested.
   /// Throws [ErrorExitException] if the archive cannot be zipped or uploaded.
+  /// The builds are cancelled when the archive cannot be uploaded.
   static Future<void> release(
     Client cloudApiClient,
     FileUploaderFactory fileUploaderFactory, {
@@ -79,13 +81,23 @@ abstract class ReleaseApp {
       gitMetadata: gitMetadata,
     );
 
-    await DeployArchive.upload(
-      logger: logger,
-      fileUploaderFactory: fileUploaderFactory,
-      uploadDescription: upload.uploadDescription,
-      projectZip: appZip,
-      subject: 'app',
-    );
+    try {
+      await DeployArchive.upload(
+        logger: logger,
+        fileUploaderFactory: fileUploaderFactory,
+        uploadDescription: upload.uploadDescription,
+        projectZip: appZip,
+        subject: 'app',
+      );
+    } on Exception {
+      await _cancelBuilds(
+        cloudApiClient,
+        logger: logger,
+        projectId: projectId,
+        builds: upload.builds,
+      );
+      rethrow;
+    }
 
     final builds = upload.builds.map(
       (build) => '${build.platform.name} ${build.buildId}',
@@ -94,6 +106,25 @@ abstract class ReleaseApp {
       'The app was uploaded for the builds: ${builds.join(', ')}.',
       newParagraph: true,
     );
+  }
+
+  /// Cancels [builds], whose archive failed to upload, so they do not stay
+  /// queued. A build that cannot be cancelled is reported as a warning.
+  static Future<void> _cancelBuilds(
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String projectId,
+    required List<AppBuildRef> builds,
+  }) async {
+    try {
+      await ReleaseOperations.cancelBuilds(
+        cloudApiClient,
+        projectId: projectId,
+        buildIds: [for (final build in builds) build.buildId],
+      );
+    } on FailureException catch (e) {
+      e.errors.forEach(logger.warning);
+    }
   }
 
   /// Returns the version name of [version], without its build number.

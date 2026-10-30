@@ -6,7 +6,8 @@ import 'package:ground_control_client/ground_control_client.dart'
         Client,
         InvalidValueException,
         NotFoundException,
-        UploadTooLargeException;
+        UploadTooLargeException,
+        UuidValue;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/flutter_platform.dart';
 import 'package:serverpod_cloud_cli/util/git_metadata.dart';
@@ -58,6 +59,34 @@ abstract class ReleaseOperations {
         stackTrace,
         'Failed to request the app builds.',
       );
+    }
+  }
+
+  /// Cancels the app builds [buildIds] of project [projectId]. A build that
+  /// no longer exists is skipped.
+  ///
+  /// Throws [FailureException] if a build cannot be cancelled, after trying
+  /// to cancel all of them.
+  static Future<void> cancelBuilds(
+    Client cloudApiClient, {
+    required String projectId,
+    required List<UuidValue> buildIds,
+  }) async {
+    final errors = <String>[];
+    for (final buildId in buildIds) {
+      try {
+        await cloudApiClient.appBuilds.cancelBuild(
+          cloudCapsuleId: projectId,
+          buildId: buildId,
+        );
+      } on NotFoundException {
+        continue;
+      } on Exception {
+        errors.add('Failed to cancel the app build $buildId.');
+      }
+    }
+    if (errors.isNotEmpty) {
+      throw FailureException(errors: errors);
     }
   }
 
