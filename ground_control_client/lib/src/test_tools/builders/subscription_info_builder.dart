@@ -5,6 +5,7 @@ class SubscriptionInfoBuilder {
   DateTime _startDate;
   DateTime? _trialEndDate;
   DateTime? _endDate;
+  DateTime? _currentPeriodEndDate;
   bool _cancelled;
   UuidValue _subscriptionId;
   String _planProductId;
@@ -18,6 +19,7 @@ class SubscriptionInfoBuilder {
       _startDate = DateTime.now(),
       _trialEndDate = DateTime.now().add(Duration(days: 7)),
       _endDate = null,
+      _currentPeriodEndDate = null,
       _cancelled = false,
       _subscriptionId = Uuid().v4obj(),
       _planProductId = 'early-access:0',
@@ -43,6 +45,13 @@ class SubscriptionInfoBuilder {
 
   SubscriptionInfoBuilder withEndDate(DateTime? endDate) {
     _endDate = endDate;
+    return this;
+  }
+
+  SubscriptionInfoBuilder withCurrentPeriodEndDate(
+    DateTime? currentPeriodEndDate,
+  ) {
+    _currentPeriodEndDate = currentPeriodEndDate;
     return this;
   }
 
@@ -88,6 +97,7 @@ class SubscriptionInfoBuilder {
       startDate: _startDate,
       trialEndDate: _trialEndDate,
       endDate: _endDate,
+      currentPeriodEndDate: _currentPeriodEndDate,
       cancelled: _cancelled,
       subscriptionId: _subscriptionId,
       planProductId: _planProductId,
