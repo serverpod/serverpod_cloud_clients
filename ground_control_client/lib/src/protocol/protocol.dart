@@ -39,6 +39,8 @@ import 'package:ground_control_client/src/protocol/domains/status/models/deploy_
     as _i51mvi6s;
 import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
     as _iy77socp;
+import 'package:ground_control_client/src/protocol/domains/store_connections/models/store_connection.dart'
+    as _ibvsp6v6;
 import 'package:ground_control_client/src/protocol/domains/users/models/user.dart'
     as _ibu0ogga;
 import 'package:ground_control_client/src/protocol/features/app_builds/models/app_build_summary.dart'
@@ -1870,6 +1872,12 @@ class Protocol extends _isc.SerializationManager {
     if (t == List<_iy77socp.DeployAttemptStage>) {
       return (data as List)
               .map((e) => deserialize<_iy77socp.DeployAttemptStage>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<_ibvsp6v6.StoreConnection>) {
+      return (data as List)
+              .map((e) => deserialize<_ibvsp6v6.StoreConnection>(e))
               .toList()
           as T;
     }
