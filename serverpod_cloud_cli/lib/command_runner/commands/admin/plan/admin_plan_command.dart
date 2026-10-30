@@ -14,10 +14,6 @@ class AdminPlanCommand extends CloudCliCommand {
   AdminPlanCommand({required super.logger}) {
     addSubcommand(AdminListOrbPlansCommand(logger: logger));
     addSubcommand(AdminUpdatePlanCommand(logger: logger));
-    addSubcommand(AdminBackfillSubscriptionUsageFiltersCommand(logger: logger));
-    addSubcommand(
-      AdminBackfillSubscriptionCloudProjectIdsMetadataCommand(logger: logger),
-    );
   }
 }
 
@@ -89,56 +85,6 @@ class AdminUpdatePlanCommand extends CloudCliCommand<AdminUpdatePlanOption> {
         externalPlanId: externalPlanId,
       ),
       textOutputUi: const PlanUpdateTextUi(),
-    );
-  }
-}
-
-class AdminBackfillSubscriptionUsageFiltersCommand extends CloudCliCommand {
-  @override
-  final name = 'backfill-subscription-filters';
-
-  @override
-  final description = 'Backfill subscription usage filters.';
-
-  AdminBackfillSubscriptionUsageFiltersCommand({required super.logger});
-
-  @override
-  Future<void> runWithOutput(
-    final Configuration commandConfig,
-    final CommandOutput output,
-  ) async {
-    final client = runner.serviceProvider.cloudApiClient;
-    await renderCommand(
-      output,
-      operation: () => client.adminMigration.backfillSubscriptionUsageFilters(),
-      textOutputUi: const BackfillSubscriptionUsageFiltersTextUi(),
-    );
-  }
-}
-
-class AdminBackfillSubscriptionCloudProjectIdsMetadataCommand
-    extends CloudCliCommand {
-  @override
-  final name = 'backfill-subscription-cloud-project-ids';
-
-  @override
-  final description = 'Backfill Orb subscription cloudProjectIds metadata.';
-
-  AdminBackfillSubscriptionCloudProjectIdsMetadataCommand({
-    required super.logger,
-  });
-
-  @override
-  Future<void> runWithOutput(
-    final Configuration commandConfig,
-    final CommandOutput output,
-  ) async {
-    final client = runner.serviceProvider.cloudApiClient;
-    await renderCommand(
-      output,
-      operation: () =>
-          client.adminMigration.backfillSubscriptionCloudProjectIdsMetadata(),
-      textOutputUi: const BackfillSubscriptionCloudProjectIdsMetadataTextUi(),
     );
   }
 }
