@@ -1,6 +1,6 @@
 import 'package:ground_control_client/ground_control_client.dart';
 
-ProjectProductInfo _starterPlanBundledProjectProduct() {
+ProjectProductInfo _starterPlanBundledProjectProduct({int minReplicas = 1}) {
   final computeSmall = ComputeProductInfo(
     size: ComputeSizeOption.small,
     productId: 'compute-starter:0',
@@ -17,9 +17,9 @@ ProjectProductInfo _starterPlanBundledProjectProduct() {
     computes: [computeSmall],
     defaultCompute: computeSmall.size,
     scaling: ComputeScalingInfo(
-      defaultMinReplicas: 1,
+      defaultMinReplicas: minReplicas,
       defaultMaxReplicas: 1,
-      allowedReplicasMin: 1,
+      allowedReplicasMin: minReplicas,
       allowedReplicasMax: 1,
     ),
   );
@@ -185,7 +185,7 @@ class PlanInfoBuilder {
   }
 
   PlanInfoBuilder withStarterPlan() {
-    final starterProduct = _starterPlanBundledProjectProduct();
+    final starterProduct = _starterPlanBundledProjectProduct(minReplicas: 0);
     _productId = 'starter:0';
     _planType = PlanType.starter;
     _projectProduct = starterProduct;
