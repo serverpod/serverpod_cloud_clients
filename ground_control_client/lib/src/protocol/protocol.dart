@@ -145,6 +145,8 @@ import 'domains/status/models/deploy_attempt.dart' as _iov43xof;
 import 'domains/status/models/deploy_attempt_stage.dart' as _iwfg38ma;
 import 'domains/status/models/deploy_progress_status.dart' as _i7neienr;
 import 'domains/status/models/deploy_stage_type.dart' as _imfv08in;
+import 'domains/store_connections/models/store_connection.dart' as _inynab3f;
+import 'domains/store_connections/models/store_type.dart' as _i8gm9lx9;
 import 'domains/users/models/user.dart' as _iz26r0wp;
 import 'domains/users/models/user_account_status.dart' as _iu2mqg52;
 import 'domains/users/models/user_label.dart' as _iptirt7i;
@@ -305,6 +307,8 @@ export 'domains/status/models/deploy_attempt.dart';
 export 'domains/status/models/deploy_attempt_stage.dart';
 export 'domains/status/models/deploy_progress_status.dart';
 export 'domains/status/models/deploy_stage_type.dart';
+export 'domains/store_connections/models/store_connection.dart';
+export 'domains/store_connections/models/store_type.dart';
 export 'domains/users/models/user.dart';
 export 'domains/users/models/user_account_status.dart';
 export 'domains/users/models/user_label.dart';
@@ -651,6 +655,12 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _imfv08in.DeployStageType) {
       return _imfv08in.DeployStageType.fromJson(data) as T;
+    }
+    if (t == _inynab3f.StoreConnection) {
+      return _inynab3f.StoreConnection.fromJson(data) as T;
+    }
+    if (t == _i8gm9lx9.StoreType) {
+      return _i8gm9lx9.StoreType.fromJson(data) as T;
     }
     if (t == _iz26r0wp.User) {
       return _iz26r0wp.User.fromJson(data) as T;
@@ -1188,6 +1198,13 @@ class Protocol extends _isc.SerializationManager {
     if (t == _isc.getType<_imfv08in.DeployStageType?>()) {
       return (data != null ? _imfv08in.DeployStageType.fromJson(data) : null)
           as T;
+    }
+    if (t == _isc.getType<_inynab3f.StoreConnection?>()) {
+      return (data != null ? _inynab3f.StoreConnection.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_i8gm9lx9.StoreType?>()) {
+      return (data != null ? _i8gm9lx9.StoreType.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_iz26r0wp.User?>()) {
       return (data != null ? _iz26r0wp.User.fromJson(data) : null) as T;
@@ -1954,6 +1971,8 @@ class Protocol extends _isc.SerializationManager {
       _iwfg38ma.DeployAttemptStage => 'DeployAttemptStage',
       _i7neienr.DeployProgressStatus => 'DeployProgressStatus',
       _imfv08in.DeployStageType => 'DeployStageType',
+      _inynab3f.StoreConnection => 'StoreConnection',
+      _i8gm9lx9.StoreType => 'StoreType',
       _iz26r0wp.User => 'User',
       _iu2mqg52.UserAccountStatus => 'UserAccountStatus',
       _iptirt7i.UserLabel => 'UserLabel',
@@ -2210,6 +2229,10 @@ class Protocol extends _isc.SerializationManager {
         return 'DeployProgressStatus';
       case _imfv08in.DeployStageType():
         return 'DeployStageType';
+      case _inynab3f.StoreConnection():
+        return 'StoreConnection';
+      case _i8gm9lx9.StoreType():
+        return 'StoreType';
       case _iz26r0wp.User():
         return 'User';
       case _iu2mqg52.UserAccountStatus():
@@ -2606,6 +2629,12 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'DeployStageType') {
       return deserialize<_imfv08in.DeployStageType>(data['data']);
+    }
+    if (dataClassName == 'StoreConnection') {
+      return deserialize<_inynab3f.StoreConnection>(data['data']);
+    }
+    if (dataClassName == 'StoreType') {
+      return deserialize<_i8gm9lx9.StoreType>(data['data']);
     }
     if (dataClassName == 'User') {
       return deserialize<_iz26r0wp.User>(data['data']);
