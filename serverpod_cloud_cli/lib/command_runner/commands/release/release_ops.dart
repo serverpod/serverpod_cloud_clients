@@ -1,12 +1,16 @@
 import 'package:ground_control_client/ground_control_client.dart'
     show
+        AppBuildDetail,
         AppBuildsUpload,
         AppPlatform,
         AppPublishingDisabledException,
         Client,
         InvalidValueException,
         NotFoundException,
-        UploadTooLargeException;
+        UploadTooLargeException,
+        UuidValue,
+        isRetryableMethodStreamDisconnect,
+        reconnectStream;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/flutter_platform.dart';
 import 'package:serverpod_cloud_cli/util/git_metadata.dart';
@@ -59,6 +63,32 @@ abstract class ReleaseOperations {
         'Failed to request the app builds.',
       );
     }
+  }
+
+  /// Returns the app build [buildId] of project [projectId] on every change,
+  /// until it reaches a final status.
+  ///
+  /// The stream reconnects when the connection drops, and emits a
+  /// [FailureException] if it cannot.
+  static Stream<AppBuildDetail> tailBuild(
+    Client cloudApiClient, {
+    required String projectId,
+    required UuidValue buildId,
+  }) {
+    return reconnectStream<AppBuildDetail>(
+      (_) => cloudApiClient.appBuilds.tailBuild(
+        cloudCapsuleId: projectId,
+        buildId: buildId,
+      ),
+      shouldRetry: isRetryableMethodStreamDisconnect,
+    ).handleError((Object e, StackTrace stackTrace) {
+      if (e is! Exception) throw e;
+      throw FailureException.nested(
+        e,
+        stackTrace,
+        'Failed to follow the app build $buildId.',
+      );
+    });
   }
 
   static AppPlatform _appPlatform(FlutterPlatform platform) {
