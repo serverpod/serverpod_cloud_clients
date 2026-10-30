@@ -122,6 +122,7 @@ import 'domains/products/models/database_product_info.dart' as _ie5edybc;
 import 'domains/products/models/database_scaling_info.dart' as _i7kd6f8h;
 import 'domains/products/models/plan_info.dart' as _ioxhthdl;
 import 'domains/products/models/plan_type.dart' as _iagjhgs9;
+import 'domains/products/models/product_billing_status.dart' as _ica2axta;
 import 'domains/products/models/product_type.dart' as _is6epy3v;
 import 'domains/products/models/project_product_info.dart' as _iwmabm4s;
 import 'domains/products/models/subscription_info.dart' as _iera5yzg;
@@ -282,6 +283,7 @@ export 'domains/products/models/database_product_info.dart';
 export 'domains/products/models/database_scaling_info.dart';
 export 'domains/products/models/plan_info.dart';
 export 'domains/products/models/plan_type.dart';
+export 'domains/products/models/product_billing_status.dart';
 export 'domains/products/models/product_type.dart';
 export 'domains/products/models/project_product_info.dart';
 export 'domains/products/models/subscription_info.dart';
@@ -582,6 +584,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _iagjhgs9.PlanType) {
       return _iagjhgs9.PlanType.fromJson(data) as T;
+    }
+    if (t == _ica2axta.ProductBillingStatus) {
+      return _ica2axta.ProductBillingStatus.fromJson(data) as T;
     }
     if (t == _is6epy3v.ProductType) {
       return _is6epy3v.ProductType.fromJson(data) as T;
@@ -1090,6 +1095,12 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_iagjhgs9.PlanType?>()) {
       return (data != null ? _iagjhgs9.PlanType.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_ica2axta.ProductBillingStatus?>()) {
+      return (data != null
+              ? _ica2axta.ProductBillingStatus.fromJson(data)
+              : null)
+          as T;
     }
     if (t == _isc.getType<_is6epy3v.ProductType?>()) {
       return (data != null ? _is6epy3v.ProductType.fromJson(data) : null) as T;
@@ -1931,6 +1942,7 @@ class Protocol extends _isc.SerializationManager {
       _i7kd6f8h.DatabaseScalingInfo => 'DatabaseScalingInfo',
       _ioxhthdl.PlanInfo => 'PlanInfo',
       _iagjhgs9.PlanType => 'PlanType',
+      _ica2axta.ProductBillingStatus => 'ProductBillingStatus',
       _is6epy3v.ProductType => 'ProductType',
       _iwmabm4s.ProjectProductInfo => 'ProjectProductInfo',
       _iera5yzg.SubscriptionInfo => 'SubscriptionInfo',
@@ -2164,6 +2176,8 @@ class Protocol extends _isc.SerializationManager {
         return 'PlanInfo';
       case _iagjhgs9.PlanType():
         return 'PlanType';
+      case _ica2axta.ProductBillingStatus():
+        return 'ProductBillingStatus';
       case _is6epy3v.ProductType():
         return 'ProductType';
       case _iwmabm4s.ProjectProductInfo():
@@ -2537,6 +2551,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'PlanType') {
       return deserialize<_iagjhgs9.PlanType>(data['data']);
+    }
+    if (dataClassName == 'ProductBillingStatus') {
+      return deserialize<_ica2axta.ProductBillingStatus>(data['data']);
     }
     if (dataClassName == 'ProductType') {
       return deserialize<_is6epy3v.ProductType>(data['data']);
