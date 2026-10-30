@@ -1698,12 +1698,6 @@ class Protocol extends _isc.SerializationManager {
               : null)
           as T;
     }
-    if (t == Map<String, String>) {
-      return (data as Map).map(
-            (k, v) => MapEntry(deserialize<String>(k), deserialize<String>(v)),
-          )
-          as T;
-    }
     if (t == List<(String, String)>) {
       return (data as List)
               .map((e) => deserialize<(String, String)>(e))
@@ -1740,6 +1734,12 @@ class Protocol extends _isc.SerializationManager {
       return (data as List)
               .map((e) => deserialize<_i51mvi6s.DeployAttempt>(e))
               .toList()
+          as T;
+    }
+    if (t == Map<String, String>) {
+      return (data as Map).map(
+            (k, v) => MapEntry(deserialize<String>(k), deserialize<String>(v)),
+          )
           as T;
     }
     if (t == List<_ibu0ogga.User>) {

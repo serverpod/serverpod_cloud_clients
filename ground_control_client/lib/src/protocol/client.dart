@@ -198,32 +198,6 @@ class EndpointAdminGrants extends _isc.EndpointRef {
   });
 }
 
-/// {@category Endpoint}
-class EndpointAdminMigration extends _isc.EndpointRef {
-  EndpointAdminMigration(_isc.EndpointCaller caller) : super(caller);
-
-  @override
-  String get name => 'adminMigration';
-
-  /// Sets the Orb usage filter on every applied plan subscription to the
-  /// project ids currently allocated under that subscription.
-  _ida.Future<Map<String, String>> backfillSubscriptionUsageFilters() =>
-      caller.callServerEndpoint<Map<String, String>>(
-        'adminMigration',
-        'backfillSubscriptionUsageFilters',
-        {},
-      );
-
-  /// Adds every procured project id to Orb subscription metadata.
-  _ida.Future<Map<String, String>>
-  backfillSubscriptionCloudProjectIdsMetadata() =>
-      caller.callServerEndpoint<Map<String, String>>(
-        'adminMigration',
-        'backfillSubscriptionCloudProjectIdsMetadata',
-        {},
-      );
-}
-
 /// Endpoint for global administrator to handle procurement for users.
 /// {@category Endpoint}
 class EndpointAdminProcurement extends _isc.EndpointRef {
@@ -2904,7 +2878,6 @@ class Client extends _isc.ServerpodClientShared {
        ) {
     adminDatabaseScaling = EndpointAdminDatabaseScaling(this);
     adminGrants = EndpointAdminGrants(this);
-    adminMigration = EndpointAdminMigration(this);
     adminProcurement = EndpointAdminProcurement(this);
     adminProjects = EndpointAdminProjects(this);
     adminSecrets = EndpointAdminSecrets(this);
@@ -2945,8 +2918,6 @@ class Client extends _isc.ServerpodClientShared {
   late final EndpointAdminDatabaseScaling adminDatabaseScaling;
 
   late final EndpointAdminGrants adminGrants;
-
-  late final EndpointAdminMigration adminMigration;
 
   late final EndpointAdminProcurement adminProcurement;
 
@@ -3022,7 +2993,6 @@ class Client extends _isc.ServerpodClientShared {
   Map<String, _isc.EndpointRef> get endpointRefLookup => {
     'adminDatabaseScaling': adminDatabaseScaling,
     'adminGrants': adminGrants,
-    'adminMigration': adminMigration,
     'adminProcurement': adminProcurement,
     'adminProjects': adminProjects,
     'adminSecrets': adminSecrets,
