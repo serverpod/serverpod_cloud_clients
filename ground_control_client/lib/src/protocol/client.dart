@@ -522,7 +522,7 @@ class EndpointAdminTest extends _isc.EndpointRef {
   /// Pushes an example notification of [notificationType].
   ///
   /// [notificationType] is the name of a push notification type:
-  /// `test` or `invoice-failed`.
+  /// `test`, `invoice-failed`, or `subscription-suspended`.
   ///
   /// Throws [InvalidValueException] when [notificationType] is not a
   /// push notification type.
