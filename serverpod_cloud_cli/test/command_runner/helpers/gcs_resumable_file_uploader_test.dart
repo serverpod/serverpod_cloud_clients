@@ -36,9 +36,6 @@ class _FakeResumableStorage {
 
   int _chunkRequests = 0;
 
-  /// Leaves a chunk request unread and unanswered.
-  bool neverReadChunkBody = false;
-
   /// Reads a chunk request fully and never answers it.
   bool neverAnswerChunk = false;
 
@@ -87,7 +84,6 @@ class _FakeResumableStorage {
     }
 
     _chunkRequests++;
-    if (neverReadChunkBody) return;
     final range = RegExp(r'^bytes (\d+)-(\d+)/(\d+)$').firstMatch(contentRange);
     if (range == null) {
       await request.drain<void>();
@@ -172,6 +168,32 @@ class _FakeResumableStorage {
   }
 }
 
+/// Consumes one request slice and then leaves the rest unread so send
+/// progress stalls.
+class _UnreadChunkBodyAdapter implements HttpClientAdapter {
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    if (requestStream != null) {
+      await requestStream.first;
+    }
+    if (cancelFuture == null) {
+      throw StateError('Chunk requests must carry a cancel token.');
+    }
+    await cancelFuture;
+    throw DioException.requestCancelled(
+      requestOptions: options,
+      reason: 'storage stopped reading the chunk',
+    );
+  }
+
+  @override
+  void close({bool force = false}) {}
+}
+
 Uint8List _randomBytes(final int length) {
   final random = Random(42);
   return Uint8List.fromList(
@@ -196,6 +218,7 @@ void main() {
     final int maxRetries = GcsResumableFileUploader.defaultMaxRetries,
     final Duration? timeout,
     final int chunkSize = _chunkSize,
+    final Dio? dio,
   }) {
     return GcsResumableFileUploader(
       storage.description,
@@ -203,6 +226,7 @@ void main() {
       maxRetries: maxRetries,
       retryDelay: (final _) => Duration.zero,
       timeout: timeout,
+      dio: dio,
     );
   }
 
@@ -386,20 +410,15 @@ void main() {
     });
 
     group('when the storage stops reading a chunk', () {
-      const chunkSize = 16 * 1024 * 1024;
-      final bytes = Uint8List(chunkSize);
-
-      setUp(() {
-        storage.neverReadChunkBody = true;
-      });
+      final bytes = Uint8List(_chunkSize);
 
       test('then a sendTimeout DioException is thrown '
           'after the timeout without progress', () async {
         await expectLater(
           uploader(
             maxRetries: 0,
-            chunkSize: chunkSize,
             timeout: const Duration(milliseconds: 300),
+            dio: Dio()..httpClientAdapter = _UnreadChunkBodyAdapter(),
           ).upload(Stream.value(bytes), bytes.length),
           throwsA(
             isA<DioException>().having(
