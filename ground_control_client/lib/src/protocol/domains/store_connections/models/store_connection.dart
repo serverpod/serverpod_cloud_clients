@@ -10,7 +10,10 @@
 // ignore_for_file: invalid_use_of_internal_member
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../domains/store_connections/models/store_credential_info.dart'
+    as _i8vsm21x;
 import '../../../domains/store_connections/models/store_type.dart' as _is7r02rq;
 
 /// A store credential an owner registered for publishing apps. The key
@@ -22,6 +25,7 @@ abstract class StoreConnection
     required this.ownerId,
     required this.store,
     required this.name,
+    this.credential,
     this.issuerId,
     this.keyId,
     DateTime? createdAt,
@@ -35,6 +39,7 @@ abstract class StoreConnection
     required _isc.UuidValue ownerId,
     required _is7r02rq.StoreType store,
     required String name,
+    _i8vsm21x.StoreCredentialInfo? credential,
     String? issuerId,
     String? keyId,
     DateTime? createdAt,
@@ -53,6 +58,11 @@ abstract class StoreConnection
         (jsonSerialization['store'] as String),
       ),
       name: jsonSerialization['name'] as String,
+      credential: jsonSerialization['credential'] == null
+          ? null
+          : _iod2a87h.Protocol().deserialize<_i8vsm21x.StoreCredentialInfo>(
+              jsonSerialization['credential'],
+            ),
       issuerId: jsonSerialization['issuerId'] as String?,
       keyId: jsonSerialization['keyId'] as String?,
       createdAt: jsonSerialization['createdAt'] == null
@@ -73,7 +83,12 @@ abstract class StoreConnection
 
   String name;
 
-  /// App Store Connect only. Null for Google Play.
+  /// The public part of the credential, shaped per store. Always set;
+  /// nullable only until `issuerId` and `keyId` are dropped.
+  _i8vsm21x.StoreCredentialInfo? credential;
+
+  /// Superseded by `credential`. Kept one release so the previous code
+  /// can still write the row during rollout; dropped in a follow-up.
   String? issuerId;
 
   String? keyId;
@@ -90,6 +105,7 @@ abstract class StoreConnection
     _isc.UuidValue? ownerId,
     _is7r02rq.StoreType? store,
     String? name,
+    _i8vsm21x.StoreCredentialInfo? credential,
     String? issuerId,
     String? keyId,
     DateTime? createdAt,
@@ -103,6 +119,7 @@ abstract class StoreConnection
       'ownerId': ownerId.toJson(),
       'store': store.toJson(),
       'name': name,
+      if (credential != null) 'credential': credential?.toJson(),
       if (issuerId != null) 'issuerId': issuerId,
       if (keyId != null) 'keyId': keyId,
       'createdAt': createdAt.toJson(),
@@ -118,6 +135,7 @@ abstract class StoreConnection
       'ownerId': ownerId.toJson(),
       'store': store.toJson(),
       'name': name,
+      if (credential != null) 'credential': credential?.toJsonForProtocol(),
       if (issuerId != null) 'issuerId': issuerId,
       if (keyId != null) 'keyId': keyId,
       'createdAt': createdAt.toJson(),
@@ -139,6 +157,7 @@ class _StoreConnectionImpl extends StoreConnection {
     required _isc.UuidValue ownerId,
     required _is7r02rq.StoreType store,
     required String name,
+    _i8vsm21x.StoreCredentialInfo? credential,
     String? issuerId,
     String? keyId,
     DateTime? createdAt,
@@ -148,6 +167,7 @@ class _StoreConnectionImpl extends StoreConnection {
          ownerId: ownerId,
          store: store,
          name: name,
+         credential: credential,
          issuerId: issuerId,
          keyId: keyId,
          createdAt: createdAt,
@@ -163,6 +183,7 @@ class _StoreConnectionImpl extends StoreConnection {
     _isc.UuidValue? ownerId,
     _is7r02rq.StoreType? store,
     String? name,
+    Object? credential = _Undefined,
     Object? issuerId = _Undefined,
     Object? keyId = _Undefined,
     DateTime? createdAt,
@@ -173,6 +194,9 @@ class _StoreConnectionImpl extends StoreConnection {
       ownerId: ownerId ?? this.ownerId,
       store: store ?? this.store,
       name: name ?? this.name,
+      credential: credential is _i8vsm21x.StoreCredentialInfo?
+          ? credential
+          : this.credential?.copyWith(),
       issuerId: issuerId is String? ? issuerId : this.issuerId,
       keyId: keyId is String? ? keyId : this.keyId,
       createdAt: createdAt ?? this.createdAt,
