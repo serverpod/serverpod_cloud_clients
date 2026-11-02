@@ -61,6 +61,7 @@ import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'domains/app_builds/models/app_build_status.dart' as _i8s6tf8y;
 import 'domains/app_builds/models/app_build_step_status.dart' as _iy5t3gwf;
 import 'domains/app_builds/models/app_platform.dart' as _ij8v08n4;
+import 'domains/app_builds/models/reported_app_identifier.dart' as _iuofohfj;
 import 'domains/billing/models/billing_customer_type.dart' as _i4m2a6uw;
 import 'domains/billing/models/billing_info.dart' as _i7vhubyw;
 import 'domains/billing/models/billing_mapping_type.dart' as _i0j2fm74;
@@ -231,6 +232,7 @@ import 'shared/pubsub/registry/pubsub_entry.dart' as _i1i04ivn;
 export 'domains/app_builds/models/app_build_status.dart';
 export 'domains/app_builds/models/app_build_step_status.dart';
 export 'domains/app_builds/models/app_platform.dart';
+export 'domains/app_builds/models/reported_app_identifier.dart';
 export 'domains/billing/models/billing_customer_type.dart';
 export 'domains/billing/models/billing_info.dart';
 export 'domains/billing/models/billing_mapping_type.dart';
@@ -417,6 +419,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _ij8v08n4.AppPlatform) {
       return _ij8v08n4.AppPlatform.fromJson(data) as T;
+    }
+    if (t == _iuofohfj.ReportedAppIdentifier) {
+      return _iuofohfj.ReportedAppIdentifier.fromJson(data) as T;
     }
     if (t == _i4m2a6uw.BillingCustomerType) {
       return _i4m2a6uw.BillingCustomerType.fromJson(data) as T;
@@ -873,6 +878,12 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_ij8v08n4.AppPlatform?>()) {
       return (data != null ? _ij8v08n4.AppPlatform.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_iuofohfj.ReportedAppIdentifier?>()) {
+      return (data != null
+              ? _iuofohfj.ReportedAppIdentifier.fromJson(data)
+              : null)
+          as T;
     }
     if (t == _isc.getType<_i4m2a6uw.BillingCustomerType?>()) {
       return (data != null
@@ -1947,6 +1958,7 @@ class Protocol extends _isc.SerializationManager {
       _i8s6tf8y.AppBuildStatus => 'AppBuildStatus',
       _iy5t3gwf.AppBuildStepStatus => 'AppBuildStepStatus',
       _ij8v08n4.AppPlatform => 'AppPlatform',
+      _iuofohfj.ReportedAppIdentifier => 'ReportedAppIdentifier',
       _i4m2a6uw.BillingCustomerType => 'BillingCustomerType',
       _i7vhubyw.BillingInfo => 'BillingInfo',
       _i0j2fm74.BillingMappingType => 'BillingMappingType',
@@ -2131,6 +2143,8 @@ class Protocol extends _isc.SerializationManager {
         return 'AppBuildStepStatus';
       case _ij8v08n4.AppPlatform():
         return 'AppPlatform';
+      case _iuofohfj.ReportedAppIdentifier():
+        return 'ReportedAppIdentifier';
       case _i4m2a6uw.BillingCustomerType():
         return 'BillingCustomerType';
       case _i7vhubyw.BillingInfo():
@@ -2455,6 +2469,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'AppPlatform') {
       return deserialize<_ij8v08n4.AppPlatform>(data['data']);
+    }
+    if (dataClassName == 'ReportedAppIdentifier') {
+      return deserialize<_iuofohfj.ReportedAppIdentifier>(data['data']);
     }
     if (dataClassName == 'BillingCustomerType') {
       return deserialize<_i4m2a6uw.BillingCustomerType>(data['data']);
