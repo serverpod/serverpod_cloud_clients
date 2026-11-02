@@ -1,6 +1,12 @@
 
 # Changelog
 
+## 1.3.0 - 2026-11-02
+
+### Added
+
+- **Flutter app release command** - Added the `scloud release app` command to automatically package, upload, and trigger cloud builds for your Flutter apps targeting Android and iOS.
+
 ## [1.2.0] - 2026-10-19
 
 ### Added
