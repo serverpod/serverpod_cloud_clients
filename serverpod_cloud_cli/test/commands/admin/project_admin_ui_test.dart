@@ -286,15 +286,40 @@ void main() {
         stderr = io.stderr;
       });
 
-      test('then stdout contains the update-plan success message', () {
+      test('then stdout contains the set-plan success message', () {
         expect(
           stdout,
-          contains('Updated the plan of project "my-project" to "growth".'),
+          contains('Set the plan to "growth" for project "my-project".'),
         );
       });
 
       test('then stderr is empty', () {
         expect(stderr, isEmpty);
+      });
+    });
+
+    group('when rendered after updating min and max podlets', () {
+      late String stdout;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const AdminProjectUpdatePlanTextUi(),
+          data: const {
+            'projectId': 'my-project',
+            'minInstances': 0,
+            'maxInstances': 1,
+          },
+        );
+        stdout = io.stdout;
+      });
+
+      test('then stdout describes the podlet change', () {
+        expect(
+          stdout,
+          contains(
+            'Set min podlets to 0 and max podlets to 1 for project "my-project".',
+          ),
+        );
       });
     });
   });

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:args/command_runner.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:mocktail/mocktail.dart';
@@ -26,6 +27,16 @@ void main() {
     ),
     adminUserMode: true,
   );
+  final unauthenticatedClient = ClientMock(
+    authKeyProvider: InMemoryKeyManager(),
+  );
+  final unauthenticatedCli = CloudCliCommandRunner.create(
+    logger: logger,
+    serviceProvider: CloudCliServiceProvider(
+      apiClientFactory: (globalCfg) => unauthenticatedClient,
+    ),
+    adminUserMode: true,
+  );
 
   const projectId = 'my-proj';
 
@@ -47,6 +58,38 @@ void main() {
       );
     },
   );
+
+  group('Given not logged in', () {
+    group(
+      'when executing admin project update-plan without plan or podlet options',
+      () {
+        late Future commandResult;
+        setUp(() async {
+          commandResult = unauthenticatedCli.run([
+            'admin',
+            'project',
+            'update-plan',
+            projectId,
+            '--non-interactive',
+          ]);
+        });
+
+        test('then throws a usage error naming the required options', () async {
+          await expectLater(
+            commandResult,
+            throwsA(
+              isA<UsageException>().having(
+                (e) => e.message,
+                'message',
+                'At least one of --plan, --min-podlets or --max-podlets '
+                    'must be given.',
+              ),
+            ),
+          );
+        });
+      },
+    );
+  });
 
   group('Given authenticated', () {
     void stubSuccessfulUpdate() {
@@ -97,29 +140,27 @@ void main() {
           },
         );
 
-        test('then command logs confirm message', () async {
+        test('then command logs a confirm message to set the plan', () async {
           await commandResult;
 
-          expect(logger.confirmCalls, isNotEmpty);
           expect(
             logger.confirmCalls.first,
             equalsConfirmCall(
               message:
-                  'Are you sure you want to update the plan of project '
-                  '"my-proj" to "growth"?',
+                  'Are you sure you want to set the plan to "growth" '
+                  'for project "my-proj"?',
               defaultValue: false,
             ),
           );
         });
 
-        test('then command outputs success message', () async {
+        test('then command outputs a success message for the plan', () async {
           await commandResult;
 
-          expect(logger.successCalls, isNotEmpty);
           expect(
             logger.successCalls.first,
             equalsSuccessCall(
-              message: 'Updated the plan of project "my-proj" to "growth".',
+              message: 'Set the plan to "growth" for project "my-proj".',
               newParagraph: true,
             ),
           );
@@ -218,18 +259,17 @@ void main() {
           await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
         });
 
-        test('then logs confirm message', () async {
+        test('then logs a confirm message to set the plan', () async {
           try {
             await commandResult;
           } catch (_) {}
 
-          expect(logger.confirmCalls, isNotEmpty);
           expect(
             logger.confirmCalls.first,
             equalsConfirmCall(
               message:
-                  'Are you sure you want to update the plan of project '
-                  '"my-proj" to "growth"?',
+                  'Are you sure you want to set the plan to "growth" '
+                  'for project "my-proj"?',
               defaultValue: false,
             ),
           );
@@ -303,5 +343,276 @@ void main() {
         });
       },
     );
+
+    group('when executing admin project update-plan with only '
+        '--min-podlets 0 --max-podlets 1 and accepting the prompt', () {
+      late Future commandResult;
+      setUp(() async {
+        stubSuccessfulUpdate();
+        logger.answerNextConfirmWith(true);
+
+        commandResult = cli.run([
+          'admin',
+          'project',
+          'update-plan',
+          projectId,
+          '--min-podlets',
+          '0',
+          '--max-podlets',
+          '1',
+        ]);
+      });
+
+      test('then updateProjectProfile is called without a plan type', () async {
+        await commandResult;
+
+        final captured = verify(
+          () => client.adminProjects.updateProjectProfile(
+            cloudProjectId: projectId,
+            profile: captureAny(named: 'profile'),
+          ),
+        ).captured;
+        expect((captured.single as ProjectProfileUpdate).planType, isNull);
+      });
+
+      test(
+        'then updateProjectProfile is called with min instances 0',
+        () async {
+          await commandResult;
+
+          final captured = verify(
+            () => client.adminProjects.updateProjectProfile(
+              cloudProjectId: projectId,
+              profile: captureAny(named: 'profile'),
+            ),
+          ).captured;
+          expect((captured.single as ProjectProfileUpdate).minInstances, 0);
+        },
+      );
+
+      test(
+        'then updateProjectProfile is called with max instances 1',
+        () async {
+          await commandResult;
+
+          final captured = verify(
+            () => client.adminProjects.updateProjectProfile(
+              cloudProjectId: projectId,
+              profile: captureAny(named: 'profile'),
+            ),
+          ).captured;
+          expect((captured.single as ProjectProfileUpdate).maxInstances, 1);
+        },
+      );
+
+      test(
+        'then command logs a confirm message describing the podlet change',
+        () async {
+          await commandResult;
+
+          expect(
+            logger.confirmCalls.first,
+            equalsConfirmCall(
+              message:
+                  'Are you sure you want to set min podlets to 0 and '
+                  'max podlets to 1 for project "my-proj"?',
+              defaultValue: false,
+            ),
+          );
+        },
+      );
+
+      test(
+        'then command outputs a success message describing the podlet change',
+        () async {
+          await commandResult;
+
+          expect(
+            logger.successCalls.first,
+            equalsSuccessCall(
+              message:
+                  'Set min podlets to 0 and max podlets to 1 '
+                  'for project "my-proj".',
+              newParagraph: true,
+            ),
+          );
+        },
+      );
+    });
+
+    group('when executing admin project update-plan with plan growth and '
+        '--min-podlets 0 and accepting the prompt', () {
+      late Future commandResult;
+      setUp(() async {
+        stubSuccessfulUpdate();
+        logger.answerNextConfirmWith(true);
+
+        commandResult = cli.run([
+          'admin',
+          'project',
+          'update-plan',
+          projectId,
+          'growth',
+          '--min-podlets',
+          '0',
+        ]);
+      });
+
+      test(
+        'then updateProjectProfile is called with the growth plan',
+        () async {
+          await commandResult;
+
+          final captured = verify(
+            () => client.adminProjects.updateProjectProfile(
+              cloudProjectId: projectId,
+              profile: captureAny(named: 'profile'),
+            ),
+          ).captured;
+          expect(
+            (captured.single as ProjectProfileUpdate).planType,
+            PlanType.growth,
+          );
+        },
+      );
+
+      test(
+        'then updateProjectProfile is called with min instances 0',
+        () async {
+          await commandResult;
+
+          final captured = verify(
+            () => client.adminProjects.updateProjectProfile(
+              cloudProjectId: projectId,
+              profile: captureAny(named: 'profile'),
+            ),
+          ).captured;
+          expect((captured.single as ProjectProfileUpdate).minInstances, 0);
+        },
+      );
+
+      test(
+        'then command outputs a success message describing both changes',
+        () async {
+          await commandResult;
+
+          expect(
+            logger.successCalls.first,
+            equalsSuccessCall(
+              message:
+                  'Set the plan to "growth" and min podlets to 0 '
+                  'for project "my-proj".',
+              newParagraph: true,
+            ),
+          );
+        },
+      );
+    });
+
+    group('when executing admin project update-plan with '
+        '--min-podlets 0 --max-podlets 1 --yes and --format json', () {
+      late Future commandResult;
+      setUp(() async {
+        stubSuccessfulUpdate();
+
+        commandResult = cli.run([
+          'admin',
+          'project',
+          'update-plan',
+          projectId,
+          '--min-podlets',
+          '0',
+          '--max-podlets',
+          '1',
+          '--yes',
+          '--format',
+          'json',
+        ]);
+      });
+
+      test(
+        'then emits a JSON object with the project id and instance counts',
+        () async {
+          await commandResult;
+
+          expect(jsonDecode(logger.rawCalls.single.content), {
+            'projectId': projectId,
+            'minInstances': 0,
+            'maxInstances': 1,
+          });
+        },
+      );
+    });
+
+    group(
+      'when executing admin project update-plan without plan or podlet options',
+      () {
+        late Future commandResult;
+        setUp(() async {
+          stubSuccessfulUpdate();
+
+          commandResult = cli.run([
+            'admin',
+            'project',
+            'update-plan',
+            projectId,
+          ]);
+        });
+
+        test('then throws a usage error naming the required options', () async {
+          await expectLater(
+            commandResult,
+            throwsA(
+              isA<UsageException>().having(
+                (e) => e.message,
+                'message',
+                'At least one of --plan, --min-podlets or --max-podlets '
+                    'must be given.',
+              ),
+            ),
+          );
+        });
+
+        test('then updateProjectProfile is not called', () async {
+          try {
+            await commandResult;
+          } catch (_) {}
+
+          verifyNever(
+            () => client.adminProjects.updateProjectProfile(
+              cloudProjectId: any(named: 'cloudProjectId'),
+              profile: any(named: 'profile'),
+            ),
+          );
+        });
+      },
+    );
+
+    group('when executing admin project update-plan with --min-podlets -1', () {
+      late Future commandResult;
+      setUp(() async {
+        commandResult = cli.run([
+          'admin',
+          'project',
+          'update-plan',
+          projectId,
+          '--min-podlets',
+          '-1',
+        ]);
+      });
+
+      test('then throws a usage error that -1 is below the minimum', () async {
+        await expectLater(
+          commandResult,
+          throwsA(
+            isA<UsageException>().having(
+              (e) => e.message,
+              'message',
+              contains('-1 is below the minimum (0)'),
+            ),
+          ),
+        );
+      });
+    });
   });
 }

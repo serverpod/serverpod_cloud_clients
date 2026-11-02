@@ -7,6 +7,7 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart'
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/projects/project_admin_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/projects/project_admin_ui.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/projects/project_admin_status_ui.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
 
 class AdminProjectCommand extends CloudCliCommand {
   @override
@@ -362,8 +363,21 @@ enum AdminProjectUpdatePlanOption<V> implements OptionDefinition<V> {
       enumParser: EnumParser([PlanType.starter, PlanType.growth]),
       argName: 'plan',
       argPos: 1,
-      mandatory: true,
       helpText: 'The plan type. Can be passed as the second argument.',
+    ),
+  ),
+  minPodlets(
+    IntOption(
+      argName: 'min-podlets',
+      helpText: 'The minimum number of podlet instances.',
+      min: 0,
+    ),
+  ),
+  maxPodlets(
+    IntOption(
+      argName: 'max-podlets',
+      helpText: 'The maximum number of podlet instances.',
+      min: 0,
     ),
   );
 
@@ -379,10 +393,30 @@ class AdminProjectUpdatePlanCommand
   final name = 'update-plan';
 
   @override
-  final description = 'Update the plan of a Serverpod Cloud project.';
+  final description =
+      'Update the plan and/or podlet scaling of a Serverpod Cloud project.';
 
   AdminProjectUpdatePlanCommand({required super.logger})
     : super(options: AdminProjectUpdatePlanOption.values);
+
+  @override
+  Future<void> runWithConfig(
+    final Configuration<AdminProjectUpdatePlanOption> commandConfig,
+  ) async {
+    final hasNoChange =
+        commandConfig.optionalValue(AdminProjectUpdatePlanOption.planType) ==
+            null &&
+        commandConfig.optionalValue(AdminProjectUpdatePlanOption.minPodlets) ==
+            null &&
+        commandConfig.optionalValue(AdminProjectUpdatePlanOption.maxPodlets) ==
+            null;
+    if (hasNoChange) {
+      throw CloudCliUsageException(
+        'At least one of --plan, --min-podlets or --max-podlets must be given.',
+      );
+    }
+    await super.runWithConfig(commandConfig);
+  }
 
   @override
   Future<void> runWithOutput(
@@ -392,13 +426,25 @@ class AdminProjectUpdatePlanCommand
     final projectId = commandConfig.value(
       AdminProjectUpdatePlanOption.projectId,
     );
-    final planType = commandConfig.value(AdminProjectUpdatePlanOption.planType);
+    final planType = commandConfig.optionalValue(
+      AdminProjectUpdatePlanOption.planType,
+    );
+    final minPodlets = commandConfig.optionalValue(
+      AdminProjectUpdatePlanOption.minPodlets,
+    );
+    final maxPodlets = commandConfig.optionalValue(
+      AdminProjectUpdatePlanOption.maxPodlets,
+    );
+
+    final change = describeProjectProfileChange(
+      planType: planType?.name,
+      minInstances: minPodlets,
+      maxInstances: maxPodlets,
+    );
 
     await confirmToContinue(
       output,
-      message:
-          'Are you sure you want to update the plan of project '
-          '"$projectId" to "$planType"?',
+      message: 'Are you sure you want to set $change for project "$projectId"?',
       defaultValue: false,
     );
 
@@ -408,6 +454,8 @@ class AdminProjectUpdatePlanCommand
         runner.serviceProvider.cloudApiClient,
         projectId: projectId,
         planType: planType,
+        minInstances: minPodlets,
+        maxInstances: maxPodlets,
       ),
       textOutputUi: const AdminProjectUpdatePlanTextUi(),
     );

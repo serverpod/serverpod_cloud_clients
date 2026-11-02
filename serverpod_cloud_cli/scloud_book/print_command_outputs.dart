@@ -438,6 +438,16 @@ const _scenarios = [
     _projectId,
     'growth',
   ]),
+  _Scenario('admin project update-plan --min-podlets --max-podlets', [
+    'admin',
+    'project',
+    'update-plan',
+    _projectId,
+    '--min-podlets',
+    '0',
+    '--max-podlets',
+    '1',
+  ]),
   _Scenario('admin project reprocure-subscription', [
     'admin',
     'project',

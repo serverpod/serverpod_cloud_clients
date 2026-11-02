@@ -153,18 +153,33 @@ abstract class ProjectAdminCommands {
   static Future<Map<String, Object?>> updateProjectPlan(
     final Client cloudApiClient, {
     required final String projectId,
-    required final PlanType planType,
+    final PlanType? planType,
+    final int? minInstances,
+    final int? maxInstances,
   }) async {
     try {
       await cloudApiClient.adminProjects.updateProjectProfile(
         cloudProjectId: projectId,
-        profile: ProjectProfileUpdate(planType: planType),
+        profile: ProjectProfileUpdate(
+          planType: planType,
+          minInstances: minInstances,
+          maxInstances: maxInstances,
+        ),
       );
     } on Exception catch (e, s) {
-      throw FailureException.nested(e, s, 'Failed to update the project plan');
+      throw FailureException.nested(
+        e,
+        s,
+        'Failed to update the project profile',
+      );
     }
 
-    return {'projectId': projectId, 'planType': planType.name};
+    return {
+      'projectId': projectId,
+      if (planType != null) 'planType': planType.name,
+      'minInstances': ?minInstances,
+      'maxInstances': ?maxInstances,
+    };
   }
 
   /// Sets [grant] on [projectId] to [amount].

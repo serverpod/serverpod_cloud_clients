@@ -186,12 +186,37 @@ class AdminProjectUpdatePlanTextUi extends OutputWidget {
   @override
   OutputWidget build(final OutputContext context) {
     final result = context.get<Map<String, Object?>>();
+    final change = describeProjectProfileChange(
+      planType: result['planType'] as String?,
+      minInstances: result['minInstances'] as int?,
+      maxInstances: result['maxInstances'] as int?,
+    );
     return SuccessTextWidget(
-      'Updated the plan of project "${result['projectId']}" '
-      'to "${result['planType']}".',
+      'Set $change for project "${result['projectId']}".',
       newParagraph: true,
     );
   }
+}
+
+/// Describes a project profile change, such as
+/// `min podlets to 0 and max podlets to 1`.
+///
+/// At least one of the values must be non-null.
+String describeProjectProfileChange({
+  final String? planType,
+  final int? minInstances,
+  final int? maxInstances,
+}) {
+  final changes = [
+    if (planType != null) 'the plan to "$planType"',
+    if (minInstances != null) 'min podlets to $minInstances',
+    if (maxInstances != null) 'max podlets to $maxInstances',
+  ];
+  if (changes.length < 2) {
+    return changes.join();
+  }
+  final leading = changes.sublist(0, changes.length - 1).join(', ');
+  return '$leading and ${changes.last}';
 }
 
 class AdminProjectSetGrantTextUi extends OutputWidget {
