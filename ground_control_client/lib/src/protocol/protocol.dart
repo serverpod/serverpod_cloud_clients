@@ -39,6 +39,8 @@ import 'package:ground_control_client/src/protocol/domains/status/models/deploy_
     as _i51mvi6s;
 import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
     as _iy77socp;
+import 'package:ground_control_client/src/protocol/domains/store_connections/models/store_connection.dart'
+    as _ibvsp6v6;
 import 'package:ground_control_client/src/protocol/domains/users/models/user.dart'
     as _ibu0ogga;
 import 'package:ground_control_client/src/protocol/features/app_builds/models/app_build_summary.dart'
@@ -147,6 +149,9 @@ import 'domains/status/models/deploy_attempt_stage.dart' as _iwfg38ma;
 import 'domains/status/models/deploy_progress_status.dart' as _i7neienr;
 import 'domains/status/models/deploy_stage_type.dart' as _imfv08in;
 import 'domains/store_connections/models/store_connection.dart' as _inynab3f;
+import 'domains/store_connections/models/store_credential.dart' as _ipat6207;
+import 'domains/store_connections/models/store_credential_info.dart'
+    as _i1a97vwb;
 import 'domains/store_connections/models/store_type.dart' as _i8gm9lx9;
 import 'domains/users/models/user.dart' as _iz26r0wp;
 import 'domains/users/models/user_account_status.dart' as _iu2mqg52;
@@ -310,6 +315,8 @@ export 'domains/status/models/deploy_attempt_stage.dart';
 export 'domains/status/models/deploy_progress_status.dart';
 export 'domains/status/models/deploy_stage_type.dart';
 export 'domains/store_connections/models/store_connection.dart';
+export 'domains/store_connections/models/store_credential.dart';
+export 'domains/store_connections/models/store_credential_info.dart';
 export 'domains/store_connections/models/store_type.dart';
 export 'domains/users/models/user.dart';
 export 'domains/users/models/user_account_status.dart';
@@ -660,6 +667,18 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _imfv08in.DeployStageType) {
       return _imfv08in.DeployStageType.fromJson(data) as T;
+    }
+    if (t == _ipat6207.AppStoreConnectCredential) {
+      return _ipat6207.AppStoreConnectCredential.fromJson(data) as T;
+    }
+    if (t == _i1a97vwb.AppStoreConnectCredentialInfo) {
+      return _i1a97vwb.AppStoreConnectCredentialInfo.fromJson(data) as T;
+    }
+    if (t == _ipat6207.GooglePlayCredential) {
+      return _ipat6207.GooglePlayCredential.fromJson(data) as T;
+    }
+    if (t == _i1a97vwb.GooglePlayCredentialInfo) {
+      return _i1a97vwb.GooglePlayCredentialInfo.fromJson(data) as T;
     }
     if (t == _inynab3f.StoreConnection) {
       return _inynab3f.StoreConnection.fromJson(data) as T;
@@ -1208,6 +1227,30 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_imfv08in.DeployStageType?>()) {
       return (data != null ? _imfv08in.DeployStageType.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_ipat6207.AppStoreConnectCredential?>()) {
+      return (data != null
+              ? _ipat6207.AppStoreConnectCredential.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_i1a97vwb.AppStoreConnectCredentialInfo?>()) {
+      return (data != null
+              ? _i1a97vwb.AppStoreConnectCredentialInfo.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_ipat6207.GooglePlayCredential?>()) {
+      return (data != null
+              ? _ipat6207.GooglePlayCredential.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_i1a97vwb.GooglePlayCredentialInfo?>()) {
+      return (data != null
+              ? _i1a97vwb.GooglePlayCredentialInfo.fromJson(data)
+              : null)
           as T;
     }
     if (t == _isc.getType<_inynab3f.StoreConnection?>()) {
@@ -1884,6 +1927,12 @@ class Protocol extends _isc.SerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_ibvsp6v6.StoreConnection>) {
+      return (data as List)
+              .map((e) => deserialize<_ibvsp6v6.StoreConnection>(e))
+              .toList()
+          as T;
+    }
     try {
       return _iaic.Protocol().deserialize<T>(data, t);
     } on _isc.DeserializationTypeNotFoundException catch (_) {}
@@ -1983,6 +2032,11 @@ class Protocol extends _isc.SerializationManager {
       _iwfg38ma.DeployAttemptStage => 'DeployAttemptStage',
       _i7neienr.DeployProgressStatus => 'DeployProgressStatus',
       _imfv08in.DeployStageType => 'DeployStageType',
+      _ipat6207.AppStoreConnectCredential => 'AppStoreConnectCredential',
+      _i1a97vwb.AppStoreConnectCredentialInfo =>
+        'AppStoreConnectCredentialInfo',
+      _ipat6207.GooglePlayCredential => 'GooglePlayCredential',
+      _i1a97vwb.GooglePlayCredentialInfo => 'GooglePlayCredentialInfo',
       _inynab3f.StoreConnection => 'StoreConnection',
       _i8gm9lx9.StoreType => 'StoreType',
       _iz26r0wp.User => 'User',
@@ -2243,6 +2297,14 @@ class Protocol extends _isc.SerializationManager {
         return 'DeployProgressStatus';
       case _imfv08in.DeployStageType():
         return 'DeployStageType';
+      case _ipat6207.AppStoreConnectCredential():
+        return 'AppStoreConnectCredential';
+      case _i1a97vwb.AppStoreConnectCredentialInfo():
+        return 'AppStoreConnectCredentialInfo';
+      case _ipat6207.GooglePlayCredential():
+        return 'GooglePlayCredential';
+      case _i1a97vwb.GooglePlayCredentialInfo():
+        return 'GooglePlayCredentialInfo';
       case _inynab3f.StoreConnection():
         return 'StoreConnection';
       case _i8gm9lx9.StoreType():
@@ -2646,6 +2708,18 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'DeployStageType') {
       return deserialize<_imfv08in.DeployStageType>(data['data']);
+    }
+    if (dataClassName == 'AppStoreConnectCredential') {
+      return deserialize<_ipat6207.AppStoreConnectCredential>(data['data']);
+    }
+    if (dataClassName == 'AppStoreConnectCredentialInfo') {
+      return deserialize<_i1a97vwb.AppStoreConnectCredentialInfo>(data['data']);
+    }
+    if (dataClassName == 'GooglePlayCredential') {
+      return deserialize<_ipat6207.GooglePlayCredential>(data['data']);
+    }
+    if (dataClassName == 'GooglePlayCredentialInfo') {
+      return deserialize<_i1a97vwb.GooglePlayCredentialInfo>(data['data']);
     }
     if (dataClassName == 'StoreConnection') {
       return deserialize<_inynab3f.StoreConnection>(data['data']);

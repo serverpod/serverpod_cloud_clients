@@ -85,6 +85,12 @@ import 'package:ground_control_client/src/protocol/domains/status/models/deploy_
     as _i51mvi6s;
 import 'package:ground_control_client/src/protocol/domains/status/models/deploy_attempt_stage.dart'
     as _iy77socp;
+import 'package:ground_control_client/src/protocol/domains/store_connections/models/store_connection.dart'
+    as _ibvsp6v6;
+import 'package:ground_control_client/src/protocol/domains/store_connections/models/store_credential.dart'
+    as _i7l7qkel;
+import 'package:ground_control_client/src/protocol/domains/store_connections/models/store_type.dart'
+    as _ilm1z026;
 import 'package:ground_control_client/src/protocol/domains/users/models/user.dart'
     as _ibu0ogga;
 import 'package:ground_control_client/src/protocol/domains/users/models/user_account_status.dart'
@@ -2815,6 +2821,71 @@ class EndpointStatus extends _isc.EndpointRef {
       }, {});
 }
 
+/// Store connections belong to the signed-in user's owner and are shared by
+/// all of the owner's projects. The key is never returned.
+/// {@category Endpoint}
+class EndpointStoreConnections extends _isc.EndpointRef {
+  EndpointStoreConnections(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'storeConnections';
+
+  /// Registers a store [credential] under [name]: an App Store Connect key
+  /// or a Google Play service account key.
+  ///
+  /// Throws [InvalidValueException] if [name], the key, or an App Store
+  /// Connect issuer id or key id is blank. Throws
+  /// [AppPublishingDisabledException] while app publishing is off in this
+  /// environment.
+  _ida.Future<_ibvsp6v6.StoreConnection> addConnection({
+    required String name,
+    required _i7l7qkel.StoreCredential credential,
+  }) => caller.callServerEndpoint<_ibvsp6v6.StoreConnection>(
+    'storeConnections',
+    'addConnection',
+    {'name': name, 'credential': credential},
+  );
+
+  /// Lists the owner's connections, oldest first, only for [store] if set.
+  ///
+  /// Throws [AppPublishingDisabledException] while app publishing is off in
+  /// this environment.
+  _ida.Future<List<_ibvsp6v6.StoreConnection>> listConnections({
+    _ilm1z026.StoreType? store,
+  }) => caller.callServerEndpoint<List<_ibvsp6v6.StoreConnection>>(
+    'storeConnections',
+    'listConnections',
+    {'store': store},
+  );
+
+  /// Replaces the key of connection [connectionId] with [credential]. Id
+  /// and name stay.
+  ///
+  /// Throws [NotFoundException] if no connection with [connectionId]
+  /// belongs to the owner. Throws [InvalidValueException] if [credential]
+  /// is for another store than the connection, or as [addConnection] does
+  /// for its fields. Throws [AppPublishingDisabledException] while app
+  /// publishing is off in this environment.
+  _ida.Future<_ibvsp6v6.StoreConnection> replaceCredential({
+    required _isc.UuidValue connectionId,
+    required _i7l7qkel.StoreCredential credential,
+  }) => caller.callServerEndpoint<_ibvsp6v6.StoreConnection>(
+    'storeConnections',
+    'replaceCredential',
+    {'connectionId': connectionId, 'credential': credential},
+  );
+
+  /// Removes connection [connectionId] and deletes its key.
+  ///
+  /// Throws [NotFoundException] if no connection with [connectionId]
+  /// belongs to the owner. Throws [AppPublishingDisabledException] while
+  /// app publishing is off in this environment.
+  _ida.Future<void> removeConnection({required _isc.UuidValue connectionId}) =>
+      caller.callServerEndpoint<void>('storeConnections', 'removeConnection', {
+        'connectionId': connectionId,
+      });
+}
+
 /// Endpoint for managing users.
 /// {@category Endpoint}
 class EndpointUsers extends _isc.EndpointRef {
@@ -2911,6 +2982,7 @@ class Client extends _isc.ServerpodClientShared {
     roles = EndpointRoles(this);
     secrets = EndpointSecrets(this);
     status = EndpointStatus(this);
+    storeConnections = EndpointStoreConnections(this);
     users = EndpointUsers(this);
     modules = Modules(this);
   }
@@ -2985,6 +3057,8 @@ class Client extends _isc.ServerpodClientShared {
 
   late final EndpointStatus status;
 
+  late final EndpointStoreConnections storeConnections;
+
   late final EndpointUsers users;
 
   late final Modules modules;
@@ -3026,6 +3100,7 @@ class Client extends _isc.ServerpodClientShared {
     'roles': roles,
     'secrets': secrets,
     'status': status,
+    'storeConnections': storeConnections,
     'users': users,
   };
 
