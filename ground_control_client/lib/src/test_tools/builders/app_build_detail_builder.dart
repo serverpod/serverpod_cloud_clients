@@ -8,6 +8,7 @@ class AppBuildDetailBuilder {
     AppBuildStepInfo(
       index: 0,
       name: 'Build',
+      stage: AppBuildStage.build,
       status: AppBuildStepStatus.succeeded,
       startedAt: DateTime.now().subtract(const Duration(minutes: 10)),
       endedAt: DateTime.now().subtract(const Duration(minutes: 2)),

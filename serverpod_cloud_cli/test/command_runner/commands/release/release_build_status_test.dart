@@ -94,11 +94,13 @@ void main() {
           AppBuildStepInfo(
             index: 0,
             name: 'Build iOS app',
+            stage: AppBuildStage.build,
             status: AppBuildStepStatus.running,
           ),
           AppBuildStepInfo(
             index: 1,
             name: ReleaseBuildStatus.publishingStepName,
+            stage: AppBuildStage.publish,
             status: AppBuildStepStatus.pending,
           ),
         ])
@@ -122,6 +124,7 @@ void main() {
           AppBuildStepInfo(
             index: 0,
             name: ReleaseBuildStatus.publishingStepName,
+            stage: AppBuildStage.publish,
             status: AppBuildStepStatus.running,
           ),
         ])

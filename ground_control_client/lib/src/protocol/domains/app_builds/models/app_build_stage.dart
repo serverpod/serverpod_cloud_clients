@@ -1,0 +1,44 @@
+/* AUTOMATICALLY GENERATED CODE DO NOT MODIFY */
+/*   To generate run: "serverpod generate"    */
+
+// ignore_for_file: implementation_imports
+// ignore_for_file: library_private_types_in_public_api
+// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: public_member_api_docs
+// ignore_for_file: type_literal_in_constant_pattern
+// ignore_for_file: use_super_parameters
+// ignore_for_file: invalid_use_of_internal_member
+
+// ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:serverpod_client/serverpod_client.dart' as _isc;
+
+/// The phase of an app build a step belongs to.
+/// - `upload` — getting the project onto the build machine.
+/// - `build` — signing and compiling the app.
+/// - `publish` — uploading the app to the store.
+enum AppBuildStage implements _isc.SerializableModel {
+  upload,
+  build,
+  publish;
+
+  static AppBuildStage fromJson(String name) {
+    switch (name) {
+      case 'upload':
+        return AppBuildStage.upload;
+      case 'build':
+        return AppBuildStage.build;
+      case 'publish':
+        return AppBuildStage.publish;
+      default:
+        throw ArgumentError(
+          'Value "$name" cannot be converted to "AppBuildStage"',
+        );
+    }
+  }
+
+  @override
+  String toJson() => name;
+
+  @override
+  String toString() => name;
+}
