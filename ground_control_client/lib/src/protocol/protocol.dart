@@ -61,7 +61,6 @@ import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'domains/app_builds/models/app_build_status.dart' as _i8s6tf8y;
 import 'domains/app_builds/models/app_build_step_status.dart' as _iy5t3gwf;
 import 'domains/app_builds/models/app_platform.dart' as _ij8v08n4;
-import 'domains/app_builds/models/reported_app_identifier.dart' as _iuofohfj;
 import 'domains/billing/models/billing_customer_type.dart' as _i4m2a6uw;
 import 'domains/billing/models/billing_info.dart' as _i7vhubyw;
 import 'domains/billing/models/billing_mapping_type.dart' as _i0j2fm74;
@@ -166,11 +165,18 @@ import 'features/admin/models/payments_invoice_status.dart' as _iu1ze8tv;
 import 'features/admin/models/payments_status.dart' as _iw02lteh;
 import 'features/app_builds/exceptions/app_publishing_disabled_exception.dart'
     as _ijed0rq9;
+import 'features/app_builds/models/android_publishing_setup.dart' as _i0oah05k;
+import 'features/app_builds/models/android_signing.dart' as _iife4rxz;
 import 'features/app_builds/models/app_build_detail.dart' as _iyqovlj1;
 import 'features/app_builds/models/app_build_ref.dart' as _i8bymbss;
 import 'features/app_builds/models/app_build_step_info.dart' as _izrhxmsy;
 import 'features/app_builds/models/app_build_summary.dart' as _iyi5usgc;
 import 'features/app_builds/models/app_builds_upload.dart' as _ig1623xk;
+import 'features/app_builds/models/app_publishing_setup.dart' as _i2sj9x5l;
+import 'features/app_builds/models/app_store_access.dart' as _iyc8rxjv;
+import 'features/app_builds/models/google_play_access.dart' as _ikj2epgu;
+import 'features/app_builds/models/ios_publishing_setup.dart' as _ixfxvxdd;
+import 'features/app_builds/models/ios_signing.dart' as _ix6c9g8d;
 import 'features/auth/exceptions/email_method_blocked_exception.dart'
     as _ihqdfodo;
 import 'features/auth/exceptions/user_account_registration_denied_exception.dart'
@@ -232,7 +238,6 @@ import 'shared/pubsub/registry/pubsub_entry.dart' as _i1i04ivn;
 export 'domains/app_builds/models/app_build_status.dart';
 export 'domains/app_builds/models/app_build_step_status.dart';
 export 'domains/app_builds/models/app_platform.dart';
-export 'domains/app_builds/models/reported_app_identifier.dart';
 export 'domains/billing/models/billing_customer_type.dart';
 export 'domains/billing/models/billing_info.dart';
 export 'domains/billing/models/billing_mapping_type.dart';
@@ -331,11 +336,18 @@ export 'features/admin/models/admin_user_status.dart';
 export 'features/admin/models/payments_invoice_status.dart';
 export 'features/admin/models/payments_status.dart';
 export 'features/app_builds/exceptions/app_publishing_disabled_exception.dart';
+export 'features/app_builds/models/android_publishing_setup.dart';
+export 'features/app_builds/models/android_signing.dart';
 export 'features/app_builds/models/app_build_detail.dart';
 export 'features/app_builds/models/app_build_ref.dart';
 export 'features/app_builds/models/app_build_step_info.dart';
 export 'features/app_builds/models/app_build_summary.dart';
 export 'features/app_builds/models/app_builds_upload.dart';
+export 'features/app_builds/models/app_publishing_setup.dart';
+export 'features/app_builds/models/app_store_access.dart';
+export 'features/app_builds/models/google_play_access.dart';
+export 'features/app_builds/models/ios_publishing_setup.dart';
+export 'features/app_builds/models/ios_signing.dart';
 export 'features/auth/exceptions/email_method_blocked_exception.dart';
 export 'features/auth/exceptions/user_account_registration_denied_exception.dart';
 export 'features/auth/models/accepted_terms.dart';
@@ -419,9 +431,6 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _ij8v08n4.AppPlatform) {
       return _ij8v08n4.AppPlatform.fromJson(data) as T;
-    }
-    if (t == _iuofohfj.ReportedAppIdentifier) {
-      return _iuofohfj.ReportedAppIdentifier.fromJson(data) as T;
     }
     if (t == _i4m2a6uw.BillingCustomerType) {
       return _i4m2a6uw.BillingCustomerType.fromJson(data) as T;
@@ -724,6 +733,12 @@ class Protocol extends _isc.SerializationManager {
     if (t == _ijed0rq9.AppPublishingDisabledException) {
       return _ijed0rq9.AppPublishingDisabledException.fromJson(data) as T;
     }
+    if (t == _i0oah05k.AndroidPublishingSetup) {
+      return _i0oah05k.AndroidPublishingSetup.fromJson(data) as T;
+    }
+    if (t == _iife4rxz.AndroidSigning) {
+      return _iife4rxz.AndroidSigning.fromJson(data) as T;
+    }
     if (t == _iyqovlj1.AppBuildDetail) {
       return _iyqovlj1.AppBuildDetail.fromJson(data) as T;
     }
@@ -738,6 +753,21 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _ig1623xk.AppBuildsUpload) {
       return _ig1623xk.AppBuildsUpload.fromJson(data) as T;
+    }
+    if (t == _i2sj9x5l.AppPublishingSetup) {
+      return _i2sj9x5l.AppPublishingSetup.fromJson(data) as T;
+    }
+    if (t == _iyc8rxjv.AppStoreAccess) {
+      return _iyc8rxjv.AppStoreAccess.fromJson(data) as T;
+    }
+    if (t == _ikj2epgu.GooglePlayAccess) {
+      return _ikj2epgu.GooglePlayAccess.fromJson(data) as T;
+    }
+    if (t == _ixfxvxdd.IosPublishingSetup) {
+      return _ixfxvxdd.IosPublishingSetup.fromJson(data) as T;
+    }
+    if (t == _ix6c9g8d.IosSigning) {
+      return _ix6c9g8d.IosSigning.fromJson(data) as T;
     }
     if (t == _ihqdfodo.EmailMethodBlockedException) {
       return _ihqdfodo.EmailMethodBlockedException.fromJson(data) as T;
@@ -878,12 +908,6 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_ij8v08n4.AppPlatform?>()) {
       return (data != null ? _ij8v08n4.AppPlatform.fromJson(data) : null) as T;
-    }
-    if (t == _isc.getType<_iuofohfj.ReportedAppIdentifier?>()) {
-      return (data != null
-              ? _iuofohfj.ReportedAppIdentifier.fromJson(data)
-              : null)
-          as T;
     }
     if (t == _isc.getType<_i4m2a6uw.BillingCustomerType?>()) {
       return (data != null
@@ -1321,6 +1345,16 @@ class Protocol extends _isc.SerializationManager {
               : null)
           as T;
     }
+    if (t == _isc.getType<_i0oah05k.AndroidPublishingSetup?>()) {
+      return (data != null
+              ? _i0oah05k.AndroidPublishingSetup.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_iife4rxz.AndroidSigning?>()) {
+      return (data != null ? _iife4rxz.AndroidSigning.fromJson(data) : null)
+          as T;
+    }
     if (t == _isc.getType<_iyqovlj1.AppBuildDetail?>()) {
       return (data != null ? _iyqovlj1.AppBuildDetail.fromJson(data) : null)
           as T;
@@ -1339,6 +1373,25 @@ class Protocol extends _isc.SerializationManager {
     if (t == _isc.getType<_ig1623xk.AppBuildsUpload?>()) {
       return (data != null ? _ig1623xk.AppBuildsUpload.fromJson(data) : null)
           as T;
+    }
+    if (t == _isc.getType<_i2sj9x5l.AppPublishingSetup?>()) {
+      return (data != null ? _i2sj9x5l.AppPublishingSetup.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_iyc8rxjv.AppStoreAccess?>()) {
+      return (data != null ? _iyc8rxjv.AppStoreAccess.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_ikj2epgu.GooglePlayAccess?>()) {
+      return (data != null ? _ikj2epgu.GooglePlayAccess.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_ixfxvxdd.IosPublishingSetup?>()) {
+      return (data != null ? _ixfxvxdd.IosPublishingSetup.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_ix6c9g8d.IosSigning?>()) {
+      return (data != null ? _ix6c9g8d.IosSigning.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_ihqdfodo.EmailMethodBlockedException?>()) {
       return (data != null
@@ -1958,7 +2011,6 @@ class Protocol extends _isc.SerializationManager {
       _i8s6tf8y.AppBuildStatus => 'AppBuildStatus',
       _iy5t3gwf.AppBuildStepStatus => 'AppBuildStepStatus',
       _ij8v08n4.AppPlatform => 'AppPlatform',
-      _iuofohfj.ReportedAppIdentifier => 'ReportedAppIdentifier',
       _i4m2a6uw.BillingCustomerType => 'BillingCustomerType',
       _i7vhubyw.BillingInfo => 'BillingInfo',
       _i0j2fm74.BillingMappingType => 'BillingMappingType',
@@ -2063,11 +2115,18 @@ class Protocol extends _isc.SerializationManager {
       _iw02lteh.PaymentsStatus => 'PaymentsStatus',
       _ijed0rq9.AppPublishingDisabledException =>
         'AppPublishingDisabledException',
+      _i0oah05k.AndroidPublishingSetup => 'AndroidPublishingSetup',
+      _iife4rxz.AndroidSigning => 'AndroidSigning',
       _iyqovlj1.AppBuildDetail => 'AppBuildDetail',
       _i8bymbss.AppBuildRef => 'AppBuildRef',
       _izrhxmsy.AppBuildStepInfo => 'AppBuildStepInfo',
       _iyi5usgc.AppBuildSummary => 'AppBuildSummary',
       _ig1623xk.AppBuildsUpload => 'AppBuildsUpload',
+      _i2sj9x5l.AppPublishingSetup => 'AppPublishingSetup',
+      _iyc8rxjv.AppStoreAccess => 'AppStoreAccess',
+      _ikj2epgu.GooglePlayAccess => 'GooglePlayAccess',
+      _ixfxvxdd.IosPublishingSetup => 'IosPublishingSetup',
+      _ix6c9g8d.IosSigning => 'IosSigning',
       _ihqdfodo.EmailMethodBlockedException => 'EmailMethodBlockedException',
       _ilk02hh2.UserAccountRegistrationDeniedException =>
         'UserAccountRegistrationDeniedException',
@@ -2143,8 +2202,6 @@ class Protocol extends _isc.SerializationManager {
         return 'AppBuildStepStatus';
       case _ij8v08n4.AppPlatform():
         return 'AppPlatform';
-      case _iuofohfj.ReportedAppIdentifier():
-        return 'ReportedAppIdentifier';
       case _i4m2a6uw.BillingCustomerType():
         return 'BillingCustomerType';
       case _i7vhubyw.BillingInfo():
@@ -2345,6 +2402,10 @@ class Protocol extends _isc.SerializationManager {
         return 'PaymentsStatus';
       case _ijed0rq9.AppPublishingDisabledException():
         return 'AppPublishingDisabledException';
+      case _i0oah05k.AndroidPublishingSetup():
+        return 'AndroidPublishingSetup';
+      case _iife4rxz.AndroidSigning():
+        return 'AndroidSigning';
       case _iyqovlj1.AppBuildDetail():
         return 'AppBuildDetail';
       case _i8bymbss.AppBuildRef():
@@ -2355,6 +2416,16 @@ class Protocol extends _isc.SerializationManager {
         return 'AppBuildSummary';
       case _ig1623xk.AppBuildsUpload():
         return 'AppBuildsUpload';
+      case _i2sj9x5l.AppPublishingSetup():
+        return 'AppPublishingSetup';
+      case _iyc8rxjv.AppStoreAccess():
+        return 'AppStoreAccess';
+      case _ikj2epgu.GooglePlayAccess():
+        return 'GooglePlayAccess';
+      case _ixfxvxdd.IosPublishingSetup():
+        return 'IosPublishingSetup';
+      case _ix6c9g8d.IosSigning():
+        return 'IosSigning';
       case _ihqdfodo.EmailMethodBlockedException():
         return 'EmailMethodBlockedException';
       case _ilk02hh2.UserAccountRegistrationDeniedException():
@@ -2469,9 +2540,6 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'AppPlatform') {
       return deserialize<_ij8v08n4.AppPlatform>(data['data']);
-    }
-    if (dataClassName == 'ReportedAppIdentifier') {
-      return deserialize<_iuofohfj.ReportedAppIdentifier>(data['data']);
     }
     if (dataClassName == 'BillingCustomerType') {
       return deserialize<_i4m2a6uw.BillingCustomerType>(data['data']);
@@ -2779,6 +2847,12 @@ class Protocol extends _isc.SerializationManager {
         data['data'],
       );
     }
+    if (dataClassName == 'AndroidPublishingSetup') {
+      return deserialize<_i0oah05k.AndroidPublishingSetup>(data['data']);
+    }
+    if (dataClassName == 'AndroidSigning') {
+      return deserialize<_iife4rxz.AndroidSigning>(data['data']);
+    }
     if (dataClassName == 'AppBuildDetail') {
       return deserialize<_iyqovlj1.AppBuildDetail>(data['data']);
     }
@@ -2793,6 +2867,21 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'AppBuildsUpload') {
       return deserialize<_ig1623xk.AppBuildsUpload>(data['data']);
+    }
+    if (dataClassName == 'AppPublishingSetup') {
+      return deserialize<_i2sj9x5l.AppPublishingSetup>(data['data']);
+    }
+    if (dataClassName == 'AppStoreAccess') {
+      return deserialize<_iyc8rxjv.AppStoreAccess>(data['data']);
+    }
+    if (dataClassName == 'GooglePlayAccess') {
+      return deserialize<_ikj2epgu.GooglePlayAccess>(data['data']);
+    }
+    if (dataClassName == 'IosPublishingSetup') {
+      return deserialize<_ixfxvxdd.IosPublishingSetup>(data['data']);
+    }
+    if (dataClassName == 'IosSigning') {
+      return deserialize<_ix6c9g8d.IosSigning>(data['data']);
     }
     if (dataClassName == 'EmailMethodBlockedException') {
       return deserialize<_ihqdfodo.EmailMethodBlockedException>(data['data']);

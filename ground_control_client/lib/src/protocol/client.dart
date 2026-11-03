@@ -105,6 +105,8 @@ import 'package:ground_control_client/src/protocol/features/app_builds/models/ap
     as _iy6jkon8;
 import 'package:ground_control_client/src/protocol/features/app_builds/models/app_builds_upload.dart'
     as _iqiq2vfs;
+import 'package:ground_control_client/src/protocol/features/app_builds/models/app_publishing_setup.dart'
+    as _ia3jvj4n;
 import 'package:ground_control_client/src/protocol/features/auth/models/accepted_terms_dto.dart'
     as _irrma5ts;
 import 'package:ground_control_client/src/protocol/features/auth/models/auth_token_info.dart'
@@ -793,6 +795,87 @@ class EndpointAppBuilds extends _isc.EndpointRef {
     'buildId': buildId,
     'stepIndex': stepIndex,
   });
+}
+
+/// Per-platform publishing setup of a capsule: the store it uploads to and
+/// how its builds are signed. Credential values are never returned.
+/// {@category Endpoint}
+class EndpointAppPublishing extends _isc.EndpointRef {
+  EndpointAppPublishing(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'appPublishing';
+
+  /// Gets the setup of both platforms. A null part is not set up yet.
+  ///
+  /// Throws [AppPublishingDisabledException] while app publishing is off in
+  /// this environment.
+  _ida.Future<_ia3jvj4n.AppPublishingSetup> getSetup({
+    required String cloudCapsuleId,
+  }) => caller.callServerEndpoint<_ia3jvj4n.AppPublishingSetup>(
+    'appPublishing',
+    'getSetup',
+    {'cloudCapsuleId': cloudCapsuleId},
+  );
+
+  /// Links the owner's App Store Connect key [appStoreConnectKeyId] as the
+  /// store iOS builds publish to.
+  ///
+  /// Throws [UnauthorizedException] if the caller is not the project owner.
+  /// Throws [NotFoundException] if no App Store Connect key with
+  /// [appStoreConnectKeyId] belongs to the project owner. Throws
+  /// [InvalidValueException] if the key is not an App Store Connect key.
+  /// Throws [ProjectSuspendedException] if the project is suspended. Throws
+  /// [AppPublishingDisabledException] while app publishing is off in this
+  /// environment.
+  _ida.Future<_ia3jvj4n.AppPublishingSetup> setIosStore({
+    required String cloudCapsuleId,
+    required _isc.UuidValue appStoreConnectKeyId,
+  }) => caller.callServerEndpoint<_ia3jvj4n.AppPublishingSetup>(
+    'appPublishing',
+    'setIosStore',
+    {
+      'cloudCapsuleId': cloudCapsuleId,
+      'appStoreConnectKeyId': appStoreConnectKeyId,
+    },
+  );
+
+  /// Unlinks the App Store Connect key from iOS. Idempotent.
+  ///
+  /// Throws [UnauthorizedException] if the caller is not the project owner.
+  /// Throws [ProjectSuspendedException] if the project is suspended. Throws
+  /// [AppPublishingDisabledException] while app publishing is off in this
+  /// environment.
+  _ida.Future<void> removeIosStore({required String cloudCapsuleId}) =>
+      caller.callServerEndpoint<void>('appPublishing', 'removeIosStore', {
+        'cloudCapsuleId': cloudCapsuleId,
+      });
+
+  /// Sets the bundle ID iOS builds are signed and published as, replacing
+  /// the one before.
+  ///
+  /// Throws [InvalidValueException] if [bundleId] is blank or Flutter's
+  /// `com.example` placeholder. Throws [ProjectSuspendedException] if the
+  /// project is suspended. Throws [AppPublishingDisabledException] while
+  /// app publishing is off in this environment.
+  _ida.Future<_ia3jvj4n.AppPublishingSetup> setIosBundleId({
+    required String cloudCapsuleId,
+    required String bundleId,
+  }) => caller.callServerEndpoint<_ia3jvj4n.AppPublishingSetup>(
+    'appPublishing',
+    'setIosBundleId',
+    {'cloudCapsuleId': cloudCapsuleId, 'bundleId': bundleId},
+  );
+
+  /// Clears the iOS bundle ID. Idempotent.
+  ///
+  /// Throws [ProjectSuspendedException] if the project is suspended. Throws
+  /// [AppPublishingDisabledException] while app publishing is off in this
+  /// environment.
+  _ida.Future<void> removeIosBundleId({required String cloudCapsuleId}) =>
+      caller.callServerEndpoint<void>('appPublishing', 'removeIosBundleId', {
+        'cloudCapsuleId': cloudCapsuleId,
+      });
 }
 
 /// Endpoint for authentication.
@@ -2957,6 +3040,7 @@ class Client extends _isc.ServerpodClientShared {
     adminUpdatePlan = EndpointAdminUpdatePlan(this);
     adminUsers = EndpointAdminUsers(this);
     appBuilds = EndpointAppBuilds(this);
+    appPublishing = EndpointAppPublishing(this);
     auth = EndpointAuth(this);
     authWithAuth = EndpointAuthWithAuth(this);
     emailIdp = EndpointEmailIdp(this);
@@ -3006,6 +3090,8 @@ class Client extends _isc.ServerpodClientShared {
   late final EndpointAdminUsers adminUsers;
 
   late final EndpointAppBuilds appBuilds;
+
+  late final EndpointAppPublishing appPublishing;
 
   late final EndpointAuth auth;
 
@@ -3075,6 +3161,7 @@ class Client extends _isc.ServerpodClientShared {
     'adminUpdatePlan': adminUpdatePlan,
     'adminUsers': adminUsers,
     'appBuilds': appBuilds,
+    'appPublishing': appPublishing,
     'auth': auth,
     'authWithAuth': authWithAuth,
     'emailIdp': emailIdp,
