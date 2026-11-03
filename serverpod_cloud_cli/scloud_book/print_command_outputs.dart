@@ -318,6 +318,23 @@ const _scenarios = [
     '--project',
     _projectId,
   ]),
+  _Scenario('release list', ['release', 'list', '--project', _projectId]),
+  _Scenario('release list', [
+    'release',
+    'list',
+    '--project',
+    _projectId,
+    '--platforms',
+    'ios',
+  ]),
+  _Scenario('release list', [
+    'release',
+    'list',
+    '--project',
+    _projectId,
+    '--platforms',
+    'ios,android',
+  ]),
   _Scenario('storage list', ['storage', 'list', '--project', _projectId]),
   _Scenario('storage create', [
     'storage',
