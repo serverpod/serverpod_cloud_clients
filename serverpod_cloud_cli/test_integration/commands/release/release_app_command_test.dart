@@ -200,6 +200,15 @@ void main() {
           ),
         );
       });
+
+      test('then the command to follow the builds is shown', () async {
+        await commandResult;
+
+        expect(
+          logger.infoCalls.map((call) => call.message),
+          contains(matches(RegExp(r'^Follow it: \S+ release show \S+$'))),
+        );
+      });
     });
 
     group('and builds that succeed when releasing the app with --await', () {

@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:config/config.dart';
+import 'package:ground_control_client/ground_control_client.dart'
+    show UuidValue;
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
@@ -16,6 +18,7 @@ import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
 
 import 'release_app.dart';
+import 'release_show.dart';
 
 class ReleaseAppDirOption extends DirOption {
   const ReleaseAppDirOption({super.group})
@@ -76,6 +79,27 @@ class ReleaseAwaitOption extends FlagOption {
       );
 }
 
+class ReleaseUploadIdOption extends StringOption {
+  const ReleaseUploadIdOption({super.group})
+    : super(
+        argName: 'upload-id',
+        argPos: 0,
+        mandatory: true,
+        helpText:
+            'The id of the app upload to show, as printed by release app. '
+            'Can be passed as the first argument.',
+        customValidator: _uploadIdValidator,
+      );
+
+  static void _uploadIdValidator(String value) {
+    try {
+      UuidValue.withValidation(value);
+    } on FormatException {
+      throw FormatException('Invalid upload id: $value');
+    }
+  }
+}
+
 enum ReleaseAppCommandOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption(asFirstArg: true, excludeSettings: true)),
   appDir(ReleaseAppDirOption()),
@@ -83,6 +107,16 @@ enum ReleaseAppCommandOption<V> implements OptionDefinition<V> {
   wait(ReleaseAwaitOption());
 
   const ReleaseAppCommandOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+enum ReleaseShowCommandOption<V> implements OptionDefinition<V> {
+  projectId(ProjectIdOption(excludeSettings: true)),
+  uploadId(ReleaseUploadIdOption());
+
+  const ReleaseShowCommandOption(this.option);
 
   @override
   final ConfigOptionBase<V> option;
@@ -104,6 +138,7 @@ class CloudReleaseCommand extends CloudCliCommand {
 
   CloudReleaseCommand({required super.logger}) {
     addSubcommand(CloudReleaseAppCommand(logger: logger));
+    addSubcommand(CloudReleaseShowCommand(logger: logger));
   }
 }
 
@@ -161,6 +196,7 @@ Examples
       runner.serviceProvider.cloudApiClient,
       runner.serviceProvider.fileUploaderFactory,
       logger: logger,
+      baseCommand: baseCommand,
       projectId: projectId,
       appDirectory: appDirectory,
       defaultPlatforms: ReleasePlatformsOption.supportedPlatforms,
@@ -201,5 +237,46 @@ Examples
       );
     }
     return appDirectory;
+  }
+}
+
+class CloudReleaseShowCommand
+    extends CloudCliCommand<ReleaseShowCommandOption> {
+  @override
+  final name = 'show';
+
+  @override
+  final description =
+      'Show the builds of an app release. '
+      'Follows their progress until they end.';
+
+  @override
+  String get usageExamples =>
+      '''\n
+Examples
+
+  Show the builds of an app release by the upload id that release app printed
+
+    \$ $baseCommand release show 3f2b0c4e-1d5a-4b8e-9c7f-2a6d8e1b4c90
+
+''';
+
+  CloudReleaseShowCommand({required super.logger})
+    : super(options: ReleaseShowCommandOption.values);
+
+  @override
+  Future<void> runWithOutput(
+    final Configuration<ReleaseShowCommandOption> commandConfig,
+    final CommandOutput output,
+  ) async {
+    final projectId = commandConfig.value(ReleaseShowCommandOption.projectId);
+    final uploadId = commandConfig.value(ReleaseShowCommandOption.uploadId);
+
+    await ReleaseShow.show(
+      runner.serviceProvider.cloudApiClient,
+      logger: logger,
+      projectId: projectId,
+      uploadId: UuidValue.withValidation(uploadId),
+    );
   }
 }
