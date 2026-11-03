@@ -53,6 +53,11 @@ class AppBuildSummaryBuilder {
     return this;
   }
 
+  AppBuildSummaryBuilder withStartedAt(DateTime? startedAt) {
+    _startedAt = startedAt;
+    return this;
+  }
+
   AppBuildSummary build() {
     return AppBuildSummary(
       id: _id,

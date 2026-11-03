@@ -66,10 +66,21 @@ class ReleasePlatformsOption extends MultiOption<FlutterPlatform> {
   }
 }
 
+class ReleaseAwaitOption extends FlagOption {
+  const ReleaseAwaitOption({super.group})
+    : super(
+        argName: 'await',
+        defaultsTo: false,
+        negatable: false,
+        helpText: 'Await the builds to finish while showing their progress.',
+      );
+}
+
 enum ReleaseAppCommandOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption(asFirstArg: true, excludeSettings: true)),
   appDir(ReleaseAppDirOption()),
-  platforms(ReleasePlatformsOption());
+  platforms(ReleasePlatformsOption()),
+  wait(ReleaseAwaitOption());
 
   const ReleaseAppCommandOption(this.option);
 
@@ -118,6 +129,10 @@ Examples
 
     \$ $baseCommand release app --platforms android
 
+  Release the app and wait for its builds to finish
+
+    \$ $baseCommand release app --await
+
   Release a Flutter app in a specific directory
 
     \$ $baseCommand release app --app-dir my_project_flutter
@@ -137,6 +152,7 @@ Examples
     final platforms = commandConfig.optionalValue(
       ReleaseAppCommandOption.platforms,
     );
+    final awaitBuilds = commandConfig.value(ReleaseAppCommandOption.wait);
 
     final appDirectory = appDir ?? _configuredOrWorkspaceAppDirectory();
     logger.debug('App directory is: ${appDirectory.path}');
@@ -149,6 +165,7 @@ Examples
       appDirectory: appDirectory,
       defaultPlatforms: ReleasePlatformsOption.supportedPlatforms,
       platforms: platforms?.toSet(),
+      awaitBuilds: awaitBuilds,
     );
   }
 

@@ -13,6 +13,7 @@ import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
+import '../../../test/util/inline_tui/helpers/fake_terminal.dart';
 import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/project_factory.dart';
 import '../../../test_utils/recording_file_uploader.dart';
@@ -41,6 +42,7 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(<AppPlatform>[]);
+    registerFallbackValue(const Uuid().v4obj());
   });
 
   setUp(() {
@@ -179,14 +181,206 @@ void main() {
         );
       });
 
-      test('then the upload is reported with the Android build', () async {
+      test('then the publishing to Android is reported', () async {
+        await commandResult;
+
+        expect(
+          logger.infoCalls.map((call) => call.message),
+          contains('Publishing the app to Android'),
+        );
+      });
+
+      test('then the builds are not followed', () async {
+        await commandResult;
+
+        verifyNever(
+          () => client.appBuilds.tailBuild(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            buildId: any(named: 'buildId'),
+          ),
+        );
+      });
+    });
+
+    group('and builds that succeed when releasing the app with --await', () {
+      late Future<void> commandResult;
+
+      setUp(() {
+        when(
+          () => client.appBuilds.tailBuild(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            buildId: any(named: 'buildId'),
+          ),
+        ).thenAnswer(
+          (_) => Stream.fromIterable([
+            AppBuildDetailBuilder()
+                .withBuild(
+                  AppBuildSummaryBuilder()
+                      .withPlatform(AppPlatform.android)
+                      .withStatus(AppBuildStatus.running)
+                      .build(),
+                )
+                .build(),
+            AppBuildDetailBuilder()
+                .withBuild(
+                  AppBuildSummaryBuilder()
+                      .withPlatform(AppPlatform.android)
+                      .withStatus(AppBuildStatus.succeeded)
+                      .build(),
+                )
+                .build(),
+          ]),
+        );
+
+        commandResult = cli.run([
+          'release',
+          'app',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--await',
+        ]);
+      });
+
+      test('then the build is followed', () async {
+        await commandResult;
+
+        verify(
+          () => client.appBuilds.tailBuild(
+            cloudCapsuleId: _projectId,
+            buildId: any(named: 'buildId'),
+          ),
+        ).called(1);
+      });
+
+      test('then the final status line shows every stage done', () async {
+        await commandResult;
+
+        expect(
+          (logger.inlineTerminal as FakeTerminal).output,
+          contains(
+            'Android  ✓ Queued    ✓ Built     ✓ Uploaded → Play internal\n',
+          ),
+        );
+      });
+
+      test('then the publication is reported', () async {
         await commandResult;
 
         expect(
           logger.successCalls.map((call) => call.message),
+          contains('Published the app to Android.'),
+        );
+      });
+    });
+
+    test('and no interactive terminal '
+        'when releasing the app with --await '
+        'then each status change is printed as a line', () async {
+      logger.inlineTerminal = FakeTerminal(hasTerminal: false);
+      when(
+        () => client.appBuilds.tailBuild(
+          cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          buildId: any(named: 'buildId'),
+        ),
+      ).thenAnswer(
+        (_) => Stream.fromIterable([
+          AppBuildDetailBuilder()
+              .withBuild(
+                AppBuildSummaryBuilder()
+                    .withPlatform(AppPlatform.android)
+                    .withStatus(AppBuildStatus.running)
+                    .build(),
+              )
+              .build(),
+          AppBuildDetailBuilder()
+              .withBuild(
+                AppBuildSummaryBuilder()
+                    .withPlatform(AppPlatform.android)
+                    .withStatus(AppBuildStatus.succeeded)
+                    .build(),
+              )
+              .build(),
+        ]),
+      );
+
+      await cli.run([
+        'release',
+        'app',
+        '--project',
+        _projectId,
+        '--project-dir',
+        p.join(d.sandbox, 'monorepo', 'project_server'),
+        '--await',
+      ]);
+
+      expect(logger.lineCalls.map((call) => call.line), [
+        'Android  ⠋ Queueing  ● Build     ● Upload → Play internal',
+        'Android  ✓ Queued    ⠋ Building  ● Upload → Play internal',
+        'Android  ✓ Queued    ✓ Built     ✓ Uploaded → Play internal',
+      ]);
+    });
+
+    group('and a build that fails when releasing the app with --await', () {
+      late Future<void> commandResult;
+
+      setUp(() {
+        when(
+          () => client.appBuilds.tailBuild(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            buildId: any(named: 'buildId'),
+          ),
+        ).thenAnswer(
+          (_) => Stream.value(
+            AppBuildDetailBuilder()
+                .withBuild(
+                  AppBuildSummaryBuilder()
+                      .withPlatform(AppPlatform.android)
+                      .withStatus(AppBuildStatus.failed)
+                      .withMessage('Gradle task assembleRelease failed.')
+                      .build(),
+                )
+                .build(),
+          ),
+        );
+
+        commandResult = cli.run([
+          'release',
+          'app',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--await',
+        ]);
+      });
+
+      test('then the command throws ErrorExitException', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then the failed stage is shown', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          (logger.inlineTerminal as FakeTerminal).output,
           contains(
-            matches(
-              RegExp(r'^The app was uploaded for the builds: android \S+\.$'),
+            'Android  ✓ Queued    ✗ Build     ● Upload → Play internal\n',
+          ),
+        );
+      });
+
+      test('then the failure is logged with its message', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          logger.errorCalls,
+          contains(
+            equalsErrorCall(
+              message:
+                  'The Android build failed: '
+                  'Gradle task assembleRelease failed.',
             ),
           ),
         );
@@ -281,18 +475,12 @@ void main() {
         );
       });
 
-      test('then the upload is reported with both builds', () async {
+      test('then the publishing to both platforms is reported', () async {
         await commandResult;
 
         expect(
-          logger.successCalls.map((call) => call.message),
-          contains(
-            matches(
-              RegExp(
-                r'^The app was uploaded for the builds: android \S+, ios \S+\.$',
-              ),
-            ),
-          ),
+          logger.infoCalls.map((call) => call.message),
+          contains('Publishing the app to iOS and Android'),
         );
       });
     });
@@ -311,8 +499,8 @@ void main() {
       ]);
 
       expect(
-        logger.successCalls.map((call) => call.message),
-        contains(startsWith('The app was uploaded for the builds: ')),
+        logger.infoCalls.map((call) => call.message),
+        contains(startsWith('Publishing ')),
       );
     });
 
@@ -460,8 +648,8 @@ project:
         ]);
 
         expect(
-          logger.successCalls.map((call) => call.message),
-          contains(startsWith('The app was uploaded for the builds: ')),
+          logger.infoCalls.map((call) => call.message),
+          contains(startsWith('Publishing ')),
         );
       });
     });
@@ -530,8 +718,8 @@ project:
         ]);
 
         expect(
-          logger.successCalls.map((call) => call.message),
-          contains(startsWith('The app was uploaded for the builds: ')),
+          logger.infoCalls.map((call) => call.message),
+          contains(startsWith('Publishing ')),
         );
       });
     });
@@ -548,8 +736,8 @@ project:
       ]);
 
       expect(
-        logger.successCalls.map((call) => call.message),
-        contains(startsWith('The app was uploaded for the builds: ')),
+        logger.infoCalls.map((call) => call.message),
+        contains(startsWith('Publishing ')),
       );
     });
   });
@@ -757,8 +945,8 @@ project:
     ]);
 
     expect(
-      logger.successCalls.map((call) => call.message),
-      contains(startsWith('The app was uploaded for the builds: ')),
+      logger.infoCalls.map((call) => call.message),
+      contains(startsWith('Publishing ')),
     );
   });
 
