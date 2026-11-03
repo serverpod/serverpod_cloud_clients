@@ -58,6 +58,7 @@ import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
 import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
     as _iaic;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import 'domains/app_builds/models/app_build_stage.dart' as _inzpzayi;
 import 'domains/app_builds/models/app_build_status.dart' as _i8s6tf8y;
 import 'domains/app_builds/models/app_build_step_status.dart' as _iy5t3gwf;
 import 'domains/app_builds/models/app_platform.dart' as _ij8v08n4;
@@ -235,6 +236,7 @@ import 'shared/exceptions/models/unauthorized_exception.dart' as _is3nd795;
 import 'shared/models/http_response_class.dart' as _is21hzeq;
 import 'shared/models/serverpod_region.dart' as _i3qziuyp;
 import 'shared/pubsub/registry/pubsub_entry.dart' as _i1i04ivn;
+export 'domains/app_builds/models/app_build_stage.dart';
 export 'domains/app_builds/models/app_build_status.dart';
 export 'domains/app_builds/models/app_build_step_status.dart';
 export 'domains/app_builds/models/app_platform.dart';
@@ -423,6 +425,9 @@ class Protocol extends _isc.SerializationManager {
       }
     }
 
+    if (t == _inzpzayi.AppBuildStage) {
+      return _inzpzayi.AppBuildStage.fromJson(data) as T;
+    }
     if (t == _i8s6tf8y.AppBuildStatus) {
       return _i8s6tf8y.AppBuildStatus.fromJson(data) as T;
     }
@@ -897,6 +902,10 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _i1i04ivn.PubsubEntry) {
       return _i1i04ivn.PubsubEntry.fromJson(data) as T;
+    }
+    if (t == _isc.getType<_inzpzayi.AppBuildStage?>()) {
+      return (data != null ? _inzpzayi.AppBuildStage.fromJson(data) : null)
+          as T;
     }
     if (t == _isc.getType<_i8s6tf8y.AppBuildStatus?>()) {
       return (data != null ? _i8s6tf8y.AppBuildStatus.fromJson(data) : null)
@@ -2008,6 +2017,7 @@ class Protocol extends _isc.SerializationManager {
 
   static String? getClassNameForType(Type type) {
     return switch (type) {
+      _inzpzayi.AppBuildStage => 'AppBuildStage',
       _i8s6tf8y.AppBuildStatus => 'AppBuildStatus',
       _iy5t3gwf.AppBuildStepStatus => 'AppBuildStepStatus',
       _ij8v08n4.AppPlatform => 'AppPlatform',
@@ -2196,6 +2206,8 @@ class Protocol extends _isc.SerializationManager {
     }
 
     switch (data) {
+      case _inzpzayi.AppBuildStage():
+        return 'AppBuildStage';
       case _i8s6tf8y.AppBuildStatus():
         return 'AppBuildStatus';
       case _iy5t3gwf.AppBuildStepStatus():
@@ -2531,6 +2543,9 @@ class Protocol extends _isc.SerializationManager {
     var dataClassName = data['className'];
     if (dataClassName is! String) {
       return super.deserializeByClassName(data);
+    }
+    if (dataClassName == 'AppBuildStage') {
+      return deserialize<_inzpzayi.AppBuildStage>(data['data']);
     }
     if (dataClassName == 'AppBuildStatus') {
       return deserialize<_i8s6tf8y.AppBuildStatus>(data['data']);

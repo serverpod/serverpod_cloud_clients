@@ -11,6 +11,7 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../domains/app_builds/models/app_build_stage.dart' as _itii79hf;
 import '../../../domains/app_builds/models/app_build_step_status.dart'
     as _igpykeyr;
 
@@ -20,6 +21,7 @@ abstract class AppBuildStepInfo
   AppBuildStepInfo._({
     required this.index,
     required this.name,
+    required this.stage,
     required this.status,
     this.startedAt,
     this.endedAt,
@@ -28,6 +30,7 @@ abstract class AppBuildStepInfo
   factory AppBuildStepInfo({
     required int index,
     required String name,
+    required _itii79hf.AppBuildStage stage,
     required _igpykeyr.AppBuildStepStatus status,
     DateTime? startedAt,
     DateTime? endedAt,
@@ -37,6 +40,9 @@ abstract class AppBuildStepInfo
     return AppBuildStepInfo(
       index: jsonSerialization['index'] as int,
       name: jsonSerialization['name'] as String,
+      stage: _itii79hf.AppBuildStage.fromJson(
+        (jsonSerialization['stage'] as String),
+      ),
       status: _igpykeyr.AppBuildStepStatus.fromJson(
         (jsonSerialization['status'] as String),
       ),
@@ -55,6 +61,8 @@ abstract class AppBuildStepInfo
   /// The step's name as the workflow defines it.
   String name;
 
+  _itii79hf.AppBuildStage stage;
+
   _igpykeyr.AppBuildStepStatus status;
 
   DateTime? startedAt;
@@ -67,6 +75,7 @@ abstract class AppBuildStepInfo
   AppBuildStepInfo copyWith({
     int? index,
     String? name,
+    _itii79hf.AppBuildStage? stage,
     _igpykeyr.AppBuildStepStatus? status,
     DateTime? startedAt,
     DateTime? endedAt,
@@ -77,6 +86,7 @@ abstract class AppBuildStepInfo
       '__className__': 'AppBuildStepInfo',
       'index': index,
       'name': name,
+      'stage': stage.toJson(),
       'status': status.toJson(),
       if (startedAt != null) 'startedAt': startedAt?.toJson(),
       if (endedAt != null) 'endedAt': endedAt?.toJson(),
@@ -89,6 +99,7 @@ abstract class AppBuildStepInfo
       '__className__': 'AppBuildStepInfo',
       'index': index,
       'name': name,
+      'stage': stage.toJson(),
       'status': status.toJson(),
       if (startedAt != null) 'startedAt': startedAt?.toJson(),
       if (endedAt != null) 'endedAt': endedAt?.toJson(),
@@ -107,12 +118,14 @@ class _AppBuildStepInfoImpl extends AppBuildStepInfo {
   _AppBuildStepInfoImpl({
     required int index,
     required String name,
+    required _itii79hf.AppBuildStage stage,
     required _igpykeyr.AppBuildStepStatus status,
     DateTime? startedAt,
     DateTime? endedAt,
   }) : super._(
          index: index,
          name: name,
+         stage: stage,
          status: status,
          startedAt: startedAt,
          endedAt: endedAt,
@@ -125,6 +138,7 @@ class _AppBuildStepInfoImpl extends AppBuildStepInfo {
   AppBuildStepInfo copyWith({
     int? index,
     String? name,
+    _itii79hf.AppBuildStage? stage,
     _igpykeyr.AppBuildStepStatus? status,
     Object? startedAt = _Undefined,
     Object? endedAt = _Undefined,
@@ -132,6 +146,7 @@ class _AppBuildStepInfoImpl extends AppBuildStepInfo {
     return AppBuildStepInfo(
       index: index ?? this.index,
       name: name ?? this.name,
+      stage: stage ?? this.stage,
       status: status ?? this.status,
       startedAt: startedAt is DateTime? ? startedAt : this.startedAt,
       endedAt: endedAt is DateTime? ? endedAt : this.endedAt,
