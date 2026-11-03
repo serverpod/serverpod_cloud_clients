@@ -742,6 +742,21 @@ class EndpointAppBuilds extends _isc.EndpointRef {
     {'cloudCapsuleId': cloudCapsuleId},
   );
 
+  /// Gets the builds made from the archive upload [uploadId], in
+  /// [AppPlatform] order.
+  ///
+  /// Throws [NotFoundException] if no build of [uploadId] belongs to the
+  /// capsule. Throws [AppPublishingDisabledException] while app publishing
+  /// is off in this environment.
+  _ida.Future<List<_iy6jkon8.AppBuildSummary>> getUploadBuilds({
+    required String cloudCapsuleId,
+    required _isc.UuidValue uploadId,
+  }) => caller.callServerEndpoint<List<_iy6jkon8.AppBuildSummary>>(
+    'appBuilds',
+    'getUploadBuilds',
+    {'cloudCapsuleId': cloudCapsuleId, 'uploadId': uploadId},
+  );
+
   /// Follows a build. Emits the build with its steps immediately, then
   /// again whenever either changes, and closes once the build is final.
   ///

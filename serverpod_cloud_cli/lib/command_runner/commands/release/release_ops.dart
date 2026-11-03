@@ -1,6 +1,7 @@
 import 'package:ground_control_client/ground_control_client.dart'
     show
         AppBuildDetail,
+        AppBuildSummary,
         AppBuildsUpload,
         AppPlatform,
         AppPublishingDisabledException,
@@ -61,6 +62,59 @@ abstract class ReleaseOperations {
         e,
         stackTrace,
         'Failed to request the app builds.',
+      );
+    }
+  }
+
+  /// Returns the app builds made from the archive upload [uploadId] in
+  /// project [projectId], in platform order.
+  ///
+  /// Throws [FailureException] if the upload has no builds in the project,
+  /// or if they cannot be fetched.
+  static Future<List<AppBuildSummary>> getUploadBuilds(
+    Client cloudApiClient, {
+    required String projectId,
+    required UuidValue uploadId,
+  }) async {
+    try {
+      return await cloudApiClient.appBuilds.getUploadBuilds(
+        cloudCapsuleId: projectId,
+        uploadId: uploadId,
+      );
+    } on NotFoundException catch (e) {
+      throw FailureException(error: e.message);
+    } on AppPublishingDisabledException catch (e) {
+      throw FailureException(error: e.message);
+    } on Exception catch (e, stackTrace) {
+      throw FailureException.nested(
+        e,
+        stackTrace,
+        'Failed to fetch the app builds of the upload $uploadId.',
+      );
+    }
+  }
+
+  /// Returns the app build [buildId] of project [projectId] with its steps.
+  ///
+  /// Throws [FailureException] if the build is not in the project, or if it
+  /// cannot be fetched.
+  static Future<AppBuildDetail> getBuild(
+    Client cloudApiClient, {
+    required String projectId,
+    required UuidValue buildId,
+  }) async {
+    try {
+      return await cloudApiClient.appBuilds.getBuild(
+        cloudCapsuleId: projectId,
+        buildId: buildId,
+      );
+    } on NotFoundException catch (e) {
+      throw FailureException(error: e.message);
+    } on Exception catch (e, stackTrace) {
+      throw FailureException.nested(
+        e,
+        stackTrace,
+        'Failed to fetch the app build $buildId.',
       );
     }
   }
