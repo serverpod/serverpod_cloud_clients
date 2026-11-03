@@ -91,6 +91,30 @@ abstract class ReleaseOperations {
     });
   }
 
+  /// Cancels the app builds [buildIds] of project [projectId], and returns
+  /// the builds that could not be cancelled, with the exception of each. A
+  /// build that no longer exists is skipped.
+  static Future<Map<UuidValue, Exception>> cancelBuilds(
+    Client cloudApiClient, {
+    required String projectId,
+    required List<UuidValue> buildIds,
+  }) async {
+    final failures = <UuidValue, Exception>{};
+    for (final buildId in buildIds) {
+      try {
+        await cloudApiClient.appBuilds.cancelBuild(
+          cloudCapsuleId: projectId,
+          buildId: buildId,
+        );
+      } on NotFoundException {
+        continue;
+      } on Exception catch (e) {
+        failures[buildId] = e;
+      }
+    }
+    return failures;
+  }
+
   static AppPlatform _appPlatform(FlutterPlatform platform) {
     return switch (platform) {
       FlutterPlatform.android => AppPlatform.android,

@@ -37,6 +37,7 @@ abstract class ReleaseApp {
   /// release, if the builds cannot be requested, or if an awaited build does
   /// not succeed.
   /// Throws [ErrorExitException] if the archive cannot be zipped or uploaded.
+  /// The builds are cancelled when the archive cannot be uploaded.
   static Future<void> release(
     Client cloudApiClient,
     FileUploaderFactory fileUploaderFactory, {
@@ -91,13 +92,23 @@ abstract class ReleaseApp {
       gitMetadata: gitMetadata,
     );
 
-    await DeployArchive.upload(
-      logger: logger,
-      fileUploaderFactory: fileUploaderFactory,
-      uploadDescription: upload.uploadDescription,
-      projectZip: appZip,
-      subject: 'app',
-    );
+    try {
+      await DeployArchive.upload(
+        logger: logger,
+        fileUploaderFactory: fileUploaderFactory,
+        uploadDescription: upload.uploadDescription,
+        projectZip: appZip,
+        subject: 'app',
+      );
+    } on Exception {
+      await _cancelBuilds(
+        cloudApiClient,
+        logger: logger,
+        projectId: projectId,
+        builds: upload.builds,
+      );
+      rethrow;
+    }
 
     final builds = [...upload.builds]
       ..sort((a, b) => a.platform.index.compareTo(b.platform.index));
@@ -243,6 +254,24 @@ abstract class ReleaseApp {
       AppBuildStatus.waiting ||
       AppBuildStatus.running => 'The $name build did not finish.',
     };
+  }
+
+  /// Cancels [builds], whose archive failed to upload, so they do not stay
+  /// queued. A build that cannot be cancelled is reported as a warning.
+  static Future<void> _cancelBuilds(
+    Client cloudApiClient, {
+    required CommandLogger logger,
+    required String projectId,
+    required List<AppBuildRef> builds,
+  }) async {
+    final failures = await ReleaseOperations.cancelBuilds(
+      cloudApiClient,
+      projectId: projectId,
+      buildIds: [for (final build in builds) build.buildId],
+    );
+    for (final MapEntry(key: buildId, value: exception) in failures.entries) {
+      logger.warning('Failed to cancel the app build $buildId: $exception');
+    }
   }
 
   /// Returns the version name of [version], without its build number.
