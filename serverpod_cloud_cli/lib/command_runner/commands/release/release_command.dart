@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:config/config.dart';
 import 'package:ground_control_client/ground_control_client.dart'
-    show UuidValue;
+    show AppPlatform, UuidValue;
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
@@ -18,7 +18,9 @@ import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
 
 import 'release_app.dart';
+import 'release_ops.dart';
 import 'release_show.dart';
+import 'release_ui.dart';
 
 class ReleaseAppDirOption extends DirOption {
   const ReleaseAppDirOption({super.group})
@@ -122,6 +124,37 @@ enum ReleaseShowCommandOption<V> implements OptionDefinition<V> {
   final ConfigOptionBase<V> option;
 }
 
+class ReleaseListPlatformsOption extends MultiOption<AppPlatform> {
+  const ReleaseListPlatformsOption()
+    : super(
+        multiParser: const MultiParser(EnumParser(AppPlatform.values)),
+        argName: 'platforms',
+        valueHelp: 'android,ios',
+        helpText:
+            'The platforms to list the builds of, separated by commas. '
+            'Lists one row per build instead of one row per publish.',
+      );
+}
+
+enum ReleaseListCommandOption<V> implements OptionDefinition<V> {
+  projectId(ProjectIdOption(asFirstArg: true, excludeSettings: true)),
+  platforms(ReleaseListPlatformsOption()),
+  limit(
+    IntOption(
+      argName: 'limit',
+      helpText: 'The maximum number of rows to list.',
+      defaultsTo: 10,
+      min: 1,
+    ),
+  ),
+  utc(UtcOption());
+
+  const ReleaseListCommandOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
 class CloudReleaseCommand extends CloudCliCommand {
   @override
   final name = 'release';
@@ -139,6 +172,7 @@ class CloudReleaseCommand extends CloudCliCommand {
   CloudReleaseCommand({required super.logger}) {
     addSubcommand(CloudReleaseAppCommand(logger: logger));
     addSubcommand(CloudReleaseShowCommand(logger: logger));
+    addSubcommand(CloudReleaseListCommand(logger: logger));
   }
 }
 
@@ -277,6 +311,81 @@ Examples
       logger: logger,
       projectId: projectId,
       uploadId: UuidValue.withValidation(uploadId),
+    );
+  }
+}
+
+class CloudReleaseListCommand
+    extends CloudCliCommand<ReleaseListCommandOption> {
+  @override
+  final name = 'list';
+
+  @override
+  final description = 'List recent app publishes, newest first.';
+
+  @override
+  String get usageExamples =>
+      '''\n
+Examples
+
+  List the 10 most recent publishes
+
+    \$ $baseCommand release list
+
+  List the 20 most recent iOS builds
+
+    \$ $baseCommand release list --platforms ios --limit 20
+
+  List the most recent builds of each platform
+
+    \$ $baseCommand release list --platforms ios,android
+
+''';
+
+  CloudReleaseListCommand({required super.logger})
+    : super(options: ReleaseListCommandOption.values);
+
+  @override
+  Future<void> runWithOutput(
+    final Configuration<ReleaseListCommandOption> commandConfig,
+    final CommandOutput output,
+  ) async {
+    final projectId = commandConfig.value(ReleaseListCommandOption.projectId);
+    final platforms = commandConfig.optionalValue(
+      ReleaseListCommandOption.platforms,
+    );
+    final limit = commandConfig.value(ReleaseListCommandOption.limit);
+    final inUtc = commandConfig.value(ReleaseListCommandOption.utc);
+    final cloudApiClient = runner.serviceProvider.cloudApiClient;
+
+    if (platforms == null || platforms.isEmpty) {
+      await renderCommand(
+        output,
+        operation: () => ReleaseOperations.listUploads(
+          cloudApiClient,
+          projectId: projectId,
+          limit: limit,
+        ),
+        textOutputUi: ReleaseUploadListTextUi(utc: inUtc),
+      );
+      return;
+    }
+
+    final selectedPlatforms = AppPlatform.values
+        .where(platforms.contains)
+        .toList();
+    await renderCommand(
+      output,
+      operation: () => ReleaseOperations.listBuilds(
+        cloudApiClient,
+        projectId: projectId,
+        platforms: selectedPlatforms,
+        limit: limit,
+      ),
+      textOutputUi: ReleaseBuildListTextUi(
+        utc: inUtc,
+        platforms: selectedPlatforms,
+      ),
     );
   }
 }

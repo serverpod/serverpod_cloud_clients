@@ -22,6 +22,7 @@ void stubCloudClient(
   registerFallbackValue(ProjectRole.admin);
   registerFallbackValue(ProjectProfileUpdate());
   registerFallbackValue(BucketVisibility.private);
+  registerFallbackValue(AppPlatform.ios);
 
   when(() => client.close()).thenAnswer((final _) async {});
   when(
@@ -37,6 +38,7 @@ void stubCloudClient(
   _stubStatusAndDeployments(client, projectId: projectId);
   _stubDatabase(client);
   _stubStorage(client);
+  _stubReleases(client);
   _stubAdmin(client, projectId: projectId);
 }
 
@@ -657,6 +659,59 @@ void _stubDatabase(final ClientMock client) {
       snapshotId: any(named: 'snapshotId'),
     ),
   ).thenAnswer((_) async {});
+}
+
+void _stubReleases(final ClientMock client) {
+  final runningUploadId = Uuid().v4obj();
+  final succeededUploadId = Uuid().v4obj();
+  final runningAt = DateTime.now().subtract(const Duration(minutes: 2));
+  final succeededAt = DateTime.now().subtract(const Duration(hours: 2));
+  final builds = [
+    AppBuildSummaryBuilder()
+        .withUploadId(runningUploadId)
+        .withPlatform(AppPlatform.ios)
+        .withStatus(AppBuildStatus.running)
+        .withVersionName('1.4.3')
+        .withBuildNumber(null)
+        .withCreatedAt(runningAt)
+        .build(),
+    AppBuildSummaryBuilder()
+        .withUploadId(runningUploadId)
+        .withPlatform(AppPlatform.android)
+        .withStatus(AppBuildStatus.queued)
+        .withVersionName('1.4.3')
+        .withBuildNumber(null)
+        .withCreatedAt(runningAt)
+        .build(),
+    AppBuildSummaryBuilder()
+        .withUploadId(succeededUploadId)
+        .withPlatform(AppPlatform.ios)
+        .withVersionName('1.4.2')
+        .withBuildNumber('37')
+        .withCreatedAt(succeededAt)
+        .build(),
+    AppBuildSummaryBuilder()
+        .withUploadId(succeededUploadId)
+        .withPlatform(AppPlatform.android)
+        .withVersionName('1.4.2')
+        .withBuildNumber('37')
+        .withCreatedAt(succeededAt)
+        .build(),
+  ];
+  when(
+    () => client.appBuilds.listBuilds(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+      platform: any(named: 'platform'),
+      limit: any(named: 'limit'),
+      afterBuildId: any(named: 'afterBuildId'),
+    ),
+  ).thenAnswer((final invocation) async {
+    final platform = invocation.namedArguments[#platform] as AppPlatform?;
+    return [
+      for (final build in builds)
+        if (platform == null || build.platform == platform) build,
+    ];
+  });
 }
 
 void _stubStorage(final ClientMock client) {

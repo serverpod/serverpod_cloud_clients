@@ -38,6 +38,16 @@ class AppBuildSummaryBuilder {
     return this;
   }
 
+  AppBuildSummaryBuilder withVersionName(String? versionName) {
+    _versionName = versionName;
+    return this;
+  }
+
+  AppBuildSummaryBuilder withBuildNumber(String? buildNumber) {
+    _buildNumber = buildNumber;
+    return this;
+  }
+
   AppBuildSummaryBuilder withMessage(String? message) {
     _message = message;
     return this;
