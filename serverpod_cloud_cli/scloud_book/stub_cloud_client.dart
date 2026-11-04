@@ -1006,4 +1006,7 @@ void _stubAdmin(final ClientMock client, {required final String projectId}) {
     (_) async => UuidValue.raw('00000000-0000-4000-8000-000000000000'),
   );
   when(() => client.adminTest.pushNotification(any())).thenAnswer((_) async {});
+  when(
+    () => client.adminBilling.backfillSubscriptionStates(),
+  ).thenAnswer((_) async {});
 }
