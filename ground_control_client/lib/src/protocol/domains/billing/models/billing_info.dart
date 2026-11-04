@@ -15,6 +15,8 @@ import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import '../../../domains/billing/models/billing_customer_type.dart'
     as _ipm3sphs;
 import '../../../domains/billing/models/owner.dart' as _icig531b;
+import '../../../domains/billing/models/vat_validation_status.dart'
+    as _irtz5iuf;
 
 abstract class BillingInfo
     implements _isc.SerializableModel, _isc.ProtocolSerialization {
@@ -33,8 +35,12 @@ abstract class BillingInfo
     required this.country,
     this.vatNumber,
     this.vatType,
+    _irtz5iuf.VatValidationStatus? vatValidationStatus,
+    this.vatValidatedAt,
     _ipm3sphs.BillingCustomerType? customerType,
   }) : id = id ?? const _isc.Uuid().v4obj(),
+       vatValidationStatus =
+           vatValidationStatus ?? _irtz5iuf.VatValidationStatus.unchecked,
        customerType = customerType ?? _ipm3sphs.BillingCustomerType.private;
 
   factory BillingInfo({
@@ -52,6 +58,8 @@ abstract class BillingInfo
     required String country,
     String? vatNumber,
     String? vatType,
+    _irtz5iuf.VatValidationStatus? vatValidationStatus,
+    DateTime? vatValidatedAt,
     _ipm3sphs.BillingCustomerType? customerType,
   }) = _BillingInfoImpl;
 
@@ -83,6 +91,16 @@ abstract class BillingInfo
       country: jsonSerialization['country'] as String,
       vatNumber: jsonSerialization['vatNumber'] as String?,
       vatType: jsonSerialization['vatType'] as String?,
+      vatValidationStatus: jsonSerialization['vatValidationStatus'] == null
+          ? null
+          : _irtz5iuf.VatValidationStatus.fromJson(
+              (jsonSerialization['vatValidationStatus'] as String),
+            ),
+      vatValidatedAt: jsonSerialization['vatValidatedAt'] == null
+          ? null
+          : _isc.DateTimeJsonExtension.fromJson(
+              jsonSerialization['vatValidatedAt'],
+            ),
       customerType: jsonSerialization['customerType'] == null
           ? null
           : _ipm3sphs.BillingCustomerType.fromJson(
@@ -120,6 +138,10 @@ abstract class BillingInfo
 
   String? vatType;
 
+  _irtz5iuf.VatValidationStatus vatValidationStatus;
+
+  DateTime? vatValidatedAt;
+
   _ipm3sphs.BillingCustomerType customerType;
 
   /// Returns a shallow copy of this [BillingInfo]
@@ -140,6 +162,8 @@ abstract class BillingInfo
     String? country,
     String? vatNumber,
     String? vatType,
+    _irtz5iuf.VatValidationStatus? vatValidationStatus,
+    DateTime? vatValidatedAt,
     _ipm3sphs.BillingCustomerType? customerType,
   });
   @override
@@ -160,6 +184,8 @@ abstract class BillingInfo
       'country': country,
       if (vatNumber != null) 'vatNumber': vatNumber,
       if (vatType != null) 'vatType': vatType,
+      'vatValidationStatus': vatValidationStatus.toJson(),
+      if (vatValidatedAt != null) 'vatValidatedAt': vatValidatedAt?.toJson(),
       'customerType': customerType.toJson(),
     };
   }
@@ -182,6 +208,8 @@ abstract class BillingInfo
       'country': country,
       if (vatNumber != null) 'vatNumber': vatNumber,
       if (vatType != null) 'vatType': vatType,
+      'vatValidationStatus': vatValidationStatus.toJson(),
+      if (vatValidatedAt != null) 'vatValidatedAt': vatValidatedAt?.toJson(),
       'customerType': customerType.toJson(),
     };
   }
@@ -210,6 +238,8 @@ class _BillingInfoImpl extends BillingInfo {
     required String country,
     String? vatNumber,
     String? vatType,
+    _irtz5iuf.VatValidationStatus? vatValidationStatus,
+    DateTime? vatValidatedAt,
     _ipm3sphs.BillingCustomerType? customerType,
   }) : super._(
          id: id,
@@ -226,6 +256,8 @@ class _BillingInfoImpl extends BillingInfo {
          country: country,
          vatNumber: vatNumber,
          vatType: vatType,
+         vatValidationStatus: vatValidationStatus,
+         vatValidatedAt: vatValidatedAt,
          customerType: customerType,
        );
 
@@ -248,6 +280,8 @@ class _BillingInfoImpl extends BillingInfo {
     String? country,
     Object? vatNumber = _Undefined,
     Object? vatType = _Undefined,
+    _irtz5iuf.VatValidationStatus? vatValidationStatus,
+    Object? vatValidatedAt = _Undefined,
     _ipm3sphs.BillingCustomerType? customerType,
   }) {
     return BillingInfo(
@@ -265,6 +299,10 @@ class _BillingInfoImpl extends BillingInfo {
       country: country ?? this.country,
       vatNumber: vatNumber is String? ? vatNumber : this.vatNumber,
       vatType: vatType is String? ? vatType : this.vatType,
+      vatValidationStatus: vatValidationStatus ?? this.vatValidationStatus,
+      vatValidatedAt: vatValidatedAt is DateTime?
+          ? vatValidatedAt
+          : this.vatValidatedAt,
       customerType: customerType ?? this.customerType,
     );
   }
