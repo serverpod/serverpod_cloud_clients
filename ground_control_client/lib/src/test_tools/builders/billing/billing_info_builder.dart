@@ -15,6 +15,7 @@ class BillingInfoBuilder {
   String _country;
   String? _vatNumber;
   String? _vatType;
+  VatValidationStatus _vatValidationStatus;
   BillingCustomerType _customerType;
 
   BillingInfoBuilder({Owner? owner})
@@ -32,6 +33,7 @@ class BillingInfoBuilder {
       _country = 'US',
       _vatNumber = null,
       _vatType = null,
+      _vatValidationStatus = VatValidationStatus.unchecked,
       _customerType = BillingCustomerType.private;
 
   BillingInfoBuilder withId(UuidValue? id) {
@@ -107,6 +109,11 @@ class BillingInfoBuilder {
     return this;
   }
 
+  BillingInfoBuilder withVatValidationStatus(VatValidationStatus status) {
+    _vatValidationStatus = status;
+    return this;
+  }
+
   BillingInfoBuilder withCustomerType(BillingCustomerType customerType) {
     _customerType = customerType;
     return this;
@@ -143,6 +150,7 @@ class BillingInfoBuilder {
       country: _country,
       vatNumber: _vatNumber,
       vatType: _vatType,
+      vatValidationStatus: _vatValidationStatus,
       customerType: _customerType,
     );
   }
