@@ -5,7 +5,7 @@ import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/release/release_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/app/app_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:test/test.dart';
@@ -35,8 +35,8 @@ void main() {
     reset(client.appBuilds);
   });
 
-  test('Given release list command when instantiated then requires login', () {
-    expect(CloudReleaseListCommand(logger: logger).requireLogin, isTrue);
+  test('Given app list command when instantiated then requires login', () {
+    expect(CloudAppListCommand(logger: logger).requireLogin, isTrue);
   });
 
   group('Given a running and a succeeded publish for iOS and Android', () {
@@ -84,7 +84,7 @@ void main() {
       late Future<void> commandResult;
 
       setUp(() {
-        commandResult = cli.run(['release', 'list', '--project', _projectId]);
+        commandResult = cli.run(['app', 'list', '--project', _projectId]);
       });
 
       test('then one row per publish is listed', () async {
@@ -122,7 +122,7 @@ void main() {
 
       setUp(() {
         commandResult = cli.run([
-          'release',
+          'app',
           'list',
           '--project',
           _projectId,
@@ -154,7 +154,7 @@ void main() {
 
       setUp(() {
         commandResult = cli.run([
-          'release',
+          'app',
           'list',
           '--project',
           _projectId,
@@ -182,7 +182,7 @@ void main() {
 
       setUp(() {
         commandResult = cli.run([
-          'release',
+          'app',
           'list',
           '--project',
           _projectId,
@@ -208,7 +208,7 @@ void main() {
 
       setUp(() {
         commandResult = cli.run([
-          'release',
+          'app',
           'list',
           '--project',
           _projectId,
@@ -243,7 +243,7 @@ void main() {
 
       setUp(() {
         commandResult = cli.run([
-          'release',
+          'app',
           'list',
           '--project',
           _projectId,
@@ -275,7 +275,7 @@ void main() {
 
       setUp(() {
         commandResult = cli.run([
-          'release',
+          'app',
           'list',
           '--project',
           _projectId,
@@ -303,7 +303,7 @@ void main() {
 
       setUp(() {
         commandResult = cli.run([
-          'release',
+          'app',
           'list',
           '--project',
           _projectId,
@@ -337,7 +337,7 @@ void main() {
 
       setUp(() {
         commandResult = cli.run([
-          'release',
+          'app',
           'list',
           '--project',
           _projectId,
@@ -380,7 +380,7 @@ void main() {
     });
 
     test('when listing the publishes then the publish has failed', () async {
-      await cli.run(['release', 'list', '--project', _projectId]);
+      await cli.run(['app', 'list', '--project', _projectId]);
 
       expect(
         logger.lineCalls.map((call) => call.line),
@@ -404,7 +404,7 @@ void main() {
     test('when listing 120 iOS builds '
         'then 120 distinct builds are listed', () async {
       await cli.run([
-        'release',
+        'app',
         'list',
         '--project',
         _projectId,
@@ -447,7 +447,7 @@ void main() {
     test('when listing 60 publishes '
         'then 60 publishes are listed with both their builds', () async {
       await cli.run([
-        'release',
+        'app',
         'list',
         '--project',
         _projectId,
@@ -469,7 +469,7 @@ void main() {
     });
 
     test('when listing the publishes then none are shown', () async {
-      await cli.run(['release', 'list', '--project', _projectId]);
+      await cli.run(['app', 'list', '--project', _projectId]);
 
       expect(logger.lineCalls, isEmpty);
       expect(
@@ -481,7 +481,7 @@ void main() {
     test('when listing the publishes with --format json '
         'then an empty list is emitted', () async {
       await cli.run([
-        'release',
+        'app',
         'list',
         '--project',
         _projectId,
@@ -495,7 +495,7 @@ void main() {
 
     test('when listing the iOS builds then none are shown', () async {
       await cli.run([
-        'release',
+        'app',
         'list',
         '--project',
         _projectId,
@@ -513,7 +513,7 @@ void main() {
       'when listing the iOS and Android builds then none are shown',
       () async {
         await cli.run([
-          'release',
+          'app',
           'list',
           '--project',
           _projectId,
@@ -543,7 +543,7 @@ void main() {
 
     test('when listing the publishes then the error is logged', () async {
       await cli
-          .run(['release', 'list', '--project', _projectId])
+          .run(['app', 'list', '--project', _projectId])
           .catchError((_) {});
 
       expect(
@@ -571,7 +571,7 @@ void main() {
       late Future<void> commandResult;
 
       setUp(() {
-        commandResult = cli.run(['release', 'list', '--project', _projectId]);
+        commandResult = cli.run(['app', 'list', '--project', _projectId]);
       });
 
       test('then the command throws ErrorExitException', () async {

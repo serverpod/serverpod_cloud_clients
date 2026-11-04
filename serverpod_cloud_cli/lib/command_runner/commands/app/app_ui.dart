@@ -12,10 +12,10 @@ import 'app_upload_row.dart';
 
 /// Lists app uploads, one row per upload with the platforms it was built
 /// for.
-class ReleaseUploadListTextUi extends OutputWidget {
+class AppUploadListTextUi extends OutputWidget {
   final bool utc;
 
-  const ReleaseUploadListTextUi({required this.utc});
+  const AppUploadListTextUi({required this.utc});
 
   @override
   OutputWidget build(final OutputContext context) {
@@ -55,11 +55,11 @@ class ReleaseUploadListTextUi extends OutputWidget {
 
 /// Lists the app builds of [platforms], one row per build, with a Platform
 /// column when there are several platforms.
-class ReleaseBuildListTextUi extends OutputWidget {
+class AppBuildListTextUi extends OutputWidget {
   final bool utc;
   final List<AppPlatform> platforms;
 
-  const ReleaseBuildListTextUi({required this.utc, required this.platforms});
+  const AppBuildListTextUi({required this.utc, required this.platforms});
 
   @override
   OutputWidget build(final OutputContext context) {
@@ -96,8 +96,8 @@ class ReleaseBuildListTextUi extends OutputWidget {
 }
 
 /// Prints the log of each step of an app build as the step ends.
-class ReleaseLogTextUi extends OutputWidget {
-  const ReleaseLogTextUi();
+class AppLogTextUi extends OutputWidget {
+  const AppLogTextUi();
 
   @override
   OutputWidget build(final OutputContext context) {

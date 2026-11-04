@@ -319,25 +319,25 @@ const _scenarios = [
     '--project',
     _projectId,
   ]),
-  _Scenario('release list', ['release', 'list', '--project', _projectId]),
-  _Scenario('release list', [
-    'release',
+  _Scenario('app list', ['app', 'list', '--project', _projectId]),
+  _Scenario('app list', [
+    'app',
     'list',
     '--project',
     _projectId,
     '--platforms',
     'ios',
   ]),
-  _Scenario('release list', [
-    'release',
+  _Scenario('app list', [
+    'app',
     'list',
     '--project',
     _projectId,
     '--platforms',
     'ios,android',
   ]),
-  _Scenario('release log', [
-    'release',
+  _Scenario('app log', [
+    'app',
     'log',
     _uploadId,
     '--platform',

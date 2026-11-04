@@ -7,11 +7,11 @@ import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/inline_tui/inline_tui.dart';
 
-import 'release_build_status.dart';
-import 'release_ops.dart';
+import 'app_build_status_formatter.dart';
+import 'app_ops.dart';
 
-/// Shows the progress of the app builds of a release.
-abstract class ReleaseBuildProgress {
+/// Shows the progress of the app builds of an app upload.
+abstract class AppBuildProgress {
   static const _spinnerInterval = Duration(milliseconds: 80);
 
   /// Shows a status line per build in [builds] of project [projectId],
@@ -32,7 +32,7 @@ abstract class ReleaseBuildProgress {
   }) async {
     final detailStream = StreamGroup.merge([
       for (final build in builds)
-        ReleaseOperations.tailBuild(
+        AppOperations.tailBuild(
           cloudApiClient,
           projectId: projectId,
           buildId: build.buildId,
@@ -65,7 +65,7 @@ abstract class ReleaseBuildProgress {
     String? versionName,
   }) {
     for (final detail in details) {
-      logger.line(ReleaseBuildStatus.line(detail.build.platform, detail));
+      logger.line(AppBuildStatusFormatter.line(detail.build.platform, detail));
     }
 
     _report(
@@ -86,7 +86,7 @@ abstract class ReleaseBuildProgress {
     final renderer = BottomRegionRenderer(terminal)..hideCursor();
     void render() => renderer.render([
       for (final build in builds)
-        ReleaseBuildStatus.line(
+        AppBuildStatusFormatter.line(
           build.platform,
           details[build.platform],
           spinnerFrame: spinnerFrame,
@@ -118,14 +118,14 @@ abstract class ReleaseBuildProgress {
     final details = <AppPlatform, AppBuildDetail>{};
     final lines = <AppPlatform, String>{
       for (final build in builds)
-        build.platform: ReleaseBuildStatus.line(build.platform, null),
+        build.platform: AppBuildStatusFormatter.line(build.platform, null),
     };
     lines.values.forEach(logger.line);
 
     await for (final detail in detailStream) {
       final platform = detail.build.platform;
       details[platform] = detail;
-      final line = ReleaseBuildStatus.line(platform, detail);
+      final line = AppBuildStatusFormatter.line(platform, detail);
       if (line == lines[platform]) continue;
       lines[platform] = line;
       logger.line(line);
@@ -145,7 +145,7 @@ abstract class ReleaseBuildProgress {
   }) {
     final errors = [
       for (final platform in platforms)
-        ?ReleaseBuildStatus.buildError(platform, details[platform]),
+        ?AppBuildStatusFormatter.buildError(platform, details[platform]),
     ];
     if (errors.isNotEmpty) {
       throw FailureException(errors: errors);
@@ -153,7 +153,7 @@ abstract class ReleaseBuildProgress {
 
     logger.success(
       'Published ${versionName ?? 'the app'} to '
-      '${ReleaseBuildStatus.platformNames(platforms)}.',
+      '${AppBuildStatusFormatter.platformNames(platforms)}.',
       newParagraph: true,
     );
   }

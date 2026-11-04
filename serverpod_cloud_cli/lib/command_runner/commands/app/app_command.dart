@@ -17,13 +17,13 @@ import 'package:serverpod_cloud_cli/util/flutter_platform.dart';
 import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
 
-import 'release_app.dart';
-import 'release_ops.dart';
-import 'release_show.dart';
-import 'release_ui.dart';
+import 'app_publish.dart';
+import 'app_ops.dart';
+import 'app_show.dart';
+import 'app_ui.dart';
 
-class ReleaseAppDirOption extends DirOption {
-  const ReleaseAppDirOption({super.group})
+class AppPublishDirOption extends DirOption {
+  const AppPublishDirOption({super.group})
     : super(
         argName: 'app-dir',
         helpText:
@@ -35,20 +35,20 @@ class ReleaseAppDirOption extends DirOption {
       );
 }
 
-class ReleasePlatformsOption extends MultiOption<FlutterPlatform> {
-  /// The platforms an app can be released for.
+class AppPublishPlatformsOption extends MultiOption<FlutterPlatform> {
+  /// The platforms an app can be published for.
   static const supportedPlatforms = [
     FlutterPlatform.android,
     FlutterPlatform.ios,
   ];
 
-  const ReleasePlatformsOption({super.group})
+  const AppPublishPlatformsOption({super.group})
     : super(
         multiParser: const MultiParser(EnumParser(FlutterPlatform.values)),
         argName: 'platforms',
         valueHelp: 'android,ios',
         helpText:
-            'The platforms to release, separated by commas. '
+            'The platforms to publish, separated by commas. '
             'The code of the other platforms is left out of the upload. '
             'Defaults to the supported platforms the app has code for. '
             'Supported platforms: android, ios.',
@@ -62,7 +62,7 @@ class ReleasePlatformsOption extends MultiOption<FlutterPlatform> {
         .toSet();
     if (unsupported.isNotEmpty) {
       throw UsageException(
-        'Releasing for ${unsupported.join(', ')} is not supported yet. '
+        'Publishing for ${unsupported.join(', ')} is not supported yet. '
             'Supported platforms: '
             '${supportedPlatforms.map((platform) => platform.name).join(', ')}.',
         '',
@@ -71,8 +71,8 @@ class ReleasePlatformsOption extends MultiOption<FlutterPlatform> {
   }
 }
 
-class ReleaseAwaitOption extends FlagOption {
-  const ReleaseAwaitOption({super.group})
+class AppPublishAwaitOption extends FlagOption {
+  const AppPublishAwaitOption({super.group})
     : super(
         argName: 'await',
         defaultsTo: false,
@@ -81,14 +81,14 @@ class ReleaseAwaitOption extends FlagOption {
       );
 }
 
-class ReleaseUploadIdOption extends StringOption {
-  const ReleaseUploadIdOption({super.group})
+class AppUploadIdOption extends StringOption {
+  const AppUploadIdOption({super.group})
     : super(
         argName: 'upload-id',
         argPos: 0,
         mandatory: true,
         helpText:
-            'The id of the app upload, as printed by release app. '
+            'The id of the app upload, as printed by app publish. '
             'Can be passed as the first argument.',
         customValidator: _uploadIdValidator,
       );
@@ -102,8 +102,8 @@ class ReleaseUploadIdOption extends StringOption {
   }
 }
 
-class ReleaseLogPlatformOption extends EnumOption<AppPlatform> {
-  const ReleaseLogPlatformOption({super.group})
+class AppLogPlatformOption extends EnumOption<AppPlatform> {
+  const AppLogPlatformOption({super.group})
     : super(
         enumParser: const EnumParser(AppPlatform.values),
         argName: 'platform',
@@ -112,30 +112,30 @@ class ReleaseLogPlatformOption extends EnumOption<AppPlatform> {
       );
 }
 
-enum ReleaseAppCommandOption<V> implements OptionDefinition<V> {
+enum AppPublishCommandOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption(asFirstArg: true, excludeSettings: true)),
-  appDir(ReleaseAppDirOption()),
-  platforms(ReleasePlatformsOption()),
-  wait(ReleaseAwaitOption());
+  appDir(AppPublishDirOption()),
+  platforms(AppPublishPlatformsOption()),
+  wait(AppPublishAwaitOption());
 
-  const ReleaseAppCommandOption(this.option);
+  const AppPublishCommandOption(this.option);
 
   @override
   final ConfigOptionBase<V> option;
 }
 
-enum ReleaseShowCommandOption<V> implements OptionDefinition<V> {
+enum AppShowCommandOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption(excludeSettings: true)),
-  uploadId(ReleaseUploadIdOption());
+  uploadId(AppUploadIdOption());
 
-  const ReleaseShowCommandOption(this.option);
+  const AppShowCommandOption(this.option);
 
   @override
   final ConfigOptionBase<V> option;
 }
 
-class ReleaseListPlatformsOption extends MultiOption<AppPlatform> {
-  const ReleaseListPlatformsOption()
+class AppListPlatformsOption extends MultiOption<AppPlatform> {
+  const AppListPlatformsOption()
     : super(
         multiParser: const MultiParser(EnumParser(AppPlatform.values)),
         argName: 'platforms',
@@ -146,9 +146,9 @@ class ReleaseListPlatformsOption extends MultiOption<AppPlatform> {
       );
 }
 
-enum ReleaseListCommandOption<V> implements OptionDefinition<V> {
+enum AppListCommandOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption(asFirstArg: true, excludeSettings: true)),
-  platforms(ReleaseListPlatformsOption()),
+  platforms(AppListPlatformsOption()),
   limit(
     IntOption(
       argName: 'limit',
@@ -159,52 +159,52 @@ enum ReleaseListCommandOption<V> implements OptionDefinition<V> {
   ),
   utc(UtcOption());
 
-  const ReleaseListCommandOption(this.option);
+  const AppListCommandOption(this.option);
 
   @override
   final ConfigOptionBase<V> option;
 }
 
-enum ReleaseLogCommandOption<V> implements OptionDefinition<V> {
+enum AppLogCommandOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption(excludeSettings: true)),
-  uploadId(ReleaseUploadIdOption()),
-  platform(ReleaseLogPlatformOption());
+  uploadId(AppUploadIdOption()),
+  platform(AppLogPlatformOption());
 
-  const ReleaseLogCommandOption(this.option);
+  const AppLogCommandOption(this.option);
 
   @override
   final ConfigOptionBase<V> option;
 }
 
-class CloudReleaseCommand extends CloudCliCommand {
-  @override
-  final name = 'release';
-
-  @override
-  final description = 'Release the apps of a Serverpod project.';
-
-  @override
-  String get category => CommandCategories.control;
-
-  /// Hidden until a released app can be built and hosted.
-  @override
-  bool get hidden => true;
-
-  CloudReleaseCommand({required super.logger}) {
-    addSubcommand(CloudReleaseAppCommand(logger: logger));
-    addSubcommand(CloudReleaseShowCommand(logger: logger));
-    addSubcommand(CloudReleaseListCommand(logger: logger));
-    addSubcommand(CloudReleaseLogCommand(logger: logger));
-  }
-}
-
-class CloudReleaseAppCommand extends CloudCliCommand<ReleaseAppCommandOption> {
+class CloudAppCommand extends CloudCliCommand {
   @override
   final name = 'app';
 
   @override
+  final description = 'Publish and follow the apps of a Serverpod project.';
+
+  @override
+  String get category => CommandCategories.control;
+
+  /// Hidden until a published app can be built and hosted.
+  @override
+  bool get hidden => true;
+
+  CloudAppCommand({required super.logger}) {
+    addSubcommand(CloudAppPublishCommand(logger: logger));
+    addSubcommand(CloudAppShowCommand(logger: logger));
+    addSubcommand(CloudAppListCommand(logger: logger));
+    addSubcommand(CloudAppLogCommand(logger: logger));
+  }
+}
+
+class CloudAppPublishCommand extends CloudCliCommand<AppPublishCommandOption> {
+  @override
+  final name = 'publish';
+
+  @override
   final description =
-      'Upload the Flutter app to be built for release. '
+      'Upload the Flutter app to be built and published. '
       'An app in a Dart workspace is uploaded with its workspace dependencies.';
 
   @override
@@ -212,50 +212,50 @@ class CloudReleaseAppCommand extends CloudCliCommand<ReleaseAppCommandOption> {
       '''\n
 Examples
 
-  Release the Flutter app of your project
+  Publish the Flutter app of your project
 
-    \$ $baseCommand release app
+    \$ $baseCommand app publish
 
-  Release only the Android app
+  Publish only the Android app
 
-    \$ $baseCommand release app --platforms android
+    \$ $baseCommand app publish --platforms android
 
-  Release the app and wait for its builds to finish
+  Publish the app and wait for its builds to finish
 
-    \$ $baseCommand release app --await
+    \$ $baseCommand app publish --await
 
-  Release a Flutter app in a specific directory
+  Publish a Flutter app in a specific directory
 
-    \$ $baseCommand release app --app-dir my_project_flutter
+    \$ $baseCommand app publish --app-dir my_project_flutter
 
 ''';
 
-  CloudReleaseAppCommand({required super.logger})
-    : super(options: ReleaseAppCommandOption.values);
+  CloudAppPublishCommand({required super.logger})
+    : super(options: AppPublishCommandOption.values);
 
   @override
   Future<void> runWithOutput(
-    final Configuration<ReleaseAppCommandOption> commandConfig,
+    final Configuration<AppPublishCommandOption> commandConfig,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(ReleaseAppCommandOption.projectId);
-    final appDir = commandConfig.optionalValue(ReleaseAppCommandOption.appDir);
+    final projectId = commandConfig.value(AppPublishCommandOption.projectId);
+    final appDir = commandConfig.optionalValue(AppPublishCommandOption.appDir);
     final platforms = commandConfig.optionalValue(
-      ReleaseAppCommandOption.platforms,
+      AppPublishCommandOption.platforms,
     );
-    final awaitBuilds = commandConfig.value(ReleaseAppCommandOption.wait);
+    final awaitBuilds = commandConfig.value(AppPublishCommandOption.wait);
 
     final appDirectory = appDir ?? _configuredOrWorkspaceAppDirectory();
     logger.debug('App directory is: ${appDirectory.path}');
 
-    await ReleaseApp.release(
+    await AppPublish.publish(
       runner.serviceProvider.cloudApiClient,
       runner.serviceProvider.fileUploaderFactory,
       logger: logger,
       baseCommand: baseCommand,
       projectId: projectId,
       appDirectory: appDirectory,
-      defaultPlatforms: ReleasePlatformsOption.supportedPlatforms,
+      defaultPlatforms: AppPublishPlatformsOption.supportedPlatforms,
       platforms: platforms?.toSet(),
       awaitBuilds: awaitBuilds,
     );
@@ -296,14 +296,13 @@ Examples
   }
 }
 
-class CloudReleaseShowCommand
-    extends CloudCliCommand<ReleaseShowCommandOption> {
+class CloudAppShowCommand extends CloudCliCommand<AppShowCommandOption> {
   @override
   final name = 'show';
 
   @override
   final description =
-      'Show the builds of an app release. '
+      'Show the builds of an app upload. '
       'Follows their progress until they end.';
 
   @override
@@ -311,24 +310,24 @@ class CloudReleaseShowCommand
       '''\n
 Examples
 
-  Show the builds of an app release by the upload id that release app printed
+  Show the builds of an app upload by the upload id that app publish printed
 
-    \$ $baseCommand release show 3f2b0c4e-1d5a-4b8e-9c7f-2a6d8e1b4c90
+    \$ $baseCommand app show 3f2b0c4e-1d5a-4b8e-9c7f-2a6d8e1b4c90
 
 ''';
 
-  CloudReleaseShowCommand({required super.logger})
-    : super(options: ReleaseShowCommandOption.values);
+  CloudAppShowCommand({required super.logger})
+    : super(options: AppShowCommandOption.values);
 
   @override
   Future<void> runWithOutput(
-    final Configuration<ReleaseShowCommandOption> commandConfig,
+    final Configuration<AppShowCommandOption> commandConfig,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(ReleaseShowCommandOption.projectId);
-    final uploadId = commandConfig.value(ReleaseShowCommandOption.uploadId);
+    final projectId = commandConfig.value(AppShowCommandOption.projectId);
+    final uploadId = commandConfig.value(AppShowCommandOption.uploadId);
 
-    await ReleaseShow.show(
+    await AppShow.show(
       runner.serviceProvider.cloudApiClient,
       logger: logger,
       projectId: projectId,
@@ -337,8 +336,7 @@ Examples
   }
 }
 
-class CloudReleaseListCommand
-    extends CloudCliCommand<ReleaseListCommandOption> {
+class CloudAppListCommand extends CloudCliCommand<AppListCommandOption> {
   @override
   final name = 'list';
 
@@ -352,43 +350,43 @@ Examples
 
   List the 10 most recent publishes
 
-    \$ $baseCommand release list
+    \$ $baseCommand app list
 
   List the 20 most recent iOS builds
 
-    \$ $baseCommand release list --platforms ios --limit 20
+    \$ $baseCommand app list --platforms ios --limit 20
 
   List the most recent builds of each platform
 
-    \$ $baseCommand release list --platforms ios,android
+    \$ $baseCommand app list --platforms ios,android
 
 ''';
 
-  CloudReleaseListCommand({required super.logger})
-    : super(options: ReleaseListCommandOption.values);
+  CloudAppListCommand({required super.logger})
+    : super(options: AppListCommandOption.values);
 
   @override
   Future<void> runWithOutput(
-    final Configuration<ReleaseListCommandOption> commandConfig,
+    final Configuration<AppListCommandOption> commandConfig,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(ReleaseListCommandOption.projectId);
+    final projectId = commandConfig.value(AppListCommandOption.projectId);
     final platforms = commandConfig.optionalValue(
-      ReleaseListCommandOption.platforms,
+      AppListCommandOption.platforms,
     );
-    final limit = commandConfig.value(ReleaseListCommandOption.limit);
-    final inUtc = commandConfig.value(ReleaseListCommandOption.utc);
+    final limit = commandConfig.value(AppListCommandOption.limit);
+    final inUtc = commandConfig.value(AppListCommandOption.utc);
     final cloudApiClient = runner.serviceProvider.cloudApiClient;
 
     if (platforms == null || platforms.isEmpty) {
       await renderCommand(
         output,
-        operation: () => ReleaseOperations.listUploads(
+        operation: () => AppOperations.listUploads(
           cloudApiClient,
           projectId: projectId,
           limit: limit,
         ),
-        textOutputUi: ReleaseUploadListTextUi(utc: inUtc),
+        textOutputUi: AppUploadListTextUi(utc: inUtc),
       );
       return;
     }
@@ -398,13 +396,13 @@ Examples
         .toList();
     await renderCommand(
       output,
-      operation: () => ReleaseOperations.listBuilds(
+      operation: () => AppOperations.listBuilds(
         cloudApiClient,
         projectId: projectId,
         platforms: selectedPlatforms,
         limit: limit,
       ),
-      textOutputUi: ReleaseBuildListTextUi(
+      textOutputUi: AppBuildListTextUi(
         utc: inUtc,
         platforms: selectedPlatforms,
       ),
@@ -412,13 +410,13 @@ Examples
   }
 }
 
-class CloudReleaseLogCommand extends CloudCliCommand<ReleaseLogCommandOption> {
+class CloudAppLogCommand extends CloudCliCommand<AppLogCommandOption> {
   @override
   final name = 'log';
 
   @override
   final description =
-      'Stream the build log of an app release for one platform. '
+      'Stream the build log of an app upload for one platform. '
       'The log of a step shows when the step ends.';
 
   @override
@@ -426,33 +424,33 @@ class CloudReleaseLogCommand extends CloudCliCommand<ReleaseLogCommandOption> {
       '''\n
 Examples
 
-  Stream the iOS build log of an app release by the upload id that release app printed
+  Stream the iOS build log of an app upload by the upload id that app publish printed
 
-    \$ $baseCommand release log 3f2b0c4e-1d5a-4b8e-9c7f-2a6d8e1b4c90 --platform ios
+    \$ $baseCommand app log 3f2b0c4e-1d5a-4b8e-9c7f-2a6d8e1b4c90 --platform ios
 
 ''';
 
-  CloudReleaseLogCommand({required super.logger})
-    : super(options: ReleaseLogCommandOption.values);
+  CloudAppLogCommand({required super.logger})
+    : super(options: AppLogCommandOption.values);
 
   @override
   Future<void> runWithOutput(
-    final Configuration<ReleaseLogCommandOption> commandConfig,
+    final Configuration<AppLogCommandOption> commandConfig,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(ReleaseLogCommandOption.projectId);
-    final uploadId = commandConfig.value(ReleaseLogCommandOption.uploadId);
-    final platform = commandConfig.value(ReleaseLogCommandOption.platform);
+    final projectId = commandConfig.value(AppLogCommandOption.projectId);
+    final uploadId = commandConfig.value(AppLogCommandOption.uploadId);
+    final platform = commandConfig.value(AppLogCommandOption.platform);
 
     await renderCommand(
       output,
-      operation: () => ReleaseOperations.followBuildLog(
+      operation: () => AppOperations.followBuildLog(
         runner.serviceProvider.cloudApiClient,
         projectId: projectId,
         uploadId: UuidValue.withValidation(uploadId),
         platform: platform,
       ),
-      textOutputUi: const ReleaseLogTextUi(),
+      textOutputUi: const AppLogTextUi(),
     );
   }
 }

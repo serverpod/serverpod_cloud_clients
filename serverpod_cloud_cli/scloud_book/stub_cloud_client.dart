@@ -38,7 +38,7 @@ void stubCloudClient(
   _stubStatusAndDeployments(client, projectId: projectId);
   _stubDatabase(client);
   _stubStorage(client);
-  _stubReleases(client);
+  _stubAppBuilds(client);
   _stubAdmin(client, projectId: projectId);
 }
 
@@ -661,7 +661,7 @@ void _stubDatabase(final ClientMock client) {
   ).thenAnswer((_) async {});
 }
 
-void _stubReleases(final ClientMock client) {
+void _stubAppBuilds(final ClientMock client) {
   final runningUploadId = Uuid().v4obj();
   final succeededUploadId = Uuid().v4obj();
   final runningAt = DateTime.now().subtract(const Duration(minutes: 2));

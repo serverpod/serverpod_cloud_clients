@@ -1,6 +1,6 @@
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/release/release_build_status.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/app/app_build_status_formatter.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -8,7 +8,7 @@ void main() {
       'when formatting the iOS status line '
       'then the queue stage is active and the others are pending', () {
     expect(
-      ReleaseBuildStatus.line(AppPlatform.ios, null),
+      AppBuildStatusFormatter.line(AppPlatform.ios, null),
       'iOS      ⠋ Queueing  ● Build     ● Upload → TestFlight',
     );
   });
@@ -26,7 +26,7 @@ void main() {
         .build();
 
     expect(
-      ReleaseBuildStatus.line(AppPlatform.android, detail),
+      AppBuildStatusFormatter.line(AppPlatform.android, detail),
       'Android  ✓ Queued    ✓ Built     ✓ Uploaded → Play internal',
     );
   });
@@ -43,8 +43,11 @@ void main() {
         )
         .build();
 
-    final iosLine = ReleaseBuildStatus.line(AppPlatform.ios, null);
-    final androidLine = ReleaseBuildStatus.line(AppPlatform.android, detail);
+    final iosLine = AppBuildStatusFormatter.line(AppPlatform.ios, null);
+    final androidLine = AppBuildStatusFormatter.line(
+      AppPlatform.android,
+      detail,
+    );
 
     expect(iosLine.indexOf('● Build'), androidLine.indexOf('✓ Built'));
     expect(iosLine.indexOf('● Upload'), androidLine.indexOf('✓ Uploaded'));
@@ -61,7 +64,7 @@ void main() {
         .build();
 
     expect(
-      ReleaseBuildStatus.line(AppPlatform.ios, detail, spinnerFrame: 1),
+      AppBuildStatusFormatter.line(AppPlatform.ios, detail, spinnerFrame: 1),
       'iOS      ✓ Queued    ⠙ Building  ● Upload → TestFlight',
     );
   });
@@ -76,10 +79,10 @@ void main() {
         .withSteps([])
         .build();
 
-    expect(ReleaseBuildStatus.stageStates(detail), [
-      ReleaseStageState.active,
-      ReleaseStageState.pending,
-      ReleaseStageState.pending,
+    expect(AppBuildStatusFormatter.stageStates(detail), [
+      AppBuildStageState.active,
+      AppBuildStageState.pending,
+      AppBuildStageState.pending,
     ]);
   });
 
@@ -106,10 +109,10 @@ void main() {
         ])
         .build();
 
-    expect(ReleaseBuildStatus.stageStates(detail), [
-      ReleaseStageState.done,
-      ReleaseStageState.active,
-      ReleaseStageState.pending,
+    expect(AppBuildStatusFormatter.stageStates(detail), [
+      AppBuildStageState.done,
+      AppBuildStageState.active,
+      AppBuildStageState.pending,
     ]);
   });
 
@@ -130,10 +133,10 @@ void main() {
         ])
         .build();
 
-    expect(ReleaseBuildStatus.stageStates(detail), [
-      ReleaseStageState.done,
-      ReleaseStageState.done,
-      ReleaseStageState.active,
+    expect(AppBuildStatusFormatter.stageStates(detail), [
+      AppBuildStageState.done,
+      AppBuildStageState.done,
+      AppBuildStageState.active,
     ]);
   });
 
@@ -146,10 +149,10 @@ void main() {
         )
         .build();
 
-    expect(ReleaseBuildStatus.stageStates(detail), [
-      ReleaseStageState.done,
-      ReleaseStageState.failed,
-      ReleaseStageState.pending,
+    expect(AppBuildStatusFormatter.stageStates(detail), [
+      AppBuildStageState.done,
+      AppBuildStageState.failed,
+      AppBuildStageState.pending,
     ]);
   });
 
@@ -166,10 +169,10 @@ void main() {
         .withSteps([])
         .build();
 
-    expect(ReleaseBuildStatus.stageStates(detail), [
-      ReleaseStageState.failed,
-      ReleaseStageState.pending,
-      ReleaseStageState.pending,
+    expect(AppBuildStatusFormatter.stageStates(detail), [
+      AppBuildStageState.failed,
+      AppBuildStageState.pending,
+      AppBuildStageState.pending,
     ]);
   });
 
@@ -177,7 +180,10 @@ void main() {
       'when naming them '
       'then they are joined in display order', () {
     expect(
-      ReleaseBuildStatus.platformNames([AppPlatform.android, AppPlatform.ios]),
+      AppBuildStatusFormatter.platformNames([
+        AppPlatform.android,
+        AppPlatform.ios,
+      ]),
       'iOS and Android',
     );
   });

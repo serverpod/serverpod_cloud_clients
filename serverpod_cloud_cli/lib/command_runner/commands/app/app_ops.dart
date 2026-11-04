@@ -24,9 +24,9 @@ import 'package:serverpod_cloud_cli/util/git_metadata.dart';
 
 import 'app_build_step_log.dart';
 import 'app_upload_row.dart';
-import 'release_build_status.dart';
+import 'app_build_status_formatter.dart';
 
-abstract class ReleaseOperations {
+abstract class AppOperations {
   static const _maxPageSize = 100;
 
   /// Requests a build of the Flutter app in [flutterAppDir] of the archive
@@ -327,7 +327,7 @@ abstract class ReleaseOperations {
       throw FailureException(
         error:
             'The upload $uploadId has no '
-            '${ReleaseBuildStatus.platformName(platform)} build.',
+            '${AppBuildStatusFormatter.platformName(platform)} build.',
       );
     }
 
@@ -371,7 +371,7 @@ abstract class ReleaseOperations {
       }
     }
 
-    final error = ReleaseBuildStatus.buildError(platform, lastDetail);
+    final error = AppBuildStatusFormatter.buildError(platform, lastDetail);
     if (error != null) {
       throw FailureException(error: error);
     }
@@ -442,7 +442,7 @@ abstract class ReleaseOperations {
       FlutterPlatform.linux ||
       FlutterPlatform.macos ||
       FlutterPlatform.windows => throw FailureException(
-        error: 'Releasing for ${platform.name} is not supported yet.',
+        error: 'Publishing for ${platform.name} is not supported yet.',
       ),
     };
   }

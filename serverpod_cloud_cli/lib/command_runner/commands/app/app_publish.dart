@@ -11,20 +11,20 @@ import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/flutter_platform.dart';
 import 'package:serverpod_cloud_cli/util/git_metadata.dart';
 
-import 'release_build_progress.dart';
-import 'release_build_status.dart';
-import 'release_ops.dart';
+import 'app_build_progress.dart';
+import 'app_build_status_formatter.dart';
+import 'app_ops.dart';
 
-abstract class ReleaseApp {
-  /// Releases the Flutter app in [appDirectory] in project [projectId] as
-  /// one build per release platform, all from one uploaded archive.
+abstract class AppPublish {
+  /// Publishes the Flutter app in [appDirectory] in project [projectId] as
+  /// one build per platform to publish, all from one uploaded archive.
   ///
-  /// The archive holds only the code of the release platforms, together with
+  /// The archive holds only the code of the platforms to publish, together with
   /// the workspace packages the app depends on when it is resolved in a Dart
   /// workspace. The workspace in the archive only lists the included
   /// packages, and their pubspec files are stripped of dev dependencies.
   ///
-  /// When [platforms] is null, the app is released for the
+  /// When [platforms] is null, the app is published for the
   /// [defaultPlatforms] it has code for.
   ///
   /// With [awaitBuilds], the progress of the builds is shown until they end.
@@ -32,11 +32,11 @@ abstract class ReleaseApp {
   /// [baseCommand].
   ///
   /// Throws [FailureException] if the app has no code for a platform to
-  /// release, if the builds cannot be requested, or if an awaited build does
+  /// publish, if the builds cannot be requested, or if an awaited build does
   /// not succeed.
   /// Throws [ErrorExitException] if the archive cannot be zipped or uploaded.
   /// The builds are cancelled when the archive cannot be uploaded.
-  static Future<void> release(
+  static Future<void> publish(
     Client cloudApiClient,
     FileUploaderFactory fileUploaderFactory, {
     required CommandLogger logger,
@@ -47,17 +47,17 @@ abstract class ReleaseApp {
     Set<FlutterPlatform>? platforms,
     bool awaitBuilds = false,
   }) async {
-    logger.init('Releasing the app of Serverpod Cloud project "$projectId".');
+    logger.init('Publishing the app of Serverpod Cloud project "$projectId".');
 
     final requestedPlatforms =
         platforms ?? _presentDefaultPlatforms(appDirectory, defaultPlatforms);
-    final releasePlatforms = FlutterPlatform.values
+    final publishPlatforms = FlutterPlatform.values
         .where(requestedPlatforms.contains)
         .toList();
 
     final preparer = TenantProject.prepareApp(
       appDirectory,
-      platforms: releasePlatforms.toSet(),
+      platforms: publishPlatforms.toSet(),
     );
     if (preparer.isWorkspace) {
       logger.list(
@@ -81,10 +81,10 @@ abstract class ReleaseApp {
     );
 
     final versionName = _versionName(preparer.projectVersion);
-    final upload = await ReleaseOperations.createBuilds(
+    final upload = await AppOperations.createBuilds(
       cloudApiClient,
       projectId: projectId,
-      platforms: releasePlatforms,
+      platforms: publishPlatforms,
       flutterAppDir: preparer.projectSubPath,
       archiveSize: appZip.length,
       versionName: versionName,
@@ -111,7 +111,7 @@ abstract class ReleaseApp {
 
     final builds = [...upload.builds]
       ..sort((a, b) => a.platform.index.compareTo(b.platform.index));
-    final platformNames = ReleaseBuildStatus.platformNames(
+    final platformNames = AppBuildStatusFormatter.platformNames(
       builds.map((build) => build.platform),
     );
     logger.info(
@@ -119,11 +119,11 @@ abstract class ReleaseApp {
       newParagraph: true,
     );
     if (!awaitBuilds) {
-      logger.info('Follow it: $baseCommand release show ${upload.uploadId}');
+      logger.info('Follow it: $baseCommand app show ${upload.uploadId}');
       return;
     }
 
-    await ReleaseBuildProgress.follow(
+    await AppBuildProgress.follow(
       cloudApiClient,
       logger: logger,
       projectId: projectId,
@@ -140,7 +140,7 @@ abstract class ReleaseApp {
     required String projectId,
     required List<AppBuildRef> builds,
   }) async {
-    final failures = await ReleaseOperations.cancelBuilds(
+    final failures = await AppOperations.cancelBuilds(
       cloudApiClient,
       projectId: projectId,
       buildIds: [for (final build in builds) build.buildId],
@@ -164,10 +164,10 @@ abstract class ReleaseApp {
     List<FlutterPlatform> defaultPlatforms,
   ) {
     final presentPlatforms = TenantProject.presentPlatforms(appDirectory);
-    final releasePlatforms = defaultPlatforms
+    final publishPlatforms = defaultPlatforms
         .where(presentPlatforms.contains)
         .toSet();
-    if (releasePlatforms.isEmpty) {
+    if (publishPlatforms.isEmpty) {
       final names = defaultPlatforms.map((platform) => platform.name);
       throw FailureException(
         error: 'The app has no code for the platforms: ${names.join(', ')}.',
@@ -176,6 +176,6 @@ abstract class ReleaseApp {
             'in the app directory.',
       );
     }
-    return releasePlatforms;
+    return publishPlatforms;
   }
 }
