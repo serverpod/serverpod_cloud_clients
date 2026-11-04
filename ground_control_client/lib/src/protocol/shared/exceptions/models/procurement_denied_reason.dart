@@ -15,6 +15,7 @@ import 'package:serverpod_client/serverpod_client.dart' as _isc;
 /// The reason a procurement was denied.
 enum ProcurementDeniedReason implements _isc.SerializableModel {
   paymentMethodRequired,
+  billingInfoRequired,
   goodStandingRequired,
   tooManyProjects,
   productNotAvailable,
@@ -24,6 +25,8 @@ enum ProcurementDeniedReason implements _isc.SerializableModel {
     switch (name) {
       case 'paymentMethodRequired':
         return ProcurementDeniedReason.paymentMethodRequired;
+      case 'billingInfoRequired':
+        return ProcurementDeniedReason.billingInfoRequired;
       case 'goodStandingRequired':
         return ProcurementDeniedReason.goodStandingRequired;
       case 'tooManyProjects':
