@@ -5,6 +5,8 @@ import 'package:ground_control_client/ground_control_client.dart'
     show
         AppBuildDetail,
         AppBuildStatus,
+        AppBuildStepInfo,
+        AppBuildStepStatus,
         AppBuildSummary,
         AppBuildsUpload,
         AppPlatform,
@@ -20,7 +22,9 @@ import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/flutter_platform.dart';
 import 'package:serverpod_cloud_cli/util/git_metadata.dart';
 
+import 'app_build_step_log.dart';
 import 'app_upload_row.dart';
+import 'release_build_status.dart';
 
 abstract class ReleaseOperations {
   static const _maxPageSize = 100;
@@ -294,6 +298,141 @@ abstract class ReleaseOperations {
       statuses.contains,
       orElse: () => AppBuildStatus.succeeded,
     );
+  }
+
+  /// Returns the log of each step of the [platform] build made from the
+  /// archive upload [uploadId] in project [projectId], in run order, as each
+  /// step ends. Once the build has ended, the steps that have not ended
+  /// follow, and the stream closes.
+  ///
+  /// Throws [FailureException] if the upload has no [platform] build in the
+  /// project, or if the build cannot be fetched. The stream emits a
+  /// [FailureException] if the build or a step log cannot be fetched, and
+  /// last if the build did not succeed.
+  static Future<Stream<AppBuildStepLog>> followBuildLog(
+    Client cloudApiClient, {
+    required String projectId,
+    required UuidValue uploadId,
+    required AppPlatform platform,
+  }) async {
+    final builds = await getUploadBuilds(
+      cloudApiClient,
+      projectId: projectId,
+      uploadId: uploadId,
+    );
+    final build = builds
+        .where((build) => build.platform == platform)
+        .firstOrNull;
+    if (build == null) {
+      throw FailureException(
+        error:
+            'The upload $uploadId has no '
+            '${ReleaseBuildStatus.platformName(platform)} build.',
+      );
+    }
+
+    return _stepLogs(
+      cloudApiClient,
+      projectId: projectId,
+      buildId: build.id,
+      platform: platform,
+    );
+  }
+
+  static Stream<AppBuildStepLog> _stepLogs(
+    Client cloudApiClient, {
+    required String projectId,
+    required UuidValue buildId,
+    required AppPlatform platform,
+  }) async* {
+    var loggedStepCount = 0;
+    AppBuildDetail? lastDetail;
+    await for (final detail in tailBuild(
+      cloudApiClient,
+      projectId: projectId,
+      buildId: buildId,
+    )) {
+      lastDetail = detail;
+      final remainingSteps = detail.steps.skip(loggedStepCount);
+      final stepsToLog = _hasBuildEnded(detail.build.status)
+          ? remainingSteps
+          : remainingSteps.takeWhile((step) => _hasEnded(step.status));
+      for (final step in stepsToLog) {
+        final log = _hasLog(step)
+            ? await _getStepLog(
+                cloudApiClient,
+                projectId: projectId,
+                buildId: buildId,
+                stepIndex: step.index,
+              )
+            : null;
+        yield AppBuildStepLog(step: step, log: log);
+        loggedStepCount++;
+      }
+    }
+
+    final error = ReleaseBuildStatus.buildError(platform, lastDetail);
+    if (error != null) {
+      throw FailureException(error: error);
+    }
+  }
+
+  static Future<String?> _getStepLog(
+    Client cloudApiClient, {
+    required String projectId,
+    required UuidValue buildId,
+    required int stepIndex,
+  }) async {
+    try {
+      return await cloudApiClient.appBuilds.getStepLog(
+        cloudCapsuleId: projectId,
+        buildId: buildId,
+        stepIndex: stepIndex,
+      );
+    } on NotFoundException catch (e) {
+      throw FailureException(error: e.message);
+    } on AppPublishingDisabledException catch (e) {
+      throw FailureException(error: e.message);
+    } on Exception catch (e, stackTrace) {
+      throw FailureException.nested(
+        e,
+        stackTrace,
+        'Failed to fetch the log of step $stepIndex of the app build '
+        '$buildId.',
+      );
+    }
+  }
+
+  static bool _hasEnded(AppBuildStepStatus status) {
+    return switch (status) {
+      AppBuildStepStatus.succeeded ||
+      AppBuildStepStatus.failed ||
+      AppBuildStepStatus.cancelled ||
+      AppBuildStepStatus.skipped => true,
+      AppBuildStepStatus.pending || AppBuildStepStatus.running => false,
+    };
+  }
+
+  static bool _hasLog(AppBuildStepInfo step) {
+    return switch (step.status) {
+      AppBuildStepStatus.succeeded ||
+      AppBuildStepStatus.failed ||
+      AppBuildStepStatus.cancelled => true,
+      AppBuildStepStatus.pending ||
+      AppBuildStepStatus.running => step.startedAt != null,
+      AppBuildStepStatus.skipped => false,
+    };
+  }
+
+  static bool _hasBuildEnded(AppBuildStatus status) {
+    return switch (status) {
+      AppBuildStatus.succeeded ||
+      AppBuildStatus.failed ||
+      AppBuildStatus.cancelled => true,
+      AppBuildStatus.queued ||
+      AppBuildStatus.waiting ||
+      AppBuildStatus.running => false,
+    };
   }
 
   static AppPlatform _appPlatform(FlutterPlatform platform) {

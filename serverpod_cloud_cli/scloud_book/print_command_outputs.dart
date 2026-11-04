@@ -34,6 +34,7 @@ import '../test_utils/render_command_ui.dart';
 import 'stub_cloud_client.dart';
 
 const _projectId = 'my-project';
+const _uploadId = '3f2b0c4e-1d5a-4b8e-9c7f-2a6d8e1b4c90';
 
 class _Scenario {
   const _Scenario(this.heading, this.args);
@@ -334,6 +335,15 @@ const _scenarios = [
     _projectId,
     '--platforms',
     'ios,android',
+  ]),
+  _Scenario('release log', [
+    'release',
+    'log',
+    _uploadId,
+    '--platform',
+    'ios',
+    '--project',
+    _projectId,
   ]),
   _Scenario('storage list', ['storage', 'list', '--project', _projectId]),
   _Scenario('storage create', [

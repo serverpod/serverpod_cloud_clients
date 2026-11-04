@@ -3,6 +3,7 @@ export 'admin_user_owner_status_builder.dart';
 export 'admin_user_project_membership_builder.dart';
 export 'admin_user_status_builder.dart';
 export 'app_build_detail_builder.dart';
+export 'app_build_step_info_builder.dart';
 export 'app_build_summary_builder.dart';
 export 'app_builds_upload_builder.dart';
 export 'app_publishing_setup_builder.dart';

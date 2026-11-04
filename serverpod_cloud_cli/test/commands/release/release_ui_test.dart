@@ -1,5 +1,6 @@
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/release/app_build_step_log.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/release/app_upload_row.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/release/release_ui.dart';
 import 'package:test/test.dart';
@@ -159,6 +160,42 @@ void main() {
           '${createdAt.toIso8601String().substring(11, 19)} (UTC)',
         ),
       );
+    });
+  });
+
+  group('Given a ReleaseLogTextUi', () {
+    test('when rendered with a log of Windows line endings '
+        'then each line is printed once', () async {
+      final io = await renderCommandUi(
+        const ReleaseLogTextUi(),
+        data: Stream.value(
+          AppBuildStepLog(
+            step: AppBuildStepInfoBuilder().withName('Build').build(),
+            log: 'Running pod install\r\nBuilt Runner.app\r\n',
+          ),
+        ),
+      );
+
+      expect(
+        io.stdout,
+        '--- Build (Succeeded) ---\n'
+        'Running pod install\n'
+        'Built Runner.app\n',
+      );
+    });
+
+    test('when rendered with a step without a log '
+        'then only its header is printed', () async {
+      final io = await renderCommandUi(
+        const ReleaseLogTextUi(),
+        data: Stream.value(
+          AppBuildStepLog(
+            step: AppBuildStepInfoBuilder().withName('Build').build(),
+          ),
+        ),
+      );
+
+      expect(io.stdout, '--- Build (Succeeded) ---\n');
     });
   });
 }

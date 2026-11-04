@@ -51,6 +51,28 @@ abstract class ReleaseBuildStatus {
     };
   }
 
+  /// The error of the build for [platform] in [detail], or null when the
+  /// build succeeded. A null [detail] is reported as a build that did not
+  /// report its status, and a build that has not ended as one that did not
+  /// finish.
+  static String? buildError(AppPlatform platform, AppBuildDetail? detail) {
+    final name = platformName(platform);
+    final build = detail?.build;
+    if (build == null) return 'The $name build did not report its status.';
+    final message = build.message;
+    return switch (build.status) {
+      AppBuildStatus.succeeded => null,
+      AppBuildStatus.failed =>
+        message == null
+            ? 'The $name build failed.'
+            : 'The $name build failed: $message',
+      AppBuildStatus.cancelled => 'The $name build was cancelled.',
+      AppBuildStatus.queued ||
+      AppBuildStatus.waiting ||
+      AppBuildStatus.running => 'The $name build did not finish.',
+    };
+  }
+
   /// The status line of the build for [platform], with the queue stage
   /// active while [detail] is null.
   ///
