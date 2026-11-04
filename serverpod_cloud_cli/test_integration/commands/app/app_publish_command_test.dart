@@ -7,7 +7,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/release/release_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/app/app_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:test/test.dart';
@@ -21,7 +21,7 @@ import '../../../test_utils/test_command_logger.dart';
 
 const _projectId = 'my-project-id';
 const _appUploadDescription = 'app-upload-description';
-final _supportedPlatformNames = ReleasePlatformsOption.supportedPlatforms
+final _supportedPlatformNames = AppPublishPlatformsOption.supportedPlatforms
     .map((platform) => platform.name)
     .join(', ');
 
@@ -73,14 +73,14 @@ void main() {
     reset(client.appBuilds);
   });
 
-  test('Given release app command when instantiated then requires login', () {
-    expect(CloudReleaseAppCommand(logger: logger).requireLogin, isTrue);
+  test('Given app publish command when instantiated then requires login', () {
+    expect(CloudAppPublishCommand(logger: logger).requireLogin, isTrue);
   });
 
   test('Given the platforms option '
       'then its help text lists the supported platforms', () {
     expect(
-      const ReleasePlatformsOption().helpText,
+      const AppPublishPlatformsOption().helpText,
       contains('Supported platforms: $_supportedPlatformNames.'),
     );
   });
@@ -102,8 +102,8 @@ void main() {
 
       setUp(() {
         commandResult = cli.run([
-          'release',
           'app',
+          'publish',
           '--project',
           _projectId,
           '--project-dir',
@@ -206,7 +206,7 @@ void main() {
 
         expect(
           logger.infoCalls.map((call) => call.message),
-          contains(matches(RegExp(r'^Follow it: \S+ release show \S+$'))),
+          contains(matches(RegExp(r'^Follow it: \S+ app show \S+$'))),
         );
       });
     });
@@ -242,8 +242,8 @@ void main() {
         );
 
         commandResult = cli.run([
-          'release',
           'app',
+          'publish',
           '--project',
           _projectId,
           '--project-dir',
@@ -315,8 +315,8 @@ void main() {
       );
 
       await cli.run([
-        'release',
         'app',
+        'publish',
         '--project',
         _projectId,
         '--project-dir',
@@ -355,8 +355,8 @@ void main() {
         );
 
         commandResult = cli.run([
-          'release',
           'app',
+          'publish',
           '--project',
           _projectId,
           '--project-dir',
@@ -424,8 +424,8 @@ void main() {
         fileUploader.uploadResponse = false;
 
         commandResult = cli.run([
-          'release',
           'app',
+          'publish',
           '--project',
           _projectId,
           '--project-dir',
@@ -487,8 +487,8 @@ void main() {
         fileUploader.uploadResponse = false;
 
         commandResult = cli.run([
-          'release',
           'app',
+          'publish',
           '--project',
           _projectId,
           '--project-dir',
@@ -531,8 +531,8 @@ void main() {
       ]).create();
 
       await cli.run([
-        'release',
         'app',
+        'publish',
         '--project',
         _projectId,
         '--project-dir',
@@ -564,8 +564,8 @@ void main() {
         ]).create();
 
         commandResult = cli.run([
-          'release',
           'app',
+          'publish',
           '--project',
           _projectId,
           '--project-dir',
@@ -619,8 +619,8 @@ void main() {
     test('when releasing the app with --platforms android '
         'then the upload is reported', () async {
       await cli.run([
-        'release',
         'app',
+        'publish',
         '--project',
         _projectId,
         '--project-dir',
@@ -640,8 +640,8 @@ void main() {
 
       setUp(() {
         commandResult = cli.run([
-          'release',
           'app',
+          'publish',
           '--project',
           _projectId,
           '--project-dir',
@@ -693,8 +693,8 @@ void main() {
         'then a UsageException names the unsupported platforms', () async {
       await expectLater(
         cli.run([
-          'release',
           'app',
+          'publish',
           '--project',
           _projectId,
           '--project-dir',
@@ -707,7 +707,7 @@ void main() {
             (e) => e.message,
             'message',
             contains(
-              'Releasing for linux, windows is not supported yet. '
+              'Publishing for linux, windows is not supported yet. '
               'Supported platforms: $_supportedPlatformNames.',
             ),
           ),
@@ -719,8 +719,8 @@ void main() {
         'then a UsageException names the unknown platform', () async {
       await expectLater(
         cli.run([
-          'release',
           'app',
+          'publish',
           '--project',
           _projectId,
           '--project-dir',
@@ -770,8 +770,8 @@ project:
       test('when releasing the app '
           'then the configured app is uploaded', () async {
         await cli.run([
-          'release',
           'app',
+          'publish',
           '--project',
           _projectId,
           '--project-dir',
@@ -803,8 +803,8 @@ project:
 
         setUp(() {
           commandResult = cli.run([
-            'release',
             'app',
+            'publish',
             '--project',
             _projectId,
             '--project-dir',
@@ -838,8 +838,8 @@ project:
       test('when releasing the app with --app-dir '
           'then the --app-dir app is uploaded', () async {
         await cli.run([
-          'release',
           'app',
+          'publish',
           '--project',
           _projectId,
           '--project-dir',
@@ -858,8 +858,8 @@ project:
     test('when releasing the app with --app-dir '
         'then the upload is reported', () async {
       await cli.run([
-        'release',
         'app',
+        'publish',
         '--project',
         _projectId,
         '--app-dir',
@@ -886,8 +886,8 @@ project:
     test('when releasing the app with --app-dir '
         'then the build is requested for the archive root', () async {
       await cli.run([
-        'release',
         'app',
+        'publish',
         '--project',
         _projectId,
         '--app-dir',
@@ -931,8 +931,8 @@ project:
         );
 
         commandResult = cli.run([
-          'release',
           'app',
+          'publish',
           '--project',
           _projectId,
           '--app-dir',
@@ -989,8 +989,8 @@ project:
 
       await cli
           .run([
-            'release',
             'app',
+            'publish',
             '--project',
             _projectId,
             '--app-dir',
@@ -1023,8 +1023,8 @@ project:
       ).create();
 
       commandResult = cli.run([
-        'release',
         'app',
+        'publish',
         '--project',
         _projectId,
         '--app-dir',
@@ -1067,8 +1067,8 @@ project:
     ).create();
 
     await cli.run([
-      'release',
       'app',
+      'publish',
       '--project',
       _projectId,
       '--project-dir',
@@ -1090,8 +1090,8 @@ project:
       await ProjectFactory.serverpodServerDir().create();
 
       commandResult = cli.run([
-        'release',
         'app',
+        'publish',
         '--project',
         _projectId,
         '--project-dir',

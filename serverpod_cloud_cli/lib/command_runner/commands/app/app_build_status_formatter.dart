@@ -10,7 +10,7 @@ import 'package:ground_control_client/ground_control_client.dart'
         AppPlatform;
 
 /// The progress of one stage of an app build.
-enum ReleaseStageState { pending, active, done, failed }
+enum AppBuildStageState { pending, active, done, failed }
 
 typedef _StageNames = ({String name, String activeName, String doneName});
 
@@ -19,7 +19,7 @@ typedef _StageNames = ({String name, String activeName, String doneName});
 ///
 /// The platform and each stage are columns of a fixed width, so the lines
 /// of all platforms line up whatever the state of their stages.
-abstract class ReleaseBuildStatus {
+abstract class AppBuildStatusFormatter {
   /// The spinner frames cycled through by the icon of an active stage.
   static const spinnerFrames = '⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏';
 
@@ -84,9 +84,9 @@ abstract class ReleaseBuildStatus {
   }) {
     final states = detail == null
         ? [
-            ReleaseStageState.active,
-            ReleaseStageState.pending,
-            ReleaseStageState.pending,
+            AppBuildStageState.active,
+            AppBuildStageState.pending,
+            AppBuildStageState.pending,
           ]
         : stageStates(detail);
     final cells = [
@@ -108,7 +108,7 @@ abstract class ReleaseBuildStatus {
   /// build stage ends when a step of the publish stage starts, and the
   /// upload stage when the build succeeds. The stage the build is in is
   /// active. A failed or cancelled build fails the stage it stopped in.
-  static List<ReleaseStageState> stageStates(AppBuildDetail detail) {
+  static List<AppBuildStageState> stageStates(AppBuildDetail detail) {
     final build = detail.build;
     final currentStage = switch (build.status) {
       AppBuildStatus.queued || AppBuildStatus.waiting => 0,
@@ -124,11 +124,11 @@ abstract class ReleaseBuildStatus {
     return [
       for (var stage = 0; stage < _stageCount; stage++)
         if (stage < currentStage)
-          ReleaseStageState.done
+          AppBuildStageState.done
         else if (stage == currentStage)
-          isFailure ? ReleaseStageState.failed : ReleaseStageState.active
+          isFailure ? AppBuildStageState.failed : AppBuildStageState.active
         else
-          ReleaseStageState.pending,
+          AppBuildStageState.pending,
     ];
   }
 
@@ -155,24 +155,24 @@ abstract class ReleaseBuildStatus {
       for (var stage = 0; stage < _stageCount; stage++)
         widest([
           for (final platform in AppPlatform.values)
-            for (final state in ReleaseStageState.values)
+            for (final state in AppBuildStageState.values)
               _stage(state, 0, _stageNames(platform)[stage]),
         ]),
     ];
   }
 
   static String _stage(
-    ReleaseStageState state,
+    AppBuildStageState state,
     int spinnerFrame,
     _StageNames names,
   ) {
     return switch (state) {
-      ReleaseStageState.pending => '● ${names.name}',
-      ReleaseStageState.active =>
+      AppBuildStageState.pending => '● ${names.name}',
+      AppBuildStageState.active =>
         '${spinnerFrames[spinnerFrame % spinnerFrames.length]} '
             '${names.activeName}',
-      ReleaseStageState.done => '✓ ${names.doneName}',
-      ReleaseStageState.failed => '✗ ${names.name}',
+      AppBuildStageState.done => '✓ ${names.doneName}',
+      AppBuildStageState.failed => '✗ ${names.name}',
     };
   }
 

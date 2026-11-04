@@ -1,6 +1,6 @@
 import 'package:ground_control_client/ground_control_client.dart';
 
-/// An app upload with the builds made from it, as listed by `release list`.
+/// An app upload with the builds made from it, as listed by `app list`.
 class AppUploadRow implements SerializableModel {
   final UuidValue uploadId;
 

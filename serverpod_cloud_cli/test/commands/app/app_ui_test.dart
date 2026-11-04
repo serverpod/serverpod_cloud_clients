@@ -1,8 +1,8 @@
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/release/app_build_step_log.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/release/app_upload_row.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/release/release_ui.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/app/app_build_step_log.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/app/app_upload_row.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/app/app_ui.dart';
 import 'package:test/test.dart';
 
 import '../../../test_utils/render_command_ui.dart';
@@ -13,7 +13,7 @@ void main() {
 
     setUp(() async {
       final io = await renderCommandUi(
-        const ReleaseUploadListTextUi(utc: true),
+        const AppUploadListTextUi(utc: true),
         data: [
           AppUploadRow(
             uploadId: const Uuid().v4obj(),
@@ -44,7 +44,7 @@ void main() {
 
     setUp(() async {
       final io = await renderCommandUi(
-        const ReleaseUploadListTextUi(utc: true),
+        const AppUploadListTextUi(utc: true),
         data: [
           AppUploadRow(
             uploadId: const Uuid().v4obj(),
@@ -72,7 +72,7 @@ void main() {
   group('Given no uploads', () {
     test('when rendered then no publishes are shown', () async {
       final io = await renderCommandUi(
-        const ReleaseUploadListTextUi(utc: true),
+        const AppUploadListTextUi(utc: true),
         data: <AppUploadRow>[],
       );
 
@@ -85,7 +85,7 @@ void main() {
 
     setUp(() async {
       final io = await renderCommandUi(
-        const ReleaseBuildListTextUi(utc: true, platforms: [AppPlatform.ios]),
+        const AppBuildListTextUi(utc: true, platforms: [AppPlatform.ios]),
         data: [AppBuildSummaryBuilder().build()],
       );
       stdout = io.stdout;
@@ -101,7 +101,7 @@ void main() {
 
     setUp(() async {
       final io = await renderCommandUi(
-        const ReleaseBuildListTextUi(
+        const AppBuildListTextUi(
           utc: true,
           platforms: [AppPlatform.ios, AppPlatform.android],
         ),
@@ -131,7 +131,7 @@ void main() {
     test('when rendered for iOS and Android '
         'then no iOS or Android publishes are shown', () async {
       final io = await renderCommandUi(
-        const ReleaseBuildListTextUi(
+        const AppBuildListTextUi(
           utc: true,
           platforms: [AppPlatform.ios, AppPlatform.android],
         ),
@@ -149,7 +149,7 @@ void main() {
         const Duration(days: 8),
       );
       final io = await renderCommandUi(
-        const ReleaseBuildListTextUi(utc: true, platforms: [AppPlatform.ios]),
+        const AppBuildListTextUi(utc: true, platforms: [AppPlatform.ios]),
         data: [AppBuildSummaryBuilder().withCreatedAt(createdAt).build()],
       );
 
@@ -163,11 +163,11 @@ void main() {
     });
   });
 
-  group('Given a ReleaseLogTextUi', () {
+  group('Given a AppLogTextUi', () {
     test('when rendered with a log of Windows line endings '
         'then each line is printed once', () async {
       final io = await renderCommandUi(
-        const ReleaseLogTextUi(),
+        const AppLogTextUi(),
         data: Stream.value(
           AppBuildStepLog(
             step: AppBuildStepInfoBuilder().withName('Build').build(),
@@ -187,7 +187,7 @@ void main() {
     test('when rendered with a step without a log '
         'then only its header is printed', () async {
       final io = await renderCommandUi(
-        const ReleaseLogTextUi(),
+        const AppLogTextUi(),
         data: Stream.value(
           AppBuildStepLog(
             step: AppBuildStepInfoBuilder().withName('Build').build(),

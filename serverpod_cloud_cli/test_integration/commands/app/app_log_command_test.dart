@@ -6,7 +6,7 @@ import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/release/release_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/app/app_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:test/test.dart';
@@ -38,8 +38,8 @@ void main() {
     reset(client.appBuilds);
   });
 
-  test('Given release log command when instantiated then requires login', () {
-    expect(CloudReleaseLogCommand(logger: logger).requireLogin, isTrue);
+  test('Given app log command when instantiated then requires login', () {
+    expect(CloudAppLogCommand(logger: logger).requireLogin, isTrue);
   });
 
   group('Given an upload with an Android build and a running iOS build '
@@ -111,7 +111,7 @@ void main() {
 
       setUp(() {
         commandResult = cli.run([
-          'release',
+          'app',
           'log',
           _uploadId.uuid,
           '--platform',
@@ -190,7 +190,7 @@ void main() {
 
       setUp(() {
         commandResult = cli.run([
-          'release',
+          'app',
           'log',
           _uploadId.uuid,
           '--platform',
@@ -228,7 +228,7 @@ void main() {
 
       setUp(() {
         commandResult = cli.run([
-          'release',
+          'app',
           'log',
           _uploadId.uuid,
           '--platform',
@@ -256,7 +256,7 @@ void main() {
 
       setUp(() {
         commandResult = cli.run([
-          'release',
+          'app',
           'log',
           _uploadId.uuid,
           '--platform',
@@ -308,7 +308,7 @@ void main() {
       );
 
       commandResult = cli.run([
-        'release',
+        'app',
         'log',
         _uploadId.uuid,
         '--platform',
@@ -357,7 +357,7 @@ void main() {
       );
 
       commandResult = cli.run([
-        'release',
+        'app',
         'log',
         _uploadId.uuid,
         '--platform',
@@ -402,7 +402,7 @@ void main() {
       ).thenThrow(NotFoundException(message: 'App upload not found'));
 
       commandResult = cli.run([
-        'release',
+        'app',
         'log',
         _uploadId.uuid,
         '--platform',
@@ -455,7 +455,7 @@ void main() {
       ).thenThrow(Exception('Connection refused'));
 
       commandResult = cli.run([
-        'release',
+        'app',
         'log',
         _uploadId.uuid,
         '--platform',
@@ -540,7 +540,7 @@ void main() {
       ).thenAnswer((_) async => 'Built Runner.app\n');
 
       commandResult = cli.run([
-        'release',
+        'app',
         'log',
         _uploadId.uuid,
         '--platform',
@@ -632,7 +632,7 @@ void main() {
       ).thenAnswer((_) async => 'Upload rejected\n');
 
       commandResult = cli.run([
-        'release',
+        'app',
         'log',
         _uploadId.uuid,
         '--platform',
@@ -701,7 +701,7 @@ void main() {
       );
 
       commandResult = cli.run([
-        'release',
+        'app',
         'log',
         _uploadId.uuid,
         '--platform',
@@ -758,7 +758,7 @@ void main() {
       );
 
       commandResult = cli.run([
-        'release',
+        'app',
         'log',
         _uploadId.uuid,
         '--platform',
@@ -798,7 +798,7 @@ void main() {
       ).thenAnswer((_) => Stream.error(Exception('Connection refused')));
 
       commandResult = cli.run([
-        'release',
+        'app',
         'log',
         _uploadId.uuid,
         '--platform',
@@ -851,7 +851,7 @@ void main() {
       ).thenThrow(NotFoundException(message: 'App build step not found'));
 
       commandResult = cli.run([
-        'release',
+        'app',
         'log',
         _uploadId.uuid,
         '--platform',

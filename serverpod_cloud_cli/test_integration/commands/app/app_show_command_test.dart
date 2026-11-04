@@ -5,7 +5,7 @@ import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/release/release_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/app/app_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:test/test.dart';
@@ -37,12 +37,12 @@ void main() {
     reset(client.appBuilds);
   });
 
-  test('Given release show command when instantiated then requires login', () {
-    expect(CloudReleaseShowCommand(logger: logger).requireLogin, isTrue);
+  test('Given app show command when instantiated then requires login', () {
+    expect(CloudAppShowCommand(logger: logger).requireLogin, isTrue);
   });
 
   group('Given an upload with a running Android build that then succeeds '
-      'when showing the release', () {
+      'when showing the upload', () {
     final build = AppBuildSummaryBuilder()
         .withPlatform(AppPlatform.android)
         .withStatus(AppBuildStatus.running)
@@ -77,7 +77,7 @@ void main() {
       logger.inlineTerminal = FakeTerminal(hasTerminal: false);
 
       commandResult = cli.run([
-        'release',
+        'app',
         'show',
         _uploadId.uuid,
         '--project',
@@ -130,7 +130,7 @@ void main() {
       ]);
     });
 
-    test('then the release is reported as published', () async {
+    test('then the upload is reported as published', () async {
       await commandResult;
 
       expect(
@@ -146,7 +146,7 @@ void main() {
   });
 
   group('Given an upload whose Android and iOS builds have succeeded '
-      'when showing the release', () {
+      'when showing the upload', () {
     final android = AppBuildSummaryBuilder()
         .withPlatform(AppPlatform.android)
         .withStatus(AppBuildStatus.succeeded)
@@ -177,7 +177,7 @@ void main() {
       });
 
       commandResult = cli.run([
-        'release',
+        'app',
         'show',
         _uploadId.uuid,
         '--project',
@@ -205,7 +205,7 @@ void main() {
       ]);
     });
 
-    test('then the release is reported as published', () async {
+    test('then the upload is reported as published', () async {
       await commandResult;
 
       expect(
@@ -221,7 +221,7 @@ void main() {
   });
 
   group('Given an upload whose Android build has failed '
-      'when showing the release', () {
+      'when showing the upload', () {
     final build = AppBuildSummaryBuilder()
         .withPlatform(AppPlatform.android)
         .withStatus(AppBuildStatus.failed)
@@ -246,7 +246,7 @@ void main() {
       );
 
       commandResult = cli.run([
-        'release',
+        'app',
         'show',
         _uploadId.uuid,
         '--project',
@@ -282,7 +282,7 @@ void main() {
     });
   });
 
-  group('Given an unknown upload when showing the release', () {
+  group('Given an unknown upload when showing the upload', () {
     late Future<void> commandResult;
 
     setUp(() {
@@ -294,7 +294,7 @@ void main() {
       ).thenThrow(NotFoundException(message: 'App upload not found'));
 
       commandResult = cli.run([
-        'release',
+        'app',
         'show',
         _uploadId.uuid,
         '--project',
@@ -317,7 +317,7 @@ void main() {
   });
 
   group('Given an upload whose ended build is gone '
-      'when showing the release', () {
+      'when showing the upload', () {
     late Future<void> commandResult;
 
     setUp(() {
@@ -335,7 +335,7 @@ void main() {
       ).thenThrow(NotFoundException(message: 'App build not found'));
 
       commandResult = cli.run([
-        'release',
+        'app',
         'show',
         _uploadId.uuid,
         '--project',
@@ -358,10 +358,10 @@ void main() {
   });
 
   test('Given an upload id that is not a UUID '
-      'when showing the release '
+      'when showing the upload '
       'then throws UsageException', () async {
     final result = cli.run([
-      'release',
+      'app',
       'show',
       'not-a-uuid',
       '--project',

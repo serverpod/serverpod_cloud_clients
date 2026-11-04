@@ -3,11 +3,11 @@ import 'package:ground_control_client/ground_control_client.dart'
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
-import 'release_build_progress.dart';
-import 'release_build_status.dart';
-import 'release_ops.dart';
+import 'app_build_progress.dart';
+import 'app_build_status_formatter.dart';
+import 'app_ops.dart';
 
-abstract class ReleaseShow {
+abstract class AppShow {
   /// Shows the app builds made from the archive upload [uploadId] in project
   /// [projectId]: their progress until they end, or their final status when
   /// they have all ended.
@@ -20,7 +20,7 @@ abstract class ReleaseShow {
     required String projectId,
     required UuidValue uploadId,
   }) async {
-    final builds = await ReleaseOperations.getUploadBuilds(
+    final builds = await AppOperations.getUploadBuilds(
       cloudApiClient,
       projectId: projectId,
       uploadId: uploadId,
@@ -30,13 +30,13 @@ abstract class ReleaseShow {
     if (builds.every(_hasEnded)) {
       final details = await Future.wait([
         for (final build in builds)
-          ReleaseOperations.getBuild(
+          AppOperations.getBuild(
             cloudApiClient,
             projectId: projectId,
             buildId: build.id,
           ),
       ]);
-      ReleaseBuildProgress.showEnded(
+      AppBuildProgress.showEnded(
         logger: logger,
         details: details,
         versionName: versionName,
@@ -44,11 +44,11 @@ abstract class ReleaseShow {
       return;
     }
 
-    final platformNames = ReleaseBuildStatus.platformNames(
+    final platformNames = AppBuildStatusFormatter.platformNames(
       builds.map((build) => build.platform),
     );
     logger.info('Publishing ${versionName ?? 'the app'} to $platformNames');
-    await ReleaseBuildProgress.follow(
+    await AppBuildProgress.follow(
       cloudApiClient,
       logger: logger,
       projectId: projectId,
