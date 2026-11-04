@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:ground_control_client/ground_control_client.dart'
     show
         AppBuildDetail,
+        AppBuildStage,
         AppBuildStatus,
         AppBuildStepInfo,
         AppBuildStepStatus,
@@ -19,9 +20,6 @@ typedef _StageNames = ({String name, String activeName, String doneName});
 /// The platform and each stage are columns of a fixed width, so the lines
 /// of all platforms line up whatever the state of their stages.
 abstract class ReleaseBuildStatus {
-  /// The name of the build step that uploads the app to the store.
-  static const publishingStepName = 'Publishing';
-
   /// The spinner frames cycled through by the icon of an active stage.
   static const spinnerFrames = '⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏';
 
@@ -107,7 +105,7 @@ abstract class ReleaseBuildStatus {
   /// [detail].
   ///
   /// The build leaves the queue when a build machine starts on it. The
-  /// build stage ends when the [publishingStepName] step starts, and the
+  /// build stage ends when a step of the publish stage starts, and the
   /// upload stage when the build succeeds. The stage the build is in is
   /// active. A failed or cancelled build fails the stage it stopped in.
   static List<ReleaseStageState> stageStates(AppBuildDetail detail) {
@@ -181,7 +179,7 @@ abstract class ReleaseBuildStatus {
   static int _stageAtBuildMachine(List<AppBuildStepInfo> steps) {
     final isPublishing = steps.any(
       (step) =>
-          step.name == publishingStepName &&
+          step.stage == AppBuildStage.publish &&
           step.status != AppBuildStepStatus.pending &&
           step.status != AppBuildStepStatus.skipped,
     );
