@@ -2954,9 +2954,9 @@ class EndpointStoreConnections extends _isc.EndpointRef {
   /// or a Google Play service account key.
   ///
   /// Throws [InvalidValueException] if [name], the key, or an App Store
-  /// Connect issuer id or key id is blank. Throws
-  /// [AppPublishingDisabledException] while app publishing is off in this
-  /// environment.
+  /// Connect issuer id or key id is blank, or App Store Connect rejects the
+  /// key. Throws [AppPublishingDisabledException] while app publishing is
+  /// off in this environment.
   _ida.Future<_ibvsp6v6.StoreConnection> addConnection({
     required String name,
     required _i7l7qkel.StoreCredential credential,
@@ -2984,8 +2984,9 @@ class EndpointStoreConnections extends _isc.EndpointRef {
   /// Throws [NotFoundException] if no connection with [connectionId]
   /// belongs to the owner. Throws [InvalidValueException] if [credential]
   /// is for another store than the connection, or as [addConnection] does
-  /// for its fields. Throws [AppPublishingDisabledException] while app
-  /// publishing is off in this environment.
+  /// for its fields and store check. Throws
+  /// [AppPublishingDisabledException] while app publishing is off in this
+  /// environment.
   _ida.Future<_ibvsp6v6.StoreConnection> replaceCredential({
     required _isc.UuidValue connectionId,
     required _i7l7qkel.StoreCredential credential,
