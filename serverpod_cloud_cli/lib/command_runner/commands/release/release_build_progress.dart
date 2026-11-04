@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:async/async.dart' show StreamGroup;
 import 'package:ground_control_client/ground_control_client.dart'
-    show AppBuildDetail, AppBuildRef, AppBuildStatus, AppPlatform, Client;
+    show AppBuildDetail, AppBuildRef, AppPlatform, Client;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/inline_tui/inline_tui.dart';
@@ -145,7 +145,7 @@ abstract class ReleaseBuildProgress {
   }) {
     final errors = [
       for (final platform in platforms)
-        ?_buildError(platform, details[platform]),
+        ?ReleaseBuildStatus.buildError(platform, details[platform]),
     ];
     if (errors.isNotEmpty) {
       throw FailureException(errors: errors);
@@ -156,23 +156,5 @@ abstract class ReleaseBuildProgress {
       '${ReleaseBuildStatus.platformNames(platforms)}.',
       newParagraph: true,
     );
-  }
-
-  static String? _buildError(AppPlatform platform, AppBuildDetail? detail) {
-    final name = ReleaseBuildStatus.platformName(platform);
-    final build = detail?.build;
-    if (build == null) return 'The $name build did not report its status.';
-    final message = build.message;
-    return switch (build.status) {
-      AppBuildStatus.succeeded => null,
-      AppBuildStatus.failed =>
-        message == null
-            ? 'The $name build failed.'
-            : 'The $name build failed: $message',
-      AppBuildStatus.cancelled => 'The $name build was cancelled.',
-      AppBuildStatus.queued ||
-      AppBuildStatus.waiting ||
-      AppBuildStatus.running => 'The $name build did not finish.',
-    };
   }
 }

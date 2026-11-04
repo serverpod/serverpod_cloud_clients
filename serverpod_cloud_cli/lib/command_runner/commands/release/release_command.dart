@@ -88,7 +88,7 @@ class ReleaseUploadIdOption extends StringOption {
         argPos: 0,
         mandatory: true,
         helpText:
-            'The id of the app upload to show, as printed by release app. '
+            'The id of the app upload, as printed by release app. '
             'Can be passed as the first argument.',
         customValidator: _uploadIdValidator,
       );
@@ -100,6 +100,16 @@ class ReleaseUploadIdOption extends StringOption {
       throw FormatException('Invalid upload id: $value');
     }
   }
+}
+
+class ReleaseLogPlatformOption extends EnumOption<AppPlatform> {
+  const ReleaseLogPlatformOption({super.group})
+    : super(
+        enumParser: const EnumParser(AppPlatform.values),
+        argName: 'platform',
+        mandatory: true,
+        helpText: 'The platform of the build to stream the log of.',
+      );
 }
 
 enum ReleaseAppCommandOption<V> implements OptionDefinition<V> {
@@ -155,6 +165,17 @@ enum ReleaseListCommandOption<V> implements OptionDefinition<V> {
   final ConfigOptionBase<V> option;
 }
 
+enum ReleaseLogCommandOption<V> implements OptionDefinition<V> {
+  projectId(ProjectIdOption(excludeSettings: true)),
+  uploadId(ReleaseUploadIdOption()),
+  platform(ReleaseLogPlatformOption());
+
+  const ReleaseLogCommandOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
 class CloudReleaseCommand extends CloudCliCommand {
   @override
   final name = 'release';
@@ -173,6 +194,7 @@ class CloudReleaseCommand extends CloudCliCommand {
     addSubcommand(CloudReleaseAppCommand(logger: logger));
     addSubcommand(CloudReleaseShowCommand(logger: logger));
     addSubcommand(CloudReleaseListCommand(logger: logger));
+    addSubcommand(CloudReleaseLogCommand(logger: logger));
   }
 }
 
@@ -386,6 +408,51 @@ Examples
         utc: inUtc,
         platforms: selectedPlatforms,
       ),
+    );
+  }
+}
+
+class CloudReleaseLogCommand extends CloudCliCommand<ReleaseLogCommandOption> {
+  @override
+  final name = 'log';
+
+  @override
+  final description =
+      'Stream the build log of an app release for one platform. '
+      'The log of a step shows when the step ends.';
+
+  @override
+  String get usageExamples =>
+      '''\n
+Examples
+
+  Stream the iOS build log of an app release by the upload id that release app printed
+
+    \$ $baseCommand release log 3f2b0c4e-1d5a-4b8e-9c7f-2a6d8e1b4c90 --platform ios
+
+''';
+
+  CloudReleaseLogCommand({required super.logger})
+    : super(options: ReleaseLogCommandOption.values);
+
+  @override
+  Future<void> runWithOutput(
+    final Configuration<ReleaseLogCommandOption> commandConfig,
+    final CommandOutput output,
+  ) async {
+    final projectId = commandConfig.value(ReleaseLogCommandOption.projectId);
+    final uploadId = commandConfig.value(ReleaseLogCommandOption.uploadId);
+    final platform = commandConfig.value(ReleaseLogCommandOption.platform);
+
+    await renderCommand(
+      output,
+      operation: () => ReleaseOperations.followBuildLog(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+        uploadId: UuidValue.withValidation(uploadId),
+        platform: platform,
+      ),
+      textOutputUi: const ReleaseLogTextUi(),
     );
   }
 }

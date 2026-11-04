@@ -712,6 +712,46 @@ void _stubReleases(final ClientMock client) {
         if (platform == null || build.platform == platform) build,
     ];
   });
+
+  final ios = AppBuildSummaryBuilder()
+      .withPlatform(AppPlatform.ios)
+      .withStatus(AppBuildStatus.succeeded)
+      .build();
+
+  when(
+    () => client.appBuilds.getUploadBuilds(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+      uploadId: any(named: 'uploadId'),
+    ),
+  ).thenAnswer((_) async => [ios]);
+  when(
+    () => client.appBuilds.tailBuild(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+      buildId: any(named: 'buildId'),
+    ),
+  ).thenAnswer(
+    (_) => Stream.value(
+      AppBuildDetailBuilder().withBuild(ios).withSteps([
+        AppBuildStepInfoBuilder()
+            .withIndex(0)
+            .withName('Build iOS app')
+            .build(),
+        AppBuildStepInfoBuilder().withIndex(1).withName('Publishing').build(),
+      ]).build(),
+    ),
+  );
+  when(
+    () => client.appBuilds.getStepLog(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+      buildId: any(named: 'buildId'),
+      stepIndex: any(named: 'stepIndex'),
+    ),
+  ).thenAnswer((invocation) async {
+    final stepIndex = invocation.namedArguments[#stepIndex] as int;
+    return stepIndex == 0
+        ? 'Running pod install\nBuilding Runner.app for release\n'
+        : 'Uploading Runner.ipa to TestFlight\n';
+  });
 }
 
 void _stubStorage(final ClientMock client) {

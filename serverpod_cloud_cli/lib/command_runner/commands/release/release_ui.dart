@@ -1,9 +1,13 @@
+import 'dart:convert';
+
 import 'package:ground_control_client/ground_control_client.dart'
-    show AppBuildStatus, AppBuildSummary, AppPlatform;
+    show AppBuildStatus, AppBuildStepStatus, AppBuildSummary, AppPlatform;
+import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/util/duration_formatter.dart'
     show friendlyPastTimeFormat;
 import 'package:serverpod_cloud_cli/util/output/output.dart';
 
+import 'app_build_step_log.dart';
 import 'app_upload_row.dart';
 
 /// Lists app uploads, one row per upload with the platforms it was built
@@ -88,6 +92,48 @@ class ReleaseBuildListTextUi extends OutputWidget {
         utc: utc,
       ),
     );
+  }
+}
+
+/// Prints the log of each step of an app build as the step ends.
+class ReleaseLogTextUi extends OutputWidget {
+  const ReleaseLogTextUi();
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    return _StepLogsWidget(stream: context.get<Stream<AppBuildStepLog>>());
+  }
+}
+
+class _StepLogsWidget extends OutputWidget {
+  final Stream<AppBuildStepLog> stream;
+
+  const _StepLogsWidget({required this.stream});
+
+  @override
+  Future<void> renderAsync({required final CommandLogger logger}) async {
+    await for (final stepLog in stream) {
+      final step = stepLog.step;
+      logger.line('--- ${step.name} (${_statusName(step.status)}) ---');
+
+      final log = stepLog.log;
+      if (log != null) {
+        for (final line in LineSplitter.split(log)) {
+          logger.line(line);
+        }
+      }
+    }
+  }
+
+  static String _statusName(AppBuildStepStatus status) {
+    return switch (status) {
+      AppBuildStepStatus.pending => 'Pending',
+      AppBuildStepStatus.running => 'Running',
+      AppBuildStepStatus.succeeded => 'Succeeded',
+      AppBuildStepStatus.failed => 'Failed',
+      AppBuildStepStatus.cancelled => 'Cancelled',
+      AppBuildStepStatus.skipped => 'Skipped',
+    };
   }
 }
 
