@@ -21,31 +21,33 @@ enum SubscriptionCause implements _isc.SerializableModel {
   /// The subscription's trial ended at `trialEndingAt`.
   trialEnded,
 
-  /// A non-first-day invoice of the subscription could not be issued because the
-  /// owner's billing info is missing. Its projects are suspended at
-  /// `suspendAt` unless the invoice is issued before then. A first-day
-  /// invoice that cannot be issued is `arrearsPastGracePeriod` at once.
+  /// The subscription's trial ended at `trialEndingAt` with the owner's
+  /// billing setup complete.
+  trialConverted,
+
+  /// An invoice of the subscription could not be issued because the
+  /// owner's billing info is missing. The subscription is in its grace
+  /// period, which ends at `suspendAt`.
   issueFailed,
 
-  /// A non-first-day invoice of the subscription could not be collected. Its
-  /// projects are suspended at `suspendAt` unless the invoice is paid
-  /// before then. A first-day invoice that cannot be collected is
-  /// `arrearsPastGracePeriod` at once.
+  /// An invoice of the subscription could not be collected. The
+  /// subscription is in its grace period, which ends at `suspendAt`.
   paymentFailed,
 
-  /// An invoice of the subscription is unpaid, or could not be issued, past
-  /// its grace period, so its projects are suspended now. `invoiceIssued`
-  /// tells which. The grace period is zero for a first-day invoice.
+  /// An invoice of the subscription is unpaid, or could not be issued, and
+  /// the subscription has no grace period left. `invoiceIssued` tells
+  /// which; `isFirstInvoice` tells that the subscription had paid no
+  /// invoice before and had no grace period. Without `billingInvoiceId`,
+  /// the subscription's trial ended at `trialEndingAt` with the owner's
+  /// billing setup incomplete, before any invoice.
   arrearsPastGracePeriod,
 
   /// The subscription owes nothing: no issued invoice is unpaid past due.
-  /// Published whenever an invoice is paid (`paidAt`) or issued already
-  /// paid (`paidAt` null), again on a redelivery, whether or not the
-  /// subscription was in arrears.
+  /// `paidAt` is set when a payment settled it. `isFirstInvoice` tells that
+  /// the payment is the subscription's first.
   settled,
 
-  /// The subscription ended in the billing system and its projects are
-  /// suspended for it.
+  /// The subscription ended in the billing system.
   ended;
 
   static SubscriptionCause fromJson(String name) {
@@ -54,6 +56,8 @@ enum SubscriptionCause implements _isc.SerializableModel {
         return SubscriptionCause.trialStarted;
       case 'trialEnded':
         return SubscriptionCause.trialEnded;
+      case 'trialConverted':
+        return SubscriptionCause.trialConverted;
       case 'issueFailed':
         return SubscriptionCause.issueFailed;
       case 'paymentFailed':
