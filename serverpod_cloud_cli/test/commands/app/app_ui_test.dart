@@ -64,8 +64,11 @@ void main() {
       stdout = io.stdout;
     });
 
-    test('when rendered then the row starts with an empty version', () {
-      expect(stdout.split('\n'), contains(matches(RegExp(r'^ +\| iOS '))));
+    test('when rendered then the row has an empty version', () {
+      expect(
+        stdout.split('\n'),
+        contains(matches(RegExp(r'^[0-9a-f-]{36} \| +\| iOS '))),
+      );
     });
   });
 
