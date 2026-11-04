@@ -83,7 +83,7 @@ void main() {
     ]);
   });
 
-  test('Given a running build before its publishing step '
+  test('Given a running build before its publish stage '
       'when getting its stage states '
       'then the build stage is active', () {
     final detail = AppBuildDetailBuilder()
@@ -99,7 +99,7 @@ void main() {
           ),
           AppBuildStepInfo(
             index: 1,
-            name: ReleaseBuildStatus.publishingStepName,
+            name: 'Upload to TestFlight',
             stage: AppBuildStage.publish,
             status: AppBuildStepStatus.pending,
           ),
@@ -113,7 +113,7 @@ void main() {
     ]);
   });
 
-  test('Given a running build in its publishing step '
+  test('Given a running build in its publish stage '
       'when getting its stage states '
       'then the upload stage is active', () {
     final detail = AppBuildDetailBuilder()
@@ -123,7 +123,7 @@ void main() {
         .withSteps([
           AppBuildStepInfo(
             index: 0,
-            name: ReleaseBuildStatus.publishingStepName,
+            name: 'Upload to TestFlight',
             stage: AppBuildStage.publish,
             status: AppBuildStepStatus.running,
           ),
@@ -137,7 +137,7 @@ void main() {
     ]);
   });
 
-  test('Given a build that failed before its publishing step '
+  test('Given a build that failed before its publish stage '
       'when getting its stage states '
       'then the build stage failed', () {
     final detail = AppBuildDetailBuilder()
