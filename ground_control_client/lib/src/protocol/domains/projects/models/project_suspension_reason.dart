@@ -24,8 +24,8 @@ enum ProjectSuspensionReason implements _isc.SerializableModel {
   usageCapExceeded,
 
   /// The invoice could not be issued because the billing setup is
-  /// incomplete. Usually occurs for first-day invoices, after a trial
-  /// concludes or new subscriptions without a trial.
+  /// incomplete. Usually occurs on the first invoice of a subscription that
+  /// started without billing details.
   billingSetupIncomplete,
 
   /// Suspended by an administrator.
