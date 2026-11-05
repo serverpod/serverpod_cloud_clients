@@ -75,9 +75,10 @@ class AppPublishAwaitOption extends FlagOption {
   const AppPublishAwaitOption({super.group})
     : super(
         argName: 'await',
-        defaultsTo: false,
-        negatable: false,
-        helpText: 'Await the builds to finish while showing their progress.',
+        defaultsTo: true,
+        helpText:
+            'Await the builds to finish while showing their progress, and '
+            'their build logs on an interactive terminal.',
       );
 }
 
@@ -220,9 +221,9 @@ Examples
 
     \$ $baseCommand app publish --platforms android
 
-  Publish the app and wait for its builds to finish
+  Publish the app without waiting for its builds to finish
 
-    \$ $baseCommand app publish --await
+    \$ $baseCommand app publish --no-await
 
   Publish a Flutter app in a specific directory
 
