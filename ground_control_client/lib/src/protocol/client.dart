@@ -137,28 +137,6 @@ import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'protocol.dart' as _il2as5qe;
 
-/// Admin tools for billing state.
-/// {@category Endpoint}
-class EndpointAdminBilling extends _isc.EndpointRef {
-  EndpointAdminBilling(_isc.EndpointCaller caller) : super(caller);
-
-  @override
-  String get name => 'adminBilling';
-
-  /// Starts a backfill that records the first paid invoice of every active
-  /// plan subscription without a state, from the billing system.
-  ///
-  /// The backfill runs on its own session after this call returns. It logs
-  /// the counts of subscriptions inserted, unpaid, recorded before, and
-  /// failed, or that it was skipped because another run holds the lock.
-  _ida.Future<void> backfillSubscriptionStates() =>
-      caller.callServerEndpoint<void>(
-        'adminBilling',
-        'backfillSubscriptionStates',
-        {},
-      );
-}
-
 /// Endpoint for reconciling database compute scaling against Serverpod Cloud.
 /// {@category Endpoint}
 class EndpointAdminDatabaseScaling extends _isc.EndpointRef {
@@ -3068,7 +3046,6 @@ class Client extends _isc.ServerpodClientShared {
              disconnectStreamsOnLostInternetConnection,
          httpClientOverride: httpClientOverride,
        ) {
-    adminBilling = EndpointAdminBilling(this);
     adminDatabaseScaling = EndpointAdminDatabaseScaling(this);
     adminGrants = EndpointAdminGrants(this);
     adminProcurement = EndpointAdminProcurement(this);
@@ -3109,8 +3086,6 @@ class Client extends _isc.ServerpodClientShared {
     users = EndpointUsers(this);
     modules = Modules(this);
   }
-
-  late final EndpointAdminBilling adminBilling;
 
   late final EndpointAdminDatabaseScaling adminDatabaseScaling;
 
@@ -3192,7 +3167,6 @@ class Client extends _isc.ServerpodClientShared {
 
   @override
   Map<String, _isc.EndpointRef> get endpointRefLookup => {
-    'adminBilling': adminBilling,
     'adminDatabaseScaling': adminDatabaseScaling,
     'adminGrants': adminGrants,
     'adminProcurement': adminProcurement,
