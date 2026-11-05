@@ -415,10 +415,6 @@ const _scenarios = [
   ]),
   _Scenario('admin list-users', ['admin', 'list-users']),
   _Scenario('admin list-users', ['admin', 'list-users', '--include-archived']),
-  _Scenario('admin backfill-subscription-states', [
-    'admin',
-    'backfill-subscription-states',
-  ]),
   _Scenario('admin invite-user', ['admin', 'invite-user', 'user@example.com']),
   _Scenario('admin user attach', [
     'admin',
