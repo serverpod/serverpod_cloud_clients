@@ -26,8 +26,6 @@ abstract class StoreConnection
     required this.store,
     required this.name,
     this.credential,
-    this.issuerId,
-    this.keyId,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) : id = id ?? const _isc.Uuid().v4obj(),
@@ -40,8 +38,6 @@ abstract class StoreConnection
     required _is7r02rq.StoreType store,
     required String name,
     _i8vsm21x.StoreCredentialInfo? credential,
-    String? issuerId,
-    String? keyId,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _StoreConnectionImpl;
@@ -63,8 +59,6 @@ abstract class StoreConnection
           : _iod2a87h.Protocol().deserialize<_i8vsm21x.StoreCredentialInfo>(
               jsonSerialization['credential'],
             ),
-      issuerId: jsonSerialization['issuerId'] as String?,
-      keyId: jsonSerialization['keyId'] as String?,
       createdAt: jsonSerialization['createdAt'] == null
           ? null
           : _isc.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
@@ -84,14 +78,8 @@ abstract class StoreConnection
   String name;
 
   /// The public part of the credential, shaped per store. Always set;
-  /// nullable only until `issuerId` and `keyId` are dropped.
+  /// nullable only until the column is tightened in a follow-up migration.
   _i8vsm21x.StoreCredentialInfo? credential;
-
-  /// Superseded by `credential`. Kept one release so the previous code
-  /// can still write the row during rollout; dropped in a follow-up.
-  String? issuerId;
-
-  String? keyId;
 
   DateTime createdAt;
 
@@ -106,8 +94,6 @@ abstract class StoreConnection
     _is7r02rq.StoreType? store,
     String? name,
     _i8vsm21x.StoreCredentialInfo? credential,
-    String? issuerId,
-    String? keyId,
     DateTime? createdAt,
     DateTime? updatedAt,
   });
@@ -120,8 +106,6 @@ abstract class StoreConnection
       'store': store.toJson(),
       'name': name,
       if (credential != null) 'credential': credential?.toJson(),
-      if (issuerId != null) 'issuerId': issuerId,
-      if (keyId != null) 'keyId': keyId,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
     };
@@ -136,8 +120,6 @@ abstract class StoreConnection
       'store': store.toJson(),
       'name': name,
       if (credential != null) 'credential': credential?.toJsonForProtocol(),
-      if (issuerId != null) 'issuerId': issuerId,
-      if (keyId != null) 'keyId': keyId,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
     };
@@ -158,8 +140,6 @@ class _StoreConnectionImpl extends StoreConnection {
     required _is7r02rq.StoreType store,
     required String name,
     _i8vsm21x.StoreCredentialInfo? credential,
-    String? issuerId,
-    String? keyId,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) : super._(
@@ -168,8 +148,6 @@ class _StoreConnectionImpl extends StoreConnection {
          store: store,
          name: name,
          credential: credential,
-         issuerId: issuerId,
-         keyId: keyId,
          createdAt: createdAt,
          updatedAt: updatedAt,
        );
@@ -184,8 +162,6 @@ class _StoreConnectionImpl extends StoreConnection {
     _is7r02rq.StoreType? store,
     String? name,
     Object? credential = _Undefined,
-    Object? issuerId = _Undefined,
-    Object? keyId = _Undefined,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -197,8 +173,6 @@ class _StoreConnectionImpl extends StoreConnection {
       credential: credential is _i8vsm21x.StoreCredentialInfo?
           ? credential
           : this.credential?.copyWith(),
-      issuerId: issuerId is String? ? issuerId : this.issuerId,
-      keyId: keyId is String? ? keyId : this.keyId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
