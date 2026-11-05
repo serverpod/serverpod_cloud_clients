@@ -27,9 +27,9 @@ abstract class AppPublish {
   /// When [platforms] is null, the app is published for the
   /// [defaultPlatforms] it has code for.
   ///
-  /// With [awaitBuilds], the progress of the builds is shown until they end.
-  /// Otherwise the command to follow them is shown, invoked through
-  /// [baseCommand].
+  /// The command to follow the builds is shown, invoked through
+  /// [baseCommand]. With [awaitBuilds], the progress and logs of the builds
+  /// are then shown until they end.
   ///
   /// Throws [FailureException] if the app has no code for a platform to
   /// publish, if the builds cannot be requested, or if an awaited build does
@@ -45,7 +45,7 @@ abstract class AppPublish {
     required Directory appDirectory,
     required List<FlutterPlatform> defaultPlatforms,
     Set<FlutterPlatform>? platforms,
-    bool awaitBuilds = false,
+    bool awaitBuilds = true,
   }) async {
     logger.init('Publishing the app of Serverpod Cloud project "$projectId".');
 
@@ -118,10 +118,8 @@ abstract class AppPublish {
       'Publishing ${versionName ?? 'the app'} to $platformNames',
       newParagraph: true,
     );
-    if (!awaitBuilds) {
-      logger.info('Follow it: $baseCommand app show ${upload.uploadId}');
-      return;
-    }
+    logger.info('Follow it: $baseCommand app show ${upload.uploadId}');
+    if (!awaitBuilds) return;
 
     await AppBuildProgress.follow(
       cloudApiClient,
@@ -129,6 +127,7 @@ abstract class AppPublish {
       projectId: projectId,
       builds: builds,
       versionName: versionName,
+      showLogs: true,
     );
   }
 

@@ -29,6 +29,10 @@ import 'app_build_status_formatter.dart';
 abstract class AppOperations {
   static const _maxPageSize = 100;
 
+  static const _maxSilentTails = 3;
+
+  static const _tailReconnectDelay = Duration(seconds: 1);
+
   /// Requests a build of the Flutter app in [flutterAppDir] of the archive
   /// for each of [platforms] in project [projectId], and returns the build
   /// ids with the upload description for an archive of [archiveSize] bytes.
@@ -134,9 +138,40 @@ abstract class AppOperations {
   /// Returns the app build [buildId] of project [projectId] on every change,
   /// until it reaches a final status.
   ///
-  /// The stream reconnects when the connection drops, and emits a
-  /// [FailureException] if it cannot.
+  /// The stream reconnects when the connection drops, or when it closes
+  /// before the build has ended, and emits a [FailureException] if it cannot
+  /// reconnect. It closes before the build has ended only when several
+  /// connections in a row close without reporting the build.
   static Stream<AppBuildDetail> tailBuild(
+    Client cloudApiClient, {
+    required String projectId,
+    required UuidValue buildId,
+  }) async* {
+    AppBuildDetail? lastDetail;
+    var silentTails = 0;
+    while (true) {
+      var reported = false;
+      await for (final detail in _tailBuildConnection(
+        cloudApiClient,
+        projectId: projectId,
+        buildId: buildId,
+      )) {
+        reported = true;
+        lastDetail = detail;
+        yield detail;
+      }
+      if (lastDetail != null && _hasBuildEnded(lastDetail.build.status)) {
+        return;
+      }
+      silentTails = reported ? 0 : silentTails + 1;
+      if (silentTails >= _maxSilentTails) {
+        return;
+      }
+      await Future<void>.delayed(_tailReconnectDelay);
+    }
+  }
+
+  static Stream<AppBuildDetail> _tailBuildConnection(
     Client cloudApiClient, {
     required String projectId,
     required UuidValue buildId,
@@ -345,35 +380,61 @@ abstract class AppOperations {
     required UuidValue buildId,
     required AppPlatform platform,
   }) async* {
-    var loggedStepCount = 0;
     AppBuildDetail? lastDetail;
-    await for (final detail in tailBuild(
+    yield* stepLogs(
       cloudApiClient,
       projectId: projectId,
       buildId: buildId,
-    )) {
-      lastDetail = detail;
+      details: tailBuild(
+        cloudApiClient,
+        projectId: projectId,
+        buildId: buildId,
+      ).map((detail) => lastDetail = detail),
+    );
+
+    final error = AppBuildStatusFormatter.buildError(platform, lastDetail);
+    if (error != null) {
+      throw FailureException(error: error);
+    }
+  }
+
+  /// Returns the log of each step of the app build [buildId] of project
+  /// [projectId], in run order, as the build [details] show the step has
+  /// ended. Once a detail shows the build has ended, the steps that have not
+  /// ended follow.
+  ///
+  /// The stream emits a [FailureException] for each step whose log cannot be
+  /// fetched, and goes on with the next step.
+  static Stream<AppBuildStepLog> stepLogs(
+    Client cloudApiClient, {
+    required String projectId,
+    required UuidValue buildId,
+    required Stream<AppBuildDetail> details,
+  }) async* {
+    var loggedStepCount = 0;
+    await for (final detail in details) {
       final remainingSteps = detail.steps.skip(loggedStepCount);
       final stepsToLog = _hasBuildEnded(detail.build.status)
           ? remainingSteps
           : remainingSteps.takeWhile((step) => _hasEnded(step.status));
       for (final step in stepsToLog) {
-        final log = _hasLog(step)
-            ? await _getStepLog(
-                cloudApiClient,
-                projectId: projectId,
-                buildId: buildId,
-                stepIndex: step.index,
-              )
-            : null;
-        yield AppBuildStepLog(step: step, log: log);
         loggedStepCount++;
+        final String? log;
+        try {
+          log = _hasLog(step)
+              ? await _getStepLog(
+                  cloudApiClient,
+                  projectId: projectId,
+                  buildId: buildId,
+                  stepIndex: step.index,
+                )
+              : null;
+        } on FailureException catch (e, stackTrace) {
+          yield* Stream.error(e, stackTrace);
+          continue;
+        }
+        yield AppBuildStepLog(step: step, log: log);
       }
-    }
-
-    final error = AppBuildStatusFormatter.buildError(platform, lastDetail);
-    if (error != null) {
-      throw FailureException(error: error);
     }
   }
 

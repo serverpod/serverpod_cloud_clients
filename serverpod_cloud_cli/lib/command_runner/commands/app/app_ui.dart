@@ -1,12 +1,13 @@
 import 'dart:convert';
 
 import 'package:ground_control_client/ground_control_client.dart'
-    show AppBuildStatus, AppBuildStepStatus, AppBuildSummary, AppPlatform;
+    show AppBuildStatus, AppBuildSummary, AppPlatform;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/util/duration_formatter.dart'
     show friendlyPastTimeFormat;
 import 'package:serverpod_cloud_cli/util/output/output.dart';
 
+import 'app_build_status_formatter.dart';
 import 'app_build_step_log.dart';
 import 'app_upload_row.dart';
 
@@ -121,8 +122,7 @@ class _StepLogsWidget extends OutputWidget {
   @override
   Future<void> renderAsync({required final CommandLogger logger}) async {
     await for (final stepLog in stream) {
-      final step = stepLog.step;
-      logger.line('--- ${step.name} (${_statusName(step.status)}) ---');
+      logger.line(AppBuildStatusFormatter.stepLogHeading(stepLog.step));
 
       final log = stepLog.log;
       if (log != null) {
@@ -131,17 +131,6 @@ class _StepLogsWidget extends OutputWidget {
         }
       }
     }
-  }
-
-  static String _statusName(AppBuildStepStatus status) {
-    return switch (status) {
-      AppBuildStepStatus.pending => 'Pending',
-      AppBuildStepStatus.running => 'Running',
-      AppBuildStepStatus.succeeded => 'Succeeded',
-      AppBuildStepStatus.failed => 'Failed',
-      AppBuildStepStatus.cancelled => 'Cancelled',
-      AppBuildStepStatus.skipped => 'Skipped',
-    };
   }
 }
 

@@ -49,6 +49,13 @@ abstract class AppBuildStatusFormatter {
     };
   }
 
+  /// The heading of the log of [step], such as `--- Build (Succeeded) ---`,
+  /// with the name of [platform] before the step name when it is set.
+  static String stepLogHeading(AppBuildStepInfo step, {AppPlatform? platform}) {
+    final prefix = platform == null ? '' : '${platformName(platform)}: ';
+    return '--- $prefix${step.name} (${_stepStatusName(step.status)}) ---';
+  }
+
   /// The error of the build for [platform] in [detail], or null when the
   /// build succeeded. A null [detail] is reported as a build that did not
   /// report its status, and a build that has not ended as one that did not
@@ -173,6 +180,17 @@ abstract class AppBuildStatusFormatter {
             '${names.activeName}',
       AppBuildStageState.done => '✓ ${names.doneName}',
       AppBuildStageState.failed => '✗ ${names.name}',
+    };
+  }
+
+  static String _stepStatusName(AppBuildStepStatus status) {
+    return switch (status) {
+      AppBuildStepStatus.pending => 'Pending',
+      AppBuildStepStatus.running => 'Running',
+      AppBuildStepStatus.succeeded => 'Succeeded',
+      AppBuildStepStatus.failed => 'Failed',
+      AppBuildStepStatus.cancelled => 'Cancelled',
+      AppBuildStepStatus.skipped => 'Skipped',
     };
   }
 

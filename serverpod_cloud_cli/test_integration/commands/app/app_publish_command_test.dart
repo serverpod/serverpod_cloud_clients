@@ -97,7 +97,7 @@ void main() {
       ]).create();
     });
 
-    group('when releasing the app', () {
+    group('when releasing the app with --no-await', () {
       late Future<void> commandResult;
 
       setUp(() {
@@ -108,6 +108,7 @@ void main() {
           _projectId,
           '--project-dir',
           p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
         ]);
       });
 
@@ -211,7 +212,7 @@ void main() {
       });
     });
 
-    group('and builds that succeed when releasing the app with --await', () {
+    group('and builds that succeed when releasing the app', () {
       late Future<void> commandResult;
 
       setUp(() {
@@ -241,6 +242,17 @@ void main() {
           ]),
         );
 
+        when(
+          () => client.appBuilds.getStepLog(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            buildId: any(named: 'buildId'),
+            stepIndex: any(named: 'stepIndex'),
+          ),
+        ).thenAnswer(
+          (_) async =>
+              [for (var line = 1; line <= 7; line++) 'line $line\n'].join(),
+        );
+
         commandResult = cli.run([
           'app',
           'publish',
@@ -248,8 +260,16 @@ void main() {
           _projectId,
           '--project-dir',
           p.join(d.sandbox, 'monorepo', 'project_server'),
-          '--await',
         ]);
+      });
+
+      test('then the command to follow the builds is shown', () async {
+        await commandResult;
+
+        expect(
+          logger.infoCalls.map((call) => call.message),
+          contains(matches(RegExp(r'^Follow it: \S+ app show \S+$'))),
+        );
       });
 
       test('then the build is followed', () async {
@@ -274,6 +294,32 @@ void main() {
         );
       });
 
+      test('then the last five lines of the build log scroll below '
+          'the status line', () async {
+        await commandResult;
+
+        expect(
+          (logger.inlineTerminal as FakeTerminal).output,
+          contains(
+            '→ Play internal\n'
+            'line 3\n'
+            'line 4\n'
+            'line 5\n'
+            'line 6\n'
+            'line 7',
+          ),
+        );
+      });
+
+      test('then the build log is cleared', () async {
+        await commandResult;
+
+        expect(
+          _lastRender(logger.inlineTerminal as FakeTerminal),
+          'Android  ✓ Queued    ✓ Built     ✓ Uploaded → Play internal\n',
+        );
+      });
+
       test('then the publication is reported', () async {
         await commandResult;
 
@@ -285,7 +331,7 @@ void main() {
     });
 
     test('and no interactive terminal '
-        'when releasing the app with --await '
+        'when releasing the app '
         'then each status change is printed as a line', () async {
       logger.inlineTerminal = FakeTerminal(hasTerminal: false);
       when(
@@ -321,7 +367,6 @@ void main() {
         _projectId,
         '--project-dir',
         p.join(d.sandbox, 'monorepo', 'project_server'),
-        '--await',
       ]);
 
       expect(logger.lineCalls.map((call) => call.line), [
@@ -331,7 +376,154 @@ void main() {
       ]);
     });
 
-    group('and a build that fails when releasing the app with --await', () {
+    group('and a build tail that closes before the build ends '
+        'when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() {
+        final statuses = [AppBuildStatus.queued, AppBuildStatus.succeeded];
+        var connection = 0;
+        when(
+          () => client.appBuilds.tailBuild(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            buildId: any(named: 'buildId'),
+          ),
+        ).thenAnswer(
+          (_) => Stream.value(
+            AppBuildDetailBuilder()
+                .withBuild(
+                  AppBuildSummaryBuilder()
+                      .withPlatform(AppPlatform.android)
+                      .withStatus(statuses[connection++])
+                      .build(),
+                )
+                .withSteps([])
+                .build(),
+          ),
+        );
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+        ]);
+      });
+
+      test('then the build is followed again', () async {
+        await commandResult;
+
+        verify(
+          () => client.appBuilds.tailBuild(
+            cloudCapsuleId: _projectId,
+            buildId: any(named: 'buildId'),
+          ),
+        ).called(2);
+      });
+
+      test('then the publication is reported', () async {
+        await commandResult;
+
+        expect(
+          logger.successCalls.map((call) => call.message),
+          contains('Published the app to Android.'),
+        );
+      });
+    });
+
+    group('and a step log that cannot be fetched when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() {
+        when(
+          () => client.appBuilds.tailBuild(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            buildId: any(named: 'buildId'),
+          ),
+        ).thenAnswer(
+          (_) => Stream.value(
+            AppBuildDetailBuilder()
+                .withBuild(
+                  AppBuildSummaryBuilder()
+                      .withPlatform(AppPlatform.android)
+                      .withStatus(AppBuildStatus.succeeded)
+                      .build(),
+                )
+                .withSteps([
+                  AppBuildStepInfoBuilder()
+                      .withIndex(0)
+                      .withName('Build')
+                      .build(),
+                  AppBuildStepInfoBuilder()
+                      .withIndex(1)
+                      .withName('Upload')
+                      .build(),
+                ])
+                .build(),
+          ),
+        );
+        when(
+          () => client.appBuilds.getStepLog(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            buildId: any(named: 'buildId'),
+            stepIndex: 0,
+          ),
+        ).thenThrow(Exception('Connection reset'));
+        when(
+          () => client.appBuilds.getStepLog(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            buildId: any(named: 'buildId'),
+            stepIndex: 1,
+          ),
+        ).thenAnswer((_) async => 'Uploaded app-release.aab\n');
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+        ]);
+      });
+
+      test(
+        'then the error is shown in the log while following the build',
+        () async {
+          await commandResult;
+
+          expect(
+            (logger.inlineTerminal as FakeTerminal).output,
+            contains('Failed to fetch the log of step 0 of the app build'),
+          );
+        },
+      );
+
+      test('then the log goes on with the next step', () async {
+        await commandResult;
+
+        expect(
+          (logger.inlineTerminal as FakeTerminal).output,
+          contains(
+            '--- Upload (Succeeded) ---\n'
+            'Uploaded app-release.aab',
+          ),
+        );
+      });
+
+      test('then the publication is reported', () async {
+        await commandResult;
+
+        expect(
+          logger.successCalls.map((call) => call.message),
+          contains('Published the app to Android.'),
+        );
+      });
+    });
+
+    group('and a build that fails when releasing the app', () {
       late Future<void> commandResult;
 
       setUp(() {
@@ -350,8 +542,23 @@ void main() {
                       .withMessage('Gradle task assembleRelease failed.')
                       .build(),
                 )
+                .withSteps([
+                  AppBuildStepInfoBuilder()
+                      .withStatus(AppBuildStepStatus.failed)
+                      .build(),
+                ])
                 .build(),
           ),
+        );
+        when(
+          () => client.appBuilds.getStepLog(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            buildId: any(named: 'buildId'),
+            stepIndex: any(named: 'stepIndex'),
+          ),
+        ).thenAnswer(
+          (_) async =>
+              [for (var line = 1; line <= 7; line++) 'line $line\n'].join(),
         );
 
         commandResult = cli.run([
@@ -361,7 +568,6 @@ void main() {
           _projectId,
           '--project-dir',
           p.join(d.sandbox, 'monorepo', 'project_server'),
-          '--await',
         ]);
       });
 
@@ -379,6 +585,20 @@ void main() {
           ),
         );
       });
+
+      test(
+        'then the build log is kept in full below the status line',
+        () async {
+          await commandResult.catchError((_) {});
+
+          expect(
+            _lastRender(logger.inlineTerminal as FakeTerminal),
+            'Android  ✓ Queued    ✗ Build     ● Upload → Play internal\n'
+            '--- Build (Failed) ---\n'
+            '${[for (var line = 1; line <= 7; line++) 'line $line\n'].join()}',
+          );
+        },
+      );
 
       test('then the failure is logged with its message', () async {
         await commandResult.catchError((_) {});
@@ -430,6 +650,7 @@ void main() {
           _projectId,
           '--project-dir',
           p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
         ]);
       });
 
@@ -493,6 +714,7 @@ void main() {
           _projectId,
           '--project-dir',
           p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
         ]);
       });
 
@@ -537,6 +759,7 @@ void main() {
         _projectId,
         '--project-dir',
         p.join(d.sandbox, 'monorepo', 'project_server'),
+        '--no-await',
       ]);
 
       verify(
@@ -551,6 +774,90 @@ void main() {
           branch: any(named: 'branch'),
         ),
       ).called(1);
+    });
+
+    group('and iOS code and builds that succeed when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() async {
+        await d.dir('monorepo', [
+          d.dir('project_flutter', [
+            d.dir('ios', [d.file('Podfile', '')]),
+          ]),
+        ]).create();
+
+        final platformOfBuild = <UuidValue, AppPlatform>{};
+        when(
+          () => client.appBuilds.createBuilds(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            platforms: any(named: 'platforms'),
+            flutterAppDir: any(named: 'flutterAppDir'),
+            archiveSize: any(named: 'archiveSize'),
+            versionName: any(named: 'versionName'),
+            commitHash: any(named: 'commitHash'),
+            commitMessage: any(named: 'commitMessage'),
+            branch: any(named: 'branch'),
+          ),
+        ).thenAnswer((invocation) async {
+          final upload = AppBuildsUploadBuilder()
+              .withPlatforms(
+                invocation.namedArguments[#platforms] as List<AppPlatform>,
+              )
+              .withUploadDescription(_appUploadDescription)
+              .build();
+          for (final build in upload.builds) {
+            platformOfBuild[build.buildId] = build.platform;
+          }
+          return upload;
+        });
+        when(
+          () => client.appBuilds.tailBuild(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            buildId: any(named: 'buildId'),
+          ),
+        ).thenAnswer(
+          (invocation) => Stream.value(
+            AppBuildDetailBuilder()
+                .withBuild(
+                  AppBuildSummaryBuilder()
+                      .withPlatform(
+                        platformOfBuild[invocation.namedArguments[#buildId]]!,
+                      )
+                      .withStatus(AppBuildStatus.succeeded)
+                      .build(),
+                )
+                .build(),
+          ),
+        );
+        when(
+          () => client.appBuilds.getStepLog(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            buildId: any(named: 'buildId'),
+            stepIndex: any(named: 'stepIndex'),
+          ),
+        ).thenAnswer((_) async => 'Built the app\n');
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+        ]);
+      });
+
+      test('then each log heading names its platform', () async {
+        await commandResult;
+
+        expect(
+          (logger.inlineTerminal as FakeTerminal).output,
+          allOf(
+            contains('--- Android: Build (Succeeded) ---'),
+            contains('--- iOS: Build (Succeeded) ---'),
+          ),
+        );
+      });
     });
 
     group('and iOS code when releasing the app', () {
@@ -570,6 +877,7 @@ void main() {
           _projectId,
           '--project-dir',
           p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
         ]);
       });
 
@@ -627,6 +935,7 @@ void main() {
         p.join(d.sandbox, 'monorepo', 'project_server'),
         '--platforms',
         'android',
+        '--no-await',
       ]);
 
       expect(
@@ -648,6 +957,7 @@ void main() {
           p.join(d.sandbox, 'monorepo', 'project_server'),
           '--platforms',
           'android,ios',
+          '--no-await',
         ]);
       });
 
@@ -701,6 +1011,7 @@ void main() {
           p.join(d.sandbox, 'monorepo', 'project_server'),
           '--platforms',
           'android,linux,windows',
+          '--no-await',
         ]),
         throwsA(
           isA<UsageException>().having(
@@ -727,6 +1038,7 @@ void main() {
           p.join(d.sandbox, 'monorepo', 'project_server'),
           '--platforms',
           'fuchsia',
+          '--no-await',
         ]),
         throwsA(
           isA<UsageException>().having(
@@ -776,6 +1088,7 @@ project:
           _projectId,
           '--project-dir',
           p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
         ]);
 
         expect(
@@ -809,6 +1122,7 @@ project:
             _projectId,
             '--project-dir',
             p.join(d.sandbox, 'monorepo', 'project_server'),
+            '--no-await',
           ]);
         });
 
@@ -846,6 +1160,7 @@ project:
           p.join(d.sandbox, 'monorepo', 'project_server'),
           '--app-dir',
           p.join(d.sandbox, 'monorepo', 'project_flutter'),
+          '--no-await',
         ]);
 
         expect(
@@ -864,6 +1179,7 @@ project:
         _projectId,
         '--app-dir',
         p.join(d.sandbox, 'monorepo', 'project_flutter'),
+        '--no-await',
       ]);
 
       expect(
@@ -892,6 +1208,7 @@ project:
         _projectId,
         '--app-dir',
         p.join(d.sandbox, 'project_flutter'),
+        '--no-await',
       ]);
 
       verify(
@@ -937,6 +1254,7 @@ project:
           _projectId,
           '--app-dir',
           p.join(d.sandbox, 'project_flutter'),
+          '--no-await',
         ]);
       });
 
@@ -1029,6 +1347,7 @@ project:
         _projectId,
         '--app-dir',
         p.join(d.sandbox, 'project_flutter'),
+        '--no-await',
       ]);
     });
 
@@ -1073,6 +1392,7 @@ project:
       _projectId,
       '--project-dir',
       p.join(d.sandbox, ProjectFactory.defaultDirectoryName),
+      '--no-await',
     ]);
 
     expect(
@@ -1096,6 +1416,7 @@ project:
         _projectId,
         '--project-dir',
         p.join(d.sandbox, ProjectFactory.defaultDirectoryName),
+        '--no-await',
       ]);
     });
 
@@ -1123,4 +1444,9 @@ project:
 
 Archive _uploadedArchive(RecordedUpload upload) {
   return ZipDecoder().decodeBytes(upload.data);
+}
+
+String _lastRender(FakeTerminal terminal) {
+  final output = terminal.output.replaceAll('\x1b[?25h', '');
+  return output.substring(output.lastIndexOf('\x1b[0J') + '\x1b[0J'.length);
 }

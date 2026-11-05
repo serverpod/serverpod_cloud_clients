@@ -187,4 +187,30 @@ void main() {
       'iOS and Android',
     );
   });
+
+  test('Given a failed step '
+      'when heading its log '
+      'then the heading names the step and its status', () {
+    expect(
+      AppBuildStatusFormatter.stepLogHeading(
+        AppBuildStepInfoBuilder()
+            .withName('Build')
+            .withStatus(AppBuildStepStatus.failed)
+            .build(),
+      ),
+      '--- Build (Failed) ---',
+    );
+  });
+
+  test('Given a step '
+      'when heading its log with a platform '
+      'then the heading names the platform before the step', () {
+    expect(
+      AppBuildStatusFormatter.stepLogHeading(
+        AppBuildStepInfoBuilder().withName('Build').build(),
+        platform: AppPlatform.ios,
+      ),
+      '--- iOS: Build (Succeeded) ---',
+    );
+  });
 }
