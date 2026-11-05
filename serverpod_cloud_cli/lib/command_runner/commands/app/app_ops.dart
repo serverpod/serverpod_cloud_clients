@@ -11,6 +11,7 @@ import 'package:ground_control_client/ground_control_client.dart'
         AppBuildsUpload,
         AppPlatform,
         AppPublishingDisabledException,
+        AppPublishingSetup,
         Client,
         InvalidValueException,
         NotFoundException,
@@ -23,6 +24,7 @@ import 'package:serverpod_cloud_cli/util/flutter_platform.dart';
 import 'package:serverpod_cloud_cli/util/git_metadata.dart';
 
 import 'app_build_step_log.dart';
+import 'app_status_row.dart';
 import 'app_upload_row.dart';
 import 'app_build_status_formatter.dart';
 
@@ -214,6 +216,59 @@ abstract class AppOperations {
       }
     }
     return failures;
+  }
+
+  /// Returns each platform of project [projectId] that has a connected
+  /// store, in display order, with its most recent build. The builds are
+  /// only fetched when a store is connected.
+  ///
+  /// Throws [FailureException] if the publishing setup or the builds cannot
+  /// be fetched.
+  static Future<List<AppStatusRow>> getStatus(
+    Client cloudApiClient, {
+    required String projectId,
+  }) async {
+    final AppPublishingSetup setup;
+    final List<AppBuildSummary> latestBuilds;
+    try {
+      setup = await cloudApiClient.appPublishing.getSetup(
+        cloudCapsuleId: projectId,
+      );
+      final hasConnectedStore =
+          setup.ios.store != null || setup.android.store != null;
+      latestBuilds = hasConnectedStore
+          ? await cloudApiClient.appBuilds.getLatestBuilds(
+              cloudCapsuleId: projectId,
+            )
+          : const [];
+    } on AppPublishingDisabledException catch (e) {
+      throw FailureException(error: e.message);
+    } on NotFoundException catch (e) {
+      throw FailureException(error: e.message);
+    } on Exception catch (e, stackTrace) {
+      throw FailureException.nested(
+        e,
+        stackTrace,
+        'Failed to fetch the app status.',
+      );
+    }
+
+    final connectedPlatforms = [
+      if (setup.ios.store != null)
+        (platform: AppPlatform.ios, store: AppStore.appStore),
+      if (setup.android.store != null)
+        (platform: AppPlatform.android, store: AppStore.googlePlay),
+    ];
+    return [
+      for (final (:platform, :store) in connectedPlatforms)
+        AppStatusRow(
+          platform: platform,
+          store: store,
+          latestBuild: latestBuilds
+              .where((build) => build.platform == platform)
+              .firstOrNull,
+        ),
+    ];
   }
 
   /// Lists the [limit] most recent app uploads of project [projectId] with

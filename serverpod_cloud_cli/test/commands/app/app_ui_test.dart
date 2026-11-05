@@ -1,6 +1,7 @@
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/app/app_build_step_log.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/app/app_status_row.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/app/app_upload_row.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/app/app_ui.dart';
 import 'package:test/test.dart';
@@ -163,6 +164,28 @@ void main() {
           '${createdAt.toIso8601String().substring(11, 19)} (UTC)',
         ),
       );
+    });
+  });
+
+  group('Given a platform whose latest build ended more than 7 days ago', () {
+    test('when rendering the status in UTC '
+        'then the state shows the labelled timestamp', () async {
+      final io = await renderCommandUi(
+        const AppStatusTextUi(utc: true, baseCommand: 'scloud'),
+        data: [
+          AppStatusRow(
+            platform: AppPlatform.ios,
+            store: AppStore.appStore,
+            latestBuild: AppBuildSummaryBuilder()
+                .withCreatedAt(DateTime.utc(2026, 1, 15, 8, 50))
+                .withStartedAt(DateTime.utc(2026, 1, 15, 8, 52))
+                .withEndedAt(DateTime.utc(2026, 1, 15, 9, 15, 5))
+                .build(),
+          ),
+        ],
+      );
+
+      expect(io.stdout, contains('Uploaded · 2026-01-15 09:15:05 (UTC)'));
     });
   });
 

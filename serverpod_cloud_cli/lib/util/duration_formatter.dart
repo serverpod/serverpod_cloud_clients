@@ -37,16 +37,19 @@ String friendlyFormatDuration(Duration value) {
 /// Times more than 7 days in the past are formatted as an absolute
 /// timestamp instead, like "2026-07-23 09:15:05 (local)" — in the local
 /// time zone, or in UTC if [inUtc] is set.
+///
+/// With [short], the relative phrase abbreviates its unit, like "2h ago".
 String friendlyPastTimeFormat(
   DateTime time, {
   bool inUtc = false,
   DateTime? now,
+  bool short = false,
 }) {
   final elapsed = (now ?? DateTime.now()).difference(time);
   if (elapsed > _relativeTimeLimit) {
     return time.toLabeledTzString(inUtc, numTimeStampChars);
   }
-  return friendlyAgoFormat(elapsed);
+  return friendlyAgoFormat(elapsed, short: short);
 }
 
 /// Formats an elapsed duration as a coarse, human-friendly
@@ -54,25 +57,32 @@ String friendlyPastTimeFormat(
 ///
 /// Only the largest applicable time unit is shown,
 /// and durations under 5 seconds are treated as "just now".
-String friendlyAgoFormat(Duration elapsed) {
+///
+/// With [short], the unit is abbreviated, like "2h ago".
+String friendlyAgoFormat(Duration elapsed, {bool short = false}) {
   if (elapsed.inSeconds < 5) {
     return 'just now';
   }
+  final ago = short ? _shortAgo : _pluralizedAgo;
   if (elapsed.inMinutes < 1) {
-    return _pluralizedAgo(elapsed.inSeconds, 'second');
+    return ago(elapsed.inSeconds, 'second');
   }
   if (elapsed.inHours < 1) {
-    return _pluralizedAgo(elapsed.inMinutes, 'minute');
+    return ago(elapsed.inMinutes, 'minute');
   }
   if (elapsed.inDays < 1) {
-    return _pluralizedAgo(elapsed.inHours, 'hour');
+    return ago(elapsed.inHours, 'hour');
   }
-  return _pluralizedAgo(elapsed.inDays, 'day');
+  return ago(elapsed.inDays, 'day');
 }
 
 String _pluralizedAgo(int count, String unit) {
   final pluralizedUnit = count == 1 ? unit : '${unit}s';
   return '$count $pluralizedUnit ago';
+}
+
+String _shortAgo(int count, String unit) {
+  return '$count${unit[0]} ago';
 }
 
 String _unitStr(int value, int? mod, String unit) {

@@ -9,6 +9,7 @@ import 'package:serverpod_cloud_cli/util/output/output.dart';
 
 import 'app_build_status_formatter.dart';
 import 'app_build_step_log.dart';
+import 'app_status_row.dart';
 import 'app_upload_row.dart';
 
 /// Lists app uploads, one row per upload with its ID and the platforms it
@@ -102,6 +103,113 @@ class AppBuildListTextUi extends OutputWidget {
       ),
     );
   }
+}
+
+/// Shows each platform with a connected store and the version and state of
+/// its latest build. Below the table, a latest build that has not ended
+/// shows the command to follow it, and one that failed or was cancelled
+/// shows why, with the command to read its log when it started. The
+/// commands are invoked through [baseCommand]. With `--format csv`, only
+/// the table is shown.
+class AppStatusTextUi extends OutputWidget {
+  final bool utc;
+  final String baseCommand;
+
+  const AppStatusTextUi({required this.utc, required this.baseCommand});
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    final rows = context.get<List<AppStatusRow>>();
+    if (rows.isEmpty) {
+      return const InfoTextWidget('No store is connected to the project yet.');
+    }
+    if (context.format == OutputFormat.csv) {
+      return _statusTable(rows);
+    }
+    return OutputWidgetList([
+      _statusTable(rows),
+      for (final row in rows)
+        if (row.latestBuild case final build?) ?_buildHint(build),
+    ]);
+  }
+
+  OutputWidget _statusTable(List<AppStatusRow> rows) {
+    return FormattedTableWidget(
+      formatter: TextTableOutputFormatter<AppStatusRow>(
+        columns: [
+          TableColumnFormatter.forElement(
+            'Platform',
+            getter: (row) => _platformName(row.platform),
+          ),
+          TableColumnFormatter.forElement(
+            'Store',
+            getter: (row) => _storeName(row.store),
+          ),
+          TableColumnFormatter.forElement(
+            'Version',
+            getter: (row) => switch (row.latestBuild) {
+              final build? => _version(build.versionName, [build.buildNumber]),
+              null => '',
+            },
+          ),
+          TableColumnFormatter.forElement(
+            'State',
+            getter: (row) => switch (row.latestBuild) {
+              final build? => _latestBuildState(build, utc: utc),
+              null => 'No builds yet',
+            },
+          ),
+        ],
+        utc: utc,
+      ),
+    );
+  }
+
+  /// The command to follow [build] while it has not ended, or the reason it
+  /// did not succeed, with the command to read its log when it started.
+  /// Null for a build that succeeded.
+  OutputWidget? _buildHint(AppBuildSummary build) {
+    final reason = AppBuildStatusFormatter.summaryError(build.platform, build);
+    if (reason == null) return null;
+    return switch (build.status) {
+      AppBuildStatus.queued ||
+      AppBuildStatus.waiting ||
+      AppBuildStatus.running => CommandHintTextWidget(
+        'Follow the ${_platformName(build.platform)} build:',
+        command: '$baseCommand app show ${build.uploadId}',
+        newParagraph: true,
+      ),
+      AppBuildStatus.failed || AppBuildStatus.cancelled
+          when build.startedAt == null =>
+        InfoTextWidget(reason, newParagraph: true),
+      AppBuildStatus.failed ||
+      AppBuildStatus.cancelled => CommandHintTextWidget(
+        reason,
+        command:
+            '$baseCommand app log ${build.uploadId} '
+            '--platform ${build.platform.name}',
+        newParagraph: true,
+      ),
+      AppBuildStatus.succeeded => null,
+    };
+  }
+}
+
+String _storeName(AppStore store) {
+  return switch (store) {
+    AppStore.appStore => 'App Store',
+    AppStore.googlePlay => 'Google Play',
+  };
+}
+
+/// The state of [build] with when it reached it, like "Uploaded · 2h ago".
+String _latestBuildState(AppBuildSummary build, {required bool utc}) {
+  final state = switch (build.status) {
+    AppBuildStatus.succeeded => 'Uploaded',
+    final status => _statusName(status),
+  };
+  final reachedAt = build.endedAt ?? build.startedAt ?? build.createdAt;
+  return '$state · ${friendlyPastTimeFormat(reachedAt, inUtc: utc, short: true)}';
 }
 
 /// Prints the log of each step of an app build as the step ends.

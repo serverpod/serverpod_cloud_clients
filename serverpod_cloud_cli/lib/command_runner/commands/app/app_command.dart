@@ -166,6 +166,16 @@ enum AppListCommandOption<V> implements OptionDefinition<V> {
   final ConfigOptionBase<V> option;
 }
 
+enum AppStatusCommandOption<V> implements OptionDefinition<V> {
+  projectId(ProjectIdOption(asFirstArg: true, excludeSettings: true)),
+  utc(UtcOption());
+
+  const AppStatusCommandOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
 enum AppLogCommandOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption(excludeSettings: true)),
   uploadId(AppUploadIdOption()),
@@ -195,6 +205,7 @@ class CloudAppCommand extends CloudCliCommand {
     addSubcommand(CloudAppPublishCommand(logger: logger));
     addSubcommand(CloudAppShowCommand(logger: logger));
     addSubcommand(CloudAppListCommand(logger: logger));
+    addSubcommand(CloudAppStatusCommand(logger: logger));
     addSubcommand(CloudAppLogCommand(logger: logger));
   }
 }
@@ -407,6 +418,47 @@ Examples
         utc: inUtc,
         platforms: selectedPlatforms,
       ),
+    );
+  }
+}
+
+class CloudAppStatusCommand extends CloudCliCommand<AppStatusCommandOption> {
+  @override
+  final name = 'status';
+
+  @override
+  final description =
+      'Show the latest build of each platform with a connected store.';
+
+  @override
+  String get usageExamples =>
+      '''\n
+Examples
+
+  Show the latest build of each connected platform
+
+    \$ $baseCommand app status
+
+''';
+
+  CloudAppStatusCommand({required super.logger})
+    : super(options: AppStatusCommandOption.values);
+
+  @override
+  Future<void> runWithOutput(
+    final Configuration<AppStatusCommandOption> commandConfig,
+    final CommandOutput output,
+  ) async {
+    final projectId = commandConfig.value(AppStatusCommandOption.projectId);
+    final inUtc = commandConfig.value(AppStatusCommandOption.utc);
+
+    await renderCommand(
+      output,
+      operation: () => AppOperations.getStatus(
+        runner.serviceProvider.cloudApiClient,
+        projectId: projectId,
+      ),
+      textOutputUi: AppStatusTextUi(utc: inUtc, baseCommand: baseCommand),
     );
   }
 }

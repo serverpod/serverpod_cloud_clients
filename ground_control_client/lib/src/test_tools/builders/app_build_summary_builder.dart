@@ -35,6 +35,14 @@ class AppBuildSummaryBuilder {
 
   AppBuildSummaryBuilder withStatus(AppBuildStatus status) {
     _status = status;
+    if (status == AppBuildStatus.queued) {
+      _startedAt = null;
+    }
+    if (status == AppBuildStatus.queued ||
+        status == AppBuildStatus.waiting ||
+        status == AppBuildStatus.running) {
+      _endedAt = null;
+    }
     return this;
   }
 
@@ -65,6 +73,11 @@ class AppBuildSummaryBuilder {
 
   AppBuildSummaryBuilder withStartedAt(DateTime? startedAt) {
     _startedAt = startedAt;
+    return this;
+  }
+
+  AppBuildSummaryBuilder withEndedAt(DateTime? endedAt) {
+    _endedAt = endedAt;
     return this;
   }
 
