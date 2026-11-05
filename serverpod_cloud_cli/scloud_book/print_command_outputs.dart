@@ -336,6 +336,7 @@ const _scenarios = [
     '--platforms',
     'ios,android',
   ]),
+  _Scenario('app status', ['app', 'status', '--project', _projectId]),
   _Scenario('app log', [
     'app',
     'log',

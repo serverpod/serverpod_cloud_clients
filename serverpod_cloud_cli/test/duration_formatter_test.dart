@@ -338,6 +338,45 @@ void main() {
     });
   });
 
+  group('friendlyAgoFormat with short', () {
+    test('when the elapsed duration is under 5 seconds '
+        'then returns "just now"', () {
+      expect(
+        friendlyAgoFormat(const Duration(seconds: 4), short: true),
+        'just now',
+      );
+    });
+
+    test('when the elapsed duration is in seconds '
+        'then abbreviates the unit', () {
+      expect(
+        friendlyAgoFormat(const Duration(seconds: 45), short: true),
+        '45s ago',
+      );
+    });
+
+    test('when the elapsed duration is in minutes '
+        'then abbreviates the unit', () {
+      expect(
+        friendlyAgoFormat(const Duration(minutes: 1), short: true),
+        '1m ago',
+      );
+    });
+
+    test('when the elapsed duration is in hours '
+        'then abbreviates the unit', () {
+      expect(
+        friendlyAgoFormat(const Duration(hours: 2, minutes: 14), short: true),
+        '2h ago',
+      );
+    });
+
+    test('when the elapsed duration is in days '
+        'then abbreviates the unit', () {
+      expect(friendlyAgoFormat(const Duration(days: 3), short: true), '3d ago');
+    });
+  });
+
   group('friendlyPastTimeFormat', () {
     final now = DateTime(2026, 7, 31, 12, 0, 0);
 

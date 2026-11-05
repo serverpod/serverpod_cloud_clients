@@ -6,6 +6,7 @@ import 'package:ground_control_client/ground_control_client.dart'
         AppBuildStage,
         AppBuildStatus,
         AppBuildStepInfo,
+        AppBuildSummary,
         AppBuildStepStatus,
         AppPlatform;
 
@@ -61,8 +62,14 @@ abstract class AppBuildStatusFormatter {
   /// report its status, and a build that has not ended as one that did not
   /// finish.
   static String? buildError(AppPlatform platform, AppBuildDetail? detail) {
+    return summaryError(platform, detail?.build);
+  }
+
+  /// The error of the [build] for [platform], or null when it succeeded. A
+  /// null [build] is reported as a build that did not report its status,
+  /// and a build that has not ended as one that did not finish.
+  static String? summaryError(AppPlatform platform, AppBuildSummary? build) {
     final name = platformName(platform);
-    final build = detail?.build;
     if (build == null) return 'The $name build did not report its status.';
     final message = build.message;
     return switch (build.status) {

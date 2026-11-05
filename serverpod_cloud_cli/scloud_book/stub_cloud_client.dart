@@ -713,6 +713,46 @@ void _stubAppBuilds(final ClientMock client) {
     ];
   });
 
+  when(
+    () => client.appPublishing.getSetup(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+    ),
+  ).thenAnswer(
+    (_) async => AppPublishingSetupBuilder()
+        .withAndroidStore(
+          GooglePlayAccess(serviceAccountEmail: 'publisher@acme.dev'),
+        )
+        .build(),
+  );
+  when(
+    () => client.appBuilds.getLatestBuilds(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+    ),
+  ).thenAnswer(
+    (_) async => [
+      AppBuildSummaryBuilder()
+          .withUploadId(succeededUploadId)
+          .withPlatform(AppPlatform.ios)
+          .withVersionName('1.4.2')
+          .withBuildNumber('37')
+          .withCreatedAt(succeededAt.subtract(const Duration(minutes: 15)))
+          .withStartedAt(succeededAt.subtract(const Duration(minutes: 14)))
+          .withEndedAt(succeededAt)
+          .build(),
+      AppBuildSummaryBuilder()
+          .withUploadId(runningUploadId)
+          .withPlatform(AppPlatform.android)
+          .withStatus(AppBuildStatus.failed)
+          .withVersionName('1.4.3')
+          .withBuildNumber(null)
+          .withMessage('Gradle task assembleRelease failed.')
+          .withCreatedAt(runningAt)
+          .withStartedAt(runningAt)
+          .withEndedAt(runningAt)
+          .build(),
+    ],
+  );
+
   final ios = AppBuildSummaryBuilder()
       .withPlatform(AppPlatform.ios)
       .withStatus(AppBuildStatus.succeeded)
