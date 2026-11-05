@@ -94,20 +94,23 @@ void main() {
           logger.lineCalls.map((call) => call.line),
           containsAllInOrder([
             allOf(
-              startsWith('Version'),
+              startsWith('ID'),
+              contains('Version'),
               contains('Platforms'),
               contains('State'),
               contains('Started'),
             ),
             anything,
             allOf(
-              startsWith('1.4.3 '),
+              startsWith('$runningUploadId '),
+              contains('1.4.3 '),
               contains('iOS, Android'),
               contains('Running'),
               contains('2 minutes ago'),
             ),
             allOf(
-              startsWith('1.4.2 (37)'),
+              startsWith('$succeededUploadId '),
+              contains('1.4.2 (37)'),
               contains('iOS, Android'),
               contains('Succeeded'),
               contains('2 hours ago'),
@@ -224,14 +227,23 @@ void main() {
           logger.lineCalls.map((call) => call.line),
           containsAllInOrder([
             allOf(
-              startsWith('Version'),
+              startsWith('ID'),
+              contains('Version'),
               isNot(contains('Platform')),
               contains('State'),
               contains('Started'),
             ),
             anything,
-            allOf(startsWith('1.4.3 '), contains('Running')),
-            allOf(startsWith('1.4.2 (37)'), contains('Succeeded')),
+            allOf(
+              startsWith('$runningUploadId '),
+              contains('1.4.3 '),
+              contains('Running'),
+            ),
+            allOf(
+              startsWith('$succeededUploadId '),
+              contains('1.4.2 (37)'),
+              contains('Succeeded'),
+            ),
           ]),
         );
         expect(logger.lineCalls, hasLength(4));
@@ -320,7 +332,7 @@ void main() {
           expect(
             logger.lineCalls.map((call) => call.line),
             containsAllInOrder([
-              allOf(startsWith('Version'), contains('Platform')),
+              allOf(startsWith('ID'), contains('Platform')),
               anything,
               allOf(contains('iOS'), contains('Running')),
               allOf(contains('Android'), contains('Queued')),

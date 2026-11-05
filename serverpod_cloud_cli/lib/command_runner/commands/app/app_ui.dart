@@ -10,8 +10,8 @@ import 'package:serverpod_cloud_cli/util/output/output.dart';
 import 'app_build_step_log.dart';
 import 'app_upload_row.dart';
 
-/// Lists app uploads, one row per upload with the platforms it was built
-/// for.
+/// Lists app uploads, one row per upload with its ID and the platforms it
+/// was built for.
 class AppUploadListTextUi extends OutputWidget {
   final bool utc;
 
@@ -26,6 +26,10 @@ class AppUploadListTextUi extends OutputWidget {
     return FormattedTableWidget(
       formatter: TextTableOutputFormatter<AppUploadRow>(
         columns: [
+          TableColumnFormatter.forElement(
+            'ID',
+            getter: (upload) => upload.uploadId.toString(),
+          ),
           TableColumnFormatter.forElement(
             'Version',
             getter: (upload) => _version(
@@ -53,8 +57,8 @@ class AppUploadListTextUi extends OutputWidget {
   }
 }
 
-/// Lists the app builds of [platforms], one row per build, with a Platform
-/// column when there are several platforms.
+/// Lists the app builds of [platforms], one row per build with the ID of
+/// its upload, and a Platform column when there are several platforms.
 class AppBuildListTextUi extends OutputWidget {
   final bool utc;
   final List<AppPlatform> platforms;
@@ -70,6 +74,10 @@ class AppBuildListTextUi extends OutputWidget {
     return FormattedTableWidget(
       formatter: TextTableOutputFormatter<AppBuildSummary>(
         columns: [
+          TableColumnFormatter.forElement(
+            'ID',
+            getter: (build) => build.uploadId.toString(),
+          ),
           TableColumnFormatter.forElement(
             'Version',
             getter: (build) => _version(build.versionName, [build.buildNumber]),

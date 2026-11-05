@@ -88,7 +88,7 @@ class AppUploadIdOption extends StringOption {
         argPos: 0,
         mandatory: true,
         helpText:
-            'The id of the app upload, as printed by app publish. '
+            'The id of the app upload, as printed by app publish or app list. '
             'Can be passed as the first argument.',
         customValidator: _uploadIdValidator,
       );
@@ -310,7 +310,7 @@ class CloudAppShowCommand extends CloudCliCommand<AppShowCommandOption> {
       '''\n
 Examples
 
-  Show the builds of an app upload by the upload id that app publish printed
+  Show the builds of an app upload by the upload id that app publish or app list printed
 
     \$ $baseCommand app show 3f2b0c4e-1d5a-4b8e-9c7f-2a6d8e1b4c90
 
@@ -424,7 +424,7 @@ class CloudAppLogCommand extends CloudCliCommand<AppLogCommandOption> {
       '''\n
 Examples
 
-  Stream the iOS build log of an app upload by the upload id that app publish printed
+  Stream the iOS build log of an app upload by the upload id that app publish or app list printed
 
     \$ $baseCommand app log 3f2b0c4e-1d5a-4b8e-9c7f-2a6d8e1b4c90 --platform ios
 
