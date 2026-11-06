@@ -821,7 +821,8 @@ class EndpointAppPublishing extends _isc.EndpointRef {
   @override
   String get name => 'appPublishing';
 
-  /// Gets the setup of both platforms. A null part is not set up yet.
+  /// Gets the setup of both platforms. A null part is not set up yet. The
+  /// first call creates the capsule's Google Play service account.
   ///
   /// Throws [AppPublishingDisabledException] while app publishing is off in
   /// this environment.
