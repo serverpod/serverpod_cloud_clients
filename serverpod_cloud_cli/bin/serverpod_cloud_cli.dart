@@ -103,7 +103,6 @@ void _reportAnalyticsEvent(
 ) {
   try {
     _postHogAnalytics.track(event: event, properties: properties);
-    _analytics.track(event: event, properties: properties);
   } catch (e, stackTrace) {
     logger.debug('Analytics event failed: $e\n$stackTrace');
   }
@@ -115,12 +114,4 @@ final Analytics _postHogAnalytics = PostHogAnalytics(
   projectApiKey: _postHogApiKey,
   version: cliVersion.canonicalizedVersion,
   libName: 'serverpod_cloud_cli',
-);
-
-const _mixPanelToken = 'd0aaf1b76185d37938f3767bdb685760';
-final Analytics _analytics = MixPanelAnalytics(
-  uniqueUserId: ResourceManager.uniqueUserId,
-  projectToken: _mixPanelToken,
-  version: cliVersion.canonicalizedVersion,
-  endpoint: 'https://api-eu.mixpanel.com/track?ip=1',
 );
