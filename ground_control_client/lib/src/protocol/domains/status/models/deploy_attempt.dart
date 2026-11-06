@@ -12,6 +12,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../domains/status/models/deploy_attempt_kind.dart' as _i9fo4w36;
 import '../../../domains/status/models/deploy_attempt_stage.dart' as _ieja195n;
 import '../../../domains/status/models/deploy_progress_status.dart'
     as _izk8c25p;
@@ -38,10 +39,13 @@ abstract class DeployAttempt
     required this.deployedById,
     this.deployedBy,
     this.statusInfo,
+    _i9fo4w36.DeployAttemptKind? kind,
+    this.sourceAttemptId,
     this.stages,
   }) : id = id ?? const _isc.Uuid().v4obj(),
        createdAt = createdAt ?? DateTime.now(),
-       updatedAt = updatedAt ?? DateTime.now();
+       updatedAt = updatedAt ?? DateTime.now(),
+       kind = kind ?? _i9fo4w36.DeployAttemptKind.deploy;
 
   factory DeployAttempt({
     _isc.UuidValue? id,
@@ -61,6 +65,8 @@ abstract class DeployAttempt
     required int? deployedById,
     _ijl94k1v.User? deployedBy,
     String? statusInfo,
+    _i9fo4w36.DeployAttemptKind? kind,
+    _isc.UuidValue? sourceAttemptId,
     List<_ieja195n.DeployAttemptStage>? stages,
   }) = _DeployAttemptImpl;
 
@@ -101,6 +107,16 @@ abstract class DeployAttempt
               jsonSerialization['deployedBy'],
             ),
       statusInfo: jsonSerialization['statusInfo'] as String?,
+      kind: jsonSerialization['kind'] == null
+          ? null
+          : _i9fo4w36.DeployAttemptKind.fromJson(
+              (jsonSerialization['kind'] as String),
+            ),
+      sourceAttemptId: jsonSerialization['sourceAttemptId'] == null
+          ? null
+          : _isc.UuidValueJsonExtension.fromJson(
+              jsonSerialization['sourceAttemptId'],
+            ),
       stages: jsonSerialization['stages'] == null
           ? null
           : _iod2a87h.Protocol()
@@ -161,6 +177,13 @@ abstract class DeployAttempt
   /// Optionally contains user-readable information about the current status of this attempt.
   String? statusInfo;
 
+  /// The kind of this deploy attempt.
+  _i9fo4w36.DeployAttemptKind kind;
+
+  /// The ID of the deploy attempt that this restart attempt restarts.
+  /// Null for deploy attempts.
+  _isc.UuidValue? sourceAttemptId;
+
   /// The stages of the deployment attempt. Placeholder for future relation.
   List<_ieja195n.DeployAttemptStage>? stages;
 
@@ -185,6 +208,8 @@ abstract class DeployAttempt
     int? deployedById,
     _ijl94k1v.User? deployedBy,
     String? statusInfo,
+    _i9fo4w36.DeployAttemptKind? kind,
+    _isc.UuidValue? sourceAttemptId,
     List<_ieja195n.DeployAttemptStage>? stages,
   });
   @override
@@ -208,6 +233,8 @@ abstract class DeployAttempt
       if (deployedById != null) 'deployedById': deployedById,
       if (deployedBy != null) 'deployedBy': deployedBy?.toJson(),
       if (statusInfo != null) 'statusInfo': statusInfo,
+      'kind': kind.toJson(),
+      if (sourceAttemptId != null) 'sourceAttemptId': sourceAttemptId?.toJson(),
       if (stages != null)
         'stages': stages?.toJson(valueToJson: (v) => v.toJson()),
     };
@@ -234,6 +261,8 @@ abstract class DeployAttempt
       if (deployedById != null) 'deployedById': deployedById,
       if (deployedBy != null) 'deployedBy': deployedBy?.toJsonForProtocol(),
       if (statusInfo != null) 'statusInfo': statusInfo,
+      'kind': kind.toJson(),
+      if (sourceAttemptId != null) 'sourceAttemptId': sourceAttemptId?.toJson(),
       if (stages != null)
         'stages': stages?.toJson(valueToJson: (v) => v.toJsonForProtocol()),
     };
@@ -266,6 +295,8 @@ class _DeployAttemptImpl extends DeployAttempt {
     required int? deployedById,
     _ijl94k1v.User? deployedBy,
     String? statusInfo,
+    _i9fo4w36.DeployAttemptKind? kind,
+    _isc.UuidValue? sourceAttemptId,
     List<_ieja195n.DeployAttemptStage>? stages,
   }) : super._(
          id: id,
@@ -285,6 +316,8 @@ class _DeployAttemptImpl extends DeployAttempt {
          deployedById: deployedById,
          deployedBy: deployedBy,
          statusInfo: statusInfo,
+         kind: kind,
+         sourceAttemptId: sourceAttemptId,
          stages: stages,
        );
 
@@ -310,6 +343,8 @@ class _DeployAttemptImpl extends DeployAttempt {
     Object? deployedById = _Undefined,
     Object? deployedBy = _Undefined,
     Object? statusInfo = _Undefined,
+    _i9fo4w36.DeployAttemptKind? kind,
+    Object? sourceAttemptId = _Undefined,
     Object? stages = _Undefined,
   }) {
     return DeployAttempt(
@@ -336,6 +371,10 @@ class _DeployAttemptImpl extends DeployAttempt {
           ? deployedBy
           : this.deployedBy?.copyWith(),
       statusInfo: statusInfo is String? ? statusInfo : this.statusInfo,
+      kind: kind ?? this.kind,
+      sourceAttemptId: sourceAttemptId is _isc.UuidValue?
+          ? sourceAttemptId
+          : this.sourceAttemptId,
       stages: stages is List<_ieja195n.DeployAttemptStage>?
           ? stages
           : this.stages?.map((e0) => e0.copyWith()).toList(),
