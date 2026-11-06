@@ -172,6 +172,7 @@ import 'features/app_builds/models/android_signing.dart' as _iife4rxz;
 import 'features/app_builds/models/app_build_detail.dart' as _iyqovlj1;
 import 'features/app_builds/models/app_build_ref.dart' as _i8bymbss;
 import 'features/app_builds/models/app_build_step_info.dart' as _izrhxmsy;
+import 'features/app_builds/models/app_build_step_log.dart' as _ihsn401r;
 import 'features/app_builds/models/app_build_summary.dart' as _iyi5usgc;
 import 'features/app_builds/models/app_builds_upload.dart' as _ig1623xk;
 import 'features/app_builds/models/app_publishing_setup.dart' as _i2sj9x5l;
@@ -345,6 +346,7 @@ export 'features/app_builds/models/android_signing.dart';
 export 'features/app_builds/models/app_build_detail.dart';
 export 'features/app_builds/models/app_build_ref.dart';
 export 'features/app_builds/models/app_build_step_info.dart';
+export 'features/app_builds/models/app_build_step_log.dart';
 export 'features/app_builds/models/app_build_summary.dart';
 export 'features/app_builds/models/app_builds_upload.dart';
 export 'features/app_builds/models/app_publishing_setup.dart';
@@ -757,6 +759,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _izrhxmsy.AppBuildStepInfo) {
       return _izrhxmsy.AppBuildStepInfo.fromJson(data) as T;
+    }
+    if (t == _ihsn401r.AppBuildStepLog) {
+      return _ihsn401r.AppBuildStepLog.fromJson(data) as T;
     }
     if (t == _iyi5usgc.AppBuildSummary) {
       return _iyi5usgc.AppBuildSummary.fromJson(data) as T;
@@ -1384,6 +1389,10 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_izrhxmsy.AppBuildStepInfo?>()) {
       return (data != null ? _izrhxmsy.AppBuildStepInfo.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_ihsn401r.AppBuildStepLog?>()) {
+      return (data != null ? _ihsn401r.AppBuildStepLog.fromJson(data) : null)
           as T;
     }
     if (t == _isc.getType<_iyi5usgc.AppBuildSummary?>()) {
@@ -2142,6 +2151,7 @@ class Protocol extends _isc.SerializationManager {
       _iyqovlj1.AppBuildDetail => 'AppBuildDetail',
       _i8bymbss.AppBuildRef => 'AppBuildRef',
       _izrhxmsy.AppBuildStepInfo => 'AppBuildStepInfo',
+      _ihsn401r.AppBuildStepLog => 'AppBuildStepLog',
       _iyi5usgc.AppBuildSummary => 'AppBuildSummary',
       _ig1623xk.AppBuildsUpload => 'AppBuildsUpload',
       _i2sj9x5l.AppPublishingSetup => 'AppPublishingSetup',
@@ -2438,6 +2448,8 @@ class Protocol extends _isc.SerializationManager {
         return 'AppBuildRef';
       case _izrhxmsy.AppBuildStepInfo():
         return 'AppBuildStepInfo';
+      case _ihsn401r.AppBuildStepLog():
+        return 'AppBuildStepLog';
       case _iyi5usgc.AppBuildSummary():
         return 'AppBuildSummary';
       case _ig1623xk.AppBuildsUpload():
@@ -2893,6 +2905,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'AppBuildStepInfo') {
       return deserialize<_izrhxmsy.AppBuildStepInfo>(data['data']);
+    }
+    if (dataClassName == 'AppBuildStepLog') {
+      return deserialize<_ihsn401r.AppBuildStepLog>(data['data']);
     }
     if (dataClassName == 'AppBuildSummary') {
       return deserialize<_iyi5usgc.AppBuildSummary>(data['data']);
