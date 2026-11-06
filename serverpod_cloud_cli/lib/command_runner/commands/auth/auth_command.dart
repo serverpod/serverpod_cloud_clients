@@ -113,6 +113,7 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
       persistent: persistent,
       signInPath: signInPath,
     );
+    runner.sendSignedInAnalyticsEvent();
   }
 }
 

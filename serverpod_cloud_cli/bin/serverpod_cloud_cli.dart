@@ -7,6 +7,7 @@ import 'package:config/config.dart' show UsageException;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
+import 'package:serverpod_cloud_cli/shared/analytics/analytics_reporter.dart';
 import 'package:serverpod_cloud_cli/shared/error_reporting/sentry_error_reporter.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart'
     show ErrorExitException;
@@ -58,8 +59,8 @@ Future<void> _main(
   final runner = CloudCliCommandRunner.create(
     logger: logger,
     version: cliVersion,
-    onAnalyticsEvent: (event, properties) =>
-        _reportAnalyticsEvent(event, properties, logger),
+    onAnalyticsEvent: (event, properties, {userAuthId}) =>
+        _reportAnalyticsEvent(event, properties, userAuthId, logger),
     onRunContextResolved: (context) {
       errorReporter.analyticsConsent = context.analyticsConsent;
       errorReporter.command = context.command;
@@ -99,19 +100,23 @@ ${error.runtimeType} $error''';
 void _reportAnalyticsEvent(
   String event,
   Map<String, dynamic> properties,
+  String? userAuthId,
   CommandLogger logger,
 ) {
   try {
-    _postHogAnalytics.track(event: event, properties: properties);
+    _analyticsReporter.track(event, properties, userAuthId: userAuthId);
   } catch (e, stackTrace) {
     logger.debug('Analytics event failed: $e\n$stackTrace');
   }
 }
 
 const _postHogApiKey = 'phc_xGBPHgcrTrDuWGtyNX3UJODXgnR684rzRPZjWRlqVxf';
-final Analytics _postHogAnalytics = PostHogAnalytics(
-  uniqueUserId: ResourceManager.uniqueUserId,
-  projectApiKey: _postHogApiKey,
-  version: cliVersion.canonicalizedVersion,
-  libName: 'serverpod_cloud_cli',
+final AnalyticsReporter _analyticsReporter = AnalyticsReporter(
+  serverpodCliId: ResourceManager.uniqueUserId,
+  createPostHogAnalytics: (distinctId) => PostHogAnalytics(
+    uniqueUserId: distinctId,
+    projectApiKey: _postHogApiKey,
+    version: cliVersion.canonicalizedVersion,
+    libName: 'serverpod_cloud_cli',
+  ),
 );

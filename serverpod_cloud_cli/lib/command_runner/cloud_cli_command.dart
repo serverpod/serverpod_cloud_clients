@@ -199,6 +199,7 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
         persistent: true,
         signInPath: globalConfiguration.signInPath,
       );
+      runner.sendSignedInAnalyticsEvent();
     }
 
     if (isAuthenticated &&

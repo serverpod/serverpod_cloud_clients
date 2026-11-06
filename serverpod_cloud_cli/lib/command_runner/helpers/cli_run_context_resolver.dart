@@ -55,4 +55,13 @@ abstract final class CliRunContextResolver {
     );
     return cloudUser?.id;
   }
+
+  /// Returns the auth id of the cloud user logged in on [localStoragePath],
+  /// or null if the user is not logged in or the id is not stored.
+  static String? fetchUserAuthId(String localStoragePath) {
+    final cloudUser = ResourceManager.tryFetchServerpodCloudUserDataSync(
+      localStoragePath: localStoragePath,
+    );
+    return cloudUser?.userAuthId;
+  }
 }
