@@ -13,6 +13,8 @@
 import 'dart:async' as _ida;
 import 'package:ground_control_client/src/protocol/domains/app_builds/models/app_platform.dart'
     as _id4pe5bk;
+import 'package:ground_control_client/src/protocol/domains/app_builds/models/upcoming_app_platform.dart'
+    as _i4oajha3;
 import 'package:ground_control_client/src/protocol/domains/billing/models/billing_customer_type.dart'
     as _iqua0tdt;
 import 'package:ground_control_client/src/protocol/domains/billing/models/billing_info.dart'
@@ -891,6 +893,30 @@ class EndpointAppPublishing extends _isc.EndpointRef {
       caller.callServerEndpoint<void>('appPublishing', 'removeIosBundleId', {
         'cloudCapsuleId': cloudCapsuleId,
       });
+
+  /// Asks to be told when [platform] ships. Applies to the caller, not to a
+  /// project. Idempotent.
+  ///
+  /// Throws [UnauthorizedException] if the caller has no Ground Control
+  /// user.
+  _ida.Future<void> registerPlatformInterest({
+    required _i4oajha3.UpcomingAppPlatform platform,
+  }) => caller.callServerEndpoint<void>(
+    'appPublishing',
+    'registerPlatformInterest',
+    {'platform': platform},
+  );
+
+  /// Lists the upcoming platforms the caller asked to be told about.
+  ///
+  /// Throws [UnauthorizedException] if the caller has no Ground Control
+  /// user.
+  _ida.Future<List<_i4oajha3.UpcomingAppPlatform>> listMyPlatformInterests() =>
+      caller.callServerEndpoint<List<_i4oajha3.UpcomingAppPlatform>>(
+        'appPublishing',
+        'listMyPlatformInterests',
+        {},
+      );
 }
 
 /// Endpoint for authentication.
