@@ -11,6 +11,7 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _ida;
+import 'dart:typed_data' as _idt;
 import 'package:ground_control_client/src/protocol/domains/app_builds/models/app_platform.dart'
     as _id4pe5bk;
 import 'package:ground_control_client/src/protocol/domains/billing/models/billing_customer_type.dart'
@@ -111,6 +112,8 @@ import 'package:ground_control_client/src/protocol/features/app_builds/models/ap
     as _iqiq2vfs;
 import 'package:ground_control_client/src/protocol/features/app_builds/models/app_publishing_setup.dart'
     as _ia3jvj4n;
+import 'package:ground_control_client/src/protocol/features/app_builds/models/generated_android_keystore.dart'
+    as _il1lq5on;
 import 'package:ground_control_client/src/protocol/features/auth/models/accepted_terms_dto.dart'
     as _irrma5ts;
 import 'package:ground_control_client/src/protocol/features/auth/models/auth_token_info.dart'
@@ -952,6 +955,47 @@ class EndpointAppPublishing extends _isc.EndpointRef {
       caller.callServerEndpoint<void>('appPublishing', 'removeIosBundleId', {
         'cloudCapsuleId': cloudCapsuleId,
       });
+
+  /// Generates the upload keystore Android builds are signed with and
+  /// returns it with its password, this once: nothing returns the password
+  /// again. The key is permanent.
+  ///
+  /// Throws [AndroidSigningAlreadySetException] if the capsule already has
+  /// an Android keystore. Throws [ProjectSuspendedException] if the project
+  /// is suspended. Throws [AppPublishingDisabledException] while app
+  /// publishing is off in this environment.
+  _ida.Future<_il1lq5on.GeneratedAndroidKeystore> generateAndroidKeystore({
+    required String cloudCapsuleId,
+  }) => caller.callServerEndpoint<_il1lq5on.GeneratedAndroidKeystore>(
+    'appPublishing',
+    'generateAndroidKeystore',
+    {'cloudCapsuleId': cloudCapsuleId},
+  );
+
+  /// Stores the PKCS12 [keystore] as the upload keystore Android builds are
+  /// signed with, using the key under [keyAlias]. The key is permanent.
+  ///
+  /// Throws [InvalidValueException] if [keystore] is too large, is not a
+  /// PKCS12 file [keystorePassword] opens, or holds no key under
+  /// [keyAlias]. Throws [AndroidSigningAlreadySetException] if the capsule
+  /// already has an Android keystore. Throws [ProjectSuspendedException] if
+  /// the project is suspended. Throws [AppPublishingDisabledException]
+  /// while app publishing is off in this environment.
+  _ida.Future<_ia3jvj4n.AppPublishingSetup> uploadAndroidKeystore({
+    required String cloudCapsuleId,
+    required _idt.ByteData keystore,
+    required String keystorePassword,
+    required String keyAlias,
+  }) => caller.callServerEndpoint<_ia3jvj4n.AppPublishingSetup>(
+    'appPublishing',
+    'uploadAndroidKeystore',
+    {
+      'cloudCapsuleId': cloudCapsuleId,
+      'keystore': keystore,
+      'keystorePassword': keystorePassword,
+      'keyAlias': keyAlias,
+    },
+  );
 }
 
 /// Endpoint for authentication.

@@ -15,28 +15,65 @@ import 'package:serverpod_client/serverpod_client.dart' as _isc;
 /// How a capsule's Android builds are signed.
 abstract class AndroidSigning
     implements _isc.SerializableModel, _isc.ProtocolSerialization {
-  AndroidSigning._({required this.keyAlias});
+  AndroidSigning._({
+    required this.keyAlias,
+    required this.generated,
+    required this.createdAt,
+  });
 
-  factory AndroidSigning({required String keyAlias}) = _AndroidSigningImpl;
+  factory AndroidSigning({
+    required String keyAlias,
+    required bool generated,
+    required DateTime createdAt,
+  }) = _AndroidSigningImpl;
 
   factory AndroidSigning.fromJson(Map<String, dynamic> jsonSerialization) {
-    return AndroidSigning(keyAlias: jsonSerialization['keyAlias'] as String);
+    return AndroidSigning(
+      keyAlias: jsonSerialization['keyAlias'] as String,
+      generated: _isc.BoolJsonExtension.fromJson(
+        jsonSerialization['generated'],
+      ),
+      createdAt: _isc.DateTimeJsonExtension.fromJson(
+        jsonSerialization['createdAt'],
+      ),
+    );
   }
 
   String keyAlias;
 
+  /// Whether Ground Control generated the keystore, as opposed to the user
+  /// uploading it.
+  bool generated;
+
+  /// When the keystore was generated or uploaded.
+  DateTime createdAt;
+
   /// Returns a shallow copy of this [AndroidSigning]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
-  AndroidSigning copyWith({String? keyAlias});
+  AndroidSigning copyWith({
+    String? keyAlias,
+    bool? generated,
+    DateTime? createdAt,
+  });
   @override
   Map<String, dynamic> toJson() {
-    return {'__className__': 'AndroidSigning', 'keyAlias': keyAlias};
+    return {
+      '__className__': 'AndroidSigning',
+      'keyAlias': keyAlias,
+      'generated': generated,
+      'createdAt': createdAt.toJson(),
+    };
   }
 
   @override
   Map<String, dynamic> toJsonForProtocol() {
-    return {'__className__': 'AndroidSigning', 'keyAlias': keyAlias};
+    return {
+      '__className__': 'AndroidSigning',
+      'keyAlias': keyAlias,
+      'generated': generated,
+      'createdAt': createdAt.toJson(),
+    };
   }
 
   @override
@@ -46,13 +83,25 @@ abstract class AndroidSigning
 }
 
 class _AndroidSigningImpl extends AndroidSigning {
-  _AndroidSigningImpl({required String keyAlias}) : super._(keyAlias: keyAlias);
+  _AndroidSigningImpl({
+    required String keyAlias,
+    required bool generated,
+    required DateTime createdAt,
+  }) : super._(keyAlias: keyAlias, generated: generated, createdAt: createdAt);
 
   /// Returns a shallow copy of this [AndroidSigning]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
   @override
-  AndroidSigning copyWith({String? keyAlias}) {
-    return AndroidSigning(keyAlias: keyAlias ?? this.keyAlias);
+  AndroidSigning copyWith({
+    String? keyAlias,
+    bool? generated,
+    DateTime? createdAt,
+  }) {
+    return AndroidSigning(
+      keyAlias: keyAlias ?? this.keyAlias,
+      generated: generated ?? this.generated,
+      createdAt: createdAt ?? this.createdAt,
+    );
   }
 }
