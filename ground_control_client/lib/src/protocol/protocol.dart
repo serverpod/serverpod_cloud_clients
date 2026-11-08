@@ -43,6 +43,8 @@ import 'package:ground_control_client/src/protocol/domains/store_connections/mod
     as _ibvsp6v6;
 import 'package:ground_control_client/src/protocol/domains/users/models/user.dart'
     as _ibu0ogga;
+import 'package:ground_control_client/src/protocol/features/app_builds/models/app_build_artifact.dart'
+    as _i7xp31jp;
 import 'package:ground_control_client/src/protocol/features/app_builds/models/app_build_summary.dart'
     as _iy6jkon8;
 import 'package:ground_control_client/src/protocol/features/auth/models/accepted_terms_dto.dart'
@@ -169,6 +171,8 @@ import 'features/app_builds/exceptions/app_publishing_disabled_exception.dart'
     as _ijed0rq9;
 import 'features/app_builds/models/android_publishing_setup.dart' as _i0oah05k;
 import 'features/app_builds/models/android_signing.dart' as _iife4rxz;
+import 'features/app_builds/models/app_build_artifact.dart' as _i652pele;
+import 'features/app_builds/models/app_build_artifact_kind.dart' as _i1ny4oxc;
 import 'features/app_builds/models/app_build_detail.dart' as _iyqovlj1;
 import 'features/app_builds/models/app_build_ref.dart' as _i8bymbss;
 import 'features/app_builds/models/app_build_step_info.dart' as _izrhxmsy;
@@ -342,6 +346,8 @@ export 'features/admin/models/payments_status.dart';
 export 'features/app_builds/exceptions/app_publishing_disabled_exception.dart';
 export 'features/app_builds/models/android_publishing_setup.dart';
 export 'features/app_builds/models/android_signing.dart';
+export 'features/app_builds/models/app_build_artifact.dart';
+export 'features/app_builds/models/app_build_artifact_kind.dart';
 export 'features/app_builds/models/app_build_detail.dart';
 export 'features/app_builds/models/app_build_ref.dart';
 export 'features/app_builds/models/app_build_step_info.dart';
@@ -748,6 +754,12 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _iife4rxz.AndroidSigning) {
       return _iife4rxz.AndroidSigning.fromJson(data) as T;
+    }
+    if (t == _i652pele.AppBuildArtifact) {
+      return _i652pele.AppBuildArtifact.fromJson(data) as T;
+    }
+    if (t == _i1ny4oxc.AppBuildArtifactKind) {
+      return _i1ny4oxc.AppBuildArtifactKind.fromJson(data) as T;
     }
     if (t == _iyqovlj1.AppBuildDetail) {
       return _iyqovlj1.AppBuildDetail.fromJson(data) as T;
@@ -1375,6 +1387,16 @@ class Protocol extends _isc.SerializationManager {
       return (data != null ? _iife4rxz.AndroidSigning.fromJson(data) : null)
           as T;
     }
+    if (t == _isc.getType<_i652pele.AppBuildArtifact?>()) {
+      return (data != null ? _i652pele.AppBuildArtifact.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_i1ny4oxc.AppBuildArtifactKind?>()) {
+      return (data != null
+              ? _i1ny4oxc.AppBuildArtifactKind.fromJson(data)
+              : null)
+          as T;
+    }
     if (t == _isc.getType<_iyqovlj1.AppBuildDetail?>()) {
       return (data != null ? _iyqovlj1.AppBuildDetail.fromJson(data) : null)
           as T;
@@ -1927,6 +1949,12 @@ class Protocol extends _isc.SerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_i7xp31jp.AppBuildArtifact>) {
+      return (data as List)
+              .map((e) => deserialize<_i7xp31jp.AppBuildArtifact>(e))
+              .toList()
+          as T;
+    }
     if (t == List<_iu79vy7r.RequiredTerms>) {
       return (data as List)
               .map((e) => deserialize<_iu79vy7r.RequiredTerms>(e))
@@ -2139,6 +2167,8 @@ class Protocol extends _isc.SerializationManager {
         'AppPublishingDisabledException',
       _i0oah05k.AndroidPublishingSetup => 'AndroidPublishingSetup',
       _iife4rxz.AndroidSigning => 'AndroidSigning',
+      _i652pele.AppBuildArtifact => 'AppBuildArtifact',
+      _i1ny4oxc.AppBuildArtifactKind => 'AppBuildArtifactKind',
       _iyqovlj1.AppBuildDetail => 'AppBuildDetail',
       _i8bymbss.AppBuildRef => 'AppBuildRef',
       _izrhxmsy.AppBuildStepInfo => 'AppBuildStepInfo',
@@ -2432,6 +2462,10 @@ class Protocol extends _isc.SerializationManager {
         return 'AndroidPublishingSetup';
       case _iife4rxz.AndroidSigning():
         return 'AndroidSigning';
+      case _i652pele.AppBuildArtifact():
+        return 'AppBuildArtifact';
+      case _i1ny4oxc.AppBuildArtifactKind():
+        return 'AppBuildArtifactKind';
       case _iyqovlj1.AppBuildDetail():
         return 'AppBuildDetail';
       case _i8bymbss.AppBuildRef():
@@ -2884,6 +2918,12 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'AndroidSigning') {
       return deserialize<_iife4rxz.AndroidSigning>(data['data']);
+    }
+    if (dataClassName == 'AppBuildArtifact') {
+      return deserialize<_i652pele.AppBuildArtifact>(data['data']);
+    }
+    if (dataClassName == 'AppBuildArtifactKind') {
+      return deserialize<_i1ny4oxc.AppBuildArtifactKind>(data['data']);
     }
     if (dataClassName == 'AppBuildDetail') {
       return deserialize<_iyqovlj1.AppBuildDetail>(data['data']);

@@ -99,6 +99,8 @@ import 'package:ground_control_client/src/protocol/features/admin/models/admin_p
     as _ie7ffsfx;
 import 'package:ground_control_client/src/protocol/features/admin/models/admin_user_status.dart'
     as _iwex31es;
+import 'package:ground_control_client/src/protocol/features/app_builds/models/app_build_artifact.dart'
+    as _i7xp31jp;
 import 'package:ground_control_client/src/protocol/features/app_builds/models/app_build_detail.dart'
     as _ilkz45dh;
 import 'package:ground_control_client/src/protocol/features/app_builds/models/app_build_summary.dart'
@@ -791,6 +793,42 @@ class EndpointAppBuilds extends _isc.EndpointRef {
     'cloudCapsuleId': cloudCapsuleId,
     'buildId': buildId,
   });
+
+  /// The files a build produced, such as the `.ipa` or `.aab`, as the
+  /// build service lists them. Empty until the build has ended, and once
+  /// the build service has discarded them. Each call reaches the build
+  /// service.
+  ///
+  /// Throws [NotFoundException] if no build with [buildId] belongs to the
+  /// capsule. Throws [AppPublishingDisabledException] while app publishing
+  /// is off in this environment.
+  _ida.Future<List<_i7xp31jp.AppBuildArtifact>> listArtifacts({
+    required String cloudCapsuleId,
+    required _isc.UuidValue buildId,
+  }) => caller.callServerEndpoint<List<_i7xp31jp.AppBuildArtifact>>(
+    'appBuilds',
+    'listArtifacts',
+    {'cloudCapsuleId': cloudCapsuleId, 'buildId': buildId},
+  );
+
+  /// A link that downloads the artifact [artifactId] of a build without
+  /// credentials. It expires ten minutes after this call, so fetch it when
+  /// the download starts, not when the build is shown.
+  ///
+  /// Throws [NotFoundException] if no build with [buildId] belongs to the
+  /// capsule or the build has no artifact [artifactId], as once the build
+  /// service has discarded it. Throws [AppPublishingDisabledException]
+  /// while app publishing is off in this environment.
+  _ida.Future<String> getArtifactDownloadUrl({
+    required String cloudCapsuleId,
+    required _isc.UuidValue buildId,
+    required String artifactId,
+  }) =>
+      caller.callServerEndpoint<String>('appBuilds', 'getArtifactDownloadUrl', {
+        'cloudCapsuleId': cloudCapsuleId,
+        'buildId': buildId,
+        'artifactId': artifactId,
+      });
 
   /// The log of the step at [stepIndex] of a build. Empty until the step
   /// has ended, null once the build service has discarded it. Each call
