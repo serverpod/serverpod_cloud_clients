@@ -1,4 +1,5 @@
-import 'package:ground_control_client/ground_control_client.dart';
+import 'package:ground_control_client/ground_control_client.dart'
+    hide AppBuildStepLog;
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/app/app_build_step_log.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/app/app_status_row.dart';

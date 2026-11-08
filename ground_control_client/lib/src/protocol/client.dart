@@ -103,6 +103,8 @@ import 'package:ground_control_client/src/protocol/features/app_builds/models/ap
     as _i7xp31jp;
 import 'package:ground_control_client/src/protocol/features/app_builds/models/app_build_detail.dart'
     as _ilkz45dh;
+import 'package:ground_control_client/src/protocol/features/app_builds/models/app_build_step_log.dart'
+    as _i437vrny;
 import 'package:ground_control_client/src/protocol/features/app_builds/models/app_build_summary.dart'
     as _iy6jkon8;
 import 'package:ground_control_client/src/protocol/features/app_builds/models/app_builds_upload.dart'
@@ -775,6 +777,27 @@ class EndpointAppBuilds extends _isc.EndpointRef {
         _ida.Stream<_ilkz45dh.AppBuildDetail>,
         _ilkz45dh.AppBuildDetail
       >('appBuilds', 'tailBuild', {
+        'cloudCapsuleId': cloudCapsuleId,
+        'buildId': buildId,
+      }, {});
+
+  /// Follows a build's step logs. The build service keeps no live output,
+  /// so a step's log exists only once the step has ended. Emits each step
+  /// with its log as soon as the step has ended, in step order, starting
+  /// with the steps that ended before the call, and closes once the build
+  /// is final. [tailBuild] shows the step that is running meanwhile.
+  ///
+  /// Emits a [NotFoundException] error if no build with [buildId] belongs
+  /// to the capsule, or an [AppPublishingDisabledException] error while app
+  /// publishing is off in this environment.
+  _ida.Stream<_i437vrny.AppBuildStepLog> tailStepLogs({
+    required String cloudCapsuleId,
+    required _isc.UuidValue buildId,
+  }) =>
+      caller.callStreamingServerEndpoint<
+        _ida.Stream<_i437vrny.AppBuildStepLog>,
+        _i437vrny.AppBuildStepLog
+      >('appBuilds', 'tailStepLogs', {
         'cloudCapsuleId': cloudCapsuleId,
         'buildId': buildId,
       }, {});
