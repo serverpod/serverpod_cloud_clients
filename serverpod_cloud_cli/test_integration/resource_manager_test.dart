@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:cli_tools/cli_tools.dart';
@@ -6,9 +7,11 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_auth_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/scloud_settings_data.dart';
+import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_user_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:uuid/uuid.dart';
 
 void main() {
@@ -184,6 +187,78 @@ void main() {
         await cliVersionFuture;
         expect(file.existsSync(), isFalse);
       });
+    });
+  });
+
+  group('Given cloud user data stored with a user auth id', () {
+    late String localStoragePath;
+
+    setUp(() async {
+      localStoragePath = p.join(d.sandbox, 'scloud');
+      await ResourceManager.storeServerpodCloudUserData(
+        cloudUserData: ServerpodCloudUserData(
+          'cloud-user-id',
+          userAuthId: 'user-auth-id',
+        ),
+        localStoragePath: localStoragePath,
+      );
+    });
+
+    test('when fetching the user data then the user auth id is preserved', () {
+      final userData = ResourceManager.tryFetchServerpodCloudUserDataSync(
+        localStoragePath: localStoragePath,
+      );
+
+      expect(userData?.userAuthId, 'user-auth-id');
+    });
+
+    test(
+      'when reading the stored file'
+      ' then the user id is under the id key that older versions read',
+      () async {
+        final expected = d.dir('scloud', [
+          d.file(
+            ResourceManagerConstants.serverpodCloudUserFilePath,
+            isA<String>().having(
+              (content) => (jsonDecode(content) as Map<String, dynamic>)['id'],
+              'id',
+              'cloud-user-id',
+            ),
+          ),
+        ]);
+        await expectLater(expected.validate(), completes);
+      },
+    );
+  });
+
+  group('Given cloud user data stored without a user auth id', () {
+    late String localStoragePath;
+
+    setUp(() async {
+      localStoragePath = p.join(d.sandbox, 'scloud');
+      await d.dir('scloud', [
+        d.file(
+          ResourceManagerConstants.serverpodCloudUserFilePath,
+          '{"id": "cloud-user-id"}',
+        ),
+      ]).create();
+    });
+
+    test('when fetching the user data then the user id is loaded', () {
+      final userData = ResourceManager.tryFetchServerpodCloudUserDataSync(
+        localStoragePath: localStoragePath,
+      );
+
+      expect(userData?.id, 'cloud-user-id');
+    });
+
+    test('when fetching the user data then the user auth id is null', () {
+      final userData = ResourceManager.tryFetchServerpodCloudUserDataSync(
+        localStoragePath: localStoragePath,
+      );
+
+      expect(userData, isNotNull);
+      expect(userData?.userAuthId, isNull);
     });
   });
 

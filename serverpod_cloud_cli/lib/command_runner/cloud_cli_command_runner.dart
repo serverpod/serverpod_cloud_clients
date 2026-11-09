@@ -9,6 +9,7 @@ import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/auth/auth_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/auth/auth_login.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/builds/builds_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/custom_domain/custom_domain_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/db/db_command.dart';
@@ -34,6 +35,7 @@ import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_cloud_cli/shared/base_command.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/activation_checker.dart';
+import 'package:serverpod_cloud_cli/util/cli_authentication_key_manager.dart';
 import 'package:serverpod_cloud_cli/util/common.dart';
 import 'package:serverpod_cloud_cli/util/output/output.dart' show OutputFormat;
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
@@ -65,6 +67,17 @@ typedef CliRunContext = ({
 });
 
 typedef OnRunContextResolved = void Function(CliRunContext context);
+
+/// Reports an analytics event with its [properties].
+///
+/// [userAuthId] is the auth id of the logged in cloud user, or null when the
+/// user is not logged in or the id is not stored.
+typedef OnCloudAnalyticsEvent =
+    void Function(
+      String event,
+      Map<String, dynamic> properties, {
+      String? userAuthId,
+    });
 
 /// Reports an error for diagnostics.
 typedef OnErrorReport =
@@ -190,7 +203,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     required CommandLogger logger,
     Version? version,
     CloudCliServiceProvider? serviceProvider,
-    OnAnalyticsEvent? onAnalyticsEvent,
+    OnCloudAnalyticsEvent? onAnalyticsEvent,
     OnRunContextResolved? onRunContextResolved,
     OnErrorReport? onErrorReport,
     bool enableAnalyticsForAllEnvs = false,
@@ -211,7 +224,8 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
         ? defaultBaseCommand
         : baseCommand;
 
-    final runner = CloudCliCommandRunner._(
+    late final CloudCliCommandRunner runner;
+    runner = CloudCliCommandRunner._(
       logger: logger,
       version: version ?? cliVersion,
       baseCommand: resolvedBaseCommand,
@@ -223,7 +237,13 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
           attemptedUpdateVersion ?? attemptedCliUpdateVersion(),
       onRunContextResolved: onRunContextResolved,
       onErrorReport: onErrorReport,
-      onAnalyticsEvent: onAnalyticsEvent,
+      onAnalyticsEvent: onAnalyticsEvent == null
+          ? null
+          : (event, properties) => onAnalyticsEvent(
+              event,
+              properties,
+              userAuthId: runner._storedUserAuthId(),
+            ),
       setLogLevel:
           ({
             String? commandName,
@@ -274,6 +294,8 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
         await _versionCommand.run();
         return;
       }
+
+      await _backfillUserAuthId();
 
       final latestVersion = await _fetchLatestCliVersion();
 
@@ -426,6 +448,30 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     }
   }
 
+  /// Stores the user auth id of the logged in user if it is missing from
+  /// the stored user data, provided the analytics consent is given.
+  ///
+  /// Never throws, so the backfill cannot break the command being run.
+  Future<void> _backfillUserAuthId() async {
+    if (!_analyticsConsent) {
+      return;
+    }
+
+    try {
+      final client = serviceProvider.cloudApiClient;
+      if (await client.authKeyProvider?.isAuthenticated != true) {
+        return;
+      }
+      await AuthLoginCommands.backfillUserAuthId(
+        cloudApiClient: client,
+        localStoragePath: globalConfiguration.scloudDir.path,
+        logger: logger,
+      );
+    } catch (e, stackTrace) {
+      logger.debug('Failed to backfill the user auth id: $e\n$stackTrace');
+    }
+  }
+
   CliRunContext _runContext(ArgResults topLevelResults) {
     final globalConfig = globalConfiguration;
     return (
@@ -438,6 +484,28 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
       ),
       baseCommand: _baseCommandInvocation,
     );
+  }
+
+  static const _signedInAnalyticsEvent = 'serverpod_cli_signed_in';
+
+  /// Sends the `serverpod_cli_signed_in` analytics event, provided the
+  /// analytics are enabled and the auth id of the signed in user is stored.
+  void sendSignedInAnalyticsEvent() {
+    if (_storedUserAuthId() == null) {
+      return;
+    }
+    sendAnalyticsEvent(_signedInAnalyticsEvent);
+  }
+
+  /// Returns the auth id of the logged in cloud user, or null if the user is
+  /// not logged in, the id is not stored, or the configuration is not
+  /// resolved yet.
+  String? _storedUserAuthId() {
+    final globalConfig = _globalConfiguration;
+    if (globalConfig == null) {
+      return null;
+    }
+    return CliRunContextResolver.fetchUserAuthId(globalConfig.scloudDir.path);
   }
 
   @override

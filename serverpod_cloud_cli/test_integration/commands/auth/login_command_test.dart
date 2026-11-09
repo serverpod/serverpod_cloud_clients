@@ -185,6 +185,7 @@ void main() {
           (_) async => UserBuilder()
               .withId(cloudUserId)
               .withEmail('test@example.com')
+              .withUserAuthId('user-auth-id')
               .build(),
         );
         mockCli = CloudCliCommandRunner.create(
@@ -220,6 +221,113 @@ void main() {
         expect(storedCloudUserData, isNotNull);
         expect(storedCloudUserData!.id, equals(cloudUserId.toString()));
       });
+
+      test('then the user auth id is stored.', () async {
+        final cliOnDone = mockCli.run([
+          'auth',
+          'login',
+          '--no-browser',
+          '--config-dir',
+          testCacheFolderPath,
+        ]);
+
+        await tokenSent.future;
+        await cliOnDone;
+
+        final storedCloudUserData =
+            ResourceManager.tryFetchServerpodCloudUserDataSync(
+              localStoragePath: testCacheFolderPath,
+            );
+        expect(storedCloudUserData?.userAuthId, 'user-auth-id');
+      });
+    });
+
+    group('when logging in through cli and the user has a user auth id', () {
+      final analyticsEvents = <({String event, String? userAuthId})>[];
+      late CloudCliCommandRunner analyticsCli;
+
+      setUp(() async {
+        analyticsEvents.clear();
+        final mockClient = ClientMock();
+        when(() => mockClient.users.readUser()).thenAnswer(
+          (_) async => UserBuilder().withUserAuthId('user-auth-id').build(),
+        );
+        analyticsCli = CloudCliCommandRunner.create(
+          logger: logger,
+          serviceProvider: CloudCliServiceProvider(
+            apiClientFactory: (_) => mockClient,
+          ),
+          onAnalyticsEvent: (event, properties, {userAuthId}) =>
+              analyticsEvents.add((event: event, userAuthId: userAuthId)),
+        );
+      });
+
+      tearDown(() async {
+        await ResourceManager.removeServerpodCloudAuthData(
+          localStoragePath: testCacheFolderPath,
+        );
+      });
+
+      test(
+        'with analytics then the signed in event is sent under the user auth id.',
+        () async {
+          final cliOnDone = analyticsCli.run([
+            'auth',
+            'login',
+            '--no-browser',
+            '--analytics',
+            '--config-dir',
+            testCacheFolderPath,
+          ]);
+
+          await tokenSent.future;
+          await cliOnDone;
+
+          expect(
+            analyticsEvents.where((e) => e.event == 'serverpod_cli_signed_in'),
+            [(event: 'serverpod_cli_signed_in', userAuthId: 'user-auth-id')],
+          );
+        },
+      );
+
+      test('with --no-analytics then no signed in event is sent.', () async {
+        final cliOnDone = analyticsCli.run([
+          'auth',
+          'login',
+          '--no-browser',
+          '--no-analytics',
+          '--config-dir',
+          testCacheFolderPath,
+        ]);
+
+        await tokenSent.future;
+        await cliOnDone;
+
+        expect(analyticsEvents, isEmpty);
+      });
+
+      test(
+        'with analytics and --no-persistent then no signed in event is sent.',
+        () async {
+          final cliOnDone = analyticsCli.run([
+            'auth',
+            'login',
+            '--no-browser',
+            '--no-persistent',
+            '--analytics',
+            '--config-dir',
+            testCacheFolderPath,
+          ]);
+
+          await tokenSent.future;
+          await cliOnDone;
+
+          expect(
+            analyticsEvents.map((e) => e.event),
+            isNot(contains('serverpod_cli_signed_in')),
+          );
+        },
+      );
     });
 
     group('when logging in through cli with --no-persistent flag', () {

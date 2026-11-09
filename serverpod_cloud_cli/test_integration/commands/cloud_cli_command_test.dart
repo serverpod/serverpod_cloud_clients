@@ -5,6 +5,9 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:config/config.dart';
+import 'package:ground_control_client/ground_control_client_test_tools.dart';
+import 'package:ground_control_client_mock/ground_control_client_mock.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:test/test.dart';
@@ -13,6 +16,7 @@ import 'package:uuid/uuid.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_auth_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
@@ -190,6 +194,64 @@ void main() {
       );
     },
   );
+
+  group('Given command that requires login, user is not logged in '
+      'and the user has a user auth id', () {
+    final analyticsEvents = <({String event, String? userAuthId})>[];
+    late CloudCliCommandRunner analyticsRunner;
+    late Completer tokenSent;
+
+    setUp(() {
+      analyticsEvents.clear();
+      final client = ClientMock();
+      when(() => client.users.readUser()).thenAnswer(
+        (_) async => UserBuilder().withUserAuthId('user-auth-id').build(),
+      );
+      analyticsRunner = CloudCliCommandRunner.create(
+        logger: logger,
+        serviceProvider: CloudCliServiceProvider(
+          apiClientFactory: (_) => client,
+        ),
+        onAnalyticsEvent: (event, properties, {userAuthId}) =>
+            analyticsEvents.add((event: event, userAuthId: userAuthId)),
+      );
+      analyticsRunner.addCommand(CommandThatRequiresLogin(logger: logger));
+
+      tokenSent = Completer();
+      unawaited(
+        CallbackHelper.completeAuthCallback(
+          logger: logger,
+          completer: tokenSent,
+          token: 'myTestToken',
+        ),
+      );
+    });
+
+    tearDown(() async {
+      await ResourceManager.removeServerpodCloudAuthData(
+        localStoragePath: testCacheFolderPath,
+      );
+    });
+
+    test('when calling run with analytics'
+        ' then the signed in event is sent under the user auth id', () async {
+      final cliOnDone = analyticsRunner.run([
+        commandThatRequiresLogin.name,
+        '--no-browser',
+        '--analytics',
+        '--config-dir',
+        testCacheFolderPath,
+      ]);
+
+      await tokenSent.future;
+      await cliOnDone;
+
+      expect(
+        analyticsEvents.where((e) => e.event == 'serverpod_cli_signed_in'),
+        [(event: 'serverpod_cli_signed_in', userAuthId: 'user-auth-id')],
+      );
+    });
+  });
 
   test('Given command that requires login and user is logged in '
       'when calling run then completes', () async {

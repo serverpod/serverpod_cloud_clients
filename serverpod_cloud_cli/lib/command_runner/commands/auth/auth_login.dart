@@ -11,6 +11,8 @@ import 'package:serverpod_cloud_cli/util/browser_launcher.dart';
 import 'package:serverpod_cloud_cli/util/listener_server.dart';
 
 abstract class AuthLoginCommands {
+  static const _backfillTimeout = Duration(seconds: 5);
+
   static Future<void> login({
     required CommandLogger logger,
     required Directory scloudDir,
@@ -86,13 +88,46 @@ abstract class AuthLoginCommands {
   }) async {
     try {
       final user = await cloudApiClient.users.readUser();
-      final cloudUserId = user.id.toString();
       await ResourceManager.storeServerpodCloudUserData(
-        cloudUserData: ServerpodCloudUserData(cloudUserId),
+        cloudUserData: ServerpodCloudUserData(
+          user.id.toString(),
+          userAuthId: user.userAuthId,
+        ),
         localStoragePath: localStoragePath,
       );
     } on Exception catch (e) {
       logger.debug('Failed to fetch user data: $e');
+    }
+  }
+
+  static Future<void> backfillUserAuthId({
+    required Client cloudApiClient,
+    required String localStoragePath,
+    required CommandLogger logger,
+  }) async {
+    final storedUserData = ResourceManager.tryFetchServerpodCloudUserDataSync(
+      localStoragePath: localStoragePath,
+    );
+    if (storedUserData == null || storedUserData.userAuthId != null) {
+      return;
+    }
+
+    try {
+      final user = await cloudApiClient.users.readUser().timeout(
+        _backfillTimeout,
+      );
+      if (user.id.toString() != storedUserData.id) {
+        return;
+      }
+      await ResourceManager.storeServerpodCloudUserData(
+        cloudUserData: ServerpodCloudUserData(
+          storedUserData.id,
+          userAuthId: user.userAuthId,
+        ),
+        localStoragePath: localStoragePath,
+      );
+    } on Exception catch (e, stackTrace) {
+      logger.debug('Failed to backfill the user auth id: $e\n$stackTrace');
     }
   }
 }

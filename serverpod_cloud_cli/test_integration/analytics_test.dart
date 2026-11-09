@@ -15,6 +15,7 @@ void main() {
 
   final List<String> analyticsEvents = [];
   final List<Map<String, dynamic>> analyticsProperties = [];
+  final List<String?> analyticsUserAuthIds = [];
 
   final client = ClientMock();
 
@@ -22,6 +23,7 @@ void main() {
     logger.clear();
     analyticsEvents.clear();
     analyticsProperties.clear();
+    analyticsUserAuthIds.clear();
   });
 
   group('Given default non-prod-env suppression (enabled)', () {
@@ -37,9 +39,10 @@ void main() {
         serviceProvider: CloudCliServiceProvider(
           apiClientFactory: (globalCfg) => client,
         ),
-        onAnalyticsEvent: (event, properties) {
+        onAnalyticsEvent: (event, properties, {userAuthId}) {
           analyticsEvents.add(event);
           analyticsProperties.add(Map<String, dynamic>.from(properties));
+          analyticsUserAuthIds.add(userAuthId);
         },
       );
     });
@@ -109,9 +112,10 @@ void main() {
         serviceProvider: CloudCliServiceProvider(
           apiClientFactory: (globalCfg) => client,
         ),
-        onAnalyticsEvent: (event, properties) {
+        onAnalyticsEvent: (event, properties, {userAuthId}) {
           analyticsEvents.add(event);
           analyticsProperties.add(Map<String, dynamic>.from(properties));
+          analyticsUserAuthIds.add(userAuthId);
         },
         enableAnalyticsForAllEnvs: true,
       );
@@ -338,6 +342,45 @@ void main() {
           equals(cloudUserId),
         );
       });
+
+      test('when invoking command with analytics'
+          ' then the event is reported without a user auth id', () async {
+        logger.answerNextConfirmWith(true);
+        await cli.run(['--config-dir', settingsDir, 'version']);
+
+        expect(analyticsUserAuthIds, equals([null]));
+      });
+    });
+
+    group('and cloud user data with a user auth id stored', () {
+      const cloudUserId = 'test-cloud-user-uuid';
+
+      setUp(() async {
+        await ResourceManager.storeServerpodCloudUserData(
+          cloudUserData: ServerpodCloudUserData(
+            cloudUserId,
+            userAuthId: 'user-auth-id',
+          ),
+          localStoragePath: settingsDir,
+        );
+      });
+
+      test('when invoking command with analytics'
+          ' then the event is reported with the user auth id', () async {
+        await cli.run(['--config-dir', settingsDir, 'version', '--analytics']);
+
+        expect(analyticsUserAuthIds, equals(['user-auth-id']));
+      });
+
+      test('when invoking command with analytics'
+          ' then analytics properties include cloud_user_id', () async {
+        await cli.run(['--config-dir', settingsDir, 'version', '--analytics']);
+
+        expect(
+          analyticsProperties.single['cloud_user_id'],
+          equals(cloudUserId),
+        );
+      });
     });
   });
 
@@ -356,9 +399,10 @@ void main() {
         serviceProvider: CloudCliServiceProvider(
           apiClientFactory: (globalCfg) => client,
         ),
-        onAnalyticsEvent: (event, properties) {
+        onAnalyticsEvent: (event, properties, {userAuthId}) {
           analyticsEvents.add(event);
           analyticsProperties.add(Map<String, dynamic>.from(properties));
+          analyticsUserAuthIds.add(userAuthId);
         },
       );
     }

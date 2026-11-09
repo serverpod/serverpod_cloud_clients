@@ -40,7 +40,7 @@ void main() {
       serviceProvider: CloudCliServiceProvider(
         apiClientFactory: (globalCfg) => client,
       ),
-      onAnalyticsEvent: (event, properties) {},
+      onAnalyticsEvent: (event, properties, {userAuthId}) {},
       onRunContextResolved: onRunContextResolved ?? resolvedContexts.add,
       enableAnalyticsForAllEnvs: enableAnalyticsForAllEnvs,
     );
