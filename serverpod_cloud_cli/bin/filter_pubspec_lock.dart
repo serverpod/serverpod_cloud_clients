@@ -109,6 +109,15 @@ void main(List<String> arguments) {
     final graph = PackageGraphParser.fromProjectDirectory(
       Directory(workspaceRoot),
     );
+    final rootNames = {for (final root in graph.roots) root.name};
+    final unknownPackages = packages.where((name) => !rootNames.contains(name));
+    if (unknownPackages.isNotEmpty) {
+      stderr.writeln(
+        'Not a root package in the workspace: ${unknownPackages.join(', ')}',
+      );
+      exit(1);
+    }
+
     final allPackages = graph.allPackageNames();
     final (unreachable, demotedToTransitive) = graph.unreachablePackages(
       packages,
@@ -151,9 +160,6 @@ void main(List<String> arguments) {
     stderr.writeln('File error: $e');
     exit(1);
   } on FormatException catch (e) {
-    stderr.writeln(e.message);
-    exit(1);
-  } on ArgumentError catch (e) {
     stderr.writeln(e.message);
     exit(1);
   }
