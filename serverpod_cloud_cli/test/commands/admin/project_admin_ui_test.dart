@@ -52,6 +52,11 @@ void main() {
         expect(stdout, contains('Users'));
         expect(stdout, contains('Plan Product Id'));
         expect(stdout, contains('Orb Subscription Id'));
+        expect(stdout, contains('First Paid At (UTC)'));
+        expect(stdout, contains('First Paid Invoice'));
+        expect(stdout, contains('Grace Invoice'));
+        expect(stdout, contains('Grace Suspend At (UTC)'));
+        expect(stdout, contains('Grace Concluded At (UTC)'));
       });
 
       test('then stdout does not contain the archived at column', () {
@@ -87,6 +92,46 @@ void main() {
 
       test('then stderr is empty', () {
         expect(stderr, isEmpty);
+      });
+    });
+
+    group('when rendered with subscription facts', () {
+      late String stdout;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          AdminProjectListTextUi(
+            utc: true,
+            showArchivedAt: false,
+            includePaymentsStatus: false,
+          ),
+          data: Stream.fromIterable([
+            AdminProjectListRow(
+              projectInfo: ProjectInfoBuilder()
+                  .withProject(
+                    ProjectBuilder().withCloudProjectId('my-project'),
+                  )
+                  .build(),
+              status: ProjectLifecycleStatus.active,
+              planProductId: 'closed-beta:0',
+              subscriptionId: 'orb_sub_1',
+              firstInvoicePaidAt: DateTime.utc(2026, 4, 5, 6, 7, 8),
+              firstPaidInvoiceId: 'inv-first',
+              gracePeriodInvoiceId: 'inv-grace',
+              gracePeriodSuspendAt: DateTime.utc(2026, 5, 1, 2, 3, 4),
+              gracePeriodConcludedAt: DateTime.utc(2026, 5, 2, 3, 4, 5),
+            ),
+          ]),
+        );
+        stdout = io.stdout;
+      });
+
+      test('then stdout contains the paid invoice and grace period', () {
+        expect(stdout, contains('2026-04-05 06:07:08'));
+        expect(stdout, contains('inv-first'));
+        expect(stdout, contains('inv-grace'));
+        expect(stdout, contains('2026-05-01 02:03:04'));
+        expect(stdout, contains('2026-05-02 03:04:05'));
       });
     });
 

@@ -56,7 +56,11 @@ class _AdminProjectStatusLines {
 
     final projectInfo = info.projectInfo;
     final project = projectInfo.project;
-    final overview = AdminOverviewLineWriter(logger: logger, utc: utc);
+    final overview = AdminOverviewLineWriter(
+      logger: logger,
+      utc: utc,
+      labelWidth: 14,
+    );
     overview.writeRow('Project', project.cloudProjectId);
     overview.writeLifecycle(
       status: info.status,
@@ -71,6 +75,13 @@ class _AdminProjectStatusLines {
     overview.writeBilling(
       billingPlanId: info.billingPlanId,
       subscriptionId: info.subscriptionId.isEmpty ? null : info.subscriptionId,
+    );
+    overview.writeSubscriptionFacts(
+      firstPaidAt: info.firstInvoicePaidAt,
+      firstPaidInvoiceId: info.firstPaidInvoiceId,
+      gracePeriodInvoiceId: info.gracePeriodInvoiceId,
+      gracePeriodSuspendAt: info.gracePeriodSuspendAt,
+      gracePeriodConcludedAt: info.gracePeriodConcludedAt,
     );
     overview.writeCreated(project.createdAt);
     overview.writeLastDeploy(info.latestDeployAttempt);

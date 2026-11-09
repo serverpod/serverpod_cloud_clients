@@ -7,7 +7,6 @@ import 'package:serverpod_cloud_cli/util/duration_formatter.dart';
 
 class AdminOverviewLineWriter {
   static const indent = '  ';
-  static const labelWidth = 10;
   static const labelStyle = cli.AnsiStyle.darkGray;
   static const dimStyle = cli.AnsiStyle.darkGray;
   static const orbSubscriptionsBase = 'https://app.withorb.com/subscriptions/';
@@ -17,9 +16,14 @@ class AdminOverviewLineWriter {
 
   final CommandLogger logger;
   final bool utc;
+  final int labelWidth;
   final List<String> lines = [];
 
-  AdminOverviewLineWriter({required this.logger, required this.utc});
+  AdminOverviewLineWriter({
+    required this.logger,
+    required this.utc,
+    this.labelWidth = 10,
+  });
 
   void writeLifecycle({
     required ProjectLifecycleStatus status,
@@ -77,6 +81,35 @@ class AdminOverviewLineWriter {
         '$plan · ${orbSubscriptionLink(sub)}',
     };
     writeRow('Billing', billingValue, nested: true);
+  }
+
+  void writeSubscriptionFacts({
+    required DateTime? firstPaidAt,
+    required String? firstPaidInvoiceId,
+    required String? gracePeriodInvoiceId,
+    required DateTime? gracePeriodSuspendAt,
+    required DateTime? gracePeriodConcludedAt,
+  }) {
+    writeRow('First paid', _instantOrNone(firstPaidAt), nested: true);
+    writeRow(
+      'Paid invoice',
+      firstPaidInvoiceId ?? style('none', dimStyle),
+      nested: true,
+    );
+    writeRow(
+      'Grace invoice',
+      gracePeriodInvoiceId ?? style('none', dimStyle),
+      nested: true,
+    );
+    writeRow('Grace ends', _instantOrNone(gracePeriodSuspendAt), nested: true);
+    writeRow('Concluded', _instantOrNone(gracePeriodConcludedAt), nested: true);
+  }
+
+  String _instantOrNone(DateTime? when) {
+    if (when == null) {
+      return style('none', dimStyle);
+    }
+    return when.toLabeledTzString(utc, numTimeStampChars);
   }
 
   void writeCreated(DateTime projectCreatedAt) {

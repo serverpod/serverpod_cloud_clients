@@ -55,6 +55,26 @@ class AdminProjectListTextUi extends OutputWidget {
             'Orb Subscription Id',
             getter: (row) => row.subscriptionId,
           ),
+          TableColumnFormatter.forTimestamp(
+            'First Paid At',
+            getter: (row) => row.firstInvoicePaidAt,
+          ),
+          TableColumnFormatter.forElement(
+            'First Paid Invoice',
+            getter: (row) => row.firstPaidInvoiceId,
+          ),
+          TableColumnFormatter.forElement(
+            'Grace Invoice',
+            getter: (row) => row.gracePeriodInvoiceId,
+          ),
+          TableColumnFormatter.forTimestamp(
+            'Grace Suspend At',
+            getter: (row) => row.gracePeriodSuspendAt,
+          ),
+          TableColumnFormatter.forTimestamp(
+            'Grace Concluded At',
+            getter: (row) => row.gracePeriodConcludedAt,
+          ),
           if (includePaymentsStatus) ...[
             TableColumnFormatter.forElement(
               'Oldest Overdue',
@@ -102,6 +122,11 @@ class AdminProjectListTextUi extends OutputWidget {
         19,
         20,
         19,
+        21,
+        18,
+        18,
+        24,
+        26,
         if (includePaymentsStatus) ...[8, 10, 8, 10, 16, 18],
         33,
         33,

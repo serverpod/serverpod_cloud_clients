@@ -84,6 +84,51 @@ void main() {
     });
   });
 
+  group('Given an admin project with recorded subscription facts', () {
+    test('when mapped to a list row then the facts are included', () {
+      final paidAt = DateTime.utc(2026, 4, 5);
+      final suspendAt = DateTime.utc(2026, 5, 1);
+      final concludedAt = DateTime.utc(2026, 5, 2);
+      final row = AdminProjectListRow.fromAdminProjectInfo(
+        AdminProjectInfoBuilder()
+            .withFirstInvoicePaidAt(paidAt)
+            .withFirstPaidInvoiceId('inv-first')
+            .withGracePeriodInvoiceId('inv-grace')
+            .withGracePeriodSuspendAt(suspendAt)
+            .withGracePeriodConcludedAt(concludedAt)
+            .build(),
+      );
+
+      expect(row.firstInvoicePaidAt, paidAt);
+      expect(row.firstPaidInvoiceId, 'inv-first');
+      expect(row.gracePeriodInvoiceId, 'inv-grace');
+      expect(row.gracePeriodSuspendAt, suspendAt);
+      expect(row.gracePeriodConcludedAt, concludedAt);
+      expect(row.toJson()['firstInvoicePaidAt'], paidAt.toIso8601String());
+      expect(row.toJson()['firstPaidInvoiceId'], 'inv-first');
+      expect(row.toJson()['gracePeriodInvoiceId'], 'inv-grace');
+      expect(row.toJson()['gracePeriodSuspendAt'], suspendAt.toIso8601String());
+      expect(
+        row.toJson()['gracePeriodConcludedAt'],
+        concludedAt.toIso8601String(),
+      );
+    });
+  });
+
+  group('Given an admin project without subscription facts', () {
+    test('when serialized then the fact keys are omitted', () {
+      final row = AdminProjectListRow.fromAdminProjectInfo(
+        AdminProjectInfoBuilder().build(),
+      );
+
+      expect(row.toJson().containsKey('firstInvoicePaidAt'), isFalse);
+      expect(row.toJson().containsKey('firstPaidInvoiceId'), isFalse);
+      expect(row.toJson().containsKey('gracePeriodInvoiceId'), isFalse);
+      expect(row.toJson().containsKey('gracePeriodSuspendAt'), isFalse);
+      expect(row.toJson().containsKey('gracePeriodConcludedAt'), isFalse);
+    });
+  });
+
   group('Given an admin project with no overdue invoices', () {
     test('when mapped to a list row then overdue amounts and dates are absent '
         'and invoiced and uninvoiced totals are 0.00', () {

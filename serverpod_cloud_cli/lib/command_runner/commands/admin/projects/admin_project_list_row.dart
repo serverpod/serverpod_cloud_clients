@@ -8,6 +8,11 @@ class AdminProjectListRow implements SerializableModel {
     this.suspensionReason,
     required this.planProductId,
     required this.subscriptionId,
+    this.firstInvoicePaidAt,
+    this.firstPaidInvoiceId,
+    this.gracePeriodInvoiceId,
+    this.gracePeriodSuspendAt,
+    this.gracePeriodConcludedAt,
     this.includePaymentsStatus = false,
     this.oldestOverdueUnpaidAmount,
     this.oldestOverdueUnpaidDueDate,
@@ -21,32 +26,35 @@ class AdminProjectListRow implements SerializableModel {
     final AdminProjectInfo info, {
     final bool includePaymentsStatus = false,
   }) {
-    if (!includePaymentsStatus) {
-      return AdminProjectListRow(
-        projectInfo: info.projectInfo,
-        status: info.status,
-        suspendedAt: info.suspendedAt,
-        suspensionReason: info.suspensionReason,
-        planProductId: info.planProductId,
-        subscriptionId: info.subscriptionId,
-      );
-    }
+    String? oldestOverdueUnpaidAmount;
+    DateTime? oldestOverdueUnpaidDueDate;
+    String? newestOverdueUnpaidAmount;
+    DateTime? newestOverdueUnpaidDueDate;
+    String? invoicedAmountOverdue;
+    String? uninvoicedAmountOverdue;
+    if (includePaymentsStatus) {
+      final overdue = List<PaymentsStatus>.of(info.overduePaymentsStatuses)
+        ..sort((final a, final b) => a.dueDate.compareTo(b.dueDate));
 
-    final overdue = List<PaymentsStatus>.of(info.overduePaymentsStatuses)
-      ..sort((final a, final b) => a.dueDate.compareTo(b.dueDate));
-
-    final oldest = overdue.firstOrNull;
-    final newest = overdue.lastOrNull;
-    var invoicedCents = 0;
-    var uninvoicedCents = 0;
-    for (final payment in overdue) {
-      final cents = _centsFromDecimalString(payment.outstandingAmount);
-      switch (payment.status) {
-        case PaymentsInvoiceStatus.issued:
-          invoicedCents += cents;
-        case PaymentsInvoiceStatus.actionNeeded:
-          uninvoicedCents += cents;
+      final oldest = overdue.firstOrNull;
+      final newest = overdue.lastOrNull;
+      var invoicedCents = 0;
+      var uninvoicedCents = 0;
+      for (final payment in overdue) {
+        final cents = _centsFromDecimalString(payment.outstandingAmount);
+        switch (payment.status) {
+          case PaymentsInvoiceStatus.issued:
+            invoicedCents += cents;
+          case PaymentsInvoiceStatus.actionNeeded:
+            uninvoicedCents += cents;
+        }
       }
+      oldestOverdueUnpaidAmount = oldest?.outstandingAmount;
+      oldestOverdueUnpaidDueDate = oldest?.dueDate;
+      newestOverdueUnpaidAmount = newest?.outstandingAmount;
+      newestOverdueUnpaidDueDate = newest?.dueDate;
+      invoicedAmountOverdue = _decimalStringFromCents(invoicedCents);
+      uninvoicedAmountOverdue = _decimalStringFromCents(uninvoicedCents);
     }
 
     return AdminProjectListRow(
@@ -56,13 +64,18 @@ class AdminProjectListRow implements SerializableModel {
       suspensionReason: info.suspensionReason,
       planProductId: info.planProductId,
       subscriptionId: info.subscriptionId,
-      includePaymentsStatus: true,
-      oldestOverdueUnpaidAmount: oldest?.outstandingAmount,
-      oldestOverdueUnpaidDueDate: oldest?.dueDate,
-      newestOverdueUnpaidAmount: newest?.outstandingAmount,
-      newestOverdueUnpaidDueDate: newest?.dueDate,
-      invoicedAmountOverdue: _decimalStringFromCents(invoicedCents),
-      uninvoicedAmountOverdue: _decimalStringFromCents(uninvoicedCents),
+      firstInvoicePaidAt: info.firstInvoicePaidAt,
+      firstPaidInvoiceId: info.firstPaidInvoiceId,
+      gracePeriodInvoiceId: info.gracePeriodInvoiceId,
+      gracePeriodSuspendAt: info.gracePeriodSuspendAt,
+      gracePeriodConcludedAt: info.gracePeriodConcludedAt,
+      includePaymentsStatus: includePaymentsStatus,
+      oldestOverdueUnpaidAmount: oldestOverdueUnpaidAmount,
+      oldestOverdueUnpaidDueDate: oldestOverdueUnpaidDueDate,
+      newestOverdueUnpaidAmount: newestOverdueUnpaidAmount,
+      newestOverdueUnpaidDueDate: newestOverdueUnpaidDueDate,
+      invoicedAmountOverdue: invoicedAmountOverdue,
+      uninvoicedAmountOverdue: uninvoicedAmountOverdue,
     );
   }
 
@@ -72,6 +85,11 @@ class AdminProjectListRow implements SerializableModel {
   final ProjectSuspensionReason? suspensionReason;
   final String planProductId;
   final String subscriptionId;
+  final DateTime? firstInvoicePaidAt;
+  final String? firstPaidInvoiceId;
+  final String? gracePeriodInvoiceId;
+  final DateTime? gracePeriodSuspendAt;
+  final DateTime? gracePeriodConcludedAt;
   final bool includePaymentsStatus;
   final String? oldestOverdueUnpaidAmount;
   final DateTime? oldestOverdueUnpaidDueDate;
@@ -84,6 +102,11 @@ class AdminProjectListRow implements SerializableModel {
   Map<String, Object?> toJson() {
     final suspendedAtValue = suspendedAt;
     final suspensionReasonValue = suspensionReason;
+    final firstInvoicePaidAtValue = firstInvoicePaidAt;
+    final firstPaidInvoiceIdValue = firstPaidInvoiceId;
+    final gracePeriodInvoiceIdValue = gracePeriodInvoiceId;
+    final gracePeriodSuspendAtValue = gracePeriodSuspendAt;
+    final gracePeriodConcludedAtValue = gracePeriodConcludedAt;
     return {
       ...projectInfo.toJson(),
       'status': status.toJson(),
@@ -93,6 +116,18 @@ class AdminProjectListRow implements SerializableModel {
         'suspensionReason': suspensionReasonValue.toJson(),
       'planProductId': planProductId,
       'subscriptionId': subscriptionId,
+      if (firstInvoicePaidAtValue != null)
+        'firstInvoicePaidAt': firstInvoicePaidAtValue.toUtc().toIso8601String(),
+      'firstPaidInvoiceId': ?firstPaidInvoiceIdValue,
+      'gracePeriodInvoiceId': ?gracePeriodInvoiceIdValue,
+      if (gracePeriodSuspendAtValue != null)
+        'gracePeriodSuspendAt': gracePeriodSuspendAtValue
+            .toUtc()
+            .toIso8601String(),
+      if (gracePeriodConcludedAtValue != null)
+        'gracePeriodConcludedAt': gracePeriodConcludedAtValue
+            .toUtc()
+            .toIso8601String(),
       if (includePaymentsStatus) ...{
         'oldestOverdueUnpaidAmount': oldestOverdueUnpaidAmount,
         'oldestOverdueUnpaidDueDate': dueDateOnly(oldestOverdueUnpaidDueDate),
