@@ -167,6 +167,8 @@ import 'features/admin/models/admin_user_project_membership.dart' as _inhawksa;
 import 'features/admin/models/admin_user_status.dart' as _iebexyj8;
 import 'features/admin/models/payments_invoice_status.dart' as _iu1ze8tv;
 import 'features/admin/models/payments_status.dart' as _iw02lteh;
+import 'features/app_builds/exceptions/android_signing_already_set_exception.dart'
+    as _iv09xi1m;
 import 'features/app_builds/exceptions/app_publishing_disabled_exception.dart'
     as _ijed0rq9;
 import 'features/app_builds/models/android_publishing_setup.dart' as _i0oah05k;
@@ -181,6 +183,8 @@ import 'features/app_builds/models/app_build_summary.dart' as _iyi5usgc;
 import 'features/app_builds/models/app_builds_upload.dart' as _ig1623xk;
 import 'features/app_builds/models/app_publishing_setup.dart' as _i2sj9x5l;
 import 'features/app_builds/models/app_store_access.dart' as _iyc8rxjv;
+import 'features/app_builds/models/generated_android_keystore.dart'
+    as _ijctux07;
 import 'features/app_builds/models/google_play_access.dart' as _ikj2epgu;
 import 'features/app_builds/models/ios_publishing_setup.dart' as _ixfxvxdd;
 import 'features/app_builds/models/ios_signing.dart' as _ix6c9g8d;
@@ -344,6 +348,7 @@ export 'features/admin/models/admin_user_project_membership.dart';
 export 'features/admin/models/admin_user_status.dart';
 export 'features/admin/models/payments_invoice_status.dart';
 export 'features/admin/models/payments_status.dart';
+export 'features/app_builds/exceptions/android_signing_already_set_exception.dart';
 export 'features/app_builds/exceptions/app_publishing_disabled_exception.dart';
 export 'features/app_builds/models/android_publishing_setup.dart';
 export 'features/app_builds/models/android_signing.dart';
@@ -357,6 +362,7 @@ export 'features/app_builds/models/app_build_summary.dart';
 export 'features/app_builds/models/app_builds_upload.dart';
 export 'features/app_builds/models/app_publishing_setup.dart';
 export 'features/app_builds/models/app_store_access.dart';
+export 'features/app_builds/models/generated_android_keystore.dart';
 export 'features/app_builds/models/google_play_access.dart';
 export 'features/app_builds/models/ios_publishing_setup.dart';
 export 'features/app_builds/models/ios_signing.dart';
@@ -748,6 +754,9 @@ class Protocol extends _isc.SerializationManager {
     if (t == _iw02lteh.PaymentsStatus) {
       return _iw02lteh.PaymentsStatus.fromJson(data) as T;
     }
+    if (t == _iv09xi1m.AndroidSigningAlreadySetException) {
+      return _iv09xi1m.AndroidSigningAlreadySetException.fromJson(data) as T;
+    }
     if (t == _ijed0rq9.AppPublishingDisabledException) {
       return _ijed0rq9.AppPublishingDisabledException.fromJson(data) as T;
     }
@@ -786,6 +795,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _iyc8rxjv.AppStoreAccess) {
       return _iyc8rxjv.AppStoreAccess.fromJson(data) as T;
+    }
+    if (t == _ijctux07.GeneratedAndroidKeystore) {
+      return _ijctux07.GeneratedAndroidKeystore.fromJson(data) as T;
     }
     if (t == _ikj2epgu.GooglePlayAccess) {
       return _ikj2epgu.GooglePlayAccess.fromJson(data) as T;
@@ -1376,6 +1388,12 @@ class Protocol extends _isc.SerializationManager {
       return (data != null ? _iw02lteh.PaymentsStatus.fromJson(data) : null)
           as T;
     }
+    if (t == _isc.getType<_iv09xi1m.AndroidSigningAlreadySetException?>()) {
+      return (data != null
+              ? _iv09xi1m.AndroidSigningAlreadySetException.fromJson(data)
+              : null)
+          as T;
+    }
     if (t == _isc.getType<_ijed0rq9.AppPublishingDisabledException?>()) {
       return (data != null
               ? _ijed0rq9.AppPublishingDisabledException.fromJson(data)
@@ -1431,6 +1449,12 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_iyc8rxjv.AppStoreAccess?>()) {
       return (data != null ? _iyc8rxjv.AppStoreAccess.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_ijctux07.GeneratedAndroidKeystore?>()) {
+      return (data != null
+              ? _ijctux07.GeneratedAndroidKeystore.fromJson(data)
+              : null)
           as T;
     }
     if (t == _isc.getType<_ikj2epgu.GooglePlayAccess?>()) {
@@ -2172,6 +2196,8 @@ class Protocol extends _isc.SerializationManager {
       _iebexyj8.AdminUserStatus => 'AdminUserStatus',
       _iu1ze8tv.PaymentsInvoiceStatus => 'PaymentsInvoiceStatus',
       _iw02lteh.PaymentsStatus => 'PaymentsStatus',
+      _iv09xi1m.AndroidSigningAlreadySetException =>
+        'AndroidSigningAlreadySetException',
       _ijed0rq9.AppPublishingDisabledException =>
         'AppPublishingDisabledException',
       _i0oah05k.AndroidPublishingSetup => 'AndroidPublishingSetup',
@@ -2186,6 +2212,7 @@ class Protocol extends _isc.SerializationManager {
       _ig1623xk.AppBuildsUpload => 'AppBuildsUpload',
       _i2sj9x5l.AppPublishingSetup => 'AppPublishingSetup',
       _iyc8rxjv.AppStoreAccess => 'AppStoreAccess',
+      _ijctux07.GeneratedAndroidKeystore => 'GeneratedAndroidKeystore',
       _ikj2epgu.GooglePlayAccess => 'GooglePlayAccess',
       _ixfxvxdd.IosPublishingSetup => 'IosPublishingSetup',
       _ix6c9g8d.IosSigning => 'IosSigning',
@@ -2466,6 +2493,8 @@ class Protocol extends _isc.SerializationManager {
         return 'PaymentsInvoiceStatus';
       case _iw02lteh.PaymentsStatus():
         return 'PaymentsStatus';
+      case _iv09xi1m.AndroidSigningAlreadySetException():
+        return 'AndroidSigningAlreadySetException';
       case _ijed0rq9.AppPublishingDisabledException():
         return 'AppPublishingDisabledException';
       case _i0oah05k.AndroidPublishingSetup():
@@ -2492,6 +2521,8 @@ class Protocol extends _isc.SerializationManager {
         return 'AppPublishingSetup';
       case _iyc8rxjv.AppStoreAccess():
         return 'AppStoreAccess';
+      case _ijctux07.GeneratedAndroidKeystore():
+        return 'GeneratedAndroidKeystore';
       case _ikj2epgu.GooglePlayAccess():
         return 'GooglePlayAccess';
       case _ixfxvxdd.IosPublishingSetup():
@@ -2920,6 +2951,11 @@ class Protocol extends _isc.SerializationManager {
     if (dataClassName == 'PaymentsStatus') {
       return deserialize<_iw02lteh.PaymentsStatus>(data['data']);
     }
+    if (dataClassName == 'AndroidSigningAlreadySetException') {
+      return deserialize<_iv09xi1m.AndroidSigningAlreadySetException>(
+        data['data'],
+      );
+    }
     if (dataClassName == 'AppPublishingDisabledException') {
       return deserialize<_ijed0rq9.AppPublishingDisabledException>(
         data['data'],
@@ -2960,6 +2996,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'AppStoreAccess') {
       return deserialize<_iyc8rxjv.AppStoreAccess>(data['data']);
+    }
+    if (dataClassName == 'GeneratedAndroidKeystore') {
+      return deserialize<_ijctux07.GeneratedAndroidKeystore>(data['data']);
     }
     if (dataClassName == 'GooglePlayAccess') {
       return deserialize<_ikj2epgu.GooglePlayAccess>(data['data']);
