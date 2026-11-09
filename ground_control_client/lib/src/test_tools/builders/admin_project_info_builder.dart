@@ -12,6 +12,11 @@ class AdminProjectInfoBuilder {
   String _subscriptionId;
   List<PaymentsStatus> _overduePaymentsStatuses;
   String? _billingPlanId;
+  DateTime? _firstInvoicePaidAt;
+  String? _firstPaidInvoiceId;
+  String? _gracePeriodInvoiceId;
+  DateTime? _gracePeriodSuspendAt;
+  DateTime? _gracePeriodConcludedAt;
   DeployAttempt? _latestDeployAttempt;
 
   AdminProjectInfoBuilder({final ProjectInfoBuilder? projectInfoBuilder})
@@ -23,6 +28,11 @@ class AdminProjectInfoBuilder {
       _subscriptionId = 'orb_sub_test',
       _overduePaymentsStatuses = const [],
       _billingPlanId = 'closed-beta:1',
+      _firstInvoicePaidAt = null,
+      _firstPaidInvoiceId = null,
+      _gracePeriodInvoiceId = null,
+      _gracePeriodSuspendAt = null,
+      _gracePeriodConcludedAt = null,
       _latestDeployAttempt = null;
 
   AdminProjectInfoBuilder withProject(final ProjectBuilder projectBuilder) {
@@ -93,6 +103,33 @@ class AdminProjectInfoBuilder {
     return this;
   }
 
+  AdminProjectInfoBuilder withFirstInvoicePaidAt(final DateTime? paidAt) {
+    _firstInvoicePaidAt = paidAt;
+    return this;
+  }
+
+  AdminProjectInfoBuilder withFirstPaidInvoiceId(final String? invoiceId) {
+    _firstPaidInvoiceId = invoiceId;
+    return this;
+  }
+
+  AdminProjectInfoBuilder withGracePeriodInvoiceId(final String? invoiceId) {
+    _gracePeriodInvoiceId = invoiceId;
+    return this;
+  }
+
+  AdminProjectInfoBuilder withGracePeriodSuspendAt(final DateTime? suspendAt) {
+    _gracePeriodSuspendAt = suspendAt;
+    return this;
+  }
+
+  AdminProjectInfoBuilder withGracePeriodConcludedAt(
+    final DateTime? concludedAt,
+  ) {
+    _gracePeriodConcludedAt = concludedAt;
+    return this;
+  }
+
   AdminProjectInfoBuilder withLatestDeployAttempt(
     final DeployAttempt? latestDeployAttempt,
   ) {
@@ -110,6 +147,11 @@ class AdminProjectInfoBuilder {
       subscriptionId: _subscriptionId,
       overduePaymentsStatuses: _overduePaymentsStatuses,
       billingPlanId: _billingPlanId,
+      firstInvoicePaidAt: _firstInvoicePaidAt,
+      firstPaidInvoiceId: _firstPaidInvoiceId,
+      gracePeriodInvoiceId: _gracePeriodInvoiceId,
+      gracePeriodSuspendAt: _gracePeriodSuspendAt,
+      gracePeriodConcludedAt: _gracePeriodConcludedAt,
       latestDeployAttempt: _latestDeployAttempt,
     );
   }

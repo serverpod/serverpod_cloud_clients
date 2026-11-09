@@ -32,6 +32,11 @@ abstract class AdminProjectInfo
     required this.subscriptionId,
     required this.overduePaymentsStatuses,
     this.billingPlanId,
+    this.firstInvoicePaidAt,
+    this.firstPaidInvoiceId,
+    this.gracePeriodInvoiceId,
+    this.gracePeriodSuspendAt,
+    this.gracePeriodConcludedAt,
     this.latestDeployAttempt,
   });
 
@@ -44,6 +49,11 @@ abstract class AdminProjectInfo
     required String subscriptionId,
     required List<_iyxx8r3m.PaymentsStatus> overduePaymentsStatuses,
     String? billingPlanId,
+    DateTime? firstInvoicePaidAt,
+    String? firstPaidInvoiceId,
+    String? gracePeriodInvoiceId,
+    DateTime? gracePeriodSuspendAt,
+    DateTime? gracePeriodConcludedAt,
     _inqbrt2s.DeployAttempt? latestDeployAttempt,
   }) = _AdminProjectInfoImpl;
 
@@ -72,6 +82,25 @@ abstract class AdminProjectInfo
             jsonSerialization['overduePaymentsStatuses'],
           ),
       billingPlanId: jsonSerialization['billingPlanId'] as String?,
+      firstInvoicePaidAt: jsonSerialization['firstInvoicePaidAt'] == null
+          ? null
+          : _isc.DateTimeJsonExtension.fromJson(
+              jsonSerialization['firstInvoicePaidAt'],
+            ),
+      firstPaidInvoiceId: jsonSerialization['firstPaidInvoiceId'] as String?,
+      gracePeriodInvoiceId:
+          jsonSerialization['gracePeriodInvoiceId'] as String?,
+      gracePeriodSuspendAt: jsonSerialization['gracePeriodSuspendAt'] == null
+          ? null
+          : _isc.DateTimeJsonExtension.fromJson(
+              jsonSerialization['gracePeriodSuspendAt'],
+            ),
+      gracePeriodConcludedAt:
+          jsonSerialization['gracePeriodConcludedAt'] == null
+          ? null
+          : _isc.DateTimeJsonExtension.fromJson(
+              jsonSerialization['gracePeriodConcludedAt'],
+            ),
       latestDeployAttempt: jsonSerialization['latestDeployAttempt'] == null
           ? null
           : _iod2a87h.Protocol().deserialize<_inqbrt2s.DeployAttempt>(
@@ -97,13 +126,31 @@ abstract class AdminProjectInfo
   /// The Orb subscription id for the project.
   String subscriptionId;
 
-  /// The subscription's overdue payments statuses, one per overdue invoice.
-  /// Note that in some cases this may reflect on more projects/products than
-  /// just this project.
+  /// The subscription's overdue payment statuses, one per overdue invoice.
   List<_iyxx8r3m.PaymentsStatus> overduePaymentsStatuses;
 
   /// Orb billing system plan id and version (e.g. starter-private:2).
   String? billingPlanId;
+
+  /// When the subscription first paid an invoice that charges an amount,
+  /// or null until it has paid one.
+  DateTime? firstInvoicePaidAt;
+
+  /// The first invoice the subscription paid, or null until it has paid one.
+  String? firstPaidInvoiceId;
+
+  /// The invoice whose failed payment or issue started the grace period,
+  /// or null when the subscription has none.
+  String? gracePeriodInvoiceId;
+
+  /// When the grace period ends and the subscription's projects are suspended
+  /// unless the invoice is settled before, or null when the subscription has
+  /// no grace period.
+  DateTime? gracePeriodSuspendAt;
+
+  /// When the subscription was concluded to be in arrears at the end of the
+  /// grace period, or null while that period runs.
+  DateTime? gracePeriodConcludedAt;
 
   /// The most recent deploy attempt for the project, when any exist.
   _inqbrt2s.DeployAttempt? latestDeployAttempt;
@@ -120,6 +167,11 @@ abstract class AdminProjectInfo
     String? subscriptionId,
     List<_iyxx8r3m.PaymentsStatus>? overduePaymentsStatuses,
     String? billingPlanId,
+    DateTime? firstInvoicePaidAt,
+    String? firstPaidInvoiceId,
+    String? gracePeriodInvoiceId,
+    DateTime? gracePeriodSuspendAt,
+    DateTime? gracePeriodConcludedAt,
     _inqbrt2s.DeployAttempt? latestDeployAttempt,
   });
   @override
@@ -137,6 +189,15 @@ abstract class AdminProjectInfo
         valueToJson: (v) => v.toJson(),
       ),
       if (billingPlanId != null) 'billingPlanId': billingPlanId,
+      if (firstInvoicePaidAt != null)
+        'firstInvoicePaidAt': firstInvoicePaidAt?.toJson(),
+      if (firstPaidInvoiceId != null) 'firstPaidInvoiceId': firstPaidInvoiceId,
+      if (gracePeriodInvoiceId != null)
+        'gracePeriodInvoiceId': gracePeriodInvoiceId,
+      if (gracePeriodSuspendAt != null)
+        'gracePeriodSuspendAt': gracePeriodSuspendAt?.toJson(),
+      if (gracePeriodConcludedAt != null)
+        'gracePeriodConcludedAt': gracePeriodConcludedAt?.toJson(),
       if (latestDeployAttempt != null)
         'latestDeployAttempt': latestDeployAttempt?.toJson(),
     };
@@ -157,6 +218,15 @@ abstract class AdminProjectInfo
         valueToJson: (v) => v.toJsonForProtocol(),
       ),
       if (billingPlanId != null) 'billingPlanId': billingPlanId,
+      if (firstInvoicePaidAt != null)
+        'firstInvoicePaidAt': firstInvoicePaidAt?.toJson(),
+      if (firstPaidInvoiceId != null) 'firstPaidInvoiceId': firstPaidInvoiceId,
+      if (gracePeriodInvoiceId != null)
+        'gracePeriodInvoiceId': gracePeriodInvoiceId,
+      if (gracePeriodSuspendAt != null)
+        'gracePeriodSuspendAt': gracePeriodSuspendAt?.toJson(),
+      if (gracePeriodConcludedAt != null)
+        'gracePeriodConcludedAt': gracePeriodConcludedAt?.toJson(),
       if (latestDeployAttempt != null)
         'latestDeployAttempt': latestDeployAttempt?.toJsonForProtocol(),
     };
@@ -180,6 +250,11 @@ class _AdminProjectInfoImpl extends AdminProjectInfo {
     required String subscriptionId,
     required List<_iyxx8r3m.PaymentsStatus> overduePaymentsStatuses,
     String? billingPlanId,
+    DateTime? firstInvoicePaidAt,
+    String? firstPaidInvoiceId,
+    String? gracePeriodInvoiceId,
+    DateTime? gracePeriodSuspendAt,
+    DateTime? gracePeriodConcludedAt,
     _inqbrt2s.DeployAttempt? latestDeployAttempt,
   }) : super._(
          projectInfo: projectInfo,
@@ -190,6 +265,11 @@ class _AdminProjectInfoImpl extends AdminProjectInfo {
          subscriptionId: subscriptionId,
          overduePaymentsStatuses: overduePaymentsStatuses,
          billingPlanId: billingPlanId,
+         firstInvoicePaidAt: firstInvoicePaidAt,
+         firstPaidInvoiceId: firstPaidInvoiceId,
+         gracePeriodInvoiceId: gracePeriodInvoiceId,
+         gracePeriodSuspendAt: gracePeriodSuspendAt,
+         gracePeriodConcludedAt: gracePeriodConcludedAt,
          latestDeployAttempt: latestDeployAttempt,
        );
 
@@ -206,6 +286,11 @@ class _AdminProjectInfoImpl extends AdminProjectInfo {
     String? subscriptionId,
     List<_iyxx8r3m.PaymentsStatus>? overduePaymentsStatuses,
     Object? billingPlanId = _Undefined,
+    Object? firstInvoicePaidAt = _Undefined,
+    Object? firstPaidInvoiceId = _Undefined,
+    Object? gracePeriodInvoiceId = _Undefined,
+    Object? gracePeriodSuspendAt = _Undefined,
+    Object? gracePeriodConcludedAt = _Undefined,
     Object? latestDeployAttempt = _Undefined,
   }) {
     return AdminProjectInfo(
@@ -223,6 +308,21 @@ class _AdminProjectInfoImpl extends AdminProjectInfo {
       billingPlanId: billingPlanId is String?
           ? billingPlanId
           : this.billingPlanId,
+      firstInvoicePaidAt: firstInvoicePaidAt is DateTime?
+          ? firstInvoicePaidAt
+          : this.firstInvoicePaidAt,
+      firstPaidInvoiceId: firstPaidInvoiceId is String?
+          ? firstPaidInvoiceId
+          : this.firstPaidInvoiceId,
+      gracePeriodInvoiceId: gracePeriodInvoiceId is String?
+          ? gracePeriodInvoiceId
+          : this.gracePeriodInvoiceId,
+      gracePeriodSuspendAt: gracePeriodSuspendAt is DateTime?
+          ? gracePeriodSuspendAt
+          : this.gracePeriodSuspendAt,
+      gracePeriodConcludedAt: gracePeriodConcludedAt is DateTime?
+          ? gracePeriodConcludedAt
+          : this.gracePeriodConcludedAt,
       latestDeployAttempt: latestDeployAttempt is _inqbrt2s.DeployAttempt?
           ? latestDeployAttempt
           : this.latestDeployAttempt?.copyWith(),

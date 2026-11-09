@@ -142,6 +142,11 @@ void main() {
         expect(lines, contains(contains('Orb Subscription Id')));
         expect(lines, contains(contains('orb_sub_1')));
         expect(lines, contains(contains('orb_sub_2')));
+        expect(lines, contains(contains('First Paid At')));
+        expect(lines, contains(contains('First Paid Invoice')));
+        expect(lines, contains(contains('Grace Invoice')));
+        expect(lines, contains(contains('Grace Suspend At')));
+        expect(lines, contains(contains('Grace Concluded At')));
       });
 
       test('then command does not output overdue payment columns', () async {

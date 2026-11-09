@@ -104,6 +104,56 @@ void main() {
       });
     });
 
+    group('when rendered with subscription facts', () {
+      test('then stdout shows the paid invoice and grace period', () async {
+        final io = await renderCommandUi(
+          AdminProjectStatusTextUi(utc: true),
+          data: AdminProjectInfoBuilder()
+              .withFirstInvoicePaidAt(DateTime.utc(2026, 4, 5, 6, 7, 8))
+              .withFirstPaidInvoiceId('inv-first')
+              .withGracePeriodInvoiceId('inv-grace')
+              .withGracePeriodSuspendAt(DateTime.utc(2026, 5, 1, 2, 3, 4))
+              .withGracePeriodConcludedAt(DateTime.utc(2026, 5, 2, 3, 4, 5))
+              .build(),
+        );
+
+        expect(io.stdout, contains('First paid'));
+        expect(io.stdout, contains('2026-04-05 06:07:08 (UTC)'));
+        expect(io.stdout, contains('Paid invoice'));
+        expect(io.stdout, contains('inv-first'));
+        expect(io.stdout, contains('Grace invoice'));
+        expect(io.stdout, contains('inv-grace'));
+        expect(io.stdout, contains('Grace ends'));
+        expect(io.stdout, contains('2026-05-01 02:03:04 (UTC)'));
+        expect(io.stdout, contains('Concluded'));
+        expect(io.stdout, contains('2026-05-02 03:04:05 (UTC)'));
+      });
+    });
+
+    group('when rendered without subscription facts', () {
+      test('then the fact rows show none', () async {
+        final io = await renderCommandUi(
+          AdminProjectStatusTextUi(utc: true),
+          data: AdminProjectInfoBuilder().build(),
+        );
+
+        final lines = io.stdout.split('\n');
+        for (final label in [
+          'First paid',
+          'Paid invoice',
+          'Grace invoice',
+          'Grace ends',
+          'Concluded',
+        ]) {
+          expect(
+            lines.where((line) => line.contains(label)),
+            everyElement(contains('none')),
+          );
+          expect(lines, contains(contains(label)));
+        }
+      });
+    });
+
     group('when rendered for an active project', () {
       test(
         'then stdout shows the status and omits suspension details',

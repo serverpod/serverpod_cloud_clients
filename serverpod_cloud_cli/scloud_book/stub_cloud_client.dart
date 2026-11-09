@@ -921,6 +921,11 @@ void _stubAdmin(final ClientMock client, {required final String projectId}) {
                 ),
           )
           .withSubscriptionId('orb_sub_book')
+          .withFirstInvoicePaidAt(DateTime.utc(2026, 2, 15))
+          .withFirstPaidInvoiceId('inv-first')
+          .withGracePeriodInvoiceId('inv-grace')
+          .withGracePeriodSuspendAt(DateTime.utc(2026, 3, 25))
+          .withGracePeriodConcludedAt(DateTime.utc(2026, 3, 25))
           .build(),
     ]),
   );
@@ -965,7 +970,15 @@ void _stubAdmin(final ClientMock client, {required final String projectId}) {
     () => client.adminProjects.getProjectStatus(
       cloudProjectId: any(named: 'cloudProjectId'),
     ),
-  ).thenAnswer((_) async => AdminProjectInfoBuilder().build());
+  ).thenAnswer(
+    (_) async => AdminProjectInfoBuilder()
+        .withFirstInvoicePaidAt(DateTime.utc(2026, 2, 15))
+        .withFirstPaidInvoiceId('inv-first')
+        .withGracePeriodInvoiceId('inv-grace')
+        .withGracePeriodSuspendAt(DateTime.utc(2026, 3, 25))
+        .withGracePeriodConcludedAt(DateTime.utc(2026, 3, 25))
+        .build(),
+  );
   when(
     () => client.adminProjects.deleteProject(
       cloudProjectId: any(named: 'cloudProjectId'),

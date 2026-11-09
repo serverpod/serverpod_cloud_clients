@@ -70,6 +70,11 @@ void main() {
         expect(output, contains('Roles'));
         expect(output, contains('Plan'));
         expect(output, contains('Billing'));
+        expect(output, contains('First paid'));
+        expect(output, contains('Paid invoice'));
+        expect(output, contains('Grace invoice'));
+        expect(output, contains('Grace ends'));
+        expect(output, contains('Concluded'));
       });
     });
 
