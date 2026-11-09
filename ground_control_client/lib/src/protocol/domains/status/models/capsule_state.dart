@@ -20,6 +20,8 @@ import 'package:serverpod_client/serverpod_client.dart' as _isc;
 /// - `degraded` — serving, but with fewer ready replicas than desired.
 /// - `unavailable` — replicas are desired but none are ready.
 /// - `suspended` — deliberately scaled to zero (paused capsule).
+/// - `idle` — scaled to zero while the minimum podlet count is zero; wakes on
+///   the next request.
 /// - `notProvisioned` — the workload is not (or not correctly) in place.
 /// - `unknown` — the status service reported a state this server does not
 ///   recognize. Consumers must treat it as not ready.
@@ -29,6 +31,7 @@ enum CapsuleState implements _isc.SerializableModel {
   degraded,
   unavailable,
   suspended,
+  idle,
   notProvisioned,
   unknown;
 
@@ -44,6 +47,8 @@ enum CapsuleState implements _isc.SerializableModel {
         return CapsuleState.unavailable;
       case 'suspended':
         return CapsuleState.suspended;
+      case 'idle':
+        return CapsuleState.idle;
       case 'notProvisioned':
         return CapsuleState.notProvisioned;
       case 'unknown':

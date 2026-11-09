@@ -30,6 +30,11 @@ StatusLook capsuleStateLook(final CapsuleState state) {
       label: 'Suspended',
       tone: StatusTone.neutral,
     ),
+    CapsuleState.idle => (
+      glyph: '☾',
+      label: 'Idling',
+      tone: StatusTone.neutral,
+    ),
     CapsuleState.notProvisioned => (
       glyph: '○',
       label: 'Not deployed',
