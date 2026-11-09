@@ -80,10 +80,10 @@ class SelectListModel<T> {
           _firstEnabledFrom(safeInitialIndex, -1) ??
           safeInitialIndex;
     }
+    final max = maxSelections;
     for (final index in initiallySelected) {
       if (index >= 0 && index < items.length && items[index].enabled) {
-        if (maxSelections != null &&
-            _selectedIndices.length >= maxSelections!) {
+        if (max != null && _selectedIndices.length >= max) {
           break;
         }
         _selectedIndices.add(index);
@@ -128,7 +128,8 @@ class SelectListModel<T> {
   bool get canSubmit {
     if (!multiSelect) return items.isNotEmpty;
     if (_selectedIndices.length < minSelections) return false;
-    if (maxSelections != null && _selectedIndices.length > maxSelections!) {
+    final max = maxSelections;
+    if (max != null && _selectedIndices.length > max) {
       return false;
     }
     return true;
