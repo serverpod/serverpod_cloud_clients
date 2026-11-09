@@ -144,6 +144,27 @@ import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 import 'protocol.dart' as _il2as5qe;
 
+/// Endpoint for the one-off Google Play service account backfill.
+/// {@category Endpoint}
+class EndpointAdminAppBuilds extends _isc.EndpointRef {
+  EndpointAdminAppBuilds(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'adminAppBuilds';
+
+  /// Creates the Google Play service account of every capsule that predates
+  /// the capsule CREATED subscriber. Capsules that already have one are
+  /// skipped. Runs in the background after returning.
+  ///
+  /// Remove when the backfill is complete.
+  _ida.Future<void> backfillPlayServiceAccounts() =>
+      caller.callServerEndpoint<void>(
+        'adminAppBuilds',
+        'backfillPlayServiceAccounts',
+        {},
+      );
+}
+
 /// Endpoint for reconciling database compute scaling against Serverpod Cloud.
 /// {@category Endpoint}
 class EndpointAdminDatabaseScaling extends _isc.EndpointRef {
@@ -3151,6 +3172,7 @@ class Client extends _isc.ServerpodClientShared {
              disconnectStreamsOnLostInternetConnection,
          httpClientOverride: httpClientOverride,
        ) {
+    adminAppBuilds = EndpointAdminAppBuilds(this);
     adminDatabaseScaling = EndpointAdminDatabaseScaling(this);
     adminGrants = EndpointAdminGrants(this);
     adminProcurement = EndpointAdminProcurement(this);
@@ -3191,6 +3213,8 @@ class Client extends _isc.ServerpodClientShared {
     users = EndpointUsers(this);
     modules = Modules(this);
   }
+
+  late final EndpointAdminAppBuilds adminAppBuilds;
 
   late final EndpointAdminDatabaseScaling adminDatabaseScaling;
 
@@ -3272,6 +3296,7 @@ class Client extends _isc.ServerpodClientShared {
 
   @override
   Map<String, _isc.EndpointRef> get endpointRefLookup => {
+    'adminAppBuilds': adminAppBuilds,
     'adminDatabaseScaling': adminDatabaseScaling,
     'adminGrants': adminGrants,
     'adminProcurement': adminProcurement,
