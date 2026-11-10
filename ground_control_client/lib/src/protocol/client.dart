@@ -136,6 +136,7 @@ import 'package:ground_control_client/src/protocol/features/projects/models/proj
     as _iag8nc5u;
 import 'package:ground_control_client/src/protocol/features/status/models/capsule_runtime_status.dart'
     as _iw0bb95d;
+import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
 import 'package:http/http.dart' as _i85jenna;
 import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
     as _iacc;
@@ -690,8 +691,15 @@ class EndpointAppBuilds extends _isc.EndpointRef {
   /// archive for each of [platforms], and returns the build ids with the
   /// upload description for an archive of [archiveSize] bytes.
   ///
-  /// Throws [InvalidValueException] if [archiveSize] is not positive, or
-  /// [platforms] is empty or repeats a platform.
+  /// [appIdentifiers] holds the app identifier of each of [platforms], the
+  /// iOS bundle ID or Android package name, as the app declares it. Each is
+  /// recorded for its platform, and one that replaces a different
+  /// identifier is listed in the result. Clients that leave it out get no
+  /// check.
+  ///
+  /// Throws [InvalidValueException] if [archiveSize] is not positive,
+  /// [platforms] is empty or repeats a platform, [appIdentifiers] does not
+  /// name exactly the [platforms], or an app identifier is invalid.
   /// Throws [UploadTooLargeException] if [archiveSize] exceeds the upload
   /// limit. Throws [AppPlatformNotSetUpException] if the publishing setup
   /// of a platform in [platforms] is incomplete; no build is created.
@@ -703,6 +711,7 @@ class EndpointAppBuilds extends _isc.EndpointRef {
     required List<_id4pe5bk.AppPlatform> platforms,
     required String flutterAppDir,
     required int archiveSize,
+    Map<_id4pe5bk.AppPlatform, String>? appIdentifiers,
     String? versionName,
     String? commitHash,
     String? commitMessage,
@@ -715,6 +724,9 @@ class EndpointAppBuilds extends _isc.EndpointRef {
       'platforms': platforms,
       'flutterAppDir': flutterAppDir,
       'archiveSize': archiveSize,
+      'appIdentifiers': appIdentifiers == null
+          ? null
+          : _iod2a87h.Protocol().mapContainerToJson(appIdentifiers),
       'versionName': versionName,
       'commitHash': commitHash,
       'commitMessage': commitMessage,

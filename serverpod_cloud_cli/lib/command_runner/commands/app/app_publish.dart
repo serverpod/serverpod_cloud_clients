@@ -1,13 +1,14 @@
 import 'dart:io';
 
 import 'package:ground_control_client/ground_control_client.dart'
-    show AppBuildRef, Client;
+    show AppBuildRef, AppIdentifierChange, AppPlatform, Client;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy/deploy_archive.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy/prepare_project_files.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/file_uploader_factory.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/util/flutter_app_identifier.dart';
 import 'package:serverpod_cloud_cli/util/flutter_platform.dart';
 import 'package:serverpod_cloud_cli/util/git_metadata.dart';
 
@@ -25,14 +26,19 @@ abstract class AppPublish {
   /// packages, and their pubspec files are stripped of dev dependencies.
   ///
   /// When [platforms] is null, the app is published for the
-  /// [defaultPlatforms] it has code for.
+  /// [defaultPlatforms] it has code for. The app identifier of each
+  /// platform is sent with the request for the builds: the one in
+  /// [configuredAppIdentifiers], or else the one the app's project files
+  /// declare. Messages about an app identifier name the project
+  /// configuration file [configFileName].
   ///
   /// The command to follow the builds is shown, invoked through
   /// [baseCommand]. With [awaitBuilds], the progress and logs of the builds
   /// are then shown until they end.
   ///
   /// Throws [FailureException] if the app has no code for a platform to
-  /// publish, if the builds cannot be requested, or if an awaited build does
+  /// publish, if the app identifier of a platform cannot be read or is
+  /// refused, if the builds cannot be requested, or if an awaited build does
   /// not succeed.
   /// Throws [ErrorExitException] if the archive cannot be zipped or uploaded.
   /// The builds are cancelled when the archive cannot be uploaded.
@@ -45,6 +51,8 @@ abstract class AppPublish {
     required Directory appDirectory,
     required List<FlutterPlatform> defaultPlatforms,
     Set<FlutterPlatform>? platforms,
+    required Map<FlutterPlatform, String> configuredAppIdentifiers,
+    required String configFileName,
     bool awaitBuilds = true,
   }) async {
     logger.init('Publishing the app of Serverpod Cloud project "$projectId".');
@@ -59,6 +67,20 @@ abstract class AppPublish {
       appDirectory,
       platforms: publishPlatforms.toSet(),
     );
+    final appIdentifiers = {
+      for (final platform in publishPlatforms)
+        platform: _appIdentifier(
+          appDirectory,
+          platform,
+          configured: configuredAppIdentifiers[platform],
+          configFileName: configFileName,
+        ),
+    };
+    for (final MapEntry(key: platform, value: appIdentifier)
+        in appIdentifiers.entries) {
+      logger.info('${appIdentifierName(platform)}: $appIdentifier');
+    }
+
     if (preparer.isWorkspace) {
       logger.list(
         preparer.includedPackagePaths,
@@ -85,11 +107,16 @@ abstract class AppPublish {
       cloudApiClient,
       projectId: projectId,
       platforms: publishPlatforms,
+      appIdentifiers: appIdentifiers,
       flutterAppDir: preparer.projectSubPath,
       archiveSize: appZip.length,
       versionName: versionName,
       gitMetadata: gitMetadata,
     );
+    for (final change
+        in upload.appIdentifierChanges ?? <AppIdentifierChange>[]) {
+      logger.warning(_appIdentifierChangeWarning(change));
+    }
 
     try {
       await DeployArchive.upload(
@@ -147,6 +174,43 @@ abstract class AppPublish {
     for (final MapEntry(key: buildId, value: exception) in failures.entries) {
       logger.warning('Failed to cancel the app build $buildId: $exception');
     }
+  }
+
+  /// Returns the app identifier of [platform]: [configured] when the
+  /// project configuration file [configFileName] sets one, or else the one
+  /// the app in [appDirectory] declares.
+  ///
+  /// Throws [FailureException] if it cannot be read, or is Flutter's
+  /// `com.example` placeholder.
+  static String _appIdentifier(
+    Directory appDirectory,
+    FlutterPlatform platform, {
+    required String? configured,
+    required String configFileName,
+  }) {
+    if (configured == null) {
+      return readAppIdentifier(
+        appDirectory,
+        platform,
+        configFileName: configFileName,
+      );
+    }
+    checkConfiguredAppIdentifier(
+      platform,
+      configured,
+      configFileName: configFileName,
+    );
+    return configured;
+  }
+
+  /// The warning that the app identifier of a platform changed.
+  static String _appIdentifierChangeWarning(AppIdentifierChange change) {
+    final name = switch (change.platform) {
+      AppPlatform.ios => 'iOS bundle ID',
+      AppPlatform.android => 'Android package name',
+    };
+    return 'The $name of the project changed from "${change.previous}" '
+        'to "${change.current}".';
   }
 
   /// Returns the version name of [version], without its build number.

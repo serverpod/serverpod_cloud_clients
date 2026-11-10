@@ -515,6 +515,50 @@ project:
         },
       );
 
+      group(
+        'and an existing scloud.yaml has app identifiers when executing link',
+        () {
+          late String appIdentifiersProjectDir;
+          late Future commandResult;
+
+          setUp(() async {
+            await ProjectFactory.serverpodServerDir(
+              withDirectoryName: 'app_identifiers_server_dir',
+              contents: [
+                d.file('scloud.yaml', '''
+project:
+  projectId: "$projectId"
+  appIdentifiers:
+    ios: "com.acme.app"
+'''),
+              ],
+            ).create();
+            appIdentifiersProjectDir = p.join(
+              d.sandbox,
+              'app_identifiers_server_dir',
+            );
+
+            commandResult = cli.run([
+              'project',
+              'link',
+              '--project',
+              projectId,
+              '--project-dir',
+              appIdentifiersProjectDir,
+            ]);
+          });
+
+          test('then the app identifiers in scloud.yaml are kept', () async {
+            await commandResult;
+
+            final expected = d.dir(appIdentifiersProjectDir, [
+              d.file('scloud.yaml', contains('ios: "com.acme.app"')),
+            ]);
+            await expectLater(expected.validate(), completes);
+          });
+        },
+      );
+
       group('and .tool-versions file with dart entry when executing link', () {
         late Future commandResult;
 

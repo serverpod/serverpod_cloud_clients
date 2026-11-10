@@ -4,6 +4,7 @@ class AppBuildsUploadBuilder {
   UuidValue _uploadId = const Uuid().v4obj();
   List<AppPlatform> _platforms = [AppPlatform.ios];
   String _uploadDescription = '{"type":"resumable"}';
+  List<AppIdentifierChange>? _appIdentifierChanges = [];
 
   AppBuildsUploadBuilder withUploadId(UuidValue uploadId) {
     _uploadId = uploadId;
@@ -20,6 +21,13 @@ class AppBuildsUploadBuilder {
     return this;
   }
 
+  AppBuildsUploadBuilder withAppIdentifierChanges(
+    List<AppIdentifierChange>? appIdentifierChanges,
+  ) {
+    _appIdentifierChanges = appIdentifierChanges;
+    return this;
+  }
+
   AppBuildsUpload build() {
     return AppBuildsUpload(
       uploadId: _uploadId,
@@ -28,6 +36,7 @@ class AppBuildsUploadBuilder {
           AppBuildRef(buildId: const Uuid().v4obj(), platform: platform),
       ],
       uploadDescription: _uploadDescription,
+      appIdentifierChanges: _appIdentifierChanges,
     );
   }
 }

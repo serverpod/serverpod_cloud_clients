@@ -12,6 +12,12 @@ final _schema = YamlMap.wrap({
     'projectId': String,
     'dartSdk': YamlOptional(String),
     'appDir': YamlOptional(String),
+    'appIdentifiers': YamlOptional(
+      YamlMap.wrap({
+        'ios': YamlOptional(String),
+        'android': YamlOptional(String),
+      }),
+    ),
     'scripts': YamlOptional(
       YamlMap.wrap({
         'pre_deploy': YamlOptional(

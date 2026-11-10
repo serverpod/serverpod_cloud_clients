@@ -257,7 +257,13 @@ Examples
     );
     final awaitBuilds = commandConfig.value(AppPublishCommandOption.wait);
 
-    final appDirectory = appDir ?? _configuredOrWorkspaceAppDirectory();
+    final configFile = globalConfiguration.projectConfigFile;
+    final config = configFile == null
+        ? null
+        : ScloudConfigIO.readFromFile(configFile.path);
+
+    final appDirectory =
+        appDir ?? _configuredOrWorkspaceAppDirectory(configFile, config);
     logger.debug('App directory is: ${appDirectory.path}');
 
     await AppPublish.publish(
@@ -269,30 +275,30 @@ Examples
       appDirectory: appDirectory,
       defaultPlatforms: AppPublishPlatformsOption.supportedPlatforms,
       platforms: platforms?.toSet(),
+      configuredAppIdentifiers: config?.appIdentifiers ?? const {},
+      configFileName: configFile == null
+          ? ProjectConfigFileConstants.defaultFileName
+          : p.basename(configFile.path),
       awaitBuilds: awaitBuilds,
     );
   }
 
-  /// Returns the app directory set by project.appDir in the scloud.yaml
-  /// file, resolved from the directory of that file, or else the Flutter
-  /// app found in the server's workspace or near the server directory.
+  /// Returns the app directory set by project.appDir in [config], read from
+  /// [configFile] and resolved from that file's directory, or else the
+  /// Flutter app found in the server's workspace or near the server
+  /// directory.
   ///
   /// Throws [FailureException] if the configured directory does not exist.
-  Directory _configuredOrWorkspaceAppDirectory() {
+  Directory _configuredOrWorkspaceAppDirectory(
+    File? configFile,
+    ScloudConfig? config,
+  ) {
     final projectDirectory = runner.verifiedProjectDirectory();
-    final configFilePath =
-        globalConfiguration.projectConfigFile?.path ??
-        p.join(
-          projectDirectory.path,
-          ProjectConfigFileConstants.defaultFileName,
-        );
-
-    final configuredAppDir = ScloudConfigIO.readFromFile(
-      configFilePath,
-    )?.appDir;
-    if (configuredAppDir == null) {
+    final configuredAppDir = config?.appDir;
+    if (configFile == null || configuredAppDir == null) {
       return TenantProject.findAppDirectory(projectDirectory);
     }
+    final configFilePath = configFile.path;
 
     final appDirectory = Directory(
       p.normalize(p.join(p.dirname(configFilePath), configuredAppDir)),

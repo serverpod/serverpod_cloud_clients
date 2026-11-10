@@ -42,12 +42,14 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(<AppPlatform>[]);
+    registerFallbackValue(<AppPlatform, String>{});
     registerFallbackValue(const Uuid().v4obj());
   });
 
   setUp(() {
     when(
       () => client.appBuilds.createBuilds(
+        appIdentifiers: any(named: 'appIdentifiers'),
         cloudCapsuleId: any(named: 'cloudCapsuleId'),
         platforms: any(named: 'platforms'),
         flutterAppDir: any(named: 'flutterAppDir'),
@@ -91,7 +93,7 @@ void main() {
       await d.dir('monorepo', [
         d.dir('project_flutter', [
           d.dir('lib', [d.file('main.dart', 'void main() {}')]),
-          d.dir('android', [d.file('build.gradle.kts', '')]),
+          ProjectFactory.flutterAndroidDir(),
           d.dir('windows', [d.file('CMakeLists.txt', '')]),
         ]),
       ]).create();
@@ -122,6 +124,7 @@ void main() {
 
         final archiveSize = verify(
           () => client.appBuilds.createBuilds(
+            appIdentifiers: any(named: 'appIdentifiers'),
             cloudCapsuleId: _projectId,
             platforms: [AppPlatform.android],
             flutterAppDir: 'project_flutter',
@@ -140,6 +143,7 @@ void main() {
 
         verify(
           () => client.appBuilds.createBuilds(
+            appIdentifiers: any(named: 'appIdentifiers'),
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
             platforms: any(named: 'platforms'),
             flutterAppDir: any(named: 'flutterAppDir'),
@@ -188,6 +192,15 @@ void main() {
         expect(
           logger.infoCalls.map((call) => call.message),
           contains('Publishing the app to Android'),
+        );
+      });
+
+      test('then the Android package name is shown', () async {
+        await commandResult;
+
+        expect(
+          logger.infoCalls.map((call) => call.message),
+          contains('Android package name: com.acme.app'),
         );
       });
 
@@ -616,6 +629,241 @@ void main() {
       });
     });
 
+    group('and an Android package name set in scloud.yaml '
+        'when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() async {
+        await d.dir('monorepo', [
+          d.dir('project_server', [
+            d.file('scloud.yaml', '''
+project:
+  projectId: "$_projectId"
+  appIdentifiers:
+    android: "com.acme.configured"
+'''),
+          ]),
+        ]).create();
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+      });
+
+      test('then the configured package name is sent '
+          'instead of the one the app declares', () async {
+        await commandResult;
+
+        verify(
+          () => client.appBuilds.createBuilds(
+            appIdentifiers: {AppPlatform.android: 'com.acme.configured'},
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            platforms: any(named: 'platforms'),
+            flutterAppDir: any(named: 'flutterAppDir'),
+            archiveSize: any(named: 'archiveSize'),
+            versionName: any(named: 'versionName'),
+            commitHash: any(named: 'commitHash'),
+            commitMessage: any(named: 'commitMessage'),
+            branch: any(named: 'branch'),
+          ),
+        ).called(1);
+      });
+    });
+
+    group('and an Android package name set in scloud.yaml '
+        'and an Android app module that takes it from a variable '
+        'when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() async {
+        await d.dir('monorepo', [
+          d.dir('project_server', [
+            d.file('scloud.yaml', '''
+project:
+  projectId: "$_projectId"
+  appIdentifiers:
+    android: "com.acme.configured"
+'''),
+          ]),
+          d.dir('project_flutter', [
+            d.dir('android', [
+              d.dir('app', [
+                d.file(
+                  'build.gradle.kts',
+                  r'android { defaultConfig { applicationId = "${appId}" } }',
+                ),
+              ]),
+            ]),
+          ]),
+        ]).create();
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+      });
+
+      test('then the app is published', () async {
+        await expectLater(commandResult, completes);
+      });
+    });
+
+    group('and iOS code and an iOS bundle ID set in scloud.yaml '
+        'when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() async {
+        await d.dir('monorepo', [
+          d.dir('project_server', [
+            d.file('scloud.yaml', '''
+project:
+  projectId: "$_projectId"
+  appIdentifiers:
+    ios: "com.acme.configured"
+'''),
+          ]),
+          d.dir('project_flutter', [ProjectFactory.flutterIosDir()]),
+        ]).create();
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+      });
+
+      test('then the configured bundle ID is sent with the package name '
+          'the app declares', () async {
+        await commandResult;
+
+        verify(
+          () => client.appBuilds.createBuilds(
+            appIdentifiers: {
+              AppPlatform.android: 'com.acme.app',
+              AppPlatform.ios: 'com.acme.configured',
+            },
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            platforms: any(named: 'platforms'),
+            flutterAppDir: any(named: 'flutterAppDir'),
+            archiveSize: any(named: 'archiveSize'),
+            versionName: any(named: 'versionName'),
+            commitHash: any(named: 'commitHash'),
+            commitMessage: any(named: 'commitMessage'),
+            branch: any(named: 'branch'),
+          ),
+        ).called(1);
+      });
+    });
+
+    group('and an iOS bundle ID set in scloud.yaml for an app without iOS '
+        'code when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() async {
+        await d.dir('monorepo', [
+          d.dir('project_server', [
+            d.file('scloud.yaml', '''
+project:
+  projectId: "$_projectId"
+  appIdentifiers:
+    ios: "com.acme.configured"
+'''),
+          ]),
+        ]).create();
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+      });
+
+      test('then only the Android package name is sent', () async {
+        await commandResult;
+
+        verify(
+          () => client.appBuilds.createBuilds(
+            appIdentifiers: {AppPlatform.android: 'com.acme.app'},
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            platforms: any(named: 'platforms'),
+            flutterAppDir: any(named: 'flutterAppDir'),
+            archiveSize: any(named: 'archiveSize'),
+            versionName: any(named: 'versionName'),
+            commitHash: any(named: 'commitHash'),
+            commitMessage: any(named: 'commitMessage'),
+            branch: any(named: 'branch'),
+          ),
+        ).called(1);
+      });
+    });
+
+    group('and an Android package name set in scloud.yaml '
+        'when releasing the app with --app-dir', () {
+      late Future<void> commandResult;
+
+      setUp(() async {
+        await d.dir('monorepo', [
+          d.dir('project_server', [
+            d.file('scloud.yaml', '''
+project:
+  projectId: "$_projectId"
+  appIdentifiers:
+    android: "com.acme.configured"
+'''),
+          ]),
+        ]).create();
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--app-dir',
+          p.join(d.sandbox, 'monorepo', 'project_flutter'),
+          '--no-await',
+        ]);
+      });
+
+      test('then the configured package name is sent', () async {
+        await commandResult;
+
+        verify(
+          () => client.appBuilds.createBuilds(
+            appIdentifiers: {AppPlatform.android: 'com.acme.configured'},
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            platforms: any(named: 'platforms'),
+            flutterAppDir: any(named: 'flutterAppDir'),
+            archiveSize: any(named: 'archiveSize'),
+            versionName: any(named: 'versionName'),
+            commitHash: any(named: 'commitHash'),
+            commitMessage: any(named: 'commitMessage'),
+            branch: any(named: 'branch'),
+          ),
+        ).called(1);
+      });
+    });
+
     group('and an incomplete Android publishing setup '
         'when releasing the app', () {
       late Future<void> commandResult;
@@ -623,6 +871,7 @@ void main() {
       setUp(() {
         when(
           () => client.appBuilds.createBuilds(
+            appIdentifiers: any(named: 'appIdentifiers'),
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
             platforms: any(named: 'platforms'),
             flutterAppDir: any(named: 'flutterAppDir'),
@@ -679,6 +928,416 @@ void main() {
       });
     });
 
+    group('and an Android app module without an applicationId '
+        'when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() async {
+        await d.dir('monorepo', [
+          d.dir('project_flutter', [
+            d.dir('android', [
+              d.dir('app', [d.file('build.gradle.kts', 'android {}')]),
+            ]),
+          ]),
+        ]).create();
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+      });
+
+      test('then the command throws ErrorExitException', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then the missing package name is logged with a hint', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          logger.errorCalls,
+          contains(
+            equalsErrorCall(
+              message:
+                  'The Android package name was not found: '
+                  'android/app/build.gradle.kts sets no applicationId.',
+              hint:
+                  'Set applicationId for the app in '
+                  'android/app/build.gradle.kts, or set '
+                  'project.appIdentifiers.android in scloud.yaml.',
+            ),
+          ),
+        );
+      });
+
+      test('then no build is requested', () async {
+        await commandResult.catchError((_) {});
+
+        verifyNever(
+          () => client.appBuilds.createBuilds(
+            appIdentifiers: any(named: 'appIdentifiers'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            platforms: any(named: 'platforms'),
+            flutterAppDir: any(named: 'flutterAppDir'),
+            archiveSize: any(named: 'archiveSize'),
+            versionName: any(named: 'versionName'),
+            commitHash: any(named: 'commitHash'),
+            commitMessage: any(named: 'commitMessage'),
+            branch: any(named: 'branch'),
+          ),
+        );
+      });
+    });
+
+    group("and Flutter's placeholder package name in the app module "
+        'when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() async {
+        await d.dir('monorepo', [
+          d.dir('project_flutter', [
+            ProjectFactory.flutterAndroidDir(
+              applicationId: 'com.example.project_flutter',
+            ),
+          ]),
+        ]).create();
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+      });
+
+      test('then the command throws ErrorExitException', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then the placeholder is logged with the file to change', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          logger.errorCalls,
+          contains(
+            equalsErrorCall(
+              message:
+                  'The Android package name com.example.project_flutter is '
+                  "Flutter's placeholder: android/app/build.gradle.kts sets "
+                  'applicationId to it.',
+              hint:
+                  'Set applicationId in android/app/build.gradle.kts to the '
+                  "app's own Android package name, or set "
+                  'project.appIdentifiers.android in scloud.yaml.',
+            ),
+          ),
+        );
+      });
+
+      test('then no build is requested', () async {
+        await commandResult.catchError((_) {});
+
+        verifyNever(
+          () => client.appBuilds.createBuilds(
+            appIdentifiers: any(named: 'appIdentifiers'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            platforms: any(named: 'platforms'),
+            flutterAppDir: any(named: 'flutterAppDir'),
+            archiveSize: any(named: 'archiveSize'),
+            versionName: any(named: 'versionName'),
+            commitHash: any(named: 'commitHash'),
+            commitMessage: any(named: 'commitMessage'),
+            branch: any(named: 'branch'),
+          ),
+        );
+      });
+    });
+
+    group("and Flutter's placeholder package name set in scloud.yaml "
+        'when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() async {
+        await d.dir('monorepo', [
+          d.dir('project_server', [
+            d.file('scloud.yaml', '''
+project:
+  projectId: "$_projectId"
+  appIdentifiers:
+    android: "com.example.app"
+'''),
+          ]),
+        ]).create();
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+      });
+
+      test(
+        'then the placeholder is logged with the setting to change',
+        () async {
+          await commandResult.catchError((_) {});
+
+          expect(
+            logger.errorCalls,
+            contains(
+              equalsErrorCall(
+                message:
+                    'The Android package name com.example.app is '
+                    "Flutter's placeholder: scloud.yaml sets "
+                    'project.appIdentifiers.android to it.',
+                hint:
+                    'Set project.appIdentifiers.android in scloud.yaml to the '
+                    "app's own Android package name.",
+              ),
+            ),
+          );
+        },
+      );
+
+      test('then no build is requested', () async {
+        await commandResult.catchError((_) {});
+
+        verifyNever(
+          () => client.appBuilds.createBuilds(
+            appIdentifiers: any(named: 'appIdentifiers'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            platforms: any(named: 'platforms'),
+            flutterAppDir: any(named: 'flutterAppDir'),
+            archiveSize: any(named: 'archiveSize'),
+            versionName: any(named: 'versionName'),
+            commitHash: any(named: 'commitHash'),
+            commitMessage: any(named: 'commitMessage'),
+            branch: any(named: 'branch'),
+          ),
+        );
+      });
+    });
+
+    group('and an Android app module without an applicationId '
+        'and a scloud.yml configuration file when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() async {
+        await d.dir('monorepo', [
+          d.dir('project_server', [
+            d.file('scloud.yml', '''
+project:
+  projectId: "$_projectId"
+'''),
+          ]),
+          d.dir('project_flutter', [
+            d.dir('android', [
+              d.dir('app', [d.file('build.gradle.kts', 'android {}')]),
+            ]),
+          ]),
+        ]).create();
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+      });
+
+      test(
+        'then the hint names the configuration file that was read',
+        () async {
+          await commandResult.catchError((_) {});
+
+          expect(
+            logger.errorCalls.map((call) => call.hint),
+            contains(
+              'Set applicationId for the app in android/app/build.gradle.kts, '
+              'or set project.appIdentifiers.android in scloud.yml.',
+            ),
+          );
+        },
+      );
+    });
+
+    group('and a package name the server refuses when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() {
+        when(
+          () => client.appBuilds.createBuilds(
+            appIdentifiers: any(named: 'appIdentifiers'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            platforms: any(named: 'platforms'),
+            flutterAppDir: any(named: 'flutterAppDir'),
+            archiveSize: any(named: 'archiveSize'),
+            versionName: any(named: 'versionName'),
+            commitHash: any(named: 'commitHash'),
+            commitMessage: any(named: 'commitMessage'),
+            branch: any(named: 'branch'),
+          ),
+        ).thenThrow(
+          InvalidValueException(
+            message: 'The Android package name "com.acme.app" is not valid.',
+          ),
+        );
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+      });
+
+      test('then the command throws ErrorExitException', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then the refusal is logged', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          logger.errorCalls.map((call) => call.message),
+          contains('The Android package name "com.acme.app" is not valid.'),
+        );
+      });
+
+      test('then nothing is uploaded', () async {
+        await commandResult.catchError((_) {});
+
+        expect(fileUploader.uploads, isEmpty);
+      });
+    });
+
+    group('and a package name that differs from the recorded one '
+        'when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() {
+        when(
+          () => client.appBuilds.createBuilds(
+            appIdentifiers: any(named: 'appIdentifiers'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            platforms: any(named: 'platforms'),
+            flutterAppDir: any(named: 'flutterAppDir'),
+            archiveSize: any(named: 'archiveSize'),
+            versionName: any(named: 'versionName'),
+            commitHash: any(named: 'commitHash'),
+            commitMessage: any(named: 'commitMessage'),
+            branch: any(named: 'branch'),
+          ),
+        ).thenAnswer(
+          (_) async => AppBuildsUploadBuilder()
+              .withPlatforms([AppPlatform.android])
+              .withUploadDescription(_appUploadDescription)
+              .withAppIdentifierChanges([
+                AppIdentifierChange(
+                  platform: AppPlatform.android,
+                  previous: 'com.acme.old',
+                  current: 'com.acme.app',
+                ),
+              ])
+              .build(),
+        );
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+      });
+
+      test('then the change is logged as a warning', () async {
+        await commandResult;
+
+        expect(
+          logger.warningCalls.map((call) => call.message),
+          contains(
+            'The Android package name of the project changed from '
+            '"com.acme.old" to "com.acme.app".',
+          ),
+        );
+      });
+
+      test('then the archive is uploaded', () async {
+        await commandResult;
+
+        expect(fileUploader.uploads, hasLength(1));
+      });
+    });
+
+    group('and a server that reports no app identifier changes '
+        'when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() {
+        when(
+          () => client.appBuilds.createBuilds(
+            appIdentifiers: any(named: 'appIdentifiers'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            platforms: any(named: 'platforms'),
+            flutterAppDir: any(named: 'flutterAppDir'),
+            archiveSize: any(named: 'archiveSize'),
+            versionName: any(named: 'versionName'),
+            commitHash: any(named: 'commitHash'),
+            commitMessage: any(named: 'commitMessage'),
+            branch: any(named: 'branch'),
+          ),
+        ).thenAnswer(
+          (_) async => AppBuildsUploadBuilder()
+              .withPlatforms([AppPlatform.android])
+              .withUploadDescription(_appUploadDescription)
+              .withAppIdentifierChanges(null)
+              .build(),
+        );
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+      });
+
+      test('then no warning is logged', () async {
+        await commandResult;
+
+        expect(logger.warningCalls, isEmpty);
+      });
+
+      test('then the archive is uploaded', () async {
+        await commandResult;
+
+        expect(fileUploader.uploads, hasLength(1));
+      });
+    });
+
     group('and an upload that fails when releasing the app', () {
       final upload = AppBuildsUploadBuilder().withPlatforms([
         AppPlatform.android,
@@ -688,6 +1347,7 @@ void main() {
       setUp(() {
         when(
           () => client.appBuilds.createBuilds(
+            appIdentifiers: any(named: 'appIdentifiers'),
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
             platforms: any(named: 'platforms'),
             flutterAppDir: any(named: 'flutterAppDir'),
@@ -752,6 +1412,7 @@ void main() {
       setUp(() {
         when(
           () => client.appBuilds.createBuilds(
+            appIdentifiers: any(named: 'appIdentifiers'),
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
             platforms: any(named: 'platforms'),
             flutterAppDir: any(named: 'flutterAppDir'),
@@ -827,6 +1488,7 @@ void main() {
 
       verify(
         () => client.appBuilds.createBuilds(
+          appIdentifiers: any(named: 'appIdentifiers'),
           cloudCapsuleId: any(named: 'cloudCapsuleId'),
           platforms: any(named: 'platforms'),
           flutterAppDir: any(named: 'flutterAppDir'),
@@ -844,14 +1506,13 @@ void main() {
 
       setUp(() async {
         await d.dir('monorepo', [
-          d.dir('project_flutter', [
-            d.dir('ios', [d.file('Podfile', '')]),
-          ]),
+          d.dir('project_flutter', [ProjectFactory.flutterIosDir()]),
         ]).create();
 
         final platformOfBuild = <UuidValue, AppPlatform>{};
         when(
           () => client.appBuilds.createBuilds(
+            appIdentifiers: any(named: 'appIdentifiers'),
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
             platforms: any(named: 'platforms'),
             flutterAppDir: any(named: 'flutterAppDir'),
@@ -929,7 +1590,7 @@ void main() {
       setUp(() async {
         await d.dir('monorepo', [
           d.dir('project_flutter', [
-            d.dir('ios', [d.file('Podfile', '')]),
+            ProjectFactory.flutterIosDir(bundleId: 'com.acme.ios'),
           ]),
         ]).create();
 
@@ -949,9 +1610,31 @@ void main() {
 
         verify(
           () => client.appBuilds.createBuilds(
+            appIdentifiers: any(named: 'appIdentifiers'),
             cloudCapsuleId: _projectId,
             platforms: [AppPlatform.android, AppPlatform.ios],
             flutterAppDir: 'project_flutter',
+            archiveSize: any(named: 'archiveSize'),
+            versionName: any(named: 'versionName'),
+            commitHash: any(named: 'commitHash'),
+            commitMessage: any(named: 'commitMessage'),
+            branch: any(named: 'branch'),
+          ),
+        ).called(1);
+      });
+
+      test('then the app identifier of each platform is sent', () async {
+        await commandResult;
+
+        verify(
+          () => client.appBuilds.createBuilds(
+            appIdentifiers: {
+              AppPlatform.android: 'com.acme.app',
+              AppPlatform.ios: 'com.acme.ios',
+            },
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            platforms: any(named: 'platforms'),
+            flutterAppDir: any(named: 'flutterAppDir'),
             archiveSize: any(named: 'archiveSize'),
             versionName: any(named: 'versionName'),
             commitHash: any(named: 'commitHash'),
@@ -1033,6 +1716,7 @@ void main() {
 
         verifyNever(
           () => client.appBuilds.createBuilds(
+            appIdentifiers: any(named: 'appIdentifiers'),
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
             platforms: any(named: 'platforms'),
             flutterAppDir: any(named: 'flutterAppDir'),
@@ -1257,7 +1941,7 @@ project:
       await ProjectFactory.nonWorkspaceFlutterAppDir(
         contents: [
           d.dir('lib', [d.file('main.dart', 'void main() {}')]),
-          d.dir('android', [d.file('build.gradle.kts', '')]),
+          ProjectFactory.flutterAndroidDir(),
         ],
       ).create();
     });
@@ -1276,6 +1960,7 @@ project:
 
       verify(
         () => client.appBuilds.createBuilds(
+          appIdentifiers: any(named: 'appIdentifiers'),
           cloudCapsuleId: _projectId,
           platforms: [AppPlatform.android],
           flutterAppDir: '.',
@@ -1295,6 +1980,7 @@ project:
       setUp(() {
         when(
           () => client.appBuilds.createBuilds(
+            appIdentifiers: any(named: 'appIdentifiers'),
             cloudCapsuleId: any(named: 'cloudCapsuleId'),
             platforms: any(named: 'platforms'),
             flutterAppDir: any(named: 'flutterAppDir'),
@@ -1351,6 +2037,7 @@ project:
         'then the error is logged with a hint', () async {
       when(
         () => client.appBuilds.createBuilds(
+          appIdentifiers: any(named: 'appIdentifiers'),
           cloudCapsuleId: any(named: 'cloudCapsuleId'),
           platforms: any(named: 'platforms'),
           flutterAppDir: any(named: 'flutterAppDir'),
@@ -1443,9 +2130,7 @@ project:
       'then the upload is reported', () async {
     await ProjectFactory.serverpodServerDir().create();
     await ProjectFactory.nonWorkspaceFlutterAppDir(
-      contents: [
-        d.dir('android', [d.file('build.gradle.kts', '')]),
-      ],
+      contents: [ProjectFactory.flutterAndroidDir()],
     ).create();
 
     await cli.run([

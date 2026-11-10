@@ -183,6 +183,7 @@ import 'features/app_builds/models/app_build_step_info.dart' as _izrhxmsy;
 import 'features/app_builds/models/app_build_step_log.dart' as _ihsn401r;
 import 'features/app_builds/models/app_build_summary.dart' as _iyi5usgc;
 import 'features/app_builds/models/app_builds_upload.dart' as _ig1623xk;
+import 'features/app_builds/models/app_identifier_change.dart' as _iont5uuo;
 import 'features/app_builds/models/app_publishing_setup.dart' as _i2sj9x5l;
 import 'features/app_builds/models/app_store_access.dart' as _iyc8rxjv;
 import 'features/app_builds/models/generated_android_keystore.dart'
@@ -363,6 +364,7 @@ export 'features/app_builds/models/app_build_step_info.dart';
 export 'features/app_builds/models/app_build_step_log.dart';
 export 'features/app_builds/models/app_build_summary.dart';
 export 'features/app_builds/models/app_builds_upload.dart';
+export 'features/app_builds/models/app_identifier_change.dart';
 export 'features/app_builds/models/app_publishing_setup.dart';
 export 'features/app_builds/models/app_store_access.dart';
 export 'features/app_builds/models/generated_android_keystore.dart';
@@ -795,6 +797,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _ig1623xk.AppBuildsUpload) {
       return _ig1623xk.AppBuildsUpload.fromJson(data) as T;
+    }
+    if (t == _iont5uuo.AppIdentifierChange) {
+      return _iont5uuo.AppIdentifierChange.fromJson(data) as T;
     }
     if (t == _i2sj9x5l.AppPublishingSetup) {
       return _i2sj9x5l.AppPublishingSetup.fromJson(data) as T;
@@ -1455,6 +1460,12 @@ class Protocol extends _isc.SerializationManager {
       return (data != null ? _ig1623xk.AppBuildsUpload.fromJson(data) : null)
           as T;
     }
+    if (t == _isc.getType<_iont5uuo.AppIdentifierChange?>()) {
+      return (data != null
+              ? _iont5uuo.AppIdentifierChange.fromJson(data)
+              : null)
+          as T;
+    }
     if (t == _isc.getType<_i2sj9x5l.AppPublishingSetup?>()) {
       return (data != null ? _i2sj9x5l.AppPublishingSetup.fromJson(data) : null)
           as T;
@@ -1888,6 +1899,20 @@ class Protocol extends _isc.SerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_iont5uuo.AppIdentifierChange>) {
+      return (data as List)
+              .map((e) => deserialize<_iont5uuo.AppIdentifierChange>(e))
+              .toList()
+          as T;
+    }
+    if (t == _isc.getType<List<_iont5uuo.AppIdentifierChange>?>()) {
+      return (data != null
+              ? (data as List)
+                    .map((e) => deserialize<_iont5uuo.AppIdentifierChange>(e))
+                    .toList()
+              : null)
+          as T;
+    }
     if (t == List<_iheq245y.CustomDomainName>) {
       return (data as List)
               .map((e) => deserialize<_iheq245y.CustomDomainName>(e))
@@ -1986,6 +2011,30 @@ class Protocol extends _isc.SerializationManager {
       return (data as List)
               .map((e) => deserialize<_id4pe5bk.AppPlatform>(e))
               .toList()
+          as T;
+    }
+    if (t == Map<_id4pe5bk.AppPlatform, String>) {
+      return Map.fromEntries(
+            (data as List).map(
+              (e) => MapEntry(
+                deserialize<_id4pe5bk.AppPlatform>(e['k']),
+                deserialize<String>(e['v']),
+              ),
+            ),
+          )
+          as T;
+    }
+    if (t == _isc.getType<Map<_id4pe5bk.AppPlatform, String>?>()) {
+      return (data != null
+              ? Map.fromEntries(
+                  (data as List).map(
+                    (e) => MapEntry(
+                      deserialize<_id4pe5bk.AppPlatform>(e['k']),
+                      deserialize<String>(e['v']),
+                    ),
+                  ),
+                )
+              : null)
           as T;
     }
     if (t == List<_iy6jkon8.AppBuildSummary>) {
@@ -2223,6 +2272,7 @@ class Protocol extends _isc.SerializationManager {
       _ihsn401r.AppBuildStepLog => 'AppBuildStepLog',
       _iyi5usgc.AppBuildSummary => 'AppBuildSummary',
       _ig1623xk.AppBuildsUpload => 'AppBuildsUpload',
+      _iont5uuo.AppIdentifierChange => 'AppIdentifierChange',
       _i2sj9x5l.AppPublishingSetup => 'AppPublishingSetup',
       _iyc8rxjv.AppStoreAccess => 'AppStoreAccess',
       _ijctux07.GeneratedAndroidKeystore => 'GeneratedAndroidKeystore',
@@ -2532,6 +2582,8 @@ class Protocol extends _isc.SerializationManager {
         return 'AppBuildSummary';
       case _ig1623xk.AppBuildsUpload():
         return 'AppBuildsUpload';
+      case _iont5uuo.AppIdentifierChange():
+        return 'AppIdentifierChange';
       case _i2sj9x5l.AppPublishingSetup():
         return 'AppPublishingSetup';
       case _iyc8rxjv.AppStoreAccess():
@@ -3008,6 +3060,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'AppBuildsUpload') {
       return deserialize<_ig1623xk.AppBuildsUpload>(data['data']);
+    }
+    if (dataClassName == 'AppIdentifierChange') {
+      return deserialize<_iont5uuo.AppIdentifierChange>(data['data']);
     }
     if (dataClassName == 'AppPublishingSetup') {
       return deserialize<_i2sj9x5l.AppPublishingSetup>(data['data']);
