@@ -10,6 +10,7 @@ import 'package:ground_control_client/ground_control_client.dart'
         AppBuildSummary,
         AppBuildsUpload,
         AppPlatform,
+        AppPlatformNotSetUpException,
         AppPublishingDisabledException,
         AppPublishingSetup,
         Client,
@@ -41,7 +42,8 @@ abstract class AppOperations {
   ///
   /// [versionName] is the app version the builds are made with.
   ///
-  /// Throws [FailureException] if the request fails.
+  /// Throws [FailureException] if the request fails, or if the publishing
+  /// setup of a platform is incomplete.
   static Future<AppBuildsUpload> createBuilds(
     Client cloudApiClient, {
     required String projectId,
@@ -70,6 +72,8 @@ abstract class AppOperations {
         hint: 'Exclude files from the app with a .scloudignore file.',
       );
     } on AppPublishingDisabledException catch (e) {
+      throw FailureException(error: e.message);
+    } on AppPlatformNotSetUpException catch (e) {
       throw FailureException(error: e.message);
     } on InvalidValueException catch (e) {
       throw FailureException(error: e.message);

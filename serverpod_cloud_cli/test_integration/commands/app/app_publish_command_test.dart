@@ -616,6 +616,69 @@ void main() {
       });
     });
 
+    group('and an incomplete Android publishing setup '
+        'when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() {
+        when(
+          () => client.appBuilds.createBuilds(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            platforms: any(named: 'platforms'),
+            flutterAppDir: any(named: 'flutterAppDir'),
+            archiveSize: any(named: 'archiveSize'),
+            versionName: any(named: 'versionName'),
+            commitHash: any(named: 'commitHash'),
+            commitMessage: any(named: 'commitMessage'),
+            branch: any(named: 'branch'),
+          ),
+        ).thenThrow(
+          AppPlatformNotSetUpException(
+            message:
+                'The publishing setup is incomplete. Android: generate or '
+                'upload an upload keystore. Finish the setup under App stores '
+                'in the Serverpod Cloud console.',
+          ),
+        );
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+      });
+
+      test('then the command throws ErrorExitException', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then the incomplete setup is logged', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          logger.errorCalls,
+          contains(
+            equalsErrorCall(
+              message:
+                  'The publishing setup is incomplete. Android: generate or '
+                  'upload an upload keystore. Finish the setup under App '
+                  'stores in the Serverpod Cloud console.',
+            ),
+          ),
+        );
+      });
+
+      test('then nothing is uploaded', () async {
+        await commandResult.catchError((_) {});
+
+        expect(fileUploader.uploads, isEmpty);
+      });
+    });
+
     group('and an upload that fails when releasing the app', () {
       final upload = AppBuildsUploadBuilder().withPlatforms([
         AppPlatform.android,
