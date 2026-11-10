@@ -1055,6 +1055,10 @@ void _stubAdmin(final ClientMock client, {required final String projectId}) {
       externalPlanId: any(named: 'externalPlanId'),
     ),
   ).thenAnswer((_) async => {'appliedVersion': '2025-03-01-v2'});
+  when(
+    () =>
+        client.adminBilling.reissueInvoice(invoiceId: any(named: 'invoiceId')),
+  ).thenAnswer((_) async => {'invoiceId': 'inv_1', 'outcome': 'issued'});
   when(() => client.adminProjects.redeployCapsule(any())).thenAnswer(
     (_) async => UuidValue.raw('00000000-0000-4000-8000-000000000000'),
   );

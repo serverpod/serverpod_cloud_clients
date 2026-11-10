@@ -165,6 +165,34 @@ class EndpointAdminAppBuilds extends _isc.EndpointRef {
       );
 }
 
+/// Endpoint for an administrator to reissue an invoice.
+/// {@category Endpoint}
+class EndpointAdminBilling extends _isc.EndpointRef {
+  EndpointAdminBilling(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'adminBilling';
+
+  /// Issues draft invoice [invoiceId] again.
+  ///
+  /// Returns `outcome` `issued` when the billing system accepts the issue.
+  /// Returns `outcome` `issueFailed` when Orb rejects the issue because the
+  /// customer address is incomplete, and Ground Control records that failure
+  /// the same way as an issue-failed webhook.
+  ///
+  /// Throws [NotFoundException] if the invoice is not found, or if that
+  /// address rejection belongs to a customer that is not a Ground Control
+  /// owner.
+  /// Throws [InvalidValueException] with Orb's reason for any other failure.
+  _ida.Future<Map<String, String>> reissueInvoice({
+    required String invoiceId,
+  }) => caller.callServerEndpoint<Map<String, String>>(
+    'adminBilling',
+    'reissueInvoice',
+    {'invoiceId': invoiceId},
+  );
+}
+
 /// Endpoint for reconciling database compute scaling against Serverpod Cloud.
 /// {@category Endpoint}
 class EndpointAdminDatabaseScaling extends _isc.EndpointRef {
@@ -3175,6 +3203,7 @@ class Client extends _isc.ServerpodClientShared {
          httpClientOverride: httpClientOverride,
        ) {
     adminAppBuilds = EndpointAdminAppBuilds(this);
+    adminBilling = EndpointAdminBilling(this);
     adminDatabaseScaling = EndpointAdminDatabaseScaling(this);
     adminGrants = EndpointAdminGrants(this);
     adminProcurement = EndpointAdminProcurement(this);
@@ -3217,6 +3246,8 @@ class Client extends _isc.ServerpodClientShared {
   }
 
   late final EndpointAdminAppBuilds adminAppBuilds;
+
+  late final EndpointAdminBilling adminBilling;
 
   late final EndpointAdminDatabaseScaling adminDatabaseScaling;
 
@@ -3299,6 +3330,7 @@ class Client extends _isc.ServerpodClientShared {
   @override
   Map<String, _isc.EndpointRef> get endpointRefLookup => {
     'adminAppBuilds': adminAppBuilds,
+    'adminBilling': adminBilling,
     'adminDatabaseScaling': adminDatabaseScaling,
     'adminGrants': adminGrants,
     'adminProcurement': adminProcurement,
