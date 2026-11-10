@@ -693,7 +693,9 @@ class EndpointAppBuilds extends _isc.EndpointRef {
   /// Throws [InvalidValueException] if [archiveSize] is not positive, or
   /// [platforms] is empty or repeats a platform.
   /// Throws [UploadTooLargeException] if [archiveSize] exceeds the upload
-  /// limit. Throws [ProjectSuspendedException] if the project is suspended.
+  /// limit. Throws [AppPlatformNotSetUpException] if the publishing setup
+  /// of a platform in [platforms] is incomplete; no build is created.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   /// Throws [AppPublishingDisabledException] while app publishing is off in
   /// this environment.
   _ida.Future<_iqiq2vfs.AppBuildsUpload> createBuilds({
