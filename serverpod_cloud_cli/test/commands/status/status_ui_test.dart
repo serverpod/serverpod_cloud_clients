@@ -129,6 +129,45 @@ void main() {
         expect(stdout, contains('scloud log --tail'));
       });
     });
+
+    group('when rendered for an idle project', () {
+      late String stdout;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const RuntimeStatusTextUi(baseCommand: 'scloud', utc: true),
+          data: CapsuleRuntimeStatus(
+            status: CapsuleStatus(
+              cloudCapsuleId: 'my-project',
+              status: CapsuleState.idle,
+              deployment: CapsuleDeploymentStatus(
+                name: 'app',
+                state: CapsuleState.idle,
+                desiredReplicas: 0,
+                readyReplicas: 0,
+              ),
+            ),
+          ),
+        );
+        stdout = io.stdout;
+      });
+
+      test('then stdout contains the idling status', () {
+        expect(stdout, contains('Idling'));
+      });
+
+      test('then stdout omits the podlet counts', () {
+        expect(stdout, isNot(contains('Podlets')));
+      });
+
+      test('then stdout omits the resume hint', () {
+        expect(stdout, isNot(contains('Resume the project')));
+      });
+
+      test('then stdout contains the project api url', () {
+        expect(stdout, contains('https://my-project.api.serverpod.space/'));
+      });
+    });
   });
 
   group('Given a RuntimeStatusWatchTextUi without a terminal', () {

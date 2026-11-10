@@ -238,6 +238,7 @@ class _RuntimeStatusLines {
       return;
     }
     if (state == CapsuleState.suspended ||
+        state == CapsuleState.idle ||
         state == CapsuleState.notProvisioned) {
       return;
     }
@@ -351,7 +352,9 @@ class _RuntimeStatusLines {
 
   ({String message, String? command})? _resolveHint(CapsuleState state) {
     final stateIsQuiet =
-        state == CapsuleState.ready || state == CapsuleState.notProvisioned;
+        state == CapsuleState.ready ||
+        state == CapsuleState.idle ||
+        state == CapsuleState.notProvisioned;
     if (stateIsQuiet) {
       switch (_latestPhase) {
         case _LatestDeployPhase.building:
@@ -387,6 +390,7 @@ class _RuntimeStatusLines {
         message: 'Resume the project from the Serverpod Cloud console.',
         command: null,
       ),
+      CapsuleState.idle => null,
       CapsuleState.notProvisioned => (
         message: 'Launch your project:',
         command: '$baseCommand launch',
@@ -415,7 +419,8 @@ class _RuntimeStatusLines {
     final CapsuleState state, {
     required final bool hasHint,
   }) {
-    if (state != CapsuleState.ready || hasHint) {
+    if ((state != CapsuleState.ready && state != CapsuleState.idle) ||
+        hasHint) {
       return;
     }
 
