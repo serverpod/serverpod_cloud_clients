@@ -63,6 +63,7 @@ abstract class AppShow {
   static bool _hasEnded(AppBuildSummary build) {
     return switch (build.status) {
       AppBuildStatus.succeeded ||
+      AppBuildStatus.builtNotUploaded ||
       AppBuildStatus.failed ||
       AppBuildStatus.cancelled => true,
       AppBuildStatus.queued ||

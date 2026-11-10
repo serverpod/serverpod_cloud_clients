@@ -74,6 +74,11 @@ abstract class AppBuildStatusFormatter {
     final message = build.message;
     return switch (build.status) {
       AppBuildStatus.succeeded => null,
+      AppBuildStatus.builtNotUploaded =>
+        message == null
+            ? 'The $name build was built but not uploaded to the store.'
+            : 'The $name build was built but not uploaded to the store: '
+                  '$message',
       AppBuildStatus.failed =>
         message == null
             ? 'The $name build failed.'
@@ -121,17 +126,20 @@ abstract class AppBuildStatusFormatter {
   /// The build leaves the queue when a build machine starts on it. The
   /// build stage ends when a step of the publish stage starts, and the
   /// upload stage when the build succeeds. The stage the build is in is
-  /// active. A failed or cancelled build fails the stage it stopped in.
+  /// active. A failed or cancelled build fails the stage it stopped in, and
+  /// a build the store refused fails the upload stage.
   static List<AppBuildStageState> stageStates(AppBuildDetail detail) {
     final build = detail.build;
     final currentStage = switch (build.status) {
       AppBuildStatus.queued || AppBuildStatus.waiting => 0,
       AppBuildStatus.succeeded => 3,
+      AppBuildStatus.builtNotUploaded => 2,
       AppBuildStatus.running => _stageAtBuildMachine(detail.steps),
       AppBuildStatus.failed || AppBuildStatus.cancelled =>
         build.startedAt == null ? 0 : _stageAtBuildMachine(detail.steps),
     };
     final isFailure =
+        build.status == AppBuildStatus.builtNotUploaded ||
         build.status == AppBuildStatus.failed ||
         build.status == AppBuildStatus.cancelled;
 

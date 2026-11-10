@@ -182,6 +182,7 @@ class AppStatusTextUi extends OutputWidget {
       AppBuildStatus.failed || AppBuildStatus.cancelled
           when build.startedAt == null =>
         InfoTextWidget(reason, newParagraph: true),
+      AppBuildStatus.builtNotUploaded ||
       AppBuildStatus.failed ||
       AppBuildStatus.cancelled => CommandHintTextWidget(
         reason,
@@ -273,6 +274,7 @@ String _statusName(AppBuildStatus status) {
     AppBuildStatus.waiting => 'Waiting',
     AppBuildStatus.running => 'Running',
     AppBuildStatus.succeeded => 'Succeeded',
+    AppBuildStatus.builtNotUploaded => 'Built, not uploaded',
     AppBuildStatus.failed => 'Failed',
     AppBuildStatus.cancelled => 'Cancelled',
   };

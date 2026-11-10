@@ -382,6 +382,7 @@ abstract class AppOperations {
       AppBuildStatus.waiting,
       AppBuildStatus.queued,
       AppBuildStatus.failed,
+      AppBuildStatus.builtNotUploaded,
       AppBuildStatus.cancelled,
     ];
     return precedence.firstWhere(
@@ -543,6 +544,7 @@ abstract class AppOperations {
   static bool _hasBuildEnded(AppBuildStatus status) {
     return switch (status) {
       AppBuildStatus.succeeded ||
+      AppBuildStatus.builtNotUploaded ||
       AppBuildStatus.failed ||
       AppBuildStatus.cancelled => true,
       AppBuildStatus.queued ||

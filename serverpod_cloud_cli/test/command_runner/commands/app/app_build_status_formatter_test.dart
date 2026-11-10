@@ -156,6 +156,40 @@ void main() {
     ]);
   });
 
+  test('Given a build the store refused '
+      'when getting its stage states '
+      'then the upload stage failed', () {
+    final detail = AppBuildDetailBuilder()
+        .withBuild(
+          AppBuildSummaryBuilder()
+              .withStatus(AppBuildStatus.builtNotUploaded)
+              .build(),
+        )
+        .build();
+
+    expect(AppBuildStatusFormatter.stageStates(detail), [
+      AppBuildStageState.done,
+      AppBuildStageState.done,
+      AppBuildStageState.failed,
+    ]);
+  });
+
+  test('Given a build the store refused '
+      'when getting its error '
+      'then it was built but not uploaded, with the message', () {
+    final build = AppBuildSummaryBuilder()
+        .withPlatform(AppPlatform.android)
+        .withStatus(AppBuildStatus.builtNotUploaded)
+        .withMessage('Step "Publish to Google Play" exited with code 1')
+        .build();
+
+    expect(
+      AppBuildStatusFormatter.summaryError(AppPlatform.android, build),
+      'The Android build was built but not uploaded to the store: '
+      'Step "Publish to Google Play" exited with code 1',
+    );
+  });
+
   test('Given a build cancelled in the queue '
       'when getting its stage states '
       'then the queue stage failed', () {
