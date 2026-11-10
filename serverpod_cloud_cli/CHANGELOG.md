@@ -1,6 +1,12 @@
 
 # Changelog
 
+## [1.3.0] - 2026-11-10
+
+### Added
+
+- **Idling capsule state** - Capsules scaled down to zero podlets now show an "Idling" state instead of appearing paused.
+
 ## [1.2.0] - 2026-10-19
 
 ### Added
