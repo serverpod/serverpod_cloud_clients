@@ -1,3 +1,5 @@
+import 'package:serverpod_cloud_cli/util/flutter_platform.dart';
+
 class ScloudConfig {
   final String projectId;
   final String? dartSdk;
@@ -5,12 +7,18 @@ class ScloudConfig {
   /// The path to the Flutter app directory, relative to the directory of
   /// the configuration file.
   final String? appDir;
+
+  /// The app identifier to publish the app with by platform, the iOS
+  /// bundle ID or Android package name. A platform without one takes it
+  /// from the app's project files.
+  final Map<FlutterPlatform, String> appIdentifiers;
   final ScloudScripts scripts;
 
   const ScloudConfig({
     required this.projectId,
     this.dartSdk,
     this.appDir,
+    this.appIdentifiers = const {},
     required this.scripts,
   });
 
@@ -21,6 +29,14 @@ class ScloudConfig {
       projectId: project['projectId'] as String? ?? '',
       dartSdk: project['dartSdk'] as String?,
       appDir: project['appDir'] as String?,
+      appIdentifiers: switch (project['appIdentifiers']) {
+        final Map<String, dynamic> identifiers => {
+          for (final platform in FlutterPlatform.values)
+            if (identifiers[platform.name] case final String identifier)
+              platform: identifier,
+        },
+        _ => const {},
+      },
       scripts: ScloudScripts.fromMap(project['scripts'] ?? {}),
     );
   }
@@ -31,6 +47,12 @@ class ScloudConfig {
         'projectId': projectId,
         if (dartSdk != null) 'dartSdk': dartSdk,
         if (appDir != null) 'appDir': appDir,
+        if (appIdentifiers.isNotEmpty)
+          'appIdentifiers': {
+            for (final MapEntry(key: platform, value: identifier)
+                in appIdentifiers.entries)
+              platform.name: identifier,
+          },
         'scripts': scripts.toMap(),
       },
     };
@@ -40,12 +62,14 @@ class ScloudConfig {
     String? projectId,
     String? dartSdk,
     String? appDir,
+    Map<FlutterPlatform, String>? appIdentifiers,
     ScloudScripts? scripts,
   }) {
     return ScloudConfig(
       projectId: projectId ?? this.projectId,
       dartSdk: dartSdk ?? this.dartSdk,
       appDir: appDir ?? this.appDir,
+      appIdentifiers: appIdentifiers ?? this.appIdentifiers,
       scripts: scripts ?? this.scripts,
     );
   }

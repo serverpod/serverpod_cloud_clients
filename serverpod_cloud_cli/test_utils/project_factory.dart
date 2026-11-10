@@ -145,6 +145,67 @@ dependencies:
 ''';
   }
 
+  /// Returns descriptor for the `android` directory of a Flutter app whose
+  /// app module declares [applicationId], as `flutter create` lays it out.
+  static d.DirectoryDescriptor flutterAndroidDir({
+    String applicationId = 'com.acme.app',
+  }) {
+    return d.dir('android', [
+      d.file('build.gradle.kts', ''),
+      d.dir('app', [
+        d.file('build.gradle.kts', """
+android {
+    namespace = "$applicationId"
+
+    defaultConfig {
+        // The unique Application ID of the app.
+        applicationId = "$applicationId"
+    }
+}
+"""),
+      ]),
+    ]);
+  }
+
+  /// Returns descriptor for the `ios` directory of a Flutter app whose app
+  /// target has [bundleId] in every build configuration, with the test
+  /// target `flutter create` adds next to it.
+  static d.DirectoryDescriptor flutterIosDir({
+    String bundleId = 'com.acme.app',
+  }) {
+    return d.dir('ios', [
+      d.file('Podfile', ''),
+      d.dir('Runner.xcodeproj', [
+        d.file('project.pbxproj', """
+		331C8088294A63A400263BE5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "\$(TEST_HOST)";
+				PRODUCT_BUNDLE_IDENTIFIER = $bundleId.RunnerTests;
+			};
+			name = Debug;
+		};
+		97C147061CF9000F007C117D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = Runner/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = $bundleId;
+			};
+			name = Debug;
+		};
+		97C147071CF9000F007C117D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = Runner/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = $bundleId;
+			};
+			name = Release;
+		};
+"""),
+      ]),
+    ]);
+  }
+
   /// Returns descriptor for a `project_flutter` Flutter app that is not
   /// resolved in a workspace, with a lock file and a package graph.
   /// Use `descriptor.create()` to create the directory.
