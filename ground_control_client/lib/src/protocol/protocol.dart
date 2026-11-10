@@ -169,6 +169,8 @@ import 'features/admin/models/payments_invoice_status.dart' as _iu1ze8tv;
 import 'features/admin/models/payments_status.dart' as _iw02lteh;
 import 'features/app_builds/exceptions/android_signing_already_set_exception.dart'
     as _iv09xi1m;
+import 'features/app_builds/exceptions/app_platform_not_set_up_exception.dart'
+    as _izin2q4a;
 import 'features/app_builds/exceptions/app_publishing_disabled_exception.dart'
     as _ijed0rq9;
 import 'features/app_builds/models/android_publishing_setup.dart' as _i0oah05k;
@@ -349,6 +351,7 @@ export 'features/admin/models/admin_user_status.dart';
 export 'features/admin/models/payments_invoice_status.dart';
 export 'features/admin/models/payments_status.dart';
 export 'features/app_builds/exceptions/android_signing_already_set_exception.dart';
+export 'features/app_builds/exceptions/app_platform_not_set_up_exception.dart';
 export 'features/app_builds/exceptions/app_publishing_disabled_exception.dart';
 export 'features/app_builds/models/android_publishing_setup.dart';
 export 'features/app_builds/models/android_signing.dart';
@@ -756,6 +759,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _iv09xi1m.AndroidSigningAlreadySetException) {
       return _iv09xi1m.AndroidSigningAlreadySetException.fromJson(data) as T;
+    }
+    if (t == _izin2q4a.AppPlatformNotSetUpException) {
+      return _izin2q4a.AppPlatformNotSetUpException.fromJson(data) as T;
     }
     if (t == _ijed0rq9.AppPublishingDisabledException) {
       return _ijed0rq9.AppPublishingDisabledException.fromJson(data) as T;
@@ -1391,6 +1397,12 @@ class Protocol extends _isc.SerializationManager {
     if (t == _isc.getType<_iv09xi1m.AndroidSigningAlreadySetException?>()) {
       return (data != null
               ? _iv09xi1m.AndroidSigningAlreadySetException.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_izin2q4a.AppPlatformNotSetUpException?>()) {
+      return (data != null
+              ? _izin2q4a.AppPlatformNotSetUpException.fromJson(data)
               : null)
           as T;
     }
@@ -2198,6 +2210,7 @@ class Protocol extends _isc.SerializationManager {
       _iw02lteh.PaymentsStatus => 'PaymentsStatus',
       _iv09xi1m.AndroidSigningAlreadySetException =>
         'AndroidSigningAlreadySetException',
+      _izin2q4a.AppPlatformNotSetUpException => 'AppPlatformNotSetUpException',
       _ijed0rq9.AppPublishingDisabledException =>
         'AppPublishingDisabledException',
       _i0oah05k.AndroidPublishingSetup => 'AndroidPublishingSetup',
@@ -2495,6 +2508,8 @@ class Protocol extends _isc.SerializationManager {
         return 'PaymentsStatus';
       case _iv09xi1m.AndroidSigningAlreadySetException():
         return 'AndroidSigningAlreadySetException';
+      case _izin2q4a.AppPlatformNotSetUpException():
+        return 'AppPlatformNotSetUpException';
       case _ijed0rq9.AppPublishingDisabledException():
         return 'AppPublishingDisabledException';
       case _i0oah05k.AndroidPublishingSetup():
@@ -2955,6 +2970,9 @@ class Protocol extends _isc.SerializationManager {
       return deserialize<_iv09xi1m.AndroidSigningAlreadySetException>(
         data['data'],
       );
+    }
+    if (dataClassName == 'AppPlatformNotSetUpException') {
+      return deserialize<_izin2q4a.AppPlatformNotSetUpException>(data['data']);
     }
     if (dataClassName == 'AppPublishingDisabledException') {
       return deserialize<_ijed0rq9.AppPublishingDisabledException>(
