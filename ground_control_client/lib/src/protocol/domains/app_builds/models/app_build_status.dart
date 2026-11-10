@@ -18,6 +18,8 @@ import 'package:serverpod_client/serverpod_client.dart' as _isc;
 /// - `waiting` — handed to the build service, waiting for a build machine.
 /// - `running` — a build machine is working on it.
 /// - `succeeded` — built and uploaded to the store.
+/// - `builtNotUploaded` — built, but the store refused the upload; the
+///   publish step's log says why and the artifact can be downloaded.
 /// - `failed` — ended with an error; `message` and the failed step say why.
 /// - `cancelled` — cancelled by a user before it ended.
 enum AppBuildStatus implements _isc.SerializableModel {
@@ -25,6 +27,7 @@ enum AppBuildStatus implements _isc.SerializableModel {
   waiting,
   running,
   succeeded,
+  builtNotUploaded,
   failed,
   cancelled;
 
@@ -38,6 +41,8 @@ enum AppBuildStatus implements _isc.SerializableModel {
         return AppBuildStatus.running;
       case 'succeeded':
         return AppBuildStatus.succeeded;
+      case 'builtNotUploaded':
+        return AppBuildStatus.builtNotUploaded;
       case 'failed':
         return AppBuildStatus.failed;
       case 'cancelled':
