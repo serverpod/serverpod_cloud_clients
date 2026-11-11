@@ -75,7 +75,6 @@ Future<void> _main(
   try {
     await runner.run(args);
   } on UsageException catch (e, stackTrace) {
-    logger.error(e.toString());
     throw ErrorExitException(e.message, e, stackTrace);
   }
 }

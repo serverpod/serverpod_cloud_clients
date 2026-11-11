@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:args/command_runner.dart' show UsageException;
 import 'package:ci/ci.dart' as ci;
 import 'package:cli_tools/better_command_runner.dart' show ExitException;
+import 'package:config/config.dart' show UsageException;
 import 'package:ground_control_client/ground_control_client.dart'
     show SerializableException;
 import 'package:sentry/sentry.dart';

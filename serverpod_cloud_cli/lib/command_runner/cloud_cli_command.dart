@@ -1,8 +1,8 @@
-import 'package:args/args.dart' show ArgResults;
-import 'package:args/command_runner.dart';
 import 'package:cli_tools/better_command_runner.dart';
 import 'package:cli_tools/logger.dart' show TextLogType;
+import 'package:config/command.dart' show Command, CommandContext;
 import 'package:config/config.dart';
+import 'package:ground_control_client/ground_control_client.dart' show Client;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/auth/auth_login.dart';
@@ -16,6 +16,7 @@ import 'package:serverpod_cloud_cli/util/cli_authentication_key_manager.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_broker.dart'
     show scloudCliConfigBroker;
 
+import 'helpers/cloud_cli_service_provider.dart' show CloudCliServiceProvider;
 import 'ui/ui.dart';
 
 abstract class CloudCliCommand<O extends OptionDefinition>
@@ -39,19 +40,19 @@ abstract class CloudCliCommand<O extends OptionDefinition>
   /// is refused in `--non-interactive` mode.
   String? get nonInteractiveHint => null;
 
-  CloudCliCommand({required this.logger, super.options = const []})
-    : super(wrapTextColumn: logger.wrapTextColumn);
+  CloudCliCommand({required this.logger, super.options});
 
   /// Gets the top parent command for this command.
   Command get _topCommand {
     Command command = this;
-    do {
+    while (command.hasParent) {
       if (command.parent case final Command par) {
         command = par;
       } else {
         return command;
       }
-    } while (true);
+    }
+    return command;
   }
 
   static const String commandDocBaseUrl =
@@ -77,6 +78,7 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
 
   /// Gets the current global configuration.
   /// Valid after the command runner has started running.
+  @Deprecated('Use CommandContext.globalConfiguration instead')
   GlobalConfiguration get globalConfiguration => runner.globalConfiguration;
 
   /// Runs this command. Subclasses should instead override [runWithOutput].
@@ -84,9 +86,9 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
   /// The command options are resolved before the login is required, so a
   /// usage error is reported without starting a login.
   @override
-  Future<void> run() async {
+  Future<void> run(final CommandContext<O, void> context) async {
     try {
-      await super.run();
+      await runWithContext(context);
     } on FailureException catch (e, stackTrace) {
       _processFailureException(e, stackTrace);
     } on UsageException catch (_) {
@@ -135,15 +137,15 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
   }
 
   @override
-  Configuration<O> resolveConfiguration(ArgResults? argResults) {
-    return Configuration.resolve(
-      options: options,
-      argResults: argResults,
-      env: envVariables,
-      configBroker: scloudCliConfigBroker(
-        globalConfig: globalConfiguration,
-        logger: logger,
-      ),
+  ConfigurationBroker? configBroker(
+    final CommandContext<OptionDefinition, void>? prevContext,
+  ) {
+    if (prevContext == null) {
+      throw StateError('prevContext should not be null in CloudCliCommand');
+    }
+    return scloudCliConfigBroker(
+      globalConfig: prevContext.root().config as GlobalConfiguration,
+      logger: logger,
     );
   }
 
@@ -157,8 +159,8 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
   ///
   /// Throws [CloudCliUsageException] if the command is [interactiveOnly] and
   /// `--non-interactive` is set.
-  @override
-  Future<void> runWithConfig(Configuration<O> commandConfig) async {
+  Future<void> runWithContext(CommandContext<O, void> context) async {
+    final globalConfiguration = context.provider.fetch<GlobalConfiguration>();
     if (interactiveOnly && globalConfiguration.nonInteractive) {
       throw CloudCliUsageException(
         'The $name command is interactive and cannot run with --non-interactive.',
@@ -166,13 +168,18 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
       );
     }
 
-    await _requireLogin();
+    await _requireLogin(context);
 
     final output = CommandOutput(
       format: globalConfiguration.format,
       logger: logger,
     );
-    await runWithOutput(commandConfig, output);
+    await runWithOutput(context.config, output);
+  }
+
+  @override
+  Future<void> runWithConfig(Configuration<O> commandConfig) async {
+    throw UnsupportedError('runWithConfig is not supported for $name');
   }
 
   /// Logs in if the command requires it and there is no active session,
@@ -180,8 +187,11 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
   ///
   /// Throws [NotLoggedInException] in `--non-interactive` mode instead of
   /// starting the interactive login.
-  Future<void> _requireLogin() async {
-    final client = runner.serviceProvider.cloudApiClient;
+  Future<void> _requireLogin(CommandContext<O, void> context) async {
+    final serviceProvider = context.provider.fetch<CloudCliServiceProvider>();
+    final globalConfiguration = context.provider.fetch<GlobalConfiguration>();
+
+    final client = serviceProvider.cloudApiClient;
     final isAuthenticated =
         await client.authKeyProvider?.isAuthenticated == true;
 
@@ -329,4 +339,19 @@ class FailureExceptionWidget extends OutputWidget {
       stackTrace: exception.nestedStackTrace,
     );
   }
+}
+
+/// Service provider, API client, and global configuration for a command run.
+extension GlobalContextExtension<O extends OptionDefinition, T>
+    on CommandContext<O, T> {
+  /// The service provider for this command run.
+  CloudCliServiceProvider get serviceProvider =>
+      provider.fetch<CloudCliServiceProvider>();
+
+  /// The Ground Control client for this command run.
+  Client get cloudApiClient => serviceProvider.cloudApiClient;
+
+  /// The global configuration for this command run.
+  GlobalConfiguration get globalConfiguration =>
+      provider.fetch<GlobalConfiguration>();
 }

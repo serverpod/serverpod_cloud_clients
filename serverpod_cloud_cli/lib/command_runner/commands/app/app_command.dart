@@ -5,6 +5,8 @@ import 'package:ground_control_client/ground_control_client.dart'
     show AppPlatform, UuidValue;
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart'
+    show GlobalConfigurationOptions;
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy/prepare_project_files.dart'
     show TenantProject;

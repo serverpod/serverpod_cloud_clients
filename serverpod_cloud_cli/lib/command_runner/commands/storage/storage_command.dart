@@ -175,7 +175,6 @@ enum StorageCreateCommandConfig<V> implements OptionDefinition<V> {
   access(
     EnumOption<BucketVisibility>(
       argName: 'access',
-      argAbbrev: 'a',
       helpText:
           'Who can read the files. '
           '"private": only your project. "public": anyone with the URL. '

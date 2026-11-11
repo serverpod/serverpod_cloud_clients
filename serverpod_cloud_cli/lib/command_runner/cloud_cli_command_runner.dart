@@ -1,7 +1,15 @@
 import 'dart:io';
 
-import 'package:args/args.dart';
+import 'package:cli_tools/analytics.dart'
+    show buildCommandLinePropertiesForAnalytics;
 import 'package:cli_tools/better_command_runner.dart';
+import 'package:config/command.dart'
+    show
+        CommandContext,
+        Middlewares,
+        UsageOutputHandler,
+        OutputSinks,
+        CommandMiddleware;
 import 'package:config/config.dart';
 import 'package:ground_control_client/ground_control_client.dart'
     show ConsoleRoutes;
@@ -26,9 +34,9 @@ import 'package:serverpod_cloud_cli/command_runner/commands/top/top_command.dart
 import 'package:serverpod_cloud_cli/command_runner/commands/storage/storage_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/variable/variable_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/version/version_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/cli_auto_update.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cli_run_context_resolver.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cli_updater.dart';
-import 'package:serverpod_cloud_cli/command_runner/helpers/cli_version_checker.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/constants.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
@@ -44,8 +52,6 @@ import 'package:serverpod_cloud_cli/util/scloud_version.dart';
 
 import 'commands/admin/admin_command.dart';
 import 'commands/settings/settings_command.dart';
-import 'completion/completion_script_carapace.dart';
-import 'completion/completion_script_completely.dart';
 
 /// The resolved context of a CLI run.
 ///
@@ -89,17 +95,20 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   final CommandLogger logger;
   final CloudCliServiceProvider _serviceProvider;
 
-  /// Called with the resolved run context each time [runCommand] is entered,
-  /// which is after the global configuration and the analytics consent are
-  /// resolved.
-  ///
-  /// An error thrown by the callback is logged and ignored, so telemetry
-  /// cannot break the command being run.
-  final OnRunContextResolved? _onRunContextResolved;
-
-  /// Called to report an error that the CLI handled but that shall still be
-  /// reported for diagnostics.
-  final OnErrorReport? _onErrorReport;
+  // /// Called with the resolved run context each time [runCommand] is entered,
+  // /// which is after the global configuration and the analytics consent are
+  // /// resolved.
+  // ///
+  // /// An error thrown by the callback is logged and ignored, so telemetry
+  // /// cannot break the command being run.
+  // final OnRunContextResolved? _onRunContextResolved;
+  // /// Called with the resolved run context each time [runCommand] is entered,
+  // /// which is after the global configuration and the analytics consent are
+  // /// resolved.
+  // ///
+  // /// An error thrown by the callback is logged and ignored, so telemetry
+  // /// cannot break the command being run.
+  // final OnRunContextResolved? _onRunContextResolved;
 
   /// If true, analytics will be not be suppressed for non-production usage.
   final bool _enableAnalyticsForAllEnvs;
@@ -110,20 +119,15 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   /// The invocation path the CLI was run through, as reported to telemetry.
   final BaseCommandInvocation _baseCommandInvocation;
 
-  final VersionCommand _versionCommand;
-
-  final CliUpdater _cliUpdater;
-
-  /// The version this process was already updated to, if any,
-  /// which must not be installed again.
-  final Version? _attemptedUpdateVersion;
+  // final VersionCommand _versionCommand;
 
   GlobalConfiguration? _globalConfiguration;
 
+  /// Whether this run may send analytics, as resolved before the command.
   bool _analyticsConsent = false;
 
   /// The curremt global configuration for the Serverpod Cloud CLI.
-  @override
+  @Deprecated('Use CommandContext.globalConfiguration instead')
   GlobalConfiguration get globalConfiguration {
     final globalConfig = _globalConfiguration;
     if (globalConfig == null) {
@@ -132,26 +136,31 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     return globalConfig;
   }
 
-  /// Sets the curremt global configuration for the Serverpod Cloud CLI.
-  /// (Since this object is re-entrant, the global config is regenerated
-  /// each call to [run].)
-  @override
-  set globalConfiguration(Configuration<GlobalOption> configuration) {
-    _globalConfiguration = GlobalConfiguration.from(
-      configuration: configuration,
-    );
-    logger.configuration = _globalConfiguration;
-  }
+  // /// Sets the curremt global configuration for the Serverpod Cloud CLI.
+  // /// (Since this object is re-entrant, the global config is regenerated
+  // /// each call to [run].)
+  // @override
+  // set globalConfiguration(Configuration<GlobalOption> configuration) {
+  //   _globalConfiguration = GlobalConfiguration.from(
+  //     configuration: configuration,
+  //   );
+  //   logger.configuration = _globalConfiguration;
+  // }
+  // /// Sets the curremt global configuration for the Serverpod Cloud CLI.
+  // /// (Since this object is re-entrant, the global config is regenerated
+  // /// each call to [run].)
+  // @override
+  // set globalConfiguration(Configuration<GlobalOption> configuration) {
+  //   _globalConfiguration = GlobalConfiguration.from(
+  //     configuration: configuration,
+  //   );
+  //   logger.configuration = _globalConfiguration;
+  // }
 
   /// Gets the initialized service provider for the Serverpod Cloud CLI.
   /// Must not be called before the [run] method has been invoked.
+  @Deprecated('Use CommandContext.serviceProvider instead')
   CloudCliServiceProvider get serviceProvider {
-    if (!_serviceProvider.initialized) {
-      _serviceProvider.initialize(
-        globalConfiguration: globalConfiguration,
-        logger: logger,
-      );
-    }
     return _serviceProvider;
   }
 
@@ -162,32 +171,31 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     required CloudCliServiceProvider serviceProvider,
     required bool enableAnalyticsForAllEnvs,
     required bool adminUserMode,
-    required CliUpdater cliUpdater,
-    required Version? attemptedUpdateVersion,
     OnRunContextResolved? onRunContextResolved,
-    OnErrorReport? onErrorReport,
     super.onAnalyticsEvent,
     super.setLogLevel,
-  }) : _onRunContextResolved = onRunContextResolved,
-       _onErrorReport = onErrorReport,
-       _serviceProvider = serviceProvider,
-       _cliUpdater = cliUpdater,
-       _attemptedUpdateVersion = attemptedUpdateVersion,
-       _versionCommand = VersionCommand(logger: logger),
+    super.prependMiddlewares,
+  }) : _serviceProvider = serviceProvider,
        _enableAnalyticsForAllEnvs = enableAnalyticsForAllEnvs,
        _adminUserMode = adminUserMode,
        _baseCommandInvocation = BaseCommandInvocation.from(baseCommand),
        super(
          baseCommand,
          'Manage your Serverpod Cloud projects',
+         rootFooter:
+             '\nSee the full documentation at: https://docs.serverpod.dev/cloud',
+         buildAnalyticsProperties: _buildEnrichedAnalyticsProperties(
+           buildCommandLinePropertiesForAnalytics,
+           BaseCommandInvocation.from(baseCommand).reportedName,
+         ),
          globalOptions: GlobalOption.values,
          wrapTextColumn: logger.wrapTextColumn,
-         messageOutput: MessageOutput(usageLogger: logger.info),
-         enableCompletionCommand: true,
-         embeddedCompletions: [
-           completionScriptCompletely,
-           completionScriptCarapace,
-         ],
+         usageOutput: UsageOutputHandler(
+           sinks: OutputSinks(
+             out: _LoggerStringSink(logger.info),
+             err: _LoggerStringSink(logger.error),
+           ),
+         ),
        );
 
   /// The environment variable that overrides the base command name shown in
@@ -224,19 +232,65 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
         ? defaultBaseCommand
         : baseCommand;
 
+    final actualServiceProvider = serviceProvider ?? CloudCliServiceProvider();
+
+    final resolvedVersion = version ?? cliVersion;
+    final autoUpdate = CliAutoUpdate(
+      logger: logger,
+      currentVersion: resolvedVersion,
+      updater: cliUpdater ?? const DartCliUpdater(),
+      attemptedVersion: attemptedUpdateVersion ?? attemptedCliUpdateVersion(),
+      onErrorReport: onErrorReport,
+    );
+
     late final CloudCliCommandRunner runner;
+
+    final middlewares = <CommandMiddleware<GlobalOption, void>>[
+      Middlewares.onBeforeRun((context) {
+        final gc = GlobalConfiguration.from(configuration: context.config);
+        context.provider.store(gc);
+        logger.configuration = gc;
+        runner._globalConfiguration = gc;
+      }),
+      (final next) {
+        return (final context) async {
+          if (context.isCompletion) return next(context);
+          final updatedAndReran = await autoUpdate.attempt(context);
+          if (updatedAndReran) return;
+          return next(context);
+        };
+      },
+      Middlewares.withHooks(
+        onRun: (context) {
+          context.provider.store(actualServiceProvider);
+          if (!actualServiceProvider.initialized) {
+            final gc = context.provider.fetch<GlobalConfiguration>();
+            actualServiceProvider.initialize(
+              globalConfiguration: gc,
+              logger: logger,
+            );
+          }
+          return context;
+        },
+        onReturn: (context, ret) {
+          context.provider.fetch<CloudCliServiceProvider>().shutdown();
+          return ret;
+        },
+        onError: (error, stackTrace, context) {
+          context.provider.fetch<CloudCliServiceProvider>().shutdown();
+          Error.throwWithStackTrace(error, stackTrace);
+        },
+      ),
+    ];
+
     runner = CloudCliCommandRunner._(
       logger: logger,
-      version: version ?? cliVersion,
+      version: resolvedVersion,
       baseCommand: resolvedBaseCommand,
-      serviceProvider: serviceProvider ?? CloudCliServiceProvider(),
+      serviceProvider: actualServiceProvider,
       enableAnalyticsForAllEnvs: enableAnalyticsForAllEnvs,
       adminUserMode: adminUserMode,
-      cliUpdater: cliUpdater ?? const DartCliUpdater(),
-      attemptedUpdateVersion:
-          attemptedUpdateVersion ?? attemptedCliUpdateVersion(),
       onRunContextResolved: onRunContextResolved,
-      onErrorReport: onErrorReport,
       onAnalyticsEvent: onAnalyticsEvent == null
           ? null
           : (event, properties) => onAnalyticsEvent(
@@ -253,11 +307,31 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
             parsedLogLevel: parsedLogLevel,
             commandName: commandName,
           ),
+      prependMiddlewares: middlewares,
     );
+
+    runner.addMiddleware(
+      Middlewares.onBeforeRun((context) {
+        final gc = GlobalConfiguration.from(configuration: context.config);
+        runner._globalConfiguration = gc;
+      }),
+    );
+
+    if (onRunContextResolved != null) {
+      runner.addMiddleware(
+        Middlewares.onBeforeRun((context) {
+          try {
+            onRunContextResolved(runner._makeRunContext(context));
+          } catch (e, stackTrace) {
+            logger.debug('Failed to resolve the run context: $e\n$stackTrace');
+          }
+        }),
+      );
+    }
 
     // Add commands (which may in turn have their own options and subcommands)
     runner.addCommands([
-      runner._versionCommand,
+      VersionCommand(logger: logger),
       CloudAuthCommand(logger: logger),
       CloudMeCommand(logger: logger),
       CloudProjectCommand(logger: logger),
@@ -281,203 +355,14 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     return runner;
   }
 
-  @override
-  Future<void> runCommand(ArgResults topLevelResults) async {
-    try {
-      try {
-        _onRunContextResolved?.call(_runContext(topLevelResults));
-      } catch (e, stackTrace) {
-        logger.debug('Failed to resolve the run context: $e\n$stackTrace');
-      }
-
-      if (globalConfiguration.version) {
-        await _versionCommand.run();
-        return;
-      }
-
-      await _backfillUserAuthId();
-
-      final latestVersion = await _fetchLatestCliVersion();
-
-      if (latestVersion != null && version < latestVersion) {
-        if (globalConfiguration.autoCliUpgrade &&
-            _attemptedUpdateVersion != latestVersion) {
-          final didRerun = await _updateAndRerunCommand(
-            latestVersion: latestVersion,
-            topLevelResults: topLevelResults,
-          );
-          if (didRerun) {
-            return;
-          }
-        } else {
-          _alertUpdateNotInstalled(latestVersion);
-        }
-      }
-
-      await super.runCommand(topLevelResults);
-    } finally {
-      _serviceProvider.shutdown();
-    }
-  }
-
-  Future<Version?> _fetchLatestCliVersion() async {
-    try {
-      return await CLIVersionChecker.fetchLatestCLIVersion(
-        logger: logger,
-        localStoragePath: globalConfiguration.scloudDir.path,
-      );
-    } catch (e) {
-      logger.debug('Failed to fetch latest CLI version: $e');
-      return null;
-    }
-  }
-
-  /// Whether [latestVersion] is a breaking update that the user must install
-  /// to continue.
-  bool _isRequiredUpdate(Version latestVersion) =>
-      CLIVersionChecker.isBreakingUpdate(
-        currentVersion: version,
-        latestVersion: latestVersion,
-      ) &&
-      globalConfiguration.breakingVersionCheck;
-
-  /// Updates the CLI to [latestVersion] and reruns the command with it.
-  ///
-  /// Returns true if the command was rerun, and so must not be run again in
-  /// this process. Returns false if the update failed and the command shall
-  /// run on the current version.
-  ///
-  /// Throws [ErrorExitException] with [ExitCodeConstants.scloudUpdatedRerunRequired]
-  /// if the rerun is turned off, with the rerun's exit code if the rerun
-  /// failed, and with [ExitCodeConstants.scloudUpdateRequired] if a breaking
-  /// update could not be installed.
-  /// Throws [UnexpectedErrorExitException] if the rerun could not be started.
-  Future<bool> _updateAndRerunCommand({
-    required Version latestVersion,
-    required ArgResults topLevelResults,
-  }) async {
-    if (!_cliUpdater.canSelfUpdate) {
-      logger.debug('This CLI installation cannot update itself.');
-      _alertUpdateNotInstalled(latestVersion);
-      return false;
-    }
-
-    final updated = await logger.progress(
-      'Updating Serverpod Cloud CLI to $latestVersion',
-      () async {
-        try {
-          await _cliUpdater.install(latestVersion, logger: logger);
-          return true;
-        } on CliUpdateFailedException catch (e, stackTrace) {
-          logger.debug('Failed to update the CLI: $e\n$stackTrace');
-          await _reportError(e, stackTrace);
-          return false;
-        }
-      },
-      successMessage: 'Updated Serverpod Cloud CLI to $latestVersion',
-    );
-
-    if (!updated) {
-      _alertUpdateNotInstalled(latestVersion);
-      return false;
-    }
-
-    if (globalConfiguration.exitOnUpdated) {
-      throw ErrorExitException.code(
-        ExitCodeConstants.scloudUpdatedRerunRequired,
-        'Updated to $latestVersion, the command must be run again.',
-      );
-    }
-
-    final int rerunExitCode;
-    try {
-      rerunExitCode = await _cliUpdater.rerun(
-        topLevelResults.arguments,
-        installedVersion: latestVersion,
-        logger: logger,
-      );
-    } on ProcessException catch (e, stackTrace) {
-      await _reportError(e, stackTrace);
-      logger.error(
-        'The CLI was updated to $latestVersion,'
-        ' but the command could not be run again.',
-        hint: 'Run the command again.',
-      );
-      throw UnexpectedErrorExitException(e.message, e, stackTrace);
-    }
-
-    if (rerunExitCode != 0) {
-      throw ErrorExitException.code(
-        rerunExitCode,
-        'The rerun of the command exited with $rerunExitCode.',
-      );
-    }
-
-    return true;
-  }
-
-  /// Alerts that [latestVersion] is available but was not installed.
-  ///
-  /// Throws [ErrorExitException] with [ExitCodeConstants.scloudUpdateRequired]
-  /// if the update is breaking and the breaking version check is enabled.
-  void _alertUpdateNotInstalled(Version latestVersion) {
-    final isRequiredUpdate = _isRequiredUpdate(latestVersion);
-
-    _printUpdateCLIAlert(
-      latestVersion: latestVersion,
-      logger: logger,
-      isRequiredUpdate: isRequiredUpdate,
-    );
-
-    if (isRequiredUpdate) {
-      throw ErrorExitException.code(
-        ExitCodeConstants.scloudUpdateRequired,
-        'You need to update the CLI to continue.',
-      );
-    }
-  }
-
-  /// Reports [error] for diagnostics, if a reporter is configured.
-  ///
-  /// Never throws, so reporting cannot break the command being run.
-  Future<void> _reportError(Object error, StackTrace stackTrace) async {
-    try {
-      await _onErrorReport?.call(error, stackTrace);
-    } catch (e, s) {
-      logger.debug('Failed to report the error: $e\n$s');
-    }
-  }
-
-  /// Stores the user auth id of the logged in user if it is missing from
-  /// the stored user data, provided the analytics consent is given.
-  ///
-  /// Never throws, so the backfill cannot break the command being run.
-  Future<void> _backfillUserAuthId() async {
-    if (!_analyticsConsent) {
-      return;
-    }
-
-    try {
-      final client = serviceProvider.cloudApiClient;
-      if (await client.authKeyProvider?.isAuthenticated != true) {
-        return;
-      }
-      await AuthLoginCommands.backfillUserAuthId(
-        cloudApiClient: client,
-        localStoragePath: globalConfiguration.scloudDir.path,
-        logger: logger,
-      );
-    } catch (e, stackTrace) {
-      logger.debug('Failed to backfill the user auth id: $e\n$stackTrace');
-    }
-  }
-
-  CliRunContext _runContext(ArgResults topLevelResults) {
-    final globalConfig = globalConfiguration;
+  CliRunContext _makeRunContext(
+    final CommandContext<GlobalOption, void> context,
+  ) {
+    final globalConfig = context.provider.fetch<GlobalConfiguration>();
     return (
-      analyticsConsent: _analyticsConsent,
-      command: CliRunContextResolver.commandPath(topLevelResults),
-      flags: CliRunContextResolver.commandFlags(topLevelResults),
+      analyticsConsent: context.provider.fetch<AnalyticsEnabled>().enabled,
+      command: CliRunContextResolver.commandPath(context),
+      flags: CliRunContextResolver.commandFlags(context),
       apiServerUrl: globalConfig.apiServer,
       cloudUserId: CliRunContextResolver.fetchCloudUserId(
         globalConfig.scloudDir.path,
@@ -491,10 +376,35 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   /// Sends the `serverpod_cli_signed_in` analytics event, provided the
   /// analytics are enabled and the auth id of the signed in user is stored.
   void sendSignedInAnalyticsEvent() {
-    if (_storedUserAuthId() == null) {
+    if (!_analyticsConsent || _storedUserAuthId() == null) {
       return;
     }
     sendAnalyticsEvent(_signedInAnalyticsEvent);
+  }
+
+  /// Stores the user auth id of the logged in user if it is missing from
+  /// the stored user data.
+  ///
+  /// Never throws, so the backfill cannot break the command being run.
+  Future<void> _backfillUserAuthId(
+    final CommandContext<GlobalOption, void> context,
+  ) async {
+    try {
+      final client = context.provider
+          .fetch<CloudCliServiceProvider>()
+          .cloudApiClient;
+      if (await client.authKeyProvider?.isAuthenticated != true) {
+        return;
+      }
+      final globalConfig = context.provider.fetch<GlobalConfiguration>();
+      await AuthLoginCommands.backfillUserAuthId(
+        cloudApiClient: client,
+        localStoragePath: globalConfig.scloudDir.path,
+        logger: logger,
+      );
+    } catch (e, stackTrace) {
+      logger.debug('Failed to backfill the user auth id: $e\n$stackTrace');
+    }
   }
 
   /// Returns the auth id of the logged in cloud user, or null if the user is
@@ -525,39 +435,73 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     super.sendAnalyticsEvent(event, enrichedProperties);
   }
 
+  static BuildCommandLinePropertiesForAnalytics
+  _buildEnrichedAnalyticsProperties(
+    final BuildCommandLinePropertiesForAnalytics buildAnalyticsProperties,
+    final String baseCommand,
+  ) {
+    return <O extends OptionDefinition, T>(final CommandContext<O, T> context) {
+      final properties = buildAnalyticsProperties(context);
+
+      final enrichedProperties = Map<String, dynamic>.from(properties);
+      enrichedProperties['base_command'] = baseCommand;
+      final globalConfig = context.provider.fetch<GlobalConfiguration>();
+      final cloudUserId = CliRunContextResolver.fetchCloudUserId(
+        globalConfig.scloudDir.path,
+      );
+      if (cloudUserId != null) {
+        enrichedProperties['cloud_user_id'] = cloudUserId;
+      }
+      return enrichedProperties;
+    };
+  }
+
   @override
-  Future<bool> determineAnalyticsSettings() async {
-    final analyticsEnabled = await _resolveAnalyticsConsent();
+  Future<bool> determineAnalyticsSettings(
+    final CommandContext<GlobalOption, void> context,
+  ) async {
+    final analyticsEnabled = await _resolveAnalyticsConsent(context);
     _analyticsConsent = analyticsEnabled;
+    if (analyticsEnabled) {
+      await _backfillUserAuthId(context);
+    }
     return analyticsEnabled;
   }
 
-  Future<bool> _resolveAnalyticsConsent() async {
+  Future<bool> _resolveAnalyticsConsent(
+    final CommandContext<GlobalOption, void> context,
+  ) async {
     if (onAnalyticsEvent == null) {
       return false;
     }
 
-    final analyticsOptionValue = globalConfiguration.analytics;
+    final analyticsOptionValue = context.config.optionalValue(
+      GlobalOption.analytics,
+    );
     if (analyticsOptionValue != null) {
       // explicitly set via option for this run
       return analyticsOptionValue;
     }
 
-    if (!_enableAnalyticsForAllEnvs && !_isTenantUser()) {
+    if (!_enableAnalyticsForAllEnvs && !_isTenantUser(context)) {
       return false;
     }
 
-    final analyticsEnabled = await _getAnalyticsSetting();
+    final analyticsEnabled = await _getAnalyticsSetting(context);
     return analyticsEnabled;
   }
 
-  Future<bool> _getAnalyticsSetting() async {
+  Future<bool> _getAnalyticsSetting(
+    final CommandContext<GlobalOption, void> context,
+  ) async {
+    final serviceProvider = context.provider.fetch<CloudCliServiceProvider>();
     final settings = serviceProvider.scloudSettings;
     final analyticsEnabled = await settings.enableAnalytics;
     if (analyticsEnabled != null) {
       return analyticsEnabled;
     }
 
+    final globalConfiguration = context.provider.fetch<GlobalConfiguration>();
     if (globalConfiguration.nonInteractive) {
       return false;
     }
@@ -571,22 +515,19 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
   }
 
   /// Returns true if the user likely is a production tenant user.
-  bool _isTenantUser() {
+  bool _isTenantUser(final CommandContext<GlobalOption, void> context) {
     if (_adminUserMode) {
       return false;
     }
     if (!isActivatedFromPub()) {
       return false;
     }
+    final globalConfiguration = context.provider.fetch<GlobalConfiguration>();
     if (globalConfiguration.apiServer != HostConstants.serverpodCloudApi) {
       return false;
     }
     return true;
   }
-
-  @override
-  String? get usageFooter =>
-      '\nSee the full documentation at: https://docs.serverpod.dev/cloud';
 
   /// Selects and verifies the project directory that is either specified by the global
   /// configuration, or files found near the current directory.
@@ -677,27 +618,36 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
 
     logger.logLevel = logLevel;
   }
-
-  static void _printUpdateCLIAlert({
-    required Version latestVersion,
-    required CommandLogger logger,
-    required bool isRequiredUpdate,
-  }) {
-    var infoMessage =
-        '''A new version $latestVersion of Serverpod Cloud CLI is available!
-
-To update to the latest version, run "dart install serverpod_cloud_cli".''';
-
-    if (isRequiredUpdate) {
-      infoMessage = '$infoMessage You need to update the CLI to continue.';
-    }
-
-    logger.box(infoMessage);
-  }
 }
 
 Directory _getDefaultStorageDir() {
   return ResourceManager.localCloudStorageDirectory;
+}
+
+class _LoggerStringSink implements StringSink {
+  final void Function(String message) log;
+
+  const _LoggerStringSink(this.log);
+
+  @override
+  void write(final Object? object) {
+    log('$object');
+  }
+
+  @override
+  void writeAll(final Iterable objects, [final String separator = '']) {
+    log(objects.join(separator));
+  }
+
+  @override
+  void writeln([final Object? object = '']) {
+    log('$object');
+  }
+
+  @override
+  void writeCharCode(final int charCode) {
+    throw UnimplementedError('writeCharCode unsupported by $runtimeType');
+  }
 }
 
 /// The global configuration options for the Serverpod Cloud CLI.
@@ -715,14 +665,6 @@ enum GlobalOption<V> implements OptionDefinition<V> {
     ),
   ),
 
-  version(
-    FlagOption(
-      argName: 'version',
-      helpText: VersionCommand.usageDescription,
-      negatable: false,
-      defaultsTo: false,
-    ),
-  ),
   authToken(
     StringOption(
       argName: 'token',
@@ -906,19 +848,14 @@ File? _projectConfigFileFinder(Configuration cfg) {
 }
 
 /// The current global configuration values for the Serverpod Cloud CLI.
-class GlobalConfiguration extends Configuration<GlobalOption> {
-  GlobalConfiguration.from({required super.configuration}) : super.from();
+typedef GlobalConfiguration = Configuration<GlobalOption>;
 
-  GlobalConfiguration.resolve({super.argResults, super.args, super.env})
-    : super.resolve(options: GlobalOption.values);
-
+extension GlobalConfigurationOptions on Configuration<GlobalOption> {
   bool get quiet => value(GlobalOption.quiet);
 
   bool get browser => value(GlobalOption.browserOpt);
 
   bool get verbose => value(GlobalOption.verbose);
-
-  bool get version => value(GlobalOption.version);
 
   bool? get analytics => optionalValue(GlobalOption.analytics);
 

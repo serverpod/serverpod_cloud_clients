@@ -1,7 +1,6 @@
-import 'dart:async';
 import 'dart:io';
 
-import 'package:args/command_runner.dart';
+import 'package:config/config.dart' show UsageException;
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_auth_data.dart';
@@ -36,24 +35,19 @@ void main() {
     });
 
     group('when executing domain attach with invalid target', () {
-      late Future commandResult;
-      setUp(() async {
-        commandResult = cli.run([
-          'domain',
-          'attach',
-          'domain.com',
-          '--target',
-          'some-invalid-target',
-          '--project',
-          projectId,
-          '--config-dir',
-          testCacheFolderPath,
-        ]);
-      });
-
       test('then command throws UsageException', () async {
-        await expectLater(
-          commandResult,
+        expect(
+          () => cli.run([
+            'domain',
+            'attach',
+            'domain.com',
+            '--target',
+            'some-invalid-target',
+            '--project',
+            projectId,
+            '--config-dir',
+            testCacheFolderPath,
+          ]),
           throwsA(
             isA<UsageException>().having(
               (e) => e.message,

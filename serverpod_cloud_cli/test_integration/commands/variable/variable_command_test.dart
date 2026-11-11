@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:args/command_runner.dart';
+import 'package:config/config.dart' show UsageException;
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:mocktail/mocktail.dart';
@@ -354,31 +354,27 @@ void main() {
       });
 
       group('with both value arg and value file arg', () {
-        late Future commandResult;
-
         setUp(() async {
           await d.file('value.txt', 'value').create();
-
-          commandResult = cli.run([
-            'variable',
-            'set',
-            'key',
-            'value',
-            '--from-file',
-            p.join(d.sandbox, 'value.txt'),
-            '--project',
-            projectId,
-          ]);
         });
 
         test('then command throws UsageException', () async {
-          await expectLater(
-            commandResult,
+          expect(
+            () => cli.run([
+              'variable',
+              'set',
+              'key',
+              'value',
+              '--from-file',
+              p.join(d.sandbox, 'value.txt'),
+              '--project',
+              projectId,
+            ]),
             throwsA(
               isA<UsageException>().having(
                 (e) => e.message,
                 'message',
-                equals(
+                contains(
                   'These options are mutually exclusive: from-file, value.',
                 ),
               ),
@@ -388,26 +384,14 @@ void main() {
       });
 
       group('with neither value arg nor file arg', () {
-        late Future commandResult;
-
-        setUp(() async {
-          commandResult = cli.run([
-            'variable',
-            'set',
-            'key',
-            '--project',
-            projectId,
-          ]);
-        });
-
         test('then command throws UsageException', () async {
-          await expectLater(
-            commandResult,
+          expect(
+            () => cli.run(['variable', 'set', 'key', '--project', projectId]),
             throwsA(
               isA<UsageException>().having(
                 (e) => e.message,
                 'message',
-                equals(
+                contains(
                   'Option group Value requires one of the options to be provided.',
                 ),
               ),

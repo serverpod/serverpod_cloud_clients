@@ -2,6 +2,8 @@ import 'package:config/config.dart';
 import 'package:path/path.dart' as p;
 
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart'
+    show GlobalConfigurationOptions;
 import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/project/project_ops.dart';

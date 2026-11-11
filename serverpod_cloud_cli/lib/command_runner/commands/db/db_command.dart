@@ -1,6 +1,8 @@
 import 'package:config/config.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart'
+    show GlobalConfigurationOptions;
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/db/db_backup_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/db/db_ops.dart';

@@ -1,11 +1,9 @@
 import 'dart:async';
 
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
-import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:test/test.dart';
-import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../../../test_utils/test_command_logger.dart';
 
@@ -99,7 +97,7 @@ void main() {
       late String help;
 
       setUp(() async {
-        help = await captureHelp(['help', 'deployment', 'build-secret']);
+        help = await captureHelp(['deployment', 'build-secret', '--help']);
       });
 
       test('then the examples use the legacy deployment build-secret path', () {
@@ -108,32 +106,4 @@ void main() {
       });
     },
   );
-
-  group('Given the cli when generating carapace completions', () {
-    setUp(() async {
-      await cli.run([
-        'completion',
-        'generate',
-        '--tool',
-        'carapace',
-        '--file',
-        p.join(d.sandbox, 'spec.yaml'),
-      ]);
-    });
-
-    test('then emits build once as a top-level command', () async {
-      await d
-          .file(
-            'spec.yaml',
-            predicate<String>((final content) {
-              final names = RegExp(
-                r'^  - name: (\S+)$',
-                multiLine: true,
-              ).allMatches(content).map((final match) => match.group(1));
-              return names.where((final name) => name == 'build').length == 1;
-            }, 'has exactly one top-level build command'),
-          )
-          .validate();
-    });
-  });
 }

@@ -114,8 +114,9 @@ class CommandThatDoesNotRequiredLogin extends CloudCliCommand {
   String get description => 'description';
 
   @override
-  Future<void> runWithConfig(
+  Future<void> runWithOutput(
     Configuration<OptionDefinition> commandConfig,
+    CommandOutput output,
   ) async {
     return;
   }
@@ -272,8 +273,8 @@ void main() {
   });
 
   test('Given command that does not requires login and user is not logged in '
-      'when calling run then completes', () {
-    expect(
+      'when calling run then completes', () async {
+    await expectLater(
       runner.run([
         commandThatDoesNotRequiredLogin.name,
         '--config-dir',
@@ -340,22 +341,21 @@ void main() {
 
   group('Given command with a mandatory option and user is not logged in '
       'when calling run without the option', () {
-    late Future commandResult;
-    setUp(() {
-      commandResult = runner.run([
+    Future<void> runCommand() {
+      return runner.run([
         commandWithMandatoryOption.name,
         '--no-browser',
         '--config-dir',
         testCacheFolderPath,
       ]);
-    });
+    }
 
     test('then throws UsageException', () async {
-      await expectLater(commandResult, throwsA(isA<UsageException>()));
+      expect(runCommand, throwsA(isA<UsageException>()));
     });
 
     test('then no login is started', () async {
-      await commandResult.catchError((_) {});
+      await expectLater(runCommand, throwsA(isA<UsageException>()));
 
       expect(logger.progressCalls, isEmpty);
     });

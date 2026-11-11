@@ -56,13 +56,20 @@ void main() {
       });
 
       test('then the usage line uses the base command', () {
-        expect(output, contains('$_baseCommand <command> [arguments]'));
+        expect(
+          output,
+          contains('$_baseCommand [global-options] <command> [arguments]'),
+        );
       });
 
       test('then the usage line does not use the default base command', () {
         expect(
           output,
-          isNot(contains('$defaultBaseCommand <command> [arguments]')),
+          isNot(
+            contains(
+              '$defaultBaseCommand [global-options] <command> [arguments]',
+            ),
+          ),
         );
       });
     });
@@ -71,11 +78,11 @@ void main() {
       late String output;
 
       setUp(() async {
-        output = await runAndCaptureOutput(['help', 'deployment', 'show']);
+        output = await runAndCaptureOutput(['deployment', 'show', '--help']);
       });
 
       test('then the invocation line uses the base command', () {
-        expect(output, contains('$_baseCommand deployment show [arguments]'));
+        expect(output, contains('Usage: $_baseCommand deployment show '));
       });
     });
 

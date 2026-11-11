@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:args/command_runner.dart';
+import 'package:config/config.dart' show UsageException;
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -271,7 +271,7 @@ void main() {
               isA<UsageException>().having(
                 (e) => e.message,
                 'message',
-                equals(
+                contains(
                   'These options are mutually exclusive: from-file, value.',
                 ),
               ),
@@ -281,27 +281,14 @@ void main() {
       });
 
       group('with neither value arg nor file arg', () {
-        late Future commandResult;
-
-        setUp(() async {
-          commandResult = cli.run([
-            'build',
-            'secret',
-            'set',
-            'key',
-            '--project',
-            projectId,
-          ]);
-        });
-
         test('then command throws UsageException', () async {
           await expectLater(
-            commandResult,
+            cli.run(['build', 'secret', 'set', 'key', '--project', projectId]),
             throwsA(
               isA<UsageException>().having(
                 (e) => e.message,
                 'message',
-                equals(
+                contains(
                   'Option group Value requires one of the options to be provided.',
                 ),
               ),

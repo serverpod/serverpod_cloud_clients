@@ -75,7 +75,6 @@ enum AdminProcurePlanOption<V> implements OptionDefinition<V> {
   productVersion(
     IntOption(
       argName: 'version',
-      argAbbrev: 'v',
       argPos: 2,
       helpText:
           'The plan version (latest if unspecified).'

@@ -6,7 +6,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:archive/archive.dart';
-import 'package:args/command_runner.dart';
+import 'package:config/config.dart' show UsageException;
 import 'package:dio/dio.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
@@ -339,20 +339,9 @@ project:
     group(
       'and invalid concurrency option value when running deploy command',
       () {
-        late Future cliCommandFuture;
-        setUp(() async {
-          cliCommandFuture = cli.run([
-            'deploy',
-            '--concurrency',
-            'invalid',
-            '--project',
-            '123',
-          ]);
-        });
-
         test('then UsageException is thrown.', () async {
           await expectLater(
-            cliCommandFuture,
+            cli.run(['deploy', '--concurrency', 'invalid', '--project', '123']),
             throwsA(
               isA<UsageException>().having(
                 (e) => e.message,

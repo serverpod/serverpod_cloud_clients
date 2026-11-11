@@ -1,3 +1,4 @@
+import 'package:config/config.dart' show Configuration;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/non_interactive_exceptions.dart';
@@ -183,7 +184,10 @@ void main() {
   test('Given empty standard out '
       'when calling confirm with --yes option set '
       'then should immediately return true', () async {
-    commandLogger.configuration = GlobalConfiguration.resolve(args: ['--yes']);
+    commandLogger.configuration = Configuration.resolve(
+      options: GlobalOption.values,
+      args: ['--yes'],
+    );
 
     late final bool result;
 
@@ -201,7 +205,8 @@ void main() {
   test('Given --non-interactive option set '
       'when calling confirm '
       'then throws UserInputRequiredException', () async {
-    commandLogger.configuration = GlobalConfiguration.resolve(
+    commandLogger.configuration = Configuration.resolve(
+      options: GlobalOption.values,
       args: ['--non-interactive'],
     );
 
@@ -218,7 +223,8 @@ void main() {
   test('Given --non-interactive and --yes options set '
       'when calling confirm '
       'then should immediately return true', () async {
-    commandLogger.configuration = GlobalConfiguration.resolve(
+    commandLogger.configuration = Configuration.resolve(
+      options: GlobalOption.values,
       args: ['--non-interactive', '--yes'],
     );
 
@@ -234,7 +240,8 @@ void main() {
   test('Given --non-interactive option set '
       'when calling input '
       'then throws UserInputRequiredException', () async {
-    commandLogger.configuration = GlobalConfiguration.resolve(
+    commandLogger.configuration = Configuration.resolve(
+      options: GlobalOption.values,
       args: ['--non-interactive'],
     );
 

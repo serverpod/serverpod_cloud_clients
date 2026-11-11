@@ -1,4 +1,4 @@
-import 'package:args/command_runner.dart';
+import 'package:config/config.dart' show UsageException;
 
 class CloudCliUsageException extends UsageException {
   final String? hint;
