@@ -2322,6 +2322,132 @@ sdks:
       });
     });
 
+    group(
+      'and a workspace whose server package gitignores its generated code',
+      () {
+        setUp(() async {
+          await ProjectFactory.serverpodAppWorkspace(
+            extraContents: [
+              d.dir('project_server', [
+                d.file('.gitignore', 'lib/src/generated\n'),
+                d.dir('lib', [
+                  d.dir('src', [
+                    d.dir('generated', [
+                      d.file('protocol.dart', ''),
+                      d.file('endpoints.dart', ''),
+                    ]),
+                  ]),
+                ]),
+              ]),
+            ],
+          ).create();
+
+          when(
+            () => client.deploy.createUploadDescription(
+              any(),
+              serverpodVersion: any(named: 'serverpodVersion'),
+              dartVersion: any(named: 'dartVersion'),
+              commitHash: any(named: 'commitHash'),
+              commitMessage: any(named: 'commitMessage'),
+              branch: any(named: 'branch'),
+              resumable: any(named: 'resumable'),
+              archiveSize: any(named: 'archiveSize'),
+            ),
+          ).thenAnswer((_) async => BucketUploadDescription.uploadDescription);
+        });
+
+        group('when deploying through CLI with --wet-run', () {
+          late Future cliCommandFuture;
+          late String outputZipPath;
+
+          setUp(() async {
+            outputZipPath = p.join(d.sandbox, 'output.zip');
+
+            cliCommandFuture = cli.run([
+              'deploy',
+              '--project',
+              BucketUploadDescription.projectId,
+              '--project-dir',
+              p.join(d.sandbox, 'monorepo', 'project_server'),
+              '--wet-run',
+              '--output',
+              outputZipPath,
+              '--skip-dart-pub-get',
+            ]);
+          });
+
+          test('then the generated code is in the archive', () async {
+            await cliCommandFuture;
+
+            final archive = ZipDecoder().decodeBytes(
+              File(outputZipPath).readAsBytesSync(),
+            );
+            expect(
+              archive.files.map((file) => file.name),
+              containsAll([
+                'project_server/lib/src/generated/protocol.dart',
+                'project_server/lib/src/generated/endpoints.dart',
+              ]),
+            );
+          });
+
+          test(
+            'then a .scloudignore is written in the server package',
+            () async {
+              await cliCommandFuture;
+
+              await expectLater(
+                d.dir('monorepo', [
+                  d.dir('project_server', [
+                    d.file('.scloudignore', contains('!lib/src/generated/**')),
+                  ]),
+                ]).validate(),
+                completes,
+              );
+            },
+          );
+        });
+
+        group('and a custom .scloudignore in the server package '
+            'when deploying through CLI with --wet-run', () {
+          late Future cliCommandFuture;
+
+          setUp(() async {
+            await d.dir('monorepo', [
+              d.dir('project_server', [
+                d.file('.scloudignore', '# Custom .scloudignore\n'),
+              ]),
+            ]).create();
+
+            cliCommandFuture = cli.run([
+              'deploy',
+              '--project',
+              BucketUploadDescription.projectId,
+              '--project-dir',
+              p.join(d.sandbox, 'monorepo', 'project_server'),
+              '--wet-run',
+              '--output',
+              p.join(d.sandbox, 'output.zip'),
+              '--skip-dart-pub-get',
+            ]);
+          });
+
+          test('then the custom .scloudignore is kept', () async {
+            await cliCommandFuture;
+
+            await expectLater(
+              d.dir('monorepo', [
+                d.dir('project_server', [
+                  d.file('.scloudignore', '# Custom .scloudignore\n'),
+                ]),
+              ]).validate(),
+              completes,
+            );
+          });
+        });
+      },
+    );
+
     group('and a non-workspace project for pubspec filtering', () {
       late String testProjectDir;
       late String outputZipPath;
