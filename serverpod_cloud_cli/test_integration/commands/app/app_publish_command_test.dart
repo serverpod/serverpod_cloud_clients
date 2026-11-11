@@ -223,6 +223,17 @@ void main() {
           contains(matches(RegExp(r'^Follow it: \S+ app show \S+$'))),
         );
       });
+
+      test('then no .scloudignore is written in the app package', () async {
+        await commandResult;
+
+        await expectLater(
+          d.dir('monorepo', [
+            d.dir('project_flutter', [d.nothing('.scloudignore')]),
+          ]).validate(),
+          completes,
+        );
+      });
     });
 
     group('and builds that succeed when releasing the app', () {

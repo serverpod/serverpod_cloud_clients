@@ -1282,7 +1282,7 @@ project:
             });
 
             test(
-              'then .scloudignore is created in the workspace root to cover all packages',
+              'then .scloudignore is created in the workspace root and in the server package',
               () async {
                 await commandResult;
                 final expected = d.dir('topdir', [
@@ -1293,7 +1293,12 @@ project:
                         'This file specifies which files and directories should be ignored',
                       ),
                     ),
-                    d.dir('project_server', [d.nothing('.scloudignore')]),
+                    d.dir('project_server', [
+                      d.file(
+                        '.scloudignore',
+                        contains('!lib/src/generated/**'),
+                      ),
+                    ]),
                     d.dir('project_client', [d.nothing('.scloudignore')]),
                   ]),
                 ]);

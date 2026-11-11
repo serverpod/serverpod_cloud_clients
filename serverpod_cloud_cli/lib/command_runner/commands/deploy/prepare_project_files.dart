@@ -142,7 +142,9 @@ abstract class TenantProject {
       'or with project.appDir in scloud.yaml.';
 
   /// Analyzes the tenant project structure, creates bespoke deployment files,
-  /// and compiles the list of paths whose contents are to be included.
+  /// and compiles the list of paths whose contents are to be included. In a
+  /// workspace, the .scloudignore file is also created in the project's
+  /// package when it has none.
   ///
   /// Specify [scloudDirPath] to override the default scloud directory path.
   ///
@@ -175,6 +177,7 @@ abstract class TenantProject {
       validateIncludedPackages: WorkspaceProjectLogic.validateIncludedPackages,
       pubGetCommand: 'dart pub get',
       keepFlutterEnvironment: false,
+      writePackageScloudIgnore: true,
       scloudDirPath: scloudDirPath,
     );
   }
@@ -239,6 +242,7 @@ abstract class TenantProject {
           WorkspaceProjectLogic.validateIncludedAppPackages,
       pubGetCommand: 'flutter pub get',
       keepFlutterEnvironment: true,
+      writePackageScloudIgnore: false,
       scloudDirPath: scloudDirPath,
     );
   }
@@ -372,6 +376,7 @@ abstract class TenantProject {
     required void Function(Iterable<Pubspec>) validateIncludedPackages,
     required String pubGetCommand,
     required bool keepFlutterEnvironment,
+    required bool writePackageScloudIgnore,
     String? scloudDirPath,
   }) {
     // Find workspace root directory by traversing up until we find a pubspec.yaml with workspace field
@@ -427,6 +432,7 @@ abstract class TenantProject {
         scloudDir,
         projectPackage,
         projectDirFilename: projectDirFilename,
+        writePackageScloudIgnore: writePackageScloudIgnore,
       );
 
       final includedPaths = [
@@ -468,18 +474,29 @@ abstract class TenantProject {
   }
 
   /// Writes the .scloud directory and files,
-  /// and creates the .scloudignore file if it doesn't exist.
+  /// and creates the .scloudignore file in the workspace root if it doesn't
+  /// exist.
+  ///
+  /// When [writePackageScloudIgnore] is true, the .scloudignore file is also
+  /// created in the project's package if it doesn't exist, so its rules take
+  /// precedence over the package's own .gitignore files.
   static void _writeSCloudFiles(
     Directory workspaceRootDir,
     Directory scloudDir,
     WorkspacePackage projectPackage, {
     required String projectDirFilename,
+    required bool writePackageScloudIgnore,
   }) {
     _deleteOldScloudRootPubspec(scloudDir);
 
     _writeProjectDirFile(scloudDir, projectPackage.dir, projectDirFilename);
 
     ScloudIgnore.writeTemplateIfNotExists(rootFolder: workspaceRootDir.path);
+    if (writePackageScloudIgnore) {
+      ScloudIgnore.writeTemplateIfNotExists(
+        rootFolder: p.join(workspaceRootDir.path, projectPackage.dir.path),
+      );
+    }
   }
 
   static String _getPackageName(Directory packageDirectory) {
