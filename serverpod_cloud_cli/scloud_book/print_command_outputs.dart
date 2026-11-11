@@ -505,6 +505,13 @@ const _scenarios = [
   ]),
   _Scenario('admin plan list', ['admin', 'plan', 'list']),
   _Scenario('admin plan update', ['admin', 'plan', 'update', 'starter']),
+  _Scenario('admin billing reissue', [
+    'admin',
+    'billing',
+    'reissue',
+    '--invoice-id',
+    'inv_1',
+  ]),
   _Scenario('admin redeploy', ['admin', 'redeploy', _projectId]),
   _Scenario('admin test-push', ['admin', 'test-push', 'test']),
 ];
