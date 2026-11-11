@@ -1,6 +1,12 @@
 
 # Changelog
 
+## 1.3.1 - 2026-11-11
+
+### Fixed
+
+- **Workspace server deployments** - Ensures generated code in workspace server packages is uploaded during deployment, even when excluded by `.gitignore`.
+
 ## [1.3.0] - 2026-11-10
 
 ### Added
