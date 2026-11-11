@@ -169,6 +169,8 @@ import 'features/admin/models/payments_invoice_status.dart' as _iu1ze8tv;
 import 'features/admin/models/payments_status.dart' as _iw02lteh;
 import 'features/app_builds/exceptions/android_signing_already_set_exception.dart'
     as _iv09xi1m;
+import 'features/app_builds/exceptions/app_build_allowance_exceeded_exception.dart'
+    as _ikq3sgbj;
 import 'features/app_builds/exceptions/app_platform_not_set_up_exception.dart'
     as _izin2q4a;
 import 'features/app_builds/exceptions/app_publishing_disabled_exception.dart'
@@ -182,6 +184,7 @@ import 'features/app_builds/models/app_build_ref.dart' as _i8bymbss;
 import 'features/app_builds/models/app_build_step_info.dart' as _izrhxmsy;
 import 'features/app_builds/models/app_build_step_log.dart' as _ihsn401r;
 import 'features/app_builds/models/app_build_summary.dart' as _iyi5usgc;
+import 'features/app_builds/models/app_build_usage.dart' as _i404f45k;
 import 'features/app_builds/models/app_builds_upload.dart' as _ig1623xk;
 import 'features/app_builds/models/app_identifier_change.dart' as _iont5uuo;
 import 'features/app_builds/models/app_publishing_setup.dart' as _i2sj9x5l;
@@ -352,6 +355,7 @@ export 'features/admin/models/admin_user_status.dart';
 export 'features/admin/models/payments_invoice_status.dart';
 export 'features/admin/models/payments_status.dart';
 export 'features/app_builds/exceptions/android_signing_already_set_exception.dart';
+export 'features/app_builds/exceptions/app_build_allowance_exceeded_exception.dart';
 export 'features/app_builds/exceptions/app_platform_not_set_up_exception.dart';
 export 'features/app_builds/exceptions/app_publishing_disabled_exception.dart';
 export 'features/app_builds/models/android_publishing_setup.dart';
@@ -363,6 +367,7 @@ export 'features/app_builds/models/app_build_ref.dart';
 export 'features/app_builds/models/app_build_step_info.dart';
 export 'features/app_builds/models/app_build_step_log.dart';
 export 'features/app_builds/models/app_build_summary.dart';
+export 'features/app_builds/models/app_build_usage.dart';
 export 'features/app_builds/models/app_builds_upload.dart';
 export 'features/app_builds/models/app_identifier_change.dart';
 export 'features/app_builds/models/app_publishing_setup.dart';
@@ -762,6 +767,9 @@ class Protocol extends _isc.SerializationManager {
     if (t == _iv09xi1m.AndroidSigningAlreadySetException) {
       return _iv09xi1m.AndroidSigningAlreadySetException.fromJson(data) as T;
     }
+    if (t == _ikq3sgbj.AppBuildAllowanceExceededException) {
+      return _ikq3sgbj.AppBuildAllowanceExceededException.fromJson(data) as T;
+    }
     if (t == _izin2q4a.AppPlatformNotSetUpException) {
       return _izin2q4a.AppPlatformNotSetUpException.fromJson(data) as T;
     }
@@ -794,6 +802,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _iyi5usgc.AppBuildSummary) {
       return _iyi5usgc.AppBuildSummary.fromJson(data) as T;
+    }
+    if (t == _i404f45k.AppBuildUsage) {
+      return _i404f45k.AppBuildUsage.fromJson(data) as T;
     }
     if (t == _ig1623xk.AppBuildsUpload) {
       return _ig1623xk.AppBuildsUpload.fromJson(data) as T;
@@ -1405,6 +1416,12 @@ class Protocol extends _isc.SerializationManager {
               : null)
           as T;
     }
+    if (t == _isc.getType<_ikq3sgbj.AppBuildAllowanceExceededException?>()) {
+      return (data != null
+              ? _ikq3sgbj.AppBuildAllowanceExceededException.fromJson(data)
+              : null)
+          as T;
+    }
     if (t == _isc.getType<_izin2q4a.AppPlatformNotSetUpException?>()) {
       return (data != null
               ? _izin2q4a.AppPlatformNotSetUpException.fromJson(data)
@@ -1454,6 +1471,10 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_iyi5usgc.AppBuildSummary?>()) {
       return (data != null ? _iyi5usgc.AppBuildSummary.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_i404f45k.AppBuildUsage?>()) {
+      return (data != null ? _i404f45k.AppBuildUsage.fromJson(data) : null)
           as T;
     }
     if (t == _isc.getType<_ig1623xk.AppBuildsUpload?>()) {
@@ -2259,6 +2280,8 @@ class Protocol extends _isc.SerializationManager {
       _iw02lteh.PaymentsStatus => 'PaymentsStatus',
       _iv09xi1m.AndroidSigningAlreadySetException =>
         'AndroidSigningAlreadySetException',
+      _ikq3sgbj.AppBuildAllowanceExceededException =>
+        'AppBuildAllowanceExceededException',
       _izin2q4a.AppPlatformNotSetUpException => 'AppPlatformNotSetUpException',
       _ijed0rq9.AppPublishingDisabledException =>
         'AppPublishingDisabledException',
@@ -2271,6 +2294,7 @@ class Protocol extends _isc.SerializationManager {
       _izrhxmsy.AppBuildStepInfo => 'AppBuildStepInfo',
       _ihsn401r.AppBuildStepLog => 'AppBuildStepLog',
       _iyi5usgc.AppBuildSummary => 'AppBuildSummary',
+      _i404f45k.AppBuildUsage => 'AppBuildUsage',
       _ig1623xk.AppBuildsUpload => 'AppBuildsUpload',
       _iont5uuo.AppIdentifierChange => 'AppIdentifierChange',
       _i2sj9x5l.AppPublishingSetup => 'AppPublishingSetup',
@@ -2558,6 +2582,8 @@ class Protocol extends _isc.SerializationManager {
         return 'PaymentsStatus';
       case _iv09xi1m.AndroidSigningAlreadySetException():
         return 'AndroidSigningAlreadySetException';
+      case _ikq3sgbj.AppBuildAllowanceExceededException():
+        return 'AppBuildAllowanceExceededException';
       case _izin2q4a.AppPlatformNotSetUpException():
         return 'AppPlatformNotSetUpException';
       case _ijed0rq9.AppPublishingDisabledException():
@@ -2580,6 +2606,8 @@ class Protocol extends _isc.SerializationManager {
         return 'AppBuildStepLog';
       case _iyi5usgc.AppBuildSummary():
         return 'AppBuildSummary';
+      case _i404f45k.AppBuildUsage():
+        return 'AppBuildUsage';
       case _ig1623xk.AppBuildsUpload():
         return 'AppBuildsUpload';
       case _iont5uuo.AppIdentifierChange():
@@ -3023,6 +3051,11 @@ class Protocol extends _isc.SerializationManager {
         data['data'],
       );
     }
+    if (dataClassName == 'AppBuildAllowanceExceededException') {
+      return deserialize<_ikq3sgbj.AppBuildAllowanceExceededException>(
+        data['data'],
+      );
+    }
     if (dataClassName == 'AppPlatformNotSetUpException') {
       return deserialize<_izin2q4a.AppPlatformNotSetUpException>(data['data']);
     }
@@ -3057,6 +3090,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'AppBuildSummary') {
       return deserialize<_iyi5usgc.AppBuildSummary>(data['data']);
+    }
+    if (dataClassName == 'AppBuildUsage') {
+      return deserialize<_i404f45k.AppBuildUsage>(data['data']);
     }
     if (dataClassName == 'AppBuildsUpload') {
       return deserialize<_ig1623xk.AppBuildsUpload>(data['data']);

@@ -939,6 +939,62 @@ project:
       });
     });
 
+    group('and a plan whose app builds for the month are used '
+        'when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() {
+        when(
+          () => client.appBuilds.createBuilds(
+            appIdentifiers: any(named: 'appIdentifiers'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            platforms: any(named: 'platforms'),
+            flutterAppDir: any(named: 'flutterAppDir'),
+            archiveSize: any(named: 'archiveSize'),
+            versionName: any(named: 'versionName'),
+            commitHash: any(named: 'commitHash'),
+            commitMessage: any(named: 'commitMessage'),
+            branch: any(named: 'branch'),
+          ),
+        ).thenThrow(
+          AppBuildAllowanceExceededException(
+            message:
+                'All 5 app builds the plan allows this month are used. The '
+                'allowance resets on 2026-12-01 (UTC).',
+          ),
+        );
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+      });
+
+      test('then the command throws ErrorExitException', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then the used allowance is logged', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          logger.errorCalls,
+          contains(
+            equalsErrorCall(
+              message:
+                  'All 5 app builds the plan allows this month are used. '
+                  'The allowance resets on 2026-12-01 (UTC).',
+            ),
+          ),
+        );
+      });
+    });
+
     group('and an Android app module without an applicationId '
         'when releasing the app', () {
       late Future<void> commandResult;
