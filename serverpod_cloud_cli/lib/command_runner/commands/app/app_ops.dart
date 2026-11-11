@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:ground_control_client/ground_control_client.dart'
     show
+        AppBuildAllowanceExceededException,
         AppBuildDetail,
         AppBuildStatus,
         AppBuildStepInfo,
@@ -46,7 +47,8 @@ abstract class AppOperations {
   /// app version the builds are made with.
   ///
   /// Throws [FailureException] if the request fails, if an app identifier
-  /// is invalid, or if the publishing setup of a platform is incomplete.
+  /// is invalid, if the publishing setup of a platform is incomplete, or if
+  /// the plan's app builds for the month are used.
   static Future<AppBuildsUpload> createBuilds(
     Client cloudApiClient, {
     required String projectId,
@@ -83,6 +85,8 @@ abstract class AppOperations {
     } on AppPublishingDisabledException catch (e) {
       throw FailureException(error: e.message);
     } on AppPlatformNotSetUpException catch (e) {
+      throw FailureException(error: e.message);
+    } on AppBuildAllowanceExceededException catch (e) {
       throw FailureException(error: e.message);
     } on InvalidValueException catch (e) {
       throw FailureException(error: e.message);

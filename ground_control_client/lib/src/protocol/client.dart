@@ -108,6 +108,8 @@ import 'package:ground_control_client/src/protocol/features/app_builds/models/ap
     as _i437vrny;
 import 'package:ground_control_client/src/protocol/features/app_builds/models/app_build_summary.dart'
     as _iy6jkon8;
+import 'package:ground_control_client/src/protocol/features/app_builds/models/app_build_usage.dart'
+    as _ihydp8mk;
 import 'package:ground_control_client/src/protocol/features/app_builds/models/app_builds_upload.dart'
     as _iqiq2vfs;
 import 'package:ground_control_client/src/protocol/features/app_builds/models/app_publishing_setup.dart'
@@ -731,6 +733,8 @@ class EndpointAppBuilds extends _isc.EndpointRef {
   /// Throws [UploadTooLargeException] if [archiveSize] exceeds the upload
   /// limit. Throws [AppPlatformNotSetUpException] if the publishing setup
   /// of a platform in [platforms] is incomplete; no build is created.
+  /// Throws [AppBuildAllowanceExceededException] if the project's owner has
+  /// used every app build the plan allows this month; no build is created.
   /// Throws [ProjectSuspendedException] if the project is suspended.
   /// Throws [AppPublishingDisabledException] while app publishing is off in
   /// this environment.
@@ -760,6 +764,19 @@ class EndpointAppBuilds extends _isc.EndpointRef {
       'commitMessage': commitMessage,
       'branch': branch,
     },
+  );
+
+  /// Gets the app builds the project's owner has used this month against
+  /// the plan's allowance.
+  ///
+  /// Throws [AppPublishingDisabledException] while app publishing is off in
+  /// this environment.
+  _ida.Future<_ihydp8mk.AppBuildUsage> getBuildUsage({
+    required String cloudCapsuleId,
+  }) => caller.callServerEndpoint<_ihydp8mk.AppBuildUsage>(
+    'appBuilds',
+    'getBuildUsage',
+    {'cloudCapsuleId': cloudCapsuleId},
   );
 
   /// Gets a build with its steps.
