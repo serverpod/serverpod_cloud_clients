@@ -24,7 +24,8 @@ import 'package:serverpod_client/serverpod_client.dart' as _isc;
 ///   the next request.
 /// - `notProvisioned` — the workload is not (or not correctly) in place.
 /// - `unknown` — the status service reported a state this server does not
-///   recognize. Consumers must treat it as not ready.
+///   recognize. Consumers must treat it as not ready. It is also the fallback
+///   a client receives for a state it predates.
 enum CapsuleState implements _isc.SerializableModel {
   ready,
   progressing,
@@ -54,9 +55,7 @@ enum CapsuleState implements _isc.SerializableModel {
       case 'unknown':
         return CapsuleState.unknown;
       default:
-        throw ArgumentError(
-          'Value "$name" cannot be converted to "CapsuleState"',
-        );
+        return CapsuleState.unknown;
     }
   }
 
