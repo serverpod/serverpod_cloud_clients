@@ -13,6 +13,8 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:ground_control_client/src/protocol/domains/app_builds/models/app_platform.dart'
     as _id4pe5bk;
+import 'package:ground_control_client/src/protocol/domains/app_builds/models/upcoming_app_platform.dart'
+    as _i4oajha3;
 import 'package:ground_control_client/src/protocol/domains/billing/models/payment_method.dart'
     as _itisjjd4;
 import 'package:ground_control_client/src/protocol/domains/buckets/models/bucket_resource.dart'
@@ -65,6 +67,7 @@ import 'domains/app_builds/models/app_build_stage.dart' as _inzpzayi;
 import 'domains/app_builds/models/app_build_status.dart' as _i8s6tf8y;
 import 'domains/app_builds/models/app_build_step_status.dart' as _iy5t3gwf;
 import 'domains/app_builds/models/app_platform.dart' as _ij8v08n4;
+import 'domains/app_builds/models/upcoming_app_platform.dart' as _icxgs6ao;
 import 'domains/billing/models/billing_customer_type.dart' as _i4m2a6uw;
 import 'domains/billing/models/billing_info.dart' as _i7vhubyw;
 import 'domains/billing/models/billing_mapping_type.dart' as _i0j2fm74;
@@ -258,6 +261,7 @@ export 'domains/app_builds/models/app_build_stage.dart';
 export 'domains/app_builds/models/app_build_status.dart';
 export 'domains/app_builds/models/app_build_step_status.dart';
 export 'domains/app_builds/models/app_platform.dart';
+export 'domains/app_builds/models/upcoming_app_platform.dart';
 export 'domains/billing/models/billing_customer_type.dart';
 export 'domains/billing/models/billing_info.dart';
 export 'domains/billing/models/billing_mapping_type.dart';
@@ -467,6 +471,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _ij8v08n4.AppPlatform) {
       return _ij8v08n4.AppPlatform.fromJson(data) as T;
+    }
+    if (t == _icxgs6ao.UpcomingAppPlatform) {
+      return _icxgs6ao.UpcomingAppPlatform.fromJson(data) as T;
     }
     if (t == _i4m2a6uw.BillingCustomerType) {
       return _i4m2a6uw.BillingCustomerType.fromJson(data) as T;
@@ -984,6 +991,12 @@ class Protocol extends _isc.SerializationManager {
     }
     if (t == _isc.getType<_ij8v08n4.AppPlatform?>()) {
       return (data != null ? _ij8v08n4.AppPlatform.fromJson(data) : null) as T;
+    }
+    if (t == _isc.getType<_icxgs6ao.UpcomingAppPlatform?>()) {
+      return (data != null
+              ? _icxgs6ao.UpcomingAppPlatform.fromJson(data)
+              : null)
+          as T;
     }
     if (t == _isc.getType<_i4m2a6uw.BillingCustomerType?>()) {
       return (data != null
@@ -2087,6 +2100,12 @@ class Protocol extends _isc.SerializationManager {
               .toList()
           as T;
     }
+    if (t == List<_i4oajha3.UpcomingAppPlatform>) {
+      return (data as List)
+              .map((e) => deserialize<_i4oajha3.UpcomingAppPlatform>(e))
+              .toList()
+          as T;
+    }
     if (t == List<_iu79vy7r.RequiredTerms>) {
       return (data as List)
               .map((e) => deserialize<_iu79vy7r.RequiredTerms>(e))
@@ -2193,6 +2212,7 @@ class Protocol extends _isc.SerializationManager {
       _i8s6tf8y.AppBuildStatus => 'AppBuildStatus',
       _iy5t3gwf.AppBuildStepStatus => 'AppBuildStepStatus',
       _ij8v08n4.AppPlatform => 'AppPlatform',
+      _icxgs6ao.UpcomingAppPlatform => 'UpcomingAppPlatform',
       _i4m2a6uw.BillingCustomerType => 'BillingCustomerType',
       _i7vhubyw.BillingInfo => 'BillingInfo',
       _i0j2fm74.BillingMappingType => 'BillingMappingType',
@@ -2400,6 +2420,8 @@ class Protocol extends _isc.SerializationManager {
         return 'AppBuildStepStatus';
       case _ij8v08n4.AppPlatform():
         return 'AppPlatform';
+      case _icxgs6ao.UpcomingAppPlatform():
+        return 'UpcomingAppPlatform';
       case _i4m2a6uw.BillingCustomerType():
         return 'BillingCustomerType';
       case _i7vhubyw.BillingInfo():
@@ -2764,6 +2786,9 @@ class Protocol extends _isc.SerializationManager {
     }
     if (dataClassName == 'AppPlatform') {
       return deserialize<_ij8v08n4.AppPlatform>(data['data']);
+    }
+    if (dataClassName == 'UpcomingAppPlatform') {
+      return deserialize<_icxgs6ao.UpcomingAppPlatform>(data['data']);
     }
     if (dataClassName == 'BillingCustomerType') {
       return deserialize<_i4m2a6uw.BillingCustomerType>(data['data']);
