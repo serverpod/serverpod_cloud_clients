@@ -727,9 +727,14 @@ class EndpointAppBuilds extends _isc.EndpointRef {
   /// identifier is listed in the result. Clients that leave it out get no
   /// check.
   ///
+  /// [flutterVersion] is the Flutter release version to build the app
+  /// with. When null, the builds use the latest stable release.
+  /// A release that does not exist fails the builds.
+  ///
   /// Throws [InvalidValueException] if [archiveSize] is not positive,
   /// [platforms] is empty or repeats a platform, [appIdentifiers] does not
-  /// name exactly the [platforms], or an app identifier is invalid.
+  /// name exactly the [platforms], an app identifier is invalid, or
+  /// [flutterVersion] is not a release version.
   /// Throws [UploadTooLargeException] if [archiveSize] exceeds the upload
   /// limit. Throws [AppPlatformNotSetUpException] if the publishing setup
   /// of a platform in [platforms] is incomplete; no build is created.
@@ -744,6 +749,7 @@ class EndpointAppBuilds extends _isc.EndpointRef {
     required String flutterAppDir,
     required int archiveSize,
     Map<_id4pe5bk.AppPlatform, String>? appIdentifiers,
+    String? flutterVersion,
     String? versionName,
     String? commitHash,
     String? commitMessage,
@@ -759,6 +765,7 @@ class EndpointAppBuilds extends _isc.EndpointRef {
       'appIdentifiers': appIdentifiers == null
           ? null
           : _iod2a87h.Protocol().mapContainerToJson(appIdentifiers),
+      'flutterVersion': flutterVersion,
       'versionName': versionName,
       'commitHash': commitHash,
       'commitMessage': commitMessage,

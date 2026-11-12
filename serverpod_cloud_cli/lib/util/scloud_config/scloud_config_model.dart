@@ -4,6 +4,9 @@ class ScloudConfig {
   final String projectId;
   final String? dartSdk;
 
+  /// The Flutter release version to build the app with.
+  final String? flutterSdk;
+
   /// The path to the Flutter app directory, relative to the directory of
   /// the configuration file.
   final String? appDir;
@@ -17,6 +20,7 @@ class ScloudConfig {
   const ScloudConfig({
     required this.projectId,
     this.dartSdk,
+    this.flutterSdk,
     this.appDir,
     this.appIdentifiers = const {},
     required this.scripts,
@@ -28,6 +32,7 @@ class ScloudConfig {
     return ScloudConfig(
       projectId: project['projectId'] as String? ?? '',
       dartSdk: project['dartSdk'] as String?,
+      flutterSdk: project['flutterSdk'] as String?,
       appDir: project['appDir'] as String?,
       appIdentifiers: switch (project['appIdentifiers']) {
         final Map<String, dynamic> identifiers => {
@@ -46,6 +51,7 @@ class ScloudConfig {
       'project': {
         'projectId': projectId,
         if (dartSdk != null) 'dartSdk': dartSdk,
+        if (flutterSdk != null) 'flutterSdk': flutterSdk,
         if (appDir != null) 'appDir': appDir,
         if (appIdentifiers.isNotEmpty)
           'appIdentifiers': {
@@ -61,6 +67,7 @@ class ScloudConfig {
   ScloudConfig copyWith({
     String? projectId,
     String? dartSdk,
+    String? flutterSdk,
     String? appDir,
     Map<FlutterPlatform, String>? appIdentifiers,
     ScloudScripts? scripts,
@@ -68,6 +75,7 @@ class ScloudConfig {
     return ScloudConfig(
       projectId: projectId ?? this.projectId,
       dartSdk: dartSdk ?? this.dartSdk,
+      flutterSdk: flutterSdk ?? this.flutterSdk,
       appDir: appDir ?? this.appDir,
       appIdentifiers: appIdentifiers ?? this.appIdentifiers,
       scripts: scripts ?? this.scripts,

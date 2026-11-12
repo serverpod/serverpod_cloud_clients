@@ -71,6 +71,21 @@ class AppPublishPlatformsOption extends MultiOption<FlutterPlatform> {
   }
 }
 
+class AppPublishFlutterVersionOption extends StringOption {
+  const AppPublishFlutterVersionOption({super.group})
+    : super(
+        argName: 'flutter-version',
+        valueHelp: 'version',
+        helpText:
+            'The Flutter release version to build the app with. '
+            'Defaults to project.flutterSdk in scloud.yaml, '
+            'or else to the version in a .tool-versions file, '
+            "or else to the single version the app's pubspec.yaml requires, "
+            'or else to the latest stable release.',
+        envName: 'SERVERPOD_CLOUD_APP_FLUTTER_VERSION',
+      );
+}
+
 class AppPublishAwaitOption extends FlagOption {
   const AppPublishAwaitOption({super.group})
     : super(
@@ -117,6 +132,7 @@ enum AppPublishCommandOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption(asFirstArg: true, excludeSettings: true)),
   appDir(AppPublishDirOption()),
   platforms(AppPublishPlatformsOption()),
+  flutterVersion(AppPublishFlutterVersionOption()),
   wait(AppPublishAwaitOption());
 
   const AppPublishCommandOption(this.option);
@@ -232,6 +248,10 @@ Examples
 
     \$ $baseCommand app publish --platforms android
 
+  Publish the app built with a specific Flutter version
+
+    \$ $baseCommand app publish --flutter-version 3.38.4
+
   Publish the app without waiting for its builds to finish
 
     \$ $baseCommand app publish --no-await
@@ -255,6 +275,9 @@ Examples
     final platforms = commandConfig.optionalValue(
       AppPublishCommandOption.platforms,
     );
+    final flutterVersion = commandConfig.optionalValue(
+      AppPublishCommandOption.flutterVersion,
+    );
     final awaitBuilds = commandConfig.value(AppPublishCommandOption.wait);
 
     final configFile = globalConfiguration.projectConfigFile;
@@ -276,6 +299,8 @@ Examples
       defaultPlatforms: AppPublishPlatformsOption.supportedPlatforms,
       platforms: platforms?.toSet(),
       configuredAppIdentifiers: config?.appIdentifiers ?? const {},
+      flutterVersionOverride: flutterVersion,
+      configuredFlutterVersion: config?.flutterSdk,
       configFileName: configFile == null
           ? ProjectConfigFileConstants.defaultFileName
           : p.basename(configFile.path),

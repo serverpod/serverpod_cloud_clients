@@ -11,6 +11,7 @@ final _schema = YamlMap.wrap({
   'project': YamlMap.wrap({
     'projectId': String,
     'dartSdk': YamlOptional(String),
+    'flutterSdk': YamlOptional(String),
     'appDir': YamlOptional(String),
     'appIdentifiers': YamlOptional(
       YamlMap.wrap({
