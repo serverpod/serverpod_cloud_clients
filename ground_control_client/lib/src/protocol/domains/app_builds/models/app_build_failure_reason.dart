@@ -16,9 +16,6 @@ import 'package:serverpod_client/serverpod_client.dart' as _isc;
 /// - `dependenciesNotResolved` — the app's packages could not be fetched.
 /// - `compileFailed` — the app did not compile.
 /// - `signingFailed` — the app could not be signed.
-/// - `signingCertificateLimitReached` — the Apple team has as many
-///   distribution certificates as Apple allows, so none could be created.
-///   Revoking an unused one in the Apple developer portal frees a place.
 /// - `storeAppNotFound` — the store has no app with the app's identifier.
 /// - `versionAlreadyUploaded` — the store already has this version or
 ///   build number.
@@ -35,7 +32,6 @@ enum AppBuildFailureReason implements _isc.SerializableModel {
   dependenciesNotResolved,
   compileFailed,
   signingFailed,
-  signingCertificateLimitReached,
   storeAppNotFound,
   versionAlreadyUploaded,
   storePermissionDenied,
@@ -54,8 +50,6 @@ enum AppBuildFailureReason implements _isc.SerializableModel {
         return AppBuildFailureReason.compileFailed;
       case 'signingFailed':
         return AppBuildFailureReason.signingFailed;
-      case 'signingCertificateLimitReached':
-        return AppBuildFailureReason.signingCertificateLimitReached;
       case 'storeAppNotFound':
         return AppBuildFailureReason.storeAppNotFound;
       case 'versionAlreadyUploaded':
