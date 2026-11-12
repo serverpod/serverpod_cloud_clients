@@ -19,6 +19,7 @@ abstract class AppShow {
     required CommandLogger logger,
     required String projectId,
     required UuidValue uploadId,
+    required String baseCommand,
   }) async {
     final builds = await AppOperations.getUploadBuilds(
       cloudApiClient,
@@ -39,6 +40,8 @@ abstract class AppShow {
       AppBuildProgress.showEnded(
         logger: logger,
         details: details,
+        projectId: projectId,
+        baseCommand: baseCommand,
         versionName: versionName,
       );
       return;
@@ -52,6 +55,8 @@ abstract class AppShow {
       cloudApiClient,
       logger: logger,
       projectId: projectId,
+      uploadId: uploadId,
+      baseCommand: baseCommand,
       builds: [
         for (final build in builds)
           AppBuildRef(buildId: build.id, platform: build.platform),

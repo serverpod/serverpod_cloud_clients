@@ -4,7 +4,13 @@ import 'dart:math';
 
 import 'package:async/async.dart' show StreamGroup;
 import 'package:ground_control_client/ground_control_client.dart'
-    show AppBuildDetail, AppBuildRef, AppPlatform, Client;
+    show
+        AppBuildDetail,
+        AppBuildRef,
+        AppBuildStatus,
+        AppPlatform,
+        Client,
+        UuidValue;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/inline_tui/inline_tui.dart';
@@ -36,9 +42,18 @@ abstract class AppBuildProgress {
     required CommandLogger logger,
     required String projectId,
     required List<AppBuildRef> builds,
+    required UuidValue uploadId,
+    required String baseCommand,
     String? versionName,
     bool showLogs = false,
   }) async {
+    logger.info(
+      'App builds run one at a time per account. Other builds wait in the queue.',
+    );
+    logger.info(
+      'Builds keep running if you stop following. Cancel them: '
+      '$baseCommand app cancel $uploadId --project $projectId',
+    );
     final detailStream = StreamGroup.merge([
       for (final build in builds)
         AppOperations.tailBuild(
@@ -65,6 +80,8 @@ abstract class AppBuildProgress {
       platforms: [for (final build in builds) build.platform],
       details: details,
       versionName: versionName,
+      projectId: projectId,
+      baseCommand: baseCommand,
     );
   }
 
@@ -75,6 +92,8 @@ abstract class AppBuildProgress {
   static void showEnded({
     required CommandLogger logger,
     required List<AppBuildDetail> details,
+    required String projectId,
+    required String baseCommand,
     String? versionName,
   }) {
     for (final detail in details) {
@@ -86,6 +105,8 @@ abstract class AppBuildProgress {
       platforms: [for (final detail in details) detail.build.platform],
       details: {for (final detail in details) detail.build.platform: detail},
       versionName: versionName,
+      projectId: projectId,
+      baseCommand: baseCommand,
     );
   }
 
@@ -283,20 +304,45 @@ abstract class AppBuildProgress {
     CommandLogger logger, {
     required List<AppPlatform> platforms,
     required Map<AppPlatform, AppBuildDetail> details,
+    required String projectId,
+    required String baseCommand,
     String? versionName,
   }) {
     final errors = [
       for (final platform in platforms)
         ?AppBuildStatusFormatter.buildError(platform, details[platform]),
     ];
+    final succeeded = [
+      for (final platform in platforms)
+        if (AppBuildStatusFormatter.buildError(platform, details[platform]) ==
+            null)
+          platform,
+    ];
+    if (succeeded.isNotEmpty) {
+      logger.success(
+        'Published ${versionName ?? 'the app'} to '
+        '${AppBuildStatusFormatter.platformNames(succeeded)}.',
+        newParagraph: true,
+      );
+    }
     if (errors.isNotEmpty) {
+      for (final platform in platforms) {
+        if (succeeded.contains(platform)) continue;
+        final build = details[platform]?.build;
+        if (build == null) continue;
+        logger.info(
+          'Read the ${AppBuildStatusFormatter.platformName(platform)} log: '
+          '$baseCommand app log ${build.uploadId} '
+          '--platform ${platform.name} --project $projectId',
+        );
+        if (build.status == AppBuildStatus.builtNotUploaded) {
+          logger.info(
+            'Download the built app for manual store upload: '
+            '$baseCommand app artifacts ${build.uploadId} --project $projectId',
+          );
+        }
+      }
       throw FailureException(errors: errors);
     }
-
-    logger.success(
-      'Published ${versionName ?? 'the app'} to '
-      '${AppBuildStatusFormatter.platformNames(platforms)}.',
-      newParagraph: true,
-    );
   }
 }

@@ -25,6 +25,7 @@ import 'app_setup.dart';
 import 'app_ops.dart';
 import 'app_show.dart';
 import 'app_ui.dart';
+import 'app_upload_controls_ui.dart';
 
 class AppPublishDirOption extends DirOption {
   const AppPublishDirOption({super.group})
@@ -223,6 +224,16 @@ enum AppStatusCommandOption<V> implements OptionDefinition<V> {
   final ConfigOptionBase<V> option;
 }
 
+enum AppUploadCommandOption<V> implements OptionDefinition<V> {
+  projectId(ProjectIdOption(excludeSettings: true)),
+  uploadId(AppUploadIdOption());
+
+  const AppUploadCommandOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
 enum AppLogCommandOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption(excludeSettings: true)),
   uploadId(AppUploadIdOption()),
@@ -274,6 +285,8 @@ class CloudAppCommand extends CloudCliCommand {
     addSubcommand(CloudAppListCommand(logger: logger));
     addSubcommand(CloudAppStatusCommand(logger: logger));
     addSubcommand(CloudAppLogCommand(logger: logger));
+    addSubcommand(CloudAppCancelCommand(logger: logger));
+    addSubcommand(CloudAppArtifactsCommand(logger: logger));
   }
 }
 
@@ -485,6 +498,7 @@ Examples
       logger: logger,
       projectId: projectId,
       uploadId: UuidValue.withValidation(uploadId),
+      baseCommand: baseCommand,
     );
   }
 }
@@ -651,6 +665,66 @@ Examples
         platform: platform,
       ),
       textOutputUi: const AppLogTextUi(),
+    );
+  }
+}
+
+class CloudAppCancelCommand extends CloudCliCommand<AppUploadCommandOption> {
+  @override
+  final name = 'cancel';
+
+  @override
+  final description =
+      'Request cancellation of the active builds of an app upload.';
+
+  CloudAppCancelCommand({required super.logger})
+    : super(options: AppUploadCommandOption.values);
+
+  @override
+  Future<void> runWithOutput(
+    Configuration<AppUploadCommandOption> commandConfig,
+    CommandOutput output,
+  ) async {
+    await renderCommand(
+      output,
+      operation: () => AppOperations.cancelUpload(
+        runner.serviceProvider.cloudApiClient,
+        projectId: commandConfig.value(AppUploadCommandOption.projectId),
+        uploadId: UuidValue.withValidation(
+          commandConfig.value(AppUploadCommandOption.uploadId),
+        ),
+      ),
+      textOutputUi: const AppCancelTextUi(),
+    );
+  }
+}
+
+class CloudAppArtifactsCommand extends CloudCliCommand<AppUploadCommandOption> {
+  @override
+  final name = 'artifacts';
+
+  @override
+  final description =
+      'Show download links for the files built from an app upload. Links expire in ten minutes.';
+
+  CloudAppArtifactsCommand({required super.logger})
+    : super(options: AppUploadCommandOption.values);
+
+  @override
+  Future<void> runWithOutput(
+    Configuration<AppUploadCommandOption> commandConfig,
+    CommandOutput output,
+  ) async {
+    await renderCommand(
+      output,
+      operation: () => AppOperations.getArtifacts(
+        runner.serviceProvider.cloudApiClient,
+        projectId: commandConfig.value(AppUploadCommandOption.projectId),
+        uploadId: UuidValue.withValidation(
+          commandConfig.value(AppUploadCommandOption.uploadId),
+        ),
+      ),
+      textOutputUi: const AppArtifactsTextUi(),
     );
   }
 }
