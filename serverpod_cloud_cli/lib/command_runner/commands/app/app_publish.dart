@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:ground_control_client/ground_control_client.dart'
     show AppBuildRef, AppIdentifierChange, AppPlatform, Client;
+import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy/deploy_archive.dart';
@@ -10,7 +11,10 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/file_uploader_factory
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/flutter_app_identifier.dart';
 import 'package:serverpod_cloud_cli/util/flutter_platform.dart';
+import 'package:serverpod_cloud_cli/util/flutter_sdk_selector.dart';
 import 'package:serverpod_cloud_cli/util/git_metadata.dart';
+import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
+import 'package:serverpod_cloud_cli/util/tool_versions_io.dart';
 
 import 'app_build_progress.dart';
 import 'app_build_status_formatter.dart';
@@ -32,13 +36,21 @@ abstract class AppPublish {
   /// declare. Messages about an app identifier name the project
   /// configuration file [configFileName].
   ///
+  /// The builds are made with the Flutter release version of
+  /// [flutterVersionOverride], or else of [configuredFlutterVersion], or
+  /// else the one a `.tool-versions` file in [appDirectory] or its
+  /// workspace root pins, or else the single version the app's pubspec
+  /// requires. With none of them, the builds use the stable channel.
+  ///
   /// The command to follow the builds is shown, invoked through
   /// [baseCommand]. With [awaitBuilds], the progress and logs of the builds
   /// are then shown until they end.
   ///
   /// Throws [FailureException] if the app has no code for a platform to
   /// publish, if the app identifier of a platform cannot be read or is
-  /// refused, if the builds cannot be requested, or if an awaited build does
+  /// refused, if the Flutter version is unsupported or below the Flutter
+  /// SDK constraint of the app's packages, if the app's lockfile cannot be
+  /// read, if the builds cannot be requested, or if an awaited build does
   /// not succeed.
   /// Throws [ErrorExitException] if the archive cannot be zipped or uploaded.
   /// The builds are cancelled when the archive cannot be uploaded.
@@ -53,6 +65,8 @@ abstract class AppPublish {
     Set<FlutterPlatform>? platforms,
     required Map<FlutterPlatform, String> configuredAppIdentifiers,
     required String configFileName,
+    String? flutterVersionOverride,
+    String? configuredFlutterVersion,
     bool awaitBuilds = true,
   }) async {
     logger.init('Publishing the app of Serverpod Cloud project "$projectId".');
@@ -79,6 +93,18 @@ abstract class AppPublish {
     for (final MapEntry(key: platform, value: appIdentifier)
         in appIdentifiers.entries) {
       logger.info('${appIdentifierName(platform)}: $appIdentifier');
+    }
+
+    final flutterVersion = _flutterVersion(
+      appDirectory,
+      preparer,
+      commandLineVersion: flutterVersionOverride,
+      configuredVersion: configuredFlutterVersion,
+    );
+    if (flutterVersion == null) {
+      logger.debug('No Flutter version requested, building with stable.');
+    } else {
+      logger.info('Flutter version: $flutterVersion');
     }
 
     if (preparer.isWorkspace) {
@@ -110,6 +136,7 @@ abstract class AppPublish {
       appIdentifiers: appIdentifiers,
       flutterAppDir: preparer.projectSubPath,
       archiveSize: appZip.length,
+      flutterVersion: flutterVersion,
       versionName: versionName,
       gitMetadata: gitMetadata,
     );
@@ -174,6 +201,41 @@ abstract class AppPublish {
     for (final MapEntry(key: buildId, value: exception) in failures.entries) {
       logger.warning('Failed to cancel the app build $buildId: $exception');
     }
+  }
+
+  /// Returns the Flutter release version to build the app in
+  /// [appDirectory] with, or null if none is requested. See
+  /// [FlutterSdkSelector.selectFlutterVersion].
+  ///
+  /// Throws [FailureException] if the app's lockfile cannot be read, or if
+  /// the requested version is invalid or below its Flutter SDK constraint.
+  static String? _flutterVersion(
+    Directory appDirectory,
+    ProjectFilePreparer preparer, {
+    required String? commandLineVersion,
+    required String? configuredVersion,
+  }) {
+    final lockfileFlutterSdk = TenantProjectPubspec.readLockfileFlutterSdk(
+      File(p.join(preparer.rootDirectory.path, 'pubspec.lock')),
+    );
+    if (lockfileFlutterSdk.issues.isNotEmpty) {
+      throw FailureException(errors: lockfileFlutterSdk.issues);
+    }
+
+    final workspaceRootDir = preparer.isWorkspace
+        ? preparer.rootDirectory
+        : null;
+    return FlutterSdkSelector.selectFlutterVersion(
+      commandLineVersion: commandLineVersion,
+      scloudVersion: configuredVersion,
+      toolVersionsVersion: ToolVersionsIO.readFlutterVersionFromToolVersions(
+        <Directory>[appDirectory, ?workspaceRootDir],
+      ),
+      pubspecVersionConstraint: TenantProjectPubspec.fromProjectDir(
+        appDirectory,
+      ).environmentFlutterConstraint(),
+      lockVersionConstraint: lockfileFlutterSdk.constraint,
+    );
   }
 
   /// Returns the app identifier of [platform]: [configured] when the

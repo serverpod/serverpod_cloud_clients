@@ -44,11 +44,12 @@ abstract class AppOperations {
   /// [appIdentifiers] holds the app identifier the app declares for each of
   /// [platforms]. Serverpod Cloud records each one, and the result lists
   /// the ones that replaced a different identifier. [versionName] is the
-  /// app version the builds are made with.
+  /// app version the builds are made with. [flutterVersion] is the Flutter
+  /// release version to build with, or null for the latest stable release.
   ///
   /// Throws [FailureException] if the request fails, if an app identifier
-  /// is invalid, if the publishing setup of a platform is incomplete, or if
-  /// the plan's app builds for the month are used.
+  /// or [flutterVersion] is invalid, if the publishing setup of a platform
+  /// is incomplete, or if the plan's app builds for the month are used.
   static Future<AppBuildsUpload> createBuilds(
     Client cloudApiClient, {
     required String projectId,
@@ -56,6 +57,7 @@ abstract class AppOperations {
     required Map<FlutterPlatform, String> appIdentifiers,
     required String flutterAppDir,
     required int archiveSize,
+    String? flutterVersion,
     String? versionName,
     GitMetadata? gitMetadata,
   }) async {
@@ -72,6 +74,7 @@ abstract class AppOperations {
         },
         flutterAppDir: flutterAppDir,
         archiveSize: archiveSize,
+        flutterVersion: flutterVersion,
         versionName: versionName,
         commitHash: gitMetadata?.commitHash,
         commitMessage: gitMetadata?.commitMessage,

@@ -12,9 +12,23 @@ abstract final class ToolVersionsIO {
   /// Returns `null` if no matching file or `dart` line is found.
   static String? readDartVersionFromToolVersions(
     Iterable<Directory> searchRoots,
+  ) => _readToolVersion(searchRoots, 'dart');
+
+  /// Looks under each directory in [searchRoots] (in order) for
+  /// `.tool-versions` and returns the `flutter` tool version from the first
+  /// file that defines one, such as `3.38.4-stable`.
+  ///
+  /// Returns `null` if no matching file or `flutter` line is found.
+  static String? readFlutterVersionFromToolVersions(
+    Iterable<Directory> searchRoots,
+  ) => _readToolVersion(searchRoots, 'flutter');
+
+  static String? _readToolVersion(
+    Iterable<Directory> searchRoots,
+    String tool,
   ) {
     for (final root in searchRoots) {
-      final version = _dartVersionFromToolVersionsFileIn(root);
+      final version = _toolVersionFromToolVersionsFileIn(root, tool);
       if (version != null) {
         return version;
       }
@@ -22,7 +36,10 @@ abstract final class ToolVersionsIO {
     return null;
   }
 
-  static String? _dartVersionFromToolVersionsFileIn(Directory directory) {
+  static String? _toolVersionFromToolVersionsFileIn(
+    Directory directory,
+    String tool,
+  ) {
     final file = File(p.join(directory.path, _fileName));
     if (!file.existsSync()) {
       return null;
@@ -40,7 +57,7 @@ abstract final class ToolVersionsIO {
       if (trimmed.startsWith('#') || trimmed.isEmpty) continue;
 
       final parts = trimmed.split(RegExp(r'\s+'));
-      if (parts.length >= 2 && parts[0] == 'dart') {
+      if (parts.length >= 2 && parts[0] == tool) {
         final version = parts[1].trim();
         return version.isEmpty ? null : version;
       }

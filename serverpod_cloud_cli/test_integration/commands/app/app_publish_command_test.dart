@@ -54,6 +54,7 @@ void main() {
         platforms: any(named: 'platforms'),
         flutterAppDir: any(named: 'flutterAppDir'),
         archiveSize: any(named: 'archiveSize'),
+        flutterVersion: any(named: 'flutterVersion'),
         versionName: any(named: 'versionName'),
         commitHash: any(named: 'commitHash'),
         commitMessage: any(named: 'commitMessage'),
@@ -129,6 +130,7 @@ void main() {
             platforms: [AppPlatform.android],
             flutterAppDir: 'project_flutter',
             archiveSize: captureAny(named: 'archiveSize'),
+            flutterVersion: any(named: 'flutterVersion'),
             versionName: any(named: 'versionName'),
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
@@ -137,6 +139,15 @@ void main() {
         ).captured.single;
         expect(archiveSize, fileUploader.uploads.single.data.length);
       });
+
+      test(
+        "then the Flutter version the app's pubspec requires is sent",
+        () async {
+          await commandResult;
+
+          expect(_sentFlutterVersion(client), '3.29.0');
+        },
+      );
 
       test('then no version name is sent', () async {
         await commandResult;
@@ -148,6 +159,7 @@ void main() {
             platforms: any(named: 'platforms'),
             flutterAppDir: any(named: 'flutterAppDir'),
             archiveSize: any(named: 'archiveSize'),
+            flutterVersion: any(named: 'flutterVersion'),
             versionName: null,
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
@@ -678,12 +690,258 @@ project:
             platforms: any(named: 'platforms'),
             flutterAppDir: any(named: 'flutterAppDir'),
             archiveSize: any(named: 'archiveSize'),
+            flutterVersion: any(named: 'flutterVersion'),
             versionName: any(named: 'versionName'),
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
             branch: any(named: 'branch'),
           ),
         ).called(1);
+      });
+    });
+
+    group('when releasing the app with --flutter-version', () {
+      late Future<void> commandResult;
+
+      setUp(() {
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--flutter-version',
+          '3.38.4',
+          '--no-await',
+        ]);
+      });
+
+      test('then the Flutter version is sent', () async {
+        await commandResult;
+
+        expect(_sentFlutterVersion(client), '3.38.4');
+      });
+
+      test('then the Flutter version is shown', () async {
+        await commandResult;
+
+        expect(
+          logger.infoCalls.map((call) => call.message),
+          contains('Flutter version: 3.38.4'),
+        );
+      });
+    });
+
+    group('and a Flutter version set in scloud.yaml '
+        'when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() async {
+        await d.dir('monorepo', [
+          d.dir('project_server', [
+            d.file('scloud.yaml', '''
+project:
+  projectId: "$_projectId"
+  flutterSdk: "3.38.3"
+'''),
+          ]),
+        ]).create();
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+      });
+
+      test('then the configured Flutter version is sent', () async {
+        await commandResult;
+
+        expect(_sentFlutterVersion(client), '3.38.3');
+      });
+    });
+
+    group('and a Flutter version pinned in .tool-versions at the workspace '
+        'root when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() async {
+        await d.dir('monorepo', [
+          d.file('.tool-versions', 'flutter 3.38.1-stable\n'),
+        ]).create();
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+      });
+
+      test('then the pinned Flutter version is sent', () async {
+        await commandResult;
+
+        expect(_sentFlutterVersion(client), '3.38.1');
+      });
+    });
+
+    group('and a Flutter SDK range in the pubspec of the app '
+        'when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() async {
+        await d.dir('monorepo', [
+          d.dir('project_flutter', [
+            d.file(
+              'pubspec.yaml',
+              ProjectFactory.serverpodFlutterAppPubspec(
+                withFlutterConstraint: '">=3.29.0"',
+              ),
+            ),
+          ]),
+        ]).create();
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+      });
+
+      test('then no Flutter version is sent', () async {
+        await commandResult;
+
+        expect(_sentFlutterVersion(client), isNull);
+      });
+    });
+
+    group('and a pubspec.lock that cannot be parsed '
+        'when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() async {
+        await d.dir('monorepo', [d.file('pubspec.lock', 'sdks: [')]).create();
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+      });
+
+      test('then the lockfile failure is logged', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          logger.errorCalls.map((call) => call.message),
+          contains(startsWith('Failed to parse pubspec.lock')),
+        );
+      });
+
+      test('then no build is requested', () async {
+        await commandResult.catchError((_) {});
+
+        _verifyNoBuildRequested(client);
+      });
+    });
+
+    group('when releasing the app with an invalid --flutter-version', () {
+      late Future<void> commandResult;
+
+      setUp(() {
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--flutter-version',
+          '^3.38.0',
+          '--no-await',
+        ]);
+      });
+
+      test('then the invalid version is logged', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          logger.errorCalls,
+          contains(
+            equalsErrorCall(
+              message:
+                  'Unsupported Flutter version "^3.38.0" '
+                  '(from --flutter-version flag).',
+              hint: 'Use a Flutter release version such as 3.38.4.',
+            ),
+          ),
+        );
+      });
+
+      test('then no build is requested', () async {
+        await commandResult.catchError((_) {});
+
+        _verifyNoBuildRequested(client);
+      });
+    });
+
+    group('when releasing the app with a --flutter-version below the '
+        "Flutter SDK constraint of the app's packages", () {
+      late Future<void> commandResult;
+
+      setUp(() {
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--flutter-version',
+          '3.27.0',
+          '--no-await',
+        ]);
+      });
+
+      test('then the version and the constraint are logged', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          logger.errorCalls,
+          contains(
+            equalsErrorCall(
+              message:
+                  'The Flutter version 3.27.0 (from --flutter-version flag) '
+                  'is below the Flutter SDK constraint "3.29.0" of the '
+                  "app's packages (from pubspec.lock).",
+              hint:
+                  'Request Flutter 3.29.0 or later, or change the Flutter '
+                  'SDK constraints of the app.',
+            ),
+          ),
+        );
+      });
+
+      test('then no build is requested', () async {
+        await commandResult.catchError((_) {});
+
+        _verifyNoBuildRequested(client);
       });
     });
 
@@ -772,6 +1030,7 @@ project:
             platforms: any(named: 'platforms'),
             flutterAppDir: any(named: 'flutterAppDir'),
             archiveSize: any(named: 'archiveSize'),
+            flutterVersion: any(named: 'flutterVersion'),
             versionName: any(named: 'versionName'),
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
@@ -818,6 +1077,7 @@ project:
             platforms: any(named: 'platforms'),
             flutterAppDir: any(named: 'flutterAppDir'),
             archiveSize: any(named: 'archiveSize'),
+            flutterVersion: any(named: 'flutterVersion'),
             versionName: any(named: 'versionName'),
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
@@ -866,6 +1126,7 @@ project:
             platforms: any(named: 'platforms'),
             flutterAppDir: any(named: 'flutterAppDir'),
             archiveSize: any(named: 'archiveSize'),
+            flutterVersion: any(named: 'flutterVersion'),
             versionName: any(named: 'versionName'),
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
@@ -887,6 +1148,7 @@ project:
             platforms: any(named: 'platforms'),
             flutterAppDir: any(named: 'flutterAppDir'),
             archiveSize: any(named: 'archiveSize'),
+            flutterVersion: any(named: 'flutterVersion'),
             versionName: any(named: 'versionName'),
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
@@ -951,6 +1213,7 @@ project:
             platforms: any(named: 'platforms'),
             flutterAppDir: any(named: 'flutterAppDir'),
             archiveSize: any(named: 'archiveSize'),
+            flutterVersion: any(named: 'flutterVersion'),
             versionName: any(named: 'versionName'),
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
@@ -1052,6 +1315,7 @@ project:
             platforms: any(named: 'platforms'),
             flutterAppDir: any(named: 'flutterAppDir'),
             archiveSize: any(named: 'archiveSize'),
+            flutterVersion: any(named: 'flutterVersion'),
             versionName: any(named: 'versionName'),
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
@@ -1119,6 +1383,7 @@ project:
             platforms: any(named: 'platforms'),
             flutterAppDir: any(named: 'flutterAppDir'),
             archiveSize: any(named: 'archiveSize'),
+            flutterVersion: any(named: 'flutterVersion'),
             versionName: any(named: 'versionName'),
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
@@ -1187,6 +1452,7 @@ project:
             platforms: any(named: 'platforms'),
             flutterAppDir: any(named: 'flutterAppDir'),
             archiveSize: any(named: 'archiveSize'),
+            flutterVersion: any(named: 'flutterVersion'),
             versionName: any(named: 'versionName'),
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
@@ -1253,6 +1519,7 @@ project:
             platforms: any(named: 'platforms'),
             flutterAppDir: any(named: 'flutterAppDir'),
             archiveSize: any(named: 'archiveSize'),
+            flutterVersion: any(named: 'flutterVersion'),
             versionName: any(named: 'versionName'),
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
@@ -1307,6 +1574,7 @@ project:
             platforms: any(named: 'platforms'),
             flutterAppDir: any(named: 'flutterAppDir'),
             archiveSize: any(named: 'archiveSize'),
+            flutterVersion: any(named: 'flutterVersion'),
             versionName: any(named: 'versionName'),
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
@@ -1368,6 +1636,7 @@ project:
             platforms: any(named: 'platforms'),
             flutterAppDir: any(named: 'flutterAppDir'),
             archiveSize: any(named: 'archiveSize'),
+            flutterVersion: any(named: 'flutterVersion'),
             versionName: any(named: 'versionName'),
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
@@ -1419,6 +1688,7 @@ project:
             platforms: any(named: 'platforms'),
             flutterAppDir: any(named: 'flutterAppDir'),
             archiveSize: any(named: 'archiveSize'),
+            flutterVersion: any(named: 'flutterVersion'),
             versionName: any(named: 'versionName'),
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
@@ -1484,6 +1754,7 @@ project:
             platforms: any(named: 'platforms'),
             flutterAppDir: any(named: 'flutterAppDir'),
             archiveSize: any(named: 'archiveSize'),
+            flutterVersion: any(named: 'flutterVersion'),
             versionName: any(named: 'versionName'),
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
@@ -1560,6 +1831,7 @@ project:
           platforms: any(named: 'platforms'),
           flutterAppDir: any(named: 'flutterAppDir'),
           archiveSize: any(named: 'archiveSize'),
+          flutterVersion: any(named: 'flutterVersion'),
           versionName: '1.2.3',
           commitHash: any(named: 'commitHash'),
           commitMessage: any(named: 'commitMessage'),
@@ -1584,6 +1856,7 @@ project:
             platforms: any(named: 'platforms'),
             flutterAppDir: any(named: 'flutterAppDir'),
             archiveSize: any(named: 'archiveSize'),
+            flutterVersion: any(named: 'flutterVersion'),
             versionName: any(named: 'versionName'),
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
@@ -1682,6 +1955,7 @@ project:
             platforms: [AppPlatform.android, AppPlatform.ios],
             flutterAppDir: 'project_flutter',
             archiveSize: any(named: 'archiveSize'),
+            flutterVersion: any(named: 'flutterVersion'),
             versionName: any(named: 'versionName'),
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
@@ -1703,6 +1977,7 @@ project:
             platforms: any(named: 'platforms'),
             flutterAppDir: any(named: 'flutterAppDir'),
             archiveSize: any(named: 'archiveSize'),
+            flutterVersion: any(named: 'flutterVersion'),
             versionName: any(named: 'versionName'),
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
@@ -1788,6 +2063,7 @@ project:
             platforms: any(named: 'platforms'),
             flutterAppDir: any(named: 'flutterAppDir'),
             archiveSize: any(named: 'archiveSize'),
+            flutterVersion: any(named: 'flutterVersion'),
             versionName: any(named: 'versionName'),
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
@@ -2032,6 +2308,7 @@ project:
           platforms: [AppPlatform.android],
           flutterAppDir: '.',
           archiveSize: any(named: 'archiveSize'),
+          flutterVersion: any(named: 'flutterVersion'),
           versionName: any(named: 'versionName'),
           commitHash: any(named: 'commitHash'),
           commitMessage: any(named: 'commitMessage'),
@@ -2052,6 +2329,7 @@ project:
             platforms: any(named: 'platforms'),
             flutterAppDir: any(named: 'flutterAppDir'),
             archiveSize: any(named: 'archiveSize'),
+            flutterVersion: any(named: 'flutterVersion'),
             versionName: any(named: 'versionName'),
             commitHash: any(named: 'commitHash'),
             commitMessage: any(named: 'commitMessage'),
@@ -2109,6 +2387,7 @@ project:
           platforms: any(named: 'platforms'),
           flutterAppDir: any(named: 'flutterAppDir'),
           archiveSize: any(named: 'archiveSize'),
+          flutterVersion: any(named: 'flutterVersion'),
           versionName: any(named: 'versionName'),
           commitHash: any(named: 'commitHash'),
           commitMessage: any(named: 'commitMessage'),
@@ -2264,4 +2543,39 @@ Archive _uploadedArchive(RecordedUpload upload) {
 String _lastRender(FakeTerminal terminal) {
   final output = terminal.output.replaceAll('\x1b[?25h', '');
   return output.substring(output.lastIndexOf('\x1b[0J') + '\x1b[0J'.length);
+}
+
+String? _sentFlutterVersion(ClientMock client) {
+  return verify(
+        () => client.appBuilds.createBuilds(
+          appIdentifiers: any(named: 'appIdentifiers'),
+          cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          platforms: any(named: 'platforms'),
+          flutterAppDir: any(named: 'flutterAppDir'),
+          archiveSize: any(named: 'archiveSize'),
+          flutterVersion: captureAny(named: 'flutterVersion'),
+          versionName: any(named: 'versionName'),
+          commitHash: any(named: 'commitHash'),
+          commitMessage: any(named: 'commitMessage'),
+          branch: any(named: 'branch'),
+        ),
+      ).captured.single
+      as String?;
+}
+
+void _verifyNoBuildRequested(ClientMock client) {
+  verifyNever(
+    () => client.appBuilds.createBuilds(
+      appIdentifiers: any(named: 'appIdentifiers'),
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+      platforms: any(named: 'platforms'),
+      flutterAppDir: any(named: 'flutterAppDir'),
+      archiveSize: any(named: 'archiveSize'),
+      flutterVersion: any(named: 'flutterVersion'),
+      versionName: any(named: 'versionName'),
+      commitHash: any(named: 'commitHash'),
+      commitMessage: any(named: 'commitMessage'),
+      branch: any(named: 'branch'),
+    ),
+  );
 }

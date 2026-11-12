@@ -202,6 +202,16 @@ class TenantProjectPubspec {
     return sdk.toString();
   }
 
+  /// The Flutter SDK constraint the package declares in
+  /// `environment.flutter`, or null if it declares none.
+  String? environmentFlutterConstraint() {
+    final flutter = pubspec.environment['flutter'];
+    if (flutter == null || flutter.isEmpty) {
+      return null;
+    }
+    return flutter.toString();
+  }
+
   /// Reads the Dart SDK constraint recorded as `sdks.dart` in [lockfile].
   ///
   /// The constraint is null if the lockfile is missing, cannot be read or
@@ -209,6 +219,21 @@ class TenantProjectPubspec {
   /// cases where the lockfile itself could not be read.
   static ({String? constraint, List<String> issues}) readLockfileDartSdk(
     File lockfile,
+  ) => _readLockfileSdk(lockfile, 'dart');
+
+  /// Reads the Flutter SDK constraint recorded as `sdks.flutter` in
+  /// [lockfile].
+  ///
+  /// The constraint is null if the lockfile is missing, cannot be read or
+  /// parsed, or records no Flutter SDK constraint. The issues describe the
+  /// cases where the lockfile itself could not be read.
+  static ({String? constraint, List<String> issues}) readLockfileFlutterSdk(
+    File lockfile,
+  ) => _readLockfileSdk(lockfile, 'flutter');
+
+  static ({String? constraint, List<String> issues}) _readLockfileSdk(
+    File lockfile,
+    String sdkName,
   ) {
     if (!lockfile.existsSync()) {
       return (constraint: null, issues: const []);
@@ -246,12 +271,12 @@ class TenantProjectPubspec {
       return (constraint: null, issues: const []);
     }
 
-    final dartSdk = sdks.value['dart']?.toString().trim();
-    if (dartSdk == null || dartSdk.isEmpty) {
+    final sdk = sdks.value[sdkName]?.toString().trim();
+    if (sdk == null || sdk.isEmpty) {
       return (constraint: null, issues: const []);
     }
 
-    return (constraint: dartSdk, issues: const []);
+    return (constraint: sdk, issues: const []);
   }
 
   /// Returns true if the pubspec.yaml defines a `serverpod.scripts.flutter_build` entry.

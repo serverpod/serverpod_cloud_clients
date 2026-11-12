@@ -489,4 +489,41 @@ packages:
       },
     );
   });
+
+  group('TenantProjectPubspec.readLockfileFlutterSdk constraint', () {
+    test('Given a pubspec.lock with dart and flutter sdk constraints, '
+        'when readLockfileFlutterSdk is called, '
+        'then the flutter constraint is returned', () async {
+      await d.dir('flutter_lockfile', [
+        d.file('pubspec.lock', '''
+sdks:
+  dart: ">=3.10.0 <4.0.0"
+  flutter: ">=3.38.0"
+'''),
+      ]).create();
+
+      final result = TenantProjectPubspec.readLockfileFlutterSdk(
+        File(d.path('flutter_lockfile/pubspec.lock')),
+      );
+
+      expect(result.constraint, '>=3.38.0');
+    });
+
+    test('Given a pubspec.lock without a flutter sdk constraint, '
+        'when readLockfileFlutterSdk is called, '
+        'then the constraint is null', () async {
+      await d.dir('dart_lockfile', [
+        d.file('pubspec.lock', '''
+sdks:
+  dart: ">=3.10.0 <4.0.0"
+'''),
+      ]).create();
+
+      final result = TenantProjectPubspec.readLockfileFlutterSdk(
+        File(d.path('dart_lockfile/pubspec.lock')),
+      );
+
+      expect(result.constraint, isNull);
+    });
+  });
 }
