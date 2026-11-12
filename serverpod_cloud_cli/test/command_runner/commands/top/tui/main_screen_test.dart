@@ -87,6 +87,20 @@ void main() {
     });
   });
 
+  group('Given a project starting from idle', () {
+    test('when the screen is rendered then the state is Starting', () async {
+      final String text = await render(
+        empty.copyWith(
+          runtime: CapsuleRuntimeStatusBuilder()
+              .withProgressingPodlets()
+              .build(),
+        ),
+      );
+
+      expect(text, contains('◐ Starting'));
+    });
+  });
+
   group('Given a project whose latest deployment failed', () {
     test('when the screen is rendered '
         'then the failed deployment is shown under the status', () async {
