@@ -3193,8 +3193,8 @@ class EndpointStoreConnections extends _isc.EndpointRef {
   ///
   /// Throws [NotFoundException] if no connection with [connectionId]
   /// belongs to the owner. Throws [InvalidValueException] if [credential]
-  /// is for another store than the connection, or as [addConnection] does
-  /// for its fields and store check. Throws
+  /// is for another store or another Apple team than the connection, or as
+  /// [addConnection] does for its fields and store check. Throws
   /// [AppPublishingDisabledException] while app publishing is off in this
   /// environment.
   _ida.Future<_ibvsp6v6.StoreConnection> replaceCredential({
