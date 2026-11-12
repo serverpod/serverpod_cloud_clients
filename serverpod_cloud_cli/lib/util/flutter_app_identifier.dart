@@ -34,18 +34,56 @@ String readAppIdentifier(
   };
 }
 
+/// Returns the app identifier of [platform]: [configured] when the project
+/// configuration file [configFileName] sets one, or else the one the app in
+/// [appDirectory] declares.
+///
+/// Throws [FailureException] if it cannot be read, is blank, or is
+/// Flutter's `com.example` placeholder. See [readAppIdentifier] and
+/// [checkConfiguredAppIdentifier].
+String resolveAppIdentifier(
+  Directory appDirectory,
+  FlutterPlatform platform, {
+  required String? configured,
+  required String configFileName,
+}) {
+  if (configured == null) {
+    return readAppIdentifier(
+      appDirectory,
+      platform,
+      configFileName: configFileName,
+    );
+  }
+  checkConfiguredAppIdentifier(
+    platform,
+    configured,
+    configFileName: configFileName,
+  );
+  return configured;
+}
+
 /// Checks the app identifier [identifier] that the project configuration
 /// file [configFileName] sets for [platform].
 ///
-/// Throws [FailureException] if it is Flutter's `com.example` placeholder,
-/// with a hint to set it to the app's own identifier.
+/// Throws [FailureException] if it is blank or Flutter's `com.example`
+/// placeholder, with a hint to set it to the app's own identifier.
 void checkConfiguredAppIdentifier(
   FlutterPlatform platform,
   String identifier, {
   required String configFileName,
 }) {
-  if (!_isPlaceholder(identifier)) return;
   final name = appIdentifierName(platform);
+  if (identifier.trim().isEmpty) {
+    throw FailureException(
+      error:
+          '$configFileName sets project.appIdentifiers.${platform.name} to an '
+          'empty value.',
+      hint:
+          'Set project.appIdentifiers.${platform.name} in $configFileName to '
+          "the app's own $name, or remove it to use the one the app declares.",
+    );
+  }
+  if (!_isPlaceholder(identifier)) return;
   throw FailureException(
     error:
         "The $name $identifier is Flutter's placeholder: $configFileName sets "

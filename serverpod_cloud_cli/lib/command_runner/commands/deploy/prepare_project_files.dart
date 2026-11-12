@@ -327,6 +327,27 @@ abstract class TenantProject {
     }
   }
 
+  /// Returns the [defaultPlatforms] the app in [appDirectory] has code for.
+  ///
+  /// Throws [FailureException] if it has code for none of them.
+  static Set<FlutterPlatform> presentDefaultPlatforms(
+    Directory appDirectory,
+    List<FlutterPlatform> defaultPlatforms,
+  ) {
+    final present = presentPlatforms(appDirectory);
+    final platforms = defaultPlatforms.where(present.contains).toSet();
+    if (platforms.isEmpty) {
+      final names = defaultPlatforms.map((platform) => platform.name);
+      throw FailureException(
+        error: 'The app has no code for the platforms: ${names.join(', ')}.',
+        hint:
+            'Add one with "flutter create --platforms=${names.first} ." '
+            'in the app directory.',
+      );
+    }
+    return platforms;
+  }
+
   /// Returns the platforms the app in [appDirectory] has code for.
   static Set<FlutterPlatform> presentPlatforms(Directory appDirectory) {
     return {

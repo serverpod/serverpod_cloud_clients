@@ -1,15 +1,18 @@
 import 'dart:convert';
 
+import 'package:cli_tools/logger.dart' as cli show AnsiStyle;
 import 'package:ground_control_client/ground_control_client.dart'
     show AppBuildStatus, AppBuildSummary, AppPlatform;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/util/duration_formatter.dart'
     show friendlyPastTimeFormat;
+import 'package:serverpod_cloud_cli/util/flutter_platform.dart';
 import 'package:serverpod_cloud_cli/util/output/output.dart';
 
 import 'app_build_status_formatter.dart';
 import 'app_build_output.dart';
 import 'app_build_step_log.dart';
+import 'app_doctor_check.dart';
 import 'app_status_row.dart';
 import 'app_upload_row.dart';
 
@@ -263,6 +266,109 @@ class _StepLogsWidget extends OutputWidget {
       }
     }
   }
+}
+
+/// Shows the checks of `app doctor`, those of the whole app first and then
+/// those of each platform, each with what it found and how to address a
+/// warning or a failure, followed by a summary of the failures and
+/// warnings.
+class AppDoctorTextUi extends OutputWidget {
+  const AppDoctorTextUi();
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    final checks = context.get<List<AppDoctorCheck>>();
+    final failed = _count(checks, AppDoctorCheckStatus.failed);
+    final warnings = _count(checks, AppDoctorCheckStatus.warning);
+    final sections = [
+      for (final platform in <FlutterPlatform?>[
+        null,
+        ...FlutterPlatform.values,
+      ])
+        if (checks.any((check) => check.platform == platform))
+          (
+            heading: platform == null ? 'App' : _flutterPlatformName(platform),
+            checks: checks.where((check) => check.platform == platform),
+          ),
+    ];
+    return OutputWidgetList([
+      for (final (index, section) in sections.indexed) ...[
+        if (index > 0) const LineTextWidget(),
+        LineTextWidget(section.heading),
+        for (final check in section.checks) ...[
+          _DoctorCheckLineWidget(check),
+          if (check.hint case final hint?)
+            for (final line in LineSplitter.split(hint))
+              LineTextWidget('    $line'),
+        ],
+      ],
+      if (failed > 0)
+        WarningTextWidget(
+          '${_checks(failed)} failed. '
+          'Fix ${failed == 1 ? 'it' : 'them'} before you publish the app.',
+          newParagraph: true,
+        )
+      else if (warnings > 0)
+        InfoTextWidget(
+          '${warnings == 1 ? '1 warning' : '$warnings warnings'} found',
+          newParagraph: true,
+        )
+      else
+        const SuccessTextWidget('No issues found.', newParagraph: true),
+    ]);
+  }
+}
+
+int _count(List<AppDoctorCheck> checks, AppDoctorCheckStatus status) =>
+    checks.where((check) => check.status == status).length;
+
+String _checks(int count) => count == 1 ? '1 check' : '$count checks';
+
+/// Renders one check of `app doctor` as a line with a mark coloured by its
+/// status, its name, and what it found.
+class _DoctorCheckLineWidget extends OutputWidget {
+  final AppDoctorCheck check;
+
+  const _DoctorCheckLineWidget(this.check);
+
+  @override
+  void render({required final CommandLogger logger}) {
+    final (mark, style) = switch (check.status) {
+      AppDoctorCheckStatus.passed => ('✓', cli.AnsiStyle.lightGreen),
+      AppDoctorCheckStatus.warning => ('!', cli.AnsiStyle.yellow),
+      AppDoctorCheckStatus.failed => ('✗', cli.AnsiStyle.red),
+    };
+    logger.line(
+      '  ${logger.wrapStyle(mark, style)} ${_checkName(check)}: '
+      '${check.detail}',
+    );
+  }
+}
+
+String _checkName(AppDoctorCheck check) {
+  return switch (check.kind) {
+    AppDoctorCheckKind.flutterVersion => 'Flutter version',
+    AppDoctorCheckKind.appIdentifier => switch (check.platform) {
+      FlutterPlatform.ios => 'Bundle ID',
+      FlutterPlatform.android => 'Package name',
+      null ||
+      FlutterPlatform.linux ||
+      FlutterPlatform.macos ||
+      FlutterPlatform.windows => 'App identifier',
+    },
+    AppDoctorCheckKind.releaseSigning => 'Release signing',
+    AppDoctorCheckKind.exportCompliance => 'Export compliance',
+  };
+}
+
+String _flutterPlatformName(FlutterPlatform platform) {
+  return switch (platform) {
+    FlutterPlatform.android => 'Android',
+    FlutterPlatform.ios => 'iOS',
+    FlutterPlatform.linux => 'Linux',
+    FlutterPlatform.macos => 'macOS',
+    FlutterPlatform.windows => 'Windows',
+  };
 }
 
 /// The [versionName] followed by the distinct [buildNumbers] in

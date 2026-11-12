@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:ground_control_client/ground_control_client.dart'
     show AppBuildRef, AppIdentifierChange, AppPlatform, Client;
-import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy/deploy_archive.dart';
@@ -11,14 +10,12 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/file_uploader_factory
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/flutter_app_identifier.dart';
 import 'package:serverpod_cloud_cli/util/flutter_platform.dart';
-import 'package:serverpod_cloud_cli/util/flutter_sdk_selector.dart';
 import 'package:serverpod_cloud_cli/util/git_metadata.dart';
-import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
-import 'package:serverpod_cloud_cli/util/tool_versions_io.dart';
 
 import 'app_build_progress.dart';
 import 'app_build_status_formatter.dart';
 import 'app_ops.dart';
+import 'app_setup.dart';
 
 abstract class AppPublish {
   /// Publishes the Flutter app in [appDirectory] in project [projectId] as
@@ -72,7 +69,8 @@ abstract class AppPublish {
     logger.init('Publishing the app of Serverpod Cloud project "$projectId".');
 
     final requestedPlatforms =
-        platforms ?? _presentDefaultPlatforms(appDirectory, defaultPlatforms);
+        platforms ??
+        TenantProject.presentDefaultPlatforms(appDirectory, defaultPlatforms);
     final publishPlatforms = FlutterPlatform.values
         .where(requestedPlatforms.contains)
         .toList();
@@ -83,7 +81,7 @@ abstract class AppPublish {
     );
     final appIdentifiers = {
       for (final platform in publishPlatforms)
-        platform: _appIdentifier(
+        platform: resolveAppIdentifier(
           appDirectory,
           platform,
           configured: configuredAppIdentifiers[platform],
@@ -95,12 +93,14 @@ abstract class AppPublish {
       logger.info('${appIdentifierName(platform)}: $appIdentifier');
     }
 
-    final flutterVersion = _flutterVersion(
+    final flutterVersion = AppSetup.selectFlutterVersion(
       appDirectory,
-      preparer,
+      rootDirectory: preparer.rootDirectory,
+      isWorkspace: preparer.isWorkspace,
       commandLineVersion: flutterVersionOverride,
       configuredVersion: configuredFlutterVersion,
-    );
+      configFileName: configFileName,
+    )?.version;
     if (flutterVersion == null) {
       logger.debug('No Flutter version requested, building with stable.');
     } else {
@@ -206,68 +206,6 @@ abstract class AppPublish {
     }
   }
 
-  /// Returns the Flutter release version to build the app in
-  /// [appDirectory] with, or null if none is requested. See
-  /// [FlutterSdkSelector.selectFlutterVersion].
-  ///
-  /// Throws [FailureException] if the app's lockfile cannot be read, or if
-  /// the requested version is invalid or below its Flutter SDK constraint.
-  static String? _flutterVersion(
-    Directory appDirectory,
-    ProjectFilePreparer preparer, {
-    required String? commandLineVersion,
-    required String? configuredVersion,
-  }) {
-    final lockfileFlutterSdk = TenantProjectPubspec.readLockfileFlutterSdk(
-      File(p.join(preparer.rootDirectory.path, 'pubspec.lock')),
-    );
-    if (lockfileFlutterSdk.issues.isNotEmpty) {
-      throw FailureException(errors: lockfileFlutterSdk.issues);
-    }
-
-    final workspaceRootDir = preparer.isWorkspace
-        ? preparer.rootDirectory
-        : null;
-    return FlutterSdkSelector.selectFlutterVersion(
-      commandLineVersion: commandLineVersion,
-      scloudVersion: configuredVersion,
-      toolVersionsVersion: ToolVersionsIO.readFlutterVersionFromToolVersions(
-        <Directory>[appDirectory, ?workspaceRootDir],
-      ),
-      pubspecVersionConstraint: TenantProjectPubspec.fromProjectDir(
-        appDirectory,
-      ).environmentFlutterConstraint(),
-      lockVersionConstraint: lockfileFlutterSdk.constraint,
-    );
-  }
-
-  /// Returns the app identifier of [platform]: [configured] when the
-  /// project configuration file [configFileName] sets one, or else the one
-  /// the app in [appDirectory] declares.
-  ///
-  /// Throws [FailureException] if it cannot be read, or is Flutter's
-  /// `com.example` placeholder.
-  static String _appIdentifier(
-    Directory appDirectory,
-    FlutterPlatform platform, {
-    required String? configured,
-    required String configFileName,
-  }) {
-    if (configured == null) {
-      return readAppIdentifier(
-        appDirectory,
-        platform,
-        configFileName: configFileName,
-      );
-    }
-    checkConfiguredAppIdentifier(
-      platform,
-      configured,
-      configFileName: configFileName,
-    );
-    return configured;
-  }
-
   /// The warning that the app identifier of a platform changed.
   static String _appIdentifierChangeWarning(AppIdentifierChange change) {
     final name = switch (change.platform) {
@@ -282,28 +220,5 @@ abstract class AppPublish {
   static String? _versionName(Version? version) {
     if (version == null) return null;
     return version.toString().split('+').first;
-  }
-
-  /// Returns the [defaultPlatforms] the app in [appDirectory] has code for.
-  ///
-  /// Throws [FailureException] if it has code for none of them.
-  static Set<FlutterPlatform> _presentDefaultPlatforms(
-    Directory appDirectory,
-    List<FlutterPlatform> defaultPlatforms,
-  ) {
-    final presentPlatforms = TenantProject.presentPlatforms(appDirectory);
-    final publishPlatforms = defaultPlatforms
-        .where(presentPlatforms.contains)
-        .toSet();
-    if (publishPlatforms.isEmpty) {
-      final names = defaultPlatforms.map((platform) => platform.name);
-      throw FailureException(
-        error: 'The app has no code for the platforms: ${names.join(', ')}.',
-        hint:
-            'Add one with "flutter create --platforms=${names.first} ." '
-            'in the app directory.',
-      );
-    }
-    return publishPlatforms;
   }
 }

@@ -1,4 +1,6 @@
 import 'package:pub_semver/pub_semver.dart';
+import 'package:serverpod_cloud_cli/constants.dart'
+    show ProjectConfigFileConstants;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
 abstract final class FlutterSdkSelector {
@@ -12,12 +14,16 @@ abstract final class FlutterSdkSelector {
   /// [scloudVersion], [toolVersionsVersion] and [pubspecVersionConstraint]
   /// that holds a value. The rest are ignored.
   ///
+  /// [scloudVersion] comes from the project configuration file
+  /// [scloudFileName], which messages name as its source.
+  ///
   /// A value is a Flutter release version. The `-stable` suffix asdf writes
   /// in `.tool-versions`, as in `3.38.4-stable`, is dropped.
   ///
   /// [pubspecVersionConstraint] is a request only when it pins a single
   /// version, such as `3.38.4`. A range or a caret constraint requests no
-  /// version.
+  /// version, but the selected version must satisfy its lower bound, as
+  /// the app itself needs it. A constraint that cannot be parsed is ignored.
   ///
   /// [lockVersionConstraint] is not a request: the selected version must
   /// satisfy its lower bound, since the app's packages need it. Its upper
@@ -28,17 +34,44 @@ abstract final class FlutterSdkSelector {
   ///
   /// Throws [FailureException] if the requested value is not a release
   /// version, if [lockVersionConstraint] cannot be parsed, or if the
-  /// selected version is below [lockVersionConstraint].
+  /// selected version is below [lockVersionConstraint] or
+  /// [pubspecVersionConstraint].
   static String? selectFlutterVersion({
     String? commandLineVersion,
     String? scloudVersion,
+    String scloudFileName = ProjectConfigFileConstants.defaultFileName,
+    String? toolVersionsVersion,
+    String? pubspecVersionConstraint,
+    String? lockVersionConstraint,
+  }) {
+    return selectFlutterVersionWithSource(
+      commandLineVersion: commandLineVersion,
+      scloudVersion: scloudVersion,
+      scloudFileName: scloudFileName,
+      toolVersionsVersion: toolVersionsVersion,
+      pubspecVersionConstraint: pubspecVersionConstraint,
+      lockVersionConstraint: lockVersionConstraint,
+    )?.version;
+  }
+
+  /// Selects the Flutter release version to build an app with, as
+  /// [selectFlutterVersion] does, together with the source it was
+  /// requested in, such as `scloud.yaml`.
+  ///
+  /// Returns null when no version is requested.
+  ///
+  /// Throws [FailureException] in the cases [selectFlutterVersion] does.
+  static ({String version, String source})? selectFlutterVersionWithSource({
+    String? commandLineVersion,
+    String? scloudVersion,
+    String scloudFileName = ProjectConfigFileConstants.defaultFileName,
     String? toolVersionsVersion,
     String? pubspecVersionConstraint,
     String? lockVersionConstraint,
   }) {
     final requested = _firstRequested([
       (commandLineVersion, '--flutter-version flag'),
-      (scloudVersion, 'scloud.yaml'),
+      (scloudVersion, scloudFileName),
       (toolVersionsVersion, '.tool-versions'),
       (_singleVersion(pubspecVersionConstraint), 'pubspec.yaml'),
     ]);
@@ -67,7 +100,21 @@ abstract final class FlutterSdkSelector {
             'change the Flutter SDK constraints of the app.',
       );
     }
-    return selected;
+
+    final pubspecMinVersion = _pubspecLowerBound(pubspecVersionConstraint);
+    if (pubspecMinVersion != null &&
+        !pubspecMinVersion.allows(Version.parse(selected))) {
+      throw FailureException(
+        error:
+            'The Flutter version $selected (from $source) is below the '
+            'Flutter SDK constraint "${pubspecVersionConstraint?.trim()}" '
+            'of the app (from pubspec.yaml).',
+        hint:
+            'Request Flutter ${_firstReleaseFrom(pubspecMinVersion)} or '
+            "later, or change environment.flutter in the app's pubspec.yaml.",
+      );
+    }
+    return (version: selected, source: source);
   }
 
   /// The first source that holds a value, or null if none do.
@@ -100,6 +147,16 @@ abstract final class FlutterSdkSelector {
         ? value.substring(0, value.length - _asdfStableSuffix.length)
         : value;
     return _releaseVersion.hasMatch(version) ? version : null;
+  }
+
+  /// The versions at or above the lower bound of the pubspec [constraint],
+  /// or null if it holds no value, no lower bound, or cannot be parsed.
+  static VersionRange? _pubspecLowerBound(String? constraint) {
+    try {
+      return _lowerBound(constraint);
+    } on FailureException {
+      return null;
+    }
   }
 
   /// The versions at or above the lower bound of [constraint], or null if
