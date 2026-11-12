@@ -279,6 +279,8 @@ ${usesNonExemptEncryption == null ? '' : '\t<key>ITSAppUsesNonExemptEncryption</
   static d.DirectoryDescriptor nonWorkspaceFlutterAppDir({
     Iterable<d.Descriptor>? contents,
     String withFlutterConstraint = '3.29.0',
+    String dependencies = '',
+    String dependencyOverrides = '',
   }) {
     return d.dir('project_flutter', [
       d.file('pubspec.yaml', '''
@@ -289,6 +291,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+$dependencies
+dependency_overrides:
+$dependencyOverrides
 dev_dependencies:
   flutter_test:
     sdk: flutter

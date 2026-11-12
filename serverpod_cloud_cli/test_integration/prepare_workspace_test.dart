@@ -1372,6 +1372,103 @@ dependencies:
     });
   });
 
+  for (final source in [
+    'dependencies',
+    'dependency_overrides',
+    'pubspec_overrides.yaml',
+  ]) {
+    test(
+      'Given an external local package in $source '
+      'when preparing a standalone app then publishing is refused early',
+      () async {
+        await ProjectFactory.nonWorkspaceFlutterAppDir(
+          dependencies: source == 'dependencies'
+              ? '  project_client:\n    path: ../project_client'
+              : '',
+          dependencyOverrides: source == 'dependency_overrides'
+              ? '  project_client:\n    path: ../project_client'
+              : '',
+          contents: [
+            if (source == 'pubspec_overrides.yaml')
+              d.file(
+                'pubspec_overrides.yaml',
+                'dependency_overrides:\n  project_client:\n    path: ../project_client\n',
+              ),
+          ],
+        ).create();
+
+        expect(
+          () => TenantProject.prepareApp(
+            Directory(p.join(d.sandbox, 'project_flutter')),
+          ),
+          throwsA(
+            isA<WorkspaceException>()
+                .having(
+                  (e) => e.errors,
+                  'errors',
+                  contains(
+                    'Local dependencies cannot be included in the app upload: project_client (../project_client).',
+                  ),
+                )
+                .having((e) => e.hint, 'hint', contains('Dart workspace')),
+          ),
+        );
+      },
+    );
+  }
+
+  test('Given a local package inside the app with an external path dependency '
+      'when preparing then the transitive dependency is named', () async {
+    await ProjectFactory.nonWorkspaceFlutterAppDir(
+      dependencies: '  local_client:\n    path: packages/local_client',
+      contents: [
+        d.dir('packages', [
+          d.dir('local_client', [
+            d.file(
+              'pubspec.yaml',
+              'name: local_client\ndependencies:\n  external_client:\n    path: ../../../external_client\n',
+            ),
+          ]),
+        ]),
+      ],
+    ).create();
+
+    expect(
+      () => TenantProject.prepareApp(
+        Directory(p.join(d.sandbox, 'project_flutter')),
+      ),
+      throwsA(
+        isA<WorkspaceException>().having(
+          (e) => e.errors,
+          'errors',
+          contains(
+            'Local dependencies cannot be included in the app upload: external_client (../../../external_client).',
+          ),
+        ),
+      ),
+    );
+  });
+
+  test('Given a local package inside the app '
+      'when preparing then the package is allowed in the upload', () async {
+    await ProjectFactory.nonWorkspaceFlutterAppDir(
+      dependencies: '  local_client:\n    path: packages/local_client',
+      contents: [
+        d.dir('packages', [
+          d.dir('local_client', [
+            d.file('pubspec.yaml', 'name: local_client\n'),
+          ]),
+        ]),
+      ],
+    ).create();
+
+    final preparer = TenantProject.prepareApp(
+      Directory(p.join(d.sandbox, 'project_flutter')),
+    );
+
+    expect(preparer.includedSubPaths, ['.']);
+  });
+
   group('Given a non-workspace Flutter app without a package graph', () {
     setUp(() async {
       await d.dir('project_flutter', [
