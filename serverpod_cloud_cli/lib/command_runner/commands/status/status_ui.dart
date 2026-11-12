@@ -374,10 +374,11 @@ class _RuntimeStatusLines {
 
     return switch (state) {
       CapsuleState.ready => null,
-      CapsuleState.progressing => (
+      CapsuleState.progressing when _deploying => (
         message: 'Follow the rollout:',
         command: '$baseCommand status deployment show',
       ),
+      CapsuleState.progressing => null,
       CapsuleState.degraded => (
         message: 'Check for errors:',
         command: '$baseCommand log --tail',
@@ -441,6 +442,8 @@ class _RuntimeStatusLines {
 
   String get runtimeProjectId => runtime.status.cloudCapsuleId;
 
+  bool get _deploying => isDeploying(runtime);
+
   void _writeRow(
     final String label,
     final String value, {
@@ -454,7 +457,7 @@ class _RuntimeStatusLines {
   ({String glyph, String label, cli.AnsiStyle? style}) _stateLook(
     CapsuleState state,
   ) {
-    final StatusLook look = capsuleStateLook(state);
+    final StatusLook look = capsuleStateLook(state, deploying: _deploying);
 
     return (
       glyph: look.glyph,

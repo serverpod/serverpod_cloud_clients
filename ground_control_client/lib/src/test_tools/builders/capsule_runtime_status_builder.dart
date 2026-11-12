@@ -6,7 +6,9 @@ class CapsuleRuntimeStatusBuilder {
   int _desiredReplicas;
   int _readyReplicas;
   DeployAttemptSummary? _serving;
+  DeployAttemptSummary? _incoming;
   DeployAttemptSummary? _latestAttempt;
+  CapsuleRevision? _incomingRevision;
 
   CapsuleRuntimeStatusBuilder()
     : _cloudCapsuleId = 'test-capsule-id',
@@ -27,9 +29,30 @@ class CapsuleRuntimeStatusBuilder {
     return this;
   }
 
+  /// One of two podlets is ready while the deployment progresses.
+  CapsuleRuntimeStatusBuilder withProgressingPodlets() {
+    _state = CapsuleState.progressing;
+    _desiredReplicas = 2;
+    _readyReplicas = 1;
+    return this;
+  }
+
+  /// The deployment is rolling out a new revision.
+  CapsuleRuntimeStatusBuilder withIncomingRevision() {
+    _incomingRevision = CapsuleRevision(uploadId: Uuid().v4obj());
+    return this;
+  }
+
   /// The deployment is serving the revision of a successful [attempt].
   CapsuleRuntimeStatusBuilder withServing(DeployAttempt attempt) {
     _serving = _summaryOf(attempt);
+
+    return this;
+  }
+
+  /// The revision being rolled out comes from [attempt].
+  CapsuleRuntimeStatusBuilder withIncoming(DeployAttempt attempt) {
+    _incoming = _summaryOf(attempt);
 
     return this;
   }
@@ -64,9 +87,11 @@ class CapsuleRuntimeStatusBuilder {
           state: _state,
           desiredReplicas: _desiredReplicas,
           readyReplicas: _readyReplicas,
+          incoming: _incomingRevision,
         ),
       ),
       serving: _serving,
+      incoming: _incoming,
       latestAttempt: _latestAttempt,
     );
   }

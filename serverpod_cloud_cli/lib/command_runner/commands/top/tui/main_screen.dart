@@ -110,7 +110,10 @@ class _StatusPanel extends StatelessComponent {
     final ServerpodThemeData theme = ServerpodTheme.of(context);
     final TopSnapshot snapshot = state.snapshot;
     final CapsuleRuntimeStatus runtime = snapshot.runtime;
-    final StatusLook look = capsuleStateLook(runtime.status.status);
+    final StatusLook look = capsuleStateLook(
+      runtime.status.status,
+      deploying: isDeploying(runtime),
+    );
     final int? ready = runtime.status.deployment?.readyReplicas;
     final int? desired = runtime.status.deployment?.desiredReplicas;
     final DeployAttemptSummary? serving = runtime.serving;

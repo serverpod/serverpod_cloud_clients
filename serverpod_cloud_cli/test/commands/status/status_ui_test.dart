@@ -168,6 +168,116 @@ void main() {
         expect(stdout, contains('https://my-project.api.serverpod.space/'));
       });
     });
+
+    group('when rendered for a progressing project with nothing in flight', () {
+      late String stdout;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const RuntimeStatusTextUi(baseCommand: 'scloud', utc: true),
+          data: CapsuleRuntimeStatusBuilder().withProgressingPodlets().build(),
+        );
+        stdout = io.stdout;
+      });
+
+      test('then the status row shows Starting', () {
+        expect(stdout, contains('◐ Starting'));
+      });
+
+      test('then stdout omits the follow the rollout hint', () {
+        expect(stdout, isNot(contains('Follow the rollout')));
+      });
+    });
+
+    group(
+      'when rendered for a progressing project with an incoming revision',
+      () {
+        late String stdout;
+
+        setUp(() async {
+          final io = await renderCommandUi(
+            const RuntimeStatusTextUi(baseCommand: 'scloud', utc: true),
+            data: CapsuleRuntimeStatusBuilder()
+                .withProgressingPodlets()
+                .withIncomingRevision()
+                .build(),
+          );
+          stdout = io.stdout;
+        });
+
+        test('then the status row shows Deploying', () {
+          expect(stdout, contains('◐ Deploying'));
+        });
+      },
+    );
+
+    group('when rendered for a progressing project '
+        'whose serving attempt succeeded', () {
+      late String stdout;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const RuntimeStatusTextUi(baseCommand: 'scloud', utc: true),
+          data: CapsuleRuntimeStatusBuilder()
+              .withProgressingPodlets()
+              .withServing(
+                DeployAttemptBuilder()
+                    .withStatus(DeployProgressStatus.success)
+                    .build(),
+              )
+              .build(),
+        );
+        stdout = io.stdout;
+      });
+
+      test('then the status row shows Starting', () {
+        expect(stdout, contains('◐ Starting'));
+      });
+    });
+
+    group('when rendered for a progressing project '
+        'whose latest attempt is still running', () {
+      late String stdout;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const RuntimeStatusTextUi(baseCommand: 'scloud', utc: true),
+          data: CapsuleRuntimeStatusBuilder()
+              .withProgressingPodlets()
+              .withLatestAttempt(
+                DeployAttemptBuilder()
+                    .withStatus(DeployProgressStatus.running)
+                    .build(),
+              )
+              .build(),
+        );
+        stdout = io.stdout;
+      });
+
+      test('then the status row shows Deploying', () {
+        expect(stdout, contains('◐ Deploying'));
+      });
+    });
+
+    group('when rendered for a progressing project with an incoming deploy '
+        'attempt but no incoming revision', () {
+      late String stdout;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          const RuntimeStatusTextUi(baseCommand: 'scloud', utc: true),
+          data: CapsuleRuntimeStatusBuilder()
+              .withProgressingPodlets()
+              .withIncoming(DeployAttemptBuilder().build())
+              .build(),
+        );
+        stdout = io.stdout;
+      });
+
+      test('then the status row shows Deploying', () {
+        expect(stdout, contains('◐ Deploying'));
+      });
+    });
   });
 
   group('Given a RuntimeStatusWatchTextUi without a terminal', () {
