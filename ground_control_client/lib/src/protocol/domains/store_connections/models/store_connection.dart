@@ -26,6 +26,7 @@ abstract class StoreConnection
     required this.store,
     required this.name,
     this.credential,
+    this.projectIds,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) : id = id ?? const _isc.Uuid().v4obj(),
@@ -38,6 +39,7 @@ abstract class StoreConnection
     required _is7r02rq.StoreType store,
     required String name,
     _i8vsm21x.StoreCredentialInfo? credential,
+    List<String>? projectIds,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _StoreConnectionImpl;
@@ -58,6 +60,11 @@ abstract class StoreConnection
           ? null
           : _iod2a87h.Protocol().deserialize<_i8vsm21x.StoreCredentialInfo>(
               jsonSerialization['credential'],
+            ),
+      projectIds: jsonSerialization['projectIds'] == null
+          ? null
+          : _iod2a87h.Protocol().deserialize<List<String>>(
+              jsonSerialization['projectIds'],
             ),
       createdAt: jsonSerialization['createdAt'] == null
           ? null
@@ -81,6 +88,10 @@ abstract class StoreConnection
   /// nullable only until the column is tightened in a follow-up migration.
   _i8vsm21x.StoreCredentialInfo? credential;
 
+  /// The IDs of the projects that publish with this connection, sorted.
+  /// Set only when listing connections, null otherwise.
+  List<String>? projectIds;
+
   DateTime createdAt;
 
   DateTime updatedAt;
@@ -94,6 +105,7 @@ abstract class StoreConnection
     _is7r02rq.StoreType? store,
     String? name,
     _i8vsm21x.StoreCredentialInfo? credential,
+    List<String>? projectIds,
     DateTime? createdAt,
     DateTime? updatedAt,
   });
@@ -106,6 +118,7 @@ abstract class StoreConnection
       'store': store.toJson(),
       'name': name,
       if (credential != null) 'credential': credential?.toJson(),
+      if (projectIds != null) 'projectIds': projectIds?.toJson(),
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
     };
@@ -120,6 +133,7 @@ abstract class StoreConnection
       'store': store.toJson(),
       'name': name,
       if (credential != null) 'credential': credential?.toJsonForProtocol(),
+      if (projectIds != null) 'projectIds': projectIds?.toJson(),
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
     };
@@ -140,6 +154,7 @@ class _StoreConnectionImpl extends StoreConnection {
     required _is7r02rq.StoreType store,
     required String name,
     _i8vsm21x.StoreCredentialInfo? credential,
+    List<String>? projectIds,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) : super._(
@@ -148,6 +163,7 @@ class _StoreConnectionImpl extends StoreConnection {
          store: store,
          name: name,
          credential: credential,
+         projectIds: projectIds,
          createdAt: createdAt,
          updatedAt: updatedAt,
        );
@@ -162,6 +178,7 @@ class _StoreConnectionImpl extends StoreConnection {
     _is7r02rq.StoreType? store,
     String? name,
     Object? credential = _Undefined,
+    Object? projectIds = _Undefined,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -173,6 +190,9 @@ class _StoreConnectionImpl extends StoreConnection {
       credential: credential is _i8vsm21x.StoreCredentialInfo?
           ? credential
           : this.credential?.copyWith(),
+      projectIds: projectIds is List<String>?
+          ? projectIds
+          : this.projectIds?.map((e0) => e0).toList(),
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

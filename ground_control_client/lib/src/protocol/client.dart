@@ -3136,7 +3136,8 @@ class EndpointStoreConnections extends _isc.EndpointRef {
     {'name': name, 'credential': credential},
   );
 
-  /// Lists the owner's connections, oldest first, only for [store] if set.
+  /// Lists the owner's connections, oldest first, only for [store] if set,
+  /// each with the IDs of the projects that publish with it.
   ///
   /// Throws [AppPublishingDisabledException] while app publishing is off in
   /// this environment.
