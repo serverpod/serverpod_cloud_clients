@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:args/command_runner.dart';
+
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
@@ -37,6 +39,20 @@ void main() {
 
   test('Given app list command when instantiated then requires login', () {
     expect(CloudAppListCommand(logger: logger).requireLogin, isTrue);
+  });
+
+  test('Given app list with an unsupported platform '
+      'when run then the error names the invalid platform', () async {
+    await expectLater(
+      cli.run(['app', 'list', '--project', _projectId, '--platforms', 'linux']),
+      throwsA(
+        isA<UsageException>().having(
+          (error) => error.message,
+          'message',
+          contains('"linux" is not an allowed value for option "--platforms".'),
+        ),
+      ),
+    );
   });
 
   group('Given a running and a succeeded publish for iOS and Android', () {
@@ -145,6 +161,10 @@ void main() {
         expect(running['versionName'], '1.4.3');
         expect(running['platforms'], ['ios', 'android']);
         expect(running['status'], 'running');
+        expect(((running['builds'] as List).first as Map)['requestedBy'], {
+          'name': null,
+          'email': 'test@example.com',
+        });
         expect(
           (running['builds'] as List).map((build) => (build as Map)['status']),
           ['running', 'queued'],
@@ -271,6 +291,10 @@ void main() {
 
         expect(logger.lineCalls, isEmpty);
         final payload = jsonDecode(logger.rawCalls.single.content) as List;
+        expect((payload.first as Map)['requestedBy'], {
+          'name': null,
+          'email': 'test@example.com',
+        });
         expect(payload.map((build) => (build as Map)['platform']), [
           'ios',
           'ios',
@@ -303,6 +327,10 @@ void main() {
 
         expect(logger.lineCalls, isEmpty);
         final payload = yamlDecode(logger.rawCalls.single.content) as List;
+        expect((payload.first as Map)['requestedBy'], {
+          'name': null,
+          'email': 'test@example.com',
+        });
         expect(payload.map((build) => (build as Map)['platform']), [
           'ios',
           'ios',

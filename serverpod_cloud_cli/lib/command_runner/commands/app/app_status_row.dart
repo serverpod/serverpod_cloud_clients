@@ -1,5 +1,7 @@
 import 'package:ground_control_client/ground_control_client.dart';
 
+import 'app_build_output.dart';
+
 /// A store an app is published to.
 enum AppStore { appStore, googlePlay }
 
@@ -23,6 +25,11 @@ class AppStatusRow implements SerializableModel {
 
   @override
   Map<String, Object?> toJson() {
-    return {'platform': platform, 'store': store, 'latestBuild': latestBuild};
+    final build = latestBuild;
+    return {
+      'platform': platform,
+      'store': store,
+      'latestBuild': build == null ? null : appBuildOutput(build),
+    };
   }
 }

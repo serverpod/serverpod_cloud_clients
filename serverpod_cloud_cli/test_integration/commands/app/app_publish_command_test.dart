@@ -220,7 +220,11 @@ void main() {
 
         expect(
           logger.infoCalls.map((call) => call.message),
-          contains(matches(RegExp(r'^Follow it: \S+ app show \S+$'))),
+          contains(
+            matches(
+              RegExp(r'^Follow it: \S+ app show \S+ --project my-project-id$'),
+            ),
+          ),
         );
       });
 
@@ -292,7 +296,11 @@ void main() {
 
         expect(
           logger.infoCalls.map((call) => call.message),
-          contains(matches(RegExp(r'^Follow it: \S+ app show \S+$'))),
+          contains(
+            matches(
+              RegExp(r'^Follow it: \S+ app show \S+ --project my-project-id$'),
+            ),
+          ),
         );
       });
 
@@ -1831,10 +1839,7 @@ project:
           isA<UsageException>().having(
             (e) => e.message,
             'message',
-            contains(
-              'Publishing for linux, windows is not supported yet. '
-              'Supported platforms: $_supportedPlatformNames.',
-            ),
+            contains('is not an allowed value for option "--platforms".'),
           ),
         ),
       );
@@ -1858,10 +1863,7 @@ project:
           isA<UsageException>().having(
             (e) => e.message,
             'message',
-            contains(
-              'Failed to resolve option `platforms`: FormatException: '
-              '"fuchsia" is not in android|ios|linux|macos|windows.',
-            ),
+            contains('is not an allowed value for option "--platforms".'),
           ),
         ),
       );

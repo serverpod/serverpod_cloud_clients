@@ -172,7 +172,11 @@ void main() {
     test('when rendering the status in UTC '
         'then the state shows the labelled timestamp', () async {
       final io = await renderCommandUi(
-        const AppStatusTextUi(utc: true, baseCommand: 'scloud'),
+        const AppStatusTextUi(
+          utc: true,
+          baseCommand: 'scloud',
+          projectId: 'my-project-id',
+        ),
         data: [
           AppStatusRow(
             platform: AppPlatform.ios,

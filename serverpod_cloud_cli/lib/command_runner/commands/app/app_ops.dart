@@ -414,28 +414,43 @@ abstract class AppOperations {
   /// follow, and the stream closes.
   ///
   /// Throws [FailureException] if the upload has no [platform] build in the
-  /// project, or if the build cannot be fetched. The stream emits a
+  /// project, if [platform] is omitted for a multi-platform upload, or if
+  /// the build cannot be fetched. The stream emits a
   /// [FailureException] if the build or a step log cannot be fetched, and
   /// last if the build did not succeed.
   static Future<Stream<AppBuildStepLog>> followBuildLog(
     Client cloudApiClient, {
     required String projectId,
     required UuidValue uploadId,
-    required AppPlatform platform,
+    AppPlatform? platform,
   }) async {
     final builds = await getUploadBuilds(
       cloudApiClient,
       projectId: projectId,
       uploadId: uploadId,
     );
+    if (builds.isEmpty) {
+      throw FailureException(error: 'The upload $uploadId has no builds.');
+    }
+    final selectedPlatform =
+        platform ??
+        (builds.map((build) => build.platform).toSet().length == 1
+            ? builds.first.platform
+            : null);
+    if (selectedPlatform == null) {
+      throw FailureException(
+        error: 'The upload $uploadId has builds for multiple platforms.',
+        hint: 'Select a platform with --platform ios or --platform android.',
+      );
+    }
     final build = builds
-        .where((build) => build.platform == platform)
+        .where((build) => build.platform == selectedPlatform)
         .firstOrNull;
     if (build == null) {
       throw FailureException(
         error:
             'The upload $uploadId has no '
-            '${AppBuildStatusFormatter.platformName(platform)} build.',
+            '${AppBuildStatusFormatter.platformName(selectedPlatform)} build.',
       );
     }
 
@@ -443,7 +458,7 @@ abstract class AppOperations {
       cloudApiClient,
       projectId: projectId,
       buildId: build.id,
-      platform: platform,
+      platform: selectedPlatform,
     );
   }
 
