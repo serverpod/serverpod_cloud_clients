@@ -282,6 +282,84 @@ void main() {
     });
   });
 
+  test('Given a publish with an uploaded iOS build and refused Android build '
+      'when showing it then the success and failure are both reported', () async {
+    final ios = AppBuildSummaryBuilder().withPlatform(AppPlatform.ios).build();
+    final android = AppBuildSummaryBuilder()
+        .withPlatform(AppPlatform.android)
+        .withStatus(AppBuildStatus.failed)
+        .build();
+    when(
+      () => client.appBuilds.getUploadBuilds(
+        cloudCapsuleId: _projectId,
+        uploadId: _uploadId,
+      ),
+    ).thenAnswer((_) async => [ios, android]);
+    for (final build in [ios, android]) {
+      when(
+        () => client.appBuilds.getBuild(
+          cloudCapsuleId: _projectId,
+          buildId: build.id,
+        ),
+      ).thenAnswer(
+        (_) async => AppBuildDetailBuilder().withBuild(build).build(),
+      );
+    }
+
+    await expectLater(
+      cli.run(['app', 'show', _uploadId.uuid, '--project', _projectId]),
+      throwsA(isA<ErrorExitException>()),
+    );
+
+    expect(
+      logger.successCalls.map((call) => call.message),
+      contains('Published 1.4.2 to iOS.'),
+    );
+    expect(
+      logger.errorCalls.map((call) => call.message),
+      contains(contains('The Android build failed')),
+    );
+    expect(
+      logger.infoCalls.map((call) => call.message),
+      contains(
+        contains(
+          'app log ${android.uploadId} --platform android --project $_projectId',
+        ),
+      ),
+    );
+  });
+
+  test('Given a build that was built but not uploaded '
+      'when showing it then the artifacts command is supplied', () async {
+    final build = AppBuildSummaryBuilder()
+        .withStatus(AppBuildStatus.builtNotUploaded)
+        .build();
+    when(
+      () => client.appBuilds.getUploadBuilds(
+        cloudCapsuleId: _projectId,
+        uploadId: _uploadId,
+      ),
+    ).thenAnswer((_) async => [build]);
+    when(
+      () => client.appBuilds.getBuild(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+      ),
+    ).thenAnswer((_) async => AppBuildDetailBuilder().withBuild(build).build());
+
+    await expectLater(
+      cli.run(['app', 'show', _uploadId.uuid, '--project', _projectId]),
+      throwsA(isA<ErrorExitException>()),
+    );
+
+    expect(
+      logger.infoCalls.map((call) => call.message),
+      contains(
+        contains('app artifacts ${build.uploadId} --project $_projectId'),
+      ),
+    );
+  });
+
   group('Given an unknown upload when showing the upload', () {
     late Future<void> commandResult;
 

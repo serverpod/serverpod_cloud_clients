@@ -202,6 +202,8 @@ abstract class AppPublish {
       cloudApiClient,
       logger: logger,
       projectId: projectId,
+      uploadId: upload.uploadId,
+      baseCommand: baseCommand,
       builds: builds,
       versionName: versionName,
       showLogs: true,

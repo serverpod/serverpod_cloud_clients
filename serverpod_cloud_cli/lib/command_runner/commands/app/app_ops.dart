@@ -26,6 +26,7 @@ import 'package:serverpod_cloud_cli/util/flutter_platform.dart';
 import 'package:serverpod_cloud_cli/util/git_metadata.dart';
 
 import 'app_build_step_log.dart';
+import 'app_artifact_row.dart';
 import 'app_status_row.dart';
 import 'app_upload_row.dart';
 import 'app_build_status_formatter.dart';
@@ -236,6 +237,92 @@ abstract class AppOperations {
       }
     }
     return failures;
+  }
+
+  /// Requests cancellation of each active build of [uploadId] in
+  /// [projectId], returning the IDs requested. Completed builds are skipped.
+  ///
+  /// Throws [FailureException] if the upload cannot be fetched or any build
+  /// cannot be cancelled.
+  static Future<List<UuidValue>> cancelUpload(
+    Client cloudApiClient, {
+    required String projectId,
+    required UuidValue uploadId,
+  }) async {
+    final builds = await getUploadBuilds(
+      cloudApiClient,
+      projectId: projectId,
+      uploadId: uploadId,
+    );
+    final activeIds = [
+      for (final build in builds)
+        if (!_hasBuildEnded(build.status)) build.id,
+    ];
+    final failures = await cancelBuilds(
+      cloudApiClient,
+      projectId: projectId,
+      buildIds: activeIds,
+    );
+    if (failures.isNotEmpty) {
+      throw FailureException(
+        errors: [
+          for (final MapEntry(key: id, value: error) in failures.entries)
+            'Could not cancel app build $id: $error',
+        ],
+      );
+    }
+    return activeIds;
+  }
+
+  /// Returns the artifacts of each build of [uploadId] in [projectId],
+  /// with download links valid for ten minutes.
+  ///
+  /// Throws [FailureException] if the upload, artifacts, or links cannot
+  /// be fetched.
+  static Future<List<AppArtifactRow>> getArtifacts(
+    Client cloudApiClient, {
+    required String projectId,
+    required UuidValue uploadId,
+  }) async {
+    final builds = await getUploadBuilds(
+      cloudApiClient,
+      projectId: projectId,
+      uploadId: uploadId,
+    );
+    final rows = <AppArtifactRow>[];
+    try {
+      for (final build in builds) {
+        final artifacts = await cloudApiClient.appBuilds.listArtifacts(
+          cloudCapsuleId: projectId,
+          buildId: build.id,
+        );
+        for (final artifact in artifacts) {
+          final url = await cloudApiClient.appBuilds.getArtifactDownloadUrl(
+            cloudCapsuleId: projectId,
+            buildId: build.id,
+            artifactId: artifact.id,
+          );
+          rows.add(
+            AppArtifactRow(
+              platform: build.platform,
+              artifact: artifact,
+              downloadUrl: url,
+            ),
+          );
+        }
+      }
+    } on NotFoundException catch (e) {
+      throw FailureException(error: e.message);
+    } on AppPublishingDisabledException catch (e) {
+      throw FailureException(error: e.message);
+    } on Exception catch (e, stackTrace) {
+      throw FailureException.nested(
+        e,
+        stackTrace,
+        'Failed to fetch the app artifacts.',
+      );
+    }
+    return rows;
   }
 
   /// Returns each platform of project [projectId] that has a connected
