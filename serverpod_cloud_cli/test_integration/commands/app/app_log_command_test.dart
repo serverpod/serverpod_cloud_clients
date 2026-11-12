@@ -42,6 +42,74 @@ void main() {
     expect(CloudAppLogCommand(logger: logger).requireLogin, isTrue);
   });
 
+  for (final platform in AppPlatform.values) {
+    test('Given a $platform-only upload when logging without --platform '
+        'then its build is streamed', () async {
+      final build = AppBuildSummaryBuilder().withPlatform(platform).build();
+      when(
+        () => client.appBuilds.getUploadBuilds(
+          cloudCapsuleId: _projectId,
+          uploadId: _uploadId,
+        ),
+      ).thenAnswer((_) async => [build]);
+      when(
+        () => client.appBuilds.tailBuild(
+          cloudCapsuleId: _projectId,
+          buildId: build.id,
+        ),
+      ).thenAnswer(
+        (_) => Stream.value(
+          AppBuildDetailBuilder().withBuild(build).withSteps([]).build(),
+        ),
+      );
+
+      await cli.run(['app', 'log', _uploadId.uuid, '--project', _projectId]);
+
+      verify(
+        () => client.appBuilds.tailBuild(
+          cloudCapsuleId: _projectId,
+          buildId: build.id,
+        ),
+      ).called(1);
+    });
+  }
+
+  test('Given a multi-platform upload when logging without --platform '
+      'then the error requests a platform', () async {
+    when(
+      () => client.appBuilds.getUploadBuilds(
+        cloudCapsuleId: _projectId,
+        uploadId: _uploadId,
+      ),
+    ).thenAnswer(
+      (_) async => [
+        AppBuildSummaryBuilder().withPlatform(AppPlatform.ios).build(),
+        AppBuildSummaryBuilder().withPlatform(AppPlatform.android).build(),
+      ],
+    );
+
+    await expectLater(
+      cli.run(['app', 'log', _uploadId.uuid, '--project', _projectId]),
+      throwsA(isA<ErrorExitException>()),
+    );
+
+    expect(
+      logger.errorCalls,
+      contains(
+        equalsErrorCall(
+          message: 'The upload $_uploadId has builds for multiple platforms.',
+          hint: 'Select a platform with --platform ios or --platform android.',
+        ),
+      ),
+    );
+    verifyNever(
+      () => client.appBuilds.tailBuild(
+        cloudCapsuleId: any(named: 'cloudCapsuleId'),
+        buildId: any(named: 'buildId'),
+      ),
+    );
+  });
+
   group('Given an upload with an Android build and a running iOS build '
       'that then succeeds', () {
     final android = AppBuildSummaryBuilder()

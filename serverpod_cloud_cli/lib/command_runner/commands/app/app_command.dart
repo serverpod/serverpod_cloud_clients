@@ -44,7 +44,8 @@ class AppPublishPlatformsOption extends MultiOption<FlutterPlatform> {
 
   const AppPublishPlatformsOption({super.group})
     : super(
-        multiParser: const MultiParser(EnumParser(FlutterPlatform.values)),
+        multiParser: const MultiParser(EnumParser(supportedPlatforms)),
+        allowedValues: supportedPlatforms,
         argName: 'platforms',
         valueHelp: 'android,ios',
         helpText:
@@ -123,8 +124,10 @@ class AppLogPlatformOption extends EnumOption<AppPlatform> {
     : super(
         enumParser: const EnumParser(AppPlatform.values),
         argName: 'platform',
-        mandatory: true,
-        helpText: 'The platform of the build to stream the log of.',
+        allowedValues: AppPlatform.values,
+        helpText:
+            'The platform of the build to stream the log of. '
+            'Defaults to the only platform of the upload.',
       );
 }
 
@@ -155,6 +158,7 @@ class AppListPlatformsOption extends MultiOption<AppPlatform> {
   const AppListPlatformsOption()
     : super(
         multiParser: const MultiParser(EnumParser(AppPlatform.values)),
+        allowedValues: AppPlatform.values,
         argName: 'platforms',
         valueHelp: 'android,ios',
         helpText:
@@ -449,6 +453,8 @@ Examples
         utc: inUtc,
         platforms: selectedPlatforms,
       ),
+      jsonOutputUi: const AppBuildListStructuredUi(),
+      yamlOutputUi: const AppBuildListStructuredUi(),
     );
   }
 }
@@ -489,7 +495,11 @@ Examples
         runner.serviceProvider.cloudApiClient,
         projectId: projectId,
       ),
-      textOutputUi: AppStatusTextUi(utc: inUtc, baseCommand: baseCommand),
+      textOutputUi: AppStatusTextUi(
+        utc: inUtc,
+        baseCommand: baseCommand,
+        projectId: projectId,
+      ),
     );
   }
 }
@@ -524,7 +534,7 @@ Examples
   ) async {
     final projectId = commandConfig.value(AppLogCommandOption.projectId);
     final uploadId = commandConfig.value(AppLogCommandOption.uploadId);
-    final platform = commandConfig.value(AppLogCommandOption.platform);
+    final platform = commandConfig.optionalValue(AppLogCommandOption.platform);
 
     await renderCommand(
       output,

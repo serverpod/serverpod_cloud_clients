@@ -172,7 +172,10 @@ abstract class AppPublish {
       'Publishing ${versionName ?? 'the app'} to $platformNames',
       newParagraph: true,
     );
-    logger.info('Follow it: $baseCommand app show ${upload.uploadId}');
+    logger.info(
+      'Follow it: $baseCommand app show ${upload.uploadId} '
+      '--project $projectId',
+    );
     if (!awaitBuilds) return;
 
     await AppBuildProgress.follow(

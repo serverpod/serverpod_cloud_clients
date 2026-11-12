@@ -8,6 +8,7 @@ import 'package:serverpod_cloud_cli/util/duration_formatter.dart'
 import 'package:serverpod_cloud_cli/util/output/output.dart';
 
 import 'app_build_status_formatter.dart';
+import 'app_build_output.dart';
 import 'app_build_step_log.dart';
 import 'app_status_row.dart';
 import 'app_upload_row.dart';
@@ -115,7 +116,13 @@ class AppStatusTextUi extends OutputWidget {
   final bool utc;
   final String baseCommand;
 
-  const AppStatusTextUi({required this.utc, required this.baseCommand});
+  final String projectId;
+
+  const AppStatusTextUi({
+    required this.utc,
+    required this.baseCommand,
+    required this.projectId,
+  });
 
   @override
   OutputWidget build(final OutputContext context) {
@@ -126,10 +133,13 @@ class AppStatusTextUi extends OutputWidget {
     if (context.format == OutputFormat.csv) {
       return _statusTable(rows);
     }
+    final followedUploads = <Object>{};
     return OutputWidgetList([
       _statusTable(rows),
       for (final row in rows)
-        if (row.latestBuild case final build?) ?_buildHint(build),
+        if (row.latestBuild case final build?)
+          if (_hasEnded(build.status) || followedUploads.add(build.uploadId))
+            ?_buildHint(build),
     ]);
   }
 
@@ -176,7 +186,7 @@ class AppStatusTextUi extends OutputWidget {
       AppBuildStatus.waiting ||
       AppBuildStatus.running => CommandHintTextWidget(
         'Follow the ${_platformName(build.platform)} build:',
-        command: '$baseCommand app show ${build.uploadId}',
+        command: '$baseCommand app show ${build.uploadId} --project $projectId',
         newParagraph: true,
       ),
       AppBuildStatus.failed || AppBuildStatus.cancelled
@@ -188,12 +198,24 @@ class AppStatusTextUi extends OutputWidget {
         reason,
         command:
             '$baseCommand app log ${build.uploadId} '
-            '--platform ${build.platform.name}',
+            '--platform ${build.platform.name} --project $projectId',
         newParagraph: true,
       ),
       AppBuildStatus.succeeded => null,
     };
   }
+}
+
+bool _hasEnded(AppBuildStatus status) {
+  return switch (status) {
+    AppBuildStatus.queued ||
+    AppBuildStatus.waiting ||
+    AppBuildStatus.running => false,
+    AppBuildStatus.succeeded ||
+    AppBuildStatus.builtNotUploaded ||
+    AppBuildStatus.failed ||
+    AppBuildStatus.cancelled => true,
+  };
 }
 
 String _storeName(AppStore store) {
@@ -278,4 +300,21 @@ String _statusName(AppBuildStatus status) {
     AppBuildStatus.failed => 'Failed',
     AppBuildStatus.cancelled => 'Cancelled',
   };
+}
+
+/// Serializes app builds with requester display information for JSON or YAML.
+class AppBuildListStructuredUi extends OutputWidget {
+  const AppBuildListStructuredUi();
+
+  @override
+  OutputWidget build(OutputContext context) {
+    final builds = context
+        .get<List<AppBuildSummary>>()
+        .map(appBuildOutput)
+        .toList();
+    final formatter = context.format == OutputFormat.yaml
+        ? const YamlOutputFormatter<List<Map<String, Object?>>>()
+        : const JsonOutputFormatter<List<Map<String, Object?>>>();
+    return RawStringWidget(formatter.format(builds));
+  }
 }

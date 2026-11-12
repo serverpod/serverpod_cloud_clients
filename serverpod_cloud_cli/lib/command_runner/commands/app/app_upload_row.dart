@@ -1,5 +1,7 @@
 import 'package:ground_control_client/ground_control_client.dart';
 
+import 'app_build_output.dart';
+
 /// An app upload with the builds made from it, as listed by `app list`.
 class AppUploadRow implements SerializableModel {
   final UuidValue uploadId;
@@ -36,7 +38,7 @@ class AppUploadRow implements SerializableModel {
       'platforms': platforms,
       'status': status,
       'createdAt': createdAt,
-      'builds': builds,
+      'builds': builds.map(appBuildOutput).toList(),
     };
   }
 }

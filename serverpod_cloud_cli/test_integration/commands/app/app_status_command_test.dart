@@ -107,6 +107,10 @@ void main() {
           'android',
         ]);
         expect((payload.last as Map)['store'], 'googlePlay');
+        expect(((payload.last as Map)['latestBuild'] as Map)['requestedBy'], {
+          'name': null,
+          'email': 'test@example.com',
+        });
         expect(
           ((payload.last as Map)['latestBuild'] as Map)['status'],
           'succeeded',
@@ -233,12 +237,48 @@ void main() {
               .having(
                 (call) => call.command,
                 'command',
-                endsWith(' app show $uploadId'),
+                endsWith(' app show $uploadId --project $_projectId'),
               ),
         ),
       );
     });
   });
+
+  test(
+    'Given two active platforms of the same upload '
+    'when showing status then one project-aware follow command is shown',
+    () async {
+      final uploadId = const Uuid().v4obj();
+      _stubSetup(
+        client,
+        AppPublishingSetupBuilder()
+            .withAndroidStore(
+              GooglePlayAccess(serviceAccountEmail: 'publisher@acme.dev'),
+            )
+            .build(),
+      );
+      _stubLatestBuilds(client, [
+        AppBuildSummaryBuilder()
+            .withUploadId(uploadId)
+            .withPlatform(AppPlatform.ios)
+            .withStatus(AppBuildStatus.running)
+            .build(),
+        AppBuildSummaryBuilder()
+            .withUploadId(uploadId)
+            .withPlatform(AppPlatform.android)
+            .withStatus(AppBuildStatus.queued)
+            .build(),
+      ]);
+
+      await cli.run(['app', 'status', '--project', _projectId]);
+
+      expect(logger.terminalCommandCalls, hasLength(1));
+      expect(
+        logger.terminalCommandCalls.single.command,
+        endsWith(' app show $uploadId --project $_projectId'),
+      );
+    },
+  );
 
   group('Given a queued iOS build', () {
     setUp(() {
@@ -311,7 +351,9 @@ void main() {
               .having(
                 (call) => call.command,
                 'command',
-                endsWith(' app log $uploadId --platform android'),
+                endsWith(
+                  ' app log $uploadId --platform android --project $_projectId',
+                ),
               ),
         ),
       );
@@ -367,7 +409,9 @@ void main() {
                 .having(
                   (call) => call.command,
                   'command',
-                  endsWith(' app log $uploadId --platform ios'),
+                  endsWith(
+                    ' app log $uploadId --platform ios --project $_projectId',
+                  ),
                 ),
           ),
         );
