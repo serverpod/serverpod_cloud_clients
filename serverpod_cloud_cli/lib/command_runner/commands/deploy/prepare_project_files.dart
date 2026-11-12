@@ -218,6 +218,7 @@ abstract class TenantProject {
 
     if (!appPubspec.isWorkspaceResolved()) {
       WorkspaceProjectLogic.validateIncludedAppPackages([appPubspec.pubspec]);
+      _validateLocalAppDependencies(appDirectory, appPubspec.pubspec);
 
       return ProjectFilePreparer(
         isWorkspace: false,
@@ -245,6 +246,62 @@ abstract class TenantProject {
       writePackageScloudIgnore: false,
       scloudDirPath: scloudDirPath,
     );
+  }
+
+  static void _validateLocalAppDependencies(
+    Directory appDirectory,
+    Pubspec appPubspec,
+  ) {
+    final root = p.normalize(appDirectory.absolute.path);
+    final overridesFile = File(p.join(root, 'pubspec_overrides.yaml'));
+    final overrides = <String, Dependency>{...appPubspec.dependencyOverrides};
+    if (overridesFile.existsSync()) {
+      final content = yamlDecode(overridesFile.readAsStringSync());
+      if (content case {'dependency_overrides': final Map values}) {
+        final pubspec = Pubspec.parse(
+          yamlEncode({'name': appPubspec.name, 'dependency_overrides': values}),
+        );
+        overrides.addAll(pubspec.dependencyOverrides);
+      }
+    }
+    final pending = [(directory: appDirectory, pubspec: appPubspec)];
+    final visited = <String>{};
+    final issues = <String>{};
+    while (pending.isNotEmpty) {
+      final (:directory, :pubspec) = pending.removeLast();
+      if (!visited.add(p.normalize(directory.absolute.path))) continue;
+      final dependencies = {...pubspec.dependencies};
+      if (pubspec == appPubspec) dependencies.addAll(overrides);
+      for (final MapEntry(key: name, value: declared) in dependencies.entries) {
+        final dependency = overrides[name] ?? declared;
+        if (dependency is! PathDependency) continue;
+        final dependencyRoot = overrides.containsKey(name)
+            ? root
+            : directory.absolute.path;
+        final target = p.normalize(p.join(dependencyRoot, dependency.path));
+        if (p.isAbsolute(dependency.path) ||
+            (!p.equals(root, target) && !p.isWithin(root, target))) {
+          issues.add('$name (${dependency.path})');
+          continue;
+        }
+        final dependencyDirectory = Directory(target);
+        pending.add((
+          directory: dependencyDirectory,
+          pubspec: TenantProjectPubspec.fromProjectDir(
+            dependencyDirectory,
+          ).pubspec,
+        ));
+      }
+    }
+    if (issues.isNotEmpty) {
+      _throwWorkspaceException(
+        message:
+            'Local dependencies cannot be included in the app upload: ${issues.join(', ')}.',
+        hint:
+            'Move the app and its local packages into a Dart workspace, '
+            'or use hosted dependencies before publishing.',
+      );
+    }
   }
 
   /// Loads the package graph of the non-workspace app in [appDirectory].
@@ -329,11 +386,18 @@ abstract class TenantProject {
 
   /// Returns the [defaultPlatforms] the app in [appDirectory] has code for.
   ///
-  /// Throws [FailureException] if it has code for none of them.
+  /// Throws [FailureException] if the directory is not a Flutter app or
+  /// it has code for none of them.
   static Set<FlutterPlatform> presentDefaultPlatforms(
     Directory appDirectory,
     List<FlutterPlatform> defaultPlatforms,
   ) {
+    if (!TenantProjectPubspec.fromProjectDir(appDirectory).isFlutterApp()) {
+      throw FailureException(
+        error: 'The directory ${appDirectory.path} is not a Flutter app.',
+        hint: 'Select a Flutter app with --app-dir.',
+      );
+    }
     final present = presentPlatforms(appDirectory);
     final platforms = defaultPlatforms.where(present.contains).toSet();
     if (platforms.isEmpty) {

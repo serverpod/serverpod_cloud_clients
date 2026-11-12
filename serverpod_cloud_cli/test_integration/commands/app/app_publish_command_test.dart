@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:archive/archive.dart';
 import 'package:args/command_runner.dart';
 import 'package:ground_control_client/ground_control_client.dart';
@@ -16,6 +18,7 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 import '../../../test/util/inline_tui/helpers/fake_terminal.dart';
 import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/project_factory.dart';
+import '../../../test_utils/push_current_dir.dart';
 import '../../../test_utils/recording_file_uploader.dart';
 import '../../../test_utils/test_command_logger.dart';
 
@@ -2281,6 +2284,36 @@ project:
     });
   });
 
+  test(
+    'Given --app-dir points to a Dart package '
+    'when publishing then the error names the invalid app directory',
+    () async {
+      await d.dir('plain_package', [
+        d.file(
+          'pubspec.yaml',
+          'name: plain_package\nenvironment:\n  sdk: ^3.10.0\n',
+        ),
+      ]).create();
+      final appDirectory = p.join(d.sandbox, 'plain_package');
+
+      await expectLater(
+        cli.run(['app', 'publish', _projectId, '--app-dir', appDirectory]),
+        throwsA(isA<ErrorExitException>()),
+      );
+
+      expect(
+        logger.errorCalls,
+        contains(
+          equalsErrorCall(
+            message: 'The directory $appDirectory is not a Flutter app.',
+            hint: 'Select a Flutter app with --app-dir.',
+          ),
+        ),
+      );
+      expect(fileUploader.uploads, isEmpty);
+    },
+  );
+
   group('Given a non-workspace Flutter app with Android code', () {
     setUp(() async {
       await ProjectFactory.nonWorkspaceFlutterAppDir(
@@ -2290,6 +2323,59 @@ project:
         ],
       ).create();
     });
+
+    test('when publishing from the app directory '
+        'then --app-dir is not required', () async {
+      pushCurrentDirectory(p.join(d.sandbox, 'project_flutter'));
+
+      await cli.run(['app', 'publish', _projectId, '--no-await']);
+
+      expect(fileUploader.uploads, hasLength(1));
+    }, tags: ['concurrency_one']);
+
+    test(
+      'when previewing the upload with --wet-run and --output '
+      'then the archive is saved without requesting builds or uploading',
+      () async {
+        final outputPath = p.join(d.sandbox, 'app.zip');
+
+        await cli.run([
+          'app',
+          'publish',
+          _projectId,
+          '--app-dir',
+          p.join(d.sandbox, 'project_flutter'),
+          '--wet-run',
+          '--show-files',
+          '--output',
+          outputPath,
+        ]);
+
+        expect(fileUploader.uploads, isEmpty);
+        verifyNever(
+          () => client.appBuilds.createBuilds(
+            appIdentifiers: any(named: 'appIdentifiers'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            platforms: any(named: 'platforms'),
+            flutterAppDir: any(named: 'flutterAppDir'),
+            archiveSize: any(named: 'archiveSize'),
+            flutterVersion: any(named: 'flutterVersion'),
+            versionName: any(named: 'versionName'),
+            commitHash: any(named: 'commitHash'),
+            commitMessage: any(named: 'commitMessage'),
+            branch: any(named: 'branch'),
+          ),
+        );
+        final archive = ZipDecoder().decodeBytes(
+          await File(outputPath).readAsBytes(),
+        );
+        expect(archive.findFile('pubspec.yaml'), isNotNull);
+        expect(
+          logger.successCalls.map((call) => call.message),
+          contains('Wet run complete. No app was uploaded or builds started.'),
+        );
+      },
+    );
 
     test('when releasing the app with --app-dir '
         'then the build is requested for the archive root', () async {

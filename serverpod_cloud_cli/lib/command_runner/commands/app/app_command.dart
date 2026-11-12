@@ -16,6 +16,7 @@ import 'package:serverpod_cloud_cli/constants.dart'
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart'
     show ErrorExitException, FailureException;
 import 'package:serverpod_cloud_cli/util/flutter_platform.dart';
+import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
 
@@ -32,8 +33,8 @@ class AppPublishDirOption extends DirOption {
         argName: 'app-dir',
         helpText:
             'The path to the Flutter app directory. '
-            'Defaults to project.appDir in scloud.yaml, '
-            "or else to the Flutter app in the server's workspace "
+            'Defaults to project.appDir in scloud.yaml, the current Flutter app, '
+            "or the Flutter app in the server's workspace "
             'or near the server directory.',
         mode: PathExistMode.mustExist,
       );
@@ -125,6 +126,22 @@ class AppPublishAwaitOption extends FlagOption {
       );
 }
 
+class AppPublishOutputOption extends FileOption {
+  const AppPublishOutputOption()
+    : super(
+        argName: 'output',
+        argAbbrev: 'o',
+        helpText: 'Save the app archive to a path ending in .zip.',
+        customValidator: _validateZipPath,
+      );
+
+  static void _validateZipPath(File file) {
+    if (!file.path.endsWith('.zip')) {
+      throw UsageException('The path must end with .zip.', '');
+    }
+  }
+}
+
 class AppUploadIdOption extends StringOption {
   const AppUploadIdOption({super.group})
     : super(
@@ -163,7 +180,25 @@ enum AppPublishCommandOption<V> implements OptionDefinition<V> {
   appDir(AppPublishDirOption()),
   platforms(AppPublishPlatformsOption()),
   flutterVersion(AppPublishFlutterVersionOption()),
-  wait(AppPublishAwaitOption());
+  wait(AppPublishAwaitOption()),
+  showFiles(
+    FlagOption(
+      argName: 'show-files',
+      helpText: 'Display the file tree that will be uploaded.',
+      defaultsTo: false,
+      negatable: false,
+    ),
+  ),
+  wetRun(
+    FlagOption(
+      argName: 'wet-run',
+      argAliases: ['dry-run'],
+      helpText: 'Prepare the app archive without uploading or starting builds.',
+      defaultsTo: false,
+      negatable: false,
+    ),
+  ),
+  output(AppPublishOutputOption());
 
   const AppPublishCommandOption(this.option);
 
@@ -445,6 +480,11 @@ Examples
       configuredFlutterVersion: config?.flutterSdk,
       configFileName: _configFileName(configFile),
       awaitBuilds: awaitBuilds,
+      showFiles: commandConfig.value(AppPublishCommandOption.showFiles),
+      wetRun: commandConfig.value(AppPublishCommandOption.wetRun),
+      outputPath: commandConfig
+          .optionalValue(AppPublishCommandOption.output)
+          ?.path,
     );
   }
 }
@@ -657,8 +697,8 @@ Examples
 
 /// Returns the app directory set by project.appDir in [config], read from
 /// [configFile] and resolved from that file's directory, or else the
-/// Flutter app found in the server's workspace or near the server directory
-/// of [runner].
+/// Flutter app in the current directory, in the server's workspace, or near
+/// the server directory of [runner].
 ///
 /// Throws [FailureException] if the configured directory does not exist.
 Directory _configuredOrWorkspaceAppDirectory(
@@ -668,6 +708,12 @@ Directory _configuredOrWorkspaceAppDirectory(
 ) {
   final configuredAppDir = config?.appDir;
   if (configFile == null || configuredAppDir == null) {
+    final currentDirectory = Directory.current;
+    if (runner.globalConfiguration.projectDir == null &&
+        File(p.join(currentDirectory.path, 'pubspec.yaml')).existsSync() &&
+        TenantProjectPubspec.fromProjectDir(currentDirectory).isFlutterApp()) {
+      return currentDirectory;
+    }
     return TenantProject.findAppDirectory(runner.verifiedProjectDirectory());
   }
   final configFilePath = configFile.path;

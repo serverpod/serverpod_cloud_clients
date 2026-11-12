@@ -41,7 +41,10 @@ abstract class AppPublish {
   ///
   /// The command to follow the builds is shown, invoked through
   /// [baseCommand]. With [awaitBuilds], the progress and logs of the builds
-  /// are then shown until they end.
+  /// are then shown until they end. With [showFiles], the archive file tree
+  /// is printed. With [outputPath], the archive is also saved to that path.
+  /// With [wetRun], preparation ends after zipping and saving the archive,
+  /// without uploading it or requesting builds.
   ///
   /// Throws [FailureException] if the app has no code for a platform to
   /// publish, if the app identifier of a platform cannot be read or is
@@ -65,6 +68,9 @@ abstract class AppPublish {
     String? flutterVersionOverride,
     String? configuredFlutterVersion,
     bool awaitBuilds = true,
+    bool showFiles = false,
+    bool wetRun = false,
+    String? outputPath,
   }) async {
     logger.init('Publishing the app of Serverpod Cloud project "$projectId".');
 
@@ -119,9 +125,23 @@ abstract class AppPublish {
     final appZip = await DeployArchive.zip(
       logger: logger,
       projectFilePreparer: preparer,
-      showFiles: false,
+      showFiles: showFiles,
       subject: 'app',
     );
+
+    if (outputPath != null) {
+      await DeployArchive.writeZipFile(
+        logger: logger,
+        outputPath: outputPath,
+        projectZip: appZip,
+      );
+    }
+    if (wetRun) {
+      logger.success(
+        'Wet run complete. No app was uploaded or builds started.',
+      );
+      return;
+    }
 
     final gitMetadata = await readGitMetadata(
       appDirectory.path,
