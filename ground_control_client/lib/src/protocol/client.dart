@@ -235,7 +235,7 @@ class EndpointAdminDatabaseScaling extends _isc.EndpointRef {
   );
 }
 
-/// Admin tools for setting capsule grant allowances.
+/// Admin tools for setting grant allowances.
 /// {@category Endpoint}
 class EndpointAdminGrants extends _isc.EndpointRef {
   EndpointAdminGrants(_isc.EndpointCaller caller) : super(caller);
@@ -260,6 +260,19 @@ class EndpointAdminGrants extends _isc.EndpointRef {
     required int amount,
   }) => caller.callServerEndpoint<void>('adminGrants', 'setCapsuleGrant', {
     'cloudCapsuleId': cloudCapsuleId,
+    'grant': grant,
+    'amount': amount,
+  });
+
+  /// Throws [NotFoundException] when the project does not exist.
+  /// Throws [InvalidValueException] when [grant] is not a plan grant, or
+  /// when [amount] is less than -1.
+  _ida.Future<void> setPlanGrant({
+    required String cloudProjectId,
+    required String grant,
+    required int amount,
+  }) => caller.callServerEndpoint<void>('adminGrants', 'setPlanGrant', {
+    'cloudProjectId': cloudProjectId,
     'grant': grant,
     'amount': amount,
   });
