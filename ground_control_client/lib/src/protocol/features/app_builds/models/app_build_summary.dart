@@ -12,6 +12,8 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
+import '../../../domains/app_builds/models/app_build_failure_reason.dart'
+    as _izmqhuyw;
 import '../../../domains/app_builds/models/app_build_status.dart' as _ih9cduki;
 import '../../../domains/app_builds/models/app_platform.dart' as _ibmlgwb0;
 import '../../../domains/users/models/user.dart' as _ijl94k1v;
@@ -28,6 +30,7 @@ abstract class AppBuildSummary
     this.versionName,
     this.buildNumber,
     this.message,
+    this.failureReason,
     this.requestedBy,
     this.commitHash,
     this.commitMessage,
@@ -45,6 +48,7 @@ abstract class AppBuildSummary
     String? versionName,
     String? buildNumber,
     String? message,
+    _izmqhuyw.AppBuildFailureReason? failureReason,
     _ijl94k1v.User? requestedBy,
     String? commitHash,
     String? commitMessage,
@@ -69,6 +73,11 @@ abstract class AppBuildSummary
       versionName: jsonSerialization['versionName'] as String?,
       buildNumber: jsonSerialization['buildNumber'] as String?,
       message: jsonSerialization['message'] as String?,
+      failureReason: jsonSerialization['failureReason'] == null
+          ? null
+          : _izmqhuyw.AppBuildFailureReason.fromJson(
+              (jsonSerialization['failureReason'] as String),
+            ),
       requestedBy: jsonSerialization['requestedBy'] == null
           ? null
           : _iod2a87h.Protocol().deserialize<_ijl94k1v.User>(
@@ -106,8 +115,14 @@ abstract class AppBuildSummary
   /// A string because Apple allows dotted build numbers.
   String? buildNumber;
 
-  /// The build service's explanation when it rejects or fails the build.
+  /// Why the build was rejected or failed: the text of the failed step's
+  /// log that explains it when a known one is found, else the build
+  /// service's own explanation.
   String? message;
+
+  /// Why the build failed or was not uploaded. Null for a build that did
+  /// neither, and for one that ended before reasons were recorded.
+  _izmqhuyw.AppBuildFailureReason? failureReason;
 
   /// The user who requested the build, if known.
   _ijl94k1v.User? requestedBy;
@@ -143,6 +158,7 @@ abstract class AppBuildSummary
     String? versionName,
     String? buildNumber,
     String? message,
+    _izmqhuyw.AppBuildFailureReason? failureReason,
     _ijl94k1v.User? requestedBy,
     String? commitHash,
     String? commitMessage,
@@ -162,6 +178,7 @@ abstract class AppBuildSummary
       if (versionName != null) 'versionName': versionName,
       if (buildNumber != null) 'buildNumber': buildNumber,
       if (message != null) 'message': message,
+      if (failureReason != null) 'failureReason': failureReason?.toJson(),
       if (requestedBy != null) 'requestedBy': requestedBy?.toJson(),
       if (commitHash != null) 'commitHash': commitHash,
       if (commitMessage != null) 'commitMessage': commitMessage,
@@ -183,6 +200,7 @@ abstract class AppBuildSummary
       if (versionName != null) 'versionName': versionName,
       if (buildNumber != null) 'buildNumber': buildNumber,
       if (message != null) 'message': message,
+      if (failureReason != null) 'failureReason': failureReason?.toJson(),
       if (requestedBy != null) 'requestedBy': requestedBy?.toJsonForProtocol(),
       if (commitHash != null) 'commitHash': commitHash,
       if (commitMessage != null) 'commitMessage': commitMessage,
@@ -210,6 +228,7 @@ class _AppBuildSummaryImpl extends AppBuildSummary {
     String? versionName,
     String? buildNumber,
     String? message,
+    _izmqhuyw.AppBuildFailureReason? failureReason,
     _ijl94k1v.User? requestedBy,
     String? commitHash,
     String? commitMessage,
@@ -225,6 +244,7 @@ class _AppBuildSummaryImpl extends AppBuildSummary {
          versionName: versionName,
          buildNumber: buildNumber,
          message: message,
+         failureReason: failureReason,
          requestedBy: requestedBy,
          commitHash: commitHash,
          commitMessage: commitMessage,
@@ -246,6 +266,7 @@ class _AppBuildSummaryImpl extends AppBuildSummary {
     Object? versionName = _Undefined,
     Object? buildNumber = _Undefined,
     Object? message = _Undefined,
+    Object? failureReason = _Undefined,
     Object? requestedBy = _Undefined,
     Object? commitHash = _Undefined,
     Object? commitMessage = _Undefined,
@@ -262,6 +283,9 @@ class _AppBuildSummaryImpl extends AppBuildSummary {
       versionName: versionName is String? ? versionName : this.versionName,
       buildNumber: buildNumber is String? ? buildNumber : this.buildNumber,
       message: message is String? ? message : this.message,
+      failureReason: failureReason is _izmqhuyw.AppBuildFailureReason?
+          ? failureReason
+          : this.failureReason,
       requestedBy: requestedBy is _ijl94k1v.User?
           ? requestedBy
           : this.requestedBy?.copyWith(),
