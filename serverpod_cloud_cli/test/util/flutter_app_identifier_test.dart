@@ -547,4 +547,28 @@ android {
       );
     });
   });
+
+  group('Given a blank Android package name configured in scloud.yaml', () {
+    setUp(() async {
+      await d.dir('app', [ProjectFactory.flutterAndroidDir()]).create();
+    });
+
+    test('when resolving the Android app identifier '
+        'then throws FailureException saying it is empty', () {
+      expect(
+        () => resolveAppIdentifier(
+          appDirectory(),
+          FlutterPlatform.android,
+          configured: '  ',
+          configFileName: 'scloud.yaml',
+        ),
+        throwsA(
+          isA<FailureException>().having((e) => e.errors, 'errors', [
+            'scloud.yaml sets project.appIdentifiers.android to an empty '
+                'value.',
+          ]),
+        ),
+      );
+    });
+  });
 }

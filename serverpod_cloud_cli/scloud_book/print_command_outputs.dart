@@ -336,6 +336,7 @@ const _scenarios = [
     '--platforms',
     'ios,android',
   ]),
+  _Scenario('app doctor', ['app', 'doctor', '--app-dir', '../app']),
   _Scenario('app status', ['app', 'status', '--project', _projectId]),
   _Scenario('app log', [
     'app',
@@ -521,10 +522,12 @@ Future<void> main(final List<String> args) async {
   final workDir = Directory.systemTemp.createTempSync('scloud-output-');
   final configDir = Directory('${workDir.path}/config')..createSync();
   final projectDir = Directory('${workDir.path}/server')..createSync();
+  final appDir = Directory('${workDir.path}/app')..createSync();
 
   try {
     await _prepareConfigDir(configDir);
     _prepareProjectDir(projectDir);
+    _prepareAppDir(appDir);
     await _printOutputs(
       configDir: configDir,
       projectDir: projectDir,
@@ -570,6 +573,70 @@ dependencies:
   serverpod: ^2.3.0
 ''');
   File('${projectDir.path}/avatar.png').writeAsBytesSync(const [0x89, 0x50]);
+}
+
+/// Writes a Flutter app whose Android and iOS setup pass the checks of
+/// `app doctor`, and that requests no Flutter version, which is a warning.
+void _prepareAppDir(final Directory appDir) {
+  File('${appDir.path}/pubspec.yaml').writeAsStringSync('''
+name: acme_flutter
+environment:
+  sdk: ^3.8.0
+dependencies:
+  flutter:
+    sdk: flutter
+''');
+  Directory('${appDir.path}/android/app').createSync(recursive: true);
+  File('${appDir.path}/android/app/build.gradle.kts').writeAsStringSync("""
+val isServerpodCloudBuild = System.getenv("SERVERPOD_APP_BUILD") != null
+
+android {
+    defaultConfig {
+        applicationId = "com.acme.app"
+    }
+    signingConfigs {
+        if (isServerpodCloudBuild) {
+            create("release") {
+                storeFile = file(System.getenv("ANDROID_KEYSTORE_PATH"))
+                storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+            }
+        }
+    }
+    buildTypes {
+        release {
+            signingConfig = if (isServerpodCloudBuild) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
+        }
+    }
+}
+""");
+  Directory('${appDir.path}/ios/Runner.xcodeproj').createSync(recursive: true);
+  File('${appDir.path}/ios/Runner.xcodeproj/project.pbxproj').writeAsStringSync(
+    """
+		97C147071CF9000F007C117D /* Release */ = {
+			buildSettings = {
+				INFOPLIST_FILE = Runner/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.acme.app;
+			};
+		};
+""",
+  );
+  Directory('${appDir.path}/ios/Runner').createSync();
+  File('${appDir.path}/ios/Runner/Info.plist').writeAsStringSync("""
+<plist version="1.0">
+<dict>
+	<key>CFBundleDisplayName</key>
+	<string>Acme</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+</dict>
+</plist>
+""");
 }
 
 Future<void> _prepareConfigDir(final Directory configDir) async {

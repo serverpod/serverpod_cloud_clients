@@ -2,9 +2,11 @@ import 'package:ground_control_client/ground_control_client.dart'
     hide AppBuildStepLog;
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/app/app_build_step_log.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/app/app_doctor_check.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/app/app_status_row.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/app/app_upload_row.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/app/app_ui.dart';
+import 'package:serverpod_cloud_cli/util/flutter_platform.dart';
 import 'package:test/test.dart';
 
 import '../../../test_utils/render_command_ui.dart';
@@ -227,6 +229,115 @@ void main() {
       );
 
       expect(io.stdout, '--- Build (Succeeded) ---\n');
+    });
+  });
+
+  group('Given app doctor checks with one failed check', () {
+    late String stdout;
+    late String stderr;
+
+    setUp(() async {
+      final io = await renderCommandUi(
+        const AppDoctorTextUi(),
+        data: const [
+          AppDoctorCheck(
+            platform: FlutterPlatform.ios,
+            kind: AppDoctorCheckKind.appIdentifier,
+            status: AppDoctorCheckStatus.passed,
+            detail: 'com.acme.app',
+          ),
+          AppDoctorCheck(
+            platform: FlutterPlatform.ios,
+            kind: AppDoctorCheckKind.exportCompliance,
+            status: AppDoctorCheckStatus.failed,
+            detail: 'ios/Runner/Info.plist is missing.',
+            hint: 'Recreate the ios project.',
+          ),
+        ],
+      );
+      stdout = io.stdout;
+      stderr = io.stderr;
+    });
+
+    test(
+      'when rendered then the summary says one check failed and asks to fix it',
+      () {
+        expect(
+          stderr,
+          contains('1 check failed. Fix it before you publish the app.'),
+        );
+      },
+    );
+
+    test('when rendered then the hint follows the failed check', () {
+      expect(
+        stdout,
+        contains(
+          '  ✗ Export compliance: ios/Runner/Info.plist is missing.\n'
+          '    Recreate the ios project.',
+        ),
+      );
+    });
+  });
+
+  group('Given app doctor checks with one warning and no failure', () {
+    late String stdout;
+
+    setUp(() async {
+      final io = await renderCommandUi(
+        const AppDoctorTextUi(),
+        data: const [
+          AppDoctorCheck(
+            platform: null,
+            kind: AppDoctorCheckKind.flutterVersion,
+            status: AppDoctorCheckStatus.warning,
+            detail: 'No Flutter version is requested.',
+            hint: 'Set project.flutterSdk.',
+          ),
+        ],
+      );
+      stdout = io.stdout;
+    });
+
+    test('when rendered then the warning is marked under the app', () {
+      expect(
+        stdout,
+        contains('App\n  ! Flutter version: No Flutter version is requested.'),
+      );
+    });
+
+    test('when rendered then the summary is the number of warnings', () {
+      expect(stdout, contains('\n1 warning found\n'));
+      expect(stdout, isNot(contains('No issues found')));
+    });
+  });
+
+  group('Given app doctor checks with two warnings and no failure', () {
+    late String stdout;
+
+    setUp(() async {
+      final io = await renderCommandUi(
+        const AppDoctorTextUi(),
+        data: const [
+          AppDoctorCheck(
+            platform: null,
+            kind: AppDoctorCheckKind.flutterVersion,
+            status: AppDoctorCheckStatus.warning,
+            detail: 'No Flutter version is requested.',
+          ),
+          AppDoctorCheck(
+            platform: FlutterPlatform.ios,
+            kind: AppDoctorCheckKind.exportCompliance,
+            status: AppDoctorCheckStatus.warning,
+            detail: 'Exempt encryption is assumed.',
+          ),
+        ],
+      );
+      stdout = io.stdout;
+    });
+
+    test('when rendered then the summary counts both warnings', () {
+      expect(stdout, contains('\n2 warnings found\n'));
     });
   });
 }

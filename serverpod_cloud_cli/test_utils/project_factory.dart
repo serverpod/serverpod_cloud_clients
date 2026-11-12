@@ -149,8 +149,11 @@ dependencies:
 
   /// Returns descriptor for the `android` directory of a Flutter app whose
   /// app module declares [applicationId], as `flutter create` lays it out.
+  /// [releaseSigning] is added to the `android` block of the app module,
+  /// such as [debugKeyReleaseSigning] or [serverpodCloudReleaseSigning].
   static d.DirectoryDescriptor flutterAndroidDir({
     String applicationId = 'com.acme.app',
+    String releaseSigning = '',
   }) {
     return d.dir('android', [
       d.file('build.gradle.kts', ''),
@@ -163,20 +166,81 @@ android {
         // The unique Application ID of the app.
         applicationId = "$applicationId"
     }
-}
+$releaseSigning}
 """),
       ]),
     ]);
   }
 
+  /// The `buildTypes` block that `flutter create` writes into
+  /// `android/app/build.gradle.kts`, which signs release builds with the
+  /// debug key. Pass it as `releaseSigning` to [flutterAndroidDir].
+  static const debugKeyReleaseSigning = """
+    buildTypes {
+        release {
+            // TODO: Add your own signing config for the release build.
+            // Signing with the debug keys for now, so `flutter run --release` works.
+            signingConfig = signingConfigs.getByName("debug")
+        }
+    }
+""";
+
+  /// The release signing setup that `serverpod create` adds to
+  /// `android/app/build.gradle.kts`, which signs release builds on
+  /// Serverpod Cloud with the keystore from the environment, and with the
+  /// debug key elsewhere. Pass it as `releaseSigning` to [flutterAndroidDir].
+  static const serverpodCloudReleaseSigning = """
+    val isServerpodCloudBuild = System.getenv("SERVERPOD_APP_BUILD") != null
+
+    signingConfigs {
+        if (isServerpodCloudBuild) {
+            create("release") {
+                storeFile = file(System.getenv("ANDROID_KEYSTORE_PATH"))
+                storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig = if (isServerpodCloudBuild) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
+        }
+    }
+""";
+
   /// Returns descriptor for the `ios` directory of a Flutter app whose app
   /// target has [bundleId] in every build configuration, with the test
   /// target `flutter create` adds next to it.
+  ///
+  /// With [usesNonExemptEncryption], the Runner's Info.plist sets
+  /// `ITSAppUsesNonExemptEncryption` to it, and with [withInfoPlist] alone,
+  /// the Info.plist leaves it out.
   static d.DirectoryDescriptor flutterIosDir({
     String bundleId = 'com.acme.app',
+    bool withInfoPlist = false,
+    bool? usesNonExemptEncryption,
   }) {
     return d.dir('ios', [
       d.file('Podfile', ''),
+      if (withInfoPlist || usesNonExemptEncryption != null)
+        d.dir('Runner', [
+          d.file('Info.plist', """
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDisplayName</key>
+	<string>Acme</string>
+${usesNonExemptEncryption == null ? '' : '\t<key>ITSAppUsesNonExemptEncryption</key>\n\t<$usesNonExemptEncryption/>\n'}</dict>
+</plist>
+"""),
+        ]),
       d.dir('Runner.xcodeproj', [
         d.file('project.pbxproj', """
 		331C8088294A63A400263BE5 /* Debug */ = {
@@ -209,17 +273,19 @@ android {
   }
 
   /// Returns descriptor for a `project_flutter` Flutter app that is not
-  /// resolved in a workspace, with a lock file and a package graph.
+  /// resolved in a workspace, with a lock file and a package graph. Its
+  /// pubspec has [withFlutterConstraint] as its Flutter SDK constraint.
   /// Use `descriptor.create()` to create the directory.
   static d.DirectoryDescriptor nonWorkspaceFlutterAppDir({
     Iterable<d.Descriptor>? contents,
+    String withFlutterConstraint = '3.29.0',
   }) {
     return d.dir('project_flutter', [
       d.file('pubspec.yaml', '''
 name: project_flutter
 environment:
   sdk: $validSdkVersion
-  flutter: 3.29.0
+  flutter: "$withFlutterConstraint"
 dependencies:
   flutter:
     sdk: flutter

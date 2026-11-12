@@ -259,4 +259,64 @@ void main() {
       );
     });
   });
+
+  group('Given a Flutter version pinned only in .tool-versions', () {
+    test(
+      'when selecting with its source '
+      'then the version comes without its asdf suffix, from .tool-versions',
+      () {
+        expect(
+          FlutterSdkSelector.selectFlutterVersionWithSource(
+            toolVersionsVersion: '3.38.1-stable',
+            pubspecVersionConstraint: '>=3.29.0',
+          ),
+          (version: '3.38.1', source: '.tool-versions'),
+        );
+      },
+    );
+  });
+
+  group('Given a Flutter version set in a project configuration file with '
+      'its own name', () {
+    test('when selecting with its source then the file name is the source', () {
+      expect(
+        FlutterSdkSelector.selectFlutterVersionWithSource(
+          scloudVersion: '3.38.3',
+          scloudFileName: 'scloud_staging.yaml',
+        ),
+        (version: '3.38.3', source: 'scloud_staging.yaml'),
+      );
+    });
+  });
+
+  group('Given an app whose pubspec requires Flutter 3.38.0 or later', () {
+    test('when selecting a requested version below it '
+        'then throws FailureException naming the pubspec constraint', () {
+      expect(
+        () => FlutterSdkSelector.selectFlutterVersion(
+          commandLineVersion: '3.35.0',
+          pubspecVersionConstraint: '>=3.38.0',
+          lockVersionConstraint: '>=3.29.0',
+        ),
+        throwsA(
+          isA<FailureException>().having((e) => e.errors, 'errors', [
+            'The Flutter version 3.35.0 (from --flutter-version flag) is '
+                'below the Flutter SDK constraint ">=3.38.0" of the app '
+                '(from pubspec.yaml).',
+          ]),
+        ),
+      );
+    });
+
+    test('when selecting a requested version above it '
+        'then the requested version is returned', () {
+      expect(
+        FlutterSdkSelector.selectFlutterVersion(
+          commandLineVersion: '3.38.4',
+          pubspecVersionConstraint: '^3.38.0',
+        ),
+        '3.38.4',
+      );
+    });
+  });
 }
