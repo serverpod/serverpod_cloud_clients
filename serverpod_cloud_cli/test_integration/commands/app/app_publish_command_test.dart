@@ -82,6 +82,43 @@ void main() {
     reset(client.appPublishing);
   });
 
+  test('Given different app display names when publishing '
+      'then the names and platform identifiers are shown', () async {
+    await ProjectFactory.serverpodAppWorkspace(
+      extraContents: [
+        d.dir('project_flutter', [
+          ProjectFactory.flutterIosDir(
+            withInfoPlist: true,
+            displayName: 'Cloud Books for iOS',
+          ),
+          ProjectFactory.flutterAndroidDir(
+            displayName: 'Cloud Books for Android',
+          ),
+        ]),
+      ],
+    ).create();
+
+    await cli.run([
+      'app',
+      'publish',
+      '--project',
+      _projectId,
+      '--project-dir',
+      p.join(d.sandbox, 'monorepo', 'project_server'),
+      '--no-await',
+    ]);
+
+    expect(
+      logger.infoCalls.map((call) => call.message),
+      containsAll([
+        'iOS app: Cloud Books for iOS',
+        'Android app: Cloud Books for Android',
+        'iOS bundle ID: com.acme.app',
+        'Android package name: com.acme.app',
+      ]),
+    );
+  });
+
   test('Given app publish command when instantiated then requires login', () {
     expect(CloudAppPublishCommand(logger: logger).requireLogin, isTrue);
   });
@@ -171,6 +208,17 @@ void main() {
       test('then the command completes', () async {
         await expectLater(commandResult, completes);
       });
+
+      test(
+        'then an app without a display name shows its package name',
+        () async {
+          await commandResult;
+          expect(
+            logger.infoCalls.map((call) => call.message),
+            contains('Android app: project_flutter'),
+          );
+        },
+      );
 
       test('then an Android build is requested for the app directory '
           'in the archive and the archive size', () async {

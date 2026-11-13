@@ -9,6 +9,7 @@ import 'package:serverpod_cloud_cli/command_runner/commands/deploy/prepare_proje
 import 'package:serverpod_cloud_cli/command_runner/helpers/file_uploader_factory.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/flutter_app_identifier.dart';
+import 'package:serverpod_cloud_cli/util/flutter_app_name.dart';
 import 'package:serverpod_cloud_cli/util/flutter_platform.dart';
 import 'package:serverpod_cloud_cli/util/git_metadata.dart';
 
@@ -96,6 +97,13 @@ abstract class AppPublish {
     };
     for (final MapEntry(key: platform, value: appIdentifier)
         in appIdentifiers.entries) {
+      final name = readAppDisplayName(
+        appDirectory,
+        platform,
+        fallback: preparer.projectPackageName,
+      );
+      final platformName = platform == FlutterPlatform.ios ? 'iOS' : 'Android';
+      logger.info('$platformName app: $name');
       logger.info('${appIdentifierName(platform)}: $appIdentifier');
     }
 

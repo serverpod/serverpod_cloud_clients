@@ -14,6 +14,7 @@ import 'package:yaml/yaml.dart';
 
 import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/test_command_logger.dart';
+import '../../../test/util/inline_tui/helpers/fake_terminal.dart';
 
 const _projectId = 'my-project-id';
 final _uploadId = const Uuid().v4obj();
@@ -31,6 +32,10 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(const Uuid().v4obj());
+  });
+
+  setUp(() {
+    logger.inlineTerminal = FakeTerminal();
   });
 
   tearDown(() {
@@ -91,6 +96,992 @@ void main() {
         ),
       ).called(1);
     });
+  }
+
+  for (final status in [
+    null,
+    AppBuildStatus.queued,
+    AppBuildStatus.waiting,
+    AppBuildStatus.running,
+  ]) {
+    test(
+      'Given a build watch whose last status is $status '
+      'when reconnects stop reporting the build then logging fails',
+      () async {
+        final build = AppBuildSummaryBuilder()
+            .withStatus(status ?? AppBuildStatus.running)
+            .build();
+        when(
+          () => client.appBuilds.getUploadBuilds(
+            cloudCapsuleId: _projectId,
+            uploadId: _uploadId,
+          ),
+        ).thenAnswer((_) async => [build]);
+        var reported = false;
+        when(
+          () => client.appBuilds.tailBuild(
+            cloudCapsuleId: _projectId,
+            buildId: build.id,
+          ),
+        ).thenAnswer((_) {
+          if (status != null && !reported) {
+            reported = true;
+            return Stream.value(
+              AppBuildDetailBuilder().withBuild(build).withSteps([]).build(),
+            );
+          }
+          return const Stream.empty();
+        });
+
+        await expectLater(
+          cli.run(['app', 'log', _uploadId.uuid, '--project', _projectId]),
+          throwsA(isA<ErrorExitException>()),
+        );
+
+        expect(
+          logger.errorCalls.map((call) => call.message),
+          contains(
+            status == null
+                ? 'The iOS build did not report its status.'
+                : 'The iOS build did not finish.',
+          ),
+        );
+      },
+    );
+  }
+
+  test('Given a queued build without logs when logging with --no-watch '
+      'then it prints nothing and exits without following', () async {
+    final build = AppBuildSummaryBuilder()
+        .withStatus(AppBuildStatus.queued)
+        .build();
+    when(
+      () => client.appBuilds.getUploadBuilds(
+        cloudCapsuleId: _projectId,
+        uploadId: _uploadId,
+      ),
+    ).thenAnswer((_) async => [build]);
+    when(
+      () => client.appBuilds.getBuild(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+      ),
+    ).thenAnswer(
+      (_) async =>
+          AppBuildDetailBuilder().withBuild(build).withSteps([]).build(),
+    );
+
+    await cli.run([
+      'app',
+      'log',
+      _uploadId.uuid,
+      '--project',
+      _projectId,
+      '--no-watch',
+    ]);
+
+    expect(logger.lineCalls, isEmpty);
+    expect(logger.infoCalls, isEmpty);
+    expect((logger.inlineTerminal as FakeTerminal).output, isEmpty);
+    verify(
+      () => client.appBuilds.getBuild(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+      ),
+    ).called(1);
+    verifyNever(
+      () => client.appBuilds.tailBuild(
+        cloudCapsuleId: any(named: 'cloudCapsuleId'),
+        buildId: any(named: 'buildId'),
+      ),
+    );
+  });
+
+  test('Given a running build with a skipped step '
+      'when logging with --no-watch as text '
+      'then the step heading is printed', () async {
+    final build = AppBuildSummaryBuilder()
+        .withStatus(AppBuildStatus.running)
+        .build();
+    when(
+      () => client.appBuilds.getUploadBuilds(
+        cloudCapsuleId: _projectId,
+        uploadId: _uploadId,
+      ),
+    ).thenAnswer((_) async => [build]);
+    when(
+      () => client.appBuilds.getBuild(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+      ),
+    ).thenAnswer(
+      (_) async => AppBuildDetailBuilder().withBuild(build).withSteps([
+        AppBuildStepInfoBuilder()
+            .withStatus(AppBuildStepStatus.skipped)
+            .build(),
+      ]).build(),
+    );
+
+    await cli.run([
+      'app',
+      'log',
+      _uploadId.uuid,
+      '--project',
+      _projectId,
+      '--no-watch',
+    ]);
+
+    expect(logger.lineCalls.map((call) => call.line), [
+      '--- Build (Skipped) ---',
+    ]);
+    verifyNever(
+      () => client.appBuilds.getStepLog(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+        stepIndex: 0,
+      ),
+    );
+  });
+
+  test('Given a running build with a skipped step '
+      'when logging with --no-watch as json '
+      'then the step is included', () async {
+    final build = AppBuildSummaryBuilder()
+        .withStatus(AppBuildStatus.running)
+        .build();
+    when(
+      () => client.appBuilds.getUploadBuilds(
+        cloudCapsuleId: _projectId,
+        uploadId: _uploadId,
+      ),
+    ).thenAnswer((_) async => [build]);
+    when(
+      () => client.appBuilds.getBuild(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+      ),
+    ).thenAnswer(
+      (_) async => AppBuildDetailBuilder().withBuild(build).withSteps([
+        AppBuildStepInfoBuilder()
+            .withStatus(AppBuildStepStatus.skipped)
+            .build(),
+      ]).build(),
+    );
+
+    await cli.run([
+      'app',
+      'log',
+      _uploadId.uuid,
+      '--project',
+      _projectId,
+      '--no-watch',
+      '--format',
+      'json',
+    ]);
+
+    final payload = jsonDecode(logger.rawCalls.single.content) as Map;
+    expect(payload['status'], 'skipped');
+    expect(payload['log'], isNull);
+    verifyNever(
+      () => client.appBuilds.getStepLog(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+        stepIndex: 0,
+      ),
+    );
+  });
+
+  test('Given a running build with a skipped step '
+      'when logging with --no-watch as yaml '
+      'then the step is included', () async {
+    final build = AppBuildSummaryBuilder()
+        .withStatus(AppBuildStatus.running)
+        .build();
+    when(
+      () => client.appBuilds.getUploadBuilds(
+        cloudCapsuleId: _projectId,
+        uploadId: _uploadId,
+      ),
+    ).thenAnswer((_) async => [build]);
+    when(
+      () => client.appBuilds.getBuild(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+      ),
+    ).thenAnswer(
+      (_) async => AppBuildDetailBuilder().withBuild(build).withSteps([
+        AppBuildStepInfoBuilder()
+            .withStatus(AppBuildStepStatus.skipped)
+            .build(),
+      ]).build(),
+    );
+
+    await cli.run([
+      'app',
+      'log',
+      _uploadId.uuid,
+      '--project',
+      _projectId,
+      '--no-watch',
+      '--format',
+      'yaml',
+    ]);
+
+    final payload = loadYaml(logger.rawCalls.single.content) as Map;
+    expect(payload['status'], 'skipped');
+    expect(payload['log'], isNull);
+    verifyNever(
+      () => client.appBuilds.getStepLog(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+        stepIndex: 0,
+      ),
+    );
+  });
+
+  test('Given a finished build with a skipped step '
+      'when logging with --no-watch as text '
+      'then the step heading is printed', () async {
+    final build = AppBuildSummaryBuilder()
+        .withStatus(AppBuildStatus.succeeded)
+        .build();
+    when(
+      () => client.appBuilds.getUploadBuilds(
+        cloudCapsuleId: _projectId,
+        uploadId: _uploadId,
+      ),
+    ).thenAnswer((_) async => [build]);
+    when(
+      () => client.appBuilds.getBuild(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+      ),
+    ).thenAnswer(
+      (_) async => AppBuildDetailBuilder().withBuild(build).withSteps([
+        AppBuildStepInfoBuilder()
+            .withStatus(AppBuildStepStatus.skipped)
+            .build(),
+      ]).build(),
+    );
+
+    await cli.run([
+      'app',
+      'log',
+      _uploadId.uuid,
+      '--project',
+      _projectId,
+      '--no-watch',
+    ]);
+
+    expect(logger.lineCalls.map((call) => call.line), [
+      '--- Build (Skipped) ---',
+    ]);
+    verifyNever(
+      () => client.appBuilds.getStepLog(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+        stepIndex: 0,
+      ),
+    );
+  });
+
+  test('Given a finished build with a skipped step '
+      'when logging with --no-watch as json '
+      'then the step is included', () async {
+    final build = AppBuildSummaryBuilder()
+        .withStatus(AppBuildStatus.succeeded)
+        .build();
+    when(
+      () => client.appBuilds.getUploadBuilds(
+        cloudCapsuleId: _projectId,
+        uploadId: _uploadId,
+      ),
+    ).thenAnswer((_) async => [build]);
+    when(
+      () => client.appBuilds.getBuild(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+      ),
+    ).thenAnswer(
+      (_) async => AppBuildDetailBuilder().withBuild(build).withSteps([
+        AppBuildStepInfoBuilder()
+            .withStatus(AppBuildStepStatus.skipped)
+            .build(),
+      ]).build(),
+    );
+
+    await cli.run([
+      'app',
+      'log',
+      _uploadId.uuid,
+      '--project',
+      _projectId,
+      '--no-watch',
+      '--format',
+      'json',
+    ]);
+
+    final payload = jsonDecode(logger.rawCalls.single.content) as Map;
+    expect(payload['status'], 'skipped');
+    expect(payload['log'], isNull);
+    verifyNever(
+      () => client.appBuilds.getStepLog(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+        stepIndex: 0,
+      ),
+    );
+  });
+
+  test('Given a finished build with a skipped step '
+      'when logging with --no-watch as yaml '
+      'then the step is included', () async {
+    final build = AppBuildSummaryBuilder()
+        .withStatus(AppBuildStatus.succeeded)
+        .build();
+    when(
+      () => client.appBuilds.getUploadBuilds(
+        cloudCapsuleId: _projectId,
+        uploadId: _uploadId,
+      ),
+    ).thenAnswer((_) async => [build]);
+    when(
+      () => client.appBuilds.getBuild(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+      ),
+    ).thenAnswer(
+      (_) async => AppBuildDetailBuilder().withBuild(build).withSteps([
+        AppBuildStepInfoBuilder()
+            .withStatus(AppBuildStepStatus.skipped)
+            .build(),
+      ]).build(),
+    );
+
+    await cli.run([
+      'app',
+      'log',
+      _uploadId.uuid,
+      '--project',
+      _projectId,
+      '--no-watch',
+      '--format',
+      'yaml',
+    ]);
+
+    final payload = loadYaml(logger.rawCalls.single.content) as Map;
+    expect(payload['status'], 'skipped');
+    expect(payload['log'], isNull);
+    verifyNever(
+      () => client.appBuilds.getStepLog(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+        stepIndex: 0,
+      ),
+    );
+  });
+
+  test('Given a finished build whose step log was discarded '
+      'when logging with --no-watch as text '
+      'then the step heading is printed', () async {
+    final build = AppBuildSummaryBuilder()
+        .withStatus(AppBuildStatus.succeeded)
+        .build();
+    when(
+      () => client.appBuilds.getUploadBuilds(
+        cloudCapsuleId: _projectId,
+        uploadId: _uploadId,
+      ),
+    ).thenAnswer((_) async => [build]);
+    when(
+      () => client.appBuilds.getBuild(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+      ),
+    ).thenAnswer(
+      (_) async => AppBuildDetailBuilder().withBuild(build).withSteps([
+        AppBuildStepInfoBuilder()
+            .withStatus(AppBuildStepStatus.succeeded)
+            .build(),
+      ]).build(),
+    );
+    when(
+      () => client.appBuilds.getStepLog(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+        stepIndex: 0,
+      ),
+    ).thenAnswer((_) async => null);
+
+    await cli.run([
+      'app',
+      'log',
+      _uploadId.uuid,
+      '--project',
+      _projectId,
+      '--no-watch',
+    ]);
+
+    expect(logger.lineCalls.map((call) => call.line), [
+      '--- Build (Succeeded) ---',
+    ]);
+  });
+
+  test('Given a finished build whose step log was discarded '
+      'when logging with --no-watch as json '
+      'then the step is included', () async {
+    final build = AppBuildSummaryBuilder()
+        .withStatus(AppBuildStatus.succeeded)
+        .build();
+    when(
+      () => client.appBuilds.getUploadBuilds(
+        cloudCapsuleId: _projectId,
+        uploadId: _uploadId,
+      ),
+    ).thenAnswer((_) async => [build]);
+    when(
+      () => client.appBuilds.getBuild(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+      ),
+    ).thenAnswer(
+      (_) async => AppBuildDetailBuilder().withBuild(build).withSteps([
+        AppBuildStepInfoBuilder()
+            .withStatus(AppBuildStepStatus.succeeded)
+            .build(),
+      ]).build(),
+    );
+    when(
+      () => client.appBuilds.getStepLog(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+        stepIndex: 0,
+      ),
+    ).thenAnswer((_) async => null);
+
+    await cli.run([
+      'app',
+      'log',
+      _uploadId.uuid,
+      '--project',
+      _projectId,
+      '--no-watch',
+      '--format',
+      'json',
+    ]);
+
+    final payload = jsonDecode(logger.rawCalls.single.content) as Map;
+    expect(payload['status'], 'succeeded');
+    expect(payload['log'], isNull);
+  });
+
+  test('Given a finished build whose step log was discarded '
+      'when logging with --no-watch as yaml '
+      'then the step is included', () async {
+    final build = AppBuildSummaryBuilder()
+        .withStatus(AppBuildStatus.succeeded)
+        .build();
+    when(
+      () => client.appBuilds.getUploadBuilds(
+        cloudCapsuleId: _projectId,
+        uploadId: _uploadId,
+      ),
+    ).thenAnswer((_) async => [build]);
+    when(
+      () => client.appBuilds.getBuild(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+      ),
+    ).thenAnswer(
+      (_) async => AppBuildDetailBuilder().withBuild(build).withSteps([
+        AppBuildStepInfoBuilder()
+            .withStatus(AppBuildStepStatus.succeeded)
+            .build(),
+      ]).build(),
+    );
+    when(
+      () => client.appBuilds.getStepLog(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+        stepIndex: 0,
+      ),
+    ).thenAnswer((_) async => null);
+
+    await cli.run([
+      'app',
+      'log',
+      _uploadId.uuid,
+      '--project',
+      _projectId,
+      '--no-watch',
+      '--format',
+      'yaml',
+    ]);
+
+    final payload = loadYaml(logger.rawCalls.single.content) as Map;
+    expect(payload['status'], 'succeeded');
+    expect(payload['log'], isNull);
+  });
+
+  test('Given a finished build whose step log is empty '
+      'when logging with --no-watch as text '
+      'then the step heading is printed', () async {
+    final build = AppBuildSummaryBuilder()
+        .withStatus(AppBuildStatus.succeeded)
+        .build();
+    when(
+      () => client.appBuilds.getUploadBuilds(
+        cloudCapsuleId: _projectId,
+        uploadId: _uploadId,
+      ),
+    ).thenAnswer((_) async => [build]);
+    when(
+      () => client.appBuilds.getBuild(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+      ),
+    ).thenAnswer(
+      (_) async => AppBuildDetailBuilder().withBuild(build).withSteps([
+        AppBuildStepInfoBuilder()
+            .withStatus(AppBuildStepStatus.succeeded)
+            .build(),
+      ]).build(),
+    );
+    when(
+      () => client.appBuilds.getStepLog(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+        stepIndex: 0,
+      ),
+    ).thenAnswer((_) async => '');
+
+    await cli.run([
+      'app',
+      'log',
+      _uploadId.uuid,
+      '--project',
+      _projectId,
+      '--no-watch',
+    ]);
+
+    expect(logger.lineCalls.map((call) => call.line), [
+      '--- Build (Succeeded) ---',
+    ]);
+  });
+
+  test('Given a finished build whose step log is empty '
+      'when logging with --no-watch as json '
+      'then the step is included', () async {
+    final build = AppBuildSummaryBuilder()
+        .withStatus(AppBuildStatus.succeeded)
+        .build();
+    when(
+      () => client.appBuilds.getUploadBuilds(
+        cloudCapsuleId: _projectId,
+        uploadId: _uploadId,
+      ),
+    ).thenAnswer((_) async => [build]);
+    when(
+      () => client.appBuilds.getBuild(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+      ),
+    ).thenAnswer(
+      (_) async => AppBuildDetailBuilder().withBuild(build).withSteps([
+        AppBuildStepInfoBuilder()
+            .withStatus(AppBuildStepStatus.succeeded)
+            .build(),
+      ]).build(),
+    );
+    when(
+      () => client.appBuilds.getStepLog(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+        stepIndex: 0,
+      ),
+    ).thenAnswer((_) async => '');
+
+    await cli.run([
+      'app',
+      'log',
+      _uploadId.uuid,
+      '--project',
+      _projectId,
+      '--no-watch',
+      '--format',
+      'json',
+    ]);
+
+    final payload = jsonDecode(logger.rawCalls.single.content) as Map;
+    expect(payload['status'], 'succeeded');
+    expect(payload['log'], '');
+  });
+
+  test('Given a finished build whose step log is empty '
+      'when logging with --no-watch as yaml '
+      'then the step is included', () async {
+    final build = AppBuildSummaryBuilder()
+        .withStatus(AppBuildStatus.succeeded)
+        .build();
+    when(
+      () => client.appBuilds.getUploadBuilds(
+        cloudCapsuleId: _projectId,
+        uploadId: _uploadId,
+      ),
+    ).thenAnswer((_) async => [build]);
+    when(
+      () => client.appBuilds.getBuild(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+      ),
+    ).thenAnswer(
+      (_) async => AppBuildDetailBuilder().withBuild(build).withSteps([
+        AppBuildStepInfoBuilder()
+            .withStatus(AppBuildStepStatus.succeeded)
+            .build(),
+      ]).build(),
+    );
+    when(
+      () => client.appBuilds.getStepLog(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+        stepIndex: 0,
+      ),
+    ).thenAnswer((_) async => '');
+
+    await cli.run([
+      'app',
+      'log',
+      _uploadId.uuid,
+      '--project',
+      _projectId,
+      '--no-watch',
+      '--format',
+      'yaml',
+    ]);
+
+    final payload = loadYaml(logger.rawCalls.single.content) as Map;
+    expect(payload['status'], 'succeeded');
+    expect(payload['log'], '');
+  });
+
+  test('Given an ended step followed by a running step '
+      'when logging with --no-watch as text '
+      'then the ended step log is printed and the command exits', () async {
+    final build = AppBuildSummaryBuilder()
+        .withStatus(AppBuildStatus.running)
+        .build();
+    when(
+      () => client.appBuilds.getUploadBuilds(
+        cloudCapsuleId: _projectId,
+        uploadId: _uploadId,
+      ),
+    ).thenAnswer((_) async => [build]);
+    when(
+      () => client.appBuilds.getBuild(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+      ),
+    ).thenAnswer(
+      (_) async => AppBuildDetailBuilder().withBuild(build).withSteps([
+        AppBuildStepInfoBuilder()
+            .withStatus(AppBuildStepStatus.succeeded)
+            .build(),
+        AppBuildStepInfoBuilder()
+            .withIndex(1)
+            .withStatus(AppBuildStepStatus.running)
+            .build(),
+      ]).build(),
+    );
+    when(
+      () => client.appBuilds.getStepLog(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+        stepIndex: 0,
+      ),
+    ).thenAnswer((_) async => 'Compiling the app');
+
+    await cli.run([
+      'app',
+      'log',
+      _uploadId.uuid,
+      '--project',
+      _projectId,
+      '--no-watch',
+    ]);
+
+    expect(logger.lineCalls.map((call) => call.line), [
+      '--- Build (Succeeded) ---',
+      'Compiling the app',
+    ]);
+    expect(logger.infoCalls, isEmpty);
+    expect((logger.inlineTerminal as FakeTerminal).output, isEmpty);
+    verifyNever(
+      () => client.appBuilds.getStepLog(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+        stepIndex: 1,
+      ),
+    );
+    verifyNever(
+      () => client.appBuilds.tailBuild(
+        cloudCapsuleId: any(named: 'cloudCapsuleId'),
+        buildId: any(named: 'buildId'),
+      ),
+    );
+  });
+
+  test('Given an ended step followed by a running step '
+      'when logging with --no-watch as json '
+      'then the ended step log is printed and the command exits', () async {
+    final build = AppBuildSummaryBuilder()
+        .withStatus(AppBuildStatus.running)
+        .build();
+    when(
+      () => client.appBuilds.getUploadBuilds(
+        cloudCapsuleId: _projectId,
+        uploadId: _uploadId,
+      ),
+    ).thenAnswer((_) async => [build]);
+    when(
+      () => client.appBuilds.getBuild(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+      ),
+    ).thenAnswer(
+      (_) async => AppBuildDetailBuilder().withBuild(build).withSteps([
+        AppBuildStepInfoBuilder()
+            .withStatus(AppBuildStepStatus.succeeded)
+            .build(),
+        AppBuildStepInfoBuilder()
+            .withIndex(1)
+            .withStatus(AppBuildStepStatus.running)
+            .build(),
+      ]).build(),
+    );
+    when(
+      () => client.appBuilds.getStepLog(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+        stepIndex: 0,
+      ),
+    ).thenAnswer((_) async => 'Compiling the app');
+
+    await cli.run([
+      'app',
+      'log',
+      _uploadId.uuid,
+      '--project',
+      _projectId,
+      '--no-watch',
+      '--format',
+      'json',
+    ]);
+
+    final payload = jsonDecode(logger.rawCalls.single.content) as Map;
+    expect(payload['log'], 'Compiling the app');
+    expect(payload['status'], 'succeeded');
+    expect(logger.lineCalls, isEmpty);
+    expect(logger.infoCalls, isEmpty);
+    expect((logger.inlineTerminal as FakeTerminal).output, isEmpty);
+    verifyNever(
+      () => client.appBuilds.getStepLog(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+        stepIndex: 1,
+      ),
+    );
+    verifyNever(
+      () => client.appBuilds.tailBuild(
+        cloudCapsuleId: any(named: 'cloudCapsuleId'),
+        buildId: any(named: 'buildId'),
+      ),
+    );
+  });
+
+  test('Given an ended step followed by a running step '
+      'when logging with --no-watch as yaml '
+      'then the ended step log is printed and the command exits', () async {
+    final build = AppBuildSummaryBuilder()
+        .withStatus(AppBuildStatus.running)
+        .build();
+    when(
+      () => client.appBuilds.getUploadBuilds(
+        cloudCapsuleId: _projectId,
+        uploadId: _uploadId,
+      ),
+    ).thenAnswer((_) async => [build]);
+    when(
+      () => client.appBuilds.getBuild(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+      ),
+    ).thenAnswer(
+      (_) async => AppBuildDetailBuilder().withBuild(build).withSteps([
+        AppBuildStepInfoBuilder()
+            .withStatus(AppBuildStepStatus.succeeded)
+            .build(),
+        AppBuildStepInfoBuilder()
+            .withIndex(1)
+            .withStatus(AppBuildStepStatus.running)
+            .build(),
+      ]).build(),
+    );
+    when(
+      () => client.appBuilds.getStepLog(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+        stepIndex: 0,
+      ),
+    ).thenAnswer((_) async => 'Compiling the app');
+
+    await cli.run([
+      'app',
+      'log',
+      _uploadId.uuid,
+      '--project',
+      _projectId,
+      '--no-watch',
+      '--format',
+      'yaml',
+    ]);
+
+    final payload = loadYaml(logger.rawCalls.single.content) as Map;
+    expect(payload['log'], 'Compiling the app');
+    expect(payload['status'], 'succeeded');
+    expect(logger.lineCalls, isEmpty);
+    expect(logger.infoCalls, isEmpty);
+    expect((logger.inlineTerminal as FakeTerminal).output, isEmpty);
+    verifyNever(
+      () => client.appBuilds.getStepLog(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+        stepIndex: 1,
+      ),
+    );
+    verifyNever(
+      () => client.appBuilds.tailBuild(
+        cloudCapsuleId: any(named: 'cloudCapsuleId'),
+        buildId: any(named: 'buildId'),
+      ),
+    );
+  });
+
+  test('Given a failed build when logging with --no-watch '
+      'then its failure is still reported', () async {
+    final build = AppBuildSummaryBuilder()
+        .withStatus(AppBuildStatus.failed)
+        .withMessage('Compilation failed')
+        .build();
+    when(
+      () => client.appBuilds.getUploadBuilds(
+        cloudCapsuleId: _projectId,
+        uploadId: _uploadId,
+      ),
+    ).thenAnswer((_) async => [build]);
+    when(
+      () => client.appBuilds.getBuild(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+      ),
+    ).thenAnswer(
+      (_) async =>
+          AppBuildDetailBuilder().withBuild(build).withSteps([]).build(),
+    );
+
+    await expectLater(
+      cli.run([
+        'app',
+        'log',
+        _uploadId.uuid,
+        '--project',
+        _projectId,
+        '--no-watch',
+      ]),
+      throwsA(isA<ErrorExitException>()),
+    );
+
+    expect(
+      logger.errorCalls.map((call) => call.message),
+      contains('The iOS build failed: Compilation failed'),
+    );
+  });
+
+  test('Given redirected output when watching logs '
+      'then no terminal indicator or banner is written', () async {
+    final terminal = FakeTerminal(hasTerminal: false);
+    logger.inlineTerminal = terminal;
+    final build = AppBuildSummaryBuilder().build();
+    when(
+      () => client.appBuilds.getUploadBuilds(
+        cloudCapsuleId: _projectId,
+        uploadId: _uploadId,
+      ),
+    ).thenAnswer((_) async => [build]);
+    when(
+      () => client.appBuilds.tailBuild(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+      ),
+    ).thenAnswer(
+      (_) => Stream.value(
+        AppBuildDetailBuilder().withBuild(build).withSteps([]).build(),
+      ),
+    );
+
+    await cli.run(['app', 'log', _uploadId.uuid, '--project', _projectId]);
+
+    expect(terminal.output, isEmpty);
+    expect(logger.infoCalls, isEmpty);
+  });
+
+  for (final fails in [false, true]) {
+    test(
+      'Given an interactive terminal when watching logs '
+      'then the waiting indicator is cleared when the stream ${fails ? 'fails' : 'ends'}',
+      () async {
+        final build = AppBuildSummaryBuilder().build();
+        when(
+          () => client.appBuilds.getUploadBuilds(
+            cloudCapsuleId: _projectId,
+            uploadId: _uploadId,
+          ),
+        ).thenAnswer((_) async => [build]);
+        when(
+          () => client.appBuilds.tailBuild(
+            cloudCapsuleId: _projectId,
+            buildId: build.id,
+          ),
+        ).thenAnswer(
+          (_) => fails
+              ? Stream.error(Exception('Unavailable'))
+              : Stream.value(
+                  AppBuildDetailBuilder()
+                      .withBuild(build)
+                      .withSteps([])
+                      .build(),
+                ),
+        );
+
+        final result = cli.run([
+          'app',
+          'log',
+          _uploadId.uuid,
+          '--project',
+          _projectId,
+          '--watch',
+        ]);
+        if (fails) {
+          await expectLater(result, throwsA(isA<ErrorExitException>()));
+        } else {
+          await result;
+        }
+
+        final terminal = logger.inlineTerminal as FakeTerminal;
+        expect(terminal.output, contains('Waiting for build logs'));
+        expect(terminal.output, endsWith('\x1b[0J'));
+      },
+    );
   }
 
   for (final platform in AppPlatform.values) {

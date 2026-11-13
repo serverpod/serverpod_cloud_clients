@@ -74,6 +74,23 @@ void main() {
     });
   });
 
+  test('Given a table with a wide final status cell '
+      'when rendered then the divider spans its visible width', () {
+    final lines = renderLines(
+      TablePrinter(
+        headers: ['Platform', 'Status'],
+        rows: [
+          ['iOS', '${_gray}Not uploaded$_reset'],
+          ['Android', 'Queued'],
+        ],
+      ),
+    );
+
+    expect(lines[1], '---------+-------------');
+    expect(lines[1].length, visible(lines[2]).length);
+    expect(lines.last, 'Android  | Queued');
+  });
+
   group('Given a table with an ANSI-styled header', () {
     test('when rendered then the divider matches the visible width', () {
       final lines = renderLines(
@@ -85,8 +102,8 @@ void main() {
         ),
       );
 
-      expect(visible(lines[0]), 'Name');
-      expect(lines[1], '----');
+      expect(visible(lines[0]).trimRight(), 'Name');
+      expect(lines[1], '-----');
     });
   });
 }

@@ -158,7 +158,7 @@ void main() async {
     test('then the produced string is a correctly aligned table.', () {
       expect(tablePrinter.toString(), '''
 Col1           | Col2           | Col3---------- |                 | 
----------------+----------------+----------------+-----------------+-
+---------------+----------------+----------------+-----------------+-----------
 Row1-Cell1     | Row1-Cell2---- | Row1-Cell3     |                 | 
 Row2-Cell1-    | Row2-Cell2---  |                |                 | 
 Row3-Cell1--   | Row3-Cell2--   | Row3-Cell3     | Row3-Cell4      | 
@@ -170,7 +170,7 @@ Row5-Cell1---- | Row5-Cell2     | Row5-Cell3     |                 | Row5-Cell5
     test('then the produced stream is a correctly aligned table.', () async {
       expect(await tablePrinter.toStream(null).toList(), [
         'Col1           | Col2           | Col3---------- |                 | ',
-        '---------------+----------------+----------------+-----------------+-',
+        '---------------+----------------+----------------+-----------------+-----------',
         'Row1-Cell1     | Row1-Cell2---- | Row1-Cell3     |                 | ',
         'Row2-Cell1-    | Row2-Cell2---  |                |                 | ',
         'Row3-Cell1--   | Row3-Cell2--   | Row3-Cell3     | Row3-Cell4      | ',
@@ -184,7 +184,7 @@ Row5-Cell1---- | Row5-Cell2     | Row5-Cell3     |                 | Row5-Cell5
       tablePrinter.writeLines(lines.add);
       expect(lines, [
         'Col1           | Col2           | Col3---------- |                 | ',
-        '---------------+----------------+----------------+-----------------+-',
+        '---------------+----------------+----------------+-----------------+-----------',
         'Row1-Cell1     | Row1-Cell2---- | Row1-Cell3     |                 | ',
         'Row2-Cell1-    | Row2-Cell2---  |                |                 | ',
         'Row3-Cell1--   | Row3-Cell2--   | Row3-Cell3     | Row3-Cell4      | ',
