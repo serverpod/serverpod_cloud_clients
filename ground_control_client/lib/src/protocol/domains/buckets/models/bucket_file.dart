@@ -45,7 +45,11 @@ abstract class BucketFile
   /// Returns a shallow copy of this [BucketFile]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
-  BucketFile copyWith({String? name, int? sizeBytes, DateTime? updated});
+  BucketFile copyWith({
+    String? name,
+    int? sizeBytes,
+    DateTime? updated = const _isc.$UndefinedDateTime(),
+  });
   @override
   Map<String, dynamic> toJson() {
     return {
@@ -85,12 +89,12 @@ class _BucketFileImpl extends BucketFile {
   BucketFile copyWith({
     String? name,
     Object? sizeBytes = _Undefined,
-    Object? updated = _Undefined,
+    DateTime? updated = const _isc.$UndefinedDateTime(),
   }) {
     return BucketFile(
       name: name ?? this.name,
       sizeBytes: sizeBytes is int? ? sizeBytes : this.sizeBytes,
-      updated: updated is DateTime? ? updated : this.updated,
+      updated: updated is _isc.UndefinedSentinel ? this.updated : updated,
     );
   }
 }

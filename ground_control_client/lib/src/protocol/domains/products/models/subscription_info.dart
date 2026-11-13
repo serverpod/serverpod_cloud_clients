@@ -137,9 +137,9 @@ abstract class SubscriptionInfo
   SubscriptionInfo copyWith({
     DateTime? createdAt,
     DateTime? startDate,
-    DateTime? trialEndDate,
-    DateTime? endDate,
-    DateTime? currentPeriodEndDate,
+    DateTime? trialEndDate = const _isc.$UndefinedDateTime(),
+    DateTime? endDate = const _isc.$UndefinedDateTime(),
+    DateTime? currentPeriodEndDate = const _isc.$UndefinedDateTime(),
     bool? cancelled,
     _isc.UuidValue? subscriptionId,
     String? planProductId,
@@ -237,9 +237,9 @@ class _SubscriptionInfoImpl extends SubscriptionInfo {
   SubscriptionInfo copyWith({
     DateTime? createdAt,
     DateTime? startDate,
-    Object? trialEndDate = _Undefined,
-    Object? endDate = _Undefined,
-    Object? currentPeriodEndDate = _Undefined,
+    DateTime? trialEndDate = const _isc.$UndefinedDateTime(),
+    DateTime? endDate = const _isc.$UndefinedDateTime(),
+    DateTime? currentPeriodEndDate = const _isc.$UndefinedDateTime(),
     bool? cancelled,
     _isc.UuidValue? subscriptionId,
     String? planProductId,
@@ -252,13 +252,13 @@ class _SubscriptionInfoImpl extends SubscriptionInfo {
     return SubscriptionInfo(
       createdAt: createdAt ?? this.createdAt,
       startDate: startDate ?? this.startDate,
-      trialEndDate: trialEndDate is DateTime?
-          ? trialEndDate
-          : this.trialEndDate,
-      endDate: endDate is DateTime? ? endDate : this.endDate,
-      currentPeriodEndDate: currentPeriodEndDate is DateTime?
-          ? currentPeriodEndDate
-          : this.currentPeriodEndDate,
+      trialEndDate: trialEndDate is _isc.UndefinedSentinel
+          ? this.trialEndDate
+          : trialEndDate,
+      endDate: endDate is _isc.UndefinedSentinel ? this.endDate : endDate,
+      currentPeriodEndDate: currentPeriodEndDate is _isc.UndefinedSentinel
+          ? this.currentPeriodEndDate
+          : currentPeriodEndDate,
       cancelled: cancelled ?? this.cancelled,
       subscriptionId: subscriptionId ?? this.subscriptionId,
       planProductId: planProductId ?? this.planProductId,

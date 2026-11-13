@@ -98,11 +98,11 @@ abstract class UserRoleMembership
     int? id,
     DateTime? createdAt,
     DateTime? updatedAt,
-    DateTime? archivedAt,
+    DateTime? archivedAt = const _isc.$UndefinedDateTime(),
     int? userId,
-    _ijl94k1v.User? user,
+    _ijl94k1v.User? user = const _UndefinedUserRoleMembership$user(),
     int? roleId,
-    _im7cbtgg.Role? role,
+    _im7cbtgg.Role? role = const _UndefinedUserRoleMembership$role(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -142,6 +142,16 @@ abstract class UserRoleMembership
 
 class _Undefined {}
 
+class _UndefinedUserRoleMembership$user extends _isc.UndefinedSentinel
+    implements _ijl94k1v.User {
+  const _UndefinedUserRoleMembership$user();
+}
+
+class _UndefinedUserRoleMembership$role extends _isc.UndefinedSentinel
+    implements _im7cbtgg.Role {
+  const _UndefinedUserRoleMembership$role();
+}
+
 class _UserRoleMembershipImpl extends UserRoleMembership {
   _UserRoleMembershipImpl({
     int? id,
@@ -171,21 +181,23 @@ class _UserRoleMembershipImpl extends UserRoleMembership {
     Object? id = _Undefined,
     DateTime? createdAt,
     DateTime? updatedAt,
-    Object? archivedAt = _Undefined,
+    DateTime? archivedAt = const _isc.$UndefinedDateTime(),
     int? userId,
-    Object? user = _Undefined,
+    _ijl94k1v.User? user = const _UndefinedUserRoleMembership$user(),
     int? roleId,
-    Object? role = _Undefined,
+    _im7cbtgg.Role? role = const _UndefinedUserRoleMembership$role(),
   }) {
     return UserRoleMembership(
       id: id is int? ? id : this.id,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      archivedAt: archivedAt is DateTime? ? archivedAt : this.archivedAt,
+      archivedAt: archivedAt is _isc.UndefinedSentinel
+          ? this.archivedAt
+          : archivedAt,
       userId: userId ?? this.userId,
-      user: user is _ijl94k1v.User? ? user : this.user?.copyWith(),
+      user: user is _isc.UndefinedSentinel ? this.user?.copyWith() : user,
       roleId: roleId ?? this.roleId,
-      role: role is _im7cbtgg.Role? ? role : this.role?.copyWith(),
+      role: role is _isc.UndefinedSentinel ? this.role?.copyWith() : role,
     );
   }
 }

@@ -77,8 +77,8 @@ abstract class AppBuildStepInfo
     String? name,
     _itii79hf.AppBuildStage? stage,
     _igpykeyr.AppBuildStepStatus? status,
-    DateTime? startedAt,
-    DateTime? endedAt,
+    DateTime? startedAt = const _isc.$UndefinedDateTime(),
+    DateTime? endedAt = const _isc.$UndefinedDateTime(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -112,8 +112,6 @@ abstract class AppBuildStepInfo
   }
 }
 
-class _Undefined {}
-
 class _AppBuildStepInfoImpl extends AppBuildStepInfo {
   _AppBuildStepInfoImpl({
     required int index,
@@ -140,16 +138,18 @@ class _AppBuildStepInfoImpl extends AppBuildStepInfo {
     String? name,
     _itii79hf.AppBuildStage? stage,
     _igpykeyr.AppBuildStepStatus? status,
-    Object? startedAt = _Undefined,
-    Object? endedAt = _Undefined,
+    DateTime? startedAt = const _isc.$UndefinedDateTime(),
+    DateTime? endedAt = const _isc.$UndefinedDateTime(),
   }) {
     return AppBuildStepInfo(
       index: index ?? this.index,
       name: name ?? this.name,
       stage: stage ?? this.stage,
       status: status ?? this.status,
-      startedAt: startedAt is DateTime? ? startedAt : this.startedAt,
-      endedAt: endedAt is DateTime? ? endedAt : this.endedAt,
+      startedAt: startedAt is _isc.UndefinedSentinel
+          ? this.startedAt
+          : startedAt,
+      endedAt: endedAt is _isc.UndefinedSentinel ? this.endedAt : endedAt,
     );
   }
 }

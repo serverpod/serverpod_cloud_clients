@@ -124,9 +124,10 @@ abstract class PlanInfo
     String? displayName,
     String? description,
     int? trialLength,
-    DateTime? trialEndDate,
+    DateTime? trialEndDate = const _isc.$UndefinedDateTime(),
     int? projectsLimit,
-    List<_izjzpv9e.ProjectProductInfo>? projectProductInfo,
+    List<_izjzpv9e.ProjectProductInfo>? projectProductInfo =
+        const _isc.$UndefinedList<_izjzpv9e.ProjectProductInfo>(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -213,9 +214,10 @@ class _PlanInfoImpl extends PlanInfo {
     String? displayName,
     Object? description = _Undefined,
     Object? trialLength = _Undefined,
-    Object? trialEndDate = _Undefined,
+    DateTime? trialEndDate = const _isc.$UndefinedDateTime(),
     Object? projectsLimit = _Undefined,
-    Object? projectProductInfo = _Undefined,
+    List<_izjzpv9e.ProjectProductInfo>? projectProductInfo =
+        const _isc.$UndefinedList<_izjzpv9e.ProjectProductInfo>(),
   }) {
     return PlanInfo(
       planType: planType ?? this.planType,
@@ -225,14 +227,13 @@ class _PlanInfoImpl extends PlanInfo {
       displayName: displayName ?? this.displayName,
       description: description is String? ? description : this.description,
       trialLength: trialLength is int? ? trialLength : this.trialLength,
-      trialEndDate: trialEndDate is DateTime?
-          ? trialEndDate
-          : this.trialEndDate,
+      trialEndDate: trialEndDate is _isc.UndefinedSentinel
+          ? this.trialEndDate
+          : trialEndDate,
       projectsLimit: projectsLimit is int? ? projectsLimit : this.projectsLimit,
-      projectProductInfo:
-          projectProductInfo is List<_izjzpv9e.ProjectProductInfo>?
-          ? projectProductInfo
-          : this.projectProductInfo?.map((e0) => e0.copyWith()).toList(),
+      projectProductInfo: projectProductInfo is _isc.UndefinedSentinel
+          ? this.projectProductInfo?.map((e0) => e0.copyWith()).toList()
+          : projectProductInfo,
     );
   }
 }

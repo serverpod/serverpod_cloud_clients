@@ -149,10 +149,10 @@ abstract class BillingInfo
   @_isc.useResult
   BillingInfo copyWith({
     _isc.UuidValue? id,
-    DateTime? createdAt,
-    DateTime? updatedAt,
+    DateTime? createdAt = const _isc.$UndefinedDateTime(),
+    DateTime? updatedAt = const _isc.$UndefinedDateTime(),
     _isc.UuidValue? ownerId,
-    _icig531b.Owner? owner,
+    _icig531b.Owner? owner = const _UndefinedBillingInfo$owner(),
     String? companyName,
     String? addressLine1,
     String? addressLine2,
@@ -163,7 +163,7 @@ abstract class BillingInfo
     String? vatNumber,
     String? vatType,
     _irtz5iuf.VatValidationStatus? vatValidationStatus,
-    DateTime? vatValidatedAt,
+    DateTime? vatValidatedAt = const _isc.$UndefinedDateTime(),
     _ipm3sphs.BillingCustomerType? customerType,
   });
   @override
@@ -222,6 +222,11 @@ abstract class BillingInfo
 
 class _Undefined {}
 
+class _UndefinedBillingInfo$owner extends _isc.UndefinedSentinel
+    implements _icig531b.Owner {
+  const _UndefinedBillingInfo$owner();
+}
+
 class _BillingInfoImpl extends BillingInfo {
   _BillingInfoImpl({
     _isc.UuidValue? id,
@@ -267,10 +272,10 @@ class _BillingInfoImpl extends BillingInfo {
   @override
   BillingInfo copyWith({
     _isc.UuidValue? id,
-    Object? createdAt = _Undefined,
-    Object? updatedAt = _Undefined,
+    DateTime? createdAt = const _isc.$UndefinedDateTime(),
+    DateTime? updatedAt = const _isc.$UndefinedDateTime(),
     _isc.UuidValue? ownerId,
-    Object? owner = _Undefined,
+    _icig531b.Owner? owner = const _UndefinedBillingInfo$owner(),
     Object? companyName = _Undefined,
     String? addressLine1,
     Object? addressLine2 = _Undefined,
@@ -281,15 +286,19 @@ class _BillingInfoImpl extends BillingInfo {
     Object? vatNumber = _Undefined,
     Object? vatType = _Undefined,
     _irtz5iuf.VatValidationStatus? vatValidationStatus,
-    Object? vatValidatedAt = _Undefined,
+    DateTime? vatValidatedAt = const _isc.$UndefinedDateTime(),
     _ipm3sphs.BillingCustomerType? customerType,
   }) {
     return BillingInfo(
       id: id ?? this.id,
-      createdAt: createdAt is DateTime? ? createdAt : this.createdAt,
-      updatedAt: updatedAt is DateTime? ? updatedAt : this.updatedAt,
+      createdAt: createdAt is _isc.UndefinedSentinel
+          ? this.createdAt
+          : createdAt,
+      updatedAt: updatedAt is _isc.UndefinedSentinel
+          ? this.updatedAt
+          : updatedAt,
       ownerId: ownerId ?? this.ownerId,
-      owner: owner is _icig531b.Owner? ? owner : this.owner?.copyWith(),
+      owner: owner is _isc.UndefinedSentinel ? this.owner?.copyWith() : owner,
       companyName: companyName is String? ? companyName : this.companyName,
       addressLine1: addressLine1 ?? this.addressLine1,
       addressLine2: addressLine2 is String? ? addressLine2 : this.addressLine2,
@@ -300,9 +309,9 @@ class _BillingInfoImpl extends BillingInfo {
       vatNumber: vatNumber is String? ? vatNumber : this.vatNumber,
       vatType: vatType is String? ? vatType : this.vatType,
       vatValidationStatus: vatValidationStatus ?? this.vatValidationStatus,
-      vatValidatedAt: vatValidatedAt is DateTime?
-          ? vatValidatedAt
-          : this.vatValidatedAt,
+      vatValidatedAt: vatValidatedAt is _isc.UndefinedSentinel
+          ? this.vatValidatedAt
+          : vatValidatedAt,
       customerType: customerType ?? this.customerType,
     );
   }

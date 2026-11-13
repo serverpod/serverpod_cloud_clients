@@ -59,7 +59,7 @@ abstract class PaymentMethod
   PaymentMethod copyWith({
     String? id,
     String? type,
-    _idh4bejc.PaymentMethodCard? card,
+    _idh4bejc.PaymentMethodCard? card = const _UndefinedPaymentMethod$card(),
     bool? isDefault,
   });
   @override
@@ -90,7 +90,10 @@ abstract class PaymentMethod
   }
 }
 
-class _Undefined {}
+class _UndefinedPaymentMethod$card extends _isc.UndefinedSentinel
+    implements _idh4bejc.PaymentMethodCard {
+  const _UndefinedPaymentMethod$card();
+}
 
 class _PaymentMethodImpl extends PaymentMethod {
   _PaymentMethodImpl({
@@ -107,13 +110,13 @@ class _PaymentMethodImpl extends PaymentMethod {
   PaymentMethod copyWith({
     String? id,
     String? type,
-    Object? card = _Undefined,
+    _idh4bejc.PaymentMethodCard? card = const _UndefinedPaymentMethod$card(),
     bool? isDefault,
   }) {
     return PaymentMethod(
       id: id ?? this.id,
       type: type ?? this.type,
-      card: card is _idh4bejc.PaymentMethodCard? ? card : this.card?.copyWith(),
+      card: card is _isc.UndefinedSentinel ? this.card?.copyWith() : card,
       isDefault: isDefault ?? this.isDefault,
     );
   }

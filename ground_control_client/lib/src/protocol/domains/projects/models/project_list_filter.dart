@@ -109,12 +109,12 @@ abstract class ProjectListFilter
   @_isc.useResult
   ProjectListFilter copyWith({
     _ie2v77w9.ProjectLifecycleStatus? phase,
-    DateTime? createdSince,
-    DateTime? createdUntil,
-    DateTime? suspendedSince,
-    DateTime? suspendedUntil,
-    DateTime? archivedSince,
-    DateTime? archivedUntil,
+    DateTime? createdSince = const _isc.$UndefinedDateTime(),
+    DateTime? createdUntil = const _isc.$UndefinedDateTime(),
+    DateTime? suspendedSince = const _isc.$UndefinedDateTime(),
+    DateTime? suspendedUntil = const _isc.$UndefinedDateTime(),
+    DateTime? archivedSince = const _isc.$UndefinedDateTime(),
+    DateTime? archivedUntil = const _isc.$UndefinedDateTime(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -177,33 +177,33 @@ class _ProjectListFilterImpl extends ProjectListFilter {
   @override
   ProjectListFilter copyWith({
     Object? phase = _Undefined,
-    Object? createdSince = _Undefined,
-    Object? createdUntil = _Undefined,
-    Object? suspendedSince = _Undefined,
-    Object? suspendedUntil = _Undefined,
-    Object? archivedSince = _Undefined,
-    Object? archivedUntil = _Undefined,
+    DateTime? createdSince = const _isc.$UndefinedDateTime(),
+    DateTime? createdUntil = const _isc.$UndefinedDateTime(),
+    DateTime? suspendedSince = const _isc.$UndefinedDateTime(),
+    DateTime? suspendedUntil = const _isc.$UndefinedDateTime(),
+    DateTime? archivedSince = const _isc.$UndefinedDateTime(),
+    DateTime? archivedUntil = const _isc.$UndefinedDateTime(),
   }) {
     return ProjectListFilter(
       phase: phase is _ie2v77w9.ProjectLifecycleStatus? ? phase : this.phase,
-      createdSince: createdSince is DateTime?
-          ? createdSince
-          : this.createdSince,
-      createdUntil: createdUntil is DateTime?
-          ? createdUntil
-          : this.createdUntil,
-      suspendedSince: suspendedSince is DateTime?
-          ? suspendedSince
-          : this.suspendedSince,
-      suspendedUntil: suspendedUntil is DateTime?
-          ? suspendedUntil
-          : this.suspendedUntil,
-      archivedSince: archivedSince is DateTime?
-          ? archivedSince
-          : this.archivedSince,
-      archivedUntil: archivedUntil is DateTime?
-          ? archivedUntil
-          : this.archivedUntil,
+      createdSince: createdSince is _isc.UndefinedSentinel
+          ? this.createdSince
+          : createdSince,
+      createdUntil: createdUntil is _isc.UndefinedSentinel
+          ? this.createdUntil
+          : createdUntil,
+      suspendedSince: suspendedSince is _isc.UndefinedSentinel
+          ? this.suspendedSince
+          : suspendedSince,
+      suspendedUntil: suspendedUntil is _isc.UndefinedSentinel
+          ? this.suspendedUntil
+          : suspendedUntil,
+      archivedSince: archivedSince is _isc.UndefinedSentinel
+          ? this.archivedSince
+          : archivedSince,
+      archivedUntil: archivedUntil is _isc.UndefinedSentinel
+          ? this.archivedUntil
+          : archivedUntil,
     );
   }
 }

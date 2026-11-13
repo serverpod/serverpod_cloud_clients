@@ -87,7 +87,7 @@ abstract class LogRecord
   LogRecord copyWith({
     String? cloudProjectId,
     String? cloudCapsuleId,
-    _isc.UuidValue? deployAttemptId,
+    _isc.UuidValue? deployAttemptId = const _isc.$UndefinedUuidValue(),
     String? serverInstanceId,
     String? recordId,
     DateTime? timestamp,
@@ -160,7 +160,7 @@ class _LogRecordImpl extends LogRecord {
   LogRecord copyWith({
     String? cloudProjectId,
     String? cloudCapsuleId,
-    Object? deployAttemptId = _Undefined,
+    _isc.UuidValue? deployAttemptId = const _isc.$UndefinedUuidValue(),
     Object? serverInstanceId = _Undefined,
     String? recordId,
     DateTime? timestamp,
@@ -170,9 +170,9 @@ class _LogRecordImpl extends LogRecord {
     return LogRecord(
       cloudProjectId: cloudProjectId ?? this.cloudProjectId,
       cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
-      deployAttemptId: deployAttemptId is _isc.UuidValue?
-          ? deployAttemptId
-          : this.deployAttemptId,
+      deployAttemptId: deployAttemptId is _isc.UndefinedSentinel
+          ? this.deployAttemptId
+          : deployAttemptId,
       serverInstanceId: serverInstanceId is String?
           ? serverInstanceId
           : this.serverInstanceId,

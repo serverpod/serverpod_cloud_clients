@@ -63,7 +63,7 @@ abstract class BackupSchedule
     _inc79lxx.BackupFrequency? frequency,
     int? hour,
     int? day,
-    Duration? retention,
+    Duration? retention = const _isc.$UndefinedDuration(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -116,13 +116,15 @@ class _BackupScheduleImpl extends BackupSchedule {
     _inc79lxx.BackupFrequency? frequency,
     Object? hour = _Undefined,
     Object? day = _Undefined,
-    Object? retention = _Undefined,
+    Duration? retention = const _isc.$UndefinedDuration(),
   }) {
     return BackupSchedule(
       frequency: frequency ?? this.frequency,
       hour: hour is int? ? hour : this.hour,
       day: day is int? ? day : this.day,
-      retention: retention is Duration? ? retention : this.retention,
+      retention: retention is _isc.UndefinedSentinel
+          ? this.retention
+          : retention,
     );
   }
 }

@@ -76,7 +76,7 @@ abstract class PubsubEntry
   PubsubEntry copyWith({
     int? id,
     DateTime? createdAt,
-    DateTime? publishedAt,
+    DateTime? publishedAt = const _isc.$UndefinedDateTime(),
     String? messageId,
     String? topic,
     String? subscriber,
@@ -139,7 +139,7 @@ class _PubsubEntryImpl extends PubsubEntry {
   PubsubEntry copyWith({
     Object? id = _Undefined,
     DateTime? createdAt,
-    Object? publishedAt = _Undefined,
+    DateTime? publishedAt = const _isc.$UndefinedDateTime(),
     String? messageId,
     String? topic,
     String? subscriber,
@@ -147,7 +147,9 @@ class _PubsubEntryImpl extends PubsubEntry {
     return PubsubEntry(
       id: id is int? ? id : this.id,
       createdAt: createdAt ?? this.createdAt,
-      publishedAt: publishedAt is DateTime? ? publishedAt : this.publishedAt,
+      publishedAt: publishedAt is _isc.UndefinedSentinel
+          ? this.publishedAt
+          : publishedAt,
       messageId: messageId ?? this.messageId,
       topic: topic ?? this.topic,
       subscriber: subscriber ?? this.subscriber,

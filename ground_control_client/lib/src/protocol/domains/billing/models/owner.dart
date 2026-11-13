@@ -145,15 +145,16 @@ abstract class Owner
     _isc.UuidValue? id,
     DateTime? createdAt,
     DateTime? updatedAt,
-    DateTime? archivedAt,
+    DateTime? archivedAt = const _isc.$UndefinedDateTime(),
     String? externalBillingId,
     String? externalPaymentId,
     Uri? billingPortalUrl,
     List<String>? billingEmails,
-    _ijl94k1v.User? user,
-    _i3r9gs4n.BillingInfo? billingInfo,
-    List<_i2isqmwh.Project>? projects,
-    DateTime? trialEndingAt,
+    _ijl94k1v.User? user = const _UndefinedOwner$user(),
+    _i3r9gs4n.BillingInfo? billingInfo = const _UndefinedOwner$billingInfo(),
+    List<_i2isqmwh.Project>? projects =
+        const _isc.$UndefinedList<_i2isqmwh.Project>(),
+    DateTime? trialEndingAt = const _isc.$UndefinedDateTime(),
     _ipm3sphs.BillingCustomerType? customerType,
   });
   @override
@@ -206,6 +207,16 @@ abstract class Owner
 
 class _Undefined {}
 
+class _UndefinedOwner$user extends _isc.UndefinedSentinel
+    implements _ijl94k1v.User {
+  const _UndefinedOwner$user();
+}
+
+class _UndefinedOwner$billingInfo extends _isc.UndefinedSentinel
+    implements _i3r9gs4n.BillingInfo {
+  const _UndefinedOwner$billingInfo();
+}
+
 class _OwnerImpl extends Owner {
   _OwnerImpl({
     _isc.UuidValue? id,
@@ -245,37 +256,40 @@ class _OwnerImpl extends Owner {
     _isc.UuidValue? id,
     DateTime? createdAt,
     DateTime? updatedAt,
-    Object? archivedAt = _Undefined,
+    DateTime? archivedAt = const _isc.$UndefinedDateTime(),
     String? externalBillingId,
     String? externalPaymentId,
     Uri? billingPortalUrl,
     List<String>? billingEmails,
-    Object? user = _Undefined,
-    Object? billingInfo = _Undefined,
-    Object? projects = _Undefined,
-    Object? trialEndingAt = _Undefined,
+    _ijl94k1v.User? user = const _UndefinedOwner$user(),
+    _i3r9gs4n.BillingInfo? billingInfo = const _UndefinedOwner$billingInfo(),
+    List<_i2isqmwh.Project>? projects =
+        const _isc.$UndefinedList<_i2isqmwh.Project>(),
+    DateTime? trialEndingAt = const _isc.$UndefinedDateTime(),
     Object? customerType = _Undefined,
   }) {
     return Owner(
       id: id ?? this.id,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      archivedAt: archivedAt is DateTime? ? archivedAt : this.archivedAt,
+      archivedAt: archivedAt is _isc.UndefinedSentinel
+          ? this.archivedAt
+          : archivedAt,
       externalBillingId: externalBillingId ?? this.externalBillingId,
       externalPaymentId: externalPaymentId ?? this.externalPaymentId,
       billingPortalUrl: billingPortalUrl ?? this.billingPortalUrl,
       billingEmails:
           billingEmails ?? this.billingEmails.map((e0) => e0).toList(),
-      user: user is _ijl94k1v.User? ? user : this.user?.copyWith(),
-      billingInfo: billingInfo is _i3r9gs4n.BillingInfo?
-          ? billingInfo
-          : this.billingInfo?.copyWith(),
-      projects: projects is List<_i2isqmwh.Project>?
-          ? projects
-          : this.projects?.map((e0) => e0.copyWith()).toList(),
-      trialEndingAt: trialEndingAt is DateTime?
-          ? trialEndingAt
-          : this.trialEndingAt,
+      user: user is _isc.UndefinedSentinel ? this.user?.copyWith() : user,
+      billingInfo: billingInfo is _isc.UndefinedSentinel
+          ? this.billingInfo?.copyWith()
+          : billingInfo,
+      projects: projects is _isc.UndefinedSentinel
+          ? this.projects?.map((e0) => e0.copyWith()).toList()
+          : projects,
+      trialEndingAt: trialEndingAt is _isc.UndefinedSentinel
+          ? this.trialEndingAt
+          : trialEndingAt,
       customerType: customerType is _ipm3sphs.BillingCustomerType?
           ? customerType
           : this.customerType,

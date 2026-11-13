@@ -151,15 +151,16 @@ abstract class Project
     int? id,
     DateTime? createdAt,
     DateTime? updatedAt,
-    DateTime? archivedAt,
+    DateTime? archivedAt = const _isc.$UndefinedDateTime(),
     _ie2v77w9.ProjectLifecycleStatus? status,
-    DateTime? suspendedAt,
+    DateTime? suspendedAt = const _isc.$UndefinedDateTime(),
     _ixae5ksq.ProjectSuspensionReason? suspensionReason,
     String? cloudProjectId,
     _isc.UuidValue? ownerId,
-    _icig531b.Owner? owner,
-    List<_im7cbtgg.Role>? roles,
-    List<_ictbn9k6.Capsule>? capsules,
+    _icig531b.Owner? owner = const _UndefinedProject$owner(),
+    List<_im7cbtgg.Role>? roles = const _isc.$UndefinedList<_im7cbtgg.Role>(),
+    List<_ictbn9k6.Capsule>? capsules =
+        const _isc.$UndefinedList<_ictbn9k6.Capsule>(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -212,6 +213,11 @@ abstract class Project
 
 class _Undefined {}
 
+class _UndefinedProject$owner extends _isc.UndefinedSentinel
+    implements _icig531b.Owner {
+  const _UndefinedProject$owner();
+}
+
 class _ProjectImpl extends Project {
   _ProjectImpl({
     int? id,
@@ -249,35 +255,40 @@ class _ProjectImpl extends Project {
     Object? id = _Undefined,
     DateTime? createdAt,
     DateTime? updatedAt,
-    Object? archivedAt = _Undefined,
+    DateTime? archivedAt = const _isc.$UndefinedDateTime(),
     _ie2v77w9.ProjectLifecycleStatus? status,
-    Object? suspendedAt = _Undefined,
+    DateTime? suspendedAt = const _isc.$UndefinedDateTime(),
     Object? suspensionReason = _Undefined,
     String? cloudProjectId,
     _isc.UuidValue? ownerId,
-    Object? owner = _Undefined,
-    Object? roles = _Undefined,
-    Object? capsules = _Undefined,
+    _icig531b.Owner? owner = const _UndefinedProject$owner(),
+    List<_im7cbtgg.Role>? roles = const _isc.$UndefinedList<_im7cbtgg.Role>(),
+    List<_ictbn9k6.Capsule>? capsules =
+        const _isc.$UndefinedList<_ictbn9k6.Capsule>(),
   }) {
     return Project(
       id: id is int? ? id : this.id,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      archivedAt: archivedAt is DateTime? ? archivedAt : this.archivedAt,
+      archivedAt: archivedAt is _isc.UndefinedSentinel
+          ? this.archivedAt
+          : archivedAt,
       status: status ?? this.status,
-      suspendedAt: suspendedAt is DateTime? ? suspendedAt : this.suspendedAt,
+      suspendedAt: suspendedAt is _isc.UndefinedSentinel
+          ? this.suspendedAt
+          : suspendedAt,
       suspensionReason: suspensionReason is _ixae5ksq.ProjectSuspensionReason?
           ? suspensionReason
           : this.suspensionReason,
       cloudProjectId: cloudProjectId ?? this.cloudProjectId,
       ownerId: ownerId ?? this.ownerId,
-      owner: owner is _icig531b.Owner? ? owner : this.owner?.copyWith(),
-      roles: roles is List<_im7cbtgg.Role>?
-          ? roles
-          : this.roles?.map((e0) => e0.copyWith()).toList(),
-      capsules: capsules is List<_ictbn9k6.Capsule>?
-          ? capsules
-          : this.capsules?.map((e0) => e0.copyWith()).toList(),
+      owner: owner is _isc.UndefinedSentinel ? this.owner?.copyWith() : owner,
+      roles: roles is _isc.UndefinedSentinel
+          ? this.roles?.map((e0) => e0.copyWith()).toList()
+          : roles,
+      capsules: capsules is _isc.UndefinedSentinel
+          ? this.capsules?.map((e0) => e0.copyWith()).toList()
+          : capsules,
     );
   }
 }

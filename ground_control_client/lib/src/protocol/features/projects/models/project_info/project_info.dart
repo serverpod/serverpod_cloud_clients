@@ -78,7 +78,8 @@ abstract class ProjectInfo
   ProjectInfo copyWith({
     _iwujrmz5.Project? project,
     String? productId,
-    _iv6ntt36.Timestamp? latestDeployAttemptTime,
+    _iv6ntt36.Timestamp? latestDeployAttemptTime =
+        const _UndefinedProjectInfo$latestDeployAttemptTime(),
     _i36x9kwn.PlanType? planType,
   });
   @override
@@ -113,6 +114,12 @@ abstract class ProjectInfo
 
 class _Undefined {}
 
+class _UndefinedProjectInfo$latestDeployAttemptTime
+    extends _isc.UndefinedSentinel
+    implements _iv6ntt36.Timestamp {
+  const _UndefinedProjectInfo$latestDeployAttemptTime();
+}
+
 class _ProjectInfoImpl extends ProjectInfo {
   _ProjectInfoImpl({
     required _iwujrmz5.Project project,
@@ -133,15 +140,16 @@ class _ProjectInfoImpl extends ProjectInfo {
   ProjectInfo copyWith({
     _iwujrmz5.Project? project,
     String? productId,
-    Object? latestDeployAttemptTime = _Undefined,
+    _iv6ntt36.Timestamp? latestDeployAttemptTime =
+        const _UndefinedProjectInfo$latestDeployAttemptTime(),
     Object? planType = _Undefined,
   }) {
     return ProjectInfo(
       project: project ?? this.project.copyWith(),
       productId: productId ?? this.productId,
-      latestDeployAttemptTime: latestDeployAttemptTime is _iv6ntt36.Timestamp?
-          ? latestDeployAttemptTime
-          : this.latestDeployAttemptTime?.copyWith(),
+      latestDeployAttemptTime: latestDeployAttemptTime is _isc.UndefinedSentinel
+          ? this.latestDeployAttemptTime?.copyWith()
+          : latestDeployAttemptTime,
       planType: planType is _i36x9kwn.PlanType? ? planType : this.planType,
     );
   }

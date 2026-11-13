@@ -82,9 +82,12 @@ abstract class CapsuleRuntimeStatus
   @_isc.useResult
   CapsuleRuntimeStatus copyWith({
     _iyq6x507.CapsuleStatus? status,
-    _ich2tv6j.DeployAttemptSummary? serving,
-    _ich2tv6j.DeployAttemptSummary? incoming,
-    _ich2tv6j.DeployAttemptSummary? latestAttempt,
+    _ich2tv6j.DeployAttemptSummary? serving =
+        const _UndefinedCapsuleRuntimeStatus$serving(),
+    _ich2tv6j.DeployAttemptSummary? incoming =
+        const _UndefinedCapsuleRuntimeStatus$serving(),
+    _ich2tv6j.DeployAttemptSummary? latestAttempt =
+        const _UndefinedCapsuleRuntimeStatus$serving(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -115,7 +118,10 @@ abstract class CapsuleRuntimeStatus
   }
 }
 
-class _Undefined {}
+class _UndefinedCapsuleRuntimeStatus$serving extends _isc.UndefinedSentinel
+    implements _ich2tv6j.DeployAttemptSummary {
+  const _UndefinedCapsuleRuntimeStatus$serving();
+}
 
 class _CapsuleRuntimeStatusImpl extends CapsuleRuntimeStatus {
   _CapsuleRuntimeStatusImpl({
@@ -136,21 +142,24 @@ class _CapsuleRuntimeStatusImpl extends CapsuleRuntimeStatus {
   @override
   CapsuleRuntimeStatus copyWith({
     _iyq6x507.CapsuleStatus? status,
-    Object? serving = _Undefined,
-    Object? incoming = _Undefined,
-    Object? latestAttempt = _Undefined,
+    _ich2tv6j.DeployAttemptSummary? serving =
+        const _UndefinedCapsuleRuntimeStatus$serving(),
+    _ich2tv6j.DeployAttemptSummary? incoming =
+        const _UndefinedCapsuleRuntimeStatus$serving(),
+    _ich2tv6j.DeployAttemptSummary? latestAttempt =
+        const _UndefinedCapsuleRuntimeStatus$serving(),
   }) {
     return CapsuleRuntimeStatus(
       status: status ?? this.status.copyWith(),
-      serving: serving is _ich2tv6j.DeployAttemptSummary?
-          ? serving
-          : this.serving?.copyWith(),
-      incoming: incoming is _ich2tv6j.DeployAttemptSummary?
-          ? incoming
-          : this.incoming?.copyWith(),
-      latestAttempt: latestAttempt is _ich2tv6j.DeployAttemptSummary?
-          ? latestAttempt
-          : this.latestAttempt?.copyWith(),
+      serving: serving is _isc.UndefinedSentinel
+          ? this.serving?.copyWith()
+          : serving,
+      incoming: incoming is _isc.UndefinedSentinel
+          ? this.incoming?.copyWith()
+          : incoming,
+      latestAttempt: latestAttempt is _isc.UndefinedSentinel
+          ? this.latestAttempt?.copyWith()
+          : latestAttempt,
     );
   }
 }

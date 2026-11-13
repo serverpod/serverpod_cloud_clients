@@ -121,7 +121,7 @@ abstract class DatabaseResource
     int? id,
     DateTime? createdAt,
     DateTime? updatedAt,
-    DateTime? archivedAt,
+    DateTime? archivedAt = const _isc.$UndefinedDateTime(),
     String? cloudCapsuleId,
     String? providerId,
     _ikd8hsk5.DatabaseProvider? provider,
@@ -218,7 +218,7 @@ class _DatabaseResourceImpl extends DatabaseResource {
     Object? id = _Undefined,
     DateTime? createdAt,
     DateTime? updatedAt,
-    Object? archivedAt = _Undefined,
+    DateTime? archivedAt = const _isc.$UndefinedDateTime(),
     String? cloudCapsuleId,
     String? providerId,
     _ikd8hsk5.DatabaseProvider? provider,
@@ -232,7 +232,9 @@ class _DatabaseResourceImpl extends DatabaseResource {
       id: id is int? ? id : this.id,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      archivedAt: archivedAt is DateTime? ? archivedAt : this.archivedAt,
+      archivedAt: archivedAt is _isc.UndefinedSentinel
+          ? this.archivedAt
+          : archivedAt,
       cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
       providerId: providerId ?? this.providerId,
       provider: provider ?? this.provider,

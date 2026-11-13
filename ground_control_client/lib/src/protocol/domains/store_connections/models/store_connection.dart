@@ -105,7 +105,7 @@ abstract class StoreConnection
     _is7r02rq.StoreType? store,
     String? name,
     _i8vsm21x.StoreCredentialInfo? credential,
-    List<String>? projectIds,
+    List<String>? projectIds = const _isc.$UndefinedList<String>(),
     DateTime? createdAt,
     DateTime? updatedAt,
   });
@@ -178,7 +178,7 @@ class _StoreConnectionImpl extends StoreConnection {
     _is7r02rq.StoreType? store,
     String? name,
     Object? credential = _Undefined,
-    Object? projectIds = _Undefined,
+    List<String>? projectIds = const _isc.$UndefinedList<String>(),
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -190,9 +190,9 @@ class _StoreConnectionImpl extends StoreConnection {
       credential: credential is _i8vsm21x.StoreCredentialInfo?
           ? credential
           : this.credential?.copyWith(),
-      projectIds: projectIds is List<String>?
-          ? projectIds
-          : this.projectIds?.map((e0) => e0).toList(),
+      projectIds: projectIds is _isc.UndefinedSentinel
+          ? this.projectIds?.map((e0) => e0).toList()
+          : projectIds,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

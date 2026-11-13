@@ -72,7 +72,7 @@ abstract class RedeemedVoucher
     String? name,
     int? creditAmountCents,
     List<String>? paysForItemIds,
-    DateTime? creditExpiresAt,
+    DateTime? creditExpiresAt = const _isc.$UndefinedDateTime(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -104,8 +104,6 @@ abstract class RedeemedVoucher
   }
 }
 
-class _Undefined {}
-
 class _RedeemedVoucherImpl extends RedeemedVoucher {
   _RedeemedVoucherImpl({
     required String code,
@@ -130,7 +128,7 @@ class _RedeemedVoucherImpl extends RedeemedVoucher {
     String? name,
     int? creditAmountCents,
     List<String>? paysForItemIds,
-    Object? creditExpiresAt = _Undefined,
+    DateTime? creditExpiresAt = const _isc.$UndefinedDateTime(),
   }) {
     return RedeemedVoucher(
       code: code ?? this.code,
@@ -138,9 +136,9 @@ class _RedeemedVoucherImpl extends RedeemedVoucher {
       creditAmountCents: creditAmountCents ?? this.creditAmountCents,
       paysForItemIds:
           paysForItemIds ?? this.paysForItemIds.map((e0) => e0).toList(),
-      creditExpiresAt: creditExpiresAt is DateTime?
-          ? creditExpiresAt
-          : this.creditExpiresAt,
+      creditExpiresAt: creditExpiresAt is _isc.UndefinedSentinel
+          ? this.creditExpiresAt
+          : creditExpiresAt,
     );
   }
 }

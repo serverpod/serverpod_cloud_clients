@@ -48,8 +48,10 @@ abstract class IosPublishingSetup
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
   IosPublishingSetup copyWith({
-    _itimvqcs.AppStoreAccess? store,
-    _ial6z2m9.IosSigning? signing,
+    _itimvqcs.AppStoreAccess? store =
+        const _UndefinedIosPublishingSetup$store(),
+    _ial6z2m9.IosSigning? signing =
+        const _UndefinedIosPublishingSetup$signing(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -75,7 +77,15 @@ abstract class IosPublishingSetup
   }
 }
 
-class _Undefined {}
+class _UndefinedIosPublishingSetup$store extends _isc.UndefinedSentinel
+    implements _itimvqcs.AppStoreAccess {
+  const _UndefinedIosPublishingSetup$store();
+}
+
+class _UndefinedIosPublishingSetup$signing extends _isc.UndefinedSentinel
+    implements _ial6z2m9.IosSigning {
+  const _UndefinedIosPublishingSetup$signing();
+}
 
 class _IosPublishingSetupImpl extends IosPublishingSetup {
   _IosPublishingSetupImpl({
@@ -88,16 +98,16 @@ class _IosPublishingSetupImpl extends IosPublishingSetup {
   @_isc.useResult
   @override
   IosPublishingSetup copyWith({
-    Object? store = _Undefined,
-    Object? signing = _Undefined,
+    _itimvqcs.AppStoreAccess? store =
+        const _UndefinedIosPublishingSetup$store(),
+    _ial6z2m9.IosSigning? signing =
+        const _UndefinedIosPublishingSetup$signing(),
   }) {
     return IosPublishingSetup(
-      store: store is _itimvqcs.AppStoreAccess?
-          ? store
-          : this.store?.copyWith(),
-      signing: signing is _ial6z2m9.IosSigning?
-          ? signing
-          : this.signing?.copyWith(),
+      store: store is _isc.UndefinedSentinel ? this.store?.copyWith() : store,
+      signing: signing is _isc.UndefinedSentinel
+          ? this.signing?.copyWith()
+          : signing,
     );
   }
 }

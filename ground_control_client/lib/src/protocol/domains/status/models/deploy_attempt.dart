@@ -172,8 +172,8 @@ abstract class DeployAttempt
     String? cloudCapsuleId,
     String? attemptId,
     _izk8c25p.DeployProgressStatus? status,
-    DateTime? startedAt,
-    DateTime? endedAt,
+    DateTime? startedAt = const _isc.$UndefinedDateTime(),
+    DateTime? endedAt = const _isc.$UndefinedDateTime(),
     DateTime? createdAt,
     DateTime? updatedAt,
     String? imageName,
@@ -183,9 +183,10 @@ abstract class DeployAttempt
     String? commitMessage,
     String? branch,
     int? deployedById,
-    _ijl94k1v.User? deployedBy,
+    _ijl94k1v.User? deployedBy = const _UndefinedDeployAttempt$deployedBy(),
     String? statusInfo,
-    List<_ieja195n.DeployAttemptStage>? stages,
+    List<_ieja195n.DeployAttemptStage>? stages =
+        const _isc.$UndefinedList<_ieja195n.DeployAttemptStage>(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -247,6 +248,11 @@ abstract class DeployAttempt
 
 class _Undefined {}
 
+class _UndefinedDeployAttempt$deployedBy extends _isc.UndefinedSentinel
+    implements _ijl94k1v.User {
+  const _UndefinedDeployAttempt$deployedBy();
+}
+
 class _DeployAttemptImpl extends DeployAttempt {
   _DeployAttemptImpl({
     _isc.UuidValue? id,
@@ -297,8 +303,8 @@ class _DeployAttemptImpl extends DeployAttempt {
     String? cloudCapsuleId,
     Object? attemptId = _Undefined,
     Object? status = _Undefined,
-    Object? startedAt = _Undefined,
-    Object? endedAt = _Undefined,
+    DateTime? startedAt = const _isc.$UndefinedDateTime(),
+    DateTime? endedAt = const _isc.$UndefinedDateTime(),
     DateTime? createdAt,
     DateTime? updatedAt,
     Object? imageName = _Undefined,
@@ -308,17 +314,20 @@ class _DeployAttemptImpl extends DeployAttempt {
     Object? commitMessage = _Undefined,
     Object? branch = _Undefined,
     Object? deployedById = _Undefined,
-    Object? deployedBy = _Undefined,
+    _ijl94k1v.User? deployedBy = const _UndefinedDeployAttempt$deployedBy(),
     Object? statusInfo = _Undefined,
-    Object? stages = _Undefined,
+    List<_ieja195n.DeployAttemptStage>? stages =
+        const _isc.$UndefinedList<_ieja195n.DeployAttemptStage>(),
   }) {
     return DeployAttempt(
       id: id ?? this.id,
       cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
       attemptId: attemptId is String? ? attemptId : this.attemptId,
       status: status is _izk8c25p.DeployProgressStatus? ? status : this.status,
-      startedAt: startedAt is DateTime? ? startedAt : this.startedAt,
-      endedAt: endedAt is DateTime? ? endedAt : this.endedAt,
+      startedAt: startedAt is _isc.UndefinedSentinel
+          ? this.startedAt
+          : startedAt,
+      endedAt: endedAt is _isc.UndefinedSentinel ? this.endedAt : endedAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       imageName: imageName is String? ? imageName : this.imageName,
@@ -332,13 +341,13 @@ class _DeployAttemptImpl extends DeployAttempt {
           : this.commitMessage,
       branch: branch is String? ? branch : this.branch,
       deployedById: deployedById is int? ? deployedById : this.deployedById,
-      deployedBy: deployedBy is _ijl94k1v.User?
-          ? deployedBy
-          : this.deployedBy?.copyWith(),
+      deployedBy: deployedBy is _isc.UndefinedSentinel
+          ? this.deployedBy?.copyWith()
+          : deployedBy,
       statusInfo: statusInfo is String? ? statusInfo : this.statusInfo,
-      stages: stages is List<_ieja195n.DeployAttemptStage>?
-          ? stages
-          : this.stages?.map((e0) => e0.copyWith()).toList(),
+      stages: stages is _isc.UndefinedSentinel
+          ? this.stages?.map((e0) => e0.copyWith()).toList()
+          : stages,
     );
   }
 }
