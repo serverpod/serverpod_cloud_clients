@@ -22,6 +22,7 @@ import 'package:ground_control_client/ground_control_client.dart'
         isRetryableMethodStreamDisconnect,
         reconnectStream;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/shared/helpers/console_urls.dart';
 import 'package:serverpod_cloud_cli/util/flutter_platform.dart';
 import 'package:serverpod_cloud_cli/util/git_metadata.dart';
 
@@ -89,7 +90,12 @@ abstract class AppOperations {
     } on AppPublishingDisabledException catch (e) {
       throw FailureException(error: e.message);
     } on AppPlatformNotSetUpException catch (e) {
-      throw FailureException(error: e.message);
+      throw await _platformsNotSetUpFailure(
+        cloudApiClient,
+        projectId: projectId,
+        platforms: appPlatforms,
+        reason: e.message,
+      );
     } on AppBuildAllowanceExceededException catch (e) {
       throw FailureException(error: e.message);
     } on InvalidValueException catch (e) {
@@ -104,6 +110,98 @@ abstract class AppOperations {
       );
     }
   }
+
+  /// The failure for builds of [platforms] that project [projectId] refused,
+  /// because the publishing setup of a platform is incomplete. [reason] is
+  /// the refusal message of Serverpod Cloud.
+  ///
+  /// It names each platform that is not set up and what it still needs, read
+  /// from the project's publishing setup, with a link to the platform's
+  /// setup guide in the console. A step the user cannot take is named
+  /// without a link. When the setup cannot be read or shows no gap, the
+  /// refusal is still reported, with a link to the setup guide of each of
+  /// [platforms].
+  static Future<FailureException> _platformsNotSetUpFailure(
+    Client cloudApiClient, {
+    required String projectId,
+    required List<AppPlatform> platforms,
+    required String reason,
+  }) async {
+    final setup = await _readSetup(cloudApiClient, projectId);
+    final messages = [
+      if (setup != null)
+        for (final platform in platforms)
+          ?_notSetUpMessage(projectId, platform, setup),
+    ];
+    if (messages.isNotEmpty) {
+      return FailureException(errors: messages, reason: reason);
+    }
+    return FailureException(
+      errors: [
+        for (final platform in platforms)
+          "${AppBuildStatusFormatter.platformName(platform)} isn't set up "
+              'yet. ${_finishItHere(projectId, platform)}',
+      ],
+      reason: reason,
+    );
+  }
+
+  /// The publishing setup of project [projectId], or null if it cannot be
+  /// read.
+  static Future<AppPublishingSetup?> _readSetup(
+    Client cloudApiClient,
+    String projectId,
+  ) async {
+    try {
+      return await cloudApiClient.appPublishing.getSetup(
+        cloudCapsuleId: projectId,
+      );
+    } on Exception {
+      return null;
+    }
+  }
+
+  /// What [platform] still needs before project [projectId] can publish to
+  /// it, according to [setup], or null if it needs nothing.
+  ///
+  /// The iOS bundle ID is left out: publishing sends the one the app
+  /// declares.
+  static String? _notSetUpMessage(
+    String projectId,
+    AppPlatform platform,
+    AppPublishingSetup setup,
+  ) {
+    final notSetUp =
+        "${AppBuildStatusFormatter.platformName(platform)} isn't set up yet";
+    const googlePlayAccess =
+        'Serverpod Cloud is still creating Google Play access for the project';
+    switch (platform) {
+      case AppPlatform.ios:
+        if (setup.ios.store != null) return null;
+        return '$notSetUp: it needs an App Store Connect key. '
+            '${_finishItHere(projectId, platform)}';
+      case AppPlatform.android:
+        final needsKeystore = setup.android.signing == null;
+        final awaitsGooglePlay = setup.android.store == null;
+        if (needsKeystore && awaitsGooglePlay) {
+          return '$notSetUp: it needs an upload keystore, and '
+              '$googlePlayAccess. ${_finishItHere(projectId, platform)}';
+        }
+        if (needsKeystore) {
+          return '$notSetUp: it needs an upload keystore. '
+              '${_finishItHere(projectId, platform)}';
+        }
+        if (awaitsGooglePlay) {
+          return '$notSetUp: $googlePlayAccess. This needs nothing from you. '
+              'Publish again once it is ready.';
+        }
+        return null;
+    }
+  }
+
+  /// The pointer to the setup guide of [platform] in project [projectId].
+  static String _finishItHere(String projectId, AppPlatform platform) =>
+      'Finish it here:\n${getAppStoreSetupUrl(projectId, platform)}';
 
   /// Returns the app builds made from the archive upload [uploadId] in
   /// project [projectId], in platform order.
