@@ -118,13 +118,14 @@ abstract class Capsule
     int? id,
     DateTime? createdAt,
     DateTime? updatedAt,
-    DateTime? archivedAt,
+    DateTime? archivedAt = const _isc.$UndefinedDateTime(),
     String? name,
     String? cloudCapsuleId,
     _irrrfshl.ServerpodRegion? region,
     int? projectId,
-    _i2isqmwh.Project? project,
-    _iy6c9ccr.CapsuleResource? resourceConfig,
+    _i2isqmwh.Project? project = const _UndefinedCapsule$project(),
+    _iy6c9ccr.CapsuleResource? resourceConfig =
+        const _UndefinedCapsule$resourceConfig(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -169,6 +170,16 @@ abstract class Capsule
 
 class _Undefined {}
 
+class _UndefinedCapsule$project extends _isc.UndefinedSentinel
+    implements _i2isqmwh.Project {
+  const _UndefinedCapsule$project();
+}
+
+class _UndefinedCapsule$resourceConfig extends _isc.UndefinedSentinel
+    implements _iy6c9ccr.CapsuleResource {
+  const _UndefinedCapsule$resourceConfig();
+}
+
 class _CapsuleImpl extends Capsule {
   _CapsuleImpl({
     int? id,
@@ -202,29 +213,32 @@ class _CapsuleImpl extends Capsule {
     Object? id = _Undefined,
     DateTime? createdAt,
     DateTime? updatedAt,
-    Object? archivedAt = _Undefined,
+    DateTime? archivedAt = const _isc.$UndefinedDateTime(),
     String? name,
     String? cloudCapsuleId,
     _irrrfshl.ServerpodRegion? region,
     int? projectId,
-    Object? project = _Undefined,
-    Object? resourceConfig = _Undefined,
+    _i2isqmwh.Project? project = const _UndefinedCapsule$project(),
+    _iy6c9ccr.CapsuleResource? resourceConfig =
+        const _UndefinedCapsule$resourceConfig(),
   }) {
     return Capsule(
       id: id is int? ? id : this.id,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      archivedAt: archivedAt is DateTime? ? archivedAt : this.archivedAt,
+      archivedAt: archivedAt is _isc.UndefinedSentinel
+          ? this.archivedAt
+          : archivedAt,
       name: name ?? this.name,
       cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
       region: region ?? this.region,
       projectId: projectId ?? this.projectId,
-      project: project is _i2isqmwh.Project?
-          ? project
-          : this.project?.copyWith(),
-      resourceConfig: resourceConfig is _iy6c9ccr.CapsuleResource?
-          ? resourceConfig
-          : this.resourceConfig?.copyWith(),
+      project: project is _isc.UndefinedSentinel
+          ? this.project?.copyWith()
+          : project,
+      resourceConfig: resourceConfig is _isc.UndefinedSentinel
+          ? this.resourceConfig?.copyWith()
+          : resourceConfig,
     );
   }
 }

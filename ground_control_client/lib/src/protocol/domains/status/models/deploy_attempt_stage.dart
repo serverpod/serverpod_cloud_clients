@@ -150,12 +150,13 @@ abstract class DeployAttemptStage
     int? id,
     String? cloudCapsuleId,
     _isc.UuidValue? attemptId,
-    _inqbrt2s.DeployAttempt? attempt,
+    _inqbrt2s.DeployAttempt? attempt =
+        const _UndefinedDeployAttemptStage$attempt(),
     String? externalId,
     _i6ej73e4.DeployStageType? stageType,
     _izk8c25p.DeployProgressStatus? stageStatus,
-    DateTime? startedAt,
-    DateTime? endedAt,
+    DateTime? startedAt = const _isc.$UndefinedDateTime(),
+    DateTime? endedAt = const _isc.$UndefinedDateTime(),
     String? buildId,
     String? stageInfo,
     String? serverpodVersionConstraint,
@@ -214,6 +215,11 @@ abstract class DeployAttemptStage
 
 class _Undefined {}
 
+class _UndefinedDeployAttemptStage$attempt extends _isc.UndefinedSentinel
+    implements _inqbrt2s.DeployAttempt {
+  const _UndefinedDeployAttemptStage$attempt();
+}
+
 class _DeployAttemptStageImpl extends DeployAttemptStage {
   _DeployAttemptStageImpl({
     int? id,
@@ -255,12 +261,13 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
     Object? id = _Undefined,
     String? cloudCapsuleId,
     _isc.UuidValue? attemptId,
-    Object? attempt = _Undefined,
+    _inqbrt2s.DeployAttempt? attempt =
+        const _UndefinedDeployAttemptStage$attempt(),
     Object? externalId = _Undefined,
     _i6ej73e4.DeployStageType? stageType,
     _izk8c25p.DeployProgressStatus? stageStatus,
-    Object? startedAt = _Undefined,
-    Object? endedAt = _Undefined,
+    DateTime? startedAt = const _isc.$UndefinedDateTime(),
+    DateTime? endedAt = const _isc.$UndefinedDateTime(),
     Object? buildId = _Undefined,
     Object? stageInfo = _Undefined,
     Object? serverpodVersionConstraint = _Undefined,
@@ -271,14 +278,16 @@ class _DeployAttemptStageImpl extends DeployAttemptStage {
       id: id is int? ? id : this.id,
       cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
       attemptId: attemptId ?? this.attemptId,
-      attempt: attempt is _inqbrt2s.DeployAttempt?
-          ? attempt
-          : this.attempt?.copyWith(),
+      attempt: attempt is _isc.UndefinedSentinel
+          ? this.attempt?.copyWith()
+          : attempt,
       externalId: externalId is String? ? externalId : this.externalId,
       stageType: stageType ?? this.stageType,
       stageStatus: stageStatus ?? this.stageStatus,
-      startedAt: startedAt is DateTime? ? startedAt : this.startedAt,
-      endedAt: endedAt is DateTime? ? endedAt : this.endedAt,
+      startedAt: startedAt is _isc.UndefinedSentinel
+          ? this.startedAt
+          : startedAt,
+      endedAt: endedAt is _isc.UndefinedSentinel ? this.endedAt : endedAt,
       buildId: buildId is String? ? buildId : this.buildId,
       stageInfo: stageInfo is String? ? stageInfo : this.stageInfo,
       serverpodVersionConstraint: serverpodVersionConstraint is String?

@@ -161,18 +161,19 @@ abstract class AdminProjectInfo
   AdminProjectInfo copyWith({
     _igjtmryi.ProjectInfo? projectInfo,
     _ie2v77w9.ProjectLifecycleStatus? status,
-    DateTime? suspendedAt,
+    DateTime? suspendedAt = const _isc.$UndefinedDateTime(),
     _ixae5ksq.ProjectSuspensionReason? suspensionReason,
     String? planProductId,
     String? subscriptionId,
     List<_iyxx8r3m.PaymentsStatus>? overduePaymentsStatuses,
     String? billingPlanId,
-    DateTime? firstInvoicePaidAt,
+    DateTime? firstInvoicePaidAt = const _isc.$UndefinedDateTime(),
     String? firstPaidInvoiceId,
     String? gracePeriodInvoiceId,
-    DateTime? gracePeriodSuspendAt,
-    DateTime? gracePeriodConcludedAt,
-    _inqbrt2s.DeployAttempt? latestDeployAttempt,
+    DateTime? gracePeriodSuspendAt = const _isc.$UndefinedDateTime(),
+    DateTime? gracePeriodConcludedAt = const _isc.$UndefinedDateTime(),
+    _inqbrt2s.DeployAttempt? latestDeployAttempt =
+        const _UndefinedAdminProjectInfo$latestDeployAttempt(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -240,6 +241,12 @@ abstract class AdminProjectInfo
 
 class _Undefined {}
 
+class _UndefinedAdminProjectInfo$latestDeployAttempt
+    extends _isc.UndefinedSentinel
+    implements _inqbrt2s.DeployAttempt {
+  const _UndefinedAdminProjectInfo$latestDeployAttempt();
+}
+
 class _AdminProjectInfoImpl extends AdminProjectInfo {
   _AdminProjectInfoImpl({
     required _igjtmryi.ProjectInfo projectInfo,
@@ -280,23 +287,26 @@ class _AdminProjectInfoImpl extends AdminProjectInfo {
   AdminProjectInfo copyWith({
     _igjtmryi.ProjectInfo? projectInfo,
     _ie2v77w9.ProjectLifecycleStatus? status,
-    Object? suspendedAt = _Undefined,
+    DateTime? suspendedAt = const _isc.$UndefinedDateTime(),
     Object? suspensionReason = _Undefined,
     String? planProductId,
     String? subscriptionId,
     List<_iyxx8r3m.PaymentsStatus>? overduePaymentsStatuses,
     Object? billingPlanId = _Undefined,
-    Object? firstInvoicePaidAt = _Undefined,
+    DateTime? firstInvoicePaidAt = const _isc.$UndefinedDateTime(),
     Object? firstPaidInvoiceId = _Undefined,
     Object? gracePeriodInvoiceId = _Undefined,
-    Object? gracePeriodSuspendAt = _Undefined,
-    Object? gracePeriodConcludedAt = _Undefined,
-    Object? latestDeployAttempt = _Undefined,
+    DateTime? gracePeriodSuspendAt = const _isc.$UndefinedDateTime(),
+    DateTime? gracePeriodConcludedAt = const _isc.$UndefinedDateTime(),
+    _inqbrt2s.DeployAttempt? latestDeployAttempt =
+        const _UndefinedAdminProjectInfo$latestDeployAttempt(),
   }) {
     return AdminProjectInfo(
       projectInfo: projectInfo ?? this.projectInfo.copyWith(),
       status: status ?? this.status,
-      suspendedAt: suspendedAt is DateTime? ? suspendedAt : this.suspendedAt,
+      suspendedAt: suspendedAt is _isc.UndefinedSentinel
+          ? this.suspendedAt
+          : suspendedAt,
       suspensionReason: suspensionReason is _ixae5ksq.ProjectSuspensionReason?
           ? suspensionReason
           : this.suspensionReason,
@@ -308,24 +318,24 @@ class _AdminProjectInfoImpl extends AdminProjectInfo {
       billingPlanId: billingPlanId is String?
           ? billingPlanId
           : this.billingPlanId,
-      firstInvoicePaidAt: firstInvoicePaidAt is DateTime?
-          ? firstInvoicePaidAt
-          : this.firstInvoicePaidAt,
+      firstInvoicePaidAt: firstInvoicePaidAt is _isc.UndefinedSentinel
+          ? this.firstInvoicePaidAt
+          : firstInvoicePaidAt,
       firstPaidInvoiceId: firstPaidInvoiceId is String?
           ? firstPaidInvoiceId
           : this.firstPaidInvoiceId,
       gracePeriodInvoiceId: gracePeriodInvoiceId is String?
           ? gracePeriodInvoiceId
           : this.gracePeriodInvoiceId,
-      gracePeriodSuspendAt: gracePeriodSuspendAt is DateTime?
-          ? gracePeriodSuspendAt
-          : this.gracePeriodSuspendAt,
-      gracePeriodConcludedAt: gracePeriodConcludedAt is DateTime?
-          ? gracePeriodConcludedAt
-          : this.gracePeriodConcludedAt,
-      latestDeployAttempt: latestDeployAttempt is _inqbrt2s.DeployAttempt?
-          ? latestDeployAttempt
-          : this.latestDeployAttempt?.copyWith(),
+      gracePeriodSuspendAt: gracePeriodSuspendAt is _isc.UndefinedSentinel
+          ? this.gracePeriodSuspendAt
+          : gracePeriodSuspendAt,
+      gracePeriodConcludedAt: gracePeriodConcludedAt is _isc.UndefinedSentinel
+          ? this.gracePeriodConcludedAt
+          : gracePeriodConcludedAt,
+      latestDeployAttempt: latestDeployAttempt is _isc.UndefinedSentinel
+          ? this.latestDeployAttempt?.copyWith()
+          : latestDeployAttempt,
     );
   }
 }

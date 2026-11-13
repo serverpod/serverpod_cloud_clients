@@ -122,13 +122,14 @@ abstract class Role
     int? id,
     DateTime? createdAt,
     DateTime? updatedAt,
-    DateTime? archivedAt,
+    DateTime? archivedAt = const _isc.$UndefinedDateTime(),
     int? projectId,
-    _i2isqmwh.Project? project,
+    _i2isqmwh.Project? project = const _UndefinedRole$project(),
     String? name,
     _isypcm2i.ProjectRole? roleName,
     List<String>? projectScopes,
-    List<_i28atcql.UserRoleMembership>? memberships,
+    List<_i28atcql.UserRoleMembership>? memberships =
+        const _isc.$UndefinedList<_i28atcql.UserRoleMembership>(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -176,6 +177,11 @@ abstract class Role
 
 class _Undefined {}
 
+class _UndefinedRole$project extends _isc.UndefinedSentinel
+    implements _i2isqmwh.Project {
+  const _UndefinedRole$project();
+}
+
 class _RoleImpl extends Role {
   _RoleImpl({
     int? id,
@@ -209,30 +215,33 @@ class _RoleImpl extends Role {
     Object? id = _Undefined,
     DateTime? createdAt,
     DateTime? updatedAt,
-    Object? archivedAt = _Undefined,
+    DateTime? archivedAt = const _isc.$UndefinedDateTime(),
     int? projectId,
-    Object? project = _Undefined,
+    _i2isqmwh.Project? project = const _UndefinedRole$project(),
     Object? name = _Undefined,
     _isypcm2i.ProjectRole? roleName,
     List<String>? projectScopes,
-    Object? memberships = _Undefined,
+    List<_i28atcql.UserRoleMembership>? memberships =
+        const _isc.$UndefinedList<_i28atcql.UserRoleMembership>(),
   }) {
     return Role(
       id: id is int? ? id : this.id,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      archivedAt: archivedAt is DateTime? ? archivedAt : this.archivedAt,
+      archivedAt: archivedAt is _isc.UndefinedSentinel
+          ? this.archivedAt
+          : archivedAt,
       projectId: projectId ?? this.projectId,
-      project: project is _i2isqmwh.Project?
-          ? project
-          : this.project?.copyWith(),
+      project: project is _isc.UndefinedSentinel
+          ? this.project?.copyWith()
+          : project,
       name: name is String? ? name : this.name,
       roleName: roleName ?? this.roleName,
       projectScopes:
           projectScopes ?? this.projectScopes.map((e0) => e0).toList(),
-      memberships: memberships is List<_i28atcql.UserRoleMembership>?
-          ? memberships
-          : this.memberships?.map((e0) => e0.copyWith()).toList(),
+      memberships: memberships is _isc.UndefinedSentinel
+          ? this.memberships?.map((e0) => e0.copyWith()).toList()
+          : memberships,
     );
   }
 }

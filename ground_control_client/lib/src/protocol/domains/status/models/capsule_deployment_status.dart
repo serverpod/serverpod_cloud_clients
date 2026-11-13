@@ -96,9 +96,10 @@ abstract class CapsuleDeploymentStatus
     _ian82d1d.CapsuleState? state,
     int? desiredReplicas,
     int? readyReplicas,
-    _isc.UuidValue? uploadId,
-    _isc.UuidValue? buildId,
-    _itkte3el.CapsuleRevision? incoming,
+    _isc.UuidValue? uploadId = const _isc.$UndefinedUuidValue(),
+    _isc.UuidValue? buildId = const _isc.$UndefinedUuidValue(),
+    _itkte3el.CapsuleRevision? incoming =
+        const _UndefinedCapsuleDeploymentStatus$incoming(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -136,6 +137,11 @@ abstract class CapsuleDeploymentStatus
 
 class _Undefined {}
 
+class _UndefinedCapsuleDeploymentStatus$incoming extends _isc.UndefinedSentinel
+    implements _itkte3el.CapsuleRevision {
+  const _UndefinedCapsuleDeploymentStatus$incoming();
+}
+
 class _CapsuleDeploymentStatusImpl extends CapsuleDeploymentStatus {
   _CapsuleDeploymentStatusImpl({
     required String name,
@@ -164,9 +170,10 @@ class _CapsuleDeploymentStatusImpl extends CapsuleDeploymentStatus {
     _ian82d1d.CapsuleState? state,
     Object? desiredReplicas = _Undefined,
     Object? readyReplicas = _Undefined,
-    Object? uploadId = _Undefined,
-    Object? buildId = _Undefined,
-    Object? incoming = _Undefined,
+    _isc.UuidValue? uploadId = const _isc.$UndefinedUuidValue(),
+    _isc.UuidValue? buildId = const _isc.$UndefinedUuidValue(),
+    _itkte3el.CapsuleRevision? incoming =
+        const _UndefinedCapsuleDeploymentStatus$incoming(),
   }) {
     return CapsuleDeploymentStatus(
       name: name ?? this.name,
@@ -175,11 +182,11 @@ class _CapsuleDeploymentStatusImpl extends CapsuleDeploymentStatus {
           ? desiredReplicas
           : this.desiredReplicas,
       readyReplicas: readyReplicas is int? ? readyReplicas : this.readyReplicas,
-      uploadId: uploadId is _isc.UuidValue? ? uploadId : this.uploadId,
-      buildId: buildId is _isc.UuidValue? ? buildId : this.buildId,
-      incoming: incoming is _itkte3el.CapsuleRevision?
-          ? incoming
-          : this.incoming?.copyWith(),
+      uploadId: uploadId is _isc.UndefinedSentinel ? this.uploadId : uploadId,
+      buildId: buildId is _isc.UndefinedSentinel ? this.buildId : buildId,
+      incoming: incoming is _isc.UndefinedSentinel
+          ? this.incoming?.copyWith()
+          : incoming,
     );
   }
 }

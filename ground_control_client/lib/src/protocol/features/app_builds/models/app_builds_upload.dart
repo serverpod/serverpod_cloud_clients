@@ -71,7 +71,8 @@ abstract class AppBuildsUpload
     _isc.UuidValue? uploadId,
     List<_i9jyz2kf.AppBuildRef>? builds,
     String? uploadDescription,
-    List<_iutjqgjp.AppIdentifierChange>? appIdentifierChanges,
+    List<_iutjqgjp.AppIdentifierChange>? appIdentifierChanges =
+        const _isc.$UndefinedList<_iutjqgjp.AppIdentifierChange>(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -107,8 +108,6 @@ abstract class AppBuildsUpload
   }
 }
 
-class _Undefined {}
-
 class _AppBuildsUploadImpl extends AppBuildsUpload {
   _AppBuildsUploadImpl({
     required _isc.UuidValue uploadId,
@@ -130,16 +129,16 @@ class _AppBuildsUploadImpl extends AppBuildsUpload {
     _isc.UuidValue? uploadId,
     List<_i9jyz2kf.AppBuildRef>? builds,
     String? uploadDescription,
-    Object? appIdentifierChanges = _Undefined,
+    List<_iutjqgjp.AppIdentifierChange>? appIdentifierChanges =
+        const _isc.$UndefinedList<_iutjqgjp.AppIdentifierChange>(),
   }) {
     return AppBuildsUpload(
       uploadId: uploadId ?? this.uploadId,
       builds: builds ?? this.builds.map((e0) => e0.copyWith()).toList(),
       uploadDescription: uploadDescription ?? this.uploadDescription,
-      appIdentifierChanges:
-          appIdentifierChanges is List<_iutjqgjp.AppIdentifierChange>?
-          ? appIdentifierChanges
-          : this.appIdentifierChanges?.map((e0) => e0.copyWith()).toList(),
+      appIdentifierChanges: appIdentifierChanges is _isc.UndefinedSentinel
+          ? this.appIdentifierChanges?.map((e0) => e0.copyWith()).toList()
+          : appIdentifierChanges,
     );
   }
 }

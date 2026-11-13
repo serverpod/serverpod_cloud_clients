@@ -40,7 +40,10 @@ abstract class CapsuleRevision
   /// Returns a shallow copy of this [CapsuleRevision]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
-  CapsuleRevision copyWith({_isc.UuidValue? uploadId, _isc.UuidValue? buildId});
+  CapsuleRevision copyWith({
+    _isc.UuidValue? uploadId = const _isc.$UndefinedUuidValue(),
+    _isc.UuidValue? buildId = const _isc.$UndefinedUuidValue(),
+  });
   @override
   Map<String, dynamic> toJson() {
     return {
@@ -65,8 +68,6 @@ abstract class CapsuleRevision
   }
 }
 
-class _Undefined {}
-
 class _CapsuleRevisionImpl extends CapsuleRevision {
   _CapsuleRevisionImpl({_isc.UuidValue? uploadId, _isc.UuidValue? buildId})
     : super._(uploadId: uploadId, buildId: buildId);
@@ -76,12 +77,12 @@ class _CapsuleRevisionImpl extends CapsuleRevision {
   @_isc.useResult
   @override
   CapsuleRevision copyWith({
-    Object? uploadId = _Undefined,
-    Object? buildId = _Undefined,
+    _isc.UuidValue? uploadId = const _isc.$UndefinedUuidValue(),
+    _isc.UuidValue? buildId = const _isc.$UndefinedUuidValue(),
   }) {
     return CapsuleRevision(
-      uploadId: uploadId is _isc.UuidValue? ? uploadId : this.uploadId,
-      buildId: buildId is _isc.UuidValue? ? buildId : this.buildId,
+      uploadId: uploadId is _isc.UndefinedSentinel ? this.uploadId : uploadId,
+      buildId: buildId is _isc.UndefinedSentinel ? this.buildId : buildId,
     );
   }
 }

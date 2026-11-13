@@ -63,7 +63,8 @@ abstract class CapsuleStatus
   CapsuleStatus copyWith({
     String? cloudCapsuleId,
     _ian82d1d.CapsuleState? status,
-    _ipungqwh.CapsuleDeploymentStatus? deployment,
+    _ipungqwh.CapsuleDeploymentStatus? deployment =
+        const _UndefinedCapsuleStatus$deployment(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -91,7 +92,10 @@ abstract class CapsuleStatus
   }
 }
 
-class _Undefined {}
+class _UndefinedCapsuleStatus$deployment extends _isc.UndefinedSentinel
+    implements _ipungqwh.CapsuleDeploymentStatus {
+  const _UndefinedCapsuleStatus$deployment();
+}
 
 class _CapsuleStatusImpl extends CapsuleStatus {
   _CapsuleStatusImpl({
@@ -111,14 +115,15 @@ class _CapsuleStatusImpl extends CapsuleStatus {
   CapsuleStatus copyWith({
     String? cloudCapsuleId,
     _ian82d1d.CapsuleState? status,
-    Object? deployment = _Undefined,
+    _ipungqwh.CapsuleDeploymentStatus? deployment =
+        const _UndefinedCapsuleStatus$deployment(),
   }) {
     return CapsuleStatus(
       cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
       status: status ?? this.status,
-      deployment: deployment is _ipungqwh.CapsuleDeploymentStatus?
-          ? deployment
-          : this.deployment?.copyWith(),
+      deployment: deployment is _isc.UndefinedSentinel
+          ? this.deployment?.copyWith()
+          : deployment,
     );
   }
 }

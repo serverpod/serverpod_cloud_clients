@@ -159,13 +159,13 @@ abstract class AppBuildSummary
     String? buildNumber,
     String? message,
     _izmqhuyw.AppBuildFailureReason? failureReason,
-    _ijl94k1v.User? requestedBy,
+    _ijl94k1v.User? requestedBy = const _UndefinedAppBuildSummary$requestedBy(),
     String? commitHash,
     String? commitMessage,
     String? branch,
     DateTime? createdAt,
-    DateTime? startedAt,
-    DateTime? endedAt,
+    DateTime? startedAt = const _isc.$UndefinedDateTime(),
+    DateTime? endedAt = const _isc.$UndefinedDateTime(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -219,6 +219,11 @@ abstract class AppBuildSummary
 
 class _Undefined {}
 
+class _UndefinedAppBuildSummary$requestedBy extends _isc.UndefinedSentinel
+    implements _ijl94k1v.User {
+  const _UndefinedAppBuildSummary$requestedBy();
+}
+
 class _AppBuildSummaryImpl extends AppBuildSummary {
   _AppBuildSummaryImpl({
     required _isc.UuidValue id,
@@ -267,13 +272,13 @@ class _AppBuildSummaryImpl extends AppBuildSummary {
     Object? buildNumber = _Undefined,
     Object? message = _Undefined,
     Object? failureReason = _Undefined,
-    Object? requestedBy = _Undefined,
+    _ijl94k1v.User? requestedBy = const _UndefinedAppBuildSummary$requestedBy(),
     Object? commitHash = _Undefined,
     Object? commitMessage = _Undefined,
     Object? branch = _Undefined,
     DateTime? createdAt,
-    Object? startedAt = _Undefined,
-    Object? endedAt = _Undefined,
+    DateTime? startedAt = const _isc.$UndefinedDateTime(),
+    DateTime? endedAt = const _isc.$UndefinedDateTime(),
   }) {
     return AppBuildSummary(
       id: id ?? this.id,
@@ -286,17 +291,19 @@ class _AppBuildSummaryImpl extends AppBuildSummary {
       failureReason: failureReason is _izmqhuyw.AppBuildFailureReason?
           ? failureReason
           : this.failureReason,
-      requestedBy: requestedBy is _ijl94k1v.User?
-          ? requestedBy
-          : this.requestedBy?.copyWith(),
+      requestedBy: requestedBy is _isc.UndefinedSentinel
+          ? this.requestedBy?.copyWith()
+          : requestedBy,
       commitHash: commitHash is String? ? commitHash : this.commitHash,
       commitMessage: commitMessage is String?
           ? commitMessage
           : this.commitMessage,
       branch: branch is String? ? branch : this.branch,
       createdAt: createdAt ?? this.createdAt,
-      startedAt: startedAt is DateTime? ? startedAt : this.startedAt,
-      endedAt: endedAt is DateTime? ? endedAt : this.endedAt,
+      startedAt: startedAt is _isc.UndefinedSentinel
+          ? this.startedAt
+          : startedAt,
+      endedAt: endedAt is _isc.UndefinedSentinel ? this.endedAt : endedAt,
     );
   }
 }

@@ -86,7 +86,8 @@ abstract class DatabaseProductInfo
     String? productId,
     String? name,
     String? description,
-    _in8146o7.DatabaseScalingInfo? scaling,
+    _in8146o7.DatabaseScalingInfo? scaling =
+        const _UndefinedDatabaseProductInfo$scaling(),
     int? cuHoursPerMonthLimit,
     int? storageLimitGB,
   });
@@ -128,6 +129,11 @@ abstract class DatabaseProductInfo
 
 class _Undefined {}
 
+class _UndefinedDatabaseProductInfo$scaling extends _isc.UndefinedSentinel
+    implements _in8146o7.DatabaseScalingInfo {
+  const _UndefinedDatabaseProductInfo$scaling();
+}
+
 class _DatabaseProductInfoImpl extends DatabaseProductInfo {
   _DatabaseProductInfoImpl({
     required _its7dxaf.DatabaseSizeOption size,
@@ -156,7 +162,8 @@ class _DatabaseProductInfoImpl extends DatabaseProductInfo {
     String? productId,
     String? name,
     String? description,
-    Object? scaling = _Undefined,
+    _in8146o7.DatabaseScalingInfo? scaling =
+        const _UndefinedDatabaseProductInfo$scaling(),
     Object? cuHoursPerMonthLimit = _Undefined,
     Object? storageLimitGB = _Undefined,
   }) {
@@ -165,9 +172,9 @@ class _DatabaseProductInfoImpl extends DatabaseProductInfo {
       productId: productId ?? this.productId,
       name: name ?? this.name,
       description: description ?? this.description,
-      scaling: scaling is _in8146o7.DatabaseScalingInfo?
-          ? scaling
-          : this.scaling?.copyWith(),
+      scaling: scaling is _isc.UndefinedSentinel
+          ? this.scaling?.copyWith()
+          : scaling,
       cuHoursPerMonthLimit: cuHoursPerMonthLimit is int?
           ? cuHoursPerMonthLimit
           : this.cuHoursPerMonthLimit,

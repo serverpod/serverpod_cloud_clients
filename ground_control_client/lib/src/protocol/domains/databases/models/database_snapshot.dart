@@ -82,7 +82,7 @@ abstract class DatabaseSnapshot
     String? id,
     String? name,
     DateTime? createdAt,
-    DateTime? expiresAt,
+    DateTime? expiresAt = const _isc.$UndefinedDateTime(),
     bool? manual,
     int? fullSizeBytes,
     int? diffSizeBytes,
@@ -150,7 +150,7 @@ class _DatabaseSnapshotImpl extends DatabaseSnapshot {
     String? id,
     String? name,
     DateTime? createdAt,
-    Object? expiresAt = _Undefined,
+    DateTime? expiresAt = const _isc.$UndefinedDateTime(),
     bool? manual,
     Object? fullSizeBytes = _Undefined,
     Object? diffSizeBytes = _Undefined,
@@ -159,7 +159,9 @@ class _DatabaseSnapshotImpl extends DatabaseSnapshot {
       id: id ?? this.id,
       name: name ?? this.name,
       createdAt: createdAt ?? this.createdAt,
-      expiresAt: expiresAt is DateTime? ? expiresAt : this.expiresAt,
+      expiresAt: expiresAt is _isc.UndefinedSentinel
+          ? this.expiresAt
+          : expiresAt,
       manual: manual ?? this.manual,
       fullSizeBytes: fullSizeBytes is int? ? fullSizeBytes : this.fullSizeBytes,
       diffSizeBytes: diffSizeBytes is int? ? diffSizeBytes : this.diffSizeBytes,

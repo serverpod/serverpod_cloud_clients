@@ -134,8 +134,8 @@ abstract class BucketResource
     _irrrfshl.ServerpodRegion? region,
     _i7xoz7e1.BucketStatus? status,
     int? lastMeteredSizeBytes,
-    DateTime? meteredAt,
-    DateTime? accessRevokedAt,
+    DateTime? meteredAt = const _isc.$UndefinedDateTime(),
+    DateTime? accessRevokedAt = const _isc.$UndefinedDateTime(),
     _iu6ymjy9.BucketAccessRevocationReason? accessRevokedReason,
   });
   @override
@@ -231,8 +231,8 @@ class _BucketResourceImpl extends BucketResource {
     _irrrfshl.ServerpodRegion? region,
     _i7xoz7e1.BucketStatus? status,
     Object? lastMeteredSizeBytes = _Undefined,
-    Object? meteredAt = _Undefined,
-    Object? accessRevokedAt = _Undefined,
+    DateTime? meteredAt = const _isc.$UndefinedDateTime(),
+    DateTime? accessRevokedAt = const _isc.$UndefinedDateTime(),
     Object? accessRevokedReason = _Undefined,
   }) {
     return BucketResource(
@@ -247,10 +247,12 @@ class _BucketResourceImpl extends BucketResource {
       lastMeteredSizeBytes: lastMeteredSizeBytes is int?
           ? lastMeteredSizeBytes
           : this.lastMeteredSizeBytes,
-      meteredAt: meteredAt is DateTime? ? meteredAt : this.meteredAt,
-      accessRevokedAt: accessRevokedAt is DateTime?
-          ? accessRevokedAt
-          : this.accessRevokedAt,
+      meteredAt: meteredAt is _isc.UndefinedSentinel
+          ? this.meteredAt
+          : meteredAt,
+      accessRevokedAt: accessRevokedAt is _isc.UndefinedSentinel
+          ? this.accessRevokedAt
+          : accessRevokedAt,
       accessRevokedReason:
           accessRevokedReason is _iu6ymjy9.BucketAccessRevocationReason?
           ? accessRevokedReason

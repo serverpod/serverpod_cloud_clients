@@ -74,7 +74,7 @@ abstract class UserLabelMapping
     int? id,
     DateTime? createdAt,
     int? userId,
-    _ijl94k1v.User? user,
+    _ijl94k1v.User? user = const _UndefinedUserLabelMapping$user(),
     _i5ur1pgv.UserLabel? label,
   });
   @override
@@ -109,6 +109,11 @@ abstract class UserLabelMapping
 
 class _Undefined {}
 
+class _UndefinedUserLabelMapping$user extends _isc.UndefinedSentinel
+    implements _ijl94k1v.User {
+  const _UndefinedUserLabelMapping$user();
+}
+
 class _UserLabelMappingImpl extends UserLabelMapping {
   _UserLabelMappingImpl({
     int? id,
@@ -132,14 +137,14 @@ class _UserLabelMappingImpl extends UserLabelMapping {
     Object? id = _Undefined,
     DateTime? createdAt,
     int? userId,
-    Object? user = _Undefined,
+    _ijl94k1v.User? user = const _UndefinedUserLabelMapping$user(),
     _i5ur1pgv.UserLabel? label,
   }) {
     return UserLabelMapping(
       id: id is int? ? id : this.id,
       createdAt: createdAt ?? this.createdAt,
       userId: userId ?? this.userId,
-      user: user is _ijl94k1v.User? ? user : this.user?.copyWith(),
+      user: user is _isc.UndefinedSentinel ? this.user?.copyWith() : user,
       label: label ?? this.label,
     );
   }

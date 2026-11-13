@@ -51,8 +51,10 @@ abstract class AndroidPublishingSetup
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
   AndroidPublishingSetup copyWith({
-    _ivee1xvx.GooglePlayAccess? store,
-    _idapt6vp.AndroidSigning? signing,
+    _ivee1xvx.GooglePlayAccess? store =
+        const _UndefinedAndroidPublishingSetup$store(),
+    _idapt6vp.AndroidSigning? signing =
+        const _UndefinedAndroidPublishingSetup$signing(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -78,7 +80,15 @@ abstract class AndroidPublishingSetup
   }
 }
 
-class _Undefined {}
+class _UndefinedAndroidPublishingSetup$store extends _isc.UndefinedSentinel
+    implements _ivee1xvx.GooglePlayAccess {
+  const _UndefinedAndroidPublishingSetup$store();
+}
+
+class _UndefinedAndroidPublishingSetup$signing extends _isc.UndefinedSentinel
+    implements _idapt6vp.AndroidSigning {
+  const _UndefinedAndroidPublishingSetup$signing();
+}
 
 class _AndroidPublishingSetupImpl extends AndroidPublishingSetup {
   _AndroidPublishingSetupImpl({
@@ -91,16 +101,16 @@ class _AndroidPublishingSetupImpl extends AndroidPublishingSetup {
   @_isc.useResult
   @override
   AndroidPublishingSetup copyWith({
-    Object? store = _Undefined,
-    Object? signing = _Undefined,
+    _ivee1xvx.GooglePlayAccess? store =
+        const _UndefinedAndroidPublishingSetup$store(),
+    _idapt6vp.AndroidSigning? signing =
+        const _UndefinedAndroidPublishingSetup$signing(),
   }) {
     return AndroidPublishingSetup(
-      store: store is _ivee1xvx.GooglePlayAccess?
-          ? store
-          : this.store?.copyWith(),
-      signing: signing is _idapt6vp.AndroidSigning?
-          ? signing
-          : this.signing?.copyWith(),
+      store: store is _isc.UndefinedSentinel ? this.store?.copyWith() : store,
+      signing: signing is _isc.UndefinedSentinel
+          ? this.signing?.copyWith()
+          : signing,
     );
   }
 }

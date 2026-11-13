@@ -137,7 +137,7 @@ abstract class CapsuleResource
   CapsuleResource copyWith({
     int? id,
     int? cloudCapsuleId,
-    _ictbn9k6.Capsule? capsule,
+    _ictbn9k6.Capsule? capsule = const _UndefinedCapsuleResource$capsule(),
     String? computeRequestCpu,
     String? computeRequestMemory,
     String? computeRequestEphemeralStorage,
@@ -197,6 +197,11 @@ abstract class CapsuleResource
 
 class _Undefined {}
 
+class _UndefinedCapsuleResource$capsule extends _isc.UndefinedSentinel
+    implements _ictbn9k6.Capsule {
+  const _UndefinedCapsuleResource$capsule();
+}
+
 class _CapsuleResourceImpl extends CapsuleResource {
   _CapsuleResourceImpl({
     int? id,
@@ -235,7 +240,7 @@ class _CapsuleResourceImpl extends CapsuleResource {
   CapsuleResource copyWith({
     Object? id = _Undefined,
     int? cloudCapsuleId,
-    Object? capsule = _Undefined,
+    _ictbn9k6.Capsule? capsule = const _UndefinedCapsuleResource$capsule(),
     String? computeRequestCpu,
     String? computeRequestMemory,
     String? computeRequestEphemeralStorage,
@@ -250,9 +255,9 @@ class _CapsuleResourceImpl extends CapsuleResource {
     return CapsuleResource(
       id: id is int? ? id : this.id,
       cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
-      capsule: capsule is _ictbn9k6.Capsule?
-          ? capsule
-          : this.capsule?.copyWith(),
+      capsule: capsule is _isc.UndefinedSentinel
+          ? this.capsule?.copyWith()
+          : capsule,
       computeRequestCpu: computeRequestCpu ?? this.computeRequestCpu,
       computeRequestMemory: computeRequestMemory ?? this.computeRequestMemory,
       computeRequestEphemeralStorage:

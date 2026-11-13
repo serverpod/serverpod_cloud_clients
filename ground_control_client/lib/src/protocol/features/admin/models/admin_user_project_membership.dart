@@ -131,7 +131,7 @@ abstract class AdminUserProjectMembership
   AdminUserProjectMembership copyWith({
     String? cloudProjectId,
     _ie2v77w9.ProjectLifecycleStatus? status,
-    DateTime? suspendedAt,
+    DateTime? suspendedAt = const _isc.$UndefinedDateTime(),
     _ixae5ksq.ProjectSuspensionReason? suspensionReason,
     List<_isypcm2i.ProjectRole>? userRoles,
     _iic46wsa.PlanType? planType,
@@ -139,7 +139,8 @@ abstract class AdminUserProjectMembership
     String? billingPlanId,
     String? billingSubscriptionId,
     DateTime? projectCreatedAt,
-    _inqbrt2s.DeployAttempt? latestDeployAttempt,
+    _inqbrt2s.DeployAttempt? latestDeployAttempt =
+        const _UndefinedAdminUserProjectMembership$latestDeployAttempt(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -191,6 +192,12 @@ abstract class AdminUserProjectMembership
 
 class _Undefined {}
 
+class _UndefinedAdminUserProjectMembership$latestDeployAttempt
+    extends _isc.UndefinedSentinel
+    implements _inqbrt2s.DeployAttempt {
+  const _UndefinedAdminUserProjectMembership$latestDeployAttempt();
+}
+
 class _AdminUserProjectMembershipImpl extends AdminUserProjectMembership {
   _AdminUserProjectMembershipImpl({
     required String cloudProjectId,
@@ -225,7 +232,7 @@ class _AdminUserProjectMembershipImpl extends AdminUserProjectMembership {
   AdminUserProjectMembership copyWith({
     String? cloudProjectId,
     _ie2v77w9.ProjectLifecycleStatus? status,
-    Object? suspendedAt = _Undefined,
+    DateTime? suspendedAt = const _isc.$UndefinedDateTime(),
     Object? suspensionReason = _Undefined,
     List<_isypcm2i.ProjectRole>? userRoles,
     Object? planType = _Undefined,
@@ -233,12 +240,15 @@ class _AdminUserProjectMembershipImpl extends AdminUserProjectMembership {
     Object? billingPlanId = _Undefined,
     Object? billingSubscriptionId = _Undefined,
     DateTime? projectCreatedAt,
-    Object? latestDeployAttempt = _Undefined,
+    _inqbrt2s.DeployAttempt? latestDeployAttempt =
+        const _UndefinedAdminUserProjectMembership$latestDeployAttempt(),
   }) {
     return AdminUserProjectMembership(
       cloudProjectId: cloudProjectId ?? this.cloudProjectId,
       status: status ?? this.status,
-      suspendedAt: suspendedAt is DateTime? ? suspendedAt : this.suspendedAt,
+      suspendedAt: suspendedAt is _isc.UndefinedSentinel
+          ? this.suspendedAt
+          : suspendedAt,
       suspensionReason: suspensionReason is _ixae5ksq.ProjectSuspensionReason?
           ? suspensionReason
           : this.suspensionReason,
@@ -254,9 +264,9 @@ class _AdminUserProjectMembershipImpl extends AdminUserProjectMembership {
           ? billingSubscriptionId
           : this.billingSubscriptionId,
       projectCreatedAt: projectCreatedAt ?? this.projectCreatedAt,
-      latestDeployAttempt: latestDeployAttempt is _inqbrt2s.DeployAttempt?
-          ? latestDeployAttempt
-          : this.latestDeployAttempt?.copyWith(),
+      latestDeployAttempt: latestDeployAttempt is _isc.UndefinedSentinel
+          ? this.latestDeployAttempt?.copyWith()
+          : latestDeployAttempt,
     );
   }
 }

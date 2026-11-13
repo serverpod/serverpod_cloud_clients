@@ -104,9 +104,10 @@ abstract class DeployAttemptSummary
     String? commitHash,
     String? commitMessage,
     String? branch,
-    _ijl94k1v.User? deployedBy,
+    _ijl94k1v.User? deployedBy =
+        const _UndefinedDeployAttemptSummary$deployedBy(),
     DateTime? startedAt,
-    DateTime? endedAt,
+    DateTime? endedAt = const _isc.$UndefinedDateTime(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -146,6 +147,11 @@ abstract class DeployAttemptSummary
 
 class _Undefined {}
 
+class _UndefinedDeployAttemptSummary$deployedBy extends _isc.UndefinedSentinel
+    implements _ijl94k1v.User {
+  const _UndefinedDeployAttemptSummary$deployedBy();
+}
+
 class _DeployAttemptSummaryImpl extends DeployAttemptSummary {
   _DeployAttemptSummaryImpl({
     required _isc.UuidValue attemptId,
@@ -177,9 +183,10 @@ class _DeployAttemptSummaryImpl extends DeployAttemptSummary {
     Object? commitHash = _Undefined,
     Object? commitMessage = _Undefined,
     Object? branch = _Undefined,
-    Object? deployedBy = _Undefined,
+    _ijl94k1v.User? deployedBy =
+        const _UndefinedDeployAttemptSummary$deployedBy(),
     DateTime? startedAt,
-    Object? endedAt = _Undefined,
+    DateTime? endedAt = const _isc.$UndefinedDateTime(),
   }) {
     return DeployAttemptSummary(
       attemptId: attemptId ?? this.attemptId,
@@ -189,11 +196,11 @@ class _DeployAttemptSummaryImpl extends DeployAttemptSummary {
           ? commitMessage
           : this.commitMessage,
       branch: branch is String? ? branch : this.branch,
-      deployedBy: deployedBy is _ijl94k1v.User?
-          ? deployedBy
-          : this.deployedBy?.copyWith(),
+      deployedBy: deployedBy is _isc.UndefinedSentinel
+          ? this.deployedBy?.copyWith()
+          : deployedBy,
       startedAt: startedAt ?? this.startedAt,
-      endedAt: endedAt is DateTime? ? endedAt : this.endedAt,
+      endedAt: endedAt is _isc.UndefinedSentinel ? this.endedAt : endedAt,
     );
   }
 }

@@ -140,15 +140,17 @@ abstract class User
     int? id,
     DateTime? createdAt,
     DateTime? updatedAt,
-    DateTime? archivedAt,
+    DateTime? archivedAt = const _isc.$UndefinedDateTime(),
     _isy42w70.UserAccountStatus? accountStatus,
     String? userAuthId,
     String? email,
     String? name,
-    List<_i28atcql.UserRoleMembership>? memberships,
-    _isc.UuidValue? ownerId,
-    _icig531b.Owner? owner,
-    List<_ibl32xb7.UserLabelMapping>? labels,
+    List<_i28atcql.UserRoleMembership>? memberships =
+        const _isc.$UndefinedList<_i28atcql.UserRoleMembership>(),
+    _isc.UuidValue? ownerId = const _isc.$UndefinedUuidValue(),
+    _icig531b.Owner? owner = const _UndefinedUser$owner(),
+    List<_ibl32xb7.UserLabelMapping>? labels =
+        const _isc.$UndefinedList<_ibl32xb7.UserLabelMapping>(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -202,6 +204,11 @@ abstract class User
 
 class _Undefined {}
 
+class _UndefinedUser$owner extends _isc.UndefinedSentinel
+    implements _icig531b.Owner {
+  const _UndefinedUser$owner();
+}
+
 class _UserImpl extends User {
   _UserImpl({
     int? id,
@@ -239,33 +246,37 @@ class _UserImpl extends User {
     Object? id = _Undefined,
     DateTime? createdAt,
     DateTime? updatedAt,
-    Object? archivedAt = _Undefined,
+    DateTime? archivedAt = const _isc.$UndefinedDateTime(),
     _isy42w70.UserAccountStatus? accountStatus,
     Object? userAuthId = _Undefined,
     String? email,
     Object? name = _Undefined,
-    Object? memberships = _Undefined,
-    Object? ownerId = _Undefined,
-    Object? owner = _Undefined,
-    Object? labels = _Undefined,
+    List<_i28atcql.UserRoleMembership>? memberships =
+        const _isc.$UndefinedList<_i28atcql.UserRoleMembership>(),
+    _isc.UuidValue? ownerId = const _isc.$UndefinedUuidValue(),
+    _icig531b.Owner? owner = const _UndefinedUser$owner(),
+    List<_ibl32xb7.UserLabelMapping>? labels =
+        const _isc.$UndefinedList<_ibl32xb7.UserLabelMapping>(),
   }) {
     return User(
       id: id is int? ? id : this.id,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      archivedAt: archivedAt is DateTime? ? archivedAt : this.archivedAt,
+      archivedAt: archivedAt is _isc.UndefinedSentinel
+          ? this.archivedAt
+          : archivedAt,
       accountStatus: accountStatus ?? this.accountStatus,
       userAuthId: userAuthId is String? ? userAuthId : this.userAuthId,
       email: email ?? this.email,
       name: name is String? ? name : this.name,
-      memberships: memberships is List<_i28atcql.UserRoleMembership>?
-          ? memberships
-          : this.memberships?.map((e0) => e0.copyWith()).toList(),
-      ownerId: ownerId is _isc.UuidValue? ? ownerId : this.ownerId,
-      owner: owner is _icig531b.Owner? ? owner : this.owner?.copyWith(),
-      labels: labels is List<_ibl32xb7.UserLabelMapping>?
-          ? labels
-          : this.labels?.map((e0) => e0.copyWith()).toList(),
+      memberships: memberships is _isc.UndefinedSentinel
+          ? this.memberships?.map((e0) => e0.copyWith()).toList()
+          : memberships,
+      ownerId: ownerId is _isc.UndefinedSentinel ? this.ownerId : ownerId,
+      owner: owner is _isc.UndefinedSentinel ? this.owner?.copyWith() : owner,
+      labels: labels is _isc.UndefinedSentinel
+          ? this.labels?.map((e0) => e0.copyWith()).toList()
+          : labels,
     );
   }
 }

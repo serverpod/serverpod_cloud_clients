@@ -101,7 +101,7 @@ abstract class CustomDomainName
     String? name,
     _ivm7u5lm.DomainNameStatus? status,
     _i425okov.DomainNameTarget? target,
-    DateTime? createdAt,
+    DateTime? createdAt = const _isc.$UndefinedDateTime(),
     String? cloudCapsuleId,
     int? capsuleId,
     String? dnsRecordVerificationValue,
@@ -179,7 +179,7 @@ class _CustomDomainNameImpl extends CustomDomainName {
     String? name,
     _ivm7u5lm.DomainNameStatus? status,
     _i425okov.DomainNameTarget? target,
-    Object? createdAt = _Undefined,
+    DateTime? createdAt = const _isc.$UndefinedDateTime(),
     String? cloudCapsuleId,
     Object? capsuleId = _Undefined,
     String? dnsRecordVerificationValue,
@@ -190,7 +190,9 @@ class _CustomDomainNameImpl extends CustomDomainName {
       name: name ?? this.name,
       status: status ?? this.status,
       target: target ?? this.target,
-      createdAt: createdAt is DateTime? ? createdAt : this.createdAt,
+      createdAt: createdAt is _isc.UndefinedSentinel
+          ? this.createdAt
+          : createdAt,
       cloudCapsuleId: cloudCapsuleId ?? this.cloudCapsuleId,
       capsuleId: capsuleId is int? ? capsuleId : this.capsuleId,
       dnsRecordVerificationValue:

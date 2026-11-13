@@ -31,7 +31,7 @@ abstract class Timestamp
   /// Returns a shallow copy of this [Timestamp]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
-  Timestamp copyWith({DateTime? timestamp});
+  Timestamp copyWith({DateTime? timestamp = const _isc.$UndefinedDateTime()});
   @override
   Map<String, dynamic> toJson() {
     return {
@@ -54,8 +54,6 @@ abstract class Timestamp
   }
 }
 
-class _Undefined {}
-
 class _TimestampImpl extends Timestamp {
   _TimestampImpl({DateTime? timestamp}) : super._(timestamp: timestamp);
 
@@ -63,9 +61,11 @@ class _TimestampImpl extends Timestamp {
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
   @override
-  Timestamp copyWith({Object? timestamp = _Undefined}) {
+  Timestamp copyWith({DateTime? timestamp = const _isc.$UndefinedDateTime()}) {
     return Timestamp(
-      timestamp: timestamp is DateTime? ? timestamp : this.timestamp,
+      timestamp: timestamp is _isc.UndefinedSentinel
+          ? this.timestamp
+          : timestamp,
     );
   }
 }

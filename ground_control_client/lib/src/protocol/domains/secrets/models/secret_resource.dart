@@ -92,8 +92,9 @@ abstract class SecretResource
     _iufgioqt.SecretType? secretType,
     String? latestVersionId,
     String? activeVersionId,
-    DateTime? createdAt,
-    List<_idoslex6.StoredSecretVersion>? storedSecretVersions,
+    DateTime? createdAt = const _isc.$UndefinedDateTime(),
+    List<_idoslex6.StoredSecretVersion>? storedSecretVersions =
+        const _isc.$UndefinedList<_idoslex6.StoredSecretVersion>(),
   });
   @override
   Map<String, dynamic> toJson() {
@@ -171,8 +172,9 @@ class _SecretResourceImpl extends SecretResource {
     _iufgioqt.SecretType? secretType,
     Object? latestVersionId = _Undefined,
     Object? activeVersionId = _Undefined,
-    Object? createdAt = _Undefined,
-    Object? storedSecretVersions = _Undefined,
+    DateTime? createdAt = const _isc.$UndefinedDateTime(),
+    List<_idoslex6.StoredSecretVersion>? storedSecretVersions =
+        const _isc.$UndefinedList<_idoslex6.StoredSecretVersion>(),
   }) {
     return SecretResource(
       id: id is int? ? id : this.id,
@@ -185,11 +187,12 @@ class _SecretResourceImpl extends SecretResource {
       activeVersionId: activeVersionId is String?
           ? activeVersionId
           : this.activeVersionId,
-      createdAt: createdAt is DateTime? ? createdAt : this.createdAt,
-      storedSecretVersions:
-          storedSecretVersions is List<_idoslex6.StoredSecretVersion>?
-          ? storedSecretVersions
-          : this.storedSecretVersions?.map((e0) => e0.copyWith()).toList(),
+      createdAt: createdAt is _isc.UndefinedSentinel
+          ? this.createdAt
+          : createdAt,
+      storedSecretVersions: storedSecretVersions is _isc.UndefinedSentinel
+          ? this.storedSecretVersions?.map((e0) => e0.copyWith()).toList()
+          : storedSecretVersions,
     );
   }
 }

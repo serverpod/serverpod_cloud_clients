@@ -73,9 +73,10 @@ abstract class StoredSecretVersion
   @_isc.useResult
   StoredSecretVersion copyWith({
     int? id,
-    DateTime? createdAt,
+    DateTime? createdAt = const _isc.$UndefinedDateTime(),
     int? secretResourceId,
-    _i75vpmhh.SecretResource? secretResource,
+    _i75vpmhh.SecretResource? secretResource =
+        const _UndefinedStoredSecretVersion$secretResource(),
     String? secretId,
     Map<String, String>? values,
   });
@@ -114,6 +115,12 @@ abstract class StoredSecretVersion
 
 class _Undefined {}
 
+class _UndefinedStoredSecretVersion$secretResource
+    extends _isc.UndefinedSentinel
+    implements _i75vpmhh.SecretResource {
+  const _UndefinedStoredSecretVersion$secretResource();
+}
+
 class _StoredSecretVersionImpl extends StoredSecretVersion {
   _StoredSecretVersionImpl({
     int? id,
@@ -137,19 +144,22 @@ class _StoredSecretVersionImpl extends StoredSecretVersion {
   @override
   StoredSecretVersion copyWith({
     Object? id = _Undefined,
-    Object? createdAt = _Undefined,
+    DateTime? createdAt = const _isc.$UndefinedDateTime(),
     int? secretResourceId,
-    Object? secretResource = _Undefined,
+    _i75vpmhh.SecretResource? secretResource =
+        const _UndefinedStoredSecretVersion$secretResource(),
     String? secretId,
     Map<String, String>? values,
   }) {
     return StoredSecretVersion(
       id: id is int? ? id : this.id,
-      createdAt: createdAt is DateTime? ? createdAt : this.createdAt,
+      createdAt: createdAt is _isc.UndefinedSentinel
+          ? this.createdAt
+          : createdAt,
       secretResourceId: secretResourceId ?? this.secretResourceId,
-      secretResource: secretResource is _i75vpmhh.SecretResource?
-          ? secretResource
-          : this.secretResource?.copyWith(),
+      secretResource: secretResource is _isc.UndefinedSentinel
+          ? this.secretResource?.copyWith()
+          : secretResource,
       secretId: secretId ?? this.secretId,
       values:
           values ?? this.values.map((key0, value0) => MapEntry(key0, value0)),

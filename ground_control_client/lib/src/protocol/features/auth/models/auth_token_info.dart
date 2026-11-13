@@ -93,9 +93,9 @@ abstract class AuthTokenInfo
     String? issuer,
     String? method,
     DateTime? createdAt,
-    DateTime? expiresAt,
-    Duration? expireAfterUnusedFor,
-    DateTime? lastUsedAt,
+    DateTime? expiresAt = const _isc.$UndefinedDateTime(),
+    Duration? expireAfterUnusedFor = const _isc.$UndefinedDuration(),
+    DateTime? lastUsedAt = const _isc.$UndefinedDateTime(),
     String? name,
     bool? current,
   });
@@ -173,9 +173,9 @@ class _AuthTokenInfoImpl extends AuthTokenInfo {
     String? issuer,
     String? method,
     DateTime? createdAt,
-    Object? expiresAt = _Undefined,
-    Object? expireAfterUnusedFor = _Undefined,
-    Object? lastUsedAt = _Undefined,
+    DateTime? expiresAt = const _isc.$UndefinedDateTime(),
+    Duration? expireAfterUnusedFor = const _isc.$UndefinedDuration(),
+    DateTime? lastUsedAt = const _isc.$UndefinedDateTime(),
     Object? name = _Undefined,
     bool? current,
   }) {
@@ -184,11 +184,15 @@ class _AuthTokenInfoImpl extends AuthTokenInfo {
       issuer: issuer ?? this.issuer,
       method: method ?? this.method,
       createdAt: createdAt ?? this.createdAt,
-      expiresAt: expiresAt is DateTime? ? expiresAt : this.expiresAt,
-      expireAfterUnusedFor: expireAfterUnusedFor is Duration?
-          ? expireAfterUnusedFor
-          : this.expireAfterUnusedFor,
-      lastUsedAt: lastUsedAt is DateTime? ? lastUsedAt : this.lastUsedAt,
+      expiresAt: expiresAt is _isc.UndefinedSentinel
+          ? this.expiresAt
+          : expiresAt,
+      expireAfterUnusedFor: expireAfterUnusedFor is _isc.UndefinedSentinel
+          ? this.expireAfterUnusedFor
+          : expireAfterUnusedFor,
+      lastUsedAt: lastUsedAt is _isc.UndefinedSentinel
+          ? this.lastUsedAt
+          : lastUsedAt,
       name: name is String? ? name : this.name,
       current: current ?? this.current,
     );
