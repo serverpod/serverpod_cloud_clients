@@ -41,6 +41,37 @@ void main() {
     expect(CloudAppListCommand(logger: logger).requireLogin, isTrue);
   });
 
+  for (final (inputs, expected) in [
+    (['IOS'], [AppPlatform.ios]),
+    (['Android'], [AppPlatform.android]),
+    ([' iOs , ANDROID '], [AppPlatform.ios, AppPlatform.android]),
+    (['IOS', 'android'], [AppPlatform.ios, AppPlatform.android]),
+    (['ios,IOS'], [AppPlatform.ios]),
+  ]) {
+    test('Given platform arguments $inputs when listing builds '
+        'then canonical platforms $expected are requested', () async {
+      _stubListBuilds(client, []);
+
+      await cli.run([
+        'app',
+        'list',
+        '--project',
+        _projectId,
+        for (final input in inputs) ...['--platforms', input],
+      ]);
+
+      final platforms = verify(
+        () => client.appBuilds.listBuilds(
+          cloudCapsuleId: _projectId,
+          platform: captureAny(named: 'platform'),
+          limit: any(named: 'limit'),
+          afterBuildId: any(named: 'afterBuildId'),
+        ),
+      ).captured;
+      expect(platforms, unorderedEquals(expected));
+    });
+  }
+
   test('Given app list with an unsupported platform '
       'when run then the error names the invalid platform', () async {
     await expectLater(
@@ -49,7 +80,9 @@ void main() {
         isA<UsageException>().having(
           (error) => error.message,
           'message',
-          contains('"linux" is not an allowed value for option "--platforms".'),
+          contains(
+            'Invalid platform "linux". Supported platforms: android, ios.',
+          ),
         ),
       ),
     );
