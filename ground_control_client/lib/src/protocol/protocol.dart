@@ -45,6 +45,8 @@ import 'package:ground_control_client/src/protocol/domains/store_connections/mod
     as _ibvsp6v6;
 import 'package:ground_control_client/src/protocol/domains/users/models/user.dart'
     as _ibu0ogga;
+import 'package:ground_control_client/src/protocol/features/admin/models/admin_voucher.dart'
+    as _i0pr0suh;
 import 'package:ground_control_client/src/protocol/features/app_builds/models/app_build_artifact.dart'
     as _i7xp31jp;
 import 'package:ground_control_client/src/protocol/features/app_builds/models/app_build_summary.dart'
@@ -79,6 +81,7 @@ import 'domains/billing/models/payment_method.dart' as _ikeafg5a;
 import 'domains/billing/models/payment_method_card.dart' as _i4cauyzh;
 import 'domains/billing/models/payment_setup_intent.dart' as _iq0xsybs;
 import 'domains/billing/models/vat_validation_status.dart' as _ikswfkzs;
+import 'domains/billing/models/voucher_status.dart' as _i676zbak;
 import 'domains/buckets/models/bucket_access_revocation_reason.dart'
     as _i2gsen8i;
 import 'domains/buckets/models/bucket_file.dart' as _i8dv9s28;
@@ -169,6 +172,7 @@ import 'features/admin/models/admin_project_info.dart' as _io29g54w;
 import 'features/admin/models/admin_user_owner_status.dart' as _ijuf7cd8;
 import 'features/admin/models/admin_user_project_membership.dart' as _inhawksa;
 import 'features/admin/models/admin_user_status.dart' as _iebexyj8;
+import 'features/admin/models/admin_voucher.dart' as _iwizwi49;
 import 'features/admin/models/payments_invoice_status.dart' as _iu1ze8tv;
 import 'features/admin/models/payments_status.dart' as _iw02lteh;
 import 'features/app_builds/exceptions/android_signing_already_set_exception.dart'
@@ -278,6 +282,7 @@ export 'domains/billing/models/payment_method.dart';
 export 'domains/billing/models/payment_method_card.dart';
 export 'domains/billing/models/payment_setup_intent.dart';
 export 'domains/billing/models/vat_validation_status.dart';
+export 'domains/billing/models/voucher_status.dart';
 export 'domains/buckets/models/bucket_access_revocation_reason.dart';
 export 'domains/buckets/models/bucket_file.dart';
 export 'domains/buckets/models/bucket_file_listing.dart';
@@ -363,6 +368,7 @@ export 'features/admin/models/admin_project_info.dart';
 export 'features/admin/models/admin_user_owner_status.dart';
 export 'features/admin/models/admin_user_project_membership.dart';
 export 'features/admin/models/admin_user_status.dart';
+export 'features/admin/models/admin_voucher.dart';
 export 'features/admin/models/payments_invoice_status.dart';
 export 'features/admin/models/payments_status.dart';
 export 'features/app_builds/exceptions/android_signing_already_set_exception.dart';
@@ -464,6 +470,7 @@ class Protocol extends _isc.SerializationManager
           _isc.getType<_i4cauyzh.PaymentMethodCard>,
           _isc.getType<_iq0xsybs.PaymentSetupIntent>,
           _isc.getType<_ikswfkzs.VatValidationStatus>,
+          _isc.getType<_i676zbak.VoucherStatus>,
           _isc.getType<_i2gsen8i.BucketAccessRevocationReason>,
           _isc.getType<_i8dv9s28.BucketFile>,
           _isc.getType<_ixt62bhu.BucketFileListing>,
@@ -551,6 +558,7 @@ class Protocol extends _isc.SerializationManager
           _isc.getType<_ijuf7cd8.AdminUserOwnerStatus>,
           _isc.getType<_inhawksa.AdminUserProjectMembership>,
           _isc.getType<_iebexyj8.AdminUserStatus>,
+          _isc.getType<_iwizwi49.AdminVoucher>,
           _isc.getType<_iu1ze8tv.PaymentsInvoiceStatus>,
           _isc.getType<_iw02lteh.PaymentsStatus>,
           _isc.getType<_iv09xi1m.AndroidSigningAlreadySetException>,
@@ -637,6 +645,7 @@ class Protocol extends _isc.SerializationManager
           _isc.getType<_i4cauyzh.PaymentMethodCard?>,
           _isc.getType<_iq0xsybs.PaymentSetupIntent?>,
           _isc.getType<_ikswfkzs.VatValidationStatus?>,
+          _isc.getType<_i676zbak.VoucherStatus?>,
           _isc.getType<_i2gsen8i.BucketAccessRevocationReason?>,
           _isc.getType<_i8dv9s28.BucketFile?>,
           _isc.getType<_ixt62bhu.BucketFileListing?>,
@@ -724,6 +733,7 @@ class Protocol extends _isc.SerializationManager
           _isc.getType<_ijuf7cd8.AdminUserOwnerStatus?>,
           _isc.getType<_inhawksa.AdminUserProjectMembership?>,
           _isc.getType<_iebexyj8.AdminUserStatus?>,
+          _isc.getType<_iwizwi49.AdminVoucher?>,
           _isc.getType<_iu1ze8tv.PaymentsInvoiceStatus?>,
           _isc.getType<_iw02lteh.PaymentsStatus?>,
           _isc.getType<_iv09xi1m.AndroidSigningAlreadySetException?>,
@@ -840,6 +850,7 @@ class Protocol extends _isc.SerializationManager
           _isc.getType<List<_ibu0ogga.User>>,
           _isc.getType<List<_io9j0but.ProjectRole>>,
           _isc.getType<List<_io9j0but.ProjectRole>?>,
+          _isc.getType<List<_i0pr0suh.AdminVoucher>>,
           _isc.getType<List<_id4pe5bk.AppPlatform>>,
           _isc.getType<Map<_id4pe5bk.AppPlatform, String>>,
           _isc.getType<Map<_id4pe5bk.AppPlatform, String>?>,
@@ -881,6 +892,7 @@ class Protocol extends _isc.SerializationManager
           'PaymentMethodCard',
           'PaymentSetupIntent',
           'VatValidationStatus',
+          'VoucherStatus',
           'BucketAccessRevocationReason',
           'BucketFile',
           'BucketFileListing',
@@ -968,6 +980,7 @@ class Protocol extends _isc.SerializationManager
           'AdminUserOwnerStatus',
           'AdminUserProjectMembership',
           'AdminUserStatus',
+          'AdminVoucher',
           'PaymentsInvoiceStatus',
           'PaymentsStatus',
           'AndroidSigningAlreadySetException',
@@ -1111,6 +1124,9 @@ class Protocol extends _isc.SerializationManager
     }
     if (t == _ikswfkzs.VatValidationStatus) {
       return _ikswfkzs.VatValidationStatus.fromJson(data) as T;
+    }
+    if (t == _i676zbak.VoucherStatus) {
+      return _i676zbak.VoucherStatus.fromJson(data) as T;
     }
     if (t == _i2gsen8i.BucketAccessRevocationReason) {
       return _i2gsen8i.BucketAccessRevocationReason.fromJson(data) as T;
@@ -1373,6 +1389,9 @@ class Protocol extends _isc.SerializationManager
     }
     if (t == _iebexyj8.AdminUserStatus) {
       return _iebexyj8.AdminUserStatus.fromJson(data) as T;
+    }
+    if (t == _iwizwi49.AdminVoucher) {
+      return _iwizwi49.AdminVoucher.fromJson(data) as T;
     }
     if (t == _iu1ze8tv.PaymentsInvoiceStatus) {
       return _iu1ze8tv.PaymentsInvoiceStatus.fromJson(data) as T;
@@ -1653,6 +1672,10 @@ class Protocol extends _isc.SerializationManager
       return (data != null
               ? _ikswfkzs.VatValidationStatus.fromJson(data)
               : null)
+          as T;
+    }
+    if (t == _isc.getType<_i676zbak.VoucherStatus?>()) {
+      return (data != null ? _i676zbak.VoucherStatus.fromJson(data) : null)
           as T;
     }
     if (t == _isc.getType<_i2gsen8i.BucketAccessRevocationReason?>()) {
@@ -2036,6 +2059,9 @@ class Protocol extends _isc.SerializationManager
     if (t == _isc.getType<_iebexyj8.AdminUserStatus?>()) {
       return (data != null ? _iebexyj8.AdminUserStatus.fromJson(data) : null)
           as T;
+    }
+    if (t == _isc.getType<_iwizwi49.AdminVoucher?>()) {
+      return (data != null ? _iwizwi49.AdminVoucher.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_iu1ze8tv.PaymentsInvoiceStatus?>()) {
       return (data != null
@@ -2687,6 +2713,12 @@ class Protocol extends _isc.SerializationManager
               : null)
           as T;
     }
+    if (t == List<_i0pr0suh.AdminVoucher>) {
+      return (data as List)
+              .map((e) => deserialize<_i0pr0suh.AdminVoucher>(e))
+              .toList()
+          as T;
+    }
     if (t == List<_id4pe5bk.AppPlatform>) {
       return (data as List)
               .map((e) => deserialize<_id4pe5bk.AppPlatform>(e))
@@ -2857,6 +2889,7 @@ class Protocol extends _isc.SerializationManager
       _i4cauyzh.PaymentMethodCard => 'PaymentMethodCard',
       _iq0xsybs.PaymentSetupIntent => 'PaymentSetupIntent',
       _ikswfkzs.VatValidationStatus => 'VatValidationStatus',
+      _i676zbak.VoucherStatus => 'VoucherStatus',
       _i2gsen8i.BucketAccessRevocationReason => 'BucketAccessRevocationReason',
       _i8dv9s28.BucketFile => 'BucketFile',
       _ixt62bhu.BucketFileListing => 'BucketFileListing',
@@ -2947,6 +2980,7 @@ class Protocol extends _isc.SerializationManager
       _ijuf7cd8.AdminUserOwnerStatus => 'AdminUserOwnerStatus',
       _inhawksa.AdminUserProjectMembership => 'AdminUserProjectMembership',
       _iebexyj8.AdminUserStatus => 'AdminUserStatus',
+      _iwizwi49.AdminVoucher => 'AdminVoucher',
       _iu1ze8tv.PaymentsInvoiceStatus => 'PaymentsInvoiceStatus',
       _iw02lteh.PaymentsStatus => 'PaymentsStatus',
       _iv09xi1m.AndroidSigningAlreadySetException =>
@@ -3082,6 +3116,8 @@ class Protocol extends _isc.SerializationManager
         return 'PaymentSetupIntent';
       case _ikswfkzs.VatValidationStatus():
         return 'VatValidationStatus';
+      case _i676zbak.VoucherStatus():
+        return 'VoucherStatus';
       case _i2gsen8i.BucketAccessRevocationReason():
         return 'BucketAccessRevocationReason';
       case _i8dv9s28.BucketFile():
@@ -3256,6 +3292,8 @@ class Protocol extends _isc.SerializationManager
         return 'AdminUserProjectMembership';
       case _iebexyj8.AdminUserStatus():
         return 'AdminUserStatus';
+      case _iwizwi49.AdminVoucher():
+        return 'AdminVoucher';
       case _iu1ze8tv.PaymentsInvoiceStatus():
         return 'PaymentsInvoiceStatus';
       case _iw02lteh.PaymentsStatus():
@@ -3466,6 +3504,9 @@ class Protocol extends _isc.SerializationManager
     }
     if (dataClassName == 'VatValidationStatus') {
       return deserialize<_ikswfkzs.VatValidationStatus>(data['data']);
+    }
+    if (dataClassName == 'VoucherStatus') {
+      return deserialize<_i676zbak.VoucherStatus>(data['data']);
     }
     if (dataClassName == 'BucketAccessRevocationReason') {
       return deserialize<_i2gsen8i.BucketAccessRevocationReason>(data['data']);
@@ -3731,6 +3772,9 @@ class Protocol extends _isc.SerializationManager
     }
     if (dataClassName == 'AdminUserStatus') {
       return deserialize<_iebexyj8.AdminUserStatus>(data['data']);
+    }
+    if (dataClassName == 'AdminVoucher') {
+      return deserialize<_iwizwi49.AdminVoucher>(data['data']);
     }
     if (dataClassName == 'PaymentsInvoiceStatus') {
       return deserialize<_iu1ze8tv.PaymentsInvoiceStatus>(data['data']);
