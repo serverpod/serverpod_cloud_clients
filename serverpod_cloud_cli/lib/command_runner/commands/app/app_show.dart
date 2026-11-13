@@ -4,7 +4,6 @@ import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
 import 'app_build_progress.dart';
-import 'app_build_status_formatter.dart';
 import 'app_ops.dart';
 
 abstract class AppShow {
@@ -14,6 +13,7 @@ abstract class AppShow {
   ///
   /// Throws [FailureException] if the upload has no builds in the project,
   /// or if a build does not succeed.
+  /// Throws [UserAbortException] if following the builds is interrupted.
   static Future<void> show(
     Client cloudApiClient, {
     required CommandLogger logger,
@@ -47,10 +47,6 @@ abstract class AppShow {
       return;
     }
 
-    final platformNames = AppBuildStatusFormatter.platformNames(
-      builds.map((build) => build.platform),
-    );
-    logger.info('Publishing ${versionName ?? 'the app'} to $platformNames');
     await AppBuildProgress.follow(
       cloudApiClient,
       logger: logger,

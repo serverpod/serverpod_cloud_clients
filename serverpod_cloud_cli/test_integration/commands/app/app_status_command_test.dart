@@ -362,7 +362,7 @@ void main() {
     });
 
     test('when showing the status '
-        'then the reason and the command to read the log are shown', () async {
+        'then the failure points to the command to read the log', () async {
       await cli.run(['app', 'status', '--project', _projectId]);
 
       expect(
@@ -372,7 +372,7 @@ void main() {
               .having(
                 (call) => call.message,
                 'message',
-                'The Android build failed: Gradle task assembleRelease failed.',
+                'The Android build failed. Find out why in the logs:',
               )
               .having(
                 (call) => call.command,

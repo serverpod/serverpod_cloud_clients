@@ -6,7 +6,7 @@ class StreamInterruptedException implements Exception {}
 
 /// Returns a stream that forwards events from [source] until [interrupt]
 /// emits, then cancels [source] and completes with
-/// [StreamInterruptedException].
+/// [StreamInterruptedException] without waiting for the cancel to finish.
 ///
 /// [interrupt] must be a broadcast stream if the caller wraps more than one
 /// source with the same interrupt stream.
@@ -32,7 +32,7 @@ Stream<T> cancelOnInterrupt<T>(Stream<T> source, Stream<void> interrupt) {
         return;
       }
       interrupted = true;
-      await sourceSubscription?.cancel();
+      sourceSubscription?.cancel().ignore();
       if (!controller.isClosed) {
         controller.addError(StreamInterruptedException());
         await controller.close();
@@ -41,7 +41,7 @@ Stream<T> cancelOnInterrupt<T>(Stream<T> source, Stream<void> interrupt) {
   };
 
   controller.onCancel = () async {
-    await sourceSubscription?.cancel();
+    if (!interrupted) await sourceSubscription?.cancel();
     await interruptSubscription?.cancel();
   };
 

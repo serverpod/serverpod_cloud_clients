@@ -129,6 +129,10 @@ abstract class DeployArchive {
   /// Uploads [projectZip] to the destination in [uploadDescription] while
   /// showing the progress.
   ///
+  /// The progress reads [action], or else `Uploading` and the [subject],
+  /// such as `Uploading project...`, and the result [stepName] followed by
+  /// `successful.` or `failed.`.
+  ///
   /// Throws [ErrorExitException] if the upload did not succeed.
   static Future<void> upload({
     required CommandLogger logger,
@@ -136,7 +140,10 @@ abstract class DeployArchive {
     required String uploadDescription,
     required List<int> projectZip,
     String subject = 'project',
+    String? action,
+    String stepName = 'Upload',
   }) async {
+    final progressAction = action ?? 'Uploading $subject';
     final total = projectZip.length;
     final events = StreamController<_UploadProgress>();
     var lastPercent = -1;
@@ -145,7 +152,7 @@ abstract class DeployArchive {
       final percent = total == 0 ? 100 : sent * 100 ~/ total;
       if (percent == lastPercent) return;
       lastPercent = percent;
-      events.add(_UploadProgress.sending(subject, sent, total));
+      events.add(_UploadProgress.sending(progressAction, sent, total));
     }
 
     unawaited(
@@ -155,13 +162,14 @@ abstract class DeployArchive {
         projectZip,
         events,
         onProgress,
+        stepName,
       ),
     );
 
     final _UploadProgress result;
     try {
       result = await logger.progressStream(
-        'Uploading $subject...',
+        '$progressAction...',
         events.stream,
         toMessage: (final p) => p.message,
         isSuccess: (final p) => p.succeeded,
@@ -189,6 +197,7 @@ abstract class DeployArchive {
     List<int> projectZip,
     StreamController<_UploadProgress> events,
     UploadProgressCallback onProgress,
+    String stepName,
   ) async {
     try {
       final fileUploader = fileUploaderFactory(uploadDescription);
@@ -197,7 +206,7 @@ abstract class DeployArchive {
         projectZip.length,
         onProgress: onProgress,
       );
-      events.add(_UploadProgress.finished(success));
+      events.add(_UploadProgress.finished(stepName, success));
     } on Exception catch (e, stackTrace) {
       events.addError(e, stackTrace);
     } finally {
@@ -213,21 +222,24 @@ class _UploadProgress {
 
   const _UploadProgress._(this.message, {required this.succeeded});
 
+  /// The progress of [action], such as `Uploading project`, after [sent]
+  /// of [total] bytes.
   factory _UploadProgress.sending(
-    final String subject,
+    final String action,
     final int sent,
     final int total,
   ) {
     return _UploadProgress._(
-      'Uploading $subject ${ByteSizeFormatter.format(sent)} '
+      '$action ${ByteSizeFormatter.format(sent)} '
       'of ${ByteSizeFormatter.format(total)}...',
       succeeded: false,
     );
   }
 
-  factory _UploadProgress.finished(final bool success) {
+  /// The result of the step [stepName], such as `Upload successful.`.
+  factory _UploadProgress.finished(final String stepName, final bool success) {
     return _UploadProgress._(
-      success ? 'Upload successful.' : 'Upload failed.',
+      success ? '$stepName successful.' : '$stepName failed.',
       succeeded: success,
     );
   }

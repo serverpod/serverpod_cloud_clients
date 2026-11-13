@@ -24,6 +24,7 @@ abstract class AppBuildsUpload
     required this.builds,
     required this.uploadDescription,
     this.appIdentifierChanges,
+    this.waitsForOtherBuilds,
   });
 
   factory AppBuildsUpload({
@@ -31,6 +32,7 @@ abstract class AppBuildsUpload
     required List<_i9jyz2kf.AppBuildRef> builds,
     required String uploadDescription,
     List<_iutjqgjp.AppIdentifierChange>? appIdentifierChanges,
+    bool? waitsForOtherBuilds,
   }) = _AppBuildsUploadImpl;
 
   factory AppBuildsUpload.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -48,6 +50,11 @@ abstract class AppBuildsUpload
                 .deserialize<List<_iutjqgjp.AppIdentifierChange>>(
                   jsonSerialization['appIdentifierChanges'],
                 ),
+      waitsForOtherBuilds: jsonSerialization['waitsForOtherBuilds'] == null
+          ? null
+          : _isc.BoolJsonExtension.fromJson(
+              jsonSerialization['waitsForOtherBuilds'],
+            ),
     );
   }
 
@@ -64,6 +71,11 @@ abstract class AppBuildsUpload
   /// not record app identifiers.
   List<_iutjqgjp.AppIdentifierChange>? appIdentifierChanges;
 
+  /// Whether the builds wait in the queue behind other builds of the
+  /// project's owner, which run one at a time per platform. Null from
+  /// servers that do not report it.
+  bool? waitsForOtherBuilds;
+
   /// Returns a shallow copy of this [AppBuildsUpload]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
@@ -73,6 +85,7 @@ abstract class AppBuildsUpload
     String? uploadDescription,
     List<_iutjqgjp.AppIdentifierChange>? appIdentifierChanges =
         const _isc.$UndefinedList<_iutjqgjp.AppIdentifierChange>(),
+    bool? waitsForOtherBuilds,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -85,6 +98,8 @@ abstract class AppBuildsUpload
         'appIdentifierChanges': appIdentifierChanges?.toJson(
           valueToJson: (v) => v.toJson(),
         ),
+      if (waitsForOtherBuilds != null)
+        'waitsForOtherBuilds': waitsForOtherBuilds,
     };
   }
 
@@ -99,6 +114,8 @@ abstract class AppBuildsUpload
         'appIdentifierChanges': appIdentifierChanges?.toJson(
           valueToJson: (v) => v.toJsonForProtocol(),
         ),
+      if (waitsForOtherBuilds != null)
+        'waitsForOtherBuilds': waitsForOtherBuilds,
     };
   }
 
@@ -108,17 +125,21 @@ abstract class AppBuildsUpload
   }
 }
 
+class _Undefined {}
+
 class _AppBuildsUploadImpl extends AppBuildsUpload {
   _AppBuildsUploadImpl({
     required _isc.UuidValue uploadId,
     required List<_i9jyz2kf.AppBuildRef> builds,
     required String uploadDescription,
     List<_iutjqgjp.AppIdentifierChange>? appIdentifierChanges,
+    bool? waitsForOtherBuilds,
   }) : super._(
          uploadId: uploadId,
          builds: builds,
          uploadDescription: uploadDescription,
          appIdentifierChanges: appIdentifierChanges,
+         waitsForOtherBuilds: waitsForOtherBuilds,
        );
 
   /// Returns a shallow copy of this [AppBuildsUpload]
@@ -131,6 +152,7 @@ class _AppBuildsUploadImpl extends AppBuildsUpload {
     String? uploadDescription,
     List<_iutjqgjp.AppIdentifierChange>? appIdentifierChanges =
         const _isc.$UndefinedList<_iutjqgjp.AppIdentifierChange>(),
+    Object? waitsForOtherBuilds = _Undefined,
   }) {
     return AppBuildsUpload(
       uploadId: uploadId ?? this.uploadId,
@@ -139,6 +161,9 @@ class _AppBuildsUploadImpl extends AppBuildsUpload {
       appIdentifierChanges: appIdentifierChanges is _isc.UndefinedSentinel
           ? this.appIdentifierChanges?.map((e0) => e0.copyWith()).toList()
           : appIdentifierChanges,
+      waitsForOtherBuilds: waitsForOtherBuilds is bool?
+          ? waitsForOtherBuilds
+          : this.waitsForOtherBuilds,
     );
   }
 }

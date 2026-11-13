@@ -1003,7 +1003,7 @@ void main() {
 
     expect(
       logger.errorCalls.map((call) => call.message),
-      contains('The iOS build failed: Compilation failed'),
+      contains('The iOS build failed.'),
     );
   });
 
@@ -1825,12 +1825,12 @@ void main() {
       await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
     });
 
-    test('then the failure reason is logged', () async {
+    test('then the failure is logged without the build message', () async {
       await commandResult.catchError((_) {});
 
       expect(
         logger.errorCalls.map((call) => call.message),
-        contains('The iOS build failed: No build machine is available'),
+        contains('The iOS build failed.'),
       );
     });
 

@@ -5,6 +5,7 @@ class AppBuildsUploadBuilder {
   List<AppPlatform> _platforms = [AppPlatform.ios];
   String _uploadDescription = '{"type":"resumable"}';
   List<AppIdentifierChange>? _appIdentifierChanges = [];
+  bool? _waitsForOtherBuilds = false;
 
   AppBuildsUploadBuilder withUploadId(UuidValue uploadId) {
     _uploadId = uploadId;
@@ -28,6 +29,18 @@ class AppBuildsUploadBuilder {
     return this;
   }
 
+  AppBuildsUploadBuilder withWaitsForOtherBuilds(bool? waitsForOtherBuilds) {
+    _waitsForOtherBuilds = waitsForOtherBuilds;
+    return this;
+  }
+
+  /// An upload whose builds wait in the queue behind other builds of the
+  /// project's owner.
+  AppBuildsUploadBuilder withBuildsAhead() {
+    _waitsForOtherBuilds = true;
+    return this;
+  }
+
   AppBuildsUpload build() {
     return AppBuildsUpload(
       uploadId: _uploadId,
@@ -37,6 +50,7 @@ class AppBuildsUploadBuilder {
       ],
       uploadDescription: _uploadDescription,
       appIdentifierChanges: _appIdentifierChanges,
+      waitsForOtherBuilds: _waitsForOtherBuilds,
     );
   }
 }

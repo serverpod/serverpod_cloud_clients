@@ -12,10 +12,14 @@ import 'package:ground_control_client/ground_control_client.dart'
         Client,
         UuidValue;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/status/status_ops.dart'
+    show StatusCommands;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/inline_tui/inline_tui.dart';
+import 'package:serverpod_cloud_cli/util/stream_util.dart';
 
 import 'app_build_status_formatter.dart';
+import 'app_build_step_lines.dart';
 import 'app_ops.dart';
 
 /// Shows the progress of the app builds of an app upload.
@@ -24,69 +28,96 @@ abstract class AppBuildProgress {
 
   static const _logRows = 5;
 
-  /// Shows a status line per build in [builds] of project [projectId],
-  /// updated on every change until all builds have ended, and then their
-  /// result.
+  static const _longQueue = Duration(minutes: 1);
+
+  static const _longQueueCheckInterval = Duration(seconds: 1);
+
+  /// Shows the stages of each build in [builds] of the archive upload
+  /// [uploadId] in project [projectId] as a vertical list of lines until all
+  /// builds have ended, and then their result. The result names the app by
+  /// [appNames], one name per platform, with [versionName].
   ///
-  /// On an interactive terminal the lines are redrawn in place, with a
-  /// spinner on the active stages. With [showLogs], the log of each build
-  /// step scrolls below the lines as the step ends. The log is cleared when
-  /// every build succeeds, and kept in full otherwise. Without an
-  /// interactive terminal, a line is printed each time it changes, and no
-  /// log is shown. A step log that cannot be fetched shows as error lines in
-  /// the log, and its cause is logged at debug level once the builds end.
+  /// A stage that ended gets a line with its duration, such as
+  /// `✓ Android build prepared.`, in the order the stages of all builds
+  /// end. On an interactive terminal, the stage each build is in shows below
+  /// those lines with a spinner and its running time. With [showLogs], the
+  /// log of each build step scrolls below them as the step ends. The log is
+  /// cleared when every build succeeds, and kept in full otherwise. Without
+  /// an interactive terminal, a line is printed as each stage starts and
+  /// ends, and no log is shown. A step log that cannot be fetched shows as
+  /// error lines in the log, and its cause is logged at debug level once the
+  /// builds end.
+  ///
+  /// While a build has been in the queue for a minute or longer, a note says
+  /// why it waits and that following can stop while the builds go on. An
+  /// interrupt, such as Ctrl+C, stops following and shows the command to
+  /// follow the builds again, invoked through [baseCommand].
   ///
   /// Throws [FailureException] if a build does not succeed.
+  /// Throws [UserAbortException] if following is interrupted.
   static Future<void> follow(
     Client cloudApiClient, {
     required CommandLogger logger,
     required String projectId,
-    required List<AppBuildRef> builds,
     required UuidValue uploadId,
+    required List<AppBuildRef> builds,
     required String baseCommand,
     String? versionName,
+    Map<AppPlatform, String>? appNames,
     bool showLogs = false,
   }) async {
-    logger.info(
-      'App builds run one at a time per account. Other builds wait in the queue.',
-    );
-    logger.info(
-      'Builds keep running if you stop following. Cancel them: '
-      '$baseCommand app cancel $uploadId --project $projectId',
-    );
-    final detailStream = StreamGroup.merge([
-      for (final build in builds)
-        AppOperations.tailBuild(
-          cloudApiClient,
-          projectId: projectId,
-          buildId: build.buildId,
-        ),
-    ]);
     final terminal = logger.inlineTerminal;
-    final details = terminal.hasTerminal
-        ? await _renderProgress(
+    final detailStream = cancelOnInterrupt(
+      StreamGroup.merge([
+        for (final build in builds)
+          AppOperations.tailBuild(
             cloudApiClient,
-            detailStream,
-            logger: logger,
-            terminal: terminal,
             projectId: projectId,
-            builds: builds,
-            showLogs: showLogs,
-          )
-        : await _printProgress(detailStream, logger: logger, builds: builds);
+            buildId: build.buildId,
+          ),
+      ]),
+      terminal.interruptSignals,
+    );
+    final Map<AppPlatform, AppBuildDetail> details;
+    try {
+      details = terminal.hasTerminal
+          ? await _renderProgress(
+              cloudApiClient,
+              detailStream,
+              logger: logger,
+              terminal: terminal,
+              projectId: projectId,
+              builds: builds,
+              showLogs: showLogs,
+            )
+          : await _printProgress(detailStream, logger: logger, builds: builds);
+    } on StreamInterruptedException {
+      logger.info(
+        builds.length == 1
+            ? 'The app build continues in Serverpod Cloud.'
+            : 'The app builds continue in Serverpod Cloud.',
+        newParagraph: true,
+      );
+      logger.terminalCommand(
+        '$baseCommand app show $uploadId --project $projectId',
+        message: 'To follow the progress again, run this command:',
+      );
+      throw UserAbortException();
+    }
 
     _report(
       logger,
       platforms: [for (final build in builds) build.platform],
       details: details,
       versionName: versionName,
+      appNames: appNames,
       projectId: projectId,
       baseCommand: baseCommand,
     );
   }
 
-  /// Prints a status line per build in [details], which have all ended,
-  /// and then their result.
+  /// Prints the lines of the stages of each build in [details], which have
+  /// all ended, and then their result.
   ///
   /// Throws [FailureException] if a build did not succeed.
   static void showEnded({
@@ -96,8 +127,14 @@ abstract class AppBuildProgress {
     required String baseCommand,
     String? versionName,
   }) {
+    final steps = AppBuildStepLines([
+      for (final detail in details) detail.build.platform,
+    ]);
+    final now = DateTime.now();
     for (final detail in details) {
-      logger.line(AppBuildStatusFormatter.line(detail.build.platform, detail));
+      for (final line in steps.update(detail)) {
+        logger.line(_plainStepLine(line, now));
+      }
     }
 
     _report(
@@ -120,20 +157,38 @@ abstract class AppBuildProgress {
     required bool showLogs,
   }) async {
     final details = <AppPlatform, AppBuildDetail>{};
+    final steps = AppBuildStepLines([
+      for (final build in builds) build.platform,
+    ]);
+    final endedLines = <AppBuildStepLine>[];
     final logLines = <String>[];
     final logFailures = <FailureException>[];
     var spinnerFrame = 0;
     final renderer = BottomRegionRenderer(terminal)..hideCursor();
-    List<String> statusLines() => [
-      for (final build in builds)
-        AppBuildStatusFormatter.line(
-          build.platform,
-          details[build.platform],
-          spinnerFrame: spinnerFrame,
-        ),
-    ];
+    List<String> queueNoteLines() {
+      final queued = steps.queuedFor(_longQueue);
+      if (queued.isEmpty) return [];
+      return [
+        '',
+        for (final line in AppBuildStatusFormatter.longQueueNote(
+          queued,
+          buildCount: builds.length,
+        ))
+          fitAnsiToColumns(line, terminal.columns),
+      ];
+    }
+
+    List<String> stepLines() {
+      final now = DateTime.now();
+      return [
+        for (final line in [...endedLines, ...steps.activeLines])
+          _stepLine(terminal, line, spinnerFrame: spinnerFrame, now: now),
+      ];
+    }
+
     void render() => renderer.render([
-      ...statusLines(),
+      ...stepLines(),
+      ...queueNoteLines(),
       for (final line in logLines.skip(max(0, logLines.length - _logRows)))
         _scrolledLogLine(terminal, line),
     ]);
@@ -166,21 +221,25 @@ abstract class AppBuildProgress {
       spinnerFrame++;
       render();
     });
-    var succeeded = false;
+    var keepLog = true;
     try {
       await for (final detail in detailStream) {
         details[detail.build.platform] = detail;
+        endedLines.addAll(steps.update(detail));
         logFeeds[detail.build.platform]?.add(detail);
         render();
       }
-      succeeded = builds.every(
+      keepLog = builds.any(
         (build) =>
             AppBuildStatusFormatter.buildError(
               build.platform,
               details[build.platform],
-            ) ==
+            ) !=
             null,
       );
+    } on StreamInterruptedException {
+      keepLog = false;
+      rethrow;
     } finally {
       ticker.cancel();
       for (final feed in logFeeds.values) {
@@ -191,8 +250,8 @@ abstract class AppBuildProgress {
       } finally {
         renderer.finish(
           lines: [
-            ...statusLines(),
-            if (!succeeded)
+            ...stepLines(),
+            if (keepLog)
               for (final line in logLines) _keptLogLine(terminal, line),
           ],
         );
@@ -279,25 +338,102 @@ abstract class AppBuildProgress {
     required List<AppBuildRef> builds,
   }) async {
     final details = <AppPlatform, AppBuildDetail>{};
-    final lines = <AppPlatform, String>{
-      for (final build in builds)
-        build.platform: AppBuildStatusFormatter.line(build.platform, null),
-    };
-    lines.values.forEach(logger.line);
+    final steps = AppBuildStepLines([
+      for (final build in builds) build.platform,
+    ]);
+    final started = <String>{};
+    void printStarted() {
+      for (final line in steps.activeLines) {
+        if (started.add(line.text)) logger.line(line.text);
+      }
+    }
 
-    await for (final detail in detailStream) {
-      final platform = detail.build.platform;
-      details[platform] = detail;
-      final line = AppBuildStatusFormatter.line(platform, detail);
-      if (line == lines[platform]) continue;
-      lines[platform] = line;
-      logger.line(line);
+    var queueNoteShown = false;
+    void printQueueNote() {
+      if (queueNoteShown) return;
+      final queued = steps.queuedFor(_longQueue);
+      if (queued.isEmpty) return;
+      queueNoteShown = true;
+      for (final line in AppBuildStatusFormatter.longQueueNote(
+        queued,
+        buildCount: builds.length,
+      )) {
+        logger.info(line);
+      }
+    }
+
+    printStarted();
+    final queueCheck = Timer.periodic(
+      _longQueueCheckInterval,
+      (_) => printQueueNote(),
+    );
+    try {
+      await for (final detail in detailStream) {
+        details[detail.build.platform] = detail;
+        final now = DateTime.now();
+        for (final line in steps.update(detail)) {
+          logger.line(_plainStepLine(line, now));
+        }
+        printStarted();
+        printQueueNote();
+      }
+    } finally {
+      queueCheck.cancel();
     }
     return details;
   }
 
-  /// Logs that the builds for [platforms] succeeded, according to their
-  /// last detail in [details].
+  /// The [line] of a stage on an interactive terminal: a spinner frame
+  /// [spinnerFrame] while the stage runs, `✓` once done and `✗` when it
+  /// failed, then its text and its time by [now], colored like the stages
+  /// of a deploy when the terminal supports color.
+  static String _stepLine(
+    InlineTerminal terminal,
+    AppBuildStepLine line, {
+    required int spinnerFrame,
+    required DateTime now,
+  }) {
+    final frames = AppBuildStatusFormatter.spinnerFrames;
+    final (marker, style) = switch (line.state) {
+      AppBuildStageState.done => ('✓', AnsiStyle.lightGreen),
+      AppBuildStageState.failed => ('✗', AnsiStyle.red),
+      AppBuildStageState.pending || AppBuildStageState.active => (
+        frames[spinnerFrame % frames.length],
+        AnsiStyle.lightGreen,
+      ),
+    };
+    final elapsed = line.elapsed(now);
+    final time = elapsed == null
+        ? ''
+        : ' (${ScrollingSection.formatElapsed(elapsed)})';
+    final text = elapsed == null ? line.text : _padded(line.text);
+    final plain = '$marker $text$time';
+    final fitted = fitAnsiToColumns(plain, terminal.columns);
+    if (!terminal.supportsColor || fitted != plain) return fitted;
+    final reset = AnsiStyle.reset.ansiCode;
+    return '${style.ansiCode}$marker$reset $text'
+        '${time.isEmpty ? '' : ' ${AnsiStyle.darkGray.ansiCode}${time.trim()}$reset'}';
+  }
+
+  /// The [line] of a stage that ended, as plain text with its duration by
+  /// [now], such as `✓ Android build prepared.   (1m 39s)`.
+  static String _plainStepLine(AppBuildStepLine line, DateTime now) {
+    final marker = line.state == AppBuildStageState.failed ? '✗' : '✓';
+    final elapsed = line.elapsed(now);
+    if (elapsed == null) return '$marker ${line.text}';
+    return '$marker ${_padded(line.text)} '
+        '(${ScrollingSection.formatElapsed(elapsed)})';
+  }
+
+  /// [text] padded to the width deploy stages use, so durations line up.
+  static String _padded(String text) =>
+      text.padRight(StatusCommands.progressMessagePadLength);
+
+  /// Logs the stores that the builds for [platforms] uploaded the app to,
+  /// according to their last detail in [details], naming the app by
+  /// [appNames] with [versionName]. Platforms whose app has the same name
+  /// share a line, such as `Uploaded Acme (1.0.0) to TestFlight and Google
+  /// Play.`. An app without a name is `the app`, without its version.
   ///
   /// Throws [FailureException] if a build did not succeed.
   static void _report(
@@ -307,22 +443,40 @@ abstract class AppBuildProgress {
     required String projectId,
     required String baseCommand,
     String? versionName,
+    Map<AppPlatform, String>? appNames,
   }) {
     final errors = [
       for (final platform in platforms)
-        ?AppBuildStatusFormatter.buildError(platform, details[platform]),
+        if (details[platform]?.build case final build?)
+          ?AppBuildStatusFormatter.followError(
+            platform,
+            build,
+            logCommand:
+                '$baseCommand app log ${build.uploadId} '
+                '--platform ${platform.name} --project $projectId',
+          )
+        else
+          ?AppBuildStatusFormatter.buildError(platform, null),
     ];
     final succeeded = [
       for (final platform in platforms)
-        if (AppBuildStatusFormatter.buildError(platform, details[platform]) ==
-            null)
+        if (details[platform]?.build.status == AppBuildStatus.succeeded)
           platform,
     ];
-    if (succeeded.isNotEmpty) {
+    final uploadsByName = AppBuildStatusFormatter.platformsByAppName(
+      succeeded,
+      appNames,
+    );
+    for (final (index, MapEntry(key: name, value: uploaded))
+        in uploadsByName.entries.indexed) {
+      final app = name == null
+          ? 'the app'
+          : versionName == null
+          ? name
+          : '$name ($versionName)';
       logger.success(
-        'Published ${versionName ?? 'the app'} to '
-        '${AppBuildStatusFormatter.platformNames(succeeded)}.',
-        newParagraph: true,
+        'Uploaded $app to ${AppBuildStatusFormatter.storeNames(uploaded)}.',
+        newParagraph: index == 0,
       );
     }
     if (errors.isNotEmpty) {
@@ -330,11 +484,6 @@ abstract class AppBuildProgress {
         if (succeeded.contains(platform)) continue;
         final build = details[platform]?.build;
         if (build == null) continue;
-        logger.info(
-          'Read the ${AppBuildStatusFormatter.platformName(platform)} log: '
-          '$baseCommand app log ${build.uploadId} '
-          '--platform ${platform.name} --project $projectId',
-        );
         if (build.status == AppBuildStatus.builtNotUploaded) {
           logger.info(
             'Download the built app for manual store upload: '
