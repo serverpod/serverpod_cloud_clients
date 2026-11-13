@@ -171,29 +171,34 @@ void main() {
   });
 
   group('Given a platform whose latest build ended more than 7 days ago', () {
-    test('when rendering the status in UTC '
-        'then the state shows the labelled timestamp', () async {
-      final io = await renderCommandUi(
-        const AppStatusTextUi(
-          utc: true,
-          baseCommand: 'scloud',
-          projectId: 'my-project-id',
-        ),
-        data: [
-          AppStatusRow(
-            platform: AppPlatform.ios,
-            store: AppStore.appStore,
-            latestBuild: AppBuildSummaryBuilder()
-                .withCreatedAt(DateTime.utc(2026, 1, 15, 8, 50))
-                .withStartedAt(DateTime.utc(2026, 1, 15, 8, 52))
-                .withEndedAt(DateTime.utc(2026, 1, 15, 9, 15, 5))
-                .build(),
+    test(
+      'when rendering the status in UTC '
+      'then Updated shows the labelled timestamp separately from Status',
+      () async {
+        final io = await renderCommandUi(
+          const AppStatusTextUi(
+            utc: true,
+            baseCommand: 'scloud',
+            projectId: 'my-project-id',
           ),
-        ],
-      );
+          data: [
+            AppStatusRow(
+              platform: AppPlatform.ios,
+              store: AppStore.appStore,
+              latestBuild: AppBuildSummaryBuilder()
+                  .withCreatedAt(DateTime.utc(2026, 1, 15, 8, 50))
+                  .withStartedAt(DateTime.utc(2026, 1, 15, 8, 52))
+                  .withEndedAt(DateTime.utc(2026, 1, 15, 9, 15, 5))
+                  .build(),
+            ),
+          ],
+        );
 
-      expect(io.stdout, contains('Uploaded · 2026-01-15 09:15:05 (UTC)'));
-    });
+        expect(io.stdout, contains('Status'));
+        expect(io.stdout, contains('Updated'));
+        expect(io.stdout, contains('Uploaded | 2026-01-15 09:15:05 (UTC)'));
+      },
+    );
   });
 
   group('Given a AppLogTextUi', () {

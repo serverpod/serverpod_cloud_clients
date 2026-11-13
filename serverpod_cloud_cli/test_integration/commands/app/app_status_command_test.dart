@@ -35,6 +35,29 @@ void main() {
     expect(CloudAppStatusCommand(logger: logger).requireLogin, isTrue);
   });
 
+  test('Given a build that was not uploaded when showing status '
+      'then the status and update time occupy separate columns', () async {
+    _stubSetup(client, AppPublishingSetupBuilder().build());
+    _stubLatestBuilds(client, [
+      AppBuildSummaryBuilder()
+          .withStatus(AppBuildStatus.builtNotUploaded)
+          .build(),
+    ]);
+
+    await cli.run(['app', 'status', '--project', _projectId]);
+
+    final row = logger.lineCalls
+        .map((call) => call.line)
+        .firstWhere((line) => line.startsWith('iOS '));
+    expect(row.split('|').map((cell) => cell.trim()), [
+      'iOS',
+      'App Store',
+      '1.4.2 (37)',
+      'Not uploaded',
+      '2m ago',
+    ]);
+  });
+
   group('Given stores connected for iOS and Android with uploaded builds', () {
     setUp(() {
       _stubSetup(
@@ -62,20 +85,21 @@ void main() {
             startsWith('Platform'),
             contains('Store'),
             contains('Version'),
-            contains('State'),
+            contains('Status'),
+            contains('Updated'),
           ),
           anything,
           allOf(
             startsWith('iOS '),
             contains('App Store'),
             contains('1.4.2 (37)'),
-            contains('Uploaded · 2m ago'),
+            matches(r'Uploaded\s+\|\s+2m ago'),
           ),
           allOf(
             startsWith('Android '),
             contains('Google Play'),
             contains('1.4.2 (37)'),
-            contains('Uploaded · 2m ago'),
+            matches(r'Uploaded\s+\|\s+2m ago'),
           ),
         ]),
       );
@@ -215,7 +239,7 @@ void main() {
           allOf(
             startsWith('iOS '),
             contains('1.4.2 '),
-            contains('Running · 5m ago'),
+            matches(r'Running\s+\|\s+5m ago'),
           ),
         ),
       );
@@ -297,7 +321,7 @@ void main() {
 
       expect(
         logger.lineCalls.map((call) => call.line),
-        contains(allOf(startsWith('iOS '), contains('Queued · 3m ago'))),
+        contains(allOf(startsWith('iOS '), matches(r'Queued\s+\|\s+3m ago'))),
       );
     });
   });
@@ -331,7 +355,9 @@ void main() {
 
       expect(
         logger.lineCalls.map((call) => call.line),
-        contains(allOf(startsWith('Android '), contains('Failed · 2m ago'))),
+        contains(
+          allOf(startsWith('Android '), matches(r'Failed\s+\|\s+2m ago')),
+        ),
       );
     });
 
@@ -371,7 +397,7 @@ void main() {
       ]);
 
       expect(logger.lineCalls.map((call) => call.line), [
-        'Platform,Store,Version,State',
+        'Platform,Store,Version,Status,Updated',
         startsWith('Android,Google Play,1.4.2 (37),Failed'),
       ]);
       expect(logger.terminalCommandCalls, isEmpty);

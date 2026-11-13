@@ -600,6 +600,8 @@ abstract class AppOperations {
   /// archive upload [uploadId] in project [projectId], in run order, as each
   /// step ends. Once the build has ended, the steps that have not ended
   /// follow, and the stream closes.
+  /// With [watch] false, fetches the build once and returns its completed
+  /// steps' logs without waiting for the build to end.
   ///
   /// Throws [FailureException] if the upload has no [platform] build in the
   /// project, if [platform] is omitted for a multi-platform upload, or if
@@ -611,6 +613,7 @@ abstract class AppOperations {
     required String projectId,
     required UuidValue uploadId,
     AppPlatform? platform,
+    bool watch = true,
   }) async {
     final builds = await getUploadBuilds(
       cloudApiClient,
@@ -647,6 +650,7 @@ abstract class AppOperations {
       projectId: projectId,
       buildId: build.id,
       platform: selectedPlatform,
+      watch: watch,
     );
   }
 
@@ -655,22 +659,41 @@ abstract class AppOperations {
     required String projectId,
     required UuidValue buildId,
     required AppPlatform platform,
+    required bool watch,
   }) async* {
     AppBuildDetail? lastDetail;
     yield* stepLogs(
       cloudApiClient,
       projectId: projectId,
       buildId: buildId,
-      details: tailBuild(
-        cloudApiClient,
-        projectId: projectId,
-        buildId: buildId,
-      ).map((detail) => lastDetail = detail),
+      details:
+          (watch
+                  ? tailBuild(
+                      cloudApiClient,
+                      projectId: projectId,
+                      buildId: buildId,
+                    )
+                  : Stream.fromFuture(
+                      getBuild(
+                        cloudApiClient,
+                        projectId: projectId,
+                        buildId: buildId,
+                      ),
+                    ))
+              .map((detail) => lastDetail = detail),
+    ).where(
+      (stepLog) =>
+          watch ||
+          _hasEnded(stepLog.step.status) ||
+          stepLog.log?.isNotEmpty == true,
     );
 
-    final error = AppBuildStatusFormatter.buildError(platform, lastDetail);
-    if (error != null) {
-      throw FailureException(error: error);
+    final detail = lastDetail;
+    if (watch || (detail != null && _hasBuildEnded(detail.build.status))) {
+      final error = AppBuildStatusFormatter.buildError(platform, detail);
+      if (error != null) {
+        throw FailureException(error: error);
+      }
     }
   }
 

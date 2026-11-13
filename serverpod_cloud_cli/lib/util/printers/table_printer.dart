@@ -111,13 +111,12 @@ class TablePrinter {
   }
 
   List<String> _formatHeader(List<int> columnWidths) {
-    final headerNames = List.generate(
-      columnWidths.length,
-      (colIx) => _padVisible(
-        _columnHeaders.elementAtOrNull(colIx) ?? '',
-        columnWidths[colIx],
-      ),
-    ).join(_columnSeparator);
+    final headerNames = List.generate(columnWidths.length, (colIx) {
+      final header = _columnHeaders.elementAtOrNull(colIx) ?? '';
+      return colIx == columnWidths.length - 1
+          ? header
+          : _padVisible(header, columnWidths[colIx]);
+    }).join(_columnSeparator);
 
     final headerDivider = columnWidths
         .map((width) {
@@ -145,13 +144,9 @@ class TablePrinter {
       [_columnMinWidths, _columnHeaders, ..._rows].map((ls) => ls.length),
     );
 
-    final lastColIx = nofColumns - 1;
     final columnWidths = List.generate(nofColumns, (colIx) {
       final minWidth = _columnMinWidths.elementAtOrNull(colIx) ?? 0;
       final headerWidth = _visibleLength(_columnHeaders.elementAtOrNull(colIx));
-      if (colIx == lastColIx) {
-        return max([minWidth, headerWidth]);
-      }
       return max([
         minWidth,
         headerWidth,

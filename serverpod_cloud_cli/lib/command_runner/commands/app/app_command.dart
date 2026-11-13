@@ -270,7 +270,17 @@ enum AppUploadCommandOption<V> implements OptionDefinition<V> {
 enum AppLogCommandOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption(excludeSettings: true)),
   uploadId(AppUploadIdOption()),
-  platform(AppLogPlatformOption());
+  platform(AppLogPlatformOption()),
+  watch(
+    FlagOption(
+      argName: 'watch',
+      helpText:
+          'Wait for new step logs until the build ends. '
+          'Use --no-watch to print the available logs and exit.',
+      defaultsTo: true,
+      negatable: true,
+    ),
+  );
 
   const AppLogCommandOption(this.option);
 
@@ -668,8 +678,9 @@ class CloudAppLogCommand extends CloudCliCommand<AppLogCommandOption> {
 
   @override
   final description =
-      'Stream the build log of an app upload for one platform. '
-      'The log of a step shows when the step ends.';
+      'Show the build log of an app upload for one platform. '
+      'By default, watch for step logs until the build ends. '
+      'Use --no-watch to print the available logs and exit.';
 
   @override
   String get usageExamples =>
@@ -679,6 +690,10 @@ Examples
   Stream the iOS build log of an app upload by the upload id that app publish or app list printed
 
     \$ $baseCommand app log 3f2b0c4e-1d5a-4b8e-9c7f-2a6d8e1b4c90 --platform ios
+
+  Print the logs currently available and exit
+
+    \$ $baseCommand app log 3f2b0c4e-1d5a-4b8e-9c7f-2a6d8e1b4c90 --platform ios --no-watch
 
 ''';
 
@@ -693,6 +708,7 @@ Examples
     final projectId = commandConfig.value(AppLogCommandOption.projectId);
     final uploadId = commandConfig.value(AppLogCommandOption.uploadId);
     final platform = commandConfig.optionalValue(AppLogCommandOption.platform);
+    final watch = commandConfig.value(AppLogCommandOption.watch);
 
     await renderCommand(
       output,
@@ -701,8 +717,9 @@ Examples
         projectId: projectId,
         uploadId: UuidValue.withValidation(uploadId),
         platform: platform,
+        watch: watch,
       ),
-      textOutputUi: const AppLogTextUi(),
+      textOutputUi: AppLogTextUi(watch: watch),
     );
   }
 }

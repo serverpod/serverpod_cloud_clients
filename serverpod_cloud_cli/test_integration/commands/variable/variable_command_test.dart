@@ -1283,7 +1283,7 @@ void main() {
           logger.lineCalls,
           containsAllInOrder([
             equalsLineCall(line: 'Name     | Value'),
-            equalsLineCall(line: '---------+------'),
+            equalsLineCall(line: '---------+---------'),
             equalsLineCall(line: 'zebra    | one'),
             equalsLineCall(line: 'alpha    | two'),
             equalsLineCall(line: 'secret_z | ••••••••'),

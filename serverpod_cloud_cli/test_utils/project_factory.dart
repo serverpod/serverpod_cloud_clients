@@ -154,6 +154,8 @@ dependencies:
   static d.DirectoryDescriptor flutterAndroidDir({
     String applicationId = 'com.acme.app',
     String releaseSigning = '',
+    String? displayName,
+    Map<String, String> stringResources = const {},
   }) {
     return d.dir('android', [
       d.file('build.gradle.kts', ''),
@@ -168,6 +170,26 @@ android {
     }
 $releaseSigning}
 """),
+        if (displayName != null)
+          d.dir('src', [
+            d.dir('main', [
+              d.file('AndroidManifest.xml', '''
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <application android:label="$displayName"/>
+</manifest>
+'''),
+              if (stringResources.isNotEmpty)
+                d.dir('res', [
+                  d.dir('values', [
+                    d.file('strings.xml', '''
+<resources>
+${stringResources.entries.map((entry) => '  <string name="${entry.key}">${entry.value}</string>').join('\n')}
+</resources>
+'''),
+                  ]),
+                ]),
+            ]),
+          ]),
       ]),
     ]);
   }
@@ -225,6 +247,8 @@ $releaseSigning}
     String bundleId = 'com.acme.app',
     bool withInfoPlist = false,
     bool? usesNonExemptEncryption,
+    String? displayName = 'Acme',
+    String? bundleName,
   }) {
     return d.dir('ios', [
       d.file('Podfile', ''),
@@ -235,8 +259,8 @@ $releaseSigning}
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CFBundleDisplayName</key>
-	<string>Acme</string>
+${displayName == null ? '' : '<key>CFBundleDisplayName</key><string>$displayName</string>'}
+${bundleName == null ? '' : '<key>CFBundleName</key><string>$bundleName</string>'}
 ${usesNonExemptEncryption == null ? '' : '\t<key>ITSAppUsesNonExemptEncryption</key>\n\t<$usesNonExemptEncryption/>\n'}</dict>
 </plist>
 """),

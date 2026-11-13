@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:cli_tools/logger.dart' as cli show AnsiStyle;
@@ -7,6 +8,7 @@ import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/util/duration_formatter.dart'
     show friendlyPastTimeFormat;
 import 'package:serverpod_cloud_cli/util/flutter_platform.dart';
+import 'package:serverpod_cloud_cli/util/inline_tui/inline_tui.dart';
 import 'package:serverpod_cloud_cli/util/output/output.dart';
 
 import 'app_build_status_formatter.dart';
@@ -33,7 +35,7 @@ class AppUploadListTextUi extends OutputWidget {
       formatter: TextTableOutputFormatter<AppUploadRow>(
         columns: [
           TableColumnFormatter.forElement(
-            'ID',
+            'Upload ID',
             getter: (upload) => upload.uploadId.toString(),
           ),
           TableColumnFormatter.forElement(
@@ -48,7 +50,7 @@ class AppUploadListTextUi extends OutputWidget {
             getter: (upload) => upload.platforms.map(_platformName).join(', '),
           ),
           TableColumnFormatter.forElement(
-            'State',
+            'Status',
             getter: (upload) => _statusName(upload.status),
           ),
           TableColumnFormatter.forElement(
@@ -81,7 +83,7 @@ class AppBuildListTextUi extends OutputWidget {
       formatter: TextTableOutputFormatter<AppBuildSummary>(
         columns: [
           TableColumnFormatter.forElement(
-            'ID',
+            'Upload ID',
             getter: (build) => build.uploadId.toString(),
           ),
           TableColumnFormatter.forElement(
@@ -94,7 +96,7 @@ class AppBuildListTextUi extends OutputWidget {
               getter: (build) => _platformName(build.platform),
             ),
           TableColumnFormatter.forElement(
-            'State',
+            'Status',
             getter: (build) => _statusName(build.status),
           ),
           TableColumnFormatter.forElement(
@@ -166,10 +168,24 @@ class AppStatusTextUi extends OutputWidget {
             },
           ),
           TableColumnFormatter.forElement(
-            'State',
+            'Status',
             getter: (row) => switch (row.latestBuild) {
-              final build? => _latestBuildState(build, utc: utc),
+              final build? =>
+                build.status == AppBuildStatus.succeeded
+                    ? 'Uploaded'
+                    : _statusName(build.status),
               null => 'No builds yet',
+            },
+          ),
+          TableColumnFormatter.forElement(
+            'Updated',
+            getter: (row) => switch (row.latestBuild) {
+              final build? => friendlyPastTimeFormat(
+                build.endedAt ?? build.startedAt ?? build.createdAt,
+                inUtc: utc,
+                short: true,
+              ),
+              null => '',
             },
           ),
         ],
@@ -228,42 +244,72 @@ String _storeName(AppStore store) {
   };
 }
 
-/// The state of [build] with when it reached it, like "Uploaded · 2h ago".
-String _latestBuildState(AppBuildSummary build, {required bool utc}) {
-  final state = switch (build.status) {
-    AppBuildStatus.succeeded => 'Uploaded',
-    final status => _statusName(status),
-  };
-  final reachedAt = build.endedAt ?? build.startedAt ?? build.createdAt;
-  return '$state · ${friendlyPastTimeFormat(reachedAt, inUtc: utc, short: true)}';
-}
-
 /// Prints the log of each step of an app build as the step ends.
 class AppLogTextUi extends OutputWidget {
-  const AppLogTextUi();
+  final bool watch;
+
+  const AppLogTextUi({this.watch = true});
 
   @override
   OutputWidget build(final OutputContext context) {
-    return _StepLogsWidget(stream: context.get<Stream<AppBuildStepLog>>());
+    return _StepLogsWidget(
+      stream: context.get<Stream<AppBuildStepLog>>(),
+      watch: watch,
+    );
   }
 }
 
 class _StepLogsWidget extends OutputWidget {
   final Stream<AppBuildStepLog> stream;
+  final bool watch;
 
-  const _StepLogsWidget({required this.stream});
+  const _StepLogsWidget({required this.stream, required this.watch});
 
   @override
   Future<void> renderAsync({required final CommandLogger logger}) async {
-    await for (final stepLog in stream) {
-      logger.line(AppBuildStatusFormatter.stepLogHeading(stepLog.step));
+    final terminal = logger.inlineTerminal;
+    final renderer = watch && terminal.hasTerminal
+        ? BottomRegionRenderer(terminal)
+        : null;
+    var frame = 0;
+    void renderWaiting() {
+      if (renderer == null) return;
+      final frames = AppBuildStatusFormatter.spinnerFrames;
+      final line = '${frames[frame++ % frames.length]} Waiting for build logs…';
+      renderer.render([
+        line.substring(0, line.length.clamp(0, terminal.columns)),
+      ]);
+    }
 
-      final log = stepLog.log;
-      if (log != null) {
-        for (final line in LineSplitter.split(log)) {
-          logger.line(line);
+    if (renderer != null) {
+      logger.info(
+        'Watching build logs. Each step is shown when it ends. '
+        'Press Ctrl+C to stop.',
+      );
+    }
+    renderWaiting();
+    final ticker = renderer == null
+        ? null
+        : Timer.periodic(
+            const Duration(milliseconds: 80),
+            (_) => renderWaiting(),
+          );
+    try {
+      await for (final stepLog in stream) {
+        renderer?.clear();
+        logger.line(AppBuildStatusFormatter.stepLogHeading(stepLog.step));
+
+        final log = stepLog.log;
+        if (log != null) {
+          for (final line in LineSplitter.split(log)) {
+            logger.line(line);
+          }
         }
+        renderWaiting();
       }
+    } finally {
+      ticker?.cancel();
+      renderer?.clear();
     }
   }
 }
@@ -402,7 +448,7 @@ String _statusName(AppBuildStatus status) {
     AppBuildStatus.waiting => 'Waiting',
     AppBuildStatus.running => 'Running',
     AppBuildStatus.succeeded => 'Succeeded',
-    AppBuildStatus.builtNotUploaded => 'Built, not uploaded',
+    AppBuildStatus.builtNotUploaded => 'Not uploaded',
     AppBuildStatus.failed => 'Failed',
     AppBuildStatus.cancelled => 'Cancelled',
   };

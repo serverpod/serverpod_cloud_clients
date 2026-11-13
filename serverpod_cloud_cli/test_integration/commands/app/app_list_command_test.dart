@@ -143,10 +143,10 @@ void main() {
           logger.lineCalls.map((call) => call.line),
           containsAllInOrder([
             allOf(
-              startsWith('ID'),
+              startsWith('Upload ID'),
               contains('Version'),
               contains('Platforms'),
-              contains('State'),
+              contains('Status'),
               contains('Started'),
             ),
             anything,
@@ -280,10 +280,10 @@ void main() {
           logger.lineCalls.map((call) => call.line),
           containsAllInOrder([
             allOf(
-              startsWith('ID'),
+              startsWith('Upload ID'),
               contains('Version'),
               isNot(contains('Platform')),
-              contains('State'),
+              contains('Status'),
               contains('Started'),
             ),
             anything,
@@ -393,7 +393,7 @@ void main() {
           expect(
             logger.lineCalls.map((call) => call.line),
             containsAllInOrder([
-              allOf(startsWith('ID'), contains('Platform')),
+              allOf(startsWith('Upload ID'), contains('Platform')),
               anything,
               allOf(contains('iOS'), contains('Running')),
               allOf(contains('Android'), contains('Queued')),

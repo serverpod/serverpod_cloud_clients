@@ -70,7 +70,7 @@ void main() {
           logger.lineCalls,
           containsAllInOrder([
             equalsLineCall(line: 'Product    | Type'),
-            equalsLineCall(line: '-----------+-----'),
+            equalsLineCall(line: '-----------+------------'),
             equalsLineCall(line: 'test-plan  | PlanProduct'),
             equalsLineCall(line: 'test-plan2 | PlanProduct'),
           ]),
