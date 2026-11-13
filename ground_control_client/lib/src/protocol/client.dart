@@ -124,6 +124,8 @@ import 'package:ground_control_client/src/protocol/features/auth/models/auth_tok
     as _i9cx54ed;
 import 'package:ground_control_client/src/protocol/features/auth/models/required_terms.dart'
     as _iu79vy7r;
+import 'package:ground_control_client/src/protocol/features/billing/models/redeemed_voucher.dart'
+    as _iepnyq8w;
 import 'package:ground_control_client/src/protocol/features/custom_domains/models/custom_domain_name_list.dart'
     as _iv3w4cs7;
 import 'package:ground_control_client/src/protocol/features/custom_domains/models/view_models/custom_domain_name_with_default_domains.dart'
@@ -1744,6 +1746,23 @@ class EndpointBilling extends _isc.EndpointRef {
   /// issues that would prevent normal operation of the service.
   _ida.Future<bool> ownerIsInGoodStanding() =>
       caller.callServerEndpoint<bool>('billing', 'ownerIsInGoodStanding', {});
+
+  /// Redeems the voucher with [code] for the account of the authenticated
+  /// user, which grants the credit of the voucher to that account.
+  ///
+  /// [code] is not case sensitive.
+  ///
+  /// Returns the terms of the granted credit.
+  ///
+  /// Throws [VoucherRedemptionDeniedException] with the reason if the
+  /// voucher is not redeemed.
+  _ida.Future<_iepnyq8w.RedeemedVoucher> redeemVoucher({
+    required String code,
+  }) => caller.callServerEndpoint<_iepnyq8w.RedeemedVoucher>(
+    'billing',
+    'redeemVoucher',
+    {'code': code},
+  );
 }
 
 /// Endpoint for managing a capsule's storage buckets.
