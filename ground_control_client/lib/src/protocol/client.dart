@@ -102,6 +102,8 @@ import 'package:ground_control_client/src/protocol/features/admin/models/admin_p
     as _ie7ffsfx;
 import 'package:ground_control_client/src/protocol/features/admin/models/admin_user_status.dart'
     as _iwex31es;
+import 'package:ground_control_client/src/protocol/features/admin/models/admin_voucher.dart'
+    as _i0pr0suh;
 import 'package:ground_control_client/src/protocol/features/app_builds/models/app_build_artifact.dart'
     as _i7xp31jp;
 import 'package:ground_control_client/src/protocol/features/app_builds/models/app_build_detail.dart'
@@ -723,6 +725,77 @@ class EndpointAdminUsers extends _isc.EndpointRef {
     'unassignRoles': unassignRoles,
     'unassignAllRoles': unassignAllRoles,
   });
+}
+
+/// Endpoint for an administrator to create, list and archive vouchers.
+/// {@category Endpoint}
+class EndpointAdminVouchers extends _isc.EndpointRef {
+  EndpointAdminVouchers(_isc.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'adminVouchers';
+
+  /// Creates a voucher.
+  ///
+  /// [code] is stored trimmed and upper-cased. [creditAmountCents] is the
+  /// credit granted per redemption. The credit pays only the billing items
+  /// named in [paysForItemIds], or all items if it is empty or null. One
+  /// owner can redeem the voucher once if [maxRedemptionsPerOwner] is null.
+  /// See [AdminVoucher] for the other terms.
+  ///
+  /// Returns the created voucher.
+  ///
+  /// Throws [InvalidValueException] if a value is invalid or
+  /// [paysForItemIds] names an unknown billing item.
+  /// Throws [DuplicateEntryException] if a voucher has the same code.
+  _ida.Future<_i0pr0suh.AdminVoucher> createVoucher({
+    required String code,
+    required String name,
+    required int creditAmountCents,
+    List<String>? paysForItemIds,
+    DateTime? redeemableUntil,
+    int? creditLifetimeDays,
+    DateTime? creditExpiresBy,
+    int? maxRedemptions,
+    int? maxRedemptionsPerOwner,
+  }) => caller.callServerEndpoint<_i0pr0suh.AdminVoucher>(
+    'adminVouchers',
+    'createVoucher',
+    {
+      'code': code,
+      'name': name,
+      'creditAmountCents': creditAmountCents,
+      'paysForItemIds': paysForItemIds,
+      'redeemableUntil': redeemableUntil,
+      'creditLifetimeDays': creditLifetimeDays,
+      'creditExpiresBy': creditExpiresBy,
+      'maxRedemptions': maxRedemptions,
+      'maxRedemptionsPerOwner': maxRedemptionsPerOwner,
+    },
+  );
+
+  /// Lists the vouchers, newest first, without the archived ones unless
+  /// [includeArchived] is set.
+  _ida.Future<List<_i0pr0suh.AdminVoucher>> listVouchers({
+    bool? includeArchived,
+  }) => caller.callServerEndpoint<List<_i0pr0suh.AdminVoucher>>(
+    'adminVouchers',
+    'listVouchers',
+    {'includeArchived': includeArchived},
+  );
+
+  /// Archives the voucher with [code], which stops new redemptions for good
+  /// and leaves granted credit in place.
+  ///
+  /// Returns the voucher, unchanged if it was archived already.
+  ///
+  /// Throws [NotFoundException] if no voucher has the code.
+  _ida.Future<_i0pr0suh.AdminVoucher> archiveVoucher({required String code}) =>
+      caller.callServerEndpoint<_i0pr0suh.AdminVoucher>(
+        'adminVouchers',
+        'archiveVoucher',
+        {'code': code},
+      );
 }
 
 /// {@category Endpoint}
@@ -3289,6 +3362,7 @@ class Client extends _isc.ServerpodClientShared {
     adminTest = EndpointAdminTest(this);
     adminUpdatePlan = EndpointAdminUpdatePlan(this);
     adminUsers = EndpointAdminUsers(this);
+    adminVouchers = EndpointAdminVouchers(this);
     appBuilds = EndpointAppBuilds(this);
     appPublishing = EndpointAppPublishing(this);
     auth = EndpointAuth(this);
@@ -3342,6 +3416,8 @@ class Client extends _isc.ServerpodClientShared {
   late final EndpointAdminUpdatePlan adminUpdatePlan;
 
   late final EndpointAdminUsers adminUsers;
+
+  late final EndpointAdminVouchers adminVouchers;
 
   late final EndpointAppBuilds appBuilds;
 
@@ -3416,6 +3492,7 @@ class Client extends _isc.ServerpodClientShared {
     'adminTest': adminTest,
     'adminUpdatePlan': adminUpdatePlan,
     'adminUsers': adminUsers,
+    'adminVouchers': adminVouchers,
     'appBuilds': appBuilds,
     'appPublishing': appPublishing,
     'auth': auth,

@@ -8,6 +8,7 @@ import 'product/admin_product_commands.dart';
 import 'projects/admin_projects_commands.dart';
 import 'redeploy/admin_redeploy_command.dart';
 import 'users/admin_users_commands.dart';
+import 'voucher/admin_voucher_command.dart';
 
 /// The admin command is used internally for Serverpod Cloud administration.
 ///
@@ -31,6 +32,7 @@ class CloudAdminCommand extends CloudCliCommand {
     addSubcommand(AdminProductCommand(logger: logger));
     addSubcommand(AdminPlanCommand(logger: logger));
     addSubcommand(AdminBillingCommand(logger: logger));
+    addSubcommand(AdminVoucherCommand(logger: logger));
     addSubcommand(AdminReconcileDatabaseScalingCommand(logger: logger));
     addSubcommand(AdminTestPushCommand(logger: logger));
   }

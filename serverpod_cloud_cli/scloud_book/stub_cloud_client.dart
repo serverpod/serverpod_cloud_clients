@@ -1059,6 +1059,56 @@ void _stubAdmin(final ClientMock client, {required final String projectId}) {
     () =>
         client.adminBilling.reissueInvoice(invoiceId: any(named: 'invoiceId')),
   ).thenAnswer((_) async => {'invoiceId': 'inv_1', 'outcome': 'issued'});
+  when(
+    () => client.adminVouchers.createVoucher(
+      code: any(named: 'code'),
+      name: any(named: 'name'),
+      creditAmountCents: any(named: 'creditAmountCents'),
+      paysForItemIds: any(named: 'paysForItemIds'),
+      redeemableUntil: any(named: 'redeemableUntil'),
+      creditLifetimeDays: any(named: 'creditLifetimeDays'),
+      creditExpiresBy: any(named: 'creditExpiresBy'),
+      maxRedemptions: any(named: 'maxRedemptions'),
+      maxRedemptionsPerOwner: any(named: 'maxRedemptionsPerOwner'),
+    ),
+  ).thenAnswer(
+    (_) async => AdminVoucherBuilder()
+        .withPaysForItemIds(['starterFee', 'growthFee'])
+        .withCreditLifetimeDays(95)
+        .build(),
+  );
+  when(
+    () => client.adminVouchers.listVouchers(
+      includeArchived: any(named: 'includeArchived'),
+    ),
+  ).thenAnswer(
+    (final invocation) async => [
+      AdminVoucherBuilder()
+          .withPaysForItemIds(['starterFee', 'growthFee'])
+          .withCreditLifetimeDays(95)
+          .withRedeemableUntil(DateTime.utc(2026, 12, 31, 23, 59))
+          .withMaxRedemptions(100)
+          .withRedemptionCount(3)
+          .build(),
+      if (invocation.namedArguments[#includeArchived] == true)
+        AdminVoucherBuilder()
+            .withCode('OLD')
+            .withName('Old offer')
+            .withCreditAmountCents(2500)
+            .withArchived()
+            .build(),
+    ],
+  );
+  when(
+    () => client.adminVouchers.archiveVoucher(code: any(named: 'code')),
+  ).thenAnswer(
+    (_) async => AdminVoucherBuilder()
+        .withCode('OLD')
+        .withName('Old offer')
+        .withCreditAmountCents(2500)
+        .withArchived()
+        .build(),
+  );
   when(() => client.adminProjects.redeployCapsule(any())).thenAnswer(
     (_) async => UuidValue.raw('00000000-0000-4000-8000-000000000000'),
   );
