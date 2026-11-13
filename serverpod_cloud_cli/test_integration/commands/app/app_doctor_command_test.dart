@@ -48,6 +48,31 @@ void main() {
       ).create();
     });
 
+    for (final (input, expected) in [
+      ('IOS', ['iOS']),
+      ('Android', ['Android']),
+      (' iOs , ANDROID ', ['Android', 'iOS']),
+    ]) {
+      test('when checking platforms $input '
+          'then only $expected are checked', () async {
+        await cli.run([
+          'app',
+          'doctor',
+          '--app-dir',
+          d.path('project_flutter'),
+          '--platforms',
+          input,
+        ]);
+
+        expect(
+          logger.lineCalls
+              .map((call) => call.line)
+              .where((line) => line == 'iOS' || line == 'Android'),
+          expected,
+        );
+      });
+    }
+
     group('when checking the app', () {
       late Future<void> commandResult;
 

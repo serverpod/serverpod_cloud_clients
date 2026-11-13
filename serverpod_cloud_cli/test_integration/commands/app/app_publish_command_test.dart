@@ -83,6 +83,53 @@ void main() {
     expect(CloudAppPublishCommand(logger: logger).requireLogin, isTrue);
   });
 
+  for (final (inputs, expected) in [
+    (['IOS'], [AppPlatform.ios]),
+    (['Android'], [AppPlatform.android]),
+    ([' iOs , ANDROID '], [AppPlatform.android, AppPlatform.ios]),
+    (['IOS', 'android'], [AppPlatform.android, AppPlatform.ios]),
+    (['ios,IOS'], [AppPlatform.ios]),
+  ]) {
+    test('Given platform arguments $inputs when publishing '
+        'then builds use the canonical platforms $expected', () async {
+      await ProjectFactory.serverpodAppWorkspace(
+        extraContents: [
+          d.dir('project_flutter', [
+            ProjectFactory.flutterAndroidDir(),
+            ProjectFactory.flutterIosDir(),
+          ]),
+        ],
+      ).create();
+
+      await cli.run([
+        'app',
+        'publish',
+        '--project',
+        _projectId,
+        '--project-dir',
+        p.join(d.sandbox, 'monorepo', 'project_server'),
+        '--no-await',
+        for (final input in inputs) ...['--platforms', input],
+      ]);
+
+      final platforms = verify(
+        () => client.appBuilds.createBuilds(
+          appIdentifiers: any(named: 'appIdentifiers'),
+          cloudCapsuleId: _projectId,
+          platforms: captureAny(named: 'platforms'),
+          flutterAppDir: any(named: 'flutterAppDir'),
+          archiveSize: any(named: 'archiveSize'),
+          flutterVersion: any(named: 'flutterVersion'),
+          versionName: any(named: 'versionName'),
+          commitHash: any(named: 'commitHash'),
+          commitMessage: any(named: 'commitMessage'),
+          branch: any(named: 'branch'),
+        ),
+      ).captured.single;
+      expect(platforms, expected);
+    });
+  }
+
   test('Given the platforms option '
       'then its help text lists the supported platforms', () {
     expect(
@@ -2118,7 +2165,9 @@ project:
           isA<UsageException>().having(
             (e) => e.message,
             'message',
-            contains('is not an allowed value for option "--platforms".'),
+            contains(
+              'Invalid platform "linux". Supported platforms: android, ios.',
+            ),
           ),
         ),
       );
@@ -2142,7 +2191,9 @@ project:
           isA<UsageException>().having(
             (e) => e.message,
             'message',
-            contains('is not an allowed value for option "--platforms".'),
+            contains(
+              'Invalid platform "fuchsia". Supported platforms: android, ios.',
+            ),
           ),
         ),
       );

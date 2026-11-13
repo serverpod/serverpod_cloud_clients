@@ -42,6 +42,57 @@ void main() {
     expect(CloudAppLogCommand(logger: logger).requireLogin, isTrue);
   });
 
+  for (final (input, platform) in [
+    ('IOS', AppPlatform.ios),
+    ('iOs', AppPlatform.ios),
+    ('Android', AppPlatform.android),
+    (' ANDROID ', AppPlatform.android),
+  ]) {
+    test('Given platform $input when logging a multi-platform upload '
+        'then the $platform build is streamed', () async {
+      final ios = AppBuildSummaryBuilder()
+          .withPlatform(AppPlatform.ios)
+          .build();
+      final android = AppBuildSummaryBuilder()
+          .withPlatform(AppPlatform.android)
+          .build();
+      final selected = platform == AppPlatform.ios ? ios : android;
+      when(
+        () => client.appBuilds.getUploadBuilds(
+          cloudCapsuleId: _projectId,
+          uploadId: _uploadId,
+        ),
+      ).thenAnswer((_) async => [ios, android]);
+      when(
+        () => client.appBuilds.tailBuild(
+          cloudCapsuleId: _projectId,
+          buildId: selected.id,
+        ),
+      ).thenAnswer(
+        (_) => Stream.value(
+          AppBuildDetailBuilder().withBuild(selected).withSteps([]).build(),
+        ),
+      );
+
+      await cli.run([
+        'app',
+        'log',
+        _uploadId.uuid,
+        '--project',
+        _projectId,
+        '--platform',
+        input,
+      ]);
+
+      verify(
+        () => client.appBuilds.tailBuild(
+          cloudCapsuleId: _projectId,
+          buildId: selected.id,
+        ),
+      ).called(1);
+    });
+  }
+
   for (final platform in AppPlatform.values) {
     test('Given a $platform-only upload when logging without --platform '
         'then its build is streamed', () async {

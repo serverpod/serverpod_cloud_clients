@@ -65,8 +65,7 @@ class AppPublishPlatformsOption extends MultiOption<FlutterPlatform> {
     super.group,
     super.helpText = publishHelpText,
   }) : super(
-         multiParser: const MultiParser(EnumParser(supportedPlatforms)),
-         allowedValues: supportedPlatforms,
+         multiParser: const MultiParser(_AppPlatformParser(supportedPlatforms)),
          argName: 'platforms',
          valueHelp: 'android,ios',
          customValidator: _supportedPlatformsValidator,
@@ -167,9 +166,9 @@ class AppUploadIdOption extends StringOption {
 class AppLogPlatformOption extends EnumOption<AppPlatform> {
   const AppLogPlatformOption({super.group})
     : super(
-        enumParser: const EnumParser(AppPlatform.values),
+        enumParser: const _AppPlatformParser(AppPlatform.values),
         argName: 'platform',
-        allowedValues: AppPlatform.values,
+        valueHelp: 'android|ios',
         helpText:
             'The platform of the build to stream the log of. '
             'Defaults to the only platform of the upload.',
@@ -220,8 +219,7 @@ enum AppShowCommandOption<V> implements OptionDefinition<V> {
 class AppListPlatformsOption extends MultiOption<AppPlatform> {
   const AppListPlatformsOption()
     : super(
-        multiParser: const MultiParser(EnumParser(AppPlatform.values)),
-        allowedValues: AppPlatform.values,
+        multiParser: const MultiParser(_AppPlatformParser(AppPlatform.values)),
         argName: 'platforms',
         valueHelp: 'android,ios',
         helpText:
@@ -810,3 +808,23 @@ Directory _configuredOrWorkspaceAppDirectory(
 String _configFileName(File? configFile) => configFile == null
     ? ProjectConfigFileConstants.defaultFileName
     : p.basename(configFile.path);
+
+/// Parses supported app platform names without case sensitivity.
+class _AppPlatformParser<E extends Enum> extends EnumParser<E> {
+  const _AppPlatformParser(super.enumValues);
+
+  @override
+  E parse(String value) {
+    final normalized = value.trim().toLowerCase();
+    for (final platform in enumValues) {
+      if (platform.name.toLowerCase() == normalized) return platform;
+    }
+    final supported = enumValues.map((platform) => platform.name).toList()
+      ..sort();
+    throw UsageException(
+      'Invalid platform "$value". '
+          'Supported platforms: ${supported.join(', ')}.',
+      '',
+    );
+  }
+}
