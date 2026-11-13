@@ -29,6 +29,24 @@ class AppPublishingSetupBuilder {
     return this;
   }
 
+  /// A capsule whose Google Play access Serverpod Cloud has created.
+  AppPublishingSetupBuilder withGooglePlayAccess() {
+    _androidStore = GooglePlayAccess(
+      serviceAccountEmail: 'publisher@acme.iam.gserviceaccount.com',
+    );
+    return this;
+  }
+
+  /// A capsule with a generated upload keystore for Android.
+  AppPublishingSetupBuilder withAndroidKeystore() {
+    _androidSigning = AndroidSigning(
+      keyAlias: 'upload',
+      generated: true,
+      createdAt: DateTime.utc(2026, 1, 1),
+    );
+    return this;
+  }
+
   /// A capsule where nothing is set up on either platform.
   AppPublishingSetupBuilder withNothingSetUp() {
     _iosStore = null;

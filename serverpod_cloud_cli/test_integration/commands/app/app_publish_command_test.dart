@@ -12,6 +12,8 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart
 import 'package:serverpod_cloud_cli/command_runner/commands/app/app_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/shared/helpers/console_urls.dart'
+    show getConsoleBaseUrl;
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
@@ -77,6 +79,7 @@ void main() {
     logger.clear();
     fileUploader.clear();
     reset(client.appBuilds);
+    reset(client.appPublishing);
   });
 
   test('Given app publish command when instantiated then requires login', () {
@@ -1147,10 +1150,7 @@ project:
       });
     });
 
-    group('and an incomplete Android publishing setup '
-        'when releasing the app', () {
-      late Future<void> commandResult;
-
+    group('and an incomplete publishing setup', () {
       setUp(() {
         when(
           () => client.appBuilds.createBuilds(
@@ -1168,47 +1168,290 @@ project:
         ).thenThrow(
           AppPlatformNotSetUpException(
             message:
-                'The publishing setup is incomplete. Android: generate or '
-                'upload an upload keystore. Finish the setup under App stores '
-                'in the Serverpod Cloud console.',
+                'The publishing setup is incomplete. Finish the setup under '
+                'App stores in the Serverpod Cloud console.',
           ),
         );
-
-        commandResult = cli.run([
-          'app',
-          'publish',
-          '--project',
-          _projectId,
-          '--project-dir',
-          p.join(d.sandbox, 'monorepo', 'project_server'),
-          '--no-await',
-        ]);
       });
 
-      test('then the command throws ErrorExitException', () async {
-        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
-      });
+      group('and Google Play access without an upload keystore '
+          'when releasing the app', () {
+        late Future<void> commandResult;
 
-      test('then the incomplete setup is logged', () async {
-        await commandResult.catchError((_) {});
+        setUp(() {
+          _stubSetup(
+            client,
+            AppPublishingSetupBuilder().withGooglePlayAccess().build(),
+          );
+          commandResult = cli.run([
+            'app',
+            'publish',
+            '--project',
+            _projectId,
+            '--project-dir',
+            p.join(d.sandbox, 'monorepo', 'project_server'),
+            '--no-await',
+          ]);
+        });
 
-        expect(
-          logger.errorCalls,
-          contains(
-            equalsErrorCall(
-              message:
-                  'The publishing setup is incomplete. Android: generate or '
-                  'upload an upload keystore. Finish the setup under App '
-                  'stores in the Serverpod Cloud console.',
+        test('then the command throws ErrorExitException', () async {
+          await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+        });
+
+        test('then the missing keystore is logged '
+            'with a link to the Google Play setup guide', () async {
+          await commandResult.catchError((_) {});
+
+          expect(
+            logger.errorCalls,
+            contains(
+              equalsErrorCall(
+                message:
+                    "Android isn't set up yet: it needs an upload keystore. "
+                    'Finish it here:\n${_googlePlaySetupUrl()}',
+              ),
             ),
-          ),
-        );
+          );
+        });
+
+        test('then nothing is uploaded', () async {
+          await commandResult.catchError((_) {});
+
+          expect(fileUploader.uploads, isEmpty);
+        });
       });
 
-      test('then nothing is uploaded', () async {
-        await commandResult.catchError((_) {});
+      group('and only an upload keystore, with Google Play access still being '
+          'created, when releasing the app', () {
+        late Future<void> commandResult;
 
-        expect(fileUploader.uploads, isEmpty);
+        setUp(() {
+          _stubSetup(
+            client,
+            AppPublishingSetupBuilder()
+                .withNothingSetUp()
+                .withAndroidKeystore()
+                .build(),
+          );
+          commandResult = cli.run([
+            'app',
+            'publish',
+            '--project',
+            _projectId,
+            '--project-dir',
+            p.join(d.sandbox, 'monorepo', 'project_server'),
+            '--no-await',
+          ]);
+        });
+
+        test('then only the pending Android access is logged, '
+            'without a link', () async {
+          await commandResult.catchError((_) {});
+
+          expect(
+            logger.errorCalls,
+            contains(
+              equalsErrorCall(
+                message:
+                    "Android isn't set up yet: Serverpod Cloud is still "
+                    'creating Google Play access for the project. This needs '
+                    'nothing from you. Publish again once it is ready.',
+              ),
+            ),
+          );
+        });
+      });
+
+      group('and neither an upload keystore nor Google Play access '
+          'when releasing the app', () {
+        late Future<void> commandResult;
+
+        setUp(() {
+          _stubSetup(client, AppPublishingSetupBuilder().build());
+          commandResult = cli.run([
+            'app',
+            'publish',
+            '--project',
+            _projectId,
+            '--project-dir',
+            p.join(d.sandbox, 'monorepo', 'project_server'),
+            '--no-await',
+          ]);
+        });
+
+        test('then both are logged '
+            'with a link to the Google Play setup guide', () async {
+          await commandResult.catchError((_) {});
+
+          expect(
+            logger.errorCalls,
+            contains(
+              equalsErrorCall(
+                message:
+                    "Android isn't set up yet: it needs an upload keystore, "
+                    'and Serverpod Cloud is still creating Google Play access '
+                    'for the project. Finish it here:\n${_googlePlaySetupUrl()}',
+              ),
+            ),
+          );
+        });
+      });
+
+      group('and a publishing setup with no gap when releasing the app', () {
+        late Future<void> commandResult;
+
+        setUp(() {
+          _stubSetup(
+            client,
+            AppPublishingSetupBuilder()
+                .withGooglePlayAccess()
+                .withAndroidKeystore()
+                .build(),
+          );
+          commandResult = cli.run([
+            'app',
+            'publish',
+            '--project',
+            _projectId,
+            '--project-dir',
+            p.join(d.sandbox, 'monorepo', 'project_server'),
+            '--no-await',
+          ]);
+        });
+
+        test('then the platform is logged '
+            'with a link to its setup guide', () async {
+          await commandResult.catchError((_) {});
+
+          expect(
+            logger.errorCalls,
+            contains(
+              equalsErrorCall(
+                message:
+                    "Android isn't set up yet. "
+                    'Finish it here:\n${_googlePlaySetupUrl()}',
+              ),
+            ),
+          );
+        });
+      });
+
+      group('and a publishing setup that cannot be read '
+          'when releasing the app', () {
+        late Future<void> commandResult;
+
+        setUp(() {
+          when(
+            () => client.appPublishing.getSetup(
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            ),
+          ).thenThrow(Exception('Connection lost'));
+          commandResult = cli.run([
+            'app',
+            'publish',
+            '--project',
+            _projectId,
+            '--project-dir',
+            p.join(d.sandbox, 'monorepo', 'project_server'),
+            '--no-await',
+          ]);
+        });
+
+        test('then the platform is logged '
+            'with a link to its setup guide', () async {
+          await commandResult.catchError((_) {});
+
+          expect(
+            logger.errorCalls,
+            contains(
+              equalsErrorCall(
+                message:
+                    "Android isn't set up yet. "
+                    'Finish it here:\n${_googlePlaySetupUrl()}',
+              ),
+            ),
+          );
+        });
+      });
+
+      group('and an iOS app without an App Store Connect key '
+          'when releasing the iOS app', () {
+        late Future<void> commandResult;
+
+        setUp(() async {
+          await d.dir('monorepo', [
+            d.dir('project_flutter', [ProjectFactory.flutterIosDir()]),
+          ]).create();
+          _stubSetup(
+            client,
+            AppPublishingSetupBuilder().withIosStore(null).build(),
+          );
+          commandResult = cli.run([
+            'app',
+            'publish',
+            '--project',
+            _projectId,
+            '--project-dir',
+            p.join(d.sandbox, 'monorepo', 'project_server'),
+            '--no-await',
+            '--platforms',
+            'ios',
+          ]);
+        });
+
+        test('then the missing key is logged '
+            'with a link to the App Store setup guide', () async {
+          await commandResult.catchError((_) {});
+
+          expect(
+            logger.errorCalls,
+            contains(
+              equalsErrorCall(
+                message:
+                    "iOS isn't set up yet: it needs an App Store Connect key. "
+                    'Finish it here:\n'
+                    '${getConsoleBaseUrl()}/project/$_projectId'
+                    '/app-stores/appStore?setup=appStore',
+              ),
+            ),
+          );
+        });
+      });
+
+      group('and iOS set up but no upload keystore '
+          'when releasing the iOS and Android apps', () {
+        late Future<void> commandResult;
+
+        setUp(() async {
+          await d.dir('monorepo', [
+            d.dir('project_flutter', [ProjectFactory.flutterIosDir()]),
+          ]).create();
+          _stubSetup(
+            client,
+            AppPublishingSetupBuilder().withGooglePlayAccess().build(),
+          );
+          commandResult = cli.run([
+            'app',
+            'publish',
+            '--project',
+            _projectId,
+            '--project-dir',
+            p.join(d.sandbox, 'monorepo', 'project_server'),
+            '--no-await',
+            '--platforms',
+            'ios,android',
+          ]);
+        });
+
+        test('then only the Android setup is logged', () async {
+          await commandResult.catchError((_) {});
+
+          expect(
+            logger.errorCalls.single.message,
+            "Android isn't set up yet: it needs an upload keystore. "
+            'Finish it here:\n${_googlePlaySetupUrl()}',
+          );
+        });
       });
     });
 
@@ -2666,4 +2909,17 @@ void _verifyNoBuildRequested(ClientMock client) {
       branch: any(named: 'branch'),
     ),
   );
+}
+
+/// The console URL of the Google Play setup guide of the test project.
+String _googlePlaySetupUrl() =>
+    '${getConsoleBaseUrl()}/project/$_projectId'
+    '/app-stores/googlePlay?setup=googlePlay';
+
+void _stubSetup(ClientMock client, AppPublishingSetup setup) {
+  when(
+    () => client.appPublishing.getSetup(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+    ),
+  ).thenAnswer((_) async => setup);
 }
