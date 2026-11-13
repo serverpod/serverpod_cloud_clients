@@ -156,6 +156,7 @@ import 'domains/status/models/capsule_revision.dart' as _i3wrl47t;
 import 'domains/status/models/capsule_state.dart' as _in4d44nu;
 import 'domains/status/models/capsule_status.dart' as _icnre768;
 import 'domains/status/models/deploy_attempt.dart' as _iov43xof;
+import 'domains/status/models/deploy_attempt_kind.dart' as _iya32tlj;
 import 'domains/status/models/deploy_attempt_stage.dart' as _iwfg38ma;
 import 'domains/status/models/deploy_progress_status.dart' as _i7neienr;
 import 'domains/status/models/deploy_stage_type.dart' as _imfv08in;
@@ -353,6 +354,7 @@ export 'domains/status/models/capsule_revision.dart';
 export 'domains/status/models/capsule_state.dart';
 export 'domains/status/models/capsule_status.dart';
 export 'domains/status/models/deploy_attempt.dart';
+export 'domains/status/models/deploy_attempt_kind.dart';
 export 'domains/status/models/deploy_attempt_stage.dart';
 export 'domains/status/models/deploy_progress_status.dart';
 export 'domains/status/models/deploy_stage_type.dart';
@@ -541,6 +543,7 @@ class Protocol extends _isc.SerializationManager
           _isc.getType<_in4d44nu.CapsuleState>,
           _isc.getType<_icnre768.CapsuleStatus>,
           _isc.getType<_iov43xof.DeployAttempt>,
+          _isc.getType<_iya32tlj.DeployAttemptKind>,
           _isc.getType<_iwfg38ma.DeployAttemptStage>,
           _isc.getType<_i7neienr.DeployProgressStatus>,
           _isc.getType<_imfv08in.DeployStageType>,
@@ -716,6 +719,7 @@ class Protocol extends _isc.SerializationManager
           _isc.getType<_in4d44nu.CapsuleState?>,
           _isc.getType<_icnre768.CapsuleStatus?>,
           _isc.getType<_iov43xof.DeployAttempt?>,
+          _isc.getType<_iya32tlj.DeployAttemptKind?>,
           _isc.getType<_iwfg38ma.DeployAttemptStage?>,
           _isc.getType<_i7neienr.DeployProgressStatus?>,
           _isc.getType<_imfv08in.DeployStageType?>,
@@ -963,6 +967,7 @@ class Protocol extends _isc.SerializationManager
           'CapsuleState',
           'CapsuleStatus',
           'DeployAttempt',
+          'DeployAttemptKind',
           'DeployAttemptStage',
           'DeployProgressStatus',
           'DeployStageType',
@@ -1338,6 +1343,9 @@ class Protocol extends _isc.SerializationManager
     }
     if (t == _iov43xof.DeployAttempt) {
       return _iov43xof.DeployAttempt.fromJson(data) as T;
+    }
+    if (t == _iya32tlj.DeployAttemptKind) {
+      return _iya32tlj.DeployAttemptKind.fromJson(data) as T;
     }
     if (t == _iwfg38ma.DeployAttemptStage) {
       return _iwfg38ma.DeployAttemptStage.fromJson(data) as T;
@@ -1979,6 +1987,10 @@ class Protocol extends _isc.SerializationManager
     }
     if (t == _isc.getType<_iov43xof.DeployAttempt?>()) {
       return (data != null ? _iov43xof.DeployAttempt.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_iya32tlj.DeployAttemptKind?>()) {
+      return (data != null ? _iya32tlj.DeployAttemptKind.fromJson(data) : null)
           as T;
     }
     if (t == _isc.getType<_iwfg38ma.DeployAttemptStage?>()) {
@@ -2962,6 +2974,7 @@ class Protocol extends _isc.SerializationManager
       _in4d44nu.CapsuleState => 'CapsuleState',
       _icnre768.CapsuleStatus => 'CapsuleStatus',
       _iov43xof.DeployAttempt => 'DeployAttempt',
+      _iya32tlj.DeployAttemptKind => 'DeployAttemptKind',
       _iwfg38ma.DeployAttemptStage => 'DeployAttemptStage',
       _i7neienr.DeployProgressStatus => 'DeployProgressStatus',
       _imfv08in.DeployStageType => 'DeployStageType',
@@ -3258,6 +3271,8 @@ class Protocol extends _isc.SerializationManager
         return 'CapsuleStatus';
       case _iov43xof.DeployAttempt():
         return 'DeployAttempt';
+      case _iya32tlj.DeployAttemptKind():
+        return 'DeployAttemptKind';
       case _iwfg38ma.DeployAttemptStage():
         return 'DeployAttemptStage';
       case _i7neienr.DeployProgressStatus():
@@ -3721,6 +3736,9 @@ class Protocol extends _isc.SerializationManager
     }
     if (dataClassName == 'DeployAttempt') {
       return deserialize<_iov43xof.DeployAttempt>(data['data']);
+    }
+    if (dataClassName == 'DeployAttemptKind') {
+      return deserialize<_iya32tlj.DeployAttemptKind>(data['data']);
     }
     if (dataClassName == 'DeployAttemptStage') {
       return deserialize<_iwfg38ma.DeployAttemptStage>(data['data']);

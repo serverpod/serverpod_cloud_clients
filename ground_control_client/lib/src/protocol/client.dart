@@ -547,8 +547,8 @@ class EndpointAdminProjects extends _isc.EndpointRef {
   /// Redeploys a capsule using its current image.
   /// Triggers a deploymentUpdated event to redeploy the infrastructure.
   ///
-  /// Returns the deployment request id minted for this publish. It is stamped
-  /// as the `serverpod/request-id` pod label.
+  /// Returns the id of the restart attempt. It is also the deployment request
+  /// id, stamped as the `serverpod/request-id` pod label.
   ///
   /// Throws a [NoPriorDeploymentException] if the capsule has no prior deployment.
   _ida.Future<_isc.UuidValue> redeployCapsule(String cloudCapsuleId) =>
@@ -1983,8 +1983,8 @@ class EndpointCapsules extends _isc.EndpointRef {
   /// Redeploys a capsule using its current image.
   /// Triggers a deploymentUpdated event to redeploy the infrastructure.
   ///
-  /// Returns the deployment request id minted for this publish. It is stamped
-  /// as the `serverpod/request-id` pod label.
+  /// Returns the id of the restart attempt. It is also the deployment request
+  /// id, stamped as the `serverpod/request-id` pod label.
   ///
   /// Throws a [NoPriorDeploymentException] if the capsule has no prior deployment.
   /// Throws [ProjectSuspendedException] if the project is suspended.
