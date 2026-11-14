@@ -4,69 +4,133 @@ import 'package:serverpod_cloud_cli/command_runner/commands/app/app_build_status
 import 'package:test/test.dart';
 
 void main() {
-  test('Given no build detail '
-      'when formatting the iOS status line '
-      'then the queue stage is active and the others are pending', () {
+  test('Given an active prepare stage '
+      'when getting its text '
+      'then it says the build is preparing', () {
     expect(
-      AppBuildStatusFormatter.line(AppPlatform.ios, null),
-      'iOS      ⠋ Queueing  ● Build     ● Upload → TestFlight',
+      AppBuildStatusFormatter.stageText(
+        AppPlatform.android,
+        1,
+        AppBuildStageState.active,
+      ),
+      'Android build preparing...',
     );
   });
 
-  test('Given a succeeded Android build '
-      'when formatting its status line '
-      'then every stage is done', () {
+  test('Given a done queue stage '
+      'when getting its text '
+      'then it says the build is queued', () {
+    expect(
+      AppBuildStatusFormatter.stageText(
+        AppPlatform.ios,
+        0,
+        AppBuildStageState.done,
+      ),
+      'iOS build queued.',
+    );
+  });
+
+  test('Given a failed build stage '
+      'when getting its text '
+      'then it says the build failed while building', () {
+    expect(
+      AppBuildStatusFormatter.stageText(
+        AppPlatform.android,
+        2,
+        AppBuildStageState.failed,
+      ),
+      'Android build failed while building.',
+    );
+  });
+
+  test('Given a failed queue stage of a cancelled build '
+      'when getting its text '
+      'then it says the build was cancelled while queuing', () {
+    expect(
+      AppBuildStatusFormatter.stageText(
+        AppPlatform.android,
+        0,
+        AppBuildStageState.failed,
+        cancelled: true,
+      ),
+      'Android build cancelled while queuing.',
+    );
+  });
+
+  group('Given a build handed to the build service at once that waited ten '
+      'minutes for a machine', () {
+    final createdAt = DateTime.utc(2026, 11, 13, 10);
+    final handedOverAt = createdAt.add(const Duration(seconds: 4));
+    final prepareStartedAt = createdAt.add(const Duration(minutes: 10));
+    final buildStartedAt = createdAt.add(const Duration(minutes: 12));
+    final buildEndedAt = createdAt.add(const Duration(minutes: 20));
     final detail = AppBuildDetailBuilder()
         .withBuild(
           AppBuildSummaryBuilder()
-              .withPlatform(AppPlatform.android)
-              .withStatus(AppBuildStatus.succeeded)
+              .withCreatedAt(createdAt)
+              .withStartedAt(handedOverAt)
+              .withEndedAt(buildEndedAt)
               .build(),
         )
+        .withSteps([
+          AppBuildStepInfoBuilder()
+              .withStage(AppBuildStage.upload)
+              .withStartedAt(prepareStartedAt)
+              .withEndedAt(buildStartedAt)
+              .build(),
+          AppBuildStepInfoBuilder()
+              .withStage(AppBuildStage.build)
+              .withStartedAt(buildStartedAt)
+              .withEndedAt(buildEndedAt)
+              .build(),
+        ])
         .build();
 
-    expect(
-      AppBuildStatusFormatter.line(AppPlatform.android, detail),
-      'Android  ✓ Queued    ✓ Built     ✓ Uploaded → Play internal',
-    );
+    test('when getting the queue stage times '
+        'then it runs from the request until the machine starts', () {
+      expect(AppBuildStatusFormatter.stageStartedAt(detail, 0), createdAt);
+      expect(AppBuildStatusFormatter.stageEndedAt(detail, 0), prepareStartedAt);
+    });
+
+    test('when getting the prepare stage times '
+        'then they are those of its step', () {
+      expect(
+        AppBuildStatusFormatter.stageStartedAt(detail, 1),
+        prepareStartedAt,
+      );
+      expect(AppBuildStatusFormatter.stageEndedAt(detail, 1), buildStartedAt);
+    });
+
+    test('when getting the build stage times '
+        'then they are those of its step', () {
+      expect(AppBuildStatusFormatter.stageStartedAt(detail, 2), buildStartedAt);
+      expect(AppBuildStatusFormatter.stageEndedAt(detail, 2), buildEndedAt);
+    });
   });
 
-  test('Given iOS and Android builds in different stages '
-      'when formatting their status lines '
-      'then their stage columns line up', () {
+  group('Given a build without prepare steps', () {
+    final createdAt = DateTime.utc(2026, 11, 13, 10);
+    final buildStartedAt = createdAt.add(const Duration(minutes: 3));
     final detail = AppBuildDetailBuilder()
         .withBuild(
           AppBuildSummaryBuilder()
-              .withPlatform(AppPlatform.android)
-              .withStatus(AppBuildStatus.succeeded)
+              .withCreatedAt(createdAt)
+              .withStartedAt(createdAt.add(const Duration(seconds: 4)))
               .build(),
         )
+        .withSteps([
+          AppBuildStepInfoBuilder()
+              .withStage(AppBuildStage.build)
+              .withStartedAt(buildStartedAt)
+              .build(),
+        ])
         .build();
 
-    final iosLine = AppBuildStatusFormatter.line(AppPlatform.ios, null);
-    final androidLine = AppBuildStatusFormatter.line(
-      AppPlatform.android,
-      detail,
-    );
-
-    expect(iosLine.indexOf('● Build'), androidLine.indexOf('✓ Built'));
-    expect(iosLine.indexOf('● Upload'), androidLine.indexOf('✓ Uploaded'));
-  });
-
-  test('Given a running build '
-      'when formatting its status line at a later spinner frame '
-      'then the active stage shows that frame', () {
-    final detail = AppBuildDetailBuilder()
-        .withBuild(
-          AppBuildSummaryBuilder().withStatus(AppBuildStatus.running).build(),
-        )
-        .withSteps([])
-        .build();
-
-    expect(
-      AppBuildStatusFormatter.line(AppPlatform.ios, detail, spinnerFrame: 1),
-      'iOS      ✓ Queued    ⠙ Building  ● Upload → TestFlight',
-    );
+    test('when getting the prepare stage times '
+        'then it starts and ends when the first build step starts', () {
+      expect(AppBuildStatusFormatter.stageStartedAt(detail, 1), buildStartedAt);
+      expect(AppBuildStatusFormatter.stageEndedAt(detail, 1), buildStartedAt);
+    });
   });
 
   test('Given a waiting build '
@@ -83,6 +147,61 @@ void main() {
       AppBuildStageState.active,
       AppBuildStageState.pending,
       AppBuildStageState.pending,
+      AppBuildStageState.pending,
+    ]);
+  });
+
+  test('Given a running build in its upload stage '
+      'when getting its stage states '
+      'then the prepare stage is active', () {
+    final detail = AppBuildDetailBuilder()
+        .withBuild(
+          AppBuildSummaryBuilder().withStatus(AppBuildStatus.running).build(),
+        )
+        .withSteps([
+          AppBuildStepInfoBuilder()
+              .withStage(AppBuildStage.upload)
+              .withStatus(AppBuildStepStatus.running)
+              .build(),
+          AppBuildStepInfoBuilder()
+              .withStage(AppBuildStage.build)
+              .withStatus(AppBuildStepStatus.pending)
+              .build(),
+        ])
+        .build();
+
+    expect(AppBuildStatusFormatter.stageStates(detail), [
+      AppBuildStageState.done,
+      AppBuildStageState.active,
+      AppBuildStageState.pending,
+      AppBuildStageState.pending,
+    ]);
+  });
+
+  test('Given a build that failed in its upload stage '
+      'when getting its stage states '
+      'then the prepare stage failed', () {
+    final detail = AppBuildDetailBuilder()
+        .withBuild(
+          AppBuildSummaryBuilder().withStatus(AppBuildStatus.failed).build(),
+        )
+        .withSteps([
+          AppBuildStepInfoBuilder()
+              .withStage(AppBuildStage.upload)
+              .withStatus(AppBuildStepStatus.failed)
+              .build(),
+          AppBuildStepInfoBuilder()
+              .withStage(AppBuildStage.build)
+              .withStatus(AppBuildStepStatus.skipped)
+              .build(),
+        ])
+        .build();
+
+    expect(AppBuildStatusFormatter.stageStates(detail), [
+      AppBuildStageState.done,
+      AppBuildStageState.failed,
+      AppBuildStageState.pending,
+      AppBuildStageState.pending,
     ]);
   });
 
@@ -94,22 +213,19 @@ void main() {
           AppBuildSummaryBuilder().withStatus(AppBuildStatus.running).build(),
         )
         .withSteps([
-          AppBuildStepInfo(
-            index: 0,
-            name: 'Build iOS app',
-            stage: AppBuildStage.build,
-            status: AppBuildStepStatus.running,
-          ),
-          AppBuildStepInfo(
-            index: 1,
-            name: 'Upload to TestFlight',
-            stage: AppBuildStage.publish,
-            status: AppBuildStepStatus.pending,
-          ),
+          AppBuildStepInfoBuilder()
+              .withStage(AppBuildStage.build)
+              .withStatus(AppBuildStepStatus.running)
+              .build(),
+          AppBuildStepInfoBuilder()
+              .withStage(AppBuildStage.publish)
+              .withStatus(AppBuildStepStatus.pending)
+              .build(),
         ])
         .build();
 
     expect(AppBuildStatusFormatter.stageStates(detail), [
+      AppBuildStageState.done,
       AppBuildStageState.done,
       AppBuildStageState.active,
       AppBuildStageState.pending,
@@ -124,32 +240,38 @@ void main() {
           AppBuildSummaryBuilder().withStatus(AppBuildStatus.running).build(),
         )
         .withSteps([
-          AppBuildStepInfo(
-            index: 0,
-            name: 'Upload to TestFlight',
-            stage: AppBuildStage.publish,
-            status: AppBuildStepStatus.running,
-          ),
+          AppBuildStepInfoBuilder()
+              .withStage(AppBuildStage.publish)
+              .withStatus(AppBuildStepStatus.running)
+              .build(),
         ])
         .build();
 
     expect(AppBuildStatusFormatter.stageStates(detail), [
       AppBuildStageState.done,
       AppBuildStageState.done,
+      AppBuildStageState.done,
       AppBuildStageState.active,
     ]);
   });
 
-  test('Given a build that failed before its publish stage '
+  test('Given a build that failed in its build stage '
       'when getting its stage states '
       'then the build stage failed', () {
     final detail = AppBuildDetailBuilder()
         .withBuild(
           AppBuildSummaryBuilder().withStatus(AppBuildStatus.failed).build(),
         )
+        .withSteps([
+          AppBuildStepInfoBuilder()
+              .withStage(AppBuildStage.build)
+              .withStatus(AppBuildStepStatus.failed)
+              .build(),
+        ])
         .build();
 
     expect(AppBuildStatusFormatter.stageStates(detail), [
+      AppBuildStageState.done,
       AppBuildStageState.done,
       AppBuildStageState.failed,
       AppBuildStageState.pending,
@@ -170,13 +292,14 @@ void main() {
     expect(AppBuildStatusFormatter.stageStates(detail), [
       AppBuildStageState.done,
       AppBuildStageState.done,
+      AppBuildStageState.done,
       AppBuildStageState.failed,
     ]);
   });
 
   test('Given a build the store refused '
       'when getting its error '
-      'then it was built but not uploaded, with the message', () {
+      'then it was built but not uploaded, without the build message', () {
     final build = AppBuildSummaryBuilder()
         .withPlatform(AppPlatform.android)
         .withStatus(AppBuildStatus.builtNotUploaded)
@@ -185,9 +308,100 @@ void main() {
 
     expect(
       AppBuildStatusFormatter.summaryError(AppPlatform.android, build),
-      'The Android build was built but not uploaded to the store: '
-      'Step "Publish to Google Play" exited with code 1',
+      'The Android build was built but not uploaded to the store.',
     );
+  });
+
+  group('Given a log command', () {
+    const logCommand = 'scloud app log upload-id --platform android';
+
+    test('and a failed build '
+        'when getting its follow error '
+        'then it points to the log instead of the build message', () {
+      final build = AppBuildSummaryBuilder()
+          .withStatus(AppBuildStatus.failed)
+          .withMessage('Step 6 script `Build Android app bundle` exited')
+          .build();
+
+      expect(
+        AppBuildStatusFormatter.followError(
+          AppPlatform.android,
+          build,
+          logCommand: logCommand,
+        ),
+        'The Android build failed. Find out why in the logs: $logCommand',
+      );
+    });
+
+    test('and a build the store refused '
+        'when getting its follow error '
+        'then it was built but not uploaded, pointing to the log', () {
+      final build = AppBuildSummaryBuilder()
+          .withStatus(AppBuildStatus.builtNotUploaded)
+          .build();
+
+      expect(
+        AppBuildStatusFormatter.followError(
+          AppPlatform.android,
+          build,
+          logCommand: logCommand,
+        ),
+        'The Android build was built but not uploaded to the store. '
+        'Find out why in the logs: $logCommand',
+      );
+    });
+
+    test('and a running build '
+        'when getting its follow error '
+        'then it did not finish, pointing to the log', () {
+      final build = AppBuildSummaryBuilder()
+          .withStatus(AppBuildStatus.running)
+          .build();
+
+      expect(
+        AppBuildStatusFormatter.followError(
+          AppPlatform.android,
+          build,
+          logCommand: logCommand,
+        ),
+        'The Android build did not finish. Find out why in the logs: '
+        '$logCommand',
+      );
+    });
+
+    test('and a cancelled build '
+        'when getting its follow error '
+        'then it was cancelled, without the log', () {
+      final build = AppBuildSummaryBuilder()
+          .withStatus(AppBuildStatus.cancelled)
+          .build();
+
+      expect(
+        AppBuildStatusFormatter.followError(
+          AppPlatform.android,
+          build,
+          logCommand: logCommand,
+        ),
+        'The Android build was cancelled.',
+      );
+    });
+
+    test('and a build that succeeded '
+        'when getting its follow error '
+        'then there is none', () {
+      final build = AppBuildSummaryBuilder()
+          .withStatus(AppBuildStatus.succeeded)
+          .build();
+
+      expect(
+        AppBuildStatusFormatter.followError(
+          AppPlatform.android,
+          build,
+          logCommand: logCommand,
+        ),
+        isNull,
+      );
+    });
   });
 
   test('Given a build cancelled in the queue '
@@ -205,6 +419,7 @@ void main() {
 
     expect(AppBuildStatusFormatter.stageStates(detail), [
       AppBuildStageState.failed,
+      AppBuildStageState.pending,
       AppBuildStageState.pending,
       AppBuildStageState.pending,
     ]);
@@ -245,6 +460,37 @@ void main() {
         platform: AppPlatform.ios,
       ),
       '--- iOS: Build (Succeeded) ---',
+    );
+  });
+
+  test('Given a build waiting for a build machine '
+      'when getting the long queue note '
+      'then it says the build waits for a machine and continues', () {
+    expect(
+      AppBuildStatusFormatter.longQueueNote([
+        AppBuildSummaryBuilder().withStatus(AppBuildStatus.waiting).build(),
+      ], buildCount: 1),
+      [
+        'Waiting for a build machine to be ready. This can take a while.',
+        'Press Ctrl+C to stop following. '
+            'The build continues in Serverpod Cloud.',
+      ],
+    );
+  });
+
+  test('Given a build queued behind other builds of two followed builds '
+      'when getting the long queue note '
+      'then it says it waits for other builds and the builds continue', () {
+    expect(
+      AppBuildStatusFormatter.longQueueNote([
+        AppBuildSummaryBuilder().withStatus(AppBuildStatus.queued).build(),
+      ], buildCount: 2),
+      [
+        'Waiting for other app builds of the account to end. '
+            'This can take a while.',
+        'Press Ctrl+C to stop following. '
+            'The builds continue in Serverpod Cloud.',
+      ],
     );
   });
 }

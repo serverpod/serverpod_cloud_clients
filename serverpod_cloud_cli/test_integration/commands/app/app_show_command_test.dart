@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:args/command_runner.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
@@ -111,22 +113,28 @@ void main() {
       ).called(1);
     });
 
-    test('then the publishing is reported', () async {
-      await commandResult;
+    test(
+      'then the stage lines are not preceded by a publishing line',
+      () async {
+        await commandResult;
 
-      expect(
-        logger.infoCalls.map((call) => call.message),
-        contains('Publishing 1.4.2 to Android'),
-      );
-    });
+        expect(
+          logger.infoCalls.map((call) => call.message),
+          isNot(contains(startsWith('Publishing '))),
+        );
+      },
+    );
 
-    test('then a status line is printed on every change', () async {
+    test('then each stage is printed as it starts and as it ends', () async {
       await commandResult;
 
       expect(logger.lineCalls.map((call) => call.line), [
-        'Android  ⠋ Queueing  ● Build     ● Upload → Play internal',
-        'Android  ✓ Queued    ⠋ Building  ● Upload → Play internal',
-        'Android  ✓ Queued    ✓ Built     ✓ Uploaded → Play internal',
+        'Android build queuing...',
+        startsWith('✓ Android build queued.'),
+        'Android build preparing...',
+        startsWith('✓ Android build prepared.'),
+        startsWith('✓ Android build built.'),
+        startsWith('✓ Android build uploaded.'),
       ]);
     });
 
@@ -137,7 +145,7 @@ void main() {
         logger.successCalls,
         contains(
           equalsSuccessCall(
-            message: 'Published 1.4.2 to Android.',
+            message: 'Uploaded the app to Google Play.',
             newParagraph: true,
           ),
         ),
@@ -196,12 +204,18 @@ void main() {
       );
     });
 
-    test('then their final status lines are printed', () async {
+    test('then the stage lines of each build are printed', () async {
       await commandResult;
 
       expect(logger.lineCalls.map((call) => call.line), [
-        'iOS      ✓ Queued    ✓ Built     ✓ Uploaded → TestFlight',
-        'Android  ✓ Queued    ✓ Built     ✓ Uploaded → Play internal',
+        startsWith('✓ iOS build queued.'),
+        startsWith('✓ iOS build prepared.'),
+        startsWith('✓ iOS build built.'),
+        startsWith('✓ iOS build uploaded.'),
+        startsWith('✓ Android build queued.'),
+        startsWith('✓ Android build prepared.'),
+        startsWith('✓ Android build built.'),
+        startsWith('✓ Android build uploaded.'),
       ]);
     });
 
@@ -212,7 +226,7 @@ void main() {
         logger.successCalls,
         contains(
           equalsSuccessCall(
-            message: 'Published 1.4.2 to iOS and Android.',
+            message: 'Uploaded the app to TestFlight and Google Play.',
             newParagraph: true,
           ),
         ),
@@ -262,11 +276,13 @@ void main() {
       await commandResult.catchError((_) {});
 
       expect(logger.lineCalls.map((call) => call.line), [
-        'Android  ✓ Queued    ✗ Build     ● Upload → Play internal',
+        startsWith('✓ Android build queued.'),
+        startsWith('✓ Android build prepared.'),
+        startsWith('✗ Android build failed while building.'),
       ]);
     });
 
-    test('then the failure is logged with its message', () async {
+    test('then the failure points to the build log', () async {
       await commandResult.catchError((_) {});
 
       expect(
@@ -274,60 +290,62 @@ void main() {
         contains(
           equalsErrorCall(
             message:
-                'The Android build failed: '
-                'Gradle task assembleRelease failed.',
+                'The Android build failed. Find out why in the logs: '
+                'scloud app log ${build.uploadId} '
+                '--platform android --project $_projectId',
           ),
         ),
       );
     });
   });
 
-  test('Given a publish with an uploaded iOS build and refused Android build '
-      'when showing it then the success and failure are both reported', () async {
-    final ios = AppBuildSummaryBuilder().withPlatform(AppPlatform.ios).build();
-    final android = AppBuildSummaryBuilder()
-        .withPlatform(AppPlatform.android)
-        .withStatus(AppBuildStatus.failed)
-        .build();
-    when(
-      () => client.appBuilds.getUploadBuilds(
-        cloudCapsuleId: _projectId,
-        uploadId: _uploadId,
-      ),
-    ).thenAnswer((_) async => [ios, android]);
-    for (final build in [ios, android]) {
+  test(
+    'Given a publish with an uploaded iOS build and refused Android build '
+    'when showing it then the success and failure are both reported',
+    () async {
+      final ios = AppBuildSummaryBuilder()
+          .withPlatform(AppPlatform.ios)
+          .build();
+      final android = AppBuildSummaryBuilder()
+          .withPlatform(AppPlatform.android)
+          .withStatus(AppBuildStatus.failed)
+          .build();
       when(
-        () => client.appBuilds.getBuild(
+        () => client.appBuilds.getUploadBuilds(
           cloudCapsuleId: _projectId,
-          buildId: build.id,
+          uploadId: _uploadId,
         ),
-      ).thenAnswer(
-        (_) async => AppBuildDetailBuilder().withBuild(build).build(),
+      ).thenAnswer((_) async => [ios, android]);
+      for (final build in [ios, android]) {
+        when(
+          () => client.appBuilds.getBuild(
+            cloudCapsuleId: _projectId,
+            buildId: build.id,
+          ),
+        ).thenAnswer(
+          (_) async => AppBuildDetailBuilder().withBuild(build).build(),
+        );
+      }
+
+      await expectLater(
+        cli.run(['app', 'show', _uploadId.uuid, '--project', _projectId]),
+        throwsA(isA<ErrorExitException>()),
       );
-    }
 
-    await expectLater(
-      cli.run(['app', 'show', _uploadId.uuid, '--project', _projectId]),
-      throwsA(isA<ErrorExitException>()),
-    );
-
-    expect(
-      logger.successCalls.map((call) => call.message),
-      contains('Published 1.4.2 to iOS.'),
-    );
-    expect(
-      logger.errorCalls.map((call) => call.message),
-      contains(contains('The Android build failed')),
-    );
-    expect(
-      logger.infoCalls.map((call) => call.message),
-      contains(
+      expect(
+        logger.successCalls.map((call) => call.message),
+        contains('Uploaded the app to TestFlight.'),
+      );
+      expect(
+        logger.errorCalls.map((call) => call.message),
         contains(
-          'app log ${android.uploadId} --platform android --project $_projectId',
+          'The Android build failed. Find out why in the logs: '
+          'scloud app log ${android.uploadId} '
+          '--platform android --project $_projectId',
         ),
-      ),
-    );
-  });
+      );
+    },
+  );
 
   test('Given a build that was built but not uploaded '
       'when showing it then the artifacts command is supplied', () async {
@@ -358,6 +376,142 @@ void main() {
         contains('app artifacts ${build.uploadId} --project $_projectId'),
       ),
     );
+  });
+
+  group('Given an upload whose Android build has waited ten minutes for a '
+      'build machine and then succeeds', () {
+    final build = AppBuildSummaryBuilder()
+        .withPlatform(AppPlatform.android)
+        .withStatus(AppBuildStatus.waiting)
+        .withCreatedAt(DateTime.now().subtract(const Duration(minutes: 10)))
+        .build();
+
+    setUp(() {
+      when(
+        () => client.appBuilds.getUploadBuilds(
+          cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          uploadId: any(named: 'uploadId'),
+        ),
+      ).thenAnswer((_) async => [build]);
+      when(
+        () => client.appBuilds.tailBuild(
+          cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          buildId: any(named: 'buildId'),
+        ),
+      ).thenAnswer(
+        (_) => Stream.fromIterable([
+          AppBuildDetailBuilder().withBuild(build).withSteps([]).build(),
+          AppBuildDetailBuilder()
+              .withBuild(
+                AppBuildSummaryBuilder()
+                    .withPlatform(AppPlatform.android)
+                    .withStatus(AppBuildStatus.succeeded)
+                    .build(),
+              )
+              .build(),
+        ]),
+      );
+    });
+
+    test('and no interactive terminal '
+        'when showing the upload '
+        'then a note says the build waits for a machine and continues '
+        'when following stops', () async {
+      logger.inlineTerminal = FakeTerminal(hasTerminal: false);
+
+      await cli.run(['app', 'show', _uploadId.uuid, '--project', _projectId]);
+
+      expect(logger.infoCalls.map((call) => call.message), [
+        'Waiting for a build machine to be ready. This can take a while.',
+        'Press Ctrl+C to stop following. '
+            'The build continues in Serverpod Cloud.',
+      ]);
+    });
+
+    test(
+      'and an interactive terminal '
+      'when showing the upload '
+      'then the note shows below the stage lines while the build waits',
+      () async {
+        await cli.run(['app', 'show', _uploadId.uuid, '--project', _projectId]);
+
+        expect(
+          (logger.inlineTerminal as FakeTerminal).output,
+          contains('Android build queuing...'),
+        );
+        expect(
+          (logger.inlineTerminal as FakeTerminal).output,
+          contains(
+            '\nWaiting for a build machine to be ready. '
+            'This can take a while.\n'
+            'Press Ctrl+C to stop following. '
+            'The build continues in Serverpod Cloud.',
+          ),
+        );
+      },
+    );
+  });
+
+  group('Given an upload whose Android build keeps waiting for a build '
+      'machine when interrupting the follow', () {
+    late Future<void> commandResult;
+
+    setUp(() async {
+      final build = AppBuildSummaryBuilder()
+          .withPlatform(AppPlatform.android)
+          .withStatus(AppBuildStatus.waiting)
+          .build();
+      final terminal = FakeTerminal();
+      logger.inlineTerminal = terminal;
+      final followed = Completer<void>();
+      when(
+        () => client.appBuilds.getUploadBuilds(
+          cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          uploadId: any(named: 'uploadId'),
+        ),
+      ).thenAnswer((_) async => [build]);
+      when(
+        () => client.appBuilds.tailBuild(
+          cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          buildId: any(named: 'buildId'),
+        ),
+      ).thenAnswer((_) {
+        followed.complete();
+        return StreamController<AppBuildDetail>().stream;
+      });
+
+      commandResult = cli.run([
+        'app',
+        'show',
+        _uploadId.uuid,
+        '--project',
+        _projectId,
+      ]);
+      await followed.future;
+      terminal.sendInterrupt();
+    });
+
+    test('then the command throws UserAbortException', () async {
+      await expectLater(commandResult, throwsA(isA<UserAbortException>()));
+    });
+
+    test('then the build is said to continue', () async {
+      await commandResult.catchError((_) {});
+
+      expect(
+        logger.infoCalls.map((call) => call.message),
+        contains('The app build continues in Serverpod Cloud.'),
+      );
+    });
+
+    test('then the command to follow the build again is shown', () async {
+      await commandResult.catchError((_) {});
+
+      expect(
+        logger.terminalCommandCalls.single.command,
+        'scloud app show $_uploadId --project $_projectId',
+      );
+    });
   });
 
   group('Given an unknown upload when showing the upload', () {

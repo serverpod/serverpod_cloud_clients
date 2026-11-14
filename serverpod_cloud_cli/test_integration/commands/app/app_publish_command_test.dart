@@ -26,6 +26,9 @@ import '../../../test_utils/test_command_logger.dart';
 
 const _projectId = 'my-project-id';
 const _appUploadDescription = 'app-upload-description';
+const _queueNote =
+    'App builds run one at a time per account. '
+    'Other builds wait in the queue.';
 final _supportedPlatformNames = AppPublishPlatformsOption.supportedPlatforms
     .map((platform) => platform.name)
     .join(', ');
@@ -82,42 +85,43 @@ void main() {
     reset(client.appPublishing);
   });
 
-  test('Given different app display names when publishing '
-      'then the names and platform identifiers are shown', () async {
-    await ProjectFactory.serverpodAppWorkspace(
-      extraContents: [
-        d.dir('project_flutter', [
-          ProjectFactory.flutterIosDir(
-            withInfoPlist: true,
-            displayName: 'Cloud Books for iOS',
-          ),
-          ProjectFactory.flutterAndroidDir(
-            displayName: 'Cloud Books for Android',
-          ),
+  test(
+    'Given different app display names when publishing '
+    'then each store is announced with the app name on its platform',
+    () async {
+      await ProjectFactory.serverpodAppWorkspace(
+        extraContents: [
+          d.dir('project_flutter', [
+            ProjectFactory.flutterIosDir(
+              withInfoPlist: true,
+              displayName: 'Cloud Books for iOS',
+            ),
+            ProjectFactory.flutterAndroidDir(
+              displayName: 'Cloud Books for Android',
+            ),
+          ]),
+        ],
+      ).create();
+
+      await cli.run([
+        'app',
+        'publish',
+        '--project',
+        _projectId,
+        '--project-dir',
+        p.join(d.sandbox, 'monorepo', 'project_server'),
+        '--no-await',
+      ]);
+
+      expect(
+        logger.infoCalls.map((call) => call.message),
+        containsAll([
+          'Publishing Cloud Books for iOS to TestFlight',
+          'Publishing Cloud Books for Android to Google Play',
         ]),
-      ],
-    ).create();
-
-    await cli.run([
-      'app',
-      'publish',
-      '--project',
-      _projectId,
-      '--project-dir',
-      p.join(d.sandbox, 'monorepo', 'project_server'),
-      '--no-await',
-    ]);
-
-    expect(
-      logger.infoCalls.map((call) => call.message),
-      containsAll([
-        'iOS app: Cloud Books for iOS',
-        'Android app: Cloud Books for Android',
-        'iOS bundle ID: com.acme.app',
-        'Android package name: com.acme.app',
-      ]),
-    );
-  });
+      );
+    },
+  );
 
   test('Given app publish command when instantiated then requires login', () {
     expect(CloudAppPublishCommand(logger: logger).requireLogin, isTrue);
@@ -209,17 +213,6 @@ void main() {
         await expectLater(commandResult, completes);
       });
 
-      test(
-        'then an app without a display name shows its package name',
-        () async {
-          await commandResult;
-          expect(
-            logger.infoCalls.map((call) => call.message),
-            contains('Android app: project_flutter'),
-          );
-        },
-      );
-
       test('then an Android build is requested for the app directory '
           'in the archive and the archive size', () async {
         await commandResult;
@@ -304,16 +297,30 @@ void main() {
 
         expect(
           logger.infoCalls.map((call) => call.message),
-          contains('Publishing the app to Android'),
+          contains('Publishing project_flutter to Google Play'),
         );
       });
 
-      test('then the Android package name is shown', () async {
+      test('then the archive upload is named as initiating the app upload, '
+          'apart from the store upload', () async {
+        await commandResult;
+
+        expect(
+          logger.progressCalls.map((call) => call.message),
+          containsAllInOrder([
+            'Zipping app',
+            'Initiating app upload...',
+            'Initiating app upload successful.',
+          ]),
+        );
+      });
+
+      test('then no queue note is shown', () async {
         await commandResult;
 
         expect(
           logger.infoCalls.map((call) => call.message),
-          contains('Android package name: com.acme.app'),
+          isNot(contains(_queueNote)),
         );
       });
 
@@ -349,6 +356,113 @@ void main() {
             d.dir('project_flutter', [d.nothing('.scloudignore')]),
           ]).validate(),
           completes,
+        );
+      });
+    });
+
+    group('and builds that wait behind other builds of the account '
+        'when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() {
+        when(
+          () => client.appBuilds.createBuilds(
+            appIdentifiers: any(named: 'appIdentifiers'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            platforms: any(named: 'platforms'),
+            flutterAppDir: any(named: 'flutterAppDir'),
+            archiveSize: any(named: 'archiveSize'),
+            flutterVersion: any(named: 'flutterVersion'),
+            versionName: any(named: 'versionName'),
+            commitHash: any(named: 'commitHash'),
+            commitMessage: any(named: 'commitMessage'),
+            branch: any(named: 'branch'),
+          ),
+        ).thenAnswer(
+          (_) async => AppBuildsUploadBuilder()
+              .withPlatforms([AppPlatform.android])
+              .withUploadDescription(_appUploadDescription)
+              .withBuildsAhead()
+              .build(),
+        );
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+      });
+
+      test('then the queue note is shown', () async {
+        await commandResult;
+
+        expect(
+          logger.infoCalls.map((call) => call.message),
+          contains(_queueNote),
+        );
+      });
+
+      test(
+        'then the queue note comes before the builds are announced',
+        () async {
+          await commandResult;
+
+          expect(
+            logger.infoCalls.map((call) => call.message),
+            containsAllInOrder([
+              _queueNote,
+              'Publishing project_flutter to Google Play',
+            ]),
+          );
+        },
+      );
+    });
+
+    group('and a server that does not report waiting builds '
+        'when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() {
+        when(
+          () => client.appBuilds.createBuilds(
+            appIdentifiers: any(named: 'appIdentifiers'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            platforms: any(named: 'platforms'),
+            flutterAppDir: any(named: 'flutterAppDir'),
+            archiveSize: any(named: 'archiveSize'),
+            flutterVersion: any(named: 'flutterVersion'),
+            versionName: any(named: 'versionName'),
+            commitHash: any(named: 'commitHash'),
+            commitMessage: any(named: 'commitMessage'),
+            branch: any(named: 'branch'),
+          ),
+        ).thenAnswer(
+          (_) async => AppBuildsUploadBuilder()
+              .withPlatforms([AppPlatform.android])
+              .withUploadDescription(_appUploadDescription)
+              .withWaitsForOtherBuilds(null)
+              .build(),
+        );
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+      });
+
+      test('then no queue note is shown', () async {
+        await commandResult;
+
+        expect(
+          logger.infoCalls.map((call) => call.message),
+          isNot(contains(_queueNote)),
         );
       });
     });
@@ -404,16 +518,12 @@ void main() {
         ]);
       });
 
-      test('then the command to follow the builds is shown', () async {
+      test('then no command to follow the builds is shown', () async {
         await commandResult;
 
         expect(
           logger.infoCalls.map((call) => call.message),
-          contains(
-            matches(
-              RegExp(r'^Follow it: \S+ app show \S+ --project my-project-id$'),
-            ),
-          ),
+          isNot(contains(startsWith('Follow it:'))),
         );
       });
 
@@ -428,25 +538,34 @@ void main() {
         ).called(1);
       });
 
-      test('then the final status line shows every stage done', () async {
+      test(
+        'then the stage lines are not preceded by a publishing line',
+        () async {
+          await commandResult;
+
+          expect(
+            logger.infoCalls.map((call) => call.message),
+            isNot(contains(startsWith('Publishing '))),
+          );
+        },
+      );
+
+      test('then the stage in progress shows with a spinner', () async {
         await commandResult;
 
         expect(
           (logger.inlineTerminal as FakeTerminal).output,
-          contains(
-            'Android  ✓ Queued    ✓ Built     ✓ Uploaded → Play internal\n',
-          ),
+          contains('⠋ Android build building...'),
         );
       });
 
       test('then the last five lines of the build log scroll below '
-          'the status line', () async {
+          'the stage lines', () async {
         await commandResult;
 
         expect(
           (logger.inlineTerminal as FakeTerminal).output,
           contains(
-            '→ Play internal\n'
             'line 3\n'
             'line 4\n'
             'line 5\n'
@@ -456,13 +575,17 @@ void main() {
         );
       });
 
-      test('then the build log is cleared', () async {
+      test('then each stage ends done, in order, and the build log is '
+          'cleared', () async {
         await commandResult;
 
-        expect(
-          _lastRender(logger.inlineTerminal as FakeTerminal),
-          'Android  ✓ Queued    ✓ Built     ✓ Uploaded → Play internal\n',
-        );
+        expect(_lastRender(logger.inlineTerminal as FakeTerminal).split('\n'), [
+          startsWith('✓ Android build queued.'),
+          startsWith('✓ Android build prepared.'),
+          startsWith('✓ Android build built.'),
+          startsWith('✓ Android build uploaded.'),
+          '',
+        ]);
       });
 
       test('then the publication is reported', () async {
@@ -470,14 +593,14 @@ void main() {
 
         expect(
           logger.successCalls.map((call) => call.message),
-          contains('Published the app to Android.'),
+          contains('Uploaded project_flutter to Google Play.'),
         );
       });
     });
 
     test('and no interactive terminal '
         'when releasing the app '
-        'then each status change is printed as a line', () async {
+        'then each stage is printed as it starts and as it ends', () async {
       logger.inlineTerminal = FakeTerminal(hasTerminal: false);
       when(
         () => client.appBuilds.tailBuild(
@@ -515,9 +638,12 @@ void main() {
       ]);
 
       expect(logger.lineCalls.map((call) => call.line), [
-        'Android  ⠋ Queueing  ● Build     ● Upload → Play internal',
-        'Android  ✓ Queued    ⠋ Building  ● Upload → Play internal',
-        'Android  ✓ Queued    ✓ Built     ✓ Uploaded → Play internal',
+        'Android build queuing...',
+        startsWith('✓ Android build queued.'),
+        startsWith('✓ Android build prepared.'),
+        'Android build building...',
+        startsWith('✓ Android build built.'),
+        startsWith('✓ Android build uploaded.'),
       ]);
     });
 
@@ -573,7 +699,7 @@ void main() {
 
         expect(
           logger.successCalls.map((call) => call.message),
-          contains('Published the app to Android.'),
+          contains('Uploaded project_flutter to Google Play.'),
         );
       });
     });
@@ -663,7 +789,7 @@ void main() {
 
         expect(
           logger.successCalls.map((call) => call.message),
-          contains('Published the app to Android.'),
+          contains('Uploaded project_flutter to Google Play.'),
         );
       });
     });
@@ -725,36 +851,41 @@ void main() {
 
         expect(
           (logger.inlineTerminal as FakeTerminal).output,
-          contains(
-            'Android  ✓ Queued    ✗ Build     ● Upload → Play internal\n',
-          ),
+          contains('✗ Android build failed while building.'),
         );
       });
 
       test(
-        'then the build log is kept in full below the status line',
+        'then the build log is kept in full below the stage lines',
         () async {
           await commandResult.catchError((_) {});
 
           expect(
-            _lastRender(logger.inlineTerminal as FakeTerminal),
-            'Android  ✓ Queued    ✗ Build     ● Upload → Play internal\n'
-            '--- Build (Failed) ---\n'
-            '${[for (var line = 1; line <= 7; line++) 'line $line\n'].join()}',
+            _lastRender(logger.inlineTerminal as FakeTerminal).split('\n'),
+            [
+              startsWith('✓ Android build queued.'),
+              startsWith('✓ Android build prepared.'),
+              startsWith('✗ Android build failed while building.'),
+              '--- Build (Failed) ---',
+              for (var line = 1; line <= 7; line++) 'line $line',
+              '',
+            ],
           );
         },
       );
 
-      test('then the failure is logged with its message', () async {
+      test('then the failure points to the build log', () async {
         await commandResult.catchError((_) {});
 
         expect(
-          logger.errorCalls,
+          logger.errorCalls.map((call) => call.message),
           contains(
-            equalsErrorCall(
-              message:
-                  'The Android build failed: '
-                  'Gradle task assembleRelease failed.',
+            allOf(
+              startsWith(
+                'The Android build failed. Find out why in the logs: '
+                'scloud app log ',
+              ),
+              endsWith('--platform android --project $_projectId'),
             ),
           ),
         );
@@ -2067,6 +2198,15 @@ project:
         await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
       });
 
+      test('then initiating the app upload is reported as failed', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          logger.progressCalls.map((call) => call.message),
+          contains('Initiating app upload failed.'),
+        );
+      });
+
       test('then the build is cancelled', () async {
         await commandResult.catchError((_) {});
 
@@ -2189,12 +2329,19 @@ project:
       ).called(1);
     });
 
-    group('and iOS code and builds that succeed when releasing the app', () {
+    group('and versioned iOS code with its own display name and builds that '
+        'succeed when releasing the app', () {
       late Future<void> commandResult;
 
       setUp(() async {
         await d.dir('monorepo', [
-          d.dir('project_flutter', [ProjectFactory.flutterIosDir()]),
+          d.dir('project_flutter', [
+            d.file(
+              'pubspec.yaml',
+              ProjectFactory.serverpodFlutterAppPubspec(withVersion: '1.2.3+4'),
+            ),
+            ProjectFactory.flutterIosDir(withInfoPlist: true),
+          ]),
         ]).create();
 
         final platformOfBuild = <UuidValue, AppPlatform>{};
@@ -2270,6 +2417,16 @@ project:
             contains('--- iOS: Build (Succeeded) ---'),
           ),
         );
+      });
+
+      test('then each store upload names the app of its platform '
+          'with the version', () async {
+        await commandResult;
+
+        expect(logger.successCalls.map((call) => call.message), [
+          'Uploaded Acme (1.2.3) to TestFlight.',
+          'Uploaded project_flutter (1.2.3) to Google Play.',
+        ]);
       });
     });
 
@@ -2351,12 +2508,12 @@ project:
         );
       });
 
-      test('then the publishing to both platforms is reported', () async {
+      test('then the publishing to both stores is reported', () async {
         await commandResult;
 
         expect(
           logger.infoCalls.map((call) => call.message),
-          contains('Publishing the app to iOS and Android'),
+          contains('Publishing project_flutter to TestFlight and Google Play'),
         );
       });
     });

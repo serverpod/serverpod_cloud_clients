@@ -815,7 +815,8 @@ class EndpointAppBuilds extends _isc.EndpointRef {
   /// iOS bundle ID or Android package name, as the app declares it. Each is
   /// recorded for its platform, and one that replaces a different
   /// identifier is listed in the result. Clients that leave it out get no
-  /// check.
+  /// check. The result also says whether the builds wait in the queue
+  /// behind other builds of the project's owner.
   ///
   /// [flutterVersion] is the Flutter release version to build the app
   /// with. When null, the builds use the latest stable release.

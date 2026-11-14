@@ -244,7 +244,7 @@ class ScrollingSection {
   /// Formats [duration] like the reference spinner: sub-100ms in milliseconds,
   /// under a minute in seconds with a single decimal, otherwise in minutes and
   /// seconds.
-  static String _formatElapsed(Duration duration) {
+  static String formatElapsed(Duration duration) {
     final ms = duration.inMilliseconds;
     if (ms < 100) return '${ms}ms';
     if (duration.inMinutes < 1) return '${(ms / 1000).toStringAsFixed(1)}s';
@@ -384,7 +384,7 @@ class ScrollingSection {
       if (text == null) return null;
       if (!_spinnerActive) return _format(text, width, dimmed: false);
       final frame = _brailleFrames[_frameIndex % _brailleFrames.length];
-      final elapsed = '(${_formatElapsed(_elapsedTime)})';
+      final elapsed = '(${formatElapsed(_elapsedTime)})';
       return _composeHeader(frame, _greenStyle, text, elapsed, width);
     }
 
@@ -393,7 +393,7 @@ class ScrollingSection {
     if (!_spinnerActive) return _format(base, width, dimmed: false);
     final icon = _success ? _successIcon : _failureIcon;
     final iconStyle = _success ? _greenStyle : _redStyle;
-    final elapsed = '(${_formatElapsed(_elapsedTime)})';
+    final elapsed = '(${formatElapsed(_elapsedTime)})';
     return _composeHeader(icon, iconStyle, base, elapsed, width);
   }
 

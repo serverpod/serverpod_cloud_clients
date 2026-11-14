@@ -40,10 +40,17 @@ abstract class AppPublish {
   /// workspace root pins, or else the single version the app's pubspec
   /// requires. With none of them, the builds use the stable channel.
   ///
-  /// The command to follow the builds is shown, invoked through
-  /// [baseCommand]. With [awaitBuilds], the progress and logs of the builds
-  /// are then shown until they end. With [showFiles], the archive file tree
-  /// is printed. With [outputPath], the archive is also saved to that path.
+  /// When Serverpod Cloud reports that the builds wait in the queue behind
+  /// other builds of the account, a note says so before the builds are
+  /// followed or announced.
+  ///
+  /// With [awaitBuilds], the progress and logs of the builds are shown
+  /// until they end, and then the stores the app was uploaded to, naming
+  /// the app by its display name on each platform. Without it, the stores
+  /// the app is published to are announced, naming the app the same way,
+  /// with the command to follow the builds, invoked through [baseCommand].
+  /// With [showFiles], the archive file tree is printed. With [outputPath],
+  /// the archive is also saved to that path.
   /// With [wetRun], preparation ends after zipping and saving the archive,
   /// without uploading it or requesting builds.
   ///
@@ -54,6 +61,7 @@ abstract class AppPublish {
   /// read, if the builds cannot be requested, or if an awaited build does
   /// not succeed.
   /// Throws [ErrorExitException] if the archive cannot be zipped or uploaded.
+  /// Throws [UserAbortException] if following the builds is interrupted.
   /// The builds are cancelled when the archive cannot be uploaded.
   static Future<void> publish(
     Client cloudApiClient,
@@ -95,17 +103,14 @@ abstract class AppPublish {
           configFileName: configFileName,
         ),
     };
-    for (final MapEntry(key: platform, value: appIdentifier)
-        in appIdentifiers.entries) {
-      final name = readAppDisplayName(
-        appDirectory,
-        platform,
-        fallback: preparer.projectPackageName,
-      );
-      final platformName = platform == FlutterPlatform.ios ? 'iOS' : 'Android';
-      logger.info('$platformName app: $name');
-      logger.info('${appIdentifierName(platform)}: $appIdentifier');
-    }
+    final appNames = {
+      for (final platform in publishPlatforms)
+        AppPlatform.values.byName(platform.name): readAppDisplayName(
+          appDirectory,
+          platform,
+          fallback: preparer.projectPackageName,
+        ),
+    };
 
     final flutterVersion = AppSetup.selectFlutterVersion(
       appDirectory,
@@ -180,6 +185,8 @@ abstract class AppPublish {
         uploadDescription: upload.uploadDescription,
         projectZip: appZip,
         subject: 'app',
+        action: 'Initiating app upload',
+        stepName: 'Initiating app upload',
       );
     } on Exception {
       await _cancelBuilds(
@@ -193,18 +200,33 @@ abstract class AppPublish {
 
     final builds = [...upload.builds]
       ..sort((a, b) => a.platform.index.compareTo(b.platform.index));
-    final platformNames = AppBuildStatusFormatter.platformNames(
-      builds.map((build) => build.platform),
-    );
-    logger.info(
-      'Publishing ${versionName ?? 'the app'} to $platformNames',
-      newParagraph: true,
-    );
-    logger.info(
-      'Follow it: $baseCommand app show ${upload.uploadId} '
-      '--project $projectId',
-    );
-    if (!awaitBuilds) return;
+    final waitsForOtherBuilds = upload.waitsForOtherBuilds ?? false;
+    if (waitsForOtherBuilds) {
+      logger.info(
+        'App builds run one at a time per account. '
+        'Other builds wait in the queue.',
+        newParagraph: true,
+      );
+    }
+    if (!awaitBuilds) {
+      final buildsByName = AppBuildStatusFormatter.platformsByAppName(
+        builds.map((build) => build.platform),
+        appNames,
+      );
+      for (final (index, MapEntry(key: name, value: platforms))
+          in buildsByName.entries.indexed) {
+        logger.info(
+          'Publishing ${name ?? 'the app'} to '
+          '${AppBuildStatusFormatter.storeNames(platforms)}',
+          newParagraph: index == 0 && !waitsForOtherBuilds,
+        );
+      }
+      logger.info(
+        'Follow it: $baseCommand app show ${upload.uploadId} '
+        '--project $projectId',
+      );
+      return;
+    }
 
     await AppBuildProgress.follow(
       cloudApiClient,
@@ -214,6 +236,7 @@ abstract class AppPublish {
       baseCommand: baseCommand,
       builds: builds,
       versionName: versionName,
+      appNames: appNames,
       showLogs: true,
     );
   }

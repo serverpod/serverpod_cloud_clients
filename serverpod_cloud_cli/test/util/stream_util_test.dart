@@ -56,6 +56,29 @@ void main() {
       await interrupt.close();
     });
 
+    test('Given a source stream whose cancel does not finish '
+        'when the interrupt stream emits '
+        'then the returned stream terminates with the error', () async {
+      final source = StreamController<int>(
+        onCancel: () => Completer<void>().future,
+      );
+      final interrupt = StreamController<void>();
+
+      final resultFuture = cancelOnInterrupt(
+        source.stream,
+        interrupt.stream,
+      ).toList();
+      await Future<void>.delayed(Duration.zero);
+      interrupt.add(null);
+
+      await expectLater(
+        resultFuture,
+        throwsA(isA<StreamInterruptedException>()),
+      );
+
+      await interrupt.close();
+    });
+
     test('Given a source stream that completes '
         'when no interrupt occurs '
         'then all source events are emitted', () async {

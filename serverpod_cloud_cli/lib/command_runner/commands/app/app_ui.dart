@@ -212,7 +212,13 @@ class AppStatusTextUi extends OutputWidget {
           when build.startedAt == null =>
         InfoTextWidget(reason, newParagraph: true),
       AppBuildStatus.builtNotUploaded ||
-      AppBuildStatus.failed ||
+      AppBuildStatus.failed => CommandHintTextWidget(
+        '$reason Find out why in the logs:',
+        command:
+            '$baseCommand app log ${build.uploadId} '
+            '--platform ${build.platform.name} --project $projectId',
+        newParagraph: true,
+      ),
       AppBuildStatus.cancelled => CommandHintTextWidget(
         reason,
         command:
