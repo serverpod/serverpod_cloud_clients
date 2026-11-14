@@ -10,6 +10,7 @@ class AppBuildSummaryBuilder {
   String? _versionName = '1.4.2';
   String? _buildNumber = '37';
   String? _message;
+  AppBuildFailureReason? _failureReason;
   User? _requestedBy = UserBuilder().build();
   String? _commitHash = '279d40f5';
   String? _commitMessage = 'Add wishlist screen';
@@ -61,6 +62,13 @@ class AppBuildSummaryBuilder {
     return this;
   }
 
+  AppBuildSummaryBuilder withFailureReason(
+    AppBuildFailureReason? failureReason,
+  ) {
+    _failureReason = failureReason;
+    return this;
+  }
+
   AppBuildSummaryBuilder withRequestedBy(User? requestedBy) {
     _requestedBy = requestedBy;
     return this;
@@ -90,6 +98,7 @@ class AppBuildSummaryBuilder {
       versionName: _versionName,
       buildNumber: _buildNumber,
       message: _message,
+      failureReason: _failureReason,
       requestedBy: _requestedBy,
       commitHash: _commitHash,
       commitMessage: _commitMessage,

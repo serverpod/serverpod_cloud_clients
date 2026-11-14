@@ -746,6 +746,7 @@ void _stubAppBuilds(final ClientMock client) {
           .withVersionName('1.4.3')
           .withBuildNumber(null)
           .withMessage('Gradle task assembleRelease failed.')
+          .withFailureReason(AppBuildFailureReason.compileFailed)
           .withCreatedAt(runningAt)
           .withStartedAt(runningAt)
           .withEndedAt(runningAt)

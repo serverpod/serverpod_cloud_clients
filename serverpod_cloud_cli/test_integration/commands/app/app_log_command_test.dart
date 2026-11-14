@@ -1007,6 +1007,59 @@ void main() {
     );
   });
 
+  test('Given a build that failed because the Apple team has no room for '
+      'another certificate when logging with --no-watch '
+      'then the failure names the certificate limit and links to '
+      "Apple's certificates page", () async {
+    final build = AppBuildSummaryBuilder()
+        .withStatus(AppBuildStatus.failed)
+        .withFailureReason(AppBuildFailureReason.signingCertificateLimitReached)
+        .build();
+    when(
+      () => client.appBuilds.getUploadBuilds(
+        cloudCapsuleId: _projectId,
+        uploadId: _uploadId,
+      ),
+    ).thenAnswer((_) async => [build]);
+    when(
+      () => client.appBuilds.getBuild(
+        cloudCapsuleId: _projectId,
+        buildId: build.id,
+      ),
+    ).thenAnswer(
+      (_) async =>
+          AppBuildDetailBuilder().withBuild(build).withSteps([]).build(),
+    );
+
+    await expectLater(
+      cli.run([
+        'app',
+        'log',
+        _uploadId.uuid,
+        '--project',
+        _projectId,
+        '--no-watch',
+      ]),
+      throwsA(isA<ErrorExitException>()),
+    );
+
+    expect(
+      logger.errorCalls.map((call) => call.message),
+      contains(
+        allOf(
+          startsWith(
+            'The iOS build failed. '
+            'Apple has no room for another certificate.\n',
+          ),
+          endsWith(
+            '\nOpen Certificates: '
+            'https://developer.apple.com/account/resources/certificates/list',
+          ),
+        ),
+      ),
+    );
+  });
+
   test('Given redirected output when watching logs '
       'then no terminal indicator or banner is written', () async {
     final terminal = FakeTerminal(hasTerminal: false);

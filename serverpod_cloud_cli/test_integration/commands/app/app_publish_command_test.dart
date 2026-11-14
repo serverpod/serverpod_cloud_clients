@@ -892,6 +892,141 @@ void main() {
       });
     });
 
+    group('and a build that Google Play refuses for its upload key '
+        'when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() {
+        when(
+          () => client.appBuilds.tailBuild(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            buildId: any(named: 'buildId'),
+          ),
+        ).thenAnswer(
+          (_) => Stream.value(
+            AppBuildDetailBuilder()
+                .withBuild(
+                  AppBuildSummaryBuilder()
+                      .withPlatform(AppPlatform.android)
+                      .withStatus(AppBuildStatus.builtNotUploaded)
+                      .withFailureReason(AppBuildFailureReason.wrongSigningKey)
+                      .build(),
+                )
+                .withSteps([])
+                .build(),
+          ),
+        );
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+        ]);
+      });
+
+      test(
+        'then the failure says what to do, then points to the build log',
+        () async {
+          await commandResult.catchError((_) {});
+
+          expect(
+            logger.errorCalls.map((call) => call.message),
+            contains(
+              allOf(
+                startsWith(
+                  'The Android build was built but not uploaded to the store. '
+                  'Google Play expects a different upload key.\n',
+                ),
+                contains(
+                  '\nOpen Play Console: https://play.google.com/console\n',
+                ),
+                contains('\nRead the log: scloud app log '),
+              ),
+            ),
+          );
+        },
+      );
+
+      test('then the command to download the build is logged', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          logger.infoCalls.map((call) => call.message),
+          contains(
+            startsWith(
+              'Download the built app for manual store upload: '
+              'scloud app artifacts ',
+            ),
+          ),
+        );
+      });
+    });
+
+    group('and an Android build that Google Play has no app for '
+        'when releasing the app', () {
+      final uploadId = const Uuid().v4obj();
+      late Future<void> commandResult;
+
+      setUp(() {
+        when(
+          () => client.appBuilds.tailBuild(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            buildId: any(named: 'buildId'),
+          ),
+        ).thenAnswer(
+          (_) => Stream.value(
+            AppBuildDetailBuilder()
+                .withBuild(
+                  AppBuildSummaryBuilder()
+                      .withUploadId(uploadId)
+                      .withPlatform(AppPlatform.android)
+                      .withStatus(AppBuildStatus.builtNotUploaded)
+                      .withFailureReason(AppBuildFailureReason.storeAppNotFound)
+                      .build(),
+                )
+                .withSteps([])
+                .build(),
+          ),
+        );
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+        ]);
+      });
+
+      test('then the failure ends its advice with the command to download '
+          'the build', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          logger.errorCalls.map((call) => call.message),
+          contains(
+            contains(
+              '\nDownload build: scloud app artifacts $uploadId '
+              '--project $_projectId\n',
+            ),
+          ),
+        );
+      });
+
+      test('then the download command is not logged again', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          logger.infoCalls.map((call) => call.message),
+          isNot(contains(startsWith('Download the built app'))),
+        );
+      });
+    });
+
     group('and an Android package name set in scloud.yaml '
         'when releasing the app', () {
       late Future<void> commandResult;

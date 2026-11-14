@@ -607,11 +607,14 @@ abstract class AppOperations {
   /// project, if [platform] is omitted for a multi-platform upload, or if
   /// the build cannot be fetched. The stream emits a
   /// [FailureException] if the build or a step log cannot be fetched, and
-  /// last if the build did not succeed.
+  /// last if the build did not succeed. When the build failed for a known
+  /// reason, that last failure says what to do, naming commands with
+  /// [baseCommand].
   static Future<Stream<AppBuildStepLog>> followBuildLog(
     Client cloudApiClient, {
     required String projectId,
     required UuidValue uploadId,
+    required String baseCommand,
     AppPlatform? platform,
     bool watch = true,
   }) async {
@@ -651,6 +654,7 @@ abstract class AppOperations {
       buildId: build.id,
       platform: selectedPlatform,
       watch: watch,
+      baseCommand: baseCommand,
     );
   }
 
@@ -660,6 +664,7 @@ abstract class AppOperations {
     required UuidValue buildId,
     required AppPlatform platform,
     required bool watch,
+    required String baseCommand,
   }) async* {
     AppBuildDetail? lastDetail;
     yield* stepLogs(
@@ -690,7 +695,12 @@ abstract class AppOperations {
 
     final detail = lastDetail;
     if (watch || (detail != null && _hasBuildEnded(detail.build.status))) {
-      final error = AppBuildStatusFormatter.buildError(platform, detail);
+      final error = AppBuildStatusFormatter.adviceError(
+        platform,
+        detail?.build,
+        projectId: projectId,
+        baseCommand: baseCommand,
+      );
       if (error != null) {
         throw FailureException(error: error);
       }
