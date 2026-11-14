@@ -39,12 +39,18 @@ void main() {
     authKeyProvider: InMemoryKeyManager.authenticated(),
   );
   final fileUploader = RecordingFileUploader();
+  String? localFlutterVersion;
+  final localFlutterVersionReads = <String>[];
   final cli = CloudCliCommandRunner.create(
     logger: logger,
     version: Version.parse('999.0.0'),
     serviceProvider: CloudCliServiceProvider(
       apiClientFactory: (_) => client,
       fileUploaderFactory: fileUploader.factory,
+      localFlutterVersionReader: (appDirectory, _) async {
+        localFlutterVersionReads.add(appDirectory.path);
+        return localFlutterVersion;
+      },
     ),
   );
 
@@ -81,6 +87,8 @@ void main() {
   tearDown(() {
     logger.clear();
     fileUploader.clear();
+    localFlutterVersion = null;
+    localFlutterVersionReads.clear();
     reset(client.appBuilds);
     reset(client.appPublishing);
   });
@@ -971,14 +979,29 @@ project:
           contains('Flutter version: 3.38.4'),
         );
       });
+
+      test('then the local Flutter SDK is not read', () async {
+        await commandResult;
+
+        expect(localFlutterVersionReads, isEmpty);
+      });
     });
 
-    group('and a Flutter version set in scloud.yaml '
+    group('and a Flutter SDK range in the pubspec of the app '
+        'and a Flutter version set in scloud.yaml '
         'when releasing the app', () {
       late Future<void> commandResult;
 
       setUp(() async {
         await d.dir('monorepo', [
+          d.dir('project_flutter', [
+            d.file(
+              'pubspec.yaml',
+              ProjectFactory.serverpodFlutterAppPubspec(
+                withFlutterConstraint: '">=3.29.0"',
+              ),
+            ),
+          ]),
           d.dir('project_server', [
             d.file('scloud.yaml', '''
 project:
@@ -1003,33 +1026,6 @@ project:
         await commandResult;
 
         expect(_sentFlutterVersion(client), '3.38.3');
-      });
-    });
-
-    group('and a Flutter version pinned in .tool-versions at the workspace '
-        'root when releasing the app', () {
-      late Future<void> commandResult;
-
-      setUp(() async {
-        await d.dir('monorepo', [
-          d.file('.tool-versions', 'flutter 3.38.1-stable\n'),
-        ]).create();
-
-        commandResult = cli.run([
-          'app',
-          'publish',
-          '--project',
-          _projectId,
-          '--project-dir',
-          p.join(d.sandbox, 'monorepo', 'project_server'),
-          '--no-await',
-        ]);
-      });
-
-      test('then the pinned Flutter version is sent', () async {
-        await commandResult;
-
-        expect(_sentFlutterVersion(client), '3.38.1');
       });
     });
 
@@ -1064,6 +1060,109 @@ project:
         await commandResult;
 
         expect(_sentFlutterVersion(client), isNull);
+      });
+    });
+
+    group('and a Flutter SDK range in the pubspec of the app '
+        'and a local Flutter SDK when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() async {
+        await d.dir('monorepo', [
+          d.dir('project_flutter', [
+            d.file(
+              'pubspec.yaml',
+              ProjectFactory.serverpodFlutterAppPubspec(
+                withFlutterConstraint: '">=3.29.0"',
+              ),
+            ),
+          ]),
+        ]).create();
+        localFlutterVersion = '3.38.4';
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+      });
+
+      test('then the local Flutter SDK is read in the app directory', () async {
+        await commandResult;
+
+        expect(localFlutterVersionReads, [
+          p.join(d.sandbox, 'monorepo', 'project_flutter'),
+        ]);
+      });
+
+      test('then the version of the local Flutter SDK is sent', () async {
+        await commandResult;
+
+        expect(_sentFlutterVersion(client), '3.38.4');
+      });
+    });
+
+    group('and a Flutter SDK range in the pubspec of the app '
+        'and a local Flutter SDK on the beta channel '
+        'when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() async {
+        await d.dir('monorepo', [
+          d.dir('project_flutter', [
+            d.file(
+              'pubspec.yaml',
+              ProjectFactory.serverpodFlutterAppPubspec(
+                withFlutterConstraint: '">=3.29.0"',
+              ),
+            ),
+          ]),
+        ]).create();
+        localFlutterVersion = '3.39.0-0.1.pre';
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+      });
+
+      test('then the command throws ErrorExitException', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then the unsupported local version is logged '
+          'with how to request a release version', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          logger.errorCalls,
+          contains(
+            equalsErrorCall(
+              message:
+                  'Unsupported Flutter version "3.39.0-0.1.pre" '
+                  '(from local Flutter SDK).',
+              hint:
+                  'Use a Flutter release version such as 3.38.4 with '
+                  '--flutter-version, or pin one in environment.flutter of the '
+                  "app's pubspec.yaml.",
+            ),
+          ),
+        );
+      });
+
+      test('then no build is requested', () async {
+        await commandResult.catchError((_) {});
+
+        _verifyNoBuildRequested(client);
       });
     });
 
@@ -1128,7 +1227,10 @@ project:
               message:
                   'Unsupported Flutter version "^3.38.0" '
                   '(from --flutter-version flag).',
-              hint: 'Use a Flutter release version such as 3.38.4.',
+              hint:
+                  'Use a Flutter release version such as 3.38.4 with '
+                  '--flutter-version, or pin one in environment.flutter of the '
+                  "app's pubspec.yaml.",
             ),
           ),
         );

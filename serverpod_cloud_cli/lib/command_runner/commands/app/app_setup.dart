@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy/prepare_project_files.dart'
     show TenantProject;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
@@ -8,24 +9,30 @@ import 'package:serverpod_cloud_cli/util/flutter_app_identifier.dart';
 import 'package:serverpod_cloud_cli/util/flutter_platform.dart';
 import 'package:serverpod_cloud_cli/util/flutter_release_setup.dart';
 import 'package:serverpod_cloud_cli/util/flutter_sdk_selector.dart';
+import 'package:serverpod_cloud_cli/util/local_flutter_sdk.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
-import 'package:serverpod_cloud_cli/util/tool_versions_io.dart';
 
 import 'app_doctor_check.dart';
 
 /// Checks of the local setup of a Flutter app that publishing depends on.
-/// Reads the app's project files only; it calls no service.
+/// Reads the app's project files and the version of the local Flutter SDK;
+/// it calls no service.
 abstract class AppSetup {
   /// Selects the Flutter release version to build the app in
-  /// [appDirectory] with, from [commandLineVersion], [configuredVersion],
-  /// a `.tool-versions` file in [appDirectory] or the workspace root, or the
-  /// app's pubspec, checked against the Flutter SDK constraint in the
-  /// lockfile of [rootDirectory]. [configuredVersion] comes from the project
-  /// configuration file [configFileName]. See
+  /// [appDirectory] with, from [commandLineVersion], the app's pubspec,
+  /// [configuredVersion], or the Flutter SDK installed on this machine,
+  /// checked against the Flutter SDK constraint in the lockfile of
+  /// [rootDirectory].
+  /// [configuredVersion] comes from the project configuration file
+  /// [configFileName]. See
   /// [FlutterSdkSelector.selectFlutterVersionWithSource].
   ///
-  /// [rootDirectory] is the workspace root when [isWorkspace], or else
-  /// [appDirectory].
+  /// The local Flutter SDK is read with [readLocalFlutterVersion] only when
+  /// no other source requests a version. Why it cannot be read is logged to
+  /// [logger].
+  ///
+  /// [rootDirectory] is the workspace root when the app is resolved in a
+  /// Dart workspace, or else [appDirectory].
   ///
   /// Returns the version with the source it was requested in, or null if
   /// none is requested.
@@ -33,14 +40,15 @@ abstract class AppSetup {
   /// Throws [FailureException] if the lockfile or the app's pubspec cannot
   /// be read, or if the requested version is not a release version or is
   /// below the lockfile's Flutter SDK constraint.
-  static ({String version, String source})? selectFlutterVersion(
+  static Future<({String version, String source})?> selectFlutterVersion(
     Directory appDirectory, {
     required Directory rootDirectory,
-    required bool isWorkspace,
     required String? commandLineVersion,
     required String? configuredVersion,
     required String configFileName,
-  }) {
+    required LocalFlutterVersionReader readLocalFlutterVersion,
+    required CommandLogger logger,
+  }) async {
     final lockfileFlutterSdk = TenantProjectPubspec.readLockfileFlutterSdk(
       File(p.join(rootDirectory.path, 'pubspec.lock')),
     );
@@ -48,18 +56,24 @@ abstract class AppSetup {
       throw FailureException(errors: lockfileFlutterSdk.issues);
     }
 
-    return FlutterSdkSelector.selectFlutterVersionWithSource(
-      commandLineVersion: commandLineVersion,
-      scloudVersion: configuredVersion,
-      scloudFileName: configFileName,
-      toolVersionsVersion: ToolVersionsIO.readFlutterVersionFromToolVersions(
-        <Directory>[appDirectory, if (isWorkspace) rootDirectory],
-      ),
-      pubspecVersionConstraint: TenantProjectPubspec.fromProjectDir(
-        appDirectory,
-      ).environmentFlutterConstraint(),
-      lockVersionConstraint: lockfileFlutterSdk.constraint,
-    );
+    final pubspecVersionConstraint = TenantProjectPubspec.fromProjectDir(
+      appDirectory,
+    ).environmentFlutterConstraint();
+
+    ({String version, String source})? select({String? localVersion}) =>
+        FlutterSdkSelector.selectFlutterVersionWithSource(
+          commandLineVersion: commandLineVersion,
+          scloudVersion: configuredVersion,
+          scloudFileName: configFileName,
+          pubspecVersionConstraint: pubspecVersionConstraint,
+          localVersion: localVersion,
+          lockVersionConstraint: lockfileFlutterSdk.constraint,
+        );
+
+    return select() ??
+        select(
+          localVersion: await readLocalFlutterVersion(appDirectory, logger),
+        );
   }
 
   /// Checks whether the Flutter app in [appDirectory] is set up to be
@@ -67,9 +81,11 @@ abstract class AppSetup {
   /// the [defaultPlatforms] it has code for.
   ///
   /// The whole app gets a Flutter version check, which selects the version
-  /// as publishing does, from [flutterVersionOverride], then
-  /// [configuredFlutterVersion], then the app's project files. It warns when
-  /// no version is requested.
+  /// as publishing does, from [flutterVersionOverride], then the app's
+  /// project files, then [configuredFlutterVersion], then the local Flutter
+  /// SDK read with [readLocalFlutterVersion]. It warns when no
+  /// version is requested. Why the local Flutter SDK cannot be read is
+  /// logged to [logger].
   ///
   /// Each platform gets an app identifier check, which reads the identifier
   /// from [configuredAppIdentifiers] or else from the app's project files.
@@ -81,7 +97,7 @@ abstract class AppSetup {
   ///
   /// Throws [FailureException] if [platforms] is null and the app has code
   /// for none of the [defaultPlatforms].
-  static List<AppDoctorCheck> check(
+  static Future<List<AppDoctorCheck>> check(
     Directory appDirectory, {
     required List<FlutterPlatform> defaultPlatforms,
     Set<FlutterPlatform>? platforms,
@@ -89,16 +105,20 @@ abstract class AppSetup {
     required String configFileName,
     String? flutterVersionOverride,
     String? configuredFlutterVersion,
-  }) {
+    required LocalFlutterVersionReader readLocalFlutterVersion,
+    required CommandLogger logger,
+  }) async {
     final requestedPlatforms =
         platforms ??
         TenantProject.presentDefaultPlatforms(appDirectory, defaultPlatforms);
     return [
-      _flutterVersionCheck(
+      await _flutterVersionCheck(
         appDirectory,
         commandLineVersion: flutterVersionOverride,
         configuredVersion: configuredFlutterVersion,
         configFileName: configFileName,
+        readLocalFlutterVersion: readLocalFlutterVersion,
+        logger: logger,
       ),
       for (final platform in FlutterPlatform.values)
         if (requestedPlatforms.contains(platform)) ...[
@@ -134,12 +154,14 @@ abstract class AppSetup {
 
   /// Checks the Flutter version the app in [appDirectory] would be built
   /// with. See [selectFlutterVersion].
-  static AppDoctorCheck _flutterVersionCheck(
+  static Future<AppDoctorCheck> _flutterVersionCheck(
     Directory appDirectory, {
     required String? commandLineVersion,
     required String? configuredVersion,
     required String configFileName,
-  }) {
+    required LocalFlutterVersionReader readLocalFlutterVersion,
+    required CommandLogger logger,
+  }) async {
     const kind = AppDoctorCheckKind.flutterVersion;
     final ({String version, String source})? selected;
     try {
@@ -150,13 +172,14 @@ abstract class AppSetup {
         appDirectory,
         isWorkspaceResolved: isWorkspace,
       );
-      selected = selectFlutterVersion(
+      selected = await selectFlutterVersion(
         appDirectory,
         rootDirectory: rootDirectory,
-        isWorkspace: isWorkspace,
         commandLineVersion: commandLineVersion,
         configuredVersion: configuredVersion,
         configFileName: configFileName,
+        readLocalFlutterVersion: readLocalFlutterVersion,
+        logger: logger,
       );
     } on FailureException catch (e) {
       return _failed(null, kind, e);

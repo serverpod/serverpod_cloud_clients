@@ -5,20 +5,25 @@ import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
 abstract final class FlutterSdkSelector {
   static final _releaseVersion = RegExp(r'^\d{1,4}\.\d{1,4}\.\d{1,4}$');
-  static const _asdfStableSuffix = '-stable';
+
+  /// The source of a version read from the Flutter SDK installed on this
+  /// machine, as messages name it.
+  static const localSource = 'local Flutter SDK';
 
   /// Selects the Flutter release version to build an app with, such as
   /// `3.38.4`.
   ///
   /// The requested version is the first of [commandLineVersion],
-  /// [scloudVersion], [toolVersionsVersion] and [pubspecVersionConstraint]
-  /// that holds a value. The rest are ignored.
+  /// [pubspecVersionConstraint], [scloudVersion] and [localVersion] that
+  /// holds a value. The rest are ignored.
+  ///
+  /// [localVersion] is the version of the Flutter SDK installed on this
+  /// machine, which the app is built with locally.
   ///
   /// [scloudVersion] comes from the project configuration file
   /// [scloudFileName], which messages name as its source.
   ///
-  /// A value is a Flutter release version. The `-stable` suffix asdf writes
-  /// in `.tool-versions`, as in `3.38.4-stable`, is dropped.
+  /// A value is a Flutter release version.
   ///
   /// [pubspecVersionConstraint] is a request only when it pins a single
   /// version, such as `3.38.4`. A range or a caret constraint requests no
@@ -33,23 +38,24 @@ abstract final class FlutterSdkSelector {
   /// Returns null when no version is requested.
   ///
   /// Throws [FailureException] if the requested value is not a release
-  /// version, if [lockVersionConstraint] cannot be parsed, or if the
+  /// version, such as a local Flutter SDK on the beta channel, if
+  /// [lockVersionConstraint] cannot be parsed, or if the
   /// selected version is below [lockVersionConstraint] or
   /// [pubspecVersionConstraint].
   static String? selectFlutterVersion({
     String? commandLineVersion,
     String? scloudVersion,
     String scloudFileName = ProjectConfigFileConstants.defaultFileName,
-    String? toolVersionsVersion,
     String? pubspecVersionConstraint,
+    String? localVersion,
     String? lockVersionConstraint,
   }) {
     return selectFlutterVersionWithSource(
       commandLineVersion: commandLineVersion,
       scloudVersion: scloudVersion,
       scloudFileName: scloudFileName,
-      toolVersionsVersion: toolVersionsVersion,
       pubspecVersionConstraint: pubspecVersionConstraint,
+      localVersion: localVersion,
       lockVersionConstraint: lockVersionConstraint,
     )?.version;
   }
@@ -65,15 +71,15 @@ abstract final class FlutterSdkSelector {
     String? commandLineVersion,
     String? scloudVersion,
     String scloudFileName = ProjectConfigFileConstants.defaultFileName,
-    String? toolVersionsVersion,
     String? pubspecVersionConstraint,
+    String? localVersion,
     String? lockVersionConstraint,
   }) {
     final requested = _firstRequested([
       (commandLineVersion, '--flutter-version flag'),
-      (scloudVersion, scloudFileName),
-      (toolVersionsVersion, '.tool-versions'),
       (_singleVersion(pubspecVersionConstraint), 'pubspec.yaml'),
+      (scloudVersion, scloudFileName),
+      (localVersion, localSource),
     ]);
     if (requested == null) {
       return null;
@@ -84,7 +90,10 @@ abstract final class FlutterSdkSelector {
     if (selected == null) {
       throw FailureException(
         error: 'Unsupported Flutter version "$value" (from $source).',
-        hint: 'Use a Flutter release version such as 3.38.4.',
+        hint:
+            'Use a Flutter release version such as 3.38.4 with '
+            '--flutter-version, or pin one in environment.flutter of the '
+            "app's pubspec.yaml.",
       );
     }
 
@@ -141,12 +150,9 @@ abstract final class FlutterSdkSelector {
     }
   }
 
-  /// The release version [value] names, or null if it names none.
+  /// [value] when it is a release version, or else null.
   static String? _normalize(String value) {
-    final version = value.endsWith(_asdfStableSuffix)
-        ? value.substring(0, value.length - _asdfStableSuffix.length)
-        : value;
-    return _releaseVersion.hasMatch(version) ? version : null;
+    return _releaseVersion.hasMatch(value) ? value : null;
   }
 
   /// The versions at or above the lower bound of the pubspec [constraint],

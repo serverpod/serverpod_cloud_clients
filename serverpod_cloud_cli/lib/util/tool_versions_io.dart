@@ -14,15 +14,6 @@ abstract final class ToolVersionsIO {
     Iterable<Directory> searchRoots,
   ) => _readToolVersion(searchRoots, 'dart');
 
-  /// Looks under each directory in [searchRoots] (in order) for
-  /// `.tool-versions` and returns the `flutter` tool version from the first
-  /// file that defines one, such as `3.38.4-stable`.
-  ///
-  /// Returns `null` if no matching file or `flutter` line is found.
-  static String? readFlutterVersionFromToolVersions(
-    Iterable<Directory> searchRoots,
-  ) => _readToolVersion(searchRoots, 'flutter');
-
   static String? _readToolVersion(
     Iterable<Directory> searchRoots,
     String tool,

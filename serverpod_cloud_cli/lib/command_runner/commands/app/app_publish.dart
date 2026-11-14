@@ -12,6 +12,7 @@ import 'package:serverpod_cloud_cli/util/flutter_app_identifier.dart';
 import 'package:serverpod_cloud_cli/util/flutter_app_name.dart';
 import 'package:serverpod_cloud_cli/util/flutter_platform.dart';
 import 'package:serverpod_cloud_cli/util/git_metadata.dart';
+import 'package:serverpod_cloud_cli/util/local_flutter_sdk.dart';
 
 import 'app_build_progress.dart';
 import 'app_build_status_formatter.dart';
@@ -35,10 +36,10 @@ abstract class AppPublish {
   /// configuration file [configFileName].
   ///
   /// The builds are made with the Flutter release version of
-  /// [flutterVersionOverride], or else of [configuredFlutterVersion], or
-  /// else the one a `.tool-versions` file in [appDirectory] or its
-  /// workspace root pins, or else the single version the app's pubspec
-  /// requires. With none of them, the builds use the stable channel.
+  /// [flutterVersionOverride], or else the single version the app's pubspec
+  /// requires, or else of [configuredFlutterVersion], or else the version of
+  /// the local Flutter SDK, read with [readLocalFlutterVersion]. With none of them, the builds use the
+  /// stable channel.
   ///
   /// When Serverpod Cloud reports that the builds wait in the queue behind
   /// other builds of the account, a note says so before the builds are
@@ -76,6 +77,7 @@ abstract class AppPublish {
     required String configFileName,
     String? flutterVersionOverride,
     String? configuredFlutterVersion,
+    required LocalFlutterVersionReader readLocalFlutterVersion,
     bool awaitBuilds = true,
     bool showFiles = false,
     bool wetRun = false,
@@ -112,14 +114,15 @@ abstract class AppPublish {
         ),
     };
 
-    final flutterVersion = AppSetup.selectFlutterVersion(
+    final flutterVersion = (await AppSetup.selectFlutterVersion(
       appDirectory,
       rootDirectory: preparer.rootDirectory,
-      isWorkspace: preparer.isWorkspace,
       commandLineVersion: flutterVersionOverride,
       configuredVersion: configuredFlutterVersion,
       configFileName: configFileName,
-    )?.version;
+      readLocalFlutterVersion: readLocalFlutterVersion,
+      logger: logger,
+    ))?.version;
     if (flutterVersion == null) {
       logger.debug('No Flutter version requested, building with stable.');
     } else {

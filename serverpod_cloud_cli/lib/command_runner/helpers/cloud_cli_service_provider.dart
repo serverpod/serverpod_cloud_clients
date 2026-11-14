@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
@@ -5,6 +6,7 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart
 import 'package:serverpod_cloud_cli/command_runner/helpers/build_token_provider.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/scloud_settings.dart';
 import 'package:serverpod_cloud_cli/util/cli_authentication_key_manager.dart';
+import 'package:serverpod_cloud_cli/util/local_flutter_sdk.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_shared/serverpod_cloud_shared.dart';
 
@@ -19,6 +21,7 @@ class CloudCliServiceProvider {
   final Client Function(GlobalConfiguration globalCfg)? _apiClientFactory;
   late final FileUploaderFactory _fileUploaderFactory;
   late final FileDownloaderFactory _fileDownloaderFactory;
+  late final LocalFlutterVersionReader _localFlutterVersionReader;
 
   bool _initialized = false;
   late GlobalConfiguration _globalConfiguration;
@@ -31,12 +34,19 @@ class CloudCliServiceProvider {
     Client Function(GlobalConfiguration globalCfg)? apiClientFactory,
     FileUploaderFactory? fileUploaderFactory,
     FileDownloaderFactory? fileDownloaderFactory,
+    LocalFlutterVersionReader? localFlutterVersionReader,
   }) : _apiClientFactory = apiClientFactory {
     _fileUploaderFactory = fileUploaderFactory ?? _createFileUploader;
     _fileDownloaderFactory = fileDownloaderFactory ?? _createFileDownloader;
+    _localFlutterVersionReader =
+        localFlutterVersionReader ?? _readLocalFlutterVersion;
   }
 
   bool get initialized => _initialized;
+
+  /// Reads the version of the Flutter SDK installed on this machine.
+  LocalFlutterVersionReader get localFlutterVersionReader =>
+      _localFlutterVersionReader;
 
   void initialize({
     required GlobalConfiguration globalConfiguration,
@@ -148,3 +158,8 @@ final class _ServerpodFileUploader implements FileUploaderClient {
     return success;
   }
 }
+
+Future<String?> _readLocalFlutterVersion(
+  Directory appDirectory,
+  CommandLogger logger,
+) => LocalFlutterSdk.readFrameworkVersion(appDirectory, logger: logger);

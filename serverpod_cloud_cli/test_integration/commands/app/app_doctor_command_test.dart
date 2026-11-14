@@ -20,12 +20,19 @@ void main() {
   final client = ClientMock(
     authKeyProvider: InMemoryKeyManager.authenticated(),
   );
+  String? localFlutterVersion;
   final cli = CloudCliCommandRunner.create(
     logger: logger,
-    serviceProvider: CloudCliServiceProvider(apiClientFactory: (_) => client),
+    serviceProvider: CloudCliServiceProvider(
+      apiClientFactory: (_) => client,
+      localFlutterVersionReader: (_, _) async => localFlutterVersion,
+    ),
   );
 
-  tearDown(() => logger.clear());
+  tearDown(() {
+    logger.clear();
+    localFlutterVersion = null;
+  });
 
   test('Given app doctor command when instantiated '
       'then it does not require login', () {
@@ -224,7 +231,9 @@ void main() {
           containsAllInOrder([
             '  ✗ Flutter version: Unsupported Flutter version "beta" '
                 '(from --flutter-version flag).',
-            '    Use a Flutter release version such as 3.38.4.',
+            '    Use a Flutter release version such as 3.38.4 with '
+                "--flutter-version, or pin one in environment.flutter of the app's "
+                'pubspec.yaml.',
           ]),
         );
       });
@@ -286,6 +295,40 @@ void main() {
         expect(logger.successCalls, isEmpty);
       },
     );
+  });
+
+  group('Given a Flutter app set up for publishing without a requested '
+      'Flutter version and a local Flutter SDK', () {
+    late Future<void> commandResult;
+
+    setUp(() async {
+      await ProjectFactory.nonWorkspaceFlutterAppDir(
+        withFlutterConstraint: '>=3.29.0',
+        contents: [
+          ProjectFactory.flutterAndroidDir(
+            releaseSigning: ProjectFactory.serverpodCloudReleaseSigning,
+          ),
+        ],
+      ).create();
+      localFlutterVersion = '3.38.4';
+
+      commandResult = cli.run([
+        'app',
+        'doctor',
+        '--app-dir',
+        d.path('project_flutter'),
+      ]);
+    });
+
+    test('when checking the app then the Flutter version check passes '
+        'with the version of the local Flutter SDK', () async {
+      await commandResult;
+
+      expect(
+        logger.lineCalls.map((call) => call.line),
+        contains('  ✓ Flutter version: 3.38.4 (from local Flutter SDK)'),
+      );
+    });
   });
 
   group('Given a Flutter app as flutter create writes it', () {
@@ -525,11 +568,18 @@ project:
       });
     });
 
-    group('and a scloud.yaml that sets the Flutter version and the Android '
+    group('and a Flutter SDK range in the pubspec of the app '
+        'and a scloud.yaml that sets the Flutter version and the Android '
         'package name', () {
       setUp(() async {
         await d.dir('monorepo', [
           d.dir('project_flutter', [
+            d.file(
+              'pubspec.yaml',
+              ProjectFactory.serverpodFlutterAppPubspec(
+                withFlutterConstraint: '">=3.29.0"',
+              ),
+            ),
             ProjectFactory.flutterAndroidDir(
               applicationId: 'com.example.app',
               releaseSigning: ProjectFactory.serverpodCloudReleaseSigning,
