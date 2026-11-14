@@ -404,6 +404,64 @@ void main() {
     });
   });
 
+  group('Given an iOS build that failed because the Apple team has no room '
+      'for another certificate', () {
+    final uploadId = const Uuid().v4obj();
+
+    setUp(() {
+      _stubSetup(
+        client,
+        AppPublishingSetupBuilder().withAndroidStore(null).build(),
+      );
+      _stubLatestBuilds(client, [
+        AppBuildSummaryBuilder()
+            .withUploadId(uploadId)
+            .withPlatform(AppPlatform.ios)
+            .withStatus(AppBuildStatus.failed)
+            .withFailureReason(
+              AppBuildFailureReason.signingCertificateLimitReached,
+            )
+            .build(),
+      ]);
+    });
+
+    test('when showing the status '
+        'then the failure names the certificate limit and links to '
+        "Apple's certificates page, "
+        'above the command to read the log', () async {
+      await cli.run(['app', 'status', '--project', _projectId]);
+
+      expect(
+        logger.terminalCommandCalls,
+        contains(
+          isA<TerminalCommandCall>()
+              .having(
+                (call) => call.message,
+                'message',
+                allOf(
+                  startsWith(
+                    'The iOS build failed. '
+                    'Apple has no room for another certificate.\n',
+                  ),
+                  contains(
+                    '\nOpen Certificates: '
+                    'https://developer.apple.com/account/resources/certificates/list\n',
+                  ),
+                  endsWith('\nRead the log:'),
+                ),
+              )
+              .having(
+                (call) => call.command,
+                'command',
+                endsWith(
+                  ' app log $uploadId --platform ios --project $_projectId',
+                ),
+              ),
+        ),
+      );
+    });
+  });
+
   group('Given a cancelled iOS build', () {
     final uploadId = const Uuid().v4obj();
 

@@ -1,6 +1,7 @@
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/app/app_build_status_formatter.dart';
+import 'package:serverpod_cloud_cli/shared/helpers/console_urls.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -312,6 +313,159 @@ void main() {
     );
   });
 
+  test('Given a build that failed for an unknown reason '
+      'when getting its advice error '
+      'then it only says the build failed', () {
+    final build = AppBuildSummaryBuilder()
+        .withStatus(AppBuildStatus.failed)
+        .withFailureReason(AppBuildFailureReason.unknown)
+        .build();
+
+    expect(
+      AppBuildStatusFormatter.adviceError(
+        AppPlatform.ios,
+        build,
+        projectId: 'project-id',
+        baseCommand: 'scloud',
+      ),
+      'The iOS build failed.',
+    );
+  });
+
+  test('Given a build whose API key Apple rejected '
+      'when getting its advice error '
+      'then it links to the setup guide of the project in the console', () {
+    final build = AppBuildSummaryBuilder()
+        .withStatus(AppBuildStatus.failed)
+        .withFailureReason(AppBuildFailureReason.storeKeyRejected)
+        .build();
+
+    expect(
+      AppBuildStatusFormatter.adviceError(
+        AppPlatform.ios,
+        build,
+        projectId: 'project-id',
+        baseCommand: 'scloud',
+      ),
+      endsWith(
+        '\nOpen setup: ${getAppStoreSetupUrl('project-id', AppPlatform.ios)}',
+      ),
+    );
+  });
+
+  test('Given a build the store refused as signed for debugging '
+      'when getting its advice error '
+      'then it names app doctor with the base command', () {
+    final build = AppBuildSummaryBuilder()
+        .withPlatform(AppPlatform.android)
+        .withStatus(AppBuildStatus.builtNotUploaded)
+        .withFailureReason(AppBuildFailureReason.debugSigned)
+        .build();
+
+    expect(
+      AppBuildStatusFormatter.adviceError(
+        AppPlatform.android,
+        build,
+        projectId: 'project-id',
+        baseCommand: 'serverpod cloud',
+      ),
+      contains('Run serverpod cloud app doctor to see what to change.'),
+    );
+  });
+
+  test('Given an Android build the store refused for permission '
+      'when getting its advice error '
+      'then it links to the setup guide of the project in the console', () {
+    final build = AppBuildSummaryBuilder()
+        .withPlatform(AppPlatform.android)
+        .withStatus(AppBuildStatus.builtNotUploaded)
+        .withFailureReason(AppBuildFailureReason.storePermissionDenied)
+        .build();
+
+    expect(
+      AppBuildStatusFormatter.adviceError(
+        AppPlatform.android,
+        build,
+        projectId: 'project-id',
+        baseCommand: 'scloud',
+      ),
+      endsWith(
+        '\nOpen setup: '
+        '${getAppStoreSetupUrl('project-id', AppPlatform.android)}',
+      ),
+    );
+  });
+
+  test('Given an iOS build the store refused for permission '
+      'when getting its advice error '
+      'then it links to the API keys of App Store Connect', () {
+    final build = AppBuildSummaryBuilder()
+        .withStatus(AppBuildStatus.builtNotUploaded)
+        .withFailureReason(AppBuildFailureReason.storePermissionDenied)
+        .build();
+
+    expect(
+      AppBuildStatusFormatter.adviceError(
+        AppPlatform.ios,
+        build,
+        projectId: 'project-id',
+        baseCommand: 'scloud',
+      ),
+      endsWith(
+        '\nOpen App Store Connect: '
+        'https://appstoreconnect.apple.com/access/integrations/api',
+      ),
+    );
+  });
+
+  test('Given an Android build the store has no app for '
+      'when getting its advice error '
+      'then it ends with the command to download the build', () {
+    final build = AppBuildSummaryBuilder()
+        .withUploadId(
+          UuidValue.fromString('43f78985-c5e5-47c9-8cee-eb028076d670'),
+        )
+        .withPlatform(AppPlatform.android)
+        .withStatus(AppBuildStatus.builtNotUploaded)
+        .withFailureReason(AppBuildFailureReason.storeAppNotFound)
+        .build();
+
+    expect(
+      AppBuildStatusFormatter.adviceError(
+        AppPlatform.android,
+        build,
+        projectId: 'project-id',
+        baseCommand: 'scloud',
+      ),
+      endsWith(
+        "Later builds upload on their own.\n"
+        'Download build: scloud app artifacts '
+        '43f78985-c5e5-47c9-8cee-eb028076d670 --project project-id',
+      ),
+    );
+  });
+
+  test('Given an iOS build the store has no app for '
+      'when getting its advice error '
+      'then it links to the apps of App Store Connect', () {
+    final build = AppBuildSummaryBuilder()
+        .withStatus(AppBuildStatus.builtNotUploaded)
+        .withFailureReason(AppBuildFailureReason.storeAppNotFound)
+        .build();
+
+    expect(
+      AppBuildStatusFormatter.adviceError(
+        AppPlatform.ios,
+        build,
+        projectId: 'project-id',
+        baseCommand: 'scloud',
+      ),
+      endsWith(
+        '\nOpen App Store Connect: https://appstoreconnect.apple.com/apps',
+      ),
+    );
+  });
+
   group('Given a log command', () {
     const logCommand = 'scloud app log upload-id --platform android';
 
@@ -328,8 +482,42 @@ void main() {
           AppPlatform.android,
           build,
           logCommand: logCommand,
+          projectId: 'project-id',
+          baseCommand: 'scloud',
         ),
         'The Android build failed. Find out why in the logs: $logCommand',
+      );
+    });
+
+    test('and a build that failed because the Apple team has no room for '
+        'another certificate '
+        'when getting its follow error '
+        "then it names the certificate limit and links to Apple's "
+        'certificates page, then points to the log', () {
+      final build = AppBuildSummaryBuilder()
+          .withStatus(AppBuildStatus.failed)
+          .withFailureReason(
+            AppBuildFailureReason.signingCertificateLimitReached,
+          )
+          .build();
+
+      expect(
+        AppBuildStatusFormatter.followError(
+          AppPlatform.ios,
+          build,
+          logCommand: logCommand,
+          projectId: 'project-id',
+          baseCommand: 'scloud',
+        ),
+        'The iOS build failed. Apple has no room for another certificate.\n'
+        'Your Apple team already has as many distribution certificates as '
+        'Apple allows. Revoke a Distribution certificate no one on your team '
+        "still uses, then publish again. If you're not sure, ask your team's "
+        'admin before you revoke it. Your apps on the App Store and '
+        'TestFlight are not affected.\n'
+        'Open Certificates: '
+        'https://developer.apple.com/account/resources/certificates/list\n'
+        'Read the log: $logCommand',
       );
     });
 
@@ -345,6 +533,8 @@ void main() {
           AppPlatform.android,
           build,
           logCommand: logCommand,
+          projectId: 'project-id',
+          baseCommand: 'scloud',
         ),
         'The Android build was built but not uploaded to the store. '
         'Find out why in the logs: $logCommand',
@@ -363,6 +553,8 @@ void main() {
           AppPlatform.android,
           build,
           logCommand: logCommand,
+          projectId: 'project-id',
+          baseCommand: 'scloud',
         ),
         'The Android build did not finish. Find out why in the logs: '
         '$logCommand',
@@ -381,6 +573,8 @@ void main() {
           AppPlatform.android,
           build,
           logCommand: logCommand,
+          projectId: 'project-id',
+          baseCommand: 'scloud',
         ),
         'The Android build was cancelled.',
       );
@@ -398,6 +592,8 @@ void main() {
           AppPlatform.android,
           build,
           logCommand: logCommand,
+          projectId: 'project-id',
+          baseCommand: 'scloud',
         ),
         isNull,
       );

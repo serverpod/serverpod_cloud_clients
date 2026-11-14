@@ -722,6 +722,7 @@ Examples
         uploadId: UuidValue.withValidation(uploadId),
         platform: platform,
         watch: watch,
+        baseCommand: baseCommand,
       ),
       textOutputUi: AppLogTextUi(watch: watch),
     );

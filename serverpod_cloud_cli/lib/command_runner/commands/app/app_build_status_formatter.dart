@@ -10,6 +10,8 @@ import 'package:ground_control_client/ground_control_client.dart'
         AppBuildStepStatus,
         AppPlatform;
 
+import 'app_build_failure_advice.dart';
+
 /// The progress of one stage of an app build.
 enum AppBuildStageState { pending, active, done, failed }
 
@@ -122,21 +124,88 @@ abstract class AppBuildStatusFormatter {
     };
   }
 
-  /// The error of the [build] for [platform] that a follow of its upload
-  /// reports, or null when it succeeded. A build that failed, was not
-  /// uploaded to the store, or did not finish points to [logCommand] for the
-  /// reason, such as `The Android build failed. Find out why in the logs:
-  /// scloud app log …`.
+  /// The error of the [build] for [platform] of project [projectId] that a
+  /// follow of its upload reports, or null when it succeeded. A build that
+  /// failed for a known reason gets the advice for it, as
+  /// [adviceError] has it, then [logCommand] to read its log. Any other
+  /// build that failed, was not uploaded to the store, or did not finish
+  /// points to [logCommand] for the reason, such as `The Android build
+  /// failed. Find out why in the logs: scloud app log …`.
   static String? followError(
     AppPlatform platform,
     AppBuildSummary build, {
     required String logCommand,
+    required String projectId,
+    required String baseCommand,
   }) {
     final error = summaryError(platform, build);
     if (error == null || build.status == AppBuildStatus.cancelled) {
       return error;
     }
-    return '$error Find out why in the logs: $logCommand';
+    final advice = AppBuildFailureAdvice.of(
+      build.failureReason,
+      platform,
+      projectId: projectId,
+      baseCommand: baseCommand,
+    );
+    if (advice == null) {
+      return '$error Find out why in the logs: $logCommand';
+    }
+    return '${_withAdvice(error, advice, build, projectId: projectId, baseCommand: baseCommand)}\nRead the log: $logCommand';
+  }
+
+  /// The error of the [build] for [platform] of project [projectId], as
+  /// [summaryError] has it, followed by what went wrong and what to do about
+  /// it when the build failed for a known reason, such as:
+  ///
+  /// ```text
+  /// The iOS build failed. Apple has no room for another certificate.
+  /// Your Apple team already has as many distribution certificates …
+  /// Open Certificates: https://developer.apple.com/…
+  /// ```
+  ///
+  /// Advice to upload the build by hand ends with the command to download
+  /// it. Commands in the advice are named with [baseCommand].
+  static String? adviceError(
+    AppPlatform platform,
+    AppBuildSummary? build, {
+    required String projectId,
+    required String baseCommand,
+  }) {
+    final error = summaryError(platform, build);
+    if (error == null || build == null) return error;
+    final advice = AppBuildFailureAdvice.of(
+      build.failureReason,
+      platform,
+      projectId: projectId,
+      baseCommand: baseCommand,
+    );
+    return advice == null
+        ? error
+        : _withAdvice(
+            error,
+            advice,
+            build,
+            projectId: projectId,
+            baseCommand: baseCommand,
+          );
+  }
+
+  static String _withAdvice(
+    String error,
+    AppBuildFailureAdvice advice,
+    AppBuildSummary build, {
+    required String projectId,
+    required String baseCommand,
+  }) {
+    return [
+      '$error ${advice.title}.',
+      advice.description,
+      if (advice.link case final link?) '${link.label}: ${link.url}',
+      if (advice.downloadsBuild)
+        'Download build: $baseCommand app artifacts ${build.uploadId} '
+            '--project $projectId',
+    ].join('\n');
   }
 
   /// The note that [queuedBuilds] have waited long in the queue, out of

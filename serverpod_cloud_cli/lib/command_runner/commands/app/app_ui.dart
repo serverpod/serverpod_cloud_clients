@@ -11,6 +11,7 @@ import 'package:serverpod_cloud_cli/util/flutter_platform.dart';
 import 'package:serverpod_cloud_cli/util/inline_tui/inline_tui.dart';
 import 'package:serverpod_cloud_cli/util/output/output.dart';
 
+import 'app_build_failure_advice.dart';
 import 'app_build_status_formatter.dart';
 import 'app_build_output.dart';
 import 'app_build_step_log.dart';
@@ -200,6 +201,22 @@ class AppStatusTextUi extends OutputWidget {
   OutputWidget? _buildHint(AppBuildSummary build) {
     final reason = AppBuildStatusFormatter.summaryError(build.platform, build);
     if (reason == null) return null;
+    final hasAdvice =
+        AppBuildFailureAdvice.of(
+          build.failureReason,
+          build.platform,
+          projectId: projectId,
+          baseCommand: baseCommand,
+        ) !=
+        null;
+    final advised = hasAdvice
+        ? AppBuildStatusFormatter.adviceError(
+            build.platform,
+            build,
+            projectId: projectId,
+            baseCommand: baseCommand,
+          )
+        : null;
     return switch (build.status) {
       AppBuildStatus.queued ||
       AppBuildStatus.waiting ||
@@ -211,6 +228,14 @@ class AppStatusTextUi extends OutputWidget {
       AppBuildStatus.failed || AppBuildStatus.cancelled
           when build.startedAt == null =>
         InfoTextWidget(reason, newParagraph: true),
+      AppBuildStatus.builtNotUploaded ||
+      AppBuildStatus.failed when advised != null => CommandHintTextWidget(
+        '$advised\nRead the log:',
+        command:
+            '$baseCommand app log ${build.uploadId} '
+            '--platform ${build.platform.name} --project $projectId',
+        newParagraph: true,
+      ),
       AppBuildStatus.builtNotUploaded ||
       AppBuildStatus.failed => CommandHintTextWidget(
         '$reason Find out why in the logs:',
