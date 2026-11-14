@@ -24,7 +24,6 @@ void main() {
         FlutterSdkSelector.selectFlutterVersion(
           commandLineVersion: '3.38.4',
           scloudVersion: '3.38.3',
-          toolVersionsVersion: '3.38.2',
           pubspecVersionConstraint: '3.38.1',
         ),
         '3.38.4',
@@ -32,25 +31,13 @@ void main() {
     });
 
     test('when selecting without a command line version '
-        'then the scloud.yaml version wins', () {
+        'then the pubspec.yaml version wins', () {
       expect(
         FlutterSdkSelector.selectFlutterVersion(
           scloudVersion: '3.38.3',
-          toolVersionsVersion: '3.38.2',
           pubspecVersionConstraint: '3.38.1',
         ),
-        '3.38.3',
-      );
-    });
-
-    test('when selecting with .tool-versions and pubspec.yaml versions '
-        'then the .tool-versions version wins', () {
-      expect(
-        FlutterSdkSelector.selectFlutterVersion(
-          toolVersionsVersion: '3.38.2',
-          pubspecVersionConstraint: '3.38.1',
-        ),
-        '3.38.2',
+        '3.38.1',
       );
     });
 
@@ -131,17 +118,6 @@ void main() {
           lockVersionConstraint: '>=3.38.0',
         ),
         throwsA(isA<FailureException>()),
-      );
-    });
-  });
-
-  group('Given an asdf Flutter version with the stable suffix', () {
-    test('when selecting then the version without the suffix is returned', () {
-      expect(
-        FlutterSdkSelector.selectFlutterVersion(
-          toolVersionsVersion: '3.38.4-stable',
-        ),
-        '3.38.4',
       );
     });
   });
@@ -260,22 +236,6 @@ void main() {
     });
   });
 
-  group('Given a Flutter version pinned only in .tool-versions', () {
-    test(
-      'when selecting with its source '
-      'then the version comes without its asdf suffix, from .tool-versions',
-      () {
-        expect(
-          FlutterSdkSelector.selectFlutterVersionWithSource(
-            toolVersionsVersion: '3.38.1-stable',
-            pubspecVersionConstraint: '>=3.29.0',
-          ),
-          (version: '3.38.1', source: '.tool-versions'),
-        );
-      },
-    );
-  });
-
   group('Given a Flutter version set in a project configuration file with '
       'its own name', () {
     test('when selecting with its source then the file name is the source', () {
@@ -316,6 +276,81 @@ void main() {
           pubspecVersionConstraint: '^3.38.0',
         ),
         '3.38.4',
+      );
+    });
+  });
+
+  group('Given a version of the local Flutter SDK', () {
+    test('when selecting with its source '
+        'then the local version is returned from the local Flutter SDK', () {
+      expect(
+        FlutterSdkSelector.selectFlutterVersionWithSource(
+          pubspecVersionConstraint: '^3.29.0',
+          localVersion: '3.38.4',
+        ),
+        (version: '3.38.4', source: 'local Flutter SDK'),
+      );
+    });
+
+    test('when selecting with a version in scloud.yaml '
+        'then the scloud.yaml version wins', () {
+      expect(
+        FlutterSdkSelector.selectFlutterVersion(
+          scloudVersion: '3.38.3',
+          localVersion: '3.38.4',
+        ),
+        '3.38.3',
+      );
+    });
+
+    test('when selecting with a version pinned in the pubspec '
+        'then the pubspec version wins', () {
+      expect(
+        FlutterSdkSelector.selectFlutterVersion(
+          pubspecVersionConstraint: '3.38.1',
+          localVersion: '3.38.4',
+        ),
+        '3.38.1',
+      );
+    });
+
+    test('when the local version is a pre-release '
+        'then throws FailureException with how to request a release', () {
+      expect(
+        () => FlutterSdkSelector.selectFlutterVersion(
+          localVersion: '3.39.0-0.1.pre',
+        ),
+        throwsA(
+          isA<FailureException>()
+              .having((e) => e.errors, 'errors', [
+                'Unsupported Flutter version "3.39.0-0.1.pre" '
+                    '(from local Flutter SDK).',
+              ])
+              .having(
+                (e) => e.hint,
+                'hint',
+                'Use a Flutter release version such as 3.38.4 with '
+                    '--flutter-version, or pin one in environment.flutter of the '
+                    "app's pubspec.yaml.",
+              ),
+        ),
+      );
+    });
+
+    test('when the local version is below the lockfile constraint '
+        'then throws FailureException naming the local Flutter SDK', () {
+      expect(
+        () => FlutterSdkSelector.selectFlutterVersion(
+          localVersion: '3.27.0',
+          lockVersionConstraint: '>=3.29.0',
+        ),
+        throwsA(
+          isA<FailureException>().having(
+            (e) => e.errors.single,
+            'error',
+            startsWith('The Flutter version 3.27.0 (from local Flutter SDK)'),
+          ),
+        ),
       );
     });
   });

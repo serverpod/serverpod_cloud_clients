@@ -91,18 +91,18 @@ class AppPublishFlutterVersionOption extends StringOption {
   /// The help text of the option of `app publish`.
   static const publishHelpText =
       'The Flutter release version to build the app with. '
-      'Defaults to project.flutterSdk in scloud.yaml, '
-      'or else to the version in a .tool-versions file, '
-      "or else to the single version the app's pubspec.yaml requires, "
+      "Defaults to the single version the app's pubspec.yaml requires, "
+      'or else to project.flutterSdk in scloud.yaml, '
+      'or else to the version of the local Flutter SDK, '
       'or else to the latest stable release.';
 
   /// The help text of the option of `app doctor`.
   static const doctorHelpText =
       'The Flutter release version to check the app against, as '
       '"app publish --flutter-version" would build it. '
-      'Defaults to project.flutterSdk in scloud.yaml, '
-      'or else to the version in a .tool-versions file, '
-      "or else to the single version the app's pubspec.yaml requires. "
+      "Defaults to the single version the app's pubspec.yaml requires, "
+      'or else to project.flutterSdk in scloud.yaml, '
+      'or else to the version of the local Flutter SDK. '
       'Without any of them, the build uses the latest stable release.';
 
   const AppPublishFlutterVersionOption({
@@ -408,6 +408,9 @@ Examples
           configFileName: _configFileName(configFile),
           flutterVersionOverride: flutterVersion,
           configuredFlutterVersion: config?.flutterSdk,
+          readLocalFlutterVersion:
+              runner.serviceProvider.localFlutterVersionReader,
+          logger: logger,
         );
       },
       textOutputUi: const AppDoctorTextUi(),
@@ -499,6 +502,7 @@ Examples
       configuredAppIdentifiers: config?.appIdentifiers ?? const {},
       flutterVersionOverride: flutterVersion,
       configuredFlutterVersion: config?.flutterSdk,
+      readLocalFlutterVersion: runner.serviceProvider.localFlutterVersionReader,
       configFileName: _configFileName(configFile),
       awaitBuilds: awaitBuilds,
       showFiles: commandConfig.value(AppPublishCommandOption.showFiles),

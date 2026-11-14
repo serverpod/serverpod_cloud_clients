@@ -137,36 +137,6 @@ void main() {
     );
   });
 
-  group('ToolVersionsIO.readFlutterVersionFromToolVersions -', () {
-    test('Given .tool-versions with flutter and dart entries when reading '
-        'the flutter version then returns the flutter version', () async {
-      await d.dir('flutter_project', [
-        d.file('.tool-versions', 'dart 3.10.0\nflutter 3.38.4-stable\n'),
-      ]).create();
-
-      expect(
-        ToolVersionsIO.readFlutterVersionFromToolVersions([
-          Directory(d.path('flutter_project')),
-        ]),
-        '3.38.4-stable',
-      );
-    });
-
-    test('Given .tool-versions without flutter entry when reading the '
-        'flutter version then returns null', () async {
-      await d.dir('dart_project', [
-        d.file('.tool-versions', 'dart 3.10.0\n'),
-      ]).create();
-
-      expect(
-        ToolVersionsIO.readFlutterVersionFromToolVersions([
-          Directory(d.path('dart_project')),
-        ]),
-        isNull,
-      );
-    });
-  });
-
   group('ToolVersionsIO.writeDartVersion -', () {
     test(
       'Given no .tool-versions file when writing then does not create file',

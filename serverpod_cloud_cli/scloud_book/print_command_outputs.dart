@@ -694,6 +694,7 @@ Future<void> _printOutputs({
       apiClientFactory: (final _) => client,
       fileUploaderFactory: RecordingFileUploader().factory,
       fileDownloaderFactory: downloader.factory,
+      localFlutterVersionReader: (final _, final _) async => null,
     ),
     adminUserMode: true,
     baseCommand: defaultBaseCommand,
