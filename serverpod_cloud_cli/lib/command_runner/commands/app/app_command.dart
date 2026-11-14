@@ -289,6 +289,7 @@ enum AppLogCommandOption<V> implements OptionDefinition<V> {
 }
 
 enum AppDoctorCommandOption<V> implements OptionDefinition<V> {
+  projectId(ProjectIdOption(excludeSettings: true)),
   appDir(AppPublishDirOption()),
   platforms(
     AppPublishPlatformsOption(
@@ -340,11 +341,9 @@ class CloudAppDoctorCommand extends CloudCliCommand<AppDoctorCommandOption> {
   @override
   final description =
       'Check whether the Flutter app is set up to be published: its Flutter '
-      'version, app identifiers, Android release signing, and iOS export '
-      'compliance. Exits with an error status when a check fails.';
-
-  @override
-  bool get requireLogin => false;
+      'version, the setup of each platform in the console, app identifiers, '
+      'Android release signing, iOS export compliance, and app icons. Exits '
+      'with an error status when a check fails.';
 
   @override
   bool get warnIfBillingOverdue => false;
@@ -364,7 +363,7 @@ Examples
 
   Check the app as it would be built with a specific Flutter version
 
-    \$ $baseCommand app doctor --flutter-version 3.38.4
+    \$ $baseCommand app doctor --flutter-version 3.50.0
 
   Check a Flutter app in a specific directory
 
@@ -380,6 +379,7 @@ Examples
     final Configuration<AppDoctorCommandOption> commandConfig,
     final CommandOutput output,
   ) async {
+    final projectId = commandConfig.value(AppDoctorCommandOption.projectId);
     final appDir = commandConfig.optionalValue(AppDoctorCommandOption.appDir);
     final platforms = commandConfig.optionalValue(
       AppDoctorCommandOption.platforms,
@@ -400,12 +400,18 @@ Examples
             appDir ??
             _configuredOrWorkspaceAppDirectory(runner, configFile, config);
         logger.debug('App directory is: ${appDirectory.path}');
+        final publishingSetup = await AppOperations.getPublishingSetup(
+          runner.serviceProvider.cloudApiClient,
+          projectId: projectId,
+        );
         return AppSetup.check(
           appDirectory,
           defaultPlatforms: AppPublishPlatformsOption.supportedPlatforms,
           platforms: platforms?.toSet(),
           configuredAppIdentifiers: config?.appIdentifiers ?? const {},
           configFileName: _configFileName(configFile),
+          projectId: projectId,
+          publishingSetup: publishingSetup,
           flutterVersionOverride: flutterVersion,
           configuredFlutterVersion: config?.flutterSdk,
           readLocalFlutterVersion:
@@ -450,7 +456,7 @@ Examples
 
   Publish the app built with a specific Flutter version
 
-    \$ $baseCommand app publish --flutter-version 3.38.4
+    \$ $baseCommand app publish --flutter-version 3.50.0
 
   Publish the app without waiting for its builds to finish
 

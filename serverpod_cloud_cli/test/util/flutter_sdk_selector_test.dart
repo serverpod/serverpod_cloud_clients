@@ -329,7 +329,7 @@ void main() {
               .having(
                 (e) => e.hint,
                 'hint',
-                'Use a Flutter release version such as 3.38.4 with '
+                'Use a Flutter release version such as 3.50.0 with '
                     '--flutter-version, or pin one in environment.flutter of the '
                     "app's pubspec.yaml.",
               ),

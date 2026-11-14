@@ -8,6 +8,9 @@ enum AppDoctorCheckKind {
   /// packages allow it.
   flutterVersion,
 
+  /// The platform's publishing setup in the console is complete.
+  consoleSetup,
+
   /// The iOS bundle ID or Android package name is set, and is not
   /// Flutter's `com.example` placeholder.
   appIdentifier,
@@ -19,6 +22,9 @@ enum AppDoctorCheckKind {
   /// The iOS app answers the export compliance question with
   /// `ITSAppUsesNonExemptEncryption`.
   exportCompliance,
+
+  /// The app icon is not the one `flutter create` gives the app.
+  appIcon,
 }
 
 /// The outcome of a check of `app doctor`.

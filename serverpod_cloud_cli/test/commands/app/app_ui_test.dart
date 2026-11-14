@@ -285,6 +285,80 @@ void main() {
     });
   });
 
+  group('Given passed app doctor checks of the iOS app', () {
+    late String stdout;
+
+    setUp(() async {
+      final io = await renderCommandUi(
+        const AppDoctorTextUi(),
+        data: const [
+          AppDoctorCheck(
+            platform: FlutterPlatform.ios,
+            kind: AppDoctorCheckKind.consoleSetup,
+            status: AppDoctorCheckStatus.passed,
+            detail: 'Set up',
+          ),
+          AppDoctorCheck(
+            platform: FlutterPlatform.ios,
+            kind: AppDoctorCheckKind.appIdentifier,
+            status: AppDoctorCheckStatus.passed,
+            detail: 'com.acme.app',
+          ),
+          AppDoctorCheck(
+            platform: FlutterPlatform.ios,
+            kind: AppDoctorCheckKind.exportCompliance,
+            status: AppDoctorCheckStatus.passed,
+            detail: 'Uses no non-exempt encryption',
+          ),
+          AppDoctorCheck(
+            platform: FlutterPlatform.ios,
+            kind: AppDoctorCheckKind.appIcon,
+            status: AppDoctorCheckStatus.passed,
+            detail: 'Not the default Flutter icon',
+          ),
+        ],
+      );
+      stdout = io.stdout;
+    });
+
+    test(
+      'when rendered then only the bundle ID shows what the check found',
+      () {
+        expect(
+          stdout,
+          contains(
+            'iOS\n'
+            '  ✓ App Store connection\n'
+            '  ✓ Bundle ID: com.acme.app\n'
+            '  ✓ Export compliance\n'
+            '  ✓ App icon\n',
+          ),
+        );
+      },
+    );
+  });
+
+  group('Given a passed console setup check of the Android app', () {
+    test(
+      'when rendered then it is named the Google Play Console connection',
+      () async {
+        final io = await renderCommandUi(
+          const AppDoctorTextUi(),
+          data: const [
+            AppDoctorCheck(
+              platform: FlutterPlatform.android,
+              kind: AppDoctorCheckKind.consoleSetup,
+              status: AppDoctorCheckStatus.passed,
+              detail: 'Set up',
+            ),
+          ],
+        );
+
+        expect(io.stdout, contains('  ✓ Google Play Console connection\n'));
+      },
+    );
+  });
+
   group('Given app doctor checks with one warning and no failure', () {
     late String stdout;
 
@@ -304,10 +378,14 @@ void main() {
       stdout = io.stdout;
     });
 
-    test('when rendered then the warning is marked under the app', () {
+    test('when rendered then the warning of the whole app opens the output '
+        'without a heading', () {
       expect(
         stdout,
-        contains('App\n  ! Flutter version: No Flutter version is requested.'),
+        startsWith(
+          '! Flutter version: No Flutter version is requested.\n'
+          '  Set project.flutterSdk.\n',
+        ),
       );
     });
 

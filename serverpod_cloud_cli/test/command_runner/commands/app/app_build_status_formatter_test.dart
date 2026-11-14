@@ -420,11 +420,8 @@ void main() {
 
   test('Given an Android build the store has no app for '
       'when getting its advice error '
-      'then it ends with the command to download the build', () {
+      'then it links to Play Console', () {
     final build = AppBuildSummaryBuilder()
-        .withUploadId(
-          UuidValue.fromString('43f78985-c5e5-47c9-8cee-eb028076d670'),
-        )
         .withPlatform(AppPlatform.android)
         .withStatus(AppBuildStatus.builtNotUploaded)
         .withFailureReason(AppBuildFailureReason.storeAppNotFound)
@@ -438,9 +435,9 @@ void main() {
         baseCommand: 'scloud',
       ),
       endsWith(
-        "Later builds upload on their own.\n"
-        'Download build: scloud app artifacts '
-        '43f78985-c5e5-47c9-8cee-eb028076d670 --project project-id',
+        "Create the app in Play Console with your app's package name, then "
+        'publish again.\n'
+        'Open Play Console: https://play.google.com/console',
       ),
     );
   });

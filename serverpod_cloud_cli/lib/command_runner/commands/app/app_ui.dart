@@ -345,10 +345,10 @@ class _StepLogsWidget extends OutputWidget {
   }
 }
 
-/// Shows the checks of `app doctor`, those of the whole app first and then
-/// those of each platform, each with what it found and how to address a
-/// warning or a failure, followed by a summary of the failures and
-/// warnings.
+/// Shows the checks of `app doctor`, those of the whole app first without a
+/// heading and then those of each platform under its name, each with what
+/// it found and how to address a warning or a failure, followed by a summary
+/// of the failures and warnings.
 class AppDoctorTextUi extends OutputWidget {
   const AppDoctorTextUi();
 
@@ -364,19 +364,20 @@ class AppDoctorTextUi extends OutputWidget {
       ])
         if (checks.any((check) => check.platform == platform))
           (
-            heading: platform == null ? 'App' : _flutterPlatformName(platform),
+            heading: platform == null ? null : _flutterPlatformName(platform),
+            indent: platform == null ? '' : '  ',
             checks: checks.where((check) => check.platform == platform),
           ),
     ];
     return OutputWidgetList([
       for (final (index, section) in sections.indexed) ...[
         if (index > 0) const LineTextWidget(),
-        LineTextWidget(section.heading),
+        if (section.heading case final heading?) LineTextWidget(heading),
         for (final check in section.checks) ...[
-          _DoctorCheckLineWidget(check),
+          _DoctorCheckLineWidget(check, indent: section.indent),
           if (check.hint case final hint?)
             for (final line in LineSplitter.split(hint))
-              LineTextWidget('    $line'),
+              LineTextWidget('${section.indent}  $line'),
         ],
       ],
       if (failed > 0)
@@ -402,11 +403,17 @@ int _count(List<AppDoctorCheck> checks, AppDoctorCheckStatus status) =>
 String _checks(int count) => count == 1 ? '1 check' : '$count checks';
 
 /// Renders one check of `app doctor` as a line with a mark coloured by its
-/// status, its name, and what it found.
+/// status, its name, and what it found. A passed check shows what it found
+/// only when that is a setting worth reading, like the Flutter version or
+/// the app identifier.
 class _DoctorCheckLineWidget extends OutputWidget {
   final AppDoctorCheck check;
 
-  const _DoctorCheckLineWidget(this.check);
+  /// The spaces before the mark: none for a check of the whole app, two for
+  /// a check under a platform heading.
+  final String indent;
+
+  const _DoctorCheckLineWidget(this.check, {required this.indent});
 
   @override
   void render({required final CommandLogger logger}) {
@@ -415,16 +422,34 @@ class _DoctorCheckLineWidget extends OutputWidget {
       AppDoctorCheckStatus.warning => ('!', cli.AnsiStyle.yellow),
       AppDoctorCheckStatus.failed => ('✗', cli.AnsiStyle.red),
     };
-    logger.line(
-      '  ${logger.wrapStyle(mark, style)} ${_checkName(check)}: '
-      '${check.detail}',
-    );
+    final line = '$indent${logger.wrapStyle(mark, style)} ${_checkName(check)}';
+    logger.line(_showsDetail(check) ? '$line: ${check.detail}' : line);
   }
+}
+
+bool _showsDetail(AppDoctorCheck check) {
+  if (check.status != AppDoctorCheckStatus.passed) return true;
+  return switch (check.kind) {
+    AppDoctorCheckKind.flutterVersion ||
+    AppDoctorCheckKind.appIdentifier => true,
+    AppDoctorCheckKind.consoleSetup ||
+    AppDoctorCheckKind.releaseSigning ||
+    AppDoctorCheckKind.exportCompliance ||
+    AppDoctorCheckKind.appIcon => false,
+  };
 }
 
 String _checkName(AppDoctorCheck check) {
   return switch (check.kind) {
     AppDoctorCheckKind.flutterVersion => 'Flutter version',
+    AppDoctorCheckKind.consoleSetup => switch (check.platform) {
+      FlutterPlatform.ios => 'App Store connection',
+      FlutterPlatform.android => 'Google Play Console connection',
+      null ||
+      FlutterPlatform.linux ||
+      FlutterPlatform.macos ||
+      FlutterPlatform.windows => 'Store connection',
+    },
     AppDoctorCheckKind.appIdentifier => switch (check.platform) {
       FlutterPlatform.ios => 'Bundle ID',
       FlutterPlatform.android => 'Package name',
@@ -435,6 +460,7 @@ String _checkName(AppDoctorCheck check) {
     },
     AppDoctorCheckKind.releaseSigning => 'Release signing',
     AppDoctorCheckKind.exportCompliance => 'Export compliance',
+    AppDoctorCheckKind.appIcon => 'App icon',
   };
 }
 

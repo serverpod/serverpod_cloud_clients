@@ -164,8 +164,7 @@ abstract class AppBuildStatusFormatter {
   /// Open Certificates: https://developer.apple.com/…
   /// ```
   ///
-  /// Advice to upload the build by hand ends with the command to download
-  /// it. Commands in the advice are named with [baseCommand].
+  /// Commands in the advice are named with [baseCommand].
   static String? adviceError(
     AppPlatform platform,
     AppBuildSummary? build, {
@@ -202,9 +201,6 @@ abstract class AppBuildStatusFormatter {
       '$error ${advice.title}.',
       advice.description,
       if (advice.link case final link?) '${link.label}: ${link.url}',
-      if (advice.downloadsBuild)
-        'Download build: $baseCommand app artifacts ${build.uploadId} '
-            '--project $projectId',
     ].join('\n');
   }
 

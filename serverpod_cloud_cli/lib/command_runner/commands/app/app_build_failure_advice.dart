@@ -22,15 +22,10 @@ class AppBuildFailureAdvice {
   /// it in the console.
   final ({String label, String url})? link;
 
-  /// Whether the fix is to download the build and upload it to the store by
-  /// hand.
-  final bool downloadsBuild;
-
   const AppBuildFailureAdvice._({
     required this.title,
     required this.description,
     this.link,
-    this.downloadsBuild = false,
   });
 
   /// The advice for a [platform] build of project [projectId] that failed
@@ -53,10 +48,9 @@ class AppBuildFailureAdvice {
         const AppBuildFailureAdvice._(
           title: "Google Play doesn't know this app yet",
           description:
-              "Create the app in Play Console if you haven't. A new app "
-              'takes its first build by hand: download this build and upload '
-              'it there once. Later builds upload on their own.',
-          downloadsBuild: true,
+              "Create the app in Play Console with your app's package name, "
+              'then publish again.',
+          link: (label: 'Open Play Console', url: _playConsole),
         ),
       AppBuildFailureReason.storeAppNotFound => const AppBuildFailureAdvice._(
         title: 'App Store Connect has no app for this bundle ID',

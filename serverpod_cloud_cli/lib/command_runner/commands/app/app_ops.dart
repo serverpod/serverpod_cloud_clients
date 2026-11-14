@@ -146,6 +146,29 @@ abstract class AppOperations {
     );
   }
 
+  /// Returns the publishing setup of project [projectId] in the console.
+  ///
+  /// Throws [FailureException] if the project is not found or the setup
+  /// cannot be read.
+  static Future<AppPublishingSetup> getPublishingSetup(
+    Client cloudApiClient, {
+    required String projectId,
+  }) async {
+    try {
+      return await cloudApiClient.appPublishing.getSetup(
+        cloudCapsuleId: projectId,
+      );
+    } on NotFoundException catch (e) {
+      throw FailureException(error: e.message);
+    } on Exception catch (e, stackTrace) {
+      throw FailureException.nested(
+        e,
+        stackTrace,
+        'Failed to read the publishing setup of the project.',
+      );
+    }
+  }
+
   /// The publishing setup of project [projectId], or null if it cannot be
   /// read.
   static Future<AppPublishingSetup?> _readSetup(
