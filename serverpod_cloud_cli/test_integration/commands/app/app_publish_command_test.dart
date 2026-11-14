@@ -1010,29 +1010,23 @@ void main() {
         ]);
       });
 
-      test('then the failure ends its advice with the command to download '
-          'the build', () async {
-        await commandResult.catchError((_) {});
+      test(
+        'then the failure advises creating the app in Play Console',
+        () async {
+          await commandResult.catchError((_) {});
 
-        expect(
-          logger.errorCalls.map((call) => call.message),
-          contains(
+          expect(
+            logger.errorCalls.map((call) => call.message),
             contains(
-              '\nDownload build: scloud app artifacts $uploadId '
-              '--project $_projectId\n',
+              contains(
+                "Create the app in Play Console with your app's package name, "
+                'then publish again.\n'
+                'Open Play Console: https://play.google.com/console',
+              ),
             ),
-          ),
-        );
-      });
-
-      test('then the download command is not logged again', () async {
-        await commandResult.catchError((_) {});
-
-        expect(
-          logger.infoCalls.map((call) => call.message),
-          isNot(contains(startsWith('Download the built app'))),
-        );
-      });
+          );
+        },
+      );
     });
 
     group('and an Android package name set in scloud.yaml '
@@ -1286,7 +1280,7 @@ project:
                   'Unsupported Flutter version "3.39.0-0.1.pre" '
                   '(from local Flutter SDK).',
               hint:
-                  'Use a Flutter release version such as 3.38.4 with '
+                  'Use a Flutter release version such as 3.50.0 with '
                   '--flutter-version, or pin one in environment.flutter of the '
                   "app's pubspec.yaml.",
             ),
@@ -1363,7 +1357,7 @@ project:
                   'Unsupported Flutter version "^3.38.0" '
                   '(from --flutter-version flag).',
               hint:
-                  'Use a Flutter release version such as 3.38.4 with '
+                  'Use a Flutter release version such as 3.50.0 with '
                   '--flutter-version, or pin one in environment.flutter of the '
                   "app's pubspec.yaml.",
             ),
@@ -2079,8 +2073,7 @@ project:
             equalsErrorCall(
               message:
                   'The Android package name com.example.project_flutter is '
-                  "Flutter's placeholder: android/app/build.gradle.kts sets "
-                  'applicationId to it.',
+                  "Flutter's placeholder.",
               hint:
                   'Set applicationId in android/app/build.gradle.kts to the '
                   "app's own Android package name, or set "
@@ -2148,8 +2141,7 @@ project:
               equalsErrorCall(
                 message:
                     'The Android package name com.example.app is '
-                    "Flutter's placeholder: scloud.yaml sets "
-                    'project.appIdentifiers.android to it.',
+                    "Flutter's placeholder.",
                 hint:
                     'Set project.appIdentifiers.android in scloud.yaml to the '
                     "app's own Android package name.",

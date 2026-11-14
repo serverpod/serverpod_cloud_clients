@@ -85,9 +85,7 @@ void checkConfiguredAppIdentifier(
   }
   if (!_isPlaceholder(identifier)) return;
   throw FailureException(
-    error:
-        "The $name $identifier is Flutter's placeholder: $configFileName sets "
-        'project.appIdentifiers.${platform.name} to it.',
+    error: "The $name $identifier is Flutter's placeholder.",
     hint:
         'Set project.appIdentifiers.${platform.name} in $configFileName to the '
         "app's own $name.",
@@ -240,9 +238,7 @@ String _single(
     }
     if (_isPlaceholder(identifier)) {
       throw FailureException(
-        error:
-            "The $name $identifier is Flutter's placeholder: $source sets "
-            '$setting to it.',
+        error: "The $name $identifier is Flutter's placeholder.",
         hint: _withConfigHint(
           "Set $setting in $source to the app's own $name",
           platform,

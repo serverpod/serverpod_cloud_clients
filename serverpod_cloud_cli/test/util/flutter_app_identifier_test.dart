@@ -40,9 +40,7 @@ void main() {
         () => readAppIdentifier(appDirectory(), FlutterPlatform.ios),
         throwsA(
           isA<FailureException>().having((e) => e.errors, 'errors', [
-            "The iOS bundle ID com.example.app is Flutter's placeholder: "
-                'ios/Runner.xcodeproj/project.pbxproj sets '
-                'PRODUCT_BUNDLE_IDENTIFIER to it.',
+            "The iOS bundle ID com.example.app is Flutter's placeholder.",
           ]),
         ),
       );

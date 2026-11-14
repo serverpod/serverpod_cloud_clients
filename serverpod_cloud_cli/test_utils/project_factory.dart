@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:serverpod_cloud_cli/constants.dart' show VersionConstants;
@@ -156,10 +157,21 @@ dependencies:
     String releaseSigning = '',
     String? displayName,
     Map<String, String> stringResources = const {},
+    bool withDefaultAppIcon = false,
   }) {
     return d.dir('android', [
       d.file('build.gradle.kts', ''),
       d.dir('app', [
+        if (withDefaultAppIcon)
+          d.dir('src', [
+            d.dir('main', [
+              d.dir('res', [
+                d.dir('mipmap-mdpi', [
+                  d.file('ic_launcher.png', base64Decode(_defaultAndroidIcon)),
+                ]),
+              ]),
+            ]),
+          ]),
         d.file('build.gradle.kts', """
 android {
     namespace = "$applicationId"
@@ -249,9 +261,18 @@ ${stringResources.entries.map((entry) => '  <string name="${entry.key}">${entry.
     bool? usesNonExemptEncryption,
     String? displayName = 'Acme',
     String? bundleName,
+    bool withDefaultAppIcon = false,
   }) {
     return d.dir('ios', [
       d.file('Podfile', ''),
+      if (withDefaultAppIcon)
+        d.dir('Runner', [
+          d.dir('Assets.xcassets', [
+            d.dir('AppIcon.appiconset', [
+              d.file('Icon-App-20x20@1x.png', base64Decode(_defaultIosIcon)),
+            ]),
+          ]),
+        ]),
       if (withInfoPlist || usesNonExemptEncryption != null)
         d.dir('Runner', [
           d.file('Info.plist', """
@@ -502,3 +523,13 @@ class SymLinkFactory {
     return file;
   }
 }
+
+/// The base64 content of the smallest Android launcher icon that
+/// `flutter create` writes, `mipmap-mdpi/ic_launcher.png`.
+const _defaultAndroidIcon =
+    'iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAIpQTFRFAAAAAVebVMX4Kbb2VMX4AVebKbb2VMX4VMX4Kbb2VMX4VMX4VMX4AVebB1ePVMX4AVebBENyKbb2UcT4VMX4ADxrAUJ1AU2KAU6LAVSVAVSWAVWXAVaZAVaaAVeaAVebAy1LAzFRBUJuBU2ABlOJHom6H43AIZXLIprSIpzVKbb2Mbn2UcT4VMX4UU+PBQAAABV0Uk5TABAQICAwMDCPn5+vv8/Pz+/v7+/vb7KPEwAAAKVJREFUSMft1MkSgjAQRdGIA86igoKirSIOiP//ew6J3WwMnYULU3nL1LnVuwhh9/zwTpt4zjvv/G99d0gbePW+X3kJfd0Bjq8WPE8F138K6Xu3stbLQvmiwOK7fxXosdB5IVrkVaH3csq/CyP/LOYM35xRcB03GJ92B4vLMR2ZFOcs2YJBcTrEqw3wi3y/WK4B2EW+i+IUgF9ME8CxinYAVhR/sgfbkVbaxFzJpwAAAABJRU5ErkJggg==';
+
+/// The base64 content of the smallest iOS app icon that `flutter create`
+/// writes, `AppIcon.appiconset/Icon-App-20x20@1x.png`.
+const _defaultIosIcon =
+    'iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAMAAAC6V+0/AAAAbFBMVEX///9Uxfj6/v/3/P8BV5v0+/+O2frZ8v2Y3fuL2PqH1vpWj72T2/sptva/1Obv+v7g9f73+vy+6fyE1frv9fl10PlXx/g8vfcos/Po9/7R7/3G7P3x9vpozPlNwvjA1uZLm8tbmsAQbaUBUpIS2jkXAAAAdklEQVQY052QyQ6DMAwFMTFt05Cw7zv8/z8SXxAOF2COo5GebO8N4msJuPNDAPg77kOOhwF10uNQlwnekZPi7kb8s0SHlLQRDwBlek4z0YzWdewYv610BbZjFFrXc+LIqKhXVJd3LBuiyh2bKMRr20/GGEofsAP1wASFbdBGzgAAAABJRU5ErkJggg==';

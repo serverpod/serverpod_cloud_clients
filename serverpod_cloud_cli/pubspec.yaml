@@ -24,6 +24,7 @@ dependencies:
   cli_tools: ^0.13.1
   collection: ^1.19.0
   config: ^0.9.1
+  crypto: ^3.0.7
   dio: ^5.8.0+1
   ffi: ^2.2.0
   ground_control_client: ^1.3.1

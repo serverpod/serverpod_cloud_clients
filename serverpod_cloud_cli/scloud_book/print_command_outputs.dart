@@ -336,7 +336,14 @@ const _scenarios = [
     '--platforms',
     'ios,android',
   ]),
-  _Scenario('app doctor', ['app', 'doctor', '--app-dir', '../app']),
+  _Scenario('app doctor', [
+    'app',
+    'doctor',
+    '--project',
+    _projectId,
+    '--app-dir',
+    '../app',
+  ]),
   _Scenario('app status', ['app', 'status', '--project', _projectId]),
   _Scenario('app log', [
     'app',

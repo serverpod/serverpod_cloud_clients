@@ -1,10 +1,13 @@
 import 'dart:io';
 
+import 'package:ground_control_client/ground_control_client.dart'
+    show AppPlatform, AppPublishingSetup;
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy/prepare_project_files.dart'
     show TenantProject;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/shared/helpers/console_urls.dart';
 import 'package:serverpod_cloud_cli/util/flutter_app_identifier.dart';
 import 'package:serverpod_cloud_cli/util/flutter_platform.dart';
 import 'package:serverpod_cloud_cli/util/flutter_release_setup.dart';
@@ -14,9 +17,9 @@ import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 
 import 'app_doctor_check.dart';
 
-/// Checks of the local setup of a Flutter app that publishing depends on.
-/// Reads the app's project files and the version of the local Flutter SDK;
-/// it calls no service.
+/// Checks of the setup of a Flutter app that publishing depends on. Reads
+/// the app's project files and the version of the local Flutter SDK; it
+/// calls no service.
 abstract class AppSetup {
   /// Selects the Flutter release version to build the app in
   /// [appDirectory] with, from [commandLineVersion], the app's pubspec,
@@ -87,10 +90,14 @@ abstract class AppSetup {
   /// version is requested. Why the local Flutter SDK cannot be read is
   /// logged to [logger].
   ///
-  /// Each platform gets an app identifier check, which reads the identifier
-  /// from [configuredAppIdentifiers] or else from the app's project files.
+  /// Each platform gets a console setup check, which fails while
+  /// [publishingSetup] of project [projectId] lacks a part the platform
+  /// needs, and an app identifier check, which reads the identifier from
+  /// [configuredAppIdentifiers] or else from the app's project files.
   /// Android also gets a release signing check and iOS an export compliance
-  /// check. Messages name the project configuration file [configFileName].
+  /// check. Last, each platform gets an app icon check, which warns while
+  /// the app has the icon of `flutter create`. Messages name the project
+  /// configuration file [configFileName].
   ///
   /// Returns the check of the whole app first, then the checks of each
   /// platform in platform order. A failed check is a result, not an error.
@@ -103,6 +110,8 @@ abstract class AppSetup {
     Set<FlutterPlatform>? platforms,
     required Map<FlutterPlatform, String> configuredAppIdentifiers,
     required String configFileName,
+    required String projectId,
+    required AppPublishingSetup publishingSetup,
     String? flutterVersionOverride,
     String? configuredFlutterVersion,
     required LocalFlutterVersionReader readLocalFlutterVersion,
@@ -122,6 +131,7 @@ abstract class AppSetup {
       ),
       for (final platform in FlutterPlatform.values)
         if (requestedPlatforms.contains(platform)) ...[
+          _consoleSetupCheck(platform, projectId, publishingSetup),
           _check(
             platform,
             AppDoctorCheckKind.appIdentifier,
@@ -136,20 +146,103 @@ abstract class AppSetup {
             _check(
               platform,
               AppDoctorCheckKind.releaseSigning,
-              () =>
-                  '${checkAndroidReleaseSigning(appDirectory)} signs release '
-                  'builds on Serverpod Cloud with the release signing config',
+              () => 'Set up in ${checkAndroidReleaseSigning(appDirectory)}',
             ),
           if (platform == FlutterPlatform.ios)
             _check(
               platform,
               AppDoctorCheckKind.exportCompliance,
-              () =>
-                  'ITSAppUsesNonExemptEncryption is '
-                  '${readUsesNonExemptEncryption(appDirectory)}',
+              () => readUsesNonExemptEncryption(appDirectory)
+                  ? 'Uses non-exempt encryption'
+                  : 'Uses no non-exempt encryption',
             ),
+          _appIconCheck(appDirectory, platform),
         ],
     ];
+  }
+
+  /// Checks whether [publishingSetup] of project [projectId] has every part
+  /// that publishing for [platform] needs. A failure links to the setup
+  /// guide of [platform] in the console.
+  static AppDoctorCheck _consoleSetupCheck(
+    FlutterPlatform platform,
+    String projectId,
+    AppPublishingSetup publishingSetup,
+  ) {
+    const kind = AppDoctorCheckKind.consoleSetup;
+    final appPlatform = switch (platform) {
+      FlutterPlatform.android => AppPlatform.android,
+      FlutterPlatform.ios => AppPlatform.ios,
+      FlutterPlatform.linux ||
+      FlutterPlatform.macos ||
+      FlutterPlatform.windows => null,
+    };
+    if (appPlatform == null) {
+      return AppDoctorCheck(
+        platform: platform,
+        kind: kind,
+        status: AppDoctorCheckStatus.failed,
+        detail: 'Publishing for ${platform.name} is not supported yet.',
+      );
+    }
+    final awaitsOnlyGooglePlay =
+        appPlatform == AppPlatform.android &&
+        publishingSetup.android.signing != null &&
+        publishingSetup.android.store == null;
+    if (awaitsOnlyGooglePlay) {
+      return AppDoctorCheck(
+        platform: platform,
+        kind: kind,
+        status: AppDoctorCheckStatus.failed,
+        detail: 'Serverpod Cloud is still creating Google Play access.',
+        hint: 'This needs nothing from you.',
+      );
+    }
+    final isSetUp = switch (appPlatform) {
+      AppPlatform.ios => publishingSetup.ios.store != null,
+      AppPlatform.android =>
+        publishingSetup.android.signing != null &&
+            publishingSetup.android.store != null,
+    };
+    if (!isSetUp) {
+      return AppDoctorCheck(
+        platform: platform,
+        kind: kind,
+        status: AppDoctorCheckStatus.failed,
+        detail: 'Not set up yet.',
+        hint: 'Finish it here: ${getAppStoreSetupUrl(projectId, appPlatform)}',
+      );
+    }
+    return AppDoctorCheck(
+      platform: platform,
+      kind: kind,
+      status: AppDoctorCheckStatus.passed,
+      detail: 'Set up',
+    );
+  }
+
+  /// Checks whether the [platform] app in [appDirectory] has its own icon.
+  /// It warns while the app has the icon of `flutter create`.
+  static AppDoctorCheck _appIconCheck(
+    Directory appDirectory,
+    FlutterPlatform platform,
+  ) {
+    const kind = AppDoctorCheckKind.appIcon;
+    if (hasDefaultAppIcon(appDirectory, platform)) {
+      return AppDoctorCheck(
+        platform: platform,
+        kind: kind,
+        status: AppDoctorCheckStatus.warning,
+        detail: 'The app uses the default Flutter icon.',
+        hint: 'Learn more: $appIconDocsUrl',
+      );
+    }
+    return AppDoctorCheck(
+      platform: platform,
+      kind: kind,
+      status: AppDoctorCheckStatus.passed,
+      detail: 'Not the default Flutter icon',
+    );
   }
 
   /// Checks the Flutter version the app in [appDirectory] would be built
@@ -189,12 +282,10 @@ abstract class AppSetup {
         platform: null,
         kind: kind,
         status: AppDoctorCheckStatus.warning,
-        detail:
-            'No Flutter version is requested, so the builds use the latest '
-            'stable release.',
+        detail: 'Not pinned, so builds use the latest stable release.',
         hint:
-            'Set project.flutterSdk in $configFileName to the Flutter version '
-            'the app is developed with.',
+            'Request a version with --flutter-version, or pin one in '
+            "environment.flutter of the app's pubspec.yaml.",
       );
     }
     return AppDoctorCheck(

@@ -91,7 +91,7 @@ abstract final class FlutterSdkSelector {
       throw FailureException(
         error: 'Unsupported Flutter version "$value" (from $source).',
         hint:
-            'Use a Flutter release version such as 3.38.4 with '
+            'Use a Flutter release version such as 3.50.0 with '
             '--flutter-version, or pin one in environment.flutter of the '
             "app's pubspec.yaml.",
       );

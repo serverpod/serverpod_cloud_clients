@@ -1,11 +1,16 @@
 import 'dart:convert';
 
+import 'package:ground_control_client/ground_control_client.dart';
+import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/app/app_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/shared/helpers/console_urls.dart'
+    show getAppStoreSetupUrl;
 import 'package:serverpod_cloud_cli/util/flutter_release_setup.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -14,6 +19,8 @@ import 'package:yaml_codec/yaml_codec.dart';
 import '../../../test_utils/command_logger_matchers.dart';
 import '../../../test_utils/project_factory.dart';
 import '../../../test_utils/test_command_logger.dart';
+
+const _projectId = 'my-project-id';
 
 void main() {
   final logger = TestCommandLogger();
@@ -29,14 +36,24 @@ void main() {
     ),
   );
 
+  setUp(() {
+    _stubSetup(
+      client,
+      AppPublishingSetupBuilder()
+          .withGooglePlayAccess()
+          .withAndroidKeystore()
+          .build(),
+    );
+  });
+
   tearDown(() {
     logger.clear();
     localFlutterVersion = null;
   });
 
   test('Given app doctor command when instantiated '
-      'then it does not require login', () {
-    expect(CloudAppDoctorCommand(logger: logger).requireLogin, isFalse);
+      'then it requires login', () {
+    expect(CloudAppDoctorCommand(logger: logger).requireLogin, isTrue);
   });
 
   group('Given a Flutter app set up for publishing', () {
@@ -65,6 +82,8 @@ void main() {
         await cli.run([
           'app',
           'doctor',
+          '--project',
+          _projectId,
           '--app-dir',
           d.path('project_flutter'),
           '--platforms',
@@ -87,6 +106,8 @@ void main() {
         commandResult = cli.run([
           'app',
           'doctor',
+          '--project',
+          _projectId,
           '--app-dir',
           d.path('project_flutter'),
         ]);
@@ -99,17 +120,19 @@ void main() {
         expect(
           logger.lineCalls.map((call) => call.line),
           containsAllInOrder([
-            'App',
-            '  ✓ Flutter version: 3.29.0 (from pubspec.yaml)',
+            '✓ Flutter version: 3.29.0 (from pubspec.yaml)',
             '',
             'Android',
+            '  ✓ Google Play Console connection',
             '  ✓ Package name: com.acme.app',
-            '  ✓ Release signing: android/app/build.gradle.kts signs release '
-                'builds on Serverpod Cloud with the release signing config',
+            '  ✓ Release signing',
+            '  ✓ App icon',
             '',
             'iOS',
+            '  ✓ App Store connection',
             '  ✓ Bundle ID: com.acme.app',
-            '  ✓ Export compliance: ITSAppUsesNonExemptEncryption is false',
+            '  ✓ Export compliance',
+            '  ✓ App icon',
           ]),
         );
       });
@@ -137,6 +160,8 @@ void main() {
         'json',
         'app',
         'doctor',
+        '--project',
+        _projectId,
         '--app-dir',
         d.path('project_flutter'),
       ]);
@@ -145,10 +170,14 @@ void main() {
           .cast<Map>();
       expect(checks.map((check) => (check['platform'], check['check'])), [
         (null, 'flutterVersion'),
+        ('android', 'consoleSetup'),
         ('android', 'appIdentifier'),
         ('android', 'releaseSigning'),
+        ('android', 'appIcon'),
+        ('ios', 'consoleSetup'),
         ('ios', 'appIdentifier'),
         ('ios', 'exportCompliance'),
+        ('ios', 'appIcon'),
       ]);
       expect(checks.map((check) => check['status']), everyElement('passed'));
       expect(logger.lineCalls, isEmpty);
@@ -161,13 +190,15 @@ void main() {
         'yaml',
         'app',
         'doctor',
+        '--project',
+        _projectId,
         '--app-dir',
         d.path('project_flutter'),
       ]);
 
       final checks = (yamlDecode(logger.rawCalls.single.content) as List)
           .cast<Map>();
-      expect(checks, hasLength(5));
+      expect(checks, hasLength(9));
       expect(checks.map((check) => check['status']), everyElement('passed'));
     });
 
@@ -176,6 +207,8 @@ void main() {
       await cli.run([
         'app',
         'doctor',
+        '--project',
+        _projectId,
         '--app-dir',
         d.path('project_flutter'),
         '--platforms',
@@ -183,7 +216,10 @@ void main() {
       ]);
 
       final lines = logger.lineCalls.map((call) => call.line);
-      expect(lines, containsAllInOrder(['App', 'iOS']));
+      expect(
+        lines,
+        containsAllInOrder([startsWith('✓ Flutter version: '), 'iOS']),
+      );
       expect(lines, isNot(contains('Android')));
     });
 
@@ -192,6 +228,8 @@ void main() {
       await cli.run([
         'app',
         'doctor',
+        '--project',
+        _projectId,
         '--app-dir',
         d.path('project_flutter'),
         '--flutter-version',
@@ -200,7 +238,7 @@ void main() {
 
       expect(
         logger.lineCalls.map((call) => call.line),
-        contains('  ✓ Flutter version: 3.38.4 (from --flutter-version flag)'),
+        contains('✓ Flutter version: 3.38.4 (from --flutter-version flag)'),
       );
     });
 
@@ -212,6 +250,8 @@ void main() {
         commandResult = cli.run([
           'app',
           'doctor',
+          '--project',
+          _projectId,
           '--app-dir',
           d.path('project_flutter'),
           '--flutter-version',
@@ -229,9 +269,9 @@ void main() {
         expect(
           logger.lineCalls.map((call) => call.line),
           containsAllInOrder([
-            '  ✗ Flutter version: Unsupported Flutter version "beta" '
+            '✗ Flutter version: Unsupported Flutter version "beta" '
                 '(from --flutter-version flag).',
-            '    Use a Flutter release version such as 3.38.4 with '
+            '  Use a Flutter release version such as 3.50.0 with '
                 "--flutter-version, or pin one in environment.flutter of the app's "
                 'pubspec.yaml.',
           ]),
@@ -271,6 +311,8 @@ void main() {
       commandResult = cli.run([
         'app',
         'doctor',
+        '--project',
+        _projectId,
         '--app-dir',
         d.path('project_flutter'),
       ]);
@@ -315,6 +357,8 @@ void main() {
       commandResult = cli.run([
         'app',
         'doctor',
+        '--project',
+        _projectId,
         '--app-dir',
         d.path('project_flutter'),
       ]);
@@ -326,7 +370,7 @@ void main() {
 
       expect(
         logger.lineCalls.map((call) => call.line),
-        contains('  ✓ Flutter version: 3.38.4 (from local Flutter SDK)'),
+        contains('✓ Flutter version: 3.38.4 (from local Flutter SDK)'),
       );
     });
   });
@@ -339,10 +383,12 @@ void main() {
           ProjectFactory.flutterAndroidDir(
             applicationId: 'com.example.app',
             releaseSigning: ProjectFactory.debugKeyReleaseSigning,
+            withDefaultAppIcon: true,
           ),
           ProjectFactory.flutterIosDir(
             bundleId: 'com.example.app',
             withInfoPlist: true,
+            withDefaultAppIcon: true,
           ),
         ],
       ).create();
@@ -355,6 +401,8 @@ void main() {
         commandResult = cli.run([
           'app',
           'doctor',
+          '--project',
+          _projectId,
           '--app-dir',
           d.path('project_flutter'),
         ]);
@@ -371,57 +419,55 @@ void main() {
         expect(
           logger.lineCalls.map((call) => call.line),
           containsAllInOrder([
-            '  ! Flutter version: No Flutter version is requested, so the '
-                'builds use the latest stable release.',
-            '    Set project.flutterSdk in scloud.yaml to the Flutter version '
-                'the app is developed with.',
+            '! Flutter version: Not pinned, so builds use the latest stable '
+                'release.',
+            '  Request a version with --flutter-version, or pin one in '
+                "environment.flutter of the app's pubspec.yaml.",
           ]),
         );
       });
 
       test('then the release signing check fails '
-          'with a link to set it up', () async {
+          'with a link to the docs', () async {
         await commandResult.catchError((_) {});
 
         expect(
           logger.lineCalls.map((call) => call.line),
           containsAllInOrder([
-            '  ✗ Release signing: android/app/build.gradle.kts signs release '
-                'builds with the debug key.',
-            '    Android release signing is managed by Serverpod Cloud. Follow '
-                'this link to set it up for your project.',
-            '    $androidReleaseSigningDocsUrl',
+            '  ✗ Release signing: Release builds are signed with the debug '
+                'key.',
+            '    Learn more: $androidReleaseSigningDocsUrl',
           ]),
         );
       });
 
-      test('then the export compliance check fails', () async {
-        await commandResult.catchError((_) {});
-
-        expect(
-          logger.lineCalls.map((call) => call.line),
-          contains(
-            startsWith(
-              '  ✗ Export compliance: ios/Runner/Info.plist does not set '
-              'ITSAppUsesNonExemptEncryption',
-            ),
-          ),
-        );
-      });
-
-      test('then the export compliance hint shows the Info.plist lines '
-          'that set it to false', () async {
+      test('then the export compliance check fails '
+          'with a link to the docs', () async {
         await commandResult.catchError((_) {});
 
         expect(
           logger.lineCalls.map((call) => call.line),
           containsAllInOrder([
-            '    If the app uses no encryption, or only exempt encryption such '
-                'as HTTPS, add these lines inside <dict> in '
-                'ios/Runner/Info.plist:',
-            '      <key>ITSAppUsesNonExemptEncryption</key>',
-            '      <false/>',
-            startsWith('    Otherwise set it to <true/>'),
+            '  ✗ Export compliance: The app does not declare whether it uses '
+                'encryption.',
+            '    Learn more: $iosExportComplianceDocsUrl',
+          ]),
+        );
+      });
+
+      test('then the app icon check of each platform warns '
+          'with a link to the docs', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          logger.lineCalls.map((call) => call.line),
+          containsAllInOrder([
+            'Android',
+            '  ! App icon: The app uses the default Flutter icon.',
+            '    Learn more: $appIconDocsUrl',
+            'iOS',
+            '  ! App icon: The app uses the default Flutter icon.',
+            '    Learn more: $appIconDocsUrl',
           ]),
         );
       });
@@ -469,6 +515,8 @@ void main() {
               'json',
               'app',
               'doctor',
+              '--project',
+              _projectId,
               '--app-dir',
               d.path('project_flutter'),
             ])
@@ -482,7 +530,7 @@ void main() {
           (check) => check['check'] == 'flutterVersion',
         );
         expect(flutterVersion['status'], 'warning');
-        expect(flutterVersion['hint'], contains('project.flutterSdk'));
+        expect(flutterVersion['hint'], contains('pubspec.yaml'));
       });
 
       test('then the release signing check failed with its hint', () {
@@ -513,6 +561,8 @@ void main() {
       await cli.run([
         'app',
         'doctor',
+        '--project',
+        _projectId,
         '--project-dir',
         p.join(d.sandbox, 'monorepo', 'project_server'),
       ]);
@@ -545,6 +595,8 @@ project:
             'json',
             'app',
             'doctor',
+            '--project',
+            _projectId,
             '--project-dir',
             p.join(d.sandbox, 'monorepo', 'project_server'),
           ]);
@@ -604,6 +656,8 @@ project:
           commandResult = cli.run([
             'app',
             'doctor',
+            '--project',
+            _projectId,
             '--project-dir',
             p.join(d.sandbox, 'monorepo', 'project_server'),
           ]);
@@ -614,7 +668,7 @@ project:
 
           expect(
             logger.lineCalls.map((call) => call.line),
-            contains('  ✓ Flutter version: 3.38.3 (from scloud.yaml)'),
+            contains('✓ Flutter version: 3.38.3 (from scloud.yaml)'),
           );
         });
 
@@ -631,6 +685,169 @@ project:
     });
   });
 
+  group('Given a Flutter app set up for publishing in a project with '
+      'nothing set up in the console', () {
+    setUp(() async {
+      _stubSetup(
+        client,
+        AppPublishingSetupBuilder().withNothingSetUp().build(),
+      );
+      await ProjectFactory.nonWorkspaceFlutterAppDir(
+        contents: [
+          ProjectFactory.flutterAndroidDir(
+            releaseSigning: ProjectFactory.serverpodCloudReleaseSigning,
+          ),
+          ProjectFactory.flutterIosDir(usesNonExemptEncryption: false),
+        ],
+      ).create();
+    });
+
+    group('when checking the app', () {
+      late Future<void> commandResult;
+
+      setUp(() {
+        commandResult = cli.run([
+          'app',
+          'doctor',
+          '--project',
+          _projectId,
+          '--app-dir',
+          d.path('project_flutter'),
+        ]);
+      });
+
+      test('then the command throws ErrorExitException', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then the console setup check of each platform fails '
+          'with a link to its setup guide', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          logger.lineCalls.map((call) => call.line),
+          containsAllInOrder([
+            'Android',
+            '  ✗ Google Play Console connection: Not set up yet.',
+            '    Finish it here: '
+                '${getAppStoreSetupUrl(_projectId, AppPlatform.android)}',
+            'iOS',
+            '  ✗ App Store connection: Not set up yet.',
+            '    Finish it here: '
+                '${getAppStoreSetupUrl(_projectId, AppPlatform.ios)}',
+          ]),
+        );
+      });
+    });
+
+    test('when checking the app with --format json '
+        'then the console setup checks are listed as failed', () async {
+      await cli
+          .run([
+            '--format',
+            'json',
+            'app',
+            'doctor',
+            '--project',
+            _projectId,
+            '--app-dir',
+            d.path('project_flutter'),
+          ])
+          .catchError((_) {});
+
+      final checks = (jsonDecode(logger.rawCalls.single.content) as List)
+          .cast<Map>()
+          .where((check) => check['check'] == 'consoleSetup');
+      expect(checks.map((check) => (check['platform'], check['status'])), [
+        ('android', 'failed'),
+        ('ios', 'failed'),
+      ]);
+    });
+  });
+
+  group('Given an Android app set up for publishing in a project whose '
+      'Google Play access Serverpod Cloud is still creating', () {
+    setUp(() async {
+      _stubSetup(
+        client,
+        AppPublishingSetupBuilder().withAndroidKeystore().build(),
+      );
+      await ProjectFactory.nonWorkspaceFlutterAppDir(
+        contents: [
+          ProjectFactory.flutterAndroidDir(
+            releaseSigning: ProjectFactory.serverpodCloudReleaseSigning,
+          ),
+        ],
+      ).create();
+    });
+
+    test('when checking the app then the console setup check fails '
+        'saying it needs nothing from the user', () async {
+      await cli
+          .run([
+            'app',
+            'doctor',
+            '--project',
+            _projectId,
+            '--app-dir',
+            d.path('project_flutter'),
+          ])
+          .catchError((_) {});
+
+      expect(
+        logger.lineCalls.map((call) => call.line),
+        containsAllInOrder([
+          '  ✗ Google Play Console connection: Serverpod Cloud is still '
+              'creating Google Play access.',
+          '    This needs nothing from you.',
+        ]),
+      );
+    });
+  });
+
+  group('Given a Flutter app set up for publishing in a project that does '
+      'not exist', () {
+    late Future<void> commandResult;
+
+    setUp(() async {
+      when(
+        () => client.appPublishing.getSetup(
+          cloudCapsuleId: any(named: 'cloudCapsuleId'),
+        ),
+      ).thenThrow(NotFoundException(message: 'Project not found.'));
+      await ProjectFactory.nonWorkspaceFlutterAppDir(
+        contents: [
+          ProjectFactory.flutterAndroidDir(
+            releaseSigning: ProjectFactory.serverpodCloudReleaseSigning,
+          ),
+        ],
+      ).create();
+
+      commandResult = cli.run([
+        'app',
+        'doctor',
+        '--project',
+        _projectId,
+        '--app-dir',
+        d.path('project_flutter'),
+      ]);
+    });
+
+    test('when checking the app '
+        'then the command throws ErrorExitException', () async {
+      await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+    });
+
+    test('when checking the app then the error is logged', () async {
+      await commandResult.catchError((_) {});
+
+      expect(
+        logger.errorCalls,
+        contains(equalsErrorCall(message: 'Project not found.')),
+      );
+    });
+  });
+
   group('Given a Flutter app without Android or iOS code', () {
     late Future<void> commandResult;
 
@@ -644,6 +861,8 @@ project:
       commandResult = cli.run([
         'app',
         'doctor',
+        '--project',
+        _projectId,
         '--app-dir',
         d.path('project_flutter'),
       ]);
@@ -656,4 +875,12 @@ project:
       },
     );
   });
+}
+
+void _stubSetup(ClientMock client, AppPublishingSetup setup) {
+  when(
+    () => client.appPublishing.getSetup(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+    ),
+  ).thenAnswer((_) async => setup);
 }

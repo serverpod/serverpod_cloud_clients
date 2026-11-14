@@ -18,7 +18,6 @@ import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/util/inline_tui/inline_tui.dart';
 import 'package:serverpod_cloud_cli/util/stream_util.dart';
 
-import 'app_build_failure_advice.dart';
 import 'app_build_status_formatter.dart';
 import 'app_build_step_lines.dart';
 import 'app_ops.dart';
@@ -487,14 +486,7 @@ abstract class AppBuildProgress {
         if (succeeded.contains(platform)) continue;
         final build = details[platform]?.build;
         if (build == null) continue;
-        final advice = AppBuildFailureAdvice.of(
-          build.failureReason,
-          platform,
-          projectId: projectId,
-          baseCommand: baseCommand,
-        );
-        if (build.status == AppBuildStatus.builtNotUploaded &&
-            advice?.downloadsBuild != true) {
+        if (build.status == AppBuildStatus.builtNotUploaded) {
           logger.info(
             'Download the built app for manual store upload: '
             '$baseCommand app artifacts ${build.uploadId} --project $projectId',
