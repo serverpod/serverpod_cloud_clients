@@ -82,6 +82,13 @@ void main() {
           .withUploadDescription(_appUploadDescription)
           .build(),
     );
+    _stubSetup(
+      client,
+      AppPublishingSetupBuilder()
+          .withGooglePlayAccess()
+          .withAndroidKeystore()
+          .build(),
+    );
   });
 
   tearDown(() {
@@ -1676,6 +1683,12 @@ project:
 
           expect(fileUploader.uploads, isEmpty);
         });
+
+        test('then no build is requested', () async {
+          await commandResult.catchError((_) {});
+
+          _verifyNoBuildRequested(client);
+        });
       });
 
       group('and only an upload keystore, with Google Play access still being '
@@ -1909,6 +1922,65 @@ project:
             'Finish it here:\n${_googlePlaySetupUrl()}',
           );
         });
+      });
+    });
+
+    group('and iOS code, with iOS set up but no upload keystore, '
+        'when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() async {
+        await d.dir('monorepo', [
+          d.dir('project_flutter', [ProjectFactory.flutterIosDir()]),
+        ]).create();
+        _stubSetup(
+          client,
+          AppPublishingSetupBuilder().withGooglePlayAccess().build(),
+        );
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+      });
+
+      test('then a build is requested for iOS only', () async {
+        await commandResult;
+
+        verify(
+          () => client.appBuilds.createBuilds(
+            appIdentifiers: any(named: 'appIdentifiers'),
+            cloudCapsuleId: _projectId,
+            platforms: [AppPlatform.ios],
+            flutterAppDir: 'project_flutter',
+            archiveSize: any(named: 'archiveSize'),
+            flutterVersion: any(named: 'flutterVersion'),
+            versionName: any(named: 'versionName'),
+            commitHash: any(named: 'commitHash'),
+            commitMessage: any(named: 'commitMessage'),
+            branch: any(named: 'branch'),
+          ),
+        ).called(1);
+      });
+
+      test('then the missing keystore is logged as a warning '
+          'with a link to the Google Play setup guide', () async {
+        await commandResult;
+
+        expect(
+          logger.warningCalls,
+          contains(
+            equalsWarningCall(
+              message:
+                  "Android isn't set up yet: it needs an upload keystore. "
+                  'Finish it here:\n${_googlePlaySetupUrl()}',
+            ),
+          ),
+        );
       });
     });
 
