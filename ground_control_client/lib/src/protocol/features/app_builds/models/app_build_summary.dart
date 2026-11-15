@@ -29,6 +29,8 @@ abstract class AppBuildSummary
     required this.status,
     this.versionName,
     this.buildNumber,
+    this.flutterVersion,
+    this.dartVersion,
     this.message,
     this.failureReason,
     this.requestedBy,
@@ -47,6 +49,8 @@ abstract class AppBuildSummary
     required _ih9cduki.AppBuildStatus status,
     String? versionName,
     String? buildNumber,
+    String? flutterVersion,
+    String? dartVersion,
     String? message,
     _izmqhuyw.AppBuildFailureReason? failureReason,
     _ijl94k1v.User? requestedBy,
@@ -72,6 +76,8 @@ abstract class AppBuildSummary
       ),
       versionName: jsonSerialization['versionName'] as String?,
       buildNumber: jsonSerialization['buildNumber'] as String?,
+      flutterVersion: jsonSerialization['flutterVersion'] as String?,
+      dartVersion: jsonSerialization['dartVersion'] as String?,
       message: jsonSerialization['message'] as String?,
       failureReason: jsonSerialization['failureReason'] == null
           ? null
@@ -115,6 +121,14 @@ abstract class AppBuildSummary
   /// A string because Apple allows dotted build numbers.
   String? buildNumber;
 
+  /// The Flutter release version the build is made with. Null when it is
+  /// not known.
+  String? flutterVersion;
+
+  /// The version of the Dart SDK the build is made with. Null when it is
+  /// not known.
+  String? dartVersion;
+
   /// Why the build was rejected or failed: the text of the failed step's
   /// log that explains it when a known one is found, else the build
   /// service's own explanation.
@@ -157,6 +171,8 @@ abstract class AppBuildSummary
     _ih9cduki.AppBuildStatus? status,
     String? versionName,
     String? buildNumber,
+    String? flutterVersion,
+    String? dartVersion,
     String? message,
     _izmqhuyw.AppBuildFailureReason? failureReason,
     _ijl94k1v.User? requestedBy = const _UndefinedAppBuildSummary$requestedBy(),
@@ -177,6 +193,8 @@ abstract class AppBuildSummary
       'status': status.toJson(),
       if (versionName != null) 'versionName': versionName,
       if (buildNumber != null) 'buildNumber': buildNumber,
+      if (flutterVersion != null) 'flutterVersion': flutterVersion,
+      if (dartVersion != null) 'dartVersion': dartVersion,
       if (message != null) 'message': message,
       if (failureReason != null) 'failureReason': failureReason?.toJson(),
       if (requestedBy != null) 'requestedBy': requestedBy?.toJson(),
@@ -199,6 +217,8 @@ abstract class AppBuildSummary
       'status': status.toJson(),
       if (versionName != null) 'versionName': versionName,
       if (buildNumber != null) 'buildNumber': buildNumber,
+      if (flutterVersion != null) 'flutterVersion': flutterVersion,
+      if (dartVersion != null) 'dartVersion': dartVersion,
       if (message != null) 'message': message,
       if (failureReason != null) 'failureReason': failureReason?.toJson(),
       if (requestedBy != null) 'requestedBy': requestedBy?.toJsonForProtocol(),
@@ -232,6 +252,8 @@ class _AppBuildSummaryImpl extends AppBuildSummary {
     required _ih9cduki.AppBuildStatus status,
     String? versionName,
     String? buildNumber,
+    String? flutterVersion,
+    String? dartVersion,
     String? message,
     _izmqhuyw.AppBuildFailureReason? failureReason,
     _ijl94k1v.User? requestedBy,
@@ -248,6 +270,8 @@ class _AppBuildSummaryImpl extends AppBuildSummary {
          status: status,
          versionName: versionName,
          buildNumber: buildNumber,
+         flutterVersion: flutterVersion,
+         dartVersion: dartVersion,
          message: message,
          failureReason: failureReason,
          requestedBy: requestedBy,
@@ -270,6 +294,8 @@ class _AppBuildSummaryImpl extends AppBuildSummary {
     _ih9cduki.AppBuildStatus? status,
     Object? versionName = _Undefined,
     Object? buildNumber = _Undefined,
+    Object? flutterVersion = _Undefined,
+    Object? dartVersion = _Undefined,
     Object? message = _Undefined,
     Object? failureReason = _Undefined,
     _ijl94k1v.User? requestedBy = const _UndefinedAppBuildSummary$requestedBy(),
@@ -287,6 +313,10 @@ class _AppBuildSummaryImpl extends AppBuildSummary {
       status: status ?? this.status,
       versionName: versionName is String? ? versionName : this.versionName,
       buildNumber: buildNumber is String? ? buildNumber : this.buildNumber,
+      flutterVersion: flutterVersion is String?
+          ? flutterVersion
+          : this.flutterVersion,
+      dartVersion: dartVersion is String? ? dartVersion : this.dartVersion,
       message: message is String? ? message : this.message,
       failureReason: failureReason is _izmqhuyw.AppBuildFailureReason?
           ? failureReason
