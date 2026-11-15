@@ -52,7 +52,8 @@ class AppPublishPlatformsOption extends MultiOption<FlutterPlatform> {
   static const publishHelpText =
       'The platforms to publish, separated by commas. '
       'The code of the other platforms is left out of the upload. '
-      'Defaults to the supported platforms the app has code for. '
+      'Defaults to the supported platforms the app has code for '
+      'and that are set up. '
       'Supported platforms: android, ios.';
 
   /// The help text of the option of `app doctor`.

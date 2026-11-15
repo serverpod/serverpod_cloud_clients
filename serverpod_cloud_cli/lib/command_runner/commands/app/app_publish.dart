@@ -29,7 +29,9 @@ abstract class AppPublish {
   /// packages, and their pubspec files are stripped of dev dependencies.
   ///
   /// When [platforms] is null, the app is published for the
-  /// [defaultPlatforms] it has code for. The app identifier of each
+  /// [defaultPlatforms] it has code for and whose publishing setup is
+  /// complete. The others are skipped with a warning that links to their
+  /// setup guide. The app identifier of each
   /// platform is sent with the request for the builds: the one in
   /// [configuredAppIdentifiers], or else the one the app's project files
   /// declare. Messages about an app identifier name the project
@@ -56,7 +58,8 @@ abstract class AppPublish {
   /// without uploading it or requesting builds.
   ///
   /// Throws [FailureException] if the app has no code for a platform to
-  /// publish, if the app identifier of a platform cannot be read or is
+  /// publish, if none of the default platforms is set up, if the app
+  /// identifier of a platform cannot be read or is
   /// refused, if the Flutter version is unsupported or below the Flutter
   /// SDK constraint of the app's packages, if the app's lockfile cannot be
   /// read, if the builds cannot be requested, or if an awaited build does
@@ -85,9 +88,23 @@ abstract class AppPublish {
   }) async {
     logger.init('Publishing the app of Serverpod Cloud project "$projectId".');
 
-    final requestedPlatforms =
-        platforms ??
-        TenantProject.presentDefaultPlatforms(appDirectory, defaultPlatforms);
+    var requestedPlatforms = platforms;
+    if (requestedPlatforms == null) {
+      final present = TenantProject.presentDefaultPlatforms(
+        appDirectory,
+        defaultPlatforms,
+      );
+      final notSetUp = await AppOperations.notSetUpMessages(
+        cloudApiClient,
+        projectId: projectId,
+        platforms: present,
+      );
+      if (notSetUp.length == present.length) {
+        throw FailureException(errors: notSetUp.values.toList());
+      }
+      notSetUp.values.forEach(logger.warning);
+      requestedPlatforms = present.difference(notSetUp.keys.toSet());
+    }
     final publishPlatforms = FlutterPlatform.values
         .where(requestedPlatforms.contains)
         .toList();

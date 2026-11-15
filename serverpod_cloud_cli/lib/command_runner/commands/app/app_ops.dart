@@ -169,6 +169,23 @@ abstract class AppOperations {
     }
   }
 
+  /// What each of [platforms] still needs before project [projectId] can
+  /// publish to it, with a link to its setup guide in the console. A
+  /// platform that is set up has no entry. Empty when the publishing setup
+  /// cannot be read.
+  static Future<Map<FlutterPlatform, String>> notSetUpMessages(
+    Client cloudApiClient, {
+    required String projectId,
+    required Iterable<FlutterPlatform> platforms,
+  }) async {
+    final setup = await _readSetup(cloudApiClient, projectId);
+    if (setup == null) return const {};
+    return {
+      for (final platform in platforms)
+        platform: ?_notSetUpMessage(projectId, _appPlatform(platform), setup),
+    };
+  }
+
   /// The publishing setup of project [projectId], or null if it cannot be
   /// read.
   static Future<AppPublishingSetup?> _readSetup(
