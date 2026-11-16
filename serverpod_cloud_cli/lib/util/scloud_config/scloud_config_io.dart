@@ -11,18 +11,22 @@ final _schema = YamlMap.wrap({
   'project': YamlMap.wrap({
     'projectId': String,
     'dartSdk': YamlOptional(String),
-    'flutterSdk': YamlOptional(String),
-    'appDir': YamlOptional(String),
-    'dartDefineFromFile': YamlOptional(
-      YamlUnion({
-        [String],
-        String,
-      }),
-    ),
-    'appIdentifiers': YamlOptional(
+    'app': YamlOptional(
       YamlMap.wrap({
-        'ios': YamlOptional(String),
-        'android': YamlOptional(String),
+        'dir': YamlOptional(String),
+        'flutterSdk': YamlOptional(String),
+        'identifiers': YamlOptional(
+          YamlMap.wrap({
+            'ios': YamlOptional(String),
+            'android': YamlOptional(String),
+          }),
+        ),
+        'dartDefineFromFile': YamlOptional(
+          YamlUnion({
+            [String],
+            String,
+          }),
+        ),
       }),
     ),
     'scripts': YamlOptional(

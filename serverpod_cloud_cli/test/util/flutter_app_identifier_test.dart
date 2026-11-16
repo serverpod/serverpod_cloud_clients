@@ -176,7 +176,7 @@ buildSettings = {
             (e) => e.hint,
             'hint',
             'Publishing needs one iOS bundle ID for the app, or set '
-                'project.appIdentifiers.ios in scloud.yaml.',
+                'project.app.identifiers.ios in scloud.yaml.',
           ),
         ),
       );
@@ -238,7 +238,7 @@ buildSettings = {
             'hint',
             'Set PRODUCT_BUNDLE_IDENTIFIER in '
                 'ios/Runner.xcodeproj/project.pbxproj to the iOS bundle ID '
-                'itself, or set project.appIdentifiers.ios in scloud.yaml.',
+                'itself, or set project.app.identifiers.ios in scloud.yaml.',
           ),
         ),
       );
@@ -416,7 +416,7 @@ android {
             'hint',
             'Set applicationId in android/app/build.gradle.kts to the '
                 'Android package name itself, or set '
-                'project.appIdentifiers.android in scloud.yaml.',
+                'project.app.identifiers.android in scloud.yaml.',
           ),
         ),
       );
@@ -517,7 +517,7 @@ android {
                 'hint',
                 'Set applicationId for the app in '
                     'android/app/build.gradle.kts, or set '
-                    'project.appIdentifiers.android in scloud.yaml.',
+                    'project.app.identifiers.android in scloud.yaml.',
               ),
         ),
       );
@@ -562,7 +562,7 @@ android {
         ),
         throwsA(
           isA<FailureException>().having((e) => e.errors, 'errors', [
-            'scloud.yaml sets project.appIdentifiers.android to an empty '
+            'scloud.yaml sets project.app.identifiers.android to an empty '
                 'value.',
           ]),
         ),

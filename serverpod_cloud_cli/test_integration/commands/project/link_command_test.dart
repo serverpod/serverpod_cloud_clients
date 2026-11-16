@@ -485,7 +485,8 @@ project:
                 d.file('scloud.yaml', '''
 project:
   projectId: "$projectId"
-  appDir: "../my_project_flutter"
+  app:
+    dir: "../my_project_flutter"
 '''),
               ],
             ).create();
@@ -501,17 +502,20 @@ project:
             ]);
           });
 
-          test('then the existing appDir in scloud.yaml is kept', () async {
-            await commandResult;
+          test(
+            'then the existing app directory in scloud.yaml is kept',
+            () async {
+              await commandResult;
 
-            final expected = d.dir(appDirProjectDir, [
-              d.file(
-                'scloud.yaml',
-                contains('appDir: "../my_project_flutter"'),
-              ),
-            ]);
-            await expectLater(expected.validate(), completes);
-          });
+              final expected = d.dir(appDirProjectDir, [
+                d.file(
+                  'scloud.yaml',
+                  contains('  app:\n    dir: "../my_project_flutter"'),
+                ),
+              ]);
+              await expectLater(expected.validate(), completes);
+            },
+          );
         },
       );
 
@@ -528,8 +532,9 @@ project:
                 d.file('scloud.yaml', '''
 project:
   projectId: "$projectId"
-  appIdentifiers:
-    ios: "com.acme.app"
+  app:
+    identifiers:
+      ios: "com.acme.app"
 '''),
               ],
             ).create();
@@ -572,8 +577,9 @@ project:
                 d.file('scloud.yaml', '''
 project:
   projectId: "$projectId"
-  dartDefineFromFile:
-    - ".env.production"
+  app:
+    dartDefineFromFile:
+      - ".env.production"
 '''),
               ],
             ).create();

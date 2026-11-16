@@ -1047,8 +1047,9 @@ void main() {
             d.file('scloud.yaml', '''
 project:
   projectId: "$_projectId"
-  appIdentifiers:
-    android: "com.acme.configured"
+  app:
+    identifiers:
+      android: "com.acme.configured"
 '''),
           ]),
         ]).create();
@@ -1143,7 +1144,8 @@ project:
             d.file('scloud.yaml', '''
 project:
   projectId: "$_projectId"
-  flutterSdk: "3.38.3"
+  app:
+    flutterSdk: "3.38.3"
 '''),
           ]),
         ]).create();
@@ -1486,9 +1488,10 @@ project:
             d.file('scloud.yaml', '''
 project:
   projectId: "$_projectId"
-  dartDefineFromFile:
-    - "../project_flutter/base.json"
-    - "../project_flutter/production.json"
+  app:
+    dartDefineFromFile:
+      - "../project_flutter/base.json"
+      - "../project_flutter/production.json"
 '''),
           ]),
           d.dir('project_flutter', [
@@ -1683,8 +1686,9 @@ project:
             d.file('scloud.yaml', '''
 project:
   projectId: "$_projectId"
-  appIdentifiers:
-    android: "com.acme.configured"
+  app:
+    identifiers:
+      android: "com.acme.configured"
 '''),
           ]),
           d.dir('project_flutter', [
@@ -1725,8 +1729,9 @@ project:
             d.file('scloud.yaml', '''
 project:
   projectId: "$_projectId"
-  appIdentifiers:
-    ios: "com.acme.configured"
+  app:
+    identifiers:
+      ios: "com.acme.configured"
 '''),
           ]),
           d.dir('project_flutter', [ProjectFactory.flutterIosDir()]),
@@ -1777,8 +1782,9 @@ project:
             d.file('scloud.yaml', '''
 project:
   projectId: "$_projectId"
-  appIdentifiers:
-    ios: "com.acme.configured"
+  app:
+    identifiers:
+      ios: "com.acme.configured"
 '''),
           ]),
         ]).create();
@@ -1824,8 +1830,9 @@ project:
             d.file('scloud.yaml', '''
 project:
   projectId: "$_projectId"
-  appIdentifiers:
-    android: "com.acme.configured"
+  app:
+    identifiers:
+      android: "com.acme.configured"
 '''),
           ]),
         ]).create();
@@ -2331,7 +2338,7 @@ project:
               hint:
                   'Set applicationId for the app in '
                   'android/app/build.gradle.kts, or set '
-                  'project.appIdentifiers.android in scloud.yaml.',
+                  'project.app.identifiers.android in scloud.yaml.',
             ),
           ),
         );
@@ -2398,7 +2405,7 @@ project:
               hint:
                   'Set applicationId in android/app/build.gradle.kts to the '
                   "app's own Android package name, or set "
-                  'project.appIdentifiers.android in scloud.yaml.',
+                  'project.app.identifiers.android in scloud.yaml.',
             ),
           ),
         );
@@ -2434,8 +2441,9 @@ project:
             d.file('scloud.yaml', '''
 project:
   projectId: "$_projectId"
-  appIdentifiers:
-    android: "com.example.app"
+  app:
+    identifiers:
+      android: "com.example.app"
 '''),
           ]),
         ]).create();
@@ -2464,7 +2472,7 @@ project:
                     'The Android package name com.example.app is '
                     "Flutter's placeholder.",
                 hint:
-                    'Set project.appIdentifiers.android in scloud.yaml to the '
+                    'Set project.app.identifiers.android in scloud.yaml to the '
                     "app's own Android package name.",
               ),
             ),
@@ -2531,7 +2539,7 @@ project:
             logger.errorCalls.map((call) => call.hint),
             contains(
               'Set applicationId for the app in android/app/build.gradle.kts, '
-              'or set project.appIdentifiers.android in scloud.yml.',
+              'or set project.app.identifiers.android in scloud.yml.',
             ),
           );
         },
@@ -3198,7 +3206,7 @@ project:
     });
 
     group('and a second Flutter app '
-        'and project.appDir in scloud.yaml names the first app', () {
+        'and project.app.dir in scloud.yaml names the first app', () {
       setUp(() async {
         await d.dir('monorepo', [
           d.file(
@@ -3217,7 +3225,8 @@ project:
             d.file('scloud.yaml', '''
 project:
   projectId: "$_projectId"
-  appDir: "../project_flutter"
+  app:
+    dir: "../project_flutter"
 '''),
           ]),
         ]).create();
@@ -3242,14 +3251,15 @@ project:
       });
     });
 
-    group('and project.appDir in scloud.yaml names a missing directory', () {
+    group('and project.app.dir in scloud.yaml names a missing directory', () {
       setUp(() async {
         await d.dir('monorepo', [
           d.dir('project_server', [
             d.file('scloud.yaml', '''
 project:
   projectId: "$_projectId"
-  appDir: "../missing_app"
+  app:
+    dir: "../missing_app"
 '''),
           ]),
         ]).create();
@@ -3284,7 +3294,7 @@ project:
                 message:
                     'The app directory '
                     '${p.join(d.sandbox, 'monorepo', 'missing_app')} '
-                    'set by project.appDir in '
+                    'set by project.app.dir in '
                     '${p.join(d.sandbox, 'monorepo', 'project_server', 'scloud.yaml')} '
                     'does not exist.',
               ),
@@ -3665,7 +3675,7 @@ project:
             message: 'No Flutter app found.',
             hint:
                 'Select the Flutter app directory with the --app-dir option, '
-                'or with project.appDir in scloud.yaml.',
+                'or with project.app.dir in scloud.yaml.',
           ),
         ),
       );

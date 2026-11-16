@@ -76,10 +76,10 @@ void checkConfiguredAppIdentifier(
   if (identifier.trim().isEmpty) {
     throw FailureException(
       error:
-          '$configFileName sets project.appIdentifiers.${platform.name} to an '
+          '$configFileName sets project.app.identifiers.${platform.name} to an '
           'empty value.',
       hint:
-          'Set project.appIdentifiers.${platform.name} in $configFileName to '
+          'Set project.app.identifiers.${platform.name} in $configFileName to '
           "the app's own $name, or remove it to use the one the app declares.",
     );
   }
@@ -87,7 +87,7 @@ void checkConfiguredAppIdentifier(
   throw FailureException(
     error: "The $name $identifier is Flutter's placeholder.",
     hint:
-        'Set project.appIdentifiers.${platform.name} in $configFileName to the '
+        'Set project.app.identifiers.${platform.name} in $configFileName to the '
         "app's own $name.",
   );
 }
@@ -295,5 +295,5 @@ String _withConfigHint(
   FlutterPlatform platform,
   String configFileName,
 ) =>
-    '$hint, or set project.appIdentifiers.${platform.name} in '
+    '$hint, or set project.app.identifiers.${platform.name} in '
     '$configFileName.';

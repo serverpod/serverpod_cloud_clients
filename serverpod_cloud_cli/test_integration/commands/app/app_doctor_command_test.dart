@@ -573,14 +573,15 @@ void main() {
       );
     });
 
-    group('and a scloud.yaml whose project.appDir does not exist', () {
+    group('and a scloud.yaml whose project.app.dir does not exist', () {
       setUp(() async {
         await d.dir('monorepo', [
           d.dir('project_server', [
             d.file('scloud.yaml', '''
 project:
   projectId: "my-project-id"
-  appDir: "../missing_flutter"
+  app:
+    dir: "../missing_flutter"
 '''),
           ]),
         ]).create();
@@ -613,7 +614,7 @@ project:
 
             expect(
               jsonDecode(logger.errorCalls.single.message),
-              contains('set by project.appDir'),
+              contains('set by project.app.dir'),
             );
           },
         );
@@ -641,9 +642,10 @@ project:
             d.file('scloud.yaml', '''
 project:
   projectId: "my-project-id"
-  flutterSdk: "3.38.3"
-  appIdentifiers:
-    android: "com.acme.configured"
+  app:
+    flutterSdk: "3.38.3"
+    identifiers:
+      android: "com.acme.configured"
 '''),
           ]),
         ]).create();
