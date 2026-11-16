@@ -8,6 +8,7 @@ import 'package:serverpod_cloud_cli/command_runner/commands/deploy/deploy_archiv
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy/prepare_project_files.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/file_uploader_factory.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/util/android_gradle_versions.dart';
 import 'package:serverpod_cloud_cli/util/dart_defines.dart';
 import 'package:serverpod_cloud_cli/util/flutter_app_identifier.dart';
 import 'package:serverpod_cloud_cli/util/flutter_app_name.dart';
@@ -43,6 +44,13 @@ abstract class AppPublish {
   /// requires, or else of [configuredFlutterVersion], or else the version of
   /// the local Flutter SDK, read with [readLocalFlutterVersion]. With none of them, the builds use the
   /// stable channel.
+  ///
+  /// When iOS is published, the build is made with the Xcode version of
+  /// [configuredXcodeVersion], or else with the one Serverpod Cloud pins.
+  ///
+  /// When Android is published, the Gradle and Android Gradle Plugin
+  /// versions the app declares are sent with the request, each when it can
+  /// be read.
   ///
   /// The builds are made with the dart defines of [dartDefineFiles], read
   /// in order, and then of [dartDefines], each a `KEY=VALUE` pair; a later
@@ -88,6 +96,7 @@ abstract class AppPublish {
     required String configFileName,
     String? flutterVersionOverride,
     String? configuredFlutterVersion,
+    String? configuredXcodeVersion,
     required LocalFlutterVersionReader readLocalFlutterVersion,
     List<File> dartDefineFiles = const [],
     List<String> dartDefines = const [],
@@ -162,6 +171,28 @@ abstract class AppPublish {
       logger.info('Flutter version: $flutterVersion');
     }
 
+    final xcodeVersion = publishPlatforms.contains(FlutterPlatform.ios)
+        ? configuredXcodeVersion
+        : null;
+    if (xcodeVersion != null) {
+      logger.info('Xcode version: $xcodeVersion');
+    }
+
+    final publishesAndroid = publishPlatforms.contains(FlutterPlatform.android);
+    final gradleVersion = publishesAndroid
+        ? readGradleVersion(appDirectory)
+        : null;
+    final androidGradlePluginVersion = publishesAndroid
+        ? readAndroidGradlePluginVersion(appDirectory)
+        : null;
+    if (publishesAndroid) {
+      logger.debug(
+        'Gradle version: ${gradleVersion ?? 'unknown'}, '
+        'Android Gradle Plugin version: '
+        '${androidGradlePluginVersion ?? 'unknown'}',
+      );
+    }
+
     if (preparer.isWorkspace) {
       logger.list(
         preparer.includedPackagePaths,
@@ -206,6 +237,9 @@ abstract class AppPublish {
       flutterAppDir: preparer.projectSubPath,
       archiveSize: appZip.length,
       flutterVersion: flutterVersion,
+      xcodeVersion: xcodeVersion,
+      gradleVersion: gradleVersion,
+      androidGradlePluginVersion: androidGradlePluginVersion,
       dartDefines: buildDartDefines,
       versionName: versionName,
       gitMetadata: gitMetadata,

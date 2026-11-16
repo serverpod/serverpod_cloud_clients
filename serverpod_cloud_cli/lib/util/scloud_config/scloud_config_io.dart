@@ -15,6 +15,8 @@ final _schema = YamlMap.wrap({
       YamlMap.wrap({
         'dir': YamlOptional(String),
         'flutterSdk': YamlOptional(String),
+        // Unquoted, a version like 27.2 is a YAML number.
+        'xcodeVersion': YamlOptional(YamlUnion({String, double})),
         'identifiers': YamlOptional(
           YamlMap.wrap({
             'ios': YamlOptional(String),

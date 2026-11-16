@@ -69,6 +69,9 @@ void main() {
         flutterAppDir: any(named: 'flutterAppDir'),
         archiveSize: any(named: 'archiveSize'),
         flutterVersion: any(named: 'flutterVersion'),
+        xcodeVersion: any(named: 'xcodeVersion'),
+        gradleVersion: any(named: 'gradleVersion'),
+        androidGradlePluginVersion: any(named: 'androidGradlePluginVersion'),
         dartDefines: any(named: 'dartDefines'),
         versionName: any(named: 'versionName'),
         commitHash: any(named: 'commitHash'),
@@ -1716,6 +1719,119 @@ project:
 
       test('then the app is published', () async {
         await expectLater(commandResult, completes);
+      });
+    });
+
+    group('and iOS code and an Xcode version set in scloud.yaml '
+        'when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() async {
+        await d.dir('monorepo', [
+          d.dir('project_server', [
+            d.file('scloud.yaml', '''
+project:
+  projectId: "$_projectId"
+  app:
+    xcodeVersion: "26.6"
+'''),
+          ]),
+          d.dir('project_flutter', [ProjectFactory.flutterIosDir()]),
+        ]).create();
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+      });
+
+      test('then the configured Xcode version is sent', () async {
+        await commandResult;
+
+        expect(_sentXcodeVersion(client), '26.6');
+      });
+
+      test('then the Xcode version is shown', () async {
+        await commandResult;
+
+        expect(
+          logger.infoCalls.map((call) => call.message),
+          contains('Xcode version: 26.6'),
+        );
+      });
+    });
+
+    group('and iOS code and an unquoted Xcode version set in scloud.yaml '
+        'when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() async {
+        await d.dir('monorepo', [
+          d.dir('project_server', [
+            d.file('scloud.yaml', '''
+project:
+  projectId: "$_projectId"
+  app:
+    xcodeVersion: 26.6
+'''),
+          ]),
+          d.dir('project_flutter', [ProjectFactory.flutterIosDir()]),
+        ]).create();
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+      });
+
+      test('then the configured Xcode version is sent', () async {
+        await commandResult;
+
+        expect(_sentXcodeVersion(client), '26.6');
+      });
+    });
+
+    group('and an Xcode version set in scloud.yaml for an app without iOS '
+        'code when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() async {
+        await d.dir('monorepo', [
+          d.dir('project_server', [
+            d.file('scloud.yaml', '''
+project:
+  projectId: "$_projectId"
+  app:
+    xcodeVersion: "26.6"
+'''),
+          ]),
+        ]).create();
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+      });
+
+      test('then no Xcode version is sent', () async {
+        await commandResult;
+
+        expect(_sentXcodeVersion(client), isNull);
       });
     });
 
@@ -3373,6 +3489,51 @@ project:
     },
   );
 
+  group('Given a non-workspace Flutter app with Android code that declares '
+      'its Gradle and Android Gradle Plugin versions', () {
+    setUp(() async {
+      await ProjectFactory.nonWorkspaceFlutterAppDir(
+        contents: [
+          d.dir('lib', [d.file('main.dart', 'void main() {}')]),
+          ProjectFactory.flutterAndroidDir(
+            gradleVersion: '8.12',
+            androidGradlePluginVersion: '8.9.1',
+          ),
+        ],
+      ).create();
+    });
+
+    test('when releasing the app '
+        'then both versions are sent with the request', () async {
+      await cli.run([
+        'app',
+        'publish',
+        '--project',
+        _projectId,
+        '--app-dir',
+        p.join(d.sandbox, 'project_flutter'),
+        '--no-await',
+      ]);
+
+      verify(
+        () => client.appBuilds.createBuilds(
+          appIdentifiers: any(named: 'appIdentifiers'),
+          cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          platforms: any(named: 'platforms'),
+          flutterAppDir: any(named: 'flutterAppDir'),
+          archiveSize: any(named: 'archiveSize'),
+          flutterVersion: any(named: 'flutterVersion'),
+          gradleVersion: '8.12',
+          androidGradlePluginVersion: '8.9.1',
+          versionName: any(named: 'versionName'),
+          commitHash: any(named: 'commitHash'),
+          commitMessage: any(named: 'commitMessage'),
+          branch: any(named: 'branch'),
+        ),
+      ).called(1);
+    });
+  });
+
   group('Given a non-workspace Flutter app with Android code', () {
     setUp(() async {
       await ProjectFactory.nonWorkspaceFlutterAppDir(
@@ -3701,6 +3862,25 @@ String? _sentFlutterVersion(ClientMock client) {
           flutterAppDir: any(named: 'flutterAppDir'),
           archiveSize: any(named: 'archiveSize'),
           flutterVersion: captureAny(named: 'flutterVersion'),
+          versionName: any(named: 'versionName'),
+          commitHash: any(named: 'commitHash'),
+          commitMessage: any(named: 'commitMessage'),
+          branch: any(named: 'branch'),
+        ),
+      ).captured.single
+      as String?;
+}
+
+String? _sentXcodeVersion(ClientMock client) {
+  return verify(
+        () => client.appBuilds.createBuilds(
+          appIdentifiers: any(named: 'appIdentifiers'),
+          cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          platforms: any(named: 'platforms'),
+          flutterAppDir: any(named: 'flutterAppDir'),
+          archiveSize: any(named: 'archiveSize'),
+          flutterVersion: any(named: 'flutterVersion'),
+          xcodeVersion: captureAny(named: 'xcodeVersion'),
           versionName: any(named: 'versionName'),
           commitHash: any(named: 'commitHash'),
           commitMessage: any(named: 'commitMessage'),

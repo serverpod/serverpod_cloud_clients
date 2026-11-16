@@ -728,6 +728,7 @@ Examples
       configuredAppIdentifiers: config?.appIdentifiers ?? const {},
       flutterVersionOverride: flutterVersion,
       configuredFlutterVersion: config?.flutterSdk,
+      configuredXcodeVersion: config?.xcodeVersion,
       readLocalFlutterVersion: runner.serviceProvider.localFlutterVersionReader,
       dartDefineFiles: _dartDefineFiles(dartDefineFiles, configFile, config),
       dartDefines: dartDefines,

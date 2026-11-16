@@ -152,15 +152,42 @@ dependencies:
   /// app module declares [applicationId], as `flutter create` lays it out.
   /// [releaseSigning] is added to the `android` block of the app module,
   /// such as [debugKeyReleaseSigning] or [serverpodCloudReleaseSigning].
+  /// With [gradleVersion], the Gradle wrapper downloads that distribution.
+  /// With [androidGradlePluginVersion], the Gradle settings declare that
+  /// version of the Android Gradle Plugin.
   static d.DirectoryDescriptor flutterAndroidDir({
     String applicationId = 'com.acme.app',
     String releaseSigning = '',
     String? displayName,
     Map<String, String> stringResources = const {},
     bool withDefaultAppIcon = false,
+    String? gradleVersion,
+    String? androidGradlePluginVersion,
   }) {
     return d.dir('android', [
       d.file('build.gradle.kts', ''),
+      if (gradleVersion != null)
+        d.dir('gradle', [
+          d.dir('wrapper', [
+            d.file('gradle-wrapper.properties', '''
+distributionBase=GRADLE_USER_HOME
+distributionPath=wrapper/dists
+zipStoreBase=GRADLE_USER_HOME
+zipStorePath=wrapper/dists
+distributionUrl=https\\://services.gradle.org/distributions/gradle-$gradleVersion-all.zip
+'''),
+          ]),
+        ]),
+      if (androidGradlePluginVersion != null)
+        d.file('settings.gradle.kts', '''
+plugins {
+    id("dev.flutter.flutter-plugin-loader") version "1.0.0"
+    id("com.android.application") version "$androidGradlePluginVersion" apply false
+    id("org.jetbrains.kotlin.android") version "2.1.0" apply false
+}
+
+include(":app")
+'''),
       d.dir('app', [
         if (withDefaultAppIcon)
           d.dir('src', [

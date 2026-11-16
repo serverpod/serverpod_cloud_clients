@@ -8,6 +8,10 @@ class ScloudConfig {
   /// `project.app.flutterSdk`.
   final String? flutterSdk;
 
+  /// The Xcode version to build the iOS app with, such as `27.2`, from
+  /// `project.app.xcodeVersion`.
+  final String? xcodeVersion;
+
   /// The path to the Flutter app directory, relative to the directory of
   /// the configuration file, from `project.app.dir`.
   final String? appDir;
@@ -27,6 +31,7 @@ class ScloudConfig {
     required this.projectId,
     this.dartSdk,
     this.flutterSdk,
+    this.xcodeVersion,
     this.appDir,
     this.appIdentifiers = const {},
     this.dartDefineFromFile = const [],
@@ -41,6 +46,11 @@ class ScloudConfig {
       projectId: project['projectId'] as String? ?? '',
       dartSdk: project['dartSdk'] as String?,
       flutterSdk: app['flutterSdk'] as String?,
+      xcodeVersion: switch (app['xcodeVersion']) {
+        final String version => version,
+        final double version => '$version',
+        _ => null,
+      },
       appDir: app['dir'] as String?,
       appIdentifiers: switch (app['identifiers']) {
         final Map<String, dynamic> identifiers => {
@@ -63,6 +73,7 @@ class ScloudConfig {
     final app = {
       if (appDir != null) 'dir': appDir,
       if (flutterSdk != null) 'flutterSdk': flutterSdk,
+      if (xcodeVersion != null) 'xcodeVersion': xcodeVersion,
       if (appIdentifiers.isNotEmpty)
         'identifiers': {
           for (final MapEntry(key: platform, value: identifier)
@@ -86,6 +97,7 @@ class ScloudConfig {
     String? projectId,
     String? dartSdk,
     String? flutterSdk,
+    String? xcodeVersion,
     String? appDir,
     Map<FlutterPlatform, String>? appIdentifiers,
     List<String>? dartDefineFromFile,
@@ -95,6 +107,7 @@ class ScloudConfig {
       projectId: projectId ?? this.projectId,
       dartSdk: dartSdk ?? this.dartSdk,
       flutterSdk: flutterSdk ?? this.flutterSdk,
+      xcodeVersion: xcodeVersion ?? this.xcodeVersion,
       appDir: appDir ?? this.appDir,
       appIdentifiers: appIdentifiers ?? this.appIdentifiers,
       dartDefineFromFile: dartDefineFromFile ?? this.dartDefineFromFile,
