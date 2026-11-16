@@ -822,6 +822,15 @@ class EndpointAppBuilds extends _isc.EndpointRef {
   /// with. When null, the builds use the latest stable release.
   /// A release that does not exist fails the builds.
   ///
+  /// [xcodeVersion] is the Xcode version to make the iOS build with, such
+  /// as `27.2`. When null, the build uses the Xcode version pinned for app
+  /// builds. A version the build service does not have fails the build.
+  ///
+  /// [gradleVersion] and [androidGradlePluginVersion] are the Gradle and
+  /// Android Gradle Plugin versions the app declares. They are recorded on
+  /// the Android build as given. Clients that leave them out get builds
+  /// without them.
+  ///
   /// [dartDefines] holds the dart defines to build the app with, by key.
   /// A `SERVER_URL` among them is ignored: every build is given the URL of
   /// the project's API server under that key.
@@ -829,7 +838,8 @@ class EndpointAppBuilds extends _isc.EndpointRef {
   /// Throws [InvalidValueException] if [archiveSize] is not positive,
   /// [platforms] is empty or repeats a platform, [appIdentifiers] does not
   /// name exactly the [platforms], an app identifier is invalid,
-  /// [flutterVersion] is not a release version, or a key of [dartDefines]
+  /// [flutterVersion] is not a release version, [xcodeVersion] is not an
+  /// Xcode version, or a key of [dartDefines]
   /// is empty or contains `=`.
   /// Throws [UploadTooLargeException] if [archiveSize] exceeds the upload
   /// limit. Throws [AppPlatformNotSetUpException] if the publishing setup
@@ -846,6 +856,9 @@ class EndpointAppBuilds extends _isc.EndpointRef {
     required int archiveSize,
     Map<_id4pe5bk.AppPlatform, String>? appIdentifiers,
     String? flutterVersion,
+    String? xcodeVersion,
+    String? gradleVersion,
+    String? androidGradlePluginVersion,
     Map<String, String>? dartDefines,
     String? versionName,
     String? commitHash,
@@ -863,6 +876,9 @@ class EndpointAppBuilds extends _isc.EndpointRef {
           ? null
           : _iod2a87h.Protocol().mapContainerToJson(appIdentifiers),
       'flutterVersion': flutterVersion,
+      'xcodeVersion': xcodeVersion,
+      'gradleVersion': gradleVersion,
+      'androidGradlePluginVersion': androidGradlePluginVersion,
       'dartDefines': dartDefines,
       'versionName': versionName,
       'commitHash': commitHash,

@@ -31,6 +31,9 @@ abstract class AppBuildSummary
     this.buildNumber,
     this.flutterVersion,
     this.dartVersion,
+    this.xcodeVersion,
+    this.gradleVersion,
+    this.androidGradlePluginVersion,
     this.message,
     this.failureReason,
     this.requestedBy,
@@ -51,6 +54,9 @@ abstract class AppBuildSummary
     String? buildNumber,
     String? flutterVersion,
     String? dartVersion,
+    String? xcodeVersion,
+    String? gradleVersion,
+    String? androidGradlePluginVersion,
     String? message,
     _izmqhuyw.AppBuildFailureReason? failureReason,
     _ijl94k1v.User? requestedBy,
@@ -78,6 +84,10 @@ abstract class AppBuildSummary
       buildNumber: jsonSerialization['buildNumber'] as String?,
       flutterVersion: jsonSerialization['flutterVersion'] as String?,
       dartVersion: jsonSerialization['dartVersion'] as String?,
+      xcodeVersion: jsonSerialization['xcodeVersion'] as String?,
+      gradleVersion: jsonSerialization['gradleVersion'] as String?,
+      androidGradlePluginVersion:
+          jsonSerialization['androidGradlePluginVersion'] as String?,
       message: jsonSerialization['message'] as String?,
       failureReason: jsonSerialization['failureReason'] == null
           ? null
@@ -129,6 +139,19 @@ abstract class AppBuildSummary
   /// not known.
   String? dartVersion;
 
+  /// The Xcode version an iOS build is made with. Null for an Android
+  /// build, and until the build is handed to the build service when none
+  /// was requested.
+  String? xcodeVersion;
+
+  /// The Gradle version an Android build is made with. Null for an iOS
+  /// build, and when it is not known.
+  String? gradleVersion;
+
+  /// The Android Gradle Plugin version an Android build is made with.
+  /// Null for an iOS build, and when it is not known.
+  String? androidGradlePluginVersion;
+
   /// Why the build was rejected or failed: the text of the failed step's
   /// log that explains it when a known one is found, else the build
   /// service's own explanation.
@@ -173,6 +196,9 @@ abstract class AppBuildSummary
     String? buildNumber,
     String? flutterVersion,
     String? dartVersion,
+    String? xcodeVersion,
+    String? gradleVersion,
+    String? androidGradlePluginVersion,
     String? message,
     _izmqhuyw.AppBuildFailureReason? failureReason,
     _ijl94k1v.User? requestedBy = const _UndefinedAppBuildSummary$requestedBy(),
@@ -195,6 +221,10 @@ abstract class AppBuildSummary
       if (buildNumber != null) 'buildNumber': buildNumber,
       if (flutterVersion != null) 'flutterVersion': flutterVersion,
       if (dartVersion != null) 'dartVersion': dartVersion,
+      if (xcodeVersion != null) 'xcodeVersion': xcodeVersion,
+      if (gradleVersion != null) 'gradleVersion': gradleVersion,
+      if (androidGradlePluginVersion != null)
+        'androidGradlePluginVersion': androidGradlePluginVersion,
       if (message != null) 'message': message,
       if (failureReason != null) 'failureReason': failureReason?.toJson(),
       if (requestedBy != null) 'requestedBy': requestedBy?.toJson(),
@@ -219,6 +249,10 @@ abstract class AppBuildSummary
       if (buildNumber != null) 'buildNumber': buildNumber,
       if (flutterVersion != null) 'flutterVersion': flutterVersion,
       if (dartVersion != null) 'dartVersion': dartVersion,
+      if (xcodeVersion != null) 'xcodeVersion': xcodeVersion,
+      if (gradleVersion != null) 'gradleVersion': gradleVersion,
+      if (androidGradlePluginVersion != null)
+        'androidGradlePluginVersion': androidGradlePluginVersion,
       if (message != null) 'message': message,
       if (failureReason != null) 'failureReason': failureReason?.toJson(),
       if (requestedBy != null) 'requestedBy': requestedBy?.toJsonForProtocol(),
@@ -254,6 +288,9 @@ class _AppBuildSummaryImpl extends AppBuildSummary {
     String? buildNumber,
     String? flutterVersion,
     String? dartVersion,
+    String? xcodeVersion,
+    String? gradleVersion,
+    String? androidGradlePluginVersion,
     String? message,
     _izmqhuyw.AppBuildFailureReason? failureReason,
     _ijl94k1v.User? requestedBy,
@@ -272,6 +309,9 @@ class _AppBuildSummaryImpl extends AppBuildSummary {
          buildNumber: buildNumber,
          flutterVersion: flutterVersion,
          dartVersion: dartVersion,
+         xcodeVersion: xcodeVersion,
+         gradleVersion: gradleVersion,
+         androidGradlePluginVersion: androidGradlePluginVersion,
          message: message,
          failureReason: failureReason,
          requestedBy: requestedBy,
@@ -296,6 +336,9 @@ class _AppBuildSummaryImpl extends AppBuildSummary {
     Object? buildNumber = _Undefined,
     Object? flutterVersion = _Undefined,
     Object? dartVersion = _Undefined,
+    Object? xcodeVersion = _Undefined,
+    Object? gradleVersion = _Undefined,
+    Object? androidGradlePluginVersion = _Undefined,
     Object? message = _Undefined,
     Object? failureReason = _Undefined,
     _ijl94k1v.User? requestedBy = const _UndefinedAppBuildSummary$requestedBy(),
@@ -317,6 +360,13 @@ class _AppBuildSummaryImpl extends AppBuildSummary {
           ? flutterVersion
           : this.flutterVersion,
       dartVersion: dartVersion is String? ? dartVersion : this.dartVersion,
+      xcodeVersion: xcodeVersion is String? ? xcodeVersion : this.xcodeVersion,
+      gradleVersion: gradleVersion is String?
+          ? gradleVersion
+          : this.gradleVersion,
+      androidGradlePluginVersion: androidGradlePluginVersion is String?
+          ? androidGradlePluginVersion
+          : this.androidGradlePluginVersion,
       message: message is String? ? message : this.message,
       failureReason: failureReason is _izmqhuyw.AppBuildFailureReason?
           ? failureReason

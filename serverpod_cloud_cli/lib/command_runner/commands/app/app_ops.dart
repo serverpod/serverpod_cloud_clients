@@ -49,9 +49,13 @@ abstract class AppOperations {
   /// app version the builds are made with. [flutterVersion] is the Flutter
   /// release version to build with, or null for the latest stable release.
   /// [dartDefines] holds the dart defines to build the app with.
+  /// [xcodeVersion] is the Xcode version to make the iOS build with, or
+  /// null for the one Serverpod Cloud pins.
+  /// [gradleVersion] and [androidGradlePluginVersion] are the versions the
+  /// app declares for its Android build.
   ///
   /// Throws [FailureException] if the request fails, if an app identifier,
-  /// [flutterVersion] or [dartDefines] is invalid, if the publishing setup of a platform
+  /// [flutterVersion], [xcodeVersion] or [dartDefines] is invalid, if the publishing setup of a platform
   /// is incomplete, or if the plan's app builds for the month are used.
   static Future<AppBuildsUpload> createBuilds(
     Client cloudApiClient, {
@@ -61,6 +65,9 @@ abstract class AppOperations {
     required String flutterAppDir,
     required int archiveSize,
     String? flutterVersion,
+    String? xcodeVersion,
+    String? gradleVersion,
+    String? androidGradlePluginVersion,
     Map<String, String>? dartDefines,
     String? versionName,
     GitMetadata? gitMetadata,
@@ -79,6 +86,9 @@ abstract class AppOperations {
         flutterAppDir: flutterAppDir,
         archiveSize: archiveSize,
         flutterVersion: flutterVersion,
+        xcodeVersion: xcodeVersion,
+        gradleVersion: gradleVersion,
+        androidGradlePluginVersion: androidGradlePluginVersion,
         dartDefines: dartDefines,
         versionName: versionName,
         commitHash: gitMetadata?.commitHash,
