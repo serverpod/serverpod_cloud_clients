@@ -19,11 +19,12 @@ import '../../../features/app_builds/models/google_play_access.dart'
 /// The Android publishing setup. A null part is not set up yet.
 abstract class AndroidPublishingSetup
     implements _isc.SerializableModel, _isc.ProtocolSerialization {
-  AndroidPublishingSetup._({this.store, this.signing});
+  AndroidPublishingSetup._({this.store, this.signing, this.packageName});
 
   factory AndroidPublishingSetup({
     _ivee1xvx.GooglePlayAccess? store,
     _idapt6vp.AndroidSigning? signing,
+    String? packageName,
   }) = _AndroidPublishingSetupImpl;
 
   factory AndroidPublishingSetup.fromJson(
@@ -40,12 +41,16 @@ abstract class AndroidPublishingSetup
           : _iod2a87h.Protocol().deserialize<_idapt6vp.AndroidSigning>(
               jsonSerialization['signing'],
             ),
+      packageName: jsonSerialization['packageName'] as String?,
     );
   }
 
   _ivee1xvx.GooglePlayAccess? store;
 
   _idapt6vp.AndroidSigning? signing;
+
+  /// The package name Android builds are published as.
+  String? packageName;
 
   /// Returns a shallow copy of this [AndroidPublishingSetup]
   /// with some or all fields replaced by the given arguments.
@@ -55,6 +60,7 @@ abstract class AndroidPublishingSetup
         const _UndefinedAndroidPublishingSetup$store(),
     _idapt6vp.AndroidSigning? signing =
         const _UndefinedAndroidPublishingSetup$signing(),
+    String? packageName,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -62,6 +68,7 @@ abstract class AndroidPublishingSetup
       '__className__': 'AndroidPublishingSetup',
       if (store != null) 'store': store?.toJson(),
       if (signing != null) 'signing': signing?.toJson(),
+      if (packageName != null) 'packageName': packageName,
     };
   }
 
@@ -71,6 +78,7 @@ abstract class AndroidPublishingSetup
       '__className__': 'AndroidPublishingSetup',
       if (store != null) 'store': store?.toJsonForProtocol(),
       if (signing != null) 'signing': signing?.toJsonForProtocol(),
+      if (packageName != null) 'packageName': packageName,
     };
   }
 
@@ -79,6 +87,8 @@ abstract class AndroidPublishingSetup
     return _isc.SerializationManager.encode(this);
   }
 }
+
+class _Undefined {}
 
 class _UndefinedAndroidPublishingSetup$store extends _isc.UndefinedSentinel
     implements _ivee1xvx.GooglePlayAccess {
@@ -94,7 +104,8 @@ class _AndroidPublishingSetupImpl extends AndroidPublishingSetup {
   _AndroidPublishingSetupImpl({
     _ivee1xvx.GooglePlayAccess? store,
     _idapt6vp.AndroidSigning? signing,
-  }) : super._(store: store, signing: signing);
+    String? packageName,
+  }) : super._(store: store, signing: signing, packageName: packageName);
 
   /// Returns a shallow copy of this [AndroidPublishingSetup]
   /// with some or all fields replaced by the given arguments.
@@ -105,12 +116,14 @@ class _AndroidPublishingSetupImpl extends AndroidPublishingSetup {
         const _UndefinedAndroidPublishingSetup$store(),
     _idapt6vp.AndroidSigning? signing =
         const _UndefinedAndroidPublishingSetup$signing(),
+    Object? packageName = _Undefined,
   }) {
     return AndroidPublishingSetup(
       store: store is _isc.UndefinedSentinel ? this.store?.copyWith() : store,
       signing: signing is _isc.UndefinedSentinel
           ? this.signing?.copyWith()
           : signing,
+      packageName: packageName is String? ? packageName : this.packageName,
     );
   }
 }
