@@ -1131,6 +1131,23 @@ class EndpointAppPublishing extends _isc.EndpointRef {
     {'cloudCapsuleId': cloudCapsuleId, 'bundleId': bundleId},
   );
 
+  /// Sets the package name Android builds are published as, replacing the
+  /// one before.
+  ///
+  /// Throws [InvalidValueException] if [packageName] is blank, not a valid
+  /// Android package name, or Flutter's `com.example` placeholder. Throws
+  /// [ProjectSuspendedException] if the project is suspended. Throws
+  /// [AppPublishingDisabledException] while app publishing is off in this
+  /// environment.
+  _ida.Future<_ia3jvj4n.AppPublishingSetup> setAndroidPackageName({
+    required String cloudCapsuleId,
+    required String packageName,
+  }) => caller.callServerEndpoint<_ia3jvj4n.AppPublishingSetup>(
+    'appPublishing',
+    'setAndroidPackageName',
+    {'cloudCapsuleId': cloudCapsuleId, 'packageName': packageName},
+  );
+
   /// Clears the iOS bundle ID. Idempotent.
   ///
   /// Throws [ProjectSuspendedException] if the project is suspended. Throws
