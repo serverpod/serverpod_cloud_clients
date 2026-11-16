@@ -12,9 +12,9 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
-/// How many app builds the project's owner has used this month against
-/// the plan's allowance. One build is one archive upload, however many
-/// platforms it was built for, and counts once the store accepted it.
+/// How many app builds the project has used this month against its plan's
+/// allowance. One build is one archive upload, however many platforms it
+/// was built for, and counts once the store accepted it.
 abstract class AppBuildUsage
     implements _isc.SerializableModel, _isc.ProtocolSerialization {
   AppBuildUsage._({required this.used, this.limit, required this.resetsAt});

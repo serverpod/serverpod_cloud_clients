@@ -559,6 +559,56 @@ project:
         },
       );
 
+      group(
+        'and an existing scloud.yaml has dart define files when executing link',
+        () {
+          late String dartDefinesProjectDir;
+          late Future commandResult;
+
+          setUp(() async {
+            await ProjectFactory.serverpodServerDir(
+              withDirectoryName: 'dart_defines_server_dir',
+              contents: [
+                d.file('scloud.yaml', '''
+project:
+  projectId: "$projectId"
+  dartDefineFromFile:
+    - ".env.production"
+'''),
+              ],
+            ).create();
+            dartDefinesProjectDir = p.join(
+              d.sandbox,
+              'dart_defines_server_dir',
+            );
+
+            commandResult = cli.run([
+              'project',
+              'link',
+              '--project',
+              projectId,
+              '--project-dir',
+              dartDefinesProjectDir,
+            ]);
+          });
+
+          test('then the dart define files in scloud.yaml are kept', () async {
+            await commandResult;
+
+            final expected = d.dir(dartDefinesProjectDir, [
+              d.file(
+                'scloud.yaml',
+                allOf(
+                  contains('dartDefineFromFile:'),
+                  contains('.env.production'),
+                ),
+              ),
+            ]);
+            await expectLater(expected.validate(), completes);
+          });
+        },
+      );
+
       group('and .tool-versions file with dart entry when executing link', () {
         late Future commandResult;
 

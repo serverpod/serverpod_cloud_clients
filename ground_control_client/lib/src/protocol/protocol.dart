@@ -854,6 +854,7 @@ class Protocol extends _isc.SerializationManager
           _isc.getType<List<_id4pe5bk.AppPlatform>>,
           _isc.getType<Map<_id4pe5bk.AppPlatform, String>>,
           _isc.getType<Map<_id4pe5bk.AppPlatform, String>?>,
+          _isc.getType<Map<String, String>?>,
           _isc.getType<List<_iy6jkon8.AppBuildSummary>>,
           _isc.getType<List<_i7xp31jp.AppBuildArtifact>>,
           _isc.getType<List<_i4oajha3.UpcomingAppPlatform>>,
@@ -2745,6 +2746,15 @@ class Protocol extends _isc.SerializationManager
                       deserialize<String>(e['v']),
                     ),
                   ),
+                )
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<Map<String, String>?>()) {
+      return (data != null
+              ? (data as Map).map(
+                  (k, v) =>
+                      MapEntry(deserialize<String>(k), deserialize<String>(v)),
                 )
               : null)
           as T;

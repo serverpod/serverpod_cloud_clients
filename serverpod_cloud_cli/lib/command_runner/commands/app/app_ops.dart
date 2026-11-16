@@ -48,9 +48,10 @@ abstract class AppOperations {
   /// the ones that replaced a different identifier. [versionName] is the
   /// app version the builds are made with. [flutterVersion] is the Flutter
   /// release version to build with, or null for the latest stable release.
+  /// [dartDefines] holds the dart defines to build the app with.
   ///
-  /// Throws [FailureException] if the request fails, if an app identifier
-  /// or [flutterVersion] is invalid, if the publishing setup of a platform
+  /// Throws [FailureException] if the request fails, if an app identifier,
+  /// [flutterVersion] or [dartDefines] is invalid, if the publishing setup of a platform
   /// is incomplete, or if the plan's app builds for the month are used.
   static Future<AppBuildsUpload> createBuilds(
     Client cloudApiClient, {
@@ -60,6 +61,7 @@ abstract class AppOperations {
     required String flutterAppDir,
     required int archiveSize,
     String? flutterVersion,
+    Map<String, String>? dartDefines,
     String? versionName,
     GitMetadata? gitMetadata,
   }) async {
@@ -77,6 +79,7 @@ abstract class AppOperations {
         flutterAppDir: flutterAppDir,
         archiveSize: archiveSize,
         flutterVersion: flutterVersion,
+        dartDefines: dartDefines,
         versionName: versionName,
         commitHash: gitMetadata?.commitHash,
         commitMessage: gitMetadata?.commitMessage,
