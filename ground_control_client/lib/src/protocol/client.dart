@@ -829,8 +829,8 @@ class EndpointAppBuilds extends _isc.EndpointRef {
   /// Throws [UploadTooLargeException] if [archiveSize] exceeds the upload
   /// limit. Throws [AppPlatformNotSetUpException] if the publishing setup
   /// of a platform in [platforms] is incomplete; no build is created.
-  /// Throws [AppBuildAllowanceExceededException] if the project's owner has
-  /// used every app build the plan allows this month; no build is created.
+  /// Throws [AppBuildAllowanceExceededException] if the project has used
+  /// every app build its plan allows this month; no build is created.
   /// Throws [ProjectSuspendedException] if the project is suspended.
   /// Throws [AppPublishingDisabledException] while app publishing is off in
   /// this environment.
@@ -864,8 +864,8 @@ class EndpointAppBuilds extends _isc.EndpointRef {
     },
   );
 
-  /// Gets the app builds the project's owner has used this month against
-  /// the plan's allowance.
+  /// Gets the app builds the project has used this month against its
+  /// plan's allowance.
   ///
   /// Throws [AppPublishingDisabledException] while app publishing is off in
   /// this environment.

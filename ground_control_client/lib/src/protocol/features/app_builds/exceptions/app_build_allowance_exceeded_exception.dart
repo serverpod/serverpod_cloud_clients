@@ -12,8 +12,8 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
-/// Thrown by createBuilds when the owner has used every app build the plan
-/// allows this month. No build is created. The message says when the
+/// Thrown by createBuilds when the project has used every app build its
+/// plan allows this month. No build is created. The message says when the
 /// allowance resets.
 abstract class AppBuildAllowanceExceededException
     implements
