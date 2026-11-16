@@ -371,7 +371,7 @@ void main() {
             kind: AppDoctorCheckKind.flutterVersion,
             status: AppDoctorCheckStatus.warning,
             detail: 'No Flutter version is requested.',
-            hint: 'Set project.flutterSdk.',
+            hint: 'Set project.app.flutterSdk.',
           ),
         ],
       );
@@ -384,7 +384,7 @@ void main() {
         stdout,
         startsWith(
           '! Flutter version: No Flutter version is requested.\n'
-          '  Set project.flutterSdk.\n',
+          '  Set project.app.flutterSdk.\n',
         ),
       );
     });

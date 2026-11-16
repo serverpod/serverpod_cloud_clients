@@ -139,7 +139,7 @@ abstract class TenantProject {
   static const _scloudAppDirFilename = 'scloud_app_dir';
   static const _selectAppDirectoryHint =
       'Select the Flutter app directory with the --app-dir option, '
-      'or with project.appDir in scloud.yaml.';
+      'or with project.app.dir in scloud.yaml.';
 
   /// Analyzes the tenant project structure, creates bespoke deployment files,
   /// and compiles the list of paths whose contents are to be included. In a

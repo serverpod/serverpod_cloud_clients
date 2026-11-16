@@ -35,7 +35,7 @@ class AppPublishDirOption extends DirOption {
         argName: 'app-dir',
         helpText:
             'The path to the Flutter app directory. '
-            'Defaults to project.appDir in scloud.yaml, the current Flutter app, '
+            'Defaults to project.app.dir in scloud.yaml, the current Flutter app, '
             "or the Flutter app in the server's workspace "
             'or near the server directory.',
         mode: PathExistMode.mustExist,
@@ -94,7 +94,7 @@ class AppPublishFlutterVersionOption extends StringOption {
   static const publishHelpText =
       'The Flutter release version to build the app with. '
       "Defaults to the single version the app's pubspec.yaml requires, "
-      'or else to project.flutterSdk in scloud.yaml, '
+      'or else to project.app.flutterSdk in scloud.yaml, '
       'or else to the version of the local Flutter SDK, '
       'or else to the latest stable release.';
 
@@ -103,7 +103,7 @@ class AppPublishFlutterVersionOption extends StringOption {
       'The Flutter release version to check the app against, as '
       '"app publish --flutter-version" would build it. '
       "Defaults to the single version the app's pubspec.yaml requires, "
-      'or else to project.flutterSdk in scloud.yaml, '
+      'or else to project.app.flutterSdk in scloud.yaml, '
       'or else to the version of the local Flutter SDK. '
       'Without any of them, the build uses the latest stable release.';
 
@@ -150,7 +150,8 @@ class AppPublishDartDefineFromFileOption extends MultiOption<String> {
         helpText:
             'A file in JSON or .env format with dart defines to build the app '
             'with. Can be repeated; a later file replaces the values of an '
-            'earlier one. Defaults to project.dartDefineFromFile in scloud.yaml.',
+            'earlier one. Defaults to project.app.dartDefineFromFile in '
+            'scloud.yaml.',
       );
 }
 
@@ -848,7 +849,7 @@ class CloudAppArtifactsCommand extends CloudCliCommand<AppUploadCommandOption> {
   }
 }
 
-/// Returns the app directory set by project.appDir in [config], read from
+/// Returns the app directory set by project.app.dir in [config], read from
 /// [configFile] and resolved from that file's directory, or else the
 /// Flutter app in the current directory, in the server's workspace, or near
 /// the server directory of [runner].
@@ -877,7 +878,7 @@ Directory _configuredOrWorkspaceAppDirectory(
   if (!appDirectory.existsSync()) {
     throw FailureException(
       error:
-          'The app directory ${appDirectory.path} set by project.appDir '
+          'The app directory ${appDirectory.path} set by project.app.dir '
           'in $configFilePath does not exist.',
     );
   }
@@ -886,7 +887,7 @@ Directory _configuredOrWorkspaceAppDirectory(
 
 /// The files to read the dart defines of an app build from: [requested],
 /// the paths given on the command line, or else the paths of
-/// project.dartDefineFromFile in [config], relative to the directory of
+/// project.app.dartDefineFromFile in [config], relative to the directory of
 /// [configFile].
 List<File> _dartDefineFiles(
   List<String>? requested,
