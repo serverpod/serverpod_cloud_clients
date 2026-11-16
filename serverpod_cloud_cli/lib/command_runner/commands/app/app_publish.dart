@@ -8,6 +8,7 @@ import 'package:serverpod_cloud_cli/command_runner/commands/deploy/deploy_archiv
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy/prepare_project_files.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/file_uploader_factory.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
+import 'package:serverpod_cloud_cli/util/dart_defines.dart';
 import 'package:serverpod_cloud_cli/util/flutter_app_identifier.dart';
 import 'package:serverpod_cloud_cli/util/flutter_app_name.dart';
 import 'package:serverpod_cloud_cli/util/flutter_platform.dart';
@@ -43,6 +44,12 @@ abstract class AppPublish {
   /// the local Flutter SDK, read with [readLocalFlutterVersion]. With none of them, the builds use the
   /// stable channel.
   ///
+  /// The builds are made with the dart defines of [dartDefineFiles], read
+  /// in order, and then of [dartDefines], each a `KEY=VALUE` pair; a later
+  /// value of a key replaces an earlier one. The keys are logged at debug
+  /// level, never the values. A `SERVER_URL` among them is dropped with a warning
+  /// as Serverpod Cloud sets it.
+  ///
   /// When Serverpod Cloud reports that the builds wait in the queue behind
   /// other builds of the account, a note says so before the builds are
   /// followed or announced.
@@ -57,7 +64,8 @@ abstract class AppPublish {
   /// With [wetRun], preparation ends after zipping and saving the archive,
   /// without uploading it or requesting builds.
   ///
-  /// Throws [FailureException] if the app has no code for a platform to
+  /// Throws [FailureException] if a dart defines file cannot be read or is
+  /// not in its format, if the app has no code for a platform to
   /// publish, if none of the default platforms is set up, if the app
   /// identifier of a platform cannot be read or is
   /// refused, if the Flutter version is unsupported or below the Flutter
@@ -81,12 +89,20 @@ abstract class AppPublish {
     String? flutterVersionOverride,
     String? configuredFlutterVersion,
     required LocalFlutterVersionReader readLocalFlutterVersion,
+    List<File> dartDefineFiles = const [],
+    List<String> dartDefines = const [],
     bool awaitBuilds = true,
     bool showFiles = false,
     bool wetRun = false,
     String? outputPath,
   }) async {
     logger.init('Publishing the app of Serverpod Cloud project "$projectId".');
+
+    final buildDartDefines = _collectDartDefines(
+      logger,
+      files: dartDefineFiles,
+      defines: dartDefines,
+    );
 
     var requestedPlatforms = platforms;
     if (requestedPlatforms == null) {
@@ -190,6 +206,7 @@ abstract class AppPublish {
       flutterAppDir: preparer.projectSubPath,
       archiveSize: appZip.length,
       flutterVersion: flutterVersion,
+      dartDefines: buildDartDefines,
       versionName: versionName,
       gitMetadata: gitMetadata,
     );
@@ -259,6 +276,29 @@ abstract class AppPublish {
       appNames: appNames,
       showLogs: true,
     );
+  }
+
+  /// The dart defines of [files], read in order, and then of [defines], or
+  /// null when there are none. A `SERVER_URL` is dropped with a warning.
+  /// The keys are logged at debug level.
+  ///
+  /// Throws [FailureException] if a file cannot be read or is not in its
+  /// format, or if a define is not a `KEY=VALUE` pair.
+  static Map<String, String>? _collectDartDefines(
+    CommandLogger logger, {
+    required List<File> files,
+    required List<String> defines,
+  }) {
+    final dartDefines = DartDefines.collect(files: files, defines: defines);
+    if (dartDefines.remove(DartDefines.serverUrlKey) != null) {
+      logger.warning(
+        'The dart define ${DartDefines.serverUrlKey} is ignored. '
+        "Serverpod Cloud sets it to the URL of the project's API server.",
+      );
+    }
+    if (dartDefines.isEmpty) return null;
+    logger.debug('Dart defines: ${dartDefines.keys.join(', ')}');
+    return dartDefines;
   }
 
   /// Cancels [builds], whose archive failed to upload, so they do not stay

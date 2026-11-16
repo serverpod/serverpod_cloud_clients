@@ -15,6 +15,11 @@ class ScloudConfig {
   /// bundle ID or Android package name. A platform without one takes it
   /// from the app's project files.
   final Map<FlutterPlatform, String> appIdentifiers;
+
+  /// The paths of the files with the dart defines to build the app with,
+  /// relative to the directory of the configuration file, in the order
+  /// they are read.
+  final List<String> dartDefineFromFile;
   final ScloudScripts scripts;
 
   const ScloudConfig({
@@ -23,6 +28,7 @@ class ScloudConfig {
     this.flutterSdk,
     this.appDir,
     this.appIdentifiers = const {},
+    this.dartDefineFromFile = const [],
     required this.scripts,
   });
 
@@ -42,6 +48,11 @@ class ScloudConfig {
         },
         _ => const {},
       },
+      dartDefineFromFile: switch (project['dartDefineFromFile']) {
+        final String path => [path],
+        final List<dynamic> paths => paths.cast<String>(),
+        _ => const [],
+      },
       scripts: ScloudScripts.fromMap(project['scripts'] ?? {}),
     );
   }
@@ -59,6 +70,8 @@ class ScloudConfig {
                 in appIdentifiers.entries)
               platform.name: identifier,
           },
+        if (dartDefineFromFile.isNotEmpty)
+          'dartDefineFromFile': dartDefineFromFile,
         'scripts': scripts.toMap(),
       },
     };
@@ -70,6 +83,7 @@ class ScloudConfig {
     String? flutterSdk,
     String? appDir,
     Map<FlutterPlatform, String>? appIdentifiers,
+    List<String>? dartDefineFromFile,
     ScloudScripts? scripts,
   }) {
     return ScloudConfig(
@@ -78,6 +92,7 @@ class ScloudConfig {
       flutterSdk: flutterSdk ?? this.flutterSdk,
       appDir: appDir ?? this.appDir,
       appIdentifiers: appIdentifiers ?? this.appIdentifiers,
+      dartDefineFromFile: dartDefineFromFile ?? this.dartDefineFromFile,
       scripts: scripts ?? this.scripts,
     );
   }

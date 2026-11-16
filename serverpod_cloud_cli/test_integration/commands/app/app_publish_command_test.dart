@@ -69,6 +69,7 @@ void main() {
         flutterAppDir: any(named: 'flutterAppDir'),
         archiveSize: any(named: 'archiveSize'),
         flutterVersion: any(named: 'flutterVersion'),
+        dartDefines: any(named: 'dartDefines'),
         versionName: any(named: 'versionName'),
         commitHash: any(named: 'commitHash'),
         commitMessage: any(named: 'commitMessage'),
@@ -1334,6 +1335,254 @@ project:
 
         _verifyNoBuildRequested(client);
       });
+    });
+
+    group('and a dart defines file in the app '
+        'when releasing the app with it and a --dart-define', () {
+      late Future<void> commandResult;
+
+      setUp(() async {
+        await d.dir('monorepo', [
+          d.dir('project_flutter', [
+            d.dir('defines', [
+              d.file(
+                'production.json',
+                '{"API_URL": "https://api.example.com", "FLAVOR": "file"}',
+              ),
+            ]),
+          ]),
+        ]).create();
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--dart-define-from-file',
+          p.join(
+            d.sandbox,
+            'monorepo',
+            'project_flutter',
+            'defines',
+            'production.json',
+          ),
+          '--dart-define',
+          'FLAVOR=production,eu',
+          '--no-await',
+        ]);
+      });
+
+      test('then the dart defines are sent with the --dart-define value '
+          'replacing the one of the file', () async {
+        await commandResult;
+
+        expect(_sentDartDefines(client), {
+          'API_URL': 'https://api.example.com',
+          'FLAVOR': 'production,eu',
+        });
+      });
+    });
+
+    group('and a gitignored dart defines file in the app '
+        'when releasing the app with it', () {
+      late Future<void> commandResult;
+
+      setUp(() async {
+        await d.dir('monorepo', [
+          d.dir('project_flutter', [
+            d.file('.gitignore', 'defines/\n'),
+            d.dir('defines', [
+              d.file(
+                'production.json',
+                '{"API_URL": "https://api.example.com"}',
+              ),
+            ]),
+          ]),
+        ]).create();
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--dart-define-from-file',
+          p.join(
+            d.sandbox,
+            'monorepo',
+            'project_flutter',
+            'defines',
+            'production.json',
+          ),
+          '--no-await',
+        ]);
+      });
+
+      test('then the dart defines of the file are sent', () async {
+        await commandResult;
+
+        expect(_sentDartDefines(client), {
+          'API_URL': 'https://api.example.com',
+        });
+      });
+
+      test('then the dart defines file is left out of the archive', () async {
+        await commandResult;
+
+        final fileNames = _uploadedArchive(
+          fileUploader.uploads.single,
+        ).files.map((file) => file.name);
+        expect(fileNames, contains('project_flutter/lib/main.dart'));
+        expect(
+          fileNames,
+          isNot(contains('project_flutter/defines/production.json')),
+        );
+      });
+    });
+
+    group('when releasing the app with a --dart-define of SERVER_URL', () {
+      late Future<void> commandResult;
+
+      setUp(() {
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--dart-define',
+          'SERVER_URL=https://example.com/',
+          '--no-await',
+        ]);
+      });
+
+      test('then a warning says that SERVER_URL is ignored', () async {
+        await commandResult;
+
+        expect(
+          logger.warningCalls.map((call) => call.message),
+          contains(
+            'The dart define SERVER_URL is ignored. '
+            "Serverpod Cloud sets it to the URL of the project's API server.",
+          ),
+        );
+      });
+
+      test('then no dart defines are sent', () async {
+        await commandResult;
+
+        expect(_sentDartDefines(client), isNull);
+      });
+    });
+
+    group('and dart defines files set in scloud.yaml', () {
+      setUp(() async {
+        await d.dir('monorepo', [
+          d.dir('project_server', [
+            d.file('scloud.yaml', '''
+project:
+  projectId: "$_projectId"
+  dartDefineFromFile:
+    - "../project_flutter/base.json"
+    - "../project_flutter/production.json"
+'''),
+          ]),
+          d.dir('project_flutter', [
+            d.file(
+              'base.json',
+              '{"API_URL": "https://base", "FLAVOR": "base"}',
+            ),
+            d.file('production.json', '{"FLAVOR": "production"}'),
+            d.file('cli.json', '{"FLAVOR": "cli"}'),
+          ]),
+        ]).create();
+      });
+
+      test('when releasing the app then the dart defines of the files are '
+          'sent, read in order', () async {
+        await cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+
+        expect(_sentDartDefines(client), {
+          'API_URL': 'https://base',
+          'FLAVOR': 'production',
+        });
+      });
+
+      test('when releasing the app with --dart-define-from-file then only '
+          'that file is read', () async {
+        await cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--dart-define-from-file',
+          p.join(d.sandbox, 'monorepo', 'project_flutter', 'cli.json'),
+          '--no-await',
+        ]);
+
+        expect(_sentDartDefines(client), {'FLAVOR': 'cli'});
+      });
+    });
+
+    group('when releasing the app with a dart defines file that does not '
+        'exist', () {
+      late Future<void> commandResult;
+
+      setUp(() {
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--dart-define-from-file',
+          p.join(d.sandbox, 'missing.json'),
+          '--no-await',
+        ]);
+      });
+
+      test('then the command throws ErrorExitException', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then no build is requested', () async {
+        await commandResult.catchError((_) {});
+
+        _verifyNoBuildRequested(client);
+      });
+    });
+
+    test('when releasing the app with a --dart-define without "=" '
+        'then the command throws UsageException', () async {
+      await expectLater(
+        cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--dart-define',
+          'FLAVOR',
+          '--no-await',
+        ]),
+        throwsA(isA<UsageException>()),
+      );
     });
 
     group('when releasing the app with an invalid --flutter-version', () {
@@ -3451,6 +3700,25 @@ String? _sentFlutterVersion(ClientMock client) {
       as String?;
 }
 
+Map<String, String>? _sentDartDefines(ClientMock client) {
+  return verify(
+        () => client.appBuilds.createBuilds(
+          appIdentifiers: any(named: 'appIdentifiers'),
+          cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          platforms: any(named: 'platforms'),
+          flutterAppDir: any(named: 'flutterAppDir'),
+          archiveSize: any(named: 'archiveSize'),
+          flutterVersion: any(named: 'flutterVersion'),
+          dartDefines: captureAny(named: 'dartDefines'),
+          versionName: any(named: 'versionName'),
+          commitHash: any(named: 'commitHash'),
+          commitMessage: any(named: 'commitMessage'),
+          branch: any(named: 'branch'),
+        ),
+      ).captured.single
+      as Map<String, String>?;
+}
+
 void _verifyNoBuildRequested(ClientMock client) {
   verifyNever(
     () => client.appBuilds.createBuilds(
@@ -3460,6 +3728,7 @@ void _verifyNoBuildRequested(ClientMock client) {
       flutterAppDir: any(named: 'flutterAppDir'),
       archiveSize: any(named: 'archiveSize'),
       flutterVersion: any(named: 'flutterVersion'),
+      dartDefines: any(named: 'dartDefines'),
       versionName: any(named: 'versionName'),
       commitHash: any(named: 'commitHash'),
       commitMessage: any(named: 'commitMessage'),

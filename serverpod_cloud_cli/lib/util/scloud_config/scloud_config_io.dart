@@ -13,6 +13,12 @@ final _schema = YamlMap.wrap({
     'dartSdk': YamlOptional(String),
     'flutterSdk': YamlOptional(String),
     'appDir': YamlOptional(String),
+    'dartDefineFromFile': YamlOptional(
+      YamlUnion({
+        [String],
+        String,
+      }),
+    ),
     'appIdentifiers': YamlOptional(
       YamlMap.wrap({
         'ios': YamlOptional(String),

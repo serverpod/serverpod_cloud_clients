@@ -822,10 +822,15 @@ class EndpointAppBuilds extends _isc.EndpointRef {
   /// with. When null, the builds use the latest stable release.
   /// A release that does not exist fails the builds.
   ///
+  /// [dartDefines] holds the dart defines to build the app with, by key.
+  /// A `SERVER_URL` among them is ignored: every build is given the URL of
+  /// the project's API server under that key.
+  ///
   /// Throws [InvalidValueException] if [archiveSize] is not positive,
   /// [platforms] is empty or repeats a platform, [appIdentifiers] does not
-  /// name exactly the [platforms], an app identifier is invalid, or
-  /// [flutterVersion] is not a release version.
+  /// name exactly the [platforms], an app identifier is invalid,
+  /// [flutterVersion] is not a release version, or a key of [dartDefines]
+  /// is empty or contains `=`.
   /// Throws [UploadTooLargeException] if [archiveSize] exceeds the upload
   /// limit. Throws [AppPlatformNotSetUpException] if the publishing setup
   /// of a platform in [platforms] is incomplete; no build is created.
@@ -841,6 +846,7 @@ class EndpointAppBuilds extends _isc.EndpointRef {
     required int archiveSize,
     Map<_id4pe5bk.AppPlatform, String>? appIdentifiers,
     String? flutterVersion,
+    Map<String, String>? dartDefines,
     String? versionName,
     String? commitHash,
     String? commitMessage,
@@ -857,6 +863,7 @@ class EndpointAppBuilds extends _isc.EndpointRef {
           ? null
           : _iod2a87h.Protocol().mapContainerToJson(appIdentifiers),
       'flutterVersion': flutterVersion,
+      'dartDefines': dartDefines,
       'versionName': versionName,
       'commitHash': commitHash,
       'commitMessage': commitMessage,

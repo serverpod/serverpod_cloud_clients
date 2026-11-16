@@ -15,6 +15,7 @@ import 'package:serverpod_cloud_cli/constants.dart'
     show ProjectConfigFileConstants;
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart'
     show ErrorExitException, FailureException;
+import 'package:serverpod_cloud_cli/util/dart_defines.dart';
 import 'package:serverpod_cloud_cli/util/flutter_platform.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
@@ -116,6 +117,43 @@ class AppPublishFlutterVersionOption extends StringOption {
        );
 }
 
+class AppPublishDartDefineOption extends MultiOption<String> {
+  const AppPublishDartDefineOption()
+    : super(
+        multiParser: const MultiParser(StringParser(), separator: null),
+        argName: 'dart-define',
+        valueHelp: 'key=value',
+        helpText:
+            'A dart define to build the app with, as KEY=VALUE. '
+            'Can be repeated. Replaces the value of the same key from a '
+            'dart defines file. SERVER_URL is always set by Serverpod Cloud.',
+        customValidator: _validateDartDefines,
+      );
+
+  static void _validateDartDefines(List<String> defines) {
+    for (final define in defines) {
+      try {
+        DartDefines.parseDefine(define);
+      } on FormatException catch (e) {
+        throw UsageException(e.message, '');
+      }
+    }
+  }
+}
+
+class AppPublishDartDefineFromFileOption extends MultiOption<String> {
+  const AppPublishDartDefineFromFileOption()
+    : super(
+        multiParser: const MultiParser(StringParser(), separator: null),
+        argName: 'dart-define-from-file',
+        valueHelp: 'path',
+        helpText:
+            'A file in JSON or .env format with dart defines to build the app '
+            'with. Can be repeated; a later file replaces the values of an '
+            'earlier one. Defaults to project.dartDefineFromFile in scloud.yaml.',
+      );
+}
+
 class AppPublishAwaitOption extends FlagOption {
   const AppPublishAwaitOption({super.group})
     : super(
@@ -181,6 +219,8 @@ enum AppPublishCommandOption<V> implements OptionDefinition<V> {
   appDir(AppPublishDirOption()),
   platforms(AppPublishPlatformsOption()),
   flutterVersion(AppPublishFlutterVersionOption()),
+  dartDefine(AppPublishDartDefineOption()),
+  dartDefineFromFile(AppPublishDartDefineFromFileOption()),
   wait(AppPublishAwaitOption()),
   showFiles(
     FlagOption(
@@ -459,6 +499,10 @@ Examples
 
     \$ $baseCommand app publish --flutter-version 3.50.0
 
+  Publish the app built with dart defines
+
+    \$ $baseCommand app publish --dart-define-from-file .env --dart-define FLAVOR=production
+
   Publish the app without waiting for its builds to finish
 
     \$ $baseCommand app publish --no-await
@@ -486,6 +530,12 @@ Examples
       AppPublishCommandOption.flutterVersion,
     );
     final awaitBuilds = commandConfig.value(AppPublishCommandOption.wait);
+    final dartDefines =
+        commandConfig.optionalValue(AppPublishCommandOption.dartDefine) ??
+        const <String>[];
+    final dartDefineFiles = commandConfig.optionalValue(
+      AppPublishCommandOption.dartDefineFromFile,
+    );
 
     final configFile = globalConfiguration.projectConfigFile;
     final config = configFile == null
@@ -510,6 +560,8 @@ Examples
       flutterVersionOverride: flutterVersion,
       configuredFlutterVersion: config?.flutterSdk,
       readLocalFlutterVersion: runner.serviceProvider.localFlutterVersionReader,
+      dartDefineFiles: _dartDefineFiles(dartDefineFiles, configFile, config),
+      dartDefines: dartDefines,
       configFileName: _configFileName(configFile),
       awaitBuilds: awaitBuilds,
       showFiles: commandConfig.value(AppPublishCommandOption.showFiles),
@@ -830,6 +882,27 @@ Directory _configuredOrWorkspaceAppDirectory(
     );
   }
   return appDirectory;
+}
+
+/// The files to read the dart defines of an app build from: [requested],
+/// the paths given on the command line, or else the paths of
+/// project.dartDefineFromFile in [config], relative to the directory of
+/// [configFile].
+List<File> _dartDefineFiles(
+  List<String>? requested,
+  File? configFile,
+  ScloudConfig? config,
+) {
+  if (requested != null && requested.isNotEmpty) {
+    return [for (final path in requested) File(path)];
+  }
+  if (configFile == null || config == null) {
+    return const [];
+  }
+  return [
+    for (final path in config.dartDefineFromFile)
+      File(p.normalize(p.join(p.dirname(configFile.path), path))),
+  ];
 }
 
 /// The name of the project configuration file [configFile], or of the
