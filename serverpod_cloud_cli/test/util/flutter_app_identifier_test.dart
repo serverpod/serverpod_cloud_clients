@@ -569,4 +569,305 @@ android {
       );
     });
   });
+
+  group(
+    "Given an Android app module with Flutter's placeholder package name",
+    () {
+      setUp(() async {
+        await d.dir('app', [
+          ProjectFactory.flutterAndroidDir(applicationId: 'com.example.my_app'),
+        ]).create();
+      });
+
+      test('when reading the Android app identifier allowing the placeholder '
+          'then the placeholder is returned', () {
+        expect(
+          readAppIdentifier(
+            appDirectory(),
+            FlutterPlatform.android,
+            allowPlaceholder: true,
+          ),
+          'com.example.my_app',
+        );
+      });
+
+      group('when writing a new package name', () {
+        late String changedPath;
+
+        setUp(() {
+          changedPath = writeAppIdentifier(
+            appDirectory(),
+            FlutterPlatform.android,
+            from: 'com.example.my_app',
+            to: 'space.serverpod.my_project',
+          );
+        });
+
+        test('then the path of the Gradle build file is returned', () {
+          expect(changedPath, 'android/app/build.gradle.kts');
+        });
+
+        test('then applicationId is set to the new package name', () async {
+          await expectLater(
+            d.dir('app', [
+              d.dir('android', [
+                d.dir('app', [
+                  d.file(
+                    'build.gradle.kts',
+                    contains('applicationId = "space.serverpod.my_project"'),
+                  ),
+                ]),
+              ]),
+            ]).validate(),
+            completes,
+          );
+        });
+
+        test('then the namespace keeps the placeholder', () async {
+          await expectLater(
+            d.dir('app', [
+              d.dir('android', [
+                d.dir('app', [
+                  d.file(
+                    'build.gradle.kts',
+                    contains('namespace = "com.example.my_app"'),
+                  ),
+                ]),
+              ]),
+            ]).validate(),
+            completes,
+          );
+        });
+
+        test('then reading the package name returns the new one', () {
+          expect(
+            readAppIdentifier(appDirectory(), FlutterPlatform.android),
+            'space.serverpod.my_project',
+          );
+        });
+      });
+
+      test('when writing a package name over one the file does not set '
+          'then throws FailureException', () {
+        expect(
+          () => writeAppIdentifier(
+            appDirectory(),
+            FlutterPlatform.android,
+            from: 'com.acme.other',
+            to: 'space.serverpod.my_project',
+          ),
+          throwsA(
+            isA<FailureException>().having((e) => e.errors, 'errors', [
+              'The Android package name could not be changed: '
+                  'android/app/build.gradle.kts does not set it to '
+                  'com.acme.other.',
+            ]),
+          ),
+        );
+      });
+    },
+  );
+
+  group("Given an iOS project with Flutter's placeholder bundle ID and a "
+      'test target', () {
+    setUp(() async {
+      await d.dir('app', [
+        ProjectFactory.flutterIosDir(bundleId: 'com.example.myApp'),
+      ]).create();
+    });
+
+    group('when writing a new bundle ID', () {
+      setUp(() {
+        writeAppIdentifier(
+          appDirectory(),
+          FlutterPlatform.ios,
+          from: 'com.example.myApp',
+          to: 'space.serverpod.my-project',
+        );
+      });
+
+      test('then reading the bundle ID returns the new one', () {
+        expect(
+          readAppIdentifier(appDirectory(), FlutterPlatform.ios),
+          'space.serverpod.my-project',
+        );
+      });
+
+      test('then the test target bundle ID is built on the new one', () async {
+        await expectLater(
+          d.dir('app', [
+            d.dir('ios', [
+              d.dir('Runner.xcodeproj', [
+                d.file(
+                  'project.pbxproj',
+                  allOf(
+                    contains(
+                      'PRODUCT_BUNDLE_IDENTIFIER = '
+                      'space.serverpod.my-project.RunnerTests;',
+                    ),
+                    isNot(contains('com.example')),
+                  ),
+                ),
+              ]),
+            ]),
+          ]).validate(),
+          completes,
+        );
+      });
+    });
+  });
+
+  group('Given an app without an iOS project', () {
+    setUp(() async {
+      await d.dir('app', []).create();
+    });
+
+    test('when writing a bundle ID then throws FailureException', () {
+      expect(
+        () => writeAppIdentifier(
+          appDirectory(),
+          FlutterPlatform.ios,
+          from: 'com.example.myApp',
+          to: 'space.serverpod.my-project',
+        ),
+        throwsA(
+          isA<FailureException>().having((e) => e.errors, 'errors', [
+            'The iOS bundle ID could not be changed: its project file is '
+                'missing.',
+          ]),
+        ),
+      );
+    });
+  });
+
+  group('Given app identifiers to validate', () {
+    for (final (platform, identifier, problem, outcome) in [
+      (FlutterPlatform.android, 'com.acme.app', null, 'it is valid'),
+      (FlutterPlatform.ios, 'com.acme.my-app', null, 'it is valid'),
+      (FlutterPlatform.android, '', 'is empty', 'it is empty'),
+      (
+        FlutterPlatform.android,
+        'com.acme.my-app',
+        'is not valid',
+        'it is not valid',
+      ),
+      (FlutterPlatform.android, 'acme', 'is not valid', 'it is not valid'),
+      (
+        FlutterPlatform.ios,
+        'com.acme.my_app',
+        'is not valid',
+        'it is not valid',
+      ),
+      (
+        FlutterPlatform.ios,
+        'com.example.app',
+        "is Flutter's placeholder",
+        "it is Flutter's placeholder",
+      ),
+    ]) {
+      test('when validating the ${platform.name} identifier "$identifier" '
+          'then $outcome', () {
+        expect(appIdentifierProblem(platform, identifier), problem);
+      });
+    }
+  });
+
+  group('Given project ids', () {
+    for (final (platform, projectId, suggestion) in [
+      (FlutterPlatform.android, 'my-project', 'space.serverpod.my_project'),
+      (FlutterPlatform.ios, 'my-project', 'space.serverpod.my-project'),
+      (FlutterPlatform.android, '1st-app', 'space.serverpod.app1st_app'),
+    ]) {
+      test('when suggesting the ${platform.name} identifier of $projectId '
+          'then $suggestion is suggested', () {
+        expect(suggestAppIdentifier(platform, projectId), suggestion);
+      });
+
+      test('when suggesting the ${platform.name} identifier of $projectId '
+          'then the suggestion is valid', () {
+        final suggested = suggestAppIdentifier(platform, projectId);
+
+        expect(appIdentifierProblem(platform, suggested), isNull);
+      });
+    }
+  });
+
+  group('Given an Android app module whose build file has a commented-out '
+      'applicationId', () {
+    setUp(() async {
+      await d.dir('app', [
+        d.dir('android', [
+          d.dir('app', [
+            d.file('build.gradle.kts', '''
+android {
+    defaultConfig {
+        // applicationId = "com.example.my_app"
+        applicationId = "com.example.my_app"
+    }
+}
+'''),
+          ]),
+        ]),
+      ]).create();
+      writeAppIdentifier(
+        appDirectory(),
+        FlutterPlatform.android,
+        from: 'com.example.my_app',
+        to: 'com.acme.app',
+      );
+    });
+
+    test(
+      'when writing a new package name then the comment line is unchanged',
+      () async {
+        await expectLater(
+          d.dir('app', [
+            d.dir('android', [
+              d.dir('app', [
+                d.file(
+                  'build.gradle.kts',
+                  contains('// applicationId = "com.example.my_app"'),
+                ),
+              ]),
+            ]),
+          ]).validate(),
+          completes,
+        );
+      },
+    );
+  });
+
+  group('Given an Android app module with a Groovy build file that sets '
+      "Flutter's placeholder", () {
+    setUp(() async {
+      await d.dir('app', [
+        d.dir('android', [
+          d.dir('app', [
+            d.file('build.gradle', '''
+android {
+    defaultConfig {
+        applicationId 'com.example.my_app'
+    }
+}
+'''),
+          ]),
+        ]),
+      ]).create();
+    });
+
+    test('when writing a new package name '
+        'then reading the package name returns the new one', () {
+      writeAppIdentifier(
+        appDirectory(),
+        FlutterPlatform.android,
+        from: 'com.example.my_app',
+        to: 'com.acme.app',
+      );
+
+      expect(
+        readAppIdentifier(appDirectory(), FlutterPlatform.android),
+        'com.acme.app',
+      );
+    });
+  });
 }

@@ -581,6 +581,50 @@ class CommandLogger {
     return promptInput(message, defaultValue: defaultValue);
   }
 
+  /// ***Suggested Value Request Guidelines***
+  ///
+  /// Prompts the user to confirm [suggestion] or type another value, in one
+  /// inline prompt below [message]. See [SuggestedValueInput.read] for
+  /// [suggestionLabel], [entryLabel], [entryPlaceholder], [hint] and
+  /// [validate].
+  /// Returns the confirmed value, or null when the user cancels with Escape.
+  ///
+  /// Format:
+  /// ```bash
+  /// <message>
+  /// > (*) <suggestionLabel>
+  ///   ( ) <entryPlaceholder>
+  ///
+  /// up/down move, enter confirm, esc cancel
+  /// ```
+  ///
+  /// Throws [UserInputRequiredException] in `--non-interactive` mode.
+  /// Throws [UserAbortException] if the user aborts with Ctrl+C.
+  Future<String?> inputWithSuggestion(
+    String message, {
+    required String suggestion,
+    required String suggestionLabel,
+    required String entryLabel,
+    required String entryPlaceholder,
+    String? hint,
+    String? Function(String value)? validate,
+  }) async {
+    if (configuration?.nonInteractive == true) {
+      throw UserInputRequiredException.input(message);
+    }
+
+    return SuggestedValueInput.read(
+      terminal: inlineTerminal,
+      prompt: message,
+      suggestion: suggestion,
+      suggestionLabel: suggestionLabel,
+      entryLabel: entryLabel,
+      entryPlaceholder: entryPlaceholder,
+      hint: hint,
+      validate: validate,
+    );
+  }
+
   /// Prompts the user for a string on the terminal.
   ///
   /// Subclasses override this to answer without a terminal.

@@ -143,11 +143,7 @@ abstract class AppSetup {
             ),
           ),
           if (platform == FlutterPlatform.android)
-            _check(
-              platform,
-              AppDoctorCheckKind.releaseSigning,
-              () => 'Set up in ${checkAndroidReleaseSigning(appDirectory)}',
-            ),
+            releaseSigningCheck(appDirectory),
           if (platform == FlutterPlatform.ios)
             _check(
               platform,
@@ -159,6 +155,18 @@ abstract class AppSetup {
           _appIconCheck(appDirectory, platform),
         ],
     ];
+  }
+
+  /// Checks whether the Android app in [appDirectory] signs its release
+  /// builds on Serverpod Cloud with the keystore the build provides. A
+  /// failure links to the docs on release signing. See
+  /// [checkAndroidReleaseSigning].
+  static AppDoctorCheck releaseSigningCheck(Directory appDirectory) {
+    return _check(
+      FlutterPlatform.android,
+      AppDoctorCheckKind.releaseSigning,
+      () => 'Set up in ${checkAndroidReleaseSigning(appDirectory)}',
+    );
   }
 
   /// Checks whether [publishingSetup] of project [projectId] has every part

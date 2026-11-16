@@ -16,6 +16,8 @@ import 'package:serverpod_cloud_cli/constants.dart'
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart'
     show ErrorExitException, FailureException;
 import 'package:serverpod_cloud_cli/util/dart_defines.dart';
+import 'package:serverpod_cloud_cli/util/flutter_app_identifier.dart'
+    show appIdentifierName, appIdentifierProblem;
 import 'package:serverpod_cloud_cli/util/flutter_platform.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
@@ -24,6 +26,7 @@ import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
 import 'app_doctor_check.dart';
 import 'app_publish.dart';
 import 'app_setup.dart';
+import 'app_setup_guide.dart';
 import 'app_ops.dart';
 import 'app_show.dart';
 import 'app_ui.dart';
@@ -60,6 +63,12 @@ class AppPublishPlatformsOption extends MultiOption<FlutterPlatform> {
   /// The help text of the option of `app doctor`.
   static const doctorHelpText =
       'The platforms to check, separated by commas. '
+      'Defaults to the supported platforms the app has code for. '
+      'Supported platforms: android, ios.';
+
+  /// The help text of the option of `app setup`.
+  static const setupHelpText =
+      'The platforms to set up, separated by commas. '
       'Defaults to the supported platforms the app has code for. '
       'Supported platforms: android, ios.';
 
@@ -350,6 +359,63 @@ enum AppDoctorCommandOption<V> implements OptionDefinition<V> {
   final ConfigOptionBase<V> option;
 }
 
+class AppSetupIdentifierOption extends StringOption {
+  const AppSetupIdentifierOption.android()
+    : super(
+        argName: 'android-package-name',
+        valueHelp: 'name',
+        envName: 'SERVERPOD_CLOUD_APP_ANDROID_PACKAGE_NAME',
+        helpText:
+            'The Android package name to publish the app with. Replaces the '
+            'one the app declares, without a prompt.',
+        customValidator: _validateAndroidPackageName,
+      );
+
+  const AppSetupIdentifierOption.ios()
+    : super(
+        argName: 'ios-bundle-id',
+        valueHelp: 'id',
+        envName: 'SERVERPOD_CLOUD_APP_IOS_BUNDLE_ID',
+        helpText:
+            'The iOS bundle ID to publish the app with. Replaces the one the '
+            'app declares, without a prompt.',
+        customValidator: _validateIosBundleId,
+      );
+
+  static void _validateAndroidPackageName(String value) =>
+      _validate(FlutterPlatform.android, value);
+
+  static void _validateIosBundleId(String value) =>
+      _validate(FlutterPlatform.ios, value);
+
+  static void _validate(FlutterPlatform platform, String value) {
+    final problem = appIdentifierProblem(platform, value.trim());
+    if (problem != null) {
+      throw UsageException(
+        'The ${appIdentifierName(platform)} "$value" $problem.',
+        '',
+      );
+    }
+  }
+}
+
+enum AppSetupCommandOption<V> implements OptionDefinition<V> {
+  projectId(ProjectIdOption(excludeSettings: true)),
+  appDir(AppPublishDirOption()),
+  platforms(
+    AppPublishPlatformsOption(
+      helpText: AppPublishPlatformsOption.setupHelpText,
+    ),
+  ),
+  androidPackageName(AppSetupIdentifierOption.android()),
+  iosBundleId(AppSetupIdentifierOption.ios());
+
+  const AppSetupCommandOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
 class CloudAppCommand extends CloudCliCommand {
   @override
   final name = 'app';
@@ -365,6 +431,7 @@ class CloudAppCommand extends CloudCliCommand {
   bool get hidden => true;
 
   CloudAppCommand({required super.logger}) {
+    addSubcommand(CloudAppSetupCommand(logger: logger));
     addSubcommand(CloudAppDoctorCommand(logger: logger));
     addSubcommand(CloudAppPublishCommand(logger: logger));
     addSubcommand(CloudAppShowCommand(logger: logger));
@@ -373,6 +440,107 @@ class CloudAppCommand extends CloudCliCommand {
     addSubcommand(CloudAppLogCommand(logger: logger));
     addSubcommand(CloudAppCancelCommand(logger: logger));
     addSubcommand(CloudAppArtifactsCommand(logger: logger));
+  }
+}
+
+class CloudAppSetupCommand extends CloudCliCommand<AppSetupCommandOption> {
+  @override
+  final name = 'setup';
+
+  @override
+  final description =
+      'Set up the Flutter app to be published. For each platform, checks the '
+      'app identifier and asks for a new one when the app uses the Flutter '
+      'default, unless --android-package-name or --ios-bundle-id sets it, '
+      'then records it on Serverpod Cloud. For Android, also checks the '
+      'release signing. Exits with an error status when a check fails.';
+
+  @override
+  bool get warnIfBillingOverdue => false;
+
+  @override
+  String get usageExamples =>
+      '''\n
+Examples
+
+  Set up the Flutter app of your project
+
+    \$ $baseCommand app setup
+
+  Set up only the Android app
+
+    \$ $baseCommand app setup --platforms android
+
+  Set up the app without prompts, as in CI or for an agent
+
+    \$ $baseCommand app setup --non-interactive --android-package-name com.acme.app --ios-bundle-id com.acme.app
+
+  Set up a Flutter app in a specific directory
+
+    \$ $baseCommand app setup --app-dir my_project_flutter
+
+''';
+
+  CloudAppSetupCommand({required super.logger})
+    : super(options: AppSetupCommandOption.values);
+
+  @override
+  Future<void> runWithOutput(
+    final Configuration<AppSetupCommandOption> commandConfig,
+    final CommandOutput output,
+  ) async {
+    final projectId = commandConfig.value(AppSetupCommandOption.projectId);
+    final appDir = commandConfig.optionalValue(AppSetupCommandOption.appDir);
+    final platforms = commandConfig.optionalValue(
+      AppSetupCommandOption.platforms,
+    );
+    final androidPackageName = commandConfig.optionalValue(
+      AppSetupCommandOption.androidPackageName,
+    );
+    final iosBundleId = commandConfig.optionalValue(
+      AppSetupCommandOption.iosBundleId,
+    );
+
+    final configFile = globalConfiguration.projectConfigFile;
+    final config = configFile == null
+        ? null
+        : ScloudConfigIO.readFromFile(configFile.path);
+
+    final context = await renderCommand(
+      output,
+      operation: () async {
+        final appDirectory =
+            appDir ??
+            _configuredOrWorkspaceAppDirectory(runner, configFile, config);
+        logger.debug('App directory is: ${appDirectory.path}');
+        return AppSetupGuide.setUp(
+          runner.serviceProvider.cloudApiClient,
+          appDirectory: appDirectory,
+          defaultPlatforms: AppPublishPlatformsOption.supportedPlatforms,
+          platforms: platforms?.toSet(),
+          requestedAppIdentifiers: {
+            FlutterPlatform.android: ?androidPackageName?.trim(),
+            FlutterPlatform.ios: ?iosBundleId?.trim(),
+          },
+          configuredAppIdentifiers: config?.appIdentifiers ?? const {},
+          canPrompt: !output.format.isStructured,
+          configFileName: _configFileName(configFile),
+          projectId: projectId,
+          logger: logger,
+        );
+      },
+      textOutputUi: const AppDoctorTextUi(
+        passedMessage: 'The app is set up for publishing.',
+      ),
+    );
+
+    final failed = context
+        .get<List<AppDoctorCheck>>()
+        .where((check) => check.status == AppDoctorCheckStatus.failed)
+        .length;
+    if (failed > 0) {
+      throw ErrorExitException('$failed app setup checks failed.');
+    }
   }
 }
 

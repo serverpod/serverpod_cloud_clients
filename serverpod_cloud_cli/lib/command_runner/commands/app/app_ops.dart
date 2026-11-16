@@ -172,6 +172,48 @@ abstract class AppOperations {
     }
   }
 
+  /// Records [appIdentifier] as the app identifier [platform] builds of
+  /// project [projectId] are published as: the iOS bundle ID or the Android
+  /// package name. It replaces the one recorded before.
+  ///
+  /// Throws [FailureException] if the request fails, if [appIdentifier] is
+  /// not valid for [platform], or if apps cannot be published for
+  /// [platform].
+  static Future<void> setAppIdentifier(
+    Client cloudApiClient, {
+    required String projectId,
+    required FlutterPlatform platform,
+    required String appIdentifier,
+  }) async {
+    final appPlatform = _appPlatform(platform);
+    try {
+      switch (appPlatform) {
+        case AppPlatform.ios:
+          await cloudApiClient.appPublishing.setIosBundleId(
+            cloudCapsuleId: projectId,
+            bundleId: appIdentifier,
+          );
+        case AppPlatform.android:
+          await cloudApiClient.appPublishing.setAndroidPackageName(
+            cloudCapsuleId: projectId,
+            packageName: appIdentifier,
+          );
+      }
+    } on InvalidValueException catch (e) {
+      throw FailureException(error: e.message);
+    } on AppPublishingDisabledException catch (e) {
+      throw FailureException(error: e.message);
+    } on NotFoundException catch (e) {
+      throw FailureException(error: e.message);
+    } on Exception catch (e, stackTrace) {
+      throw FailureException.nested(
+        e,
+        stackTrace,
+        'Failed to record the app identifier of the project.',
+      );
+    }
+  }
+
   /// What each of [platforms] still needs before project [projectId] can
   /// publish to it, with a link to its setup guide in the console. A
   /// platform that is set up has no entry. Empty when the publishing setup

@@ -336,6 +336,14 @@ const _scenarios = [
     '--platforms',
     'ios,android',
   ]),
+  _Scenario('app setup', [
+    'app',
+    'setup',
+    '--project',
+    _projectId,
+    '--app-dir',
+    '../app',
+  ]),
   _Scenario('app doctor', [
     'app',
     'doctor',
@@ -605,7 +613,8 @@ dependencies:
 }
 
 /// Writes a Flutter app whose Android and iOS setup pass the checks of
-/// `app doctor`, and that requests no Flutter version, which is a warning.
+/// `app setup` and `app doctor`, and that requests no Flutter version,
+/// which is a warning.
 void _prepareAppDir(final Directory appDir) {
   File('${appDir.path}/pubspec.yaml').writeAsStringSync('''
 name: acme_flutter

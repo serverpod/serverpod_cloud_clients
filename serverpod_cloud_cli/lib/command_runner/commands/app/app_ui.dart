@@ -348,9 +348,12 @@ class _StepLogsWidget extends OutputWidget {
 /// Shows the checks of `app doctor`, those of the whole app first without a
 /// heading and then those of each platform under its name, each with what
 /// it found and how to address a warning or a failure, followed by a summary
-/// of the failures and warnings.
+/// of the failures and warnings. `app setup` shows its checks the same way.
 class AppDoctorTextUi extends OutputWidget {
-  const AppDoctorTextUi();
+  /// The summary when every check passed.
+  final String passedMessage;
+
+  const AppDoctorTextUi({this.passedMessage = 'No issues found.'});
 
   @override
   OutputWidget build(final OutputContext context) {
@@ -392,7 +395,7 @@ class AppDoctorTextUi extends OutputWidget {
           newParagraph: true,
         )
       else
-        const SuccessTextWidget('No issues found.', newParagraph: true),
+        SuccessTextWidget(passedMessage, newParagraph: true),
     ]);
   }
 }

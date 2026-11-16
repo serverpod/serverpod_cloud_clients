@@ -14,3 +14,4 @@ export 'src/scrolling_section.dart';
 export 'src/scrolling_sink.dart';
 export 'src/select_list.dart';
 export 'src/select_list_style.dart';
+export 'src/suggested_value_input.dart';

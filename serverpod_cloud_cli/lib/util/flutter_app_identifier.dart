@@ -13,17 +13,27 @@ import 'package:serverpod_cloud_cli/util/flutter_platform.dart';
 /// Throws [FailureException] if the file holding it is missing, declares no
 /// identifier, declares more than one, as an app with flavors does, takes it
 /// from a variable or another unquoted value, or declares Flutter's
-/// `com.example` placeholder. Its hint says the identifier can be set in the
-/// project configuration file [configFileName] instead.
+/// `com.example` placeholder, unless [allowPlaceholder] is true. Its hint
+/// says the identifier can be set in the project configuration file
+/// [configFileName] instead.
 /// Throws [ArgumentError] for a platform that apps cannot be published for.
 String readAppIdentifier(
   Directory appDirectory,
   FlutterPlatform platform, {
   String configFileName = ProjectConfigFileConstants.defaultFileName,
+  bool allowPlaceholder = false,
 }) {
   return switch (platform) {
-    FlutterPlatform.ios => _readBundleId(appDirectory, configFileName),
-    FlutterPlatform.android => _readApplicationId(appDirectory, configFileName),
+    FlutterPlatform.ios => _readBundleId(
+      appDirectory,
+      configFileName,
+      allowPlaceholder: allowPlaceholder,
+    ),
+    FlutterPlatform.android => _readApplicationId(
+      appDirectory,
+      configFileName,
+      allowPlaceholder: allowPlaceholder,
+    ),
     FlutterPlatform.linux ||
     FlutterPlatform.macos ||
     FlutterPlatform.windows => throw ArgumentError.value(
@@ -129,7 +139,11 @@ final _quotedValue = RegExp(r'''^["']([^"']*)["']''');
 /// `$name` in Gradle.
 final _variableReference = RegExp(r'\$[({A-Za-z_]');
 
-String _readBundleId(Directory appDirectory, String configFileName) {
+String _readBundleId(
+  Directory appDirectory,
+  String configFileName, {
+  required bool allowPlaceholder,
+}) {
   final file = File(p.join(appDirectory.path, _xcodeProjectPath));
   if (!file.existsSync()) {
     throw FailureException(
@@ -153,13 +167,16 @@ String _readBundleId(Directory appDirectory, String configFileName) {
     source: _xcodeProjectPath,
     setting: 'PRODUCT_BUNDLE_IDENTIFIER',
     configFileName: configFileName,
+    allowPlaceholder: allowPlaceholder,
   );
 }
 
-String _readApplicationId(Directory appDirectory, String configFileName) {
-  final relativePath = _gradleBuildPaths
-      .where((path) => File(p.join(appDirectory.path, path)).existsSync())
-      .firstOrNull;
+String _readApplicationId(
+  Directory appDirectory,
+  String configFileName, {
+  required bool allowPlaceholder,
+}) {
+  final relativePath = _gradleBuildPath(appDirectory);
   if (relativePath == null) {
     throw FailureException(
       error:
@@ -211,6 +228,7 @@ String _readApplicationId(Directory appDirectory, String configFileName) {
     source: relativePath,
     setting: 'applicationId',
     configFileName: configFileName,
+    allowPlaceholder: allowPlaceholder,
   );
 }
 
@@ -220,6 +238,7 @@ String _single(
   required String source,
   required String setting,
   required String configFileName,
+  required bool allowPlaceholder,
 }) {
   final name = appIdentifierName(platform);
   if (identifiers.length == 1) {
@@ -236,7 +255,7 @@ String _single(
         ),
       );
     }
-    if (_isPlaceholder(identifier)) {
+    if (!allowPlaceholder && _isPlaceholder(identifier)) {
       throw FailureException(
         error: "The $name $identifier is Flutter's placeholder.",
         hint: _withConfigHint(
@@ -274,6 +293,168 @@ String _single(
 /// on it.
 bool _isPlaceholder(String identifier) =>
     identifier == 'com.example' || identifier.startsWith('com.example.');
+
+/// An iOS bundle ID: alphanumeric segments, with hyphens, separated by
+/// periods.
+final _iosBundleIdPattern = RegExp(r'^[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*$');
+
+/// An Android package name: two or more segments separated by periods, each
+/// a letter followed by letters, digits or underscores.
+final _androidPackageNamePattern = RegExp(
+  r'^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z][A-Za-z0-9_]*)+$',
+);
+
+/// What is wrong with [identifier] as the app identifier of [platform],
+/// like "is not valid" or "is Flutter's placeholder", or null when
+/// Serverpod Cloud can publish the app with it.
+///
+/// Throws [ArgumentError] for a platform that apps cannot be published for.
+String? appIdentifierProblem(FlutterPlatform platform, String identifier) {
+  final pattern = switch (platform) {
+    FlutterPlatform.ios => _iosBundleIdPattern,
+    FlutterPlatform.android => _androidPackageNamePattern,
+    FlutterPlatform.linux ||
+    FlutterPlatform.macos ||
+    FlutterPlatform.windows => throw ArgumentError.value(
+      platform,
+      'platform',
+      'has no app identifier to publish with',
+    ),
+  };
+  if (identifier.isEmpty) return 'is empty';
+  if (!pattern.hasMatch(identifier)) {
+    return 'is not valid';
+  }
+  if (_isPlaceholder(identifier)) {
+    return "is Flutter's placeholder";
+  }
+  return null;
+}
+
+/// The app identifier Serverpod Cloud suggests for [platform] in project
+/// [projectId]: `space.serverpod.` followed by the project id, with the
+/// characters the identifier of [platform] does not allow replaced.
+///
+/// Throws [ArgumentError] for a platform that apps cannot be published for.
+String suggestAppIdentifier(FlutterPlatform platform, String projectId) {
+  final name = projectId.toLowerCase();
+  final segment = switch (platform) {
+    FlutterPlatform.ios => name.replaceAll(RegExp(r'[^a-z0-9-]+'), '-'),
+    FlutterPlatform.android => switch (name.replaceAll(
+      RegExp(r'[^a-z0-9_]+'),
+      '_',
+    )) {
+      final name when name.startsWith(RegExp('[a-z]')) => name,
+      final name => 'app$name',
+    },
+    FlutterPlatform.linux ||
+    FlutterPlatform.macos ||
+    FlutterPlatform.windows => throw ArgumentError.value(
+      platform,
+      'platform',
+      'has no app identifier to publish with',
+    ),
+  };
+  return 'space.serverpod.$segment';
+}
+
+/// The `PRODUCT_BUNDLE_IDENTIFIER` setting of an Xcode project: the text up
+/// to the value, the value, and the text after it.
+final _bundleIdSettingParts = RegExp(
+  r'(PRODUCT_BUNDLE_IDENTIFIER\s*=\s*"?)([^";]+?)("?\s*;)',
+);
+
+/// Replaces the app identifier [from] with [to] in the project files of the
+/// [platform] app in [appDirectory], as [readAppIdentifier] reads it: the
+/// `applicationId` of the Android app module's Gradle build file, or the
+/// `PRODUCT_BUNDLE_IDENTIFIER` of the Xcode project. In the Xcode project,
+/// the bundle IDs built on [from], like the one of the test target, get [to]
+/// in its place too.
+///
+/// Returns the path of the file it changed, relative to [appDirectory].
+///
+/// Throws [FailureException] if the file is missing or does not set the app
+/// identifier to [from].
+/// Throws [ArgumentError] for a platform that apps cannot be published for.
+String writeAppIdentifier(
+  Directory appDirectory,
+  FlutterPlatform platform, {
+  required String from,
+  required String to,
+}) {
+  final relativePath = switch (platform) {
+    FlutterPlatform.ios => _xcodeProjectPath,
+    FlutterPlatform.android => _gradleBuildPath(appDirectory),
+    FlutterPlatform.linux ||
+    FlutterPlatform.macos ||
+    FlutterPlatform.windows => throw ArgumentError.value(
+      platform,
+      'platform',
+      'has no app identifier to publish with',
+    ),
+  };
+  final name = appIdentifierName(platform);
+  final missing = FailureException(
+    error: 'The $name could not be changed: its project file is missing.',
+  );
+  if (relativePath == null) throw missing;
+  final file = File(p.join(appDirectory.path, relativePath));
+  if (!file.existsSync()) throw missing;
+  final content = file.readAsStringSync();
+  final changed = switch (platform) {
+    FlutterPlatform.ios => content.replaceAllMapped(_bundleIdSettingParts, (
+      match,
+    ) {
+      final value = match.group(2) ?? '';
+      if (value != from && !value.startsWith('$from.')) {
+        return match.group(0) ?? '';
+      }
+      return '${match.group(1)}$to${value.substring(from.length)}'
+          '${match.group(3)}';
+    }),
+    _ => _replaceApplicationId(content, from: from, to: to),
+  };
+  if (changed == content) {
+    throw FailureException(
+      error:
+          'The $name could not be changed: $relativePath does not set it to '
+          '$from.',
+    );
+  }
+  file.writeAsStringSync(changed);
+  return relativePath;
+}
+
+/// The Gradle build file [content] with each `applicationId` setting of
+/// the quoted value [from] set to [to] instead. Comment lines stay as they
+/// are.
+String _replaceApplicationId(
+  String content, {
+  required String from,
+  required String to,
+}) {
+  final lines = content.split('\n');
+  for (final (index, line) in lines.indexed) {
+    if (line.trimLeft().startsWith('//')) continue;
+    final match = _applicationIdSetting.firstMatch(line);
+    final value = match?.group(1);
+    if (match == null || value == null) continue;
+    final quoted = _quotedValue.firstMatch(value.trim());
+    if (quoted == null || quoted.group(1)?.trim() != from) continue;
+    final valueStart = match.end - value.length;
+    lines[index] =
+        line.substring(0, valueStart) +
+        value.replaceFirst(from, to) +
+        line.substring(valueStart + value.length);
+  }
+  return lines.join('\n');
+}
+
+/// The path of the Gradle build file of the Android app module in
+/// [appDirectory], relative to it, or null when there is none.
+String? _gradleBuildPath(Directory appDirectory) => _gradleBuildPaths
+    .where((path) => File(p.join(appDirectory.path, path)).existsSync())
+    .firstOrNull;
 
 /// The name of the app identifier of [platform], like "iOS bundle ID".
 String appIdentifierName(FlutterPlatform platform) => switch (platform) {

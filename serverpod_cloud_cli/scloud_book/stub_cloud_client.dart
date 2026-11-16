@@ -725,6 +725,18 @@ void _stubAppBuilds(final ClientMock client) {
         .build(),
   );
   when(
+    () => client.appPublishing.setAndroidPackageName(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+      packageName: any(named: 'packageName'),
+    ),
+  ).thenAnswer((_) async => AppPublishingSetupBuilder().build());
+  when(
+    () => client.appPublishing.setIosBundleId(
+      cloudCapsuleId: any(named: 'cloudCapsuleId'),
+      bundleId: any(named: 'bundleId'),
+    ),
+  ).thenAnswer((_) async => AppPublishingSetupBuilder().build());
+  when(
     () => client.appBuilds.getLatestBuilds(
       cloudCapsuleId: any(named: 'cloudCapsuleId'),
     ),
