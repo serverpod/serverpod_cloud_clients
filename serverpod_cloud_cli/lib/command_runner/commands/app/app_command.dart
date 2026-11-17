@@ -426,10 +426,6 @@ class CloudAppCommand extends CloudCliCommand {
   @override
   String get category => CommandCategories.control;
 
-  /// Hidden until a published app can be built and hosted.
-  @override
-  bool get hidden => true;
-
   CloudAppCommand({required super.logger}) {
     addSubcommand(CloudAppSetupCommand(logger: logger));
     addSubcommand(CloudAppDoctorCommand(logger: logger));
