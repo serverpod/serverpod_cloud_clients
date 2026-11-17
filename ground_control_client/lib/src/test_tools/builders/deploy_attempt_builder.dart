@@ -15,6 +15,7 @@ class DeployAttemptBuilder {
   List<DeployAttemptStage>? _stages;
   DateTime? _startedAt;
   DateTime? _endedAt;
+  DeployAttemptKind _kind = DeployAttemptKind.deploy;
 
   DeployAttemptBuilder()
     : _cloudCapsuleId = 'test-capsule-id',
@@ -64,6 +65,22 @@ class DeployAttemptBuilder {
           .build(),
       DeployAttemptStageBuilder()
           .withDeployStageFailure()
+          .withAttemptId(_attemptId)
+          .build(),
+    ];
+    return this;
+  }
+
+  DeployAttemptBuilder asRestart() {
+    _kind = DeployAttemptKind.restart;
+    _stages = [
+      DeployAttemptStageBuilder()
+          .withDeployStageSuccess()
+          .withAttemptId(_attemptId)
+          .build(),
+      DeployAttemptStageBuilder()
+          .withStageType(DeployStageType.service)
+          .withStageStatus(DeployProgressStatus.success)
           .withAttemptId(_attemptId)
           .build(),
     ];
@@ -153,6 +170,7 @@ class DeployAttemptBuilder {
       branch: _branch,
       deployedById: _deployedBy?.id,
       deployedBy: _deployedBy,
+      kind: _kind,
       stages: _stages
           ?.map(
             (e) => e.copyWith(
