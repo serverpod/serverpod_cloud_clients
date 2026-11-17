@@ -54,6 +54,22 @@ void main() {
       );
     });
 
+    test('when resolving the install arguments for a custom build then '
+        'installs from the custom build registry', () {
+      expect(
+        installArguments(
+          CliInstallation.native,
+          version: Version.parse('1.2.3-preview-main.4'),
+        ),
+        [
+          'install',
+          'serverpod_cloud_cli@{hosted: '
+              'https://quiver.serverpod.space/registry/serverpod, '
+              'version: 1.2.3-preview-main.4}',
+        ],
+      );
+    });
+
     test('when resolving the rerun invocation then runs the invoked '
         'executable with only the arguments', () {
       final invocation = rerunInvocation(
@@ -90,6 +106,25 @@ void main() {
       expect(
         installArguments(CliInstallation.pubGlobal, version: Version(1, 2, 3)),
         ['pub', 'global', 'activate', 'serverpod_cloud_cli', '1.2.3'],
+      );
+    });
+
+    test('when resolving the install arguments for a custom build then '
+        'reactivates the package from the custom build registry', () {
+      expect(
+        installArguments(
+          CliInstallation.pubGlobal,
+          version: Version.parse('1.2.3-preview-56.7'),
+        ),
+        [
+          'pub',
+          'global',
+          'activate',
+          'serverpod_cloud_cli',
+          '1.2.3-preview-56.7',
+          '--hosted-url',
+          'https://quiver.serverpod.space/registry/serverpod',
+        ],
       );
     });
 
@@ -162,6 +197,27 @@ void main() {
       });
 
       expect(attempted, isNot(Version(1, 3, 0)));
+    });
+  });
+
+  group('Given a released version', () {
+    test('when resolving the install command then installs from pub', () {
+      expect(
+        installCommand(Version(1, 2, 3)),
+        'dart install serverpod_cloud_cli',
+      );
+    });
+  });
+
+  group('Given a custom build version', () {
+    test('when resolving the install command then installs that version from '
+        'the custom build registry', () {
+      expect(
+        installCommand(Version.parse('1.2.3-preview-main.4')),
+        "dart install 'serverpod_cloud_cli@{hosted: "
+        'https://quiver.serverpod.space/registry/serverpod, '
+        "version: 1.2.3-preview-main.4}'",
+      );
     });
   });
 }

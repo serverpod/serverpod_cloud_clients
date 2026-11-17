@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/cli_custom_build.dart';
 
 /// The name of the pub package holding the CLI.
 const _cliPackageName = 'serverpod_cloud_cli';
@@ -78,19 +79,46 @@ CliInstallation resolveCliInstallation({
 
 /// The `dart` arguments that install [version] for [installation].
 ///
+/// A custom build version is installed from [customBuildRegistryUrl], any
+/// other version from pub.dev.
+///
 /// Throws a [StateError] for [CliInstallation.source], which cannot be updated.
 List<String> installArguments(
   CliInstallation installation, {
   required Version version,
 }) {
+  final isCustomBuild = customBuildChannelOf(version) != null;
   switch (installation) {
     case CliInstallation.native:
-      return ['install', '$_cliPackageName@$version'];
+      return ['install', _installDescriptor(version)];
     case CliInstallation.pubGlobal:
-      return ['pub', 'global', 'activate', _cliPackageName, '$version'];
+      return [
+        'pub',
+        'global',
+        'activate',
+        _cliPackageName,
+        '$version',
+        if (isCustomBuild) ...['--hosted-url', customBuildRegistryUrl],
+      ];
     case CliInstallation.source:
       throw StateError('A source checkout cannot be updated.');
   }
+}
+
+/// The command a user runs to install [version] of the CLI.
+String installCommand(Version version) {
+  if (customBuildChannelOf(version) == null) {
+    return '$_dartExecutable install $_cliPackageName';
+  }
+  return "$_dartExecutable install '${_installDescriptor(version)}'";
+}
+
+/// The `dart install` package descriptor of [version].
+String _installDescriptor(Version version) {
+  if (customBuildChannelOf(version) == null) {
+    return '$_cliPackageName@$version';
+  }
+  return '$_cliPackageName@{hosted: $customBuildRegistryUrl, version: $version}';
 }
 
 /// The executable and arguments that rerun this CLI with [args].

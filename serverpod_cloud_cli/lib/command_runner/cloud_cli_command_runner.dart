@@ -27,6 +27,7 @@ import 'package:serverpod_cloud_cli/command_runner/commands/storage/storage_comm
 import 'package:serverpod_cloud_cli/command_runner/commands/variable/variable_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/version/version_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cli_run_context_resolver.dart';
+import 'package:serverpod_cloud_cli/command_runner/helpers/cli_custom_build.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cli_updater.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cli_version_checker.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
@@ -114,6 +115,9 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
 
   final CliUpdater _cliUpdater;
 
+  /// Fetches the latest version on the custom build channel of this CLI.
+  final CustomBuildVersionFetcher _customBuildVersionFetcher;
+
   /// The version this process was already updated to, if any,
   /// which must not be installed again.
   final Version? _attemptedUpdateVersion;
@@ -163,6 +167,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     required bool enableAnalyticsForAllEnvs,
     required bool adminUserMode,
     required CliUpdater cliUpdater,
+    required CustomBuildVersionFetcher customBuildVersionFetcher,
     required Version? attemptedUpdateVersion,
     OnRunContextResolved? onRunContextResolved,
     OnErrorReport? onErrorReport,
@@ -172,6 +177,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
        _onErrorReport = onErrorReport,
        _serviceProvider = serviceProvider,
        _cliUpdater = cliUpdater,
+       _customBuildVersionFetcher = customBuildVersionFetcher,
        _attemptedUpdateVersion = attemptedUpdateVersion,
        _versionCommand = VersionCommand(logger: logger),
        _enableAnalyticsForAllEnvs = enableAnalyticsForAllEnvs,
@@ -209,6 +215,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     bool enableAnalyticsForAllEnvs = false,
     bool? adminUserMode,
     CliUpdater? cliUpdater,
+    CustomBuildVersionFetcher? customBuildVersionFetcher,
     Version? attemptedUpdateVersion,
     String? baseCommand,
   }) {
@@ -233,6 +240,8 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
       enableAnalyticsForAllEnvs: enableAnalyticsForAllEnvs,
       adminUserMode: adminUserMode,
       cliUpdater: cliUpdater ?? const DartCliUpdater(),
+      customBuildVersionFetcher:
+          customBuildVersionFetcher ?? fetchLatestCustomBuildVersion,
       attemptedUpdateVersion:
           attemptedUpdateVersion ?? attemptedCliUpdateVersion(),
       onRunContextResolved: onRunContextResolved,
@@ -320,8 +329,19 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     }
   }
 
+  /// Fetches the latest version of the CLI on the channel of [version].
+  ///
+  /// A custom build is compared with the latest build on its own channel,
+  /// and a released version with the latest release.
   Future<Version?> _fetchLatestCliVersion() async {
     try {
+      final channel = customBuildChannelOf(version);
+      if (channel != null) {
+        return await _customBuildVersionFetcher(
+          channel,
+        ).timeout(const Duration(seconds: 2));
+      }
+
       return await CLIVersionChecker.fetchLatestCLIVersion(
         logger: logger,
         localStoragePath: globalConfiguration.scloudDir.path,
@@ -686,7 +706,7 @@ class CloudCliCommandRunner extends BetterCommandRunner<GlobalOption, void> {
     var infoMessage =
         '''A new version $latestVersion of Serverpod Cloud CLI is available!
 
-To update to the latest version, run "dart install serverpod_cloud_cli".''';
+To update to the latest version, run "${installCommand(latestVersion)}".''';
 
     if (isRequiredUpdate) {
       infoMessage = '$infoMessage You need to update the CLI to continue.';

@@ -42,11 +42,16 @@ void main() {
 
   tearDown(reportedErrors.clear);
 
+  final fetchedChannels = <String>[];
+
+  tearDown(fetchedChannels.clear);
+
   Future<CloudCliCommandRunner> createCli({
     required Version currentVersion,
     required Version latestVersion,
     FakeCliUpdater? updater,
     Version? attemptedUpdateVersion,
+    Version? latestCustomBuildVersion,
   }) async {
     await ResourceManager.storeLatestCliVersion(
       cliVersionData: PackageVersionData(
@@ -61,6 +66,10 @@ void main() {
       logger: logger,
       version: currentVersion,
       cliUpdater: updater ?? FakeCliUpdater(),
+      customBuildVersionFetcher: (channel) async {
+        fetchedChannels.add(channel);
+        return latestCustomBuildVersion;
+      },
       attemptedUpdateVersion: attemptedUpdateVersion,
       onErrorReport: (error, stackTrace) async {
         reportedErrors.add(error);
@@ -101,6 +110,141 @@ void main() {
         equalsInfoCall(message: 'Serverpod Cloud CLI version: 1.0.0'),
       );
     });
+  });
+
+  group('Given a main branch build and a newer build on its channel '
+      'when calling the cli', () {
+    late FakeCliUpdater updater;
+    late Future commandResult;
+
+    setUp(() async {
+      updater = FakeCliUpdater();
+      final cli = await createCli(
+        currentVersion: Version.parse('1.0.0-preview-main.3'),
+        latestVersion: Version(1, 0, 0),
+        latestCustomBuildVersion: Version.parse('1.0.0-preview-main.4'),
+        updater: updater,
+      );
+
+      commandResult = cli.run(['version', '--config-dir', testCacheFolderPath]);
+    });
+
+    test('then should complete', () async {
+      await expectLater(commandResult, completes);
+    });
+
+    test('then should look up the latest build on the main channel', () async {
+      await commandResult;
+
+      expect(fetchedChannels, ['preview-main']);
+    });
+
+    test('then should install the latest build on the channel', () async {
+      await commandResult;
+
+      expect(updater.installCalls, [Version.parse('1.0.0-preview-main.4')]);
+    });
+
+    test('then should rerun the command', () async {
+      await commandResult;
+
+      expect(updater.rerunCalls, hasLength(1));
+    });
+  });
+
+  group('Given a main branch build that is the latest on its channel and a '
+      'newer release when calling the cli', () {
+    late FakeCliUpdater updater;
+    late Future commandResult;
+
+    setUp(() async {
+      updater = FakeCliUpdater();
+      final cli = await createCli(
+        currentVersion: Version.parse('1.0.0-preview-main.3'),
+        latestVersion: Version(2, 0, 0),
+        latestCustomBuildVersion: Version.parse('1.0.0-preview-main.3'),
+        updater: updater,
+      );
+
+      commandResult = cli.run(['version', '--config-dir', testCacheFolderPath]);
+    });
+
+    test('then should complete', () async {
+      await expectLater(commandResult, completes);
+    });
+
+    test('then should not install anything', () async {
+      await commandResult;
+
+      expect(updater.installCalls, isEmpty);
+    });
+
+    test('then should not alert about the update', () async {
+      await commandResult;
+
+      expect(logger.boxCalls, isEmpty);
+    });
+
+    test('then should run the command in this process', () async {
+      await commandResult;
+
+      expect(
+        logger.infoCalls.first,
+        equalsInfoCall(
+          message: 'Serverpod Cloud CLI version: 1.0.0-preview-main.3',
+        ),
+      );
+    });
+  });
+
+  group('Given a pull request preview build and a newer build on its channel '
+      'when calling the cli with --no-auto-cli-upgrade', () {
+    late FakeCliUpdater updater;
+    late Future commandResult;
+
+    setUp(() async {
+      updater = FakeCliUpdater();
+      final cli = await createCli(
+        currentVersion: Version.parse('1.0.0-preview-123.0'),
+        latestVersion: Version(1, 0, 0),
+        latestCustomBuildVersion: Version.parse('1.0.0-preview-123.1'),
+        updater: updater,
+      );
+
+      commandResult = cli.run([
+        'version',
+        '--config-dir',
+        testCacheFolderPath,
+        '--no-auto-cli-upgrade',
+      ]);
+    });
+
+    test('then should not install anything', () async {
+      await commandResult;
+
+      expect(updater.installCalls, isEmpty);
+    });
+
+    test(
+      'then should alert with the command that installs the build',
+      () async {
+        await commandResult;
+
+        expect(
+          logger.boxCalls.first,
+          equalsBoxCall(
+            message:
+                'A new version 1.0.0-preview-123.1 of Serverpod Cloud CLI is '
+                'available!\n'
+                '\n'
+                'To update to the latest version, run "dart install '
+                "'serverpod_cloud_cli@{hosted: "
+                'https://quiver.serverpod.space/registry/serverpod, '
+                "version: 1.0.0-preview-123.1}'\".",
+          ),
+        );
+      },
+    );
   });
 
   group('Given a newer non-breaking version when calling the cli', () {
