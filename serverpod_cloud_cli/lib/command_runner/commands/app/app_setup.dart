@@ -95,7 +95,8 @@ abstract class AppSetup {
   /// needs, and an app identifier check, which reads the identifier from
   /// [configuredAppIdentifiers] or else from the app's project files.
   /// Android also gets a release signing check and iOS an export compliance
-  /// check. Last, each platform gets an app icon check, which warns while
+  /// check, which warns while the app does not declare whether it uses
+  /// encryption. Last, each platform gets an app icon check, which warns while
   /// the app has the icon of `flutter create`. Messages name the project
   /// configuration file [configFileName].
   ///
@@ -145,16 +146,38 @@ abstract class AppSetup {
           if (platform == FlutterPlatform.android)
             releaseSigningCheck(appDirectory),
           if (platform == FlutterPlatform.ios)
-            _check(
-              platform,
-              AppDoctorCheckKind.exportCompliance,
-              () => readUsesNonExemptEncryption(appDirectory)
-                  ? 'Uses non-exempt encryption'
-                  : 'Uses no non-exempt encryption',
-            ),
+            _exportComplianceCheck(appDirectory),
           _appIconCheck(appDirectory, platform),
         ],
     ];
+  }
+
+  /// Checks whether the iOS app in [appDirectory] answers the export
+  /// compliance question of App Store Connect. A warning links to the docs on
+  /// export compliance. See [readUsesNonExemptEncryption].
+  static AppDoctorCheck _exportComplianceCheck(Directory appDirectory) {
+    const kind = AppDoctorCheckKind.exportCompliance;
+    final bool usesNonExemptEncryption;
+    try {
+      usesNonExemptEncryption = readUsesNonExemptEncryption(appDirectory);
+    } on FailureException catch (exception) {
+      return AppDoctorCheck(
+        platform: FlutterPlatform.ios,
+        kind: kind,
+        status: AppDoctorCheckStatus.warning,
+        detail: exception.errors.join(' '),
+        hint: exception.hint,
+      );
+    }
+
+    return AppDoctorCheck(
+      platform: FlutterPlatform.ios,
+      kind: kind,
+      status: AppDoctorCheckStatus.passed,
+      detail: usesNonExemptEncryption
+          ? 'Uses non-exempt encryption'
+          : 'Uses no non-exempt encryption',
+    );
   }
 
   /// Checks whether the Android app in [appDirectory] signs its release

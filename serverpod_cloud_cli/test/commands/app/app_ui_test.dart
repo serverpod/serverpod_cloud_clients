@@ -247,15 +247,15 @@ void main() {
         data: const [
           AppDoctorCheck(
             platform: FlutterPlatform.ios,
-            kind: AppDoctorCheckKind.appIdentifier,
+            kind: AppDoctorCheckKind.consoleSetup,
             status: AppDoctorCheckStatus.passed,
-            detail: 'com.acme.app',
+            detail: 'Set up',
           ),
           AppDoctorCheck(
             platform: FlutterPlatform.ios,
-            kind: AppDoctorCheckKind.exportCompliance,
+            kind: AppDoctorCheckKind.appIdentifier,
             status: AppDoctorCheckStatus.failed,
-            detail: 'ios/Runner/Info.plist is missing.',
+            detail: 'ios/Runner.xcodeproj/project.pbxproj is missing.',
             hint: 'Recreate the ios project.',
           ),
         ],
@@ -278,7 +278,7 @@ void main() {
       expect(
         stdout,
         contains(
-          '  ✗ Export compliance: ios/Runner/Info.plist is missing.\n'
+          '  ✗ Bundle ID: ios/Runner.xcodeproj/project.pbxproj is missing.\n'
           '    Recreate the ios project.',
         ),
       );

@@ -441,14 +441,14 @@ void main() {
         );
       });
 
-      test('then the export compliance check fails '
+      test('then the export compliance check warns '
           'with a link to the docs', () async {
         await commandResult.catchError((_) {});
 
         expect(
           logger.lineCalls.map((call) => call.line),
           containsAllInOrder([
-            '  ✗ Export compliance: The app does not declare whether it uses '
+            '  ! Export compliance: The app does not declare whether it uses '
                 'encryption.',
             '    Learn more: $iosExportComplianceDocsUrl',
           ]),
@@ -497,7 +497,7 @@ void main() {
           logger.warningCalls,
           contains(
             equalsWarningCall(
-              message: '4 checks failed. Fix them before you publish the app.',
+              message: '3 checks failed. Fix them before you publish the app.',
               newParagraph: true,
             ),
           ),
@@ -539,6 +539,14 @@ void main() {
         );
         expect(releaseSigning['status'], 'failed');
         expect(releaseSigning['hint'], contains(androidReleaseSigningDocsUrl));
+      });
+
+      test('then the export compliance check is a warning with its hint', () {
+        final exportCompliance = checks.singleWhere(
+          (check) => check['check'] == 'exportCompliance',
+        );
+        expect(exportCompliance['status'], 'warning');
+        expect(exportCompliance['hint'], contains(iosExportComplianceDocsUrl));
       });
     });
   });
