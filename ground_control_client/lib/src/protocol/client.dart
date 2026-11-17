@@ -847,8 +847,6 @@ class EndpointAppBuilds extends _isc.EndpointRef {
   /// Throws [AppBuildAllowanceExceededException] if the project has used
   /// every app build its plan allows this month; no build is created.
   /// Throws [ProjectSuspendedException] if the project is suspended.
-  /// Throws [AppPublishingDisabledException] while app publishing is off in
-  /// this environment.
   _ida.Future<_iqiq2vfs.AppBuildsUpload> createBuilds({
     required String cloudCapsuleId,
     required List<_id4pe5bk.AppPlatform> platforms,
@@ -889,9 +887,6 @@ class EndpointAppBuilds extends _isc.EndpointRef {
 
   /// Gets the app builds the project has used this month against its
   /// plan's allowance.
-  ///
-  /// Throws [AppPublishingDisabledException] while app publishing is off in
-  /// this environment.
   _ida.Future<_ihydp8mk.AppBuildUsage> getBuildUsage({
     required String cloudCapsuleId,
   }) => caller.callServerEndpoint<_ihydp8mk.AppBuildUsage>(
@@ -903,8 +898,7 @@ class EndpointAppBuilds extends _isc.EndpointRef {
   /// Gets a build with its steps.
   ///
   /// Throws [NotFoundException] if no build with [buildId] belongs to the
-  /// capsule. Throws [AppPublishingDisabledException] while app publishing
-  /// is off in this environment.
+  /// capsule.
   _ida.Future<_ilkz45dh.AppBuildDetail> getBuild({
     required String cloudCapsuleId,
     required _isc.UuidValue buildId,
@@ -921,8 +915,7 @@ class EndpointAppBuilds extends _isc.EndpointRef {
   ///
   /// Throws [InvalidValueException] if [limit] is negative.
   /// Throws [NotFoundException] if [afterBuildId] does not name a build of
-  /// the capsule. Throws [AppPublishingDisabledException] while app
-  /// publishing is off in this environment.
+  /// the capsule.
   _ida.Future<List<_iy6jkon8.AppBuildSummary>> listBuilds({
     required String cloudCapsuleId,
     _id4pe5bk.AppPlatform? platform,
@@ -941,9 +934,6 @@ class EndpointAppBuilds extends _isc.EndpointRef {
 
   /// Gets the capsule's most recent build per platform, in [AppPlatform]
   /// order. Platforms without a build are left out.
-  ///
-  /// Throws [AppPublishingDisabledException] while app publishing is off in
-  /// this environment.
   _ida.Future<List<_iy6jkon8.AppBuildSummary>> getLatestBuilds({
     required String cloudCapsuleId,
   }) => caller.callServerEndpoint<List<_iy6jkon8.AppBuildSummary>>(
@@ -956,8 +946,7 @@ class EndpointAppBuilds extends _isc.EndpointRef {
   /// [AppPlatform] order.
   ///
   /// Throws [NotFoundException] if no build of [uploadId] belongs to the
-  /// capsule. Throws [AppPublishingDisabledException] while app publishing
-  /// is off in this environment.
+  /// capsule.
   _ida.Future<List<_iy6jkon8.AppBuildSummary>> getUploadBuilds({
     required String cloudCapsuleId,
     required _isc.UuidValue uploadId,
@@ -971,8 +960,7 @@ class EndpointAppBuilds extends _isc.EndpointRef {
   /// again whenever either changes, and closes once the build is final.
   ///
   /// Emits a [NotFoundException] error if no build with [buildId] belongs
-  /// to the capsule, or an [AppPublishingDisabledException] error while app
-  /// publishing is off in this environment.
+  /// to the capsule.
   _ida.Stream<_ilkz45dh.AppBuildDetail> tailBuild({
     required String cloudCapsuleId,
     required _isc.UuidValue buildId,
@@ -992,8 +980,7 @@ class EndpointAppBuilds extends _isc.EndpointRef {
   /// is final. [tailBuild] shows the step that is running meanwhile.
   ///
   /// Emits a [NotFoundException] error if no build with [buildId] belongs
-  /// to the capsule, or an [AppPublishingDisabledException] error while app
-  /// publishing is off in this environment.
+  /// to the capsule.
   _ida.Stream<_i437vrny.AppBuildStepLog> tailStepLogs({
     required String cloudCapsuleId,
     required _isc.UuidValue buildId,
@@ -1011,8 +998,7 @@ class EndpointAppBuilds extends _isc.EndpointRef {
   /// is left as it is.
   ///
   /// Throws [NotFoundException] if no build with [buildId] belongs to the
-  /// capsule. Throws [AppPublishingDisabledException] while app publishing
-  /// is off in this environment.
+  /// capsule.
   _ida.Future<void> cancelBuild({
     required String cloudCapsuleId,
     required _isc.UuidValue buildId,
@@ -1027,8 +1013,7 @@ class EndpointAppBuilds extends _isc.EndpointRef {
   /// service.
   ///
   /// Throws [NotFoundException] if no build with [buildId] belongs to the
-  /// capsule. Throws [AppPublishingDisabledException] while app publishing
-  /// is off in this environment.
+  /// capsule.
   _ida.Future<List<_i7xp31jp.AppBuildArtifact>> listArtifacts({
     required String cloudCapsuleId,
     required _isc.UuidValue buildId,
@@ -1044,8 +1029,7 @@ class EndpointAppBuilds extends _isc.EndpointRef {
   ///
   /// Throws [NotFoundException] if no build with [buildId] belongs to the
   /// capsule or the build has no artifact [artifactId], as once the build
-  /// service has discarded it. Throws [AppPublishingDisabledException]
-  /// while app publishing is off in this environment.
+  /// service has discarded it.
   _ida.Future<String> getArtifactDownloadUrl({
     required String cloudCapsuleId,
     required _isc.UuidValue buildId,
@@ -1063,9 +1047,7 @@ class EndpointAppBuilds extends _isc.EndpointRef {
   /// step ended.
   ///
   /// Throws [NotFoundException] if no build with [buildId] belongs to the
-  /// capsule or the build has no step [stepIndex]. Throws
-  /// [AppPublishingDisabledException] while app publishing is off in this
-  /// environment.
+  /// capsule or the build has no step [stepIndex].
   _ida.Future<String?> getStepLog({
     required String cloudCapsuleId,
     required _isc.UuidValue buildId,
@@ -1087,9 +1069,6 @@ class EndpointAppPublishing extends _isc.EndpointRef {
   String get name => 'appPublishing';
 
   /// Gets the setup of both platforms. A null part is not set up yet.
-  ///
-  /// Throws [AppPublishingDisabledException] while app publishing is off in
-  /// this environment.
   _ida.Future<_ia3jvj4n.AppPublishingSetup> getSetup({
     required String cloudCapsuleId,
   }) => caller.callServerEndpoint<_ia3jvj4n.AppPublishingSetup>(
@@ -1105,9 +1084,7 @@ class EndpointAppPublishing extends _isc.EndpointRef {
   /// Throws [NotFoundException] if no App Store Connect key with
   /// [appStoreConnectKeyId] belongs to the project owner. Throws
   /// [InvalidValueException] if the key is not an App Store Connect key.
-  /// Throws [ProjectSuspendedException] if the project is suspended. Throws
-  /// [AppPublishingDisabledException] while app publishing is off in this
-  /// environment.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<_ia3jvj4n.AppPublishingSetup> setIosStore({
     required String cloudCapsuleId,
     required _isc.UuidValue appStoreConnectKeyId,
@@ -1123,9 +1100,7 @@ class EndpointAppPublishing extends _isc.EndpointRef {
   /// Unlinks the App Store Connect key from iOS. Idempotent.
   ///
   /// Throws [UnauthorizedException] if the caller is not the project owner.
-  /// Throws [ProjectSuspendedException] if the project is suspended. Throws
-  /// [AppPublishingDisabledException] while app publishing is off in this
-  /// environment.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<void> removeIosStore({required String cloudCapsuleId}) =>
       caller.callServerEndpoint<void>('appPublishing', 'removeIosStore', {
         'cloudCapsuleId': cloudCapsuleId,
@@ -1136,8 +1111,7 @@ class EndpointAppPublishing extends _isc.EndpointRef {
   ///
   /// Throws [InvalidValueException] if [bundleId] is blank or Flutter's
   /// `com.example` placeholder. Throws [ProjectSuspendedException] if the
-  /// project is suspended. Throws [AppPublishingDisabledException] while
-  /// app publishing is off in this environment.
+  /// project is suspended.
   _ida.Future<_ia3jvj4n.AppPublishingSetup> setIosBundleId({
     required String cloudCapsuleId,
     required String bundleId,
@@ -1152,9 +1126,7 @@ class EndpointAppPublishing extends _isc.EndpointRef {
   ///
   /// Throws [InvalidValueException] if [packageName] is blank, not a valid
   /// Android package name, or Flutter's `com.example` placeholder. Throws
-  /// [ProjectSuspendedException] if the project is suspended. Throws
-  /// [AppPublishingDisabledException] while app publishing is off in this
-  /// environment.
+  /// [ProjectSuspendedException] if the project is suspended.
   _ida.Future<_ia3jvj4n.AppPublishingSetup> setAndroidPackageName({
     required String cloudCapsuleId,
     required String packageName,
@@ -1166,9 +1138,7 @@ class EndpointAppPublishing extends _isc.EndpointRef {
 
   /// Clears the iOS bundle ID. Idempotent.
   ///
-  /// Throws [ProjectSuspendedException] if the project is suspended. Throws
-  /// [AppPublishingDisabledException] while app publishing is off in this
-  /// environment.
+  /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<void> removeIosBundleId({required String cloudCapsuleId}) =>
       caller.callServerEndpoint<void>('appPublishing', 'removeIosBundleId', {
         'cloudCapsuleId': cloudCapsuleId,
@@ -1180,8 +1150,7 @@ class EndpointAppPublishing extends _isc.EndpointRef {
   ///
   /// Throws [AndroidSigningAlreadySetException] if the capsule already has
   /// an Android keystore. Throws [ProjectSuspendedException] if the project
-  /// is suspended. Throws [AppPublishingDisabledException] while app
-  /// publishing is off in this environment.
+  /// is suspended.
   _ida.Future<_il1lq5on.GeneratedAndroidKeystore> generateAndroidKeystore({
     required String cloudCapsuleId,
   }) => caller.callServerEndpoint<_il1lq5on.GeneratedAndroidKeystore>(
@@ -1197,8 +1166,7 @@ class EndpointAppPublishing extends _isc.EndpointRef {
   /// PKCS12 file [keystorePassword] opens, or holds no key under
   /// [keyAlias]. Throws [AndroidSigningAlreadySetException] if the capsule
   /// already has an Android keystore. Throws [ProjectSuspendedException] if
-  /// the project is suspended. Throws [AppPublishingDisabledException]
-  /// while app publishing is off in this environment.
+  /// the project is suspended.
   _ida.Future<_ia3jvj4n.AppPublishingSetup> uploadAndroidKeystore({
     required String cloudCapsuleId,
     required _idt.ByteData keystore,
@@ -3297,8 +3265,7 @@ class EndpointStoreConnections extends _isc.EndpointRef {
   ///
   /// Throws [InvalidValueException] if [name], the key, or an App Store
   /// Connect issuer id or key id is blank, or App Store Connect rejects the
-  /// key. Throws [AppPublishingDisabledException] while app publishing is
-  /// off in this environment.
+  /// key.
   _ida.Future<_ibvsp6v6.StoreConnection> addConnection({
     required String name,
     required _i7l7qkel.StoreCredential credential,
@@ -3310,9 +3277,6 @@ class EndpointStoreConnections extends _isc.EndpointRef {
 
   /// Lists the owner's connections, oldest first, only for [store] if set,
   /// each with the IDs of the projects that publish with it.
-  ///
-  /// Throws [AppPublishingDisabledException] while app publishing is off in
-  /// this environment.
   _ida.Future<List<_ibvsp6v6.StoreConnection>> listConnections({
     _ilm1z026.StoreType? store,
   }) => caller.callServerEndpoint<List<_ibvsp6v6.StoreConnection>>(
@@ -3327,9 +3291,7 @@ class EndpointStoreConnections extends _isc.EndpointRef {
   /// Throws [NotFoundException] if no connection with [connectionId]
   /// belongs to the owner. Throws [InvalidValueException] if [credential]
   /// is for another store or another Apple team than the connection, or as
-  /// [addConnection] does for its fields and store check. Throws
-  /// [AppPublishingDisabledException] while app publishing is off in this
-  /// environment.
+  /// [addConnection] does for its fields and store check.
   _ida.Future<_ibvsp6v6.StoreConnection> replaceCredential({
     required _isc.UuidValue connectionId,
     required _i7l7qkel.StoreCredential credential,
@@ -3342,8 +3304,7 @@ class EndpointStoreConnections extends _isc.EndpointRef {
   /// Removes connection [connectionId] and deletes its key.
   ///
   /// Throws [NotFoundException] if no connection with [connectionId]
-  /// belongs to the owner. Throws [AppPublishingDisabledException] while
-  /// app publishing is off in this environment.
+  /// belongs to the owner.
   _ida.Future<void> removeConnection({required _isc.UuidValue connectionId}) =>
       caller.callServerEndpoint<void>('storeConnections', 'removeConnection', {
         'connectionId': connectionId,
