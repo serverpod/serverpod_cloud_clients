@@ -1,6 +1,19 @@
 
 # Changelog
 
+## [1.4.0] - 2026-11-17
+
+### Added
+
+- **App publishing** - Build Flutter apps in Serverpod Cloud and publish them to TestFlight and Google Play with `scloud app publish`. The `scloud app` commands also set up and check each platform, follow builds and their logs, and download the built files.
+- **Build configuration** - Pass values to builds with `--dart-define` and `--dart-define-from-file`, and choose the Flutter version with `--flutter-version` or in `scloud.yaml`.
+- **Archive preview and dry runs** - Inspect archive contents and save local build ZIPs without uploading by using `--show-files`, `--dry-run`, and `--output`.
+- **Monthly build allowances** - Each plan includes a monthly number of app builds, with clear feedback on usage limits and reset dates.
+
+### Fixed
+
+- **Idle capsule wake status** - Fixed status displays in `scloud top` and `scloud status live` to show "Starting" instead of "Deploying" when waking up an idle capsule.
+
 ## 1.3.1 - 2026-11-11
 
 ### Fixed
