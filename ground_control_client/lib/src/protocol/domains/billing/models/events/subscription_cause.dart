@@ -48,7 +48,12 @@ enum SubscriptionCause implements _isc.SerializableModel {
   settled,
 
   /// The subscription ended in the billing system.
-  ended;
+  ended,
+
+  /// The amount due of the subscription's billing period that ends at
+  /// `billingPeriodEndsAt` reached the subscription's usage cap.
+  /// `evaluatedAmount` is that amount and `amountThreshold` is the cap.
+  usageCapExceeded;
 
   static SubscriptionCause fromJson(String name) {
     switch (name) {
@@ -68,6 +73,8 @@ enum SubscriptionCause implements _isc.SerializableModel {
         return SubscriptionCause.settled;
       case 'ended':
         return SubscriptionCause.ended;
+      case 'usageCapExceeded':
+        return SubscriptionCause.usageCapExceeded;
       default:
         throw ArgumentError(
           'Value "$name" cannot be converted to "SubscriptionCause"',
