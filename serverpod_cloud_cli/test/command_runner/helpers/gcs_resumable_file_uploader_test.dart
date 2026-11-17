@@ -36,9 +36,6 @@ class _FakeResumableStorage {
 
   int _chunkRequests = 0;
 
-  /// Leaves a chunk request unread and unanswered.
-  bool neverReadChunkBody = false;
-
   /// Reads a chunk request fully and never answers it.
   bool neverAnswerChunk = false;
 
@@ -87,7 +84,6 @@ class _FakeResumableStorage {
     }
 
     _chunkRequests++;
-    if (neverReadChunkBody) return;
     final range = RegExp(r'^bytes (\d+)-(\d+)/(\d+)$').firstMatch(contentRange);
     if (range == null) {
       await request.drain<void>();
@@ -386,20 +382,22 @@ void main() {
     });
 
     group('when the storage stops reading a chunk', () {
-      const chunkSize = 16 * 1024 * 1024;
-      final bytes = Uint8List(chunkSize);
+      final bytes = _randomBytes(_chunkSize);
+      late _StalledReadAdapter adapter;
 
       setUp(() {
-        storage.neverReadChunkBody = true;
+        adapter = _StalledReadAdapter();
       });
 
       test('then a sendTimeout DioException is thrown '
           'after the timeout without progress', () async {
         await expectLater(
-          uploader(
+          GcsResumableFileUploader(
+            storage.description,
+            dio: Dio()..httpClientAdapter = adapter,
+            chunkSize: _chunkSize,
             maxRetries: 0,
-            chunkSize: chunkSize,
-            timeout: const Duration(milliseconds: 300),
+            timeout: const Duration(milliseconds: 100),
           ).upload(Stream.value(bytes), bytes.length),
           throwsA(
             isA<DioException>().having(
@@ -409,6 +407,7 @@ void main() {
             ),
           ),
         );
+        expect(adapter.readBytes, lessThan(bytes.length));
       });
     });
 
@@ -459,4 +458,35 @@ void main() {
       },
     );
   });
+}
+
+/// A Dio adapter that reads the first slice of a request body, then stops
+/// reading and never answers, until the request is cancelled.
+class _StalledReadAdapter implements HttpClientAdapter {
+  int readBytes = 0;
+
+  @override
+  Future<ResponseBody> fetch(
+    final RequestOptions options,
+    final Stream<Uint8List>? requestStream,
+    final Future<void>? cancelFuture,
+  ) async {
+    final subscription = requestStream?.listen(null);
+    subscription?.onData((final data) {
+      readBytes += data.length;
+      subscription.pause();
+    });
+    try {
+      await cancelFuture;
+      throw DioException.requestCancelled(
+        requestOptions: options,
+        reason: 'cancelled',
+      );
+    } finally {
+      await subscription?.cancel();
+    }
+  }
+
+  @override
+  void close({final bool force = false}) {}
 }
