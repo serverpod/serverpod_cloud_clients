@@ -13,6 +13,7 @@ class AdminBillingCommand extends CloudCliCommand {
 
   AdminBillingCommand({required super.logger}) {
     addSubcommand(AdminReissueInvoiceCommand(logger: logger));
+    addSubcommand(AdminRecordPaymentFailedCommand(logger: logger));
   }
 }
 
@@ -57,6 +58,53 @@ class AdminReissueInvoiceCommand
         invoiceId: invoiceId,
       ),
       textOutputUi: const ReissueInvoiceTextUi(),
+    );
+  }
+}
+
+enum AdminRecordPaymentFailedOption<V> implements OptionDefinition<V> {
+  invoiceId(
+    StringOption(
+      argName: 'invoice-id',
+      mandatory: true,
+      helpText: 'The invoice id in the billing system.',
+    ),
+  );
+
+  const AdminRecordPaymentFailedOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class AdminRecordPaymentFailedCommand
+    extends CloudCliCommand<AdminRecordPaymentFailedOption> {
+  @override
+  final name = 'record-payment-failed';
+
+  @override
+  final description =
+      'Record a missed payment failure and run the payment-failed flow.';
+
+  AdminRecordPaymentFailedCommand({required super.logger})
+    : super(options: AdminRecordPaymentFailedOption.values);
+
+  @override
+  Future<void> runWithOutput(
+    final Configuration<AdminRecordPaymentFailedOption> commandConfig,
+    final CommandOutput output,
+  ) async {
+    final invoiceId = commandConfig.value(
+      AdminRecordPaymentFailedOption.invoiceId,
+    );
+
+    await renderCommand(
+      output,
+      operation: () => BillingAdminOperations.recordPaymentFailed(
+        runner.serviceProvider.cloudApiClient,
+        invoiceId: invoiceId,
+      ),
+      textOutputUi: const RecordPaymentFailedTextUi(),
     );
   }
 }

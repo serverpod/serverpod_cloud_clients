@@ -233,4 +233,167 @@ void main() {
       });
     });
   });
+
+  test(
+    'Given admin billing record-payment-failed command when instantiated then requires login',
+    () {
+      expect(
+        AdminRecordPaymentFailedCommand(logger: logger).requireLogin,
+        isTrue,
+      );
+    },
+  );
+
+  group('Given authenticated', () {
+    group('when the payment failure is recorded', () {
+      late Future commandResult;
+      setUp(() async {
+        when(
+          () => client.adminBilling.recordPaymentFailed(invoiceId: 'inv_1'),
+        ).thenAnswer(
+          (_) async => {'invoiceId': 'inv_1', 'outcome': 'recorded'},
+        );
+
+        commandResult = cli.run([
+          'admin',
+          'billing',
+          'record-payment-failed',
+          '--invoice-id',
+          'inv_1',
+        ]);
+      });
+
+      test('then command completes successfully', () async {
+        await expectLater(commandResult, completes);
+      });
+
+      test('then command logs success', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          logger.successCalls,
+          contains(
+            equalsSuccessCall(
+              message: 'Invoice "inv_1" payment failure recorded.',
+              newParagraph: true,
+            ),
+          ),
+        );
+      });
+    });
+
+    group('when executing with --format json', () {
+      late Future commandResult;
+      setUp(() async {
+        when(
+          () => client.adminBilling.recordPaymentFailed(invoiceId: 'inv_1'),
+        ).thenAnswer(
+          (_) async => {'invoiceId': 'inv_1', 'outcome': 'recorded'},
+        );
+
+        commandResult = cli.run([
+          'admin',
+          'billing',
+          'record-payment-failed',
+          '--invoice-id',
+          'inv_1',
+          '--format',
+          'json',
+        ]);
+      });
+
+      test('then emits the outcome as JSON', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        expect(jsonDecode(logger.rawCalls.single.content), {
+          'invoiceId': 'inv_1',
+          'outcome': 'recorded',
+        });
+      });
+    });
+
+    group('when executing with --format yaml', () {
+      late Future commandResult;
+      setUp(() async {
+        when(
+          () => client.adminBilling.recordPaymentFailed(invoiceId: 'inv_1'),
+        ).thenAnswer(
+          (_) async => {'invoiceId': 'inv_1', 'outcome': 'recorded'},
+        );
+
+        commandResult = cli.run([
+          'admin',
+          'billing',
+          'record-payment-failed',
+          '--invoice-id',
+          'inv_1',
+          '--format',
+          'yaml',
+        ]);
+      });
+
+      test('then emits the outcome as YAML', () async {
+        await commandResult;
+
+        expect(logger.lineCalls, isEmpty);
+        expect(yamlDecode(logger.rawCalls.single.content), {
+          'invoiceId': 'inv_1',
+          'outcome': 'recorded',
+        });
+      });
+    });
+
+    group('when the invoice cannot be recorded', () {
+      late Future commandResult;
+      setUp(() async {
+        when(
+          () => client.adminBilling.recordPaymentFailed(invoiceId: 'inv_1'),
+        ).thenThrow(InvalidValueException(message: 'Invoice is not unpaid'));
+
+        commandResult = cli.run([
+          'admin',
+          'billing',
+          'record-payment-failed',
+          '--invoice-id',
+          'inv_1',
+        ]);
+      });
+
+      test('then command prints the reason', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+
+        expect(
+          logger.errorCalls,
+          contains(equalsErrorCall(message: 'Invoice is not unpaid')),
+        );
+      });
+    });
+
+    group('when the invoice is not found', () {
+      late Future commandResult;
+      setUp(() async {
+        when(
+          () => client.adminBilling.recordPaymentFailed(invoiceId: 'missing'),
+        ).thenThrow(NotFoundException(message: 'Invoice not found'));
+
+        commandResult = cli.run([
+          'admin',
+          'billing',
+          'record-payment-failed',
+          '--invoice-id',
+          'missing',
+        ]);
+      });
+
+      test('then command fails with the server message', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+
+        expect(
+          logger.errorCalls,
+          contains(equalsErrorCall(message: 'Invoice not found')),
+        );
+      });
+    });
+  });
 }

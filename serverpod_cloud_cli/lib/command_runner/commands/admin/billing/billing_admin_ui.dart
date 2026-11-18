@@ -19,3 +19,17 @@ class ReissueInvoiceTextUi extends OutputWidget {
     );
   }
 }
+
+class RecordPaymentFailedTextUi extends OutputWidget {
+  const RecordPaymentFailedTextUi();
+
+  @override
+  OutputWidget build(final OutputContext context) {
+    final result = context.get<Map<String, Object?>>();
+    final invoiceId = result['invoiceId'];
+    return SuccessTextWidget(
+      'Invoice "$invoiceId" payment failure recorded.',
+      newParagraph: true,
+    );
+  }
+}

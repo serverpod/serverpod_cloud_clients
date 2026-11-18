@@ -28,4 +28,30 @@ abstract class BillingAdminOperations {
       throw FailureException.nested(e, s, 'Failed to reissue invoice');
     }
   }
+
+  /// Asks Ground Control to record a missed payment failure of [invoiceId].
+  ///
+  /// Returns the invoice id and `outcome` `recorded`.
+  /// Throws [FailureException] when the invoice is not found, its customer
+  /// is not an owner, or the invoice cannot be recorded.
+  static Future<Map<String, Object?>> recordPaymentFailed(
+    final Client cloudApiClient, {
+    required final String invoiceId,
+  }) async {
+    try {
+      final result = await cloudApiClient.adminBilling.recordPaymentFailed(
+        invoiceId: invoiceId,
+      );
+      return {
+        'invoiceId': result['invoiceId'] ?? invoiceId,
+        'outcome': result['outcome'],
+      };
+    } on NotFoundException catch (e) {
+      throw FailureException(error: e.message);
+    } on InvalidValueException catch (e) {
+      throw FailureException(error: e.message);
+    } on Exception catch (e, s) {
+      throw FailureException.nested(e, s, 'Failed to record payment failure');
+    }
+  }
 }

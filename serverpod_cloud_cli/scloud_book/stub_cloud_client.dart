@@ -1073,6 +1073,11 @@ void _stubAdmin(final ClientMock client, {required final String projectId}) {
         client.adminBilling.reissueInvoice(invoiceId: any(named: 'invoiceId')),
   ).thenAnswer((_) async => {'invoiceId': 'inv_1', 'outcome': 'issued'});
   when(
+    () => client.adminBilling.recordPaymentFailed(
+      invoiceId: any(named: 'invoiceId'),
+    ),
+  ).thenAnswer((_) async => {'invoiceId': 'inv_1', 'outcome': 'recorded'});
+  when(
     () => client.adminVouchers.createVoucher(
       code: any(named: 'code'),
       name: any(named: 'name'),
