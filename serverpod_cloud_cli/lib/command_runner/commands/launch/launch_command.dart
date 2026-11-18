@@ -31,14 +31,6 @@ enum LaunchOption<V> implements OptionDefinition<V> {
     ),
   ),
   dartVersion(DartSdkVersionOption()),
-  tui(
-    FlagOption(
-      argName: 'tui',
-      defaultsTo: false,
-      helpText: 'Flag to enable interactive terminal UI.',
-      hide: true,
-    ),
-  ),
   utc(UtcOption()),
 
   // Deploy-specific options
@@ -111,7 +103,6 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
     final dartVersionOverride = commandConfig.optionalValue(
       LaunchOption.dartVersion,
     );
-    final tui = commandConfig.value(LaunchOption.tui);
     final inUtc = commandConfig.value(LaunchOption.utc);
 
     // Deploy-specific options
@@ -178,7 +169,6 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
       includePreDeployScripts: preDeployScripts,
       performDeploy: deploy,
       dartVersionOverride: dartVersionOverride,
-      tui: tui,
       inUtc: inUtc,
       consoleServer: consoleServer,
       openBrowser: openBrowser,
