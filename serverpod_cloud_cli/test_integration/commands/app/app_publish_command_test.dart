@@ -116,6 +116,7 @@ void main() {
               displayName: 'Cloud Books for iOS',
             ),
             ProjectFactory.flutterAndroidDir(
+              releaseSigning: ProjectFactory.serverpodCloudReleaseSigning,
               displayName: 'Cloud Books for Android',
             ),
           ]),
@@ -158,7 +159,9 @@ void main() {
       await ProjectFactory.serverpodAppWorkspace(
         extraContents: [
           d.dir('project_flutter', [
-            ProjectFactory.flutterAndroidDir(),
+            ProjectFactory.flutterAndroidDir(
+              releaseSigning: ProjectFactory.serverpodCloudReleaseSigning,
+            ),
             ProjectFactory.flutterIosDir(),
           ]),
         ],
@@ -207,7 +210,9 @@ void main() {
       await d.dir('monorepo', [
         d.dir('project_flutter', [
           d.dir('lib', [d.file('main.dart', 'void main() {}')]),
-          ProjectFactory.flutterAndroidDir(),
+          ProjectFactory.flutterAndroidDir(
+            releaseSigning: ProjectFactory.serverpodCloudReleaseSigning,
+          ),
           d.dir('windows', [d.file('CMakeLists.txt', '')]),
         ]),
       ]).create();
@@ -1782,7 +1787,8 @@ project:
               d.dir('app', [
                 d.file(
                   'build.gradle.kts',
-                  r'android { defaultConfig { applicationId = "${appId}" } }',
+                  'android { defaultConfig { applicationId = "\${appId}" }\n'
+                      '${ProjectFactory.serverpodCloudReleaseSigning}}',
                 ),
               ]),
             ]),
@@ -2571,6 +2577,7 @@ project:
         await d.dir('monorepo', [
           d.dir('project_flutter', [
             ProjectFactory.flutterAndroidDir(
+              releaseSigning: ProjectFactory.serverpodCloudReleaseSigning,
               applicationId: 'com.example.project_flutter',
             ),
           ]),
@@ -3572,6 +3579,173 @@ project:
     },
   );
 
+  group('Given a non-workspace Flutter app whose iOS code uses the camera '
+      'and the photo library, and an Info.plist without their purpose '
+      'strings', () {
+    setUp(() async {
+      await ProjectFactory.nonWorkspaceFlutterAppDir(
+        lockedPackages: ['image_picker'],
+        contents: [
+          d.dir('lib', [d.file('main.dart', 'void main() {}')]),
+          ProjectFactory.flutterIosDir(usesNonExemptEncryption: false),
+        ],
+      ).create();
+    });
+
+    group('when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() {
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--app-dir',
+          p.join(d.sandbox, 'project_flutter'),
+          '--platforms',
+          'ios',
+          '--no-await',
+          '--output',
+          d.path('app.zip'),
+        ]);
+      });
+
+      test('then the command throws ErrorExitException', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then only the failed checks are shown', () async {
+        await commandResult.catchError((_) {});
+
+        final lines = logger.lineCalls.map((call) => call.line);
+        expect(
+          lines,
+          containsAllInOrder([
+            'iOS',
+            '  ✗ Privacy descriptions: NSCameraUsageDescription is missing.',
+            '    App Store Connect rejects the build without it.',
+            '    Needed for the camera by: image_picker.',
+            '    Add it to ios/Runner/Info.plist with why the app needs it.',
+            '  ✗ Privacy descriptions: '
+                'NSPhotoLibraryUsageDescription is missing.',
+          ]),
+        );
+        expect(lines, isNot(contains(contains('✓'))));
+      });
+
+      test('then the error says how to publish anyway', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          logger.errorCalls,
+          contains(
+            equalsErrorCall(
+              message: '2 checks of the app failed.',
+              hint:
+                  'Fix them and publish again, or publish anyway with '
+                  '--force.',
+            ),
+          ),
+        );
+      });
+
+      test('then the app is not zipped', () async {
+        await commandResult.catchError((_) {});
+
+        await expectLater(d.nothing('app.zip').validate(), completes);
+      });
+
+      test('then no build is requested', () async {
+        await commandResult.catchError((_) {});
+
+        verifyNever(
+          () => client.appBuilds.createBuilds(
+            appIdentifiers: any(named: 'appIdentifiers'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            platforms: any(named: 'platforms'),
+            flutterAppDir: any(named: 'flutterAppDir'),
+            archiveSize: any(named: 'archiveSize'),
+            flutterVersion: any(named: 'flutterVersion'),
+            versionName: any(named: 'versionName'),
+            commitHash: any(named: 'commitHash'),
+            commitMessage: any(named: 'commitMessage'),
+            branch: any(named: 'branch'),
+          ),
+        );
+      });
+    });
+
+    group('when releasing the app with --force', () {
+      late Future<void> commandResult;
+
+      setUp(() {
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--app-dir',
+          p.join(d.sandbox, 'project_flutter'),
+          '--platforms',
+          'ios',
+          '--no-await',
+          '--force',
+        ]);
+      });
+
+      test('then the app is published', () async {
+        await expectLater(commandResult, completes);
+        expect(fileUploader.uploads, hasLength(1));
+      });
+
+      test('then a warning says that it is published anyway', () async {
+        await commandResult;
+
+        expect(
+          logger.warningCalls.map((call) => call.message),
+          contains(
+            '2 checks of the app failed. Publishing anyway, as --force is '
+            'set.',
+          ),
+        );
+      });
+    });
+  });
+
+  group('Given a non-workspace Flutter app whose iOS checks only warn, '
+      'as its Info.plist does not declare export compliance', () {
+    setUp(() async {
+      await ProjectFactory.nonWorkspaceFlutterAppDir(
+        contents: [
+          d.dir('lib', [d.file('main.dart', 'void main() {}')]),
+          ProjectFactory.flutterIosDir(withInfoPlist: true),
+        ],
+      ).create();
+    });
+
+    test('when releasing the app then it is published '
+        'without showing the checks', () async {
+      await cli.run([
+        'app',
+        'publish',
+        '--project',
+        _projectId,
+        '--app-dir',
+        p.join(d.sandbox, 'project_flutter'),
+        '--platforms',
+        'ios',
+        '--no-await',
+      ]);
+
+      expect(fileUploader.uploads, hasLength(1));
+      expect(
+        logger.lineCalls.map((call) => call.line),
+        isNot(contains(contains('Export compliance'))),
+      );
+    });
+  });
+
   group('Given a non-workspace Flutter app with Android code that declares '
       'its Gradle and Android Gradle Plugin versions', () {
     setUp(() async {
@@ -3579,6 +3753,7 @@ project:
         contents: [
           d.dir('lib', [d.file('main.dart', 'void main() {}')]),
           ProjectFactory.flutterAndroidDir(
+            releaseSigning: ProjectFactory.serverpodCloudReleaseSigning,
             gradleVersion: '8.12',
             androidGradlePluginVersion: '8.9.1',
           ),
@@ -3622,7 +3797,9 @@ project:
       await ProjectFactory.nonWorkspaceFlutterAppDir(
         contents: [
           d.dir('lib', [d.file('main.dart', 'void main() {}')]),
-          ProjectFactory.flutterAndroidDir(),
+          ProjectFactory.flutterAndroidDir(
+            releaseSigning: ProjectFactory.serverpodCloudReleaseSigning,
+          ),
         ],
       ).create();
     });
@@ -3867,7 +4044,11 @@ project:
       'then the upload is reported', () async {
     await ProjectFactory.serverpodServerDir().create();
     await ProjectFactory.nonWorkspaceFlutterAppDir(
-      contents: [ProjectFactory.flutterAndroidDir()],
+      contents: [
+        ProjectFactory.flutterAndroidDir(
+          releaseSigning: ProjectFactory.serverpodCloudReleaseSigning,
+        ),
+      ],
     ).create();
 
     await cli.run([

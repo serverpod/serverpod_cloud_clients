@@ -281,7 +281,10 @@ ${stringResources.entries.map((entry) => '  <string name="${entry.key}">${entry.
   ///
   /// With [usesNonExemptEncryption], the Runner's Info.plist sets
   /// `ITSAppUsesNonExemptEncryption` to it, and with [withInfoPlist] alone,
-  /// the Info.plist leaves it out.
+  /// the Info.plist leaves it out. The Info.plist also sets each of
+  /// [infoPlistStrings] to its string value. [podfile] is the content of the
+  /// Podfile, and [runnerSources] are native source files of the Runner app
+  /// by file name.
   static d.DirectoryDescriptor flutterIosDir({
     String bundleId = 'com.acme.app',
     bool withInfoPlist = false,
@@ -289,9 +292,18 @@ ${stringResources.entries.map((entry) => '  <string name="${entry.key}">${entry.
     String? displayName = 'Acme',
     String? bundleName,
     bool withDefaultAppIcon = false,
+    Map<String, String> infoPlistStrings = const {},
+    String podfile = '',
+    Map<String, String> runnerSources = const {},
   }) {
     return d.dir('ios', [
-      d.file('Podfile', ''),
+      d.file('Podfile', podfile),
+      if (runnerSources.isNotEmpty)
+        d.dir('Runner', [
+          for (final MapEntry(key: name, value: source)
+              in runnerSources.entries)
+            d.file(name, source),
+        ]),
       if (withDefaultAppIcon)
         d.dir('Runner', [
           d.dir('Assets.xcassets', [
@@ -300,7 +312,9 @@ ${stringResources.entries.map((entry) => '  <string name="${entry.key}">${entry.
             ]),
           ]),
         ]),
-      if (withInfoPlist || usesNonExemptEncryption != null)
+      if (withInfoPlist ||
+          usesNonExemptEncryption != null ||
+          infoPlistStrings.isNotEmpty)
         d.dir('Runner', [
           d.file('Info.plist', """
 <?xml version="1.0" encoding="UTF-8"?>
@@ -309,6 +323,7 @@ ${stringResources.entries.map((entry) => '  <string name="${entry.key}">${entry.
 <dict>
 ${displayName == null ? '' : '<key>CFBundleDisplayName</key><string>$displayName</string>'}
 ${bundleName == null ? '' : '<key>CFBundleName</key><string>$bundleName</string>'}
+${infoPlistStrings.entries.map((entry) => '\t<key>${entry.key}</key>\n\t<string>${entry.value}</string>').join('\n')}
 ${usesNonExemptEncryption == null ? '' : '\t<key>ITSAppUsesNonExemptEncryption</key>\n\t<$usesNonExemptEncryption/>\n'}</dict>
 </plist>
 """),
@@ -344,13 +359,39 @@ ${usesNonExemptEncryption == null ? '' : '\t<key>ITSAppUsesNonExemptEncryption</
     ]);
   }
 
+  /// Returns descriptor for the `.flutter-plugins-dependencies` file that
+  /// `flutter pub get` writes into a Flutter app, listing [iosPlugins] as
+  /// the iOS plugins of the app, by name with the path of their package.
+  static d.FileDescriptor flutterPluginsDependencies({
+    required Map<String, String> iosPlugins,
+  }) {
+    return d.file(
+      '.flutter-plugins-dependencies',
+      jsonEncode({
+        'plugins': {
+          'ios': [
+            for (final MapEntry(key: name, value: path) in iosPlugins.entries)
+              {
+                'name': name,
+                'path': path,
+                'native_build': true,
+                'dependencies': <String>[],
+              },
+          ],
+        },
+      }),
+    );
+  }
+
   /// Returns descriptor for a `project_flutter` Flutter app that is not
   /// resolved in a workspace, with a lock file and a package graph. Its
-  /// pubspec has [withFlutterConstraint] as its Flutter SDK constraint.
+  /// pubspec has [withFlutterConstraint] as its Flutter SDK constraint, and
+  /// its lock file also lists each of [lockedPackages] as a hosted package.
   /// Use `descriptor.create()` to create the directory.
   static d.DirectoryDescriptor nonWorkspaceFlutterAppDir({
     Iterable<d.Descriptor>? contents,
     String withFlutterConstraint = '3.29.0',
+    List<String> lockedPackages = const [],
     String dependencies = '',
     String dependencyOverrides = '',
   }) {
@@ -378,7 +419,7 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-sdks:
+${lockedPackages.map(_hostedLockEntry).join()}sdks:
   dart: $validSdkVersion
   flutter: 3.29.0
 '''),
@@ -560,3 +601,16 @@ const _defaultAndroidIcon =
 /// writes, `AppIcon.appiconset/Icon-App-20x20@1x.png`.
 const _defaultIosIcon =
     'iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAMAAAC6V+0/AAAAbFBMVEX///9Uxfj6/v/3/P8BV5v0+/+O2frZ8v2Y3fuL2PqH1vpWj72T2/sptva/1Obv+v7g9f73+vy+6fyE1frv9fl10PlXx/g8vfcos/Po9/7R7/3G7P3x9vpozPlNwvjA1uZLm8tbmsAQbaUBUpIS2jkXAAAAdklEQVQY052QyQ6DMAwFMTFt05Cw7zv8/z8SXxAOF2COo5GebO8N4msJuPNDAPg77kOOhwF10uNQlwnekZPi7kb8s0SHlLQRDwBlek4z0YzWdewYv610BbZjFFrXc+LIqKhXVJd3LBuiyh2bKMRr20/GGEofsAP1wASFbdBGzgAAAABJRU5ErkJggg==';
+
+/// The `pubspec.lock` entry of [name] as a hosted package from pub.dev.
+String _hostedLockEntry(String name) =>
+    '''
+  $name:
+    dependency: transitive
+    description:
+      name: $name
+      sha256: "1111111111111111111111111111111111111111111111111111111111111111"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
+''';

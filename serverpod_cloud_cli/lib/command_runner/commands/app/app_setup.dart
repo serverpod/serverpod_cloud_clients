@@ -12,6 +12,7 @@ import 'package:serverpod_cloud_cli/util/flutter_app_identifier.dart';
 import 'package:serverpod_cloud_cli/util/flutter_platform.dart';
 import 'package:serverpod_cloud_cli/util/flutter_release_setup.dart';
 import 'package:serverpod_cloud_cli/util/flutter_sdk_selector.dart';
+import 'package:serverpod_cloud_cli/util/ios_purpose_strings.dart';
 import 'package:serverpod_cloud_cli/util/local_flutter_sdk.dart';
 import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 
@@ -94,11 +95,9 @@ abstract class AppSetup {
   /// [publishingSetup] of project [projectId] lacks a part the platform
   /// needs, and an app identifier check, which reads the identifier from
   /// [configuredAppIdentifiers] or else from the app's project files.
-  /// Android also gets a release signing check and iOS an export compliance
-  /// check, which warns while the app does not declare whether it uses
-  /// encryption. Last, each platform gets an app icon check, which warns while
-  /// the app has the icon of `flutter create`. Messages name the project
-  /// configuration file [configFileName].
+  /// Then each platform gets the checks of its project files, see
+  /// [checkProjectFiles]. Messages name the project configuration file
+  /// [configFileName].
   ///
   /// Returns the check of the whole app first, then the checks of each
   /// platform in platform order. A failed check is a result, not an error.
@@ -143,12 +142,50 @@ abstract class AppSetup {
               configFileName: configFileName,
             ),
           ),
-          if (platform == FlutterPlatform.android)
-            releaseSigningCheck(appDirectory),
-          if (platform == FlutterPlatform.ios)
-            _exportComplianceCheck(appDirectory),
-          _appIconCheck(appDirectory, platform),
+          ..._projectFileChecks(appDirectory, platform),
         ],
+    ];
+  }
+
+  /// Checks the project files of the Flutter app in [appDirectory] for each
+  /// of [platforms]: the parts of the [check]s that need neither the
+  /// console nor the app identifier and Flutter version that publishing
+  /// resolves itself.
+  ///
+  /// Android gets a release signing check. iOS gets an export compliance
+  /// check, which warns while the app does not declare whether it uses
+  /// encryption, and a check of privacy descriptions, which fails for each
+  /// purpose string that the app's code needs and the Info.plist lacks or
+  /// leaves empty. Last, each platform gets an app icon check, which warns
+  /// while the app has the icon of `flutter create`.
+  ///
+  /// Returns the checks of each platform in platform order. A failed check
+  /// is a result, not an error.
+  static List<AppDoctorCheck> checkProjectFiles(
+    Directory appDirectory, {
+    required Set<FlutterPlatform> platforms,
+  }) {
+    return [
+      for (final platform in FlutterPlatform.values)
+        if (platforms.contains(platform))
+          ..._projectFileChecks(appDirectory, platform),
+    ];
+  }
+
+  /// The checks of the project files of [platform] of the app in
+  /// [appDirectory]. See [checkProjectFiles].
+  static List<AppDoctorCheck> _projectFileChecks(
+    Directory appDirectory,
+    FlutterPlatform platform,
+  ) {
+    return [
+      if (platform == FlutterPlatform.android)
+        releaseSigningCheck(appDirectory),
+      if (platform == FlutterPlatform.ios) ...[
+        _exportComplianceCheck(appDirectory),
+        ..._privacyDescriptionChecks(appDirectory),
+      ],
+      _appIconCheck(appDirectory, platform),
     ];
   }
 
@@ -177,6 +214,90 @@ abstract class AppSetup {
       detail: usesNonExemptEncryption
           ? 'Uses non-exempt encryption'
           : 'Uses no non-exempt encryption',
+    );
+  }
+
+  /// Checks whether the iOS app in [appDirectory] has a purpose string in
+  /// its Info.plist for each privacy sensitive feature that its code uses:
+  /// the packages in its lockfile, the iOS code of its plugins, and its own
+  /// native code. See [findIosPurposeStringIssues].
+  ///
+  /// Returns one failed check for each purpose string that is missing or
+  /// empty, a failed check when the Info.plist cannot be read, a warning
+  /// when the lockfile cannot be read, or else a single passed check.
+  static List<AppDoctorCheck> _privacyDescriptionChecks(
+    Directory appDirectory,
+  ) {
+    const kind = AppDoctorCheckKind.privacyDescriptions;
+    final Set<String> packages;
+    try {
+      packages = _readPackageNames(appDirectory);
+    } on FailureException catch (exception) {
+      return [
+        AppDoctorCheck(
+          platform: FlutterPlatform.ios,
+          kind: kind,
+          status: AppDoctorCheckStatus.warning,
+          detail: 'Cannot check: ${exception.errors.join(' ')}',
+          hint: exception.hint,
+        ),
+      ];
+    }
+
+    final List<IosPurposeStringIssue> issues;
+    try {
+      issues = findIosPurposeStringIssues(appDirectory, packages: packages);
+    } on FailureException catch (exception) {
+      return [_failed(FlutterPlatform.ios, kind, exception)];
+    }
+    if (issues.isEmpty) {
+      return const [
+        AppDoctorCheck(
+          platform: FlutterPlatform.ios,
+          kind: kind,
+          status: AppDoctorCheckStatus.passed,
+          detail: 'Set for each feature the app uses',
+        ),
+      ];
+    }
+    return [
+      for (final issue in issues)
+        AppDoctorCheck(
+          platform: FlutterPlatform.ios,
+          kind: kind,
+          status: AppDoctorCheckStatus.failed,
+          detail: issue.isEmpty
+              ? '${issue.key} is empty.'
+              : '${issue.key} is missing.',
+          hint: [
+            issue.isEmpty
+                ? 'App Store Connect rejects a build with an empty purpose '
+                      'string.'
+                : 'App Store Connect rejects the build without it.',
+            'Needed for ${issue.feature} by: ${issue.usedBy.join(', ')}.',
+            issue.isEmpty
+                ? 'Set it in $iosInfoPlistPath to why the app needs it.'
+                : 'Add it to $iosInfoPlistPath with why the app needs it.',
+          ].join('\n'),
+        ),
+    ];
+  }
+
+  /// Reads the names of the packages in the lockfile of the app in
+  /// [appDirectory], or of its workspace when the app is resolved in one.
+  ///
+  /// Throws [FailureException] if the app's pubspec or the lockfile cannot
+  /// be read.
+  static Set<String> _readPackageNames(Directory appDirectory) {
+    final isWorkspace = TenantProjectPubspec.fromProjectDir(
+      appDirectory,
+    ).isWorkspaceResolved();
+    final rootDirectory = TenantProject.resolveLockfileDirectory(
+      appDirectory,
+      isWorkspaceResolved: isWorkspace,
+    );
+    return readLockfilePackageNames(
+      File(p.join(rootDirectory.path, 'pubspec.lock')),
     );
   }
 
