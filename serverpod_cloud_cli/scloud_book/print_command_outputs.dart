@@ -631,16 +631,6 @@ dependencies:
   flutter:
     sdk: flutter
 ''');
-  File('${appDir.path}/pubspec.lock').writeAsStringSync('''
-packages:
-  flutter:
-    dependency: "direct main"
-    description: flutter
-    source: sdk
-    version: "0.0.0"
-sdks:
-  dart: ">=3.8.0 <4.0.0"
-''');
   Directory('${appDir.path}/android/app').createSync(recursive: true);
   File('${appDir.path}/android/app/build.gradle.kts').writeAsStringSync("""
 val isServerpodCloudBuild = System.getenv("SERVERPOD_APP_BUILD") != null

@@ -345,9 +345,10 @@ class _StepLogsWidget extends OutputWidget {
   }
 }
 
-/// Shows the checks of `app doctor`, see [AppDoctorChecksWidget], followed
-/// by a summary of the failures and warnings. `app setup` shows its checks
-/// the same way.
+/// Shows the checks of `app doctor`, those of the whole app first without a
+/// heading and then those of each platform under its name, each with what
+/// it found and how to address a warning or a failure, followed by a summary
+/// of the failures and warnings. `app setup` shows its checks the same way.
 class AppDoctorTextUi extends OutputWidget {
   /// The summary when every check passed.
   final String passedMessage;
@@ -359,36 +360,6 @@ class AppDoctorTextUi extends OutputWidget {
     final checks = context.get<List<AppDoctorCheck>>();
     final failed = _count(checks, AppDoctorCheckStatus.failed);
     final warnings = _count(checks, AppDoctorCheckStatus.warning);
-    return OutputWidgetList([
-      AppDoctorChecksWidget(checks),
-      if (failed > 0)
-        WarningTextWidget(
-          '${_checks(failed)} failed. '
-          'Fix ${failed == 1 ? 'it' : 'them'} before you publish the app.',
-          newParagraph: true,
-        )
-      else if (warnings > 0)
-        InfoTextWidget(
-          '${warnings == 1 ? '1 warning' : '$warnings warnings'} found',
-          newParagraph: true,
-        )
-      else
-        SuccessTextWidget(passedMessage, newParagraph: true),
-    ]);
-  }
-}
-
-/// Shows [checks] of `app doctor`, those of the whole app first without a
-/// heading and then those of each platform under its name, each with what
-/// it found and how to address a warning or a failure.
-class AppDoctorChecksWidget extends OutputWidget {
-  /// The checks to show.
-  final List<AppDoctorCheck> checks;
-
-  const AppDoctorChecksWidget(this.checks);
-
-  @override
-  OutputWidget build(final OutputContext context) {
     final sections = [
       for (final platform in <FlutterPlatform?>[
         null,
@@ -412,6 +383,19 @@ class AppDoctorChecksWidget extends OutputWidget {
               LineTextWidget('${section.indent}  $line'),
         ],
       ],
+      if (failed > 0)
+        WarningTextWidget(
+          '${_checks(failed)} failed. '
+          'Fix ${failed == 1 ? 'it' : 'them'} before you publish the app.',
+          newParagraph: true,
+        )
+      else if (warnings > 0)
+        InfoTextWidget(
+          '${warnings == 1 ? '1 warning' : '$warnings warnings'} found',
+          newParagraph: true,
+        )
+      else
+        SuccessTextWidget(passedMessage, newParagraph: true),
     ]);
   }
 }
@@ -454,7 +438,6 @@ bool _showsDetail(AppDoctorCheck check) {
     AppDoctorCheckKind.consoleSetup ||
     AppDoctorCheckKind.releaseSigning ||
     AppDoctorCheckKind.exportCompliance ||
-    AppDoctorCheckKind.privacyDescriptions ||
     AppDoctorCheckKind.appIcon => false,
   };
 }
@@ -480,7 +463,6 @@ String _checkName(AppDoctorCheck check) {
     },
     AppDoctorCheckKind.releaseSigning => 'Release signing',
     AppDoctorCheckKind.exportCompliance => 'Export compliance',
-    AppDoctorCheckKind.privacyDescriptions => 'Privacy descriptions',
     AppDoctorCheckKind.appIcon => 'App icon',
   };
 }
