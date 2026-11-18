@@ -12,9 +12,9 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
-/// Thrown by createBuilds when the publishing setup of a requested platform
-/// is incomplete. No build is created. The message says what is missing per
-/// platform.
+/// Thrown when the publishing setup of a platform a call needs is
+/// incomplete. createBuilds creates no build then. The message says what is
+/// missing per platform.
 abstract class AppPlatformNotSetUpException
     implements
         _isc.SerializableException,

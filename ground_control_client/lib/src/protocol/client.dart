@@ -120,6 +120,8 @@ import 'package:ground_control_client/src/protocol/features/app_builds/models/ap
     as _ia3jvj4n;
 import 'package:ground_control_client/src/protocol/features/app_builds/models/generated_android_keystore.dart'
     as _il1lq5on;
+import 'package:ground_control_client/src/protocol/features/app_builds/models/ios_bundle_id_registration.dart'
+    as _i6c0c8i1;
 import 'package:ground_control_client/src/protocol/features/auth/models/accepted_terms_dto.dart'
     as _irrma5ts;
 import 'package:ground_control_client/src/protocol/features/auth/models/auth_token_info.dart'
@@ -1137,6 +1139,21 @@ class EndpointAppPublishing extends _isc.EndpointRef {
     'appPublishing',
     'setIosBundleId',
     {'cloudCapsuleId': cloudCapsuleId, 'bundleId': bundleId},
+  );
+
+  /// Makes sure the iOS bundle ID is registered with Apple, in the team of
+  /// the linked App Store Connect key, registering it when missing. The
+  /// result says whether it is registered. Idempotent.
+  ///
+  /// Throws [AppPlatformNotSetUpException] if no App Store Connect key is
+  /// linked or no bundle ID is set. Throws [ProjectSuspendedException] if
+  /// the project is suspended.
+  _ida.Future<_i6c0c8i1.IosBundleIdRegistration> ensureIosBundleId({
+    required String cloudCapsuleId,
+  }) => caller.callServerEndpoint<_i6c0c8i1.IosBundleIdRegistration>(
+    'appPublishing',
+    'ensureIosBundleId',
+    {'cloudCapsuleId': cloudCapsuleId},
   );
 
   /// Sets the package name Android builds are published as, replacing the
