@@ -434,6 +434,8 @@ abstract class AppBuildProgress {
   /// [appNames] with [versionName]. Platforms whose app has the same name
   /// share a line, such as `Uploaded Acme (1.0.0) to TestFlight and Google
   /// Play.`. An app without a name is `the app`, without its version.
+  /// Builds that were built but not uploaded get the command to download
+  /// them, once per upload.
   ///
   /// Throws [FailureException] if a build did not succeed.
   static void _report(
@@ -482,16 +484,17 @@ abstract class AppBuildProgress {
       );
     }
     if (errors.isNotEmpty) {
-      for (final platform in platforms) {
-        if (succeeded.contains(platform)) continue;
-        final build = details[platform]?.build;
-        if (build == null) continue;
-        if (build.status == AppBuildStatus.builtNotUploaded) {
-          logger.info(
-            'Download the built app for manual store upload: '
-            '$baseCommand app artifacts ${build.uploadId} --project $projectId',
-          );
-        }
+      final notUploadedUploadIds = {
+        for (final platform in platforms)
+          if (details[platform]?.build case final build?
+              when build.status == AppBuildStatus.builtNotUploaded)
+            build.uploadId,
+      };
+      for (final uploadId in notUploadedUploadIds) {
+        logger.info(
+          'Download the built app for manual store upload: '
+          '$baseCommand app artifacts $uploadId --project $projectId',
+        );
       }
       throw FailureException(errors: errors);
     }

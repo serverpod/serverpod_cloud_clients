@@ -1040,6 +1040,89 @@ void main() {
       );
     });
 
+    group('and iOS code and builds that are built but not uploaded '
+        'when releasing the app', () {
+      final uploadId = const Uuid().v4obj();
+      late Future<void> commandResult;
+
+      setUp(() async {
+        await d.dir('monorepo', [
+          d.dir('project_flutter', [ProjectFactory.flutterIosDir()]),
+        ]).create();
+
+        final platformOfBuild = <UuidValue, AppPlatform>{};
+        when(
+          () => client.appBuilds.createBuilds(
+            appIdentifiers: any(named: 'appIdentifiers'),
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            platforms: any(named: 'platforms'),
+            flutterAppDir: any(named: 'flutterAppDir'),
+            archiveSize: any(named: 'archiveSize'),
+            flutterVersion: any(named: 'flutterVersion'),
+            versionName: any(named: 'versionName'),
+            commitHash: any(named: 'commitHash'),
+            commitMessage: any(named: 'commitMessage'),
+            branch: any(named: 'branch'),
+          ),
+        ).thenAnswer((invocation) async {
+          final upload = AppBuildsUploadBuilder()
+              .withPlatforms(
+                invocation.namedArguments[#platforms] as List<AppPlatform>,
+              )
+              .withUploadDescription(_appUploadDescription)
+              .build();
+          for (final build in upload.builds) {
+            platformOfBuild[build.buildId] = build.platform;
+          }
+          return upload;
+        });
+        when(
+          () => client.appBuilds.tailBuild(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            buildId: any(named: 'buildId'),
+          ),
+        ).thenAnswer(
+          (invocation) => Stream.value(
+            AppBuildDetailBuilder()
+                .withBuild(
+                  AppBuildSummaryBuilder()
+                      .withUploadId(uploadId)
+                      .withPlatform(
+                        platformOfBuild[invocation.namedArguments[#buildId]]!,
+                      )
+                      .withStatus(AppBuildStatus.builtNotUploaded)
+                      .build(),
+                )
+                .withSteps([])
+                .build(),
+          ),
+        );
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+        ]);
+      });
+
+      test('then the command to download the builds is logged once', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          logger.infoCalls
+              .map((call) => call.message)
+              .where((message) => message.contains('app artifacts')),
+          [
+            'Download the built app for manual store upload: '
+                'scloud app artifacts $uploadId --project $_projectId',
+          ],
+        );
+      });
+    });
+
     group('and an Android package name set in scloud.yaml '
         'when releasing the app', () {
       late Future<void> commandResult;
