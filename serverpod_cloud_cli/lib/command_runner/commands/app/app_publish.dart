@@ -15,11 +15,14 @@ import 'package:serverpod_cloud_cli/util/flutter_app_name.dart';
 import 'package:serverpod_cloud_cli/util/flutter_platform.dart';
 import 'package:serverpod_cloud_cli/util/git_metadata.dart';
 import 'package:serverpod_cloud_cli/util/local_flutter_sdk.dart';
+import 'package:serverpod_cloud_cli/util/output/output.dart';
 
 import 'app_build_progress.dart';
 import 'app_build_status_formatter.dart';
+import 'app_doctor_check.dart';
 import 'app_ops.dart';
 import 'app_setup.dart';
+import 'app_ui.dart';
 
 abstract class AppPublish {
   /// Publishes the Flutter app in [appDirectory] in project [projectId] as
@@ -72,7 +75,13 @@ abstract class AppPublish {
   /// With [wetRun], preparation ends after zipping and saving the archive,
   /// without uploading it or requesting builds.
   ///
-  /// Throws [FailureException] if a dart defines file cannot be read or is
+  /// Before the archive is zipped, the project files of each platform to
+  /// publish are checked as `app doctor` checks them, see
+  /// [AppSetup.checkProjectFiles]. Only the failed checks are shown. With
+  /// [force], publishing goes on after a warning; without it, it stops.
+  ///
+  /// Throws [FailureException] if a check of the project files fails and
+  /// [force] is not set, if a dart defines file cannot be read or is
   /// not in its format, if the app has no code for a platform to
   /// publish, if none of the default platforms is set up, if the app
   /// identifier of a platform cannot be read or is
@@ -103,6 +112,7 @@ abstract class AppPublish {
     bool awaitBuilds = true,
     bool showFiles = false,
     bool wetRun = false,
+    bool force = false,
     String? outputPath,
   }) async {
     logger.init('Publishing the app of Serverpod Cloud project "$projectId".');
@@ -201,6 +211,13 @@ abstract class AppPublish {
         newParagraph: true,
       );
     }
+
+    await _checkProjectFiles(
+      logger: logger,
+      appDirectory: appDirectory,
+      platforms: publishPlatforms.toSet(),
+      force: force,
+    );
 
     final appZip = await DeployArchive.zip(
       logger: logger,
@@ -309,6 +326,45 @@ abstract class AppPublish {
       versionName: versionName,
       appNames: appNames,
       showLogs: true,
+    );
+  }
+
+  /// Checks the project files of [platforms] of the app in [appDirectory],
+  /// see [AppSetup.checkProjectFiles], and shows the checks that failed.
+  /// Warnings are not shown. With [force], a warning says that publishing
+  /// goes on.
+  ///
+  /// Throws [FailureException] if a check failed and [force] is not set.
+  static Future<void> _checkProjectFiles({
+    required CommandLogger logger,
+    required Directory appDirectory,
+    required Set<FlutterPlatform> platforms,
+    required bool force,
+  }) async {
+    final failed = [
+      for (final check in AppSetup.checkProjectFiles(
+        appDirectory,
+        platforms: platforms,
+      ))
+        if (check.status == AppDoctorCheckStatus.failed) check,
+    ];
+    if (failed.isEmpty) return;
+
+    await AppDoctorChecksWidget(
+      failed,
+    ).buildTree(OutputContext(OutputFormat.text)).renderTree(logger: logger);
+    final summary = failed.length == 1
+        ? '1 check of the app failed.'
+        : '${failed.length} checks of the app failed.';
+    if (force) {
+      logger.warning('$summary Publishing anyway, as --force is set.');
+      return;
+    }
+    throw FailureException(
+      error: summary,
+      hint:
+          'Fix ${failed.length == 1 ? 'it' : 'them'} and publish again, or '
+          'publish anyway with --force.',
     );
   }
 

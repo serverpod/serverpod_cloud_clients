@@ -249,6 +249,16 @@ enum AppPublishCommandOption<V> implements OptionDefinition<V> {
       negatable: false,
     ),
   ),
+  force(
+    FlagOption(
+      argName: 'force',
+      helpText:
+          'Publish even when a check of the app fails, such as a missing iOS '
+          'privacy description.',
+      defaultsTo: false,
+      negatable: false,
+    ),
+  ),
   output(AppPublishOutputOption());
 
   const AppPublishCommandOption(this.option);
@@ -548,8 +558,9 @@ class CloudAppDoctorCommand extends CloudCliCommand<AppDoctorCommandOption> {
   final description =
       'Check whether the Flutter app is set up to be published: its Flutter '
       'version, the setup of each platform in the console, app identifiers, '
-      'Android release signing, iOS export compliance, and app icons. Exits '
-      'with an error status when a check fails.';
+      'Android release signing, iOS export compliance and privacy '
+      'descriptions, and app icons. Exits with an error status when a check '
+      'fails.';
 
   @override
   bool get warnIfBillingOverdue => false;
@@ -676,6 +687,10 @@ Examples
 
     \$ $baseCommand app publish --app-dir my_project_flutter
 
+  Publish the app even though a check of the app fails
+
+    \$ $baseCommand app publish --force
+
 ''';
 
   CloudAppPublishCommand({required super.logger})
@@ -732,6 +747,7 @@ Examples
       awaitBuilds: awaitBuilds,
       showFiles: commandConfig.value(AppPublishCommandOption.showFiles),
       wetRun: commandConfig.value(AppPublishCommandOption.wetRun),
+      force: commandConfig.value(AppPublishCommandOption.force),
       outputPath: commandConfig
           .optionalValue(AppPublishCommandOption.output)
           ?.path,

@@ -23,6 +23,11 @@ enum AppDoctorCheckKind {
   /// `ITSAppUsesNonExemptEncryption`.
   exportCompliance,
 
+  /// The iOS app's Info.plist has a purpose string for each privacy
+  /// sensitive feature its packages use, such as `NSCameraUsageDescription`
+  /// for the camera, and none of them is empty.
+  privacyDescriptions,
+
   /// The app icon is not the one `flutter create` gives the app.
   appIcon,
 }
