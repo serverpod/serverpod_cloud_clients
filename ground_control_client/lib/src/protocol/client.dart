@@ -174,7 +174,8 @@ class EndpointAdminAppBuilds extends _isc.EndpointRef {
       );
 }
 
-/// Endpoint for an administrator to reissue an invoice.
+/// Endpoint for an administrator to reissue an invoice or record a missed
+/// payment failure.
 /// {@category Endpoint}
 class EndpointAdminBilling extends _isc.EndpointRef {
   EndpointAdminBilling(_isc.EndpointCaller caller) : super(caller);
@@ -198,6 +199,23 @@ class EndpointAdminBilling extends _isc.EndpointRef {
   }) => caller.callServerEndpoint<Map<String, String>>(
     'adminBilling',
     'reissueInvoice',
+    {'invoiceId': invoiceId},
+  );
+
+  /// Records a missed payment failure of [invoiceId] the way an
+  /// `invoice.payment_failed` webhook does.
+  ///
+  /// Returns `outcome` `recorded` when the payment-failed event is published.
+  ///
+  /// Throws [NotFoundException] if the invoice is not found, or if its
+  /// customer is not a Ground Control owner.
+  /// Throws [InvalidValueException] if the invoice has no subscription, is
+  /// a draft, is not unpaid, or has no failed payment.
+  _ida.Future<Map<String, String>> recordPaymentFailed({
+    required String invoiceId,
+  }) => caller.callServerEndpoint<Map<String, String>>(
+    'adminBilling',
+    'recordPaymentFailed',
     {'invoiceId': invoiceId},
   );
 }

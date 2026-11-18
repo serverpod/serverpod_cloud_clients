@@ -528,6 +528,13 @@ const _scenarios = [
     '--invoice-id',
     'inv_1',
   ]),
+  _Scenario('admin billing record-payment-failed', [
+    'admin',
+    'billing',
+    'record-payment-failed',
+    '--invoice-id',
+    'inv_1',
+  ]),
   _Scenario('admin voucher create', [
     'admin',
     'voucher',
