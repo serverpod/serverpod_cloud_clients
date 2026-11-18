@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 
@@ -12,9 +11,6 @@ import 'package:serverpod_cloud_cli/command_runner/helpers/file_uploader_factory
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy/deploy.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy/prepare_project_files.dart'
     show TenantProject;
-import 'package:serverpod_cloud_cli/command_runner/commands/launch/tui/app.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/launch/tui/state.dart';
-import 'package:serverpod_cloud_cli/command_runner/commands/launch/tui/state_holder.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/password/password_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/project/project_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/status/status_ops.dart';
@@ -31,8 +27,6 @@ import 'package:serverpod_cloud_cli/util/pubspec_validator.dart'
     show TenantProjectPubspec;
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_io.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config_model.dart';
-import 'package:serverpod_logging_cli/serverpod_logging_cli.dart';
-import 'package:serverpod_tui/serverpod_tui.dart';
 import 'package:yaml_codec/yaml_codec.dart' show yamlDecode;
 
 abstract class Launch {
@@ -47,7 +41,6 @@ abstract class Launch {
     required String? projectId,
     required bool includePreDeployScripts,
     required bool performDeploy,
-    required bool tui,
     required bool inUtc,
     required String consoleServer,
     required bool openBrowser,
@@ -77,38 +70,21 @@ abstract class Launch {
       performDeploy: performDeploy,
     );
 
-    if (tui) {
-      await launchWithTui(
-        cloudApiClient,
-        fileUploaderFactory,
-        logger: logger,
-        baseCommand: baseCommand,
-        projectSetup: projectSetup,
-        consoleServer: consoleServer,
-        openBrowser: openBrowser,
-        deployConcurrency: deployConcurrency,
-        wetRun: wetRun,
-        deployShowFiles: deployShowFiles,
-        deployOutputPath: deployOutputPath,
-        deploySkipTailingStatus: deploySkipTailingStatus,
-      );
-    } else {
-      await launchWithoutTui(
-        cloudApiClient,
-        fileUploaderFactory,
-        logger: logger,
-        baseCommand: baseCommand,
-        projectSetup: projectSetup,
-        consoleServer: consoleServer,
-        openBrowser: openBrowser,
-        deployConcurrency: deployConcurrency,
-        wetRun: wetRun,
-        deployShowFiles: deployShowFiles,
-        deployOutputPath: deployOutputPath,
-        deploySkipTailingStatus: deploySkipTailingStatus,
-        inUtc: inUtc,
-      );
-    }
+    await launchWithoutTui(
+      cloudApiClient,
+      fileUploaderFactory,
+      logger: logger,
+      baseCommand: baseCommand,
+      projectSetup: projectSetup,
+      consoleServer: consoleServer,
+      openBrowser: openBrowser,
+      deployConcurrency: deployConcurrency,
+      wetRun: wetRun,
+      deployShowFiles: deployShowFiles,
+      deployOutputPath: deployOutputPath,
+      deploySkipTailingStatus: deploySkipTailingStatus,
+      inUtc: inUtc,
+    );
   }
 
   static Future<void> launchWithoutTui(
@@ -155,96 +131,11 @@ abstract class Launch {
       logger,
       baseCommand,
       projectSetup,
-      consoleServer: consoleServer,
-      openBrowser: openBrowser,
       deployConcurrency: deployConcurrency,
       wetRun: wetRun,
       deployShowFiles: deployShowFiles,
       deployOutputPath: deployOutputPath,
       deploySkipTailingStatus: deploySkipTailingStatus,
-    );
-  }
-
-  static Future<void> launchWithTui(
-    Client cloudApiClient,
-    FileUploaderFactory fileUploaderFactory, {
-    required CommandLogger logger,
-    required String baseCommand,
-    required ProjectLaunch projectSetup,
-    required String consoleServer,
-    required bool openBrowser,
-    required int deployConcurrency,
-    required bool wetRun,
-    required bool deployShowFiles,
-    String? deployOutputPath,
-    bool deploySkipTailingStatus = false,
-  }) async {
-    final defaultProjectId = _getDefaultProjectId(projectSetup);
-
-    final existingProjects = await _fetchExistingUndeployedProjects(
-      cloudApiClient,
-    );
-    final existingProjectIds = existingProjects
-        .map((p) => p.cloudProjectId)
-        .toList();
-
-    final state = LaunchConfigState(
-      projectSetup: projectSetup,
-      defaultProjectId: defaultProjectId,
-      existingProjectIds: existingProjectIds,
-    );
-    final holder = LaunchAppStateHolder(state);
-
-    final tuiWriter = TuiLogWriter()..attach(holder);
-    final tuiLogger = ServerpodCliLogger(tuiWriter);
-
-    // Hook up the TUI logger for structured logs in the TUI.
-    logger.initializeWith(tuiLogger);
-
-    await runTuiApp(
-      ScloudLaunchApp(
-        holder: holder,
-        onLaunch: () async {
-          // Update UI to show logs from the launch
-          state.markLaunchingProject();
-          holder.markDirty();
-
-          final stdoutController = StreamController<List<int>>();
-          stdoutController.stream
-              .transform(const Utf8Decoder(allowMalformed: true))
-              .transform(const LineSplitter())
-              .listen(logger.debug);
-          final toDebugLog = IOSink(stdoutController);
-          final stderrController = StreamController<List<int>>();
-          stderrController.stream
-              .transform(const Utf8Decoder(allowMalformed: true))
-              .transform(const LineSplitter())
-              .listen(logger.error);
-          final toErrorLog = IOSink(stderrController);
-
-          await performLaunch(
-            cloudApiClient,
-            fileUploaderFactory,
-            logger,
-            baseCommand,
-            state.projectSetup,
-            consoleServer: consoleServer,
-            openBrowser: openBrowser,
-            stdout: toDebugLog,
-            stderr: toErrorLog,
-            deployConcurrency: deployConcurrency,
-            wetRun: wetRun,
-            deployShowFiles: deployShowFiles,
-            deployOutputPath: deployOutputPath,
-            deploySkipTailingStatus: deploySkipTailingStatus,
-          );
-        },
-        onQuit: () {
-          /// Reset to the default logger for post-tui logs.
-          logger.reset();
-          shutdownTuiApp();
-        },
-      ),
     );
   }
 
@@ -331,8 +222,6 @@ abstract class Launch {
       );
       if (preexistingProject != null) {
         projectSetup.preexistingProject = true;
-        projectSetup.preexistingProjectDeployed =
-            preexistingProject.latestDeployAttemptTime?.timestamp != null;
         return;
       }
 
@@ -360,11 +249,6 @@ abstract class Launch {
     if (selectedId != null) {
       projectSetup.projectId = selectedId;
       projectSetup.preexistingProject = true;
-      final preexistingProject = existingProjects.firstWhereOrNull(
-        (p) => p.project.cloudProjectId == selectedId,
-      );
-      projectSetup.preexistingProjectDeployed =
-          preexistingProject?.latestDeployAttemptTime?.timestamp != null;
       return;
     }
 
@@ -567,23 +451,6 @@ abstract class Launch {
     return '${project.project.cloudProjectId.padRight(30)}$lastDeployed';
   }
 
-  static Future<List<Project>> _fetchExistingUndeployedProjects(
-    Client cloudApiClient,
-  ) async {
-    try {
-      final projects = await cloudApiClient.projects.listProjectsInfo(
-        includeLatestDeployAttemptTime: true,
-      );
-      return projects
-          .where((p) => p.project.archivedAt == null)
-          .where((p) => p.latestDeployAttemptTime?.timestamp == null)
-          .map((p) => p.project)
-          .toList();
-    } on Exception catch (e, s) {
-      throw FailureException.nested(e, s, 'Request to list projects failed');
-    }
-  }
-
   static String? _getDefaultProjectId(ProjectLaunch projectSetup) {
     final projectPubspec = projectSetup.projectPubspec;
     if (projectPubspec.isServerpodServer()) {
@@ -662,15 +529,11 @@ abstract class Launch {
     CommandLogger logger,
     String baseCommand,
     ProjectLaunch projectSetup, {
-    required String consoleServer,
-    required bool openBrowser,
     required int deployConcurrency,
     required bool wetRun,
     required bool deployShowFiles,
     String? deployOutputPath,
     bool deploySkipTailingStatus = false,
-    IOSink? stdout,
-    IOSink? stderr,
   }) async {
     final projectId = projectSetup.projectId;
     if (projectId == null) {
@@ -730,8 +593,6 @@ abstract class Launch {
       skipTailingStatus: deploySkipTailingStatus,
       suppressCommandMessages: true,
       dartVersionOverride: projectSetup.dartVersionOverride,
-      stdout: stdout,
-      stderr: stderr,
     );
 
     if (wetRun) return;
