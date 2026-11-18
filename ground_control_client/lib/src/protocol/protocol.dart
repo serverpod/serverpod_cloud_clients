@@ -201,6 +201,10 @@ import 'features/app_builds/models/app_store_access.dart' as _iyc8rxjv;
 import 'features/app_builds/models/generated_android_keystore.dart'
     as _ijctux07;
 import 'features/app_builds/models/google_play_access.dart' as _ikj2epgu;
+import 'features/app_builds/models/ios_bundle_id_registration.dart'
+    as _i10kzmhu;
+import 'features/app_builds/models/ios_bundle_id_registration_status.dart'
+    as _inh3r59f;
 import 'features/app_builds/models/ios_publishing_setup.dart' as _ixfxvxdd;
 import 'features/app_builds/models/ios_signing.dart' as _ix6c9g8d;
 import 'features/auth/exceptions/email_method_blocked_exception.dart'
@@ -393,6 +397,8 @@ export 'features/app_builds/models/app_publishing_setup.dart';
 export 'features/app_builds/models/app_store_access.dart';
 export 'features/app_builds/models/generated_android_keystore.dart';
 export 'features/app_builds/models/google_play_access.dart';
+export 'features/app_builds/models/ios_bundle_id_registration.dart';
+export 'features/app_builds/models/ios_bundle_id_registration_status.dart';
 export 'features/app_builds/models/ios_publishing_setup.dart';
 export 'features/app_builds/models/ios_signing.dart';
 export 'features/auth/exceptions/email_method_blocked_exception.dart';
@@ -584,6 +590,8 @@ class Protocol extends _isc.SerializationManager
           _isc.getType<_iyc8rxjv.AppStoreAccess>,
           _isc.getType<_ijctux07.GeneratedAndroidKeystore>,
           _isc.getType<_ikj2epgu.GooglePlayAccess>,
+          _isc.getType<_i10kzmhu.IosBundleIdRegistration>,
+          _isc.getType<_inh3r59f.IosBundleIdRegistrationStatus>,
           _isc.getType<_ixfxvxdd.IosPublishingSetup>,
           _isc.getType<_ix6c9g8d.IosSigning>,
           _isc.getType<_ihqdfodo.EmailMethodBlockedException>,
@@ -760,6 +768,8 @@ class Protocol extends _isc.SerializationManager
           _isc.getType<_iyc8rxjv.AppStoreAccess?>,
           _isc.getType<_ijctux07.GeneratedAndroidKeystore?>,
           _isc.getType<_ikj2epgu.GooglePlayAccess?>,
+          _isc.getType<_i10kzmhu.IosBundleIdRegistration?>,
+          _isc.getType<_inh3r59f.IosBundleIdRegistrationStatus?>,
           _isc.getType<_ixfxvxdd.IosPublishingSetup?>,
           _isc.getType<_ix6c9g8d.IosSigning?>,
           _isc.getType<_ihqdfodo.EmailMethodBlockedException?>,
@@ -1009,6 +1019,8 @@ class Protocol extends _isc.SerializationManager
           'AppStoreAccess',
           'GeneratedAndroidKeystore',
           'GooglePlayAccess',
+          'IosBundleIdRegistration',
+          'IosBundleIdRegistrationStatus',
           'IosPublishingSetup',
           'IosSigning',
           'EmailMethodBlockedException',
@@ -1467,6 +1479,12 @@ class Protocol extends _isc.SerializationManager
     }
     if (t == _ikj2epgu.GooglePlayAccess) {
       return _ikj2epgu.GooglePlayAccess.fromJson(data) as T;
+    }
+    if (t == _i10kzmhu.IosBundleIdRegistration) {
+      return _i10kzmhu.IosBundleIdRegistration.fromJson(data) as T;
+    }
+    if (t == _inh3r59f.IosBundleIdRegistrationStatus) {
+      return _inh3r59f.IosBundleIdRegistrationStatus.fromJson(data) as T;
     }
     if (t == _ixfxvxdd.IosPublishingSetup) {
       return _ixfxvxdd.IosPublishingSetup.fromJson(data) as T;
@@ -2179,6 +2197,18 @@ class Protocol extends _isc.SerializationManager
     }
     if (t == _isc.getType<_ikj2epgu.GooglePlayAccess?>()) {
       return (data != null ? _ikj2epgu.GooglePlayAccess.fromJson(data) : null)
+          as T;
+    }
+    if (t == _isc.getType<_i10kzmhu.IosBundleIdRegistration?>()) {
+      return (data != null
+              ? _i10kzmhu.IosBundleIdRegistration.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_inh3r59f.IosBundleIdRegistrationStatus?>()) {
+      return (data != null
+              ? _inh3r59f.IosBundleIdRegistrationStatus.fromJson(data)
+              : null)
           as T;
     }
     if (t == _isc.getType<_ixfxvxdd.IosPublishingSetup?>()) {
@@ -3029,6 +3059,9 @@ class Protocol extends _isc.SerializationManager
       _iyc8rxjv.AppStoreAccess => 'AppStoreAccess',
       _ijctux07.GeneratedAndroidKeystore => 'GeneratedAndroidKeystore',
       _ikj2epgu.GooglePlayAccess => 'GooglePlayAccess',
+      _i10kzmhu.IosBundleIdRegistration => 'IosBundleIdRegistration',
+      _inh3r59f.IosBundleIdRegistrationStatus =>
+        'IosBundleIdRegistrationStatus',
       _ixfxvxdd.IosPublishingSetup => 'IosPublishingSetup',
       _ix6c9g8d.IosSigning => 'IosSigning',
       _ihqdfodo.EmailMethodBlockedException => 'EmailMethodBlockedException',
@@ -3363,6 +3396,10 @@ class Protocol extends _isc.SerializationManager
         return 'GeneratedAndroidKeystore';
       case _ikj2epgu.GooglePlayAccess():
         return 'GooglePlayAccess';
+      case _i10kzmhu.IosBundleIdRegistration():
+        return 'IosBundleIdRegistration';
+      case _inh3r59f.IosBundleIdRegistrationStatus():
+        return 'IosBundleIdRegistrationStatus';
       case _ixfxvxdd.IosPublishingSetup():
         return 'IosPublishingSetup';
       case _ix6c9g8d.IosSigning():
@@ -3875,6 +3912,12 @@ class Protocol extends _isc.SerializationManager
     }
     if (dataClassName == 'GooglePlayAccess') {
       return deserialize<_ikj2epgu.GooglePlayAccess>(data['data']);
+    }
+    if (dataClassName == 'IosBundleIdRegistration') {
+      return deserialize<_i10kzmhu.IosBundleIdRegistration>(data['data']);
+    }
+    if (dataClassName == 'IosBundleIdRegistrationStatus') {
+      return deserialize<_inh3r59f.IosBundleIdRegistrationStatus>(data['data']);
     }
     if (dataClassName == 'IosPublishingSetup') {
       return deserialize<_ixfxvxdd.IosPublishingSetup>(data['data']);
