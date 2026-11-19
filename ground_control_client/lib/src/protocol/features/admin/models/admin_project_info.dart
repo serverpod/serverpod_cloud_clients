@@ -32,6 +32,7 @@ abstract class AdminProjectInfo
     required this.subscriptionId,
     required this.overduePaymentsStatuses,
     this.billingPlanId,
+    this.trialEndDate,
     this.firstInvoicePaidAt,
     this.firstPaidInvoiceId,
     this.gracePeriodInvoiceId,
@@ -49,6 +50,7 @@ abstract class AdminProjectInfo
     required String subscriptionId,
     required List<_iyxx8r3m.PaymentsStatus> overduePaymentsStatuses,
     String? billingPlanId,
+    DateTime? trialEndDate,
     DateTime? firstInvoicePaidAt,
     String? firstPaidInvoiceId,
     String? gracePeriodInvoiceId,
@@ -82,6 +84,11 @@ abstract class AdminProjectInfo
             jsonSerialization['overduePaymentsStatuses'],
           ),
       billingPlanId: jsonSerialization['billingPlanId'] as String?,
+      trialEndDate: jsonSerialization['trialEndDate'] == null
+          ? null
+          : _isc.DateTimeJsonExtension.fromJson(
+              jsonSerialization['trialEndDate'],
+            ),
       firstInvoicePaidAt: jsonSerialization['firstInvoicePaidAt'] == null
           ? null
           : _isc.DateTimeJsonExtension.fromJson(
@@ -132,6 +139,10 @@ abstract class AdminProjectInfo
   /// Orb billing system plan id and version (e.g. starter-private:2).
   String? billingPlanId;
 
+  /// When the subscription's trial ends, when that end is still in the future.
+  /// Null when the subscription has no trial, or the trial has ended.
+  DateTime? trialEndDate;
+
   /// When the subscription first paid an invoice that charges an amount,
   /// or null until it has paid one.
   DateTime? firstInvoicePaidAt;
@@ -167,6 +178,7 @@ abstract class AdminProjectInfo
     String? subscriptionId,
     List<_iyxx8r3m.PaymentsStatus>? overduePaymentsStatuses,
     String? billingPlanId,
+    DateTime? trialEndDate = const _isc.$UndefinedDateTime(),
     DateTime? firstInvoicePaidAt = const _isc.$UndefinedDateTime(),
     String? firstPaidInvoiceId,
     String? gracePeriodInvoiceId,
@@ -190,6 +202,7 @@ abstract class AdminProjectInfo
         valueToJson: (v) => v.toJson(),
       ),
       if (billingPlanId != null) 'billingPlanId': billingPlanId,
+      if (trialEndDate != null) 'trialEndDate': trialEndDate?.toJson(),
       if (firstInvoicePaidAt != null)
         'firstInvoicePaidAt': firstInvoicePaidAt?.toJson(),
       if (firstPaidInvoiceId != null) 'firstPaidInvoiceId': firstPaidInvoiceId,
@@ -219,6 +232,7 @@ abstract class AdminProjectInfo
         valueToJson: (v) => v.toJsonForProtocol(),
       ),
       if (billingPlanId != null) 'billingPlanId': billingPlanId,
+      if (trialEndDate != null) 'trialEndDate': trialEndDate?.toJson(),
       if (firstInvoicePaidAt != null)
         'firstInvoicePaidAt': firstInvoicePaidAt?.toJson(),
       if (firstPaidInvoiceId != null) 'firstPaidInvoiceId': firstPaidInvoiceId,
@@ -257,6 +271,7 @@ class _AdminProjectInfoImpl extends AdminProjectInfo {
     required String subscriptionId,
     required List<_iyxx8r3m.PaymentsStatus> overduePaymentsStatuses,
     String? billingPlanId,
+    DateTime? trialEndDate,
     DateTime? firstInvoicePaidAt,
     String? firstPaidInvoiceId,
     String? gracePeriodInvoiceId,
@@ -272,6 +287,7 @@ class _AdminProjectInfoImpl extends AdminProjectInfo {
          subscriptionId: subscriptionId,
          overduePaymentsStatuses: overduePaymentsStatuses,
          billingPlanId: billingPlanId,
+         trialEndDate: trialEndDate,
          firstInvoicePaidAt: firstInvoicePaidAt,
          firstPaidInvoiceId: firstPaidInvoiceId,
          gracePeriodInvoiceId: gracePeriodInvoiceId,
@@ -293,6 +309,7 @@ class _AdminProjectInfoImpl extends AdminProjectInfo {
     String? subscriptionId,
     List<_iyxx8r3m.PaymentsStatus>? overduePaymentsStatuses,
     Object? billingPlanId = _Undefined,
+    DateTime? trialEndDate = const _isc.$UndefinedDateTime(),
     DateTime? firstInvoicePaidAt = const _isc.$UndefinedDateTime(),
     Object? firstPaidInvoiceId = _Undefined,
     Object? gracePeriodInvoiceId = _Undefined,
@@ -318,6 +335,9 @@ class _AdminProjectInfoImpl extends AdminProjectInfo {
       billingPlanId: billingPlanId is String?
           ? billingPlanId
           : this.billingPlanId,
+      trialEndDate: trialEndDate is _isc.UndefinedSentinel
+          ? this.trialEndDate
+          : trialEndDate,
       firstInvoicePaidAt: firstInvoicePaidAt is _isc.UndefinedSentinel
           ? this.firstInvoicePaidAt
           : firstInvoicePaidAt,

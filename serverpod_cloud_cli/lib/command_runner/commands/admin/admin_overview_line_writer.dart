@@ -84,12 +84,14 @@ class AdminOverviewLineWriter {
   }
 
   void writeSubscriptionFacts({
+    required DateTime? trialEndDate,
     required DateTime? firstPaidAt,
     required String? firstPaidInvoiceId,
     required String? gracePeriodInvoiceId,
     required DateTime? gracePeriodSuspendAt,
     required DateTime? gracePeriodConcludedAt,
   }) {
+    writeRow('Trial ends', _instantOrNone(trialEndDate), nested: true);
     writeRow('First paid', _instantOrNone(firstPaidAt), nested: true);
     writeRow(
       'Paid invoice',

@@ -12,6 +12,7 @@ class AdminProjectInfoBuilder {
   String _subscriptionId;
   List<PaymentsStatus> _overduePaymentsStatuses;
   String? _billingPlanId;
+  DateTime? _trialEndDate;
   DateTime? _firstInvoicePaidAt;
   String? _firstPaidInvoiceId;
   String? _gracePeriodInvoiceId;
@@ -28,6 +29,7 @@ class AdminProjectInfoBuilder {
       _subscriptionId = 'orb_sub_test',
       _overduePaymentsStatuses = const [],
       _billingPlanId = 'closed-beta:1',
+      _trialEndDate = null,
       _firstInvoicePaidAt = null,
       _firstPaidInvoiceId = null,
       _gracePeriodInvoiceId = null,
@@ -103,6 +105,11 @@ class AdminProjectInfoBuilder {
     return this;
   }
 
+  AdminProjectInfoBuilder withTrialEndDate(final DateTime? trialEndDate) {
+    _trialEndDate = trialEndDate;
+    return this;
+  }
+
   AdminProjectInfoBuilder withFirstInvoicePaidAt(final DateTime? paidAt) {
     _firstInvoicePaidAt = paidAt;
     return this;
@@ -147,6 +154,7 @@ class AdminProjectInfoBuilder {
       subscriptionId: _subscriptionId,
       overduePaymentsStatuses: _overduePaymentsStatuses,
       billingPlanId: _billingPlanId,
+      trialEndDate: _trialEndDate,
       firstInvoicePaidAt: _firstInvoicePaidAt,
       firstPaidInvoiceId: _firstPaidInvoiceId,
       gracePeriodInvoiceId: _gracePeriodInvoiceId,

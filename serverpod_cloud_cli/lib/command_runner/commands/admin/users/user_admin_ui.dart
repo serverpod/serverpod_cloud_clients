@@ -2,6 +2,7 @@ import 'package:cli_tools/logger.dart' as cli show AnsiStyle;
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/admin_overview_line_writer.dart';
+import 'package:serverpod_cloud_cli/command_runner/commands/admin/projects/admin_project_status_lines.dart';
 import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 
 class AdminUserStatusTextUi extends OutputWidget {
@@ -108,28 +109,27 @@ class _AdminUserStatusLines {
     }
   }
 
-  void _writeProject(AdminUserProjectMembership project) {
-    final overview = AdminOverviewLineWriter(logger: logger, utc: utc);
-    overview.writeRow('Project', project.cloudProjectId);
-    overview.writeLifecycle(
-      status: project.status,
-      suspendedAt: project.suspendedAt,
-      suspensionReason: project.suspensionReason,
+  void _writeProject(AdminUserProjectMembership membership) {
+    final roles = membership.userRoles.map((role) => role.name).join(', ');
+    final overview = AdminOverviewLineWriter(
+      logger: logger,
+      utc: utc,
+      labelWidth: 14,
     );
-
-    final roles = project.userRoles.map((role) => role.name).join(', ');
-    overview.writeRow('Roles', roles.isEmpty ? '—' : roles, nested: true);
-    overview.writePlan(
-      planType: project.planType,
-      planProductId: project.planProductId,
+    overview.writeRow(
+      'User roles',
+      roles.isEmpty
+          ? overview.style('none', AdminOverviewLineWriter.dimStyle)
+          : roles,
     );
-    overview.writeBilling(
-      billingPlanId: project.billingPlanId,
-      subscriptionId: project.billingSubscriptionId,
-    );
-    overview.writeCreated(project.projectCreatedAt);
-    overview.writeLastDeploy(project.latestDeployAttempt);
     _lines.addAll(overview.lines);
+    _lines.addAll(
+      AdminProjectStatusLines(
+        logger: logger,
+        info: membership.project,
+        utc: utc,
+      ).build(),
+    );
   }
 
   void _writeRow(
