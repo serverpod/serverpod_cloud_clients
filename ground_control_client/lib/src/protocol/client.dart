@@ -1194,19 +1194,23 @@ class EndpointAppPublishing extends _isc.EndpointRef {
     {'cloudCapsuleId': cloudCapsuleId},
   );
 
-  /// Stores the PKCS12 [keystore] as the upload keystore Android builds are
-  /// signed with, using the key under [keyAlias]. The key is permanent.
+  /// Stores the PKCS12 or JKS [keystore] as the upload keystore Android
+  /// builds are signed with, using the key under [keyAlias]. Builds open the
+  /// key with [keyPassword], or with [keystorePassword] when it is left out.
+  /// The key is permanent.
   ///
   /// Throws [InvalidValueException] if [keystore] is too large, is not a
-  /// PKCS12 file [keystorePassword] opens, or holds no key under
-  /// [keyAlias]. Throws [AndroidSigningAlreadySetException] if the capsule
-  /// already has an Android keystore. Throws [ProjectSuspendedException] if
-  /// the project is suspended.
+  /// PKCS12 or JKS file [keystorePassword] opens, or holds no key under
+  /// [keyAlias] that the key password opens. Throws
+  /// [AndroidSigningAlreadySetException] if the capsule already has an
+  /// Android keystore. Throws [ProjectSuspendedException] if the project is
+  /// suspended.
   _ida.Future<_ia3jvj4n.AppPublishingSetup> uploadAndroidKeystore({
     required String cloudCapsuleId,
     required _idt.ByteData keystore,
     required String keystorePassword,
     required String keyAlias,
+    String? keyPassword,
   }) => caller.callServerEndpoint<_ia3jvj4n.AppPublishingSetup>(
     'appPublishing',
     'uploadAndroidKeystore',
@@ -1215,6 +1219,7 @@ class EndpointAppPublishing extends _isc.EndpointRef {
       'keystore': keystore,
       'keystorePassword': keystorePassword,
       'keyAlias': keyAlias,
+      'keyPassword': keyPassword,
     },
   );
 
