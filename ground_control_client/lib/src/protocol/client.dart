@@ -130,6 +130,8 @@ import 'package:ground_control_client/src/protocol/features/auth/models/required
     as _iu79vy7r;
 import 'package:ground_control_client/src/protocol/features/billing/models/redeemed_voucher.dart'
     as _iepnyq8w;
+import 'package:ground_control_client/src/protocol/features/billing/models/usage_cap.dart'
+    as _i2r6t70b;
 import 'package:ground_control_client/src/protocol/features/custom_domains/models/custom_domain_name_list.dart'
     as _iv3w4cs7;
 import 'package:ground_control_client/src/protocol/features/custom_domains/models/view_models/custom_domain_name_with_default_domains.dart'
@@ -1880,6 +1882,55 @@ class EndpointBilling extends _isc.EndpointRef {
     'redeemVoucher',
     {'code': code},
   );
+
+  /// Reads the usage cap of the subscription of project [cloudProjectId],
+  /// with the amount due so far for the current billing period and the
+  /// lowest usage cap the subscription can have.
+  ///
+  /// Throws [UsageCapDeniedException] when the plan of the project has no
+  /// usage cap.
+  /// Throws [NotFoundException] when the project is not found, or has no
+  /// subscription registered in the billing system.
+  _ida.Future<_i2r6t70b.UsageCap> readUsageCap({
+    required String cloudProjectId,
+  }) => caller.callServerEndpoint<_i2r6t70b.UsageCap>(
+    'billing',
+    'readUsageCap',
+    {'cloudProjectId': cloudProjectId},
+  );
+
+  /// Sets the usage cap of the subscription of project [cloudProjectId] to
+  /// [usageCapCents] US cents. When the amount due of a billing period
+  /// reaches the usage cap, the projects of the subscription are suspended.
+  ///
+  /// Projects of the subscription that are suspended for the usage cap are
+  /// reactivated.
+  ///
+  /// Throws [UsageCapDeniedException] when the plan of the project has no
+  /// usage cap, or when [usageCapCents] is below the lowest usage cap the
+  /// subscription can have.
+  /// Throws [NotFoundException] when the project is not found, or has no
+  /// subscription registered in the billing system.
+  _ida.Future<_i2r6t70b.UsageCap> setUsageCap({
+    required String cloudProjectId,
+    required int usageCapCents,
+  }) => caller.callServerEndpoint<_i2r6t70b.UsageCap>(
+    'billing',
+    'setUsageCap',
+    {'cloudProjectId': cloudProjectId, 'usageCapCents': usageCapCents},
+  );
+
+  /// Removes the usage cap of the subscription of project [cloudProjectId].
+  ///
+  /// Projects of the subscription that are suspended for the usage cap are
+  /// reactivated.
+  ///
+  /// Throws [NotFoundException] when the project is not found, or has no
+  /// subscription registered in the billing system.
+  _ida.Future<void> removeUsageCap({required String cloudProjectId}) =>
+      caller.callServerEndpoint<void>('billing', 'removeUsageCap', {
+        'cloudProjectId': cloudProjectId,
+      });
 }
 
 /// Endpoint for managing a capsule's storage buckets.

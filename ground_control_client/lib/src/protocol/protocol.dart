@@ -216,11 +216,15 @@ import 'features/auth/models/accepted_terms_dto.dart' as _i8z78m78;
 import 'features/auth/models/auth_token_info.dart' as _ic6o6jk9;
 import 'features/auth/models/required_terms.dart' as _il367b51;
 import 'features/auth/models/terms.dart' as _i5k61oox;
+import 'features/billing/exceptions/usage_cap_denied_exception.dart'
+    as _ij7n6nga;
+import 'features/billing/exceptions/usage_cap_denied_reason.dart' as _ipz16z00;
 import 'features/billing/exceptions/voucher_redemption_denied_exception.dart'
     as _ibykmik2;
 import 'features/billing/exceptions/voucher_redemption_denied_reason.dart'
     as _ixkkqqw3;
 import 'features/billing/models/redeemed_voucher.dart' as _icy9c8g7;
+import 'features/billing/models/usage_cap.dart' as _im7ub4ea;
 import 'features/buckets/exceptions/bucket_access_revoked_exception.dart'
     as _igte1e9r;
 import 'features/buckets/exceptions/bucket_rate_limit_exceeded_exception.dart'
@@ -408,9 +412,12 @@ export 'features/auth/models/accepted_terms_dto.dart';
 export 'features/auth/models/auth_token_info.dart';
 export 'features/auth/models/required_terms.dart';
 export 'features/auth/models/terms.dart';
+export 'features/billing/exceptions/usage_cap_denied_exception.dart';
+export 'features/billing/exceptions/usage_cap_denied_reason.dart';
 export 'features/billing/exceptions/voucher_redemption_denied_exception.dart';
 export 'features/billing/exceptions/voucher_redemption_denied_reason.dart';
 export 'features/billing/models/redeemed_voucher.dart';
+export 'features/billing/models/usage_cap.dart';
 export 'features/buckets/exceptions/bucket_access_revoked_exception.dart';
 export 'features/buckets/exceptions/bucket_rate_limit_exceeded_exception.dart';
 export 'features/buckets/exceptions/bucket_storage_identity_unavailable_exception.dart';
@@ -601,9 +608,12 @@ class Protocol extends _isc.SerializationManager
           _isc.getType<_ic6o6jk9.AuthTokenInfo>,
           _isc.getType<_il367b51.RequiredTerms>,
           _isc.getType<_i5k61oox.Terms>,
+          _isc.getType<_ij7n6nga.UsageCapDeniedException>,
+          _isc.getType<_ipz16z00.UsageCapDeniedReason>,
           _isc.getType<_ibykmik2.VoucherRedemptionDeniedException>,
           _isc.getType<_ixkkqqw3.VoucherRedemptionDeniedReason>,
           _isc.getType<_icy9c8g7.RedeemedVoucher>,
+          _isc.getType<_im7ub4ea.UsageCap>,
           _isc.getType<_igte1e9r.BucketAccessRevokedException>,
           _isc.getType<_izuy2njw.BucketRateLimitExceededException>,
           _isc.getType<_ih9vxrpp.BucketStorageIdentityUnavailableException>,
@@ -779,9 +789,12 @@ class Protocol extends _isc.SerializationManager
           _isc.getType<_ic6o6jk9.AuthTokenInfo?>,
           _isc.getType<_il367b51.RequiredTerms?>,
           _isc.getType<_i5k61oox.Terms?>,
+          _isc.getType<_ij7n6nga.UsageCapDeniedException?>,
+          _isc.getType<_ipz16z00.UsageCapDeniedReason?>,
           _isc.getType<_ibykmik2.VoucherRedemptionDeniedException?>,
           _isc.getType<_ixkkqqw3.VoucherRedemptionDeniedReason?>,
           _isc.getType<_icy9c8g7.RedeemedVoucher?>,
+          _isc.getType<_im7ub4ea.UsageCap?>,
           _isc.getType<_igte1e9r.BucketAccessRevokedException?>,
           _isc.getType<_izuy2njw.BucketRateLimitExceededException?>,
           _isc.getType<_ih9vxrpp.BucketStorageIdentityUnavailableException?>,
@@ -1030,9 +1043,12 @@ class Protocol extends _isc.SerializationManager
           'AuthTokenInfo',
           'RequiredTerms',
           'Terms',
+          'UsageCapDeniedException',
+          'UsageCapDeniedReason',
           'VoucherRedemptionDeniedException',
           'VoucherRedemptionDeniedReason',
           'RedeemedVoucher',
+          'UsageCap',
           'BucketAccessRevokedException',
           'BucketRateLimitExceededException',
           'BucketStorageIdentityUnavailableException',
@@ -1514,6 +1530,12 @@ class Protocol extends _isc.SerializationManager
     if (t == _i5k61oox.Terms) {
       return _i5k61oox.Terms.fromJson(data) as T;
     }
+    if (t == _ij7n6nga.UsageCapDeniedException) {
+      return _ij7n6nga.UsageCapDeniedException.fromJson(data) as T;
+    }
+    if (t == _ipz16z00.UsageCapDeniedReason) {
+      return _ipz16z00.UsageCapDeniedReason.fromJson(data) as T;
+    }
     if (t == _ibykmik2.VoucherRedemptionDeniedException) {
       return _ibykmik2.VoucherRedemptionDeniedException.fromJson(data) as T;
     }
@@ -1522,6 +1544,9 @@ class Protocol extends _isc.SerializationManager
     }
     if (t == _icy9c8g7.RedeemedVoucher) {
       return _icy9c8g7.RedeemedVoucher.fromJson(data) as T;
+    }
+    if (t == _im7ub4ea.UsageCap) {
+      return _im7ub4ea.UsageCap.fromJson(data) as T;
     }
     if (t == _igte1e9r.BucketAccessRevokedException) {
       return _igte1e9r.BucketAccessRevokedException.fromJson(data) as T;
@@ -2250,6 +2275,18 @@ class Protocol extends _isc.SerializationManager
     if (t == _isc.getType<_i5k61oox.Terms?>()) {
       return (data != null ? _i5k61oox.Terms.fromJson(data) : null) as T;
     }
+    if (t == _isc.getType<_ij7n6nga.UsageCapDeniedException?>()) {
+      return (data != null
+              ? _ij7n6nga.UsageCapDeniedException.fromJson(data)
+              : null)
+          as T;
+    }
+    if (t == _isc.getType<_ipz16z00.UsageCapDeniedReason?>()) {
+      return (data != null
+              ? _ipz16z00.UsageCapDeniedReason.fromJson(data)
+              : null)
+          as T;
+    }
     if (t == _isc.getType<_ibykmik2.VoucherRedemptionDeniedException?>()) {
       return (data != null
               ? _ibykmik2.VoucherRedemptionDeniedException.fromJson(data)
@@ -2265,6 +2302,9 @@ class Protocol extends _isc.SerializationManager
     if (t == _isc.getType<_icy9c8g7.RedeemedVoucher?>()) {
       return (data != null ? _icy9c8g7.RedeemedVoucher.fromJson(data) : null)
           as T;
+    }
+    if (t == _isc.getType<_im7ub4ea.UsageCap?>()) {
+      return (data != null ? _im7ub4ea.UsageCap.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_igte1e9r.BucketAccessRevokedException?>()) {
       return (data != null
@@ -3072,11 +3112,14 @@ class Protocol extends _isc.SerializationManager
       _ic6o6jk9.AuthTokenInfo => 'AuthTokenInfo',
       _il367b51.RequiredTerms => 'RequiredTerms',
       _i5k61oox.Terms => 'Terms',
+      _ij7n6nga.UsageCapDeniedException => 'UsageCapDeniedException',
+      _ipz16z00.UsageCapDeniedReason => 'UsageCapDeniedReason',
       _ibykmik2.VoucherRedemptionDeniedException =>
         'VoucherRedemptionDeniedException',
       _ixkkqqw3.VoucherRedemptionDeniedReason =>
         'VoucherRedemptionDeniedReason',
       _icy9c8g7.RedeemedVoucher => 'RedeemedVoucher',
+      _im7ub4ea.UsageCap => 'UsageCap',
       _igte1e9r.BucketAccessRevokedException => 'BucketAccessRevokedException',
       _izuy2njw.BucketRateLimitExceededException =>
         'BucketRateLimitExceededException',
@@ -3418,12 +3461,18 @@ class Protocol extends _isc.SerializationManager
         return 'RequiredTerms';
       case _i5k61oox.Terms():
         return 'Terms';
+      case _ij7n6nga.UsageCapDeniedException():
+        return 'UsageCapDeniedException';
+      case _ipz16z00.UsageCapDeniedReason():
+        return 'UsageCapDeniedReason';
       case _ibykmik2.VoucherRedemptionDeniedException():
         return 'VoucherRedemptionDeniedException';
       case _ixkkqqw3.VoucherRedemptionDeniedReason():
         return 'VoucherRedemptionDeniedReason';
       case _icy9c8g7.RedeemedVoucher():
         return 'RedeemedVoucher';
+      case _im7ub4ea.UsageCap():
+        return 'UsageCap';
       case _igte1e9r.BucketAccessRevokedException():
         return 'BucketAccessRevokedException';
       case _izuy2njw.BucketRateLimitExceededException():
@@ -3948,6 +3997,12 @@ class Protocol extends _isc.SerializationManager
     if (dataClassName == 'Terms') {
       return deserialize<_i5k61oox.Terms>(data['data']);
     }
+    if (dataClassName == 'UsageCapDeniedException') {
+      return deserialize<_ij7n6nga.UsageCapDeniedException>(data['data']);
+    }
+    if (dataClassName == 'UsageCapDeniedReason') {
+      return deserialize<_ipz16z00.UsageCapDeniedReason>(data['data']);
+    }
     if (dataClassName == 'VoucherRedemptionDeniedException') {
       return deserialize<_ibykmik2.VoucherRedemptionDeniedException>(
         data['data'],
@@ -3958,6 +4013,9 @@ class Protocol extends _isc.SerializationManager
     }
     if (dataClassName == 'RedeemedVoucher') {
       return deserialize<_icy9c8g7.RedeemedVoucher>(data['data']);
+    }
+    if (dataClassName == 'UsageCap') {
+      return deserialize<_im7ub4ea.UsageCap>(data['data']);
     }
     if (dataClassName == 'BucketAccessRevokedException') {
       return deserialize<_igte1e9r.BucketAccessRevokedException>(data['data']);
