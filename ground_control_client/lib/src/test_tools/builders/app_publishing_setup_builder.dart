@@ -8,7 +8,6 @@ class AppPublishingSetupBuilder {
   IosSigning? _iosSigning = IosSigning(bundleId: 'com.acme.app');
   GooglePlayAccess? _androidStore;
   AndroidSigning? _androidSigning;
-  String? _androidPackageName;
 
   AppPublishingSetupBuilder withIosStore(AppStoreAccess? store) {
     _iosStore = store;
@@ -31,11 +30,6 @@ class AppPublishingSetupBuilder {
   }
 
   /// A capsule whose Google Play access Serverpod Cloud has created.
-  AppPublishingSetupBuilder withAndroidPackageName(String? packageName) {
-    _androidPackageName = packageName;
-    return this;
-  }
-
   AppPublishingSetupBuilder withGooglePlayAccess() {
     _androidStore = GooglePlayAccess(
       serviceAccountEmail: 'publisher@acme.iam.gserviceaccount.com',
@@ -59,7 +53,6 @@ class AppPublishingSetupBuilder {
     _iosSigning = null;
     _androidStore = null;
     _androidSigning = null;
-    _androidPackageName = null;
     return this;
   }
 
@@ -69,7 +62,6 @@ class AppPublishingSetupBuilder {
       android: AndroidPublishingSetup(
         store: _androidStore,
         signing: _androidSigning,
-        packageName: _androidPackageName,
       ),
     );
   }
