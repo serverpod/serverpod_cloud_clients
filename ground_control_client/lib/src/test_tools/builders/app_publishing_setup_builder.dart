@@ -20,6 +20,11 @@ class AppPublishingSetupBuilder {
     return this;
   }
 
+  AppPublishingSetupBuilder withIosBundleId(String bundleId) {
+    _iosSigning = IosSigning(bundleId: bundleId);
+    return this;
+  }
+
   AppPublishingSetupBuilder withAndroidStore(GooglePlayAccess? store) {
     _androidStore = store;
     return this;
