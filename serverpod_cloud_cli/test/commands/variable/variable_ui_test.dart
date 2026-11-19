@@ -63,8 +63,8 @@ void main() {
         );
       });
 
-      test('then stdout hints to redeploy', () {
-        expect(stdout, contains('scloud deploy'));
+      test('then stdout hints to restart', () {
+        expect(stdout, contains('scloud deploy --restart'));
       });
 
       test('then stderr is empty', () {

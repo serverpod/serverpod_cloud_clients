@@ -11,20 +11,20 @@ void main() {
     logger = TestCommandLogger();
   });
 
-  group('Given a redeploy hint widget', () {
+  group('Given a restart hint widget', () {
     test(
-      'when rendered then the redeploy copy and deploy command are written',
+      'when rendered then the restart copy and deploy --restart command are written',
       () async {
-        await const RedeployHintWidget(baseCommand: 'scloud')
+        await const RestartHintWidget(baseCommand: 'scloud')
             .buildTree(OutputContext(OutputFormat.text))
             .renderTree(logger: logger);
 
         expect(logger.terminalCommandCalls, [
           equalsTerminalCommandCall(
-            command: 'scloud deploy',
+            command: 'scloud deploy --restart',
             message:
                 'The changes will not take effect until your server is '
-                're-deployed.',
+                'restarted.',
           ),
         ]);
       },
@@ -33,18 +33,14 @@ void main() {
     test(
       'when the base command is a wrapper then the hinted command uses it',
       () async {
-        await const RedeployHintWidget(baseCommand: 'serverpod cloud')
+        await const RestartHintWidget(baseCommand: 'serverpod cloud')
             .buildTree(OutputContext(OutputFormat.text))
             .renderTree(logger: logger);
 
-        expect(logger.terminalCommandCalls, [
-          equalsTerminalCommandCall(
-            command: 'serverpod cloud deploy',
-            message:
-                'The changes will not take effect until your server is '
-                're-deployed.',
-          ),
-        ]);
+        expect(
+          logger.terminalCommandCalls.single.command,
+          'serverpod cloud deploy --restart',
+        );
       },
     );
   });
