@@ -33,7 +33,7 @@ class VariableSetTextUi extends OutputWidget {
             ? 'Successfully set secret: $name.'
             : 'Successfully set environment variable: $name.',
       ),
-      RedeployHintWidget(baseCommand: baseCommand),
+      RestartHintWidget(baseCommand: baseCommand),
     ]);
   }
 }
@@ -54,7 +54,7 @@ class VariableUnsetTextUi extends OutputWidget {
             ? 'Successfully removed secret: $name.'
             : 'Successfully removed environment variable: $name.',
       ),
-      RedeployHintWidget(baseCommand: baseCommand),
+      RestartHintWidget(baseCommand: baseCommand),
     ]);
   }
 }

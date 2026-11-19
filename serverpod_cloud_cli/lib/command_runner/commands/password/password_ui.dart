@@ -73,7 +73,7 @@ class PasswordSetTextUi extends OutputWidget {
         : SuccessTextWidget('Successfully set password "$name".');
     return OutputWidgetList([
       success,
-      RedeployHintWidget(baseCommand: baseCommand),
+      RestartHintWidget(baseCommand: baseCommand),
     ]);
   }
 }
@@ -92,7 +92,7 @@ class PasswordUnsetTextUi extends OutputWidget {
         : SuccessTextWidget('Successfully unset password "$name".');
     return OutputWidgetList([
       success,
-      RedeployHintWidget(baseCommand: baseCommand),
+      RestartHintWidget(baseCommand: baseCommand),
     ]);
   }
 }

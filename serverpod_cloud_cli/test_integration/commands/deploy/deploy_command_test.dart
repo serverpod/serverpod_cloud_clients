@@ -206,13 +206,13 @@ project:
           );
         });
 
-        test('then success message is logged.', () async {
+        test('then restart success message is logged.', () async {
           await cliCommandFuture;
           expect(
             logger.successCalls,
             contains(
               equalsSuccessCall(
-                message: 'Redeploy started.',
+                message: 'Restart started.',
                 followUp:
                     'Your changes take effect once the deployment finishes.',
                 newParagraph: true,
@@ -243,14 +243,111 @@ project:
           ]);
         });
 
-        test('then UsageException is thrown.', () async {
+        test('then redeployCapsule is not called.', () async {
+          await cliCommandFuture.catchError((final _) {});
+          verifyNever(
+            () => client.capsules.redeployCapsule(
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            ),
+          );
+        });
+
+        test('then UsageException naming --restart is thrown.', () async {
           await expectLater(
             cliCommandFuture,
             throwsA(
               isA<UsageException>().having(
                 (final e) => e.message,
                 'message',
-                contains('--redeploy option cannot be combined'),
+                contains('--restart option cannot be combined'),
+              ),
+            ),
+          );
+        });
+      });
+
+      group('when running deploy with --restart', () {
+        late Future cliCommandFuture;
+        setUp(() {
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--restart',
+            '--project',
+            '123',
+          ]);
+        });
+
+        test('then command completes successfully.', () async {
+          await expectLater(cliCommandFuture, completes);
+        });
+
+        test('then redeployCapsule is called for the project.', () async {
+          await cliCommandFuture;
+          verify(
+            () => client.capsules.redeployCapsule(cloudCapsuleId: '123'),
+          ).called(1);
+        });
+
+        test('then the project is not zipped or uploaded.', () async {
+          await cliCommandFuture;
+          verifyNever(
+            () => client.deploy.createUploadDescription(
+              any(),
+              serverpodVersion: any(named: 'serverpodVersion'),
+              dartVersion: any(named: 'dartVersion'),
+              commitHash: any(named: 'commitHash'),
+              commitMessage: any(named: 'commitMessage'),
+              branch: any(named: 'branch'),
+              resumable: any(named: 'resumable'),
+              archiveSize: any(named: 'archiveSize'),
+            ),
+          );
+        });
+
+        test('then restart success message is logged.', () async {
+          await cliCommandFuture;
+          expect(
+            logger.successCalls,
+            contains(
+              equalsSuccessCall(
+                message: 'Restart started.',
+                followUp:
+                    'Your changes take effect once the deployment finishes.',
+                newParagraph: true,
+              ),
+            ),
+          );
+        });
+
+        test('then a "status" command hint is logged.', () async {
+          await cliCommandFuture;
+          expect(
+            logger.terminalCommandCalls.single.command,
+            equals('scloud status'),
+          );
+        });
+      });
+
+      group('when running deploy with --restart and --wet-run', () {
+        late Future cliCommandFuture;
+        setUp(() {
+          cliCommandFuture = cli.run([
+            'deploy',
+            '--restart',
+            '--wet-run',
+            '--project',
+            '123',
+          ]);
+        });
+
+        test('then UsageException naming --restart is thrown.', () async {
+          await expectLater(
+            cliCommandFuture,
+            throwsA(
+              isA<UsageException>().having(
+                (final e) => e.message,
+                'message',
+                contains('--restart option cannot be combined'),
               ),
             ),
           );
@@ -264,6 +361,63 @@ project:
             ),
           );
         });
+      });
+    });
+
+    group('and redeployCapsule throws NoPriorDeploymentException '
+        'when running deploy with --restart', () {
+      late Future cliCommandFuture;
+      setUp(() {
+        reset(client.capsules);
+        when(
+          () => client.capsules.redeployCapsule(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenThrow(NoPriorDeploymentException(capsuleId: '123'));
+
+        cliCommandFuture = cli.run(['deploy', '--restart', '--project', '123']);
+      });
+
+      test('then ErrorExitException is thrown.', () async {
+        await expectLater(cliCommandFuture, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then not-deployed error is logged.', () async {
+        await cliCommandFuture.catchError((final _) {});
+        expect(
+          logger.errorCalls.first,
+          equalsErrorCall(
+            message: "This project hasn't been deployed yet.",
+            hint: 'Deploy it first with: scloud deploy',
+          ),
+        );
+      });
+    });
+
+    group('and redeployCapsule throws NotFoundException '
+        'when running deploy with --restart', () {
+      late Future cliCommandFuture;
+      setUp(() {
+        reset(client.capsules);
+        when(
+          () => client.capsules.redeployCapsule(
+            cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          ),
+        ).thenThrow(NotFoundException(message: 'Capsule not found: 123'));
+
+        cliCommandFuture = cli.run(['deploy', '--restart', '--project', '123']);
+      });
+
+      test('then ErrorExitException is thrown.', () async {
+        await expectLater(cliCommandFuture, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then not-found error is logged.', () async {
+        await cliCommandFuture.catchError((final _) {});
+        expect(
+          logger.errorCalls.first,
+          equalsErrorCall(message: 'Capsule not found: 123'),
+        );
       });
     });
 

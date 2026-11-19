@@ -47,12 +47,13 @@ class DeployShowFilesOption extends FlagOption {
       );
 }
 
-class DeployRedeployOption extends FlagOption {
-  const DeployRedeployOption({super.group})
+class DeployRestartOption extends FlagOption {
+  const DeployRestartOption({super.group})
     : super(
-        argName: 'redeploy',
+        argName: 'restart',
+        argAliases: const ['redeploy'],
         helpText:
-            'Redeploy the currently running build with the latest variables and '
+            'Restart the currently running build with the latest variables and '
             'secrets. Skips zipping and uploading the project.',
         defaultsTo: false,
         negatable: false,
@@ -91,7 +92,7 @@ enum DeployCommandOption<V> implements OptionDefinition<V> {
   concurrency(DeployConcurrencyOption()),
   wetRun(DeployWetRunOption()),
   showFiles(DeployShowFilesOption()),
-  redeploy(DeployRedeployOption()),
+  restart(DeployRestartOption()),
   output(DeployOutputOption()),
   wait(AwaitOption()),
   dartVersion(DartSdkVersionOption()),
@@ -150,9 +151,9 @@ Examples
 
     \$ $baseCommand deploy --output deployment.zip
 
-  Redeploy the currently running build with the latest variables and secrets
+  Restart the currently running build with the latest variables and secrets
 
-    \$ scloud deploy --redeploy
+    \$ $baseCommand deploy --restart
 
 ''';
 
@@ -168,7 +169,7 @@ Examples
     final concurrency = commandConfig.value(DeployCommandOption.concurrency);
     final wetRun = commandConfig.value(DeployCommandOption.wetRun);
     final showFiles = commandConfig.value(DeployCommandOption.showFiles);
-    final redeploy = commandConfig.value(DeployCommandOption.redeploy);
+    final restart = commandConfig.value(DeployCommandOption.restart);
     final outputPath = commandConfig.optionalValue(DeployCommandOption.output);
     final wait = commandConfig.value(DeployCommandOption.wait);
     final dartVersionOverride = commandConfig.optionalValue(
@@ -178,20 +179,21 @@ Examples
       DeployCommandOption.skipDartPubGet,
     );
 
-    if (redeploy) {
+    if (restart) {
       if (wetRun ||
           showFiles ||
           outputPath != null ||
           dartVersionOverride != null) {
         throw CloudCliUsageException(
-          'The --redeploy option cannot be combined with '
+          'The --restart option cannot be combined with '
           '--wet-run, --show-files, --output, or --dart-version.',
         );
       }
 
-      await Deploy.redeploy(
+      await Deploy.restart(
         runner.serviceProvider.cloudApiClient,
         logger: logger,
+        baseCommand: baseCommand,
         projectId: projectId,
       );
       return;

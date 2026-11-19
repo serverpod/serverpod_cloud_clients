@@ -33,17 +33,23 @@ import 'deploy_archive.dart';
 import 'prepare_project_files.dart';
 
 abstract class Deploy {
-  static Future<void> redeploy(
+  /// Restarts the running build of [projectId] with the latest variables and
+  /// secrets, without uploading the project.
+  ///
+  /// Throws [FailureException] if the project has not been deployed, is not
+  /// found, or the restart request fails.
+  static Future<void> restart(
     final Client cloudApiClient, {
     required final CommandLogger logger,
+    required final String baseCommand,
     required final String projectId,
   }) async {
-    logger.init('Redeploying Serverpod Cloud project "$projectId".');
+    logger.init('Restarting Serverpod Cloud project "$projectId".');
 
     try {
       await logger.progress(
-        'Requesting redeploy',
-        successMessage: 'Redeploy requested.',
+        'Requesting restart',
+        successMessage: 'Restart requested.',
         padRight: StatusCommands.progressMessagePadLength,
         newParagraph: true,
         () async {
@@ -56,7 +62,7 @@ abstract class Deploy {
     } on NoPriorDeploymentException {
       throw FailureException(
         error: "This project hasn't been deployed yet.",
-        hint: 'Deploy it first with: scloud deploy',
+        hint: 'Deploy it first with: $baseCommand deploy',
       );
     } on NotFoundException catch (e) {
       throw FailureException(error: e.message);
@@ -64,17 +70,17 @@ abstract class Deploy {
       throw FailureException.nested(
         e,
         stackTrace,
-        'Redeploy failed. Please try again.',
+        'Restart failed. Please try again.',
       );
     }
 
     logger.success(
-      'Redeploy started.',
+      'Restart started.',
       followUp: 'Your changes take effect once the deployment finishes.',
       newParagraph: true,
     );
     logger.terminalCommand(
-      'scloud status',
+      '$baseCommand status',
       message: 'To view the deployment status, run this command:',
       newParagraph: true,
     );

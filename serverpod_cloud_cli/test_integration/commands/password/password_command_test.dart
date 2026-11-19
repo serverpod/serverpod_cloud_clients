@@ -242,13 +242,35 @@ void main() {
             logger.successCalls.first,
             equalsSuccessCall(message: 'Successfully set password "database".'),
           );
+        });
+
+        test('then logs restart hint', () async {
+          reset(client);
+          when(
+            () => client.secrets.upsert(
+              secrets: any(named: 'secrets'),
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            ),
+          ).thenAnswer((_) async => Future.value());
+
+          final commandResult = cli.run([
+            'password',
+            'set',
+            'database',
+            'value',
+            '--project',
+            projectId,
+          ]);
+
+          await commandResult;
+
           expect(
             logger.terminalCommandCalls.single,
             equalsTerminalCommandCall(
-              command: 'scloud deploy',
+              command: 'scloud deploy --restart',
               message:
                   'The changes will not take effect until your server is '
-                  're-deployed.',
+                  'restarted.',
             ),
           );
         });
@@ -692,13 +714,35 @@ void main() {
               message: 'Successfully unset password "database".',
             ),
           );
+        });
+
+        test('then logs restart hint', () async {
+          reset(client);
+          when(
+            () => client.secrets.delete(
+              key: any(named: 'key'),
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+            ),
+          ).thenAnswer((_) async => Future.value());
+
+          logger.answerNextConfirmWith(true);
+          final commandResult = cli.run([
+            'password',
+            'unset',
+            'database',
+            '--project',
+            projectId,
+          ]);
+
+          await commandResult;
+
           expect(
             logger.terminalCommandCalls.single,
             equalsTerminalCommandCall(
-              command: 'scloud deploy',
+              command: 'scloud deploy --restart',
               message:
                   'The changes will not take effect until your server is '
-                  're-deployed.',
+                  'restarted.',
             ),
           );
         });

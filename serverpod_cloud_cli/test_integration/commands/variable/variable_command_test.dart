@@ -304,16 +304,16 @@ void main() {
           );
         });
 
-        test('then logs redeploy hint', () async {
+        test('then logs restart hint', () async {
           await commandResult;
 
           expect(
             logger.terminalCommandCalls.single,
             equalsTerminalCommandCall(
-              command: 'scloud deploy',
+              command: 'scloud deploy --restart',
               message:
                   'The changes will not take effect until your server is '
-                  're-deployed.',
+                  'restarted.',
             ),
           );
         });
@@ -690,16 +690,16 @@ void main() {
           );
         });
 
-        test('then logs redeploy hint', () async {
+        test('then logs restart hint', () async {
           await commandResult;
 
           expect(
             logger.terminalCommandCalls.single,
             equalsTerminalCommandCall(
-              command: 'scloud deploy',
+              command: 'scloud deploy --restart',
               message:
                   'The changes will not take effect until your server is '
-                  're-deployed.',
+                  'restarted.',
             ),
           );
         });
@@ -1092,16 +1092,16 @@ void main() {
         );
       });
 
-      test('then logs redeploy hint', () async {
+      test('then logs restart hint', () async {
         await commandResult;
 
         expect(
           logger.terminalCommandCalls.single,
           equalsTerminalCommandCall(
-            command: 'scloud deploy',
+            command: 'scloud deploy --restart',
             message:
                 'The changes will not take effect until your server is '
-                're-deployed.',
+                'restarted.',
           ),
         );
       });

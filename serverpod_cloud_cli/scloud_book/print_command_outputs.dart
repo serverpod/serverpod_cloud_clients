@@ -86,7 +86,12 @@ const _scenarios = [
     '--project',
     _projectId,
   ]),
-  _Scenario('deploy', ['deploy', '--redeploy', '--project', _projectId]),
+  _Scenario('deploy --restart', [
+    'deploy',
+    '--restart',
+    '--project',
+    _projectId,
+  ]),
   _Scenario('variable list', ['variable', 'list', '--project', _projectId]),
   _Scenario('variable set', [
     'variable',

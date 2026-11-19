@@ -78,14 +78,17 @@ void main() {
         expect(stdout, contains('Successfully set password "database".'));
       });
 
-      test('then stdout hints to redeploy', () {
+      test('then stdout says the changes take effect after a restart', () {
         expect(
           stdout,
           contains(
-            'The changes will not take effect until your server is re-deployed.',
+            'The changes will not take effect until your server is restarted.',
           ),
         );
-        expect(stdout, contains('scloud deploy'));
+      });
+
+      test('then stdout hints to restart', () {
+        expect(stdout, contains('scloud deploy --restart'));
       });
 
       test('then stderr is empty', () {
@@ -112,8 +115,8 @@ void main() {
         expect(stdout, contains('Successfully unset password "database".'));
       });
 
-      test('then stdout hints to redeploy', () {
-        expect(stdout, contains('scloud deploy'));
+      test('then stdout hints to restart', () {
+        expect(stdout, contains('scloud deploy --restart'));
       });
 
       test('then stderr is empty', () {
