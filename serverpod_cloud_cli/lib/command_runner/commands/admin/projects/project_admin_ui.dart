@@ -56,6 +56,10 @@ class AdminProjectListTextUi extends OutputWidget {
             getter: (row) => row.subscriptionId,
           ),
           TableColumnFormatter.forTimestamp(
+            'Trial End',
+            getter: (row) => row.trialEndDate,
+          ),
+          TableColumnFormatter.forTimestamp(
             'First Paid At',
             getter: (row) => row.firstInvoicePaidAt,
           ),
@@ -121,6 +125,7 @@ class AdminProjectListTextUi extends OutputWidget {
         if (showArchivedAt) 19,
         19,
         20,
+        19,
         19,
         21,
         18,

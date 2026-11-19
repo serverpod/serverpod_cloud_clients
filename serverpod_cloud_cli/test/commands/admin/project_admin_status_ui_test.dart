@@ -144,6 +144,7 @@ void main() {
           'Grace invoice',
           'Grace ends',
           'Concluded',
+          'Trial ends',
         ]) {
           expect(
             lines.where((line) => line.contains(label)),
@@ -151,6 +152,20 @@ void main() {
           );
           expect(lines, contains(contains(label)));
         }
+      });
+    });
+
+    group('when rendered with a future trial end', () {
+      test('then stdout shows when the trial ends', () async {
+        final io = await renderCommandUi(
+          AdminProjectStatusTextUi(utc: true),
+          data: AdminProjectInfoBuilder()
+              .withTrialEndDate(DateTime.utc(2026, 12, 1, 2, 3, 4))
+              .build(),
+        );
+
+        expect(io.stdout, contains('Trial ends'));
+        expect(io.stdout, contains('2026-12-01 02:03:04 (UTC)'));
       });
     });
 

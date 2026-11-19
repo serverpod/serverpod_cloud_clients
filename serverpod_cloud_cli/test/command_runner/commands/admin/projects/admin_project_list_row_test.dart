@@ -47,6 +47,18 @@ void main() {
       );
 
       expect(row.planProductId, 'growth-private:0');
+      expect(row.trialEndDate, isNull);
+      expect(row.toJson().containsKey('trialEndDate'), isFalse);
+    });
+
+    test('when mapped to a list row then a future trial end is included', () {
+      final trialEnd = DateTime.utc(2026, 12, 1, 2, 3, 4);
+      final row = AdminProjectListRow.fromAdminProjectInfo(
+        AdminProjectInfoBuilder().withTrialEndDate(trialEnd).build(),
+      );
+
+      expect(row.trialEndDate, trialEnd);
+      expect(row.toJson()['trialEndDate'], trialEnd.toIso8601String());
     });
 
     test('when mapped to a list row then overdue fields are absent', () {
@@ -126,6 +138,7 @@ void main() {
       expect(row.toJson().containsKey('gracePeriodInvoiceId'), isFalse);
       expect(row.toJson().containsKey('gracePeriodSuspendAt'), isFalse);
       expect(row.toJson().containsKey('gracePeriodConcludedAt'), isFalse);
+      expect(row.toJson().containsKey('trialEndDate'), isFalse);
     });
   });
 

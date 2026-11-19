@@ -43,6 +43,8 @@ void main() {
       });
 
       test('then stdout contains structured project fields', () {
+        expect(stdout, contains('User roles'));
+        expect(stdout, contains('admin'));
         expect(stdout, contains('Project'));
         expect(stdout, contains('my-project'));
         expect(stdout, contains('Phase'));
@@ -50,6 +52,11 @@ void main() {
         expect(stdout, contains('Roles'));
         expect(stdout, contains('Plan'));
         expect(stdout, contains('Billing'));
+        expect(stdout, contains('First paid'));
+        expect(stdout, contains('Paid invoice'));
+        expect(stdout, contains('Grace invoice'));
+        expect(stdout, contains('Grace ends'));
+        expect(stdout, contains('Concluded'));
         expect(
           stdout,
           contains('https://app.withorb.com/subscriptions/orb_sub_test'),
@@ -85,6 +92,46 @@ void main() {
         expect(stdout, contains('2024-03-04 05:06:07 (UTC)'));
         expect(stdout, contains('Reason'));
         expect(stdout, contains('paymentOverdue'));
+      });
+    });
+
+    group('when rendered with subscription facts', () {
+      late String stdout;
+
+      setUp(() async {
+        final io = await renderCommandUi(
+          AdminUserStatusTextUi(utc: true),
+          data: AdminUserStatusBuilder().withProjects([
+            AdminUserProjectMembershipBuilder().withProject(
+              AdminProjectInfoBuilder()
+                  .withProject(
+                    ProjectBuilder().withCloudProjectId('my-project'),
+                  )
+                  .withSubscriptionId('orb_sub_test')
+                  .withFirstInvoicePaidAt(DateTime.utc(2026, 4, 5, 6, 7, 8))
+                  .withFirstPaidInvoiceId('inv-first')
+                  .withGracePeriodInvoiceId('inv-grace')
+                  .withGracePeriodSuspendAt(DateTime.utc(2026, 5, 1, 2, 3, 4))
+                  .withGracePeriodConcludedAt(
+                    DateTime.utc(2026, 5, 2, 3, 4, 5),
+                  ),
+            ),
+          ]).build(),
+        );
+        stdout = io.stdout;
+      });
+
+      test('then stdout shows the paid invoice and grace period', () {
+        expect(stdout, contains('First paid'));
+        expect(stdout, contains('2026-04-05 06:07:08 (UTC)'));
+        expect(stdout, contains('Paid invoice'));
+        expect(stdout, contains('inv-first'));
+        expect(stdout, contains('Grace invoice'));
+        expect(stdout, contains('inv-grace'));
+        expect(stdout, contains('Grace ends'));
+        expect(stdout, contains('2026-05-01 02:03:04 (UTC)'));
+        expect(stdout, contains('Concluded'));
+        expect(stdout, contains('2026-05-02 03:04:05 (UTC)'));
       });
     });
 

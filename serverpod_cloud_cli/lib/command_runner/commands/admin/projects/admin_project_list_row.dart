@@ -8,6 +8,7 @@ class AdminProjectListRow implements SerializableModel {
     this.suspensionReason,
     required this.planProductId,
     required this.subscriptionId,
+    this.trialEndDate,
     this.firstInvoicePaidAt,
     this.firstPaidInvoiceId,
     this.gracePeriodInvoiceId,
@@ -64,6 +65,7 @@ class AdminProjectListRow implements SerializableModel {
       suspensionReason: info.suspensionReason,
       planProductId: info.planProductId,
       subscriptionId: info.subscriptionId,
+      trialEndDate: info.trialEndDate,
       firstInvoicePaidAt: info.firstInvoicePaidAt,
       firstPaidInvoiceId: info.firstPaidInvoiceId,
       gracePeriodInvoiceId: info.gracePeriodInvoiceId,
@@ -85,6 +87,7 @@ class AdminProjectListRow implements SerializableModel {
   final ProjectSuspensionReason? suspensionReason;
   final String planProductId;
   final String subscriptionId;
+  final DateTime? trialEndDate;
   final DateTime? firstInvoicePaidAt;
   final String? firstPaidInvoiceId;
   final String? gracePeriodInvoiceId;
@@ -102,6 +105,7 @@ class AdminProjectListRow implements SerializableModel {
   Map<String, Object?> toJson() {
     final suspendedAtValue = suspendedAt;
     final suspensionReasonValue = suspensionReason;
+    final trialEndDateValue = trialEndDate;
     final firstInvoicePaidAtValue = firstInvoicePaidAt;
     final firstPaidInvoiceIdValue = firstPaidInvoiceId;
     final gracePeriodInvoiceIdValue = gracePeriodInvoiceId;
@@ -116,6 +120,8 @@ class AdminProjectListRow implements SerializableModel {
         'suspensionReason': suspensionReasonValue.toJson(),
       'planProductId': planProductId,
       'subscriptionId': subscriptionId,
+      if (trialEndDateValue != null)
+        'trialEndDate': trialEndDateValue.toUtc().toIso8601String(),
       if (firstInvoicePaidAtValue != null)
         'firstInvoicePaidAt': firstInvoicePaidAtValue.toUtc().toIso8601String(),
       'firstPaidInvoiceId': ?firstPaidInvoiceIdValue,

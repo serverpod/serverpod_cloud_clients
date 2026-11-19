@@ -52,6 +52,7 @@ void main() {
         expect(stdout, contains('Users'));
         expect(stdout, contains('Plan Product Id'));
         expect(stdout, contains('Orb Subscription Id'));
+        expect(stdout, contains('Trial End (UTC)'));
         expect(stdout, contains('First Paid At (UTC)'));
         expect(stdout, contains('First Paid Invoice'));
         expect(stdout, contains('Grace Invoice'));
@@ -115,6 +116,7 @@ void main() {
               status: ProjectLifecycleStatus.active,
               planProductId: 'closed-beta:0',
               subscriptionId: 'orb_sub_1',
+              trialEndDate: DateTime.utc(2026, 12, 1, 2, 3, 4),
               firstInvoicePaidAt: DateTime.utc(2026, 4, 5, 6, 7, 8),
               firstPaidInvoiceId: 'inv-first',
               gracePeriodInvoiceId: 'inv-grace',
@@ -132,6 +134,7 @@ void main() {
         expect(stdout, contains('inv-grace'));
         expect(stdout, contains('2026-05-01 02:03:04'));
         expect(stdout, contains('2026-05-02 03:04:05'));
+        expect(stdout, contains('2026-12-01 02:03:04'));
       });
     });
 

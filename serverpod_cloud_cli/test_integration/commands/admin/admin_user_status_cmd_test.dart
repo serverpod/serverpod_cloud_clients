@@ -143,10 +143,15 @@ void main() {
         final owner = decoded['owner'] as Map<String, dynamic>;
         expect(owner['userEmail'], userEmail);
         final projects = decoded['projects'] as List<dynamic>;
-        final project = projects.single as Map<String, dynamic>;
+        final membership = projects.single as Map<String, dynamic>;
+        final project = membership['project'] as Map<String, dynamic>;
+        expect(membership['userRoles'], ['admin']);
         expect(project['status'], 'active');
         expect(project.containsKey('suspendedAt'), isFalse);
         expect(project.containsKey('suspensionReason'), isFalse);
+        expect(project.containsKey('gracePeriodInvoiceId'), isFalse);
+        expect(project.containsKey('gracePeriodSuspendAt'), isFalse);
+        expect(project.containsKey('gracePeriodConcludedAt'), isFalse);
       });
     });
 

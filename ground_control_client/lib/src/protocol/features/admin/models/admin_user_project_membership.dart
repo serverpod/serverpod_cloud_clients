@@ -12,154 +12,54 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:ground_control_client/src/protocol/protocol.dart' as _iod2a87h;
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
-import '../../../domains/products/models/plan_type.dart' as _iic46wsa;
-import '../../../domains/projects/models/project_lifecycle_status.dart'
-    as _ie2v77w9;
 import '../../../domains/projects/models/project_role.dart' as _isypcm2i;
-import '../../../domains/projects/models/project_suspension_reason.dart'
-    as _ixae5ksq;
-import '../../../domains/status/models/deploy_attempt.dart' as _inqbrt2s;
+import '../../../features/admin/models/admin_project_info.dart' as _icnx3kzo;
 
-/// Project membership and procurement details for an admin user status view.
+/// A project the user belongs to, including that project's admin status.
 abstract class AdminUserProjectMembership
     implements _isc.SerializableModel, _isc.ProtocolSerialization {
   AdminUserProjectMembership._({
-    required this.cloudProjectId,
-    required this.status,
-    this.suspendedAt,
-    this.suspensionReason,
     required this.userRoles,
-    this.planType,
-    this.planProductId,
-    this.billingPlanId,
-    this.billingSubscriptionId,
-    required this.projectCreatedAt,
-    this.latestDeployAttempt,
+    required this.project,
   });
 
   factory AdminUserProjectMembership({
-    required String cloudProjectId,
-    required _ie2v77w9.ProjectLifecycleStatus status,
-    DateTime? suspendedAt,
-    _ixae5ksq.ProjectSuspensionReason? suspensionReason,
     required List<_isypcm2i.ProjectRole> userRoles,
-    _iic46wsa.PlanType? planType,
-    String? planProductId,
-    String? billingPlanId,
-    String? billingSubscriptionId,
-    required DateTime projectCreatedAt,
-    _inqbrt2s.DeployAttempt? latestDeployAttempt,
+    required _icnx3kzo.AdminProjectInfo project,
   }) = _AdminUserProjectMembershipImpl;
 
   factory AdminUserProjectMembership.fromJson(
     Map<String, dynamic> jsonSerialization,
   ) {
     return AdminUserProjectMembership(
-      cloudProjectId: jsonSerialization['cloudProjectId'] as String,
-      status: _ie2v77w9.ProjectLifecycleStatus.fromJson(
-        (jsonSerialization['status'] as String),
-      ),
-      suspendedAt: jsonSerialization['suspendedAt'] == null
-          ? null
-          : _isc.DateTimeJsonExtension.fromJson(
-              jsonSerialization['suspendedAt'],
-            ),
-      suspensionReason: jsonSerialization['suspensionReason'] == null
-          ? null
-          : _ixae5ksq.ProjectSuspensionReason.fromJson(
-              (jsonSerialization['suspensionReason'] as String),
-            ),
       userRoles: _iod2a87h.Protocol().deserialize<List<_isypcm2i.ProjectRole>>(
         jsonSerialization['userRoles'],
       ),
-      planType: jsonSerialization['planType'] == null
-          ? null
-          : _iic46wsa.PlanType.fromJson(
-              (jsonSerialization['planType'] as String),
-            ),
-      planProductId: jsonSerialization['planProductId'] as String?,
-      billingPlanId: jsonSerialization['billingPlanId'] as String?,
-      billingSubscriptionId:
-          jsonSerialization['billingSubscriptionId'] as String?,
-      projectCreatedAt: _isc.DateTimeJsonExtension.fromJson(
-        jsonSerialization['projectCreatedAt'],
+      project: _iod2a87h.Protocol().deserialize<_icnx3kzo.AdminProjectInfo>(
+        jsonSerialization['project'],
       ),
-      latestDeployAttempt: jsonSerialization['latestDeployAttempt'] == null
-          ? null
-          : _iod2a87h.Protocol().deserialize<_inqbrt2s.DeployAttempt>(
-              jsonSerialization['latestDeployAttempt'],
-            ),
     );
   }
-
-  /// The cloud project id of the membership.
-  String cloudProjectId;
-
-  /// The lifecycle status of the project.
-  _ie2v77w9.ProjectLifecycleStatus status;
-
-  /// When the project was last suspended, when set.
-  DateTime? suspendedAt;
-
-  /// Why the project was last suspended, when set.
-  _ixae5ksq.ProjectSuspensionReason? suspensionReason;
 
   /// Roles the user holds on the project.
   List<_isypcm2i.ProjectRole> userRoles;
 
-  /// The project's plan type, when known.
-  _iic46wsa.PlanType? planType;
-
-  /// Ground Control plan product id for the project's subscription.
-  String? planProductId;
-
-  /// Orb (billing system) plan id for the project's subscription.
-  String? billingPlanId;
-
-  /// Orb subscription id for the project's subscription.
-  String? billingSubscriptionId;
-
-  /// When the project was created.
-  DateTime projectCreatedAt;
-
-  /// The most recent deploy attempt for the project, when any exist.
-  _inqbrt2s.DeployAttempt? latestDeployAttempt;
+  /// The admin status of the project.
+  _icnx3kzo.AdminProjectInfo project;
 
   /// Returns a shallow copy of this [AdminUserProjectMembership]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
   AdminUserProjectMembership copyWith({
-    String? cloudProjectId,
-    _ie2v77w9.ProjectLifecycleStatus? status,
-    DateTime? suspendedAt = const _isc.$UndefinedDateTime(),
-    _ixae5ksq.ProjectSuspensionReason? suspensionReason,
     List<_isypcm2i.ProjectRole>? userRoles,
-    _iic46wsa.PlanType? planType,
-    String? planProductId,
-    String? billingPlanId,
-    String? billingSubscriptionId,
-    DateTime? projectCreatedAt,
-    _inqbrt2s.DeployAttempt? latestDeployAttempt =
-        const _UndefinedAdminUserProjectMembership$latestDeployAttempt(),
+    _icnx3kzo.AdminProjectInfo? project,
   });
   @override
   Map<String, dynamic> toJson() {
     return {
       '__className__': 'AdminUserProjectMembership',
-      'cloudProjectId': cloudProjectId,
-      'status': status.toJson(),
-      if (suspendedAt != null) 'suspendedAt': suspendedAt?.toJson(),
-      if (suspensionReason != null)
-        'suspensionReason': suspensionReason?.toJson(),
       'userRoles': userRoles.toJson(valueToJson: (v) => v.toJson()),
-      if (planType != null) 'planType': planType?.toJson(),
-      if (planProductId != null) 'planProductId': planProductId,
-      if (billingPlanId != null) 'billingPlanId': billingPlanId,
-      if (billingSubscriptionId != null)
-        'billingSubscriptionId': billingSubscriptionId,
-      'projectCreatedAt': projectCreatedAt.toJson(),
-      if (latestDeployAttempt != null)
-        'latestDeployAttempt': latestDeployAttempt?.toJson(),
+      'project': project.toJson(),
     };
   }
 
@@ -167,20 +67,8 @@ abstract class AdminUserProjectMembership
   Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'AdminUserProjectMembership',
-      'cloudProjectId': cloudProjectId,
-      'status': status.toJson(),
-      if (suspendedAt != null) 'suspendedAt': suspendedAt?.toJson(),
-      if (suspensionReason != null)
-        'suspensionReason': suspensionReason?.toJson(),
       'userRoles': userRoles.toJson(valueToJson: (v) => v.toJson()),
-      if (planType != null) 'planType': planType?.toJson(),
-      if (planProductId != null) 'planProductId': planProductId,
-      if (billingPlanId != null) 'billingPlanId': billingPlanId,
-      if (billingSubscriptionId != null)
-        'billingSubscriptionId': billingSubscriptionId,
-      'projectCreatedAt': projectCreatedAt.toJson(),
-      if (latestDeployAttempt != null)
-        'latestDeployAttempt': latestDeployAttempt?.toJsonForProtocol(),
+      'project': project.toJsonForProtocol(),
     };
   }
 
@@ -190,83 +78,23 @@ abstract class AdminUserProjectMembership
   }
 }
 
-class _Undefined {}
-
-class _UndefinedAdminUserProjectMembership$latestDeployAttempt
-    extends _isc.UndefinedSentinel
-    implements _inqbrt2s.DeployAttempt {
-  const _UndefinedAdminUserProjectMembership$latestDeployAttempt();
-}
-
 class _AdminUserProjectMembershipImpl extends AdminUserProjectMembership {
   _AdminUserProjectMembershipImpl({
-    required String cloudProjectId,
-    required _ie2v77w9.ProjectLifecycleStatus status,
-    DateTime? suspendedAt,
-    _ixae5ksq.ProjectSuspensionReason? suspensionReason,
     required List<_isypcm2i.ProjectRole> userRoles,
-    _iic46wsa.PlanType? planType,
-    String? planProductId,
-    String? billingPlanId,
-    String? billingSubscriptionId,
-    required DateTime projectCreatedAt,
-    _inqbrt2s.DeployAttempt? latestDeployAttempt,
-  }) : super._(
-         cloudProjectId: cloudProjectId,
-         status: status,
-         suspendedAt: suspendedAt,
-         suspensionReason: suspensionReason,
-         userRoles: userRoles,
-         planType: planType,
-         planProductId: planProductId,
-         billingPlanId: billingPlanId,
-         billingSubscriptionId: billingSubscriptionId,
-         projectCreatedAt: projectCreatedAt,
-         latestDeployAttempt: latestDeployAttempt,
-       );
+    required _icnx3kzo.AdminProjectInfo project,
+  }) : super._(userRoles: userRoles, project: project);
 
   /// Returns a shallow copy of this [AdminUserProjectMembership]
   /// with some or all fields replaced by the given arguments.
   @_isc.useResult
   @override
   AdminUserProjectMembership copyWith({
-    String? cloudProjectId,
-    _ie2v77w9.ProjectLifecycleStatus? status,
-    DateTime? suspendedAt = const _isc.$UndefinedDateTime(),
-    Object? suspensionReason = _Undefined,
     List<_isypcm2i.ProjectRole>? userRoles,
-    Object? planType = _Undefined,
-    Object? planProductId = _Undefined,
-    Object? billingPlanId = _Undefined,
-    Object? billingSubscriptionId = _Undefined,
-    DateTime? projectCreatedAt,
-    _inqbrt2s.DeployAttempt? latestDeployAttempt =
-        const _UndefinedAdminUserProjectMembership$latestDeployAttempt(),
+    _icnx3kzo.AdminProjectInfo? project,
   }) {
     return AdminUserProjectMembership(
-      cloudProjectId: cloudProjectId ?? this.cloudProjectId,
-      status: status ?? this.status,
-      suspendedAt: suspendedAt is _isc.UndefinedSentinel
-          ? this.suspendedAt
-          : suspendedAt,
-      suspensionReason: suspensionReason is _ixae5ksq.ProjectSuspensionReason?
-          ? suspensionReason
-          : this.suspensionReason,
       userRoles: userRoles ?? this.userRoles.map((e0) => e0).toList(),
-      planType: planType is _iic46wsa.PlanType? ? planType : this.planType,
-      planProductId: planProductId is String?
-          ? planProductId
-          : this.planProductId,
-      billingPlanId: billingPlanId is String?
-          ? billingPlanId
-          : this.billingPlanId,
-      billingSubscriptionId: billingSubscriptionId is String?
-          ? billingSubscriptionId
-          : this.billingSubscriptionId,
-      projectCreatedAt: projectCreatedAt ?? this.projectCreatedAt,
-      latestDeployAttempt: latestDeployAttempt is _isc.UndefinedSentinel
-          ? this.latestDeployAttempt?.copyWith()
-          : latestDeployAttempt,
+      project: project ?? this.project.copyWith(),
     );
   }
 }
