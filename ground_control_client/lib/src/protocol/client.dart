@@ -865,7 +865,8 @@ class EndpointAppBuilds extends _isc.EndpointRef {
   /// limit. Throws [AppPlatformNotSetUpException] if the publishing setup
   /// of a platform in [platforms] is incomplete; no build is created.
   /// Throws [AppBuildAllowanceExceededException] if the project has used
-  /// every app build its plan allows this month; no build is created.
+  /// every app build its plan allows in the current billing period; no
+  /// build is created.
   /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<_iqiq2vfs.AppBuildsUpload> createBuilds({
     required String cloudCapsuleId,
@@ -905,8 +906,8 @@ class EndpointAppBuilds extends _isc.EndpointRef {
     },
   );
 
-  /// Gets the app builds the project has used this month against its
-  /// plan's allowance.
+  /// Gets the app builds the project has used in the current billing
+  /// period against its plan's allowance.
   _ida.Future<_ihydp8mk.AppBuildUsage> getBuildUsage({
     required String cloudCapsuleId,
   }) => caller.callServerEndpoint<_ihydp8mk.AppBuildUsage>(

@@ -13,8 +13,8 @@
 import 'package:serverpod_client/serverpod_client.dart' as _isc;
 
 /// Thrown by createBuilds when the project has used every app build its
-/// plan allows this month. No build is created. The message says when the
-/// allowance resets.
+/// plan allows in the current billing period. No build is created. The
+/// message says when the allowance resets.
 abstract class AppBuildAllowanceExceededException
     implements
         _isc.SerializableException,
