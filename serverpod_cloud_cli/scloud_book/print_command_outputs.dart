@@ -540,6 +540,21 @@ const _scenarios = [
     '--invoice-id',
     'inv_1',
   ]),
+  _Scenario('admin billing record-trial-ended', [
+    'admin',
+    'billing',
+    'record-trial-ended',
+    '--subscription-id',
+    'sub_1',
+  ]),
+  _Scenario('admin billing record-trials-ended --dry-run', [
+    'admin',
+    'billing',
+    'record-trials-ended',
+    '--since',
+    '2026-11-05',
+    '--dry-run',
+  ]),
   _Scenario('admin voucher create', [
     'admin',
     'voucher',
