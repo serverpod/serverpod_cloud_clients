@@ -1,3 +1,4 @@
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:ground_control_client/ground_control_client.dart' show Client;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
@@ -88,13 +89,13 @@ Examples
 
   @override
   Future<void> runWithOutput(
-    final Configuration<TopOption> commandConfig,
+    final CommandContext<TopOption, void> context,
     final CommandOutput output,
   ) async {
-    final String projectId = commandConfig.value(TopOption.projectId);
-    final bool inUtc = commandConfig.value(TopOption.utc);
-    final Duration interval = commandConfig.value(TopOption.interval);
-    final Client client = runner.serviceProvider.cloudApiClient;
+    final String projectId = context.config.value(TopOption.projectId);
+    final bool inUtc = context.config.value(TopOption.utc);
+    final Duration interval = context.config.value(TopOption.interval);
+    final Client client = context.serviceProvider.cloudApiClient;
 
     if (!logger.inlineTerminal.hasTerminal) {
       throw FailureException(

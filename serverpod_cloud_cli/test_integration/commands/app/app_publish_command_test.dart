@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:archive/archive.dart';
-import 'package:args/command_runner.dart';
+import 'package:config/config.dart' show UsageException;
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';

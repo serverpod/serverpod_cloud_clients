@@ -17,12 +17,12 @@ import '../test_utils/test_command_logger.dart';
 const _updateAlert =
     'A new version 2.0.0 of Serverpod Cloud CLI is available!\n'
     '\n'
-    'To update to the latest version, run "dart install serverpod_cloud_cli".';
+    '  To update to the latest version, run "dart install serverpod_cloud_cli".';
 
 const _nonBreakingAlert =
     'A new version 1.1.0 of Serverpod Cloud CLI is available!\n'
     '\n'
-    'To update to the latest version, run "dart install serverpod_cloud_cli".';
+    '  To update to the latest version, run "dart install serverpod_cloud_cli".';
 
 void main() {
   final logger = TestCommandLogger();
@@ -237,7 +237,7 @@ void main() {
                 'A new version 1.0.0-preview-123.1 of Serverpod Cloud CLI is '
                 'available!\n'
                 '\n'
-                'To update to the latest version, run "dart install '
+                '  To update to the latest version, run "dart install '
                 "'serverpod_cloud_cli@{hosted: "
                 'https://quiver.serverpod.space/registry/serverpod, '
                 "version: 1.0.0-preview-123.1}'\".",

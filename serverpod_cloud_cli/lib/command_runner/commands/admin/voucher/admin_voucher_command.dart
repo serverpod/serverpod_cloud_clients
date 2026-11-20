@@ -1,3 +1,4 @@
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/voucher/voucher_admin_ops.dart';
@@ -122,36 +123,36 @@ class AdminCreateVoucherCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AdminCreateVoucherOption> commandConfig,
+    final CommandContext<AdminCreateVoucherOption, void> context,
     final CommandOutput output,
   ) async {
-    final code = commandConfig.value(AdminCreateVoucherOption.code);
-    final name = commandConfig.value(AdminCreateVoucherOption.name);
+    final code = context.config.value(AdminCreateVoucherOption.code);
+    final name = context.config.value(AdminCreateVoucherOption.name);
     final creditAmountCents = _parseCents(
-      commandConfig.value(AdminCreateVoucherOption.amount),
+      context.config.value(AdminCreateVoucherOption.amount),
     );
-    final paysFor = commandConfig.value(AdminCreateVoucherOption.paysFor);
-    final redeemableUntil = commandConfig.optionalValue(
+    final paysFor = context.config.value(AdminCreateVoucherOption.paysFor);
+    final redeemableUntil = context.config.optionalValue(
       AdminCreateVoucherOption.redeemableUntil,
     );
-    final creditLifetimeDays = commandConfig.optionalValue(
+    final creditLifetimeDays = context.config.optionalValue(
       AdminCreateVoucherOption.creditLifetimeDays,
     );
-    final creditExpiresBy = commandConfig.optionalValue(
+    final creditExpiresBy = context.config.optionalValue(
       AdminCreateVoucherOption.creditExpiresBy,
     );
-    final maxRedemptions = commandConfig.optionalValue(
+    final maxRedemptions = context.config.optionalValue(
       AdminCreateVoucherOption.maxRedemptions,
     );
-    final maxRedemptionsPerOwner = commandConfig.value(
+    final maxRedemptionsPerOwner = context.config.value(
       AdminCreateVoucherOption.maxRedemptionsPerOwner,
     );
-    final utc = commandConfig.value(AdminCreateVoucherOption.utc);
+    final utc = context.config.value(AdminCreateVoucherOption.utc);
 
     await renderCommand(
       output,
       operation: () => VoucherAdminOperations.createVoucher(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         code: code,
         name: name,
         creditAmountCents: creditAmountCents,
@@ -210,18 +211,18 @@ class AdminListVouchersCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AdminListVouchersOption> commandConfig,
+    final CommandContext<AdminListVouchersOption, void> context,
     final CommandOutput output,
   ) async {
-    final includeArchived = commandConfig.value(
+    final includeArchived = context.config.value(
       AdminListVouchersOption.includeArchived,
     );
-    final utc = commandConfig.value(AdminListVouchersOption.utc);
+    final utc = context.config.value(AdminListVouchersOption.utc);
 
     await renderCommand(
       output,
       operation: () => VoucherAdminOperations.listVouchers(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         includeArchived: includeArchived,
       ),
       textOutputUi: AdminVoucherListTextUi(utc: utc),
@@ -263,13 +264,14 @@ class AdminArchiveVoucherCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AdminArchiveVoucherOption> commandConfig,
+    final CommandContext<AdminArchiveVoucherOption, void> context,
     final CommandOutput output,
   ) async {
-    final code = commandConfig.value(AdminArchiveVoucherOption.code);
-    final utc = commandConfig.value(AdminArchiveVoucherOption.utc);
+    final code = context.config.value(AdminArchiveVoucherOption.code);
+    final utc = context.config.value(AdminArchiveVoucherOption.utc);
 
     await confirmToContinue(
+      context,
       output,
       message:
           'Are you sure you want to archive the voucher "$code"? '
@@ -280,7 +282,7 @@ class AdminArchiveVoucherCommand
     await renderCommand(
       output,
       operation: () => VoucherAdminOperations.archiveVoucher(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         code: code,
       ),
       textOutputUi: AdminVoucherArchiveTextUi(utc: utc),

@@ -1,8 +1,11 @@
 import 'dart:io' show Directory;
 
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart'
+    show GlobalConfigurationOptions;
 import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy/deploy_command.dart';
@@ -90,29 +93,31 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
 
   @override
   Future<void> runWithOutput(
-    final Configuration commandConfig,
+    final CommandContext<LaunchOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectConfigFile = globalConfiguration.projectConfigFile;
-    final consoleServer = globalConfiguration.consoleServer;
-    final openBrowser = globalConfiguration.browser;
+    final projectConfigFile = context.globalConfiguration.projectConfigFile;
+    final consoleServer = context.globalConfiguration.consoleServer;
+    final openBrowser = context.globalConfiguration.browser;
 
-    final projectId = commandConfig.optionalValue(LaunchOption.projectId);
-    final preDeployScripts = commandConfig.value(LaunchOption.preDeployScripts);
-    final deploy = commandConfig.value(LaunchOption.deploy);
-    final dartVersionOverride = commandConfig.optionalValue(
+    final projectId = context.config.optionalValue(LaunchOption.projectId);
+    final preDeployScripts = context.config.value(
+      LaunchOption.preDeployScripts,
+    );
+    final deploy = context.config.value(LaunchOption.deploy);
+    final dartVersionOverride = context.config.optionalValue(
       LaunchOption.dartVersion,
     );
-    final inUtc = commandConfig.value(LaunchOption.utc);
+    final inUtc = context.config.value(LaunchOption.utc);
 
     // Deploy-specific options
-    final concurrency = commandConfig.value(LaunchOption.concurrency);
-    final wetRun = commandConfig.value(LaunchOption.wetRun);
-    final showFiles = commandConfig.value(LaunchOption.showFiles);
-    final outputPath = commandConfig.optionalValue(LaunchOption.output);
-    final wait = commandConfig.value(LaunchOption.wait);
+    final concurrency = context.config.value(LaunchOption.concurrency);
+    final wetRun = context.config.value(LaunchOption.wetRun);
+    final showFiles = context.config.value(LaunchOption.showFiles);
+    final outputPath = context.config.optionalValue(LaunchOption.output);
+    final wait = context.config.value(LaunchOption.wait);
 
-    final projectDirectory = runner.verifiedProjectDirectory();
+    final projectDirectory = runner.verifiedProjectDirectory(context);
     final relativeProjectDir = p.relative(projectDirectory.path, from: '.');
 
     if (projectConfigFile != null) {
@@ -122,7 +127,7 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
               'The configuration file $projectConfigFile lacks a project ID.',
         );
       }
-      if (commandConfig.valueSourceType(LaunchOption.projectId) !=
+      if (context.config.valueSourceType(LaunchOption.projectId) !=
           ValueSourceType.config) {
         final config = ScloudConfigIO.readFromFile(projectConfigFile.path);
         if (config?.projectId != projectId) {
@@ -141,8 +146,8 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
       // Unambiguous scloud.<ext> file found, perform a deploy
       logger.debug('Project directory is: $relativeProjectDir');
       await Deploy.deploy(
-        runner.serviceProvider.cloudApiClient,
-        runner.serviceProvider.fileUploaderFactory,
+        context.serviceProvider.cloudApiClient,
+        context.serviceProvider.fileUploaderFactory,
         logger: logger,
         baseCommand: baseCommand,
         projectId: projectId,
@@ -160,8 +165,8 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
     }
 
     await Launch.launch(
-      runner.serviceProvider.cloudApiClient,
-      runner.serviceProvider.fileUploaderFactory,
+      context.serviceProvider.cloudApiClient,
+      context.serviceProvider.fileUploaderFactory,
       logger: logger,
       baseCommand: baseCommand,
       projectDirectory: Directory(relativeProjectDir),

@@ -1,3 +1,4 @@
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/version/version_ops.dart';
@@ -18,13 +19,16 @@ class VersionCommand extends CloudCliCommand {
   final name = 'version';
 
   @override
+  final aliases = ['--version'];
+
+  @override
   final description = usageDescription;
 
   VersionCommand({required super.logger});
 
   @override
   Future<void> runWithOutput(
-    final Configuration commandConfig,
+    final CommandContext<OptionDefinition, void> context,
     final CommandOutput output,
   ) async {
     await renderCommand(

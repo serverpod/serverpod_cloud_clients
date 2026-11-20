@@ -1,8 +1,13 @@
+import 'dart:async' show FutureOr;
 import 'dart:io';
 
+import 'package:config/command.dart' show commandContextOf;
 import 'package:config/config.dart';
 import 'package:ground_control_client/ground_control_client.dart'
-    show ProjectLifecycleStatus, ProjectRole;
+    show ProjectLifecycleStatus, ProjectRole, ProjectInfo;
+import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart'
+    show GlobalContextExtension;
+import 'package:serverpod_cloud_cli/command_runner/commands/project/project_ops.dart';
 import 'package:serverpod_cloud_cli/util/scloud_config/scloud_config.dart';
 
 import 'email_validator.dart';
@@ -124,6 +129,36 @@ class ProjectIdOption extends StringOption {
          helpText: asFirstArg ? _helpTextFirstArg : _helpText,
          group: group,
        );
+
+  /// When the command runner invokes this, [context] is a
+  /// `CommandCompletionContext`. `commandContextOf` returns the leaf
+  /// `CommandContext` of the commands typed so far, with resolved option
+  /// values and whatever middleware stored on its provider.
+  @override
+  FutureOr<CompletionResult> complete(final CompletionContext context) async {
+    final cmdContext = commandContextOf(context);
+    if (cmdContext == null) {
+      return super.complete(context);
+    }
+    final client = cmdContext.cloudApiClient;
+    final projects = await ProjectCommands.listProjectsOperation(client);
+    return CompletionResult.values(
+      projects
+          .map(
+            (p) => CompletionCandidate(
+              p.project.cloudProjectId,
+              description: _projectDescription(p),
+            ),
+          )
+          .toList(),
+    );
+  }
+}
+
+String? _projectDescription(final ProjectInfo pi) {
+  final planType = pi.planType;
+  final planName = planType != null ? '${planType.name}, ' : '';
+  return '$planName(${pi.project.status.name})';
 }
 
 class NameOption extends StringOption {

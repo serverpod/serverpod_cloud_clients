@@ -1,3 +1,4 @@
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
@@ -56,15 +57,15 @@ Examples
 
   @override
   Future<void> runWithOutput(
-    final Configuration<ProjectUserListOption> commandConfig,
+    final CommandContext<ProjectUserListOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(ProjectUserListOption.projectId);
+    final projectId = context.config.value(ProjectUserListOption.projectId);
 
     await renderCommand(
       output,
       operation: () => UserCommands.listUsersOperation(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
       ),
       textOutputUi: ProjectUserListTextUi(projectId: projectId),
@@ -107,17 +108,17 @@ Examples
 
   @override
   Future<void> runWithOutput(
-    final Configuration<ProjectUserInviteOption> commandConfig,
+    final CommandContext<ProjectUserInviteOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(ProjectUserInviteOption.projectId);
-    final userEmail = commandConfig.value(ProjectUserInviteOption.user);
-    final roles = commandConfig.value(ProjectUserInviteOption.roles);
+    final projectId = context.config.value(ProjectUserInviteOption.projectId);
+    final userEmail = context.config.value(ProjectUserInviteOption.user);
+    final roles = context.config.value(ProjectUserInviteOption.roles);
 
     await renderCommand(
       output,
       operation: () => UserCommands.inviteUser(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
         email: userEmail,
         assignRoles: roles,
@@ -161,16 +162,16 @@ Examples
 
   @override
   Future<void> runWithOutput(
-    final Configuration<ProjectUserRevokeOption> commandConfig,
+    final CommandContext<ProjectUserRevokeOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(ProjectUserRevokeOption.projectId);
-    final userEmail = commandConfig.value(ProjectUserRevokeOption.user);
+    final projectId = context.config.value(ProjectUserRevokeOption.projectId);
+    final userEmail = context.config.value(ProjectUserRevokeOption.user);
 
     await renderCommand(
       output,
       operation: () => UserCommands.revokeUser(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
         email: userEmail,
         unassignRoles: const [],

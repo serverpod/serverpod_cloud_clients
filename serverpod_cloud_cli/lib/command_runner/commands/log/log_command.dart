@@ -1,3 +1,4 @@
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
@@ -145,17 +146,17 @@ Examples
 
   @override
   Future<void> runWithOutput(
-    final Configuration<LogOption> commandConfig,
+    final CommandContext<LogOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(LogOption.projectId);
-    final limit = commandConfig.value(LogOption.limit);
-    final inUtc = commandConfig.value(LogOption.utc);
-    var until = commandConfig.optionalValue(LogOption.until);
-    var since = commandConfig.optionalValue(LogOption.since);
-    final tailOpt = commandConfig.optionalValue(LogOption.tail);
-    final internalAllOpt = commandConfig.value(LogOption.all);
-    final raw = commandConfig.value(LogOption.raw);
+    final projectId = context.config.value(LogOption.projectId);
+    final limit = context.config.value(LogOption.limit);
+    final inUtc = context.config.value(LogOption.utc);
+    var until = context.config.optionalValue(LogOption.until);
+    var since = context.config.optionalValue(LogOption.since);
+    final tailOpt = context.config.optionalValue(LogOption.tail);
+    final internalAllOpt = context.config.value(LogOption.all);
+    final raw = context.config.value(LogOption.raw);
 
     final anyTimeSpanIsSet = until != null || since != null;
     if (internalAllOpt) {
@@ -178,7 +179,7 @@ Examples
       );
     }
 
-    final client = runner.serviceProvider.cloudApiClient;
+    final client = context.serviceProvider.cloudApiClient;
 
     if (tailOpt == true) {
       await renderCommand(

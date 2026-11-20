@@ -1,3 +1,4 @@
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/builds/builds_command.dart';
@@ -132,22 +133,22 @@ Examples
 
   @override
   Future<void> runWithOutput(
-    final Configuration<DeploymentsShowOption> commandConfig,
+    final CommandContext<DeploymentsShowOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(DeploymentsShowOption.projectId);
-    final inUtc = commandConfig.value(DeploymentsShowOption.utc);
-    final wait = commandConfig.value(DeploymentsShowOption.wait);
-    final deploymentArg = commandConfig.optionalValue(
+    final projectId = context.config.value(DeploymentsShowOption.projectId);
+    final inUtc = context.config.value(DeploymentsShowOption.utc);
+    final wait = context.config.value(DeploymentsShowOption.wait);
+    final deploymentArg = context.config.optionalValue(
       DeploymentsShowOption.deploy,
     );
-    final overallStatus = commandConfig.value(
+    final overallStatus = context.config.value(
       DeploymentsShowOption.overallStatus,
     );
 
     if (wait && !overallStatus) {
       await DeploymentCommands.tailDeployment(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         logger: logger,
         baseCommand: baseCommand,
         commandNames: _commandNames,
@@ -160,7 +161,7 @@ Examples
     await renderCommand(
       output,
       operation: () => DeploymentCommands.fetchDeploymentStatus(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         baseCommand: baseCommand,
         commandNames: _commandNames,
         projectId: projectId,
@@ -228,17 +229,17 @@ Examples
 
   @override
   Future<void> runWithOutput(
-    final Configuration<DeploymentsListOption> commandConfig,
+    final CommandContext<DeploymentsListOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(DeploymentsListOption.projectId);
-    final limit = commandConfig.value(DeploymentsListOption.limit);
-    final inUtc = commandConfig.value(DeploymentsListOption.utc);
+    final projectId = context.config.value(DeploymentsListOption.projectId);
+    final limit = context.config.value(DeploymentsListOption.limit);
+    final inUtc = context.config.value(DeploymentsListOption.utc);
 
     await renderCommand(
       output,
       operation: () => DeploymentCommands.listDeployAttemptsOperation(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         cloudCapsuleId: projectId,
         limit: limit,
       ),

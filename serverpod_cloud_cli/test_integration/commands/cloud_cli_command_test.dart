@@ -4,6 +4,7 @@ library;
 import 'dart:async';
 import 'dart:io';
 
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
@@ -39,7 +40,7 @@ class CommandThatRequiresLogin extends CloudCliCommand {
 
   @override
   Future<void> runWithOutput(
-    Configuration<OptionDefinition> commandConfig,
+    CommandContext<OptionDefinition, void> context,
     CommandOutput output,
   ) async {
     return;
@@ -70,7 +71,7 @@ class CommandWithMandatoryOption extends CloudCliCommand<MandatoryOption> {
 
   @override
   Future<void> runWithOutput(
-    Configuration<MandatoryOption> commandConfig,
+    CommandContext<MandatoryOption, void> context,
     CommandOutput output,
   ) async {
     return;
@@ -94,7 +95,7 @@ class InteractiveOnlyCommand extends CloudCliCommand {
 
   @override
   Future<void> runWithOutput(
-    Configuration<OptionDefinition> commandConfig,
+    CommandContext<OptionDefinition, void> context,
     CommandOutput output,
   ) async {
     return;
@@ -114,8 +115,9 @@ class CommandThatDoesNotRequiredLogin extends CloudCliCommand {
   String get description => 'description';
 
   @override
-  Future<void> runWithConfig(
-    Configuration<OptionDefinition> commandConfig,
+  Future<void> runWithOutput(
+    CommandContext<OptionDefinition, void> context,
+    CommandOutput output,
   ) async {
     return;
   }
@@ -272,8 +274,8 @@ void main() {
   });
 
   test('Given command that does not requires login and user is not logged in '
-      'when calling run then completes', () {
-    expect(
+      'when calling run then completes', () async {
+    await expectLater(
       runner.run([
         commandThatDoesNotRequiredLogin.name,
         '--config-dir',
@@ -340,22 +342,21 @@ void main() {
 
   group('Given command with a mandatory option and user is not logged in '
       'when calling run without the option', () {
-    late Future commandResult;
-    setUp(() {
-      commandResult = runner.run([
+    Future<void> runCommand() {
+      return runner.run([
         commandWithMandatoryOption.name,
         '--no-browser',
         '--config-dir',
         testCacheFolderPath,
       ]);
-    });
+    }
 
     test('then throws UsageException', () async {
-      await expectLater(commandResult, throwsA(isA<UsageException>()));
+      expect(runCommand, throwsA(isA<UsageException>()));
     });
 
     test('then no login is started', () async {
-      await commandResult.catchError((_) {});
+      await expectLater(runCommand, throwsA(isA<UsageException>()));
 
       expect(logger.progressCalls, isEmpty);
     });

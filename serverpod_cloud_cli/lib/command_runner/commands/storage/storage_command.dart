@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:ground_control_client/ground_control_client.dart'
     show BucketVisibility;
@@ -152,15 +153,15 @@ class CloudStorageListCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<StorageListCommandConfig> commandConfig,
+    final CommandContext<StorageListCommandConfig, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(StorageListCommandConfig.projectId);
+    final projectId = context.config.value(StorageListCommandConfig.projectId);
 
     await renderCommand(
       output,
       operation: () => StorageOperations.listStorages(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
         baseCommand: baseCommand,
       ),
@@ -175,7 +176,6 @@ enum StorageCreateCommandConfig<V> implements OptionDefinition<V> {
   access(
     EnumOption<BucketVisibility>(
       argName: 'access',
-      argAbbrev: 'a',
       helpText:
           'Who can read the files. '
           '"private": only your project. "public": anyone with the URL. '
@@ -222,17 +222,21 @@ Examples
 
   @override
   Future<void> runWithOutput(
-    final Configuration<StorageCreateCommandConfig> commandConfig,
+    final CommandContext<StorageCreateCommandConfig, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(StorageCreateCommandConfig.projectId);
-    final storageId = commandConfig.value(StorageCreateCommandConfig.storageId);
-    final access = commandConfig.value(StorageCreateCommandConfig.access);
+    final projectId = context.config.value(
+      StorageCreateCommandConfig.projectId,
+    );
+    final storageId = context.config.value(
+      StorageCreateCommandConfig.storageId,
+    );
+    final access = context.config.value(StorageCreateCommandConfig.access);
 
     await renderCommand(
       output,
       operation: () => StorageOperations.createStorage(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
         storageId: storageId,
         access: access,
@@ -270,13 +274,18 @@ class CloudStorageDeleteCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<StorageDeleteCommandConfig> commandConfig,
+    final CommandContext<StorageDeleteCommandConfig, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(StorageDeleteCommandConfig.projectId);
-    final storageId = commandConfig.value(StorageDeleteCommandConfig.storageId);
+    final projectId = context.config.value(
+      StorageDeleteCommandConfig.projectId,
+    );
+    final storageId = context.config.value(
+      StorageDeleteCommandConfig.storageId,
+    );
 
     await confirmToContinue(
+      context,
       output,
       message:
           'Delete storage "$storageId" and every file in it? '
@@ -287,7 +296,7 @@ class CloudStorageDeleteCommand
     await renderCommand(
       output,
       operation: () => StorageOperations.deleteStorage(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
         storageId: storageId,
         baseCommand: baseCommand,
@@ -370,23 +379,25 @@ Examples
 
   @override
   Future<void> runWithOutput(
-    final Configuration<StorageFileListCommandConfig> commandConfig,
+    final CommandContext<StorageFileListCommandConfig, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(
+    final projectId = context.config.value(
       StorageFileListCommandConfig.projectId,
     );
-    final storageId = commandConfig.value(
+    final storageId = context.config.value(
       StorageFileListCommandConfig.storageId,
     );
-    final path = commandConfig.optionalValue(StorageFileListCommandConfig.path);
-    final tree = commandConfig.value(StorageFileListCommandConfig.tree);
-    final utc = commandConfig.value(StorageFileListCommandConfig.utc);
+    final path = context.config.optionalValue(
+      StorageFileListCommandConfig.path,
+    );
+    final tree = context.config.value(StorageFileListCommandConfig.tree);
+    final utc = context.config.value(StorageFileListCommandConfig.utc);
 
     await renderCommand(
       output,
       operation: () => StorageOperations.listFiles(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
         storageId: storageId,
         path: path,
@@ -454,20 +465,20 @@ Examples
 
   @override
   Future<void> runWithOutput(
-    final Configuration<StorageFileUploadCommandConfig> commandConfig,
+    final CommandContext<StorageFileUploadCommandConfig, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(
+    final projectId = context.config.value(
       StorageFileUploadCommandConfig.projectId,
     );
-    final storageId = commandConfig.value(
+    final storageId = context.config.value(
       StorageFileUploadCommandConfig.storageId,
     );
-    final source = commandConfig.value(StorageFileUploadCommandConfig.file);
-    final path = commandConfig.optionalValue(
+    final source = context.config.value(StorageFileUploadCommandConfig.file);
+    final path = context.config.optionalValue(
       StorageFileUploadCommandConfig.path,
     );
-    final followSymlinks = commandConfig.value(
+    final followSymlinks = context.config.value(
       StorageFileUploadCommandConfig.followSymlinks,
     );
 
@@ -479,6 +490,7 @@ Examples
 
     if (source is Directory) {
       await confirmToContinue(
+        context,
         output,
         message: _uploadPlanMessage(source, plan, storageId),
         defaultValue: true,
@@ -488,8 +500,8 @@ Examples
     await renderCommand(
       output,
       operation: () => StorageOperations.uploadFiles(
-        runner.serviceProvider.cloudApiClient,
-        runner.serviceProvider.fileUploaderFactory,
+        context.serviceProvider.cloudApiClient,
+        context.serviceProvider.fileUploaderFactory,
         logger,
         projectId: projectId,
         storageId: storageId,
@@ -587,17 +599,17 @@ Examples
 
   @override
   Future<void> runWithOutput(
-    final Configuration<StorageFileDownloadCommandConfig> commandConfig,
+    final CommandContext<StorageFileDownloadCommandConfig, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(
+    final projectId = context.config.value(
       StorageFileDownloadCommandConfig.projectId,
     );
-    final storageId = commandConfig.value(
+    final storageId = context.config.value(
       StorageFileDownloadCommandConfig.storageId,
     );
-    final path = commandConfig.value(StorageFileDownloadCommandConfig.path);
-    final outputFile = commandConfig.optionalValue(
+    final path = context.config.value(StorageFileDownloadCommandConfig.path);
+    final outputFile = context.config.optionalValue(
       StorageFileDownloadCommandConfig.output,
     );
 
@@ -605,6 +617,7 @@ Examples
 
     if (destination.existsSync()) {
       await confirmToContinue(
+        context,
         output,
         message: 'Overwrite "${destination.path}"?',
         defaultValue: false,
@@ -614,8 +627,8 @@ Examples
     await renderCommand(
       output,
       operation: () => StorageOperations.downloadFile(
-        runner.serviceProvider.cloudApiClient,
-        runner.serviceProvider.fileDownloaderFactory,
+        context.serviceProvider.cloudApiClient,
+        context.serviceProvider.fileDownloaderFactory,
         logger,
         projectId: projectId,
         storageId: storageId,
@@ -673,19 +686,19 @@ Examples
 
   @override
   Future<void> runWithOutput(
-    final Configuration<StorageFileDeleteCommandConfig> commandConfig,
+    final CommandContext<StorageFileDeleteCommandConfig, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(
+    final projectId = context.config.value(
       StorageFileDeleteCommandConfig.projectId,
     );
-    final storageId = commandConfig.value(
+    final storageId = context.config.value(
       StorageFileDeleteCommandConfig.storageId,
     );
-    final path = commandConfig.value(StorageFileDeleteCommandConfig.path);
+    final path = context.config.value(StorageFileDeleteCommandConfig.path);
 
     final plan = await StorageOperations.collectDeleteItems(
-      runner.serviceProvider.cloudApiClient,
+      context.serviceProvider.cloudApiClient,
       projectId: projectId,
       storageId: storageId,
       path: path,
@@ -693,6 +706,7 @@ Examples
     );
 
     await confirmToContinue(
+      context,
       output,
       message: plan.isFolder
           ? _deletePlanMessage(plan, storageId)
@@ -703,7 +717,7 @@ Examples
     await renderCommand(
       output,
       operation: () => StorageOperations.deleteFiles(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
         storageId: storageId,
         path: plan.path,

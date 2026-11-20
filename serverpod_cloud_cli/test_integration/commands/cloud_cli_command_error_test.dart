@@ -1,4 +1,5 @@
 import 'package:cli_tools/cli_tools.dart';
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:path/path.dart' as p;
@@ -33,7 +34,7 @@ class _ThrowingCommand extends CloudCliCommand {
 
   @override
   Future<void> runWithOutput(
-    Configuration<OptionDefinition> commandConfig,
+    CommandContext<OptionDefinition, void> context,
     CommandOutput output,
   ) async {
     throw _throwError();

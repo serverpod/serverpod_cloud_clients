@@ -1,4 +1,5 @@
-import 'package:args/command_runner.dart';
+import 'package:config/config.dart' show UsageException;
+import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
@@ -28,14 +29,9 @@ void main() {
 
   group('Input validation - Given stored credentials', () {
     group('when running log command with invalid --limit value', () {
-      late Future result;
-      setUp(() async {
-        result = cli.run(['log', '--limit', 'abc', '--project', projectId]);
-      });
-
       test('then throws UsageException', () async {
-        await expectLater(
-          result,
+        expect(
+          () => cli.run(['log', '--limit', 'abc', '--project', projectId]),
           throwsA(
             isA<UsageException>().having(
               (e) => e.message,
@@ -48,22 +44,10 @@ void main() {
     });
 
     group('when running log command with invalid --until value', () {
-      late Future result;
-      setUp(() async {
-        try {
-          result = cli.run([
-            'log',
-            '--until',
-            'not-a-date',
-            '--project',
-            projectId,
-          ]);
-        } catch (_) {}
-      });
-
       test('then throws UsageException', () async {
-        await expectLater(
-          result,
+        expect(
+          () =>
+              cli.run(['log', '--until', 'not-a-date', '--project', projectId]),
           throwsA(
             isA<UsageException>().having(
               (e) => e.message,
@@ -76,22 +60,10 @@ void main() {
     });
 
     group('when running log command with invalid --since value', () {
-      late Future result;
-      setUp(() async {
-        try {
-          result = cli.run([
-            'log',
-            '--since',
-            'not-a-date',
-            '--project',
-            projectId,
-          ]);
-        } catch (_) {}
-      });
-
       test('then throws UsageException', () async {
-        await expectLater(
-          result,
+        expect(
+          () =>
+              cli.run(['log', '--since', 'not-a-date', '--project', projectId]),
           throwsA(
             isA<UsageException>().having(
               (e) => e.message,
@@ -104,16 +76,9 @@ void main() {
     });
 
     group('when running log command with invalid duration in --until', () {
-      late Future result;
-      setUp(() async {
-        try {
-          result = cli.run(['log', '--until', '1x', '--project', projectId]);
-        } catch (_) {}
-      });
-
       test('then throws UsageException', () async {
-        await expectLater(
-          result,
+        expect(
+          () => cli.run(['log', '--until', '1x', '--project', projectId]),
           throwsA(
             isA<UsageException>().having(
               (e) => e.message,
@@ -126,16 +91,9 @@ void main() {
     });
 
     group('when running log command with invalid duration in --since', () {
-      late Future result;
-      setUp(() async {
-        try {
-          result = cli.run(['log', '--since', 'hello', '--project', projectId]);
-        } catch (_) {}
-      });
-
       test('then throws UsageException', () async {
-        await expectLater(
-          result,
+        expect(
+          () => cli.run(['log', '--since', 'hello', '--project', projectId]),
           throwsA(
             isA<UsageException>().having(
               (e) => e.message,
@@ -183,24 +141,19 @@ void main() {
     group(
       'when running log command with the hidden --all value together with --until flag',
       () {
-        late Future result;
-        setUp(() async {
-          try {
-            result = cli.run([
-              'log',
-              '--all',
-              '--until',
-              '2024-01-01T00:00:00Z',
-              '--project',
-              projectId,
-            ]);
-          } catch (_) {}
+        setUp(() {
+          _stubEmptyRecentLogs(client, projectId);
         });
 
         test('then logs warning', () async {
-          try {
-            await result;
-          } catch (_) {}
+          await cli.run([
+            'log',
+            '--all',
+            '--until',
+            '2024-01-01T00:00:00Z',
+            '--project',
+            projectId,
+          ]);
 
           expect(
             logger.warningCalls.last,
@@ -216,24 +169,19 @@ void main() {
     group(
       'when running log command with the hidden --all value together with --since flag',
       () {
-        late Future result;
-        setUp(() async {
-          try {
-            result = cli.run([
-              'log',
-              '--all',
-              '--since',
-              '2024-01-01T00:00:00Z',
-              '--project',
-              projectId,
-            ]);
-          } catch (_) {}
+        setUp(() {
+          _stubEmptyRecentLogs(client, projectId);
         });
 
         test('then logs warning', () async {
-          try {
-            await result;
-          } catch (_) {}
+          await cli.run([
+            'log',
+            '--all',
+            '--since',
+            '2024-01-01T00:00:00Z',
+            '--project',
+            projectId,
+          ]);
 
           expect(
             logger.warningCalls.last,
@@ -249,24 +197,19 @@ void main() {
     group(
       'when running log command with the hidden --all value together with --until option',
       () {
-        late Future result;
-        setUp(() async {
-          try {
-            result = cli.run([
-              'log',
-              '--all',
-              '--until',
-              '1m',
-              '--project',
-              projectId,
-            ]);
-          } catch (_) {}
+        setUp(() {
+          _stubEmptyRecentLogs(client, projectId);
         });
 
         test('then logs warning', () async {
-          try {
-            await result;
-          } catch (_) {}
+          await cli.run([
+            'log',
+            '--all',
+            '--until',
+            '1m',
+            '--project',
+            projectId,
+          ]);
 
           expect(
             logger.warningCalls.last,
@@ -379,4 +322,13 @@ void main() {
       },
     );
   });
+}
+
+void _stubEmptyRecentLogs(ClientMock client, String projectId) {
+  when(
+    () => client.logs.fetchRecentRecords(
+      cloudCapsuleId: projectId,
+      limit: any(named: 'limit'),
+    ),
+  ).thenAnswer((_) => const Stream<LogRecord>.empty());
 }

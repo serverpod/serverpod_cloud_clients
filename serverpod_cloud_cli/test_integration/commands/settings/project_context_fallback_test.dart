@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:args/command_runner.dart';
+import 'package:config/config.dart' show UsageException;
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
@@ -150,26 +150,21 @@ void main() {
     group(
       'when executing a project-scoped command without specifying the project',
       () {
-        late Future commandResult;
-        setUp(() async {
-          commandResult = cli.run([
-            'variable',
-            'list',
-            '--config-dir',
-            testConfigDirPath,
-          ]);
-        });
-
         test(
           'then throws UsageException that the project option is mandatory',
           () async {
-            await expectLater(
-              commandResult,
+            expect(
+              () => cli.run([
+                'variable',
+                'list',
+                '--config-dir',
+                testConfigDirPath,
+              ]),
               throwsA(
                 isA<UsageException>().having(
                   (e) => e.message,
                   'message',
-                  equals('Option `project` is mandatory.'),
+                  contains('Option `project` is mandatory.'),
                 ),
               ),
             );

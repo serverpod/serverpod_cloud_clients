@@ -1,3 +1,4 @@
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/redeploy/redeploy_ops.dart';
@@ -27,15 +28,15 @@ class AdminRedeployCommand extends CloudCliCommand<AdminRedeployOption> {
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AdminRedeployOption> commandConfig,
+    final CommandContext<AdminRedeployOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(AdminRedeployOption.projectId);
+    final projectId = context.config.value(AdminRedeployOption.projectId);
 
     await renderCommand(
       output,
       operation: () => RedeployOperations.redeployProject(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
       ),
       textOutputUi: const RedeployTextUi(),

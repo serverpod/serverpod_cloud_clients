@@ -1,4 +1,5 @@
-import 'package:args/args.dart';
+import 'package:config/command.dart';
+import 'package:config/config.dart';
 
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
 
@@ -11,15 +12,14 @@ abstract final class CliRunContextResolver {
   /// Contains command names only - never option values or positional
   /// arguments, since those can hold project ids and other user data.
   /// Returns null if no command was resolved.
-  static String? commandPath(ArgResults topLevelResults) {
+  static String? commandPath<O extends OptionDefinition, T>(
+    final CommandContext<O, T> context,
+  ) {
     final names = <String>[];
-    ArgResults? commandResults = topLevelResults.command;
-    while (commandResults != null) {
-      final name = commandResults.name;
-      if (name != null) {
-        names.add(name);
-      }
-      commandResults = commandResults.command;
+    CommandContext<OptionDefinition, T>? commandContext = context.root().next;
+    while (commandContext != null) {
+      names.add(commandContext.command.name);
+      commandContext = commandContext.next;
     }
     if (names.isEmpty) {
       return null;
@@ -33,15 +33,15 @@ abstract final class CliRunContextResolver {
   ///
   /// Contains flag and option names only - never their values, since those
   /// can hold project ids and other user data.
-  static List<String> commandFlags(ArgResults topLevelResults) {
+  static List<String> commandFlags<O extends OptionDefinition, T>(
+    final CommandContext<O, T> context,
+  ) {
     final flags = <String>[];
-    ArgResults? commandResults = topLevelResults;
-    while (commandResults != null) {
-      final results = commandResults;
-      flags.addAll(
-        results.options.where(results.wasParsed).map((option) => '--$option'),
-      );
-      commandResults = results.command;
+    CommandContext<OptionDefinition, T>? commandContext = context.root();
+    while (commandContext != null) {
+      flags.addAll(_argFlags(commandContext.config));
+      flags.addAll(_argFlags(commandContext.builtinConfig));
+      commandContext = commandContext.next;
     }
     flags.sort();
     return flags;
@@ -63,5 +63,15 @@ abstract final class CliRunContextResolver {
       localStoragePath: localStoragePath,
     );
     return cloudUser?.userAuthId;
+  }
+
+  static Iterable<String> _argFlags<O extends OptionDefinition>(
+    final Configuration<O> config,
+  ) {
+    return config
+        .optionsWhereSource((final source) => source == ValueSourceType.arg)
+        .map((final option) => option.option.argName)
+        .whereType<String>()
+        .map((final name) => '--$name');
   }
 }

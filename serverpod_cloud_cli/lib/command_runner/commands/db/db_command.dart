@@ -1,6 +1,9 @@
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart'
+    show GlobalConfigurationOptions;
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/db/db_backup_ops.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/db/db_ops.dart';
@@ -70,15 +73,15 @@ class CloudDbConnectionDetailsCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<DbConnectionDetailsOption> commandConfig,
+    final CommandContext<DbConnectionDetailsOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(DbConnectionDetailsOption.projectId);
+    final projectId = context.config.value(DbConnectionDetailsOption.projectId);
 
     await renderCommand(
       output,
       operation: () => DbOperations.getConnectionDetails(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
       ),
       textOutputUi: const DbConnectionTextUi(),
@@ -115,16 +118,16 @@ class CloudDbUserCreateCommand extends CloudCliCommand<DbUserCreateOption> {
 
   @override
   Future<void> runWithOutput(
-    final Configuration<DbUserCreateOption> commandConfig,
+    final CommandContext<DbUserCreateOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(DbUserCreateOption.projectId);
-    final username = commandConfig.value(DbUserCreateOption.username);
+    final projectId = context.config.value(DbUserCreateOption.projectId);
+    final username = context.config.value(DbUserCreateOption.username);
 
     await renderCommand(
       output,
       operation: () => DbOperations.createSuperUser(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
         username: username,
       ),
@@ -163,16 +166,16 @@ class CloudDbUserResetPasswordCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<DbUserResetPasswordOption> commandConfig,
+    final CommandContext<DbUserResetPasswordOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(DbUserResetPasswordOption.projectId);
-    final username = commandConfig.value(DbUserResetPasswordOption.username);
+    final projectId = context.config.value(DbUserResetPasswordOption.projectId);
+    final username = context.config.value(DbUserResetPasswordOption.username);
 
     await renderCommand(
       output,
       operation: () => DbOperations.resetPassword(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
         username: username,
       ),
@@ -203,16 +206,16 @@ class CloudDbUserListCommand extends CloudCliCommand<DbUserListOption> {
 
   @override
   Future<void> runWithOutput(
-    final Configuration<DbUserListOption> commandConfig,
+    final CommandContext<DbUserListOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(DbUserListOption.projectId);
-    final utc = commandConfig.value(DbUserListOption.utc);
+    final projectId = context.config.value(DbUserListOption.projectId);
+    final utc = context.config.value(DbUserListOption.utc);
 
     await renderCommand(
       output,
       operation: () => DbOperations.listDatabaseUsers(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
       ),
       textOutputUi: DbUserListTextUi(
@@ -256,13 +259,14 @@ class CloudDbUserDeleteCommand extends CloudCliCommand<DbUserDeleteOption> {
 
   @override
   Future<void> runWithOutput(
-    final Configuration<DbUserDeleteOption> commandConfig,
+    final CommandContext<DbUserDeleteOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(DbUserDeleteOption.projectId);
-    final username = commandConfig.value(DbUserDeleteOption.username);
+    final projectId = context.config.value(DbUserDeleteOption.projectId);
+    final username = context.config.value(DbUserDeleteOption.username);
 
     await confirmToContinue(
+      context,
       output,
       message:
           'Permanently delete database user "$username" for project "$projectId"? '
@@ -273,7 +277,7 @@ class CloudDbUserDeleteCommand extends CloudCliCommand<DbUserDeleteOption> {
     await renderCommand(
       output,
       operation: () => DbOperations.deleteDatabaseUser(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
         username: username,
       ),
@@ -307,12 +311,12 @@ class CloudDbWipeCommand extends CloudCliCommand<DbWipeOption> {
 
   @override
   Future<void> runWithOutput(
-    final Configuration<DbWipeOption> commandConfig,
+    final CommandContext<DbWipeOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(DbWipeOption.projectId);
+    final projectId = context.config.value(DbWipeOption.projectId);
 
-    if (!globalConfiguration.skipConfirmation) {
+    if (!context.globalConfiguration.skipConfirmation) {
       final confirmed = await output.renderInteractive(
         ui: ConfirmationWidget('''
 WARNING: Deletes all tables and data in the database for project "$projectId".
@@ -335,7 +339,7 @@ Do you want to proceed?''', defaultValue: false),
       output,
       operation: () async => Stream.fromFuture(
         DbOperations.wipeDatabase(
-          runner.serviceProvider.cloudApiClient,
+          context.serviceProvider.cloudApiClient,
           projectId: projectId,
         ),
       ),
@@ -429,19 +433,19 @@ class CloudDbBackupCreateCommand extends CloudCliCommand<DbBackupCreateOption> {
 
   @override
   Future<void> runWithOutput(
-    final Configuration<DbBackupCreateOption> commandConfig,
+    final CommandContext<DbBackupCreateOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(DbBackupCreateOption.projectId);
-    final utc = commandConfig.value(DbBackupCreateOption.utc);
+    final projectId = context.config.value(DbBackupCreateOption.projectId);
+    final utc = context.config.value(DbBackupCreateOption.utc);
 
     await renderCommand(
       output,
       operation: () => DbBackupOperations.createSnapshot(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
-        name: commandConfig.optionalValue(DbBackupCreateOption.name),
-        expireIn: commandConfig.optionalValue(DbBackupCreateOption.expireIn),
+        name: context.config.optionalValue(DbBackupCreateOption.name),
+        expireIn: context.config.optionalValue(DbBackupCreateOption.expireIn),
       ),
       textOutputUi: BackupSnapshotCreateTextUi(utc: utc),
     );
@@ -470,16 +474,16 @@ class CloudDbBackupListCommand extends CloudCliCommand<DbBackupListOption> {
 
   @override
   Future<void> runWithOutput(
-    final Configuration<DbBackupListOption> commandConfig,
+    final CommandContext<DbBackupListOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(DbBackupListOption.projectId);
-    final utc = commandConfig.value(DbBackupListOption.utc);
+    final projectId = context.config.value(DbBackupListOption.projectId);
+    final utc = context.config.value(DbBackupListOption.utc);
 
     await renderCommand(
       output,
       operation: () => DbBackupOperations.listSnapshots(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
       ),
       textOutputUi: BackupSnapshotListTextUi(
@@ -522,13 +526,14 @@ class CloudDbBackupDeleteCommand extends CloudCliCommand<DbBackupDeleteOption> {
 
   @override
   Future<void> runWithOutput(
-    final Configuration<DbBackupDeleteOption> commandConfig,
+    final CommandContext<DbBackupDeleteOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(DbBackupDeleteOption.projectId);
-    final snapshotId = commandConfig.value(DbBackupDeleteOption.snapshotId);
+    final projectId = context.config.value(DbBackupDeleteOption.projectId);
+    final snapshotId = context.config.value(DbBackupDeleteOption.snapshotId);
 
     await confirmToContinue(
+      context,
       output,
       message:
           'Permanently delete snapshot "$snapshotId" for project "$projectId"? '
@@ -539,7 +544,7 @@ class CloudDbBackupDeleteCommand extends CloudCliCommand<DbBackupDeleteOption> {
     await renderCommand(
       output,
       operation: () => DbBackupOperations.deleteSnapshot(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
         snapshotId: snapshotId,
       ),
@@ -574,13 +579,14 @@ class CloudDbBackupRestoreCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<DbBackupRestoreOption> commandConfig,
+    final CommandContext<DbBackupRestoreOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(DbBackupRestoreOption.projectId);
-    final snapshotId = commandConfig.value(DbBackupRestoreOption.snapshotId);
+    final projectId = context.config.value(DbBackupRestoreOption.projectId);
+    final snapshotId = context.config.value(DbBackupRestoreOption.snapshotId);
 
     await confirmToContinue(
+      context,
       output,
       message:
           '''
@@ -596,7 +602,7 @@ Do you want to proceed?''',
       output,
       operation: () async => Stream.fromFuture(
         DbBackupOperations.restoreSnapshot(
-          runner.serviceProvider.cloudApiClient,
+          context.serviceProvider.cloudApiClient,
           projectId: projectId,
           snapshotId: snapshotId,
         ),
@@ -664,11 +670,11 @@ class CloudDbScheduleSetCommand extends CloudCliCommand<DbScheduleSetOption> {
 
   @override
   Future<void> runWithOutput(
-    final Configuration<DbScheduleSetOption> commandConfig,
+    final CommandContext<DbScheduleSetOption, void> context,
     final CommandOutput output,
   ) async {
-    final frequency = commandConfig.value(DbScheduleSetOption.frequency);
-    final day = commandConfig.optionalValue(DbScheduleSetOption.day);
+    final frequency = context.config.value(DbScheduleSetOption.frequency);
+    final day = context.config.optionalValue(DbScheduleSetOption.day);
 
     if (frequency == BackupFrequency.weekly &&
         day != null &&
@@ -681,12 +687,12 @@ class CloudDbScheduleSetCommand extends CloudCliCommand<DbScheduleSetOption> {
     await renderCommand(
       output,
       operation: () => DbBackupOperations.setSchedule(
-        runner.serviceProvider.cloudApiClient,
-        projectId: commandConfig.value(DbScheduleSetOption.projectId),
+        context.serviceProvider.cloudApiClient,
+        projectId: context.config.value(DbScheduleSetOption.projectId),
         frequency: frequency,
         day: day,
-        hour: commandConfig.optionalValue(DbScheduleSetOption.hour),
-        retention: commandConfig.optionalValue(DbScheduleSetOption.retention),
+        hour: context.config.optionalValue(DbScheduleSetOption.hour),
+        retention: context.config.optionalValue(DbScheduleSetOption.retention),
       ),
       textOutputUi: const BackupScheduleSetTextUi(),
     );
@@ -714,14 +720,14 @@ class CloudDbScheduleShowCommand extends CloudCliCommand<DbScheduleShowOption> {
 
   @override
   Future<void> runWithOutput(
-    final Configuration<DbScheduleShowOption> commandConfig,
+    final CommandContext<DbScheduleShowOption, void> context,
     final CommandOutput output,
   ) async {
     await renderCommand(
       output,
       operation: () => DbBackupOperations.getSchedule(
-        runner.serviceProvider.cloudApiClient,
-        projectId: commandConfig.value(DbScheduleShowOption.projectId),
+        context.serviceProvider.cloudApiClient,
+        projectId: context.config.value(DbScheduleShowOption.projectId),
       ),
       textOutputUi: BackupScheduleShowTextUi(baseCommand: baseCommand),
       jsonOutputUi: const BackupScheduleShowStructuredUi(
@@ -756,14 +762,14 @@ class CloudDbScheduleUnsetCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<DbScheduleUnsetOption> commandConfig,
+    final CommandContext<DbScheduleUnsetOption, void> context,
     final CommandOutput output,
   ) async {
     await renderCommand(
       output,
       operation: () => DbBackupOperations.disableSchedule(
-        runner.serviceProvider.cloudApiClient,
-        projectId: commandConfig.value(DbScheduleUnsetOption.projectId),
+        context.serviceProvider.cloudApiClient,
+        projectId: context.config.value(DbScheduleUnsetOption.projectId),
       ),
       textOutputUi: const BackupScheduleUnsetTextUi(),
     );

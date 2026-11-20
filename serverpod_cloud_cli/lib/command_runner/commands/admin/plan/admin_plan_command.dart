@@ -1,3 +1,4 @@
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/plan/plan_admin_ops.dart';
@@ -28,13 +29,13 @@ class AdminListOrbPlansCommand extends CloudCliCommand {
 
   @override
   Future<void> runWithOutput(
-    final Configuration commandConfig,
+    final CommandContext<OptionDefinition, void> context,
     final CommandOutput output,
   ) async {
     await renderCommand(
       output,
       operation: () => PlanAdminCommands.listOrbPlansOperation(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
       ),
       textOutputUi: const StringColumnListWidget(heading: 'External Plan ID'),
     );
@@ -71,17 +72,17 @@ class AdminUpdatePlanCommand extends CloudCliCommand<AdminUpdatePlanOption> {
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AdminUpdatePlanOption> commandConfig,
+    final CommandContext<AdminUpdatePlanOption, void> context,
     final CommandOutput output,
   ) async {
-    final externalPlanId = commandConfig.value(
+    final externalPlanId = context.config.value(
       AdminUpdatePlanOption.externalPlanId,
     );
 
     await renderCommand(
       output,
       operation: () => PlanAdminCommands.updateOrbPlan(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         externalPlanId: externalPlanId,
       ),
       textOutputUi: const PlanUpdateTextUi(),

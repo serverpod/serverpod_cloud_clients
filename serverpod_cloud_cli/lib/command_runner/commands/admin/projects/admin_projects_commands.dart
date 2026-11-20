@@ -1,3 +1,4 @@
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:ground_control_client/ground_control_client.dart'
     show PlanType, ProjectLifecycleStatus, ProjectListFilter;
@@ -66,35 +67,35 @@ class AdminListProjectsCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AdminListProjectsOption> commandConfig,
+    final CommandContext<AdminListProjectsOption, void> context,
     final CommandOutput output,
   ) async {
-    final includeArchived = commandConfig.value(
+    final includeArchived = context.config.value(
       AdminListProjectsOption.includeArchived,
     );
-    final includePaymentsStatus = commandConfig.value(
+    final includePaymentsStatus = context.config.value(
       AdminListProjectsOption.includePaymentsStatus,
     );
-    final phase = commandConfig.optionalValue(AdminListProjectsOption.phase);
-    final createdSince = commandConfig.optionalValue(
+    final phase = context.config.optionalValue(AdminListProjectsOption.phase);
+    final createdSince = context.config.optionalValue(
       AdminListProjectsOption.createdSince,
     );
-    final createdUntil = commandConfig.optionalValue(
+    final createdUntil = context.config.optionalValue(
       AdminListProjectsOption.createdUntil,
     );
-    final suspendedSince = commandConfig.optionalValue(
+    final suspendedSince = context.config.optionalValue(
       AdminListProjectsOption.suspendedSince,
     );
-    final suspendedUntil = commandConfig.optionalValue(
+    final suspendedUntil = context.config.optionalValue(
       AdminListProjectsOption.suspendedUntil,
     );
-    final archivedSince = commandConfig.optionalValue(
+    final archivedSince = context.config.optionalValue(
       AdminListProjectsOption.archivedSince,
     );
-    final archivedUntil = commandConfig.optionalValue(
+    final archivedUntil = context.config.optionalValue(
       AdminListProjectsOption.archivedUntil,
     );
-    final inUtc = commandConfig.value(AdminListProjectsOption.utc);
+    final inUtc = context.config.value(AdminListProjectsOption.utc);
     final filter = ProjectListFilter(
       phase: phase,
       createdSince: createdSince,
@@ -113,7 +114,7 @@ class AdminListProjectsCommand
     await renderCommand(
       output,
       operation: () async => ProjectAdminCommands.listProjectsOperation(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         includeArchived: includeArchived,
         includePaymentsStatus: includePaymentsStatus,
         filter: filter,
@@ -150,16 +151,16 @@ class AdminProjectStatusCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AdminProjectStatusOption> commandConfig,
+    final CommandContext<AdminProjectStatusOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(AdminProjectStatusOption.projectId);
-    final inUtc = commandConfig.value(AdminProjectStatusOption.utc);
+    final projectId = context.config.value(AdminProjectStatusOption.projectId);
+    final inUtc = context.config.value(AdminProjectStatusOption.utc);
 
     await renderCommand(
       output,
       operation: () => ProjectAdminCommands.getProjectStatusOperation(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
       ),
       textOutputUi: AdminProjectStatusTextUi(utc: inUtc),
@@ -189,12 +190,13 @@ class AdminProjectDeleteCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AdminProjectDeleteOption> commandConfig,
+    final CommandContext<AdminProjectDeleteOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(AdminProjectDeleteOption.projectId);
+    final projectId = context.config.value(AdminProjectDeleteOption.projectId);
 
     await confirmToContinue(
+      context,
       output,
       message: 'Are you sure you want to delete the project "$projectId"?',
       defaultValue: false,
@@ -203,7 +205,7 @@ class AdminProjectDeleteCommand
     await renderCommand(
       output,
       operation: () => ProjectAdminCommands.deleteProject(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
       ),
       textOutputUi: const AdminProjectDeleteTextUi(),
@@ -234,12 +236,13 @@ class AdminProjectSuspendCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AdminProjectSuspendOption> commandConfig,
+    final CommandContext<AdminProjectSuspendOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(AdminProjectSuspendOption.projectId);
+    final projectId = context.config.value(AdminProjectSuspendOption.projectId);
 
     await confirmToContinue(
+      context,
       output,
       message: 'Are you sure you want to suspend the project "$projectId"?',
       defaultValue: false,
@@ -248,7 +251,7 @@ class AdminProjectSuspendCommand
     await renderCommand(
       output,
       operation: () => ProjectAdminCommands.suspendProject(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
       ),
       textOutputUi: const AdminProjectSuspendTextUi(),
@@ -280,14 +283,15 @@ class AdminProjectReactivateCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AdminProjectReactivateOption> commandConfig,
+    final CommandContext<AdminProjectReactivateOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(
+    final projectId = context.config.value(
       AdminProjectReactivateOption.projectId,
     );
 
     await confirmToContinue(
+      context,
       output,
       message: 'Are you sure you want to reactivate the project "$projectId"?',
       defaultValue: false,
@@ -296,7 +300,7 @@ class AdminProjectReactivateCommand
     await renderCommand(
       output,
       operation: () => ProjectAdminCommands.reactivateProject(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
       ),
       textOutputUi: const AdminProjectReactivateTextUi(),
@@ -327,15 +331,16 @@ class AdminProjectChangeOwnerCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AdminProjectChangeOwnerOption> commandConfig,
+    final CommandContext<AdminProjectChangeOwnerOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(
+    final projectId = context.config.value(
       AdminProjectChangeOwnerOption.projectId,
     );
-    final ownerEmail = commandConfig.value(AdminProjectChangeOwnerOption.user);
+    final ownerEmail = context.config.value(AdminProjectChangeOwnerOption.user);
 
     await confirmToContinue(
+      context,
       output,
       message:
           'Are you sure you want to change the owner of project '
@@ -346,7 +351,7 @@ class AdminProjectChangeOwnerCommand
     await renderCommand(
       output,
       operation: () => ProjectAdminCommands.changeProjectOwner(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
         ownerEmail: ownerEmail,
       ),
@@ -386,15 +391,18 @@ class AdminProjectUpdatePlanCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AdminProjectUpdatePlanOption> commandConfig,
+    final CommandContext<AdminProjectUpdatePlanOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(
+    final projectId = context.config.value(
       AdminProjectUpdatePlanOption.projectId,
     );
-    final planType = commandConfig.value(AdminProjectUpdatePlanOption.planType);
+    final planType = context.config.value(
+      AdminProjectUpdatePlanOption.planType,
+    );
 
     await confirmToContinue(
+      context,
       output,
       message:
           'Are you sure you want to update the plan of project '
@@ -405,7 +413,7 @@ class AdminProjectUpdatePlanCommand
     await renderCommand(
       output,
       operation: () => ProjectAdminCommands.updateProjectPlan(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
         planType: planType,
       ),
@@ -448,15 +456,16 @@ class AdminProjectReprocureCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AdminProjectReprocureOption> commandConfig,
+    final CommandContext<AdminProjectReprocureOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(
+    final projectId = context.config.value(
       AdminProjectReprocureOption.projectId,
     );
-    final planType = commandConfig.value(AdminProjectReprocureOption.planType);
+    final planType = context.config.value(AdminProjectReprocureOption.planType);
 
     await confirmToContinue(
+      context,
       output,
       message:
           'Are you sure you want to re-procure a new subscription for project '
@@ -467,7 +476,7 @@ class AdminProjectReprocureCommand
     await renderCommand(
       output,
       operation: () => ProjectAdminCommands.reprocureExistingProject(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
         planType: planType,
       ),
@@ -519,14 +528,17 @@ class AdminProjectSetGrantCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AdminProjectSetGrantOption> commandConfig,
+    final CommandContext<AdminProjectSetGrantOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(AdminProjectSetGrantOption.projectId);
-    final grant = commandConfig.value(AdminProjectSetGrantOption.grant);
-    final amount = commandConfig.value(AdminProjectSetGrantOption.amount);
+    final projectId = context.config.value(
+      AdminProjectSetGrantOption.projectId,
+    );
+    final grant = context.config.value(AdminProjectSetGrantOption.grant);
+    final amount = context.config.value(AdminProjectSetGrantOption.amount);
 
     await confirmToContinue(
+      context,
       output,
       message:
           'Are you sure you want to set $grant to $amount '
@@ -537,7 +549,7 @@ class AdminProjectSetGrantCommand
     await renderCommand(
       output,
       operation: () => ProjectAdminCommands.setGrant(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
         grant: grant,
         amount: amount,
