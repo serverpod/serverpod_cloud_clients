@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.5.0] - 2026-11-23
+
+### Added
+
+- **iOS privacy validation** - `app doctor` and `app publish` now verify that required iOS privacy descriptions are present before packaging, helping prevent App Store rejections.
+
+### Changed
+
+- **Project status details** - Project status reports are now grouped by project and include subscription payment and grace-period information.
+
+### Fixed
+
+- **Duplicate artifact commands** - Build summaries now display the artifact download command only once for multi-platform builds sharing the same upload.
+
+### Removed
+
+- **Interactive launch TUI** - Removed the obsolete interactive launch interface in favor of the standard command-line deployment flow.
+
 ## [1.4.0] - 2026-11-17
 
 ### Added
