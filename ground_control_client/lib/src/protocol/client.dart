@@ -177,7 +177,7 @@ class EndpointAdminAppBuilds extends _isc.EndpointRef {
 }
 
 /// Endpoint for an administrator to reissue an invoice or record a missed
-/// payment failure or trial end.
+/// payment failure.
 /// {@category Endpoint}
 class EndpointAdminBilling extends _isc.EndpointRef {
   EndpointAdminBilling(_isc.EndpointCaller caller) : super(caller);
@@ -219,40 +219,6 @@ class EndpointAdminBilling extends _isc.EndpointRef {
     'adminBilling',
     'recordPaymentFailed',
     {'invoiceId': invoiceId},
-  );
-
-  /// Records a missed trial end of [subscriptionId] the way a
-  /// `subscription.trial_ended` webhook does.
-  ///
-  /// Returns `outcome` `recorded` when the trial-ended event is published.
-  ///
-  /// Throws [NotFoundException] if the subscription is not found, has no
-  /// plan allocation, or its customer is not a Ground Control owner.
-  /// Throws [InvalidValueException] if the subscription is cancelled, has no
-  /// trial, its trial has not ended, it has no active project, or its
-  /// owner's billing setup is complete.
-  _ida.Future<Map<String, String>> recordTrialEnded({
-    required String subscriptionId,
-  }) => caller.callServerEndpoint<Map<String, String>>(
-    'adminBilling',
-    'recordTrialEnded',
-    {'subscriptionId': subscriptionId},
-  );
-
-  /// Records the missed trial end of every active subscription whose trial
-  /// ended at or after [since], the way a `subscription.trial_ended` webhook
-  /// does. With [dryRun], nothing is published.
-  ///
-  /// Returns one entry per subscription with its `subscriptionId`, its
-  /// `outcome` (`recorded`, `dryRun` or `skipped`) and the `reason` it was
-  /// skipped for, empty otherwise.
-  _ida.Future<List<Map<String, String>>> recordTrialsEnded({
-    required DateTime since,
-    required bool dryRun,
-  }) => caller.callServerEndpoint<List<Map<String, String>>>(
-    'adminBilling',
-    'recordTrialsEnded',
-    {'since': since, 'dryRun': dryRun},
   );
 }
 
