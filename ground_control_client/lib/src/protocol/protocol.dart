@@ -853,7 +853,6 @@ class Protocol extends _isc.SerializationManager
           _isc.getType<Map<_i8py5gak.DomainNameTarget, String>>,
           _isc.getType<List<_ixr2s32y.DartSdkVersion>>,
           _isc.getType<Map<String, String>>,
-          _isc.getType<List<Map<String, String>>>,
           _isc.getType<List<String>>,
           _isc.getType<List<String>?>,
           _isc.getType<List<(String, String)>>,
@@ -2690,12 +2689,6 @@ class Protocol extends _isc.SerializationManager
       return (data as Map).map(
             (k, v) => MapEntry(deserialize<String>(k), deserialize<String>(v)),
           )
-          as T;
-    }
-    if (t == List<Map<String, String>>) {
-      return (data as List)
-              .map((e) => deserialize<Map<String, String>>(e))
-              .toList()
           as T;
     }
     if (t == List<String>) {

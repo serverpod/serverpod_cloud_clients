@@ -1078,27 +1078,6 @@ void _stubAdmin(final ClientMock client, {required final String projectId}) {
     ),
   ).thenAnswer((_) async => {'invoiceId': 'inv_1', 'outcome': 'recorded'});
   when(
-    () => client.adminBilling.recordTrialEnded(
-      subscriptionId: any(named: 'subscriptionId'),
-    ),
-  ).thenAnswer((_) async => {'subscriptionId': 'sub_1', 'outcome': 'recorded'});
-  when(
-    () => client.adminBilling.recordTrialsEnded(
-      since: any(named: 'since'),
-      dryRun: any(named: 'dryRun'),
-    ),
-  ).thenAnswer(
-    (_) async => [
-      {'subscriptionId': 'sub_1', 'outcome': 'dryRun', 'reason': ''},
-      {
-        'subscriptionId': 'sub_2',
-        'outcome': 'skipped',
-        'reason':
-            'Invalid subscription: sub_2: Owner billing setup is complete',
-      },
-    ],
-  );
-  when(
     () => client.adminVouchers.createVoucher(
       code: any(named: 'code'),
       name: any(named: 'name'),
