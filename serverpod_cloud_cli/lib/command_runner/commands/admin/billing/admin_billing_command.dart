@@ -14,6 +14,8 @@ class AdminBillingCommand extends CloudCliCommand {
   AdminBillingCommand({required super.logger}) {
     addSubcommand(AdminReissueInvoiceCommand(logger: logger));
     addSubcommand(AdminRecordPaymentFailedCommand(logger: logger));
+    addSubcommand(AdminRecordTrialEndedCommand(logger: logger));
+    addSubcommand(AdminRecordTrialsEndedCommand(logger: logger));
   }
 }
 
@@ -105,6 +107,131 @@ class AdminRecordPaymentFailedCommand
         invoiceId: invoiceId,
       ),
       textOutputUi: const RecordPaymentFailedTextUi(),
+    );
+  }
+}
+
+enum AdminRecordTrialEndedOption<V> implements OptionDefinition<V> {
+  subscriptionId(
+    StringOption(
+      argName: 'subscription-id',
+      mandatory: true,
+      helpText: 'The subscription id in the billing system.',
+    ),
+  );
+
+  const AdminRecordTrialEndedOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class AdminRecordTrialEndedCommand
+    extends CloudCliCommand<AdminRecordTrialEndedOption> {
+  @override
+  final name = 'record-trial-ended';
+
+  @override
+  final description = 'Record a missed trial end and run the trial-ended flow.';
+
+  AdminRecordTrialEndedCommand({required super.logger})
+    : super(options: AdminRecordTrialEndedOption.values);
+
+  @override
+  Future<void> runWithOutput(
+    final Configuration<AdminRecordTrialEndedOption> commandConfig,
+    final CommandOutput output,
+  ) async {
+    final subscriptionId = commandConfig.value(
+      AdminRecordTrialEndedOption.subscriptionId,
+    );
+
+    await confirmToContinue(
+      output,
+      message:
+          'Are you sure you want to record the trial end of the subscription '
+          '"$subscriptionId"? Its projects are suspended and its owner is '
+          'emailed.',
+      defaultValue: false,
+    );
+
+    await renderCommand(
+      output,
+      operation: () => BillingAdminOperations.recordTrialEnded(
+        runner.serviceProvider.cloudApiClient,
+        subscriptionId: subscriptionId,
+      ),
+      textOutputUi: const RecordTrialEndedTextUi(),
+    );
+  }
+}
+
+enum AdminRecordTrialsEndedOption<V> implements OptionDefinition<V> {
+  since(
+    DateTimeOption(
+      argName: 'since',
+      mandatory: true,
+      helpText:
+          'The first trial end to include, such as 2026-11-05T00:00:00Z. '
+          'A value without a time zone is read in the local time zone.',
+    ),
+  ),
+  dryRun(
+    FlagOption(
+      argName: 'dry-run',
+      helpText: 'List what would be recorded without recording it.',
+      defaultsTo: false,
+      negatable: false,
+    ),
+  );
+
+  const AdminRecordTrialsEndedOption(this.option);
+
+  @override
+  final ConfigOptionBase<V> option;
+}
+
+class AdminRecordTrialsEndedCommand
+    extends CloudCliCommand<AdminRecordTrialsEndedOption> {
+  @override
+  final name = 'record-trials-ended';
+
+  @override
+  final description =
+      'Record the missed trial end of every subscription whose trial ended '
+      'since a date, and run the trial-ended flow for each.';
+
+  AdminRecordTrialsEndedCommand({required super.logger})
+    : super(options: AdminRecordTrialsEndedOption.values);
+
+  @override
+  Future<void> runWithOutput(
+    final Configuration<AdminRecordTrialsEndedOption> commandConfig,
+    final CommandOutput output,
+  ) async {
+    final since = commandConfig.value(AdminRecordTrialsEndedOption.since);
+    final dryRun = commandConfig.value(AdminRecordTrialsEndedOption.dryRun);
+
+    if (!dryRun) {
+      await confirmToContinue(
+        output,
+        message:
+            'Are you sure you want to record the trial end of every '
+            'subscription whose trial ended since '
+            '${since.toUtc().toIso8601String()}? '
+            'Their projects are suspended and their owners are emailed.',
+        defaultValue: false,
+      );
+    }
+
+    await renderCommand(
+      output,
+      operation: () => BillingAdminOperations.recordTrialsEnded(
+        runner.serviceProvider.cloudApiClient,
+        since: since,
+        dryRun: dryRun,
+      ),
+      textOutputUi: const RecordTrialsEndedTextUi(),
     );
   }
 }
