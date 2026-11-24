@@ -76,6 +76,7 @@ import 'domains/billing/models/billing_mapping_type.dart' as _i0j2fm74;
 import 'domains/billing/models/events/invoice_cause.dart' as _izs8n7t0;
 import 'domains/billing/models/events/owner_cause.dart' as _iry9161d;
 import 'domains/billing/models/events/subscription_cause.dart' as _iode8lcu;
+import 'domains/billing/models/events/voucher_cause.dart' as _ik7ph1qq;
 import 'domains/billing/models/owner.dart' as _i7df4v4i;
 import 'domains/billing/models/payment_method.dart' as _ikeafg5a;
 import 'domains/billing/models/payment_method_card.dart' as _i4cauyzh;
@@ -282,6 +283,7 @@ export 'domains/billing/models/billing_mapping_type.dart';
 export 'domains/billing/models/events/invoice_cause.dart';
 export 'domains/billing/models/events/owner_cause.dart';
 export 'domains/billing/models/events/subscription_cause.dart';
+export 'domains/billing/models/events/voucher_cause.dart';
 export 'domains/billing/models/owner.dart';
 export 'domains/billing/models/payment_method.dart';
 export 'domains/billing/models/payment_method_card.dart';
@@ -473,6 +475,7 @@ class Protocol extends _isc.SerializationManager
           _isc.getType<_izs8n7t0.InvoiceCause>,
           _isc.getType<_iry9161d.OwnerCause>,
           _isc.getType<_iode8lcu.SubscriptionCause>,
+          _isc.getType<_ik7ph1qq.VoucherCause>,
           _isc.getType<_i7df4v4i.Owner>,
           _isc.getType<_ikeafg5a.PaymentMethod>,
           _isc.getType<_i4cauyzh.PaymentMethodCard>,
@@ -651,6 +654,7 @@ class Protocol extends _isc.SerializationManager
           _isc.getType<_izs8n7t0.InvoiceCause?>,
           _isc.getType<_iry9161d.OwnerCause?>,
           _isc.getType<_iode8lcu.SubscriptionCause?>,
+          _isc.getType<_ik7ph1qq.VoucherCause?>,
           _isc.getType<_i7df4v4i.Owner?>,
           _isc.getType<_ikeafg5a.PaymentMethod?>,
           _isc.getType<_i4cauyzh.PaymentMethodCard?>,
@@ -902,6 +906,7 @@ class Protocol extends _isc.SerializationManager
           'InvoiceCause',
           'OwnerCause',
           'SubscriptionCause',
+          'VoucherCause',
           'Owner',
           'PaymentMethod',
           'PaymentMethodCard',
@@ -1127,6 +1132,9 @@ class Protocol extends _isc.SerializationManager
     }
     if (t == _iode8lcu.SubscriptionCause) {
       return _iode8lcu.SubscriptionCause.fromJson(data) as T;
+    }
+    if (t == _ik7ph1qq.VoucherCause) {
+      return _ik7ph1qq.VoucherCause.fromJson(data) as T;
     }
     if (t == _i7df4v4i.Owner) {
       return _i7df4v4i.Owner.fromJson(data) as T;
@@ -1679,6 +1687,9 @@ class Protocol extends _isc.SerializationManager
     if (t == _isc.getType<_iode8lcu.SubscriptionCause?>()) {
       return (data != null ? _iode8lcu.SubscriptionCause.fromJson(data) : null)
           as T;
+    }
+    if (t == _isc.getType<_ik7ph1qq.VoucherCause?>()) {
+      return (data != null ? _ik7ph1qq.VoucherCause.fromJson(data) : null) as T;
     }
     if (t == _isc.getType<_i7df4v4i.Owner?>()) {
       return (data != null ? _i7df4v4i.Owner.fromJson(data) : null) as T;
@@ -2936,6 +2947,7 @@ class Protocol extends _isc.SerializationManager
       _izs8n7t0.InvoiceCause => 'InvoiceCause',
       _iry9161d.OwnerCause => 'OwnerCause',
       _iode8lcu.SubscriptionCause => 'SubscriptionCause',
+      _ik7ph1qq.VoucherCause => 'VoucherCause',
       _i7df4v4i.Owner => 'Owner',
       _ikeafg5a.PaymentMethod => 'PaymentMethod',
       _i4cauyzh.PaymentMethodCard => 'PaymentMethodCard',
@@ -3162,6 +3174,8 @@ class Protocol extends _isc.SerializationManager
         return 'OwnerCause';
       case _iode8lcu.SubscriptionCause():
         return 'SubscriptionCause';
+      case _ik7ph1qq.VoucherCause():
+        return 'VoucherCause';
       case _i7df4v4i.Owner():
         return 'Owner';
       case _ikeafg5a.PaymentMethod():
@@ -3551,6 +3565,9 @@ class Protocol extends _isc.SerializationManager
     }
     if (dataClassName == 'SubscriptionCause') {
       return deserialize<_iode8lcu.SubscriptionCause>(data['data']);
+    }
+    if (dataClassName == 'VoucherCause') {
+      return deserialize<_ik7ph1qq.VoucherCause>(data['data']);
     }
     if (dataClassName == 'Owner') {
       return deserialize<_i7df4v4i.Owner>(data['data']);
