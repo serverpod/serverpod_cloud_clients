@@ -19,6 +19,7 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../../../test/util/inline_tui/helpers/fake_terminal.dart';
 import '../../../test_utils/command_logger_matchers.dart';
+import '../../../test_utils/git_repo.dart';
 import '../../../test_utils/project_factory.dart';
 import '../../../test_utils/push_current_dir.dart';
 import '../../../test_utils/recording_file_uploader.dart';
@@ -4106,6 +4107,94 @@ project:
       );
     });
   });
+
+  group(
+    'Given an app in a git repository with a commit',
+    () {
+      late String repoDir;
+      late List<String> publishArgs;
+
+      setUp(() async {
+        await ProjectFactory.serverpodAppWorkspace(
+          extraContents: [
+            d.dir('project_flutter', [
+              ProjectFactory.flutterAndroidDir(
+                releaseSigning: ProjectFactory.serverpodCloudReleaseSigning,
+              ),
+            ]),
+          ],
+        ).create();
+        repoDir = p.join(d.sandbox, 'monorepo');
+        await initGitRepo(repoDir);
+        await gitCommitAll(repoDir, 'Initial commit');
+        publishArgs = [
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(repoDir, 'project_server'),
+          '--platforms',
+          'android',
+          '--no-await',
+        ];
+      });
+
+      test('when publishing '
+          'then no uncommitted changes warning is logged', () async {
+        await cli.run(publishArgs);
+
+        expect(
+          logger.warningCalls.where(
+            (call) => call.message.contains('uncommitted changes'),
+          ),
+          isEmpty,
+        );
+      });
+
+      group('and an uncommitted file when publishing', () {
+        setUp(() async {
+          await d.file('uncommitted.txt', 'work in progress').create(repoDir);
+          await cli.run(publishArgs);
+        });
+
+        test('then an uncommitted changes warning is logged', () {
+          expect(
+            logger.warningCalls.any(
+              (call) => call.message.contains('uncommitted changes'),
+            ),
+            isTrue,
+          );
+        });
+
+        test('then the builds still receive the last commit metadata', () {
+          verify(
+            () => client.appBuilds.createBuilds(
+              appIdentifiers: any(named: 'appIdentifiers'),
+              cloudCapsuleId: any(named: 'cloudCapsuleId'),
+              platforms: any(named: 'platforms'),
+              flutterAppDir: any(named: 'flutterAppDir'),
+              archiveSize: any(named: 'archiveSize'),
+              flutterVersion: any(named: 'flutterVersion'),
+              xcodeVersion: any(named: 'xcodeVersion'),
+              gradleVersion: any(named: 'gradleVersion'),
+              androidGradlePluginVersion: any(
+                named: 'androidGradlePluginVersion',
+              ),
+              dartDefines: any(named: 'dartDefines'),
+              versionName: any(named: 'versionName'),
+              commitHash: any(named: 'commitHash', that: isNotNull),
+              commitMessage: 'Initial commit',
+              branch: 'main',
+            ),
+          ).called(1);
+        });
+      });
+    },
+    skip: isGitExecutableAvailable()
+        ? null
+        : 'Requires the git executable, which was not found on PATH.',
+  );
 }
 
 Archive _uploadedArchive(RecordedUpload upload) {

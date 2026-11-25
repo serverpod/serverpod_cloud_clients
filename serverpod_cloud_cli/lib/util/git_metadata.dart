@@ -101,6 +101,25 @@ Future<GitMetadata?> readGitMetadata(
   );
 }
 
+/// Warns through [logger] when [metadata] has uncommitted changes. They are
+/// part of the [subject], such as `deployment` or `release`, which is
+/// recorded against the last commit. Does nothing when [metadata] is null.
+void warnIfUncommittedChanges(
+  GitMetadata? metadata, {
+  required CommandLogger logger,
+  required String subject,
+}) {
+  if (metadata == null || !metadata.hasUncommittedChanges) return;
+  logger.warning(
+    'You have uncommitted changes in your git repository.',
+    hint:
+        'These changes may be included in the $subject, but the $subject is '
+        'recorded against the last commit. Commit your changes for an '
+        'accurate $subject history.',
+    newParagraph: true,
+  );
+}
+
 /// Runs a git command and returns its trimmed stdout, or `null` when the
 /// command fails (non-zero exit code or the `git` executable is missing).
 Future<String?> _gitOutput(
