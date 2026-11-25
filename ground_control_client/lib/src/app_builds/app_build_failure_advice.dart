@@ -44,11 +44,6 @@ class OpenSetupAction extends AppBuildFailureAction {
   const OpenSetupAction() : super('Open setup');
 }
 
-/// Downloads the build, so the user can upload it to the store by hand.
-class DownloadBuildAction extends AppBuildFailureAction {
-  const DownloadBuildAction() : super('Download build');
-}
-
 /// Opens [url], a page outside Serverpod Cloud.
 class OpenLinkAction extends AppBuildFailureAction {
   /// The page to open.
@@ -58,26 +53,49 @@ class OpenLinkAction extends AppBuildFailureAction {
     : super(label);
 }
 
+/// What to check when Google Play cannot access the app.
+String _playAppNotFoundDescription({
+  required String? androidPackageName,
+  required String? invitedUserEmail,
+}) {
+  final String packageName = androidPackageName == null
+      ? "your app's package name"
+      : 'this package name';
+  final List<String> values = [
+    if (androidPackageName != null) 'Package name: $androidPackageName',
+    if (invitedUserEmail != null) 'Invited user: $invitedUserEmail',
+  ];
+  final String description =
+      "Make sure you've created an app with $packageName in Play Console, "
+      'and that the user you invited for Serverpod Cloud has it selected '
+      'under App permissions, so we can see it.';
+
+  return values.isEmpty ? description : '$description\n\n${values.join('\n')}';
+}
+
 /// The advice for an app build that failed for this reason.
 extension AppBuildFailureReasonAdvice on AppBuildFailureReason {
   /// The advice for a [platform] build that failed for this reason, or null
   /// when there is nothing more to say than that it failed. Commands are
-  /// named with [baseCommand].
+  /// named with [baseCommand]. The advice for an Android app Google Play
+  /// cannot access lists [androidPackageName] and [invitedUserEmail], the
+  /// user invited to Play Console, when they are given.
   AppBuildFailureAdvice? adviceFor(
     AppPlatform platform, {
     required String baseCommand,
+    String? androidPackageName,
+    String? invitedUserEmail,
   }) {
     final android = platform == AppPlatform.android;
     return switch (this) {
       AppBuildFailureReason.unknown => null,
       AppBuildFailureReason.storeAppNotFound when android =>
-        const AppBuildFailureAdvice(
-          title: "Google Play doesn't know this app yet",
-          description:
-              "Create the app in Play Console if you haven't. A new app takes "
-              'its first build by hand: download this build and upload it '
-              'there once. Later builds upload on their own.',
-          action: DownloadBuildAction(),
+        AppBuildFailureAdvice(
+          title: "We can't access this app on Google Play",
+          description: _playAppNotFoundDescription(
+            androidPackageName: androidPackageName,
+            invitedUserEmail: invitedUserEmail,
+          ),
         ),
       AppBuildFailureReason.storeAppNotFound => const AppBuildFailureAdvice(
         title: 'App Store Connect has no app for this bundle ID',

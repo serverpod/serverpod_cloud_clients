@@ -24,14 +24,42 @@ void main() {
   });
 
   group('Given the store does not know the app', () {
-    test('when the build is for Android '
-        'then the build is offered for a manual first upload', () {
+    test('when the Android package name and invited user are given '
+        'then the advice ends with both', () {
+      final advice = AppBuildFailureReason.storeAppNotFound.adviceFor(
+        AppPlatform.android,
+        baseCommand: _baseCommand,
+        androidPackageName: 'com.example.app',
+        invitedUserEmail: 'user@example.com',
+      );
+
+      expect(
+        advice?.description,
+        endsWith(
+          '\n\nPackage name: com.example.app\nInvited user: user@example.com',
+        ),
+      );
+    });
+
+    test('when only the invited user is given '
+        'then the advice leaves out the package name line', () {
+      final advice = AppBuildFailureReason.storeAppNotFound.adviceFor(
+        AppPlatform.android,
+        baseCommand: _baseCommand,
+        invitedUserEmail: 'user@example.com',
+      );
+
+      expect(advice?.description, isNot(contains('Package name:')));
+    });
+
+    test('when neither is given '
+        'then the advice has no list of values', () {
       final advice = AppBuildFailureReason.storeAppNotFound.adviceFor(
         AppPlatform.android,
         baseCommand: _baseCommand,
       );
 
-      expect(advice?.action, isA<DownloadBuildAction>());
+      expect(advice?.description, isNot(contains('\n')));
     });
 
     test('when the build is for iOS '
