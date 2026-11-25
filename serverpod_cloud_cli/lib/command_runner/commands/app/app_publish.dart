@@ -144,6 +144,11 @@ abstract class AppPublish {
         .where(requestedPlatforms.contains)
         .toList();
 
+    final gitMetadata = await readGitMetadata(
+      appDirectory.path,
+      logger: logger,
+    );
+
     final preparer = TenantProject.prepareApp(
       appDirectory,
       platforms: publishPlatforms.toSet(),
@@ -219,6 +224,8 @@ abstract class AppPublish {
       force: force,
     );
 
+    warnIfUncommittedChanges(gitMetadata, logger: logger, subject: 'release');
+
     final appZip = await DeployArchive.zip(
       logger: logger,
       projectFilePreparer: preparer,
@@ -239,11 +246,6 @@ abstract class AppPublish {
       );
       return;
     }
-
-    final gitMetadata = await readGitMetadata(
-      appDirectory.path,
-      logger: logger,
-    );
 
     final versionName = _versionName(preparer.projectVersion);
     final upload = await AppOperations.createBuilds(

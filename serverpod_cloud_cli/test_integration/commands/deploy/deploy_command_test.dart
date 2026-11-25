@@ -26,6 +26,7 @@ import 'package:yaml_codec/yaml_codec.dart';
 
 import '../../../test_utils/bucket_upload_description.dart';
 import '../../../test_utils/command_logger_matchers.dart';
+import '../../../test_utils/git_repo.dart';
 import '../../../test_utils/project_factory.dart';
 import '../../../test_utils/push_current_dir.dart';
 import '../../../test_utils/test_command_logger.dart';
@@ -4180,8 +4181,8 @@ project:
           ),
         ).thenAnswer((_) => Stream.value(DeployAttemptStageBuilder().build()));
 
-        await _initGitRepo(testProjectDir);
-        await _gitCommitAll(testProjectDir, 'Initial commit');
+        await initGitRepo(testProjectDir);
+        await gitCommitAll(testProjectDir, 'Initial commit');
       });
 
       group('when deploying through CLI', () {
@@ -4276,52 +4277,8 @@ project:
         });
       });
     },
-    skip: _isGitExecutableAvailable()
+    skip: isGitExecutableAvailable()
         ? null
         : 'Requires the git executable, which was not found on PATH.',
   );
-}
-
-/// Whether the `git` executable can be invoked on this machine. Used to skip
-/// the git-dependent integration tests in environments without git installed.
-bool _isGitExecutableAvailable() {
-  try {
-    return Process.runSync('git', const ['--version']).exitCode == 0;
-  } on ProcessException {
-    return false;
-  }
-}
-
-Future<void> _initGitRepo(String directory) async {
-  await _runGit(['init'], directory);
-  await _runGit(['checkout', '-b', 'main'], directory);
-}
-
-Future<void> _gitCommitAll(String directory, String message) async {
-  await _runGit(['add', '.'], directory);
-  await _runGit([
-    '-c',
-    'user.name=Test User',
-    '-c',
-    'user.email=test@example.com',
-    '-c',
-    'commit.gpgsign=false',
-    'commit',
-    '-m',
-    message,
-  ], directory);
-}
-
-Future<void> _runGit(List<String> arguments, String workingDirectory) async {
-  final result = await Process.run(
-    'git',
-    arguments,
-    workingDirectory: workingDirectory,
-  );
-  if (result.exitCode != 0) {
-    throw StateError(
-      'git ${arguments.join(' ')} failed (exit ${result.exitCode}): '
-      '${result.stderr}',
-    );
-  }
 }

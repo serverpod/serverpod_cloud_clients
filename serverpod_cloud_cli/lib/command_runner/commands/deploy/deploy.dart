@@ -176,16 +176,11 @@ abstract class Deploy {
     );
 
     final gitMetadata = await readGitMetadata(projectDir, logger: logger);
-    if (gitMetadata != null && gitMetadata.hasUncommittedChanges) {
-      logger.warning(
-        'You have uncommitted changes in your git repository.',
-        hint:
-            'These changes are included in the deployment, but the deploy '
-            'is recorded against the last commit. Commit your changes for '
-            'an accurate deployment history.',
-        newParagraph: true,
-      );
-    }
+    warnIfUncommittedChanges(
+      gitMetadata,
+      logger: logger,
+      subject: 'deployment',
+    );
 
     final projectFilePreparer = TenantProject.prepare(
       projectDirectory,
