@@ -58,6 +58,16 @@ class AppPublishingSetupBuilder {
     return this;
   }
 
+  /// A capsule with an Android upload keystore the user uploaded.
+  AppPublishingSetupBuilder withUploadedAndroidKeystore() {
+    _androidSigning = AndroidSigning(
+      keyAlias: 'upload',
+      generated: false,
+      createdAt: DateTime.utc(2026, 1, 1),
+    );
+    return this;
+  }
+
   /// A capsule where nothing is set up on either platform.
   AppPublishingSetupBuilder withNothingSetUp() {
     _iosStore = null;
