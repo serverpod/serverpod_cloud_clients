@@ -615,6 +615,50 @@ project:
         },
       );
 
+      group(
+        'and an existing scloud.yaml has an entry point when executing link',
+        () {
+          late String targetProjectDir;
+          late Future commandResult;
+
+          setUp(() async {
+            await ProjectFactory.serverpodServerDir(
+              withDirectoryName: 'target_server_dir',
+              contents: [
+                d.file('scloud.yaml', '''
+project:
+  projectId: "$projectId"
+  app:
+    target: "lib/main_production.dart"
+'''),
+              ],
+            ).create();
+            targetProjectDir = p.join(d.sandbox, 'target_server_dir');
+
+            commandResult = cli.run([
+              'project',
+              'link',
+              '--project',
+              projectId,
+              '--project-dir',
+              targetProjectDir,
+            ]);
+          });
+
+          test('then the entry point in scloud.yaml is kept', () async {
+            await commandResult;
+
+            final expected = d.dir(targetProjectDir, [
+              d.file(
+                'scloud.yaml',
+                contains('target: "lib/main_production.dart"'),
+              ),
+            ]);
+            await expectLater(expected.validate(), completes);
+          });
+        },
+      );
+
       group('and .tool-versions file with dart entry when executing link', () {
         late Future commandResult;
 

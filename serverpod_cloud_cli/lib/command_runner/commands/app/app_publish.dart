@@ -48,6 +48,13 @@ abstract class AppPublish {
   /// the local Flutter SDK, read with [readLocalFlutterVersion]. With none of them, the builds use the
   /// stable channel.
   ///
+  /// The builds are made from the Dart file of the main entry point of
+  /// [targetOverride], or else of [configuredTarget], or else of
+  /// [defaultAppTarget], each relative to [appDirectory]. See
+  /// [AppSetup.resolveTarget]. Before anything is uploaded, it is checked to
+  /// exist and to be in the archive, not left out by `.gitignore` or
+  /// `.scloudignore`.
+  ///
   /// When iOS is published, the build is made with the Xcode version of
   /// [configuredXcodeVersion], or else with the one Serverpod Cloud pins.
   ///
@@ -80,8 +87,10 @@ abstract class AppPublish {
   /// [AppSetup.checkProjectFiles]. Only the failed checks are shown. With
   /// [force], publishing goes on after a warning; without it, it stops.
   ///
-  /// Throws [FailureException] if a check of the project files fails and
-  /// [force] is not set, if a dart defines file cannot be read or is
+  /// Throws [FailureException] if the entry point does not exist, is not
+  /// a `.dart` file inside [appDirectory], or is left out of the archive, if
+  /// a check of the project files
+  /// fails and [force] is not set, if a dart defines file cannot be read or is
   /// not in its format, if the app has no code for a platform to
   /// publish, if none of the default platforms is set up, if the app
   /// identifier of a platform cannot be read or is
@@ -106,6 +115,8 @@ abstract class AppPublish {
     String? flutterVersionOverride,
     String? configuredFlutterVersion,
     String? configuredXcodeVersion,
+    String? targetOverride,
+    String? configuredTarget,
     required LocalFlutterVersionReader readLocalFlutterVersion,
     List<File> dartDefineFiles = const [],
     List<String> dartDefines = const [],
@@ -153,6 +164,26 @@ abstract class AppPublish {
       appDirectory,
       platforms: publishPlatforms.toSet(),
     );
+
+    final target = AppSetup.resolveTarget(
+      appDirectory,
+      commandLineTarget: targetOverride,
+      configuredTarget: configuredTarget,
+      configFileName: configFileName,
+    ).path;
+    AppSetup.ensureTargetUploaded(
+      appDirectory,
+      rootDirectory: preparer.rootDirectory,
+      target: target,
+      isExcluded: preparer.isExcluded,
+      logger: logger,
+    );
+    if (target == defaultAppTarget) {
+      logger.debug('Entry point: $target');
+    } else {
+      logger.info('Entry point: $target');
+    }
+
     final appIdentifiers = {
       for (final platform in publishPlatforms)
         platform: resolveAppIdentifier(
@@ -255,6 +286,7 @@ abstract class AppPublish {
       appIdentifiers: appIdentifiers,
       flutterAppDir: preparer.projectSubPath,
       archiveSize: appZip.length,
+      target: target == defaultAppTarget ? null : target,
       flutterVersion: flutterVersion,
       xcodeVersion: xcodeVersion,
       gradleVersion: gradleVersion,

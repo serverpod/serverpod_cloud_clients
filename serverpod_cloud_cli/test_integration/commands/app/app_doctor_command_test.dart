@@ -21,6 +21,13 @@ import '../../../test_utils/project_factory.dart';
 import '../../../test_utils/test_command_logger.dart';
 
 const _projectId = 'my-project-id';
+const _ignoredTargetHint =
+    'Opt it back in with a ! rule in .scloudignore, such as '
+    '"!lib/main.dart".';
+const _targetHint =
+    "Set the Dart file of the app's main entry point with --target, or "
+    'with project.app.target in scloud.yaml. A relative path is relative to '
+    'the app directory.';
 
 void main() {
   final logger = TestCommandLogger();
@@ -121,6 +128,7 @@ void main() {
           logger.lineCalls.map((call) => call.line),
           containsAllInOrder([
             '✓ Flutter version: 3.29.0 (from pubspec.yaml)',
+            '✓ Entry point: lib/main.dart (default)',
             '',
             'Android',
             '  ✓ Google Play Console connection',
@@ -171,6 +179,7 @@ void main() {
           .cast<Map>();
       expect(checks.map((check) => (check['platform'], check['check'])), [
         (null, 'flutterVersion'),
+        (null, 'entryPoint'),
         ('android', 'consoleSetup'),
         ('android', 'appIdentifier'),
         ('android', 'releaseSigning'),
@@ -200,7 +209,7 @@ void main() {
 
       final checks = (yamlDecode(logger.rawCalls.single.content) as List)
           .cast<Map>();
-      expect(checks, hasLength(10));
+      expect(checks, hasLength(11));
       expect(checks.map((check) => check['status']), everyElement('passed'));
     });
 
@@ -242,6 +251,64 @@ void main() {
         logger.lineCalls.map((call) => call.line),
         contains('✓ Flutter version: 3.38.4 (from --flutter-version flag)'),
       );
+    });
+
+    test('when checking the app with --target naming an existing file '
+        'then the entry point passes', () async {
+      await d.dir('project_flutter', [
+        d.dir('lib', [d.file('main_production.dart', 'void main() {}')]),
+      ]).create();
+
+      await cli.run([
+        'app',
+        'doctor',
+        '--project',
+        _projectId,
+        '--app-dir',
+        d.path('project_flutter'),
+        '--target',
+        'lib/main_production.dart',
+      ]);
+
+      expect(
+        logger.lineCalls.map((call) => call.line),
+        contains('✓ Entry point: lib/main_production.dart (from --target)'),
+      );
+    });
+
+    group('when checking the app with --target naming a file that does not '
+        'exist', () {
+      late Future<void> commandResult;
+
+      setUp(() {
+        commandResult = cli.run([
+          'app',
+          'doctor',
+          '--project',
+          _projectId,
+          '--app-dir',
+          d.path('project_flutter'),
+          '--target',
+          'lib/main_production.dart',
+        ]);
+      });
+
+      test('then the command throws ErrorExitException', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then the entry point check fails with its fix', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          logger.lineCalls.map((call) => call.line),
+          containsAllInOrder([
+            '✗ Entry point: The entry point lib/main_production.dart, set by '
+                '--target, does not exist.',
+            '  $_targetHint',
+          ]),
+        );
+      });
     });
 
     group('when checking the app with a --flutter-version '
@@ -1048,6 +1115,197 @@ import Flutter
     });
   });
 
+  group('Given a Flutter app set up for publishing whose .gitignore ignores '
+      'lib/main.dart', () {
+    setUp(() async {
+      await ProjectFactory.nonWorkspaceFlutterAppDir(
+        contents: [
+          d.file('.gitignore', 'lib/main.dart\n'),
+          ProjectFactory.flutterAndroidDir(
+            applicationId: 'com.acme.app',
+            releaseSigning: ProjectFactory.serverpodCloudReleaseSigning,
+          ),
+        ],
+      ).create();
+    });
+
+    group('when checking the app', () {
+      late Future<void> commandResult;
+
+      setUp(() {
+        commandResult = cli.run([
+          'app',
+          'doctor',
+          '--project',
+          _projectId,
+          '--app-dir',
+          d.path('project_flutter'),
+        ]);
+      });
+
+      test('then the command throws ErrorExitException', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then the entry point check fails with its fix', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          logger.lineCalls.map((call) => call.line),
+          containsAllInOrder([
+            '✗ Entry point: The entry point lib/main.dart is left out of the '
+                'upload by .gitignore or .scloudignore.',
+            '  $_ignoredTargetHint',
+          ]),
+        );
+      });
+    });
+
+    test('when checking the app with --format json '
+        'then the entry point check is listed as failed', () async {
+      await cli
+          .run([
+            '--format',
+            'json',
+            'app',
+            'doctor',
+            '--project',
+            _projectId,
+            '--app-dir',
+            d.path('project_flutter'),
+          ])
+          .catchError((_) {});
+
+      final checks = (jsonDecode(logger.rawCalls.single.content) as List)
+          .cast<Map>();
+      expect(
+        checks.singleWhere((check) => check['check'] == 'entryPoint'),
+        containsPair('status', 'failed'),
+      );
+    });
+
+    test('and a .scloudignore that opts lib/main.dart back in '
+        'when checking the app then the entry point passes', () async {
+      await d.dir('project_flutter', [
+        d.file('.scloudignore', '!lib/main.dart\n'),
+      ]).create();
+
+      await cli
+          .run([
+            'app',
+            'doctor',
+            '--project',
+            _projectId,
+            '--app-dir',
+            d.path('project_flutter'),
+          ])
+          .catchError((_) {});
+
+      expect(
+        logger.lineCalls.map((call) => call.line),
+        contains('✓ Entry point: lib/main.dart (default)'),
+      );
+    });
+  });
+
+  group('Given a Flutter app set up for publishing without lib/main.dart', () {
+    setUp(() async {
+      await ProjectFactory.nonWorkspaceFlutterAppDir(
+        withMainDart: false,
+        contents: [
+          ProjectFactory.flutterAndroidDir(
+            applicationId: 'com.acme.app',
+            releaseSigning: ProjectFactory.serverpodCloudReleaseSigning,
+          ),
+        ],
+      ).create();
+    });
+
+    group('when checking the app', () {
+      late Future<void> commandResult;
+
+      setUp(() {
+        commandResult = cli.run([
+          'app',
+          'doctor',
+          '--project',
+          _projectId,
+          '--app-dir',
+          d.path('project_flutter'),
+        ]);
+      });
+
+      test('then the command throws ErrorExitException', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then the entry point check fails with its fix', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          logger.lineCalls.map((call) => call.line),
+          containsAllInOrder([
+            '✗ Entry point: The app has no lib/main.dart, the default entry '
+                'point.',
+            '  $_targetHint',
+          ]),
+        );
+      });
+    });
+
+    test('when checking the app with --format json '
+        'then the entry point check is listed as failed', () async {
+      await cli
+          .run([
+            '--format',
+            'json',
+            'app',
+            'doctor',
+            '--project',
+            _projectId,
+            '--app-dir',
+            d.path('project_flutter'),
+          ])
+          .catchError((_) {});
+
+      final checks = (jsonDecode(logger.rawCalls.single.content) as List)
+          .cast<Map>();
+      expect(
+        checks.singleWhere((check) => check['check'] == 'entryPoint'),
+        allOf(
+          containsPair('status', 'failed'),
+          containsPair(
+            'detail',
+            'The app has no lib/main.dart, the default entry point.',
+          ),
+        ),
+      );
+    });
+
+    test('when checking the app with --format yaml '
+        'then the entry point check is listed as failed', () async {
+      await cli
+          .run([
+            '--format',
+            'yaml',
+            'app',
+            'doctor',
+            '--project',
+            _projectId,
+            '--app-dir',
+            d.path('project_flutter'),
+          ])
+          .catchError((_) {});
+
+      final checks = (yamlDecode(logger.rawCalls.single.content) as List)
+          .cast<Map>();
+      expect(
+        checks.singleWhere((check) => check['check'] == 'entryPoint'),
+        containsPair('status', 'failed'),
+      );
+    });
+  });
+
   group('Given a workspace with a Serverpod server and a Flutter app '
       'set up for publishing', () {
     setUp(() async {
@@ -1075,6 +1333,70 @@ import Flutter
       expect(
         logger.lineCalls.map((call) => call.line),
         containsAllInOrder(['Android', '  ✓ Package name: com.acme.app']),
+      );
+    });
+
+    test(
+      'and a scloud.yaml that sets the entry point '
+      'when checking the app then the configured entry point passes',
+      () async {
+        await d.dir('monorepo', [
+          d.dir('project_flutter', [
+            d.dir('lib', [d.file('main_production.dart', 'void main() {}')]),
+          ]),
+          d.dir('project_server', [
+            d.file('scloud.yaml', '''
+project:
+  projectId: "my-project-id"
+  app:
+    target: lib/main_production.dart
+'''),
+          ]),
+        ]).create();
+
+        await cli.run([
+          'app',
+          'doctor',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+        ]);
+
+        expect(
+          logger.lineCalls.map((call) => call.line),
+          contains(
+            '✓ Entry point: lib/main_production.dart '
+            '(from project.app.target in scloud.yaml)',
+          ),
+        );
+      },
+    );
+
+    test('and a .gitignore in the workspace root that ignores the entry '
+        'point of the app when checking the app from the server directory '
+        'then the entry point check fails', () async {
+      await d.dir('monorepo', [
+        d.file('.gitignore', 'project_flutter/lib/main.dart\n'),
+      ]).create();
+
+      await cli
+          .run([
+            'app',
+            'doctor',
+            '--project',
+            _projectId,
+            '--project-dir',
+            p.join(d.sandbox, 'monorepo', 'project_server'),
+          ])
+          .catchError((_) {});
+
+      expect(
+        logger.lineCalls.map((call) => call.line),
+        contains(
+          '✗ Entry point: The entry point lib/main.dart is left out of the '
+          'upload by .gitignore or .scloudignore.',
+        ),
       );
     });
 

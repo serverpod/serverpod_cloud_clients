@@ -126,6 +126,23 @@ class AppPublishFlutterVersionOption extends StringOption {
        );
 }
 
+class AppPublishTargetOption extends StringOption {
+  /// The help text of the option of `app publish`.
+  static const publishHelpText =
+      "The Dart file of the app's main entry point to build, relative to the "
+      'app directory. Defaults to project.app.target in scloud.yaml, '
+      'or else to lib/main.dart.';
+
+  /// The help text of the option of `app doctor`.
+  static const doctorHelpText =
+      "The Dart file of the app's main entry point to check, relative to the "
+      'app directory, as "app publish --target" would build it. Defaults to '
+      'project.app.target in scloud.yaml, or else to lib/main.dart.';
+
+  const AppPublishTargetOption({super.helpText = publishHelpText})
+    : super(argName: 'target', argAbbrev: 't', valueHelp: 'path');
+}
+
 class AppPublishDartDefineOption extends MultiOption<String> {
   const AppPublishDartDefineOption()
     : super(
@@ -228,6 +245,7 @@ enum AppPublishCommandOption<V> implements OptionDefinition<V> {
   projectId(ProjectIdOption(asFirstArg: true, excludeSettings: true)),
   appDir(AppPublishDirOption()),
   platforms(AppPublishPlatformsOption()),
+  target(AppPublishTargetOption()),
   flutterVersion(AppPublishFlutterVersionOption()),
   dartDefine(AppPublishDartDefineOption()),
   dartDefineFromFile(AppPublishDartDefineFromFileOption()),
@@ -356,6 +374,9 @@ enum AppDoctorCommandOption<V> implements OptionDefinition<V> {
     AppPublishPlatformsOption(
       helpText: AppPublishPlatformsOption.doctorHelpText,
     ),
+  ),
+  target(
+    AppPublishTargetOption(helpText: AppPublishTargetOption.doctorHelpText),
   ),
   flutterVersion(
     AppPublishFlutterVersionOption(
@@ -557,10 +578,10 @@ class CloudAppDoctorCommand extends CloudCliCommand<AppDoctorCommandOption> {
   @override
   final description =
       'Check whether the Flutter app is set up to be published: its Flutter '
-      'version, the setup of each platform in the console, app identifiers, '
-      'Android release signing, iOS export compliance and privacy '
-      'descriptions, and app icons. Exits with an error status when a check '
-      'fails.';
+      'version and entry point, the setup of each platform in the console, '
+      'app identifiers, Android release signing, iOS export compliance and '
+      'privacy descriptions, and app icons. Exits with an error status when '
+      'a check fails.';
 
   @override
   bool get warnIfBillingOverdue => false;
@@ -581,6 +602,10 @@ Examples
   Check the app as it would be built with a specific Flutter version
 
     \$ $baseCommand app doctor --flutter-version 3.50.0
+
+  Check the app as it would be built from a different entry point
+
+    \$ $baseCommand app doctor --target lib/main_production.dart
 
   Check a Flutter app in a specific directory
 
@@ -604,6 +629,7 @@ Examples
     final flutterVersion = commandConfig.optionalValue(
       AppDoctorCommandOption.flutterVersion,
     );
+    final target = commandConfig.optionalValue(AppDoctorCommandOption.target);
 
     final configFile = globalConfiguration.projectConfigFile;
     final config = configFile == null
@@ -631,6 +657,8 @@ Examples
           publishingSetup: publishingSetup,
           flutterVersionOverride: flutterVersion,
           configuredFlutterVersion: config?.flutterSdk,
+          commandLineTarget: target,
+          configuredTarget: config?.target,
           readLocalFlutterVersion:
               runner.serviceProvider.localFlutterVersionReader,
           logger: logger,
@@ -675,6 +703,10 @@ Examples
 
     \$ $baseCommand app publish --flutter-version 3.50.0
 
+  Publish the app built from a different entry point
+
+    \$ $baseCommand app publish --target lib/main_production.dart
+
   Publish the app built with dart defines
 
     \$ $baseCommand app publish --dart-define-from-file .env --dart-define FLAVOR=production
@@ -709,6 +741,7 @@ Examples
     final flutterVersion = commandConfig.optionalValue(
       AppPublishCommandOption.flutterVersion,
     );
+    final target = commandConfig.optionalValue(AppPublishCommandOption.target);
     final awaitBuilds = commandConfig.value(AppPublishCommandOption.wait);
     final dartDefines =
         commandConfig.optionalValue(AppPublishCommandOption.dartDefine) ??
@@ -740,6 +773,8 @@ Examples
       flutterVersionOverride: flutterVersion,
       configuredFlutterVersion: config?.flutterSdk,
       configuredXcodeVersion: config?.xcodeVersion,
+      targetOverride: target,
+      configuredTarget: config?.target,
       readLocalFlutterVersion: runner.serviceProvider.localFlutterVersionReader,
       dartDefineFiles: _dartDefineFiles(dartDefineFiles, configFile, config),
       dartDefines: dartDefines,

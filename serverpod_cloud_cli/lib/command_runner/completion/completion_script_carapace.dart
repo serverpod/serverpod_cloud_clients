@@ -184,6 +184,7 @@ commands:
           -p, --project=!: "The ID of the project.\nCan be omitted for existing projects that are linked (see the \"project link\" command)."
           --app-dir=: "The path to the Flutter app directory. Defaults to project.app.dir in scloud.yaml, the current Flutter app, or the Flutter app in the server's workspace or near the server directory."
           --platforms=*: "The platforms to check, separated by commas. Defaults to the supported platforms the app has code for. Supported platforms: android, ios."
+          -t, --target=: "The Dart file of the app's main entry point to check, relative to the app directory, as \"app publish --target\" would build it. Defaults to project.app.target in scloud.yaml, or else to lib/main.dart."
           --flutter-version=: "The Flutter release version to check the app against, as \"app publish --flutter-version\" would build it. Defaults to the single version the app's pubspec.yaml requires, or else to project.app.flutterSdk in scloud.yaml, or else to the version of the local Flutter SDK. Without any of them, the build uses the latest stable release."
         completion:
           flag:
@@ -194,6 +195,7 @@ commands:
           -p, --project=!: "The ID of the project. Can be passed as the first argument.\nCan be omitted for existing projects that are linked (see the \"project link\" command)."
           --app-dir=: "The path to the Flutter app directory. Defaults to project.app.dir in scloud.yaml, the current Flutter app, or the Flutter app in the server's workspace or near the server directory."
           --platforms=*: "The platforms to publish, separated by commas. The code of the other platforms is left out of the upload. Defaults to the supported platforms the app has code for and that are set up. Supported platforms: android, ios."
+          -t, --target=: "The Dart file of the app's main entry point to build, relative to the app directory. Defaults to project.app.target in scloud.yaml, or else to lib/main.dart."
           --flutter-version=: "The Flutter release version to build the app with. Defaults to the single version the app's pubspec.yaml requires, or else to project.app.flutterSdk in scloud.yaml, or else to the version of the local Flutter SDK, or else to the latest stable release."
           --dart-define=*: "A dart define to build the app with, as KEY=VALUE. Can be repeated. Replaces the value of the same key from a dart defines file. SERVER_URL is always set by Serverpod Cloud."
           --dart-define-from-file=*: "A file in JSON or .env format with dart defines to build the app with. Can be repeated; a later file replaces the values of an earlier one. Defaults to project.app.dartDefineFromFile in scloud.yaml."

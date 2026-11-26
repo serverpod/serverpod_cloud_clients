@@ -450,6 +450,7 @@ bool _showsDetail(AppDoctorCheck check) {
   if (check.status != AppDoctorCheckStatus.passed) return true;
   return switch (check.kind) {
     AppDoctorCheckKind.flutterVersion ||
+    AppDoctorCheckKind.entryPoint ||
     AppDoctorCheckKind.appIdentifier => true,
     AppDoctorCheckKind.consoleSetup ||
     AppDoctorCheckKind.releaseSigning ||
@@ -462,6 +463,7 @@ bool _showsDetail(AppDoctorCheck check) {
 String _checkName(AppDoctorCheck check) {
   return switch (check.kind) {
     AppDoctorCheckKind.flutterVersion => 'Flutter version',
+    AppDoctorCheckKind.entryPoint => 'Entry point',
     AppDoctorCheckKind.consoleSetup => switch (check.platform) {
       FlutterPlatform.ios => 'App Store connection',
       FlutterPlatform.android => 'Google Play Console connection',

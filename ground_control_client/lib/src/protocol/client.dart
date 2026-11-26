@@ -838,6 +838,11 @@ class EndpointAppBuilds extends _isc.EndpointRef {
   /// check. The result also says whether the builds wait in the queue
   /// behind other builds of the project's owner.
   ///
+  /// [target] is the Dart file of the app's main entry point, relative to
+  /// [flutterAppDir], such as `lib/main_production.dart`. When null, the
+  /// builds use `lib/main.dart`. A file that does not exist fails the
+  /// builds.
+  ///
   /// [flutterVersion] is the Flutter release version to build the app
   /// with. When null, the builds use the latest stable release.
   /// A release that does not exist fails the builds.
@@ -858,9 +863,10 @@ class EndpointAppBuilds extends _isc.EndpointRef {
   /// Throws [InvalidValueException] if [archiveSize] is not positive,
   /// [platforms] is empty or repeats a platform, [appIdentifiers] does not
   /// name exactly the [platforms], an app identifier is invalid,
-  /// [flutterVersion] is not a release version, [xcodeVersion] is not an
-  /// Xcode version, or a key of [dartDefines]
-  /// is empty or contains `=`.
+  /// [target] is not a relative path to a `.dart` file inside
+  /// [flutterAppDir], [flutterVersion] is not a release version,
+  /// [xcodeVersion] is not an Xcode version, or a key of [dartDefines] is
+  /// empty or contains `=`.
   /// Throws [UploadTooLargeException] if [archiveSize] exceeds the upload
   /// limit. Throws [AppPlatformNotSetUpException] if the publishing setup
   /// of a platform in [platforms] is incomplete; no build is created.
@@ -874,6 +880,7 @@ class EndpointAppBuilds extends _isc.EndpointRef {
     required String flutterAppDir,
     required int archiveSize,
     Map<_id4pe5bk.AppPlatform, String>? appIdentifiers,
+    String? target,
     String? flutterVersion,
     String? xcodeVersion,
     String? gradleVersion,
@@ -894,6 +901,7 @@ class EndpointAppBuilds extends _isc.EndpointRef {
       'appIdentifiers': appIdentifiers == null
           ? null
           : _iod2a87h.Protocol().mapContainerToJson(appIdentifiers),
+      'target': target,
       'flutterVersion': flutterVersion,
       'xcodeVersion': xcodeVersion,
       'gradleVersion': gradleVersion,

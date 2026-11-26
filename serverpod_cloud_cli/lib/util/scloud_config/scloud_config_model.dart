@@ -16,6 +16,11 @@ class ScloudConfig {
   /// the configuration file, from `project.app.dir`.
   final String? appDir;
 
+  /// The Dart file of the app's main entry point, relative to the Flutter
+  /// app directory, from `project.app.target`. Either `/` or `\` separates
+  /// its segments.
+  final String? target;
+
   /// The app identifier to publish the app with by platform, the iOS
   /// bundle ID or Android package name, from `project.app.identifiers`. A
   /// platform without one takes it from the app's project files.
@@ -33,6 +38,7 @@ class ScloudConfig {
     this.flutterSdk,
     this.xcodeVersion,
     this.appDir,
+    this.target,
     this.appIdentifiers = const {},
     this.dartDefineFromFile = const [],
     required this.scripts,
@@ -52,6 +58,7 @@ class ScloudConfig {
         _ => null,
       },
       appDir: app['dir'] as String?,
+      target: app['target'] as String?,
       appIdentifiers: switch (app['identifiers']) {
         final Map<String, dynamic> identifiers => {
           for (final platform in FlutterPlatform.values)
@@ -72,6 +79,7 @@ class ScloudConfig {
   Map<String, dynamic> toMap() {
     final app = {
       if (appDir != null) 'dir': appDir,
+      if (target != null) 'target': target,
       if (flutterSdk != null) 'flutterSdk': flutterSdk,
       if (xcodeVersion != null) 'xcodeVersion': xcodeVersion,
       if (appIdentifiers.isNotEmpty)
@@ -99,6 +107,7 @@ class ScloudConfig {
     String? flutterSdk,
     String? xcodeVersion,
     String? appDir,
+    String? target,
     Map<FlutterPlatform, String>? appIdentifiers,
     List<String>? dartDefineFromFile,
     ScloudScripts? scripts,
@@ -109,6 +118,7 @@ class ScloudConfig {
       flutterSdk: flutterSdk ?? this.flutterSdk,
       xcodeVersion: xcodeVersion ?? this.xcodeVersion,
       appDir: appDir ?? this.appDir,
+      target: target ?? this.target,
       appIdentifiers: appIdentifiers ?? this.appIdentifiers,
       dartDefineFromFile: dartDefineFromFile ?? this.dartDefineFromFile,
       scripts: scripts ?? this.scripts,

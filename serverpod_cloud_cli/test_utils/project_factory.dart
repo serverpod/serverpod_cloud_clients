@@ -49,8 +49,8 @@ dependencies:
   }
 
   /// Returns descriptor for a `monorepo` Dart workspace with a Serverpod
-  /// server, client, and Flutter app package, resolved with a lock file and
-  /// a package graph.
+  /// server, client, and Flutter app package with `lib/main.dart`, resolved
+  /// with a lock file and a package graph.
   /// Use `descriptor.create()` to create the directory.
   static d.DirectoryDescriptor serverpodAppWorkspace({
     List<String> extraWorkspacePackages = const [],
@@ -101,6 +101,7 @@ dependencies:
       ]),
       d.dir('project_flutter', [
         d.file('pubspec.yaml', serverpodFlutterAppPubspec()),
+        d.dir('lib', [d.file('main.dart', 'void main() {}')]),
       ]),
       ...extraContents,
     ]);
@@ -384,7 +385,8 @@ ${usesNonExemptEncryption == null ? '' : '\t<key>ITSAppUsesNonExemptEncryption</
   }
 
   /// Returns descriptor for a `project_flutter` Flutter app that is not
-  /// resolved in a workspace, with a lock file and a package graph. Its
+  /// resolved in a workspace, with a lock file, a package graph, and
+  /// `lib/main.dart` unless [withMainDart] is false. Its
   /// pubspec has [withFlutterConstraint] as its Flutter SDK constraint, and
   /// its lock file also lists each of [lockedPackages] as a hosted package.
   /// Use `descriptor.create()` to create the directory.
@@ -394,6 +396,7 @@ ${usesNonExemptEncryption == null ? '' : '\t<key>ITSAppUsesNonExemptEncryption</
     List<String> lockedPackages = const [],
     String dependencies = '',
     String dependencyOverrides = '',
+    bool withMainDart = true,
   }) {
     return d.dir('project_flutter', [
       d.file('pubspec.yaml', '''
@@ -423,6 +426,7 @@ ${lockedPackages.map(_hostedLockEntry).join()}sdks:
   dart: $validSdkVersion
   flutter: 3.29.0
 '''),
+      if (withMainDart) d.dir('lib', [d.file('main.dart', 'void main() {}')]),
       d.dir('.dart_tool', [
         d.file('package_graph.json', '''
 {

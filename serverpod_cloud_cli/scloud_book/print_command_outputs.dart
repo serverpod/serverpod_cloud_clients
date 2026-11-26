@@ -697,6 +697,8 @@ android {
 </dict>
 </plist>
 """);
+  Directory('${appDir.path}/lib').createSync();
+  File('${appDir.path}/lib/main.dart').writeAsStringSync('void main() {}\n');
 }
 
 Future<void> _prepareConfigDir(final Directory configDir) async {

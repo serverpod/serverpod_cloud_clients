@@ -46,7 +46,9 @@ abstract class AppOperations {
   /// [appIdentifiers] holds the app identifier the app declares for each of
   /// [platforms]. Serverpod Cloud records each one, and the result lists
   /// the ones that replaced a different identifier. [versionName] is the
-  /// app version the builds are made with. [flutterVersion] is the Flutter
+  /// app version the builds are made with. [target] is the Dart file of the
+  /// app's main entry point, relative to [flutterAppDir], or null for
+  /// `lib/main.dart`. [flutterVersion] is the Flutter
   /// release version to build with, or null for the latest stable release.
   /// [dartDefines] holds the dart defines to build the app with.
   /// [xcodeVersion] is the Xcode version to make the iOS build with, or
@@ -55,8 +57,9 @@ abstract class AppOperations {
   /// app declares for its Android build.
   ///
   /// Throws [FailureException] if the request fails, if an app identifier,
-  /// [flutterVersion], [xcodeVersion] or [dartDefines] is invalid, if the publishing setup of a platform
-  /// is incomplete, or if the plan's app builds for the month are used.
+  /// [target], [flutterVersion], [xcodeVersion] or [dartDefines] is invalid,
+  /// if the publishing setup of a platform is incomplete, or if the plan's
+  /// app builds for the month are used.
   static Future<AppBuildsUpload> createBuilds(
     Client cloudApiClient, {
     required String projectId,
@@ -64,6 +67,7 @@ abstract class AppOperations {
     required Map<FlutterPlatform, String> appIdentifiers,
     required String flutterAppDir,
     required int archiveSize,
+    String? target,
     String? flutterVersion,
     String? xcodeVersion,
     String? gradleVersion,
@@ -85,6 +89,7 @@ abstract class AppOperations {
         },
         flutterAppDir: flutterAppDir,
         archiveSize: archiveSize,
+        target: target,
         flutterVersion: flutterVersion,
         xcodeVersion: xcodeVersion,
         gradleVersion: gradleVersion,

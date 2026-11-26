@@ -6,6 +6,7 @@ import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy/prepare_project_files.dart'
     show TenantProject;
+import 'package:serverpod_cloud_cli/project_zipper/helpers/project_files.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:serverpod_cloud_cli/shared/helpers/console_urls.dart';
 import 'package:serverpod_cloud_cli/util/flutter_app_identifier.dart';
@@ -18,10 +19,115 @@ import 'package:serverpod_cloud_cli/util/pubspec_validator.dart';
 
 import 'app_doctor_check.dart';
 
+/// The Dart file of the app's main entry point that a build uses when none
+/// is set, relative to the app directory.
+const String defaultAppTarget = 'lib/main.dart';
+
 /// Checks of the setup of a Flutter app that publishing depends on. Reads
 /// the app's project files and the version of the local Flutter SDK; it
 /// calls no service.
 abstract class AppSetup {
+  /// Resolves the Dart file of the main entry point to build the app in
+  /// [appDirectory] from: [commandLineTarget], or else [configuredTarget]
+  /// from the project configuration file [configFileName], or else
+  /// [defaultAppTarget]. A relative path is relative to [appDirectory]. A
+  /// `\` in [configuredTarget] is read as `/`, so the configuration file
+  /// works on every platform.
+  ///
+  /// Returns the path relative to [appDirectory], with `/` separators, and
+  /// the source it was set in, which is null for [defaultAppTarget].
+  ///
+  /// Throws [FailureException] if the path is not a `.dart` file inside
+  /// [appDirectory], or if the file does not exist.
+  static ({String path, String? source}) resolveTarget(
+    Directory appDirectory, {
+    required String? commandLineTarget,
+    required String? configuredTarget,
+    required String configFileName,
+  }) {
+    final (requested, source) = switch ((
+      commandLineTarget?.trim(),
+      configuredTarget?.trim(),
+    )) {
+      (final String target, _) when target.isNotEmpty => (target, '--target'),
+      (_, final String target) when target.isNotEmpty => (
+        target.replaceAll(r'\', '/'),
+        'project.app.target in $configFileName',
+      ),
+      _ => (defaultAppTarget, null),
+    };
+    final hint =
+        "Set the Dart file of the app's main entry point with --target, or "
+        'with project.app.target in $configFileName. A relative path is '
+        'relative to the app directory.';
+
+    final appPath = p.normalize(p.absolute(appDirectory.path));
+    final targetPath = p.normalize(p.absolute(appPath, requested));
+    if (!p.isWithin(appPath, targetPath) ||
+        p.extension(targetPath) != '.dart') {
+      throw FailureException(
+        error:
+            'The entry point $requested, set by $source, is not a .dart '
+            'file inside the app directory.',
+        hint: hint,
+      );
+    }
+
+    final path = p.posix.joinAll(
+      p.split(p.relative(targetPath, from: appPath)),
+    );
+    if (!File(targetPath).existsSync()) {
+      throw FailureException(
+        error: source == null
+            ? 'The app has no $path, the default entry point.'
+            : 'The entry point $path, set by $source, does not exist.',
+        hint: hint,
+      );
+    }
+    return (path: path, source: source);
+  }
+
+  /// Checks that the entry point [target], relative to [appDirectory], is in
+  /// the archive of the app: not ignored by a `.gitignore` or
+  /// `.scloudignore` file between [rootDirectory], the root of the archive,
+  /// and [target], and not a path that [isExcluded] leaves out. [isExcluded]
+  /// receives the path relative to [rootDirectory]. A warning about an
+  /// invalid ignore rule is logged to [logger].
+  ///
+  /// Throws [FailureException] if the entry point is left out.
+  static void ensureTargetUploaded(
+    Directory appDirectory, {
+    required Directory rootDirectory,
+    required String target,
+    bool Function(String relativePath)? isExcluded,
+    required CommandLogger logger,
+  }) {
+    final appSubPath = p.relative(
+      p.normalize(p.absolute(appDirectory.path)),
+      from: p.normalize(p.absolute(rootDirectory.path)),
+    );
+    final archivePath = p.posix.normalize(
+      p.posix.join(p.posix.joinAll(p.split(appSubPath)), target),
+    );
+    final (collected, _) = ProjectFiles.collectFiles(
+      logger: logger,
+      rootDirectory: rootDirectory,
+      beneath: archivePath,
+    );
+    final excluded =
+        isExcluded?.call(p.joinAll(p.posix.split(archivePath))) ?? false;
+    if (collected.isNotEmpty && !excluded) return;
+
+    throw FailureException(
+      error:
+          'The entry point $target is left out of the upload by .gitignore '
+          'or .scloudignore.',
+      hint:
+          'Opt it back in with a ! rule in .scloudignore, such as '
+          '"!$target".',
+    );
+  }
+
   /// Selects the Flutter release version to build the app in
   /// [appDirectory] with, from [commandLineVersion], the app's pubspec,
   /// [configuredVersion], or the Flutter SDK installed on this machine,
@@ -89,7 +195,11 @@ abstract class AppSetup {
   /// project files, then [configuredFlutterVersion], then the local Flutter
   /// SDK read with [readLocalFlutterVersion]. It warns when no
   /// version is requested. Why the local Flutter SDK cannot be read is
-  /// logged to [logger].
+  /// logged to [logger]. The whole app also gets an entry point check,
+  /// which fails when the Dart file of the app's main entry point does not
+  /// exist, see [resolveTarget] with [commandLineTarget] and
+  /// [configuredTarget], or when it is left out of the upload, see
+  /// [ensureTargetUploaded].
   ///
   /// Each platform gets a console setup check, which fails while
   /// [publishingSetup] of project [projectId] lacks a part the platform
@@ -99,7 +209,7 @@ abstract class AppSetup {
   /// [checkProjectFiles]. Messages name the project configuration file
   /// [configFileName].
   ///
-  /// Returns the check of the whole app first, then the checks of each
+  /// Returns the checks of the whole app first, then the checks of each
   /// platform in platform order. A failed check is a result, not an error.
   ///
   /// Throws [FailureException] if [platforms] is null and the app has code
@@ -114,6 +224,8 @@ abstract class AppSetup {
     required AppPublishingSetup publishingSetup,
     String? flutterVersionOverride,
     String? configuredFlutterVersion,
+    String? commandLineTarget,
+    String? configuredTarget,
     required LocalFlutterVersionReader readLocalFlutterVersion,
     required CommandLogger logger,
   }) async {
@@ -127,6 +239,13 @@ abstract class AppSetup {
         configuredVersion: configuredFlutterVersion,
         configFileName: configFileName,
         readLocalFlutterVersion: readLocalFlutterVersion,
+        logger: logger,
+      ),
+      _entryPointCheck(
+        appDirectory,
+        commandLineTarget: commandLineTarget,
+        configuredTarget: configuredTarget,
+        configFileName: configFileName,
         logger: logger,
       ),
       for (final platform in FlutterPlatform.values)
@@ -446,6 +565,50 @@ abstract class AppSetup {
       status: AppDoctorCheckStatus.passed,
       detail: '${selected.version} (from ${selected.source})',
     );
+  }
+
+  /// Checks whether the Dart file of the main entry point of the app in
+  /// [appDirectory] exists and is uploaded with the app. See
+  /// [resolveTarget] and [ensureTargetUploaded].
+  static AppDoctorCheck _entryPointCheck(
+    Directory appDirectory, {
+    required String? commandLineTarget,
+    required String? configuredTarget,
+    required String configFileName,
+    required CommandLogger logger,
+  }) {
+    const kind = AppDoctorCheckKind.entryPoint;
+    try {
+      final target = resolveTarget(
+        appDirectory,
+        commandLineTarget: commandLineTarget,
+        configuredTarget: configuredTarget,
+        configFileName: configFileName,
+      );
+      final isWorkspace = TenantProjectPubspec.fromProjectDir(
+        appDirectory,
+      ).isWorkspaceResolved();
+      ensureTargetUploaded(
+        appDirectory,
+        rootDirectory: TenantProject.resolveLockfileDirectory(
+          appDirectory,
+          isWorkspaceResolved: isWorkspace,
+        ),
+        target: target.path,
+        logger: logger,
+      );
+      return AppDoctorCheck(
+        platform: null,
+        kind: kind,
+        status: AppDoctorCheckStatus.passed,
+        detail: switch (target.source) {
+          final source? => '${target.path} (from $source)',
+          null => '${target.path} (default)',
+        },
+      );
+    } on FailureException catch (e) {
+      return _failed(null, kind, e);
+    }
   }
 
   /// Runs the check [kind] of [platform] with [inspect], which returns what

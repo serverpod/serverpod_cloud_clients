@@ -8,6 +8,11 @@ enum AppDoctorCheckKind {
   /// packages allow it.
   flutterVersion,
 
+  /// The Dart file of the app's main entry point exists in the app
+  /// directory, and no `.gitignore` or `.scloudignore` rule leaves it out of
+  /// the upload.
+  entryPoint,
+
   /// The platform's publishing setup in the console is complete.
   consoleSetup,
 

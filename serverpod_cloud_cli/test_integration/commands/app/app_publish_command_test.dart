@@ -30,6 +30,10 @@ const _appUploadDescription = 'app-upload-description';
 const _queueNote =
     'App builds run one at a time per account. '
     'Other builds wait in the queue.';
+const _targetHint =
+    "Set the Dart file of the app's main entry point with --target, or "
+    'with project.app.target in scloud.yaml. A relative path is relative to '
+    'the app directory.';
 final _supportedPlatformNames = AppPublishPlatformsOption.supportedPlatforms
     .map((platform) => platform.name)
     .join(', ');
@@ -69,6 +73,7 @@ void main() {
         platforms: any(named: 'platforms'),
         flutterAppDir: any(named: 'flutterAppDir'),
         archiveSize: any(named: 'archiveSize'),
+        target: any(named: 'target'),
         flutterVersion: any(named: 'flutterVersion'),
         xcodeVersion: any(named: 'xcodeVersion'),
         gradleVersion: any(named: 'gradleVersion'),
@@ -210,7 +215,6 @@ void main() {
       await ProjectFactory.serverpodAppWorkspace().create();
       await d.dir('monorepo', [
         d.dir('project_flutter', [
-          d.dir('lib', [d.file('main.dart', 'void main() {}')]),
           ProjectFactory.flutterAndroidDir(
             releaseSigning: ProjectFactory.serverpodCloudReleaseSigning,
           ),
@@ -1809,6 +1813,186 @@ project:
 
       test('then the app is published', () async {
         await expectLater(commandResult, completes);
+      });
+    });
+
+    group('and an entry point set in scloud.yaml', () {
+      setUp(() async {
+        await d.dir('monorepo', [
+          d.dir('project_server', [
+            d.file('scloud.yaml', '''
+project:
+  projectId: "$_projectId"
+  app:
+    target: lib/main_production.dart
+'''),
+          ]),
+          d.dir('project_flutter', [
+            d.dir('lib', [d.file('main_production.dart', 'void main() {}')]),
+          ]),
+        ]).create();
+      });
+
+      test('when releasing the app '
+          'then the configured entry point is sent', () async {
+        await cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+
+        expect(_sentTarget(client), 'lib/main_production.dart');
+      });
+
+      test('when releasing the app '
+          'then the entry point is shown', () async {
+        await cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+
+        expect(
+          logger.infoCalls.map((call) => call.message),
+          contains('Entry point: lib/main_production.dart'),
+        );
+      });
+
+      test('and a .gitignore in the app that ignores the entry point '
+          'when releasing the app then nothing is uploaded', () async {
+        await d.dir('monorepo', [
+          d.dir('project_flutter', [
+            d.file('.gitignore', 'lib/main_production.dart\n'),
+          ]),
+        ]).create();
+
+        await expectLater(
+          cli.run([
+            'app',
+            'publish',
+            '--project',
+            _projectId,
+            '--project-dir',
+            p.join(d.sandbox, 'monorepo', 'project_server'),
+            '--no-await',
+          ]),
+          throwsA(isA<ErrorExitException>()),
+        );
+
+        _verifyNoBuildRequested(client);
+        expect(fileUploader.uploads, isEmpty);
+      });
+
+      test('when releasing the app with --target lib/main.dart '
+          'then the default entry point is sent as none', () async {
+        await cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--target',
+          'lib/main.dart',
+          '--no-await',
+        ]);
+
+        expect(_sentTarget(client), isNull);
+      });
+    });
+
+    test(
+      'and an entry point set in scloud.yaml with backslashes '
+      'when releasing the app then the entry point is sent with slashes',
+      () async {
+        await d.dir('monorepo', [
+          d.dir('project_server', [
+            d.file('scloud.yaml', r'''
+project:
+  projectId: "my-project-id"
+  app:
+    target: lib\flavors\main_production.dart
+'''),
+          ]),
+          d.dir('project_flutter', [
+            d.dir('lib', [
+              d.dir('flavors', [
+                d.file('main_production.dart', 'void main() {}'),
+              ]),
+            ]),
+          ]),
+        ]).create();
+
+        await cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+
+        expect(_sentTarget(client), 'lib/flavors/main_production.dart');
+      },
+    );
+
+    group('and an entry point set in scloud.yaml that does not exist '
+        'when releasing the app', () {
+      late Future<void> commandResult;
+
+      setUp(() async {
+        await d.dir('monorepo', [
+          d.dir('project_server', [
+            d.file('scloud.yaml', '''
+project:
+  projectId: "$_projectId"
+  app:
+    target: lib/main_production.dart
+'''),
+          ]),
+        ]).create();
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--no-await',
+        ]);
+      });
+
+      test('then the missing entry point is logged', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          logger.errorCalls,
+          contains(
+            equalsErrorCall(
+              message:
+                  'The entry point lib/main_production.dart, set by '
+                  'project.app.target in scloud.yaml, does not exist.',
+              hint: _targetHint,
+            ),
+          ),
+        );
+      });
+
+      test('then no build is requested and nothing is uploaded', () async {
+        await commandResult.catchError((_) {});
+
+        _verifyNoBuildRequested(client);
+        expect(fileUploader.uploads, isEmpty);
       });
     });
 
@@ -3587,7 +3771,6 @@ project:
       await ProjectFactory.nonWorkspaceFlutterAppDir(
         lockedPackages: ['image_picker'],
         contents: [
-          d.dir('lib', [d.file('main.dart', 'void main() {}')]),
           ProjectFactory.flutterIosDir(usesNonExemptEncryption: false),
         ],
       ).create();
@@ -3718,10 +3901,7 @@ project:
       'as its Info.plist does not declare export compliance', () {
     setUp(() async {
       await ProjectFactory.nonWorkspaceFlutterAppDir(
-        contents: [
-          d.dir('lib', [d.file('main.dart', 'void main() {}')]),
-          ProjectFactory.flutterIosDir(withInfoPlist: true),
-        ],
+        contents: [ProjectFactory.flutterIosDir(withInfoPlist: true)],
       ).create();
     });
 
@@ -3752,7 +3932,6 @@ project:
     setUp(() async {
       await ProjectFactory.nonWorkspaceFlutterAppDir(
         contents: [
-          d.dir('lib', [d.file('main.dart', 'void main() {}')]),
           ProjectFactory.flutterAndroidDir(
             releaseSigning: ProjectFactory.serverpodCloudReleaseSigning,
             gradleVersion: '8.12',
@@ -3797,7 +3976,6 @@ project:
     setUp(() async {
       await ProjectFactory.nonWorkspaceFlutterAppDir(
         contents: [
-          d.dir('lib', [d.file('main.dart', 'void main() {}')]),
           ProjectFactory.flutterAndroidDir(
             releaseSigning: ProjectFactory.serverpodCloudReleaseSigning,
           ),
@@ -4039,6 +4217,316 @@ project:
     });
   });
 
+  group('Given a non-workspace Flutter app with Android code '
+      'and without lib/main.dart '
+      'when publishing the app', () {
+    late Future<void> commandResult;
+
+    setUp(() async {
+      await ProjectFactory.nonWorkspaceFlutterAppDir(
+        withMainDart: false,
+        contents: [
+          ProjectFactory.flutterAndroidDir(
+            releaseSigning: ProjectFactory.serverpodCloudReleaseSigning,
+          ),
+        ],
+      ).create();
+
+      commandResult = cli.run([
+        'app',
+        'publish',
+        '--project',
+        _projectId,
+        '--app-dir',
+        p.join(d.sandbox, 'project_flutter'),
+        '--no-await',
+      ]);
+    });
+
+    test('then the command throws ErrorExitException', () async {
+      await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+    });
+
+    test('then the missing entry point is logged', () async {
+      await commandResult.catchError((_) {});
+
+      expect(
+        logger.errorCalls,
+        contains(
+          equalsErrorCall(
+            message: 'The app has no lib/main.dart, the default entry point.',
+            hint: _targetHint,
+          ),
+        ),
+      );
+    });
+
+    test('then no build is requested and nothing is uploaded', () async {
+      await commandResult.catchError((_) {});
+
+      _verifyNoBuildRequested(client);
+      expect(fileUploader.uploads, isEmpty);
+    });
+  });
+
+  group('Given a non-workspace Flutter app with Android code '
+      'and lib/main_production.dart', () {
+    setUp(() async {
+      await ProjectFactory.nonWorkspaceFlutterAppDir(
+        contents: [
+          d.dir('lib', [d.file('main_production.dart', 'void main() {}')]),
+          ProjectFactory.flutterAndroidDir(
+            releaseSigning: ProjectFactory.serverpodCloudReleaseSigning,
+          ),
+        ],
+      ).create();
+    });
+
+    test('when publishing the app without --target '
+        'then no entry point is sent', () async {
+      await cli.run([
+        'app',
+        'publish',
+        '--project',
+        _projectId,
+        '--app-dir',
+        p.join(d.sandbox, 'project_flutter'),
+        '--no-await',
+      ]);
+
+      expect(_sentTarget(client), isNull);
+    });
+
+    test('when publishing the app with --target lib/main_production.dart '
+        'then the entry point is sent', () async {
+      await cli.run([
+        'app',
+        'publish',
+        '--project',
+        _projectId,
+        '--app-dir',
+        p.join(d.sandbox, 'project_flutter'),
+        '--target',
+        'lib/main_production.dart',
+        '--no-await',
+      ]);
+
+      expect(_sentTarget(client), 'lib/main_production.dart');
+    });
+
+    test('when publishing the app with -t and an absolute path '
+        'then the entry point is sent relative to the app directory', () async {
+      await cli.run([
+        'app',
+        'publish',
+        '--project',
+        _projectId,
+        '--app-dir',
+        p.join(d.sandbox, 'project_flutter'),
+        '-t',
+        p.join(d.sandbox, 'project_flutter', 'lib', 'main_production.dart'),
+        '--no-await',
+      ]);
+
+      expect(_sentTarget(client), 'lib/main_production.dart');
+    });
+
+    group('when publishing the app with --target naming a file that does '
+        'not exist', () {
+      late Future<void> commandResult;
+
+      setUp(() {
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--app-dir',
+          p.join(d.sandbox, 'project_flutter'),
+          '--target',
+          'lib/main_staging.dart',
+          '--no-await',
+        ]);
+      });
+
+      test('then the command throws ErrorExitException', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then the missing entry point is logged', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          logger.errorCalls,
+          contains(
+            equalsErrorCall(
+              message:
+                  'The entry point lib/main_staging.dart, set by --target, '
+                  'does not exist.',
+              hint: _targetHint,
+            ),
+          ),
+        );
+      });
+
+      test('then no build is requested and nothing is uploaded', () async {
+        await commandResult.catchError((_) {});
+
+        _verifyNoBuildRequested(client);
+        expect(fileUploader.uploads, isEmpty);
+      });
+    });
+
+    group('and a .gitignore that ignores lib/main_production.dart '
+        'when publishing the app with --target lib/main_production.dart', () {
+      late Future<void> commandResult;
+
+      setUp(() async {
+        await d.dir('project_flutter', [
+          d.file('.gitignore', 'lib/main_production.dart\n'),
+        ]).create();
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--app-dir',
+          p.join(d.sandbox, 'project_flutter'),
+          '--target',
+          'lib/main_production.dart',
+          '--no-await',
+        ]);
+      });
+
+      test('then the command throws ErrorExitException', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then the ignored entry point is logged', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          logger.errorCalls,
+          contains(
+            equalsErrorCall(
+              message:
+                  'The entry point lib/main_production.dart is left out of '
+                  'the upload by .gitignore or .scloudignore.',
+              hint:
+                  'Opt it back in with a ! rule in .scloudignore, such as '
+                  '"!lib/main_production.dart".',
+            ),
+          ),
+        );
+      });
+
+      test('then no build is requested and nothing is uploaded', () async {
+        await commandResult.catchError((_) {});
+
+        _verifyNoBuildRequested(client);
+        expect(fileUploader.uploads, isEmpty);
+      });
+    });
+
+    test('and a .gitignore that ignores lib/main_production.dart and a '
+        '.scloudignore that opts it back in '
+        'when publishing the app with --target lib/main_production.dart '
+        'then the entry point is sent', () async {
+      await d.dir('project_flutter', [
+        d.file('.gitignore', 'lib/main_production.dart\n'),
+        d.file('.scloudignore', '!lib/main_production.dart\n'),
+      ]).create();
+
+      await cli.run([
+        'app',
+        'publish',
+        '--project',
+        _projectId,
+        '--app-dir',
+        p.join(d.sandbox, 'project_flutter'),
+        '--target',
+        'lib/main_production.dart',
+        '--no-await',
+      ]);
+
+      expect(_sentTarget(client), 'lib/main_production.dart');
+    });
+
+    test('and a .scloudignore that ignores lib/main_production.dart '
+        'when publishing the app with --target lib/main_production.dart '
+        'then the command throws ErrorExitException', () async {
+      await d.dir('project_flutter', [
+        d.file('.scloudignore', 'lib/main_production.dart\n'),
+      ]).create();
+
+      await expectLater(
+        cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--app-dir',
+          p.join(d.sandbox, 'project_flutter'),
+          '--target',
+          'lib/main_production.dart',
+          '--no-await',
+        ]),
+        throwsA(isA<ErrorExitException>()),
+      );
+    });
+
+    group('when publishing the app with --target outside the app '
+        'directory', () {
+      late Future<void> commandResult;
+
+      setUp(() async {
+        await d.dir('other_app', [
+          d.dir('lib', [d.file('main.dart', 'void main() {}')]),
+        ]).create();
+
+        commandResult = cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--app-dir',
+          p.join(d.sandbox, 'project_flutter'),
+          '--target',
+          '../other_app/lib/main.dart',
+          '--no-await',
+        ]);
+      });
+
+      test('then the command throws ErrorExitException', () async {
+        await expectLater(commandResult, throwsA(isA<ErrorExitException>()));
+      });
+
+      test('then the refused entry point is logged', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          logger.errorCalls,
+          contains(
+            equalsErrorCall(
+              message:
+                  'The entry point ../other_app/lib/main.dart, set by '
+                  '--target, is not a .dart file inside the app directory.',
+              hint: _targetHint,
+            ),
+          ),
+        );
+      });
+
+      test('then no build is requested and nothing is uploaded', () async {
+        await commandResult.catchError((_) {});
+
+        _verifyNoBuildRequested(client);
+        expect(fileUploader.uploads, isEmpty);
+      });
+    });
+  });
+
   test('Given a non-workspace Serverpod server project '
       'and a Flutter app near the server directory '
       'when releasing the app '
@@ -4262,6 +4750,29 @@ Map<String, String>? _sentDartDefines(ClientMock client) {
       as Map<String, String>?;
 }
 
+String? _sentTarget(ClientMock client) {
+  return verify(
+        () => client.appBuilds.createBuilds(
+          appIdentifiers: any(named: 'appIdentifiers'),
+          cloudCapsuleId: any(named: 'cloudCapsuleId'),
+          platforms: any(named: 'platforms'),
+          flutterAppDir: any(named: 'flutterAppDir'),
+          archiveSize: any(named: 'archiveSize'),
+          target: captureAny(named: 'target'),
+          flutterVersion: any(named: 'flutterVersion'),
+          xcodeVersion: any(named: 'xcodeVersion'),
+          gradleVersion: any(named: 'gradleVersion'),
+          androidGradlePluginVersion: any(named: 'androidGradlePluginVersion'),
+          dartDefines: any(named: 'dartDefines'),
+          versionName: any(named: 'versionName'),
+          commitHash: any(named: 'commitHash'),
+          commitMessage: any(named: 'commitMessage'),
+          branch: any(named: 'branch'),
+        ),
+      ).captured.single
+      as String?;
+}
+
 void _verifyNoBuildRequested(ClientMock client) {
   verifyNever(
     () => client.appBuilds.createBuilds(
@@ -4270,7 +4781,11 @@ void _verifyNoBuildRequested(ClientMock client) {
       platforms: any(named: 'platforms'),
       flutterAppDir: any(named: 'flutterAppDir'),
       archiveSize: any(named: 'archiveSize'),
+      target: any(named: 'target'),
       flutterVersion: any(named: 'flutterVersion'),
+      xcodeVersion: any(named: 'xcodeVersion'),
+      gradleVersion: any(named: 'gradleVersion'),
+      androidGradlePluginVersion: any(named: 'androidGradlePluginVersion'),
       dartDefines: any(named: 'dartDefines'),
       versionName: any(named: 'versionName'),
       commitHash: any(named: 'commitHash'),
