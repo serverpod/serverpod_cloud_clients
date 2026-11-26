@@ -180,6 +180,39 @@ void main() {
         expect(analyticsEvents, equals(['version']));
       });
 
+      test('when the shell requests completion of an option value'
+          ' then does not ask user for consent', () async {
+        logger.answerNextConfirmWith(false);
+        await collectOutput(
+          () => cli.run([
+            '__complete',
+            '--config-dir',
+            settingsDir,
+            '--format',
+            '',
+          ]),
+        );
+
+        expect(logger.confirmCalls, isEmpty);
+      });
+
+      test('when the shell requests completion of an option value'
+          ' with analytics option set to true'
+          ' then does not send analytics event', () async {
+        await collectOutput(
+          () => cli.run([
+            '__complete',
+            '--config-dir',
+            settingsDir,
+            '--analytics',
+            '--format',
+            '',
+          ]),
+        );
+
+        expect(analyticsEvents, isEmpty);
+      });
+
       group('and declining consent on first invocation', () {
         setUp(() async {
           logger.answerNextConfirmWith(false);

@@ -301,6 +301,7 @@ class TestCommandLogger extends CommandLogger {
     String? hint,
     bool newParagraph = false,
     StackTrace? stackTrace,
+    LogType type = TextLogType.normal,
     bool forcePrintStackTrace = false,
   }) {
     if (printToStdout) {
@@ -359,7 +360,11 @@ class TestCommandLogger extends CommandLogger {
   }
 
   @override
-  void info(String message, {bool newParagraph = false}) {
+  void info(
+    String message, {
+    LogType type = TextLogType.normal,
+    bool newParagraph = false,
+  }) {
     if (printToStdout) {
       print('log info: $message');
     }

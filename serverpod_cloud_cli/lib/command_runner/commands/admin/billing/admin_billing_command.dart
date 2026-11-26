@@ -1,3 +1,4 @@
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/billing/billing_admin_ops.dart';
@@ -46,15 +47,15 @@ class AdminReissueInvoiceCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AdminReissueInvoiceOption> commandConfig,
+    final CommandContext<AdminReissueInvoiceOption, void> context,
     final CommandOutput output,
   ) async {
-    final invoiceId = commandConfig.value(AdminReissueInvoiceOption.invoiceId);
+    final invoiceId = context.config.value(AdminReissueInvoiceOption.invoiceId);
 
     await renderCommand(
       output,
       operation: () => BillingAdminOperations.reissueInvoice(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         invoiceId: invoiceId,
       ),
       textOutputUi: const ReissueInvoiceTextUi(),
@@ -91,17 +92,17 @@ class AdminRecordPaymentFailedCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AdminRecordPaymentFailedOption> commandConfig,
+    final CommandContext<AdminRecordPaymentFailedOption, void> context,
     final CommandOutput output,
   ) async {
-    final invoiceId = commandConfig.value(
+    final invoiceId = context.config.value(
       AdminRecordPaymentFailedOption.invoiceId,
     );
 
     await renderCommand(
       output,
       operation: () => BillingAdminOperations.recordPaymentFailed(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         invoiceId: invoiceId,
       ),
       textOutputUi: const RecordPaymentFailedTextUi(),

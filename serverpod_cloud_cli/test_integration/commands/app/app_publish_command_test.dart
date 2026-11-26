@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:archive/archive.dart';
-import 'package:args/command_runner.dart';
+import 'package:config/config.dart' show UsageException;
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
@@ -3406,6 +3406,56 @@ project:
             'message',
             contains(
               'Invalid platform "fuchsia". Supported platforms: android, ios.',
+            ),
+          ),
+        ),
+      );
+    });
+
+    test('when releasing the app with an --output path without .zip '
+        'then a UsageException says how the path must end', () async {
+      await expectLater(
+        cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--output',
+          'app.txt',
+          '--no-await',
+        ]),
+        throwsA(
+          isA<UsageException>().having(
+            (e) => e.message,
+            'message',
+            endsWith('The path must end with .zip.'),
+          ),
+        ),
+      );
+    });
+
+    test('when releasing the app with a --dart-define without a value '
+        'then a UsageException names the expected format', () async {
+      await expectLater(
+        cli.run([
+          'app',
+          'publish',
+          '--project',
+          _projectId,
+          '--project-dir',
+          p.join(d.sandbox, 'monorepo', 'project_server'),
+          '--dart-define',
+          'API_URL',
+          '--no-await',
+        ]),
+        throwsA(
+          isA<UsageException>().having(
+            (e) => e.message,
+            'message',
+            endsWith(
+              'Invalid dart define "API_URL". Use the format KEY=VALUE.',
             ),
           ),
         ),

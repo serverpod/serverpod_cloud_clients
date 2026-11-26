@@ -1,3 +1,4 @@
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:ground_control_client/ground_control_client.dart'
     show BuildSecretType;
@@ -105,14 +106,14 @@ Examples
 
   @override
   Future<void> runWithOutput(
-    final Configuration<BuildLogOption> commandConfig,
+    final CommandContext<BuildLogOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(BuildLogOption.projectId);
-    final inUtc = commandConfig.value(BuildLogOption.utc);
-    final deploymentArg = commandConfig.optionalValue(BuildLogOption.deploy);
+    final projectId = context.config.value(BuildLogOption.projectId);
+    final inUtc = context.config.value(BuildLogOption.utc);
+    final deploymentArg = context.config.optionalValue(BuildLogOption.deploy);
 
-    final client = runner.serviceProvider.cloudApiClient;
+    final client = context.serviceProvider.cloudApiClient;
     final attemptId = await DeploymentCommands.getDeployAttemptId(
       client,
       baseCommand: baseCommand,
@@ -232,18 +233,18 @@ ${_buildSecretsExplanation(baseCommand)}""";
 
   @override
   Future<void> runWithOutput(
-    final Configuration<BuildSecretSetCommandConfig> commandConfig,
+    final CommandContext<BuildSecretSetCommandConfig, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(
+    final projectId = context.config.value(
       BuildSecretSetCommandConfig.projectId,
     );
-    final name = commandConfig.value(BuildSecretSetCommandConfig.name);
-    final buildSecretType = commandConfig.value(
+    final name = context.config.value(BuildSecretSetCommandConfig.name);
+    final buildSecretType = context.config.value(
       BuildSecretSetCommandConfig.buildSecretType,
     );
 
-    final valueToSet = commandConfig.valueOrFileContent(
+    final valueToSet = context.config.valueOrFileContent(
       value: BuildSecretSetCommandConfig.value,
       valueFile: BuildSecretSetCommandConfig.valueFile,
     );
@@ -251,7 +252,7 @@ ${_buildSecretsExplanation(baseCommand)}""";
     await renderCommand(
       output,
       operation: () => BuildsOperations.setBuildSecret(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
         name: name,
         value: valueToSet,
@@ -286,17 +287,17 @@ ${_buildSecretsExplanation(baseCommand)}""";
 
   @override
   Future<void> runWithOutput(
-    final Configuration<BuildSecretsListCommandConfig> commandConfig,
+    final CommandContext<BuildSecretsListCommandConfig, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(
+    final projectId = context.config.value(
       BuildSecretsListCommandConfig.projectId,
     );
 
     await renderCommand(
       output,
       operation: () => BuildsOperations.listBuildSecretsOperation(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
       ),
       textOutputUi: const StringColumnListWidget(heading: 'Secret name'),
@@ -329,15 +330,16 @@ ${_buildSecretsExplanation(baseCommand)}""";
 
   @override
   Future<void> runWithOutput(
-    final Configuration<BuildSecretUnsetCommandConfig> commandConfig,
+    final CommandContext<BuildSecretUnsetCommandConfig, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(
+    final projectId = context.config.value(
       BuildSecretUnsetCommandConfig.projectId,
     );
-    final name = commandConfig.value(BuildSecretUnsetCommandConfig.name);
+    final name = context.config.value(BuildSecretUnsetCommandConfig.name);
 
     await confirmToContinue(
+      context,
       output,
       message: 'Are you sure you want to remove the build secret "$name"?',
       defaultValue: false,
@@ -346,7 +348,7 @@ ${_buildSecretsExplanation(baseCommand)}""";
     await renderCommand(
       output,
       operation: () => BuildsOperations.unsetBuildSecret(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
         name: name,
       ),

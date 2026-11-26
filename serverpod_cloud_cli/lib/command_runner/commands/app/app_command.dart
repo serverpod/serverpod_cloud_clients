@@ -1,12 +1,13 @@
 import 'dart:io';
 
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:ground_control_client/ground_control_client.dart'
     show AppPlatform, UuidValue;
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart'
-    show CloudCliCommandRunner;
+    show CloudCliCommandRunner, GlobalConfigurationOptions;
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy/prepare_project_files.dart'
     show TenantProject;
@@ -88,11 +89,10 @@ class AppPublishPlatformsOption extends MultiOption<FlutterPlatform> {
         .map((platform) => platform.name)
         .toSet();
     if (unsupported.isNotEmpty) {
-      throw UsageException(
+      throw InvalidValueException(
         'Publishing for ${unsupported.join(', ')} is not supported yet. '
-            'Supported platforms: '
-            '${supportedPlatforms.map((platform) => platform.name).join(', ')}.',
-        '',
+        'Supported platforms: '
+        '${supportedPlatforms.map((platform) => platform.name).join(', ')}.',
       );
     }
   }
@@ -141,11 +141,7 @@ class AppPublishDartDefineOption extends MultiOption<String> {
 
   static void _validateDartDefines(List<String> defines) {
     for (final define in defines) {
-      try {
-        DartDefines.parseDefine(define);
-      } on FormatException catch (e) {
-        throw UsageException(e.message, '');
-      }
+      DartDefines.parseDefine(define);
     }
   }
 }
@@ -186,7 +182,7 @@ class AppPublishOutputOption extends FileOption {
 
   static void _validateZipPath(File file) {
     if (!file.path.endsWith('.zip')) {
-      throw UsageException('The path must end with .zip.', '');
+      throw const FormatException('The path must end with .zip.');
     }
   }
 }
@@ -401,9 +397,8 @@ class AppSetupIdentifierOption extends StringOption {
   static void _validate(FlutterPlatform platform, String value) {
     final problem = appIdentifierProblem(platform, value.trim());
     if (problem != null) {
-      throw UsageException(
+      throw InvalidValueException(
         'The ${appIdentifierName(platform)} "$value" $problem.',
-        '',
       );
     }
   }
@@ -492,35 +487,40 @@ Examples
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AppSetupCommandOption> commandConfig,
+    final CommandContext<AppSetupCommandOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(AppSetupCommandOption.projectId);
-    final appDir = commandConfig.optionalValue(AppSetupCommandOption.appDir);
-    final platforms = commandConfig.optionalValue(
+    final projectId = context.config.value(AppSetupCommandOption.projectId);
+    final appDir = context.config.optionalValue(AppSetupCommandOption.appDir);
+    final platforms = context.config.optionalValue(
       AppSetupCommandOption.platforms,
     );
-    final androidPackageName = commandConfig.optionalValue(
+    final androidPackageName = context.config.optionalValue(
       AppSetupCommandOption.androidPackageName,
     );
-    final iosBundleId = commandConfig.optionalValue(
+    final iosBundleId = context.config.optionalValue(
       AppSetupCommandOption.iosBundleId,
     );
 
-    final configFile = globalConfiguration.projectConfigFile;
+    final configFile = context.globalConfiguration.projectConfigFile;
     final config = configFile == null
         ? null
         : ScloudConfigIO.readFromFile(configFile.path);
 
-    final context = await renderCommand(
+    final outputContext = await renderCommand(
       output,
       operation: () async {
         final appDirectory =
             appDir ??
-            _configuredOrWorkspaceAppDirectory(runner, configFile, config);
+            _configuredOrWorkspaceAppDirectory(
+              runner,
+              context,
+              configFile,
+              config,
+            );
         logger.debug('App directory is: ${appDirectory.path}');
         return AppSetupGuide.setUp(
-          runner.serviceProvider.cloudApiClient,
+          context.serviceProvider.cloudApiClient,
           appDirectory: appDirectory,
           defaultPlatforms: AppPublishPlatformsOption.supportedPlatforms,
           platforms: platforms?.toSet(),
@@ -540,7 +540,7 @@ Examples
       ),
     );
 
-    final failed = context
+    final failed = outputContext
         .get<List<AppDoctorCheck>>()
         .where((check) => check.status == AppDoctorCheckStatus.failed)
         .length;
@@ -593,32 +593,37 @@ Examples
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AppDoctorCommandOption> commandConfig,
+    final CommandContext<AppDoctorCommandOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(AppDoctorCommandOption.projectId);
-    final appDir = commandConfig.optionalValue(AppDoctorCommandOption.appDir);
-    final platforms = commandConfig.optionalValue(
+    final projectId = context.config.value(AppDoctorCommandOption.projectId);
+    final appDir = context.config.optionalValue(AppDoctorCommandOption.appDir);
+    final platforms = context.config.optionalValue(
       AppDoctorCommandOption.platforms,
     );
-    final flutterVersion = commandConfig.optionalValue(
+    final flutterVersion = context.config.optionalValue(
       AppDoctorCommandOption.flutterVersion,
     );
 
-    final configFile = globalConfiguration.projectConfigFile;
+    final configFile = context.globalConfiguration.projectConfigFile;
     final config = configFile == null
         ? null
         : ScloudConfigIO.readFromFile(configFile.path);
 
-    final context = await renderCommand(
+    final outputContext = await renderCommand(
       output,
       operation: () async {
         final appDirectory =
             appDir ??
-            _configuredOrWorkspaceAppDirectory(runner, configFile, config);
+            _configuredOrWorkspaceAppDirectory(
+              runner,
+              context,
+              configFile,
+              config,
+            );
         logger.debug('App directory is: ${appDirectory.path}');
         final publishingSetup = await AppOperations.getPublishingSetup(
-          runner.serviceProvider.cloudApiClient,
+          context.serviceProvider.cloudApiClient,
           projectId: projectId,
         );
         return AppSetup.check(
@@ -632,14 +637,14 @@ Examples
           flutterVersionOverride: flutterVersion,
           configuredFlutterVersion: config?.flutterSdk,
           readLocalFlutterVersion:
-              runner.serviceProvider.localFlutterVersionReader,
+              context.serviceProvider.localFlutterVersionReader,
           logger: logger,
         );
       },
       textOutputUi: const AppDoctorTextUi(),
     );
 
-    final failed = context
+    final failed = outputContext
         .get<List<AppDoctorCheck>>()
         .where((check) => check.status == AppDoctorCheckStatus.failed)
         .length;
@@ -698,38 +703,38 @@ Examples
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AppPublishCommandOption> commandConfig,
+    final CommandContext<AppPublishCommandOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(AppPublishCommandOption.projectId);
-    final appDir = commandConfig.optionalValue(AppPublishCommandOption.appDir);
-    final platforms = commandConfig.optionalValue(
+    final projectId = context.config.value(AppPublishCommandOption.projectId);
+    final appDir = context.config.optionalValue(AppPublishCommandOption.appDir);
+    final platforms = context.config.optionalValue(
       AppPublishCommandOption.platforms,
     );
-    final flutterVersion = commandConfig.optionalValue(
+    final flutterVersion = context.config.optionalValue(
       AppPublishCommandOption.flutterVersion,
     );
-    final awaitBuilds = commandConfig.value(AppPublishCommandOption.wait);
+    final awaitBuilds = context.config.value(AppPublishCommandOption.wait);
     final dartDefines =
-        commandConfig.optionalValue(AppPublishCommandOption.dartDefine) ??
+        context.config.optionalValue(AppPublishCommandOption.dartDefine) ??
         const <String>[];
-    final dartDefineFiles = commandConfig.optionalValue(
+    final dartDefineFiles = context.config.optionalValue(
       AppPublishCommandOption.dartDefineFromFile,
     );
 
-    final configFile = globalConfiguration.projectConfigFile;
+    final configFile = context.globalConfiguration.projectConfigFile;
     final config = configFile == null
         ? null
         : ScloudConfigIO.readFromFile(configFile.path);
 
     final appDirectory =
         appDir ??
-        _configuredOrWorkspaceAppDirectory(runner, configFile, config);
+        _configuredOrWorkspaceAppDirectory(runner, context, configFile, config);
     logger.debug('App directory is: ${appDirectory.path}');
 
     await AppPublish.publish(
-      runner.serviceProvider.cloudApiClient,
-      runner.serviceProvider.fileUploaderFactory,
+      context.serviceProvider.cloudApiClient,
+      context.serviceProvider.fileUploaderFactory,
       logger: logger,
       baseCommand: baseCommand,
       projectId: projectId,
@@ -740,15 +745,16 @@ Examples
       flutterVersionOverride: flutterVersion,
       configuredFlutterVersion: config?.flutterSdk,
       configuredXcodeVersion: config?.xcodeVersion,
-      readLocalFlutterVersion: runner.serviceProvider.localFlutterVersionReader,
+      readLocalFlutterVersion:
+          context.serviceProvider.localFlutterVersionReader,
       dartDefineFiles: _dartDefineFiles(dartDefineFiles, configFile, config),
       dartDefines: dartDefines,
       configFileName: _configFileName(configFile),
       awaitBuilds: awaitBuilds,
-      showFiles: commandConfig.value(AppPublishCommandOption.showFiles),
-      wetRun: commandConfig.value(AppPublishCommandOption.wetRun),
-      force: commandConfig.value(AppPublishCommandOption.force),
-      outputPath: commandConfig
+      showFiles: context.config.value(AppPublishCommandOption.showFiles),
+      wetRun: context.config.value(AppPublishCommandOption.wetRun),
+      force: context.config.value(AppPublishCommandOption.force),
+      outputPath: context.config
           .optionalValue(AppPublishCommandOption.output)
           ?.path,
     );
@@ -780,14 +786,14 @@ Examples
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AppShowCommandOption> commandConfig,
+    final CommandContext<AppShowCommandOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(AppShowCommandOption.projectId);
-    final uploadId = commandConfig.value(AppShowCommandOption.uploadId);
+    final projectId = context.config.value(AppShowCommandOption.projectId);
+    final uploadId = context.config.value(AppShowCommandOption.uploadId);
 
     await AppShow.show(
-      runner.serviceProvider.cloudApiClient,
+      context.serviceProvider.cloudApiClient,
       logger: logger,
       projectId: projectId,
       uploadId: UuidValue.withValidation(uploadId),
@@ -827,16 +833,16 @@ Examples
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AppListCommandOption> commandConfig,
+    final CommandContext<AppListCommandOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(AppListCommandOption.projectId);
-    final platforms = commandConfig.optionalValue(
+    final projectId = context.config.value(AppListCommandOption.projectId);
+    final platforms = context.config.optionalValue(
       AppListCommandOption.platforms,
     );
-    final limit = commandConfig.value(AppListCommandOption.limit);
-    final inUtc = commandConfig.value(AppListCommandOption.utc);
-    final cloudApiClient = runner.serviceProvider.cloudApiClient;
+    final limit = context.config.value(AppListCommandOption.limit);
+    final inUtc = context.config.value(AppListCommandOption.utc);
+    final cloudApiClient = context.serviceProvider.cloudApiClient;
 
     if (platforms == null || platforms.isEmpty) {
       await renderCommand(
@@ -896,16 +902,16 @@ Examples
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AppStatusCommandOption> commandConfig,
+    final CommandContext<AppStatusCommandOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(AppStatusCommandOption.projectId);
-    final inUtc = commandConfig.value(AppStatusCommandOption.utc);
+    final projectId = context.config.value(AppStatusCommandOption.projectId);
+    final inUtc = context.config.value(AppStatusCommandOption.utc);
 
     await renderCommand(
       output,
       operation: () => AppOperations.getStatus(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
       ),
       textOutputUi: AppStatusTextUi(
@@ -947,18 +953,18 @@ Examples
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AppLogCommandOption> commandConfig,
+    final CommandContext<AppLogCommandOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(AppLogCommandOption.projectId);
-    final uploadId = commandConfig.value(AppLogCommandOption.uploadId);
-    final platform = commandConfig.optionalValue(AppLogCommandOption.platform);
-    final watch = commandConfig.value(AppLogCommandOption.watch);
+    final projectId = context.config.value(AppLogCommandOption.projectId);
+    final uploadId = context.config.value(AppLogCommandOption.uploadId);
+    final platform = context.config.optionalValue(AppLogCommandOption.platform);
+    final watch = context.config.value(AppLogCommandOption.watch);
 
     await renderCommand(
       output,
       operation: () => AppOperations.followBuildLog(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
         uploadId: UuidValue.withValidation(uploadId),
         platform: platform,
@@ -983,16 +989,16 @@ class CloudAppCancelCommand extends CloudCliCommand<AppUploadCommandOption> {
 
   @override
   Future<void> runWithOutput(
-    Configuration<AppUploadCommandOption> commandConfig,
+    CommandContext<AppUploadCommandOption, void> context,
     CommandOutput output,
   ) async {
     await renderCommand(
       output,
       operation: () => AppOperations.cancelUpload(
-        runner.serviceProvider.cloudApiClient,
-        projectId: commandConfig.value(AppUploadCommandOption.projectId),
+        context.serviceProvider.cloudApiClient,
+        projectId: context.config.value(AppUploadCommandOption.projectId),
         uploadId: UuidValue.withValidation(
-          commandConfig.value(AppUploadCommandOption.uploadId),
+          context.config.value(AppUploadCommandOption.uploadId),
         ),
       ),
       textOutputUi: const AppCancelTextUi(),
@@ -1013,16 +1019,16 @@ class CloudAppArtifactsCommand extends CloudCliCommand<AppUploadCommandOption> {
 
   @override
   Future<void> runWithOutput(
-    Configuration<AppUploadCommandOption> commandConfig,
+    CommandContext<AppUploadCommandOption, void> context,
     CommandOutput output,
   ) async {
     await renderCommand(
       output,
       operation: () => AppOperations.getArtifacts(
-        runner.serviceProvider.cloudApiClient,
-        projectId: commandConfig.value(AppUploadCommandOption.projectId),
+        context.serviceProvider.cloudApiClient,
+        projectId: context.config.value(AppUploadCommandOption.projectId),
         uploadId: UuidValue.withValidation(
-          commandConfig.value(AppUploadCommandOption.uploadId),
+          context.config.value(AppUploadCommandOption.uploadId),
         ),
       ),
       textOutputUi: const AppArtifactsTextUi(),
@@ -1033,23 +1039,26 @@ class CloudAppArtifactsCommand extends CloudCliCommand<AppUploadCommandOption> {
 /// Returns the app directory set by project.app.dir in [config], read from
 /// [configFile] and resolved from that file's directory, or else the
 /// Flutter app in the current directory, in the server's workspace, or near
-/// the server directory of [runner].
+/// the server directory selected for [context].
 ///
 /// Throws [FailureException] if the configured directory does not exist.
-Directory _configuredOrWorkspaceAppDirectory(
+Directory _configuredOrWorkspaceAppDirectory<O extends OptionDefinition>(
   CloudCliCommandRunner runner,
+  CommandContext<O, void> context,
   File? configFile,
   ScloudConfig? config,
 ) {
   final configuredAppDir = config?.appDir;
   if (configFile == null || configuredAppDir == null) {
     final currentDirectory = Directory.current;
-    if (runner.globalConfiguration.projectDir == null &&
+    if (context.globalConfiguration.projectDir == null &&
         File(p.join(currentDirectory.path, 'pubspec.yaml')).existsSync() &&
         TenantProjectPubspec.fromProjectDir(currentDirectory).isFlutterApp()) {
       return currentDirectory;
     }
-    return TenantProject.findAppDirectory(runner.verifiedProjectDirectory());
+    return TenantProject.findAppDirectory(
+      runner.verifiedProjectDirectory(context),
+    );
   }
   final configFilePath = configFile.path;
 
@@ -1105,6 +1114,8 @@ class _AppPlatformParser<E extends Enum> extends EnumParser<E> {
     }
     final supported = enumValues.map((platform) => platform.name).toList()
       ..sort();
+    // TODO: throw FormatException instead when new config package version
+    // supports it being thrown here.
     throw UsageException(
       'Invalid platform "$value". '
           'Supported platforms: ${supported.join(', ')}.',

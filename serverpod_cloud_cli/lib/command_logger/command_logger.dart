@@ -136,12 +136,12 @@ class CommandLogger {
   /// ```bash
   /// The current project is set to my-project.
   /// ```
-  void info(String message, {bool newParagraph = false}) {
-    _logger.info(
-      message,
-      type: cli.TextLogType.normal,
-      newParagraph: newParagraph,
-    );
+  void info(
+    String message, {
+    cli.LogType type = cli.TextLogType.normal,
+    bool newParagraph = false,
+  }) {
+    _logger.info(message, type: type, newParagraph: newParagraph);
   }
 
   /// **Warning Messages Guidelines**
@@ -183,6 +183,7 @@ class CommandLogger {
     String? hint,
     bool newParagraph = false,
     StackTrace? stackTrace,
+    cli.LogType type = cli.TextLogType.normal,
     bool forcePrintStackTrace = false,
   }) {
     final String msg;
@@ -201,6 +202,7 @@ class CommandLogger {
       stackTrace: configuration?.verbose == true || forcePrintStackTrace
           ? stackTrace
           : null,
+      type: type,
     );
 
     if (hint != null) {

@@ -1,19 +1,16 @@
-import 'package:args/command_runner.dart';
+import 'package:config/config.dart' show CommandUsageException;
 
-class CloudCliUsageException extends UsageException {
+class CloudCliUsageException extends CommandUsageException {
   final String? hint;
 
-  CloudCliUsageException(String message, {this.hint}) : super(message, '');
+  CloudCliUsageException(super.message, super.command, {this.hint});
 
   @override
   String toString() {
     final buffer = StringBuffer();
-    buffer.write(message);
+    buffer.write(super.toString());
     if (hint != null) {
       buffer.write('\n$hint');
-    }
-    if (usage != '') {
-      buffer.writeln('\n\n$usage');
     }
     return buffer.toString();
   }

@@ -1,8 +1,11 @@
 import 'dart:io' show File;
 
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart'
+    show GlobalConfigurationOptions;
 import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/deploy/deploy.dart';
@@ -72,7 +75,7 @@ class DeployOutputOption extends FileOption {
 
   static void _zipExtValidator(File value) {
     if (!value.path.endsWith('.zip')) {
-      throw UsageException('The path must end with .zip', '');
+      throw const FormatException('The path must end with .zip');
     }
   }
 }
@@ -162,20 +165,20 @@ Examples
 
   @override
   Future<void> runWithOutput(
-    final Configuration<DeployCommandOption> commandConfig,
+    final CommandContext<DeployCommandOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(DeployCommandOption.projectId);
-    final concurrency = commandConfig.value(DeployCommandOption.concurrency);
-    final wetRun = commandConfig.value(DeployCommandOption.wetRun);
-    final showFiles = commandConfig.value(DeployCommandOption.showFiles);
-    final restart = commandConfig.value(DeployCommandOption.restart);
-    final outputPath = commandConfig.optionalValue(DeployCommandOption.output);
-    final wait = commandConfig.value(DeployCommandOption.wait);
-    final dartVersionOverride = commandConfig.optionalValue(
+    final projectId = context.config.value(DeployCommandOption.projectId);
+    final concurrency = context.config.value(DeployCommandOption.concurrency);
+    final wetRun = context.config.value(DeployCommandOption.wetRun);
+    final showFiles = context.config.value(DeployCommandOption.showFiles);
+    final restart = context.config.value(DeployCommandOption.restart);
+    final outputPath = context.config.optionalValue(DeployCommandOption.output);
+    final wait = context.config.value(DeployCommandOption.wait);
+    final dartVersionOverride = context.config.optionalValue(
       DeployCommandOption.dartVersion,
     );
-    final skipDartPubGet = commandConfig.value(
+    final skipDartPubGet = context.config.value(
       DeployCommandOption.skipDartPubGet,
     );
 
@@ -187,11 +190,12 @@ Examples
         throw CloudCliUsageException(
           'The --restart option cannot be combined with '
           '--wet-run, --show-files, --output, or --dart-version.',
+          this,
         );
       }
 
       await Deploy.restart(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         logger: logger,
         baseCommand: baseCommand,
         projectId: projectId,
@@ -199,18 +203,18 @@ Examples
       return;
     }
 
-    final projectDirectory = runner.verifiedProjectDirectory();
+    final projectDirectory = runner.verifiedProjectDirectory(context);
     logger.debug('Project directory is: ${projectDirectory.path}');
     final configFilePath =
-        globalConfiguration.projectConfigFile?.path ??
+        context.globalConfiguration.projectConfigFile?.path ??
         p.join(
           projectDirectory.path,
           ProjectConfigFileConstants.defaultFileName,
         );
 
     await Deploy.deploy(
-      runner.serviceProvider.cloudApiClient,
-      runner.serviceProvider.fileUploaderFactory,
+      context.serviceProvider.cloudApiClient,
+      context.serviceProvider.fileUploaderFactory,
       logger: logger,
       baseCommand: baseCommand,
       projectId: projectId,

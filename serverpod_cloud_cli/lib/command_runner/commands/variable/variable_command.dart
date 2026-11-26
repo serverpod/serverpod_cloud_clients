@@ -1,3 +1,4 @@
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
@@ -118,25 +119,25 @@ Examples
 
   @override
   Future<void> runWithOutput(
-    final Configuration<SetVariableCommandConfig> commandConfig,
+    final CommandContext<SetVariableCommandConfig, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(SetVariableCommandConfig.projectId);
-    final variableName = commandConfig.value(
+    final projectId = context.config.value(SetVariableCommandConfig.projectId);
+    final variableName = context.config.value(
       SetVariableCommandConfig.variableName,
     );
-    final valueToSet = commandConfig.valueOrFileContent(
+    final valueToSet = context.config.valueOrFileContent(
       value: SetVariableCommandConfig.variableValue,
       valueFile: SetVariableCommandConfig.valueFile,
     );
-    final secretFlag = commandConfig.optionalValue(
+    final secretFlag = context.config.optionalValue(
       SetVariableCommandConfig.secret,
     );
 
     await renderCommand(
       output,
       operation: () => VariableCommands.setVariable(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         baseCommand: baseCommand,
         projectId: projectId,
         name: variableName,
@@ -171,22 +172,25 @@ Examples
 
   @override
   Future<void> runWithOutput(
-    final Configuration<UnsetVariableCommandConfig> commandConfig,
+    final CommandContext<UnsetVariableCommandConfig, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(UnsetVariableCommandConfig.projectId);
-    final variableName = commandConfig.value(
+    final projectId = context.config.value(
+      UnsetVariableCommandConfig.projectId,
+    );
+    final variableName = context.config.value(
       UnsetVariableCommandConfig.variableName,
     );
 
     await VariableCommands.findVariable(
-      runner.serviceProvider.cloudApiClient,
+      context.serviceProvider.cloudApiClient,
       baseCommand: baseCommand,
       projectId: projectId,
       name: variableName,
     );
 
     await confirmToContinue(
+      context,
       output,
       message:
           'Are you sure you want to remove the environment variable "$variableName"?',
@@ -196,7 +200,7 @@ Examples
     await renderCommand(
       output,
       operation: () => VariableCommands.unsetVariable(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         baseCommand: baseCommand,
         projectId: projectId,
         name: variableName,
@@ -220,15 +224,15 @@ class CloudVariableListCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<ListVariableCommandConfig> commandConfig,
+    final CommandContext<ListVariableCommandConfig, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(ListVariableCommandConfig.projectId);
+    final projectId = context.config.value(ListVariableCommandConfig.projectId);
 
     await renderCommand(
       output,
       operation: () => VariableCommands.listVariablesOperation(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
       ),
       textOutputUi: VariableListTextUi(),

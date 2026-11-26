@@ -263,7 +263,7 @@ void main() {
             isA<UsageException>().having(
               (e) => e.message,
               'message',
-              'The launch command is interactive and cannot run with --non-interactive.',
+              'Interactive commands cannot run with "--non-interactive".',
             ),
           ),
         );

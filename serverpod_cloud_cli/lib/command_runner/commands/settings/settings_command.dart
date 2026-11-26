@@ -1,3 +1,4 @@
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/settings/settings_ops.dart';
@@ -54,13 +55,13 @@ class CloudSettingsListCommand extends CloudCliCommand {
 
   @override
   Future<void> runWithOutput(
-    final Configuration commandConfig,
+    final CommandContext<OptionDefinition, void> context,
     final CommandOutput output,
   ) async {
     await renderCommand(
       output,
       operation: () => SettingsOperations.listSettingsOperation(
-        runner.serviceProvider.scloudSettings,
+        context.serviceProvider.scloudSettings,
       ),
       textOutputUi: const SettingsListUi(),
     );
@@ -110,11 +111,11 @@ Examples
 
   @override
   Future<void> runWithOutput(
-    final Configuration<SettingsSetOption> commandConfig,
+    final CommandContext<SettingsSetOption, void> context,
     final CommandOutput output,
   ) async {
-    final name = commandConfig.value(SettingsSetOption.name);
-    final value = commandConfig.optionalValue(SettingsSetOption.value);
+    final name = context.config.value(SettingsSetOption.name);
+    final value = context.config.optionalValue(SettingsSetOption.value);
     if (value == null) {
       throw StateError('Expected the value option to be set.');
     }
@@ -122,7 +123,7 @@ Examples
     await renderCommand(
       output,
       operation: () => SettingsOperations.setSetting(
-        runner.serviceProvider.scloudSettings,
+        context.serviceProvider.scloudSettings,
         name: name,
         value: value,
       ),
@@ -169,15 +170,15 @@ Examples
 
   @override
   Future<void> runWithOutput(
-    final Configuration<SettingsUnsetOption> commandConfig,
+    final CommandContext<SettingsUnsetOption, void> context,
     final CommandOutput output,
   ) async {
-    final name = commandConfig.value(SettingsUnsetOption.name);
+    final name = context.config.value(SettingsUnsetOption.name);
 
     await renderCommand(
       output,
       operation: () => SettingsOperations.unsetSetting(
-        runner.serviceProvider.scloudSettings,
+        context.serviceProvider.scloudSettings,
         name: name,
       ),
       textOutputUi: const SettingsUnsetTextUi(),

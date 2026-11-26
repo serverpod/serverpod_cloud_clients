@@ -1,4 +1,4 @@
-import 'package:args/command_runner.dart';
+import 'package:config/config.dart' show UsageException;
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:mocktail/mocktail.dart';
@@ -28,7 +28,12 @@ void main() {
   for (final command in ['publish', 'doctor', 'list', 'log']) {
     test('Given app $command help when showing platform choices '
         'then only the supported platforms are advertised', () {
-      final usage = cli.commands['app']?.subcommands[command]?.usage;
+      final app = cli.subcommands.singleWhere(
+        (final subcommand) => subcommand.name == 'app',
+      );
+      final usage = app.subcommands
+          .singleWhere((final subcommand) => subcommand.name == command)
+          .usage;
       expect(usage, contains(command == 'log' ? 'android|ios' : 'android,ios'));
       expect(usage, isNot(matches(RegExp(r'\b(linux|macos|windows)\b'))));
     });

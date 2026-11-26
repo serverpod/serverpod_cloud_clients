@@ -1074,7 +1074,7 @@ void main() {
           isA<UsageException>().having(
             (final e) => e.message,
             'message',
-            contains('does not exist'),
+            endsWith('does not exist.'),
           ),
         ),
       );

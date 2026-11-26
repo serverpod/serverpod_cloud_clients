@@ -1,3 +1,4 @@
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/notification/notification_admin_ops.dart';
@@ -35,17 +36,17 @@ class AdminTestPushCommand extends CloudCliCommand<AdminTestPushOption> {
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AdminTestPushOption> commandConfig,
+    final CommandContext<AdminTestPushOption, void> context,
     final CommandOutput output,
   ) async {
-    final notificationType = commandConfig.value(
+    final notificationType = context.config.value(
       AdminTestPushOption.notificationType,
     );
 
     await renderCommand(
       output,
       operation: () => NotificationAdminOperations.pushNotification(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         notificationType: notificationType,
       ),
       textOutputUi: const PushNotificationTextUi(),

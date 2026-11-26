@@ -46,6 +46,10 @@ void main() {
 
   tearDown(fetchedChannels.clear);
 
+  final diagnosticsEvents = <String>[];
+
+  tearDown(diagnosticsEvents.clear);
+
   Future<CloudCliCommandRunner> createCli({
     required Version currentVersion,
     required Version latestVersion,
@@ -71,8 +75,12 @@ void main() {
         return latestCustomBuildVersion;
       },
       attemptedUpdateVersion: attemptedUpdateVersion,
+      onRunContextResolved: (context) {
+        diagnosticsEvents.add('run context resolved');
+      },
       onErrorReport: (error, stackTrace) async {
         reportedErrors.add(error);
+        diagnosticsEvents.add('error reported');
       },
     );
   }
@@ -89,7 +97,12 @@ void main() {
         updater: updater,
       );
 
-      commandResult = cli.run(['version', '--config-dir', testCacheFolderPath]);
+      commandResult = cli.run([
+        'settings',
+        'list',
+        '--config-dir',
+        testCacheFolderPath,
+      ]);
     });
 
     test('then should complete', () async {
@@ -106,8 +119,8 @@ void main() {
       await commandResult;
 
       expect(
-        logger.infoCalls.first,
-        equalsInfoCall(message: 'Serverpod Cloud CLI version: 1.0.0'),
+        logger.lineCalls.map((call) => call.line),
+        contains(contains('analytics')),
       );
     });
   });
@@ -126,7 +139,12 @@ void main() {
         updater: updater,
       );
 
-      commandResult = cli.run(['version', '--config-dir', testCacheFolderPath]);
+      commandResult = cli.run([
+        'settings',
+        'list',
+        '--config-dir',
+        testCacheFolderPath,
+      ]);
     });
 
     test('then should complete', () async {
@@ -166,7 +184,12 @@ void main() {
         updater: updater,
       );
 
-      commandResult = cli.run(['version', '--config-dir', testCacheFolderPath]);
+      commandResult = cli.run([
+        'settings',
+        'list',
+        '--config-dir',
+        testCacheFolderPath,
+      ]);
     });
 
     test('then should complete', () async {
@@ -189,10 +212,8 @@ void main() {
       await commandResult;
 
       expect(
-        logger.infoCalls.first,
-        equalsInfoCall(
-          message: 'Serverpod Cloud CLI version: 1.0.0-preview-main.3',
-        ),
+        logger.lineCalls.map((call) => call.line),
+        contains(contains('analytics')),
       );
     });
   });
@@ -212,7 +233,8 @@ void main() {
       );
 
       commandResult = cli.run([
-        'version',
+        'settings',
+        'list',
         '--config-dir',
         testCacheFolderPath,
         '--no-auto-cli-upgrade',
@@ -259,7 +281,12 @@ void main() {
         updater: updater,
       );
 
-      commandResult = cli.run(['version', '--config-dir', testCacheFolderPath]);
+      commandResult = cli.run([
+        'settings',
+        'list',
+        '--config-dir',
+        testCacheFolderPath,
+      ]);
     });
 
     test('then should complete', () async {
@@ -297,7 +324,12 @@ void main() {
         updater: updater,
       );
 
-      commandResult = cli.run(['version', '--config-dir', testCacheFolderPath]);
+      commandResult = cli.run([
+        'settings',
+        'list',
+        '--config-dir',
+        testCacheFolderPath,
+      ]);
     });
 
     test('then should complete', () async {
@@ -334,7 +366,12 @@ void main() {
         updater: FakeCliUpdater(rerunSucceeds: false),
       );
 
-      commandResult = cli.run(['version', '--config-dir', testCacheFolderPath]);
+      commandResult = cli.run([
+        'settings',
+        'list',
+        '--config-dir',
+        testCacheFolderPath,
+      ]);
     });
 
     test('then should throw UnexpectedErrorExitException', () async {
@@ -369,7 +406,12 @@ void main() {
         updater: FakeCliUpdater(rerunExitCode: 3),
       );
 
-      commandResult = cli.run(['version', '--config-dir', testCacheFolderPath]);
+      commandResult = cli.run([
+        'settings',
+        'list',
+        '--config-dir',
+        testCacheFolderPath,
+      ]);
     });
 
     test(
@@ -400,7 +442,8 @@ void main() {
         );
 
         commandResult = cli.run([
-          'version',
+          'settings',
+          'list',
           '--config-dir',
           testCacheFolderPath,
           '--exit-on-updated',
@@ -447,7 +490,12 @@ void main() {
         updater: updater,
       );
 
-      commandResult = cli.run(['version', '--config-dir', testCacheFolderPath]);
+      commandResult = cli.run([
+        'settings',
+        'list',
+        '--config-dir',
+        testCacheFolderPath,
+      ]);
     });
 
     test('then should throw ErrorExitException with exit code 69', () async {
@@ -487,6 +535,17 @@ void main() {
 
       expect(reportedErrors.single, isA<CliUpdateFailedException>());
     });
+
+    test(
+      'then should report the failure after the run context is resolved',
+      () async {
+        try {
+          await commandResult;
+        } catch (_) {}
+
+        expect(diagnosticsEvents, ['run context resolved', 'error reported']);
+      },
+    );
   });
 
   group('Given a newer non-breaking version and a failing install '
@@ -502,7 +561,12 @@ void main() {
         updater: updater,
       );
 
-      commandResult = cli.run(['version', '--config-dir', testCacheFolderPath]);
+      commandResult = cli.run([
+        'settings',
+        'list',
+        '--config-dir',
+        testCacheFolderPath,
+      ]);
     });
 
     test('then should complete', () async {
@@ -515,12 +579,12 @@ void main() {
       expect(logger.boxCalls.first, equalsBoxCall(message: _nonBreakingAlert));
     });
 
-    test('then should run the command on the current version', () async {
+    test('then should run the command in this process', () async {
       await commandResult;
 
       expect(
-        logger.infoCalls.first,
-        equalsInfoCall(message: 'Serverpod Cloud CLI version: 1.0.0'),
+        logger.lineCalls.map((call) => call.line),
+        contains(contains('analytics')),
       );
     });
 
@@ -545,7 +609,8 @@ void main() {
       );
 
       commandResult = cli.run([
-        'version',
+        'settings',
+        'list',
         '--config-dir',
         testCacheFolderPath,
         '--no-breaking-version-check',
@@ -568,12 +633,12 @@ void main() {
       expect(logger.boxCalls.first, equalsBoxCall(message: _updateAlert));
     });
 
-    test('then should run the command on the current version', () async {
+    test('then should run the command in this process', () async {
       await commandResult;
 
       expect(
-        logger.infoCalls.first,
-        equalsInfoCall(message: 'Serverpod Cloud CLI version: 1.0.0'),
+        logger.lineCalls.map((call) => call.line),
+        contains(contains('analytics')),
       );
     });
   });
@@ -592,7 +657,8 @@ void main() {
       );
 
       commandResult = cli.run([
-        'version',
+        'settings',
+        'list',
         '--config-dir',
         testCacheFolderPath,
         '--no-auto-cli-upgrade',
@@ -615,12 +681,12 @@ void main() {
       expect(logger.boxCalls.first, equalsBoxCall(message: _nonBreakingAlert));
     });
 
-    test('then should run the command on the current version', () async {
+    test('then should run the command in this process', () async {
       await commandResult;
 
       expect(
-        logger.infoCalls.first,
-        equalsInfoCall(message: 'Serverpod Cloud CLI version: 1.0.0'),
+        logger.lineCalls.map((call) => call.line),
+        contains(contains('analytics')),
       );
     });
   });
@@ -639,7 +705,8 @@ void main() {
       );
 
       commandResult = cli.run([
-        'version',
+        'settings',
+        'list',
         '--config-dir',
         testCacheFolderPath,
         '--no-auto-cli-upgrade',
@@ -677,6 +744,295 @@ void main() {
     });
   });
 
+  group('Given a newer breaking version when calling the version command', () {
+    late FakeCliUpdater updater;
+    late Future commandResult;
+
+    setUp(() async {
+      updater = FakeCliUpdater();
+      final cli = await createCli(
+        currentVersion: Version(1, 0, 0),
+        latestVersion: Version(2, 0, 0),
+        updater: updater,
+      );
+
+      commandResult = cli.run(['version', '--config-dir', testCacheFolderPath]);
+    });
+
+    test('then should complete', () async {
+      await expectLater(commandResult, completes);
+    });
+
+    test('then should not install anything', () async {
+      await commandResult;
+
+      expect(updater.installCalls, isEmpty);
+    });
+
+    test('then should print the version of this process', () async {
+      await commandResult;
+
+      expect(logger.infoCalls, [
+        equalsInfoCall(message: 'Serverpod Cloud CLI version: 1.0.0'),
+      ]);
+    });
+  });
+
+  group('Given a newer breaking version when calling the version command '
+      'with --no-auto-cli-upgrade', () {
+    late Future commandResult;
+
+    setUp(() async {
+      final cli = await createCli(
+        currentVersion: Version(1, 0, 0),
+        latestVersion: Version(2, 0, 0),
+      );
+
+      commandResult = cli.run([
+        'version',
+        '--config-dir',
+        testCacheFolderPath,
+        '--no-auto-cli-upgrade',
+      ]);
+    });
+
+    test('then should complete', () async {
+      await expectLater(commandResult, completes);
+    });
+
+    test('then should not alert about the update', () async {
+      await commandResult;
+
+      expect(logger.boxCalls, isEmpty);
+    });
+  });
+
+  group(
+    'Given a newer breaking version when calling the cli with --version',
+    () {
+      late FakeCliUpdater updater;
+      late Future commandResult;
+
+      setUp(() async {
+        updater = FakeCliUpdater();
+        final cli = await createCli(
+          currentVersion: Version(1, 0, 0),
+          latestVersion: Version(2, 0, 0),
+          updater: updater,
+        );
+
+        commandResult = cli.run([
+          '--version',
+          '--config-dir',
+          testCacheFolderPath,
+        ]);
+      });
+
+      test('then should complete', () async {
+        await expectLater(commandResult, completes);
+      });
+
+      test('then should not install anything', () async {
+        await commandResult;
+
+        expect(updater.installCalls, isEmpty);
+      });
+
+      test('then should print the version of this process', () async {
+        await commandResult;
+
+        expect(logger.infoCalls, [
+          equalsInfoCall(message: 'Serverpod Cloud CLI version: 1.0.0'),
+        ]);
+      });
+    },
+  );
+
+  group('Given a newer breaking version '
+      'when calling the cli with --version after a command', () {
+    late FakeCliUpdater updater;
+    late Future commandResult;
+
+    setUp(() async {
+      updater = FakeCliUpdater();
+      final cli = await createCli(
+        currentVersion: Version(1, 0, 0),
+        latestVersion: Version(2, 0, 0),
+        updater: updater,
+      );
+
+      commandResult = cli.run([
+        'project',
+        'create',
+        '--version',
+        '--config-dir',
+        testCacheFolderPath,
+      ]);
+    });
+
+    test('then should not install anything', () async {
+      await commandResult;
+
+      expect(updater.installCalls, isEmpty);
+    });
+  });
+
+  group('Given a newer breaking version when calling the cli '
+      'with --version and --no-auto-cli-upgrade', () {
+    late Future commandResult;
+
+    setUp(() async {
+      final cli = await createCli(
+        currentVersion: Version(1, 0, 0),
+        latestVersion: Version(2, 0, 0),
+      );
+
+      commandResult = cli.run([
+        '--version',
+        '--config-dir',
+        testCacheFolderPath,
+        '--no-auto-cli-upgrade',
+      ]);
+    });
+
+    test('then should complete', () async {
+      await expectLater(commandResult, completes);
+    });
+
+    test('then should not alert about the update', () async {
+      await commandResult;
+
+      expect(logger.boxCalls, isEmpty);
+    });
+  });
+
+  group(
+    'Given a newer non-breaking version when calling the cli with --help',
+    () {
+      late FakeCliUpdater updater;
+      late Future commandResult;
+
+      setUp(() async {
+        updater = FakeCliUpdater();
+        final cli = await createCli(
+          currentVersion: Version(1, 0, 0),
+          latestVersion: Version(1, 1, 0),
+          updater: updater,
+        );
+
+        commandResult = cli.run([
+          '--help',
+          '--config-dir',
+          testCacheFolderPath,
+        ]);
+      });
+
+      test('then should install the latest version', () async {
+        await commandResult;
+
+        expect(updater.installCalls, [Version(1, 1, 0)]);
+      });
+    },
+  );
+
+  group('Given a newer breaking version '
+      'when calling the completion command', () {
+    late FakeCliUpdater updater;
+    late Future commandResult;
+
+    setUp(() async {
+      updater = FakeCliUpdater();
+      final cli = await createCli(
+        currentVersion: Version(1, 0, 0),
+        latestVersion: Version(2, 0, 0),
+        updater: updater,
+      );
+
+      commandResult = collectOutput(
+        () => cli.run([
+          'completion',
+          '--shell',
+          'bash',
+          '--config-dir',
+          testCacheFolderPath,
+        ]),
+      );
+    });
+
+    test('then should complete', () async {
+      await expectLater(commandResult, completes);
+    });
+
+    test('then should not install anything', () async {
+      await commandResult;
+
+      expect(updater.installCalls, isEmpty);
+    });
+  });
+
+  group('Given a newer breaking version when calling the completion command '
+      'with --no-auto-cli-upgrade', () {
+    late Future commandResult;
+
+    setUp(() async {
+      final cli = await createCli(
+        currentVersion: Version(1, 0, 0),
+        latestVersion: Version(2, 0, 0),
+      );
+
+      commandResult = collectOutput(
+        () => cli.run([
+          'completion',
+          '--shell',
+          'bash',
+          '--config-dir',
+          testCacheFolderPath,
+          '--no-auto-cli-upgrade',
+        ]),
+      );
+    });
+
+    test('then should complete', () async {
+      await expectLater(commandResult, completes);
+    });
+
+    test('then should not alert about the update', () async {
+      await commandResult;
+
+      expect(logger.boxCalls, isEmpty);
+    });
+  });
+
+  group('Given a newer breaking version '
+      'when the shell requests completion of an option value', () {
+    late String response;
+
+    setUp(() async {
+      final cli = await createCli(
+        currentVersion: Version(1, 0, 0),
+        latestVersion: Version(2, 0, 0),
+      );
+
+      final output = await collectOutput(
+        () => cli.run([
+          '__complete',
+          '--config-dir',
+          testCacheFolderPath,
+          '--format',
+          '',
+        ]),
+      );
+      response = output.stdout.output;
+    });
+
+    test('then should answer with the alternatives', () {
+      expect(
+        response.split('\n'),
+        containsAll(['text', 'csv', 'json', 'yaml']),
+      );
+    });
+  });
+
   group('Given a CLI that cannot update itself and a newer breaking version '
       'when calling the cli', () {
     late FakeCliUpdater updater;
@@ -690,7 +1046,12 @@ void main() {
         updater: updater,
       );
 
-      commandResult = cli.run(['version', '--config-dir', testCacheFolderPath]);
+      commandResult = cli.run([
+        'settings',
+        'list',
+        '--config-dir',
+        testCacheFolderPath,
+      ]);
     });
 
     test('then should not install anything', () async {
@@ -746,7 +1107,12 @@ void main() {
         attemptedUpdateVersion: Version(2, 0, 0),
       );
 
-      commandResult = cli.run(['version', '--config-dir', testCacheFolderPath]);
+      commandResult = cli.run([
+        'settings',
+        'list',
+        '--config-dir',
+        testCacheFolderPath,
+      ]);
     });
 
     test('then should not install anything', () async {
@@ -789,7 +1155,12 @@ void main() {
         attemptedUpdateVersion: Version(1, 5, 0),
       );
 
-      commandResult = cli.run(['version', '--config-dir', testCacheFolderPath]);
+      commandResult = cli.run([
+        'settings',
+        'list',
+        '--config-dir',
+        testCacheFolderPath,
+      ]);
     });
 
     test('then should install the latest version', () async {

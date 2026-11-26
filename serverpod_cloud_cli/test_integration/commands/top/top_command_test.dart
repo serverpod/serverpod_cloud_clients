@@ -55,7 +55,7 @@ void main() {
                 return e.message;
               },
               'message',
-              'The top command is interactive and cannot run with --non-interactive.',
+              'Interactive commands cannot run with "--non-interactive".',
             ),
           ),
         );

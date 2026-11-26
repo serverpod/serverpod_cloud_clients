@@ -1,3 +1,4 @@
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:ground_control_client/ground_control_client.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
@@ -93,21 +94,21 @@ The valid targets are:
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AttachCustomDomainCommandConfig> commandConfig,
+    final CommandContext<AttachCustomDomainCommandConfig, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(
+    final projectId = context.config.value(
       AttachCustomDomainCommandConfig.projectId,
     );
-    final domainName = commandConfig.value(
+    final domainName = context.config.value(
       AttachCustomDomainCommandConfig.domainName,
     );
-    final target = commandConfig.value(AttachCustomDomainCommandConfig.target);
+    final target = context.config.value(AttachCustomDomainCommandConfig.target);
 
     await renderCommand(
       output,
       operation: () => CustomDomainOperations.attachDomain(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
         domainName: domainName,
         target: target,
@@ -139,17 +140,17 @@ class CloudListCustomDomainCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<ListCustomDomainCommandConfig> commandConfig,
+    final CommandContext<ListCustomDomainCommandConfig, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(
+    final projectId = context.config.value(
       ListCustomDomainCommandConfig.projectId,
     );
 
     await renderCommand(
       output,
       operation: () => CustomDomainOperations.listDomains(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
       ),
       textOutputUi: const CustomDomainListTextUi(),
@@ -186,17 +187,18 @@ class CloudDetachCustomDomainCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<DetachCustomDomainCommandConfig> commandConfig,
+    final CommandContext<DetachCustomDomainCommandConfig, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(
+    final projectId = context.config.value(
       DetachCustomDomainCommandConfig.projectId,
     );
-    final domainName = commandConfig.value(
+    final domainName = context.config.value(
       DetachCustomDomainCommandConfig.domainName,
     );
 
     await confirmToContinue(
+      context,
       output,
       message:
           'Are you sure you want to delete the custom domain "$domainName"?',
@@ -206,7 +208,7 @@ class CloudDetachCustomDomainCommand
     await renderCommand(
       output,
       operation: () => CustomDomainOperations.detachDomain(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
         domainName: domainName,
       ),
@@ -238,20 +240,20 @@ class CloudVerifyCustomDomainRecordCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<RefreshCustomDomainRecordCommandConfig> commandConfig,
+    final CommandContext<RefreshCustomDomainRecordCommandConfig, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(
+    final projectId = context.config.value(
       RefreshCustomDomainRecordCommandConfig.projectId,
     );
-    final domainName = commandConfig.value(
+    final domainName = context.config.value(
       RefreshCustomDomainRecordCommandConfig.domainName,
     );
 
     await renderCommand(
       output,
       operation: () => CustomDomainOperations.verifyDomain(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
         domainName: domainName,
       ),

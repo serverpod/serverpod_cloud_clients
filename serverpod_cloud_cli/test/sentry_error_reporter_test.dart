@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:args/command_runner.dart' show UsageException;
+import 'package:config/config.dart' show UsageException;
 import 'package:ground_control_client/ground_control_client.dart'
     show InvalidValueException;
 import 'package:serverpod_cloud_cli/shared/error_reporting/sentry_error_reporter.dart';

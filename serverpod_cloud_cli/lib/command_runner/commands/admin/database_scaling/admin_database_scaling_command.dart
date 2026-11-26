@@ -1,3 +1,4 @@
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/admin/database_scaling/database_scaling_ops.dart';
@@ -47,18 +48,19 @@ class AdminReconcileDatabaseScalingCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AdminReconcileDatabaseScalingOption> commandConfig,
+    final CommandContext<AdminReconcileDatabaseScalingOption, void> context,
     final CommandOutput output,
   ) async {
-    final apply = commandConfig.value(
+    final apply = context.config.value(
       AdminReconcileDatabaseScalingOption.apply,
     );
-    final projectIds = commandConfig.value(
+    final projectIds = context.config.value(
       AdminReconcileDatabaseScalingOption.projectId,
     );
 
     if (apply) {
       await confirmToContinue(
+        context,
         output,
         message:
             'Reset the compute scaling of '
@@ -71,7 +73,7 @@ class AdminReconcileDatabaseScalingCommand
     await renderCommand(
       output,
       operation: () => DatabaseScalingOperations.reconcileComputeScaling(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         apply: apply,
         projectIds: projectIds,
       ),

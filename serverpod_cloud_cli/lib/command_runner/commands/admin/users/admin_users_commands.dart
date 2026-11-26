@@ -1,3 +1,4 @@
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:ground_control_client/ground_control_client.dart'
     show UserAccountStatus;
@@ -50,19 +51,19 @@ class AdminUserStatusCommand extends CloudCliCommand<AdminUserStatusOption> {
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AdminUserStatusOption> commandConfig,
+    final CommandContext<AdminUserStatusOption, void> context,
     final CommandOutput output,
   ) async {
-    final identifier = commandConfig.value(AdminUserStatusOption.identifier);
-    final includeArchived = commandConfig.value(
+    final identifier = context.config.value(AdminUserStatusOption.identifier);
+    final includeArchived = context.config.value(
       AdminUserStatusOption.includeArchived,
     );
-    final inUtc = commandConfig.value(AdminUserStatusOption.utc);
+    final inUtc = context.config.value(AdminUserStatusOption.utc);
 
     await renderCommand(
       output,
       operation: () => UserAdminCommands.getUserStatusOperation(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         identifier: identifier,
         includeArchived: includeArchived,
       ),
@@ -113,24 +114,24 @@ class AdminListUsersCommand extends CloudCliCommand<AdminListUsersOption> {
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AdminListUsersOption> commandConfig,
+    final CommandContext<AdminListUsersOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.optionalValue(
+    final projectId = context.config.optionalValue(
       AdminListUsersOption.projectId,
     );
-    final accountStatus = commandConfig.optionalValue(
+    final accountStatus = context.config.optionalValue(
       AdminListUsersOption.accountStatus,
     );
-    final includeArchived = commandConfig.value(
+    final includeArchived = context.config.value(
       AdminListUsersOption.includeArchived,
     );
-    final inUtc = commandConfig.value(AdminListUsersOption.utc);
+    final inUtc = context.config.value(AdminListUsersOption.utc);
 
     await renderCommand(
       output,
       operation: () => UserAdminCommands.listUsersOperation(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
         ofAccountStatus: accountStatus,
         includeArchived: includeArchived,
@@ -161,15 +162,15 @@ class AdminInviteUserCommand extends CloudCliCommand<AdminInviteUserOption> {
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AdminInviteUserOption> commandConfig,
+    final CommandContext<AdminInviteUserOption, void> context,
     final CommandOutput output,
   ) async {
-    final email = commandConfig.value(AdminInviteUserOption.user);
+    final email = context.config.value(AdminInviteUserOption.user);
 
     await renderCommand(
       output,
       operation: () => UserAdminCommands.inviteUser(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         email: email,
       ).then((final _) => const <String, Object?>{}),
       textOutputUi: const AdminInviteUserTextUi(),
@@ -200,17 +201,17 @@ class AdminUserAttachCommand extends CloudCliCommand<AdminUserAttachOption> {
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AdminUserAttachOption> commandConfig,
+    final CommandContext<AdminUserAttachOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(AdminUserAttachOption.projectId);
-    final email = commandConfig.value(AdminUserAttachOption.user);
-    final role = commandConfig.value(AdminUserAttachOption.role);
+    final projectId = context.config.value(AdminUserAttachOption.projectId);
+    final email = context.config.value(AdminUserAttachOption.user);
+    final role = context.config.value(AdminUserAttachOption.role);
 
     await renderCommand(
       output,
       operation: () => UserAdminCommands.attachUserToProject(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
         email: email,
         assignRoles: [role],
@@ -243,15 +244,16 @@ class AdminUserDetachCommand extends CloudCliCommand<AdminUserDetachOption> {
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AdminUserDetachOption> commandConfig,
+    final CommandContext<AdminUserDetachOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(AdminUserDetachOption.projectId);
-    final email = commandConfig.value(AdminUserDetachOption.user);
-    final role = commandConfig.optionalValue(AdminUserDetachOption.role);
+    final projectId = context.config.value(AdminUserDetachOption.projectId);
+    final email = context.config.value(AdminUserDetachOption.user);
+    final role = context.config.optionalValue(AdminUserDetachOption.role);
     final unassignAllRoles = role == null;
 
     await confirmToContinue(
+      context,
       output,
       message: unassignAllRoles
           ? 'Are you sure you want to detach "$email" from all roles on project "$projectId"?'
@@ -262,7 +264,7 @@ class AdminUserDetachCommand extends CloudCliCommand<AdminUserDetachOption> {
     await renderCommand(
       output,
       operation: () => UserAdminCommands.detachUserFromProject(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
         email: email,
         unassignRoles: role == null ? const [] : [role],

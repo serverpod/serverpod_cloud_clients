@@ -140,15 +140,14 @@ void main() {
       });
 
       test('then an error is printed to stderr for the unknown command', () {
-        expect(result.stderr, contains('ERROR:'));
-        expect(
-          result.stderr,
-          contains('Could not find a command named "not-a-command".'),
-        );
+        expect(result.stderr, contains('Unknown subcommand: "not-a-command"'));
       });
 
       test('then the usage is printed to stderr', () {
-        expect(result.stderr, contains('Usage: scloud <command> [arguments]'));
+        expect(
+          result.stderr,
+          contains('Usage: scloud [global-options] <command> [arguments]'),
+        );
       });
 
       test(
@@ -176,15 +175,11 @@ void main() {
       });
 
       test('then an error is printed to stderr for the unknown option', () {
-        expect(result.stderr, contains('ERROR:'));
-        expect(
-          result.stderr,
-          contains('Could not find an option named "--bogus".'),
-        );
+        expect(result.stderr, contains('Unknown option: --bogus'));
       });
 
       test('then the command usage is printed to stderr', () {
-        expect(result.stderr, contains('Usage: scloud version [arguments]'));
+        expect(result.stderr, contains('Usage: scloud version'));
       });
 
       test(
@@ -212,7 +207,6 @@ void main() {
       });
 
       test('then an error is printed to stderr for the missing option', () {
-        expect(result.stderr, contains('ERROR:'));
         expect(
           result.stderr,
           contains('Option group Value requires one of the options'),
@@ -249,12 +243,15 @@ void main() {
       test('then the usage text uses that command name', () {
         expect(
           result.stdout,
-          contains('serverpod cloud <command> [arguments]'),
+          contains('serverpod cloud [global-options] <command> [arguments]'),
         );
       });
 
       test('then the usage text does not use the default command name', () {
-        expect(result.stdout, isNot(contains('scloud <command> [arguments]')));
+        expect(
+          result.stdout,
+          isNot(contains('scloud [global-options] <command> [arguments]')),
+        );
       });
     });
 
@@ -269,7 +266,10 @@ void main() {
       });
 
       test('then the usage text uses the default command name', () {
-        expect(result.stdout, contains('scloud <command> [arguments]'));
+        expect(
+          result.stdout,
+          contains('scloud [global-options] <command> [arguments]'),
+        );
       });
     });
   });

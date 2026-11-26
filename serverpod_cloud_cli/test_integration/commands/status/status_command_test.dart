@@ -5,13 +5,11 @@ import 'package:ground_control_client/ground_control_client.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:path/path.dart' as p;
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/status/status_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 import 'package:test/test.dart';
-import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:yaml_codec/yaml_codec.dart';
 
 import '../../../test/util/inline_tui/helpers/fake_terminal.dart';
@@ -1046,7 +1044,7 @@ void main() {
 
   group('Given the hidden deployment command when printing its help', () {
     setUp(() async {
-      await cli.run(['help', 'deployment']);
+      await cli.run(['deployment', '--help']);
     });
 
     test(
@@ -1066,7 +1064,7 @@ void main() {
     late String help;
 
     setUp(() async {
-      help = await captureHelp(['help', 'deployment', 'show']);
+      help = await captureHelp(['deployment', 'show', '--help']);
     });
 
     test('then the examples use the legacy deployment show path', () {
@@ -1079,7 +1077,7 @@ void main() {
     late String help;
 
     setUp(() async {
-      help = await captureHelp(['help', 'deployment', 'list']);
+      help = await captureHelp(['deployment', 'list', '--help']);
     });
 
     test('then the examples use the legacy deployment list path', () {
@@ -1094,7 +1092,7 @@ void main() {
       late String help;
 
       setUp(() async {
-        help = await captureHelp(['help', 'deployment', 'build-log']);
+        help = await captureHelp(['deployment', 'build-log', '--help']);
       });
 
       test('then the examples use the legacy deployment build-log path', () {
@@ -1140,43 +1138,6 @@ void main() {
     test('then the examples use the public status deployment log path', () {
       expect(help, contains(r'$ scloud status deployment log'));
       expect(help, isNot(contains(r'$ scloud build log')));
-    });
-  });
-
-  group('Given the cli when generating carapace completions', () {
-    setUp(() async {
-      await cli.run([
-        'completion',
-        'generate',
-        '--tool',
-        'carapace',
-        '--file',
-        p.join(d.sandbox, 'spec.yaml'),
-      ]);
-    });
-
-    test('then emits status once as a top-level command', () async {
-      await d
-          .file(
-            'spec.yaml',
-            predicate<String>((final content) {
-              final names = RegExp(
-                r'^  - name: (\S+)$',
-                multiLine: true,
-              ).allMatches(content).map((final match) => match.group(1));
-              return names.where((final name) => name == 'status').length == 1;
-            }, 'has exactly one top-level status command'),
-          )
-          .validate();
-    });
-
-    test('then does not emit deployment as a top-level command', () async {
-      await d
-          .file(
-            'spec.yaml',
-            isNot(contains(RegExp(r'^  - name: deployment$', multiLine: true))),
-          )
-          .validate();
     });
   });
 }

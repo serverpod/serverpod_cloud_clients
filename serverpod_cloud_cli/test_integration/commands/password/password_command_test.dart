@@ -318,7 +318,7 @@ void main() {
               isA<UsageException>().having(
                 (e) => e.message,
                 'message',
-                contains('Invalid value for option `from-file`'),
+                contains('Invalid value for option "--from-file"'),
               ),
             ),
           );
@@ -326,32 +326,28 @@ void main() {
       });
 
       group('with both value arg and value file arg', () {
-        late Future commandResult;
-
         setUp(() async {
           await d.file('value.txt', 'password-value').create();
-
-          commandResult = cli.run([
-            'password',
-            'set',
-            'database',
-            'value',
-            '--from-file',
-            p.join(d.sandbox, 'value.txt'),
-            '--project',
-            projectId,
-          ]);
         });
 
         test('then command throws UsageException', () async {
-          await expectLater(
-            commandResult,
+          expect(
+            () => cli.run([
+              'password',
+              'set',
+              'database',
+              'value',
+              '--from-file',
+              p.join(d.sandbox, 'value.txt'),
+              '--project',
+              projectId,
+            ]),
             throwsA(
               isA<UsageException>().having(
                 (e) => e.message,
                 'message',
-                equals(
-                  'These options are mutually exclusive: from-file, value.',
+                contains(
+                  'These options are mutually exclusive: --from-file, --value.',
                 ),
               ),
             ),
@@ -360,26 +356,20 @@ void main() {
       });
 
       group('with neither value arg nor value file arg', () {
-        late Future commandResult;
-
-        setUp(() async {
-          commandResult = cli.run([
-            'password',
-            'set',
-            'database',
-            '--project',
-            projectId,
-          ]);
-        });
-
         test('then command throws UsageException', () async {
-          await expectLater(
-            commandResult,
+          expect(
+            () => cli.run([
+              'password',
+              'set',
+              'database',
+              '--project',
+              projectId,
+            ]),
             throwsA(
               isA<UsageException>().having(
                 (e) => e.message,
                 'message',
-                equals(
+                contains(
                   'Option group Value requires one of the options to be provided.',
                 ),
               ),

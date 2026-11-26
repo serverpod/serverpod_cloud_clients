@@ -593,7 +593,7 @@ void main() {
             isA<UsageException>().having(
               (e) => e.message,
               'message',
-              'The --day value must be between 1 and 7 for a weekly schedule.',
+              'The "--day" value must be between 1 and 7 for a weekly schedule.',
             ),
           ),
         );

@@ -61,7 +61,7 @@ void main() {
     test('when the path does not exist then validation throws', () {
       expect(
         () => option.validateValue(File('missing.png')),
-        throwsA(isA<UsageException>()),
+        throwsA(isA<InvalidValueException>()),
       );
     });
 
@@ -96,7 +96,7 @@ void main() {
 
       expect(
         () => option.validateValue(File(p.join(d.sandbox, 'a.txt'))),
-        throwsA(isA<UsageException>()),
+        throwsA(isA<InvalidValueException>()),
       );
     });
   });

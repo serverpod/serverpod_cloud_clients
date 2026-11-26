@@ -1,3 +1,4 @@
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
@@ -79,15 +80,15 @@ class CloudPasswordListCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<PasswordListCommandConfig> commandConfig,
+    final CommandContext<PasswordListCommandConfig, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(PasswordListCommandConfig.projectId);
+    final projectId = context.config.value(PasswordListCommandConfig.projectId);
 
     await renderCommand(
       output,
       operation: () => PasswordOperations.listPasswords(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
       ),
       textOutputUi: PasswordListTextUi(),
@@ -124,12 +125,12 @@ class CloudPasswordSetCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<PasswordSetCommandConfig> commandConfig,
+    final CommandContext<PasswordSetCommandConfig, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(PasswordSetCommandConfig.projectId);
-    final name = commandConfig.value(PasswordSetCommandConfig.name);
-    final valueToSet = commandConfig.valueOrFileContent(
+    final projectId = context.config.value(PasswordSetCommandConfig.projectId);
+    final name = context.config.value(PasswordSetCommandConfig.name);
+    final valueToSet = context.config.valueOrFileContent(
       value: PasswordSetCommandConfig.value,
       valueFile: PasswordSetCommandConfig.valueFile,
     );
@@ -137,7 +138,7 @@ class CloudPasswordSetCommand
     await renderCommand(
       output,
       operation: () => PasswordOperations.setPassword(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
         name: name,
         value: valueToSet,
@@ -171,13 +172,16 @@ class CloudPasswordUnsetCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<PasswordUnsetCommandConfig> commandConfig,
+    final CommandContext<PasswordUnsetCommandConfig, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(PasswordUnsetCommandConfig.projectId);
-    final name = commandConfig.value(PasswordUnsetCommandConfig.name);
+    final projectId = context.config.value(
+      PasswordUnsetCommandConfig.projectId,
+    );
+    final name = context.config.value(PasswordUnsetCommandConfig.name);
 
     await confirmToContinue(
+      context,
       output,
       message: 'Are you sure you want to unset the password "$name"?',
       defaultValue: false,
@@ -186,7 +190,7 @@ class CloudPasswordUnsetCommand
     await renderCommand(
       output,
       operation: () => PasswordOperations.unsetPassword(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
         name: name,
       ).then((_) => {'name': name}),

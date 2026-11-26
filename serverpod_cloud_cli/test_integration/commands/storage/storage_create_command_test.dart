@@ -236,7 +236,7 @@ void main() {
             isA<UsageException>().having(
               (final e) => e.message,
               'message',
-              contains(
+              endsWith(
                 'Use lowercase letters, digits and dashes, '
                 'starting and ending with a letter or digit.',
               ),

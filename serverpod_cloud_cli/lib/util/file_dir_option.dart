@@ -20,7 +20,7 @@ class FileSystemEntityParser extends ValueParser<FileSystemEntity> {
 ///
 /// Parses to a [File] or a [Directory], whichever [value] is on disk.
 /// If the input is not valid according to [mode],
-/// the validation throws a [UsageException].
+/// the validation throws an [InvalidValueException].
 class FileDirOption extends ConfigOptionBase<FileSystemEntity> {
   final PathExistMode mode;
 
@@ -54,15 +54,14 @@ class FileDirOption extends ConfigOptionBase<FileSystemEntity> {
         break;
       case PathExistMode.mustExist:
         if (type == FileSystemEntityType.notFound) {
-          throw UsageException(
+          throw InvalidValueException(
             'File or directory "${value.path}" does not exist',
-            '',
           );
         }
         break;
       case PathExistMode.mustNotExist:
         if (type != FileSystemEntityType.notFound) {
-          throw UsageException('Path "${value.path}" already exists', '');
+          throw InvalidValueException('Path "${value.path}" already exists');
         }
         break;
     }

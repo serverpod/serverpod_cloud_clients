@@ -1,3 +1,4 @@
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
@@ -43,15 +44,15 @@ class AdminListProcuredCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AdminListProcuredOption> commandConfig,
+    final CommandContext<AdminListProcuredOption, void> context,
     final CommandOutput output,
   ) async {
-    final userEmail = commandConfig.value(AdminListProcuredOption.user);
+    final userEmail = context.config.value(AdminListProcuredOption.user);
 
     await renderCommand(
       output,
       operation: () => ProductAdminCommands.listProcuredProductsOperation(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         userEmail: userEmail,
       ),
       textOutputUi: ProductListTextUi(),
@@ -75,7 +76,6 @@ enum AdminProcurePlanOption<V> implements OptionDefinition<V> {
   productVersion(
     IntOption(
       argName: 'version',
-      argAbbrev: 'v',
       argPos: 2,
       helpText:
           'The plan version (latest if unspecified).'
@@ -121,23 +121,27 @@ class AdminProcurePlanCommand extends CloudCliCommand<AdminProcurePlanOption> {
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AdminProcurePlanOption> commandConfig,
+    final CommandContext<AdminProcurePlanOption, void> context,
     final CommandOutput output,
   ) async {
-    final userEmail = commandConfig.value(AdminProcurePlanOption.user);
-    final productName = commandConfig.value(AdminProcurePlanOption.productName);
-    final ver = commandConfig.optionalValue(
+    final userEmail = context.config.value(AdminProcurePlanOption.user);
+    final productName = context.config.value(
+      AdminProcurePlanOption.productName,
+    );
+    final ver = context.config.optionalValue(
       AdminProcurePlanOption.productVersion,
     );
-    final trialPeriod = commandConfig.optionalValue(
+    final trialPeriod = context.config.optionalValue(
       AdminProcurePlanOption.trialPeriod,
     );
-    final override = commandConfig.value(AdminProcurePlanOption.overrideChecks);
+    final override = context.config.value(
+      AdminProcurePlanOption.overrideChecks,
+    );
 
     await renderCommand(
       output,
       operation: () => ProductAdminCommands.procurePlan(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         userEmail: userEmail,
         planName: productName,
         planVersion: ver,
@@ -200,17 +204,17 @@ class AdminCancelPlanCommand extends CloudCliCommand<AdminCancelPlanOption> {
 
   @override
   Future<void> runWithOutput(
-    final Configuration<AdminCancelPlanOption> commandConfig,
+    final CommandContext<AdminCancelPlanOption, void> context,
     final CommandOutput output,
   ) async {
-    final userEmail = commandConfig.value(AdminCancelPlanOption.user);
-    final subscriptionId = commandConfig.optionalValue(
+    final userEmail = context.config.value(AdminCancelPlanOption.user);
+    final subscriptionId = context.config.optionalValue(
       AdminCancelPlanOption.subscriptionId,
     );
-    final cloudProjectId = commandConfig.optionalValue(
+    final cloudProjectId = context.config.optionalValue(
       AdminCancelPlanOption.cloudProjectId,
     );
-    final terminateImmediately = commandConfig.value(
+    final terminateImmediately = context.config.value(
       AdminCancelPlanOption.terminateImmediately,
     );
 
@@ -221,7 +225,7 @@ class AdminCancelPlanCommand extends CloudCliCommand<AdminCancelPlanOption> {
     await renderCommand(
       output,
       operation: () => ProductAdminCommands.cancelPlan(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         userEmail: userEmail,
         subscriptionId: subscriptionUuid,
         cloudProjectId: cloudProjectId,

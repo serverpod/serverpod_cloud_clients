@@ -1,3 +1,4 @@
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/categories.dart';
@@ -104,14 +105,14 @@ Examples
 
   @override
   Future<void> runWithOutput(
-    final Configuration<StatusLiveOption> commandConfig,
+    final CommandContext<StatusLiveOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(StatusLiveOption.projectId);
-    final inUtc = commandConfig.value(StatusLiveOption.utc);
-    final watch = commandConfig.value(StatusLiveOption.watch);
-    final interval = commandConfig.value(StatusLiveOption.interval);
-    final client = runner.serviceProvider.cloudApiClient;
+    final projectId = context.config.value(StatusLiveOption.projectId);
+    final inUtc = context.config.value(StatusLiveOption.utc);
+    final watch = context.config.value(StatusLiveOption.watch);
+    final interval = context.config.value(StatusLiveOption.interval);
+    final client = context.serviceProvider.cloudApiClient;
 
     if (watch) {
       await renderCommand(
@@ -131,7 +132,7 @@ Examples
       return;
     }
 
-    if (commandConfig.valueSourceType(StatusLiveOption.interval) ==
+    if (context.config.valueSourceType(StatusLiveOption.interval) ==
         ValueSourceType.arg) {
       logger.warning('The --interval option has no effect without --watch.');
     }

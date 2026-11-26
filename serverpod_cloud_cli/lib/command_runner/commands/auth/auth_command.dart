@@ -1,5 +1,8 @@
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart'
+    show GlobalConfigurationOptions;
 import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/auth/auth_login.dart';
@@ -79,14 +82,14 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
 
   @override
   Future<void> runWithOutput(
-    final Configuration<LoginCommandOption> commandConfig,
+    final CommandContext<LoginCommandOption, void> context,
     final CommandOutput output,
   ) async {
-    final signInPath = globalConfiguration.signInPath;
-    final timeLimit = commandConfig.value(LoginCommandOption.timeoutOpt);
-    final persistent = commandConfig.value(LoginCommandOption.persistentOpt);
+    final signInPath = context.globalConfiguration.signInPath;
+    final timeLimit = context.config.value(LoginCommandOption.timeoutOpt);
+    final persistent = context.config.value(LoginCommandOption.persistentOpt);
 
-    final localStoragePath = globalConfiguration.scloudDir;
+    final localStoragePath = context.globalConfiguration.scloudDir;
 
     final storedCloudData =
         await ResourceManager.tryFetchServerpodCloudAuthData(
@@ -105,15 +108,15 @@ class CloudLoginCommand extends CloudCliCommand<LoginCommandOption> {
 
     await AuthLoginCommands.login(
       logger: logger,
-      scloudDir: globalConfiguration.scloudDir,
-      consoleServer: globalConfiguration.consoleServer,
-      openBrowser: globalConfiguration.browser,
-      cloudApiClient: runner.serviceProvider.cloudApiClient,
+      scloudDir: context.globalConfiguration.scloudDir,
+      consoleServer: context.globalConfiguration.consoleServer,
+      openBrowser: context.globalConfiguration.browser,
+      cloudApiClient: context.serviceProvider.cloudApiClient,
       timeLimit: timeLimit,
       persistent: persistent,
       signInPath: signInPath,
     );
-    runner.sendSignedInAnalyticsEvent();
+    runner.sendSignedInAnalyticsEvent(context);
   }
 }
 
@@ -167,13 +170,13 @@ See also "$baseCommand auth list", to list the current authentication sessions.'
 
   @override
   Future<void> runWithOutput(
-    final Configuration<LogoutCommandOption> commandConfig,
+    final CommandContext<LogoutCommandOption, void> context,
     final CommandOutput output,
   ) async {
-    final tokenIds = commandConfig.value(LogoutCommandOption.tokenId);
-    final all = commandConfig.value(LogoutCommandOption.all);
+    final tokenIds = context.config.value(LogoutCommandOption.tokenId);
+    final all = context.config.value(LogoutCommandOption.all);
 
-    final localStoragePath = globalConfiguration.scloudDir;
+    final localStoragePath = context.globalConfiguration.scloudDir;
 
     final cloudData = await ResourceManager.tryFetchServerpodCloudAuthData(
       localStoragePath: localStoragePath.path,
@@ -192,7 +195,7 @@ See also "$baseCommand auth list", to list the current authentication sessions.'
     await renderCommand(
       output,
       operation: () => Auth.logout(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         localStoragePath: localStoragePath.path,
         tokenIds: tokenIds,
         all: all,
@@ -226,14 +229,15 @@ class ListAuthSessionsCommand extends CloudCliCommand<ListAuthSessionsOption> {
 
   @override
   Future<void> runWithOutput(
-    final Configuration<ListAuthSessionsOption> commandConfig,
+    final CommandContext<ListAuthSessionsOption, void> context,
     final CommandOutput output,
   ) async {
-    final inUtc = commandConfig.value(ListAuthSessionsOption.utc);
+    final inUtc = context.config.value(ListAuthSessionsOption.utc);
     await renderCommand(
       output,
-      operation: () =>
-          Auth.listAuthSessionsOperation(runner.serviceProvider.cloudApiClient),
+      operation: () => Auth.listAuthSessionsOperation(
+        context.serviceProvider.cloudApiClient,
+      ),
       textOutputUi: AuthSessionListTextUi(utc: inUtc),
     );
   }
@@ -295,23 +299,23 @@ the --token option or the SERVERPOD_CLOUD_TOKEN environment variable.''';
 
   @override
   Future<void> runWithOutput(
-    final Configuration<CreateTokenCommandOption> commandConfig,
+    final CommandContext<CreateTokenCommandOption, void> context,
     final CommandOutput output,
   ) async {
-    final expiresAt = commandConfig.optionalValue(
+    final expiresAt = context.config.optionalValue(
       CreateTokenCommandOption.expireAt,
     );
-    final noExpiresAfter = commandConfig.value(
+    final noExpiresAfter = context.config.value(
       CreateTokenCommandOption.noExpiresAfter,
     );
-    final expiresAfter = commandConfig.optionalValue(
+    final expiresAfter = context.config.optionalValue(
       CreateTokenCommandOption.idleTtl,
     );
 
     await renderCommand(
       output,
       operation: () => Auth.createApiToken(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         expiresAt: expiresAt,
         expiresAfter: noExpiresAfter ? null : expiresAfter,
       ),
@@ -364,17 +368,17 @@ Examples
 
   @override
   Future<void> runWithOutput(
-    final Configuration<RevokeTokenCommandOption> commandConfig,
+    final CommandContext<RevokeTokenCommandOption, void> context,
     final CommandOutput output,
   ) async {
-    final tokenId = commandConfig.value(RevokeTokenCommandOption.tokenId);
+    final tokenId = context.config.value(RevokeTokenCommandOption.tokenId);
 
     await renderCommand(
       output,
       operation: () => Auth.revokeToken(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         tokenId: tokenId,
-        localStoragePath: globalConfiguration.scloudDir.path,
+        localStoragePath: context.globalConfiguration.scloudDir.path,
       ),
       textOutputUi: const AuthRevokeTokenTextUi(),
     );

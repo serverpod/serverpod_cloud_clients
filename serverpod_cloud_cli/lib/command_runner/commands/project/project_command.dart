@@ -1,7 +1,10 @@
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:path/path.dart' as p;
 
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
+import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart'
+    show GlobalConfigurationOptions;
 import 'package:serverpod_cloud_cli/command_runner/ui/ui.dart';
 import 'package:serverpod_cloud_cli/command_runner/helpers/command_options.dart';
 import 'package:serverpod_cloud_cli/command_runner/commands/project/project_ops.dart';
@@ -74,21 +77,22 @@ class CloudProjectCreateCommand extends CloudCliCommand<ProjectCreateOption> {
 
   @override
   Future<void> runWithOutput(
-    final Configuration commandConfig,
+    final CommandContext<ProjectCreateOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(ProjectCreateOption.projectId);
-    final plan = commandConfig.optionalValue(ProjectCreateOption.plan);
-    final enableDb = commandConfig.value(ProjectCreateOption.enableDb);
+    final projectId = context.config.value(ProjectCreateOption.projectId);
+    final plan = context.config.optionalValue(ProjectCreateOption.plan);
+    final enableDb = context.config.value(ProjectCreateOption.enableDb);
 
     await confirmToContinue(
+      context,
       output,
       message:
           'Depending on your subscription, a new project may incur additional costs. Continue?',
       defaultValue: true,
     );
 
-    final client = runner.serviceProvider.cloudApiClient;
+    final client = context.serviceProvider.cloudApiClient;
 
     // final createdPlan = await ProjectCommands.createPlan(client, plan: plan);
     final planContext = await renderCommand(
@@ -157,12 +161,13 @@ class CloudProjectDeleteCommand extends CloudCliCommand {
 
   @override
   Future<void> runWithOutput(
-    final Configuration commandConfig,
+    final CommandContext<OptionDefinition, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(ProjectDeleteOption.projectId);
+    final projectId = context.config.value(ProjectDeleteOption.projectId);
 
     await confirmToContinue(
+      context,
       output,
       message: 'Are you sure you want to delete the project "$projectId"?',
       defaultValue: false,
@@ -171,7 +176,7 @@ class CloudProjectDeleteCommand extends CloudCliCommand {
     await renderCommand(
       output,
       operation: () => ProjectCommands.deleteProject(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
       ),
       textOutputUi: const ProjectDeleteTextUi(),
@@ -212,16 +217,16 @@ class CloudProjectListCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<ProjectListCommandOption> commandConfig,
+    final CommandContext<ProjectListCommandOption, void> context,
     final CommandOutput output,
   ) async {
-    final showArchived = commandConfig.value(ProjectListCommandOption.all);
-    final inUtc = commandConfig.value(ProjectListCommandOption.utc);
+    final showArchived = context.config.value(ProjectListCommandOption.all);
+    final inUtc = context.config.value(ProjectListCommandOption.utc);
 
     await renderCommand(
       output,
       operation: () => ProjectCommands.listProjectsOperation(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         showArchived: showArchived,
       ),
       textOutputUi: ProjectListTextUi(utc: inUtc, showArchived: showArchived),
@@ -256,16 +261,16 @@ class CloudProjectShowCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<ProjectShowCommandOption> commandConfig,
+    final CommandContext<ProjectShowCommandOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(ProjectShowCommandOption.projectId);
-    final utc = commandConfig.value(ProjectShowCommandOption.utc);
+    final projectId = context.config.value(ProjectShowCommandOption.projectId);
+    final utc = context.config.value(ProjectShowCommandOption.utc);
 
     await renderCommand(
       output,
       operation: () => ProjectCommands.showProjectOperation(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
         projectId: projectId,
       ),
       textOutputUi: ProjectShowTextUi(utc: utc),
@@ -309,16 +314,16 @@ class CloudProjectLinkCommand
 
   @override
   Future<void> runWithOutput(
-    final Configuration<ProjectLinkCommandOption> commandConfig,
+    final CommandContext<ProjectLinkCommandOption, void> context,
     final CommandOutput output,
   ) async {
-    final projectId = commandConfig.value(ProjectLinkCommandOption.projectId);
-    final dartVersionOverride = commandConfig.optionalValue(
+    final projectId = context.config.value(ProjectLinkCommandOption.projectId);
+    final dartVersionOverride = context.config.optionalValue(
       ProjectLinkCommandOption.dartVersion,
     );
-    final projectDirectory = runner.verifiedProjectDirectory();
+    final projectDirectory = runner.verifiedProjectDirectory(context);
     final configFilePath =
-        globalConfiguration.projectConfigFile?.path ??
+        context.globalConfiguration.projectConfigFile?.path ??
         p.join(
           projectDirectory.path,
           ProjectConfigFileConstants.defaultFileName,
@@ -330,7 +335,7 @@ class CloudProjectLinkCommand
       output,
       operation: () async => Stream.fromFuture(
         ProjectCommands.linkProject(
-          runner.serviceProvider.cloudApiClient,
+          context.serviceProvider.cloudApiClient,
           projectId: projectId,
           projectDirectory: projectDirectory.path,
           configFilePath: configFilePath,

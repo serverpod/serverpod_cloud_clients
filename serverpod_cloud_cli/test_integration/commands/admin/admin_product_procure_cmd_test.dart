@@ -73,5 +73,42 @@ void main() {
         );
       });
     });
+
+    group('when executing admin product procure with --version', () {
+      late Future commandResult;
+      setUp(() async {
+        when(
+          () => client.adminProcurement.procurePlan(
+            userEmail: any(named: 'userEmail'),
+            planProductName: any(named: 'planProductName'),
+            planProductVersion: any(named: 'planProductVersion'),
+            overrideChecks: any(named: 'overrideChecks'),
+          ),
+        ).thenAnswer((invocation) async => Future.value(Uuid().v4obj()));
+
+        commandResult = cli.run([
+          'admin',
+          'product',
+          'procure-plan',
+          'test@example.com',
+          'test-plan',
+          '--version',
+          '2',
+        ]);
+      });
+
+      test('then that version of the plan is procured', () async {
+        await commandResult;
+
+        verify(
+          () => client.adminProcurement.procurePlan(
+            userEmail: 'test@example.com',
+            planProductName: 'test-plan',
+            planProductVersion: 2,
+            overrideChecks: any(named: 'overrideChecks'),
+          ),
+        ).called(1);
+      });
+    });
   });
 }

@@ -4,6 +4,7 @@ library;
 import 'dart:async';
 import 'dart:io';
 
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:ground_control_client/ground_control_client_test_tools.dart';
 import 'package:ground_control_client_mock/ground_control_client_mock.dart';
@@ -19,6 +20,7 @@ import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command_runner.dart
 import 'package:serverpod_cloud_cli/command_runner/helpers/cloud_cli_service_provider.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/models/serverpod_cloud_auth_data.dart';
 import 'package:serverpod_cloud_cli/persistent_storage/resource_manager.dart';
+import 'package:serverpod_cloud_cli/shared/exceptions/cloud_cli_usage_exception.dart';
 import 'package:serverpod_cloud_cli/shared/exceptions/exit_exceptions.dart';
 
 import '../../test_utils/command_logger_matchers.dart';
@@ -39,7 +41,7 @@ class CommandThatRequiresLogin extends CloudCliCommand {
 
   @override
   Future<void> runWithOutput(
-    Configuration<OptionDefinition> commandConfig,
+    CommandContext<OptionDefinition, void> context,
     CommandOutput output,
   ) async {
     return;
@@ -70,7 +72,7 @@ class CommandWithMandatoryOption extends CloudCliCommand<MandatoryOption> {
 
   @override
   Future<void> runWithOutput(
-    Configuration<MandatoryOption> commandConfig,
+    CommandContext<MandatoryOption, void> context,
     CommandOutput output,
   ) async {
     return;
@@ -94,7 +96,7 @@ class InteractiveOnlyCommand extends CloudCliCommand {
 
   @override
   Future<void> runWithOutput(
-    Configuration<OptionDefinition> commandConfig,
+    CommandContext<OptionDefinition, void> context,
     CommandOutput output,
   ) async {
     return;
@@ -114,8 +116,9 @@ class CommandThatDoesNotRequiredLogin extends CloudCliCommand {
   String get description => 'description';
 
   @override
-  Future<void> runWithConfig(
-    Configuration<OptionDefinition> commandConfig,
+  Future<void> runWithOutput(
+    CommandContext<OptionDefinition, void> context,
+    CommandOutput output,
   ) async {
     return;
   }
@@ -272,8 +275,8 @@ void main() {
   });
 
   test('Given command that does not requires login and user is not logged in '
-      'when calling run then completes', () {
-    expect(
+      'when calling run then completes', () async {
+    await expectLater(
       runner.run([
         commandThatDoesNotRequiredLogin.name,
         '--config-dir',
@@ -340,22 +343,21 @@ void main() {
 
   group('Given command with a mandatory option and user is not logged in '
       'when calling run without the option', () {
-    late Future commandResult;
-    setUp(() {
-      commandResult = runner.run([
+    Future<void> runCommand() {
+      return runner.run([
         commandWithMandatoryOption.name,
         '--no-browser',
         '--config-dir',
         testCacheFolderPath,
       ]);
-    });
+    }
 
     test('then throws UsageException', () async {
-      await expectLater(commandResult, throwsA(isA<UsageException>()));
+      expect(runCommand, throwsA(isA<UsageException>()));
     });
 
     test('then no login is started', () async {
-      await commandResult.catchError((_) {});
+      await expectLater(runCommand, throwsA(isA<UsageException>()));
 
       expect(logger.progressCalls, isEmpty);
     });
@@ -378,14 +380,13 @@ void main() {
       await expectLater(
         commandResult,
         throwsA(
-          isA<UsageException>().having(
-            (e) => e.toString(),
-            'toString',
-            startsWith(
-              'The interactive-only-command command is interactive '
-              'and cannot run with --non-interactive.\nUse another command.',
-            ),
-          ),
+          isA<CloudCliUsageException>()
+              .having(
+                (e) => e.message,
+                'message',
+                'Interactive commands cannot run with "--non-interactive".',
+              )
+              .having((e) => e.hint, 'hint', 'Use another command.'),
         ),
       );
     });
@@ -394,7 +395,20 @@ void main() {
       await commandResult.catchError((_) {});
 
       expect(logger.progressCalls, isEmpty);
-      expect(logger.errorCalls, isEmpty);
+    });
+
+    test('then the only error logged is the usage error', () async {
+      await commandResult.catchError((_) {});
+
+      expect(
+        logger.errorCalls.map((call) => call.message).join('\n'),
+        allOf(
+          startsWith(
+            'Interactive commands cannot run with "--non-interactive".',
+          ),
+          endsWith('Use another command.'),
+        ),
+      );
     });
   });
 }

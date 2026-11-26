@@ -1,3 +1,4 @@
+import 'package:config/command.dart' show CommandContext;
 import 'package:config/config.dart';
 import 'package:serverpod_cloud_cli/command_runner/cloud_cli_command.dart';
 import 'package:serverpod_cloud_cli/util/output/output.dart' show CommandOutput;
@@ -20,13 +21,13 @@ class CloudMeCommand extends CloudCliCommand {
 
   @override
   Future<void> runWithOutput(
-    final Configuration commandConfig,
+    final CommandContext<OptionDefinition, void> context,
     final CommandOutput output,
   ) async {
     await renderCommand(
       output,
       operation: () => MeCommands.showCurrentUserOperation(
-        runner.serviceProvider.cloudApiClient,
+        context.serviceProvider.cloudApiClient,
       ),
       textOutputUi: MeTextUi(),
     );
