@@ -2387,6 +2387,9 @@ class EndpointDeploy extends _isc.EndpointRef {
   /// [archiveSize]. Throws [UploadTooLargeException] if a resumable upload's
   /// [archiveSize] exceeds the upload limit. Without [resumable],
   /// [archiveSize] is ignored and the signed `PUT` carries the limit.
+  /// Throws [InvalidValueException] if [dartVersion] is not a valid semver
+  /// or version constraint. Throws [DartSdkUnsupportedConstraintException]
+  /// if no supported Dart SDK version satisfies [dartVersion].
   /// Throws [ProjectSuspendedException] if the project is suspended.
   _ida.Future<String> createUploadDescription(
     String cloudProjectId, {
