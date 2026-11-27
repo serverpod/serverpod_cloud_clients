@@ -4,18 +4,23 @@ import 'dart:io';
 import 'package:serverpod_cloud_cli/command_logger/command_logger.dart';
 
 abstract final class ListenerServer {
+  static const _tokenParameter = 'token';
+  static const _projectIdParameter = 'projectId';
+
   /// Starts a local HTTP server that waits for a single callback request and
-  /// returns the value of the [queryParameter] query parameter from it.
+  /// returns all the query parameters of it.
   ///
   /// The server listens on an available `localhost` port and the resulting
   /// callback URL is reported through [onConnected] so the caller can hand it
-  /// off to the browser flow. The returned value is `null` if the parameter is
-  /// missing, the [timeLimit] is reached, or an error occurs.
+  /// off to the browser flow. The returned map is `null` if the
+  /// [requiredParameter] is missing, the [timeLimit] is reached, or an error
+  /// occurs.
   ///
   /// [successMessage] and [failureMessage] are shown in the browser when the
-  /// callback is received with or without the [queryParameter] respectively.
-  static Future<String?> listenForCallback({
-    required String queryParameter,
+  /// callback is received with or without the [requiredParameter]
+  /// respectively.
+  static Future<Map<String, String>?> _listenForCallbackQuery({
+    required String requiredParameter,
     required CommandLogger logger,
     void Function(Uri callbackUrl)? onConnected,
     Duration timeLimit = const Duration(minutes: 2),
@@ -28,13 +33,13 @@ abstract final class ListenerServer {
     final localServerAddress = Uri.http('$host:${server.port}', '/callback');
     logger.debug('Listening for callback on $localServerAddress...');
 
-    String? value;
+    Map<String, String>? query;
     try {
       onConnected?.call(localServerAddress);
-      value = await _processRequests(
+      query = await _processRequests(
         server,
         logger,
-        queryParameter: queryParameter,
+        requiredParameter: requiredParameter,
         successMessage: successMessage,
         failureMessage: failureMessage,
       ).timeout(timeLimit);
@@ -49,24 +54,60 @@ abstract final class ListenerServer {
       await server.close();
     }
 
-    return value;
+    return query;
   }
 
-  /// Starts a local HTTP server that waits for the authentication callback and
-  /// returns the authentication token from it.
-  static Future<String?> listenForAuthenticationToken({
+  /// Starts a local HTTP server that waits for a single callback request and
+  /// returns the value of the [queryParameter] query parameter from it.
+  ///
+  /// The returned value is `null` if the parameter is missing, the
+  /// [timeLimit] is reached, or an error occurs. See [_listenForCallbackQuery]
+  /// for the other parameters.
+  static Future<String?> listenForCallback({
+    required String queryParameter,
+    required CommandLogger logger,
     void Function(Uri callbackUrl)? onConnected,
     Duration timeLimit = const Duration(minutes: 2),
-    required CommandLogger logger,
-  }) {
-    return listenForCallback(
-      queryParameter: 'token',
+    String successMessage = 'Success, you may now close this window.',
+    String failureMessage =
+        'Something went wrong, please try again or contact support.',
+  }) async {
+    final query = await _listenForCallbackQuery(
+      requiredParameter: queryParameter,
       logger: logger,
       onConnected: onConnected,
       timeLimit: timeLimit,
-      successMessage: 'Login successful, you may now close this window.',
+      successMessage: successMessage,
+      failureMessage: failureMessage,
+    );
+    return query?[queryParameter];
+  }
+
+  /// Starts a local HTTP server that waits for the authentication callback and
+  /// returns the authentication token and the id of the project selected in
+  /// the console from it.
+  ///
+  /// The project id is `null` when the console did not select a project. Returns `null` if
+  /// the token is missing, the [timeLimit] is reached, or an error occurs.
+  static Future<({String token, String? projectId})?>
+  listenForAuthenticationTokenAndProject({
+    void Function(Uri callbackUrl)? onConnected,
+    Duration timeLimit = const Duration(minutes: 2),
+    required CommandLogger logger,
+  }) async {
+    final query = await _listenForCallbackQuery(
+      requiredParameter: _tokenParameter,
+      logger: logger,
+      onConnected: onConnected,
+      timeLimit: timeLimit,
+      successMessage:
+          'Login successful, you may now close this window and return to the CLI.',
       failureMessage: 'Login failed, please try again or contact support.',
     );
+    final token = query?[_tokenParameter];
+    if (token == null) return null;
+
+    return (token: token, projectId: query?[_projectIdParameter]);
   }
 
   static String _cliHtmlTemplate(String message) =>
@@ -100,24 +141,26 @@ abstract final class ListenerServer {
   </body>
 ''';
 
-  static Future<String?> _handleCallbackRequest(
+  static Future<Map<String, String>?> _handleCallbackRequest(
     HttpRequest request, {
-    required String queryParameter,
+    required String requiredParameter,
     required String successMessage,
     required String failureMessage,
   }) async {
-    final value = request.uri.queryParameters[queryParameter];
+    final query = request.uri.queryParameters;
+    final hasRequiredParameter = query.containsKey(requiredParameter);
+
     request.response.statusCode = HttpStatus.ok;
     request.response.headers.contentType = ContentType.html;
     request.response.headers
       ..add(HttpHeaders.accessControlAllowOriginHeader, '*')
       ..add(HttpHeaders.accessControlAllowHeadersHeader, '*');
 
-    final message = value == null ? failureMessage : successMessage;
+    final message = hasRequiredParameter ? successMessage : failureMessage;
 
     request.response.write(_cliHtmlTemplate(message));
 
-    return value;
+    return hasRequiredParameter ? query : null;
   }
 
   static Future<void> _handlePreflightRequest(HttpRequest request) async {
@@ -128,10 +171,10 @@ abstract final class ListenerServer {
       ..add(HttpHeaders.accessControlAllowHeadersHeader, '*');
   }
 
-  static Future<String?> _processRequests(
+  static Future<Map<String, String>?> _processRequests(
     HttpServer server,
     CommandLogger logger, {
-    required String queryParameter,
+    required String requiredParameter,
     required String successMessage,
     required String failureMessage,
   }) async {
@@ -142,7 +185,7 @@ abstract final class ListenerServer {
           case (method: 'GET', path: ['callback']):
             return await _handleCallbackRequest(
               request,
-              queryParameter: queryParameter,
+              requiredParameter: requiredParameter,
               successMessage: successMessage,
               failureMessage: failureMessage,
             );

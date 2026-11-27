@@ -181,25 +181,10 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
   /// Throws [NotLoggedInException] in `--non-interactive` mode instead of
   /// starting the interactive login.
   Future<void> _requireLogin() async {
-    final client = runner.serviceProvider.cloudApiClient;
-    final isAuthenticated =
-        await client.authKeyProvider?.isAuthenticated == true;
+    final isAuthenticated = await isLoggedIn();
 
     if (requireLogin && !isAuthenticated) {
-      if (globalConfiguration.nonInteractive) {
-        throw NotLoggedInException(baseCommand: baseCommand);
-      }
-
-      await AuthLoginCommands.login(
-        logger: logger,
-        scloudDir: globalConfiguration.scloudDir,
-        consoleServer: globalConfiguration.consoleServer,
-        openBrowser: globalConfiguration.browser,
-        cloudApiClient: client,
-        persistent: true,
-        signInPath: globalConfiguration.signInPath,
-      );
-      runner.sendSignedInAnalyticsEvent();
+      await logIn();
     }
 
     if (isAuthenticated &&
@@ -207,9 +192,44 @@ See the full documentation at: $commandDocBaseUrl${_topCommand.name}
         globalConfiguration.warnBillingOverdue) {
       await BillingCommands.warnIfOverdue(
         logger: logger,
-        billing: client.billing,
+        billing: runner.serviceProvider.cloudApiClient.billing,
       );
     }
+  }
+
+  /// Whether the user has an active login.
+  Future<bool> isLoggedIn() async {
+    final client = runner.serviceProvider.cloudApiClient;
+    return await client.authKeyProvider?.isAuthenticated == true;
+  }
+
+  /// Logs in through the console in the browser and stores the login.
+  ///
+  /// When [selectProject] is true, the console also lets the user select or
+  /// create a project after logging in.
+  ///
+  /// Returns the id of the project selected in the console, or `null` if no
+  /// project was selected.
+  ///
+  /// Throws [NotLoggedInException] in `--non-interactive` mode instead of
+  /// starting the interactive login.
+  Future<String?> logIn({bool selectProject = false}) async {
+    if (globalConfiguration.nonInteractive) {
+      throw NotLoggedInException(baseCommand: baseCommand);
+    }
+
+    final selectedProjectId = await AuthLoginCommands.login(
+      logger: logger,
+      scloudDir: globalConfiguration.scloudDir,
+      consoleServer: globalConfiguration.consoleServer,
+      openBrowser: globalConfiguration.browser,
+      cloudApiClient: runner.serviceProvider.cloudApiClient,
+      persistent: true,
+      signInPath: globalConfiguration.signInPath,
+      selectProject: selectProject,
+    );
+    runner.sendSignedInAnalyticsEvent();
+    return selectedProjectId;
   }
 
   /// Runs this command with prepared configuration and output.

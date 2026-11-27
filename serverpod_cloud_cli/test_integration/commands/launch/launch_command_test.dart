@@ -146,11 +146,261 @@ void main() {
   });
 
   test(
-    'Given project launch command when instantiated then requires login',
+    'Given project launch command when instantiated then it does not require login before running',
     () {
-      expect(CloudLaunchCommand(logger: logger).requireLogin, isTrue);
+      expect(CloudLaunchCommand(logger: logger).requireLogin, isFalse);
     },
   );
+
+  group('Given not authenticated and a serverpod directory', () {
+    const consoleProjectId = 'console-project';
+    final client = ClientMock(
+      authKeyProvider: InMemoryKeyManager.unauthenticated(),
+    );
+    final cli = CloudCliCommandRunner.create(
+      logger: logger,
+      version: Version.parse('999.0.0'),
+      serviceProvider: CloudCliServiceProvider(
+        apiClientFactory: (globalCfg) => client,
+        fileUploaderFactory: (_) => mockFileUploader,
+      ),
+    );
+    late String testProjectDir;
+
+    setUp(() async {
+      when(
+        () => client.users.readUser(),
+      ).thenAnswer((_) async => UserBuilder().build());
+      when(() => client.platform.getDartSdkVersionPolicy()).thenAnswer(
+        (_) async => DartSdkVersionPolicyBuilder()
+            .withSupportedVersions(['3.7', '3.8', '3.9', '3.10', '3.11'])
+            .withMinVersionInclusive('3.7.0')
+            .withMaxVersionExclusive('3.15.0')
+            .build(),
+      );
+      when(
+        () => client.projects.listProjectsInfo(
+          includeLatestDeployAttemptTime: any(
+            named: 'includeLatestDeployAttemptTime',
+          ),
+        ),
+      ).thenAnswer(
+        (_) async => [
+          ProjectInfoBuilder()
+              .withProject(
+                ProjectBuilder().withCloudProjectId(consoleProjectId),
+              )
+              .build(),
+        ],
+      );
+      when(
+        () => client.projects.fetchProjectConfig(
+          cloudProjectId: any(named: 'cloudProjectId'),
+        ),
+      ).thenAnswer(
+        (invocation) async => ProjectConfig(
+          projectId: invocation.namedArguments[#cloudProjectId],
+        ),
+      );
+
+      await ProjectFactory.serverpodServerDir(
+        withDirectoryName: 'server_dir',
+      ).create();
+      testProjectDir = p.join(d.sandbox, 'server_dir');
+    });
+
+    group('when executing launch and the console selects a project', () {
+      late Future commandResult;
+      setUp(() async {
+        logger.inlineTerminal = FakeTerminal()..queueInput(FakeTerminal.escape);
+        final loggedIn = Completer<void>();
+        unawaited(
+          CallbackHelper.completeAuthCallback(
+            logger: logger,
+            completer: loggedIn,
+            token: 'myTestToken',
+            projectId: consoleProjectId,
+          ),
+        );
+
+        commandResult = cli.run([
+          'launch',
+          '--project-dir',
+          testProjectDir,
+          '--config-dir',
+          d.sandbox,
+          '--no-deploy',
+          '--no-browser',
+        ]);
+        await loggedIn.future;
+      });
+
+      test(
+        'then the sign-in link asks the console to select a project',
+        () async {
+          await commandResult;
+
+          expect(
+            logger.infoCalls,
+            contains(
+              isA<InfoCall>().having(
+                (call) => call.message,
+                'message',
+                contains('select-project=true'),
+              ),
+            ),
+          );
+        },
+      );
+
+      test('then the terminal project selection is skipped', () async {
+        await commandResult;
+
+        final output = (logger.inlineTerminal as FakeTerminal).output;
+        expect(output, isNot(contains('Select a Serverpod Cloud project')));
+      });
+
+      test('then writes scloud.yaml with the selected project', () async {
+        await commandResult;
+
+        final expected = d.dir('server_dir', [
+          d.file('scloud.yaml', contains('projectId: "$consoleProjectId"')),
+        ]);
+        await expectLater(expected.validate(), completes);
+      });
+    });
+
+    group('when executing launch and the console only logs in', () {
+      late Future commandResult;
+      setUp(() async {
+        logger.inlineTerminal = FakeTerminal()..queueInput(FakeTerminal.escape);
+        final loggedIn = Completer<void>();
+        unawaited(
+          CallbackHelper.completeAuthCallback(
+            logger: logger,
+            completer: loggedIn,
+            token: 'myTestToken',
+          ),
+        );
+
+        commandResult = cli.run([
+          'launch',
+          '--project-dir',
+          testProjectDir,
+          '--config-dir',
+          d.sandbox,
+          '--no-deploy',
+          '--no-browser',
+        ]);
+        await loggedIn.future;
+      });
+
+      test('then the terminal project selection is shown', () async {
+        await commandResult.catchError((_) {});
+
+        final output = (logger.inlineTerminal as FakeTerminal).output;
+        expect(output, contains('Select a Serverpod Cloud project'));
+      });
+
+      test(
+        'then cancelling the terminal project selection throws UserAbortException',
+        () async {
+          await expectLater(commandResult, throwsA(isA<UserAbortException>()));
+        },
+      );
+    });
+
+    group('when executing launch with an scloud.yaml project', () {
+      late Future commandResult;
+      setUp(() async {
+        await d.file(p.join(testProjectDir, 'scloud.yaml'), '''
+project:
+  projectId: "$consoleProjectId"
+''').create();
+
+        final loggedIn = Completer<void>();
+        unawaited(
+          CallbackHelper.completeAuthCallback(
+            logger: logger,
+            completer: loggedIn,
+            token: 'myTestToken',
+          ),
+        );
+
+        commandResult = cli.run([
+          'launch',
+          '--project-dir',
+          testProjectDir,
+          '--config-dir',
+          d.sandbox,
+          '--wet-run',
+          '--no-browser',
+        ]);
+        await loggedIn.future;
+      });
+
+      test('then the sign-in link does not ask to select a project', () async {
+        await commandResult.catchError((_) {});
+
+        expect(
+          logger.infoCalls,
+          isNot(
+            contains(
+              isA<InfoCall>().having(
+                (call) => call.message,
+                'message',
+                contains('select-project'),
+              ),
+            ),
+          ),
+        );
+      });
+    });
+
+    group('when executing launch with --project', () {
+      late Future commandResult;
+      setUp(() async {
+        final loggedIn = Completer<void>();
+        unawaited(
+          CallbackHelper.completeAuthCallback(
+            logger: logger,
+            completer: loggedIn,
+            token: 'myTestToken',
+          ),
+        );
+
+        commandResult = cli.run([
+          'launch',
+          '--project',
+          consoleProjectId,
+          '--project-dir',
+          testProjectDir,
+          '--config-dir',
+          d.sandbox,
+          '--no-deploy',
+          '--no-browser',
+        ]);
+        await loggedIn.future;
+      });
+
+      test('then the sign-in link does not ask to select a project', () async {
+        await commandResult;
+
+        expect(
+          logger.infoCalls,
+          isNot(
+            contains(
+              isA<InfoCall>().having(
+                (call) => call.message,
+                'message',
+                contains('select-project'),
+              ),
+            ),
+          ),
+        );
+      });
+    });
+  });
 
   group('Given authenticated', () {
     final attemptId = Uuid().v4obj();

@@ -81,6 +81,9 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
     : super(options: LaunchOption.values);
 
   @override
+  bool get requireLogin => false;
+
+  @override
   bool get interactiveOnly => true;
 
   @override
@@ -97,7 +100,7 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
     final consoleServer = globalConfiguration.consoleServer;
     final openBrowser = globalConfiguration.browser;
 
-    final projectId = commandConfig.optionalValue(LaunchOption.projectId);
+    var projectId = commandConfig.optionalValue(LaunchOption.projectId);
     final preDeployScripts = commandConfig.value(LaunchOption.preDeployScripts);
     final deploy = commandConfig.value(LaunchOption.deploy);
     final dartVersionOverride = commandConfig.optionalValue(
@@ -114,6 +117,12 @@ Otherwise it will guide you through setting up a new Serverpod Cloud project.
 
     final projectDirectory = runner.verifiedProjectDirectory();
     final relativeProjectDir = p.relative(projectDirectory.path, from: '.');
+
+    if (!await isLoggedIn()) {
+      final isNewProjectSetup = projectConfigFile == null && projectId == null;
+      final selectedProjectId = await logIn(selectProject: isNewProjectSetup);
+      projectId ??= selectedProjectId;
+    }
 
     if (projectConfigFile != null) {
       if (projectId == null) {

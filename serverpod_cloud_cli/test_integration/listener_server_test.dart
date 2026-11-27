@@ -10,11 +10,11 @@ import 'package:http/http.dart' as http;
 void main() async {
   group('Given a listener server listening for an authentication token', () {
     late Completer<Uri> callbackUrlFuture;
-    late Future<String?> tokenFuture;
+    late Future<({String token, String? projectId})?> callbackFuture;
 
     setUp(() async {
       callbackUrlFuture = Completer<Uri>();
-      tokenFuture = ListenerServer.listenForAuthenticationToken(
+      callbackFuture = ListenerServer.listenForAuthenticationTokenAndProject(
         logger: CommandLogger(VoidLogger()),
         onConnected: (Uri callbackUrl) {
           callbackUrlFuture.complete(callbackUrl);
@@ -22,64 +22,70 @@ void main() async {
       );
     });
 
-    group(
-      'when a request is made with an authentication token parameter then token is returned.',
-      () {
-        const testToken = 'myTestToken';
+    group('when a request is made with a token', () {
+      late http.Response response;
+      setUp(() async {
+        final callbackUrl = await callbackUrlFuture.future;
+        response = await http.get(
+          callbackUrl.replace(queryParameters: {'token': 'myTestToken'}),
+        );
+      });
 
-        late http.Response response;
-        setUp(() async {
-          final callbackUrl = await callbackUrlFuture.future;
-          final urlWithToken = callbackUrl.replace(
-            queryParameters: {'token': testToken},
-          );
-          response = await http.get(urlWithToken);
-        });
+      test('then the token is returned without a project id.', () async {
+        final callback = await callbackFuture;
+        expect(callback, (token: 'myTestToken', projectId: null));
+      });
 
-        test('then a token is returned.', () async {
-          final fetchedToken = await tokenFuture;
-          expect(fetchedToken, testToken);
-        });
+      test('then request response has status code 200.', () {
+        expect(response.statusCode, 200);
+      });
 
-        test('then request response has status code 200.', () {
-          expect(response.statusCode, 200);
-        });
+      test('then response body has successful login message.', () {
+        expect(response.body, contains('Login successful'));
+      });
+    });
 
-        test('then response body has successful login message.', () {
-          expect(
-            response.body,
-            contains('Login successful, you may now close this window.'),
-          );
-        });
-      },
-    );
+    group('when a request is made with a token and a project id', () {
+      setUp(() async {
+        final callbackUrl = await callbackUrlFuture.future;
+        await http.get(
+          callbackUrl.replace(
+            queryParameters: {'token': 'myTestToken', 'projectId': 'my-app'},
+          ),
+        );
+      });
 
-    group(
-      'when a request is made without an authentication token parameter then token null is returned.',
-      () {
-        late http.Response response;
-        setUp(() async {
-          final callbackUrl = await callbackUrlFuture.future;
-          response = await http.get(callbackUrl);
-        });
+      test('then the token and the project id are returned.', () async {
+        final callback = await callbackFuture;
+        expect(callback, (token: 'myTestToken', projectId: 'my-app'));
+      });
+    });
 
-        test('then null is returned.', () async {
-          final fetchedToken = await tokenFuture;
-          expect(fetchedToken, null);
-        });
+    group('when a request is made without a token', () {
+      late http.Response response;
+      setUp(() async {
+        final callbackUrl = await callbackUrlFuture.future;
+        response = await http.get(
+          callbackUrl.replace(queryParameters: {'projectId': 'my-app'}),
+        );
+      });
 
-        test('then request response has status code 200.', () {
-          expect(response.statusCode, 200);
-        });
+      test('then null is returned.', () async {
+        final callback = await callbackFuture;
+        expect(callback, isNull);
+      });
 
-        test('then response body has failed login message.', () {
-          expect(
-            response.body,
-            contains('Login failed, please try again or contact support.'),
-          );
-        });
-      },
-    );
+      test('then request response has status code 200.', () {
+        expect(response.statusCode, 200);
+      });
+
+      test('then response body has failed login message.', () {
+        expect(
+          response.body,
+          contains('Login failed, please try again or contact support.'),
+        );
+      });
+    });
 
     group('when a preflight check request is made', () {
       late http.Response response;
@@ -117,11 +123,11 @@ void main() async {
     'Given a listener server listening for an authentication token when time limit is reached',
     () {
       late Completer<Uri> callbackUrlFuture;
-      late Future<String?> tokenFuture;
+      late Future<({String token, String? projectId})?> callbackFuture;
 
       setUp(() async {
         callbackUrlFuture = Completer<Uri>();
-        tokenFuture = ListenerServer.listenForAuthenticationToken(
+        callbackFuture = ListenerServer.listenForAuthenticationTokenAndProject(
           logger: CommandLogger(VoidLogger()),
           onConnected: (Uri callbackUrl) {
             callbackUrlFuture.complete(callbackUrl);
@@ -130,9 +136,9 @@ void main() async {
         );
       });
 
-      test('then token is null.', () async {
-        final fetchedToken = await tokenFuture;
-        expect(fetchedToken, isNull);
+      test('then null is returned.', () async {
+        final callback = await callbackFuture;
+        expect(callback, isNull);
       });
     },
   );

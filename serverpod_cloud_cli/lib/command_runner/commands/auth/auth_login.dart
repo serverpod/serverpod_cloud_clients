@@ -13,30 +13,49 @@ import 'package:serverpod_cloud_cli/util/listener_server.dart';
 abstract class AuthLoginCommands {
   static const _backfillTimeout = Duration(seconds: 5);
 
-  static Future<void> login({
+  /// Logs in to Serverpod Cloud through the console in the browser.
+  ///
+  /// Opens the console sign-in page at [signInPath] and waits up to
+  /// [timeLimit] for the console to send the login back. When [persistent] is
+  /// true, the login is stored in [scloudDir].
+  ///
+  /// When [selectProject] is true, the console also lets the user select or
+  /// create a project after logging in.
+  ///
+  /// Returns the id of the project selected in the console, or `null` if no
+  /// project was selected.
+  ///
+  /// Throws a [FailureException] if no login was received.
+  static Future<String?> login({
     required CommandLogger logger,
     required Directory scloudDir,
     required String consoleServer,
     required bool openBrowser,
     required Client cloudApiClient,
-    Duration timeLimit = const Duration(seconds: 300),
+    Duration timeLimit = const Duration(minutes: 10),
     required bool persistent,
     required String signInPath,
+    bool selectProject = false,
   }) async {
     final localStoragePath = scloudDir.path;
 
     final cloudServer = Uri.parse(consoleServer).replace(path: signInPath);
 
     final callbackUrlFuture = Completer<Uri>();
-    final tokenFuture = ListenerServer.listenForAuthenticationToken(
-      onConnected: (Uri callbackUrl) => callbackUrlFuture.complete(callbackUrl),
-      timeLimit: timeLimit,
-      logger: logger,
-    );
+    final callbackFuture =
+        ListenerServer.listenForAuthenticationTokenAndProject(
+          onConnected: (Uri callbackUrl) =>
+              callbackUrlFuture.complete(callbackUrl),
+          timeLimit: timeLimit,
+          logger: logger,
+        );
 
     final callbackUrl = await callbackUrlFuture.future;
     final signInUrl = cloudServer.replace(
-      queryParameters: {'callback': callbackUrl.toString()},
+      queryParameters: {
+        if (selectProject) 'select-project': 'true',
+        'callback': callbackUrl.toString(),
+      },
     );
     logger.info(
       'Please log in to Serverpod Cloud using the opened browser or through this link:\n$signInUrl',
@@ -53,13 +72,13 @@ abstract class AuthLoginCommands {
     await logger.progress(
       'Waiting for authentication to complete...',
       () async {
-        final token = await tokenFuture;
-        return token != null;
+        final callback = await callbackFuture;
+        return callback != null;
       },
     );
 
-    final token = await tokenFuture;
-    if (token == null) {
+    final callback = await callbackFuture;
+    if (callback == null) {
       throw FailureException(
         error: 'Failed to get authentication token.',
         hint: 'Please try to log in again.',
@@ -68,7 +87,7 @@ abstract class AuthLoginCommands {
 
     if (persistent) {
       await ResourceManager.storeServerpodCloudAuthData(
-        authData: ServerpodCloudAuthData(token),
+        authData: ServerpodCloudAuthData(callback.token),
         localStoragePath: localStoragePath,
       );
       await fetchAndStoreServerpodCloudUserData(
@@ -79,6 +98,8 @@ abstract class AuthLoginCommands {
     }
 
     logger.success('Successfully logged in to Serverpod Cloud.');
+
+    return callback.projectId;
   }
 
   static Future<void> fetchAndStoreServerpodCloudUserData({

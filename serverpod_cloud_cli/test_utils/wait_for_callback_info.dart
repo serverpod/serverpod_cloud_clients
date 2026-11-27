@@ -6,19 +6,20 @@ import 'test_command_logger.dart';
 
 abstract final class CallbackHelper {
   /// Simulates the browser hitting the authentication callback URL that the CLI
-  /// logged, optionally providing an authentication [token].
+  /// logged, optionally providing an authentication [token] and the
+  /// [projectId] selected in the console.
   static Future<void> completeAuthCallback({
     required TestCommandLogger logger,
     required Completer<void> completer,
     String? token,
+    String? projectId,
     Duration timeout = const Duration(seconds: 25),
   }) {
     return CallbackHelper.completeCallback(
       logger: logger,
       completer: completer,
       callbackUrlParameter: 'callback',
-      responseParameter: 'token',
-      responseValue: token,
+      responseParameters: {'token': ?token, 'projectId': ?projectId},
       timeout: timeout,
     );
   }
@@ -35,22 +36,20 @@ abstract final class CallbackHelper {
       logger: logger,
       completer: completer,
       callbackUrlParameter: 'return-url',
-      responseParameter: 'projectId',
-      responseValue: projectId,
+      responseParameters: {'projectId': ?projectId},
       timeout: timeout,
     );
   }
 
   /// Waits for an info log message that embeds a CLI callback URL in its
   /// `<callbackUrlParameter>=<url>` query parameter, then sends an HTTP GET to
-  /// that URL — optionally with `<responseParameter>=<responseValue>` appended —
-  /// to simulate the browser/console redirecting back to the local CLI server.
+  /// that URL with the [responseParameters] appended to simulate the
+  /// browser/console redirecting back to the local CLI server.
   static Future<void> completeCallback({
     required TestCommandLogger logger,
     required Completer<void> completer,
     required String callbackUrlParameter,
-    required String responseParameter,
-    String? responseValue,
+    required Map<String, String> responseParameters,
     Duration timeout = const Duration(seconds: 25),
   }) async {
     final marker = '$callbackUrlParameter=';
@@ -70,11 +69,9 @@ abstract final class CallbackHelper {
           }
 
           final callbackUrl = Uri.parse(Uri.decodeFull(splitMessage[1]));
-          final urlToCall = responseValue != null
-              ? callbackUrl.replace(
-                  queryParameters: {responseParameter: responseValue},
-                )
-              : callbackUrl;
+          final urlToCall = responseParameters.isEmpty
+              ? callbackUrl
+              : callbackUrl.replace(queryParameters: responseParameters);
           final response = await http.get(urlToCall);
           if (response.statusCode != 200) {
             throw StateError(
